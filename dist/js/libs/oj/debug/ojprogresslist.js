@@ -3,10 +3,9 @@
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
-define(['ojs/ojcore', 'jquery', 'knockout', 'ojs/ojcomponentcore', 'ojs/ojprogresslistdatasource', 'ojs/ojlistview', 'ojs/ojprogressbar', 'ojs/ojcomposite'], 
+define(['ojs/ojcore', 'jquery', 'knockout', 'ojs/ojcomponentcore', 'ojs/ojlistview', 'ojs/ojprogress', 'ojs/ojcomposite'], 
        function(oj, $, ko)
 {
-
 
 /**
  * Copyright (c) 2017, Oracle and/or its affiliates.
@@ -77,11 +76,144 @@ oj.Composite.register('oj-progress-status',
  * All rights reserved.
  */
 
+/*jslint browser: true,devel:true*/
 /**
- * @ignore
+ * This interface defines the API for oj.ProgressItem.
+ * It can be implemented in order to the track progress and status of an arbitrary task
+ * (e.g. a file being uploaded)
+ *
+ * @export
+ * @interface ProgressItem
+ * @memberof oj
+ * @since 4.0.0
+ * @ojstatus preview
+ */
+oj.ProgressItem = function() {
+};
+
+/**
+ * Attach an event handler
+ *
+
+ * @method
+ * @name addEventListener
+ * @memberof! oj.ProgressItem
+ * @instance
+ * @param {string} eventType eventType
+ * @param {function(Object)} eventHandler event handler function
+ *
+ * @export
+ */
+
+/**
+ * Detach an event handler
+ *
+ * @method
+ * @name removeEventListener
+ * @memberof! oj.ProgressItem
+ * @instance
+ * @param {string} eventType eventType
+ * @param {function(Object)} eventHandler event handler function
+ *
+ * @export
+ */
+
+/**
+ * @export
+ * Status
+ * @enum {string}
+ */
+oj.ProgressItem.Status = {
+  /**
+   * initial state before any progress events
+   */
+  'QUEUED': 'queued',
+  /**
+   * upload is in progress
+   */
+  'LOADSTARTED': 'loadstarted',
+  /**
+   * upload aborted
+   */
+  'ABORTED': 'aborted',
+  /**
+   * upload failed
+   */
+  'ERRORED': 'errored',
+  /**
+   * upload timeout
+   */
+  'TIMEDOUT': 'timedout',
+  /**
+   * upload is completed
+   */
+  'LOADED': 'loaded'
+};
+
+/**
+ * @export
+ * Event types
+ * @enum {string}
+ */
+oj.ProgressItem.EventType = {
+  /**
+   * Triggered when the progress start
+   */
+  'LOADSTART': 'loadstart',
+  /**
+   * Triggered for upload progress events.
+   */
+  'PROGRESS': 'progress',
+  /**
+   * Triggered when an upload has been aborted.
+   */
+  'ABORT': 'abort',
+  /**
+   * Triggered when an upload failed.
+   */
+  'ERROR': 'error',
+  /**
+   * Triggered when an upload succeeded.
+   */
+  'LOAD': 'load',
+  /**
+   * Triggered when timeout has passed before upload completed
+   */
+  'TIMEOUT': 'timeout',
+  /**
+   * Triggered when an upload completed (success or failure).
+   */
+  'LOADEND': 'loadend'
+};
+
+/**
+ * Copyright (c) 2017, Oracle and/or its affiliates.
+ * All rights reserved.
+ */
+
+/**
  * @ojcomponent oj.ojProgressList
  * @since 4.0.0
- * @classdesc Display a <code class="prettyprint">ListView</code> where the data is a <code class="prettyprint">ProgressListDataSource</code> and data rows are <code class="prettyprint">ProgressItem</code>s with ko data-bind progress, status and message.
+ * @ojstatus preview
+ *
+ * @classdesc 
+ * <h3 id="progressListOverview-section">
+ *   JET ProgressList
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#progressListOverview-section"></a>
+ * </h3>
+ * <p>Description:</p>
+ * <p>Display a <code class="prettyprint">ListView</code> where the data is a <code class="prettyprint">TableDataSource</code> and data rows are <code class="prettyprint">ProgressItem</code>s with ko data-bind progress, status and message. Please see the <code class="prettyprint">ListView</code> for Touch and Keyboard End User Information</p>
+ *
+ * <p>See {@link oj.ojListView}</p>
+ * <p>See {@link oj.TableDataSource}</p>
+ * <p>See {@link oj.ProgressItem}</p>
+ *
+ * <pre class="prettyprint">
+ * <code>
+ * &lt;oj-progress-list data='{{dataSource}}'>
+ * &lt;/oj-progress-list>
+ * </code>
+ * </pre>
  */
 
 /**
@@ -89,9 +221,19 @@ oj.Composite.register('oj-progress-status',
  * @name data
  * @memberof oj.ojProgressList
  * @instance
- * @type {null|oj.ProgressListDataSource}
+ * @type {null|oj.TableDataSource}
  * @default <code class="prettyprint">null</code>
  * @desc Data used by the file upload progress list.
+ *
+ * @example <caption>Initialize the progress list with the <code class="prettyprint">data</code> attribute specified:</caption>
+ * &lt;oj-progress-list data='{{dataSource}}'>&lt;/oj-progress-list>
+ * 
+ * @example <caption>Get or set the <code class="prettyprint">data</code> property after initialization:</caption>
+ * // getter
+ * var dataValue = myProgressList.data;
+ * 
+ * // setter
+ * myProgressList.data = dataSource;
  */
 
 /**
@@ -137,7 +279,46 @@ oj.Composite.register('oj-progress-list',
   "metadata": {"inline": progressListMetadata}
 });
 
-
+/**
+ * Sets a property or a single subproperty for complex properties and notifies the component
+ * of the change, triggering a [property]Changed event.
+ * 
+ * @function setProperty
+ * @param {string} property - The property name to set. Supports dot notation for subproperty access.
+ * @param {*} value - The new value to set the property to.
+ * 
+ * @expose
+ * @memberof oj.ojProgressList
+ * @instance
+ * 
+ * @example <caption>Set a single subproperty of a complex property:</caption>
+ * myComponent.setProperty('complexProperty.subProperty1.subProperty2', "someValue");
+ */ 
+/**
+ * Retrieves a value for a property or a single subproperty for complex properties.
+ * @function getProperty
+ * @param {string} property - The property name to get. Supports dot notation for subproperty access.
+ * @return {*}
+ * 
+ * @expose
+ * @memberof oj.ojProgressList
+ * @instance
+ * 
+ * @example <caption>Get a single subproperty of a complex property:</caption>
+ * var subpropValue = myComponent.getProperty('complexProperty.subProperty1.subProperty2');
+ */ 
+/**
+ * Performs a batch set of properties.
+ * @function setProperties
+ * @param {Object} properties - An object containing the property and value pairs to set.
+ * 
+ * @expose
+ * @memberof oj.ojProgressList
+ * @instance
+ * 
+ * @example <caption>Set a batch of properties:</caption>
+ * myComponent.setProperties({"prop1": "value1", "prop2.subprop": "value2", "prop3": "value3"});
+ */ 
 /**
  * Copyright (c) 2017, Oracle and/or its affiliates.
  * All rights reserved.
@@ -200,6 +381,13 @@ function progressItemViewModel (context) {
       handleUploadFail,
       handleUploadDone;
 
+  // The props field on context is a Promise. Once that resolves,
+  // we can access the properties data that were defined in the composite metadata
+  // and add listeners
+  context.props.then(function(properties) {
+    addListeners(properties.data);
+  });
+
   // Triggered for upload progress events. The event payload contains:
   // total: {integer} total number of bytes for the upload
   // loaded: {integer} number of bytes are loaded
@@ -228,11 +416,6 @@ function progressItemViewModel (context) {
       self.status(oj.ProgressItem.Status['LOADED']);
       removeListeners(item);
     }
-  };
-
-  // Composite lifecycle listener 
-  self['bindingsApplied'] = function(context) {
-    addListeners(element.data);
   };
 
   self['status'] = ko.observable(oj.ProgressItem.Status['QUEUED']);

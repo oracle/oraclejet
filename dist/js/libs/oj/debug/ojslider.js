@@ -33,63 +33,56 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'jqueryui-amd/widgets/dra
   /**
    * @ojcomponent oj.ojSlider
    * @augments oj.editableValue
+   * @since 0.7
    *
    * @classdesc
    * <h3 id="sliderOverview-section">
    *   JET Slider Component
    *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#sliderOverview-section"></a>
    * </h3>
-   * <p>Description: The ojSlider component enhances an HTML
+   * <p>Description: The oj-slider component enhances an HTML
    * <code class="prettyprint">input</code> element into an interactive slider.
    * </p>
-   * The <code class="prettyprint">type</code> option is used to set the slider to either a
-   * single-thumb or a range slider.
-   * Single thumb sliders are defined by setting the <code class="prettyprint">type</code>
-   * option to either <code class="prettyprint">"single"</code>,
-   * <code class="prettyprint">"fromMin"</code>, or <code class="prettyprint">"fromMax"</code>.
-   * The <code class="prettyprint">type</code> option defaults to
-   * <code class="prettyprint">"fromMin"</code>, which will style the value bar from the minimum
-   * value to the slider thumb.
-   * A range slider (a slider with two thumbs) is defined by setting
-   * <code class="prettyprint">type</code> to <code class="prettyprint">range"</code>.
-   * The value bar is styled between the thumbs for a range slider.
-   * <ul>
-   * <li> To create a single thumb slider:</li>
-   * Either use the default <code class="prettyprint">type</code>, or set the
-   * <code class="prettyprint">type</code> option to either "single", "fromMin", or "fromMax".
-   * Set the <code class="prettyprint">value</code> option to a number. The value should be
-   * between the <code class="prettyprint">min</code> and
-   * <code class="prettyprint">max</code> option values.
-   * <li> To create a range slider (slider with two thumbs):</li>
-   * set the <code class="prettyprint">type</code> option to "range",
-   * and set the <code class="prettyprint">value</code> option to an array of two numbers.
-   * The first array value must be less than or equal to the second array value, and both
-   * values must be between the <code class="prettyprint">min</code> and
-   * <code class="prettyprint">max</code> option values.
-   * </ul>
+   * The numerical <code class="prettyprint">value</code> attribute determines the 
+   * current value of the slider, and thus affects the position of the slider thumb.
+   * The value should be between the <code class="prettyprint">min</code> and
+   * <code class="prettyprint">max</code> attribute values.
    * </p>
-   * The step option of the slider specifies the interval between thumb stops. For example,
+   * The <code class="prettyprint">step</code> attribute of the slider specifies the 
+   * interval between thumb stops. For example,
    * if <code class="prettyprint">min</code>  is set to 0 and
    * <code class="prettyprint">max</code>
    * is set to 10, a <code class="prettyprint">step</code> value of 2 would allow the thumb
    * to be positioned at 0, 2, 4, 6, 8, and 10.
    * </p>
-   * The <code class="prettyprint">orientation</code> option defaults to
+   * The <code class="prettyprint">orientation</code> attribute defaults to
    * <code class="prettyprint">"horizontal"</code>.
    * Set <code class="prettyprint">orientation</code> to
    * <code class="prettyprint">"vertical"</code> for a vertical slider (one where the thumb
    * travels along the vertical axis).
    * </p>
-   * Set the <code class="prettyprint">disabled</code> option
+   * The <code class="prettyprint">type</code> attribute is used to effect the rendered
+   * style of the slider.
+   * The <code class="prettyprint">type</code> attribute defaults to
+   * <code class="prettyprint">"fromMin"</code>, which will style the value bar from the minimum
+   * value to the slider thumb.
+   * The <code class="prettyprint">type</code> attribute to either "single" or "fromMax" -
+   * this will alter the rendered style of the slider's bar value.
+   * </p>
+   * Set the <code class="prettyprint">disabled</code> attribute
    * <code class="prettyprint">true</code> to display a slider that displays a value but does
    * not allow interaction.
    * </p>
-   * For horizontal sliders, use the slider component's
-   * <code class="prettyprint">rootAttributes </code>
-   * to set the width. For vertical sliders, use <code class="prettyprint">style </code>
-   * attributes on the <code class="prettyprint">input </code> tag to set the slider height.
-   * These conventions are recommended in order
-   * to achieve the best messaging format.
+   * Use <code class="prettyprint">style </code> attributes on the 
+   * <code class="prettyprint">oj-slider </code> element to set a horizontal slider's 
+   * width or a vertical slider's height.
+   * </p>
+   * Note that the <code class="prettyprint">range</code> value for the
+   * <code class="prettyprint">type</code> attribute
+   * is not part of the initial (4.0) release of the custom element slider. In addition, the 
+   * <code class="prettyprint">raw-value</code> attribute is also not part of the 
+   * initial release of the custom element slider.
+   * We anticipate that these features will be included in the next dot release (4.1). 
    * </p>
    * <h3 id="touch-section">
    *   Touch End User Information
@@ -115,29 +108,17 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'jqueryui-amd/widgets/dra
    * <code class="prettyprint">aria-valuemax</code>,
    * <code class="prettyprint">aria-valuemin</code>
    * and <code class="prettyprint">aria-orientation</code>.
-   * <p>
-   * It is up to the application developer to associate the label with the slider input component.
-   * There are several ways to do this:
-   * <ul>
-   * <li>
-   * Set an <code class="prettyprint">aria-labelledby</code> on the slider
-   * input to reference the label <code class="prettyprint">id</code>.
-   * </li>
-   * <li>
-   * Set an <code class="prettyprint">id</code> on the slider input, and also set
-   * the <code class="prettyprint">for</code> attribute on the label to be the input's id.
-   * </li>
-   * <li>
-   * Set an <code class="prettyprint">aria-label</code> on the slider input.
-   * </li>
-   * <li>
-   * Use Javascript to update the <code class="prettyprint">aria-labelledby</code> attributes on the slider thumbs.
-   * </li>
-   * </ul>
-   *
-   * The slider component will then use this information in the input tag to create the
-   * appropriate aria attribute on the slider thumb(s).
-   </p>
+ * <h3 id="label-section">
+ *   Label and Slider
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#label-section"></a>
+ * </h3>
+ * <p>
+ * It is up to the application developer to associate the oj-label to the oj-slider element.
+ * For accessibility, you should associate a oj-label element with the oj-slider element
+ * by putting an <code class="prettyprint">id</code> on the oj-slider element, and then setting the
+ * <code class="prettyprint">for</code> attribute on the oj-label to be the slider element's id.
+ * </p>
+   * </p>
    * In addition, the slider thumb element can be accessed programmatically.
    * This approach may be necessary to ensure accessibility conformance.
    * For example, if the slider controls another element that is in a remote area of the page,
@@ -150,19 +131,14 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'jqueryui-amd/widgets/dra
    * that controlled by the slider.
    * Assume that the <code class="prettyprint">id</code> of the remote element is
    * "idOfRemoteElement".
-   * Below we use the <code class="prettyprint">getNodeBySubId()</code> method to access the
-   * thumb element in order to set the
+   * Below we show how to access the thumb element in order to set the
    * <code class="prettyprint">aria-controls</code> attribute of the thumb to point to the the
    * id ("idOfRemoteElement") of the remote html element:
    *
    * <pre class="prettyprint">
    * <code>
-   *  $(document).ready(function() {
-   *     ko.applyBindings(...)
-   *     var thumb0 =
-   *        $('#inputslider-id').find('.oj-slider-thumb')[0];
-   *     $(thumb0).attr("aria-controls", "idOfRemoteElement");
-   *  });
+   *     var thumb0 = myComponent.querySelectorAll('.oj-slider-thumb')[0];
+   *     thumb0.setAttribute(aria-controls, "idOfRemoteElement");
    * </code></pre>
    *
    * <p>See also the <a href="#styling-section">oj-focus-highlight</a> discussion.
@@ -173,22 +149,14 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'jqueryui-amd/widgets/dra
    * </h3>
    * {@ojinclude "name":"stylingDoc"}
    *
-   * <p>
+   * @example <caption>Declare the oj-slider component with no attributes specified:</caption>
+   * &lt;oj-slider>&lt;/oj-slider>
    *
-   * <!-- - - - - Above this point, the tags are for the class.
-   *              Below this point, the tags are for the constructor (initializer). - - - - -->
-   * @desc Creates an ojSlider component
+   * @example <caption>Initialize the slider with a few attributes:</caption>
+   * &lt;oj-slider value=10 max=100 min=0 step=2>&lt;/oj-slider>
    *
-   * @param {Object=} options a map of option-value pairs to set on the component
-   *
-   * @example <caption>Initialize component using widget API</caption>
-   * &lt;input id="spin" type="text"/&gt;<br/>
-   * $("#slider").ojSlider({'value': 10, 'max':100, 'min':0, 'step':2});
-   * $("#slider").ojSlider({'option', 'value', 10});
-   * @example <caption>Using knockout, value, min, max bind to observables - salary,
-   * salaryMax, salaryMin</caption>
-   * &lt;input id="foo" data-bind="ojComponent:
-   *   {component: 'ojSlider', value: salary, min:salaryMin, max:salaryMax, step:5}"/&gt;
+   * @example <caption>Initialize a component attribute via component binding:</caption>
+   * &lt;oj-slider value="{{currentValue}}">&lt;/oj-slider>
    */
   oj.__registerWidget('oj.ojSlider', $['oj']['editableValue'], {
     defaultElement: '<input>',
@@ -196,11 +164,6 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'jqueryui-amd/widgets/dra
     widgetEventPrefix: 'oj',
 
     options: {
-
-      /** @private
-       * @type {?number}
-       */
-      distance: 0,
       /**
        * The maximum value of the slider.
        * The <code class="prettyprint">max</code> must not be less than the
@@ -212,12 +175,14 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'jqueryui-amd/widgets/dra
        * @type {?number}
        * @default <code class="prettyprint">null</code>
        * @example <caption>Initialize the slider with the
-       * <code class="prettyprint">max</code> option specified:</caption>
-       * $( ".selector" ).ojSlider( { "max": 100 } );
-       * @example <caption>Set the <code class="prettyprint">max</code> to a number inside
-       * of quotes; this is valid and will be coerced to a number,
-       * -100 in this example:</caption>
-       * $( ".selector" ).ojSlider( { "max": "-100" } );
+       * <code class="prettyprint">max</code> attribute:</caption>
+       * &lt;oj-slider max=100>&lt;/oj-slider>
+       * @example <caption>Get or set the <code class="prettyprint">max</code> property after initialization:</caption>
+       * // Getter
+       * var max = myComponent.max;
+       * 
+       * // Setter
+       * myComponent.max = 100;
        */
       max: 100,
       /**
@@ -231,12 +196,15 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'jqueryui-amd/widgets/dra
        * @type {?number}
        * @default <code class="prettyprint">null</code>
        * @example <caption>Initialize the slider with the
-       * <code class="prettyprint">min</code> option specified:</caption>
-       * $( ".selector" ).ojSlider( { "min": 100 } );
-       * @example <caption>Set the <code class="prettyprint">min</code> to a number inside
-       * of quotes; this is valid and will be coerced to a number,
-       * -100 in this example:</caption>
-       * $( ".selector" ).ojSlider( { "min": "-100" } );
+       * <code class="prettyprint">min</code> attribute:</caption>
+       * &lt;oj-slider min=0>&lt;/oj-slider>
+       * @example <caption>Get or set the <code class="prettyprint">min</code> property after initialization:</caption>
+       * // Getter
+       * var min = myComponent.min;
+       * 
+       * // Setter
+       * myComponent.min = 0;
+       * 
        */
       min: 0,
       /**
@@ -251,16 +219,17 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'jqueryui-amd/widgets/dra
        * @default <code class="prettyprint">"horizontal"</code>
        *
        * @example <caption>Initialize the slider with the
-       * <code class="prettyprint">orientation</code> option specified:</caption>
-       * $( ".selector" ).ojSlider( { "orientation": "vertical" } );
+       * <code class="prettyprint">orientation</code> attribute:</caption>
+        * &lt;oj-slider orientation="vertical">&lt;/oj-slider>
        *
        * @example <caption>Get or set the <code class="prettyprint">orientation</code>
-       * option after initialization:</caption>
-       * // getter
-       * var orientation = $( ".selector" ).ojSlider( "option", "orientation" );
-       *
-       * // setter
-       * $( ".selector" ).ojSlider( "option", "orientation", "vertical" );
+       * property after initialization:</caption>
+       * // Getter
+       * var orientation = myComponent.orientation;
+       * 
+       * // Setter
+       * myComponent.orientation = "vertical";
+       * 
        */
       orientation: 'horizontal',
 
@@ -269,13 +238,20 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'jqueryui-amd/widgets/dra
        * components.
        * Whether the component is readOnly. The element's
        * <code class="prettyprint">readOnly</code>
-       * property is used as its initial value if it exists, when the option is not explicitly
+       * attribute is used as its initial value if it exists, when the attribute is not explicitly
        * set. When neither is set, <code class="prettyprint">readOnly </code>
        * defaults to false.
        *
        * @example <caption>Initialize component with <code class="prettyprint">readOnly</code>
-       * option:</caption>
-       * $(".selector").ojSlider({"readOnly": true});
+       * attribute:</caption>
+        * &lt;oj-slider readOnly="true">&lt;/oj-slider>
+       * @example <caption>Get or set the <code class="prettyprint">readOnly</code> property after initialization:</caption>
+       * // Getter
+       * var readOnly = myComponent.readOnly;
+       * 
+       * // Setter
+       * myComponent.readOnly = true;
+       * 
        *
        * @private
        * @type {?boolean}
@@ -286,15 +262,22 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'jqueryui-amd/widgets/dra
       readOnly: false,
 
       /**
-       * Whether the component is disabled. The element's
-       * <code class="prettyprint">disabled</code>  property is used as its initial
-       * value if it exists, when the option is not explicitly set. When neither is set,
+       * Whether the component is disabled. The 
+       * <code class="prettyprint">disabled</code> attribute is used as its initial
+       * value if it exists, when the attribute is not explicitly set. When neither is set,
        * <code class="prettyprint">disabled </code>
        * defaults to false.
        *
-       * @example <caption>Initialize component with
-       * <code class="prettyprint">disabled</code> option:</caption>
-       * $(".selector").ojSlider({"disabled": true});
+       * @example <caption>Initialize the slider with
+       * <code class="prettyprint">disabled</code> attribute:</caption>
+        * &lt;oj-slider disabled="true">&lt;/oj-slider>
+       * @example <caption>Get or set the <code class="prettyprint">disabled</code> property after initialization:</caption>
+       * // Getter
+       * var disabled = myComponent.disabled;
+       * 
+       * // Setter
+       * myComponent.disabled = true;
+       * 
        *
        * @expose
        * @type {?boolean}
@@ -315,25 +298,20 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'jqueryui-amd/widgets/dra
        * @default <code class="prettyprint">1</code>
        * @memberof oj.ojSlider
        * @example <caption>Initialize the slider with the
-       * <code class="prettyprint">step</code> option specified:</caption>
-       * $( ".selector" ).ojSlider( { "step": 10 } );
-       * @example <caption>Set the <code class="prettyprint">step</code> to a number inside
-       * of quotes; this is valid and will be coerced to a number,
-       * 10 in this example:</caption>
-       * $( ".selector" ).ojSlider( { "step": "10" } );
+       * <code class="prettyprint">step</code> attribute:</caption>
+       * &lt;oj-slider step=10>&lt;/oj-slider>
+       * @example <caption>Get or set the <code class="prettyprint">step</code> property after initialization:</caption>
+       * // Getter
+       * var step = myComponent.step;
+       * 
+       * // Setter
+       * myComponent.step = 10;
+       * 
        **/
 
       step: 1,
       /**
-       * The slider type determines whether the slider has one thumb or two thumbs,
-       * and how the value is represented in the UI.
-       * <p> Note that for the use case of dynamically switching between a range slider
-       * and a single-thumb slider, it is best to set the
-       * <code class="prettyprint">type</code> option before setting the
-       * <code class="prettyprint">value</code> option.
-       * This avoids the loss of the second thumb's value (during value coersion) when
-       * switching from a single-thumb slider to a range slider (when the value would be
-       * set as an array on a single-thumb slider).
+       * The slider type determines whether the slider how the value is represented in the UI.
        *
        * @expose
        * @type {?string}
@@ -341,8 +319,6 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'jqueryui-amd/widgets/dra
        * the slider min to the the slider thumb.
        * @ojvalue {string} "fromMax" A single-thumb slider where the value bar goes from
        * the slider thumb to the the slider max.
-       * @ojvalue {string} "range" A slider with two thumbs, where the value bar goes
-       * between the slider thumbs.
        * @ojvalue {string} "single" A single-thumb slider where the value bar has no
        * additional styling.
        * @default <code class="prettyprint">"fromMin"</code>
@@ -350,72 +326,65 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'jqueryui-amd/widgets/dra
        * @memberof oj.ojSlider
        *
        * @example <caption>Initialize component with <code class="prettyprint">type</code>
-       * option set to "range":</caption>
-       * $(".selector").ojSlider({"type": "range"});
+       * attribute set to "fromMax":</caption>
+        * &lt;oj-slider type="fromMax">&lt;/oj-slider>
+       * @example <caption>Get or set the <code class="prettyprint">type</code> property after initialization:</caption>
+       * // Getter
+       * var type = myComponent.type;
+       * 
+       * // Setter
+       * myComponent.type = "fromMax";
+       * 
        *
        */
 
       type: 'fromMin',
       /**
-       * The value of the component. Value can be a number or an array.
-       * When <code class="prettyprint">type</code> is equal to "range" the
-       * <code class="prettyprint">value</code> should be an array of two numbers,
-       * while any other <code class="prettyprint">type</code> should have
-       * <code class="prettyprint">value</code> defined as a number.
+       * The numerical value of the slider.
        *
-       * <p> Note that the <code class="prettyprint">value</code> option should
-       * be compatible with the <code class="prettyprint">type</code> option, as
+       * <p> Note that the <code class="prettyprint">value</code> attribute should
+       * be compatible with the <code class="prettyprint">type</code> attribute, as
        * described above. A value that is not compatible with the type will be coerced
        * into a compatible value.
-       * For example, it <code class="prettyprint">type</code> is set to "range"
-       * and the value is not an array of two numbers, then the value will be
-       * automatically coerced into an array of two numbers.
        *
-       * <p> Also note that for the use case of dynamically switching between a single-thumb
-       * slider and a range slider, you should set the <code class="prettyprint">type</code>
-       * option before setting the <code class="prettyprint">value</code> option.
-       * This avoids the loss of the second thumb's value (during value coersion) when
-       * switching from a single-thumb slider to a range slider (when the value would be
-       * set as an array on a single-thumb slider).
-       *
-       * @example <caption>Initialize the component with the
-       * <code class="prettyprint">value</code> option specified:</caption>
-       * $(".selector").ojSlider({'value': 55});<br/>
-       * @example <caption>Get or set <code class="prettyprint">value</code> option,
+       * @example <caption>Initialize the slider with the
+       * <code class="prettyprint">value</code> attribute:</caption>
+        * &lt;oj-slider value=55>&lt;/oj-slider>
+       * @example <caption>Get or set <code class="prettyprint">value</code> property
        * after initialization:</caption>
-       * // Getter: returns 55
-       * $(".selector").ojSlider("option", "value");
-       * // Setter: sets 20
-       * $(".selector").ojSlider("option", "value", 20);
-       * @example <caption>Set the <code class="prettyprint">value</code> to a number inside
-       * of quotes; this is valid and will be coerced to a number,
-       * 10 in this example:</caption>
-       * $( ".selector" ).ojSlider( { "value": "10" } );
+       * // Getter
+       * var value = myComponent.value;
+       * 
+       * // Setter
+       * myComponent.value = 10;
+       * 
        * @expose
        * @access public
        * @instance
        * @default <code class="prettyprint">0</code>
+       * @ojwriteback
        * @memberof oj.ojSlider
-       * @type {?number|Array.<Number>}
+       * @type {?number}
        */
       value: 0,
       /**
-       * <p>The  <code class="prettyprint">rawValue</code> is the read-only option for
+       * <p>The  <code class="prettyprint">rawValue</code> is the read-only attribute for
        * retrieving the transient value from the slider.</p>
        * <p>
        * The <code class="prettyprint">rawValue</code> updates to display the transient
        * changes of the slider thumb value (subject to the step constraints). The difference
        * in behavior is that <code class="prettyprint">rawValue</code> will be updated the
-       * thumb as it is sliding, where as the <code class="prettyprint">value</code> option is
+       * thumb as it is sliding, where as the <code class="prettyprint">value</code> attribute is
        * updated only after the thumb is released (or after a key press).
        * </p>
-       * <p>This is a read-only option so page authors cannot set or change it directly.</p>
+       * <p>This is a read-only attribute so page authors cannot set or change it directly.</p>
        * @expose
        * @access public
+       * @ignore
        * @instance
        * @default n/a
        * @memberof oj.ojSlider
-       * @type {?number|Array.<Number>|undefined}
+       * @type {?number|undefined}
        * @since 1.2
        * @readonly
        */
@@ -508,52 +477,77 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'jqueryui-amd/widgets/dra
       this._setupEvents();
     },
 
+    _copyLabelledbyToThumb: function(labelId) {
+
+        var thumb = this._elementWrapped.find('.oj-slider-thumb');
+        thumb.attr('aria-labelledby', labelId);
+
+        if (thumb.length > 1) {
+          var thumb2 = thumb[1];
+           $(thumb2).attr('aria-labelledby', String(labelId));
+        }
+    },
+
     _AfterCreate: function () {
       this._super();
 
       this._makeDraggable();
       var thumb;
 
-      var label = this._GetLabelElementLocal();
+      // For custom elements, set the aria-labelledby on the input element
+      // (provided the oj-label is part of the form)
+      if (this.OuterWrapper)  {
+          var defaultLabelId = this["uuid"] + "_Label";
+          var LId = oj.EditableValueUtils.getOjLabelId(this.widget(), defaultLabelId);
+          if (LId)
+              this.element.attr("aria-labelledby", LId);
+      }
 
-      // this.$label = this._GetLabelElementLocal();
+      //
+      // For custom elements, if the input has an aria-labelledby, then just
+      // copy it to the thumb (since EditableValue has already determined that 
+      // the slider control is using aria-labelledby)
+      //
+      if (this.OuterWrapper) {
+        var ariaId = this.element.attr('aria-labelledby');
+        if (ariaId !== undefined && ariaId !== null) {
+          this._copyLabelledbyToThumb(ariaId);
+          return;
+        }
+      }
+
+      var label = this._GetLabelElementLocal();
 
       //
       // Copy any labelled-by on the <input labelled-by="id"> to the slider thumb.
       //
       if (label) {
         //
-        // this id shold be on the thumb: aria-labelledby =
+        // this id should be on the thumb: aria-labelledby =
         //
-        thumb = this._elementWrapped.find('.oj-slider-thumb');
+
         // Set the aria-labelledby attribute of the thumb to the returned id.
         var labelId = label.attr('id');
         if (!labelId) {
           labelId = label.attr('for');
         }
 
-        thumb.attr('aria-labelledby', labelId);
-
-        if (label.length > 1 && thumb.length > 1) {
-          /*
-            var label2 = label[1];
-            var secondLabelId = $(label2).attr("id");
-          */
-
-          var thumb2 = thumb[1];
-          thumb2.attr('aria-labelledby', String(labelId));
+        if (labelId.length > 0) {
+          this._copyLabelledbyToThumb(labelId);
         }
+
       } else {
         //
         // Check if the <input> has aria-label=""
         //
 
         var ariaLabelString;
-
-        if (this.OuterWrapper) 
+          
+        if (this.OuterWrapper) {
           ariaLabelString = this._elementWrapped.attr('aria-label');
-        else
+        } else {
           ariaLabelString = this.element.attr('aria-label');
+        }
 
         if (ariaLabelString) {
 
@@ -566,6 +560,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'jqueryui-amd/widgets/dra
     },
 
     _GetLabelElementLocal: function () {
+
       // If <input> has aria-labelledby set, then look for label it is referring to.
       var queryResult = this._getAriaLabelledByElementLocal();
       if (queryResult !== null && queryResult.length !== 0) {
@@ -583,10 +578,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'jqueryui-amd/widgets/dra
     _getAriaLabelForElementLocal: function () {
 
       var id;
-      if (this.OuterWrapper) 
-        id = this._elementWrapped.prop('id');
-      else
-        id = this.element.prop('id');
+      id = this.element.prop('id');
 
       if (id !== undefined) {
         var labelQuery = "label[for='" + id + "']";
@@ -608,24 +600,29 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'jqueryui-amd/widgets/dra
       // .prop does not work for aria-labelledby. Need to use .attr to find
       // aria-labelledby.
 
-      var ariaId;
-      if (this.OuterWrapper) 
-        ariaId = this._elementWrapped.attr('aria-labelledby');
-      else
-        ariaId = this.element.attr('aria-labelledby');
+      var ariaId = this.element.attr('aria-labelledby');
+
+      // Handle direct labelling case for custom elements
+      // (this is not the common case, but still is supported)
+      if (ariaId === undefined && this.OuterWrapper) {
+          // ariaId = this._elementWrapped.attr('aria-labelledby');
+          var ariaIdDirect = this._elementWrapped.attr('aria-labelledby');
+          if (ariaIdDirect) {
+              if (document.getElementById(ariaIdDirect) !== null) {
+                  return $(document.getElementById(ariaIdDirect));
+              }
+          }
+      }
 
       if (ariaId !== undefined) {
-        var labelQuery = "label[id='" + ariaId + "']";
-        var jqLabelQuery = $(labelQuery);
+        var jqLabelQuery = $("label[id='" + ariaId + "']");
         if (jqLabelQuery.length > 0) return jqLabelQuery;
 
-        var spanQuery = "span[id='" + ariaId + "']";
-        var jqSpanQuery = $(spanQuery);
+        var jqSpanQuery = $("span[id='" + ariaId + "']");
         if (jqSpanQuery.length > 0) {
           return jqSpanQuery;
         }
       }
-
       return null;
     },
 
@@ -740,10 +737,16 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'jqueryui-amd/widgets/dra
       this._thumbs = $(thumbs.join('')).appendTo(this._sliderContainer);  // @HTMLUpdateOK
       this._thumb = this._thumbs.eq(0);
 
+      this._refreshThumbOptions();
+    },
+
+    // 
+    // reapply disabled properties to each slider thumb.
+    // 
+    _refreshThumbOptions: function () {
       var that = this;
-      i = 0;
       this._thumbs.each(function () {
-        $(this).data('oj-slider-thumb-index', i++);
+        $(this).data('oj-slider-thumb-index');
 
         if (that._isVertical()) {
           $(this).attr('aria-orientation', 'vertical');
@@ -755,7 +758,6 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'jqueryui-amd/widgets/dra
         } else {
           $(this).removeAttr('aria-disabled');
         }
-
         // To support read only, we place set title = "read only" on the thumb.
         if (that.options.readOnly) {
           $(this).attr('title', 'read only');
@@ -763,6 +765,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'jqueryui-amd/widgets/dra
         } else {
           $(this).removeAttr('title');
         }
+
       });
     },
 
@@ -974,7 +977,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'jqueryui-amd/widgets/dra
     _GetContentElement: function () {
       return this._getActiveThumb();
     },
-
+ 
     //
     // Destroy the slider DOM.
     // This is called both by _destroy and during an option change.
@@ -1003,7 +1006,6 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'jqueryui-amd/widgets/dra
         this.element.removeUniqueId();
         this._RemoveHoverable(this.element);
       }
-
     },
 
     //
@@ -1318,13 +1320,23 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'jqueryui-amd/widgets/dra
       }
     },
 
-    //
-    // Set the slider value.
-    //
     _setSingleValue: function (event, newValue, rawOnly) {
       this._newValue = this._trimAlignValue(newValue);
-      this._SetRawValue(this._newValue, event);
+      // not exposing rawValue for slider custom element 4.0.
+      if (!this._IsCustomElement()) {
+        this._SetRawValue(this._newValue, event);
+      }
       if (!rawOnly) {
+        // not exposing rawValue for slider custom element 4.0.
+        if (this._IsCustomElement()) {
+          // 
+          // supress the rawValueChanged event that is triggered in EditableValue.js
+          // (by updating raw value prior to calling super._SetValue().
+          // (note that this will supress the setDisplayValue()._setRawValue() 
+          // (Remove this code once we expose rawValue for custom elements.)
+          // 
+          this.options['rawValue'] = this._newValue;
+        }
         this._SetValue(this._newValue, event);
         this._updateUI();
       }
@@ -1337,12 +1349,18 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'jqueryui-amd/widgets/dra
       if (this._multipleThumbs) {
         // store the last change values for creating draggable containment
         this._lastChangedValues = this._getNewValues(index, this._newMultiValue[index]);
-        this._SetRawValue(this._lastChangedValues, event);
+        // not exposing rawValue for slider custom element 4.0.
+        if (!this._IsCustomElement()) {
+          this._SetRawValue(this._lastChangedValues, event);
+        }
         if (!rawOnly) {
           this._SetValue(this._lastChangedValues, event);
         }
       } else {
-        this._SetRawValue(this._newValue, event);
+        // not exposing rawValue for slider custom element 4.0.
+        if (!this._IsCustomElement()) {
+          this._SetRawValue(this._newValue, event);
+        }
         if (!rawOnly) {
           this._SetValue(this._newValue, event);
         }
@@ -1430,49 +1448,69 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'jqueryui-amd/widgets/dra
           }
         } else {
           this._multipleThumbs = false;
-          coercedValue = this._parse(key, value);
+          // Only coerce values for widget syntax,
+          if (!this._IsCustomElement()) {
+            coercedValue = this._parse(key, value);
+          } else {
+            coercedValue = value;
+          }
           // verify that the new value is within range.
           this._checkValueBounds(coercedValue, this._valueMin(), this._valueMax());
         }
       }
 
       if (key === 'max' || key === 'min') {
-        coercedValue = this._parse(key, value);
 
+        // Only coerce values for widget syntax,
+        // since the framework handles this for custom elements.
+        if (!this._IsCustomElement()) {
+          coercedValue = this._parse(key, value);
+        } else {
+          coercedValue = value;
+        }
+
+        //
+        // Note that coerce the value to be within the 
+        // min and max when we option change the min or max.
+        //
         if (key === 'min') {
           this._checkMinMax(coercedValue, this._valueMax());
-          // check all thumbs against the new min.
+          // Coerce any out of bounds "value" attributes to be within the min bounds
           if (!this._multipleThumbs) {
-            this._checkValueBounds(this._getSingleValue(), coercedValue, this._valueMax());
+            if (this._getSingleValue() < coercedValue) {
+              this._super('value', coercedValue, flags);
+            }
           } else {
-            for (var index = 0; index < coercedValue.length; index += 1) {
-              this._checkValueBounds(this._getMultiValues(index), coercedValue, this._valueMax());
+            if (this._getMultiValues(0) < coercedValue) {
+              this._super('value', [coercedValue, this._getMultiValues(1)], flags);
+            }
+            if (this._getMultiValues(1) < coercedValue) {
+              this._super('value', [this._getMultiValues(0), coercedValue], flags);
             }
           }
         } else if (key === 'max') {
           this._checkMinMax(this._valueMin(), coercedValue);
-          // check all thumbs against the new max
+          // Coerce any out of bounds "value" attributes to be within the max bounds
           if (!this._multipleThumbs) {
-            this._checkValueBounds(this._getSingleValue(), this._valueMin(), coercedValue);
+            if (this._getSingleValue() > coercedValue) {
+              this._super('value', coercedValue, flags);
+            }
           } else {
-            for (var index = 0; index < coercedValue.length; index += 1) {
-              this._checkValueBounds(this._getMultiValues(index), this._valueMin(), coercedValue);
+            if (this._getMultiValues(0) > coercedValue) {
+              this._super('value', [coercedValue, this._getMultiValues(1)], flags);
+            }
+            if (this._getMultiValues(1) > coercedValue) {
+              this._super('value', [this._getMultiValues(0), coercedValue], flags);
             }
           }
         }
-
       } else if (key === 'step') {
         coercedValue = this._parseStep(value);
       } else {
         coercedValue = value;
       }
 
-      // Note - this sets aria-disabled="false" on the top level element.
-      // For sliders, we do not set disabled on the top level div.
-      if (key !== 'disabled') {
-        this._super(key, coercedValue, flags);
-      }
-
+      this._super(key, coercedValue, flags);
       // when a dom element supports readonly, use that, and not aria-readonly.
       // having both is an error
 
@@ -1486,28 +1524,37 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'jqueryui-amd/widgets/dra
 
       switch (key) {
 
-        case 'value':
-          this._updateUI();
+      case 'disabled':
+        this._refreshThumbOptions();
+        // disable the dragging if disabled is true.
+        if (this.options.disabled) {
+          this._disableDraggable();
+        } else {
           this._makeDraggable();
-          break;
+        }
+        break;
 
-        case 'min':
-        case 'max':
+      case 'value':
+        this._updateUI();
+        this._makeDraggable();
+        break;
 
-          this._calculateNewMax();
-          this._updateUI();
-          this._makeDraggable();
-          break;
+      case 'min':
+      case 'max':
 
-        case 'orientation':
-        case 'readonly':
-        case 'step':
-        case 'type':
-        case 'disabled':
-          this._reCreate();
-          break;
-        default:
-          break;
+        this._calculateNewMax();
+        this._updateUI();
+        this._makeDraggable();
+        break;
+
+      case 'orientation':
+      case 'readonly':
+      case 'step':
+      case 'type':
+        this._reCreate();
+        break;
+      default:
+        break;
       }
     },
 
@@ -1566,12 +1613,10 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'jqueryui-amd/widgets/dra
     },
 
     _calculateNewMax: function () {
-      // Check if we need to do this--don't just use straight remainder
-      // because of JS math issues
       var min = this._valueMin();
       if ((((this.options.max - min) / this.options.step) % 1) !== 0) {
-        var remainder = (this.options.max - min) % this.options.step;
-        this.max = this.options.max - remainder;
+          var remainder = (this.options.max - min) % this.options.step;
+          this.max = (this.options.max - remainder) + this.options.step;
       } else {
         this.max = this.options.max;
       }
@@ -1646,7 +1691,6 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'jqueryui-amd/widgets/dra
             valPercent = this._getThumbsValueFrac(i) * 100;
 
             if (this._isRTL() && !this._isVertical()) valPercent = 100 - valPercent;
-            // console.log(i + " Refresh value " + valPercent);
 
             if (!this._isVertical()) {
               thumb['css']({ left: valPercent + '%' });
@@ -1700,7 +1744,6 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'jqueryui-amd/widgets/dra
 
     // Set the range (bar value)
     _setRange: function (val) {
-      // console.log("_setRange " + val);
 
       var oRange = this.options.type;
 
@@ -1738,7 +1781,6 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'jqueryui-amd/widgets/dra
 
       if (index === 0) {
         var thumb1Pct = this._getThumbsValueFrac(1) * 100;
-        // console.log("thumb1Pct " + thumb1Pct);
 
         switch (this.options.type) {
 
@@ -1907,7 +1949,6 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'jqueryui-amd/widgets/dra
             } else {
               if (curVal === this._valueMax()) return;
               tempVal = curVal + step;
-              // console.log("horz key " + curVal + " -> " + tempVal + " " + step);
             }
 
             newVal = this._trimAlignValue(tempVal);
@@ -2014,8 +2055,10 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'jqueryui-amd/widgets/dra
         }
       );
 
-      if (opts['value'] === undefined) {
-        throw new Error(this.getTranslatedString('noValue'));
+      if (!this._IsCustomElement()) {
+        if (opts['value'] === undefined) {
+          throw new Error(this.getTranslatedString('noValue'));
+        }
       }
 
       this._checkMinMax(opts['min'], opts['max']);
@@ -2075,7 +2118,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'jqueryui-amd/widgets/dra
       return null;
     },
 
-    //* * @inheritdoc */
+    // @inheritdoc
     getSubIdByNode: function (node) {
       if (node != null) {
         if (node.id === this._getThumbId(0) && $(node).hasClass('oj-slider-thumb')) {
@@ -2346,6 +2389,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'jqueryui-amd/widgets/dra
         this._callDraggable(this._thumb);
       }
     },
+
     //
     // Call this if we change option to disabled.
     //
@@ -2394,7 +2438,6 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'jqueryui-amd/widgets/dra
     // Draggable - end
     /////////////////////////////////////////////////////////////////////////////////////////
 
-
     /**
      * <table class="keyboard-table">
      *   <thead>
@@ -2415,7 +2458,6 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'jqueryui-amd/widgets/dra
      *       <td><kbd>Swipe</kbd></td>
      *       <td>Reposition the thumb.</td>
      *     </tr>
-     *     {@ojinclude "name":"labelTouchDoc"}
      *   </tbody>
      * </table>
      *
@@ -2497,7 +2539,6 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'jqueryui-amd/widgets/dra
      * vertical slider.
      *       </td>
      *     </tr>
-     *     {@ojinclude "name":"labelKeyboardDoc"}
      * </tbody>
      * </table>
      *
@@ -2559,27 +2600,13 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'jqueryui-amd/widgets/dra
     /// ///////////////     SUB-IDS     //////////////////
 
     /**
-     * <p>Sub-ID for the slider thumb. Use this id to access the thumb of a single-thumbed
-     * slider, or the first thumb (associated with the lowest value) of a range slider. </p>
+     * <p>Sub-ID for the slider thumb. Use this id to access the thumb of the  slider. </p>
      *
      * @ojsubid oj-slider-thumb-0
      * @memberof oj.ojSlider
      *
      * @example <caption>Get the node for the slider thumb:</caption>
-     * var node = $( ".selector" ).ojSlider( "getNodeBySubId", {'subId': 'oj-slider-thumb-0'} );
-     */
-
-    /**
-     * <p>Sub-ID for the second slider thumb. Use this id to access the
-     * second thumb (associated with the highest value) of a range slider. </p>
-     *
-     * @ojsubid oj-slider-thumb-1
-     * @memberof oj.ojSlider
-     *
-     * @example <caption>Get the node for the slider thumb:</caption>
-     * var node = $( ".selector" ).ojSlider( "getNodeBySubId",
-     * {'subId': 'oj-slider-thumb-1'} );
-     *
+     * var node = myComponent.getNodeBySubId({'subId': 'oj-slider-thumb-0'});
      */
 
     /**
@@ -2589,8 +2616,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'jqueryui-amd/widgets/dra
      * @memberof oj.ojSlider
      *
      * @example <caption>Get the node for the slider bar:</caption>
-     * var node = $( ".selector" ).ojSlider( "getNodeBySubId",
-     * {'subId': 'oj-slider-bar'} );
+     * var node = myComponent.getNodeBySubId({'subId': 'oj-slider-bar'});
      *
      */
 
@@ -2601,68 +2627,45 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'jqueryui-amd/widgets/dra
      * @memberof oj.ojSlider
      *
      * @example <caption>Get the node for the slider bar value:</caption>
-     * var node = $( ".selector" ).ojSlider( "getNodeBySubId",
-     * {'subId': 'oj-slider-bar-value'} );
+     * var node = myComponent.getNodeBySubId({'subId': 'oj-slider-bar-value'});
      *
      */
   });
 }());
 
-(function() {
-var ojSliderMeta = {
-  "properties": {
-    "distance": {
-      "type": "number"
+(function () {
+  var ojSliderMeta = {
+    'properties': {
+      'max': {
+        'type': 'number'
+      },
+      'min': {
+        'type': 'number'
+      },
+      'orientation': {
+        'type': 'string',
+        'enumValues': ['horizontal', 'vertical']
+      },
+      'step': {
+        'type': 'number'
+      },
+      'type': {
+        'type': 'string',
+        'enumValues': ['single', 'fromMin', 'fromMax']
+      },
+      'value': {
+        'type': 'number',
+        'writeback': true
+      }
     },
-    "max": {
-      "type": "number"
-    },
-    "min": {
-      "type": "number"
-    },
-    "orientation": {
-      "type": "string"
-    },
-    "rawValue": {
-      "type": "number|Array<Number>",
-      "readOnly": true,
-      "writeback": true
-    },
-    "step": {
-      "type": "number"
-    },
-    "type": {
-      "type": "string"
-    },
-    "value": {
-      "type": "number|Array<Number>",
-      "writeback": true
+    'methods': {},
+    'extension': {
+      _INNER_ELEM: 'input',
+      _WIDGET_NAME: 'ojSlider'
     }
-  },
-  "methods": {},
-  "extension": {
-    _INNER_ELEM: 'input',
-    _WIDGET_NAME: "ojSlider"
-  }
-};
-var _ARRAY_REGEXP = /^\[.*\]/;
-var sliderParseFunction = function(value, name, meta, defaultParseFunction) {
-
-  if (name === "rawValue" || name === "value") {
-    if (_ARRAY_REGEXP.test(value)) {
-      return JSON.parse(value);
-    }
-  }
-  return defaultParseFunction(value);
-};
+  };
   oj.CustomElementBridge.registerMetadata('oj-slider', 'editableValue', ojSliderMeta);
-//  oj.CustomElementBridge.register('oj-slider', {'metadata': oj.CustomElementBridge.getMetadata('oj-slider')});
-
-oj.CustomElementBridge.register('oj-slider', {
-  'metadata': oj.CustomElementBridge.getMetadata('oj-slider'),
-  'parseFunction': sliderParseFunction});
-  
-})();
-
+  oj.CustomElementBridge.register('oj-slider', {'metadata': oj.CustomElementBridge.getMetadata('oj-slider')});
+}());
 
 });

@@ -36,6 +36,9 @@ DvtGauge._DEFAULT_MAX_VALUE = 100;
 DvtGauge.prototype.Init = function(context, callback, callbackObj, bStaticRendering) {
   DvtGauge.superclass.Init.call(this, context, callback, callbackObj);
 
+  //  - unable to get cursor on gauges
+  context.getStage().setCursor('');
+
   // If non-interactive, we can skip the following
   this._bStaticRendering = bStaticRendering;
   if (!this._bStaticRendering) {
@@ -433,10 +436,10 @@ DvtGauge.prototype.__increaseValue = function() {
     var step = (this.Options['max'] - this.Options['min']) / 100;
     this.Options['value'] = Math.min(Math.max(this.Options['value'] + step, this.Options['min']), this.Options['max']);
   }
-  this.render();
+  this.renderUpdate();
 
   // Fire the value change input event
-  this.dispatchEvent(dvt.EventFactory.newValueChangeEvent(oldValue, this.Options['value'], true));
+  this.dispatchEvent(dvt.EventFactory.newValueChangeEvent(oldValue, this.Options['value'], false));
 };
 
 
@@ -458,10 +461,10 @@ DvtGauge.prototype.__decreaseValue = function() {
     var step = (this.Options['max'] - this.Options['min']) / 100;
     this.Options['value'] = Math.min(Math.max(this.Options['value'] - step, this.Options['min']), this.Options['max']);
   }
-  this.render();
+  this.renderUpdate();
 
   // Fire the value change input event
-  this.dispatchEvent(dvt.EventFactory.newValueChangeEvent(oldValue, this.Options['value'], true));
+  this.dispatchEvent(dvt.EventFactory.newValueChangeEvent(oldValue, this.Options['value'], false));
 };
 
 
@@ -968,14 +971,29 @@ DvtGaugeKeyboardHandler.prototype.processKeyDown = function(event) {
   // Note: Don't call superclass so that the arrow key behaviors are not overridden
   var keyCode = event.keyCode;
   var isR2L = dvt.Agent.isRightToLeft(this._gauge.getCtx());
-
-  if (keyCode == dvt.KeyboardEvent.UP_ARROW || keyCode == (isR2L ? dvt.KeyboardEvent.LEFT_ARROW : dvt.KeyboardEvent.RIGHT_ARROW)) {
-    this._gauge.__increaseValue();
-    dvt.EventManager.consumeEvent(event);
-  }
-  else if (keyCode == dvt.KeyboardEvent.DOWN_ARROW || keyCode == (isR2L ? dvt.KeyboardEvent.RIGHT_ARROW : dvt.KeyboardEvent.LEFT_ARROW)) {
-    this._gauge.__decreaseValue();
-    dvt.EventManager.consumeEvent(event);
+  var value = this._gauge.getOptions()['value'];
+  if (!this._gauge.getOptions()['readOnly']) {
+    if (keyCode == dvt.KeyboardEvent.TAB && !this._bEditing) {
+      this._bEditing = true;
+      this._oldValue = value;
+    }
+    else if (keyCode == dvt.KeyboardEvent.UP_ARROW || keyCode == (isR2L ? dvt.KeyboardEvent.LEFT_ARROW : dvt.KeyboardEvent.RIGHT_ARROW)) {
+      this._gauge.__increaseValue();
+      dvt.EventManager.consumeEvent(event);
+    }
+    else if (keyCode == dvt.KeyboardEvent.DOWN_ARROW || keyCode == (isR2L ? dvt.KeyboardEvent.RIGHT_ARROW : dvt.KeyboardEvent.LEFT_ARROW)) {
+      this._gauge.__decreaseValue();
+      dvt.EventManager.consumeEvent(event);
+    }
+    else if (this._bEditing && (keyCode == dvt.KeyboardEvent.ENTER || keyCode == dvt.KeyboardEvent.TAB) && this._oldValue != value) {
+      this._gauge.dispatchEvent(dvt.EventFactory.newValueChangeEvent(this._oldValue, value, true));
+      if (keyCode == dvt.KeyboardEvent.TAB) {
+        this._bEditing = false;
+        this._oldValue = null;
+      }
+      else
+        this._oldValue = value;
+    }
   }
 };
 
@@ -1483,7 +1501,6 @@ DvtGaugeRenderer.renderMetricLabel = function(gauge, container, bounds, color, h
     var metricLabel = new dvt.OutputText(gauge.getCtx(), metricLabelString, bounds.x + bounds.w / 2, bounds.y + bounds.h / 2);
     metricLabel.setCSSStyle(options['metricLabel']['style']);
     var size = options['metricLabel']['style'].getStyle('font-size');
-    size = size ? parseInt(size) : null;
     if (!size) {
       size = DvtGaugeRenderer.calcLabelFontSize([metricLabelString, minString, maxString], metricLabel, bounds);
       metricLabel.setTextString(metricLabelString);
@@ -1543,15 +1560,9 @@ DvtGaugeRenderer.renderLabel = function(gauge, container, bounds, color, valign)
     var label = new dvt.MultilineText(gauge.getCtx(), labelString);
     var fontStyle = labelStyle.clone();
     label.setCSSStyle(labelStyle);
-    var size = labelStyle.getStyle('font-size');
-    size = size ? parseInt(size) : null;
-    if (!size) {
-      // Calculate font size
-      var tempLabel = new dvt.OutputText(gauge.getCtx(), labelString, 0, 0);
-      tempLabel.setCSSStyle(labelStyle);
-      size = tempLabel.getOptimalFontSize(bounds);
-      fontStyle.setFontSize('font-size', size.toString());
-    }
+    var size = labelStyle.getStyle('font-size') || dvt.TextUtils.getOptimalFontSize(label.getCtx(), label.getTextString(), label.getCSSStyle(), bounds);
+    fontStyle.setFontSize('font-size', size);
+
     // Set color
     if (color != null)
       fontStyle.setStyle('color', color);
@@ -1559,7 +1570,7 @@ DvtGaugeRenderer.renderLabel = function(gauge, container, bounds, color, valign)
     label.setCSSStyle(fontStyle);
     rendered = dvt.TextUtils.fitText(label, bounds.w, bounds.h, gauge);
 
-    var textHeight = dvt.TextUtils.getTextHeight(label);
+    var textHeight = label.getDimensions().h;
     if (valign == 'top')
       label.setY(bounds.y);
     else if (valign == 'bottom')
@@ -1579,7 +1590,7 @@ DvtGaugeRenderer.renderLabel = function(gauge, container, bounds, color, valign)
  * @param {Array} labels A list of label strings used to find the optimal string size for the label
  * @param {dvt.OutputText} label The text object used to get the optimal size
  * @param {dvt.Rectangle} bounds The available bounds for rendering.
- * @return {number} The optimal font size
+ * @return {string} The optimal font size with the unit 'px'
  */
 DvtGaugeRenderer.calcLabelFontSize = function(labels, label, bounds) {
   var maxWidth = 0;
@@ -1587,14 +1598,14 @@ DvtGaugeRenderer.calcLabelFontSize = function(labels, label, bounds) {
   var width = 0;
   for (var i = 0; i < labels.length; i++) {
     label.setTextString(labels[i]);
-    width = label.measureDimensions().w;
+    width = label.getDimensions().w;
     if (width > maxWidth) {
       maxLabel = labels[i];
       maxWidth = width;
     }
   }
   label.setTextString(maxLabel);
-  return label.getOptimalFontSize(bounds);
+  return dvt.TextUtils.getOptimalFontSize(label.getCtx(), label.getTextString(), label.getCSSStyle(), bounds);
 };
 
 
@@ -1607,13 +1618,16 @@ DvtGaugeRenderer.calcLabelFontSize = function(labels, label, bounds) {
 DvtGaugeRenderer.adjustForStep = function(options, value) {
   var step = Number(options['step']);
   if (step && step > 0) {
-    var stepNum = (value - options['min']) / step;
-    if (stepNum > .5) {
-      var adjustedValue = Math.round(stepNum) * step + options['min'];
+    var stepNum = value / step;
+
+    // If the min is 0 stars, we should allocate the first half of the star for the 0 value in order to give it
+    // some selection space.
+    if (stepNum < .5)
+      return options['min'];
+    else {
+      var adjustedValue = Math.ceil(stepNum) * step;
       return Math.max(Math.min(options['max'], adjustedValue), options['min']);
     }
-    else
-      return options['min'];
   }
   return value;
 };
@@ -2333,6 +2347,10 @@ dvt.StatusMeterGauge.prototype.SetOptions = function(options) {
       options['plotArea']['svgStyle'] = options['plotArea']['style'];
   }
 
+  // <oj-status-meter-gauge> is editable by default
+  if (options['readOnly'] == null && this.getCtx().isCustomElement())
+    options['readOnly'] = false;
+
   // Combine the user options with the defaults and store
   dvt.StatusMeterGauge.superclass.SetOptions.call(this, this.Defaults.calcOptions(options));
 };
@@ -2672,7 +2690,7 @@ DvtStatusMeterGaugeRenderer._renderShape = function(gauge, container, bounds) {
   }
 
   var bRender = true;
-  if (endCoord == baselineCoord) {
+  if (options['value'] == options['min']) {
     if (isVert)
       indicatorY1 = indicatorY2;
     else
@@ -2940,9 +2958,9 @@ DvtStatusMeterGaugeRenderer._renderMetricLabelOutsidePlotArea = function(gauge, 
     var maxMetricLabel = new dvt.OutputText(gauge.getCtx(), maxValue);
     maxMetricLabel.setCSSStyle(metricLabelStyle);
     var computedMetricLabelBounds = new dvt.Rectangle(bounds.x, bounds.y + .8 * bounds.h, bounds.w, .2 * (bounds.h));
-    var size = metricLabelStyle.getStyle('font-size');
-    size = size ? parseInt(size) : maxMetricLabel.getOptimalFontSize(computedMetricLabelBounds);
-    maxMetricLabelDims = maxMetricLabel.measureDimensions();
+    var size = metricLabelStyle.getStyle('font-size') || dvt.TextUtils.getOptimalFontSize(maxMetricLabel.getCtx(), maxMetricLabel.getTextString(), maxMetricLabel.getCSSStyle(), computedMetricLabelBounds);
+    maxMetricLabel.setFontSize(size);
+    maxMetricLabelDims = maxMetricLabel.getDimensions();
     bounds.h -= maxMetricLabelDims.h;
     alignCoord = bounds.y - maxMetricLabelDims.h;
     var metricLabelSpace = maxMetricLabelDims.w;
@@ -2974,7 +2992,7 @@ DvtStatusMeterGaugeRenderer._renderMetricLabelOutsidePlotArea = function(gauge, 
       var maxMetricLabel = new dvt.OutputText(gauge.getCtx(), maxValue);
       maxMetricLabel.setCSSStyle(metricLabelStyle);
       maxMetricLabel.setFontSize(size);
-      maxMetricLabelDims = maxMetricLabel.measureDimensions();
+      maxMetricLabelDims = maxMetricLabel.getDimensions();
       maxMetricLabelDims.w = Math.min(maxMetricLabelDims.w, bounds.w);
       // Align the metricLabel
       alignCoord = isRTL ? bounds.x + maxMetricLabelDims.w : bounds.x + bounds.w;
@@ -2996,7 +3014,7 @@ DvtStatusMeterGaugeRenderer._renderMetricLabelOutsidePlotArea = function(gauge, 
       var minMetricLabel = new dvt.OutputText(gauge.getCtx(), minValue);
       minMetricLabel.setCSSStyle(metricLabelStyle);
       minMetricLabel.setFontSize(size);
-      var minMetricLabelDims = minMetricLabel.measureDimensions();
+      var minMetricLabelDims = minMetricLabel.getDimensions();
 
       // Align the metricLabel
       if (options['value'] < 0 || options['max'] <= 0) {
@@ -3171,12 +3189,12 @@ DvtStatusMeterGaugeRenderer._renderLabel = function(gauge, container, bounds, me
     // Make size calculations based on the available height not width to have consistent size on same sized gauges
     // for horizontal gauges. For vertical gauges make calculations based on width
     if (isVert)
-      size = tempLabel.getOptimalFontSize(new dvt.Rectangle(labelSpace.x, labelSpace.y, labelSpace.w, Number.MAX_VALUE));
+      size = dvt.TextUtils.getOptimalFontSize(tempLabel.getCtx(), tempLabel.getTextString(), tempLabel.getCSSStyle(), new dvt.Rectangle(labelSpace.x, labelSpace.y, labelSpace.w, Number.MAX_VALUE));
     else
-      size = tempLabel.getOptimalFontSize(new dvt.Rectangle(labelSpace.x, labelSpace.y, Number.MAX_VALUE, labelSpace.h));
+      size = dvt.TextUtils.getOptimalFontSize(tempLabel.getCtx(), tempLabel.getTextString(), tempLabel.getCSSStyle(), new dvt.Rectangle(labelSpace.x, labelSpace.y, Number.MAX_VALUE, labelSpace.h));
   }
   var label = new dvt.MultilineText(gauge.getCtx(), labelString);
-  fontStyle.setFontSize('font-size', size.toString());
+  fontStyle.setFontSize('font-size', size);
   label.setCSSStyle(fontStyle);
   dvt.TextUtils.fitText(label, labelSpace.w, labelSpace.h, gauge);
   if (options['label']['position'] == 'center' || (options['label']['position'] == 'auto' && isVert)) {
@@ -3569,6 +3587,8 @@ DvtStatusMeterGaugeRenderer._renderCenterContent = function(gauge, options, boun
       'component': options['_widgetConstructor']
     };
     var context = gauge.getCtx();
+    dataContext = context.fixRendererContext(dataContext);
+
     var parentDiv = context.getContainer();
 
     // Remove existing overlay if there is one
@@ -4375,8 +4395,7 @@ DvtDialGaugeRenderer._renderLabel = function(gauge, container, bounds) {
     if (!options['metricLabel']['style'].getStyle('color') && options['background']['_isDark'])
       options['metricLabel']['style'].setStyle('color', '#CCCCCC');
     label.setCSSStyle(options['metricLabel']['style']);
-    var size = parseInt(options['metricLabel']['style'].getFontSize());
-    size = size ? parseInt(size) : null;
+    var size = options['metricLabel']['style'].getFontSize();
     if (!size) {
       size = DvtGaugeRenderer.calcLabelFontSize([labelString, minString, maxString], label, bounds);
       label.setTextString(labelString);
@@ -4575,6 +4594,11 @@ dvt.RatingGauge.prototype.SetOptions = function(options) {
     if (options['unselectedState']['style'])
       options['unselectedState']['svgStyle'] = options['unselectedState']['style'];
   }
+
+  // <oj-rating-gauge> is editable by default
+  if (options['readOnly'] == null && this.getCtx().isCustomElement())
+    options['readOnly'] = false;
+
   // Combine the user options with the defaults and store
   dvt.RatingGauge.superclass.SetOptions.call(this, this.Defaults.calcOptions(options));
 };
@@ -4976,7 +5000,7 @@ DvtRatingGaugeRenderer.render = function(gauge, container, width, height) {
 };
 
 /**
- * Creates a shape for the rating gauge at the given position
+ * Creates the shapes for the rating gauge at the given position
  * @param {dvt.RatingGauge} gauge
  * @param {dvt.Container} container The container to render into.
  * @param {object} stateOptions The options object for this state.
@@ -4992,15 +5016,7 @@ DvtRatingGaugeRenderer._createShapes = function(gauge, container, stateOptions) 
   var shapeWidth = gauge.__shapeWidth;
   var shapeHeight = gauge.__shapeHeight;
 
-  var shape;
-  if (stateOptions['source']) {
-    shape = new dvt.ImageMarker(context, shapeWidth / 2, shapeHeight / 2, shapeWidth, shapeHeight, null, stateOptions['source']);
-    shape.setPreserveAspectRatio('none');
-  }
-  else if (stateOptions['type'] != 'none') {
-    shape = dvt.LedGauge.newInstance(context, null, null, true);
-    shape.render(stateOptions, shapeWidth, shapeHeight);
-  }
+  var useShape = dvt.Agent.isPlatformIE() ? null : DvtRatingGaugeRenderer._createShape(context, 0, 0, shapeWidth, shapeHeight, stateOptions, options);
 
   for (var i = 0; i < options['max']; i++) {
     var x, y;
@@ -5017,14 +5033,51 @@ DvtRatingGaugeRenderer._createShapes = function(gauge, container, stateOptions) 
       y = bounds.y + bounds.h / 2 - shapeHeight / 2;
     }
 
-    if (shape) {
-      // Custom style and class
-      shape.setClassName(options['svgClassName']);
-      shape.setStyle(options['svgStyle']);
-      var use = new dvt.Use(context, x, y, shape);
+    if (dvt.Agent.isPlatformIE()) {
+      var shape = DvtRatingGaugeRenderer._createShape(context, x, y, shapeWidth, shapeHeight, stateOptions, options);
+
+      if (shape) {
+        shapesContainer.addChild(shape);
+      }
+
+    }
+    else if (useShape) {
+      var use = new dvt.Use(context, x, y, useShape);
       shapesContainer.addChild(use);
     }
   }
+};
+
+/**
+ * Creates a shape used to create the rating gauge
+ * @param {dvt.Context} context
+ * @param {number} x  The x position of the marker.
+ * @param {number} y  The y position of the marker.
+ * @param {number} width  The width of the marker.
+ * @param {number} height  The height of the marker.
+ * @param {object} stateOptions The options object for this state.
+ * @param {object} gaugeOptions The options object for the gauge.
+ * @private
+ */
+DvtRatingGaugeRenderer._createShape = function(context, x, y, width, height, stateOptions, gaugeOptions) {
+  var shape;
+  if (stateOptions['source']) {
+    shape = new dvt.ImageMarker(context, x + width / 2, y + height / 2, width, height, null, stateOptions['source']);
+    shape.setPreserveAspectRatio('none');
+  }
+  else if (stateOptions['type'] != 'none') {
+    shape = dvt.LedGauge.newInstance(context, null, null, true);
+    if (x != 0 && y != 0)
+      shape.setTranslate(x, y);
+    shape.render(stateOptions, width, height);
+  }
+
+  // Custom style and class
+  if (shape) {
+    shape.setClassName(gaugeOptions['svgClassName']);
+    shape.setStyle(gaugeOptions['svgStyle']);
+  }
+  return shape;
 };
 /**
  * Event Manager for dvt.RatingGauge.

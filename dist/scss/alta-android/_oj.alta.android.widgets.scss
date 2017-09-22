@@ -8,8 +8,6 @@
 @import "widgets/oj.alta.android.tags.core";
 @import "widgets/oj.alta.android.tags.typography";
 @import "widgets/oj.alta.android.tags.lists";
-@import "widgets/oj.alta.android.utilities";
-
 
 // shared
 @import "widgets/oj.alta.android.icons";
@@ -25,13 +23,15 @@
 @import "widgets/oj.alta.android.tabs";
 @import "widgets/oj.alta.android.train";
 @import "widgets/oj.alta.android.navigationlist";
+@import "widgets/oj.alta.android.tabbar";
 @import "widgets/oj.alta.android.offcanvas";
 
 // behavior
 @import "widgets/oj.alta.android.animation";
-@import "widgets/oj.alta.android.progressbar";
+@import "widgets/oj.alta.android.progress";
 @import "widgets/oj.alta.android.pulltorefresh";
 @import "widgets/oj.alta.android.swipetoreveal";
+@import "widgets/oj.alta.android.switcher";
 
 // secondary windows
 @import "widgets/oj.alta.android.dialog";
@@ -48,6 +48,7 @@
 @import "widgets/oj.alta.android.pagingcontrol";
 @import "widgets/oj.alta.android.table";
 @import "widgets/oj.alta.android.tree";
+@import "widgets/oj.alta.android.treeview";
 @import "widgets/oj.alta.android.datagrid";
 @import "widgets/oj.alta.android.rowexpander";
 @import "widgets/oj.alta.android.listview";
@@ -87,6 +88,8 @@
 @import "widgets/oj.alta.android.formcontrol.slider";
 @import "widgets/oj.alta.android.formcontrol.colorpalette";
 @import "widgets/oj.alta.android.formcontrol.colorspectrum";
+// mostly used by form controls
+@import "widgets/oj.alta.android.option";
 
 // responsive
 @import "widgets/oj.alta.android.flex";
@@ -103,3 +106,7 @@
 // file upload
 @import "widgets/oj.alta.android.filepicker";
 @import "widgets/oj.alta.android.progresslist";
+
+//icon
+@import "widgets/oj.alta.android.avatar";
+@import "widgets/oj.alta.android.iconcircle";

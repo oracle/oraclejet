@@ -21,6 +21,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojconveyorbelt', 'oj
 
 /**
  * @ojcomponent oj.ojTabs
+ * @ignore
  * @augments oj.baseComponent
  * @since 0.6
  * 
@@ -1502,7 +1503,9 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojconveyorbelt', 'oj
         toShow.show();
         // - unable to stretch ojtable in an initially hidden ojtab
         if (toShow.length > 0)
-          oj.Components.subtreeShown(toShow[0]);
+        {
+          oj.Components.subtreeShown(toShow[0], {'initialRender': self._initialRender});
+        }
         complete();
       }
 
@@ -3180,44 +3183,4 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojconveyorbelt', 'oj
 }
 ());
 
-(function() {
-var ojTabsMeta = {
-  "properties": {
-    "disabledTabs": {
-      "type": "Array"
-    },
-    "edge": {
-      "type": "string"
-    },
-    "orientation": {
-      "type": "string"
-    },
-    "removable": {
-      "type": "boolean|Array"
-    },
-    "reorderable": {
-      "type": "boolean"
-    },
-    "selected": {
-      "type": "string|number"
-    },
-    "selectOn": {
-      "type": "string"
-    },
-    "truncation": {
-      "type": "string"
-    }
-  },
-  "methods": {
-    "addTab": {},
-    "refresh": {},
-    "removeTab": {}
-  },
-  "extension": {
-    _WIDGET_NAME: "ojTabs"
-  }
-};
-oj.CustomElementBridge.registerMetadata('oj-tabs', 'baseComponent', ojTabsMeta);
-oj.CustomElementBridge.register('oj-tabs', {'metadata': oj.CustomElementBridge.getMetadata('oj-tabs')});
-})();
 });

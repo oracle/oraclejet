@@ -1,7 +1,7 @@
 // Copyright (c) 2014, 2017, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-// WARNING: do not directly import this file, instead import the 
-//          version in your base theme's directory, 
+// WARNING: do not directly import this file, instead import the
+//          version in your base theme's directory,
 //          for example alta/widgets/_oj.alta.pagingcontrol.scss
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 @import "../../utilities/oj.utilities";
@@ -12,15 +12,15 @@
 
     /* paging control */
     /* --------------------------------------------------------------- */
-        
+
     // This is to prevent the flash of unstyled content before the html becomes JET components.
     @if $initialVisibility == hidden {
       oj-paging-control:not(.oj-complete) {
         visibility: hidden;
-      }      
+      }
     }
 
-    /* Styling for the component. Set the line-height back to normal in case it 
+    /* Styling for the component. Set the line-height back to normal in case it
        was set to 0 by the table/datagrid footer classes */
     .oj-pagingcontrol {
       line-height: normal;
@@ -34,11 +34,11 @@
     /* Styling for the loadMore mode contents. */
     .oj-pagingcontrol-loadmore {
       padding: $pagingControlPadding;
-      @include oj-ltr() {    
+      @include oj-ltr() {
         text-align: right;
       }
 
-      @include oj-rtl() {    
+      @include oj-rtl() {
         text-align: left;
       }
     }
@@ -49,7 +49,7 @@
       white-space: nowrap;
       text-decoration: none;
     }
-    
+
     .oj-pagingcontrol-loadmore-link.oj-hover {
       text-decoration: underline;
     }
@@ -71,37 +71,37 @@
     /* Styling for the page mode page input section. */
     .oj-pagingcontrol-nav-input-section {
       display: inline-block;
-      vertical-align: middle;
+      vertical-align: top;
       white-space: nowrap;
-      @include oj-ltr() {    
+      @include oj-ltr() {
         padding-right: $pagingControlPadding;
       }
-      @include oj-rtl() {    
+      @include oj-rtl() {
         padding-left: $pagingControlPadding;
       }
     }
 
     /* Styling for the page mode navigation arrows section. */
     .oj-pagingcontrol-nav-arrow-section {
-      display: inline-block; 
+      display: inline-block;
       vertical-align: middle;
-      @include oj-ltr() {    
+      @include oj-ltr() {
         border-left: 1px solid $panelBorderColor;
         padding-left: $pagingControlPadding;
       }
-      @include oj-rtl() {    
+      @include oj-rtl() {
         border-right: 1px solid $panelBorderColor;
         padding-right: $pagingControlPadding;
       }
     }
-    
+
     /* Styling for the page mode navigation arrows section when it is the first child  */
     .oj-pagingcontrol-nav-arrow-section:first-child {
-      @include oj-ltr() {    
+      @include oj-ltr() {
         border-left: 0;
         padding-left: 0;
       }
-      @include oj-rtl() {    
+      @include oj-rtl() {
         border-right: 0;
         padding-right: 0;
       }
@@ -113,7 +113,7 @@
       vertical-align: middle;
       line-height: $buttonHeight;
     }
-    
+
     /* Styling for the page mode dot links. */
     .oj-pagingcontrol-nav-dot {
       line-height: $fontSize;
@@ -130,17 +130,18 @@
       border-radius: 50%;
       position: relative;
       transition: all 0.3s ease 0s;
-      width: $smallFontSize;
-      height: $smallFontSize;
+      width: $pagingDotSize;
+      height: $pagingDotSize;
+      box-sizing: border-box;
       display: inline-block;
       vertical-align: middle;
     }
-    
+
     /* Styling for the page mode dot bullet when paging control in high contrast mode. */
     .oj-hicontrast .oj-pagingcontrol-nav-dot-bullet {
       border: 3px double;
     }
-    
+
     /* Styling for the page mode dot link when selected or hovered. */
     .oj-pagingcontrol-nav-dot-bullet.oj-selected,
     .oj-pagingcontrol-nav-dot-bullet.oj-hover {
@@ -148,7 +149,7 @@
       border-color: $iconColorActive;
       content: "";
     }
-    
+
     /* Styling for the page mode page links. */
     .oj-pagingcontrol-nav-page {
       color: $linkTextColor;
@@ -160,7 +161,7 @@
       font-size: $fontSize;
       outline: none;
     }
-    
+
     .oj-pagingcontrol-nav-page.oj-hover {
       text-decoration: underline;
     }
@@ -180,7 +181,7 @@
     .oj-pagingcontrol-nav-page.oj-disabled {
       text-decoration: none;
     }
-    
+
     /* Styling for the page mode page ellipsis. */
     .oj-pagingcontrol-nav-page-ellipsis {
       min-width: $fontSize;
@@ -196,7 +197,7 @@
     }
 
     /* Styling for the page mode page input element. */
-    input.oj-pagingcontrol-nav-input.oj-inputtext-input { 
+    input.oj-pagingcontrol-nav-input.oj-inputtext-input {
       @include oj-form-control-content($textAlign: center);
       min-width: 2.5 * $fontSize;
       max-width: 2.5 * $fontSize;
@@ -205,38 +206,40 @@
       font-size: $fontSize;
       padding-left: 2px;
       padding-right: 2px;
+      margin-top: 0.2em;
     }
-    
+
     /* Styling for the page mode page input element when readOnly. */
-    input[readOnly].oj-pagingcontrol-nav-input.oj-inputtext-input { 
+    input[readOnly].oj-pagingcontrol-nav-input.oj-inputtext-input {
       color: $formControlLabelColor;
       min-width: $fontSize;
       max-width: $fontSize;
       min-height: 0;
       max-height: none;
+      margin-top: 0.1em;
     }
 
     /* Styling for the page mode maximum number of pages text. */
     .oj-pagingcontrol-nav-input-max {
       color: $formControlLabelColor;
       font-size: $fontSize;
-      @include oj-ltr() {    
-        padding-left: $pagingControlPadding; 
+      @include oj-ltr() {
+        padding-left: $pagingControlPadding;
       }
-      @include oj-rtl() {    
-        padding-right: $pagingControlPadding; 
-      } 
+      @include oj-rtl() {
+        padding-right: $pagingControlPadding;
+      }
     }
 
     /* Styling for the page mode page range summary. */
     .oj-pagingcontrol-nav-input-summary {
       color: $formControlLabelColor;
       font-size: $fontSize;
-      @include oj-ltr() {    
-        padding-right: $pagingControlPadding; 
+      @include oj-ltr() {
+        padding-right: $pagingControlPadding;
       }
-      @include oj-rtl() {    
-        padding-left: $pagingControlPadding; 
+      @include oj-rtl() {
+        padding-left: $pagingControlPadding;
       }
     }
 
@@ -253,7 +256,7 @@
       padding: 5px;
       cursor: $buttonCursor;
     }
-    
+
     /* Styling for the page mode navigation page arrows in hover state. */
     .oj-pagingcontrol-nav-arrow.oj-hover {
       background-color: $buttonBgColorHover;
@@ -262,7 +265,7 @@
       color: $buttonIconColorHover;
       text-decoration: none;
     }
-    
+
     /* Styling for the page mode navigation page arrows when active. */
     .oj-pagingcontrol-nav-arrow.oj-active,
     .oj-pagingcontrol-nav-arrow.oj-active.oj-hover {
@@ -272,18 +275,18 @@
        @include oj-background-image($buttonBgImageActive);
     }
 
-    
+
 
     /* Styling for the page mode navigation first page arrow icon. */
     .oj-pagingcontrol-nav-first-icon {
-      @include oj-ltr() {    
+      @include oj-ltr() {
         @extend .oj-fwk-icon-caret02end-w !optional;
       }
-      @include oj-rtl() {    
+      @include oj-rtl() {
         @extend .oj-fwk-icon-caret02end-e !optional;
       }
     }
-    
+
     /* Styling for the page mode navigation first page arrow icon in vertical orientation. */
     .oj-pagingcontrol-nav-first-vertical-icon {
       @extend .oj-fwk-icon-caret02end-n !optional;
@@ -291,14 +294,14 @@
 
     /* Styling for the page mode navigation previous page arrow icon. */
     .oj-pagingcontrol-nav-previous-icon {
-      @include oj-ltr() {    
+      @include oj-ltr() {
         @extend .oj-fwk-icon-caret02-w !optional;
       }
-      @include oj-rtl() {    
+      @include oj-rtl() {
         @extend .oj-fwk-icon-caret02-e !optional;
       }
     }
-    
+
     /* Styling for the page mode navigation previous page arrow icon in vertical orientation. */
     .oj-pagingcontrol-nav-previous-vertical-icon {
       @extend .oj-fwk-icon-caret02-n !optional;
@@ -306,14 +309,14 @@
 
     /* Styling for the page mode navigation next page arrow icon. */
     .oj-pagingcontrol-nav-next-icon {
-      @include oj-ltr() {    
+      @include oj-ltr() {
         @extend .oj-fwk-icon-caret02-e !optional;
       }
-      @include oj-rtl() {    
+      @include oj-rtl() {
         @extend .oj-fwk-icon-caret02-w !optional;
       }
     }
-    
+
     /* Styling for the page mode navigation next page arrow icon in vertical orientation. */
     .oj-pagingcontrol-nav-next-vertical-icon {
       @extend .oj-fwk-icon-caret02-s !optional;
@@ -321,14 +324,14 @@
 
     /* Styling for the page mode navigation last page arrow icon. */
     .oj-pagingcontrol-nav-last-icon {
-      @include oj-ltr() {    
+      @include oj-ltr() {
         @extend .oj-fwk-icon-caret02end-e !optional;
       }
-      @include oj-rtl() {    
+      @include oj-rtl() {
         @extend .oj-fwk-icon-caret02end-w !optional;
       }
     }
-    
+
     /* Styling for the page mode navigation last page arrow icon in vertical orientation. */
     .oj-pagingcontrol-nav-last-vertical-icon {
       @extend .oj-fwk-icon-caret02end-s !optional;

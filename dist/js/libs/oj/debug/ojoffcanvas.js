@@ -22,6 +22,7 @@ define(['ojs/ojcore', 'jquery', 'hammerjs', 'promise', 'ojs/ojjquery-hammer', 'o
  * @class Utility methods for offcanvas.
  * @since 1.1.0
  * @export
+ * @ojstatus preview
  *
  * @classdesc
  * This class provides functions used for controlling offcanvas regions.  Offcanvas regions can be used in either static (simply displaying and hiding in response to user interactions) or responsive (using media queries to dynamically move application content between the main viewport and offcanvas regions) contexts.  The open, close and toggle methods can be used to directly control the display of an offcanvas region in both the static and responsive cases.  The setupResponsive and tearDownResponsive methods are only needed for responsive usages and are used to add and remove listeners that use the specified media queries to configure the offcanvas in response to changes in browser size.
@@ -36,6 +37,9 @@ define(['ojs/ojcore', 'jquery', 'hammerjs', 'promise', 'ojs/ojjquery-hammer', 'o
  * <li>setupPanToReveal: setup offcanvas for pan to reveal.</li>
  * <li>tearDownPantoReveal: remove listeners that were added in setupPanToReveal.</li><br>
  * </ul>
+ *
+ * <p>Note for performance reasons, if the Offcanvas content is expensive to render, you should wrap it in an <code class="prettyprint">oj-defer</code> element (API doc {@link oj.ojDefer}) to defer the rendering of that content.<br/>
+ * See the <a href="../jetCookbook.html?component=offcanvas&demo=deferredRendering">Offcanvas - Deferred Rendering</a> demo for an example.</p>
  *
  * <h3 id="events-section">
  *   Events
@@ -746,6 +750,13 @@ oj.OffcanvasUtils._afterCloseHandler = function(offcanvas)
   if (curOffcanvas !== offcanvas)
     return;
 
+  // bail and do final cleanup if pan to reveal is in progress
+  if (offcanvas["_panInProgress"])
+  {
+    $.removeData(drawer[0], oj.OffcanvasUtils._DATA_OFFCANVAS_KEY);
+    return;
+  }
+
   var edge = oj.OffcanvasUtils._getEdge(drawer),
       wrapper = oj.OffcanvasUtils._getAnimateWrapper(offcanvas);
 
@@ -920,8 +931,9 @@ oj.OffcanvasUtils._openPush = function(offcanvas, resolve, reject, edge)
       if (size === undefined)
         size = drawer.outerWidth(true) + "px";
 
-      oj.OffcanvasUtils._setTransform(drawer,
-                                      oj.OffcanvasUtils._getTranslationX(edge, size, true));
+      // - offcanvas: drawer push animation is incorrect in rtl mode
+//      oj.OffcanvasUtils._setTransform(drawer,
+//                                      oj.OffcanvasUtils._getTranslationX(edge, size, true));
       translation = oj.OffcanvasUtils._getTranslationX(edge, size, false);
     }
     else {
@@ -1139,6 +1151,7 @@ oj.OffcanvasUtils._closeOverlay = function(offcanvas, resolve, reject, drawer, a
     endHandler();
   }
 };
+
 
 oj.OffcanvasUtils._openOldDrawer = function(offcanvas, resolve, reject, edge, displayMode)
 {
@@ -1370,6 +1383,7 @@ oj.OffcanvasUtils.open = function(offcanvas)
     else {
       oj.OffcanvasUtils._openOldDrawer(myOffcanvas, resolve, reject, edge, displayMode);
     }
+
   });
 
   promise = promise.then(function(value) {
@@ -1485,7 +1499,6 @@ oj.OffcanvasUtils._close = function(selector, animation)
       else {
         oj.OffcanvasUtils._closeOldDrawer(offcanvas, resolve, reject, drawer, animation);
       }
-
     }
     else {
       resolve(true);
@@ -1738,15 +1751,7 @@ oj.OffcanvasUtils.setupPanToReveal = function(offcanvas)
 
     drawer = oj.OffcanvasUtils._getDrawer(offcanvas);
 
-    // need the size to display the canvas when release
-    size = offcanvas["size"];
-    if (size == null)
-    {
-        size = drawer.outerWidth();
-    }
-
     outerWrapper = oj.OffcanvasUtils._getOuterWrapper(drawer);
-    wrapper = oj.OffcanvasUtils._getAnimateWrapper(offcanvas);
 
     //use hammer for swipe
     mOptions = {
@@ -1792,10 +1797,21 @@ oj.OffcanvasUtils.setupPanToReveal = function(offcanvas)
 
         if (!evt.isDefaultPrevented())
         {
+            // need the size to display the canvas when release
+            size = offcanvas["size"];
+            if (size == null)
+            {
+                size = drawer.outerWidth();
+            }
+
             // make sure it's in closed state
             offcanvas["_closePromise"] = null;
 
+            // mark panning in progress so it won't be close, see _afterCloseHandler
+            offcanvas["_panInProgress"] = true;
+
             // cancel any close animation transition handler
+            wrapper = oj.OffcanvasUtils._getAnimateWrapper(offcanvas);
             wrapper.off(".oc");
 
             // sets the appropriate offcanvas class
@@ -1850,6 +1866,7 @@ oj.OffcanvasUtils.setupPanToReveal = function(offcanvas)
 
         // reset flag
         proceed = false;
+        offcanvas["_panInProgress"] = null;
 
         delta = Math.abs(event['gesture']['deltaX']);
         ui = {"distance": delta};
@@ -2079,6 +2096,10 @@ oj.OffcanvasUtils.tearDownPanToReveal = function(offcanvas)
  *     <tr>
  *       <td>oj-offcanvas-bottom<br>
  *       <td>Applied to the offcanvas on the bottom edge.</td>
+ *     </tr>
+ *     <tr>
+ *       <td>oj-offcanvas-overlay-shadow</td>
+ *       <td>Add this marker class to an overlay offcanvas to show a drop shadow when it is open.</td>
  *     </tr>
  *   </tbody>
  * </table>

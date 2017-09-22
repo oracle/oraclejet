@@ -6,6 +6,7 @@
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 @import "../../utilities/oj.utilities";
+@import "oj.common.sprite";
 
 $iconFontFileName: 'JetFW_iconfont.woff' !default;
 
@@ -175,53 +176,14 @@ $iconFontFileName: 'JetFW_iconfont.woff' !default;
     }
 
 
-
-    .oj-fwk-icon-status-error2,
-    .oj-fwk-icon-status-warning2,
-    .oj-fwk-icon-status-info2,
-    .oj-fwk-icon-status-confirmation2 {
-      height: 9px;
-      width: 9px;
-      font-size: 9px;
-    }
-
-    .oj-fwk-icon-status-confirmation2 {
-      @include oj-icon-content(
-        $icon: oj-common-image-url("alertModifier_complete.svg")
-      );
-    }
-
-    .oj-fwk-icon-status-info2 {
-      @include oj-icon-content(
-        $icon: oj-common-image-url("alertModifier_info.svg")
-      );
-    }
-
-    .oj-fwk-icon-status-warning2 {
-      @include oj-icon-content(
-        $icon: oj-common-image-url("alertModifier_warning.svg")
-      );
-    }
-
-    .oj-fwk-icon-status-error2 {
-      @include oj-icon-content(
-          $icon: oj-common-image-url("alertModifier_error.svg")
-      );
-    }
-
-    .oj-fwk-icon-status-confirmation2:before,
-    .oj-fwk-icon-status-info2:before,
-    .oj-fwk-icon-status-warning2:before,
-    .oj-fwk-icon-status-error2:before {
-      width: 9px; /* Needed for old versions of IE11 */
-    }
-
-
-
-    %default-icon-file-size {
-      width:  16px;
-      height: 16px;
-
+    // svg icons defined in the sprite
+    .oj-fwk-icon-status-confirmation,
+    .oj-fwk-icon-status-info,
+    .oj-fwk-icon-status-warning,
+    .oj-fwk-icon-status-error,
+    .oj-fwk-icon-folder-open,
+    .oj-fwk-icon-folder-collapsed,
+    .oj-fwk-icon-document {
       // if the page font size happens to
       // be larger than the icon not setting the
       // font size can cause padding above the icon.
@@ -231,126 +193,16 @@ $iconFontFileName: 'JetFW_iconfont.woff' !default;
       font-size: 16px;
     }
 
-    .oj-fwk-icon-status-confirmation {
-      @extend %default-icon-file-size;
-      @include oj-icon-content(
-        $icon: oj-image-url("stat_confirm_16.svg")
-      );
+    // svg icons defined in the sprite
+    .oj-fwk-icon-status-error2,
+    .oj-fwk-icon-status-warning2,
+    .oj-fwk-icon-status-info2,
+    .oj-fwk-icon-status-confirmation2 {
+      font-size: 9px;
     }
 
-    .oj-fwk-icon-status-info {
-      @extend %default-icon-file-size;
-      @include oj-icon-content(
-        $icon: oj-image-url("stat_info_16.svg")
-      );
-    }
-
-    .oj-fwk-icon-status-warning {
-      @extend %default-icon-file-size;
-      @include oj-icon-content(
-        $icon: oj-image-url("stat_warn_16.svg")
-      );
-    }
-
-    .oj-fwk-icon-status-error {
-      @extend %default-icon-file-size;
-      @include oj-icon-content(
-          $icon: oj-image-url("stat_error_16.svg")
-      );
-    }
-
-
-    .oj-fwk-icon-status-confirmation3 {
-      width:  24px;
-      height: 24px;
-      font-size: 24px;
-      display: inline-block;
-      background-repeat: no-repeat;
-      background-position: top left;
-      background-size: 100%;
-      background-image: oj-common-image-url('status_confirmation.svg');
-    }
-
-    /* in high-contrast mode, background-image disappears, so we have to use content */
-    .oj-hicontrast .oj-fwk-icon-status-confirmation3 {
-      background-image: none;
-    }
-    .oj-hicontrast .oj-fwk-icon-status-confirmation3:before {
-      content: oj-common-image-url('status_confirmation.svg');
-    }
-
-    /* in print mode, background-image disappears, so we have to use content */
-    @media print {
-      .oj-fwk-icon-status-confirmation3 {
-        background-image: none;
-      }
-      .oj-fwk-icon-status-confirmation3:before {
-        content: oj-common-image-url('status_confirmation.svg');
-      }
-    }
-
-    .oj-fwk-icon-status-error3 {
-      width:  24px;
-      height: 24px;
-      font-size: 24px;
-      display: inline-block;
-      background-repeat: no-repeat;
-      background-position: top left;
-      background-size: 100%;
-      background-image: oj-common-image-url('status_error.svg');
-    }
-
-    /* in high-contrast mode, background-image disappears, so we have to use content */
-    .oj-hicontrast .oj-fwk-icon-status-error3 {
-      background-image: none;
-    }
-    .oj-hicontrast .oj-fwk-icon-status-error3:before {
-      content: oj-common-image-url('status_error.svg');
-    }
-
-    /* in print mode, background-image disappears, so we have to use content */
-    @media print {
-      .oj-fwk-icon-status-error3 {
-        background-image: none;
-      }
-      .oj-fwk-icon-status-error3:before {
-        content: oj-common-image-url('status_error.svg');
-      }
-    }
-
-    .oj-fwk-icon-folder-open {
-      @extend %default-icon-file-size;
-      @include oj-icon-content(
-          $icon: oj-image-url("hier_folderopen_16_mono.svg")
-      );
-    }
-
-    .oj-fwk-icon-folder-collapsed {
-      @extend %default-icon-file-size;
-      @include oj-icon-content(
-          $icon: oj-image-url("hier_folderclose_16_mono.svg")
-      );
-    }
-
-    .oj-fwk-icon-document {
-      @extend %default-icon-file-size;
-      @include oj-icon-content(
-          $icon: oj-image-url("hier_leaf_16_mono.svg")
-      );
-    }
-
-    .oj-fwk-icon-status-confirmation:before,
-    .oj-fwk-icon-status-info:before,
-    .oj-fwk-icon-status-warning:before,
-    .oj-fwk-icon-status-error:before,
-    .oj-fwk-icon-folder-open:before,
-    .oj-fwk-icon-folder-collapsed:before,
-    .oj-fwk-icon-document:before {
-      width: 16px; /* Needed for old versions of IE11 */
-    }
 
     /* Icon Font Icons =========== */
-
 
 
     // misc
@@ -387,6 +239,12 @@ $iconFontFileName: 'JetFW_iconfont.woff' !default;
     }
     .oj-fwk-icon-folderhierarchy:before {
       content: oj-prepend-slash($oj-fwk-icon-folderhierarchy);
+    }
+    .oj-fwk-icon-grid:before {
+      content: oj-prepend-slash($oj-fwk-icon-grid);
+    }
+    .oj-fwk-icon-list:before {
+      content: oj-prepend-slash($oj-fwk-icon-list);
     }
     .oj-fwk-icon-arrowbox-n:before {
       content: oj-prepend-slash($oj-fwk-icon-arrowbox-n);
@@ -906,10 +764,6 @@ $iconFontFileName: 'JetFW_iconfont.woff' !default;
       }
 
     }
-
-
-
-
 
   }
 }

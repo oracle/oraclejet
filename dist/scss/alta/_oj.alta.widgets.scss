@@ -10,7 +10,6 @@
 @import "widgets/oj.alta.tags.lists";
 @import "widgets/oj.alta.utilities";
 
-
 // shared
 @import "widgets/oj.alta.icons";
 @import "widgets/oj.alta.resizable";
@@ -25,13 +24,15 @@
 @import "widgets/oj.alta.tabs";
 @import "widgets/oj.alta.train";
 @import "widgets/oj.alta.navigationlist";
+@import "widgets/oj.alta.tabbar";
 @import "widgets/oj.alta.offcanvas";
 
 // behavior
 @import "widgets/oj.alta.animation";
-@import "widgets/oj.alta.progressbar";
+@import "widgets/oj.alta.progress";
 @import "widgets/oj.alta.pulltorefresh";
 @import "widgets/oj.alta.swipetoreveal";
+@import "widgets/oj.alta.switcher";
 
 // secondary windows
 @import "widgets/oj.alta.dialog";
@@ -48,6 +49,7 @@
 @import "widgets/oj.alta.pagingcontrol";
 @import "widgets/oj.alta.table";
 @import "widgets/oj.alta.tree";
+@import "widgets/oj.alta.treeview";
 @import "widgets/oj.alta.datagrid";
 @import "widgets/oj.alta.rowexpander";
 @import "widgets/oj.alta.listview";
@@ -87,6 +89,8 @@
 @import "widgets/oj.alta.formcontrol.slider";
 @import "widgets/oj.alta.formcontrol.colorpalette";
 @import "widgets/oj.alta.formcontrol.colorspectrum";
+// mostly used by form controls
+@import "widgets/oj.alta.option";
 
 // responsive
 @import "widgets/oj.alta.flex";
@@ -103,3 +107,7 @@
 // file upload
 @import "widgets/oj.alta.filepicker";
 @import "widgets/oj.alta.progresslist";
+
+//icon
+@import "widgets/oj.alta.avatar";
+@import "widgets/oj.alta.iconcircle";

@@ -650,6 +650,9 @@ dvt.Chart.prototype.processEvent = function(event, source) {
   else if (type == dvt.SimpleScrollbarEvent.TYPE)
     event = this._processScrollbarEvent(event.getNewMin(), event.getNewMax(), event.getSubtype() == dvt.SimpleScrollbarEvent.SUBTYPE_END, source);
 
+  else if (type == 'ready' && this != source)
+    return; // Ready event fired by legend shouldn't be dispatched because the chart isn't ready yet ()
+
   else if (type == 'adfShowPopup')
     event = this._processShowPopupEvent(event);
 
@@ -1770,6 +1773,15 @@ var DvtChartAutomation = function(dvtComponent) {
 
 dvt.Obj.createSubclass(DvtChartAutomation, dvt.Automation);
 
+/**
+ * @const
+ */
+DvtChartAutomation.PLOT_AREA_SUBID = 'plotArea';
+
+/**
+ * @const
+ */
+DvtChartAutomation.PIE_CENTER_LABEL_SUBID = 'pieCenterLabel';
 
 /**
  * Valid subIds inlcude:
@@ -1802,7 +1814,18 @@ DvtChartAutomation.prototype.GetSubIdForDomElement = function(displayable) {
   }
   else {
     var logicalObj = this._chart.getEventManager().GetLogicalObject(displayable);
-    if (logicalObj && this._options['type'] == 'pie') // pie charts do not use ChartObjPeer and return only dataItem[seriesIndex]
+    if (!logicalObj)
+      return null;
+
+    if (logicalObj instanceof dvt.SimpleObjPeer) {
+      var type = logicalObj.getParams()['type'];
+      if (type == 'pieCenterLabel')
+        return DvtChartAutomation.PIE_CENTER_LABEL_SUBID;
+      else if (type == 'plotArea')
+        return DvtChartAutomation.PLOT_AREA_SUBID;
+    }
+
+    if (logicalObj instanceof DvtChartPieSlice) // pie chart data items do not use ChartObjPeer and return only dataItem[seriesIndex]
       return 'dataItem[' + logicalObj.getSeriesIndex() + ']';
 
     if (logicalObj instanceof DvtChartObjPeer) { // Chart data items
@@ -1882,9 +1905,13 @@ DvtChartAutomation.prototype._convertAxisSubIdToChartSubId = function(subId, axi
  * @override
  */
 DvtChartAutomation.prototype.getDomElementForSubId = function(subId) {
-  // TOOLTIP
-  if (subId == dvt.Automation.TOOLTIP_SUBID)
+  // First check for subIds that don't have to be parsed
+  if (subId == dvt.Automation.TOOLTIP_SUBID) // TOOLTIP
     return this.GetTooltipElement(this._chart, DvtChartTooltipUtils.isDataCursorEnabled(this._chart) ? DvtChartDataCursor.TOOLTIP_ID : null);
+  else if (subId == DvtChartAutomation.PIE_CENTER_LABEL_SUBID) // PIE CENTER LABEL
+    return this._chart.pieChart.getCenterLabel().getElem();
+  else if (subId == DvtChartAutomation.PLOT_AREA_SUBID) // PLOT AREA
+    return this._chart.getPlotArea().getElem();
 
   // CHART ELEMENTS
   var openParen1 = subId.indexOf('[');
@@ -2897,9 +2924,14 @@ DvtChartEventManager.prototype._onTouchDragEnd = function(event) {
     event.preventDefault();
     this.getCtx().getTooltipManager().hideTooltip();
 
-    // : Reset the touch manager because we do not use it to handle the dragging, but the dragging
-    // updates the touch manager state
-    this.getTouchManager().reset();
+    var touchManager = this.getTouchManager();
+    var identifier = event['changedTouches'].length == 1 ? event['changedTouches'][0].identifier : null;
+    var touchInfo = identifier != null ? touchManager.getTouchInfo(identifier) : null;
+
+    // : Reset the touch manager if we will be processing a touchMove, because we do not use the touch manager to handle the dragging
+    // but the dragging updates the touch manager state
+    if (!touchInfo || touchInfo['touchMoved'])
+      touchManager.reset();
   }
 
   this.setDragButtonsVisible(true);
@@ -2913,11 +2945,9 @@ DvtChartEventManager.prototype.endDrag = function() {
   var dragHandler = this._getDragHandler();
   var chartEvent;
 
-  if (dragHandler) {
+  if (dragHandler)
     chartEvent = dragHandler.processDragEnd(null, true);
-    if (chartEvent)
-      this._callback.call(this._callbackObj, chartEvent);
-  }
+
   if (this._dataCursorHandler)
     this._dataCursorHandler.processEnd();
 
@@ -3031,6 +3061,17 @@ DvtChartEventManager.prototype.setMarqueeSelectHandler = function(handler) {
   this._marqueeSelectHandler = handler;
 };
 
+/**
+ * @override
+ */
+DvtChartEventManager.prototype.getMarqueeGlassPane = function() {
+  if (this._dragMode == DvtChartEventManager.DRAG_MODE_ZOOM)
+    return this._marqueeZoomHandler.getGlassPane();
+  else if (this._dragMode == DvtChartEventManager.DRAG_MODE_SELECT)
+    return this._marqueeSelectHandler.getGlassPane();
+
+  return null;
+};
 
 /**
  * Cancels marquee zoom/select.
@@ -3265,18 +3306,19 @@ DvtChartEventManager.prototype.GetDropOffset = function(event) {
  */
 DvtChartEventManager.prototype.GetDropTargetType = function(event) {
   var relPos = this._context.pageToStageCoords(event.pageX, event.pageY);
+  var dropOptions = this._chart.getOptions()['dnd']['drop'];
 
   var paBounds = this._chart.__getPlotAreaSpace();
-  if (paBounds.containsPoint(relPos.x, relPos.y))
+  if (Object.keys(dropOptions['plotArea']).length > 0 && paBounds.containsPoint(relPos.x, relPos.y))
     return 'plotArea';
 
-  if (DvtChartAxisUtils.isAxisRendered(this._chart, 'x') && DvtChartAxisUtils.axisContainsPoint(this._chart.xAxis, relPos))
+  if (Object.keys(dropOptions['xAxis']).length > 0 && DvtChartAxisUtils.isAxisRendered(this._chart, 'x') && DvtChartAxisUtils.axisContainsPoint(this._chart.xAxis, relPos))
     return 'xAxis';
 
-  if (DvtChartAxisUtils.isAxisRendered(this._chart, 'y') && DvtChartAxisUtils.axisContainsPoint(this._chart.yAxis, relPos))
+  if (Object.keys(dropOptions['yAxis']).length > 0 && DvtChartAxisUtils.isAxisRendered(this._chart, 'y') && DvtChartAxisUtils.axisContainsPoint(this._chart.yAxis, relPos))
     return 'yAxis';
 
-  if (DvtChartAxisUtils.isAxisRendered(this._chart, 'y2') && DvtChartAxisUtils.axisContainsPoint(this._chart.y2Axis, relPos))
+  if (Object.keys(dropOptions['y2Axis']).length > 0 && DvtChartAxisUtils.isAxisRendered(this._chart, 'y2') && DvtChartAxisUtils.axisContainsPoint(this._chart.y2Axis, relPos))
     return 'y2Axis';
 
   return null;
@@ -3301,22 +3343,11 @@ DvtChartEventManager.prototype.GetDropEventPayload = function(event) {
  * @override
  */
 DvtChartEventManager.prototype.ShowDropEffect = function(event) {
-  var dropTargetType = this.GetDropTargetType(event);
-  var dropColor = this._chart.getOptions()['_dropColor'];
+  var dropObject = this._getDropObject(event);
 
-  if (dropTargetType == 'plotArea') {
-    var plotArea = this._chart.getCache().getFromCache('plotAreaBackground');
-    if (plotArea)
-      plotArea.setSolidFill(dropColor);
-  }
-  else if (dropTargetType == 'xAxis') {
-    this._chart.xAxis.getCache().getFromCache('background').setSolidFill(dropColor);
-  }
-  else if (dropTargetType == 'yAxis') {
-    this._chart.yAxis.getCache().getFromCache('background').setSolidFill(dropColor);
-  }
-  else if (dropTargetType == 'y2Axis') {
-    this._chart.y2Axis.getCache().getFromCache('background').setSolidFill(dropColor);
+  if (dropObject) {
+    dropObject.setClassName('oj-active-drop');
+    dropObject.setSolidFill(this._chart.getOptions()['_dropColor']);
   }
 };
 
@@ -3332,19 +3363,60 @@ DvtChartEventManager.prototype.ClearDropEffect = function() {
       plotArea.setSolidFill(plotAreaColor);
     else
       plotArea.setInvisibleFill();
+    dvt.ToolkitUtils.removeClassName(plotArea.getElem(), 'oj-invalid-drop');
+    dvt.ToolkitUtils.removeClassName(plotArea.getElem(), 'oj-active-drop');
   }
 
   // Clear the axes
   var clearAxisDropEffect = function(axis) {
     if (axis) {
       var background = axis.getCache().getFromCache('background');
-      if (background)
+      if (background) {
         background.setInvisibleFill();
+        dvt.ToolkitUtils.removeClassName(background.getElem(), 'oj-invalid-drop');
+        dvt.ToolkitUtils.removeClassName(background.getElem(), 'oj-active-drop');
+      }
     }
   };
   clearAxisDropEffect(this._chart.xAxis);
   clearAxisDropEffect(this._chart.yAxis);
   clearAxisDropEffect(this._chart.y2Axis);
+};
+
+/**
+ * @override
+ */
+DvtChartEventManager.prototype.ShowRejectedDropEffect = function(event) {
+  var dropObject = this._getDropObject(event);
+
+  if (dropObject)
+    dropObject.setClassName('oj-invalid-drop');
+};
+
+/**
+ * Returns the background object that accepts DnD drops
+ * @param {object} event
+ * @return {dvt.Rect}
+ * @private
+ */
+DvtChartEventManager.prototype._getDropObject = function(event) {
+  var dropTargetType = this.GetDropTargetType(event);
+  var dropObject;
+
+  if (dropTargetType == 'plotArea') {
+    dropObject = this._chart.getCache().getFromCache('plotAreaBackground');
+  }
+  else if (dropTargetType == 'xAxis') {
+    dropObject = this._chart.xAxis.getCache().getFromCache('background');
+  }
+  else if (dropTargetType == 'yAxis') {
+    dropObject = this._chart.yAxis.getCache().getFromCache('background');
+  }
+  else if (dropTargetType == 'y2Axis') {
+    dropObject = this._chart.y2Axis.getCache().getFromCache('background');
+  }
+
+  return dropObject;
 };
 /*---------------------------------------------------------------------------------*/
 /*  DvtChartKeyboardHandler     Keyboard handler for Chart                         */
@@ -3483,7 +3555,7 @@ DvtChartKeyboardHandler.prototype.getDefaultNavigable = function(navigableItems)
 
   return defaultNavigable;
 };
-// Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
+// Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
 /**
  * Logical object for chart data object displayables.
  * @param {dvt.Chart} chart The owning chart instance.
@@ -3915,7 +3987,7 @@ DvtChartObjPeer.prototype.getNextNavigable = function(event) {
     next = this._findNextNavigable(event);
   }
   else if (DvtChartTypeUtils.isFunnel(chart) && isUpDown) {
-    if (isRTL && !isHoriz)
+    if (isRTL)
       event.keyCode = event.keyCode == dvt.KeyboardEvent.UP_ARROW ? dvt.KeyboardEvent.RIGHT_ARROW : dvt.KeyboardEvent.LEFT_ARROW;
     else
       event.keyCode = event.keyCode - 1;
@@ -8450,7 +8522,7 @@ DvtChartFunnelSlice.prototype._getSliceLabel = function(sliceBounds, barBounds) 
   if (! dvt.TextUtils.fitText(label, sliceBounds.h - this._3dRatio * (0.8 - this._valuePercent) * 50, sliceBounds.w, this, DvtChartFunnelSlice._MIN_CHARS_DATA_LABEL))
     return;
 
-  var textDim = label.measureDimensions();
+  var textDim = label.getDimensions();
   var pos = this._getLabelPosition(sliceBounds);
   // Checking if the text starts within the bounding box of the colored bar.
   if (isPatternBg) {
@@ -8704,9 +8776,9 @@ DvtChartPyramidSlice._BORDER_COLOR = '#FFFFFF';
 /** Minimum number of characters to use when truncating.
  * @private */
 DvtChartPyramidSlice._MIN_CHARS_DATA_LABEL = 3;
-/** Factor by which to move label down to look more centered
+/** Horizontal padding for the slice label to prevent the text from bleeding
  * @private */
-DvtChartPyramidSlice._TOP_SLICE_LABEL_OFFSET = 0.4;
+DvtChartPyramidSlice._SLICE_LABEL_HORIZONTAL_PADDING = 4;
 /** Factor by which the total width is used for rendering the 3D side
  * @private */
 DvtChartPyramidSlice._3D_WIDTH_FACTOR = 0.2;
@@ -8718,12 +8790,13 @@ DvtChartPyramidSlice._3D_WIDTH_FACTOR = 0.2;
  */
 DvtChartPyramidSlice.prototype._getPath = function() {
   var isBiDi = dvt.Agent.isRightToLeft(this.getCtx());
-  var gapCount = DvtChartDataUtils.getSeriesCount(this._chart);
-  var offset = (gapCount - this._numDrawnSeries) * this._gap;
+  var seriesCount = DvtChartDataUtils.getSeriesCount(this._chart);
+  var offset = (seriesCount - this._numDrawnSeries - 1) * this._gap;
   var center3DOffset = this._3dRatio * DvtChartPyramidSlice._3D_WIDTH_FACTOR * 0.98 * this._pyramidWidth;
+  var chartOptions = this._chart.getOptions();
 
-  var heightToBottomEdge = Math.sqrt(Math.pow(this._pyramidHeight - (gapCount - 1) * this._gap, 2) * (1 - this._startPercent));// height to bottom edge
-  var heightToTopEdge = (this._startPercent + this._valuePercent >= 1) ? 0 : Math.sqrt(Math.pow(this._pyramidHeight - (gapCount - 1) * this._gap, 2) * (1 - this._startPercent - this._valuePercent));//height to top edge
+  var heightToBottomEdge = Math.sqrt(Math.pow(this._pyramidHeight - (seriesCount - 1) * this._gap, 2) * (1 - this._startPercent));// height to bottom edge
+  var heightToTopEdge = (this._startPercent + this._valuePercent >= 1) ? 0 : Math.sqrt(Math.pow(this._pyramidHeight - (seriesCount - 1) * this._gap, 2) * (1 - this._startPercent - this._valuePercent));//height to top edge
 
   var topEdgeWidth = (1 - this._3dRatio * DvtChartPyramidSlice._3D_WIDTH_FACTOR) * 0.98 * this._pyramidWidth * (heightToTopEdge / this._pyramidHeight);
   var gapAdjustedHeightToBottom = this._numDrawnSeries == 0 ? heightToBottomEdge : heightToBottomEdge - this._gap;
@@ -8744,7 +8817,7 @@ DvtChartPyramidSlice.prototype._getPath = function() {
   }
 
   var threeDPathTop, threeDPathSide;
-  if (this._chart.getOptions()['styleDefaults']['threeDEffect'] == 'on') {
+  if (chartOptions['styleDefaults']['threeDEffect'] == 'on') {
 
     // 3D angle is 45 degrees
     var bottomEdge3DOffset = this._3dRatio * DvtChartPyramidSlice._3D_WIDTH_FACTOR * bottomEdgeWidth * Math.sqrt(2) / 2;
@@ -8772,12 +8845,12 @@ DvtChartPyramidSlice.prototype._getPath = function() {
   pathCommands += dvt.PathUtils.lineTo(topLeftCoords[0], topLeftCoords[1]);
   pathCommands += dvt.PathUtils.closePath();
 
-  var isLast = gapCount == this._numDrawnSeries + 1;
+  var topBottomEdgeRatio = topEdgeWidth / bottomEdgeWidth;
   // alternative calculations for top slice
-  var sliceHeight = isLast ? Math.abs(topLeftCoords[1] - bottomLeftCoords[1]) / 2 : Math.abs(topLeftCoords[1] - bottomLeftCoords[1]);
-  var sliceWidth = isLast ? bottomEdgeWidth / 2 : Math.abs(topRightCoords[0] - topLeftCoords[0]);
-  var sliceY = Math.min(topLeftCoords[1], bottomLeftCoords[1]) + (isLast ? DvtChartPyramidSlice._TOP_SLICE_LABEL_OFFSET * (heightToBottomEdge - heightToTopEdge) : 0); // Moving x a bit lower for better placement of labels
-  var sliceX = isLast ? bottomLeftCoords[0] + (isBiDi ? -1 : 1) * bottomEdgeWidth / 4 : topLeftCoords[0];
+  var sliceHeight = 0.5 * Math.abs(topLeftCoords[1] - bottomLeftCoords[1]) * (1 + topBottomEdgeRatio);
+  var sliceWidth = 0.5 * Math.abs(bottomRightCoords[0] - bottomLeftCoords[0]) * (1 + topBottomEdgeRatio) - DvtChartPyramidSlice._SLICE_LABEL_HORIZONTAL_PADDING;
+  var sliceY = bottomLeftCoords[1] - sliceHeight;
+  var sliceX = bottomLeftCoords[0] + (isBiDi ? -1 : 1) * ((bottomEdgeWidth - sliceWidth) / 2);
   var sliceBounds = new dvt.Rectangle(sliceX, sliceY, sliceWidth, sliceHeight);
 
   return {'slice': pathCommands, 'sliceBounds': sliceBounds, 'threeDPathTop': threeDPathTop, 'threeDPathSide': threeDPathSide};
@@ -8813,7 +8886,7 @@ DvtChartPyramidSlice.prototype._getSliceLabel = function(sliceBounds) {
   if (! dvt.TextUtils.fitText(label, sliceBounds.w, sliceBounds.h, this, DvtChartPyramidSlice._MIN_CHARS_DATA_LABEL))
     return;
 
-  var textDim = label.measureDimensions();
+  var textDim = label.getDimensions();
   var pos = this._getLabelPosition(sliceBounds);
   // Checking if the text starts within the bounding box.
   if (isPatternBg) {
@@ -9075,6 +9148,8 @@ DvtChartPie._THREED_DEPTH = 0.1;
 DvtChartPie._RADIUS = 0.45;
 /** @private */
 DvtChartPie._RADIUS_LABELS = 0.38;
+/** @private */
+DvtChartPie._MIN_ARC_LENGTH = 1.5;
 
 dvt.Obj.createSubclass(DvtChartPie, dvt.Container);
 
@@ -9126,6 +9201,9 @@ DvtChartPie.prototype.Init = function(chart, availSpace, callback, callbackObj) 
 
   // Create slices and set initial selection
   this._slices = this._createSlices();
+
+  // The center label text object
+  this._centerLabel = null;
 
   // a dvt.Container where we add parts of the pie and feeler lines
   // any special filters (currently, drop shadow effect for 2D pies)
@@ -9240,6 +9318,8 @@ DvtChartPie.prototype.setInitialSelection = function() {
  * Renders the pie chart.
  */
 DvtChartPie.prototype.render = function() {
+  DvtChartEventUtils.addPlotAreaDnDBackground(this.chart, this, this._frame, true);
+
   var shadow;
   if (!this.contains(this._shapesContainer)) {
     if (!this._shapesContainer) {
@@ -9268,7 +9348,23 @@ DvtChartPie.prototype.render = function() {
   DvtChartPie._layoutSlices(this._slices, this._anchorOffset);
 
   // create the physical surface objects and labels
+  var pieCircumference = 2 * Math.PI * this.getRadiusX();
+  var prevEndCoord = 0;
+  var thinSlices = {};
+  var hasLargeSeriesCount = this.chart.getOptionsCache().getFromCache('hasLargeSeriesCount');
   for (var i = 0; i < this._slices.length; i++) {
+    // Skip rendering some of the thin slices for charts with large series counts
+    if (hasLargeSeriesCount) {
+      var angleExtent = this._slices[i].getAngleExtent();
+      var sliceArc = (angleExtent / 360) * pieCircumference;
+      var endCoord = ((this._slices[i].getAngleStart() + angleExtent) / 360) * pieCircumference;
+      if (sliceArc < DvtChartPie._MIN_ARC_LENGTH && Math.abs(prevEndCoord - endCoord) < DvtChartPie._MIN_ARC_LENGTH) {
+        thinSlices[this._slices[i].getSeriesIndex()] = true;
+        continue; // skip pre render
+      }
+      else
+        prevEndCoord = endCoord;
+    }
     this._slices[i].preRender();
   }
 
@@ -9287,7 +9383,8 @@ DvtChartPie.prototype.render = function() {
   // now that everything has been laid out, tell the slices to
   // render their surfaces
   for (var i = 0; i < zOrderedSlices.length; i++) {
-    zOrderedSlices[i].render(this._duringDisplayAnim);
+    if (!thinSlices[zOrderedSlices[i].getSeriesIndex()])
+      zOrderedSlices[i].render(this._duringDisplayAnim);
   }
 
   // : Don't render shadows in Chrome SVG
@@ -9885,6 +9982,22 @@ DvtChartPie.parseLabelPosition = function(position) {
  */
 DvtChartPie.prototype.getSkin = function() {
   return this._options['skin'];
+};
+
+/**
+ * Stores the center label text object, if one is created.
+ * @param {DvtMultilineText} text The center label text object
+ */
+DvtChartPie.prototype.setCenterLabel = function(text) {
+  this._centerLabel = text;
+};
+
+/**
+ * Returns the center label text object, if one exists.
+ * @return {DvtMultilineText} text The center label text object
+ */
+DvtChartPie.prototype.getCenterLabel = function() {
+  return this._centerLabel;
 };
 
 // Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
@@ -10787,7 +10900,7 @@ DvtChartPieSlice.prototype.getAriaLabel = function() {
 
   // Include percentage in the shortDesc
   var percentageLabel = dvt.Bundle.getTranslatedString(dvt.Bundle.CHART_PREFIX, 'LABEL_PERCENTAGE', null);
-  var percentage = DvtChartPieLabelUtils.generateSliceLabelString(this, 'percent');
+  var percentage = DvtChartPieLabelUtils.generateSlicePercentageString(this);
   shortDesc += '; ' + dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'COLON_SEP_LIST', [percentageLabel, percentage]);
 
   var states = [];
@@ -12834,6 +12947,10 @@ DvtChartAxisUtils.isGridShifted = function(chart) {
   if (!DvtChartTypeUtils.isBLAC(chart))
     return false;
 
+  // Hierarchical charts will render grid lines between labels by default
+  if (DvtChartDataUtils.getNumLevels(chart) > 1)
+    return true;
+
   var seriesCount = DvtChartDataUtils.getSeriesCount(chart);
   for (var i = 0; i < seriesCount; i++) {
     // Ignore the series if it isn't rendered
@@ -13179,48 +13296,56 @@ DvtChartAxisUtils.getGroupWidthRatios = function(chart) {
   var numGroups = DvtChartDataUtils.getGroupCount(chart);
   var isSplitDualY = DvtChartTypeUtils.isSplitDualY(chart);
   var categories = DvtChartDataUtils.getStackCategories(chart, 'bar');
-  var hasVaryingWidth = chart.getOptionsCache().getFromCache('hasVaryingBarWidth');
+  var numYCategories = categories['y'].length;
+  var numY2Categories = categories['y2'].length;
   var groupWidths, yWidth, y2Width, i;
 
-  if (hasVaryingWidth) {
+
+  var barWidthSum, gapWidthSum;
+  var hasConstantZValue = chart.getOptionsCache().getFromCache('hasConstantZValue');
+
+  if (hasConstantZValue) {
+    var constantZValue = chart.getOptionsCache().getFromCache('constantZValue');
+    var barWidth = constantZValue * (isSplitDualY ? Math.max(numYCategories, numY2Categories) : numYCategories + numY2Categories);
+    barWidthSum = barWidth * numGroups;
+
+    // The gap size is the same for all groups, regardless of the bar width.
+    gapWidthSum = barWidthSum * barGapRatio / (1 - barGapRatio);
+
+    // no need for group widths if z is constant
+    groupWidths = null;
+
+  }
+  else {
     var barWidths = [];
+
     for (var g = 0; g < numGroups; g++) {
       yWidth = 0;
-      for (i = 0; i < categories['y'].length; i++) {
+      for (i = 0; i < numYCategories; i++) {
         yWidth += DvtChartDataUtils.getBarCategoryZ(chart, categories['y'][i], g, false);
       }
       y2Width = 0;
-      for (i = 0; i < categories['y2'].length; i++) {
+      for (i = 0; i < numY2Categories; i++) {
         y2Width += DvtChartDataUtils.getBarCategoryZ(chart, categories['y2'][i], g, true);
       }
       barWidths.push(isSplitDualY ? Math.max(yWidth, y2Width) : yWidth + y2Width);
     }
 
-    var barWidthSum = dvt.ArrayUtils.reduce(barWidths, function(prev, cur) {
+    barWidthSum = dvt.ArrayUtils.reduce(barWidths, function(prev, cur) {
       return prev + cur;
     });
 
     // The gap size is the same for all groups, regardless of the bar width.
-    var gapWidthSum = barWidthSum * barGapRatio / (1 - barGapRatio);
+    gapWidthSum = barWidthSum * barGapRatio / (1 - barGapRatio);
     groupWidths = dvt.ArrayUtils.map(barWidths, function(barWidth) {
       // divide the gaps evenly
       return barWidth + gapWidthSum / numGroups;
     });
-
-    // Store the average z-value. This is useful because when we call groupAxisInfo.getGroupWidth(), it returns the average
-    // group width. Thus, we can convert z-value to pixels using (zValue / averageGroupZ * groupAxisInfo.getGroupWidth()).
-    options['_averageGroupZ'] = (barWidthSum + gapWidthSum) / numGroups;
   }
-  else {
-    // Same logic as above, but simplified when the Z value is always one
-    yWidth = categories['y'].length;
-    y2Width = categories['y2'].length;
-    var barWidth = isSplitDualY ? Math.max(yWidth, y2Width) : yWidth + y2Width;
-    options['_averageGroupZ'] = barWidth / (1 - barGapRatio);
 
-    // When the Z value is always one, we don't need to return the group width ratios
-    groupWidths = null;
-  }
+  // Store the average z-value. This is useful because when we call groupAxisInfo.getGroupWidth(), it returns the average
+  // group width. Thus, we can convert z-value to pixels using (zValue / averageGroupZ * groupAxisInfo.getGroupWidth()).
+  options['_averageGroupZ'] = (barWidthSum + gapWidthSum) / numGroups;
 
   return groupWidths;
 };
@@ -13392,8 +13517,10 @@ DvtChartDataUtils.processDataObject = function(chart) {
   // Cached variables
   var hasY2Assignment = false;
   var hasVolume = false;
-  var hasVaryingBarWidth = false;
+  var hasConstantZValue = true;
+  var constantZValue = null; // the constant z value in the data, null if the z values vary
   var hasLowHighSeries = false;
+  var hasNegativeValues = false;
 
   // Stock Chart Overrides
   var isStock = DvtChartTypeUtils.isStock(chart);
@@ -13405,7 +13532,6 @@ DvtChartDataUtils.processDataObject = function(chart) {
     }
   }
 
-  var isBLAC = DvtChartTypeUtils.isBLAC(chart);
   var isMixedFrequency = DvtChartAxisUtils.isMixedFrequency(chart);
   var hasLargeSeriesCount = seriesCount > 100;
   optionsCache.putToCache('hasLargeSeriesCount', hasLargeSeriesCount);
@@ -13448,14 +13574,22 @@ DvtChartDataUtils.processDataObject = function(chart) {
           }
           if (item['y'] != null) {
             item['y'] = Number(item['y']);
+            if (item['y'] < 0)
+              hasNegativeValues = true;
           }
           if (item['z'] != null) {
             item['z'] = Number(item['z']);
-            if (isBLAC && item['z'] != 1)
-              hasVaryingBarWidth = true;
+            if (constantZValue == null)
+              constantZValue = item['z'];
+            else if (constantZValue != item['z'])
+              hasConstantZValue = false;
           }
+          else
+            constantZValue = 1;
           if (item['value'] != null) {
             item['value'] = Number(item['value']);
+            if (item['value'] < 0)
+              hasNegativeValues = true;
           }
           if (item['targetValue'] != null) {
             item['targetValue'] = Number(item['targetValue']);
@@ -13467,6 +13601,8 @@ DvtChartDataUtils.processDataObject = function(chart) {
           if (item['close'] != null) {
             item['close'] = Number(item['close']);
             hasLowHighSeries = true;
+            if (item['close'] < 0)
+              hasNegativeValues = true;
           }
           if (item['low'] != null) {
             item['low'] = Number(item['low']);
@@ -13491,8 +13627,10 @@ DvtChartDataUtils.processDataObject = function(chart) {
 
   // Cache the computed values
   optionsCache.putToCache('hasVolume', hasVolume);
-  optionsCache.putToCache('hasVaryingBarWidth', hasVaryingBarWidth);
+  optionsCache.putToCache('hasConstantZValue', hasConstantZValue);
+  optionsCache.putToCache('constantZValue', hasConstantZValue ? constantZValue : null);
   optionsCache.putToCache('hasLowHighSeries', hasLowHighSeries);
+  optionsCache.putToCache('hasNegativeValues', hasNegativeValues);
 
   // Add Volume Series
   if (isStock && DvtChartDataUtils.hasVolumeSeries(chart) && !DvtChartTypeUtils.isOverview(chart)) {
@@ -14193,7 +14331,7 @@ DvtChartDataUtils.getValue = function(chart, seriesIndex, groupIndex, itemIndex)
   // Use the cached value if it has been computed before
   var val;
   var cacheKey = 'value';
-  var isNested = !isNaN(itemIndex) && itemIndex != null && itemIndex >= 0;
+  var isNested = typeof(itemIndex) == 'number' && itemIndex >= 0;
   if (!isNested) {
     val = chart.getOptionsCache().getFromCachedMap2D(cacheKey, seriesIndex, groupIndex);
     if (val !== undefined) // anything that's defined, including null
@@ -14396,7 +14534,7 @@ DvtChartDataUtils.getZValue = function(chart, seriesIndex, groupIndex, defaultVa
   if (dataItem == null || typeof(dataItem) != 'object')
     return defaultVal;
   if (dataItem['z'] != null) // Object with value property
-    return dataItem['z'];
+    return Math.max(0, dataItem['z']); // override any negative z-values as 0
   return defaultVal;
 };
 
@@ -15034,7 +15172,8 @@ DvtChartDataUtils.getStackCategories = function(chart, type, bIncludeHiddenSerie
  */
 DvtChartDataUtils.getBarCategoryZ = function(chart, category, groupIndex, isY2) {
   var width = 0;
-  for (var s = 0; s < DvtChartDataUtils.getSeriesCount(chart); s++) {
+  var seriesCount = DvtChartDataUtils.getSeriesCount(chart);
+  for (var s = 0; s < seriesCount; s++) {
     var seriesType = DvtChartStyleUtils.getSeriesType(chart, s);
     if ((seriesType != 'bar' && seriesType != 'candlestick' && seriesType != 'boxPlot') ||
         DvtChartDataUtils.getStackCategory(chart, s) != category || !DvtChartStyleUtils.isSeriesRendered(chart, s))
@@ -15216,6 +15355,9 @@ DvtChartDataUtils.getScatterBubbleMarkerPosition = function(chart, seriesIndex, 
  * @return {boolean}
  */
 DvtChartDataUtils.isSeriesNegative = function(chart, seriesIndex) {
+  if (!chart.getOptionsCache().getFromCache('hasNegativeValues'))
+    return false;
+
   var isSeriesNegative = chart.getOptionsCache().getFromCachedMap('isSeriesNegative', seriesIndex);
   if (isSeriesNegative != null)
     return isSeriesNegative;
@@ -15228,7 +15370,6 @@ DvtChartDataUtils.isSeriesNegative = function(chart, seriesIndex) {
       break;
     }
   }
-  
   chart.getOptionsCache().putToCachedMap('isSeriesNegative', seriesIndex, isSeriesNegative);
   return isSeriesNegative;
 };
@@ -15359,6 +15500,61 @@ DvtChartDataUtils._getNestedGroupsData = function(groups) {
 };
 
 /**
+ * Populates a cache map indicating if a data item is the outermost bar.
+ * @param {dvt.Chart} chart
+ * @private
+ */
+DvtChartDataUtils._computeOutermostBarMap = function(chart) {
+  if (!chart.getOptionsCache().getFromCache('outermostBar')) {
+    var stackMap = {};
+    var numSeries = DvtChartDataUtils.getSeriesCount(chart);
+    var hasNegativeValues = chart.getOptionsCache().getFromCache('hasNegativeValues');
+
+    // Iterate through the series and create an object maping stack category to a list of series.
+    for (var seriesIndex = numSeries - 1; seriesIndex >= 0; seriesIndex--) {
+      if (!DvtChartStyleUtils.isSeriesRendered(chart, seriesIndex) || DvtChartStyleUtils.getSeriesType(chart, seriesIndex) != 'bar')
+        continue;
+      var stackCategory = DvtChartDataUtils.getStackCategory(chart, seriesIndex) || '';
+      var bAssignedToY2 = DvtChartDataUtils.isAssignedToY2(chart, seriesIndex);
+      var stackKey = stackCategory + bAssignedToY2;
+      if (stackMap[stackKey])
+        stackMap[stackKey].push(seriesIndex);
+      else
+        stackMap[stackKey] = [seriesIndex];
+    }
+
+    // For each stack category, iterate through each group and the series that are part of the stack.
+    // If both the positive and negative outermost series are found then we can exit the series loop.
+    var numGroups = DvtChartDataUtils.getGroupCount(chart);
+    for (var key in stackMap) {
+      var seriesList = stackMap[key];
+      for (var groupIndex = 0; groupIndex < numGroups; groupIndex++) {
+        var hasPositiveOutermost = false;
+        var hasNegativeOutermost = false;
+        for (var seriesListIndex = 0; seriesListIndex < seriesList.length; seriesListIndex++) {
+          if ((!hasNegativeValues && hasPositiveOutermost) || (hasPositiveOutermost && hasNegativeOutermost))
+            break;
+
+          seriesIndex = seriesList[seriesListIndex];
+          if (!DvtChartStyleUtils.isDataItemRendered(chart, seriesIndex, groupIndex))
+            continue;
+
+          var value = DvtChartDataUtils.getValue(chart, seriesIndex, groupIndex);
+          if (!hasPositiveOutermost && value >= 0) {
+            hasPositiveOutermost = true;
+            chart.getOptionsCache().putToCachedMap2D('outermostBar', seriesIndex, groupIndex, true);
+          }
+          else if (!hasNegativeOutermost && value < 0) {
+            hasNegativeOutermost = true;
+            chart.getOptionsCache().putToCachedMap2D('outermostBar', seriesIndex, groupIndex, true);
+          }
+        }
+      }
+    }
+  }
+};
+
+/**
  * Whether or not a bar is the outermost bar in its group or category.
  * @param {dvt.Chart} chart
  * @param {Number} seriesIndex The series index.
@@ -15366,23 +15562,8 @@ DvtChartDataUtils._getNestedGroupsData = function(groups) {
  * @return {boolean}  true if the bar is the outermost bar in its group or category, otherwise false.
  */
 DvtChartDataUtils.isOutermostBar = function(chart, seriesIndex, groupIndex) {
-  var stackCategory = DvtChartDataUtils.getStackCategory(chart, seriesIndex);
-  var isNegative = DvtChartDataUtils.getValue(chart, seriesIndex, groupIndex) < 0;
-  var numSeries = DvtChartDataUtils.getSeriesCount(chart);
-
-  // Checking only higher series
-  for (var s = seriesIndex + 1; s < numSeries; s++) {
-    if (stackCategory != DvtChartDataUtils.getStackCategory(chart, s))
-      continue;
-    if (isNegative != (DvtChartDataUtils.getValue(chart, s, groupIndex) < 0))
-      continue;
-    if (DvtChartStyleUtils.getSeriesType(chart, s) != 'bar')
-      continue;
-    if (!DvtChartStyleUtils.isDataItemRendered(chart, s, groupIndex)) // Skip hidden data items
-      continue;
-    return false;
-  }
-  return true;
+  DvtChartDataUtils._computeOutermostBarMap(chart);
+  return chart.getOptionsCache().getFromCachedMap2D('outermostBar', seriesIndex, groupIndex) || false;
 };
 
 /**
@@ -15886,8 +16067,13 @@ DvtChartEventUtils.getAxisStartEndGroup = function(axis, min, max) {
  */
 DvtChartEventUtils.setInitialSelection = function(chart, selection) {
   var handler = chart.getSelectionHandler();
-  if (!handler || !selection || selection.length == 0)
+  if (!handler)
     return;
+
+  if (!selection || selection.length == 0) {
+    handler.clearSelection();
+    return;
+  }
 
   // Construct a selectionMap that maps the selection id to a selected boolean so that the process to match peers with
   // the selection array takes O(n) time instead of O(n^2) ()
@@ -16004,6 +16190,50 @@ DvtChartEventUtils.addEventData = function(chart, eventPayload) {
     // getDataContext() doesn't support group objects
     else if (groupIndex != null)
       eventPayload['groupData'] = DvtChartDataUtils.getGroupsDataForContext(chart)[groupIndex];
+  }
+};
+
+/**
+ * Returns whether items in plotarea are draggable.
+ * @param {dvt.Chart} chart
+ * @return {boolean}
+ */
+DvtChartEventUtils.isPlotAreaDraggable = function(chart) {
+  var options = chart.getOptions();
+  var chartDrag = options['dnd'] ? options['dnd']['drag']['items'] : {}; // for draggable effect
+  return Object.keys(chartDrag).length > 0;
+};
+
+/**
+ * Returns whether plot area is a drop target.
+ * @param {dvt.Chart} chart
+ * @return {boolean}
+ */
+DvtChartEventUtils.isPlotAreaDropTarget = function(chart) {
+  var options = chart.getOptions();
+  var chartDrop = options['dnd'] ? options['dnd']['drop']['plotArea'] : {}; // for drop effect
+  return Object.keys(chartDrop).length > 0;
+};
+
+/**
+ * Create a background rect that allows DND theming
+ * @param {dvt.Chart} chart The chart being rendered.
+ * @param {dvt.Container} container The container to render into.
+ * @param {dvt.Rectangle} availSpace The available space.
+ * @param {boolean} bHorizontal Is chart horizontal
+ */
+DvtChartEventUtils.addPlotAreaDnDBackground = function(chart, container, availSpace, bHorizontal) {
+  var isPlotAreaDraggable = DvtChartEventUtils.isPlotAreaDraggable(chart);
+  var isPlotAreaDropTarget = DvtChartEventUtils.isPlotAreaDropTarget(chart);
+
+  if (isPlotAreaDropTarget || isPlotAreaDraggable) {
+    background = new dvt.Rect(chart.getCtx(), 0, 0, bHorizontal ? availSpace.w : availSpace.h, bHorizontal ? availSpace.h : availSpace.w);
+    background.setInvisibleFill();
+    container.addChild(background);
+    chart.getCache().putToCache('plotAreaBackground', background);
+
+    if (isPlotAreaDraggable)
+      background.setClassName('oj-draggable');
   }
 };
 /**
@@ -17140,7 +17370,7 @@ DvtChartStyleUtils.getMaxBarWidth = function(chart) {
 DvtChartStyleUtils.getBarWidth = function(chart, seriesIndex, groupIndex) {
   // If the chart doesn't have Z values, the stack widths are all the same, so override the seriesIndex and groupIndex so
   // the computation doesn't need to be repeated for every group and we can use the cached value instead.
-  if (!chart.getOptionsCache().getFromCache('hasVaryingBarWidth')) {
+  if (chart.getOptionsCache().getFromCache('hasConstantZValue')) {
     seriesIndex = 0;
     groupIndex = 0;
   }
@@ -17168,7 +17398,7 @@ DvtChartStyleUtils.getBarWidth = function(chart, seriesIndex, groupIndex) {
 DvtChartStyleUtils.getBarStackWidth = function(chart, category, groupIndex, isY2) {
   // If the chart doesn't have Z values, the stack widths are all the same, so override the groupIndex so
   // the computation doesn't need to be repeated for every group and we can use the cached value instead.
-  if (!chart.getOptionsCache().getFromCache('hasVaryingBarWidth'))
+  if (chart.getOptionsCache().getFromCache('hasConstantZValue'))
     groupIndex = 0;
 
   var cacheKey = isY2 ? 'y2BarStackWidth' : 'yBarStackWidth';
@@ -17192,7 +17422,7 @@ DvtChartStyleUtils.getBarStackWidth = function(chart, category, groupIndex, isY2
 DvtChartStyleUtils.getBarCategoryOffsetMap = function(chart, groupIndex) {
   // If the chart doesn't have Z values, the stack widths are all the same, so override the groupIndex so
   // the computation doesn't need to be repeated for every group and we can use the cached value instead.
-  if (!chart.getOptionsCache().getFromCache('hasVaryingBarWidth'))
+  if (chart.getOptionsCache().getFromCache('hasConstantZValue'))
     groupIndex = 0;
 
   var cacheKey = 'barCategoryOffsetMap';
@@ -17239,7 +17469,8 @@ DvtChartStyleUtils.getBarCategoryOffsetMap = function(chart, groupIndex) {
       yTotalWidth = y2TotalWidth;
   }
   else { // The width of each bar series item is the width of the stack
-    for (var i = 0; i < DvtChartDataUtils.getSeriesCount(chart); i++) {
+    var seriesCount = DvtChartDataUtils.getSeriesCount(chart);
+    for (var i = 0; i < seriesCount; i++) {
       var seriesType = DvtChartStyleUtils.getSeriesType(chart, i);
       if ((seriesType != 'bar' && seriesType != 'candlestick' && seriesType != 'boxPlot') || !DvtChartStyleUtils.isSeriesRendered(chart, i))
         continue;
@@ -17640,7 +17871,7 @@ DvtChartStyleUtils.getDataLabelPosition = function(chart, seriesIndex, groupInde
         textDim = dvt.TextUtils.getTextStringHeight(chart.getCtx(), style);
 
       var barInfo = DvtChartDataUtils.getBarInfo(chart, seriesIndex, groupIndex);
-      var barHeight = Math.abs(barInfo.baseCoord - barInfo.yCoord);
+      var barHeight = barInfo ? Math.abs(barInfo.baseCoord - barInfo.yCoord) : 0;
 
       if (barHeight <= textDim)
         position = 'outsideBarEdge';
@@ -20449,13 +20680,14 @@ DvtChartPieLabelUtils._layoutInsideLabels = function(pie, isHybrid) {
     sliceLabel.alignCenter();
 
     // Find the estimated dimensions of the label
-    var estimatedDims = dvt.TextUtils.guessTextDimensions(sliceLabel);
+    var sliceLabelDims = sliceLabel.getDimensions();
+
 
     // Find the largest rectangle that will fit.  The height is accurate, so we only need to check the width.
     var x1 = posX;
     var x2 = posX;
-    var y1 = posY - estimatedDims.h / 2;
-    var y2 = posY + estimatedDims.h / 2;
+    var y1 = posY - sliceLabelDims.h / 2;
+    var y2 = posY + sliceLabelDims.h / 2;
 
     // Calculate the left-most x1 that will fit
     while (slice.contains(x1, y1) && slice.contains(x1, y2)) {
@@ -20473,7 +20705,7 @@ DvtChartPieLabelUtils._layoutInsideLabels = function(pie, isHybrid) {
 
     // Adjust the anchor point to the midpoint of available space if truncation would occur centered at current anchor
     var usableSpace = 2 * Math.min(posX - x1, x2 - posX);
-    if (usableSpace < estimatedDims.w) {
+    if (usableSpace < sliceLabelDims.w) {
       sliceLabel.setX((x1 + x2) / 2);
       usableSpace = x2 - x1;
     }
@@ -20490,7 +20722,7 @@ DvtChartPieLabelUtils._layoutInsideLabels = function(pie, isHybrid) {
       // Truncate the text.  It will be added to the chart later, so remove if it is added.
       var stage = pie.getCtx().getStage();
       var minChars = !DvtChartPieLabelUtils._isTextLabel(pie, slice) ? sliceLabel.getTextString().length : null;
-      if (dvt.TextUtils.fitText(sliceLabel, usableSpace, estimatedDims.h, stage, minChars)) {
+      if (dvt.TextUtils.fitText(sliceLabel, usableSpace, sliceLabelDims.h, stage, minChars)) {
         stage.removeChild(sliceLabel);
         slice.setSliceLabel(sliceLabel);
       }
@@ -20624,9 +20856,11 @@ DvtChartPieLabelUtils.createPieCenter = function(pieChart) {
       centerText.setX(centerCoord.x);
       centerText.alignCenter();
 
-      if (centerText.isTruncated() && !tooltipFunc)
-        pieChart.chart.getEventManager().associate(centerText, new dvt.SimpleObjPeer(centerText.getTextString()));
+      // Associate with logical object to support automation and truncation
+      if (!tooltipFunc)
+        pieChart.chart.getEventManager().associate(centerText, new dvt.SimpleObjPeer(centerText.getTextString(), null, null, {type: 'pieCenterLabel'}));
       pieChart.addChild(centerText);
+      pieChart.setCenterLabel(centerText);
     }
   }
 
@@ -20713,10 +20947,28 @@ DvtChartPieLabelUtils.getDefaultSliceLabelString = function(slice, labelType) {
       return customLabel;
   }
 
-  // Generate percent string
-  var value = slice.getValue();
+  if (labelType == 'percent')
+    return DvtChartPieLabelUtils.generateSlicePercentageString(slice);
+  else if (labelType == 'number')
+    return DvtChartTooltipUtils.formatValue(pieChart.getCtx(), valueFormat, slice.getValue());
+  else if (labelType == 'text')
+    return slice.getSeriesLabel();
+  else if (labelType == 'textAndPercent')
+    return slice.getSeriesLabel() + ', ' + DvtChartPieLabelUtils.generateSlicePercentageString(slice);
+  else
+    return null;
+};
+
+/**
+ * Returns the default percentage string for a given pie slice
+ * @param {DvtChartPieSlice} slice
+ * @return {string} The default percentage string for the slice
+ */
+DvtChartPieLabelUtils.generateSlicePercentageString = function(slice) {
+  var pieChart = slice.getPieChart();
+
   var totalValue = pieChart.getTotalValue();
-  var percentage = (totalValue == 0) ? 0 : ((value / totalValue));
+  var percentage = (totalValue == 0) ? 0 : ((slice.getValue() / totalValue));
   var decDigits = percentage < 0.01 ? 3 : percentage < 0.10 ? 2 : percentage < 1 ? 1 : 0;
   // For pies smaller than a certain size, drop to fewer significant digits so that the labels can display.
   if (pieChart.getRadiusX() * 2 < 150)
@@ -20738,25 +20990,8 @@ DvtChartPieLabelUtils.getDefaultSliceLabelString = function(slice, labelType) {
     spercent = DvtChartTooltipUtils.formatValue(pieChart.getCtx(), {}, percentage, null, null, percentage == 100 ? 1 : Math.pow(10, -1 * decDigits)) + '%';
   }
 
-  // Generate value string
-  var svalue = DvtChartTooltipUtils.formatValue(pieChart.getCtx(), valueFormat, value);
-
-  // Set default text to series name
-  var stext = slice.getSeriesLabel();
-
-  if (labelType == 'percent')
-    return spercent;
-  else if (labelType == 'number')
-    return svalue;
-  else if (labelType == 'text')
-    return stext;
-  else if (labelType == 'textAndPercent')
-    return stext + ', ' + spercent;
-  else
-    return null;
+  return spercent;
 };
-
-
 
 /**
  * Called after initial naive layout is generated to resolve label collisions
@@ -21729,7 +21964,7 @@ DvtChartRenderer._renderTitles = function(chart, container, availSpace) {
       if (subtitleObj) {
         subtitleObj.setCSSStyle(options['subtitle']['style']);
         container.addChild(subtitleObj);
-        var subtitleDims = subtitleObj.measureDimensions();
+        var subtitleDims = subtitleObj.getDimensions();
 
         // Put subtitle on next next line if it does not fit on same line as title, or if titles will be aligned to plot area
         var titleSubtitleGap = DvtChartDefaults.getGapWidth(chart, options['layout']['titleSubtitleGapWidth']);
@@ -21739,7 +21974,7 @@ DvtChartRenderer._renderTitles = function(chart, container, availSpace) {
           subtitleObj.setY(availSpace.y + titleHeight + titleSubtitleGap);
 
           if (dvt.TextUtils.fitText(subtitleObj, availSpace.w, availSpace.h, container)) {
-            subtitleDims = subtitleObj.measureDimensions();
+            subtitleDims = subtitleObj.getDimensions();
             titleHeight += subtitleDims.h + titleSubtitleGap;
             if (dvt.Agent.isRightToLeft(chart.getCtx())) {
               if (subtitleObj)
@@ -21907,6 +22142,9 @@ DvtChartRenderer._renderPlotArea = function(chart, container, availSpace) {
     plotArea.setTranslate(availSpace.x, availSpace.y);
     container.addChild(plotArea);
     chart.setPlotArea(plotArea);
+
+    // Associate plot area with logical object to support automation
+    chart.getEventManager().associate(plotArea, new dvt.SimpleObjPeer(null, null, null, {type: 'plotArea'}));
 
     // Render the plot area contents
     var plotAreaBounds = new dvt.Rectangle(0, 0, availSpace.w, availSpace.h);
@@ -22119,7 +22357,9 @@ DvtChartRenderer._positionLegend = function(legend, availSpace) {
  * @private
  */
 DvtChartRenderer._renderDragButtons = function(chart, container) {
-  if (!DvtChartTypeUtils.hasAxes(chart) || DvtChartTypeUtils.isOverview(chart))
+  var minSize = DvtChartRenderer._BUTTON_SIZE + 2 * (DvtChartRenderer._BUTTON_PADDING + DvtChartRenderer._BUTTON_CORNER_DIST);
+  var plotAreaSpace = chart.__getPlotAreaSpace();
+  if (!DvtChartTypeUtils.hasAxes(chart) || DvtChartTypeUtils.isOverview(chart) || plotAreaSpace.w < minSize || plotAreaSpace.h < minSize)
     return;
 
   var options = chart.getOptions();
@@ -22461,7 +22701,7 @@ DvtChartAxisRenderer._renderCartesian = function(chart, container, availSpace) {
   if (bAligned && yInfo && y2Info) {
     // Alignment won't happen below if yAxis.getPreferredSize() is not called in _createYAxis(), so we must call
     // _alignYAxes() again later after rendering yAxis.
-    DvtChartAxisRenderer._alignYAxes(yInfo, y2Info);
+    DvtChartAxisRenderer._alignYAxes(chart, yInfo, y2Info);
 
     //  - y2 tick label is missing sometimes
     // recalculate preferred dimensions to account for new set of labels, which may be wider than previous dimensions
@@ -22525,7 +22765,7 @@ DvtChartAxisRenderer._renderCartesian = function(chart, container, availSpace) {
     }
 
     if (bAligned && yInfo && y2Info) // align again after rendering yAxis
-      DvtChartAxisRenderer._alignYAxes(yInfo, y2Info);
+      DvtChartAxisRenderer._alignYAxes(chart, yInfo, y2Info);
 
     if (y2Info) {
       y2Info.axis.setTranslateX(availSpace.x);
@@ -22546,7 +22786,7 @@ DvtChartAxisRenderer._renderCartesian = function(chart, container, availSpace) {
     }
 
     if (bAligned && yInfo && y2Info)  // align again after rendering yAxis
-      DvtChartAxisRenderer._alignYAxes(yInfo, y2Info);
+      DvtChartAxisRenderer._alignYAxes(chart, yInfo, y2Info);
 
     if (y2Info) {
       if (isSplitDualY)
@@ -22843,11 +23083,13 @@ DvtChartAxisRenderer._adjustYAxisForLabels = function(axis, axisOptions, chart, 
 
     if (DvtChartTypeUtils.isHorizontal(chart))
       buffer *= 4;
+    else
+      buffer *= 2;
 
-    if ((axisInfo.getDataMin() - axisInfo.getGlobalMin()) < buffer && axisInfo.getDataMin() < 0)
+    if ((axisInfo.getDataMin() - axisInfo.getGlobalMin()) <= buffer && axisInfo.getDataMin() < 0)
       axisOptions['dataMin'] -= buffer;
 
-    if (axisInfo.getGlobalMax() - axisInfo.getDataMax() < buffer && axisInfo.getDataMax() > 0)
+    if (axisInfo.getGlobalMax() - axisInfo.getDataMax() <= buffer && axisInfo.getDataMax() > 0)
       axisOptions['dataMax'] += buffer;
   }
 };
@@ -22994,11 +23236,12 @@ DvtChartAxisRenderer._positionAxis = function(availSpace, axisInfo, gap) {
 
 /**
  * Aligns Y1 and Y2 axes gridlines if needed.
+ * @param {dvt.Chart} chart
  * @param {object} yInfo
  * @param {object} y2Info
  * @private
  */
-DvtChartAxisRenderer._alignYAxes = function(yInfo, y2Info) {
+DvtChartAxisRenderer._alignYAxes = function(chart, yInfo, y2Info) {
   var yAxisInfo = yInfo.axis.getInfo();
   if (!yAxisInfo)
     return; // alignYAxes doesn't work if the y info hasn't been created (either in getPreferredSize or render)
@@ -23006,8 +23249,20 @@ DvtChartAxisRenderer._alignYAxes = function(yInfo, y2Info) {
   var majorTickCount = yAxisInfo.getMajorTickCount();
   var minorTickCount = yAxisInfo.getMinorTickCount();
 
-  // Save tick counts in options for use when data axis info is re-created after layout
   var y2Options = y2Info.options;
+
+  // support for aligning log axis with log axis (if an app attempts to align log w/ linear, we don't guarantee good results)
+  var y2AxisInfo = y2Info.axis.getInfo();
+  if (y2AxisInfo && DvtChartAxisUtils.isLog(chart, 'y') && DvtChartAxisUtils.isLog(chart, 'y2')) {
+    // When a y2 log axis initially requires more ticks to render its content than the y log axis,
+    // we must force an increase of the scaleUnit in order to align it to the y axis because we will be decreasing its tickCount
+    if (majorTickCount < y2AxisInfo.getMajorTickCount()) {
+      // save scale unit in options for use when axis into is re-created
+      y2Options['_logScaleUnit'] = y2AxisInfo.alignLogScaleToTickCount(y2AxisInfo.getLogScaleUnit(), majorTickCount);
+    }
+  }
+
+  // Save tick counts in options for use when data axis info is re-created after layout
   y2Options['_majorTickCount'] = majorTickCount;
   y2Options['_minorTickCount'] = minorTickCount;
 };
@@ -23202,6 +23457,11 @@ DvtChartLegendRenderer.render = function(chart, container, availSpace) {
   var gap = isHoriz ? DvtChartDefaults.getGapHeight(chart, options['layout']['legendGapHeight']) : DvtChartDefaults.getGapWidth(chart, options['layout']['legendGapWidth']);
   dvt.LayoutUtils.position(availSpace, position, legend, actualSize.w, actualSize.h, gap);
 
+  var isDraggable = Object.keys(legendOptions['dnd']['drag']['series']).length > 0;
+  var background = legend.getCache().getFromCache('background');
+  if (isDraggable && background)
+    background.setClassName('oj-draggable');
+
   var bounds = legend.__getBounds();
   var shiftedPos = legend.localToStage(new dvt.Point(bounds.x, bounds.y));
 
@@ -23385,7 +23645,7 @@ DvtChartLegendRenderer._createLegendItem = function(chart, seriesIndex) {
 
   // Skip if displayInLegend is auto and series label is an empty string
   var seriesLabel = DvtChartDataUtils.getSeriesLabel(chart, seriesIndex);
-  if (displayInLegend != 'on' && (!seriesLabel || dvt.StringUtils.trim(seriesLabel).length <= 0))
+  if (displayInLegend != 'on' && (seriesLabel == null || (typeof(seriesLabel) == 'string' && dvt.StringUtils.trim(seriesLabel).length <= 0)))
     return null;
 
   // Create the legend item and add the properties for this series
@@ -23554,6 +23814,10 @@ DvtChartPlotAreaRenderer._renderBackgroundObjects = function(chart, container, a
 
   container.addChild(background);
   chart.getCache().putToCache('plotAreaBackground', background);
+
+  var isPlotAreaDraggable = DvtChartEventUtils.isPlotAreaDraggable(chart);
+  if (isPlotAreaDraggable)
+    background.setClassName('oj-draggable');
 
   // Reference Objects
   if (options['xAxis']['referenceObjects'] || options['yAxis']['referenceObjects'] || options['y2Axis']['referenceObjects']) {
@@ -23727,10 +23991,25 @@ DvtChartPlotAreaRenderer._renderGridlines = function(chart, container, options, 
   baselineStroke.setWidth(options['baselineWidth'] != null ? options['baselineWidth'] : options['lineWidth']);
   baselineStroke.setStyle(dvt.Stroke.convertTypeString(options['baselineStyle'] ? options['baselineStyle'] : options['lineStyle']));
 
-  // Render each gridline
+  // Render a single path for horizontal and vertical gridlines otherwise render individual lines/circles
+  var pathCmd = '';
   for (var i = 0; i < coords.length; i++) {
-    var stroke = (baselineCoord != null && coords[i] == baselineCoord) ? baselineStroke : lineStroke;
-    DvtChartPlotAreaRenderer._renderGridline(chart, container, position, coords[i], stroke, availSpace);
+    var isBaseline = baselineCoord != null && coords[i] == baselineCoord;
+    if (position == 'radial' || position == 'tangential' || isBaseline) {
+      DvtChartPlotAreaRenderer._renderGridline(chart, container, position, coords[i], isBaseline ? baselineStroke : lineStroke, availSpace);
+    }
+    else if (position == 'top' || position == 'bottom')
+      pathCmd += dvt.PathUtils.moveTo(coords[i], availSpace.y) + dvt.PathUtils.verticalLineTo(availSpace.y + availSpace.h);
+    else
+      pathCmd += dvt.PathUtils.moveTo(availSpace.x, coords[i]) + dvt.PathUtils.horizontalLineTo(availSpace.x + availSpace.w);
+  }
+  if (pathCmd != '') {
+    var path = new dvt.Path(chart.getCtx(), pathCmd);
+    if (!dvt.Agent.isTouchDevice() || dvt.Agent.getDevicePixelRatio() > 1)
+      path.setPixelHinting(true);
+    path.setStroke(lineStroke);
+    path.setMouseEnabled(false);
+    container.addChild(path);
   }
 };
 
@@ -23884,7 +24163,7 @@ DvtChartPlotAreaRenderer._renderDataLabel = function(chart, container, dataItemB
   label.setX(dataItemBounds.x + dataItemBounds.w / 2);
   label.alignCenter();
   label.alignMiddle();
-  var textDim = label.measureDimensions();
+  var textDim = label.getDimensions();
 
   if (position == 'left') {
     label.setX(dataItemBounds.x - textDim.w / 2 - DvtChartPlotAreaRenderer._MARKER_DATA_LABEL_GAP);
@@ -23922,7 +24201,7 @@ DvtChartPlotAreaRenderer._renderDataLabel = function(chart, container, dataItemB
       dataItemBounds.h -= DvtChartPlotAreaRenderer._MARKER_DATA_LABEL_GAP * 2;
       dataItemBounds.w -= DvtChartPlotAreaRenderer._MARKER_DATA_LABEL_GAP * 2;
 
-      var size = label.getOptimalFontSize(dataItemBounds);
+      var size = dvt.TextUtils.getOptimalFontSize(label.getCtx(), label.getTextString(), label.getCSSStyle(), dataItemBounds);
       label.setFontSize(size);
       if (!dvt.TextUtils.fitText(label, dataItemBounds.w, dataItemBounds.h, container, DvtChartPlotAreaRenderer._MIN_CHARS_DATA_LABEL))
         return; //dropping text if doesn't fit.
@@ -23963,7 +24242,7 @@ DvtChartPlotAreaRenderer._renderDataLabel = function(chart, container, dataItemB
         return;
       else if (dvt.TextUtils.fitText(label, maxWidth, dataItemBounds.h, container, 1)) {
         // Recalculate x co-ordinate if truncated
-        textDim = label.measureDimensions();
+        textDim = label.getDimensions();
         if (position == 'left') {
           label.setX(dataItemBounds.x - textDim.w / 2 - DvtChartPlotAreaRenderer._MARKER_DATA_LABEL_GAP);
         }
@@ -24514,6 +24793,7 @@ DvtChartPlotAreaRenderer._renderBars = function(chart, container, availSpace) {
   var outerColor = DvtChartStyleUtils.getSelectedOuterColor(chart);
   var duringZoomAndScroll = chart.getOptions()['_duringZoomAndScroll'];
   var groupWidth = DvtChartStyleUtils.getGroupWidth(chart);
+  var prevStackYCoords = {};
 
   // Iterate through the data
   for (var seriesIndex = 0; seriesIndex < DvtChartDataUtils.getSeriesCount(chart); seriesIndex++) {
@@ -24524,11 +24804,16 @@ DvtChartPlotAreaRenderer._renderBars = function(chart, container, availSpace) {
 
     var pathCmd = ''; // path command for optimized rendering during zoom & scroll
     var itemStyleSet = chart.getOptionsCache().getFromCachedMap('itemStyleSet', seriesIndex);
+    var stackCategory = DvtChartDataUtils.getStackCategory(chart, seriesIndex) || '';
+    var bAssignedToY2 = DvtChartDataUtils.isAssignedToY2(chart, seriesIndex);
 
     var minMaxGroupIndex = DvtChartDataUtils.getViewportMinMaxGroupIndex(chart, seriesIndex);
     for (var groupIndex = minMaxGroupIndex['min'] - 1; groupIndex <= minMaxGroupIndex['max'] + 1; groupIndex++) {
       if (DvtChartDataUtils.isDataItemFiltered(chart, seriesIndex, groupIndex) ||
           !DvtChartStyleUtils.isDataItemRendered(chart, seriesIndex, groupIndex))
+        continue;
+
+      if (DvtChartDataUtils.getZValue(chart, seriesIndex, groupIndex) == 0)
         continue;
 
       var barInfo = DvtChartDataUtils.getBarInfo(chart, seriesIndex, groupIndex, availSpace);
@@ -24542,6 +24827,20 @@ DvtChartPlotAreaRenderer._renderBars = function(chart, container, availSpace) {
       var x1 = barInfo.x1;
       var x2 = barInfo.x2;
       var barWidth = barInfo.barWidth;
+
+      // For stack bars, don't render bar if it's height is less than .5px and
+      // the gap between the previously rendered series is less than .5px
+      if (isStacked) {
+        var bNegative = DvtChartDataUtils.getValue(chart, seriesIndex, groupIndex) < 0;
+        var stackKey = '' + groupIndex + stackCategory + bAssignedToY2 + bNegative;
+        if (Math.abs(baseCoord - yCoord) < .5 && Math.abs(yCoord - prevStackYCoords[stackKey]) < .5 && !DvtChartDataUtils.isOutermostBar(chart, seriesIndex, groupIndex))
+          continue;
+        else {
+          if (prevStackYCoords[stackKey])
+            baseCoord = prevStackYCoords[stackKey];
+          prevStackYCoords[stackKey] = yCoord;
+        }
+      }
 
       // Support for 0 value bars. If the bar is smaller than a pixel:
       // - draw as 1px bar if it's range series
@@ -25473,7 +25772,7 @@ DvtChartFunnelRenderer._MAX_WIDTH_FOR_GAPS = 0.25;
 /** @private @const */
 DvtChartFunnelRenderer._GROUP_INDEX = 0;
 /** @private @const */
-DvtChartFunnelRenderer._ANGLE_EXTENT_THRESHOLD = 0.0001;
+DvtChartFunnelRenderer._SLICE_VALUE_THRESHOLD = 0.0001;
 
 /**
  * Renders the funnel into the available space.
@@ -25487,10 +25786,11 @@ DvtChartFunnelRenderer.render = function(chart, container, availSpace) {
   funnelContainer.setTranslate(availSpace.x, availSpace.y);
   container.addChild(funnelContainer);
   chart.setPlotArea(funnelContainer);
+  var isHorizontal = DvtChartTypeUtils.isHorizontal(chart);
 
   var bbox;
 
-  if (chart.getOptions()['orientation'] == 'horizontal')
+  if (isHorizontal)
     bbox = new dvt.Rectangle(0, 0, availSpace.w, availSpace.h);
   else { //rotate the container and the bounding rect
     var rotationMatrix = new dvt.Matrix();
@@ -25501,6 +25801,8 @@ DvtChartFunnelRenderer.render = function(chart, container, availSpace) {
     bbox = new dvt.Rectangle(0, 0, availSpace.h, availSpace.w);
     funnelContainer.setMatrix(rotationMatrix);
   }
+
+  DvtChartEventUtils.addPlotAreaDnDBackground(chart, funnelContainer, availSpace, isHorizontal);
 
   if (! DvtChartFunnelRenderer._renderFunnelSlices(chart, funnelContainer, bbox))
     DvtChartRenderer.renderEmptyText(chart, container, availSpace);
@@ -25567,8 +25869,8 @@ DvtChartFunnelRenderer._renderFunnelSlices = function(chart, container, availSpa
       continue;
 
     //  - rendering issues for funnel/pie/sunburst charts
-    var sliceValue = targetValue ? targetValue : value;
-    if (sliceValue < DvtChartFunnelRenderer._ANGLE_EXTENT_THRESHOLD * totalValue)
+    var sliceValue = (targetValue != null) ? targetValue : value;
+    if (sliceValue < DvtChartFunnelRenderer._SLICE_VALUE_THRESHOLD * totalValue)
       continue;
 
     var slice;
@@ -25617,6 +25919,8 @@ DvtChartPyramidRenderer.render = function(chart, container, availSpace) {
   chart.setPlotArea(pyramidContainer);
 
   var bbox = new dvt.Rectangle(0, 0, availSpace.w, availSpace.h);
+
+  DvtChartEventUtils.addPlotAreaDnDBackground(chart, pyramidContainer, availSpace, true);
 
   if (! DvtChartPyramidRenderer._renderPyramidSlices(chart, pyramidContainer, bbox))
     DvtChartRenderer.renderEmptyText(chart, container, availSpace);
@@ -26059,6 +26363,10 @@ dvt.Obj.createSubclass(dvt.SparkChart, dvt.BaseComponent);
  */
 dvt.SparkChart.newInstance = function(context, callback, callbackObj) {
   var sparkChart = new dvt.SparkChart();
+
+  //  - unable to get mouse pointer on spark chart
+  context.getStage().setCursor('');
+
   sparkChart.Init(context, callback, callbackObj);
   return sparkChart;
 };

@@ -29,20 +29,21 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore', 'ojs/ojanimati
  *
  * @classdesc
  * <h3 id="collapsibleOverview-section">
- *   JET Collapsible Component
+ *   JET Collapsible
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#collapsibleOverview-section"></a>
  * </h3>
  *
- * <p>Description: Themeable, WAI-ARIA-compliant collapsible with mouse and keyboard interactions for navigation.
+ * <p>Description: A JET Collapsible displays a header that can be expanded to show additional content beneath it.  
+The child element of the oj-collapsible in the named <a href="#header">header</a> slot is displayed in the header, while the child element in the <a href="#Default">default</a> slot is displayed as the content
  *
- * <p>A JET Collapsible can be created from any valid markup as long as the root element has at least two children: the first element for the header and the second element for the content.
+ * <p>Note for performance reasons, if the collapsible content is expensive to render, you should wrap it in an <code class="prettyprint">oj-defer</code> element (API doc {@link oj.ojDefer}) to defer the rendering of that content.<br/>
+ * See the <a href="../jetCookbook.html?component=collapsible&demo=deferredRendering">Collapsible - Deferred Rendering</a> demo for an example.</p>
  *
- * <pre class="prettyprint">
- * <code>
- * &lt;div id="collapsible">
- *   &lt;h3>Header 1&lt;/h3>
+ * <pre class="prettyprint"><code>
+ * &lt;oj-collapsible>
+ *   &lt;h3 slot='header'>Header 1&lt;/h3>
  *   &lt;p>Content 1&lt;/p>
- * &lt;/div>
+ * &lt;/oj-collapsible>
  * </code></pre>
  *
  * <h3 id="touch-section">
@@ -66,45 +67,7 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore', 'ojs/ojanimati
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#rtl-section"></a>
  * </h3>
  *
- * <p>As with any JET component, in the unusual case that the directionality (LTR or RTL) changes post-init, the collapsible must be <code class="prettyprint">refresh()</code>ed.
- *
- *
- * <h3 id="pseudos-section">
- *   Pseudo-selectors
- *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#pseudos-section"></a>
- * </h3>
- *
- * <p>The <code class="prettyprint">:oj-collapsible</code> pseudo-selector can be used in jQuery expressions to select JET Collapsible.  For example:
- *
- * <pre class="prettyprint">
- * <code>$( ":oj-collapsible" ) // selects all JET Collapsible on the page
- * $myEventTarget.closest( ":oj-collapsible" ) // selects the closest ancestor that is a JET Collapsible
- * </code></pre>
- *
- *
- * <h3 id="jqui2jet-section">
- *   JET for jQuery UI developers
- *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#jqui2jet-section"></a>
- * </h3>
- *
- * <ol>
- *   <li>JET Collapsible supports expandArea option: specifies where to click to toggle disclosure. Default is "disclosureIcon", however if a collapsible is inside an Accordion, default is "header"</li>
- * </ol>
- *
- * <p>Also, event names for all JET components are prefixed with "oj", instead of component-specific prefixes like "collapsible".
- *
- * <!-- - - - - Above this point, the tags are for the class.
- *              Below this point, the tags are for the constructor (initializer). - - - - - - -->
- *
- * @desc Creates a JET Collapsible.
- * @example <caption>Initialize the collapsible with no options specified:</caption>
- * $( ".selector" ).ojCollapsible();
- *
- * @example <caption>Initialize the collapsible with some options specified:</caption>
- * $( ".selector" ).ojCollapsible( { "expanded": true } );
- *
- * @example <caption>Initialize the collapsible via the JET <code class="prettyprint">ojComponent</code> binding:</caption>
- * &lt;div id="collapsible" data-bind="ojComponent: { component: 'ojCollapsible', expanded: true}">
+ * <p>In the unusual case that the directionality (LTR or RTL) changes post-init, the collapsible must be <code class="prettyprint">refresh()</code>ed.
  *
  */
 (function ()
@@ -126,16 +89,17 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore', 'ojs/ojanimati
        * @instance
        * @type {boolean}
        * @default <code class="prettyprint">false</code>
+       * @ojwriteback
        *
-       * @example <caption>Initialize the collapsible with the <code class="prettyprint">expanded</code> option specified:</caption>
-       * $( ".selector" ).ojCollapsible( { "expanded": true } );
+       * @example <caption>Initialize the collapsible with the <code class="prettyprint">expanded</code> attribute specified:</caption>
+       * &lt;oj-collapsible expanded='true'>&lt;/oj-collapsible>
        *
-       * @example <caption>Get or set the <code class="prettyprint">expanded</code> option, after initialization:</caption>
+       * @example <caption>Get or set the <code class="prettyprint">expanded</code> property after initialization:</caption>
        * // getter
-       * var expanded = $( ".selector" ).ojCollapsible( "option", "expanded" );
+       * var expandedValue = myCollapsible.expanded;
        *
        * // setter
-       * $( ".selector" ).ojCollapsible( "option", "expanded", true );
+       * myCollapsible.expanded = false;
        */
       expanded : false,
 
@@ -144,88 +108,67 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore', 'ojs/ojanimati
        * @name disabled
        * @memberof! oj.ojCollapsible
        * @instance
-       * @type {boolean|null}
+       * @type {boolean}
        * @default <code class="prettyprint">false</code>
-       * @example <caption>Initialize the collapsible with the <code class="prettyprint">disabled</code> option specified:</caption>
-       * $( ".selector" ).ojCollapsible( { "disabled": true } );
+       * @example <caption>Initialize the collapsible with the <code class="prettyprint">disabled</code> attribute specified:</caption>
+       * &lt;oj-collapsible disabled='true'>&lt;/oj-collapsible>
        *
-       * @example <caption>Get or set the <code class="prettyprint">disabled</code> option, after initialization:</caption>
+       * @example <caption>Get or set the <code class="prettyprint">disabled</code> property after initialization:</caption>
        * // getter
-       * var disabled = $( ".selector" ).ojCollapsible( "option", "disabled" );
+       * var disabledValue = myCollapsible.disabled;
        *
        * // setter
-       * $( ".selector" ).ojCollapsible( "option", "disabled", true );
+       * myCollapsible.disabled = false;
        */
-      disabled: null,
+      disabled: false,
 
       /**
        * The type of event to expand/collapse the collapsible.
        * To expand the collapsible on hover, use "mouseover".
        *
-       * @deprecated
+       * @ignore
        * @expose
        * @memberof! oj.ojCollapsible
        * @instance
        * @type {string}
        * @default <code class="prettyprint">"click"</code>
-       *
-       * @example <caption>Initialize the collapsible with the <code class="prettyprint">expandOn</code> option specified:</caption>
-       * $( ".selector" ).ojCollapsible( { "expandOn": "mouseover" } );
-       *
-       * @example <caption>Get or set the <code class="prettyprint">expandOn</code> option, after initialization:</caption>
-       * // getter
-       * var expandOn = $( ".selector" ).ojCollapsible( "option", "expandOn" );
-       *
-       * // setter
-       * $( ".selector" ).ojCollapsible( "option", "expandOn", "mouseover" );
        */
       expandOn : "click",
 
       /**
-       * Where in the header to click to toggle disclosure. Valid values: disclosureIcon or header
+       * Where in the header to click to toggle disclosure.
        *
        * @expose
        * @memberof! oj.ojCollapsible
        * @instance
        * @type {string}
+       * @ojvalue {string} "header" click any where in the header to toggle disclosure
+       * @ojvalue {string} "disclosureIcon" click the disclosureIcon to toggle disclosure
        * @default <code class="prettyprint">"header"</code>
        *
-       * @example <caption>Initialize the collapsible with the <code class="prettyprint">expandArea</code> option specified:</caption>
-       * $( ".selector" ).ojCollapsible( { "expandArea": "disclosureIcon" } );
+       * @example <caption>Initialize the collapsible with the <code class="prettyprint">expand-area</code> attribute specified:</caption>
+       * &lt;oj-collapsible expand-area='disclosureIcon'>&lt;/oj-collapsible>
        *
-       * @example <caption>Get or set the <code class="prettyprint">expandArea</code> option, after initialization:</caption>
+       * @example <caption>Get or set the <code class="prettyprint">expand-area</code> property after initialization:</caption>
        * // getter
-       * var expandArea = $( ".selector" ).ojCollapsible( "option", "expandArea" );
+       * var expandAreaValue = myCollapsible.expandArea;
        *
        * // setter
-       * $( ".selector" ).ojCollapsible( "option", "expandArea", "disclosureIcon" );
+       * myCollapsible.expandArea = 'disclosureIcon';
        */
       expandArea : "header",
 
       // callbacks
       /**
        * Triggered immediately before the collapsible is expanded.
-       * beforeExpand can be canceled to prevent the content from expanding by returning a false in the event listener.
+       * Call <code class="prettyprint">event.preventDefault()</code> in the event listener to veto the event, which prevents the content from expanding.
        *
        * @expose
        * @event
-       * @memberof! oj.ojCollapsible
+       * @memberof oj.ojCollapsible
        * @instance
-       * @property {Event} event <code class="prettyprint">jQuery</code> event object
-       * @property {Object} ui Parameters
-       * @property {jQuery} ui.header The header that is about to be expanded.
-       * @property {jQuery} ui.content The content that is about to be expanded.
-       *
-       * @example <caption>Initialize the collapsible with the <code class="prettyprint">beforeExpand</code> callback specified:</caption>
-       * $( ".selector" ).ojCollapsible({
-       *     "beforeExpand": function( event, ui ) {}
-       * });
-       *
-       * @example <caption>Bind an event listener to the <code class="prettyprint">ojbeforeexpand</code> event:</caption>
-       * $( ".selector" ).on( "ojbeforeexpand", function( event, ui ) {
-       *      // verify that the component firing the event is a component of interest 
-       *      if ($(event.target).is(".mySelector")) {} 
-       * } );
+       * @property {Element} header The header that is about to be expanded.
+       * @property {Element} content The content that is about to be expanded.
        */
       beforeExpand : null,
 
@@ -236,47 +179,21 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore', 'ojs/ojanimati
        * @event
        * @memberof oj.ojCollapsible
        * @instance
-       * @property {Event} event <code class="prettyprint">jQuery</code> event object
-       * @property {Object} ui Parameters
-       * @property {jQuery} ui.header The header that was just expanded.
-       * @property {jQuery} ui.content The content that was just expanded.
-       *
-       * @example <caption>Initialize the collapsible with the <code class="prettyprint">expand</code> callback specified:</caption>
-       * $( ".selector" ).ojCollapsible({
-       *     "expand": function( event, ui ) {}
-       * });
-       *
-       * @example <caption>Bind an event listener to the <code class="prettyprint">ojexpand</code> event:</caption>
-       * $( ".selector" ).on( "ojexpand", function( event, ui ) {
-       *      // verify that the component firing the event is a component of interest 
-       *      if ($(event.target).is(".mySelector")) {} 
-       * } );
+       * @property {Element} header The header that was just expanded.
+       * @property {Element} content The content that was just expanded.
        */
       expand : null,
 
       /**
        * Triggered immediately before the collapsible is collapsed.
-       * beforeCollapse can be canceled to prevent the content from collapsing by returning a false in the event listener.
+       * Call <code class="prettyprint">event.preventDefault()</code> in the event listener to veto the event, which prevents the content from collapsing.
        *
        * @expose
        * @event
-       * @memberof! oj.ojCollapsible
+       * @memberof oj.ojCollapsible
        * @instance
-       * @property {Event} event <code class="prettyprint">jQuery</code> event object
-       * @property {Object} ui Parameters
-       * @property {jQuery} ui.header The header that is about to be collapsed.
-       * @property {jQuery} ui.content The content that is about to be collapsed.
-       *
-       * @example <caption>Initialize the collapsible with the <code class="prettyprint">beforeCollapse</code> callback specified:</caption>
-       * $( ".selector" ).ojCollapsible({
-       *     "beforeCollapse": function( event, ui ) {}
-       * });
-       *
-       * @example <caption>Bind an event listener to the <code class="prettyprint">ojbeforecollapse</code> event:</caption>
-       * $( ".selector" ).on( "ojbeforecollapse", function( event, ui ) {
-       *      // verify that the component firing the event is a component of interest 
-       *      if ($(event.target).is(".mySelector")) {} 
-       * } );
+       * @property {Element} header The header that is about to be collapsed.
+       * @property {Element} content The content that is about to be collapsed.
        */
       beforeCollapse : null,
 
@@ -287,21 +204,8 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore', 'ojs/ojanimati
        * @event
        * @memberof oj.ojCollapsible
        * @instance
-       * @property {Event} event <code class="prettyprint">jQuery</code> event object
-       * @property {Object} ui Parameters
-       * @property {jQuery} ui.header The header that was just collapsed.
-       * @property {jQuery} ui.content The content that was just collapsed.
-       *
-       * @example <caption>Initialize the collapsible with the <code class="prettyprint">collapse</code> callback specified:</caption>
-       * $( ".selector" ).ojCollapsible({
-       *     "collapse": function( event, ui ) {}
-       * });
-       *
-       * @example <caption>Bind an event listener to the <code class="prettyprint">ojcollapse</code> event:</caption>
-       * $( ".selector" ).on( "ojcollapse", function( event, ui ) {
-       *      // verify that the component firing the event is a component of interest 
-       *      if ($(event.target).is(".mySelector")) {} 
-       * } );
+       * @property {Element} header The header that was just collapsed.
+       * @property {Element} content The content that was just collapsed.
        */
       collapse : null
 
@@ -508,17 +412,16 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore', 'ojs/ojanimati
     },
 
     /**
-     * Refreshes the visual state of the collapsible. JET components require a <code class="prettyprint">refresh()</code> or re-init after the DOM is
-     * programmatically changed underneath the component.
+     * Refreshes the visual state of the collapsible.
      *
      * <p>This method does not accept any arguments.
      *
      * @expose
-     * @memberof! oj.ojCollapsible
+     * @memberof oj.ojCollapsible
      * @instance
      *
      * @example <caption>Invoke the <code class="prettyprint">refresh</code> method:</caption>
-     * $( ".selector" ).ojCollapsible( "refresh" );
+     * myCollapsible.refresh();
      */
     refresh : function ()
     {
@@ -529,14 +432,96 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore', 'ojs/ojanimati
       this._refresh();
     },
 
+    // Make sure the header slot is the first child of the root element
+    // If the slot header is not specified, it will create one with empty text
+    _processHeaderSlots: function() {
+      var self = this;
+      var elem = this.element[0];
+      var newHeader = false;
+
+      // add the header node if not specified
+      var headers = oj.CustomElementBridge.getSlotMap(elem)["header"];
+      var header;
+
+      if (headers && headers.length) {
+        // exactly one child element has the "header" named slot
+        if (headers.length === 1) {
+          header = headers[0];
+        }
+        // multiple child elements have the "header" named slots, combine them
+        else {
+          var $header = $("<span slot='header'></span>");
+          header = $header[0];
+
+          for (var i = 0; i < headers.length; i++) {
+            header.appendChild(headers[i]); // @HTMLUpdateOK
+          }
+          $header.children().attr("slot", "");
+          newHeader = true;
+        }
+      }
+      else {
+        header = $("<span slot='header'></span>")[0];
+        newHeader = true;
+      }
+
+      // make the header slot be the first child
+      // Note prepend doesn't work in IE11 and Edge, use insertBefore instead
+      if (newHeader || this.element.children().index(header) !== 0) {
+        elem.insertBefore(header, elem.firstChild); // @HTMLUpdateOK
+      }
+
+      return $(header);
+    },
+
+    // Make sure the default slots are the last child of the root element
+    // If there are multiple default slots, combine them
+    _processDefaultSlots: function() {
+      var self = this;
+      var elem = this.element[0];
+
+      var contents = oj.CustomElementBridge.getSlotMap(elem)[""];
+      var content;
+
+      if (contents && contents.length === 1) {
+        content = contents[0];
+      }
+      else {
+        var $content = $("<div></div>");
+        content = $content[0];
+        if (contents && contents.length) {
+          for (var i = 0; i < contents.length; i++) {
+            content.appendChild(contents[i]); // @HTMLUpdateOK
+          }
+        }
+        // add the content slot 
+        // Note: append doesn't work in IE11 and Edge, use appendChild instead 
+        elem.appendChild(content); // @HTMLUpdateOK
+      }
+
+      return $(content);
+    },
+
     _processPanels : function ()
     {
-      // - Stop using ui-helper-reset in the layout widgets.
-      this.header = this.element.children(":first-child")
-                      .addClass("oj-collapsible-header");
+      //process header
+      if (this._IsCustomElement()) {
+        this.header = this._processHeaderSlots();
+      }
+      else {
+        // - Stop using ui-helper-reset in the layout widgets.
+        this.header = this.element.children(":first-child");
+      }
+      this.header.addClass("oj-collapsible-header");
 
-      this.content = this.header.next()
-        .addClass("oj-collapsible-content oj-component-content");
+      //process content
+      if (this._IsCustomElement()) {
+        this.content = this._processDefaultSlots();
+      }
+      else {
+        this.content = this.header.next()
+      }
+      this.content.addClass("oj-collapsible-content oj-component-content");
 
       this.content.wrap("<div></div>"); //@HTMLUpdateOK
       this.wrapper = this.content.parent()
@@ -877,9 +862,8 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore', 'ojs/ojanimati
      * $( ".selector" ).ojCollapsible( "option", "expanded", true );
      *
      * @expose
-     * @deprecated
      * @ignore
-     * @memberof oj.ojCollapsible
+     * @memberof! oj.ojCollapsible
      * @instance
      * @param {boolean} vetoable if event is vetoable
      */
@@ -910,9 +894,8 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore', 'ojs/ojanimati
      * $( ".selector" ).ojCollapsible( "option", "expanded", false );
      *
      * @expose
-     * @deprecated
      * @ignore
-     * @memberof oj.ojCollapsible
+     * @memberof! oj.ojCollapsible
      * @instance
      * @param {boolean} vetoable if event is vetoable
      */
@@ -1110,36 +1093,29 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore', 'ojs/ojanimati
     // Fragments:
 
     /**
-     * <p>Sub-ID for the header of a Collapsible.</p>
+     * <p>The default slot is the collapsible's content. 
      *
-     * @ojsubid oj-collapsible-header
+     * @ojchild Default
      * @memberof oj.ojCollapsible
-     * @deprecated This sub-ID is not needed.  Since the application supplies this element, it can supply a unique ID by which the element can be accessed.
      *
-     * @example <caption>Get the Collapsible header:</caption>
-     * var node = $( ".selector" ).ojCollapsible( "getNodeBySubId", {'subId': 'oj-collapsible-header'} );
+     * @example <caption>Initialize the Collapsible with child content specified:</caption>
+     * &lt;oj-collapsible>
+     *   &lt;h3 slot='header'>Header 1&lt;/h3>
+     *   &lt;p>Content 1&lt;/p>
+     * &lt;/oj-collapsible>
      */
 
     /**
-     * <p>Sub-ID for the content of a Collapsible.</p>
+     * <p>The <code class="prettyprint">header</code> slot is the collapsible's header. If not specified, the header contains only an open/close icon. Note that the header text is required for JET collapsible for accessibility purposes.</p>
      *
-     * @ojsubid oj-collapsible-content
+     * @ojslot header
      * @memberof oj.ojCollapsible
-     * @deprecated This sub-ID is not needed.  Since the application supplies this element, it can supply a unique ID by which the element can be accessed.
      *
-     * @example <caption>Get the Collapsible content:</caption>
-     * var node = $( ".selector" ).ojCollapsible( "getNodeBySubId", {'subId': 'oj-collapsible-content'} );
-     */
-
-    /**
-     * <p>Sub-ID for the disclosure icon of a Collapsible.</p>
-     *
-     * @ojsubid oj-collapsible-header-icon
-     * @memberof oj.ojCollapsible
-     * @deprecated this sub-ID is deprecated, please use oj-collapsible-disclosure instead.
-     *
-     * @example <caption>Get the Collapsible disclosure icon:</caption>
-     * var node = $( ".selector" ).ojCollapsible( "getNodeBySubId", {'subId': 'oj-collapsible-header-icon'} );
+     * @example <caption>Initialize the Collapsible with the header slot specified:</caption>
+     * &lt;oj-collapsible>
+     *   &lt;h3 slot='header'>Header 1&lt;/h3>
+     *   &lt;p>Content 1&lt;/p>
+     * &lt;/oj-collapsible>
      */
 
     /**
@@ -1147,9 +1123,8 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore', 'ojs/ojanimati
      *
      * @ojsubid oj-collapsible-disclosure
      * @memberof oj.ojCollapsible
-     *
      * @example <caption>Get the Collapsible disclosure icon:</caption>
-     * var node = $( ".selector" ).ojCollapsible( "getNodeBySubId", {'subId': 'oj-collapsible-disclosure'} );
+     * var node = myCollapsible.getNodeBySubId({"subId": "oj-collapsible-disclosure"});
      */
 
     /**

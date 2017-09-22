@@ -3,7 +3,7 @@
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
-define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'], 
+define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojoption'], 
        /*
         * @param {Object} oj 
         * @param {jQuery} $
@@ -39,14 +39,18 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
  *
  * @classdesc
  * <h3 id="buttonOverview-section">
- *   JET Button Component
+ *   JET Button
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#buttonOverview-section"></a>
  * </h3>
  *
- * <p>Description: Themeable, WAI-ARIA-compliant push buttons and toggle buttons, with appropriate styles for hover, active, checked, and disabled.
+ * <p>Description: Themeable, WAI-ARIA-compliant push buttons, with appropriate styles for hover, active, checked, and disabled.
  *
- * <p>There are two types of JET Buttons: push buttons and toggle buttons.
+ * <p>To create toggle buttons, see the [JET Buttonset]{@link oj.ojButtonset}.
  *
+ * <pre class="prettyprint"><code>&lt;oj-button id="myButton">
+ *     &lt;span>My Button&lt;/span>
+ * &lt;/oj-button>
+ * </code></pre>
  *
  * <h3 id="pushButtons-section">
  *   Push Buttons
@@ -54,45 +58,17 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
  * </h3>
  *
  * <p>Push buttons are ordinary buttons that do not stay pressed in when clicked.
- * Push buttons are created from buttons, anchors, and inputs of type button, submit, and reset.  
- * 
- * <p>Button elements are typically a good general-purpose choice.
- * 
- * <p>Anchor-based buttons are recommended only if native anchor functionality such as href navigation is desired.  If only a click listener is needed, 
+ * Push buttons are created from <code class="prettyprint">oj-button</code> elements.
+ *
+ * <p>Anchor-based buttons are recommended only if native anchor functionality such as href navigation is desired.  If only a click listener is needed,
  * button-based buttons are recommended.
- * 
- * <p>Inputs of type button, submit, and reset are less frequently useful because they don't support icons, and because of the Web 1.0 nature of submit/reset buttons.
- *
- *
- * <h3 id="toggleButtons-section">
- *   Toggle Buttons
- *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#toggleButtons-section"></a>
- * </h3>
- *
- * <p>Toggle buttons are buttons that toggle between a selected state and an unselected state when clicked.
- * Toggle buttons are created from radio buttons and checkboxes (inputs of type radio and checkbox).
- *
- * <p>For toggle buttons, the input must have a corresponding label element, which must be a sibling of the input that precedes the input.
- * The label's <code class="prettyprint">for</code> attribute must refer to the input's <code class="prettyprint">id</code> attribute.
- *
- * <p>A new wrapper element is created around the label and input, so that the component has a single root, while avoiding the accessibility problems
- * caused by nesting the input inside the label.
- *
- * <p>The label-precedes-input requirement ensures compatibility with the JET <code class="prettyprint">ojComponent</code> binding on the input element,
- * which expects all relevant DOM elements, including label, to be already available with all their attributes resolved.
- *
- * <p>The wrapper and label are styled to appear as the button, while the underlying input is updated on click.
- *
- * <p> Note that a given radio button must not be both checked and disabled, unless all radios in the group are disabled, since this removes
- * the entire radio group from the tab order in mainstream browsers.  This issue applies to native radios and is not unique to JET.
- *
  *
  * <h3 id="buttonsetToolbar-section">
  *   Buttonsets and Toolbars
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#buttonsetToolbar-section"></a>
  * </h3>
  *
- * <p>The [JET Buttonset]{@link oj.ojButtonset} component can be used to group related buttons, such as a group of radios or checkboxes.  Buttonset provides
+ * <p>The [JET Buttonset]{@link oj.ojButtonset} component can be used to create toggle buttons or group related buttons, such as a group of radios or checkboxes.  Buttonset provides
  * visual and semantic grouping and WAI-ARIA-compliant focus management.  See the Buttonset API doc for more information.
  *
  * <p>Also, buttons and buttonsets can be placed in a [JET Toolbar]{@link oj.ojToolbar}.  Like Buttonset, Toolbar is themable and provides WAI-ARIA-compliant
@@ -120,23 +96,16 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#a11y-section"></a>
  * </h3>
  *
- * <p>For accessibility, a JET Button must always have a <a href="#label">label</a>, even if it is <a href="#display">icon-only</a>.
+ * <p>For accessibility, a JET Button must always have its default slot filled, even if it is <a href="#display">icon-only</a>.
  *
- * <p>See also the <a href="#styling-section">oj-focus-highlight</a> discussion.
- *
- * <p>Disabled content: JET supports an accessible luminosity contrast ratio,
- * as specified in <a href="http://www.w3.org/TR/WCAG20/#visual-audio-contrast-contrast">WCAG 2.0 - Section 1.4.3 "Contrast"</a>,
- * in the themes that are accessible.  (See the "Theming" chapter of the JET Developer Guide for more information on which
- * themes are accessible.)  Note that Section 1.4.3 says that text or images of text that are part of an inactive user
- * interface component have no contrast requirement.  Because disabled content may not meet the minimum contrast ratio
- * required of enabled content, it cannot be used to convey meaningful information.<p>
- *
+ * {@ojinclude "name":"accessibilityCommon"}
+ * 
  *
  * <h3 id="styling-section">
  *   Styling
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#styling-section"></a>
  * </h3>
- * 
+ *
  * {@ojinclude "name":"stylingDoc"}
  *
  *
@@ -156,110 +125,16 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
  *   Performance
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#perf-section"></a>
  * </h3>
- * 
- * <p>In lieu of stamping a button in a table, dataGrid, or other container, consider placing a single Button outside the 
+ *
+ * <p>In lieu of stamping a button in a table, dataGrid, or other container, consider placing a single Button outside the
  * container that acts on the currently selected row or cell.
- * 
- * 
- * <h3 id="pseudos-section">
- *   Pseudo-selectors
- *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#pseudos-section"></a>
- * </h3>
- *
- * <p>The <code class="prettyprint">:oj-button</code> pseudo-selector can be used in jQuery expressions to select JET Buttons.  For example:
- *
- * <pre class="prettyprint">
- * <code>$( ":oj-button" ) // selects all JET Buttons on the page
- * $myEventTarget.closest( ":oj-button" ) // selects the closest ancestor that is a JET Button
- * </code></pre>
- *
  *
  * <h3 id="state-section">
  *   Setting Component State
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#state-section"></a>
  * </h3>
  *
- * <p>In JET, when setting component state after create time, the correct approach depends on whether the component has a JS API for that state.
- *
- * <p>State with a JS API, such as Button's disabled state, checked state, and label, should be set after creation via that API (which in those examples is
- * <code class="prettyprint">option()</code>), not by directly manipulating the DOM after creation.  This can be done by calling that JS API directly, or by binding
- * a component option like <code class="prettyprint">disabled</code> to an observable using the <code class="prettyprint">ojComponent</code> binding.
- * In the latter case, updates should always be made via the observable, since updates to the observable will update the option, while updates flow from the
- * component option to the observable only for UI interaction, not for programmatic updates via the API.
- *
- * <p>Built-in KO bindings, like KO's <code class="prettyprint">disable</code> binding, should not be used for state with a JS API, since that is tatamount to
- * updating the DOM directly.  The component option should be bound instead, via JET's <code class="prettyprint">ojComponent</code> binding.
- *
- * <p>If a button's checked state needs to be set programmatically, then it should be wrapped in a Buttonset so that its <code class="prettyprint">checked</code>
- * option can be used.  It is OK for a Buttonset to contain only one Button.
- *
- * <p>State with no JS API should be set by manipulating the DOM directly in an allowable way, and then calling <code class="prettyprint">refresh()</code>
- * on the affected component(s).  E.g. the reading direction (LTR / RTL) is changed by by setting the <code class="prettyprint">"dir"</code> attribute on the
- * <code class="prettyprint">&lt;html></code> node and calling <code class="prettyprint">refresh()</code>.
- *
- * <p>When using a built-in Knockout binding (as opposed to the <code class="prettyprint">ojComponent</code> binding), keep in mind that those bindings do not
- * execute the necessary <code class="prettyprint">refresh()</code> call after updating the DOM.  Updates that flow from the component to the observable,
- * as a result of user interaction, are not problematic.  But updates in the other direction, that programmatically update the DOM because the observable changed,
- * will not be picked up until the next <code class="prettyprint">refresh()</code>.
- *
- *
- * <h3 id="jqui2jet-section">
- *   JET for jQuery UI developers
- *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#jqui2jet-section"></a>
- * </h3>
- *
- * <!-- TODO: discuss component state, refresh(), etc. -->
- * <ol>
- *   <li>All JQUI and JET components inherit <code class="prettyprint">disable()</code> and <code class="prettyprint">enable()</code> methods from the base class.  This API
- *       duplicates the functionality of the <code class="prettyprint">disabled</code> option.  In JET, to keep the API as lean as possible, we
- *       have chosen not to document these methods outside of this section.</li>
- *   <li>JQUI Button has a Boolean <code class="prettyprint">text</code> option indicating whether to hide the label when icons are present.
- *       In JET, we prefer to avoid Booleans for future flexibility, so JET Button instead has an expandable <code class="prettyprint">display</code> option accepting
- *       the values <code class="prettyprint">"all"</code> and <code class="prettyprint">"icons"</code>.</li>
- *   <li>In JQUI Button, the <code class="prettyprint">icons</code> option accepts keys named <code class="prettyprint">"primary"</code> and
- *       <code class="prettyprint">"secondary"</code>.  For clarity, these options have been renamed in JET Button to <code class="prettyprint">"start"</code> and
- *       <code class="prettyprint">"end"</code>, our standard directionality-neutral terms for (in LTR) "left" and "right".</li>
- *   <li>JET Button can be effectively disabled without having its <code class="prettyprint">disabled</code> option set.  See [Buttonset.disabled]{@link oj.ojButtonset#disabled}.</li>
- * </ol>
- *
- *
- * <p>Also, event names for all JET components are prefixed with "oj", instead of component-specific prefixes like "button" or "menu".
- * E.g. the JQUI <code class="prettyprint">buttoncreate</code> event is <code class="prettyprint">ojcreate</code> in JET, as shown in the doc for that event.
- * Reason:  This makes the API more powerful.  It allows apps to listen to "foo" events from <em>all</em> JET components via:
- *
- * <pre class="prettyprint">
- * <code>$( ".selector" ).on( "ojfoo", myFunc);
- * </code></pre>
- *
- * or to "foo" events only from JET Buttons (the JQUI functionality) via:
- *
- * <pre class="prettyprint">
- * <code>$( ".selector" ).on( "ojfoo", ":oj-button", myFunc);
- * </code></pre>
- *
- *
- * <!-- - - - - Above this point, the tags are for the class.
- *              Below this point, the tags are for the constructor (initializer). - - - - - - -->
- *
- *
- * @desc Creates a JET Button.
- *
- * @param {Object=} options a map of option-value pairs to set on the component
- *
- * @example <caption>Initialize the button with no options specified:</caption>
- * $( ".selector" ).ojButton();
- *
- * @example <caption>Initialize the button with some options and callbacks specified:</caption>
- * $( ".selector" ).ojButton( { "label": "Copy", "create": function( event, ui ) {} } );
- *
- * @example <caption>Initialize a push button via the JET <code class="prettyprint">ojComponent</code> binding:</caption>
- * &lt;button id="paste" data-bind="ojComponent: { component: 'ojButton',
- *                                              label: 'Paste',
- *                                              create: setupButton }">
- *
- * @example <caption>Initialize a toggle button via the JET <code class="prettyprint">ojComponent</code> binding:</caption>
- * &lt;label for="check">Toggle&lt;/label>
- * &lt;input type="checkbox" id="check" data-bind="ojComponent: {component: 'ojButton'}"/>
+ * {@ojinclude "name":"stateCommon"}
  */
 oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
 {
@@ -268,101 +143,182 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
     options: // options is in externs.js, so no need for quotes
     {
         /**
-         * <p>Indicates in what states the button has chrome (background and border).  
+         * {@ojinclude "name":"buttonCommonChroming"}
          * 
+         * @name chroming
+         * @memberof oj.ojButton
+         * @type {string}
+         * @ojvalue {string} "full" In typical themes, full-chrome buttons always have chrome.
+         * @ojvalue {string} "half" In typical themes, half-chrome buttons acquire chrome only in their hover, active, and selected states. Half-chroming is recommended for buttons in a toolbar.
+         *     (This is the toolbar default in most themes.)
+         * @ojvalue {string} "outlined" In typical themes, outlined buttons are similar to half-chrome buttons, but have a border in the default state.
+         * @default Varies by theme and containership as detailed above.
+         *
+         * @example <caption>Initialize the Button with the <code class="prettyprint">chroming</code> attribute specified:</caption>
+         * &lt;oj-button chroming='half'>&lt;/oj-button>
+         *
+         * @example <caption>Get or set the <code class="prettyprint">chroming</code> property after initialization:</caption>
+         * // getter
+         * var chromingValue = myButton.chroming;
+         *
+         * // setter
+         * myButton.chroming = 'half';
+         *
+         * @example <caption>Set the default in the theme (SCSS) :</caption>
+         * $buttonChromingOptionDefault: half !default;
+         */
+        
+        /**
+         * {@ojinclude "name":"buttonCommonChroming"}
+         * 
+         * @name chroming
+         * @memberof oj.ojMenuButton
+         * @type {string}
+         * @ojvalue {string} "full" In typical themes, full-chrome buttons always have chrome.
+         * @ojvalue {string} "half" In typical themes, half-chrome buttons acquire chrome only in their hover, active, and selected states. Half-chroming is recommended for buttons in a toolbar.
+         *     (This is the toolbar default in most themes.)
+         * @ojvalue {string} "outlined" In typical themes, outlined buttons are similar to half-chrome buttons, but have a border in the default state.
+         * @default Varies by theme and containership as detailed above.
+         *
+         * @example <caption>Initialize the Menu Button with the <code class="prettyprint">chroming</code> attribute specified:</caption>
+         * &lt;oj-menu-button chroming='half'>&lt;/oj-menu-button>
+         *
+         * @example <caption>Get or set the <code class="prettyprint">chroming</code> property after initialization:</caption>
+         * // getter
+         * var chromingValue = myMenuButton.chroming;
+         *
+         * // setter
+         * myMenuButton.chroming = 'half';
+         *
+         * @example <caption>Set the default in the theme (SCSS) :</caption>
+         * $buttonChromingOptionDefault: half !default;
+         */
+        
+        /**
+         * <p>Indicates in what states the button has chrome (background and border).
+         *
          * <p>The default chroming varies by theme and containership as follows:
          * <ul>
          *   <li>If the button is in a buttonset or toolbar, then the default chroming is the current <code class="prettyprint">chroming</code> value of the nearest such container.</li>
          *   <li>Else, if <code class="prettyprint">$buttonChromingOptionDefault</code> is set in the current theme as seen in the example below, then that value is the chroming default.</li>
          *   <li>Else, the default chroming is <code class="prettyprint">"full"</code>.</li>
          * </ul>
-         * 
-         * <p>Once a value has been set on this button option, that value applies regardless of theme and containership.
-         * 
+         *
+         * <p>Once a value has been set on this button attribute, that value applies regardless of theme and containership.
+         *
          * @expose
          * @memberof oj.ojButton
          * @instance
          * @since 1.2.0
-         * 
-         * @type {string}
-         * @ojvalue {string} "full" In typical themes, full-chrome buttons always have chrome.
-         * @ojvalue {string} "half" In typical themes, half-chrome buttons acquire chrome only in their hover, active, and selected states. Half-chroming is recommended for buttons in a toolbar.  
-         *     (This is the toolbar default in most themes.)
-         * @ojvalue {string} "outlined" In typical themes, outlined buttons are similar to half-chrome buttons, but have a border in the default state.
-         * @default Varies by theme and containership as detailed above.
-         *
-         * @example <caption>Initialize the button with the <code class="prettyprint">chroming</code> option specified:</caption>
-         * $( ".selector" ).ojButton( { "chroming": "half" } );
-         *
-         * @example <caption>Get or set the <code class="prettyprint">chroming</code> option, after initialization:</caption>
-         * // getter
-         * var display = $( ".selector" ).ojButton( "option", "chroming" );
-         *
-         * // setter
-         * $( ".selector" ).ojButton( "option", "chroming", "full" );
-         * 
-         * @example <caption>Set the default in the theme (SCSS) :</caption>
-         * $buttonChromingOptionDefault: half !default;
+         * @ojfragment buttonCommonChroming
          */
         chroming: "full",
 
         /**
+         * {@ojinclude "name":"buttonCommonDisabled"}
+         * 
+         * @name disabled
+         * @memberof oj.ojButton
+         * @type {boolean}
+         * @default the DOM <code class="prettyprint">disabled</code> value otherwise
+         *
+         * @example <caption>Initialize the Button with the <code class="prettyprint">disabled</code> attribute specified:</caption>
+         * &lt;oj-button disabled='true'>&lt;/oj-button>
+         *
+         * @example <caption>Get or set the <code class="prettyprint">disabled</code> property after initialization:</caption>
+         * // getter
+         * var disabledValue = myButton.disabled;
+         *
+         * // setter
+         * myButton.disabled = true;
+         */
+        
+        /**
+         * {@ojinclude "name":"buttonCommonDisabled"}
+         * 
+         * @name disabled
+         * @memberof oj.ojMenuButton
+         * @type {boolean}
+         * @default the DOM <code class="prettyprint">disabled</code> value otherwise
+         *
+         * @example <caption>Initialize the Menu Button with the <code class="prettyprint">disabled</code> attribute specified:</caption>
+         * &lt;oj-menu-button disabled='true'>&lt;/oj-menu-button>
+         *
+         * @example <caption>Get or set the <code class="prettyprint">disabled</code> property after initialization:</caption>
+         * // getter
+         * var disabledValue = myMenuButton.disabled;
+         *
+         * // setter
+         * myMenuButton.disabled = true;
+         */
+                
+        /**
          * <p>Disables the button if set to <code class="prettyprint">true</code>.
          *
-         * <p>If the button is in a buttonset, setting the buttonset's <code class="prettyprint">disabled</code> option effectively disables all its Buttons, without affecting
-         * their <code class="prettyprint">disabled</code> options.  Thus, a Button is effectively disabled if either its own
-         * <code class="prettyprint">disabled</code> option is set, or the Buttonset's <code class="prettyprint">disabled</code> option is set.
-         *
          * <p>After create time, the <code class="prettyprint">disabled</code> state should be set via this API, not by setting the underlying DOM attribute.
-         *
-         * <p>The 2-way <code class="prettyprint">disabled</code> binding offered by the <code class="prettyprint">ojComponent</code> binding
-         * should be used instead of Knockout's built-in <code class="prettyprint">disable</code> and <code class="prettyprint">enable</code> bindings,
-         * as the former sets the API, while the latter sets the underlying DOM attribute.
          *
          * @expose
          * @memberof oj.ojButton
          * @instance
-         * @type {boolean}
-         * @default <code class="prettyprint">false</code> for <code class="prettyprint">&lt;a></code> based Buttons; the DOM <code class="prettyprint">disabled</code> value otherwise
-         *
-         * @example <caption>Initialize the button with the <code class="prettyprint">disabled</code> option specified:</caption>
-         * $( ".selector" ).ojButton( { "disabled": true } );
-         *
-         * @example <caption>Get or set the <code class="prettyprint">disabled</code> option, after initialization:</caption>
-         * // getter
-         * var disabled = $( ".selector" ).ojButton( "option", "disabled" );
-         *
-         * // setter
-         * $( ".selector" ).ojButton( "option", "disabled", true );
+         * @ojfragment buttonCommonDisabled
          */
         disabled: false,
 
         /**
-         * <p>Whether to display both the <a href="#label">label</a> and <a href="#icons">icons</a> (<code class="prettyprint">"all"</code>) 
-         * or just the icons (<code class="prettyprint">"icons"</code>).  In the latter case, the label is displayed in a tooltip instead, unless a 
-         * tooltip was already supplied at create time.
-         *
-         * <p>For accessibility, a JET Button must always have a label, even if it is icon-only.
-         *
-         * <p>The <code class="prettyprint">display</code> option will be ignored if no icons are specified via the <code class="prettyprint">icons</code> option.
-         *
-         * @expose
+         * {@ojinclude "name":"buttonCommonDisplay"}
+         * 
+         * <p>For accessibility, a JET Button must always have a label set via the default slot, even if it is icon-only.
+         * 
+         * @name display
          * @memberof oj.ojButton
-         * @instance
          * @type {string}
          * @ojvalue {string} "all" Display both the label and icons.
          * @ojvalue {string} "icons" Display only the icons.
          * @default <code class="prettyprint">"all"</code>
          *
-         * @example <caption>Initialize the button with the <code class="prettyprint">display</code> option specified:</caption>
-         * $( ".selector" ).ojButton( { "display": "icons" } );
+         * @example <caption>Initialize the Button with the <code class="prettyprint">display</code> attribute specified:</caption>
+         * &lt;oj-button display='icons'>&lt;/oj-button>
          *
-         * @example <caption>Get or set the <code class="prettyprint">display</code> option, after initialization:</caption>
+         * @example <caption>Get or set the <code class="prettyprint">display</code> property after initialization:</caption>
          * // getter
-         * var display = $( ".selector" ).ojButton( "option", "display" );
+         * var displayValue = myButton.display;
          *
          * // setter
-         * $( ".selector" ).ojButton( "option", "display", "icons" );
+         * myButton.display = 'icons';
+         */
+        
+        /**
+         * {@ojinclude "name":"buttonCommonDisplay"}
+         * 
+         * <p>For accessibility, a JET Menu Button must always have a label set via the default slot, even if it is icon-only.
+         * 
+         * @name display
+         * @memberof oj.ojMenuButton
+         * @type {string}
+         * @ojvalue {string} "all" Display both the label and icons.
+         * @ojvalue {string} "icons" Display only the icons.
+         * @default <code class="prettyprint">"all"</code>
+         *
+         * @example <caption>Initialize the Menu Button with the <code class="prettyprint">display</code> attribute specified:</caption>
+         * &lt;oj-menu-button display='icons'>&lt;/oj-menu-button>
+         *
+         * @example <caption>Get or set the <code class="prettyprint">display</code> property after initialization:</caption>
+         * // getter
+         * var displayValue = myMenuButton.display;
+         *
+         * // setter
+         * myMenuButton.display = 'icons';
+         */
+        
+        /**
+         * <p>Whether to display both the <a href="#label">label</a> and <a href="#icons">icons</a> (<code class="prettyprint">"all"</code>)
+         * or just the icons (<code class="prettyprint">"icons"</code>).  In the latter case, the label is displayed in a tooltip instead, unless a
+         * tooltip was already supplied at create time.
+         *
+         * @expose
+         * @memberof oj.ojButton
+         * @instance
+         * @ojfragment buttonCommonDisplay
          */
         display: "all",
 
@@ -389,7 +345,7 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
          * @instance
          * @type {?string}
          * @default the label from the DOM
-         *
+         * @ignore
          * @example <caption>Initialize the button with the <code class="prettyprint">label</code> option specified:</caption>
          * $( ".selector" ).ojButton( { "label": "custom label" } );
          *
@@ -416,6 +372,7 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
          * <p>The <code class="prettyprint">start</code> and <code class="prettyprint">end</code> properties accept one or more
          * style class names (as seen in the examples), or <code class="prettyprint">null</code>, indicating "no icon."
          *
+         * @ignore
          * @expose
          * @memberof oj.ojButton
          * @instance
@@ -441,6 +398,7 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
             /**
              * <p>The start icon of the button.  See the top-level <code class="prettyprint">icons</code> option for details.
              *
+             * @ignore
              * @expose
              * @alias icons.start
              * @memberof! oj.ojButton
@@ -458,7 +416,7 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
             start: null,
             /**
              * <p>The end icon of the button.  See the top-level <code class="prettyprint">icons</code> option for details.
-             *
+             * @ignore
              * @expose
              * @alias icons.end
              * @memberof! oj.ojButton
@@ -487,10 +445,10 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
          * <p>By default, menu buttons have a downward pointing "dropdown" arrow for their end icon.  See the <code class="prettyprint">icons</code> option for details.
          *
          * <p>Menu button functionality is supported for Buttons based on button or anchor tags.  (Buttons based on input tags either do not support the dropdown icon,
-         * or do not make sense for use as a menu button, or both.)  Buttons are recommended over anchors, as anchor-based buttons are intended for use when native 
+         * or do not make sense for use as a menu button, or both.)  Buttons are recommended over anchors, as anchor-based buttons are intended for use when native
          * anchor functionality such as href navigation is needed.
          *
-         * <p>See [Menu's]{@link oj.ojMenu} Accessibility section for a discussion of how <code class="prettyprint">aria-label</code> and 
+         * <p>See [Menu's]{@link oj.ojMenu} Accessibility section for a discussion of how <code class="prettyprint">aria-label</code> and
          * <code class="prettyprint">aria-labelledby</code> are handled for menu buttons and other menu launchers.
          *
          * @expose
@@ -498,7 +456,7 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
          * @instance
          * @type {Element|Array.<Element>|string|jQuery|NodeList}
          * @default <code class="prettyprint">null</code>
-         *
+         * @ignore
          * @example <caption>Initialize a menu button:</caption>
          * $( ".selector" ).ojButton({ "menu": "#myMenu" });
          *
@@ -512,30 +470,16 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
         menu: null
 
         // Events
-
-        /**
-         * Triggered when the button is created.
-         *
-         * @event
-         * @name create
-         * @memberof oj.ojButton
-         * @instance
-         * @property {Event} event <code class="prettyprint">jQuery</code> event object
-         * @property {Object} ui Currently empty
-         *
-         * @example <caption>Initialize the button with the <code class="prettyprint">create</code> callback specified:</caption>
-         * $( ".selector" ).ojButton({
-         *     "create": function( event, ui ) {}
-         * });
-         *
-         * @example <caption>Bind an event listener to the <code class="prettyprint">ojcreate</code> event:</caption>
-         * $( ".selector" ).on( "ojcreate", function( event, ui ) {} );
-         */
-        // create event declared in superclass, but we still want the above API doc
     },
 
     _InitOptions: function(originalDefaults, constructorOptions) {
         this._super(originalDefaults, constructorOptions);
+
+        // if custom element we are supporting slots
+        if (this._IsCustomElement())
+        {
+            this._processSlots();
+        }
 
         this._initButtonTypes(); // init this.type and this.buttonElement, used below
 
@@ -561,11 +505,14 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
         }
 
         // if this is a menuButton and app didn't set icons.end to its own icon or to null to suppress the icon, then default to built-in menuButton dropdown icon
-        if (this.options.menu && (!constructorOptions.icons || constructorOptions.icons.end === undefined))
+        if (!this._IsCustomElement())
         {
-            this.option('icons.end',
-                        "oj-component-icon oj-button-menu-dropdown-icon",
-                        {'_context': {writeback: true, internalSet: true}});
+            if (this.options.menu && (!constructorOptions.icons || constructorOptions.icons.end === undefined))
+            {
+                this.option('icons.end',
+                            "oj-component-icon oj-button-menu-dropdown-icon",
+                            {'_context': {writeback: true, internalSet: true}});
+            }
         }
     },
 
@@ -585,10 +532,10 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
 
         this.rootElement.addClass( BASE_CLASSES );
         _setChromingClass(this.rootElement, this.options.chroming);
-        
+
         // Called for touchend/cancel on both button and document.  Listening only on button isn't completely reliable
-        // on at least iOS and Android since the touchend can happen slightly off of the button.  Listening only on the 
-        // document runs the risk that we won't hear it because someone eats it.  Could use capture listener to dodge 
+        // on at least iOS and Android since the touchend can happen slightly off of the button.  Listening only on the
+        // document runs the risk that we won't hear it because someone eats it.  Could use capture listener to dodge
         // that risk, but just listening on both seems to work great.
         var endHandler = function() {
             self.rootElement.removeClass( activeClass );
@@ -603,11 +550,11 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
 
                 self.rootElement.addClass( activeClass );
                 self._toggleDefaultClasses();
-                
+
                 // don't pass "touchend touchcancel", due to semantics of one() : it's called once per event type.
                 // It's almost always touchend, not touchcancel, that is fired, so the touchend listeners would pile up.
-                // The likelihood is very small that the double edge case would occur where both endHandler is needed, 
-                // AND the touch ends with touchcancel rather than touchend, and the result would only be that the hover 
+                // The likelihood is very small that the double edge case would occur where both endHandler is needed,
+                // AND the touch ends with touchcancel rather than touchend, and the result would only be that the hover
                 // style sticks to the button.
                 self.document.one("touchend", endHandler);
             })
@@ -615,7 +562,7 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
             .bind( "mouseenter" + this.eventNamespace, function() {
                 if ( self._IsEffectivelyDisabled() )
                     return;
-                
+
                 // do this for real mouse enters, but not 300ms after a tap
                 if (!oj.DomUtils.recentTouchEnd()) {
                     if ( this === _lastActive )
@@ -642,14 +589,21 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
             }
         };
 
-        // Must do this in capture phase to avoid race condition where app's click 
-        // handlers on anchor buttons can be called if their listeners get registered 
+        // Must do this in capture phase to avoid race condition where app's click
+        // handlers on anchor buttons can be called if their listeners get registered
         // before ours, e.g. if their KO click binding is before the ojComponent binding.
-        this.buttonElement[0].addEventListener("click", this._disabledClickHandler, true);
-
+        if (this._IsCustomElement())
+        {
+            this.rootElement[0].addEventListener("click", this._disabledClickHandler, true);
+        }
+        else
+        {
+            this.buttonElement[0].addEventListener("click", this._disabledClickHandler, true);
+        }
+        
         this._focusable({
-            'element': this.rootElement, 
-            'applyHighlight': true, 
+            'element': this.rootElement,
+            'applyHighlight': true,
             'afterToggle' : function() {
                 self._toggleDefaultClasses();
             }
@@ -783,19 +737,19 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
                 .bind( "keydown" + this.eventNamespace, function(event) {
                     if ( self._IsEffectivelyDisabled() )
                         // ...then bail out always, also eating event unless key is Tab or left/right arrow, since:
-                        // - Must allow Tab so KB user can't get stuck here. 
-                        // - Nice to allow Buttonset/Toolbar's left/right arrow handling too, but not strictly essential as long as user 
-                        //   can Tab out and back in, since (if app refreshed Buttonset/Toolbar after disabling button as required), the 
+                        // - Must allow Tab so KB user can't get stuck here.
+                        // - Nice to allow Buttonset/Toolbar's left/right arrow handling too, but not strictly essential as long as user
+                        //   can Tab out and back in, since (if app refreshed Buttonset/Toolbar after disabling button as required), the
                         //   tab-back-in will go to an enabled button of the Buttonset/Toolbar, or skip Buttonset/Toolbar if all buttons disabled.
-                        // - Must eat Enter/Space/DownArrow to prevent that functionality from occurring. (For non-anchor buttons, the native 
+                        // - Must eat Enter/Space/DownArrow to prevent that functionality from occurring. (For non-anchor buttons, the native
                         //   disabled status prevents some of those on at least some platforms.)
-                        // Since anchor buttons don't have a native disabled status, they remain focusable when disabled, and thus are most 
+                        // Since anchor buttons don't have a native disabled status, they remain focusable when disabled, and thus are most
                         // susceptible to having key events while disabled. (We ensure they are not tabbable, but they remain focusable)
                         return event.keyCode === $.ui.keyCode.TAB || event.keyCode === $.ui.keyCode.LEFT || event.keyCode === $.ui.keyCode.RIGHT;
 
                     var isSpace = event.keyCode === $.ui.keyCode.SPACE;
                     var isAnchor = self.type === "anchor";
-                    
+
                     // now that anchor doesn't support Space, still keep this line, in case users try to click via Space
                     if ( isAnchor && isSpace ) {
                         event.preventDefault(); // prevent scrolling down one page when clicking anchor button via Spacebar.  Only prevent for anchor!
@@ -818,7 +772,7 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
                 //setting tabIndex to a non-negative value will fix this. Refer 
                 // isNaN(..) returns true when tabIndex is undefined (or 'undefined', which the original impl checked for...)
                 var tabIndex = this.buttonElement.attr( "tabindex" );
-                if( tabIndex === null || isNaN(tabIndex) ) // Don't override if user already set a tabIndex.  
+                if( tabIndex === null || isNaN(tabIndex) ) // Don't override if user already set a tabIndex.
                 {
                     this.buttonElement.attr( "tabindex", "0" );
                 }
@@ -826,11 +780,21 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
         } // end of: if (checkbox) {} else if (radio) {} else {}
 
         // at create time, we want only the "if disabled" part of callee, not the "if enabled" part, so only call if disabled
-        if (this.options.disabled) 
+        if (this.options.disabled)
             this._manageAnchorTabIndex(false, true);
 
         this._updateEffectivelyDisabled();
-        this._handleLabelAndIconsAtCreateTime();
+
+        var buttonset = self._getEnclosingContainerComponent("buttonset");
+        if (this._IsCustomElement() || (buttonset && buttonset._IsCustomElement()))
+        {
+            this._setDisplayOptionOnDom();
+        }
+        else
+        {
+            this._handleLabelAndIconsAtCreateTime();
+        }
+
         this._setupMenuButton(null);
 
         // call this at the *end* of _ComponentCreate, since it needs to know whether any state classes like oj-active, oj-disabled, oj-selected, oj-hover, .oj-focus
@@ -840,11 +804,100 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
 
     _NotifyContextMenuGesture: function(menu, event, eventType)
     {
-        // For toggle buttons, launcher must be the hidden focusable input, but for Shift-F10 we want the CM aligned to the root element, not that 
+        // For toggle buttons, launcher must be the hidden focusable input, but for Shift-F10 we want the CM aligned to the root element, not that
         // launcher.  rootElement works for push buttons too.
         this._OpenContextMenu(event, eventType, {
             "position": {"of": eventType==="keyboard" ? this.rootElement : event}
         });
+    },
+
+    _processSlots: function() {
+        var self = this;
+        var elem = this.element[0];
+        var rootElem = elem.parentNode;
+        var isMenuButton = rootElem.tagName === 'OJ-MENU-BUTTON';
+
+        // we are responsible for reparenting any slots because of use of inner elem
+        var rootSlots = oj.CustomElementBridge.getSlotMap(rootElem);
+
+        // don't add context menu here since we do not ever need to move it
+        if (isMenuButton)
+            var supportedSlots = ["startIcon", "", "endIcon", "menu"];
+        else
+            supportedSlots = ["startIcon", "", "endIcon"];
+
+        // move all desired slots down one level
+        $.each(supportedSlots, function(i, slotName) {
+            if (rootSlots[slotName] && slotName != "") {
+                $.each(rootSlots[slotName], function(i, node) {
+                    elem.appendChild(node);
+                })
+            }
+        });
+
+        // be sure to not remove the context menu slot
+        $(rootElem).children().not(elem).not("[slot='contextMenu']").remove();
+        
+        // all slots are now within the inner button element
+        var slots = oj.CustomElementBridge.getSlotMap(elem);
+
+        // rearrange slots
+        $.each(supportedSlots, function(i, slotName) {
+            if (slots[slotName]) {
+                $.each(slots[slotName], function(i, node) {
+                    elem.appendChild(node);
+                    if (slotName === "")
+                    {
+                        var currentText = node;
+                        var wrapperSpan = currentText;
+                        if (currentText.nodeType === 3)
+                        {
+                            wrapperSpan = document.createElement('span');
+                            $(currentText).replaceWith(wrapperSpan);  // @HTMLUpdateOK
+                            wrapperSpan.appendChild(currentText);
+                        }
+                        $(wrapperSpan).addClass('oj-button-text');
+                        self._setTextSpanIdAndLabelledBy($(wrapperSpan));
+                    }
+                    else if (slotName === "startIcon")
+                    {
+                        $(node).addClass('oj-button-icon');
+                        $(node).addClass('oj-start');
+                    }
+                    else if (slotName === "endIcon")
+                    {
+                        $(node).addClass('oj-button-icon');
+                        $(node).addClass('oj-end');
+                    }
+                    else if (slotName === "menu")
+                    {
+                        $(node).uniqueId();
+                        self.menuSlot = '#' + node.id;
+                        if (slots["endIcon"] === undefined)
+                        {
+                            var dropDownElem = document.createElement('span');
+                            dropDownElem.className = 'oj-button-icon oj-end oj-component-icon oj-button-menu-dropdown-icon';
+                            dropDownElem['slot'] = 'endIcon';
+                            elem.insertBefore(dropDownElem, node);  // @HTMLUpdateOK
+                        }
+                    }
+                })
+            }
+        });
+
+        // wrap button content in a label for consistent DOM/theming structure
+        var wrapperDiv = $('<div>');
+        wrapperDiv.addClass('oj-button-label');
+        $(elem).children().wrapAll(wrapperDiv);  // @HTMLUpdateOK
+    },
+    
+    // Helper function to return the correct menu reference between custom element and non custom element components.
+    _getMenuNode: function() // Private, not an override (not in base class). Method name unquoted so will be safely optimized (renamed) by GCC as desired.
+    {
+        if (this._IsCustomElement())
+            return this.menuSlot;
+        else
+            return this.options.menu;
     },
 
     // Part 1 of type-specific component init.  Called from _InitOptions, so very limited component state is available!
@@ -891,6 +944,7 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
 
             this.element
                 .addClass( "oj-button-input oj-helper-hidden-accessible" )
+                .attr("data-oj-internal", "") // automation support
                 .add(this.buttonElement) // doesn't mutate this.element
                 .wrapAll("<span></span>"); // add root node around label/input.  @HTMLUpdateOK trusted string
 
@@ -918,7 +972,7 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
 
     /**
      * Returns a <code class="prettyprint">jQuery</code> object containing the root element of the Button component.
-     *
+     * @ignore
      * @expose
      * @memberof oj.ojButton
      * @instance
@@ -934,7 +988,7 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
 
     _destroy: function() // Override of protected base class method.  Method name needn't be quoted since is in externs.js.
     {
-        this._removeMenuBehavior(this.options.menu);
+        this._removeMenuBehavior(this._getMenuNode());
         this.buttonElement[0].removeEventListener("click", this._disabledClickHandler, true);
 
         // TBD: won't need this after the restore-attrs feature is in place.
@@ -945,7 +999,7 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
 
         // If disabled, we want to run the "changing from disabled to enabled" part of callee, to restore original tabindex.
         // If enabled, don't want to run any part of callee.
-        if (this.options.disabled) 
+        if (this.options.disabled)
             this._manageAnchorTabIndex(true, false);
 
         var isToggle = this._isToggle;
@@ -982,7 +1036,7 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
 
     _NotifyDetached: function() {
         // In browsers [Chrome v35, Firefox v24.5, IE9, Safari v6.1.4], blur and mouseleave events are generated for hidden content but not detached content,
-        // so when the component is detached from the document, we must use this hook to remove the oj-focus, oj-focus-highlight, oj-hover, and oj-active classes, to 
+        // so when the component is detached from the document, we must use this hook to remove the oj-focus, oj-focus-highlight, oj-hover, and oj-active classes, to
         // ensure that button is displayed without those classes when it is re-attached to the DOM. Refer .
         // _super() now removes those 3 classes, so just need to call _tDC() afterwards.
         this._super();
@@ -1024,7 +1078,7 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
             this.rootElement.removeAttr( "aria-disabled" );
         } else { // else is <a>
             // _setOption._super() puts aria-disabled on the rootElement. For <a>'s, element and rootElement are both the <a> in JQUI,
-            // but are different in CustomElements.  aria-disabled belongs on element.  Also, the value it sets is potentially wrong since it 
+            // but are different in CustomElements.  aria-disabled belongs on element.  Also, the value it sets is potentially wrong since it
             // doesn't know about "effectively disabled".
             this.element.attr( "aria-disabled", effectivelyDisabled ); // set element attr to correct value in both JQUI and Custom Elements.
             if (this._IsCustomElement()) this.rootElement.removeAttr( "aria-disabled" );
@@ -1033,13 +1087,13 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
         if (effectivelyDisabled)
         {
             // TBD: when the handling of oj-active in baseComponent._setOption("disabled") is finalized, review whether this should be handled there instead.
-            // baseComponent._setOption("disabled") removes oj-active, oj-hover, oj-focus, and oj-focus-highlight, but _updateEffectivelyDisabled is called in a number of other 
+            // baseComponent._setOption("disabled") removes oj-active, oj-hover, oj-focus, and oj-focus-highlight, but _updateEffectivelyDisabled is called in a number of other
             // cases too, so do it here too to be safe.
             this.widget().removeClass("oj-active oj-default oj-focus-only oj-hover oj-focus oj-focus-highlight");
             _lastActive = null; // avoid (very slight) possibility that first mouseIn after button is subsequently re-enabled will set oj-active
 
             // when disabling a menu button, dismiss the menu if open
-            this._dismissMenu(this.options.menu);
+            this._dismissMenu(this._getMenuNode());
         }
         else
         {
@@ -1081,30 +1135,46 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
                 break;
         }
     },
+    
+    /**
+     * Refreshes the menu button. JET components require a <code class="prettyprint">refresh()</code> after a supported DOM change is made
+     * that affects the component, of which the component would otherwise be unaware.  In particular, if the Menu Button is reparented from
+     * inside a Buttonset or Toolbar to a location that's not in a Buttonset or Toolbar, then <code class="prettyprint">refresh()</code>
+     * must be called.
+     *
+     * <p>Note that anything having an API, such as the Menu Button's disabled state, must be set via the API, not
+     * by mutating the DOM and calling <code class="prettyprint">refresh()</code>. 
+     *
+     * @expose
+     * @memberof oj.ojMenuButton
+     * @instance
+     *
+     * @example <caption>Invoke the <code class="prettyprint">refresh</code> method:</caption>
+     * myMenuButton.refresh();
+     */
 
     /**
      * Refreshes the button. JET components require a <code class="prettyprint">refresh()</code> after a supported DOM change is made
      * that affects the component, of which the component would otherwise be unaware.  In particular, if the Button is reparented from
-     * inside a Buttonset or Toolbar to a location that's not in a Buttonset or Toolbar, then <code class="prettyprint">refresh()</code> 
+     * inside a Buttonset or Toolbar to a location that's not in a Buttonset or Toolbar, then <code class="prettyprint">refresh()</code>
      * must be called.
      *
-     * <p>Note that anything having a JS API, such as the Button's label, disabled state, and checked state, must be set via the API, not
-     * by mutating the DOM and calling <code class="prettyprint">refresh()</code>.  (For the checked state, see Buttonset's
-     * <code class="prettyprint">checked</code> option.)
+     * <p>Note that anything having an API, such as the Button's disabled state, must be set via the API, not
+     * by mutating the DOM and calling <code class="prettyprint">refresh()</code>. 
      *
      * @expose
      * @memberof oj.ojButton
      * @instance
      *
      * @example <caption>Invoke the <code class="prettyprint">refresh</code> method:</caption>
-     * $( ".selector" ).ojButton( "refresh" );
+     * myButton.refresh();
      */
     refresh: function() // Override of public base class method (unlike JQUI).  Method name needn't be quoted since is in externs.js.
     {
         this._super();
 
         // TODO:
-        // - JSDoc says to call refresh() when Button reparented.  Instead, app should call oj.Components.subtreeAttached(), and our 
+        // - JSDoc says to call refresh() when Button reparented.  Instead, app should call oj.Components.subtreeAttached(), and our
         //   _NotifyAttached override should do the handling.
         // - There are other things we should do in the "no longer in buttonset" case, like removing buttonset listeners.  Anything else too?
         // - The reason the jsdoc doesn't mention the "moved into Buttonset (possibly from another buttonset)" case is that in that case
@@ -1113,13 +1183,13 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
         // Handle the rare case where we just got reparented out of a disabled Buttonset
         if ( this._ancestorDisabled && !this._getEnclosingContainerElement("buttonset").length )
             this.__setAncestorComponentDisabled(false);
-        
-        // re-fetch the chroming option, so that if it's still set to the default dynamic getter, which takes its value from the containing 
-        // buttonset or toolbar if present, refresh() will update the visible chroming.  This is needed for cases like the following, all of 
-        // which call button.refresh() : 
+
+        // re-fetch the chroming option, so that if it's still set to the default dynamic getter, which takes its value from the containing
+        // buttonset or toolbar if present, refresh() will update the visible chroming.  This is needed for cases like the following, all of
+        // which call button.refresh() :
         // - The button previously wasn't in a buttonset or toolbar, but now is, or vice versa.  This is common at init time, when the bset/
-        //   toolbar is created after their buttons, in which case the bset/toolbar refreshes their buttons.  Can also happen due to reparenting 
-        //   the button into or out of the bset/toolbar. "into": app must refresh bset/toolbar, which refreshes their buttons.  "out of": app 
+        //   toolbar is created after their buttons, in which case the bset/toolbar refreshes their buttons.  Can also happen due to reparenting
+        //   the button into or out of the bset/toolbar. "into": app must refresh bset/toolbar, which refreshes their buttons.  "out of": app
         //   must refresh the button.
         // - The app sets the chroming option of the containing buttonset or toolbar, which refreshes their buttons.
         // Do this after the _super() call, which updates the list of containers (buttonset/toolbar) that the component is in.
@@ -1201,7 +1271,7 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
         // Due to FF bug (see Bugzilla's Bug 984869), <button> with flex/inline-flex display doesn't work. Workaround by wrapping <button> contents with a <div> and setting the latter display flex/inline-flex
         if (this.type === "button") {
             var contentContainer = $("<div></div>").addClass("oj-button-label");
-            contentContainer.append(textSpan);
+            contentContainer.append(textSpan); // @HTMLUpdateOK append span containing trusted content and existing DOM, per above comments on lines referencing textSpan.
             this.element.append(contentContainer); // @HTMLUpdateOK attach detached wrapped DOM created from trusted string and existing DOM
         } else {
             buttonElement.append(textSpan); // @HTMLUpdateOK attach detached DOM created from trusted string and existing DOM
@@ -1210,10 +1280,15 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
         // Need to set "aria-labelledby" attribute of (button/anchor) element to point to label span as fix for  (accessibility: icon-only button label is read twice by screen reader)
         // This is only a problem for <button> and <a> at the time of writing, so the fix is only applied to these two button types.
         if ((this.type === "button" || this.type === "anchor") && !this.element[0].hasAttribute('aria-label')  && !this.element[0].hasAttribute('aria-labelledby') ) {
-            textSpan.uniqueId(); // assign id so that this.element can have "aria-labelledby" attribute pointing to the textspan
-            this.element.attr("aria-labelledby", textSpan.attr("id"));
+            this._setTextSpanIdAndLabelledBy(textSpan);
         }
         return textSpan;
+    },
+
+    _setTextSpanIdAndLabelledBy: function(textSpan)
+    {
+        textSpan.uniqueId(); // assign id so that this.element can have "aria-labelledby" attribute pointing to the textspan
+        this.element.attr("aria-labelledby", textSpan.attr("id"));
     },
 
     /*
@@ -1331,12 +1406,25 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
      */
     _setDisplayOptionOnDom: function(textSpan, hasStartIcon, hasEndIcon) // Private, not an override (not in base class).  Method name unquoted so will be safely optimized (renamed) by GCC as desired.
     {
+        // The case for menu buttons and top level buttons
+        var buttonLabelElem = this.buttonElement.children( '.oj-button-label' );
+        
+        // The case for buttonset buttons
+        if (!buttonLabelElem.length)
+        {
+            var buttonset = this._getEnclosingContainerComponent("buttonset");
+            if (this._IsCustomElement() || (buttonset && buttonset._IsCustomElement()))
+                buttonLabelElem = this.buttonElement.children( 'oj-option' );
+            else
+                buttonLabelElem = this.buttonElement;
+        }
+        
         if (textSpan === undefined)
-            textSpan = this.buttonElement.find( '.oj-button-text' );
+            textSpan = buttonLabelElem.children( '.oj-button-text' );
         if (hasStartIcon === undefined)
-            hasStartIcon = !!this.options.icons.start;
+            hasStartIcon = (!!this.options.icons.start) || buttonLabelElem.children("[slot='startIcon']").length;
         if (hasEndIcon === undefined)
-            hasEndIcon = !!this.options.icons.end;
+            hasEndIcon = (!!this.options.icons.end) || buttonLabelElem.children("[slot='endIcon']").length;
 
         var multipleIcons = hasStartIcon && hasEndIcon;
         var atLeastOneIcon = hasStartIcon || hasEndIcon;
@@ -1375,65 +1463,65 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
                         .addClass( buttonClass );
     },
 
-    // Anchors are the only Button type lacking a native disabled API, so this tabindex logic is needed to prevent 
-    // them from being tabbable when disabled.  We only set the tabindex for anchors, and only when the Button is 
+    // Anchors are the only Button type lacking a native disabled API, so this tabindex logic is needed to prevent
+    // them from being tabbable when disabled.  We only set the tabindex for anchors, and only when the Button is
     // standalone (not in a Buttonset or Toolbar), since those components already manage the tabindex.
-    // 
-    // Each time a standalone anchor Button is set to disabled, including create time, we set its tabindex to -1, and 
+    //
+    // Each time a standalone anchor Button is set to disabled, including create time, we set its tabindex to -1, and
     // stash its old tabindex in an ivar, so that we can restore it when it is later enabled, and at destroy time.
     // This handles the common case where the button's "is standalone" status never changes.
-    // 
-    // For the rare case that a Button is reparented into one of those components, those components will take 
+    //
+    // For the rare case that a Button is reparented into one of those components, those components will take
     // over the tabindex, so Button needn't do anything special at that time.
-    // 
-    // Likewise, for the routine case that a Button is inited before its Buttonset/Toolbar, those components will take 
-    // over the tabindex when they're inited, so it's harmless for Button to have already set a tabindex that those 
+    //
+    // Likewise, for the routine case that a Button is inited before its Buttonset/Toolbar, those components will take
+    // over the tabindex when they're inited, so it's harmless for Button to have already set a tabindex that those
     // components will overwrite, and to have already set an ivar that those components will ignore.
-    // 
-    // For the rare case that a Button is reparented out of one of those components, so as to become standalone, we 
+    //
+    // For the rare case that a Button is reparented out of one of those components, so as to become standalone, we
     // take no action, and in fact should NOT call this method, for the following reasons:
-    // - Already, for all button types (not just anchor), the app must fix up the tabindex of a button reparented out of 
+    // - Already, for all button types (not just anchor), the app must fix up the tabindex of a button reparented out of
     //   these containers, since it might be -1. There's little reason to handle anchors specially.
     // - We prefer not to introduce special handling just for this rare edge case.
-    // - We don't want to guess whether the tabindex was set by the former container (which we try to fix up), vs. being 
+    // - We don't want to guess whether the tabindex was set by the former container (which we try to fix up), vs. being
     //   set a moment ago by the app (which we hope not to clobber).
-    // - If the button is disabled, we don't want to call the regular "set tabindex and stash old tabindex" logic, since 
-    //   the old tabindex is often -1 set by the old container.  Stashing -1 would mean that the next enable or destroy 
+    // - If the button is disabled, we don't want to call the regular "set tabindex and stash old tabindex" logic, since
+    //   the old tabindex is often -1 set by the old container.  Stashing -1 would mean that the next enable or destroy
     //   incorrectly sets -1 on the tabindex. And we don't want to special-case that logic for this rare reparenting case.
-    //   Also, disabled buttons from those containers already have the desired -1 value (unless app changed it, which is 
+    //   Also, disabled buttons from those containers already have the desired -1 value (unless app changed it, which is
     //   their decision), so no action needed anyway.
-    // 
-    // Since this logic never runs when in a Buttonset, callers don't need to worry about "effectively disabled", and can 
+    //
+    // Since this logic never runs when in a Buttonset, callers don't need to worry about "effectively disabled", and can
     // just pass the old/new values of this.options.disabled.
-    // 
-    // This method should NOT be called by refresh(), since there's no need, and since refresh() is called when reparented 
+    //
+    // This method should NOT be called by refresh(), since there's no need, and since refresh() is called when reparented
     // out of a buttonset/toolbar.  Per above, this method should NOT be called at that time.
-    // 
-    // This method should be called by _setOption("disabled") and at create time, NOT by _updateEffectivelyDisabled() 
-    // (which is called in both of those cases), since _updateEffectivelyDisabled() can be called 
-    // indirectly by refresh() when the button was just reparented out of a disabled Buttonset.  Since this logic never 
+    //
+    // This method should be called by _setOption("disabled") and at create time, NOT by _updateEffectivelyDisabled()
+    // (which is called in both of those cases), since _updateEffectivelyDisabled() can be called
+    // indirectly by refresh() when the button was just reparented out of a disabled Buttonset.  Since this logic never
     // runs when in a Buttonset, calling from _updateEffectivelyDisabled() is not needed.
     _manageAnchorTabIndex: function( oldDisabled, disabled )
     {
         // bail if:
         // - truthiness of disabled option is same as before, e.g. changed from "a" to "b"
         // - not a standalone anchor button
-        if (!oldDisabled == !disabled || this.type !== "anchor" 
-                || this._getEnclosingContainerElement("buttonset").length 
+        if (!oldDisabled == !disabled || this.type !== "anchor"
+                || this._getEnclosingContainerElement("buttonset").length
                 || this._getEnclosingContainerElement("toolbar").length)
             return;
 
         if (disabled) { // enabled button becoming disabled, at create time or later. (Not destroy time, since that logic only passes disabled=false.)
-            // If the existing tabindex is unset (attr() returns undefined) or invalid (not a (stringified) integer), set the 
-            // ivar to null, in which case when we later restore the old value, we just clear the attr.  Obviously correct 
-            // in unset case. For invalid case, we prefer not to set anything invalid on the dom, and per MDN 
+            // If the existing tabindex is unset (attr() returns undefined) or invalid (not a (stringified) integer), set the
+            // ivar to null, in which case when we later restore the old value, we just clear the attr.  Obviously correct
+            // in unset case. For invalid case, we prefer not to set anything invalid on the dom, and per MDN
             // unset and invalid tabindexes are handled the same.
             var attr = this.element.attr("tabindex");
             this._oldAnchorTabIndex = this._isInteger(Number(attr)) ? attr: null;
-            
+
             this.element.attr("tabindex", -1);
         } else { // disabled button becoming enabled after create time, incl. destroy time.  (Not create time, since that logic only passes disabled=true.)
-            this._oldAnchorTabIndex == null 
+            this._oldAnchorTabIndex == null
                 ? this.element.removeAttr("tabindex")
                 : this.element.attr("tabindex", this._oldAnchorTabIndex);
             // no need to clear ivar
@@ -1443,19 +1531,19 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
     // IE11 and several modern platforms don't support Number.isInteger(), so use MDN's polyfill:
     _isInteger: function( value )
     {
-        return typeof value === "number" && 
-            isFinite(value) && 
+        return typeof value === "number" &&
+            isFinite(value) &&
             Math.floor(value) === value;
     },
 
     _selectorMap: {
-        "buttonset": ".oj-buttonset", 
-        "toolbar":   ".oj-toolbar" 
+        "buttonset": ".oj-buttonset",
+        "toolbar":   ".oj-toolbar"
     },
 
     _constructorMap: {
-        "buttonset": "ojButtonset", 
-        "toolbar":   "ojToolbar" 
+        "buttonset": "ojButtonset",
+        "toolbar":   "ojToolbar"
     },
 
     // component param is "buttonset" or "toolbar".
@@ -1470,7 +1558,7 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
     _getEnclosingContainerComponent: function(component)
     {
         var elem = this._getEnclosingContainerElement(component)[0];
-        var constructor = oj.Components.getWidgetConstructor(elem, this._constructorMap[component]);
+        var constructor = oj.Components.__GetWidgetConstructor(elem, this._constructorMap[component]);
         return constructor && constructor("instance");
     },
 
@@ -1485,12 +1573,12 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
      */
     _setupMenuButton: function(oldMenuOption) // Private, not an override (not in base class).  Method name unquoted so will be safely optimized (renamed) by GCC as desired.
     {
-        if ( this.options.menu && this.element.is("input")) // both push and toggle buttons based on <input>
+        if ( this._getMenuNode() && this.element.is("input")) // both push and toggle buttons based on <input>
             throw new Error("Menu Button functionality is not supported on input elements.");
 
         this._removeMenuBehavior(oldMenuOption);
 
-        if ( this.options.menu )
+        if ( this._getMenuNode() )
         {
             var self = this;
             this.element
@@ -1504,7 +1592,7 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
                     } else if (event.which === $.ui.keyCode.ESCAPE)
                     {
                         var bubbleEscUp = !self.rootElement.hasClass('oj-selected');
-						self._dismissMenu(self.options.menu, event);
+						self._dismissMenu(self._getMenuNode(), event);
                         return bubbleEscUp;
                     }
 
@@ -1559,17 +1647,22 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
     _getMenu: function() { // Private, not an override (not in base class).  Method name unquoted so will be safely optimized (renamed) by GCC as desired.
         // The JET Menu of the first element found.
         // Per architect discussion, get it every time rather than caching the menu.
-        var menu = this._getMenuOnly(this.options.menu); 
+        var menu = this._getMenuOnly(this._getMenuNode());
 
         // if no element found, or if element has no JET Menu
         if (!menu)
             throw new Error('JET Button: "menu" option specified, but does not reference a valid JET Menu.');
 
-        if (!this._menuListenerSet) {        
+        if (!this._menuListenerSet) {
             var self = this;
 
+            if (!this._IsCustomElement())
+             var closeEvent = "ojclose";
+            else
+                closeEvent = "ojClose";
+            
             // must use "on" syntax rather than clobbering whatever "close" handler the app may have set via the menu's "option" syntax
-            menu.widget().on( "ojclose" + this.menuEventNamespace, function( event, ui ) {
+            menu.widget().on( closeEvent + this.menuEventNamespace, function( event, ui ) {
                 self._menuDismissHandler(event);
             });
             this._menuListenerSet = true;
@@ -1579,22 +1672,22 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
     },
 
     /*
-     * Returns the JET Menu of the (first) element specified by the menuOption param, which should be a (current or old) 
+     * Returns the JET Menu of the (first) element specified by the menuOption param, which should be a (current or old)
      * value of the menu option.  Returns null if no element found, or if element has no JET Menu.
-     * 
+     *
      * Most callers should call _getMenu instead, as _getMenuOnly() performs no init, and doesn't throw if no menu found.
      * This method is suitable as a helper for _getMenu, or (say) to close an open menu (which isn't needed if menu is already gone).
-     * 
-     * If you need the menu's *element* (not component), then it's better to call $(foo) than 
+     *
+     * If you need the menu's *element* (not component), then it's better to call $(foo) than
      * menu=this._getMenuOnly(foo); elem=menu && menu.widget(),
      * since $(foo) works when the element is found but its component is not (and is more efficient).
-     * 
-     * If you need the menu's element *and* component, and should throw if they're missing, then just call 
+     *
+     * If you need the menu's element *and* component, and should throw if they're missing, then just call
      * menu=this._getMenu(); elem=menu.widget(),
      */
     _getMenuOnly: function(menuOption) { // Private, not an override (not in base class).  Method name unquoted so will be safely optimized (renamed) by GCC as desired.
         // Call instance() since need to access non-public Menu api's like __dismiss()
-        var constructor = oj.Components.getWidgetConstructor($(menuOption)[0], "ojMenu");
+        var constructor = oj.Components.__GetWidgetConstructor($(menuOption)[0], "ojMenu");
         return constructor && constructor("instance");
     },
 
@@ -1635,13 +1728,13 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
         menu.open(event, {"launcher": this.element, "initialFocus": focus});
 
         // bail if launch was cancelled by a beforeOpen listener
-        if (!menuElem.is(":visible")) 
+        if (!menuElem.is(":visible"))
             return;
 
         this._menuVisible = true;
 
         // If menu has neither aria-label nor aria-labelledby after menu.open() calls the beforeOpen listeners, then set aria-labelledby
-        // referencing the menu button, and remove it when the menu is closed.  This approach provides a useful default while allowing 
+        // referencing the menu button, and remove it when the menu is closed.  This approach provides a useful default while allowing
         // the menu to be shared by several launchers.
         if (!menuElem.attr("aria-label") && !menuElem.attr("aria-labelledby")) {
             this.element.uniqueId(); // add id if not already there
@@ -1675,11 +1768,11 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
         if (this._menuVisible)
         {
             // Doesn't throw if menu not found. Something is likely wrong in that case, but don't sweat it unless they try to *launch* an MIA menu.
-            var menu = this._getMenuOnly(menuOption); 
+            var menu = this._getMenuOnly(menuOption);
             if (menu) {
                 // TODO: this should be called by __dismiss(), rather than the caller having to call this too.
                 menu.__collapseAll( event, true ); // close open submenus before hiding the popup so that submenus will not be shown on reopen
-                
+
                 menu.__dismiss(event); // causes _menuDismissHandler(event) to be called
             }
         }
@@ -1697,7 +1790,7 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
     _menuDismissHandler: function(event) // Private, not an override (not in base class).  Method name unquoted so will be safely optimized (renamed) by GCC as desired.
     {
         if (this._setAriaLabelledBy) {
-            $(this.options.menu).removeAttr("aria-labelledby");
+            $(this._getMenuNode()).removeAttr("aria-labelledby");
             this._setAriaLabelledBy = false;
         }
 
@@ -1738,19 +1831,155 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
     // API doc for inherited methods with no JS in this file:
 
     /**
-     * Removes the button functionality completely. This will return the element back to its pre-init state.
+     * <p>The default slot is the button's text label. The <code class="prettyprint">&lt;oj-button></code> element accepts plain text or DOM nodes as children for the default slot.
+     * A default slot label is required for all buttons for accessibility purposes. The label can be hidden using the display attribute.</p>
      *
-     * @method
-     * @name oj.ojButton#destroy
+     * <p>If a text node is provided it will be wrapped in a span.</p>
+     *
+     * @ojchild Default
      * @memberof oj.ojButton
-     * @instance
      *
-     * @example <caption>Invoke the <code class="prettyprint">destroy</code> method:</caption>
-     * $( ".selector" ).ojButton( "destroy" );
+     * @example <caption>Initialize the Button with child content specified:</caption>
+     * &lt;oj-button>
+     *   &lt;span>myValue&lt;/span>
+     * &lt;/oj-button>
+     *
+     * @example <caption>Initialize the Button with data-bound child content specified in a span:</caption>
+     * &lt;oj-button>
+     *   &lt;span data-bind='text: myText'>&lt;/span>
+     * &lt;/oj-button>
+     *
+     * @example <caption>Initialize the Button with data-bound child content specified without a container element:</caption>
+     * &lt;oj-button>
+     *   &lt;!-- ko text: myText -->&lt;!--/ko-->
+     * &lt;/oj-button>
      */
     
+    /**
+     * <p>The default slot is the menu button's text label. The <code class="prettyprint">&lt;oj-menu-button></code> element accepts plain text or DOM nodes as children for the default slot.
+     * A default slot label is required for all menu buttons for accessibility purposes. The label can be hidden using the display attribute.</p>
+     *
+     * <p>If a text node is provided it will be wrapped in a span.</p>
+     *
+     * @ojchild Default
+     * @memberof oj.ojMenuButton
+     *
+     * @example <caption>Initialize the Menu Button with child content specified:</caption>
+     * &lt;oj-menu-button>
+     *   &lt;span>myValue&lt;/span>
+     * &lt;/oj-menu-button>
+     *
+     * @example <caption>Initialize the Menu Button with data-bound child content specified in a span:</caption>
+     * &lt;oj-menu-button>
+     *   &lt;span data-bind='text: myText'>&lt;/span>
+     * &lt;/oj-menu-button>
+     *
+     * @example <caption>Initialize the Menu Button with data-bound child content specified without a container element:</caption>
+     * &lt;oj-menu-button>
+     *   &lt;!-- ko text: myText -->&lt;!--/ko-->
+     * &lt;/oj-menu-button>
+     */
+
+    /**
+     * <p>The <code class="prettyprint">startIcon</code> slot is the button's start icon. The  <code class="prettyprint">&lt;oj-button></code> element accepts DOM nodes as children with the startIcon slot.</p>
+     *
+     * @ojslot startIcon
+     * @memberof oj.ojButton
+     *
+     * @example <caption>Initialize the Button with child content specified for the startIcon:</caption>
+     * &lt;oj-button>
+     *   &lt;span slot='startIcon' class='myIconClass'>&lt;/span>
+     *   &lt;span>myValue&lt;/span>
+     * &lt;/oj-button>
+     */
+    
+    /**
+     * <p>The <code class="prettyprint">startIcon</code> slot is the menu button's start icon. The  <code class="prettyprint">&lt;oj-menu-button></code> element accepts DOM nodes as children with the startIcon slot.</p>
+     *
+     * @ojslot startIcon
+     * @memberof oj.ojMenuButton
+     *
+     * @example <caption>Initialize the Menu Button with child content specified for the startIcon:</caption>
+     * &lt;oj-menu-button>
+     *   &lt;span slot='startIcon' class='myIconClass'>&lt;/span>
+     *   &lt;span>myValue&lt;/span>
+     * &lt;/oj-menu-button>
+     */
+     
+    /**
+     * <p>The <code class="prettyprint">endIcon</code> slot is the button's end icon. The  <code class="prettyprint">&lt;oj-button></code> element accepts DOM nodes as children with the endIcon slot.</p>
+     *
+     * @ojslot endIcon
+     * @memberof oj.ojButton
+     *
+     * @example <caption>Initialize the Button with child content specified for the endIcon:</caption>
+     * &lt;oj-button>
+     *   &lt;span>myValue&lt;/span>
+     *   &lt;span slot='endIcon' class='myIconClass'>&lt;/span>
+     * &lt;/oj-button>
+     */
+     
+    /**
+     * <p>The <code class="prettyprint">endIcon</code> slot is the menu button's end icon. The  <code class="prettyprint">&lt;oj-menu-button></code> element accepts DOM nodes as children with the endIcon slot. If no end icon is provided, a default end icon is used.</p>
+     *
+     * @ojslot endIcon
+     * @memberof oj.ojMenuButton
+     *
+     * @example <caption>Initialize the Menu Button with child content specified for the endIcon:</caption>
+     * &lt;oj-menu-button>
+     *   &lt;span>myValue&lt;/span>
+     *   &lt;span slot='endIcon' class='myIconClass'>&lt;/span>
+     * &lt;/oj-menu-button>
+     */
+    
+    /**
+     * <p>The <code class="prettyprint">menu</code> menu associatied with the menu button. The <code class="prettyprint">oj-menu-button</code> element accepts a single <code class="prettyprint">oj-menu</code> element as a child with the menu slot. See the [JET Menu]{@link oj.ojMenu} for more information on setting up a menu.</p>
+     *
+     * @ojslot menu
+     * @memberof oj.ojMenuButton
+     *
+     * @example <caption>Initialize the Menu Button with child content specified for the menu:</caption>
+     * &lt;oj-menu-button>
+     *   &lt;span>myValue&lt;/span>
+     *   &lt;oj-menu slot="menu" style="display:none" aria-label="This menu button's menu">
+     *   ...
+     *   &lt;/oj-menu>
+     * &lt;/oj-menu-button>
+     */
+     
     // Fragments:
 
+    /**
+     * <p>See also the <a href="#styling-section">oj-focus-highlight</a> discussion.
+     *
+     * <p>Disabled content: JET supports an accessible luminosity contrast ratio,
+     * as specified in <a href="http://www.w3.org/TR/WCAG20/#visual-audio-contrast-contrast">WCAG 2.0 - Section 1.4.3 "Contrast"</a>,
+     * in the themes that are accessible.  (See the "Theming" chapter of the JET Developer Guide for more information on which
+     * themes are accessible.)  Note that Section 1.4.3 says that text or images of text that are part of an inactive user
+     * interface component have no contrast requirement.  Because disabled content may not meet the minimum contrast ratio
+     * required of enabled content, it cannot be used to convey meaningful information.<p>
+     * 
+     * @ojfragment accessibilityCommon
+     * @memberof oj.ojButton
+     */
+    
+    /**
+     * <p>Built-in KO bindings, like KO's <code class="prettyprint">disable</code> binding, should not be used for state with a JS API, since that is tatamount to
+     * updating the DOM directly.  The component attribute should be bound instead.
+     *
+     * <p>State with no JS API should be set by manipulating the DOM directly in an allowable way, and then calling <code class="prettyprint">refresh()</code>
+     * on the affected component(s).  E.g. the reading direction (LTR / RTL) is changed by by setting the <code class="prettyprint">"dir"</code> attribute on the
+     * <code class="prettyprint">&lt;html></code> node and calling <code class="prettyprint">refresh()</code>.
+     *
+     * <p>When using a built-in Knockout binding, keep in mind that those bindings do not
+     * execute the necessary <code class="prettyprint">refresh()</code> call after updating the DOM.  Updates that flow from the component to the observable,
+     * as a result of user interaction, are not problematic.  But updates in the other direction, that programmatically update the DOM because the observable changed,
+     * will not be picked up until the next <code class="prettyprint">refresh()</code>.
+     * 
+     * @ojfragment stateCommon
+     * @memberof oj.ojButton
+     */
+    
     /**
      * <table class="keyboard-table">
      *   <thead>
@@ -1780,11 +2009,11 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
      * </table>
      *
      * <p>See also the [Menu]{@link oj.ojMenu} touch gesture doc.
-     * 
+     *
      * @ojfragment touchDoc - Used in touch gesture section of classdesc, and standalone gesture doc
      * @memberof oj.ojButton
      */
-        
+
     /**
      * <table class="keyboard-table">
      *   <thead>
@@ -1824,10 +2053,10 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
      * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
      * @memberof oj.ojButton
      */
-        
+
     /**
      * {@ojinclude "name":"ojStylingDocIntro"}
-     * 
+     *
      * <table class="generic-table styling-table">
      *   <thead>
      *     <tr>
@@ -1869,28 +2098,35 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
 });
 
 /**
- * @ojcomponent oj.ojButtonset
- * @augments oj.baseComponent
- * @since 0.6
- *
+ * @ojcomponent oj.ojMenuButton
+ * @since 4.0
+ * @augments oj.ojButton
  * @classdesc
- * <h3 id="buttonsetOverview-section">
- *   JET Buttonset Component
- *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#buttonsetOverview-section"></a>
+ * <h3 id="menubuttonOverview-section">
+ *   JET Menu Button
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#menubuttonOverview-section"></a>
  * </h3>
  *
- * <p>Description: Themeable, WAI-ARIA-compliant visual and semantic grouping container for [JET Buttons]{@link oj.ojButton}.
+ * <pre class="prettyprint"><code>&lt;oj-menu-button id="menuButton">
+ *   &lt;oj-menu id="menu" slot="menu" style="display:none">
+ *       &lt;oj-option>Item 1&lt;/oj-option>
+ *       &lt;oj-option>Item 2&lt;/oj-option>
+ *       &lt;oj-option>Item 3&lt;/oj-option>
+ *   &lt;/oj-menu>
+ * &lt;/oj-menu-button></code></pre>
+ * 
+ * <h3 id="buttonsetToolbar-section">
+ *   Buttonsets and Toolbars
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#buttonsetToolbar-section"></a>
+ * </h3>
+ * 
+ * <p>The [JET Buttonset]{@link oj.ojButtonset} component can be used to create toggle buttons or group related buttons.  It cannot be used
+ * to create menu buttons or regular push buttons. Buttonset provides visual and semantic grouping and WAI-ARIA-compliant focus management.  See the Buttonset API doc for more information.
  *
- * <p>The JET Buttonset component can be used to group related buttons, such as a group of radios or checkboxes.  Buttonset provides
- * visual and semantic grouping and WAI-ARIA-compliant focus management.
- *
- * <p>When a Buttonset is created or refreshed, it creates JET Buttons out of all contained DOM elements supported by JET Button
- * that are not already Buttons, by calling <code class="prettyprint">.ojButton()</code> on them.
- *
- * <p>A buttonset that contains radios should contain all radios in the radio group.  Checkboxes and radios in the buttonset should specify the
- * <code class="prettyprint">value</code> attribute, since the <code class="prettyprint">checked</code> option refers to that attribute.
- *
- *
+ * <p>Menu buttons, push buttons, and buttonsets can be placed in a [JET Toolbar]{@link oj.ojToolbar}.  Like Buttonset, Toolbar is themable and provides WAI-ARIA-compliant
+ * focus management.  See the Toolbar API doc for more information.
+ * 
+ * 
  * <h3 id="touch-section">
  *   Touch End User Information
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#touch-section"></a>
@@ -1907,6 +2143,143 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
  * {@ojinclude "name":"keyboardDoc"}
  *
  *
+ * <h3 id="a11y-section">
+ *   Accessibility
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#a11y-section"></a>
+ * </h3>
+ *
+ * <p>For accessibility, a JET Menu Button must always have its default slot filled, even if it is <a href="#display">icon-only</a>.
+ * 
+ * {@ojinclude "name":"accessibilityCommon"}
+ *
+ *
+ * <h3 id="styling-section">
+ *   Styling
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#styling-section"></a>
+ * </h3>
+ *
+ * {@ojinclude "name":"stylingDoc"}
+ *
+ *
+ * <h3 id="perf-section">
+ *   Performance
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#perf-section"></a>
+ * </h3>
+ *
+ * <p>In lieu of stamping a menu button in a table, dataGrid, or other container, consider placing a single Menu Button outside of the
+ * container that acts on the currently selected row or cell.
+ *
+ * <h3 id="state-section">
+ *   Setting Component State
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#state-section"></a>
+ * </h3>
+ *
+ * {@ojinclude "name":"stateCommon"}
+ */
+
+/**
+ * @ojcomponent oj.ojButtonsetOne
+ * @since 0.6
+ * @augments oj.ojButtonset
+ * @classdesc
+ * <h3 id="buttonsetOverview-section">
+ *   JET Buttonset One
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#buttonsetOverview-section"></a>
+ * </h3>
+ *
+ * <p>Description: Themeable, WAI-ARIA-compliant visual and semantic grouping container for [JET Buttons]{@link oj.ojButton}.
+ *
+ * <p>The JET ButtonsetOne can be used to group related buttons, where only one button may be selected.  Buttonset provides
+ * visual and semantic grouping and WAI-ARIA-compliant focus management.
+ *
+ * <p>When a Buttonset is created or refreshed, it creates JET Buttons out of all contained <code class="prettyprint">oj-option</code>
+ * DOM elements by wrapping them and calling <code class="prettyprint">.ojButton()</code> on the generated content. The Buttonset will remove all
+ * non <code class="prettyprint">oj-option</code> DOM elements from the Buttonset.
+ *
+ * <p><code class="prettyprint">oj-option</code>s inside of the buttonset should specify the <code class="prettyprint">oj-option</code>
+ * <code class="prettyprint">value</code> attribute, since the <code class="prettyprint">oj-buttonset-one</code> <code class="prettyprint">value</code> attribute refers to that attribute.
+ *
+ * <pre class="prettyprint"><code>&lt;oj-buttonset-one id="myButtonset">
+ *   &lt;oj-option value="myValue0">Value0&lt;/oj-option>
+ *   &lt;oj-option value="myValue1">Value1&lt;/oj-option>
+ * &lt;/oj-buttonset-one></code></pre>
+ *
+ * {@ojinclude "name":"buttonsetCommon"}
+ *
+ * <pre class="prettyprint">
+ * <code>&lt;oj-buttonset-one id="drinkset">
+ *       &lt;!-- ko foreach: drinkValues -->
+ *       &lt;oj-option value="[[id]]">
+ *           &lt;span data-bind="text: label">&lt;/span>
+ *       &lt;/oj-option>
+ *       &lt;!-- /ko -->
+ *   &lt;/oj-buttonset-one>
+ * </code></pre>
+ */
+
+/**
+ * @ojcomponent oj.ojButtonsetMany
+ * @since 0.6
+ * @augments oj.ojButtonset
+ * @classdesc
+ * <h3 id="buttonsetOverview-section">
+ *   JET Buttonset Many
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#buttonsetOverview-section"></a>
+ * </h3>
+ *
+ * <p>Description: Themeable, WAI-ARIA-compliant visual and semantic grouping container for [JET Buttons]{@link oj.ojButton}.
+ *
+ * <p>The JET ButtonsetMany can be used to group related buttons, where any number of the buttons can be selected.  Buttonset provides
+ * visual and semantic grouping and WAI-ARIA-compliant focus management.
+ *
+ * <p>When a Buttonset is created or refreshed, it creates JET Buttons out of all contained <code class="prettyprint">oj-option</code>
+ * DOM elements by wrapping them and calling <code class="prettyprint">.ojButton()</code> on the generated content. The Buttonset will remove all
+ * non <code class="prettyprint">oj-option</code> DOM elements from the Buttonset.
+ *
+ * <p><code class="prettyprint">oj-option</code>s in the buttonset should specify the <code class="prettyprint">oj-option</code>
+ * <code class="prettyprint">value</code> attribute, since the <code class="prettyprint">oj-buttonset-mnay</code> <code class="prettyprint">value</code> attribute refers to that attribute.
+ *
+ * <pre class="prettyprint"><code>&lt;oj-buttonset-many id="myButtonset">
+ *   &lt;oj-option value="myValue0">Value0&lt;/oj-option>
+ *   &lt;oj-option value="myValue1">Value1&lt;/oj-option>
+ * &lt;/oj-buttonset-many></code></pre>
+ *
+ * {@ojinclude "name":"buttonsetCommon"}
+ *
+ * <pre class="prettyprint">
+ * <code>&lt;oj-buttonset-many id="drinkset">
+ *       &lt;!-- ko foreach: drinkValues -->
+ *       &lt;oj-option value="[[id]]">
+ *           &lt;span data-bind="text: label">&lt;/span>
+ *       &lt;/oj-option>
+ *       &lt;!-- /ko -->
+ *   &lt;/oj-buttonset-many>
+ * </code></pre>
+ */
+
+/**
+ * @ojcomponent oj.ojButtonset
+ * @augments oj.baseComponent
+ * @since 0.6
+ * @abstract
+ * @classdesc
+ */
+
+/**
+ * <h3 id="touch-section">
+ *   Touch End User Information
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#touch-section"></a>
+ * </h3>
+ *
+ * {@ojinclude "name":"touchDoc"}
+ *
+ * <h3 id="keyboard-section">
+ *   Keyboard End User Information
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#keyboard-section"></a>
+ * </h3>
+ *
+ * {@ojinclude "name":"keyboardDoc"}
+ *
  * <h3 id="keyboard-appdev-section">
  *   Keyboard Application Developer Information
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#keyboard-appdev-section"></a>
@@ -1915,9 +2288,8 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
  * <p>The application should not do anything to interfere with the Buttonset's focus management, such as setting the <code class="prettyprint">tabindex</code>
  * of the buttons.  Also, enabled buttons should remain user-visible, without which arrow-key navigation to the button would cause the focus to seemingly disappear.
  *
- * <p>The buttonset's focus management should be turned off when placing the buttonset in a [JET Toolbar]{@link oj.ojToolbar}.  See the <code class="prettyprint">focusManagement</code> option.
+ * <p>The buttonset's focus management should be turned off when placing the buttonset in a [JET Toolbar]{@link oj.ojToolbar}.  See the <code class="prettyprint">focusManagement</code> attribute.
  * In this case, the "Keyboard End User Information" documented above is superseded by the Toolbar's documented keyboard behavior.
- *
  *
  * <h3 id="a11y-section">
  *   Accessibility
@@ -1932,7 +2304,7 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
  * aria-controls="myTextEditor"
  * </code></pre>
  *
- * <p>An <code class="prettyprint">aria-label</code> conveying the "choose only one" semantics should be included for a buttonset consisting of a radio group.
+ * <p>An <code class="prettyprint">aria-label</code> conveying the "choose only one" semantics should be included for a buttonset-one.
  *
  * <p>The <code class="prettyprint">aria-controls</code> attribute should be included if the buttonset is controlling something else on the page, e.g.
  * bold / italic / underline buttons controlling a rich text editor.  If the buttonset is contained in a toolbar, <code class="prettyprint">aria-controls</code>
@@ -1950,10 +2322,8 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
  *   Styling
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#styling-section"></a>
  * </h3>
- * 
- * 
- * {@ojinclude "name":"stylingDoc"}
  *
+ * {@ojinclude "name":"stylingDoc"}
  *
  * <h3 id="rtl-section">
  *   Reading direction
@@ -1964,92 +2334,19 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
  * <code class="prettyprint">&lt;html></code> element of the page.  As with any JET component, in the unusual case that the reading direction
  * is changed post-create, the buttonset must be <code class="prettyprint">refresh()</code>ed, or the page must be reloaded.
  *
- *
- * <h3 id="pseudos-section">
- *   Pseudo-selectors
- *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#pseudos-section"></a>
- * </h3>
- *
- * <p>The <code class="prettyprint">:oj-buttonset</code> pseudo-selector can be used in jQuery expressions to select JET Buttonsets.  For example:
- *
- * <pre class="prettyprint">
- * <code>$( ":oj-buttonset" ) // selects all JET Buttonsets on the page
- * $myEventTarget.closest( ":oj-buttonset" ) // selects the closest ancestor that is a JET Buttonset
- * </code></pre>
- *
- *
  * <h3 id="binding-section">
  *   Declarative Binding
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#binding-section"></a>
  * </h3>
  *
  * <p>For components like Buttonset and Menu that contain a number of like items, applications may wish to use a <code class="prettyprint">foreach</code> Knockout binding
- * to stamp out the contents.  This binding cannot live on the same node as the JET <code class="prettyprint">ojComponent</code> binding, and must instead live on a nested
+ * to stamp out the contents.  This binding cannot live on the same node as the <code class="prettyprint">ojComponent</code> binding, and must instead live on a nested
  * virtual element as follows:
  *
- * <pre class="prettyprint">
- * <code>&lt;div id="drinkset" aria-label="Choose only one beverage."
- *      data-bind="ojComponent: {component: 'ojButtonset', checked: drink}">
- *     &lt;!-- ko foreach: drinkRadios -->
- *         &lt;label data-bind="attr: {for: id}">&lt;/label>
- *         &lt;input type="radio" name="beverage"
- *                data-bind="value: id, attr: {id: id},
- *                           ojComponent: { component: 'ojButton', label: label }"/>
- *     &lt;!-- /ko -->
- * &lt;/div>
- * </code></pre>
- *
- *
- * <h3 id="jqui2jet-section">
- *   JET for jQuery UI developers
- *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#jqui2jet-section"></a>
- * </h3>
- *
- * <ol>
- *   <li>All JQUI and JET components inherit <code class="prettyprint">disable()</code> and <code class="prettyprint">enable()</code> methods from the base class.  This API
- *       duplicates the functionality of the <code class="prettyprint">disabled</code> option.  In JET, to keep the API as lean as possible, we
- *       have chosen not to document these methods outside of this section.</li>
- *   <li>JQUI Buttonset has an undocumented <code class="prettyprint">items</code> option allowing apps to get and set the selector used by Buttonset to find all its
- *       buttonizable descendants.  This option has been removed in JET, as we do not want this to be settable.</li>
- *   <li>The focus management functionality is new in JET.</li>
- *   <li>JET Buttonset's [disabled]{@link oj.ojButtonset#disabled} option effectively disables its Buttons without affecting their <code class="prettyprint">disabled</code>
- *       options.</li>
- * </ol>
- *
- * <p>Also, event names for all JET components are prefixed with "oj", instead of component-specific prefixes like "buttonset" or "menu".
- * E.g. the JQUI <code class="prettyprint">buttonsetcreate</code> event is <code class="prettyprint">ojcreate</code> in JET, as shown in the doc for that event.
- * Reason:  This makes the API more powerful.  It allows apps to listen to "foo" events from <em>all</em> JET components via:
- *
- * <pre class="prettyprint">
- * <code>$( ".selector" ).on( "ojfoo", myFunc);
- * </code></pre>
- *
- * or to "foo" events only from JET Buttonsets (the JQUI functionality) via:
- *
- * <pre class="prettyprint">
- * <code>$( ".selector" ).on( "ojfoo", ":oj-buttonset", myFunc);
- * </code></pre>
- *
- *
- * <!-- - - - - Above this point, the tags are for the class.
- *              Below this point, the tags are for the constructor (initializer). - - - - - - -->
- *
- *
- * @desc Creates a JET Buttonset.
- *
- * @param {Object=} options a map of option-value pairs to set on the component
- *
- * @example <caption>Initialize the buttonset with no options specified:</caption>
- * $( ".selector" ).ojButtonset();
- *
- * @example <caption>Initialize the buttonset with some options and callbacks specified:</caption>
- * $( ".selector" ).ojButtonset( { "disabled": true, "create": function( event, ui ) {} } );
- *
- * @example <caption>Initialize the buttonset via the JET <code class="prettyprint">ojComponent</code> binding:</caption>
- * &lt;div id="beverages" data-bind="ojComponent: { component: 'ojButtonset',
- *                                               disabled: true,
- *                                               create: setupButtonset }">
+ * @ojfragment buttonsetCommon
+ * @memberof oj.ojButtonset
  */
+
 oj.__registerWidget("oj.ojButtonset", $['oj']['baseComponent'],
 {
     // private.  Was an undocumented JQUI option, which we removed, so I moved from options to here and added underscore.  Leave unquoted so gets renamed by GCC as desired.
@@ -2060,136 +2357,263 @@ oj.__registerWidget("oj.ojButtonset", $['oj']['baseComponent'],
     options: // options is in externs.js.  TODO: same as other prototype fields.
     {
         /**
-         * The <code class="prettyprint">checked</code> option indicates which radio or checkboxes in the Buttonset are selected.
+         * The <code class="prettyprint">value</code> attribute indicates which <code class="prettyprint">oj-option</code> in the Buttonset is selected.
+         * It corresponds to the <code class="prettyprint">value</code> attribute of the <code class="prettyprint">oj-option</code>, which should always be set.
+         *
+         * <code class="prettyprint">value</code> is any type equal to the <code class="prettyprint">value</code> attribute of the selected <code class="prettyprint">oj-option</code>.  The attribute is
+         * <code class="prettyprint">null</code> if and only if no <code class="prettyprint">oj-option</code> is selected.  Thus, an n-<code class="prettyprint">oj-option</code> group has n+1 valid
+         * <code class="prettyprint">value</code> values: the n <code class="prettyprint">oj-option</code> values, and <code class="prettyprint">null</code> .
+         *
+         * {@ojinclude "name":"buttonsetCommonValue"}
+         *
+         * @name value
+         * @memberof oj.ojButtonsetOne
+         * @type {*}
+         * @default null    
+         * @ojwriteback         
+         *
+         * @example <caption>Initialize the Buttonset with the <code class="prettyprint">value</code> attribute specified:</caption>
+         * &lt;oj-buttonset-one value='bold'>&lt;/oj-buttonset-one>
+         *
+         * @example <caption>Get or set the <code class="prettyprint">value</code> property after initialization:</caption>
+         * // Get one
+         * var value = myButtonset.value;
+         *
+         * // Set one.  (No property change event will be fired.)
+         * myButtonset.value = 'bold';
+         */
+        /**
+         * The <code class="prettyprint">value</code> attribute indicates which <code class="prettyprint">oj-option</code>s in the Buttonset are selected.
          * It corresponds to the <code class="prettyprint">value</code> attribute of those elements, which should always be set.
          *
-         * <p>If this Buttonset consists of a single radio group, and no other buttons, then <code class="prettyprint">checked</code>
-         * is a string equal to the <code class="prettyprint">value</code> attribute of the checked radio.  The option is
-         * <code class="prettyprint">null</code> if and only if no radio is selected.  Thus, an n-radio group has n+1 valid
-         * <code class="prettyprint">checked</code> values: the n radio values, and <code class="prettyprint">null</code> .
+         * <code class="prettyprint">value</code> is a possibly empty, non-<code class="prettyprint">null</code> string array containing the <code class="prettyprint">value</code>
+         * attributes of the selected <code class="prettyprint">oj-option</code>s.  This array has "set", not "list", semantics; i.e. order is neither important nor guaranteed.
+         * Thus, an n-<code class="prettyprint">oj-option</code> set has 2^n valid <code class="prettyprint">value</code> values: the 2^n possible subsets of n <code class="prettyprint">oj-option</code>s.
          *
-         * <p>If this Buttonset consists of one or more checkboxes, and no other buttons, then <code class="prettyprint">checked</code> is
-         * a possibly empty, non-<code class="prettyprint">null</code> string array containing the <code class="prettyprint">value</code>
-         * attributes of the checked checkboxes.  This array has "set", not "list", semantics; i.e. order is neither important nor guaranteed.
-         * Thus, an n-checkbox set has 2^n valid <code class="prettyprint">checked</code> values: the 2^n possible subsets of n checkboxes.
+         * {@ojinclude "name":"buttonsetCommonValue"}
          *
-         * <p>In all other cases, <code class="prettyprint">checked</code> is <code class="prettyprint">null</code>.
+         * @name value
+         * @memberof oj.ojButtonsetMany
+         * @type {Array.<*>|undefined}
+         * @default null
+         * @ojwriteback
+         *         
+         * @example <caption>Initialize the Buttonset with the <code class="prettyprint">value</code> attribute specified:</caption>
+         * &lt;oj-buttonset-many value='{{["bold", "italic"]}}'>&lt;/oj-buttonset-many>
          *
-         * <p>After create time, the <code class="prettyprint">checked</code> state should be set via this API, not by setting the underlying DOM attribute.
+         * @example <caption>Get or set the <code class="prettyprint">value</code> property after initialization:</caption>
+         * // Get one (if many)
+         * var value = myButtonset.value[0];
          *
-         * <p>The 2-way <code class="prettyprint">checked</code> binding offered by the <code class="prettyprint">ojComponent</code> binding
-         * should be used instead of Knockout's built-in <code class="prettyprint">checked</code> or <code class="prettyprint">attr</code> bindings,
-         * as the former sets the API, while the latter two set the underlying DOM attribute.
+         * // Get all
+         * var values = myButtonset.value;
          *
-         * <p>It's still possible for the <code class="prettyprint">checked</code> option and DOM to get out of synch by other means.  
-         * In this case, the app is responsible for updating the <code class="prettyprint">checked</code> option.  A typical case is 
-         * when the set of Buttons contained in the Buttonset changes, possibly due to a Knockout binding, in which case the app must first call 
-         * <code class="prettyprint">refresh</code> (as in all cases when the DOM changes underneath a component), and then  
-         * update the <code class="prettyprint">checked</code> option to the desired value.
+         * // Set one.  (If many. No property change event will be fired.)
+         * myButtonset.value[1] = 'bold';
          *
-         * <p>Often there is no need to listen for this event, since the <code class="prettyprint">ojComponent</code>
-         * <code class="prettyprint">checked</code> binding, discussed above, will update the bound observable whenever the
-         * <code class="prettyprint">checked</code> state changes.  The declarative binding is often preferable to an explicit listener.
+         * // Set all.
+         * myButtonset.value = ["bold", "italic"];
+         */
+        /**
+         * <p>In all other cases, <code class="prettyprint">value</code> is <code class="prettyprint">null</code>.
          *
-         * <p>A click listener should not be used to detect changes to the <code class="prettyprint">checked</code> state.
-         * The <code class="prettyprint">ojComponent</code> <code class="prettyprint">checked</code> binding and/or
-         * the <code class="prettyprint">optionChange</code> event should be used instead.
+         * <p>It's still possible for the <code class="prettyprint">value</code> attribute and DOM to get out of sync by other means.
+         * In this case, the app is responsible for updating the <code class="prettyprint">value</code> attribute.  A typical case is
+         * when the set of Buttons contained in the Buttonset changes, possibly due to a Knockout binding, in which case the app must first call
+         * <code class="prettyprint">refresh</code> (as in all cases when the DOM changes underneath a component), and then
+         * update the <code class="prettyprint">value</code> attribute to the desired value.
          *
+         * <p>Often there is no need to listen for this event, since the
+         * <code class="prettyprint">value</code> binding, discussed above, will update the bound observable whenever the
+         * <code class="prettyprint">value</code> state changes.  The declarative binding is often preferable to an explicit listener.
+         *
+         * <p>A click listener should not be used to detect changes to the <code class="prettyprint">value</code> state.
+         * The attribute <code class="prettyprint">value</code> binding and/or
+         * the <code class="prettyprint">valueChange</code> event should be used instead.
+         *
+         * @alias value
          * @expose
-         * @memberof oj.ojButtonset
+         * @memberof oj.ojButtonset         
          * @instance
-         * @type {?string|Array.<string>|undefined}
-         * @default If not initially set, is initialized to reflect the initial DOM state
-         *
-         * @example <caption>Initialize a buttonset with the <code class="prettyprint">checked</code> option specified:</caption>
-         * // radio
-         * $( ".selector" ).ojButtonset( { "checked": "tea" } );
-         *
-         * // checkbox
-         * $( ".selector" ).ojButtonset( { "checked": ["bold", "italic"] } );
-         *
-         * @example <caption>Get or set the <code class="prettyprint">checked</code> option, after initialization:</caption>
-         * // getter
-         * var display = $( ".selector" ).ojButtonset( "option", "checked" );
-         *
-         * // radio setter
-         * $( ".selector" ).ojButtonset( "option", "checked", "tea" );
-         *
-         * // checkbox setter
-         * $( ".selector" ).ojButtonset( "option", "checked", ["bold", "italic"] );
+         * @ojfragment buttonsetCommonValue
          */
         checked: null,
 
-        /** 
-         * <p>Indicates in what states the buttonset's buttons have chrome (background and border).  
-         * 
-         * <p>A buttonset's chroming must be set by setting this buttonset option (or setting the [chroming]{@link oj.ojToolbar#chroming} option 
-         * of a containing toolbar), rather than setting the [chroming]{@link oj.ojButton#chroming} option on each of its buttons.
-         * 
-         * <p>This option only affects buttons that have never had their own <code class="prettyprint">chroming</code> option set.  This allows 
-         * individual buttons to opt out of their buttonset's chroming if needed.  Note, however, that built-in themes expect all buttons in a 
-         * buttonset to share the same chroming.
-         * 
-         * <p>Thus, in built-in themes, the <code class="prettyprint">chroming</code> option of buttons in a buttonset must either be unset 
-         * (recommended) or set to the same value as the buttonset's <code class="prettyprint">chroming</code> option.
-         * 
-         * <p>The default chroming varies by theme and containership as follows:
-         * <ul>
-         *   <li>If the buttonset is in a toolbar, then the default chroming is the current value of the toolbar's [chroming]{@link oj.ojToolbar#chroming} option.</li>
-         *   <li>Else, if <code class="prettyprint">$buttonsetChromingOptionDefault</code> is set in the current theme as seen in the example below, then that value is the chroming default.</li>
-         *   <li>Else, the default chroming is <code class="prettyprint">"full"</code>.</li>
-         * </ul>
-         * 
-         * <p>Once a value has been set on this buttonset option, that value applies regardless of theme and containership.
-         * 
-         * @expose
-         * @memberof oj.ojButtonset
-         * @instance
-         * @since 1.2.0
-         * 
-         * @type {string}
+        /**
+         * {@ojinclude "name":"buttonsetCommonChroming"}
+         *
+         * @name chroming
+         * @memberof oj.ojButtonsetOne
+         * @type {string|undefined}
          * @ojvalue {string} "full" In typical themes, full-chrome buttons always have chrome.
-         * @ojvalue {string} "half" In typical themes, half-chrome buttons acquire chrome only in their hover, active, and selected states. Half-chroming is recommended for buttons in a toolbar.  
+         * @ojvalue {string} "half" In typical themes, half-chrome buttons acquire chrome only in their hover, active, and selected states. Half-chroming is recommended for buttons in a toolbar.
          *     (This is the toolbar default in most themes.)
          * @ojvalue {string} "outlined" In typical themes, outlined buttons are similar to half-chrome buttons, but have a border in the default state.
          * @default Varies by theme and containership as detailed above.
          *
-         * @example <caption>Initialize the buttonset with the <code class="prettyprint">chroming</code> option specified:</caption>
-         * $( ".selector" ).ojButtonset( { "chroming": "half" } );
+         * @example <caption>Initialize the Buttonset with the <code class="prettyprint">chroming</code> attribute specified:</caption>
+         * &lt;oj-buttonset-one chroming='half'>&lt;/oj-buttonset-one>
          *
-         * @example <caption>Get or set the <code class="prettyprint">chroming</code> option, after initialization:</caption>
+         * @example <caption>Get or set the <code class="prettyprint">chroming</code> property after initialization:</caption>
          * // getter
-         * var display = $( ".selector" ).ojButtonset( "option", "chroming" );
+         * var chromingValue = myButtonset.chroming;
          *
          * // setter
-         * $( ".selector" ).ojButtonset( "option", "chroming", "full" );
-         * 
+         * myButtonset.chroming = 'half';
+         *
          * @example <caption>Set the default in the theme (SCSS) :</caption>
          * $buttonsetChromingOptionDefault: half !default;
+         */
+        /**
+         * {@ojinclude "name":"buttonsetCommonChroming"}
+         *
+         * @name chroming
+         * @memberof oj.ojButtonsetMany
+         * @type {string}
+         * @ojvalue {string} "full" In typical themes, full-chrome buttons always have chrome.
+         * @ojvalue {string} "half" In typical themes, half-chrome buttons acquire chrome only in their hover, active, and selected states. Half-chroming is recommended for buttons in a toolbar.
+         *     (This is the toolbar default in most themes.)
+         * @ojvalue {string} "outlined" In typical themes, outlined buttons are similar to half-chrome buttons, but have a border in the default state.
+         * @default Varies by theme and containership as detailed above.
+         *
+         * @example <caption>Initialize the Buttonset with the <code class="prettyprint">chroming</code> attribute specified:</caption>
+         * &lt;oj-buttonset-many chroming='half'>&lt;/oj-buttonset-many>
+         *
+         * @example <caption>Get or set the <code class="prettyprint">chroming</code> property after initialization:</caption>
+         * // getter
+         * var chromingValue = myButtonset.chroming;
+         *
+         * // setter
+         * myButtonset.chroming = 'half';
+         *
+         * @example <caption>Set the default in the theme (SCSS) :</caption>
+         * $buttonsetChromingOptionDefault: half !default;
+         */
+
+        /**
+         * <p>Indicates in what states the buttonset's buttons have chrome (background and border).
+         *
+         * <p>A buttonset's chroming must be set by setting this buttonset attribute (or setting the [chroming]{@link oj.ojToolbar#chroming} attribute
+         * of a containing toolbar).
+         *
+         * <p>The default chroming varies by theme and containership as follows:
+         * <ul>
+         *   <li>If the buttonset is in a toolbar, then the default chroming is the current value of the toolbar's [chroming]{@link oj.ojToolbar#chroming} attribute.</li>
+         *   <li>Else, if <code class="prettyprint">$buttonsetChromingOptionDefault</code> is set in the current theme as seen in the example below, then that value is the chroming default.</li>
+         *   <li>Else, the default chroming is <code class="prettyprint">"full"</code>.</li>
+         * </ul>
+         *
+         * <p>Once a value has been set on this buttonset attribute, that value applies regardless of theme and containership.
+         *
+         * @expose
+         * @memberof oj.ojButtonset
+         * @instance
+         * @since 1.2.0
+         * @ojfragment buttonsetCommonChroming
          */
         chroming: "full",
 
         /**
-         * <p>Setting the Buttonset's <code class="prettyprint">disabled</code> option effectively disables all its Buttons, without affecting
-         * their <code class="prettyprint">disabled</code> options.  Thus, a Button is effectively disabled if either its own
-         * <code class="prettyprint">disabled</code> option is set, or the Buttonset's <code class="prettyprint">disabled</code> option is set.
+         * {@ojinclude "name":"buttonsetCommonDisplay"}
+         *
+         * @name display
+         * @memberof oj.ojButtonsetOne
+         * @type {string}
+         * @ojvalue {string} "all" Display both the label and icons.
+         * @ojvalue {string} "icons" Display only the icons.
+         * @default <code class="prettyprint">"all"</code>
+         *
+         * @example <caption>Initialize the Buttonset with the <code class="prettyprint">display</code> attribute specified:</caption>
+         * &lt;oj-buttonset-one display='icons'>&lt;/oj-buttonset-one>
+         *
+         * @example <caption>Get or set the <code class="prettyprint">display</code> property after initialization:</caption>
+         * // getter
+         * var displayValue = myButtonset.display;
+         *
+         * // setter
+         * myButtonset.display = 'icons';
+         */
+        /**
+         * {@ojinclude "name":"buttonsetCommonDisplay"}
+         *
+         * @name display
+         * @memberof oj.ojButtonsetMany
+         * @type {string}
+         * @ojvalue {string} "all" Display both the label and icons.
+         * @ojvalue {string} "icons" Display only the icons.
+         * @default <code class="prettyprint">"all"</code>
+         *
+         * @example <caption>Initialize the Buttonset with the <code class="prettyprint">display</code> attribute specified:</caption>
+         * &lt;oj-buttonset-many display='icons'>&lt;/oj-buttonset-many>
+         *
+         * @example <caption>Get or set the <code class="prettyprint">display</code> property after initialization:</caption>
+         * // getter
+         * var displayValue = myButtonset.display;
+         *
+         * // setter
+         * myButtonset.display = 'icons';
+         */
+        /**
+         * <p>Whether to display both the <a href="#label">label</a> and <a href="#icons">icons</a> (<code class="prettyprint">"all"</code>)
+         * or just the icons (<code class="prettyprint">"icons"</code>) of the buttons.  In the latter case, the label is displayed in a tooltip instead.
+         *
+         * <p>The <code class="prettyprint">display</code> attribute will be ignored if no icons exist in the button.
+         *
+         * @expose
+         * @memberof oj.ojButtonset
+         * @instance
+         * @ojfragment buttonsetCommonDisplay
+         */
+        display: "all",
+
+        /**
+         * {@ojinclude "name":"buttonsetCommonDisabled"}
+         *
+         * @member
+         * @name disabled
+         * @memberof oj.ojButtonsetOne
+         * @type {boolean}
+         * @default <code class="prettyprint">false</code>
+         *
+         * @example <caption>Initialize the Buttonset with the <code class="prettyprint">disabled</code> attribute specified:</caption>
+         * &lt;oj-buttonset-one disabled='true'>&lt;/oj-buttonset-one>
+         *
+         * @example <caption>Get or set the <code class="prettyprint">disabled</code> property after initialization:</caption>
+         * // getter
+         * var disabledValue = myButtonset.disabled;
+         *
+         * // setter
+         * myButtonset.disabled = true;
+         */
+        /**
+         * {@ojinclude "name":"buttonsetCommonDisabled"}
+         *
+         * @member
+         * @name disabled
+         * @memberof oj.ojButtonsetMany
+         * @type {boolean}
+         * @default <code class="prettyprint">false</code>
+         *
+         * @example <caption>Initialize the Buttonset with the <code class="prettyprint">disabled</code> attribute specified:</caption>
+         * &lt;oj-buttonset-many disabled='true'>&lt;/oj-buttonset-many>
+         *
+         * @example <caption>Get or set the <code class="prettyprint">disabled</code> property after initialization:</caption>
+         * // getter
+         * var disabledValue = myButtonset.disabled;
+         *
+         * // setter
+         * myButtonset.disabled = true;
+         */
+        /**
+         * <p>Setting the Buttonset's <code class="prettyprint">disabled</code> attribute effectively disables all its Buttons, without affecting
+         * their <code class="prettyprint">disabled</code> attributes.  Thus, a Button is effectively disabled if either its own
+         * <code class="prettyprint">disabled</code> attribute is set, or the Buttonset's <code class="prettyprint">disabled</code> attribute is set.
          *
          * @member
          * @name disabled
          * @memberof oj.ojButtonset
          * @instance
-         * @type {boolean}
-         * @default <code class="prettyprint">false</code>
-         *
-         * @example <caption>Initialize the buttonset with the <code class="prettyprint">disabled</code> option specified:</caption>
-         * $( ".selector" ).ojButtonset( { "disabled": true } );
-         *
-         * @example <caption>Get or set the <code class="prettyprint">disabled</code> option, after initialization:</caption>
-         * // getter
-         * var disabled = $( ".selector" ).ojButtonset( "option", "disabled" );
-         *
-         * // setter
-         * $( ".selector" ).ojButtonset( "option", "disabled", true );
+         * @ojfragment buttonsetCommonDisabled
          */
         // disabled option declared in superclass, but we still want the above API doc
 
@@ -2198,54 +2622,58 @@ oj.__registerWidget("oj.ojButtonset", $['oj']['baseComponent'],
         // keys would no longer wrap around when reach end of Bset, in which case Bset would let the event bubble up to Toolbar (or to whoever if
         // not in a TB).  Any edge cases?  e.g. with tabstops, TB contents with special arrow-key behavior like inputTexts, etc.?
         /**
-         * The <code class="prettyprint">focusManagement</code> option should be set to <code class="prettyprint">"none"</code> when the
+         * {@ojinclude "name":"buttonsetCommonFocusManagement"}
+         *
+         * @name focusManagement
+         * @memberof oj.ojButtonsetOne
+         * @type {string}
+         * @ojvalue {string} "oneTabstop" Focus management is enabled.  The Buttonset is a single tabstop with arrow-key navigation.
+         * @ojvalue {string} "none" Focus management is disabled, to avoid interfering with the focus management of a containing component.
+         * @default <code class="prettyprint">"oneTabstop"</code>
+         *
+         * @example <caption>Initialize the Buttonset with the <code class="prettyprint">focusManagement</code> attribute specified:</caption>
+         * &lt;oj-buttonset-one focus-management='none'>&lt;/oj-buttonset-one>
+         *
+         * @example <caption>Get or set the <code class="prettyprint">focusManagement</code> property after initialization:</caption>
+         * // getter
+         * var focusManagementValue = myButtonset.focusManagement;
+         *
+         * // setter
+         * myButtonset.focusManagement = 'none';
+         */
+        /**
+         * {@ojinclude "name":"buttonsetCommonFocusManagement"}
+         *
+         * @name focusManagement
+         * @memberof oj.ojButtonsetMany
+         * @type {string}
+         * @ojvalue {string} "oneTabstop" Focus management is enabled.  The Buttonset is a single tabstop with arrow-key navigation.
+         * @ojvalue {string} "none" Focus management is disabled, to avoid interfering with the focus management of a containing component.
+         * @default <code class="prettyprint">"oneTabstop"</code>
+         *
+         * @example <caption>Initialize the Buttonset with the <code class="prettyprint">focusManagement</code> attribute specified:</caption>
+         * &lt;oj-buttonset-many focus-management='none'>&lt;/oj-buttonset-many>
+         *
+         * @example <caption>Get or set the <code class="prettyprint">focusManagement</code> property after initialization:</caption>
+         * // getter
+         * var focusManagementValue = myButtonset.focusManagement;
+         *
+         * // setter
+         * myButtonset.focusManagement = 'none';
+         */
+        /**
+         * The <code class="prettyprint">focusManagement</code> attribute should be set to <code class="prettyprint">"none"</code> when the
          * Buttonset is placed in a [JET Toolbar]{@link oj.ojToolbar}.  This allows the Toolbar to manage the focus with no interference from the Buttonset,
          * so that arrow keys move within the entire Toolbar, not just within the Buttonset.
          *
          * @expose
          * @memberof oj.ojButtonset
          * @instance
-         * @type {string}
-         * @ojvalue {string} "oneTabstop" Focus management is enabled.  The Buttonset is a single tabstop with arrow-key navigation.
-         * @ojvalue {string} "none" Focus management is disabled, to avoid interfering with the focus management of a containing component.
-         * @default <code class="prettyprint">"oneTabstop"</code>
-         *
-         * @example <caption>Initialize the buttonset with the <code class="prettyprint">focusManagement</code> option specified:</caption>
-         * $( ".selector" ).ojButtonset( { "focusManagement": "none" } );
-         *
-         * @example <caption>Get or set the <code class="prettyprint">focusManagement</code> option, after initialization:</caption>
-         * // getter
-         * var display = $( ".selector" ).ojButtonset( "option", "focusManagement" );
-         *
-         * // setter
-         * $( ".selector" ).ojButtonset( "option", "focusManagement", "none" );
+         * @ojfragment buttonsetCommonFocusManagement
          */
         focusManagement: "oneTabstop"
 
         // Events
-
-        /**
-         * Triggered when the buttonset is created.
-         *
-         * @event
-         * @name create
-         * @memberof oj.ojButtonset
-         * @instance
-         * @property {Event} event <code class="prettyprint">jQuery</code> event object
-         * @property {Object} ui Currently empty
-         *
-         * @example <caption>Initialize the buttonset with the <code class="prettyprint">create</code> callback specified:</caption>
-         * $( ".selector" ).ojButtonset({
-         *     "create": function( event, ui ) {}
-         * });
-         *
-         * @example <caption>Bind an event listener to the <code class="prettyprint">ojcreate</code> event:</caption>
-         * $( ".selector" ).on( "ojcreate", function( event, ui ) {
-         *     // verify that the component firing the event is a component of interest
-         *     if ($(event.target).is(".mySelector")) {}
-         * });
-         */
-        // create event declared in superclass, but we still want the above API doc
     },
 
     // If this is a radio or checkbox buttonset, and the specified checked value is valid,
@@ -2262,75 +2690,128 @@ oj.__registerWidget("oj.ojButtonset", $['oj']['baseComponent'],
     {
         var type = $.type(checked);
         var valid, allCheckboxes;
-
-        if (type === "null" || type === "array")
+                
+        // whether buttonset contains exclusively checkboxes, therefore is buttonset many
+        allCheckboxes = (this.element[0].tagName === 'OJ-BUTTONSET-MANY' || ($buttons.length > 0 && $buttons.filter("input[type=checkbox]").length === $buttons.length));
+        
+        // requires an array in buttonset many case
+        if (allCheckboxes && type != "array")
         {
-            // whether buttonset contains exclusively checkboxes
-            allCheckboxes = $buttons.filter("input[type=checkbox]").length === $buttons.length;
-        }
-
-        if (allCheckboxes && type === "null")
-        {
-            // null not a valid value for checkbox set.  This is case (c2) below.
             throw new Error("Invalid 'checked' value set on JET Buttonset: " + checked);
         }
-
-        if (type === "string" || type === "null")
+        
+        // cannot have different names in radio groups
+        if (!allCheckboxes && $buttons.length > 0)
         {
-            // Cases when it's string or null:
-            // (a) Radio: *all* buttons are radios in same group, and that the checked value to be set is null or matches one of the radio values.
-            // Result:  Set on DOM.
-            // (b) Not a set:  Buttonset is neither a radioset nor checkboxset, and checked is null, the only valid value.
-            // Result:  Nothing to set on DOM.
-            // (c) Invalid:  Throw.  Cases:
-            //     (c1) Radio group, and the checked value is non-null and doesn't match any of the radio values.
-            //     (c2) Checkboxset, checked is null, which is invalid.  Already bailed out for this case above.
-            //     (c3) Checkboxset, checked is string, which is invalid.
-            //     (c4) Not a set, and checked is not null.
-
-            // before setting DOM for *any* buttons, verify that it's Case (a).
             var name = $buttons[0].name;
             var validRadios = (name || $buttons.length<=1) // if name is "" and there's >1 radio, then they're in separate radio groups
-                && $buttons.filter("input[type=radio][name=" + name + "]").length === $buttons.length
-                && (checked===null || $buttons.filter("[value=" + checked + "]").length);
-
-            if ( validRadios ) // Case (a)
-            {
-                $buttons.each(function() {
-                    this.checked = (this.value === checked);
-                });
-            }
-
-            // validRadios true iff case (a).  (checked===null) is true for (a), (b), and (c2), but we already bailed out for (c2) above.
-            // so this says "valid if (a) or (b)"
-            valid = validRadios || checked===null;
-        } else if (type === "array") // only valid for a checkbox set
-        {
-            // Before setting any buttons, verify that the checked value to be set is valid:
-            // Verify that all buttons are checkboxes, since is array.
-            // Then, in a sorted copy of the array (concat makes a copy), verify no dupes and
-            // that all entries are values in the buttonset
-            var last;
-            valid = allCheckboxes && checked.concat().sort().every(function(elem, index, array) {
-                var retVal = elem !== last && $buttons.filter("[value=" + elem + "]").length;
-                last = elem;
-                return retVal;
-            });
-
-            if (valid)
-            {
-                $buttons.each(function() {
-                    this.checked = (checked.indexOf(this.value) > -1);
-                });
-            }
-        } else
-        {
-            // value is invalid (not the right type for *any* kind of buttonset)
-            valid = false;
+                && $buttons.filter("input[type=radio][name=" + name + "]").length === $buttons.length;
         }
+
+        valid = this._setCheckedOnButtons(checked, $buttons, type, allCheckboxes);
+        
+        valid = valid || checked===null;
 
         if (!valid)
             throw new Error("Invalid 'checked' value set on JET Buttonset: " + checked);
+    },
+    // does comparsion and sets checked on inputs
+    // for custom elements it will accept objects as values on inputs and will get the value from oj option rather than the input
+    // compares references first
+    // if any references match it will not do object comparison
+    // if there are no reference matches and it is custom element and it is an object or array containing at least one object do deep comparison on the objects
+    _setCheckedOnButtons: function(checked, $buttons, type, isMany)
+    {
+        // loop once for reference comparison
+        var checkedFoundCount = this._shallowCompare(checked, $buttons, isMany);
+
+        // loop second for deep object comparison, supported in custom elements only, and only if no references were found in prior check
+        if (this._shouldDeepCompare(checked, isMany, checkedFoundCount))
+        {
+            checkedFoundCount = this._deepCompare(checked, $buttons, isMany, checkedFoundCount);
+        }
+
+        return isMany ? checkedFoundCount === checked.length : checkedFoundCount === 1;
+    },
+
+    // compares references and increments the match counter
+    _shallowCompare: function(checked, $buttons, isMany)
+    {
+        var self = this;
+        var checkedFoundCount = 0;
+        $buttons.each(function() {
+            // gets value off ojOption in custom element case
+            var value = self._getInputValue(this);
+            
+            // if a buttonset many, checked is an array so do indexOf for reference comparison
+            // if a buttonset one, check reference
+            if (isMany ? (checked.indexOf(value) > -1) : value === checked)
+            {
+                this.checked = true;
+                checkedFoundCount++;
+            }
+            else
+            {
+                this.checked = false;
+            }
+        });
+        return checkedFoundCount;
+    },
+    // checks if deep comparison needed
+    // if buttonset many - deep compare if we have not found all of our values in the value array
+    // if buttonset one -  deep compare if we did not find the value
+    _shouldDeepCompare: function(checked, isMany, checkedFoundCount)
+    {
+       return isMany ? checkedFoundCount !== checked.length : !checkedFoundCount;
+    },
+
+    // compares objects deeply using
+    _deepCompare: function(checked, $buttons, isMany, checkedFoundCount)
+    {
+        var self = this;
+        $buttons.each(function() {
+            // gets value off ojOption in custom element case
+            var value = self._getInputValue(this);
+
+            // if array loop over values and only compare objects
+            if (isMany)
+            {
+                for (var i = 0; i < checked.length; i++)
+                {
+                    // need to compare all types within many due to parsing
+                    if (self._deepCompareValues(value, checked[i]))
+                    {
+                        this.checked = true;
+                        checkedFoundCount++;
+                    }
+                }
+            }
+            else if (self._deepCompareValues(value, checked))
+            {
+                this.checked = true;
+                checkedFoundCount++;
+            }
+        });
+        return checkedFoundCount;
+    },
+
+    // performs deep comparison using public method if available otherwise internal compareValues
+    _deepCompareValues: function(value, checked){
+        // ojCompareValues is a custom comparator that returns 0 if the values are equal
+        return ($.type(value) == 'object' && value['ojCompareValues']) ? value['ojCompareValues'](value, checked) === 0 : oj.Object.compareValues(value, checked);
+    },
+
+    // gets value from ojOption in custom element case
+    _getInputValue: function(input)
+    {
+        return this._IsCustomElement() ? this._getOjOptionFromInput(input).value : input.value;
+    },
+
+    // gets the oj option associated with an input
+    _getOjOptionFromInput: function(input)
+    {
+        // oj option is first child of preceeding label
+        return $(input).prev().children()[0];
     },
 
     // if all buttons are radios with same group, returns value attr of selected radio (string), or null if none selected
@@ -2342,6 +2823,7 @@ oj.__registerWidget("oj.ojButtonset", $['oj']['baseComponent'],
         var checked = undefined;
         var isRadio = null;
         var name = null;
+        var self = this;
 
         $buttons.each(function(index) {
             // at this point, all previous buttons, if any, were all radios in same group, or were all checkboxes
@@ -2387,19 +2869,20 @@ oj.__registerWidget("oj.ojButtonset", $['oj']['baseComponent'],
 
             // at this point, all buttons so far including this one are either all radios in same group, or are all checkboxes
 
+            var value = self._getInputValue(this);
             if (checked === undefined) // this is first button
             {
                 checked = currentIsRadio
-                    ? this.checked ? this.value : null
-                    : this.checked ? [this.value] : [];
+                    ? this.checked ? value : null
+                    : this.checked ? [value] : [];
                 isRadio = currentIsRadio;
                 name = currentName;
             } else if (this.checked)
             {
                 if (isRadio)
-                    checked = this.value;
+                    checked = value;
                 else
-                    checked.push(this.value);
+                    checked.push(value);
             } // else not first button and not checked, so leave "checked" at whatever value we set on previous iteration
         });
 
@@ -2430,8 +2913,178 @@ oj.__registerWidget("oj.ojButtonset", $['oj']['baseComponent'],
         });
     },
 
+    // remove non oj-options from DOM
+    _removeNonOjOptions: function ()
+    {
+        this.element.children(":not(oj-option)").remove();
+    },
+
+    // Add the custom option renderer to all oj options
+    _processOjOptions: function ()
+    {
+        var self = this;
+        var ojOptions = this.element.find("oj-option");
+
+        $.each(ojOptions, function(i, option) {
+            option["customOptionRenderer"] = self._customOptionRenderer.bind(self);
+        });
+    },
+
+    // Call render on all the oj options directly
+    _customOptionRenderer: function(option)
+    {
+        this._removeOptionDecoration(option);
+        this._addOptionDecoration(option);
+    },
+
+    // Wrap the oj option in a label and add an input as a sibling
+    _addOptionDecoration: function(option) {
+        var ojOption = $(option);
+
+        // add classes to slots and wrap text if applicable
+        this._addOptionClasses(option);
+
+        // is the buttonset one or many
+        var isOne = this.element[0].tagName === 'OJ-BUTTONSET-ONE';
+        var type = isOne ? 'radio': 'checkbox';
+
+        // get values from the oj option to set on the input
+        var value = option.value;
+        var disabled = option.disabled;
+
+        // create label/input to decorate oj option
+        var input = $('<input>');
+        var label = $('<label>');
+
+        // input needs an id so label can set the for attribute
+        input.uniqueId();
+        input.prop('value', value);
+        input.prop('type', type);
+        input.prop('disabled', disabled);
+
+        // set the label for attribute
+        var id = input[0].id;
+        label.prop('for', id);
+
+        // if a radio buttonset need a uniform name, create one using the first input id
+        if (isOne)
+        {
+            if (!this._name)
+            {
+                this._name = '_n_' + id;
+            }
+            input.prop('name', this._name);
+        }
+
+        // rearrange the dom
+        ojOption.before(label);  // @HTMLUpdateOK
+        label.append(ojOption);  // @HTMLUpdateOK
+        label.after(input);  // @HTMLUpdateOK
+
+        // if the buttonset has already been setup it should be reset on any rerender
+        // should be oj-complete but trying to avoid issue with oj option rerendering
+        // before the j-option is inited
+        if ($(this.element).hasClass('oj-buttonset'))
+        {
+            this.$buttons = this.element.find( this._items );
+            this._setup(false);
+        }
+    },
+
+    // remove the dom that we generated excluding the wrapped span
+    // destroy the button and leave just what was originally there
+    _removeOptionDecoration: function(option) {
+        var ojOption = $(option);
+        var parentLabel = ojOption.parent();
+
+        if (parentLabel.prop('tagName') === 'LABEL')
+        {
+            this._removeOptionClasses(option);
+
+            var input = parentLabel.siblings(".oj-button-input")
+
+            input.ojButton('destroy');
+
+            input.removeUniqueId();
+
+            input.remove();
+            parentLabel.replaceWith(option);  // @HTMLUpdateOK
+        }
+    },
+
+    // add needed CSS Classes to slots and wrap the text spans
+    _addOptionClasses: function(option) {
+        var slotMap = oj.CustomElementBridge.getSlotMap(option);
+        var text = slotMap[""] ? slotMap[""] : null;
+        var startIcon = slotMap["startIcon"] ? slotMap["startIcon"][0] : null;
+        var endIcon = slotMap["endIcon"] ? slotMap["endIcon"][0] : null;
+
+        if (startIcon)
+        {
+            $(startIcon).addClass('oj-button-icon');
+            $(startIcon).addClass('oj-start');
+        }
+
+        if (text)
+        {
+            for (var i = 0; i < text.length; i++)
+            {
+                var currentText = text[i];
+                var wrapperSpan = currentText;
+                if (currentText.nodeType === 3)
+                {
+                    wrapperSpan = $('<span>');
+                    $(currentText).replaceWith(wrapperSpan);  // @HTMLUpdateOK
+                    wrapperSpan.append(currentText);  // @HTMLUpdateOK
+                }
+
+                $(wrapperSpan).addClass('oj-button-text');
+            }
+        }
+
+        if (endIcon)
+        {
+            $(endIcon).addClass('oj-button-icon');
+            $(endIcon).addClass('oj-end');
+        }
+    },
+
+    // remove needed CSS Classes to slots
+    _removeOptionClasses: function(option) {
+        var slotMap = oj.CustomElementBridge.getSlotMap(option);
+        var text = slotMap[""] ? slotMap[""] : null;
+        var startIcon = slotMap["startIcon"] ? slotMap["startIcon"][0] : null;
+        var endIcon = slotMap["endIcon"] ? slotMap["endIcon"][0] : null;
+
+        if (startIcon)
+        {
+            $(startIcon).removeClass('oj-button-icon');
+            $(startIcon).removeClass('oj-start');
+        }
+
+        if (text)
+        {
+            for (var i = 0; i < text.length; i++)
+            {
+                $(text[i]).removeClass('oj-button-text');
+            }
+        }
+
+        if (endIcon)
+        {
+            $(endIcon).removeClass('oj-button-icon');
+            $(endIcon).removeClass('oj-end');
+        }
+    },
+
     _InitOptions: function(originalDefaults, constructorOptions) {
         this._super(originalDefaults, constructorOptions);
+
+        if (this._IsCustomElement())
+        {
+            this._removeNonOjOptions();
+            this._processOjOptions();
+        }
 
         this.$buttons = this.element.find( this._items );
 
@@ -2457,7 +3110,7 @@ oj.__registerWidget("oj.ojButtonset", $['oj']['baseComponent'],
             //
             // Writeback is not relevant here, since this code block handles the case where no option value was supplied, in
             // which case there must not be an observable to write to.
-            if ($.type(checked) === "array")
+            if ($.type(checked) === "array" || this.element[0].tagName === 'OJ-BUTTONSET-MANY')
                 this.options.checked = [];
 
             if (checked !== undefined)
@@ -2480,11 +3133,11 @@ oj.__registerWidget("oj.ojButtonset", $['oj']['baseComponent'],
     _NotifyContextMenuGesture: function(menu, event, eventType)
     {
         // Set launcher to the current tabbable button
-        // For toggle buttons, launcher must be the hidden focusable input, but for Shift-F10 we want the CM aligned to the Button's root element, not that 
+        // For toggle buttons, launcher must be the hidden focusable input, but for Shift-F10 we want the CM aligned to the Button's root element, not that
         // hidden input.  This is no change from the default for push buttons, since in that case the root element and launcher (input) are the same.
         var currentButton = this.element.find(":oj-button[tabindex=0]");
         this._OpenContextMenu(event, eventType, {
-            "launcher": currentButton, 
+            "launcher": currentButton,
             "position": {"of": eventType==="keyboard" ? currentButton.ojButton("widget") : event}
         });
 },
@@ -2506,8 +3159,8 @@ oj.__registerWidget("oj.ojButtonset", $['oj']['baseComponent'],
 
     _setOption: function( key, value, flags ) // Override of protected base class method.  Method name needn't be quoted since is in externs.js.
     {
-        // previously called super at end, so that optionChange (fired at end of super) is fired at very end, but now must call at start, so that 
-        // when the chroming case calls Button.refresh(), callee sees the new value of the option.
+        // previously called super at end, so that optionChange (fired at end of super) is fired at very end, but now must call at start, so that
+        // when the chroming case calls Button.refreshrefresh(), callee sees the new value of the option.
         this._superApply( arguments );
 
         if ( key === "disabled" )
@@ -2527,15 +3180,17 @@ oj.__registerWidget("oj.ojButtonset", $['oj']['baseComponent'],
             this._setRole(value);
         } else if ( key === "chroming" ) {
             _setChromingClass(this.element, value);
-            
-            // refresh the buttons to make them re-fetch their chroming option, in case it's still set to the default dynamic getter, 
+
+            // refresh the buttons to make them re-fetch their chroming option, in case it's still set to the default dynamic getter,
             // which takes its value from the containing buttonset or toolbar if present.
             // TBD: Consider only calling refresh() on children that haven't had their chroming option set, i.e. those still using the dynamic getter.
             this.$buttons.ojButton( "refresh" );
+        } else if ( key === "display" ) {
+            this.$buttons.ojButton( "option", key, value );
         }
     },
 
-    // TODO: JSDoc says: "refresh() is required ... after a change to the disabled status of any of the buttons in the buttonset."  Instead, shouldn't 
+    // TODO: JSDoc says: "refresh() is required ... after a change to the disabled status of any of the buttons in the buttonset."  Instead, shouldn't
     // Button._setOption("disabled") look for a containing Buttonset and do the necessary housekeeping?
     /**
      * Refreshes the buttonset, including the following:
@@ -2560,13 +3215,22 @@ oj.__registerWidget("oj.ojButtonset", $['oj']['baseComponent'],
      * @instance
      *
      * @example <caption>Invoke the <code class="prettyprint">refresh</code> method:</caption>
-     * $( ".selector" ).ojButtonset( "refresh" );
+     * myButtonset.refresh();
      */
     refresh: function() // Override of public base class method (unlike JQUI).  Method name needn't be quoted since is in externs.js.
     {
         this._super();
 
-        // Call this after _super(), which updates the list of containers (toolbar) that the buttonset is in, which must be updated 
+        // Should not need to call refresh on oj-options. If the content of an oj-option is modified then
+        // app should call refresh on the option not the container and that should trigger a re-render
+        // only need to add custom renderer for case where something is added that the buttonset did not 
+        // know about before
+        if (this._IsCustomElement())
+        {
+            this._processOjOptions();
+        }
+        
+        // Call this after _super(), which updates the list of containers (toolbar) that the buttonset is in, which must be updated
         // when _setup calls the chroming option getter.
         this._setup(false);
     },
@@ -2577,17 +3241,18 @@ oj.__registerWidget("oj.ojButtonset", $['oj']['baseComponent'],
         this.isRtl = this._GetReadingDirection() === "rtl";
         _setChromingClass(this.element, this.options.chroming);
 
-        if (isCreate)
+        if ((isCreate && !this.initCheckedFromDom) || this._IsCustomElement())
         {
-            if (!this.initCheckedFromDom) {
-                // if app provided a "checked" option, it wins over whatever's in the DOM.
-                this._setCheckedOnDom(this.options.checked, this.$buttons); // throws if checked option invalid
-            }
+            // if app provided a "checked" option, it wins over whatever's in the DOM.
+            this._setCheckedOnDom(this.options.checked, this.$buttons); // throws if checked option invalid
 
             // At create time, whether set from DOM or option, checked option and checked props are now in synch, so we just need to
             // set .oj-selected on each button.  This is done below by either the _applyCheckedStateFromDom()
             // call (for existing buttons) or the initializer call (for new buttons).
-        } else { // it's refresh time.
+        }
+
+        if (!isCreate)
+        { // it's refresh time.
             // If the DOM's checked state is out of synch with the checked option, it's either because
             // the app directly set the "checked" attr of an existing Button in the Buttonset, which we don't support (they should
             // have used the component API instead), or the set of buttons in the set has changed (possibly because a KO foreach
@@ -2617,7 +3282,7 @@ oj.__registerWidget("oj.ojButtonset", $['oj']['baseComponent'],
 
             // Create buttons underneath us
             .not( ":oj-button" )
-                .ojButton() // sets .oj-selected
+                .ojButton({'display': this.options.display}) // sets .oj-selected
             .end()
 
             // Update rounded corners, etc.
@@ -2818,12 +3483,12 @@ oj.__registerWidget("oj.ojButtonset", $['oj']['baseComponent'],
                 var increment = (event.which == $.ui.keyCode.DOWN || ((event.which == $.ui.keyCode.RIGHT) ^ this.isRtl)) ? 1 : -1;
                 var newIndex = (oldIndex+increment+length)%length; // wrap around if at start/end of buttonset
 
-                // When radios are inside an element with role=toolbar, WAI-ARIA doesn't specify how to reconcile its recommended 
+                // When radios are inside an element with role=toolbar, WAI-ARIA doesn't specify how to reconcile its recommended
                 // Toolbar behavior (left/right arrows move focus w/o selecting) and radio behavior (all 4 arrow keys both move focus
-                // and check/select that radio).  A11y office recommended treating radios in a Buttonset or Toolbar like other buttons: 
-                // Arrow moves focus without selecting, Spacebar selects, which we prefer too.  
+                // and check/select that radio).  A11y office recommended treating radios in a Buttonset or Toolbar like other buttons:
+                // Arrow moves focus without selecting, Spacebar selects, which we prefer too.
                 // Previously we did that for only left/right arrows, and disabled up/down arrows, but since both native and WAI-ARIA-
-                // compliant radios support up/down arrows, and since JAWS automatically instructs the user to use up/down arrows even 
+                // compliant radios support up/down arrows, and since JAWS automatically instructs the user to use up/down arrows even
                 // when the radio group is inside a role=toolbar, we now support up/down arrows for radios via the fall-thru above
                 // (but still focus only, not select).
                 $enabledButtons.eq(newIndex).focus();
@@ -2867,41 +3532,41 @@ oj.__registerWidget("oj.ojButtonset", $['oj']['baseComponent'],
 
     // API doc for inherited methods with no JS in this file:
 
+    // Fragments:
+
     /**
-     * Returns a <code class="prettyprint">jQuery</code> object containing the root element of the Buttonset component.
+     * <p>The &lt;oj-buttonset-one> element accepts <code class="prettyprint">oj-option</code>s as children. See the <code class="prettyprint">oj-option</code> doc for details about
+     * accepted children and slots.</p>
      *
-     * @method
-     * @name oj.ojButtonset#widget
-     * @memberof oj.ojButtonset
-     * @instance
-     * @return {jQuery} the root element of the component
+     * @ojchild Default
+     * @memberof oj.ojButtonsetOne
      *
-     * @example <caption>Invoke the <code class="prettyprint">widget</code> method:</caption>
-     * var widget = $( ".selector" ).ojButtonset( "widget" );
+     * @example <caption>Initialize the Buttonset with child content specified:</caption>
+     * &lt;oj-buttonset-one>
+     *   &lt;oj-option value="myValue">myValue&lt;/oj-option>
+     * &lt;/oj-buttonset-one>
      */
 
     /**
-     * Removes the buttonset functionality completely, including focus management, and recursively <code class="prettyprint">destroy()</code>s
-     * the contained buttons. This will return the element back to its pre-init state.
+     * <p>The &lt;oj-buttonset-many> element accepts <code class="prettyprint">oj-option</code>s as children. See the <code class="prettyprint">oj-option</code> doc for details about
+     * accepted children and slots.</p>
      *
-     * @method
-     * @name oj.ojButtonset#destroy
-     * @memberof oj.ojButtonset
-     * @instance
+     * @ojchild Default
+     * @memberof oj.ojButtonsetMany
      *
-     * @example <caption>Invoke the <code class="prettyprint">destroy</code> method:</caption>
-     * $( ".selector" ).ojButtonset( "destroy" );
+     * @example <caption>Initialize the Buttonset with child content specified:</caption>
+     * &lt;oj-buttonset-many>
+     *   &lt;oj-option value="myValue">myValue&lt;/span>
+     * &lt;/oj-buttonset-many>
      */
-    
-    // Fragments:
-    
+
     /**
      * <p>All Buttonset touch interaction is with the individual buttons.  See the [JET Button]{@link oj.ojButton} touch gesture doc.
      *
      * @ojfragment touchDoc - Used in touch gesture section of classdesc, and standalone gesture doc
      * @memberof oj.ojButtonset
      */
-    
+
     /**
      * <p>JET Buttonset is a single tabstop, with arrow-key navigation within the buttonset, as follows:
      *
@@ -2933,7 +3598,7 @@ oj.__registerWidget("oj.ojButtonset", $['oj']['baseComponent'],
 
     /**
      * {@ojinclude "name":"ojStylingDocIntro"}
-     * 
+     *
      * <table class="generic-table styling-table">
      *   <thead>
      *     <tr>
@@ -2945,7 +3610,7 @@ oj.__registerWidget("oj.ojButtonset", $['oj']['baseComponent'],
      *     <tr>
      *       <td>oj-buttonset-width-auto</td>
 
-     *       <td>Forces Buttonset Buttons' widths to be determined by the total width of their icons and label contents, 
+     *       <td>Forces Buttonset Buttons' widths to be determined by the total width of their icons and label contents,
      *           overriding any theming defaults.
      *           <p>Optionally, specify the overall width of the Buttonset for further width control.</p>
      *           <p>Can be applied to Buttonset's root element, or on an ancestor such as Toolbar or document.
@@ -2954,8 +3619,8 @@ oj.__registerWidget("oj.ojButtonset", $['oj']['baseComponent'],
      *     <tr>
      *       <td>oj-buttonset-width-equal</td>
      *       <td>Forces Buttonset Buttons' widths to be equal, overriding any theming defaults.
-     *           <p>Note that the overall width of the Buttonset defaults to 100%; set the 
-     *              <code class="prettyprint">max-width</code> (recommended) or 
+     *           <p>Note that the overall width of the Buttonset defaults to 100%; set the
+     *              <code class="prettyprint">max-width</code> (recommended) or
      *              <code class="prettyprint">width</code> of the Buttonset for further width control.
      *           <p>Can be applied to Buttonset's root element, or on an ancestor such as Toolbar or document.
      *       </td>
@@ -2966,7 +3631,6 @@ oj.__registerWidget("oj.ojButtonset", $['oj']['baseComponent'],
      * @ojfragment stylingDoc - Used in Styling section of classdesc, and standalone Styling doc
      * @memberof oj.ojButtonset
      */
-    
 });
 
 // -----------------------------------------------------------------------------
@@ -2981,13 +3645,13 @@ var _lastToggleActive;
 var BUTTON_EVENT_NAMESPACE = ".ojButton",
 
     BASE_CLASSES = "oj-button oj-component oj-enabled oj-default", // oj-enabled is a state class, but convenient to include in this var instead
-    STATE_CLASSES = "oj-hover oj-active oj-selected", 
+    STATE_CLASSES = "oj-hover oj-active oj-selected",
     TYPE_CLASSES = "oj-button-icons-only oj-button-icon-only oj-button-text-icons oj-button-text-icon-start oj-button-text-icon-end oj-button-text-only",
     CHROMING_CLASSES = "oj-button-full-chrome oj-button-half-chrome oj-button-outlined-chrome",
 
     _chromingMap = {
-        "full": "oj-button-full-chrome", 
-        "half": "oj-button-half-chrome", 
+        "full": "oj-button-full-chrome",
+        "half": "oj-button-half-chrome",
         "outlined": "oj-button-outlined-chrome"
     },
 
@@ -3053,7 +3717,7 @@ var BUTTON_EVENT_NAMESPACE = ".ojButton",
         return $radios;
     },
 
-    // searches actualContainers array for each elem of interestingContainers in order, until one is found, 
+    // searches actualContainers array for each elem of interestingContainers in order, until one is found,
     // walks up the tree to find that container, and returns its widget constructor.  Returns null if no containers found.
     _findContainer = function( element, actualContainers, interestingContainers )
     {
@@ -3062,7 +3726,7 @@ var BUTTON_EVENT_NAMESPACE = ".ojButton",
             if (actualContainers.indexOf(containerName) >= 0) {
                 // walk up parents until find the container
                 for (; ; element = element.parentNode) {
-                    var func = oj.Components.getWidgetConstructor(element, containerName);
+                    var func = oj.Components.__GetWidgetConstructor(element, containerName);
                     if (func) {
                         return func;
                     }
@@ -3073,14 +3737,14 @@ var BUTTON_EVENT_NAMESPACE = ".ojButton",
     },
 
     _interestingContainers = {
-        "button":    ["ojButtonset", "ojToolbar"], 
+        "button":    ["ojButtonset", "ojToolbar"],
         "buttonset": ["ojToolbar"]
     },
 
     _getChromingDefault = function( componentName, element, actualContainers )
     {
         var containerConstructor = _findContainer(element, actualContainers, _interestingContainers[componentName]);
-    
+
         // If the component is in an interesting container (buttonset or toolbar), then the default chroming is the current value of the chroming option of the nearest such container.
         if (containerConstructor) {
             return containerConstructor("option", "chroming");
@@ -3122,26 +3786,14 @@ var ojButtonMeta = {
       "enumValues": ["all", "icons"]
     },
     "href": {
-      "type": "string"
-    },
-    "icons": {
-      "type": "Object",
-      "properties": {
-        "end": {
-          "type": "string"
-        },
-        "start": {
-          "type": "string"
-        },
+      "type": "string",
+      "extension": {
+        _COPY_TO_INNER_ELEM: true
       }
-    },
-    "label": {
-      "type": "string"
     }
   },
   "extension": {
-    _WIDGET_NAME: "ojButton", 
-    _TRANSFER_ATTRS: ["href"]
+    _WIDGET_NAME: "ojButton"
   }
 };
 oj.CustomElementBridge.registerMetadata('oj-button', 'baseComponent', ojButtonMeta);
@@ -3153,4 +3805,105 @@ oj.CustomElementBridge.register('oj-button', {
 });
 })();
 
+(function() {
+var ojMenuButtonMeta = {
+  "properties": {
+    "chroming": {
+      "type": "string",
+      "enumValues": ["full", "half", "outlined"]
+    },
+    "disabled": {
+      "type": "boolean"
+    },
+    "display": {
+      "type": "string",
+      "enumValues": ["all", "icons"]
+    },
+    "href": {
+      "type": "string",
+      "extension": {
+        _COPY_TO_INNER_ELEM: true
+      }
+    }
+  },
+  "extension": {
+    _WIDGET_NAME: "ojButton"
+  }
+};
+oj.CustomElementBridge.registerMetadata('oj-menu-button', 'baseComponent', ojMenuButtonMeta);
+oj.CustomElementBridge.register('oj-menu-button', {
+  'metadata': oj.CustomElementBridge.getMetadata('oj-menu-button'),
+  'innerDomFunction': function(element) {
+    return element.getAttribute("href") ? 'a' : 'button';
+  }
+});
+})();
+
+(function() {
+var ojButtonSetOneMeta = {
+  "properties": {
+    "chroming": {
+      "type": "string",
+      "enumValues": ["full", "half", "outlined"]
+    },
+    "disabled": {
+      "type": "boolean"
+    },
+    "display": {
+      "type": "string",
+      "enumValues": ["all", "icons"]
+    },
+    "focusManagement": {
+      "type": "string",
+      "enumValues": ["oneTabstop", "none"]
+    },
+    "value": {
+      "type": "any",
+      "writeback": true
+      }
+  },
+  "extension": {
+    _WIDGET_NAME: "ojButtonset",
+    _ALIASED_PROPS: {"value": "checked"}
+  }
+};
+oj.CustomElementBridge.registerMetadata('oj-buttonset-one', 'baseComponent', ojButtonSetOneMeta);
+oj.CustomElementBridge.register('oj-buttonset-one', {
+  'metadata': oj.CustomElementBridge.getMetadata('oj-buttonset-one')
+});
+})();
+
+(function() {
+var ojButtonSetManyMeta = {
+  "properties": {
+    "chroming": {
+      "type": "string",
+      "enumValues": ["full", "half", "outlined"]
+    },
+    "disabled": {
+      "type": "boolean"
+    },
+    "display": {
+      "type": "string",
+      "enumValues": ["all", "icons"]
+    },
+    "focusManagement": {
+      "type": "string",
+      "enumValues": ["oneTabstop", "none"]
+    },
+    "value": {
+      "type": "Array",
+      "writeback": true
+      }
+  },
+  "extension": {
+    _WIDGET_NAME: "ojButtonset",
+    _ALIASED_PROPS: {"value": "checked"}
+  }
+};
+oj.CustomElementBridge.registerMetadata('oj-buttonset-many', 'baseComponent', ojButtonSetManyMeta);
+oj.CustomElementBridge.register('oj-buttonset-many', {
+  'metadata': oj.CustomElementBridge.getMetadata('oj-buttonset-many')
+});
+})();
 });

@@ -347,7 +347,21 @@ oj.ComponentBinding.prototype._update = function(element, valueAccessor, allBind
     
     comp = comp.bind(jelem);
     
-    changeTracker = new ComponentChangeTracker(comp, oj.ComponentBinding._changeQueue);
+    var updaterCallback = function(changes) 
+    {
+      var mutationOptions = oj.ComponentBinding.__removeDotNotationOptions(changes);
+    
+      comp("option", changes);
+      var keys  = Object.keys(mutationOptions);
+      
+      for (var k=0; k<keys.length; k++)
+      {
+        var key = keys[k];
+        comp("option", key, mutationOptions[key]);
+      }
+    };
+    
+    changeTracker = new ComponentChangeTracker(updaterCallback, oj.ComponentBinding._changeQueue);
     
     // Create a compatible valueAccessor for backward compatibility with the managed attributes and custom bindings that
     // expect the ojComponent value to be defined inline. We can use already-resolved binding value here because the component
@@ -554,13 +568,13 @@ oj.ComponentBinding.prototype._initComponent = function(element, ctx)
           for (var k = 0; k<updateKeys.length; k++)            
           {
             var p = updateKeys[k];
-            ctx.changeTracker.addChange(p, updateProps[p]);
+            ctx.changeTracker.addChange(p, oj.ComponentBinding.__cloneIfArray(updateProps[p]));
           }
         }
       }
       else if (!ctx.readOnlyProperties[prop]) // ignore chnages to read-only properties
       {
-        ctx.changeTracker.addChange(prop, value);
+        ctx.changeTracker.addChange(prop, oj.ComponentBinding.__cloneIfArray(value));
       }
     }
   };
@@ -795,8 +809,10 @@ oj.ComponentBinding._registerWritebacks = function(jelem, ctx)
            
             var accessor = ctx.valueAccessor();
             
-            for (var name in nameValues)
+            var names = Object.keys(nameValues);
+            for (var nm=0; nm<names.length; nm++)
             {
+              var name = names[nm];
               ctx.changeTracker.suspend(name);
               try
               {
@@ -859,13 +875,13 @@ oj.ComponentBinding._writeValueToProperty = function(name, target, value,
     if (func)
     {
       var writer = func(bindingContext);
-      writer(value);
+      writer(oj.ComponentBinding.__cloneIfArray(value));
     }
   
   }
   else if (ko.isWriteableObservable(target))
   {
-    target(value);
+    target(oj.ComponentBinding.__cloneIfArray(value));
   }
 };
 
@@ -887,6 +903,21 @@ oj.ComponentBinding._toJS = function(prop)
 
   return prop;
 };
+
+
+/**
+ * @ignore
+ */
+oj.ComponentBinding.__cloneIfArray = function(value)
+{
+  if (Array.isArray(value))
+  {
+    value = value.slice();
+  }
+  return value;
+}
+
+
 
 /**
  * @private
@@ -1022,6 +1053,14 @@ oj.ComponentBinding._INSTANCE = oj.ComponentBinding.create(["ojComponent", "jque
  */
 $.widget("oj._ojDetectCleanData", 
 {
+  options: 
+  {
+    /**
+     * @type {boolean}
+     * @default <code class="prettyprint">false</code>
+     */
+    'cleanParent': false,
+  },
   _destroy: function()
   {
     var disposal, cleanExternalData, oldCleanExternal;
@@ -1036,7 +1075,16 @@ $.widget("oj._ojDetectCleanData",
 
     try
     {
-      ko.cleanNode(this.element[0]);
+      // provide the option to clean from the parent node for components like ojdatagrid so that the comment
+      // and text nodes aren't memory leaked with ko when remove/_destroy is not called on all node types
+      if (this.options['cleanParent'] && this.element[0].parentNode != null)
+      {
+        ko.cleanNode(this.element[0].parentNode);
+      }
+      else
+      {
+        ko.cleanNode(this.element[0]);          
+      }
     }
     finally
     {
@@ -1181,13 +1229,13 @@ function ComponentChangeTracker(component, queue)
 oj.Object.createSubclass(ComponentChangeTracker, oj.Object, "ComponentBinding.ComponentChangeTracker");
 
 /**
- * @param {Function} component
+ * @param {Function} updateCallback
  * @param {Object} queue
  */
-ComponentChangeTracker.prototype.Init = function(component, queue)
+ComponentChangeTracker.prototype.Init = function(updateCallback, queue)
 {
   ComponentChangeTracker.superclass.Init.call(this);
-  this._component = component;
+  this._updateCallback = updateCallback;
   this._queue = queue;
   this._changes = {};
   this._suspendCountMap = {};
@@ -1239,16 +1287,7 @@ ComponentChangeTracker.prototype.applyChanges = function(changes)
 {
   if (!this._disposed)
   {
-    
-    var mutationOptions = oj.ComponentBinding.__removeDotNotationOptions(changes);
-    
-    var flags = {'changed' : true}; // indicates that the callee does not need to diff the value
-    
-    this._component("option", changes, flags); 
-    for (var mo in mutationOptions)
-    {
-      this._component("option", mo, mutationOptions[mo], flags);
-    }
+    this._updateCallback(changes);
   }
 };
 
@@ -1277,7 +1316,7 @@ ComponentChangeTracker.prototype._isSuspended = function(option)
 //       can update observable to null, without having to additionally clear DOM attr to avoid having it restored from DOM attr.
 //       Vet with Max first.
 // TODO: keep binding and DOM in synch, a la disabled option in JQUI, similar to todo for contextMenu feature on JET base class.
-// TODO: share code with baseComponent._setupContextMenu?  Should this have any of the configurability of that method?
+// TODO: share code with baseComponent._SetupContextMenu?  Should this have any of the configurability of that method?
 //       where would shared code live?
 ko.bindingHandlers['ojContextMenu'] = 
 {
@@ -1323,7 +1362,7 @@ ko.bindingHandlers['ojContextMenu'] =
     // lazily get the Menu component in case it is inited after the ojContextMenu binding is applied to launcher.
     var getContextMenu = function()
     {
-      var constructor = oj.Components.getWidgetConstructor(getContextMenuNode()[0], "ojMenu");
+      var constructor = oj.Components.__GetWidgetConstructor(getContextMenuNode()[0], "ojMenu");
 
       // The JET Menu of the first element found.
       // Per architect discussion, get it every time rather than caching the menu.
@@ -1551,12 +1590,12 @@ ko.bindingHandlers['ojContextMenu'] =
  */
 function _getDataGridHeaderRenderer(bindingContext, template)
 {
+    var nodeStore = {};
     return function(context)
     {
-        var parent, childContext, useTemplate;
+        var parent, childContext;
 
         parent = context['parentElement'];
-        // runs the template
         // runs the template
         childContext = bindingContext['createChildContext'](context['data'], null, 
                            function(binding)
@@ -1566,17 +1605,13 @@ function _getDataGridHeaderRenderer(bindingContext, template)
                                binding['$headerContext'] = context;
                            }
                        );
-    	useTemplate = _resolveDataGridTemplate(template, context);
-        ko['renderTemplate'](useTemplate, childContext, {
-                           'afterRender': function(renderedElement)
-                           {
-                               $(renderedElement)['_ojDetectCleanData']();
-                           }}, parent);
+                       
+        _executeTemplate(context, template, parent, childContext, nodeStore);
 
         // tell the datagrid not to do anything
         return null;
     };
-}
+};
 
 /**
  * Returns a cell renderer function executes the template specified in the binding attribute.
@@ -1588,9 +1623,10 @@ function _getDataGridHeaderRenderer(bindingContext, template)
  */
 function _getDataGridCellRenderer(bindingContext, template)
 {
+    var nodeStore = {};
     return function(context)
     {
-        var parent, childContext, useTemplate;
+        var parent, childContext;
 
         parent = context['parentElement'];
         // runs the template
@@ -1603,24 +1639,73 @@ function _getDataGridCellRenderer(bindingContext, template)
                                binding['$cell'] = context['cell'];
                            }
                        );
-    	useTemplate = _resolveDataGridTemplate(template, context);
-        ko['renderTemplate'](useTemplate, childContext, {
-                           'afterRender': function(renderedElement)
-                           {
-                               $(renderedElement)['_ojDetectCleanData']();
-                           }}, parent);
 
+        _executeTemplate(context, template, parent, childContext, nodeStore);
+        
         // tell the datagrid not to do anything
         return null;
     };
-}
+};
+
+
+/**
+ * Execute a template and applies relevant afterRender function
+ * @param {Object} context the ko binding context
+ * @param {Function|string} template the template function or string
+ * @param {Element} parent the parent element of the binding
+ * @param {Object} childContext the context applied to binding
+ * @param {Object} nodeStore place to store the nodeArray
+ * @private
+ */
+function _executeTemplate(context, template, parent, childContext, nodeStore)
+{
+    var nodesArray, i, useTemplate;
+    
+    useTemplate = _resolveDataGridTemplate(template, context);
+    
+    nodesArray = _getClonedNodeArray(useTemplate, nodeStore);
+    
+    ko.virtualElements.setDomNodeChildren(parent, nodesArray);
+    ko.applyBindingsToDescendants(childContext, parent);
+    
+    for (i = 0; i < parent.childNodes.length; i++)
+    {
+        if (parent.childNodes[i].nodeType == 1)
+        {
+            $(parent.childNodes[i])['_ojDetectCleanData']({'cleanParent': true});
+            break;
+        }
+    }
+};
+
+/**
+ * Get an array of nodes from the template or cached template nodes
+ * @param {string} useTemplate the template function or string
+ * @param {Object} nodeStore place to store the nodeArray
+ * @returns {Array} cloned node array from the template or node store
+ * @private
+ */
+function _getClonedNodeArray(useTemplate, nodeStore)
+{
+    var nodesArray = nodeStore[useTemplate];
+    if (nodesArray == null)
+    {
+        nodesArray = ko.utils.parseHtmlFragment(document.getElementById(useTemplate).innerHTML);
+        nodeStore[useTemplate] = nodesArray;
+    }
+    
+    var newNodesArray = nodesArray.map(function(obj){
+        return obj.cloneNode(true);
+    });
+    
+    return newNodesArray;
+};
 
 /**
  * If they specify a function for the template get the string of the template by
  * calling the function and passing the cell or header context
  * @param {Function|string} template
  * @param {Object} context
- * @returns {null|string}
  * @private
  */
 function _resolveDataGridTemplate(template, context)
@@ -1787,28 +1872,6 @@ oj.ComponentBinding.getDefaultInstance().setupManagedAttributes({
    */
   oj.__ExpressionUtils = {};
   
-  /**
-   * @ignore
-   */
-  oj.__ExpressionUtils.getExpressionInfo = function(attrValue)
-  {
-    var info = {};
-    if (attrValue)
-    {
-      var exp = _ATTR_EXP.exec(attrValue);
-      exp = exp ? exp[1] : null;
-      if (!exp)
-      {
-       info.downstreamOnly = true;
-       exp = _ATTR_EXP_RO.exec(attrValue);
-       exp = exp ? exp[1] : null;
-      }
-      info.expr = exp;
-    }
-
-    return info;
-  }
-  
   oj.__ExpressionUtils.getPropertyWriterExpression = function(expression)
   { 
     var reserveddWords = ["true", "false", "null", "undefined"];
@@ -1817,6 +1880,10 @@ oj.ComponentBinding.getDefaultInstance().setupManagedAttributes({
     {
       return null;
     }
+    
+    // Remove the white space on both ends to ensure that the _ASSIGNMENT_TARGET_EXP regexp
+    // is matched properly
+    expression = expression.trim();
   
     // Matches something that can be assigned to--either an isolated identifier or something ending with a property accessor
     // This is designed to be simple and avoid false negatives, but could produce false positives (e.g., a+b.c).
@@ -1833,8 +1900,6 @@ oj.ComponentBinding.getDefaultInstance().setupManagedAttributes({
     return 'function(v){' + target + '=v;}';
   };
   
-  var _ATTR_EXP = /(?:\{\{\s*)([^\s]+)(?:\s*\}\})/;
-  var _ATTR_EXP_RO = /(?:\[\[\s*)([^\s]+)(?:\s*\]\])/;
   var _ASSIGNMENT_TARGET_EXP = /^(?:[$_a-z][$\w]*|(.+)(\.\s*[$_a-z][$\w]*|\[.+\]))$/i;
 })();
 
@@ -1843,8 +1908,8 @@ oj.ComponentBinding.getDefaultInstance().setupManagedAttributes({
  * @ignore
  * @constructor
  */
-oj.__ExpressionPropertyUpdater = function(element, bindingContext)
-{
+oj.__ExpressionPropertyUpdater = function(element, bindingContext, isComposite)
+{ 
   // This function should be called when the bindings are applied initially and whenever the expression attribute changes
   this.setupExpression = function(attrVal, propName, metadata)
   {
@@ -1854,11 +1919,6 @@ oj.__ExpressionPropertyUpdater = function(element, bindingContext)
       return;
 
     var info = oj.__AttributeUtils.getExpressionInfo(attrVal);
-
-    if (_propsWithLocalValue[propName])
-    {
-      _propsWithLocalValue[propName] = null;
-    }
 
     var oldListener = _expressionListeners[propName];
     if (oldListener)
@@ -1875,6 +1935,13 @@ oj.__ExpressionPropertyUpdater = function(element, bindingContext)
       _changeListeners[propName] = null;
     }
 
+    if (metadata._domListener) {
+      var event = oj.__AttributeUtils.eventListenerPropertyToEventType(propName);
+      // If the attribute is removed, there won't be a new expression so the remove call
+      // below can't be relied upon.  So clean up here as well to handle that case
+      _setDomListener(event, null);
+    }
+
     var readOnly = metadata['readOnly'];
 
     var expr = info.expr;
@@ -1886,6 +1953,7 @@ oj.__ExpressionPropertyUpdater = function(element, bindingContext)
 
       if (!readOnly)
       {
+        var initialRead = true;
         ko.ignoreDependencies(
           function()
           {
@@ -1894,20 +1962,41 @@ oj.__ExpressionPropertyUpdater = function(element, bindingContext)
               // the expression's dependency changes
               function()
               {
-                if (!_propsWithLocalValue[propName])
+                var value = evaluator(bindingContext);
+                var unwrappedValue = ko.utils.unwrapObservable(value);
+
+                if (metadata._domListener) {
+                  var event = oj.__AttributeUtils.eventListenerPropertyToEventType(propName);
+                  _setDomListener(event, unwrappedValue);
+                }
+                else
                 {
-                  var value = evaluator(bindingContext);
+                  // We cannot share the same storage with KO because we want to be able to compare values,
+                  // so make a copy of the array before setting it.
+                  if (Array.isArray(unwrappedValue))
+                  {
+                    unwrappedValue = unwrappedValue.slice();
+                  }
                   
-                  _setElementProperty(propName, ko.utils.unwrapObservable(value));
-              
+                  if (!initialRead && _throttler)
+                  {
+                    _throttler.addChange(propName, unwrappedValue);
+                  }
+                  else
+                  {
+                    _setElementProperty(propName, unwrappedValue);
+                  }
                 }
               }
             );
           }
         );
+        initialRead = false;
       }
 
-      _changeListeners[propName] = _listenToPropertyChanges(propName, expr, evaluator, metadata['writeback'] && !info.downstreamOnly);
+      // Only listen for property changes for writeable properties
+      if (metadata['writeback'] && !info.downstreamOnly)
+        _changeListeners[propName] = _listenToPropertyChanges(propName, expr, evaluator);
 
       return true;
     }
@@ -1938,47 +2027,84 @@ oj.__ExpressionPropertyUpdater = function(element, bindingContext)
       element.removeEventListener(prop + _CHANGED_EVENT_SUFFIX, _changeListeners[prop]);
     }
     _changeListeners = {};
+
+    // dom event listeners
+    names = Object.keys(_domListeners);
+    for (i=0; i<names.length; i++)
+    {
+      var event = names[i];
+      _setDomListener(event, null);
+    }
+    _domListeners = {};
+    
+    if (_throttler)
+    {
+      _throttler.dispose();
+    }
   }
 
+  function _setDomListener(event, listener) {
+    if (_domListeners[event]) {
+      element.removeEventListener(event, _domListeners[event]);
+      _domListeners[event] = null;
+    }
+    if (listener && listener instanceof Function) {
+      _domListeners[event] = listener;
+      element.addEventListener(event, listener);
+    }
+  }
 
-  function _listenToPropertyChanges(propName, expr, evaluator, writable)
+  function _listenToPropertyChanges(propName, expr, evaluator)
   {
     var listener = function(evt)
     {
-      var written  = false;
       if (!_isSettingProperty(propName))
       {
-        if (writable)
-        {
-          ko.ignoreDependencies(
-            function()
+        var written = false;
+        var reason;
+        ko.ignoreDependencies(
+          function()
+          {
+            var value = evt['detail']['value'];
+
+            var target = evaluator(bindingContext);
+
+            if (ko.isObservable(target))
             {
-              var value = evt['detail']['value'];
-
-              var target = evaluator(bindingContext);
-
               if (ko.isWriteableObservable(target))
               {
+                target(oj.ComponentBinding.__cloneIfArray(value));
                 written = true;
-                target(value);
               }
               else
               {
-                 var writerExpr = oj.__ExpressionUtils.getPropertyWriterExpression(expr);
-                  if (writerExpr != null)
-                  {
-                    // TODO: consider caching the evaluator
-                    var wrirerEvaluator = oj.ComponentBinding.__CreateEvaluator(writerExpr);
-                    wrirerEvaluator(bindingContext)(value);
-                    written = true;
-                  }
+                reason = "the observable is not writeable";
               }
             }
-          );
-        }
+            else
+            {
+              var writerExpr = oj.__ExpressionUtils.getPropertyWriterExpression(expr);
+              if (writerExpr != null)
+              {
+                // TODO: consider caching the evaluator
+                var wrirerEvaluator = oj.ComponentBinding.__CreateEvaluator(writerExpr);
+                wrirerEvaluator(bindingContext)(oj.ComponentBinding.__cloneIfArray(value));
+                written = true;
+              }
+              else
+              {
+                reason = "the expression is not a valid update target";
+              }
+            }
+          }
+        );
+        
         if (!written)
         {
-          _propsWithLocalValue[propName] = true;
+          if (reason)
+          {
+            oj.Logger.info("The expression '%s' for property '%s' was not updated because %s.", expr, propName, reason);
+          }
         }
       }
 
@@ -1994,12 +2120,6 @@ oj.__ExpressionPropertyUpdater = function(element, bindingContext)
     _startSettingProperty(propName);
     try
     {
-      // We cannot share the same storage with KO because we want to be able to compare values,
-      // so make a copy of the array before setting it.
-      if (Array.isArray(value))
-      {
-        value = value.slice();
-      }
       element['setProperty'](propName, value);
     }
     finally
@@ -2054,10 +2174,66 @@ oj.__ExpressionPropertyUpdater = function(element, bindingContext)
     return meta;
   }
   
-
+  function _setupComponentChangeTracker()
+  {
+    
+    //  We are not throttling composite property updates because:
+    //  1) Existing customers may expect that properties be updated immediately
+    //  2) KO templates do not have any optimizations for simulteneous property updates
+    //  3) Updates to embeddded JET components will still be throttled
+    if (isComposite)
+    {
+      return null;
+    }
+    
+    var updater = function(changes)
+    {
+      var keys = Object.keys(changes);
+      for (var i=0; i<keys.length; i++)
+      {
+        var key = keys[i];
+      
+        // We rely on the flag set by the _startSettingProperty() to determine whether
+        // the property is being changed in response to a subscription notification
+        // from KO. Change events from all sets made NOT in response to a KO update 
+        // trigger an an attempt to write the value back into the associated expression.
+        // If the writeback is not possible for any reason, we consider that the binding
+        // has been 'obscured' by a local property set, and further update notifications
+        // are are going to be ignored. This means that we are stuck with calling 
+        // _startSettingProperty() for all properties in the batch update. 
+        // The downside for this approach is that property changes made in response 
+        // to a property set from within the same batch will NOT be written back
+        // into the KO expression. The likelihood of the writeback bugs because 
+        // of this is very low IMO: we have few properties with writeback enabled,
+        // and the behavior for the component changing a property whose value is being set
+        // in the same batch is already undefined. If some app runs into an issue, the
+        // workaround will be to call oj.ComponentBinding.deliverChanges() after each observable
+        // change.
+        _startSettingProperty(key);
+      }
+      try
+      {
+        element['setProperties'](changes);
+      }
+      finally
+      {
+        for (var n=0; n<keys.length; n++)
+        {
+          var k = keys[n];
+          _endSettingProperty(k);
+        }
+      }
+    };
+     
+    return new ComponentChangeTracker(updater, oj.ComponentBinding._changeQueue);
+  }
+  
+  
+  var _throttler = _setupComponentChangeTracker();
+  
+  var _domListeners = {};
   var _expressionListeners = {};
   var _changeListeners = {};
-  var _propsWithLocalValue = {};
   var _settingProperties = {};
   var _CHANGED_EVENT_SUFFIX = "Changed";
 }
@@ -2069,23 +2245,32 @@ oj.__ExpressionPropertyUpdater = function(element, bindingContext)
 
 
 /**
- * @class Utilities for creating knockout observable to implement responsive pages.
+ * @class Utilities for creating knockout observables to implement responsive pages. 
+ * For example you could use oj.ResponsiveKnockoutUtils.createMediaQueryObservable to 
+ * create an observable based on the screen width and then bind the tab bar's 
+ * orientation attribute to it. See the method doc below for specific examples.
  * @since 1.1.0
  * @export
+ * @ojstatus preview
  */
 oj.ResponsiveKnockoutUtils = {};
 
-
-
 /**
  * <p>creates an observable that 
- * returns true or false based on a media query string.</p>
+ * returns true or false based on a media query string. 
+ * Can be used in conjuntion with {@link oj.ResponsiveUtils.getFrameworkQuery}
+ * to create an observable based on a framework media query.</p>
  * 
  * <p>Example:</p>
  * <pre class="prettyprint">
  * <code>
  *    var customQuery = oj.ResponsiveKnockoutUtils.createMediaQueryObservable(
  *                                         '(min-width: 400px)');
+ *
+ *    var lgQuery = oj.ResponsiveUtils.getFrameworkQuery(
+ *                             oj.ResponsiveUtils.FRAMEWORK_QUERY_KEY.LG_UP);
+ *        
+ *    self.large = oj.ResponsiveKnockoutUtils.createMediaQueryObservable(lgQuery);
  * </code></pre>
  * 
  * @param {string} queryString media query string, for example '(min-width: 400px)'
@@ -2315,15 +2500,44 @@ oj.KnockoutTemplateUtils = {};
  */
 oj.KnockoutTemplateUtils.getRenderer = function(template, bReplaceNode) 
 {
-  return function (context) {
+  var templateRenderer = function (context) {
     // For DVTs, the node to attach the template to is different than the context's parentElement key
     var parentElement = context['_parentElement'] || context['parentElement'];
-
+    
     var bindingContext = ko.contextFor(context['componentElement']);
+
     var childContext = bindingContext['createChildContext'](context['data'], null, function(binding) { binding['$context'] = context; });
     ko['renderTemplate'](template, childContext, {'afterRender': function(renderedElement) { $(renderedElement)['_ojDetectCleanData'](); }}, 
       parentElement, bReplaceNode ? 'replaceNode' : 'replaceChildren');
     return null;
+  };
+  
+  return function (context) {
+    if (context['componentElement'].classList && context['componentElement'].classList.contains("oj-dvtbase")){
+      // Create a dummy div
+      var dummyDiv = document.createElement("div");
+      dummyDiv.style.display = "none";
+      dummyDiv._dvtcontext = context['_dvtcontext'];
+      context['componentElement'].appendChild(dummyDiv);
+      Object.defineProperty(context, '_parentElement', { 'value': dummyDiv, 'enumerable': false });
+      Object.defineProperty(context, '_templateCleanup', { 'value': function(){$(dummyDiv).remove();}, 'enumerable': false });
+      Object.defineProperty(context, '_templateName', { 'value': template, 'enumerable': false });
+
+      templateRenderer(context);
+
+      var elem = dummyDiv.children[0];
+      if (elem) {
+        if (elem.namespaceURI === 'http://www.w3.org/2000/svg') {
+          dummyDiv.removeChild(elem);
+          $(dummyDiv).remove();
+        } 
+        return {'insert':elem};
+      }
+      return {'preventDefault':true};
+    }
+    else {
+      return templateRenderer(context);
+    }
   };
 };
 /**
@@ -2526,6 +2740,14 @@ oj.koStringTemplateEngine.install = function()
 {
   ko['bindingHandlers']['_ojCustomElement'] =
   {
+    'init': function(element, valueAccessor, allBindingsAccessor, viewModel, bindingContext)
+    {
+       // Apply child bindings first
+       ko.applyBindingsToDescendants(bindingContext, element);
+       
+       return {'controlsDescendantBindings' : true};
+    },
+    
     'update': function(element, valueAccessor, allBindingsAccessor, viewModel, bindingContext)
     {
       var callbackId = 0;
@@ -2534,7 +2756,7 @@ oj.koStringTemplateEngine.install = function()
       
       // This instance won't be created unless oj.BaseCustomElementBridge is defined so this call is safe
       var bridge = oj.BaseCustomElementBridge.getInstance(element);
-      bridge.notifyBindingsInvoked(element);
+
       var propsPromise = bridge.getPropertiesPromise();
       
       function cleanup()
@@ -2551,41 +2773,48 @@ oj.koStringTemplateEngine.install = function()
           element.removeEventListener(_ATTRIBUTE_CHANGED, attributeListener);
           attributeListener = null;
         }
-
-        bridge.notifyBindingsCleaned(element);
       };
       
-      function setup()
+      function setup(isComposite)
       {
         var metadataProps = oj.BaseCustomElementBridge.getProperties(bridge);
-        if (Object.keys(metadataProps).length > 0)
-        {
-          _expressionHandler = new oj.__ExpressionPropertyUpdater(element, bindingContext);
-          
-          // setupExpression will only update properties defined in metadata so it's safe to iterate through all element attributes
-          // including ones defined on the base HTML prototype
-          var attrs = element.attributes; // attrs is a NodeList
-          for (var i = 0; i < attrs.length; i++)
-          {
-            var attr = attrs[i];
-            var propName = oj.__AttributeUtils.attributeToPropertyName(attr.nodeName);
-            _expressionHandler.setupExpression(attr.nodeValue, propName, metadataProps[propName.split('.')[0]]);
-          }
-          
-          attributeListener = function(evt)
-          {
-            var detail = evt['detail'];
-            var attr = detail['attribute'];
-            var propName = oj.__AttributeUtils.attributeToPropertyName(attr);
-            
-            var metadata = metadataProps[propName.split('.')[0]]; // send metadata for top level property
-            _expressionHandler.setupExpression(detail['value'], propName, metadata);
-          };
-              
-          element.addEventListener(_ATTRIBUTE_CHANGED, attributeListener);
-        }
+        _expressionHandler = new oj.__ExpressionPropertyUpdater(element, bindingContext, isComposite);
 
-        bridge.notifyBindingsApplied(element, bindingContext);
+        // Dummy metadata for passing to the ExpressionPropertyUpdater for DOM listener attributes i.e. on-*
+        var domListenerMetadata = {_domListener:true};
+        
+        // Set a flag on the bridge to indicate that we are initializing expressions from the DOM
+        // to avoid overriding any property sets that could have occured after
+        bridge._initializingExpressions = true;
+
+        // setupExpression will only update properties defined in metadata so it's safe to iterate through all element attributes
+        // including ones defined on the base HTML prototype
+        var attrs = element.attributes; // attrs is a NodeList
+        for (var i = 0; i < attrs.length; i++)
+        {
+          var attr = attrs[i];
+          var propName = oj.__AttributeUtils.attributeToPropertyName(attr.nodeName);
+          var eventName = oj.__AttributeUtils.eventListenerPropertyToEventType(propName);
+          var isDomEvent = eventName && !metadataProps[propName];
+          _expressionHandler.setupExpression(attr.value, propName, isDomEvent ? domListenerMetadata : metadataProps[propName.split('.')[0]]);
+        }
+        
+        bridge._initializingExpressions = false;
+
+        attributeListener = function(evt)
+        {
+          var detail = evt['detail'];
+          var attr = detail['attribute'];
+          var propName = oj.__AttributeUtils.attributeToPropertyName(attr);
+          var eventName = oj.__AttributeUtils.eventListenerPropertyToEventType(propName);
+          var isDomEvent = eventName && !metadataProps[propName];
+          
+          var metadata = isDomEvent ? domListenerMetadata : metadataProps[propName.split('.')[0]]; // send metadata for top level property
+          _expressionHandler.setupExpression(detail['value'], propName, metadata);
+         
+        };
+            
+        element.addEventListener(_ATTRIBUTE_CHANGED, attributeListener);
       };
   
       // Since we are tracking all our dependencies explicitly, we are suspending dependency detection here.
@@ -2598,7 +2827,7 @@ oj.koStringTemplateEngine.install = function()
             {
               // Access valueAccesor to ensure that the binding is re-initialzied when an
               // observable ViewModel is mutated
-              valueAccessor();
+              var isComposite = valueAccessor().composite;
               
               if (!ko.computedContext.isInitial()) 
               {
@@ -2620,29 +2849,24 @@ oj.koStringTemplateEngine.install = function()
                 return ret;
               }
               
+              // The propsPromise is resolved synchronously in the connected callback for JET custom elements,
+              // but not for composites which are registered asynchronously due to the metadata Promise. Since
+              // the 1.0 custom element polyfill calls the connected callback synchronously, the binding provider
+              // promises will resolve children first allowing us to ensure that children are ready by the time
+              // parents are being created so our internal code can access properties early.
               propsPromise.then(
                 _createCallbackWithIdMatching(callbackId,
                   function()
                   {
-                    //resolved
-                    try 
-                    {
-                      setup();      
-                    } 
-                    catch (ex) 
-                    {
-                      bridge.notifyBindingsFailed(element);
-                      // Rethrow the exception
-                      throw ex;
-                    }
+                    setup(isComposite);
+                    oj._KnockoutBindingProvider.getInstance().__NotifyBindingsApplied(element);
                   }
                 ),
                 _createCallbackWithIdMatching(callbackId,
                   function(reason)
                   {
-                    bridge.notifyBindingsFailed(element);
                     //rejected
-                    oj.Logger.error("Component create Promise rejected. Reason: %o", 
+                    oj.Logger.error("Custom element binding setup failed. Reason: %o", 
                         reason);
                   }
                 )
@@ -3105,7 +3329,7 @@ oj.__KO_CUSTOM_BINDING_PROVIDER_INSTANCE.addPostprocessor(
     {
       if (!oj.BaseCustomElementBridge)
         return wrappedReturn;
-      return wrappedReturn || (node.nodeType === 1 && oj.BaseCustomElementBridge.isRegistered(node.nodeName));
+      return wrappedReturn || (node.nodeType === 1 && oj.BaseCustomElementBridge.getRegistered(node.nodeName));
     },
 
     'getBindingAccessors': function(node, bindingContext, wrappedReturn)
@@ -3113,13 +3337,13 @@ oj.__KO_CUSTOM_BINDING_PROVIDER_INSTANCE.addPostprocessor(
       if (node.nodeType === 1 && oj.BaseCustomElementBridge)
       {
         var name = node.nodeName;
-        if (oj.BaseCustomElementBridge.isRegistered(name))
+        var info = oj.BaseCustomElementBridge.getRegistered(name);
+        
+        if (info)
         {
           wrappedReturn = wrappedReturn || {};
 
-          var compositionBinding  = '_ojCustomElement';
-
-          wrappedReturn[compositionBinding] = function() {}
+          wrappedReturn['_ojCustomElement'] = function() {return {composite: info.composite}}
 
         }
       }
@@ -3154,6 +3378,102 @@ oj.ComponentBinding.getDefaultInstance().setupManagedAttributes({
   },
   'for': 'ojSunburst'
 });
+
+/**
+ * @ignore
+ * @constructor
+ */
+oj._KnockoutBindingProvider = function()
+{
+  /**
+   * @ignore
+   */
+  this.whenReady = function(elem)
+  {
+    return _getReadyMediatorInstance(elem).getPromise();
+  }
+  
+  /**
+   * @ignore
+   */
+  this.addDisposeCallback =  function(elem, callback)
+  {
+    ko.utils.domNodeDisposal.addDisposeCallback(elem, callback);
+  }
+  
+
+  /**
+   * @ignore
+   */
+  this.__NotifyBindingsApplied = function(elem)
+  {
+    _getReadyMediatorInstance(elem).resolve(true);
+  }
+
+  /**
+   * @ignore
+   */
+  function _getReadyMediatorInstance(elem)
+  {
+    var prop = "_ojBndMdtr";
+    var mediator = elem[prop];
+    if (!mediator)
+    {
+      mediator = new ElementMediator();
+      Object.defineProperty(elem, prop, {'value': mediator});
+    }
+    return mediator;
+  }
+  
+  /**
+   * @ignore
+   * @constructor
+   */
+  function ElementMediator()
+  {
+    this.getPromise = function()
+    {
+      if (!_promise)
+      {
+        _promise = new Promise(function(resolve){_resolver = resolve;});
+      }
+      return _promise;
+    };
+    
+    this.resolve = function(val)
+    {
+      if (_resolver)
+      {
+        _resolver(val);
+        _resolver = null;
+      }
+      else if (!_promise)
+      {
+        _promise = Promise.resolve(val);
+      }
+    }
+    
+    var _promise;
+    var _resolver;
+  }
+}
+
+/**
+ * @ignore
+ */
+oj._KnockoutBindingProvider.getInstance = function()
+{
+  return oj._KnockoutBindingProvider._instance;
+}
+
+/**
+ * @ignore
+ */
+oj._KnockoutBindingProvider._instance = new oj._KnockoutBindingProvider();
+
+
+
+
 
 /**
  * Returns a renderer function executes the template specified in the binding attribute.
@@ -3249,4 +3569,4 @@ oj.ComponentBinding.getDefaultInstance().setupManagedAttributes(
 });
 
 
-});
+return oj._KnockoutBindingProvider.getInstance();});

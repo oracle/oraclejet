@@ -14,7 +14,7 @@ oj.CompositeTemplateRenderer = {};
 /**
  * @ignore
  */
-oj.CompositeTemplateRenderer.renderTemplate = function(params, element, view, bindingContext) 
+oj.CompositeTemplateRenderer.renderTemplate = function(params, element, view) 
 {
   // Store composite children on a hidden node while slotting to avoid stale knockout bindings
   // when observables are updated while children are disconnected from DOM. The _storeNodes methods
@@ -23,6 +23,8 @@ oj.CompositeTemplateRenderer.renderTemplate = function(params, element, view, bi
   ko.virtualElements.setDomNodeChildren(element, view);
 
   oj.CompositeTemplateRenderer.invokeViewModelMethod(params.viewModel, 'attachedMethod', [params.viewModelContext]);
+  
+  var bindingContext = oj.CompositeTemplateRenderer._createKoBindingContext(element);
 
   // Null out the parent references since we don't want the composite View to be able to access the outside context
   var childBindingContext = bindingContext['createChildContext'](params.viewModel, undefined, 
@@ -33,6 +35,7 @@ oj.CompositeTemplateRenderer.renderTemplate = function(params, element, view, bi
       ctx['$slotNodeCounts'] = params.slotNodeCounts;
       ctx['$props'] = params.props;
       ctx['$unique'] = params.unique;
+      ctx['$uniqueId'] = params.uniqueId;
       ctx['$parent'] = null;
       ctx['$parentContext'] = null;
       ctx['$parents'] = null;
@@ -98,7 +101,7 @@ oj.CompositeTemplateRenderer.createSlotMap = function(element)
   {
     var child = childNodeList[i];
     // Only assign Text and Element nodes to a slot
-    if (oj.CompositeElementBridge._isSlotAssignable(child))
+    if (oj.BaseCustomElementBridge.isSlotAssignable(child))
     {
       // Ignore text nodes that only contain whitespace
       if (child.nodeType === 3 && !child.nodeValue.trim())
@@ -139,7 +142,7 @@ oj.CompositeTemplateRenderer._storeNodes = function(element, view)
     for (var i = 0; i < childNodes.length; i++)
     {
       var node = childNodes[i];
-      if (oj.CompositeElementBridge._isSlotAssignable(node))
+      if (oj.BaseCustomElementBridge.isSlotAssignable(node))
       {
         assignableNodes.push(node);
       }
@@ -152,6 +155,20 @@ oj.CompositeTemplateRenderer._storeNodes = function(element, view)
       oj.Components.subtreeHidden(nodeStorage);
   }
   return nodeStorage;
+};
+
+/**
+ * @ignore
+ */
+oj.CompositeTemplateRenderer._createKoBindingContext = function(elem)
+{
+  var div = document.createElement("div");
+  ko.applyBindings(null, div);
+  var context = ko.contextFor(div);
+  
+  ko.cleanNode(div);
+  
+  return context;
 };
 (function()
 {
@@ -235,7 +252,7 @@ ko['bindingHandlers']['_ojNodeStorage_'] =
   {
     return {'controlsDescendantBindings' : true};
   }
-}
+};
 
 ko['bindingHandlers']['_ojSlot_'] =
 {
@@ -287,7 +304,7 @@ ko['bindingHandlers']['_ojSlot_'] =
         node['__oj_slots'] = unwrap(values['slot']) || '';
       }
       ko.virtualElements.setDomNodeChildren(element, assignedNodes);
-
+      
       // Notifies JET components in node that they have been shown
       if (oj.Components)
       {

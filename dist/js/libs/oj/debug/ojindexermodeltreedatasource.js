@@ -21,7 +21,10 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojindexer', 'ojs/ojdatasource-common'],
  * This should be used with the Indexer and its associated ListView.
  * By default, this adapter groups the data based on the first letter of the data and the alphabet of the current locale.
  * @class oj.IndexerModelTreeDataSource
- * @classdesc Implementation of the IndexerModel and TreeDataSource
+ * @classdesc TreeDataSource and IndexerModel implementation that represents hierachical data available from an array of JSON objects.  This data source can be used by [Indexer]{@link oj.ojIndexer} and 
+ *            associated [ListView]{@link oj.ojListView}.<br><br> 
+ *            See the <a href="../jetCookbook.html?component=indexer&demo=characterIndexer">Indexer - Basic</a> demo for an example.<br><br>
+ *            Refer to {@link oj.TreeDataSource} for other data sources that represent hierarachical data.
  * @param {Array.<Object>} data an array of data used for Indexer and ListView 
  * @param {string} idAttribute the id attribute of the data
  * @param {function(Object)} listener a callback function that handles when a section becomes current (user clicks on the section in the Indexer).
@@ -56,7 +59,7 @@ oj.Object.createSubclass(oj.IndexerModelTreeDataSource, oj.TreeDataSource, "oj.I
  * Initializes the instance.
  * @export
  * @expose
- * @memberof! oj.IndexerModelTreeDataSource
+ * @memberof oj.IndexerModelTreeDataSource
  * @instance
  */
 oj.IndexerModelTreeDataSource.prototype.Init = function()
@@ -72,6 +75,7 @@ oj.IndexerModelTreeDataSource.prototype.Init = function()
         resource = oj.Translations.getTranslatedString('oj-ojIndexer.indexerCharacters');
         sections = resource.split('|');
     }
+    sections.push(oj.IndexerModel.SECTION_OTHERS);
 
     strategy = this.options['groupingStrategy'];
     if (strategy == null)
@@ -153,12 +157,13 @@ oj.IndexerModelTreeDataSource.prototype._get = function(key)
  * @return {Array.<Object>} an array of all indexable sections 
  * @export
  * @expose
- * @memberof! oj.IndexerModelTreeDataSource
+ * @memberof oj.IndexerModelTreeDataSource
  * @instance
  */
 oj.IndexerModelTreeDataSource.prototype.getIndexableSections = function()
 {
-    return this.sections;
+    // remove other sections from this.sections
+    return this.sections.slice(0, this.sections.length-1);
 };
 
 /**
@@ -167,7 +172,7 @@ oj.IndexerModelTreeDataSource.prototype.getIndexableSections = function()
  * @return {Array.<Object>} an array of missing sections
  * @export
  * @expose
- * @memberof! oj.IndexerModelTreeDataSource
+ * @memberof oj.IndexerModelTreeDataSource
  * @instance
  */
 oj.IndexerModelTreeDataSource.prototype.getMissingSections = function()
@@ -177,8 +182,8 @@ oj.IndexerModelTreeDataSource.prototype.getMissingSections = function()
     if (this.missing == null)
     {
         missing = [];
-        // figure out what's missing
-        for (i=0; i<this.sections.length; i++)
+        // figure out what's missing, skip the others section since it's always available
+        for (i=0; i<this.sections.length-1; i++)
         {
             section = this.sections[i];
             if (this._get(section) == null)
@@ -201,7 +206,7 @@ oj.IndexerModelTreeDataSource.prototype.getMissingSections = function()
  *                   exists for that section.  
  * @export
  * @expose
- * @memberof! oj.IndexerModelTreeDataSource
+ * @memberof oj.IndexerModelTreeDataSource
  * @instance
  */
 oj.IndexerModelTreeDataSource.prototype.setSection = function(section)
@@ -217,7 +222,7 @@ oj.IndexerModelTreeDataSource.prototype.setSection = function(section)
  * @return {number} the number of children for the specified parent.
  * @export
  * @expose
- * @memberof! oj.IndexerModelTreeDataSource
+ * @memberof oj.IndexerModelTreeDataSource
  * @instance
  */
 oj.IndexerModelTreeDataSource.prototype.getChildCount = function(parentKey)
@@ -227,8 +232,8 @@ oj.IndexerModelTreeDataSource.prototype.getChildCount = function(parentKey)
     if (parentKey == null)
     {
         count = this.sections.length - this.getMissingSections().length;
-        // include other section if there are entries in it
-        return this._get(oj.IndexerModel.SECTION_OTHERS) != null ? count + 1 : count;
+        // exclude other section if there are no entries in it
+        return this._get(oj.IndexerModel.SECTION_OTHERS) != null ? count : count - 1;
     }
     else
     {
@@ -253,7 +258,7 @@ oj.IndexerModelTreeDataSource.prototype.getChildCount = function(parentKey)
                     nextPos = this._get(next);
                 }
 
-                if (isNaN(nextPos))
+                if (isNaN(nextPos) || nextPos == null)
                 {
                     nextPos = this.data.length;
                 }
@@ -283,27 +288,20 @@ oj.IndexerModelTreeDataSource.prototype.getChildCount = function(parentKey)
  *        flushed and executed in the order they are queued.  This flag is ignored if the datasource does not support batching.
  * @export
  * @expose
- * @memberof! oj.IndexerModelTreeDataSource
+ * @memberof oj.IndexerModelTreeDataSource
  * @instance
  */
 oj.IndexerModelTreeDataSource.prototype.fetchChildren = function(parentKey, range, callbacks, options)
 {
-    var missing, available, nodeSet, self = this;
+    var available, nodeSet, self = this;
 
     if (parentKey == null)
     {
         // root case
-        missing = this.getMissingSections();
         available = this.sections.filter(function(section) 
         {
-            return missing.indexOf(section) == -1;
+            return self._get(section) != null;
         });
-
-        // if there's entries in other section, create a node for that too
-        if (this._get(oj.IndexerModel.SECTION_OTHERS) != null)
-        {
-            available.push(oj.IndexerModel.SECTION_OTHERS);
-        }
 
         nodeSet = {
             "getParent": function() {

@@ -66,6 +66,7 @@ dvt.TimelineOverview.prototype.Init = function(context, callback, callbackObj)
 {
   dvt.TimelineOverview.superclass.Init.call(this, context, callback, callbackObj);
 
+
   // default fills
   var colors = [dvt.ColorUtils.getPound(dvt.ColorUtils.getBrighter('#aadd77', 0.35)), '#aadd77', dvt.ColorUtils.getPound(dvt.ColorUtils.getDarker('#aadd77', 0.5))];
   // get pastel doesn't work too well on ipad
@@ -77,6 +78,14 @@ dvt.TimelineOverview.prototype.Init = function(context, callback, callbackObj)
 
   // default marker size
   this._markerSize = 12;
+};
+
+/**
+ * @override
+ */
+dvt.Overview.prototype.initDefaults = function()
+{
+  this.Defaults = new DvtTimelineOverviewDefaults();
 };
 
 /**
@@ -190,9 +199,9 @@ dvt.TimelineOverview.prototype._applyParsedProperties = function(props)
   this._seriesIds = props.seriesIds;
 
   this._defaultMarkerStyles = props.defaultMarkerStyles;
-  this._durationColors = ['#267DB3', '#68C182', '#FAD55C', '#ED6647',
-                          '#8561C8', '#6DDBDB', '#FFB54D', '#E371B2',
-                          '#47BDEF', '#A2BF39', '#A75DBA', '#F7F37B'];
+  this._borderStyles = DvtTimelineOverviewStyleUtils.getDefaultMarkerBorderStyles(this.Options);
+
+  this._durationColors = dvt.CSSStyle.COLORS_ALTA;
 
   if (props.labelStyle)
     this._labelStyle = new dvt.CSSStyle(props.labelStyle);
@@ -793,7 +802,7 @@ dvt.TimelineOverview.prototype.HandleShapeMouseOver = function(event)
   {
     var itemId = this.getItemId(drawable);
 
-    var evt = new DvtTimelineOverviewEvent(DvtTimelineOverviewEvent.SUBTYPE_HIGHLIGHT);
+    var evt = new dvt.TimelineOverviewEvent(dvt.TimelineOverviewEvent.SUBTYPE_HIGHLIGHT);
     evt.setItemId(itemId);
 
     // highlight the item in timeline series
@@ -837,7 +846,7 @@ dvt.TimelineOverview.prototype.HandleShapeMouseOut = function(event)
       // unhighlight item also
       var itemId = this.getItemId(drawable);
 
-      var evt = new DvtTimelineOverviewEvent(DvtTimelineOverviewEvent.SUBTYPE_UNHIGHLIGHT);
+      var evt = new dvt.TimelineOverviewEvent(dvt.TimelineOverviewEvent.SUBTYPE_UNHIGHLIGHT);
       evt.setItemId(itemId);
 
       // highlight the item in timeline series
@@ -873,7 +882,7 @@ dvt.TimelineOverview.prototype.HandleMarkerClick = function(drawable, isMultiSel
   if (time != null)
   {
     // scroll timeline
-    var evt = new DvtTimelineOverviewEvent(DvtTimelineOverviewEvent.SUBTYPE_SCROLL_TIME);
+    var evt = new dvt.TimelineOverviewEvent(dvt.TimelineOverviewEvent.SUBTYPE_SCROLL_TIME);
     evt.setTime(time);
     this.dispatchEvent(evt);
 
@@ -1007,7 +1016,7 @@ dvt.TimelineOverview.prototype.selectItem = function(drawable, isMultiSelect)
   var itemId = this.getItemId(drawable);
 
   // scroll timeline
-  var evt = new DvtTimelineOverviewEvent(DvtTimelineOverviewEvent.SUBTYPE_SELECTION);
+  var evt = new dvt.TimelineOverviewEvent(dvt.TimelineOverviewEvent.SUBTYPE_SELECTION);
   evt.setItemId(itemId);
   evt.setMultiSelect(isMultiSelect);
   this.dispatchEvent(evt);
@@ -1407,6 +1416,87 @@ dvt.TimelineOverview.prototype.getMarkers = function()
   return this._markers;
 };
 /**
+ * Default values and utility functions for component versioning.
+ * @class
+ * @constructor
+ * @extends {dvt.BaseComponentDefaults}
+ */
+var DvtTimelineOverviewDefaults = function()
+{
+  this.Init({'alta': DvtTimelineOverviewDefaults.VERSION_1});
+};
+
+dvt.Obj.createSubclass(DvtTimelineOverviewDefaults, dvt.BaseComponentDefaults);
+
+/**
+ * Contains overrides for version 1.
+ * @const
+ */
+DvtTimelineOverviewDefaults.VERSION_1 = {
+  'overviewPosition': 'below',
+  'style': {
+    'borderTopStyle': 'none',
+    'currentTimeIndicatorColor': '#c000d1',
+    'handleFillColor': '#ffffff',
+    'handleTextureColor': '#b3c6db',
+    'leftFilterPanelAlpha': 0.7,
+    'leftFilterPanelColor': '#ffffff',
+    'overviewBackgroundColor': '#e6ecf3',
+    'rightFilterPanelAlpha': 0.7,
+    'rightFilterPanelColor': '#ffffff',
+    'timeAxisBarColor': '#d9dfe3',
+    'timeAxisBarAlpha': 0,
+    'timeIndicatorColor': '#bcc7d2',
+    'windowBackgroundAlpha': 1,
+    'windowBackgroundColor': '#ffffff',
+    'windowBorderBottomColor': '#4f4f4f',
+    'windowBorderBottomStyle': 'solid',
+    'windowBorderLeftColor': '#4f4f4f',
+    'windowBorderLeftStyle': 'solid',
+    'windowBorderRightColor': '#4f4f4f',
+    'windowBorderRightStyle': 'solid',
+    'windowBorderTopColor': '#4f4f4f',
+    'windowBorderTopStyle': 'solid'
+  },
+  '_fc': '#aadd77',
+  '_do': 0,
+  '_bc': '#648baf',
+  '_bof': '0px',
+  '_bs': 'solid',
+  '_bw': '1px',
+  '_dbc': '#648baf',
+  '_dbs': 'solid',
+  '_dbw': '1px',
+  '_hbc': '#85bbe7',
+  '_hbs': 'solid',
+  '_hbw': '2px',
+  '_hbof': '0px',
+  '_hgc': '#ebeced',
+  '_hgo': 1,
+  '_hdbs': 'solid',
+  '_hdbc': '#85bbe7',
+  '_hdbw': '2px',
+  '_sbs': 'solid',
+  '_sbc': '#000000',
+  '_sbw': '2px',
+  '_sbof': '0px',
+  '_sbo': 1,
+  '_sdbs': 'solid',
+  '_sdbc': '#000000',
+  '_sdbw': '2px',
+  '_asbs': 'solid',
+  '_asbc': '#000000',
+  '_asbw': '2px',
+  '_asbof': '0px',
+  '_asbo': 1,
+  '_asgc': '#e4f0fa',
+  '_asgo': 1,
+  '_asdbs': 'solid',
+  '_asdbc': '#000000',
+  '_asdbw': '2px',
+  '_aoc': 'off'
+};
+/**
  * TimelineOverview XML Parser
  * @param {dvt.TimelineOverview} timelineOverview The owning timelineOverview component.
  * @class
@@ -1418,7 +1508,7 @@ var DvtTimelineOverviewParser = function(timelineOverview)
   this.Init(timelineOverview);
 };
 
-dvt.Obj.createSubclass(DvtTimelineOverviewParser, dvt.Obj);
+dvt.Obj.createSubclass(DvtTimelineOverviewParser, dvt.OverviewParser);
 
 
 /**
@@ -1475,7 +1565,7 @@ DvtTimelineOverviewParser.prototype.parseMarker = function(xmlString)
 DvtTimelineOverviewParser.prototype.ParseRootAttributes = function(options) 
 {
   // The object that will be populated with parsed values and returned
-  var ret = new Object();
+  var ret = DvtTimelineOverviewParser.superclass.ParseRootAttributes.call(this, options);
 
   ret.start = parseInt(options['start']);
   ret.end = parseInt(options['end']);
@@ -1484,95 +1574,22 @@ DvtTimelineOverviewParser.prototype.ParseRootAttributes = function(options)
   ret.currentTime = parseInt(options['ocd']);
 
   ret.orientation = options['orn'];
-  ret.overviewPosition = options['ovp'];
   ret.selectionMode = options['selmode'];
   ret.isRtl = options['rtl'].toString();
-
-  ret.borderTopStyle = options['_bts'];
-  ret.borderTopColor = options['_btc'];
 
   ret.seriesIds = options['sid'];
   ret.animationOnClick = options['_aoc'];
 
   var defaultMarkerStyles = new Object();
-  defaultMarkerStyles.shape = options['_ds'];
-  defaultMarkerStyles.scaleX = options['_dsx'];
-  defaultMarkerStyles.scaleY = options['_dsy'];
-  defaultMarkerStyles.opacity = options['_do'];
-  defaultMarkerStyles.color = options['_fc'];
-  defaultMarkerStyles.pixelHinting = options['_ph'];
+  defaultMarkerStyles.shape = DvtTimelineOverviewStyleUtils.getDefaultMarkerShape(options);
+  defaultMarkerStyles.scaleX = DvtTimelineOverviewStyleUtils.getDefaultMarkerScaleX(options);
+  defaultMarkerStyles.scaleY = DvtTimelineOverviewStyleUtils.getDefaultMarkerScaleY(options);
+  defaultMarkerStyles.opacity = DvtTimelineOverviewStyleUtils.getDefaultMarkerOpacity(options);
+  defaultMarkerStyles.color = DvtTimelineOverviewStyleUtils.getDefaultMarkerFillColor(options);
+  defaultMarkerStyles.pixelHinting = DvtTimelineOverviewStyleUtils.getDefaultMarkerPixelHinting(options);
   ret.defaultMarkerStyles = defaultMarkerStyles;
 
-  ret.handleFillColor = options['_hfc'];
-  ret.handleTextureColor = options['_htc'];
-  ret.handleBackgroundImage = options['_hbi'];
-  ret.handleWidth = options['_hw'];
-  ret.handleHeight = options['_hh'];
-  ret.windowBackgroundColor = options['_wbc'];
-  ret.windowBorderTopStyle = options['_wbts'];
-  ret.windowBorderRightStyle = options['_wbrs'];
-  ret.windowBorderBottomStyle = options['_wbbs'];
-  ret.windowBorderLeftStyle = options['_wbls'];
-  ret.windowBorderTopColor = options['_wbtc'];
-  ret.windowBorderRightColor = options['_wbrc'];
-  ret.windowBorderBottomColor = options['_wbbc'];
-  ret.windowBorderLeftColor = options['_wblc'];
-
-  ret.overviewBackgroundColor = options['_obc'];
-  ret.currentTimeIndicatorColor = options['_ctic'];
-  ret.timeIndicatorColor = options['_tic'];
-  ret.timeAxisBarColor = options['_tabc'];
-  ret.timeAxisBarOpacity = options['_tabo'];
-
   ret.labelStyle = options['_ls'];
-
-  // parse border styles
-  var borderStyles = new Object();
-  borderStyles['_bs'] = options['_bs'];
-  borderStyles['_bc'] = options['_bc'];
-  borderStyles['_bw'] = options['_bw'];
-  borderStyles['_bof'] = options['_bof'];
-  borderStyles['_bo'] = options['_bo'];
-  borderStyles['_gc'] = options['_gc'];
-  borderStyles['_go'] = options['_go'];
-  borderStyles['_dbs'] = options['_dbs'];
-  borderStyles['_dbc'] = options['_dbc'];
-  borderStyles['_dbw'] = options['_dbw'];
-
-  borderStyles['_hbs'] = options['_hbs'];
-  borderStyles['_hbc'] = options['_hbc'];
-  borderStyles['_hbw'] = options['_hbw'];
-  borderStyles['_hbof'] = options['_hbof'];
-  borderStyles['_hbo'] = options['_hbo'];
-  borderStyles['_hgc'] = options['_hgc'];
-  borderStyles['_hgo'] = options['_hgo'];
-  borderStyles['_hdbs'] = options['_hdbs'];
-  borderStyles['_hdbc'] = options['_hdbc'];
-  borderStyles['_hdbw'] = options['_hdbw'];
-
-  borderStyles['_sbs'] = options['_sbs'];
-  borderStyles['_sbc'] = options['_sbc'];
-  borderStyles['_sbw'] = options['_sbw'];
-  borderStyles['_sbof'] = options['_sbof'];
-  borderStyles['_sbo'] = options['_sbo'];
-  borderStyles['_sgc'] = options['_sgc'];
-  borderStyles['_sgo'] = options['_sgo'];
-  borderStyles['_sdbs'] = options['_sdbs'];
-  borderStyles['_sdbc'] = options['_sdbc'];
-  borderStyles['_sdbw'] = options['_sdbw'];
-
-  borderStyles['_asbs'] = options['_asbs'];
-  borderStyles['_asbc'] = options['_asbc'];
-  borderStyles['_asbw'] = options['_asbw'];
-  borderStyles['_asbof'] = options['_asbof'];
-  borderStyles['_asbo'] = options['_asbo'];
-  borderStyles['_asgc'] = options['_asgc'];
-  borderStyles['_asgo'] = options['_asgo'];
-  borderStyles['_asdbs'] = options['_asdbs'];
-  borderStyles['_asdbc'] = options['_asdbc'];
-  borderStyles['_asdbw'] = options['_asdbw'];
-
-  ret.borderStyles = borderStyles;
 
   return ret;
 };
@@ -1802,58 +1819,180 @@ DvtTimelineOverviewNode.prototype.setY = function(y)
  * @class
  * @constructor
  */
-var DvtTimelineOverviewEvent = function(type) {
-  this.Init(DvtTimelineOverviewEvent.TYPE);
+dvt.TimelineOverviewEvent = function(type) {
+  this.Init(dvt.TimelineOverviewEvent.TYPE);
   this._subtype = type;
 };
 
-dvt.Obj.createSubclass(DvtTimelineOverviewEvent, dvt.OverviewEvent);
+dvt.Obj.createSubclass(dvt.TimelineOverviewEvent, dvt.OverviewEvent);
 
-DvtTimelineOverviewEvent.TYPE = 'timeline';
+dvt.TimelineOverviewEvent.TYPE = 'timeline';
 
-DvtTimelineOverviewEvent.SUBTYPE_HIGHLIGHT = 'highlight';
-DvtTimelineOverviewEvent.SUBTYPE_UNHIGHLIGHT = 'unhighlight';
-DvtTimelineOverviewEvent.SUBTYPE_SELECTION = 'selection';
+dvt.TimelineOverviewEvent.SUBTYPE_HIGHLIGHT = 'highlight';
+dvt.TimelineOverviewEvent.SUBTYPE_UNHIGHLIGHT = 'unhighlight';
+dvt.TimelineOverviewEvent.SUBTYPE_SELECTION = 'selection';
 
-DvtTimelineOverviewEvent.SUBTYPE_SCROLL_TIME = dvt.OverviewEvent.SUBTYPE_SCROLL_TIME;
-DvtTimelineOverviewEvent.SUBTYPE_SCROLL_POS = dvt.OverviewEvent.SUBTYPE_SCROLL_POS;
-DvtTimelineOverviewEvent.SUBTYPE_RANGECHANGE = dvt.OverviewEvent.SUBTYPE_RANGECHANGE;
-DvtTimelineOverviewEvent.SUBTYPE_RANGECHANGING = 'rangeChanging';
-DvtTimelineOverviewEvent.SUBTYPE_DROPCALLBACK = dvt.OverviewEvent.SUBTYPE_PRE_RANGECHANGE;
+dvt.TimelineOverviewEvent.SUBTYPE_SCROLL_TIME = dvt.OverviewEvent.SUBTYPE_SCROLL_TIME;
+dvt.TimelineOverviewEvent.SUBTYPE_SCROLL_POS = dvt.OverviewEvent.SUBTYPE_SCROLL_POS;
+dvt.TimelineOverviewEvent.SUBTYPE_RANGECHANGE = dvt.OverviewEvent.SUBTYPE_RANGECHANGE;
+dvt.TimelineOverviewEvent.SUBTYPE_RANGECHANGING = 'rangeChanging';
+dvt.TimelineOverviewEvent.SUBTYPE_DROPCALLBACK = dvt.OverviewEvent.SUBTYPE_PRE_RANGECHANGE;
 
 // keys to look up value
-DvtTimelineOverviewEvent.ITEM_ID_KEY = 'itemId';
-DvtTimelineOverviewEvent.MULTI_SELECT_KEY = 'multiSelect';
+dvt.TimelineOverviewEvent.ITEM_ID_KEY = 'itemId';
+dvt.TimelineOverviewEvent.MULTI_SELECT_KEY = 'multiSelect';
 
-DvtTimelineOverviewEvent.START_POS = dvt.OverviewEvent.START_POS;
-DvtTimelineOverviewEvent.END_POS = dvt.OverviewEvent.END_POS;
+dvt.TimelineOverviewEvent.START_POS = dvt.OverviewEvent.START_POS;
+dvt.TimelineOverviewEvent.END_POS = dvt.OverviewEvent.END_POS;
 
 
 /***** highlight and unhighlight *********/
-DvtTimelineOverviewEvent.prototype.setItemId = function(itemId) 
+dvt.TimelineOverviewEvent.prototype.setItemId = function(itemId) 
 {
-  this.addParam(DvtTimelineOverviewEvent.ITEM_ID_KEY, itemId);
+  this.addParam(dvt.TimelineOverviewEvent.ITEM_ID_KEY, itemId);
 };
 
-DvtTimelineOverviewEvent.prototype.getItemId = function() 
+dvt.TimelineOverviewEvent.prototype.getItemId = function() 
 {
-  return this.getParamValue(DvtTimelineOverviewEvent.ITEM_ID_KEY);
+  return this.getParamValue(dvt.TimelineOverviewEvent.ITEM_ID_KEY);
 };
 
 
 /****** selection **************/
-DvtTimelineOverviewEvent.prototype.setMultiSelect = function(isMultiSelect) 
+dvt.TimelineOverviewEvent.prototype.setMultiSelect = function(isMultiSelect) 
 {
-  this.addParam(DvtTimelineOverviewEvent.MULTI_SELECT_KEY, isMultiSelect);
+  this.addParam(dvt.TimelineOverviewEvent.MULTI_SELECT_KEY, isMultiSelect);
 };
 
-DvtTimelineOverviewEvent.prototype.isMultiSelect = function() 
+dvt.TimelineOverviewEvent.prototype.isMultiSelect = function() 
 {
-  var isMultiSelect = this.getParamValue(DvtTimelineOverviewEvent.MULTI_SELECT_KEY);
+  var isMultiSelect = this.getParamValue(dvt.TimelineOverviewEvent.MULTI_SELECT_KEY);
   if (isMultiSelect != null)
     return isMultiSelect;
 
   return false;
+};
+/**
+ * Style related utility functions for dvt.TimelineOverview.
+ * @class
+ */
+var DvtTimelineOverviewStyleUtils = new Object();
+
+dvt.Obj.createSubclass(DvtTimelineOverviewStyleUtils, dvt.Obj);
+
+/**
+ * Gets the default marker shape.
+ * @param {object} options The object containing data and specifications for the component.
+ * @return {string} The default marker shape.
+ */
+DvtTimelineOverviewStyleUtils.getDefaultMarkerShape = function(options)
+{
+  return options['_ds'];
+};
+
+/**
+ * Gets the default marker scale X value.
+ * @param {object} options The object containing data and specifications for the component.
+ * @return {number} The default marker scale X value.
+ */
+DvtTimelineOverviewStyleUtils.getDefaultMarkerScaleX = function(options)
+{
+  return options['_dsx'];
+};
+
+/**
+ * Gets the default marker scale Y value.
+ * @param {object} options The object containing data and specifications for the component.
+ * @return {number} The default marker scale Y value.
+ */
+DvtTimelineOverviewStyleUtils.getDefaultMarkerScaleY = function(options)
+{
+  return options['_dsy'];
+};
+
+/**
+ * Gets the default marker opacity.
+ * @param {object} options The object containing data and specifications for the component.
+ * @return {number} The default marker opacity.
+ */
+DvtTimelineOverviewStyleUtils.getDefaultMarkerOpacity = function(options)
+{
+  return options['_do'];
+};
+
+/**
+ * Gets the default marker fill color.
+ * @param {object} options The object containing data and specifications for the component.
+ * @return {string} The default marker fill color.
+ */
+DvtTimelineOverviewStyleUtils.getDefaultMarkerFillColor = function(options)
+{
+  return options['_fc'];
+};
+
+/**
+ * Gets the default marker pixel hinting value.
+ * @param {object} options The object containing data and specifications for the component.
+ * @return {number} The default marker pixel hinting value.
+ */
+DvtTimelineOverviewStyleUtils.getDefaultMarkerPixelHinting = function(options)
+{
+  return options['_ph'];
+};
+
+/**
+ * Gets the default marker border styles.
+ * @param {object} options The object containing data and specifications for the component.
+ * @return {object} The default marker border styles.
+ */
+DvtTimelineOverviewStyleUtils.getDefaultMarkerBorderStyles = function(options)
+{
+  var borderStyles = new Object();
+  borderStyles['_bs'] = options['_bs'];
+  borderStyles['_bc'] = options['_bc'];
+  borderStyles['_bw'] = options['_bw'];
+  borderStyles['_bof'] = options['_bof'];
+  borderStyles['_bo'] = options['_bo'];
+  borderStyles['_gc'] = options['_gc'];
+  borderStyles['_go'] = options['_go'];
+  borderStyles['_dbs'] = options['_dbs'];
+  borderStyles['_dbc'] = options['_dbc'];
+  borderStyles['_dbw'] = options['_dbw'];
+
+  borderStyles['_hbs'] = options['_hbs'];
+  borderStyles['_hbc'] = options['_hbc'];
+  borderStyles['_hbw'] = options['_hbw'];
+  borderStyles['_hbof'] = options['_hbof'];
+  borderStyles['_hbo'] = options['_hbo'];
+  borderStyles['_hgc'] = options['_hgc'];
+  borderStyles['_hgo'] = options['_hgo'];
+  borderStyles['_hdbs'] = options['_hdbs'];
+  borderStyles['_hdbc'] = options['_hdbc'];
+  borderStyles['_hdbw'] = options['_hdbw'];
+
+  borderStyles['_sbs'] = options['_sbs'];
+  borderStyles['_sbc'] = options['_sbc'];
+  borderStyles['_sbw'] = options['_sbw'];
+  borderStyles['_sbof'] = options['_sbof'];
+  borderStyles['_sbo'] = options['_sbo'];
+  borderStyles['_sgc'] = options['_sgc'];
+  borderStyles['_sgo'] = options['_sgo'];
+  borderStyles['_sdbs'] = options['_sdbs'];
+  borderStyles['_sdbc'] = options['_sdbc'];
+  borderStyles['_sdbw'] = options['_sdbw'];
+
+  borderStyles['_asbs'] = options['_asbs'];
+  borderStyles['_asbc'] = options['_asbc'];
+  borderStyles['_asbw'] = options['_asbw'];
+  borderStyles['_asbof'] = options['_asbof'];
+  borderStyles['_asbo'] = options['_asbo'];
+  borderStyles['_asgc'] = options['_asgc'];
+  borderStyles['_asgo'] = options['_asgo'];
+  borderStyles['_asdbs'] = options['_asdbs'];
+  borderStyles['_asdbc'] = options['_asdbc'];
+  borderStyles['_asdbw'] = options['_asdbw'];
+
+  return borderStyles;
 };
 // Copyright (c) 2012, 2016, Oracle and/or its affiliates. All rights reserved.
 /*---------------------------------------------------------------------*/
@@ -2683,29 +2822,14 @@ dvt.Timeline.prototype.applyStyleValues = function()
   if (this._hasOverview)
   {
     this._overviewSize = this._isVertical ? DvtTimelineStyleUtils.getOverviewWidth() : DvtTimelineStyleUtils.getOverviewHeight();
-    var overviewStyle = this.Options['overview']['style'];
-    if (this.Options['overview']['svgStyle'])
-      overviewStyle = this.Options['overview']['svgStyle'];
+    var overviewOptions = this.Options['overview'];
+    var overviewStyle = overviewOptions['svgStyle'] ? overviewOptions['svgStyle'] : overviewOptions['style'];
     if (overviewStyle)
     {
-      var splits = overviewStyle.split(';');
-      for (var i = 0; i < splits.length; i++)
-      {
-        var s = splits[i];
-        if (s && s.length > 0)
-        {
-          var colonIndex = s.indexOf(':');
-          if (colonIndex > - 1)
-          {
-            var attrName = dvt.StringUtils.trim(s.substring(0, colonIndex));
-            if ((this._isVertical && attrName == 'width') || (!this._isVertical && attrName == 'height'))
-            {
-              this._overviewSize = parseInt(dvt.StringUtils.trim(s.substring(colonIndex + 1)), 10);
-              break;
-            }
-          }
-        }
-      }
+      var overviewCSSStyle = new dvt.CSSStyle(overviewStyle);
+      var overviewSize = this._isVertical ? overviewCSSStyle.getWidth() : overviewCSSStyle.getHeight();
+      if (overviewSize != null)
+        this._overviewSize = dvt.CSSStyle.toNumber(overviewSize);
     }
   }
   dvt.Timeline.superclass.applyStyleValues.call(this);
@@ -2880,14 +3004,9 @@ dvt.Timeline.prototype._getOverviewObject = function()
   overviewOptions['end'] = this._end;
   overviewOptions['renstart'] = this._viewStartTime;
   overviewOptions['width'] = this._contentLength;
-  overviewOptions['ovp'] = 'below';
   overviewOptions['selmode'] = this._selectionMode;
   overviewOptions['rtl'] = this.isRTL();
   overviewOptions['sid'] = 'ts1';
-  overviewOptions['_bts'] = 'none';
-  overviewOptions['_btc'] = '#4f4f4f';
-  overviewOptions['_fc'] = '#aadd77';
-  overviewOptions['_do'] = '0';
 
   var windowBackgroundColor = DvtTimelineStyleUtils.getOverviewWindowBackgroundColor(this.Options);
   overviewOptions['_wbc'] = windowBackgroundColor;
@@ -2898,53 +3017,10 @@ dvt.Timeline.prototype._getOverviewObject = function()
   overviewOptions['_wbrc'] = windowBorderColor;
   overviewOptions['_wbbc'] = windowBorderColor;
   overviewOptions['_wblc'] = windowBorderColor;
-  overviewOptions['_wbts'] = 'solid';
-  overviewOptions['_wbrs'] = 'solid';
-  overviewOptions['_wbbs'] = 'solid';
-  overviewOptions['_wbls'] = 'solid';
 
   overviewOptions['_ls'] = DvtTimelineStyleUtils.getOverviewLabelStyle(this.Options).toString();
   overviewOptions['_obc'] = DvtTimelineStyleUtils.getOverviewBackgroundColor(this.Options);
   overviewOptions['_ctic'] = DvtTimelineStyleUtils.getReferenceObjectColor(this.Options);
-
-  overviewOptions['_tic'] = '#BCC7D2';
-  overviewOptions['_tabc'] = '#D9DFE3';
-  overviewOptions['_tabo'] = '0';
-  overviewOptions['_bs'] = 'solid';
-  overviewOptions['_bc'] = '#648BAF';
-  overviewOptions['_bw'] = '1px';
-  overviewOptions['_bof'] = '0px';
-  overviewOptions['_dbs'] = 'solid';
-  overviewOptions['_dbc'] = '#648BAF';
-  overviewOptions['_dbw'] = '1px';
-  overviewOptions['_hbs'] = 'solid';
-  overviewOptions['_hbc'] = '#85bbe7';
-  overviewOptions['_hbw'] = '2px';
-  overviewOptions['_hbof'] = '0px';
-  overviewOptions['_hgc'] = '#ebeced';
-  overviewOptions['_hgo'] = '1';
-  overviewOptions['_hdbs'] = 'solid';
-  overviewOptions['_hdbc'] = '#85bbe7';
-  overviewOptions['_hdbw'] = '2px';
-  overviewOptions['_sbs'] = 'solid';
-  overviewOptions['_sbc'] = '#000000';
-  overviewOptions['_sbw'] = '2px';
-  overviewOptions['_sbof'] = '0px';
-  overviewOptions['_sbo'] = '1';
-  overviewOptions['_sdbs'] = 'solid';
-  overviewOptions['_sdbc'] = '#000000';
-  overviewOptions['_sdbw'] = '2px';
-  overviewOptions['_asbs'] = 'solid';
-  overviewOptions['_asbc'] = '#000000';
-  overviewOptions['_asbw'] = '2px';
-  overviewOptions['_asbof'] = '0px';
-  overviewOptions['_asbo'] = '1';
-  overviewOptions['_asgc'] = '#e4f0fa';
-  overviewOptions['_asgo'] = '1';
-  overviewOptions['_asdbs'] = 'solid';
-  overviewOptions['_asdbc'] = '#000000';
-  overviewOptions['_asdbw'] = '2px';
-  overviewOptions['_aoc'] = 'off';
 
   if (this._referenceObjects && this._referenceObjects.length > 0 && this._referenceObjects[0])
     overviewOptions['ocd'] = this._referenceObjects[0].getTime();
@@ -2956,11 +3032,9 @@ dvt.Timeline.prototype._getOverviewObject = function()
     if (handle)
     {
       overviewOptions['_hbi'] = handle;
-      overviewOptions['_hw'] = '15';
-      overviewOptions['_hh'] = '3';
+      overviewOptions['_hw'] = 15;
+      overviewOptions['_hh'] = 3;
     }
-    else
-      overviewOptions['_htc'] = DvtTimelineStyleUtils.getOverviewHandleTextureColor(this.Options);
   }
   else
   {
@@ -2969,11 +3043,9 @@ dvt.Timeline.prototype._getOverviewObject = function()
     if (handle)
     {
       overviewOptions['_hbi'] = handle;
-      overviewOptions['_hw'] = '3';
-      overviewOptions['_hh'] = '15';
+      overviewOptions['_hw'] = 3;
+      overviewOptions['_hh'] = 15;
     }
-    else
-      overviewOptions['_htc'] = DvtTimelineStyleUtils.getOverviewHandleTextureColor(this.Options);
     overviewOptions['_ds'] = 'square';
     overviewOptions['_dsx'] = '1.3d';
     overviewOptions['_dsy'] = '0.9d';
@@ -3052,7 +3124,27 @@ dvt.Timeline.prototype._getOverviewMarkerOptions = function()
         itemOption['rk'] = j;
         itemOption['tid'] = item.getId();
         itemOption['t'] = item.getStartTime();
-        itemOption['_sd'] = 'true';
+        itemOption['_sd'] = item.getMarkerSD();
+
+        //begin custom marker handling (for ADF)
+        if (!this._isVertical)
+        {
+          if (item.getMarkerShape())
+            itemOption['s'] = item.getMarkerShape();
+          if (item.getMarkerScaleX())
+            itemOption['sx'] = item.getMarkerScaleX();
+          if (item.getMarkerScaleY())
+            itemOption['sy'] = item.getMarkerScaleY();
+        }
+        if (item.getMarkerShortDesc())
+          itemOption['d'] = item.getMarkerShortDesc();
+        if (item.getMarkerFillColor())
+          itemOption['c'] = item.getMarkerFillColor();
+        if (item.getMarkerGradientFill())
+          itemOption['g'] = item.getMarkerGradientFill();
+        if (item.getMarkerOpacity())
+          itemOption['o'] = item.getMarkerOpacity();
+        // end custom marker handling (for ADF)
 
         var endTime = item.getEndTime();
         if (endTime)
@@ -3525,9 +3617,11 @@ dvt.Timeline.prototype.HandleEvent = function(event, component)
           var item = s._items[j];
           if (item.getId() == selectedItemId)
           {
-            this.SelectionHandler._addToSelection(item, isMultiSelect);
             this.EventManager.setFocusObj(item);
             this.updateScrollForItemSelection(item);
+            // fire selection event if selection changed
+            if (this.SelectionHandler._addToSelection(item, isMultiSelect))
+              this.EventManager.fireSelectionEvent(item);
             break;
           }
         }
@@ -4243,9 +4337,7 @@ DvtTimelineRenderer._renderSeriesLabels = function(timeline)
         var seriesLabelElem = new dvt.OutputText(context, seriesLabel, 0, 0, 'sl_s' + i);
         seriesLabelElem.setCSSStyle(seriesLabelStyle);
 
-        timeline.addChild(seriesLabelElem);
         var dim = seriesLabelElem.getDimensions();
-        timeline.removeChild(seriesLabelElem);
         if (timeline.isVertical())
           var totalSpace = timeline._seriesSize;
         else
@@ -4295,10 +4387,7 @@ DvtTimelineRenderer._renderSeriesLabels = function(timeline)
           var seriesEmptyTextElem = new dvt.OutputText(context, seriesEmptyText, 0, 0, 'et_s' + i);
           seriesEmptyTextElem.setCSSStyle(DvtTimelineStyleUtils.getEmptyTextStyle(timeline.Options));
 
-          timeline.addChild(seriesEmptyTextElem);
           var dim = seriesEmptyTextElem.getDimensions();
-          timeline.removeChild(seriesEmptyTextElem);
-
           var posMatrix = new dvt.Matrix(1, 0, 0, 1, (timeline._canvasLength - dim.w) / 2 + timeline._startX, i * (timeline._seriesSize + timeline.getTimeAxisVisibleSize(seriesCount)) + ((timeline._seriesSize - dim.h) / 2) + timeline._startY);
           seriesEmptyTextElem.setMatrix(posMatrix);
 
@@ -4520,7 +4609,11 @@ DvtTimelineRenderer._renderScrollbars = function(timeline)
     timeline.addChild(timeline._scrollbarsCanvas);
   }
   else
+  {
     timeline._scrollbarsCanvas.removeChildren();
+    timeline.setTimeDirScrollbar(null);
+    timeline.setContentDirScrollbar(null);
+  }
 
   if (timeline.isTimeDirScrollbarOn())
   {
@@ -4817,9 +4910,7 @@ DvtTimelineRenderer._addLabel = function(context, container, pos, text, maxLengt
   if (labelStyle != null)
     label.setCSSStyle(labelStyle);
 
-  container.addChild(label);
   var dim = label.getDimensions();
-  container.removeChild(label);
   y = y - dim.h;
   label.setY(y);
   if (isRTL)
@@ -4953,13 +5044,6 @@ DvtTimelineStyleUtils._DEFAULT_OVERVIEW_WIDTH = 60;
 DvtTimelineStyleUtils._DEFAULT_OVERVIEW_HEIGHT = 100;
 
 /**
- * The default Overview handle texture color.
- * @const
- * @private
- */
-DvtTimelineStyleUtils._DEFAULT_OVERVIEW_HANDLE_TEXTURE_COLOR = '#B3C6DB';
-
-/**
  * The default Item enabled stroke width.
  * @const
  * @private
@@ -5021,6 +5105,13 @@ DvtTimelineStyleUtils._DEFAULT_BUBBLE_OFFSET = 20;
  * @private
  */
 DvtTimelineStyleUtils._DEFAULT_BUBBLE_SPACING = 15;
+
+/**
+ * The default item content spacing.
+ * @const
+ * @private
+ */
+DvtTimelineStyleUtils._DEFAULT_ITEM_CONTENT_SPACING = 2;
 
 /**
  * The default Item duration feeler offset value.
@@ -5198,6 +5289,15 @@ DvtTimelineStyleUtils.getBubbleOffset = function()
 DvtTimelineStyleUtils.getBubbleSpacing = function()
 {
   return DvtTimelineStyleUtils._DEFAULT_BUBBLE_SPACING;
+};
+
+/**
+ * Gets the item content spacing.
+ * @return {number} The item content spacing.
+ */
+DvtTimelineStyleUtils.getItemContentSpacing = function()
+{
+  return DvtTimelineStyleUtils._DEFAULT_ITEM_CONTENT_SPACING;
 };
 
 /**
@@ -5482,15 +5582,6 @@ DvtTimelineStyleUtils.getOverviewBackgroundColor = function(options)
 DvtTimelineStyleUtils.getOverviewLabelStyle = function(options)
 {
   return options['styleDefaults']['overview']['labelStyle'];
-};
-
-/**
- * Gets the overview handle texture color.
- * @return {string} The overview handle texture color.
- */
-DvtTimelineStyleUtils.getOverviewHandleTextureColor = function()
-{
-  return DvtTimelineStyleUtils._DEFAULT_OVERVIEW_HANDLE_TEXTURE_COLOR;
 };
 
 /**
@@ -6578,13 +6669,10 @@ DvtTimelineSeriesItemRenderer._createBubble = function(item, series, index)
   var marginTop = 5;
   var marginStart = 5;
   var content = DvtTimelineSeriesItemRenderer._getBubbleContent(item, series);
-  series.addChild(content);
-  var dim = content.getDimensions();
-  series.removeChild(content);
 
   // TODO: Review this later...
-  item.setWidth(dim.w + marginStart * 2);
-  item.setHeight(dim.h + marginTop * 2);
+  item.setWidth(content._w + marginStart * 2);
+  item.setHeight(content._h + marginTop * 2);
   item._content = content;
 
   var spacing = series.calculateSpacing(item, index);
@@ -6778,23 +6866,32 @@ DvtTimelineSeriesItemRenderer._getBubbleContent = function(item, series)
   var container = new dvt.Container(context);
   var offsetX = 0;
   var offsetY = 0;
+  var maxWidth = 0;
+  var maxHeight = 0;
+  var textHeight = 0;
 
   if (!isRTL)
   {
     // left to right rendering
     if (thumbnail)
     {
-      var thumbImage = new dvt.Image(context, thumbnail, 0, 0, DvtTimelineStyleUtils.getThumbnailWidth(), DvtTimelineStyleUtils.getThumbnailHeight(), '_tn');
+      var thumbWidth = DvtTimelineStyleUtils.getThumbnailWidth();
+      var thumbHeight = DvtTimelineStyleUtils.getThumbnailHeight();
+      var thumbImage = new dvt.Image(context, thumbnail, 0, 0, thumbWidth, thumbHeight, '_tn');
       thumbImage.setMouseEnabled(false);
       container.addChild(thumbImage);
-      offsetX = DvtTimelineStyleUtils.getThumbnailWidth() + 2;
+      offsetX = thumbWidth + DvtTimelineStyleUtils.getItemContentSpacing();
+      maxHeight = thumbHeight;
     }
 
     if (title)
     {
-      var titleText = new dvt.OutputText(context, title, offsetX, offsetY);
+      var titleText = new dvt.OutputText(context, title, offsetX, 0);
       titleText.setCSSStyle(DvtTimelineStyleUtils.getItemTitleStyle(item));
-      offsetY = 15;
+      var dim = titleText.getDimensions();
+      maxWidth = dim.w;
+      textHeight = dim.h;
+      offsetY = textHeight;
       container.addChild(titleText);
     }
 
@@ -6802,18 +6899,24 @@ DvtTimelineSeriesItemRenderer._getBubbleContent = function(item, series)
     {
       var descText = new dvt.OutputText(context, desc, offsetX, offsetY);
       descText.setCSSStyle(DvtTimelineStyleUtils.getItemDescriptionStyle(item));
+      dim = descText.getDimensions();
+      maxWidth = Math.max(maxWidth, dim.w);
+      textHeight = offsetY + dim.h;
       container.addChild(descText);
     }
+    container._w = maxWidth == 0 ? Math.max(offsetX - DvtTimelineStyleUtils.getItemContentSpacing(), 0) : offsetX + maxWidth;
   }
   else
   {
     // right to left rendering
     if (title)
     {
-      titleText = new dvt.OutputText(context, title, 0, offsetY);
+      titleText = new dvt.OutputText(context, title, 0, 0);
       titleText.setCSSStyle(DvtTimelineStyleUtils.getItemTitleStyle(item));
-      offsetX = titleText.measureDimensions().w + 2;
-      offsetY = 15;
+      dim = titleText.getDimensions();
+      offsetX = dim.w;
+      textHeight = dim.h;
+      offsetY = textHeight;
       container.addChild(titleText);
     }
 
@@ -6821,7 +6924,8 @@ DvtTimelineSeriesItemRenderer._getBubbleContent = function(item, series)
     {
       descText = new dvt.OutputText(context, desc, 0, offsetY);
       descText.setCSSStyle(DvtTimelineStyleUtils.getItemDescriptionStyle(item));
-      var width = descText.measureDimensions().w + 2;
+      dim = descText.getDimensions();
+      var width = dim.w;
       if (offsetX != 0 && width != offsetX)
       {
         if (width > offsetX)
@@ -6834,16 +6938,24 @@ DvtTimelineSeriesItemRenderer._getBubbleContent = function(item, series)
       }
       else
         offsetX = width;
+      textHeight = offsetY + dim.h;
       container.addChild(descText);
     }
 
     if (thumbnail)
     {
-      thumbImage = new dvt.Image(context, thumbnail, offsetX, 0, DvtTimelineStyleUtils.getThumbnailWidth(), DvtTimelineStyleUtils.getThumbnailHeight(), '_tn');
+      thumbWidth = DvtTimelineStyleUtils.getThumbnailWidth();
+      thumbHeight = DvtTimelineStyleUtils.getThumbnailHeight();
+      offsetX = (offsetX == 0 ? 0 : offsetX + DvtTimelineStyleUtils.getItemContentSpacing());
+      thumbImage = new dvt.Image(context, thumbnail, offsetX, 0, thumbWidth, thumbHeight, '_tn');
       thumbImage.setMouseEnabled(false);
       container.addChild(thumbImage);
+      maxWidth = thumbWidth;
+      maxHeight = thumbHeight;
     }
+    container._w = offsetX + maxWidth;
   }
+  container._h = Math.max(maxHeight, textHeight);
   return container;
 };
 
@@ -7193,6 +7305,16 @@ DvtTimelineSeriesNode.prototype.Init = function(timeline, seriesIndex, props)
   this._durationSize = 0;
 
   this._spbs = props.spbs;
+
+  //custom marker handling (for ADF)
+  this._markerShape = props.markerShape;
+  this._markerScaleX = props.markerScaleX;
+  this._markerScaleY = props.markerScaleY;
+  this._markerShortDesc = props.markerShortDesc;
+  this._markerFillColor = props.markerFillColor;
+  this._markerGradientFill = props.markerGradientFill;
+  this._markerOpacity = props.markerOpacity;
+  this._markerSD = props.markerSD;
 };
 
 DvtTimelineSeriesNode.prototype.getId = function()
@@ -7398,6 +7520,78 @@ DvtTimelineSeriesNode.prototype.setHeight = function(h)
 DvtTimelineSeriesNode.prototype.getAction = function()
 {
   return this._action;
+};
+
+/**
+ * Gets the marker shape for this item.
+ * @return {string} The marker shape for this item.
+ */
+DvtTimelineSeriesNode.prototype.getMarkerShape = function()
+{
+  return this._markerShape;
+};
+
+/**
+ * Gets the marker scaleX value for this item.
+ * @return {number} The marker scaleX value for this item.
+ */
+DvtTimelineSeriesNode.prototype.getMarkerScaleX = function()
+{
+  return this._markerScaleX;
+};
+
+/**
+ * Gets the marker scaleY value for this item.
+ * @return {number} The marker scaleY value for this item.
+ */
+DvtTimelineSeriesNode.prototype.getMarkerScaleY = function()
+{
+  return this._markerScaleY;
+};
+
+/**
+ * Gets the marker short description for this item.
+ * @return {string} The marker short description for this item.
+ */
+DvtTimelineSeriesNode.prototype.getMarkerShortDesc = function()
+{
+  return this._markerShortDesc;
+};
+
+/**
+ * Gets the marker fill color for this item.
+ * @return {string} The marker fill color for this item.
+ */
+DvtTimelineSeriesNode.prototype.getMarkerFillColor = function()
+{
+  return this._markerFillColor;
+};
+
+/**
+ * Gets the marker gradient fill for this item.
+ * @return {string} The marker gradient fill for this item.
+ */
+DvtTimelineSeriesNode.prototype.getMarkerGradientFill = function()
+{
+  return this._markerGradientFill;
+};
+
+/**
+ * Gets the marker opacity for this item.
+ * @return {number} The marker opacity for this item.
+ */
+DvtTimelineSeriesNode.prototype.getMarkerOpacity = function()
+{
+  return this._markerOpacity;
+};
+
+/**
+ * Gets the marker default value for this item.
+ * @return {number} The marker default value for this item.
+ */
+DvtTimelineSeriesNode.prototype.getMarkerSD = function()
+{
+  return this._markerSD;
 };
 
 /**
@@ -7813,6 +8007,19 @@ DvtTimelineSeriesParser.prototype.ParseNodeAttributes = function(data, compStart
   ret.durationFillColor = data['durationFillColor'];
 
   ret.spbs = data['showPopupBehaviors'];
+
+  //custom marker handling (for ADF)
+  ret.markerShape = data['_markerShape'];
+  ret.markerScaleX = data['_markerScaleX'];
+  ret.markerScaleY = data['_markerScaleY'];
+  ret.markerShortDesc = data['_markerShortDesc'];
+  ret.markerFillColor = data['_markerFillColor'];
+  ret.markerGradientFill = data['_markerGradientFill'];
+  ret.markerOpacity = data['_markerOpacity'];
+  if (data['_markerSD'] == false)
+    ret.markerSD = 'false';
+  else
+    ret.markerSD = 'true';
 
   return ret;
 };

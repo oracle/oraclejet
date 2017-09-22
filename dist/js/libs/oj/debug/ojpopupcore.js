@@ -1223,7 +1223,14 @@ oj.PopupService.OPTION =
      * callbacks.
      * @since 3.0.0
      */
-    CONTEXT : "context"
+    CONTEXT : "context",
+
+    /**
+     * Indicates the component with the associated popup was instantiated as a custom element.
+     * This switch determines how the associated surrogate will be created.
+     * @since 4.0.0
+     */
+    CUSTOM_ELEMENT: "customElement"
   };
 
 // -----------------------------------------------------------------------------
@@ -1261,6 +1268,17 @@ oj.PopupServiceImpl.prototype.open = function (options)
   var popup = options[oj.PopupService.OPTION.POPUP];
   oj.Assert.assertPrototype(popup, $);
 
+  // Trying to open a popup that is either already opening, open or closing.
+  // Evaulate if global dom listeners are still needed and ignore the request.
+  // This is generally and indicator something wacky has happened that needs recovery.
+  var status = oj.ZOrderUtils.getStatus(popup);
+  if (status !== oj.ZOrderUtils.STATUS.UNKNOWN &&
+      status !== oj.ZOrderUtils.STATUS.CLOSE)
+  {
+    this._assertEventSink();
+    return;
+  }
+
   /** @type {jQuery} */
   var launcher = options[oj.PopupService.OPTION.LAUNCHER];
   oj.Assert.assertPrototype(launcher, $);
@@ -1282,6 +1300,7 @@ oj.PopupServiceImpl.prototype.open = function (options)
   var layerClass = options[oj.PopupService.OPTION.LAYER_SELECTORS];
   oj.Assert.assertString(layerClass);
 
+  var isCustomElement = options[oj.PopupService.OPTION.CUSTOM_ELEMENT];
 
   var layerLevel = options[oj.PopupService.OPTION.LAYER_LEVEL];
   if (!layerLevel ||
@@ -1295,10 +1314,13 @@ oj.PopupServiceImpl.prototype.open = function (options)
 
   var afterOpenCallback = events[oj.PopupService.EVENT.POPUP_AFTER_OPEN];
 
+  oj.ZOrderUtils.setStatus(popup, oj.ZOrderUtils.STATUS.OPENING);
+
   //set logical parent
   oj.DomUtils.setLogicalParent(popup, launcher);
 
-  oj.ZOrderUtils.addToAncestorLayer(popup, launcher, modality, layerClass, layerLevel);
+  oj.ZOrderUtils.addToAncestorLayer(popup, launcher, modality, layerClass, layerLevel,
+    isCustomElement);
 
   var _finalize = function ()
   {
@@ -1325,6 +1347,7 @@ oj.PopupServiceImpl.prototype.open = function (options)
       var layer = oj.ZOrderUtils.getFirstAncestorLayer(popup);
       oj.Assert.assertPrototype(layer, $);
       oj.ZOrderUtils.applyEvents(layer, events);
+      oj.ZOrderUtils.setStatus(popup, oj.ZOrderUtils.STATUS.OPEN);
     }
   };
   _finalize = _finalize.bind(this);
@@ -1345,7 +1368,6 @@ oj.PopupServiceImpl.prototype.open = function (options)
     else
       _finalize();
   }
-  ;
 };
 
 /**
@@ -1391,7 +1413,7 @@ oj.PopupServiceImpl.prototype.close = function (options)
   oj.Assert.assertPrototype(popup, $);
 
   /** @type {!jQuery} */
-  var layer = oj.ZOrderUtils.getFirstAncestorLayer(popup);
+  var layer = oj.ZOrderUtils.getOpenPopupLayer(popup);
   oj.Assert.assertPrototype(layer, $);
 
   /** @type {!Object.<oj.PopupService.EVENT, function(...)>} **/
@@ -1401,9 +1423,14 @@ oj.PopupServiceImpl.prototype.close = function (options)
   else
     events = $.extend(oj.ZOrderUtils.getEvents(layer), events);
 
-  // No events registered for the popup then it is already closing.
-  if (!events)
+  // Popup is not in a open status or there are no events registered for the popup,
+  // then it is opening, closing or already closed. Evaluate if the document level
+  // dom listeners are still needed and ignore the request.
+  if (oj.ZOrderUtils.getStatus(popup) !== oj.ZOrderUtils.STATUS.OPEN || !events)
+  {
+    this._assertEventSink();
     return;
+  }
 
   var beforeCloseCallback = events[oj.PopupService.EVENT.POPUP_BEFORE_CLOSE];
   if (!beforeCloseCallback || !$.isFunction(beforeCloseCallback))
@@ -1411,6 +1438,7 @@ oj.PopupServiceImpl.prototype.close = function (options)
 
   var afterCloseCallback = events[oj.PopupService.EVENT.POPUP_AFTER_CLOSE];
 
+  oj.ZOrderUtils.setStatus(popup, oj.ZOrderUtils.STATUS.CLOSING);
   // Unregister events during before close callback
   oj.ZOrderUtils.applyEvents(layer, {});
 
@@ -1439,6 +1467,8 @@ oj.PopupServiceImpl.prototype.close = function (options)
     {
       if (afterCloseCallback && $.isFunction(afterCloseCallback))
         afterCloseCallback(options);
+
+      oj.ZOrderUtils.setStatus(popup, oj.ZOrderUtils.STATUS.CLOSE);
     }
 
   };
@@ -1579,8 +1609,7 @@ oj.PopupServiceImpl.prototype._assertEventSink = function ()
 
   var hasPopupsOpen = oj.ZOrderUtils.hasPopupsOpen();
   var callbackEventFilter = this._callbackEventFilter;
-  var win;
-  var documentElement;
+
   if (!hasPopupsOpen && callbackEventFilter)
   {
     window.removeEventListener("resize", oj.PopupServiceImpl._refreshCallback, true);
@@ -1866,6 +1895,71 @@ oj.PopupServiceImpl._REFRESH_DELAY = 10;
 oj.ZOrderUtils = {};
 
 /**
+ * Operation status for a target popup.
+ * @enum {number}
+ * @public
+ * @see oj.ZOrderUtils.getStatus
+ * @see oj.ZOrderUtils.setStatus
+ */
+oj.ZOrderUtils.STATUS =
+{
+  /** Node has not interacted with the popup service. */
+  UNKNOWN : 0,
+  /** Popup is in the process of opening. */
+  OPENING : 1,
+  /** Popup is currently open. */
+  OPEN : 2,
+  /** Popup is in the process of closing */
+  CLOSING : 3,
+  /** Popup previously open is now closed **/
+  CLOSE : 4
+};
+
+/**
+ * Key to store the current operation status of the popup.
+ * @const
+ * @private
+ * @type {string}
+ * @see oj.ZOrderUtils.getStatus
+ * @see oj.ZOrderUtils.setStatus
+ */
+oj.ZOrderUtils._STATUS_DATA = "oj-popup-status";
+
+/**
+ * Returns the current operation status of the target popup element.
+ * @param {jQuery|Element} popup
+ * @returns {oj.ZOrderUtils.STATUS}
+ * @see oj.ZOrderUtils.setStatus
+ */
+oj.ZOrderUtils.getStatus = function (popup)
+{
+  if (popup instanceof Element)
+    popup = $(popup);
+
+  /** @type {?} */
+  var status = popup.data(oj.ZOrderUtils._STATUS_DATA);
+  if (isNaN(status))
+    return oj.ZOrderUtils.STATUS.UNKNOWN;
+  else
+    return status;
+};
+
+/**
+ * Sets the current operational status of the popup element.
+ * @param {jQuery|Element} popup
+ * @param {oj.ZOrderUtils.STATUS} status
+ * @see oj.ZOrderUtils.getStatus
+ */
+oj.ZOrderUtils.setStatus = function (popup, status)
+{
+  if (popup instanceof Element)
+    popup = $(popup);
+
+  if (status >= 1 && status <= 4)
+    popup.data(oj.ZOrderUtils._STATUS_DATA, status);
+};
+
+/**
  * Accepts a launcher associated with the target popup being open.  The
  * resultant is the nearest layer or default zorder container that the
  * popup should be reparented to when open.  It can also return the
@@ -1883,7 +1977,7 @@ oj.ZOrderUtils.getFirstAncestorLayer = function (launcher)
 
   var parent = launcher;
   while (parent && parent.length > 0
-    && parent.attr("oj.ZOrderUtils._SURROGATE_ATTR") !== oj.ZOrderUtils._DEFAULT_LAYER_ID)
+    && parent.attr(oj.ZOrderUtils._SURROGATE_ATTR) !== oj.ZOrderUtils._DEFAULT_LAYER_ID)
   {
     if (oj.ZOrderUtils._hasSurrogate(parent[0]))
       return parent;
@@ -1911,7 +2005,7 @@ oj.ZOrderUtils.getDefaultLayer = function ()
   defaultLayer = $("<div>");
   defaultLayer.attr("role", "presentation");
   defaultLayer.attr("id", oj.ZOrderUtils._DEFAULT_LAYER_ID);
-  defaultLayer.prependTo($(document.body));
+  defaultLayer.prependTo($(document.body)); //@HTMLUpdateOK; attach programmatic generated node
 
   return defaultLayer;
 };
@@ -1926,10 +2020,12 @@ oj.ZOrderUtils.getDefaultLayer = function ()
  * @param {!oj.PopupService.MODALITY} modality of the popup being open
  * @param {string} layerClass selector that defines the stacking context "z-index" of the popup
  * @param {oj.PopupService.LAYER_LEVEL} layerLevel defines where the popup will be reparented
+ * @param {boolean} isCustomElement indicates if the owning component is a custom element
  * @return {void}
  * @public
  */
-oj.ZOrderUtils.addToAncestorLayer = function (popup, launcher, modality, layerClass, layerLevel)
+oj.ZOrderUtils.addToAncestorLayer = function (popup, launcher, modality, layerClass, layerLevel,
+  isCustomElement)
 {
   var popupDom = popup[0];
   if (oj.ZOrderUtils._hasSurrogate(popupDom.parentNode))
@@ -1951,10 +2047,13 @@ oj.ZOrderUtils.addToAncestorLayer = function (popup, launcher, modality, layerCl
   layer.addClass(layerClass);
   popup.after(layer);  //@HtmlUpdateOk
 
-  var surrogate = oj.ZOrderUtils._createSurrogate(layer);
+  var surrogate = oj.ZOrderUtils._createSurrogate(layer, isCustomElement);
 
   oj.Components.subtreeDetached(popupDom);
   popup.appendTo(layer);  //@HtmlUpdateOk
+
+  // link the popup to the layer @see oj.ZOrderUtils.getOpenPopupLayer
+  popup.data(oj.ZOrderUtils._LAYER_ID_DATA, layer.attr("id"));
 
   layer.appendTo(ancestorLayer);  //@HtmlUpdateOk
   oj.Components.subtreeAttached(popupDom);
@@ -1986,12 +2085,13 @@ oj.ZOrderUtils.applyEvents = function (layer, events, surrogate)
 
   layer.data(oj.ZOrderUtils._EVENTS_DATA, events);
 
-  if (surrogate && events && $.isFunction(events[oj.PopupService.EVENT.POPUP_REMOVE]))
+  if (surrogate && surrogate.length > 0 &&
+    events && $.isFunction(events[oj.PopupService.EVENT.POPUP_REMOVE]))
   {
     // if the surrogate script element gets replaced in the dom it will trigger closure of the
     // popup.
-    surrogate['surrogate']();
-    surrogate['surrogate']("option", "beforeDestroy", events[oj.PopupService.EVENT.POPUP_REMOVE]);
+    oj.Components.setComponentOption(surrogate[0], "beforeDestroy",
+      events[oj.PopupService.EVENT.POPUP_REMOVE]);
   }
 };
 
@@ -2015,32 +2115,41 @@ oj.ZOrderUtils.getEvents = function (layer)
  * {@link oj.ZOrderUtils._SURROGATE_ATTR}.
  *
  * @param {!jQuery} layer stacking context
+ * @param {boolean} isCustomElement
  * @return {jQuery}
  * @private
  * @see oj.ZOrderUtils.addToAncestorLayer
  */
-oj.ZOrderUtils._createSurrogate = function (layer)
+oj.ZOrderUtils._createSurrogate = function (layer, isCustomElement)
 {
+  var nodeName = "script";
+  if (isCustomElement)
+    nodeName = "oj-surrogate";
+
   /** @type {?} */
-  var surrogate = $("<script>");  //@HtmlUpdateOk - Script tag is used as a placeholder in the
-                                  // document from where the popup is reparented when open.
-                                  // The script tag is used because it doesn't introduce layout.
-                                  // The script node is bound to a query headless component that
-                                  // invokes a listener when the subtree it is contained within
-                                  // is removed from the document.  The listener triggers implicit
-                                  // dismissal of the popup so the popup isn't orphaned from the
-                                  // original subtree. The script tag is internal to the framework.
-                                  // It is created when the popup is open and removed when the
-                                  // popup is closed.
+  var surrogate = $(document.createElement(nodeName));  //@HtmlUpdateOk;
 
   /** @type {?} */
   var layerId = layer.attr("id");
-  if (oj.StringUtils.isEmptyOrUndefined(layerId))
-    surrogate.uniqueId();
-  else
+  if (!oj.StringUtils.isEmptyOrUndefined(layerId))
     surrogate.attr("id", [layerId, "surrogate"].join("_"));
 
+  if (isCustomElement)
+  {
+    // programmatically created elements not managed by a binding stratagy like knockout
+    // needs this attribute to signal the component should be created.
+    surrogate.attr("data-oj-binding-provider", "none");
+  }
+
   surrogate.insertBefore(layer);  //@HtmlUpdateOk
+
+  if (!isCustomElement)
+  {
+    // create the jquery ui component bound to the script node
+    surrogate["ojSurrogate"]();
+  }
+
+  /** @type {?} */
   var surrogateId = surrogate.attr('id');
   // loosely associate the popup to the surrogate element
   layer.attr(oj.ZOrderUtils._SURROGATE_ATTR, surrogateId);
@@ -2066,9 +2175,34 @@ oj.ZOrderUtils._removeSurrogate = function (layer)
   /** @type {jQuery} */
   var surrogate = $(document.getElementById(surrogateId));
   layer.insertAfter(surrogate);  //@HtmlUpdateOk
+  if (surrogate.length > 0)
+    oj.Components.setComponentOption(surrogate[0], "beforeDestroy", null);
 
-  surrogate['surrogate']("option", "beforeDestroy", null);
   surrogate.remove();
+};
+
+/**
+ * Returns the layer associated with a popup.  The layer should be the immediate parent of an open
+ * popup unless it was disconnected from the document.
+ *
+ * @param {!jQuery} popup
+ * @returns {!jQuery} open popup's layer
+ * @public
+ */
+oj.ZOrderUtils.getOpenPopupLayer = function (popup)
+{
+  /** @type {?} */
+  var layer = popup.parent();
+  if (!layer || layer.length === 0)
+  {
+    // the open popup has been detached from the layer before it was closed
+    // use the backup pointer for better cleanup
+    /** @type {?} */
+    var layerId = popup.data(oj.ZOrderUtils._LAYER_ID_DATA);
+    layer = $(document.getElementById(layerId));
+  }
+
+  return layer;
 };
 
 /**
@@ -2081,7 +2215,8 @@ oj.ZOrderUtils._removeSurrogate = function (layer)
  */
 oj.ZOrderUtils.removeFromAncestorLayer = function (popup)
 {
-  var layer = oj.ZOrderUtils.getFirstAncestorLayer(popup);
+  var layer = oj.ZOrderUtils.getOpenPopupLayer(popup);
+
   oj.ZOrderUtils.preOrderVisit(layer, oj.ZOrderUtils._closeDescendantPopupsCallback);
 
   oj.ZOrderUtils._removeOverlayFromAncestorLayer(layer);
@@ -2093,6 +2228,7 @@ oj.ZOrderUtils.removeFromAncestorLayer = function (popup)
   oj.Components.subtreeDetached(popupDom);
   oj.ZOrderUtils._removeSurrogate(layer);
   oj.DomUtils.unwrap(popup, layer);
+  popup.removeData(oj.ZOrderUtils._LAYER_ID_DATA);
   oj.Components.subtreeAttached(popupDom);
 };
 
@@ -2366,7 +2502,7 @@ oj.ZOrderUtils._visitTree = function (layer, callback, context)
  */
 oj.ZOrderUtils._hasSurrogate = function (element)
 {
-  if (element.nodeType === 1 && element.hasAttribute(oj.ZOrderUtils._SURROGATE_ATTR))
+  if (element && element.nodeType === 1 && element.hasAttribute(oj.ZOrderUtils._SURROGATE_ATTR))
     return true;
   else
     return false;
@@ -2619,6 +2755,18 @@ oj.ZOrderUtils._DEFAULT_LAYER_ID = "__oj_zorder_container";
 oj.ZOrderUtils._SURROGATE_ATTR = "data-oj-surrogate-id";
 
 /**
+ * This key that captures the popups layer id.  The layer should always be the immediate parent
+ * of the popup after open but if the popup is disconnected from the layer, this is a secondary
+ * link to the layer for better cleanup.
+ *
+ * @const
+ * @private
+ * @type {string}
+ * @see oj.ZOrderUtils.getOpenPopupLayer
+ */
+oj.ZOrderUtils._LAYER_ID_DATA = "oj-popup-layer-id";
+
+/**
  * The attribute name assigned to the popup layer for open dialogs that have a
  * modality state of "modal".  The value of the attribute points to the associated
  * overlay element.
@@ -2638,25 +2786,53 @@ oj.ZOrderUtils._OVERLAY_SELECTOR = "oj-component-overlay";
 
 // -----------------------------------------------------------------------------
 
-$.widget("oj.surrogate",
+oj.__registerWidget("oj.ojSurrogate", $['oj']['baseComponent'],
   {
+    version: "1.0.0",
+    widgetEventPrefix : "oj",
     options :
       {
-        'create' : null,
         'beforeDestroy' : null
       },
-    _create : function ()
+    _ComponentCreate : function ()
     {
       this._super();
       this.element.uniqueId();
     },
+    _invokeBeforeDestroy: function ()
+    {
+      var callback = this.options["beforeDestroy"];
+      this.options["beforeDestroy"] = null;
+      if (callback)
+        callback();
+    },
     _destroy : function ()
     {
-      this._trigger("beforeDestroy");
+
+      this._invokeBeforeDestroy();
       this.element.removeUniqueId();
+      this._super();
+    },
+    _NotifyDetached: function()
+    {
+      this._invokeBeforeDestroy();
       this._super();
     }
   });
+
+  var ojSurrogateMeta = {
+   "properties" : {
+      "beforeDestroy" : {
+        "type" : "function"
+      }
+   },
+   "extension" : {
+      _WIDGET_NAME : "ojSurrogate"
+   }
+  };
+  oj.CustomElementBridge.registerMetadata('oj-surrogate', 'baseComponent', ojSurrogateMeta);
+  oj.CustomElementBridge.register('oj-surrogate', {'metadata' :
+      oj.CustomElementBridge.getMetadata('oj-surrogate')});
 
 /**
  * @extends {oj.Object}
@@ -2831,7 +3007,7 @@ oj.PopupLiveRegion.prototype.announce = function (message)
   {
     var liveRegion = oj.PopupLiveRegion._getLiveRegion();
     liveRegion.children().remove();
-    $("<div>").text(message).appendTo(liveRegion);  //@HtmlUpdateOk - The "messsage" comes from a
+    $("<div>").text(message).appendTo(liveRegion);  //@HtmlUpdateOk; the "messsage" comes from a
                                                     // translated string that can be overridden by
                                                     // an option on the ojPopup.  The jquery "text"
                                                     // function will escape script.
@@ -3094,7 +3270,6 @@ oj.PopupWhenReadyMediator.prototype.destroy = function ()
 {
   // If the promise is swapped (component is destroyed)
   // before the event is fired, resolve with a "none" operation.
-  var operation = this._operation;
   if (this._resolvedQueue)
     this._deliverResolved("none");
 

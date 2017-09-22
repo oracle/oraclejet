@@ -23,39 +23,39 @@
 @if $includeGanttClasses != false {
   @include module-include-once("alta.windows.gantt") {
   	.oj-gantt-zoomin-icon {
-      background-image:oj-image-url("dvt/common/zoom_in_16_ena.svg");
+      background-image:oj-common-image-url("dvt/common/zoom_in_16_ena.svg");
     }
     
     .oj-gantt-zoomin-icon.oj-hover {
-      background-image:oj-image-url("dvt/common/zoom_in_16_hov.svg");
+      background-image:oj-common-image-url("dvt/common/zoom_in_16_hov.svg");
     }
     
     .oj-gantt-zoomin-icon.oj-active {
-      background-image:oj-image-url("dvt/common/zoom_in_16_act.svg");
+      background-image:oj-common-image-url("dvt/common/zoom_in_16_act.svg");
       background-color:$buttonBgColorActive;
       border-color:$buttonBorderColorActive;
     }
     
     .oj-gantt-zoomin-icon.oj-disabled {
-      background-image:oj-image-url("dvt/common/zoom_in_16_dis.svg");
+      background-image:oj-common-image-url("dvt/common/zoom_in_16_dis.svg");
     }
     
     .oj-gantt-zoomout-icon {
-      background-image:oj-image-url("dvt/common/zoom_out_16_ena.svg");
+      background-image:oj-common-image-url("dvt/common/zoom_out_16_ena.svg");
     }
     
     .oj-gantt-zoomout-icon.oj-hover {
-      background-image:oj-image-url("dvt/common/zoom_out_16_hov.svg");
+      background-image:oj-common-image-url("dvt/common/zoom_out_16_hov.svg");
     }
     
     .oj-gantt-zoomout-icon.oj-active {
-      background-image:oj-image-url("dvt/common/zoom_out_16_act.svg");
+      background-image:oj-common-image-url("dvt/common/zoom_out_16_act.svg");
       background-color:$buttonBgColorActive;
       border-color:$buttonBorderColorActive;
     }
     
     .oj-gantt-zoomout-icon.oj-disabled {
-      background-image:oj-image-url("dvt/common/zoom_out_16_dis.svg");
+      background-image:oj-common-image-url("dvt/common/zoom_out_16_dis.svg");
     }
   }
 }

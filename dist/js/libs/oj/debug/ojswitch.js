@@ -34,9 +34,11 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue'],
   /**
    * @ojcomponent oj.ojSwitch
    * @augments oj.editableValue
+   * @since 0.7
+   *
    * @classdesc
    * <p>
-   * Component JET Switch (ojSwitch) enhances <code class="prettyprint">input</code>
+   * the oj-switch component enhances <code class="prettyprint">input</code>
    * element and manages the selection of Boolean values.
    * </p>
    *
@@ -66,8 +68,8 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue'],
    * like aria-checked and aria-disabled.
    * </p>
    * <p>
-   * It is up to the application developer to associate the label to the input component.
-   * For Switch, you should put an <code class="prettyprint">id</code> on the input, and
+   * It is up to the application developer to associate the label to the input element.
+   * For Switch, you should put an <code class="prettyprint">id</code> on the input element, and
    * then set the <code class="prettyprint">for</code> attribute on the label to be the
    * input's id.
    * </p>
@@ -90,24 +92,18 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue'],
    * <code class="prettyprint">for</code> attribute on the label to be the input's id.
    * </p>
    * <h3 id="state-section">
-   *   Setting the Value Option
+   *   Setting the Value Attribute
    *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#state-section"></a>
    * </h3>
-   * <p>The value option should be Boolean. If the value option is undefined, then it is
+   * <p>The value attribute should be Boolean. If the value attribute is undefined, then it is
    * <code class="prettyprint">false</code>.
    * </p>
-   * <!-- - - Above this point, the tags are for the class.
-   *              Below this point, the tags are for the constructor (initializer). - - - - -->
    *
-   * @desc Creates or re-initializes a JET Switch.
+   * @example <caption>Initialize the switch with no attributes specified:</caption>
+   * &lt;oj-switch>&lt;/oj-switch>
    *
-   * @param {Object=} options a map of option-value pairs to set on the component
-   *
-   * @example <caption>Initialize the switch with no options specified:</caption>
-   * $(".selector").ojSwitch();
-   *
-   * @example <caption>Initialize the switch with some options specified:</caption>
-   * $(".selector").ojSwitch({"value": true, "disabled": false});
+   * @example <caption>Initialize the switch with some attributes specified:</caption>
+   * &lt;oj-switch value=true disabled=false>&lt;/oj-switch>
    */
   oj.__registerWidget('oj.ojSwitch', $['oj']['editableValue'], {
     version: '1.1.0',
@@ -118,19 +114,26 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue'],
     {
       /**
        * <p>
-       * Disabled <code class="prettyprint">true</code> disables the component and disables
-       * all the inputs/labels.
-       * Disabled <code class="prettyprint">false</code> enables the component, and leaves
-       * the input's disabled state as it is in the DOM.
-       * <p>
+       * Whether the component is disabled. The element's
+       * <code class="prettyprint">disabled</code>
+       *  property is used as its initial
+       * value if it exists, when the attribute is not explicitly set. When neither is set,
+       * <code class="prettyprint">disabled </code>
+       * defaults to false.
        *
-       * @example <caption>Initialize component with
-       * <code class="prettyprint">disabled</code> option:</caption>
-       * $(".selector").ojSwitch({"disabled": true});
-       *
+       * @example <caption>Initialize the switch with
+       * <code class="prettyprint">disabled</code> attribute:</caption>
+       * &lt;oj-switch disabled="true">&lt;/oj-switch>
+       * @example <caption>Get or set the <code class="prettyprint">disabled</code> property after initialization:</caption>
+       * // Getter
+       * var disabled = myComponent.disabled;
+       * 
+       * // Setter
+       * myComponent.disabled = true;
+       * 
        * @expose
        * @type {?boolean}
-       * @default <code class="prettyprint">false</code>
+       * @default false
        * @public
        * @instance
        * @memberof oj.ojSwitch
@@ -141,104 +144,55 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue'],
        * Whether the component is readOnly. The element's
        * <code class="prettyprint">readOnly</code>
        *  property is used as its initial
-       * value if it exists, when the option is not explicitly set. When neither is set,
+       * value if it exists, when the attribute is not explicitly set. When neither is set,
        * <code class="prettyprint">readOnly </code>
        * defaults to false.
        *
-       * @example <caption>Initialize component with
-       * <code class="prettyprint">readOnly</code> option:</caption>
-       * $(".selector").ojSwitch({"readOnly": true});
+       * @example <caption>Initialize the switch with
+       * <code class="prettyprint">readOnly</code> attribute:</caption>
+       * &lt;oj-switch readonly="true">&lt;/oj-switch>
+       * @example <caption>Get or set the <code class="prettyprint">readonly</code> property after initialization:</caption>
+       * // Getter
+       * var readonly = myComponent.readonly;
+       * 
+       * // Setter
+       * myComponent.readonly = true;
+       * 
        *
        * @expose
        * @type {?boolean}
-       * @default <code class="prettyprint">false</code>
+       * @alias readonly
+       * @default false
        * @instance
        * @memberof oj.ojSwitch
        */
       readOnly: false,
 
-
-      /**
-       * Represents advisory information for the component, such as would be appropriate for
-       * a tooltip.
-       *
-       * <p>
-       * When a title is present it is by default displayed in the notewindow, or as determined by
-       * the 'title' property set on the <code class="prettyprint">displayOptions</code> option.
-       * When the <code class="prettyprint">title</code> option changes the component refreshes to
-       * display the new title.
-       * </p>
-       *
-       * @example <caption>Initialize component with
-       * <code class="prettyprint">title</code> option:</caption>
-       * $(".selector").ojSwitch({"title": "My Switch"});
-       *
-       * @expose
-       * @type {string|undefined}
-       * @default when the option is not set, the element's title attribute is used as its initial
-       * value if it exists.
-       * @public
-       * @instance
-       * @memberof oj.ojSwitch
-       */
-      title: '',
-
       /**
        * The state of the switch component (true/false).
        *
        * @example <caption>Initialize component (switch is ON) with
-       * <code class="prettyprint">value</code> option:</caption>
-       * $(".selector").ojSwitch({"value": true});
-       *
+       * <code class="prettyprint">value</code> attribute:</caption>
+       * &lt;oj-switch value="true">&lt;/oj-switch>
+       * @example <caption>Get or set the <code class="prettyprint">value</code> property after initialization:</caption>
+       * // Getter
+       * var value = myComponent.value;
+       * 
+       * // Setter
+       * myComponent.value = true;
+       * 
        * @expose
        * @type {?boolean}
-       * @default <code class="prettyprint">false</code>
+       * @default false
+       * @ojwriteback
        * @public
        * @instance
        * @memberof oj.ojSwitch
        */
       value: false
-
-      // Events
-
-      /**
-       * Triggered when the ojSwitch is created.
-       *
-       * @event
-       * @name create
-       * @memberof oj.ojSwitch
-       * @instance
-       * @property {Event} event <code class="prettyprint">jQuery</code> event object
-       * @property {Object} ui Currently empty
-       *
-       * @example <caption>Initialize the ojSwitch with the <code class="prettyprint">create</code> callback specified:</caption>
-       * $( ".selector" ).ojSwitch({
-       *     "create": function( event, ui ) {}
-       * });
-       *
-       * @example <caption>Bind an event listener to the <code class="prettyprint">ojcreate</code> event:</caption>
-       * $( ".selector" ).on( "ojcreate", function( event, ui ) {} );
-       */
-      // create event declared in superclass, but we still want the above API doc
     },
 
     // P U B L I C    M E T H O D S
-
-    /**
-     * Refreshes the switch
-     * <p>A <code class="prettyprint">refresh()</code> or re-init is required
-     * when a switch is programatically changed.
-     *
-     * @example <caption>Invoke the <code class="prettyprint">refresh</code> method:</caption>
-     * $( ".selector" ).ojSwitch( "refresh" );
-     * @expose
-     * @memberof oj.ojSwitch
-     * @instance
-     */
-    refresh: function () {
-      this._super();
-      this._setup();
-    },
 
     /**
      * Returns a jQuery object containing the element visually representing the switch.
@@ -256,17 +210,21 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue'],
 
     // @inheritdoc
     getNodeBySubId: function (locator) {
-      var node;
+      var node = this._super(locator);
       var subId;
       var rootElement = this.widget();
 
-      node = (locator == null || locator['subId'] == null) ? rootElement : null;
-      if (!node) {
-        subId = locator['subId'];
-        if (subId === 'oj-switch-thumb' || subId === 'oj-switch-track') {
-          return rootElement.find('.' + subId)[0];
+      if (!node)
+      {
+        node = (locator == null || locator['subId'] == null) ? rootElement : null;
+        if (!node) {
+          subId = locator['subId'];
+          if (subId === 'oj-switch-thumb' || subId === 'oj-switch-track') {
+            return rootElement.find('.' + subId)[0];
+          }
         }
       }
+      
       return node || null;
     },
 
@@ -281,6 +239,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue'],
      *
      * @expose
      * @override
+     * @ignore
      * @memberof oj.ojSwitch
      * @instance
      * @param {!Element} node - child DOM node
@@ -289,7 +248,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue'],
     getSubIdByNode: function (node) {
       var originalId = $(this.element).attr('id');
       var nodeId;
-      var result = null;
+      var result = this._super(node);
 
       if (node != null) {
         if ($(node).hasClass('oj-switch-track') || $(node).hasClass('oj-switch-thumb')) {
@@ -343,11 +302,14 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue'],
       ];
 
       this._super(originalDefaults, constructorOptions);
-      oj.EditableValueUtils.initializeOptionsFromDom(props, constructorOptions, this);
-
-      val = this.option('value');
-      this.option({ value: !!val },
-                  { '_context': { writeback: true, internalSet: true } });
+      
+      // Only needed for non new element style
+      if (!this._IsCustomElement()) {
+        oj.EditableValueUtils.initializeOptionsFromDom(props, constructorOptions, this);
+        val = this.option('value');
+        this.option({ value: !!val },
+                    { '_context': { writeback: true, internalSet: true } });
+      }
     },
 
     /**
@@ -385,40 +347,63 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue'],
       this.switchThumb = this._element2.find('.oj-switch-thumb');
       this.switchThumb
         .attr('role', this._setSwitchRole());
-
-      // Set aria-label.. : aria-labelledby or aria-label
-      this._setAriaLabel(this.element, this.switchThumb);
-      //    this._setupEvents();
-      this._setup();
     },
 
+    _AfterCreate: function () {
+      this._super();
+    
+      // Get aria-label and aria-labelledby attribute values from the component and move them to the thumb which is the dom that gets focus
+      var target = this.switchThumb;
+      this._SetAriaInfo(target);
+    },
+		
     /**
-     * Set ARIA label for the switch: aria-labelledby or aria-label
-     *
+     * Set aria label information for the switch.  It will come from either aria-labelledby or aria-label
      * @protected
      * @memberof oj.ojSwitch
-     * @instance
+     * @ignore
      */
-    _setAriaLabel: function (elem, target) {
-      var id = elem.prop('id');
-      var ariaLabelledBy = elem.attr('aria-labelledby');
-      var ariaLabel = elem.attr('aria-label');
-      var switchLabel;
+    _SetAriaInfo: function(target) {
+      var component;
+      
+      // Grab the right component
+      if (this.OuterWrapper) {
+    	component =  this._element2[0]; 
+      }	  
+      else {
+        component = this._element2[0].querySelector("input");
+      }
+            
+      var labelElementId;
+      if (this._IsCustomElement()) {
+        // Custom element case
+          var defaultLabelId = this["uuid"] + "_Label";
+          labelElementId = oj.EditableValueUtils.getOjLabelId(this.widget(), defaultLabelId);
+      }
+      else {
+        // Non custom element case
+        var label = this._GetLabelElement();
+        if (label) {
+          labelElementId = label.attr('id');
+        }
+      }
 
-      if (ariaLabel) { // 1. <input aria-label='...' is set
-        target.attr('aria-label', ariaLabel);
-      } else if (ariaLabelledBy) { // 2. <input aria-labelledby='...' is set
-        target.attr('aria-labelledby', ariaLabelledBy);
-      } else {
-        if (id) {
-          switchLabel = $("label[for='" + id + "']");
-          if (switchLabel) { // 3. <label for='...'
-            if (switchLabel.attr('id')) {
-              target.attr('aria-labelledby', switchLabel.attr('id'));
-            } else {
-              target.attr('aria-label', $(switchLabel).text());
-            }
-          }
+      // Apply the label to the target
+      if (labelElementId)
+      {
+        // Set the aria-labelledby attribute of the thumb to the returned id
+        target.attr('aria-labelledby', labelElementId);
+      }
+      else
+      {
+        // Check if the element has aria-label
+        var ariaLabelString = component.getAttribute('aria-label');
+        if (ariaLabelString)
+        {
+          // Set the aria-label of the thumb to the returned string
+          target.attr('aria-label', ariaLabelString);
+          // And remove it from the component
+          component.removeAttr('aria-label');
         }
       }
     },
@@ -432,7 +417,6 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue'],
      */
     _setup: function () {
       var rootElement = $(this.widget());
-      var thumbTitle = this.option('title');
 
       this._setupEvents();
 
@@ -456,11 +440,6 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue'],
 
       if (this.option('value')) {
         rootElement.addClass('oj-selected');
-      }
-
-      // Title
-      if (thumbTitle !== undefined) {
-        $(this.switchThumb).attr('title', thumbTitle);
       }
 
       // Aria
@@ -496,7 +475,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue'],
      * @instance
      */
     _setupEvents: function () {
-      this._off(this._element2, 'keydown keyup mousedown mouseup mouseleave mouseenter touchstart');
+      this._off(this._element2, 'keydown keyup mousedown mouseup mouseleave mouseenter touchstart touchend');
       if (this._CanSetValue()) {
         this._on(this._element2, this._switchEvents);
         this._AddHoverable(this._element2);
@@ -530,6 +509,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue'],
         // LEFT MOUSE BUTTON will change the switch
         if (event.which === 1) {
           $(event.currentTarget).addClass('oj-active');
+          event.preventDefault();
         }
       },
       mouseup: function (event) {
@@ -549,14 +529,17 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue'],
         }
       },
       "touchstart": function (event) {
+		$(event.currentTarget).addClass('oj-active');  
+          event.preventDefault();
+      },
+      "touchend": function (event) {
         this._SetValue(!this.option('value'), event);
-        event.preventDefault();
       }
     },
 
     /**
      * Returns the default styleclass for the component. Currently this is
-     * used to pass to the _ojLabel component, which will append -label and
+     * used to pass to the ojLabel component, which will append -label and
      * add the style class onto the label. This way we can style the label
      * specific to the input component. For example, for inline labels, the
      * checkboxset/checkboxset components need to have margin-top:0, whereas all the
@@ -665,24 +648,38 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue'],
     }
 
   },
-    /**
-     * @override
-     * @private
-     */
-    _setOption: function (key, value, flags) {
-      var coercedValue;
-      switch (key) {
-        case 'disabled':
-        case 'readOnly':
-        case 'value':
-          coercedValue = !!value;
-          break;
-        default:
-          coercedValue = value;
-      }
-      this._super(key, coercedValue, flags);
-      this._setup();
+
+  /**
+   * @override
+   * @private
+   */
+  _setOption: function (key, value, flags) {
+    var coercedValue;
+    switch (key) {
+      case 'disabled':
+      case 'readOnly':
+      case 'value':
+        coercedValue = !!value;
+        break;
+      default:
+        coercedValue = value;
     }
+    this._super(key, coercedValue, flags);
+  },
+
+  /**
+   * Used for explicit cases where the component needs to be refreshed
+   * (e.g., when the value option changes or other UI gestures).
+   * @override
+   * @protected
+   * @memberof oj.ojSwitch
+   */
+  _Refresh : function (name, value, forceDisplayValueRefresh)
+  {
+    this._superApply(arguments);
+    this._setup();
+  }
+
 
     // Fragments:
 
@@ -701,7 +698,6 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue'],
      *       <td><kbd>Tap</kbd></td>
      *       <td>Toggle switch value</td>
      *     </tr>
-     *     {@ojinclude "name":"labelTouchDoc"}
      *   </tbody>
      * </table>
      *
@@ -730,7 +726,6 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue'],
      *       <td>Set focus to the thumb. If hints, title or messages exist in a notewindow,
      *        pop up the notewindow.</td>
      *     </tr>
-     *     {@ojinclude "name":"labelKeyboardDoc"}
      *   </tbody>
      * </table>
      *
@@ -779,7 +774,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue'],
  * @memberof oj.ojSwitch
  *
  * @example <caption>Get the node for the track:</caption>
- * var node = $( ".selector" ).ojSwitch( "getNodeBySubId", {'subId': 'oj-switch-track'} );
+ * var node = myComponent.getNodeBySubId({'subId': 'oj-switch-track'});
  */
 
 /**
@@ -789,7 +784,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue'],
  * @memberof oj.ojSwitch
  *
  * @example <caption>Get the node for the thumb:</caption>
- * var node = $( ".selector" ).ojSwitch( "getNodeBySubId", {'subId': 'oj-switch-thumb'} );
+ * var node = myComponent.getNodeBySubId({'subId': 'oj-switch-thumb'});
  */
 
 (function() {
@@ -800,8 +795,7 @@ var ojSwitchMeta = {
       "writeback": true
     },
     "readonly": {
-      "type": "boolean",
-      "writeback": true
+      "type": "boolean"
     }
   },
   "methods": {

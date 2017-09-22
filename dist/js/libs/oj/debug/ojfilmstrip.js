@@ -227,31 +227,29 @@ oj.FilmStripPagingModel.prototype.totalSizeConfidence = function()
  * 
  * @classdesc
  * <h3 id="filmStripOverview-section">
- *   JET FilmStrip Component
+ *   JET FilmStrip
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#filmStripOverview-section"></a>
  * </h3>
  * 
- * <p>Description: Container component that lays out its children in a single 
+ * <p>Description: Container element that lays out its children in a single 
  * row or column across logical pages and allows navigating through them.
  * 
- * <p>A JET FilmStrip can be created from any 
- * <code class="prettyprint">&lt;div></code> element that contains multiple 
- * direct child elements.  All child elements are expected to be the same size.
+ * <p>A JET FilmStrip can contain multiple direct child elements and  
+ * all child elements are expected to be the same size.
  * <p>FilmStrip will layout the child items across multiple logical pages and 
- * allow for changing between logical pages.  When the component is resized, 
+ * allow for changing between logical pages.  When the element is resized, 
  * relayout will occur and the number of pages and number of items shown per 
  * page may change.
  * 
- * <pre class="prettyprint">
- * <code>
- * &lt;div id="filmStrip" data-bind="ojComponent: {component: 'ojFilmStrip'}">
- *   &lt;div id="item1" class="my-filmstrip-item">Alpha&lt;/div>
- *   &lt;div id="item2" class="my-filmstrip-item">Beta&lt;/div>
- *   &lt;div id="item3" class="my-filmstrip-item">Gamma&lt;/div>
- *   &lt;div id="item4" class="my-filmstrip-item">Delta&lt;/div>
- *   &lt;div id="item5" class="my-filmstrip-item">Epsilon&lt;/div>
- *   &lt;div id="item6" class="my-filmstrip-item">Zeta&lt;/div>
- * &lt;/div>
+ * <pre class="prettyprint"><code>
+ * &lt;oj-film-strip>
+ *   &lt;div class='my-filmstrip-item'>Alpha&lt;/div>
+ *   &lt;div class='my-filmstrip-item'>Beta&lt;/div>
+ *   &lt;div class='my-filmstrip-item'>Gamma&lt;/div>
+ *   &lt;div class='my-filmstrip-item'>Delta&lt;/div>
+ *   &lt;div class='my-filmstrip-item'>Epsilon&lt;/div>
+ *   &lt;div class='my-filmstrip-item'>Zeta&lt;/div>
+ * &lt;/oj-film-strip>
  * </code></pre>
  * 
  * <p>JET FilmStrip and ConveyorBelt look similar, but are intended to be used
@@ -319,7 +317,7 @@ oj.FilmStripPagingModel.prototype.totalSizeConfidence = function()
  * <p>FilmStrip assigns itself the WAI-ARIA 
  * <code class="prettyprint">role</code> of 
  * <code class="prettyprint">"region"</code>.  The application <b>must</b> 
- * specify a WAI-ARIA label for the FilmStrip in the DOM so that screen reader
+ * specify a WAI-ARIA label for the FilmStrip element so that screen reader
  * users will understand the purpose of the FilmStrip.  
  * 
  * <p>The application <b>must</b> provide accessible controls for navigating 
@@ -349,46 +347,25 @@ oj.FilmStripPagingModel.prototype.totalSizeConfidence = function()
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#rtl-section"></a>
  * </h3>
  * 
- * <p>As with any JET component, in the unusual case that the directionality 
+ * <p>As with any JET element, in the unusual case that the directionality 
  * (LTR or RTL) changes post-init, the FilmStrip must be 
  * <code class="prettyprint">refresh()</code>ed.
- * 
- * 
- * <h3 id="pseudos-section">
- *   Pseudo-selectors
- *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#pseudos-section"></a>
- * </h3>
- * 
- * <p>The <code class="prettyprint">:oj-filmstrip</code> pseudo-selector can 
- * be used in jQuery expressions to select JET FilmStrip.  For example:
- * 
- * <pre class="prettyprint">
- * <code>$( ":oj-filmstrip" ) // selects all JET FilmStrips on the page
- * $myEventTarget.closest( ":oj-filmstrip" ) // selects the closest ancestor that is a JET FilmStrip
- * </code></pre>
- * 
- * 
- * <h3 id="jqui2jet-section">
- *   JET for jQuery UI developers
- *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#jqui2jet-section"></a>
- * </h3>
- * 
- * <p>Event names for all JET components are prefixed with "oj", instead of 
- * component-specific prefixes like "filmStrip".  
- * 
- * <!-- - - - - Above this point, the tags are for the class.
- *              Below this point, the tags are for the constructor (initializer). - - - - - - -->
- * 
- * @desc Creates a JET FilmStrip. 
- * @example <caption>Initialize the FilmStrip with no options specified:</caption>
- * $( ".selector" ).ojFilmStrip();
- * 
- * @example <caption>Initialize the FilmStrip with some options specified:</caption>
- * $( ".selector" ).ojFilmStrip( { "orientation": "vertical" } );
- * 
- * @example <caption>Initialize the FilmStrip via the JET 
- * <code class="prettyprint">ojComponent</code> binding:</caption>
- * &lt;div id="filmStrip" data-bind="ojComponent: { component: 'ojFilmStrip', orientation: 'vertical'}">
+ */
+/**
+ * <p>The &lt;oj-film-strip> element lays out its children in a single row or column across logical pages and allows navigating through them.<p>
+ *
+ * @ojchild Default
+ * @memberof oj.ojFilmStrip
+ *
+ * @example <caption>Initialize the film strip with child content specified:</caption>
+ * &lt;oj-film-strip>
+ *   &lt;div class='my-filmstrip-item'>Alpha&lt;/div>
+ *   &lt;div class='my-filmstrip-item'>Beta&lt;/div>
+ *   &lt;div class='my-filmstrip-item'>Gamma&lt;/div>
+ *   &lt;div class='my-filmstrip-item'>Delta&lt;/div>
+ *   &lt;div class='my-filmstrip-item'>Epsilon&lt;/div>
+ *   &lt;div class='my-filmstrip-item'>Zeta&lt;/div>
+ * &lt;/oj-film-strip>
  */
 (function()
 {
@@ -402,11 +379,11 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
     /** 
      * Specify the maximum number of child items to show in a logical page.
      * A value of 0 (the default) means that FilmStrip will show as many items
-     * per logical page as will fit based on the component and item sizes.
+     * per logical page as will fit based on the element and item sizes.
      * 
      * <p>FilmStrip may show fewer than the specified number of items when 
-     * <code class="prettyprint">maxItemsPerPage</code> is set to a value other 
-     * than 0 if the component size is smaller than what would be required to 
+     * <code class="prettyprint">max-items-per-page</code> is set to a value other 
+     * than 0 if the element size is smaller than what would be required to 
      * show that many items.  
      *
      * @expose 
@@ -417,16 +394,17 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
      * @see #getItemsPerPage
      *
      * @example <caption>Initialize the FilmStrip with the 
-     * <code class="prettyprint">maxItemsPerPage</code> option specified:</caption>
-     * $( ".selector" ).ojFilmStrip( { "maxItemsPerPage": 3 } );
+     * <code class="prettyprint">max-items-per-page</code> attribute specified:</caption>
+     * &lt;oj-film-strip max-items-per-page='3'>
+     * &lt;/oj-film-strip>
      * 
      * @example <caption>Get or set the <code class="prettyprint">maxItemsPerPage</code> 
-     * option after initialization:</caption>
+     * property after initialization:</caption>
      * // getter
-     * var maxItemsPerPage = $( ".selector" ).ojFilmStrip( "option", "maxItemsPerPage" );
+     * var maxItemsPerPage = myFilmStrip.maxItemsPerPage;
      * 
      * // setter
-     * $( ".selector" ).ojFilmStrip( "option", "maxItemsPerPage", 3 );
+     * myFilmStrip.maxItemsPerPage = 3;
      */
     maxItemsPerPage: 0,
     
@@ -442,16 +420,17 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
      * @default <code class="prettyprint">"horizontal"</code>
      *
      * @example <caption>Initialize the FilmStrip with the 
-     * <code class="prettyprint">orientation</code> option specified:</caption>
-     * $( ".selector" ).ojFilmStrip( { "orientation": "vertical" } );
+     * <code class="prettyprint">orientation</code> attribute specified:</caption>
+     * &lt;oj-film-strip orientation='vertical'>
+     * &lt;/oj-film-strip>
      * 
      * @example <caption>Get or set the <code class="prettyprint">orientation</code> 
-     * option after initialization:</caption>
+     * property after initialization:</caption>
      * // getter
-     * var orientation = $( ".selector" ).ojFilmStrip( "option", "orientation" );
+     * var orientation = myFilmStrip.orientation;
      * 
      * // setter
-     * $( ".selector" ).ojFilmStrip( "option", "orientation", "vertical" );
+     * myFilmStrip.orientation = 'vertical';
      */
     orientation: "horizontal",
     
@@ -459,41 +438,50 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
      * Specify the child item whose logical page should be displayed.  The
      * position of the item on the logical page is not guaranteed.
      * 
-     * <p>This option can be set to an object containing either string id of the item 
+     * <p>This attribute can be set to an object containing either string id of the item 
      * or numeric 0-based index of the item or both.  If the object contains both 
      * string id and numeric index, string id takes precedence.
-     * Directly setting a value of type string or number for this option is deprecated.  
-     * The value set must be an object containing the string id or numeric index or both.
      * 
-     * <p>FilmStrip will automatically update the value of this option when the 
+     * <p>FilmStrip will automatically update the value of this attribute when the 
      * logical page is changed to be the first item on the new logical page.  
      * When the value is updated automatically, it will be an object containing 
      * numeric index and string id, if available.
      * 
-     * <p>When the component is resized, FilmStrip will preserve the value of 
-     * this option to show the new logical page on which the item is located.  
+     * <p>When the element is resized, FilmStrip will preserve the value of 
+     * this attribute to show the new logical page on which the item is located.  
      *
      * @expose 
      * @memberof! oj.ojFilmStrip
      * @instance
      * @type {Object}
      * @default <code class="prettyprint">{"index" : 0}</code>
+     * @ojwriteback
      *
      * @example <caption>Initialize the FilmStrip with the 
-     * <code class="prettyprint">currentItem</code> option specified:</caption>
-     * $( ".selector" ).ojFilmStrip( { "currentItem": {"index" : 3} } ); (or)
-     * $( ".selector" ).ojFilmStrip( { "currentItem": {"id" : "thirdItemId"} } ); (or)
-     * $( ".selector" ).ojFilmStrip( { "currentItem": {"index" : 3, "id" : "thirdItemId"} } );
+     * <code class="prettyprint">current-item</code> attribute specified:</caption>
+     * &lt;!-- Using dot notation -->
+     * &lt;oj-film-strip current-item.index='3' current-item.id='thirdItemId'>
+     * &lt;/oj-film-strip>
+     *
+     * &lt;!-- Using JSON notation -->
+     * &lt;oj-film-strip current-item='{"index" : 3, "id" : "thirdItemId"}'>
+     * &lt;/oj-film-strip>
      * 
      * @example <caption>Get or set the <code class="prettyprint">currentItem</code> 
-     * option after initialization:</caption>
-     * // getter
-     * var currentItem = $( ".selector" ).ojFilmStrip( "option", "currentItem" );
+     * property after initialization:</caption>
+     *
+     * // Get one
+     * var index = myFilmStrip.currentItem.index;
+     *
+     * // Set one, leaving the others intact. Use the setProperty API for 
+     * // subproperties so that a property change event is fired.
+     * myFilmStrip.setProperty('currentItem.index', 1);
      * 
-     * // setter
-     * $( ".selector" ).ojFilmStrip( "option", "currentItem", {"index" : 3} ); (or)
-     * $( ".selector" ).ojFilmStrip( "option", "currentItem", {"id" : "thirdItemId"} ); (or)
-     * $( ".selector" ).ojFilmStrip( "option", "currentItem", {"index" : 3, "id" : "thirdItemId"} );
+     * // Get all
+     * var currentItem = myFilmStrip.currentItem;
+     * 
+     * // Set all
+     * myFilmStrip.currentItem = {'index' : 3, 'id' : 'thirdItemId'};
      */
     currentItem: {"index" : 0},
     
@@ -506,21 +494,22 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
      * @type {string}
      * @ojvalue {string} "adjacent" Arrows are outside, adjacent to the filmStrip 
      *          content.  The arrows are still inside the bounds of the filmStrip
-     *          component itself.
+     *          element itself.
      * @ojvalue {string} "overlay" Arrows are inside, overlaying the filmStrip content.
      * @default <code class="prettyprint">"adjacent"</code>
      *
      * @example <caption>Initialize the FilmStrip with the 
-     * <code class="prettyprint">arrowPlacement</code> option specified:</caption>
-     * $( ".selector" ).ojFilmStrip( { "arrowPlacement": "overlay" } );
+     * <code class="prettyprint">arrow-placement</code> attribute specified:</caption>
+     * &lt;oj-film-strip arrow-placement='overlay'>
+     * &lt;/oj-film-strip>
      * 
      * @example <caption>Get or set the <code class="prettyprint">arrowPlacement</code> 
-     * option after initialization:</caption>
+     * property after initialization:</caption>
      * // getter
-     * var arrowPlacement = $( ".selector" ).ojFilmStrip( "option", "arrowPlacement" );
+     * var arrowPlacement = myFilmStrip.arrowPlacement;
      * 
      * // setter
-     * $( ".selector" ).ojFilmStrip( "option", "arrowPlacement", "overlay" );
+     * myFilmStrip.arrowPlacement = 'overlay';
      */
     arrowPlacement: "adjacent",
     
@@ -537,37 +526,38 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
      *          filmStrip, and hidden otherwise.
      * @ojvalue {string} "auto" Behaves as if the value were 
      *          <code class="prettyprint">visible</code> when the 
-     *          <code class="prettyprint">arrowPlacement</code> 
-     *          option is set to <code class="prettyprint">adjacent</code>, and
+     *          <code class="prettyprint">arrow-placement</code> 
+     *          attribute is set to <code class="prettyprint">adjacent</code>, and
      *          <code class="prettyprint">hover</code> when the 
-     *          <code class="prettyprint">arrowPlacement</code> 
-     *          option is set to <code class="prettyprint">overlay</code>.
+     *          <code class="prettyprint">arrow-placement</code> 
+     *          attribute is set to <code class="prettyprint">overlay</code>.
      * @default <code class="prettyprint">"auto"</code>
      *
      * @example <caption>Initialize the FilmStrip with the 
-     * <code class="prettyprint">arrowVisibility</code> option specified:</caption>
-     * $( ".selector" ).ojFilmStrip( { "arrowVisibility": "visible" } );
+     * <code class="prettyprint">arrow-visibility</code> attribute specified:</caption>
+     * &lt;oj-film-strip arrow-visibility='visible'>
+     * &lt;/oj-film-strip>
      * 
      * @example <caption>Get or set the <code class="prettyprint">arrowVisibility</code> 
-     * option after initialization:</caption>
+     * property after initialization:</caption>
      * // getter
-     * var arrowVisibility = $( ".selector" ).ojFilmStrip( "option", "arrowVisibility" );
+     * var arrowVisibility = myFilmStrip.arrowVisibility;
      * 
      * // setter
-     * $( ".selector" ).ojFilmStrip( "option", "arrowVisibility", "visible" );
+     * myFilmStrip.arrowVisibility = 'visible';
      */
     arrowVisibility: "auto"
     
     /**
      * FilmStrip inherits the <code class="prettyprint">disabled</code> 
-     * option from its superclass, but does not support it in order to avoid 
+     * attribute from its superclass, but does not support it in order to avoid 
      * tight coupling between a FilmStrip and its contents.  Setting this
-     * option on FilmStrip has no effect.
+     * attribute on FilmStrip has no effect.
      * 
      * <p><b>WARNING:</b> Applications should not depend on this behavior 
      * because we reserve the right to change it in the future in order to 
      * support <code class="prettyprint">disabled</code> and propagate it to 
-     * child components of FilmStrip.  
+     * child elements of FilmStrip.  
      * 
      * @member
      * @name disabled
@@ -575,8 +565,9 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
      * @instance
      * @type {boolean}
      * @default <code class="prettyprint">false</code>
+     * @ignore
      */
-    // disabled option declared in superclass, but we still want the above API doc
+    // disabled attribute declared in superclass, but we still want the above API doc
 
     // Events
 
@@ -587,16 +578,7 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
      * @name create
      * @memberof oj.ojFilmStrip
      * @instance
-     * @property {Event} event <code class="prettyprint">jQuery</code> event object
-     * @property {Object} ui Currently empty
-     *
-     * @example <caption>Initialize the filmStrip with the <code class="prettyprint">create</code> callback specified:</caption>
-     * $( ".selector" ).ojFilmStrip({
-     *     "create": function( event, ui ) {}
-     * });
-     *
-     * @example <caption>Bind an event listener to the <code class="prettyprint">ojcreate</code> event:</caption>
-     * $( ".selector" ).on( "ojcreate", function( event, ui ) {} );
+     * @ignore
      */
     // create event declared in superclass, but we still want the above API doc
   },
@@ -623,21 +605,21 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
     //ensure a unique id for use with aria-labelledby on navigation arrows
     elem.uniqueId();
     
-    //log warning message when "disabled" option set
+    //log warning message when "disabled" property set
     var options = this.options;
     if (options.disabled)
       oj.Logger.warn(_WARNING_DISABLED_OPTION);
     
-    //throw error if "orientation" option set to invalid value
+    //throw error if "orientation" property set to invalid value
     if (options.orientation !== _HORIZONTAL && options.orientation !== _VERTICAL)
       throw new Error(_ERROR_INVALID_ORIENTATION + options.orientation);
     
-    //throw error if "arrowPlacement" option set to invalid value
+    //throw error if "arrowPlacement" property set to invalid value
     if (options.arrowPlacement !== _ADJACENT && 
         options.arrowPlacement !== _OVERLAY)
       throw new Error(_ERROR_INVALID_NAV_ARROW_PLACEMENT + options.arrowPlacement);
     
-    //throw error if "arrowVisibility" option set to invalid value
+    //throw error if "arrowVisibility" property set to invalid value
     if (options.arrowVisibility !== _VISIBLE && 
         options.arrowVisibility !== _HIDDEN && 
         options.arrowVisibility !== _HOVER && 
@@ -661,9 +643,9 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
 
   // This method currently runs at create, init, and refresh time (since refresh() is called by _init()).
   /**
-   * Refreshes the visual state of the FilmStrip. JET components require a 
-   * <code class="prettyprint">refresh()</code> or re-init after the DOM is 
-   * programmatically changed underneath the component.
+   * Refreshes the visual state of the FilmStrip. JET elements require a 
+   * <code class="prettyprint">refresh()</code> after the DOM is 
+   * programmatically changed underneath the element.
    * 
    * <p>This method does not accept any arguments.
    * 
@@ -672,7 +654,7 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
    * @instance
    * 
    * @example <caption>Invoke the <code class="prettyprint">refresh</code> method:</caption>
-   * $( ".selector" ).ojFilmStrip( "refresh" );
+   * myFilmStrip.refresh();
    */
   refresh: function() // Override of public base class method.  
   {
@@ -684,7 +666,7 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
   /**
    * Get the actual number of items shown per logical page.  
    * <p>The value returned by this method may be different from the value of the
-   * <code class="prettyprint">maxItemsPerPage</code> option.
+   * <code class="prettyprint">maxItemsPerPage</code> property.
    * @returns {number} The actual number of items shown per logical page.
    * 
    * @expose 
@@ -693,7 +675,7 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
    * @see #maxItemsPerPage
    * 
    * @example <caption>Invoke the <code class="prettyprint">getItemsPerPage</code> method:</caption>
-   * var itemsPerPage = $( ".selector" ).ojFilmStrip( "getItemsPerPage" );
+   * var itemsPerPage = myFilmStrip.getItemsPerPage();
    */
   getItemsPerPage: function()
   {
@@ -711,7 +693,7 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
    * @instance
    * 
    * @example <caption>Invoke the <code class="prettyprint">getPagingModel</code> method:</caption>
-   * var pagingModel = $( ".selector" ).ojFilmStrip( "getPagingModel" );
+   * var pagingModel = myFilmStrip.getPagingModel();
    */
   getPagingModel: function()
   {
@@ -918,7 +900,7 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
   /** 
    * Destroy the internal structure of the filmStrip that will be recreated
    * during a refresh.
-   * @memberof oj.ojMasonryLayout
+   * @memberof oj.ojFilmStrip
    * @instance
    * @private
    */
@@ -977,11 +959,11 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
     switch (key) 
     {
       case "disabled":
-        //log warning message when "disabled" option set
+        //log warning message when "disabled" property set
         oj.Logger.warn(_WARNING_DISABLED_OPTION);
         break;
       case "orientation":
-        //throw error if "orientation" option set to invalid value
+        //throw error if "orientation" property set to invalid value
         if (value !== _HORIZONTAL && value !== _VERTICAL)
           throw new Error(_ERROR_INVALID_ORIENTATION + value);
         bRefresh = (options.orientation != value);
@@ -990,13 +972,13 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
         bRefresh = (options.maxItemsPerPage != value);
         break;
       case "arrowPlacement":
-        //throw error if "arrowPlacement" option set to invalid value
+        //throw error if "arrowPlacement" property set to invalid value
         if (value !== _ADJACENT && value !== _OVERLAY)
           throw new Error(_ERROR_INVALID_NAV_ARROW_PLACEMENT + value);
         bRefresh = (options.arrowPlacement != value);
         break;
       case "arrowVisibility":
-        //throw error if "arrowVisibility" option set to invalid value
+        //throw error if "arrowVisibility" property set to invalid value
         if (value !== _VISIBLE && value !== _HIDDEN && 
             value !== _HOVER && value !== _AUTO)
           throw new Error(_ERROR_INVALID_NAV_ARROW_VISIBILITY + value);
@@ -1931,13 +1913,13 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
         oj.FocusUtils.focusElement(elem[0]);
     }
     
-    //update currentItem option if it's not on the current page
+    //update currentItem property if it's not on the current page
     var options = this.options;
     var currItemPage = this._findPage(options.currentItem);
     if (currItemPage != pageIndex)
     {
       var newFirstItem = this._getFirstItemOnPage(pageIndex);
-      //FIX : only update currentItem option if the filmstrip is not empty
+      //FIX : only update currentItem property if the filmstrip is not empty
       if (newFirstItem)
         this.option(_CURRENT_ITEM, newFirstItem, {'_context': {writeback: true}});
     }
@@ -2588,7 +2570,7 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
     }
   },
   
-  //** @inheritdoc */
+  // @inheritdoc
   getNodeBySubId: function(locator)
   {
     if (locator == null)
@@ -2618,7 +2600,7 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
     return null;
   },
 
-  //** @inheritdoc */
+  // @inheritdoc
   getSubIdByNode: function(node) {
     var startArrow = this.getNodeBySubId({'subId':'oj-filmstrip-start-arrow'});
     var endArrow = this.getNodeBySubId({'subId':'oj-filmstrip-end-arrow'});
@@ -2639,9 +2621,18 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
       currentNode = currentNode.parentElement;          
     }
     return null;
+  },
+
+  // @inheritdoc
+  _CompareOptionValues: function(option, value1, value2) 
+  {
+    if (option == 'currentItem')
+      return oj.Object.compareValues(value1, value2);
+    else
+      return this._super(option, value1, value2);
   }
   
-  // start jsdoc fragments /////////////////////////////////////////////////////
+  // start API doc fragments /////////////////////////////////////////////////////
   
   /**
    * <p>Sub-ID for the start navigation arrow of a horizontal FilmStrip.</p>
@@ -2650,7 +2641,7 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
    * @memberof oj.ojFilmStrip
    *
    * @example <caption>Get the start navigation arrow:</caption>
-   * var node = $( ".selector" ).ojFilmStrip( "getNodeBySubId", {'subId': 'oj-filmstrip-start-arrow'} );
+   * var node = myFilmStrip.getNodeBySubId({'subId': 'oj-filmstrip-start-arrow'} );
    */
   
   /**
@@ -2660,7 +2651,7 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
    * @memberof oj.ojFilmStrip
    *
    * @example <caption>Get the end navigation arrow:</caption>
-   * var node = $( ".selector" ).ojFilmStrip( "getNodeBySubId", {'subId': 'oj-filmstrip-end-arrow'} );
+   * var node = myFilmStrip.getNodeBySubId({'subId': 'oj-filmstrip-end-arrow'} );
    */
   
   /**
@@ -2670,7 +2661,7 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
    * @memberof oj.ojFilmStrip
    *
    * @example <caption>Get the top navigation arrow:</caption>
-   * var node = $( ".selector" ).ojFilmStrip( "getNodeBySubId", {'subId': 'oj-filmstrip-top-arrow'} );
+   * var node = myFilmStrip.getNodeBySubId({'subId': 'oj-filmstrip-top-arrow'} );
    */
   
   /**
@@ -2680,7 +2671,7 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
    * @memberof oj.ojFilmStrip
    *
    * @example <caption>Get the bottom navigation arrow:</caption>
-   * var node = $( ".selector" ).ojFilmStrip( "getNodeBySubId", {'subId': 'oj-filmstrip-bottom-arrow'} );
+   * var node = myFilmStrip.getNodeBySubId({'subId': 'oj-filmstrip-bottom-arrow'} );
    */
 
   /**
@@ -2754,7 +2745,7 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
    * @memberof oj.ojFilmStrip
    */
   
-  // end jsdoc fragments ///////////////////////////////////////////////////////
+  // end API doc fragments ///////////////////////////////////////////////////////
   
 }); // end of oj.__registerWidget
 
@@ -2780,14 +2771,14 @@ var _ADJACENT = "adjacent",
     _DRAG_SCROLL_MAX_THRESHOLD = 100,
     
     _EMPTY_STRING = "",
-    //throw an error when invalid "currentItem" option set
-    _ERROR_CURRENT_ITEM_NOT_FOUND = "JET FilmStrip: Value of 'currentItem' option not found: ",
-    //throw an error when "orientation" option set to invalid value
-    _ERROR_INVALID_ORIENTATION = "JET FilmStrip: Unsupported value set as 'orientation' option: ",
-    //throw an error when "arrowPlacement" option set to invalid value
-    _ERROR_INVALID_NAV_ARROW_PLACEMENT = "Unsupported value set as 'arrowPlacement' option: ",
-    //throw an error when "arrowVisibility" option set to invalid value
-    _ERROR_INVALID_NAV_ARROW_VISIBILITY = "Unsupported value set as 'arrowVisibility' option: ",
+    //throw an error when invalid "currentItem" property set
+    _ERROR_CURRENT_ITEM_NOT_FOUND = "JET FilmStrip: Value of 'currentItem' property not found: ",
+    //throw an error when "orientation" property set to invalid value
+    _ERROR_INVALID_ORIENTATION = "JET FilmStrip: Unsupported value set as 'orientation' property: ",
+    //throw an error when "arrowPlacement" property set to invalid value
+    _ERROR_INVALID_NAV_ARROW_PLACEMENT = "Unsupported value set as 'arrowPlacement' property: ",
+    //throw an error when "arrowVisibility" property set to invalid value
+    _ERROR_INVALID_NAV_ARROW_VISIBILITY = "Unsupported value set as 'arrowVisibility' property: ",
     _FLEX_BASIS = "flex-basis",
     _HIDDEN = "hidden",
     //jQuery hidden selector
@@ -2836,8 +2827,8 @@ var _ADJACENT = "adjacent",
     _WEBKIT_FLEX_BASIS = "-webkit-flex-basis",
     _WEBKIT_TRANSFORM = "-webkit-transform",
     
-    //log warning message when "disabled" option set
-    _WARNING_DISABLED_OPTION = "JET FilmStrip: 'disabled' option not supported",
+    //log warning message when "disabled" property set
+    _WARNING_DISABLED_OPTION = "JET FilmStrip: 'disabled' property not supported",
     
     /**
      * Apply a CSS transform to the given object.

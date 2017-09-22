@@ -3,11 +3,11 @@
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
-define(['./DvtToolkit', './DvtPanZoomCanvas'], function(dvt) {
+define(['jquery','./DvtToolkit', './DvtPanZoomCanvas'], function($, dvt) {
   // Internal use only.  All APIs and functionality are subject to change at any time.
 
 (function(dvt) {
-// Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
+// Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
 
 
 
@@ -16,11 +16,10 @@ define(['./DvtToolkit', './DvtPanZoomCanvas'], function(dvt) {
  * Defines the context for a layout call.
  * @class DvtDiagramLayoutContext
  * @constructor
- * @param {DvtDiagramLayoutContext} context optional context to use for
  * initializing this context
  */
-var DvtDiagramLayoutContext = function(context) {
-  this.Init(context);
+var DvtDiagramLayoutContext = function() {
+  this.Init();
 };
 
 dvt.Obj.createSubclass(DvtDiagramLayoutContext, dvt.Obj, 'DvtDiagramLayoutContext');
@@ -29,48 +28,16 @@ dvt.Obj.createSubclass(DvtDiagramLayoutContext, dvt.Obj, 'DvtDiagramLayoutContex
 /**
  * @protected
  * Initialize the layout context.
- * @param {DvtDiagramLayoutContext} context optional layout context to copy
- * from
  */
-DvtDiagramLayoutContext.prototype.Init = function(context) {
-  this._layout = context ? context._layout : null;
-  this._layoutAttrs = context ? context._layoutAttrs : null;
-  this._nodeCount = context ? context._nodeCount : 0;
-  this._linkCount = context ? context._linkCount : 0;
-  this._bLocaleR2L = context ? context._bLocaleR2L : false;
-  this._componentSize = context ? context._componentSize : null;
-  this._viewport = context ? context._viewport : null;
-  this._containerId = context ? context._containerId : null;
-  this._containerPadding = context ? context._containerPadding : null;
+DvtDiagramLayoutContext.prototype.Init = function() {
+  this._nodeCount = 0;
+  this._linkCount = 0;
+  this._bLocaleR2L = false;
   this._nodes = {};
   this._links = {};
   this._arNodes = [];
   this._arLinks = [];
-  if (context) {
-    // create copies of nodes
-    for (var i = 0; i < this._nodeCount; i++) {
-      var nodeCopy = new DvtDiagramLayoutContextNode(context._arNodes[i]);
-      this._arNodes.push(nodeCopy);
-      this._nodes[nodeCopy.getId()] = nodeCopy;
-    }
-    for (var nodeId in context._nodes) {
-      if (!this._nodes[nodeId]) {
-        this._nodes[nodeId] = new DvtDiagramLayoutContextNode(context._nodes[nodeId]);
-      }
-    }
-
-    // create copies of links
-    for (var i = 0; i < this._linkCount; i++) {
-      var linkCopy = new DvtDiagramLayoutContextLink(context._arLinks[i]);
-      this._arLinks.push(linkCopy);
-      this._links[linkCopy.getId()] = linkCopy;
-    }
-    for (var linkId in context._links) {
-      if (!this._links[linkId]) {
-        this._links[linkId] = new DvtDiagramLayoutContextLink(context._links[linkId]);
-      }
-    }
-  }
+  this._dirtyContext = {};
 };
 
 
@@ -137,6 +104,25 @@ DvtDiagramLayoutContext.prototype.addNodeToMap = function(node) {
   this._nodes[node.getId()] = node;
 };
 
+/**
+ * @protected
+ * Remove a node context from this layout.
+ * @param {DvtDiagramLayoutContextNode} parent context for the parent node
+ * @param {DvtDiagramLayoutContextNode} node node context to remove from this layout
+ */
+DvtDiagramLayoutContext.prototype.removeNode = function(parent, node) {
+  if (!node)
+    return;
+  if (parent) {
+    dvt.ArrayUtils.removeItem(parent.getChildNodes(), node);
+  }
+  else {
+    dvt.ArrayUtils.removeItem(this._arNodes, node);
+    this._nodeCount--;
+  }
+  delete this._nodes[node.getId()];
+};
+
 
 /**
  * Get a node context by id.  Nodes being laid out and read-only nodes provided
@@ -184,6 +170,20 @@ DvtDiagramLayoutContext.prototype.addLink = function(link) {
   this._links[link.getId()] = link;
 };
 
+/**
+ * Remove a link context from this layout.
+ * @param {DvtDiagramLayoutContextLink} link link context to remove
+ * @protected
+ */
+DvtDiagramLayoutContext.prototype.removeLink = function(link) {
+  if (!link)
+    return;
+  if (this.getLinkById(link.getId())) {
+    dvt.ArrayUtils.removeItem(this._arLinks, link);
+    this._linkCount--;
+  }
+  delete this._links[link.getId()];
+};
 
 /**
  * Get a link context by id.
@@ -445,7 +445,42 @@ DvtDiagramLayoutContext.prototype.getCommonContainer = function(nodeId1, nodeId2
   }
   return commonId;
 };
-// Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
+
+/**
+ * Gets event data object. Values can be retrieved from the object using 'type' and 'data' keys.
+ * @return {object} event data object
+ */
+DvtDiagramLayoutContext.prototype.getEventData = function() {
+  return this._eventData;
+};
+
+/**
+ * @protected
+ * Sets event data object
+ * @param {object} eventData event data object
+ */
+DvtDiagramLayoutContext.prototype.setEventData = function(eventData) {
+  this._eventData = eventData;
+};
+
+/**
+ * @protected
+ * Sets dirty context for the layout
+ * @param {object} dirtyContext a map that contains dirty context for the layout
+ */
+DvtDiagramLayoutContext.prototype.setDirtyContext = function(dirtyContext) {
+  this._dirtyContext = dirtyContext;
+};
+
+/**
+ * @protected
+ * Gets dirty context for the layout
+ * @return {object} a map that contains dirty context for the layout
+ */
+DvtDiagramLayoutContext.prototype.getDirtyContext = function() {
+  return this._dirtyContext;
+};
+// Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
 
 
 
@@ -454,11 +489,9 @@ DvtDiagramLayoutContext.prototype.getCommonContainer = function(nodeId1, nodeId2
  * Defines the link context for a layout call.
  * @class DvtDiagramLayoutContextLink
  * @constructor
- * @param {DvtDiagramLayoutContextLink} link optional context to use for
- * initializing this context
  */
-var DvtDiagramLayoutContextLink = function(link) {
-  this.Init(link);
+var DvtDiagramLayoutContextLink = function() {
+  this.Init();
 };
 
 dvt.Obj.createSubclass(DvtDiagramLayoutContextLink, dvt.Obj, 'DvtDiagramLayoutContextLink');
@@ -467,27 +500,13 @@ dvt.Obj.createSubclass(DvtDiagramLayoutContextLink, dvt.Obj, 'DvtDiagramLayoutCo
 /**
  * @protected
  * Initialize the layout context.
- * @param {DvtDiagramLayoutContextLink} link optional layout context to
- * copy from
  */
-DvtDiagramLayoutContextLink.prototype.Init = function(link) {
-  this._id = link ? link._id : null;
-  this._startId = link ? link._startId : null;
-  this._endId = link ? link._endId : null;
-  this._points = link ? link._points : null;
-  this._labelPosition = link ? link._labelPosition : null;
-  this._labelValign = link ? link._labelValign : null;
-  this._labelHalign = link ? link._labelHalign : null;
-  this._labelBounds = link ? link._labelBounds : null;
-  this._layoutAttrs = link ? link._layoutAttrs : null;
-  this._startConnectorOffset = link ? link._startConnectorOffset : 0;
-  this._endConnectorOffset = link ? link._endConnectorOffset : 0;
-  this._linkWidth = link ? link._linkWidth : 1;
-  this._selected = link ? link._selected : false;
-  this._labelRotAngle = link ? link._labelRotAngle : null;
-  this._labelRotPoint = link ? link._labelRotPoint : null;
-  this._bPromoted = link ? link._bPromoted : false;
-  this._containerId = link ? link._containerId : null;
+DvtDiagramLayoutContextLink.prototype.Init = function() {
+  this._startConnectorOffset = 0;
+  this._endConnectorOffset = 0;
+  this._linkWidth = 1;
+  this._selected = false;
+  this._bPromoted = false;
 };
 
 
@@ -561,6 +580,7 @@ DvtDiagramLayoutContextLink.prototype.setPoints = function(points) {
     this._points = dvt.PathUtils.createPathArray(points);
   else
     this._points = points;
+  this.setDirty();
 };
 
 
@@ -583,6 +603,7 @@ DvtDiagramLayoutContextLink.prototype.getPoints = function() {
  */
 DvtDiagramLayoutContextLink.prototype.setLabelPosition = function(pos) {
   this._labelPosition = pos;
+  this.setDirty();
 };
 
 
@@ -725,6 +746,7 @@ DvtDiagramLayoutContextLink.prototype.getSelected = function() {
  */
 DvtDiagramLayoutContextLink.prototype.setLabelRotationAngle = function(angle) {
   this._labelRotAngle = angle;
+  this.setDirty();
 };
 
 
@@ -745,6 +767,7 @@ DvtDiagramLayoutContextLink.prototype.getLabelRotationAngle = function() {
  */
 DvtDiagramLayoutContextLink.prototype.setLabelRotationPoint = function(point) {
   this._labelRotPoint = point;
+  this.setDirty();
 };
 
 
@@ -784,6 +807,7 @@ DvtDiagramLayoutContextLink.prototype.isPromoted = function() {
  */
 DvtDiagramLayoutContextLink.prototype.setLabelValign = function(valign) {
   this._labelValign = valign;
+  this.setDirty();
 };
 /**
  * Sets the label halign
@@ -793,6 +817,7 @@ DvtDiagramLayoutContextLink.prototype.setLabelValign = function(valign) {
  */
 DvtDiagramLayoutContextLink.prototype.setLabelHalign = function(halign) {
   this._labelHalign = halign;
+  this.setDirty();
 };
 /**
  * Gets the label valign
@@ -821,6 +846,7 @@ DvtDiagramLayoutContextLink.prototype.getLabelHalign = function() {
  */
 DvtDiagramLayoutContextLink.prototype.setCoordinateSpace = function(id) {
   this._coordinateContainerId = id;
+  this.setDirty();
 };
 
 /**
@@ -853,7 +879,34 @@ DvtDiagramLayoutContextLink.prototype.setData = function(data) {
 DvtDiagramLayoutContextLink.prototype.getData = function() {
   return this._data;
 };
-// Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
+
+/**
+ * @protected
+ * Mark layout context for the link as dirty once the its position or label position changed
+ */
+DvtDiagramLayoutContextLink.prototype.setDirty = function() {
+  if (this.LayoutContext) {
+    this.LayoutContext.getDirtyContext()[this.getId()] = true;
+  }
+};
+
+/**
+ * @protected
+ * Copies layout context state for the link from existing link layout context
+ * @param {DvtDiagramLayoutContextLink} link existing link layout context
+ */
+DvtDiagramLayoutContextLink.prototype.copyFrom = function(link) {
+  if (link) {
+    this.setPoints(link.getPoints());
+    this.setLabelPosition(link.getLabelPosition());
+    this.setLabelRotationAngle(link.getLabelRotationAngle());
+    this.setLabelRotationPoint(link.getLabelRotationPoint());
+    this.setLabelValign(link.getLabelValign());
+    this.setLabelHalign(link.getLabelHalign());
+    this.setCoordinateSpace(link.getCoordinateSpace());
+  }
+};
+// Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
 
 
 
@@ -862,11 +915,9 @@ DvtDiagramLayoutContextLink.prototype.getData = function() {
  * Defines the node context for a layout call.
  * @class DvtDiagramLayoutContextNode
  * @constructor
- * @param {DvtDiagramLayoutContextNode} node optional context to use for
- * initializing this context
  */
-var DvtDiagramLayoutContextNode = function(node) {
-  this.Init(node);
+var DvtDiagramLayoutContextNode = function() {
+  this.Init();
 };
 
 dvt.Obj.createSubclass(DvtDiagramLayoutContextNode, dvt.Obj, 'DvtDiagramLayoutContextNode');
@@ -875,31 +926,14 @@ dvt.Obj.createSubclass(DvtDiagramLayoutContextNode, dvt.Obj, 'DvtDiagramLayoutCo
 /**
  * @protected
  * Initialize the layout context.
- * @param {DvtDiagramLayoutContextNode} node optional layout context to
- * copy from
  */
-DvtDiagramLayoutContextNode.prototype.Init = function(node) {
-  this._id = node ? node._id : null;
-  this._bounds = node ? node._bounds : null;
-  this._contentBounds = node ? node._contentBounds : null;
-  this._position = node ? node._position : null;
-  this._labelPosition = node ? node._labelPosition : null;
-  this._labelBounds = node ? node._labelBounds : null;
-  this._labelValign = node ? node._labelValign : null;
-  this._labelHalign = node ? node._labelHalign : null;
-  this._layoutAttrs = node ? node._layoutAttrs : null;
-  this._bReadOnly = node ? node._bReadOnly : false;
-  this._containerId = node ? node._containerId : null;
-  this._selected = node ? node._selected : false;
-  this._labelRotAngle = node ? node._labelRotAngle : null;
-  this._labelRotPoint = node ? node._labelRotPoint : null;
-  this._containerPadding = node ? node._containerPadding : null;
-  this._origBounds = node ? node._origBounds : null;
-  this._origContentBounds = node ? node._origContentBounds : null;
-  this._bDisclosed = node ? node._bDisclosed : false;
-  this.Component = node ? node.GetDiagram() : null;
+DvtDiagramLayoutContextNode.prototype.Init = function() {
+  this._bReadOnly = false;
+  this._selected = false;
+  this._bDisclosed = false;
   this.IsRendered = true;
-  this.ContentOffset = new dvt.DiagramPoint(0, 0); //used by global layout for nodes inside container
+  //used by global layout for nodes inside container
+  this.ContentOffset = new dvt.DiagramPoint(0, 0);
 };
 
 
@@ -941,8 +975,9 @@ DvtDiagramLayoutContextNode.prototype.setBounds = function(bounds) {
  * @return {DvtDiagramRectangle}
  */
 DvtDiagramLayoutContextNode.prototype.getBounds = function() {
-  if (!this.IsRendered && this.Component)
-    this.Component.renderNodeFromContext(this);
+  if (!this._bounds && this.Component) {
+    this.Component.updateNodeDims(this);
+  }
   return this._bounds;
 };
 
@@ -966,8 +1001,9 @@ DvtDiagramLayoutContextNode.prototype.setContentBounds = function(bounds) {
  * @return {DvtDiagramRectangle}
  */
 DvtDiagramLayoutContextNode.prototype.getContentBounds = function() {
-  if (!this.IsRendered && this.Component)
-    this.Component.renderNodeFromContext(this);
+  if (!this._contentBounds && this.Component) {
+    this.Component.updateNodeDims(this);
+  }
   return this._contentBounds;
 };
 
@@ -979,7 +1015,8 @@ DvtDiagramLayoutContextNode.prototype.getContentBounds = function() {
  */
 DvtDiagramLayoutContextNode.prototype.setPosition = function(pos) {
   this._position = pos;
-  this._updateParentNodes(this);
+  this.UpdateParentNodes();
+  this.setDirty();
 };
 
 /**
@@ -1010,7 +1047,7 @@ DvtDiagramLayoutContextNode.prototype.getRelativePosition = function(containerId
       if (parentId) {
         var parent = layoutContext.getNodeById(parentId);
         if (parent && this.Component && !parent.IsRendered)
-          this.Component.renderNodeFromContext(parent);
+          this.Component.renderNodeFromContext(parent, true);
       }
       //calculate relative position
       position['x'] += node.ContentOffset['x'] + node.getPosition()['x'];
@@ -1047,6 +1084,7 @@ DvtDiagramLayoutContextNode.prototype.getRelativePosition = function(containerId
  */
 DvtDiagramLayoutContextNode.prototype.setLabelPosition = function(pos) {
   this._labelPosition = pos;
+  this.setDirty();
 };
 
 
@@ -1075,6 +1113,9 @@ DvtDiagramLayoutContextNode.prototype.setLabelBounds = function(bounds) {
  * @return {DvtDiagramRectangle}
  */
 DvtDiagramLayoutContextNode.prototype.getLabelBounds = function() {
+  if (!this._labelBounds && this.Component) {
+    this.Component.updateNodeDims(this);
+  }
   return this._labelBounds;
 };
 
@@ -1167,6 +1208,7 @@ DvtDiagramLayoutContextNode.prototype.getSelected = function() {
  */
 DvtDiagramLayoutContextNode.prototype.setLabelRotationAngle = function(angle) {
   this._labelRotAngle = angle;
+  this.setDirty();
 };
 
 
@@ -1187,6 +1229,7 @@ DvtDiagramLayoutContextNode.prototype.getLabelRotationAngle = function() {
  */
 DvtDiagramLayoutContextNode.prototype.setLabelRotationPoint = function(point) {
   this._labelRotPoint = point;
+  this.setDirty();
 };
 
 
@@ -1285,6 +1328,7 @@ DvtDiagramLayoutContextNode.prototype.setContainerPadding = function(top, right,
           this._origContentBounds['w'] + left + right,
           this._origContentBounds['h'] + top + bottom);
     }
+    this.setDirty();
   }
 };
 
@@ -1354,18 +1398,28 @@ DvtDiagramLayoutContextNode.prototype.getParentNode = function() {
 };
 
 /**
- * Resets IsRendered flag for parent nodes.
+ * Resets IsRendered flag and calculated bounds for parent nodes.
  * Relevant for global layout option, when parent container is already rendered, but a child node changes position
  * the parent node should be marked as not rendered
- * @param {DvtDiagramLayoutContextNode} node current node
- * @private
+ * @protected
  */
-DvtDiagramLayoutContextNode.prototype._updateParentNodes = function(node) {
-  var parent = node.getParentNode();
+DvtDiagramLayoutContextNode.prototype.UpdateParentNodes = function() {
+  var parent = this.getParentNode();
   if (parent && parent.IsRendered) {
-    parent.IsRendered = false;
-    this._updateParentNodes(parent);
+    parent.Reset();
+    parent.UpdateParentNodes();
   }
+};
+
+/**
+ * Resets IsRendered flag and calculated bounds for the current node.
+ * @protected
+ */
+DvtDiagramLayoutContextNode.prototype.Reset = function() {
+  this.IsRendered = false;
+  this.setBounds(null);
+  this.setContentBounds(null);
+  this.setLabelBounds(null);
 };
 
 /**
@@ -1376,6 +1430,7 @@ DvtDiagramLayoutContextNode.prototype._updateParentNodes = function(node) {
  */
 DvtDiagramLayoutContextNode.prototype.setLabelValign = function(valign) {
   this._labelValign = valign;
+  this.setDirty();
 };
 /**
  * Sets the label halign
@@ -1385,6 +1440,7 @@ DvtDiagramLayoutContextNode.prototype.setLabelValign = function(valign) {
  */
 DvtDiagramLayoutContextNode.prototype.setLabelHalign = function(halign) {
   this._labelHalign = halign;
+  this.setDirty();
 };
 /**
  * Gets the label valign
@@ -1421,6 +1477,35 @@ DvtDiagramLayoutContextNode.prototype.setData = function(data) {
  */
 DvtDiagramLayoutContextNode.prototype.getData = function() {
   return this._data;
+};
+
+/**
+ * @protected
+ * Mark layout context for the node as dirty once the its position or label position changed
+ */
+DvtDiagramLayoutContextNode.prototype.setDirty = function() {
+  if (this.LayoutContext) {
+    this.LayoutContext.getDirtyContext()[this.getId()] = true;
+  }
+};
+
+/**
+ * @protected
+ * Copies layout context state for the node from existing node layout context
+ * @param {DvtDiagramLayoutContextNode} node existing node layout context
+ */
+DvtDiagramLayoutContextNode.prototype.copyFrom = function(node) {
+  if (node) {
+    this.setPosition(node.getPosition());
+    this.setLabelPosition(node.getLabelPosition());
+    this.setLabelRotationAngle(node.getLabelRotationAngle());
+    this.setLabelRotationPoint(node.getLabelRotationPoint());
+    this.setLabelValign(node.getLabelValign());
+    this.setLabelHalign(node.getLabelHalign());
+    if (node.getContainerPadding()) {
+      this.setContainerPadding(node.getContainerPadding());
+    }
+  }
 };
 // Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 
@@ -1493,1654 +1578,6 @@ dvt.DiagramPoint = DvtDiagramPoint;
  * Expose DvtDiagramRectangle outside function wrapper via dvt.DiagramRectangle
  */
 dvt.DiagramRectangle = DvtDiagramRectangle;
-// Copyright (c) 2012, 2016, Oracle and/or its affiliates. All rights reserved.
-dvt.ShapeAnimationUtils = {};
-
-dvt.Obj.createSubclass(dvt.ShapeAnimationUtils, dvt.Obj);
-
-dvt.ShapeAnimationUtils.transitionShapes = function(oldShape, newShape, anim) {
-  /*if (oldShape instanceof dvt.Polyline && newShape instanceof dvt.Polyline) {
-    dvt.ShapeAnimationUtils.TransitionPolylineToPolyline(oldShape, newShape, anim);
-  }
-  else if (oldShape instanceof dvt.Rect && newShape instanceof dvt.Rect) {
-    dvt.ShapeAnimationUtils.TransitionRectToRect(oldShape, newShape, anim);
-  }
-  else*/ if (oldShape && newShape && oldShape instanceof dvt.Text && newShape instanceof dvt.Text) {
-    dvt.ShapeAnimationUtils.TransitionTextToText(oldShape, newShape, anim);
-  }
-  else if (oldShape && newShape && oldShape instanceof dvt.Shape && newShape instanceof dvt.Shape) {
-    dvt.ShapeAnimationUtils.TransitionShapeToShapeUsingPaths(oldShape, newShape, anim);
-  }
-  else if (oldShape && newShape) {
-    dvt.ShapeAnimationUtils.TransitionShapeToShape(oldShape, newShape, anim);
-  }
-};
-
-/*dvt.ShapeAnimationUtils.TransitionPolylineToPolyline = function(oldShape, newShape, anim) {
-  dvt.ShapeAnimationUtils._transitionTranslate(oldShape, newShape, anim);
-
-  //var oldPoints = oldShape.getPoints();
-
-  var newPoints = newShape.getPoints();
-
-  var oldLocalPoints = [];
-  for (var i = 0; i < newPoints.length; i+=2) {
-    var stagePt = newShape.localToStage(new dvt.Point(newPoints[i], newPoints[i+1]));
-    var localPt = oldShape.stageToLocal(stagePt);
-    oldLocalPoints.push(localPt.x);
-    oldLocalPoints.push(localPt.y);
-  }
-
-  if (anim) {
-    anim.addProp(dvt.Animator.TYPE_POLYLINE, oldShape, oldShape.getPoints, oldShape.setPoints, oldLocalPoints);
-  }
-};*/
-
-/*dvt.ShapeAnimationUtils.TransitionRectToRect = function(oldShape, newShape, anim) {
-  dvt.ShapeAnimationUtils._transitionTranslate(oldShape, newShape, anim);
-
-  var oldTopLeft = new dvt.Point(oldShape.getX(), oldShape.getY());
-  var oldBottomRight = new dvt.Point(oldShape.getX() + oldShape.getWidth(), oldShape.getY() + oldShape.getHeight());
-
-  var newTopLeft = new dvt.Point(newShape.getX(), newShape.getY());
-  var newBottomRight = new dvt.Point(newShape.getX() + newShape.getWidth(), newShape.getY() + newShape.getHeight());
-
-  var oldStageTopLeft = oldShape.localToStage(oldTopLeft);
-  var oldStageBottomRight = oldShape.localToStage(oldBottomRight);
-
-  var newStageTopLeft = newShape.localToStage(newTopLeft);
-  var newStageBottomRight = newShape.localToStage(newBottomRight);
-
-  var oldLocalTopLeft = oldShape.stageToLocal(newStageTopLeft);
-  var oldLocalBottomRight = oldShape.stageToLocal(newStageBottomRight);
-
-  if (anim) {
-    if (oldStageTopLeft.x != newStageTopLeft.x) {
-      anim.addProp(dvt.Animator.TYPE_NUMBER, oldShape, oldShape.getX, oldShape.setX, oldLocalTopLeft.x);
-    }
-    if (oldStageTopLeft.y != newStageTopLeft.y) {
-      anim.addProp(dvt.Animator.TYPE_NUMBER, oldShape, oldShape.getY, oldShape.setY, oldLocalTopLeft.y);
-    }
-    if (oldStageBottomRight.x != newStageBottomRight.x ||
-        oldStageTopLeft.x != newStageTopLeft.x) {
-      anim.addProp(dvt.Animator.TYPE_NUMBER, oldShape, oldShape.getWidth, oldShape.setWidth, oldLocalBottomRight.x - oldLocalTopLeft.x);
-    }
-    if (oldStageBottomRight.y != newStageBottomRight.y ||
-        oldStageTopLeft.y != newStageTopLeft.y) {
-      anim.addProp(dvt.Animator.TYPE_NUMBER, oldShape, oldShape.getHeight, oldShape.setHeight, oldLocalBottomRight.y - oldLocalTopLeft.y);
-    }
-  }
-};*/
-
-dvt.ShapeAnimationUtils.TransitionTextToText = function(oldShape, newShape, anim) {
-  dvt.ShapeAnimationUtils._transitionMatrix(oldShape, newShape, anim);
-
-  var oldFill = oldShape.getFill ? oldShape.getFill() : null;
-  var newFill = newShape.getFill ? newShape.getFill() : null;
-
-  if (anim) {
-    if (oldShape.getX() != newShape.getX()) {
-      anim.addProp(dvt.Animator.TYPE_NUMBER, oldShape, oldShape.getX, oldShape.setX, newShape.getX());
-    }
-    if (oldShape.getY() != newShape.getY()) {
-      anim.addProp(dvt.Animator.TYPE_NUMBER, oldShape, oldShape.getY, oldShape.setY, newShape.getY());
-    }
-
-    if (oldFill && newFill && oldFill instanceof dvt.SolidFill && newFill instanceof dvt.SolidFill) {
-      if (oldFill.getColor() != newFill.getColor()) {
-        anim.addProp(dvt.Animator.TYPE_FILL, oldShape, oldShape.getFill, oldShape.setFill, newFill);
-      }
-    }
-  }
-};
-
-dvt.ShapeAnimationUtils.TransitionShapeToShape = function(oldShape, newShape, anim) {
-  var oldStageDims = oldShape.getDimensions(oldShape.getCtx().getStage());
-  var newStageDims = newShape.getDimensions(newShape.getCtx().getStage());
-
-  var oldFill = oldShape.getFill ? oldShape.getFill() : null;
-  var newFill = newShape.getFill ? newShape.getFill() : null;
-
-  var oldStroke = oldShape.getStroke ? oldShape.getStroke() : null;
-  var newStroke = newShape.getStroke ? newShape.getStroke() : null;
-
-  if (anim) {
-    var deltaSx = 1;
-    var deltaSy = 1;
-    if (oldStageDims.w != newStageDims.w) {
-      deltaSx = newStageDims.w / oldStageDims.w;
-    }
-    if (oldStageDims.h != newStageDims.h) {
-      deltaSy = newStageDims.h / oldStageDims.h;
-    }
-    var deltaTx = 0;
-    var deltaTy = 0;
-    if (oldStageDims.x != newStageDims.x) {
-      deltaTx = newStageDims.x - oldStageDims.x;
-    }
-    if (oldStageDims.y != newStageDims.y) {
-      deltaTy = newStageDims.y - oldStageDims.y;
-    }
-
-    if (oldFill && newFill && oldFill instanceof dvt.SolidFill && newFill instanceof dvt.SolidFill) {
-      if (oldFill.getColor() != newFill.getColor()) {
-        anim.addProp(dvt.Animator.TYPE_FILL, oldShape, oldShape.getFill, oldShape.setFill, newFill);
-      }
-    }
-
-    if (oldStroke && newStroke && oldStroke instanceof dvt.SolidStroke && newStroke instanceof dvt.SolidStroke) {
-      if (oldStroke.getColor() != newStroke.getColor()) {
-        anim.addProp(dvt.Animator.TYPE_STROKE, oldShape, oldShape.getStroke, oldShape.setStroke, newStroke);
-      }
-    }
-
-    if (deltaTx != 0 || deltaTy != 0 || deltaSx != 1 || deltaSy != 1) {
-      /*if (oldShape.getStroke) {
-        var stroke = oldShape.getStroke();
-        if (stroke) {
-          stroke = stroke.clone();
-          stroke.setFixedWidth(false);
-          oldShape.setStroke(stroke);
-        }
-      }*/
-
-      var deltaMat = new dvt.Matrix();
-      //scale about the top left corner of the bounds
-      deltaMat.translate(-oldStageDims.x, -oldStageDims.y);
-      deltaMat.scale(deltaSx, deltaSy);
-      deltaMat.translate(oldStageDims.x, oldStageDims.y);
-      //now translate to the correct place
-      deltaMat.translate(deltaTx, deltaTy);
-      //apply the delta on top of the original matrix
-      var newMat = oldShape.getMatrix().clone();
-      newMat.concat(deltaMat);
-      anim.addProp(dvt.Animator.TYPE_MATRIX, oldShape, oldShape.getMatrix, oldShape.setMatrix, newMat);
-    }
-  }
-};
-
-/*dvt.ShapeAnimationUtils._transitionTranslate = function(oldShape, newShape, anim) {
-  var oldTranslate = new dvt.Point(oldShape.getTranslateX(), oldShape.getTranslateY());
-
-  var newTranslate = new dvt.Point(newShape.getTranslateX(), newShape.getTranslateY());
-
-  var oldStageTranslate = oldShape.getParent().localToStage(oldTranslate);
-
-  var newStageTranslate = newShape.getParent().localToStage(newTranslate);
-
-  var oldLocalTranslate = oldShape.getParent().stageToLocal(newStageTranslate);
-
-  if (anim) {
-    if (oldStageTranslate.x != newStageTranslate.x) {
-      anim.addProp(dvt.Animator.TYPE_NUMBER, oldShape, oldShape.getTranslateX, oldShape.setTranslateX, oldLocalTranslate.x);
-    }
-    if (oldStageTranslate.y != newStageTranslate.y) {
-      anim.addProp(dvt.Animator.TYPE_NUMBER, oldShape, oldShape.getTranslateY, oldShape.setTranslateY, oldLocalTranslate.y);
-    }
-  }
-};*/
-
-dvt.ShapeAnimationUtils._transitionMatrix = function(oldShape, newShape, anim) {
-  if (anim) {
-    var oldMatrix = dvt.ShapeAnimationUtils._getCurrentTransformationMatrix(oldShape);
-    var newMatrix = dvt.ShapeAnimationUtils._getCurrentTransformationMatrix(newShape);
-
-    if (!oldMatrix.equals(newMatrix)) {
-      //invert the parent's CTM to determine the matrix that must be applied to the shape itself
-      var parentMat = dvt.ShapeAnimationUtils._getCurrentTransformationMatrix(oldShape.getParent());
-      parentMat.invert();
-      newMatrix.concat(parentMat);
-      anim.addProp(dvt.Animator.TYPE_MATRIX, oldShape, oldShape.getMatrix, oldShape.setMatrix, newMatrix);
-    }
-  }
-};
-
-dvt.ShapeAnimationUtils._getCurrentTransformationMatrix = function(displayable) {
-  var arDisp = [displayable];
-  var parent = displayable.getParent();
-  while (parent) {
-    arDisp.push(parent);
-    parent = parent.getParent();
-  }
-  var ctm = new dvt.Matrix();
-  for (var i = 0; i < arDisp.length; i++) {
-    var disp = arDisp[i];
-    ctm.concat(disp.getMatrix());
-  }
-  return ctm;
-};
-
-
-/**
- * @protected
- * Transition the shapes by converting them to paths.
- */
-dvt.ShapeAnimationUtils.TransitionShapeToShapeUsingPaths = function(oldShape, newShape, anim) {
-  var oldPath = dvt.ShapeAnimationUtils._convertShapeToPath(oldShape);
-  var newPath = dvt.ShapeAnimationUtils._convertShapeToPath(newShape);
-  //if the shape couldn't be converted to a path, transition it normally
-  if (!oldPath || !newPath) {
-    dvt.ShapeAnimationUtils.TransitionShapeToShape(oldShape, newShape, anim);
-    return;
-  }
-  //if the path is different from the original shape, replace the shape with the path
-  if (oldShape != oldPath) {
-    dvt.ShapeAnimationUtils._replaceShape(oldShape, oldPath);
-    oldShape = oldPath;
-  }
-
-  //don't transition the matrix because _assimilatePaths will transform the path coords instead so that
-  //we're transitioning directly to user coords (to avoid case like switching from bar to tmap, where
-  //tmap is so big and scaled down so much the shapes initially fly offscreen until the matrix transition
-  //can scale it down far enough to bring them back into view)
-  //dvt.ShapeAnimationUtils._transitionMatrix(oldShape, newShape, anim);
-
-  var oldFill = oldShape.getFill ? oldShape.getFill() : null;
-  var newFill = newShape.getFill ? newShape.getFill() : null;
-
-  if (anim) {
-    if (oldFill && newFill && oldFill instanceof dvt.SolidFill && newFill instanceof dvt.SolidFill) {
-      if (oldFill.getColor() != newFill.getColor()) {
-        anim.addProp(dvt.Animator.TYPE_FILL, oldShape, oldShape.getFill, oldShape.setFill, newFill);
-      }
-    }
-
-    //need to pass in newCTM because the newPath passed in here may not be attached to the stage
-    var newCTM = dvt.ShapeAnimationUtils._getCurrentTransformationMatrix(newShape);
-    //make the paths compatible for animating
-    dvt.ShapeAnimationUtils._assimilatePaths(oldShape, newPath, anim, newCTM);
-  }
-};
-
-
-/**
- * @private
- * Convert the shape to a path.
- */
-dvt.ShapeAnimationUtils._convertShapeToPath = function(shape) {
-  if (shape instanceof dvt.Path) {
-    return shape;
-  }
-  else {
-    var points = dvt.ShapeAnimationUtils._getPathPoints(shape);
-    if (points) {
-      var path = new dvt.Path(shape.getCtx(), points);
-      return path;
-    }
-  }
-  return null;
-};
-
-
-/**
- * @private
- * Replace the old shape with the new one.
- */
-dvt.ShapeAnimationUtils._replaceShape = function(oldShape, newShape) {
-  var fill = oldShape.getFill();
-  var stroke = oldShape.getStroke();
-  var mat = oldShape.getMatrix();
-  var childIndex = oldShape.getParent().getChildIndex(oldShape);
-  oldShape.getParent().addChildAt(newShape, childIndex);
-  oldShape.setFill(null);
-  oldShape.setStroke(null);
-  oldShape.setMatrix(null);
-  newShape.setFill(fill);
-  newShape.setStroke(stroke);
-  newShape.setMatrix(mat);
-  var numChildren = oldShape.getNumChildren();
-  for (var i = 0; i < numChildren; i++) {
-    newShape.addChild(oldShape.getChildAt(0));
-  }
-  oldShape.getParent().removeChild(oldShape);
-  if (oldShape.destroy) {
-    oldShape.destroy();
-  }
-};
-
-
-/**
- * @private
- * Get the path points to represent the given shape.
- */
-dvt.ShapeAnimationUtils._getPathPoints = function(shape) {
-  var arPoints;
-  if (shape instanceof dvt.Rect) {
-    var rx = shape.getRx();
-    var ry = shape.getRy();
-    var x = shape.getX();
-    var y = shape.getY();
-    var w = shape.getWidth();
-    var h = shape.getHeight();
-    if (rx && ry) {
-      var angleExtent = .5 * Math.PI;
-
-      //taken from http://en.wikipedia.org/wiki/B%C3%A9zier_spline
-      //unit circle at origin can be composed from arbitrary number of cubic Bezier curves.
-      //Arc starts at point A and ends at point B, where A is at angle phi above x-axis, and B is at angle -phi
-      //below x-axis.
-
-      //points on unit circle
-      var ax = Math.cos(.5 * angleExtent);
-      var ay = Math.sin(.5 * angleExtent);
-      var bx = ax;
-      var by = -ay;
-      //control points
-      var cax = (4 - ax) / 3;
-      var cay = (1 - ax) * (3 - ax) / (3 * ay);
-      var cbx = cax;
-      var cby = -cay;
-
-      var pointA = new dvt.Point(ax, ay);
-      var pointB = new dvt.Point(bx, by);
-      var pointCA = new dvt.Point(cax, cay);
-      var pointCB = new dvt.Point(cbx, cby);
-
-      var mat = new dvt.Matrix();
-      //rotate arc to current angle
-      mat.rotate(.5 * angleExtent);
-      //scale by radius in each direction
-      mat.scale(rx, ry);
-
-      var cpa = mat.transformPoint(pointCA);
-      var cpb = mat.transformPoint(pointCB);
-
-      var cx = x + w - rx;
-      var cy = y + ry;
-      arPoints = ['M', x + rx, y, 'L', x + w - rx, y, 'C', cx + cpa.x, cy - cpa.y, cx + cpb.x, cy - cpb.y, x + w, y + ry];
-      cy = y + h - ry;
-      arPoints.push('L', x + w, y + h - ry, 'C', cx + cpb.x, cy + cpb.y, cx + cpa.x, cy + cpa.y, x + w - rx, y + h);
-      cx = x + rx;
-      arPoints.push('L', x + rx, y + h, 'C', cx - cpa.x, cy + cpa.y, cx - cpb.x, cy + cpb.y, x, y + h - ry);
-      cy = y + ry;
-      arPoints.push('L', x, y + ry, 'C', cx - cpb.x, cy - cpb.y, cx - cpa.x, cy - cpa.y, x + rx, y, 'Z');
-    }
-    else {
-      arPoints = ['M', x, y, 'L', x + w, y, 'L', x + w, y + h, 'L', x, y + h, 'Z'];
-    }
-  }
-  else if (shape instanceof dvt.Polyline || shape instanceof dvt.Polygon) {
-    var points = shape.getPoints();
-    if (points) {
-      arPoints = [];
-      for (var i = 0; i < points.length; i += 2) {
-        if (i == 0) {
-          arPoints.push('M', points[i], points[i + 1]);
-        }
-        else {
-          arPoints.push('L', points[i], points[i + 1]);
-        }
-      }
-      if (shape instanceof dvt.Polygon) {
-        arPoints.push('Z');
-      }
-    }
-  }
-  else if (shape instanceof dvt.Line) {
-    arPoints = ['M', shape.getX1(), shape.getY1(), 'L', shape.getX2(), shape.getY2()];
-  }
-  else if (shape instanceof dvt.Circle) {
-    var cx = shape.getCx();
-    var cy = shape.getCy();
-    var rx = 0;
-    var ry = 0;
-    if (shape instanceof dvt.Oval) {
-      rx = shape.getRx();
-      ry = shape.getRy();
-    }
-    else {
-      rx = shape.getRadius();
-      ry = rx;
-    }
-    //    arPoints = ["M", cx, cy-ry,                //start at top
-    //                "Q", cx+rx, cy-ry, cx+rx, cy,  //top right quadrant
-    //                "Q", cx+rx, cy+ry, cx, cy+ry,  //bottom right quadrant
-    //                "Q", cx-rx, cy+ry, cx-rx, cy,  //bottom left quadrant
-    //                "Q", cx-rx, cy-ry, cx, cy-ry]; //top left quadrant
-
-    var numCurves = 4;
-    var startAngle = -.5 * Math.PI;
-    var angleExtent = 2 * Math.PI / numCurves;
-
-    //taken from http://en.wikipedia.org/wiki/B%C3%A9zier_spline
-    //unit circle at origin can be composed from arbitrary number of cubic Bezier curves.
-    //Arc starts at point A and ends at point B, where A is at angle phi above x-axis, and B is at angle -phi
-    //below x-axis.
-
-    //points on unit circle
-    var ax = Math.cos(.5 * angleExtent);
-    var ay = Math.sin(.5 * angleExtent);
-    var bx = ax;
-    var by = -ay;
-    //control points
-    var cax = (4 - ax) / 3;
-    var cay = (1 - ax) * (3 - ax) / (3 * ay);
-    var cbx = cax;
-    var cby = -cay;
-
-    var pointA = new dvt.Point(ax, ay);
-    var pointB = new dvt.Point(bx, by);
-    var pointCA = new dvt.Point(cax, cay);
-    var pointCB = new dvt.Point(cbx, cby);
-
-    arPoints = [];
-    for (var i = 0; i < numCurves; i++) {
-      var mat = new dvt.Matrix();
-      //rotate arc to current angle
-      mat.rotate(startAngle + i * angleExtent);
-      //scale by radius in each direction
-      mat.scale(rx, ry);
-
-      //because we want to draw the path in user's clockwise direction, treat B as the starting point and A as the ending point
-      if (i == 0) {
-        var startPoint = mat.transformPoint(pointB);
-        //translate by center point
-        arPoints.push('M', cx + startPoint.x, cy + startPoint.y);
-      }
-
-      var controlPoint1 = mat.transformPoint(pointCB);
-      var controlPoint2 = mat.transformPoint(pointCA);
-      var endPoint = mat.transformPoint(pointA);
-      //translate by center point
-      arPoints.push('C', cx + controlPoint1.x, cy + controlPoint1.y, cx + controlPoint2.x, cy + controlPoint2.y, cx + endPoint.x, cy + endPoint.y);
-    }
-    arPoints.push('Z');
-  }
-  else if (shape instanceof dvt.Arc) {
-    //copied from DvtSvgArc._createArc()
-    var sa = (shape.getAngleStart() * dvt.Math.RADS_PER_DEGREE);
-    var ae = (shape.getAngleExtent() * dvt.Math.RADS_PER_DEGREE);
-
-    var x1 = shape.getCx() + (shape.getRx() * Math.cos(sa));        // get arc
-    var y1 = shape.getCy() - (shape.getRy() * Math.sin(sa));        // end points
-    var x2 = shape.getCx() + (shape.getRx() * Math.cos(sa + ae));
-    var y2 = shape.getCy() - (shape.getRy() * Math.sin(sa + ae));
-
-    var nLargeArc = (Math.abs(shape.getAngleExtent()) > 180) ? '1' : '0';
-    var nSweepFlag = (shape.getAngleExtent() > 0) ? '0' : '1';     // 0 == svg +ve angle
-
-    arPoints = ['M', x1, y1, 'A', shape.getRx(), shape.getRy(), '0', nLargeArc, nSweepFlag, x2, y2];
-    if (shape.getClosure() === dvt.Arc.CHORD) {
-      arPoints.push('Z');
-    }
-    else if (shape.getClosure() === dvt.Arc.PIE) {
-      arPoints.push('L', shape.getCx(), shape.getCy(), 'Z');
-    }
-  }
-
-  return arPoints;
-};
-
-
-/**
- * @private
- * Get the index of the next drawing command in the path.
- */
-dvt.ShapeAnimationUtils._getNextCommandIndex = function(arPoints, index) {
-  while (index < arPoints.length) {
-    if (isNaN(arPoints[index])) {
-      break;
-    }
-    index++;
-  }
-  return index;
-};
-
-
-/**
- * @private
- * Get the index of the previous drawing command in the path.
- */
-dvt.ShapeAnimationUtils._getPrevCommandIndex = function(arPoints, index) {
-  while (index > -1) {
-    if (isNaN(arPoints[index])) {
-      break;
-    }
-    index--;
-  }
-  return index;
-};
-
-
-/**
- * @private
- * Count the number of  drawing commands in the path.
- */
-dvt.ShapeAnimationUtils._countCommands = function(arPoints) {
-  var count = 0;
-  for (var i = 0; i < arPoints.length; i++) {
-    if (isNaN(arPoints[i])) {
-      count++;
-    }
-  }
-  return count;
-};
-
-
-/**
- * Make paths contain the same number of commands by interspersing additional dummy commands
- * uniformly throughout the shorter path.
- */
-dvt.ShapeAnimationUtils._makePathsSameLength = function(oldPoints, newPoints) {
-  var oldCommandCount = dvt.ShapeAnimationUtils._countCommands(oldPoints);
-  var newCommandCount = dvt.ShapeAnimationUtils._countCommands(newPoints);
-  if (oldCommandCount != newCommandCount) {
-    var diffCommandCount = 0;
-    var shortCommandCount = 0;
-    var longCommandCount = 0;
-    var shortPathPoints;
-    var longPathPoints;
-
-    if (oldCommandCount > newCommandCount) {
-      diffCommandCount = oldCommandCount - newCommandCount;
-      shortCommandCount = newCommandCount;
-      longCommandCount = oldCommandCount;
-      shortPathPoints = newPoints;
-      longPathPoints = oldPoints;
-    }
-    else {
-      diffCommandCount = newCommandCount - oldCommandCount;
-      shortCommandCount = oldCommandCount;
-      longCommandCount = newCommandCount;
-      shortPathPoints = oldPoints;
-      longPathPoints = newPoints;
-    }
-
-    //determine the number of commands in the interval between insertions
-    var insertInterval = Math.floor(shortCommandCount / diffCommandCount);
-    if (insertInterval < 1) {
-      insertInterval = 1;
-    }
-    //determine the number of commands to insert each time
-    var commandsPerInsert = Math.floor(diffCommandCount / shortCommandCount);
-    if (commandsPerInsert < 1) {
-      commandsPerInsert = 1;
-    }
-    //start at -1 to skip the initial "M"
-    var commandCount = -1;
-    for (var i = 0; i < shortPathPoints.length; i++) {
-      if (isNaN(shortPathPoints[i])) {
-        //if we're at the insertion point, insert commands before the current command
-        //and reset the command count
-        if (commandCount == insertInterval) {
-          commandCount = 0;
-
-          for (var j = 0; j < commandsPerInsert; j++) {
-            //increment i because we're inserting before the current command
-            shortPathPoints.splice(i++, 0, 'tmp');
-            diffCommandCount--;
-          }
-        }
-
-        //always increment the command count, even if it was reset above
-        commandCount++;
-      }
-    }
-    //insert any leftover commands at the end
-    for (var i = 0; i < diffCommandCount; i++) {
-      if (shortPathPoints[shortPathPoints.length - 1] == 'Z') {
-        shortPathPoints.splice(shortPathPoints.length - 1, 0, 'tmp');
-      }
-      else {
-        shortPathPoints.push('tmp');
-      }
-    }
-  }
-};
-
-
-/**
- * @private
- * If the path is closed, replace Z with an explicit L, so that we can animate that segment.
- */
-dvt.ShapeAnimationUtils._modifyClosePath = function(points) {
-  if (points.length > 2 && points[points.length - 1] == 'Z') {
-    points.splice(points.length - 1, 1);
-    points.push('L', points[1], points[2]);
-    return true;
-  }
-  return false;
-};
-
-
-/**
- * @private
- * Assimilate the old and new paths to make them compatible for animating.
- */
-dvt.ShapeAnimationUtils._assimilatePaths = function(oldShape, newShape, anim, newCTM) {
-  var obj = dvt.ShapeAnimationUtils.getAssimilatedPaths(oldShape.getCommands(), newShape.getCommands());
-
-  //transform path to account for CTM
-  var oldMatrix = dvt.ShapeAnimationUtils._getCurrentTransformationMatrix(oldShape);
-  if (oldMatrix) {
-    dvt.ShapeAnimationUtils._transformPathCoords(obj.updatedOldPath, oldMatrix);
-  }
-  //clear old matrix because we've transformed the points
-  oldShape.setMatrix(null);
-  //need to pass in newCTM because the newShape passed in here may not be attached to the stage
-  var newMatrix = newCTM;
-  if (newMatrix) {
-    dvt.ShapeAnimationUtils._transformPathCoords(obj.updatedNewPath, newMatrix);
-  }
-
-  //immediately update the old path with the old assimilated points
-  oldShape.setCommands(obj.updatedOldPath);
-  //animate the transition to the new assimilated points
-  anim.addProp(dvt.Animator.TYPE_PATH, oldShape, oldShape.getCommands, oldShape.setCommands, obj.updatedNewPath);
-};
-
-
-/**
- * Get path commands that are compatible for animating.
- *
- * @param {array}  oldPathCommands  Array of old path commands and coordinates.
- * @param {array}  newPathCommands  Array of new path commands and coordinates.
- * @type {object}
- * @return An object with two fields: updatedOldPath - array of assimilated old path commands and coordinates,
- *          updatedNewPath - array of assimilated new path commands and coordinates.
- */
-dvt.ShapeAnimationUtils.getAssimilatedPaths = function(oldPathCommands, newPathCommands) {
-  var oldPoints = dvt.ArrayUtils.copy(oldPathCommands);
-  var newPoints = dvt.ArrayUtils.copy(newPathCommands);
-  //assimilated new path
-  var updatedNewPoints = [];
-  //assimilated old path
-  var updatedOldPoints = [];
-
-  //insert drawing command between concatenated coords
-  dvt.ShapeAnimationUtils._makeImplicitCommandsExplicit(oldPoints);
-  dvt.ShapeAnimationUtils._makeImplicitCommandsExplicit(newPoints);
-  //turn lowercase relative commands into uppercase absolute commands
-  dvt.ShapeAnimationUtils._makeRelativeCommandsAbsolute(oldPoints);
-  dvt.ShapeAnimationUtils._makeRelativeCommandsAbsolute(newPoints);
-  //turn H and V into L
-  dvt.ShapeAnimationUtils._makeShorthandCommandsVerbose(oldPoints);
-  dvt.ShapeAnimationUtils._makeShorthandCommandsVerbose(newPoints);
-
-  //make sure each closed subpath starts with M
-  dvt.ShapeAnimationUtils._makeSubpathsExplicit(oldPoints);
-  dvt.ShapeAnimationUtils._makeSubpathsExplicit(newPoints);
-
-  //break the paths down into subpaths and process them by pairs
-  var oldSubpaths = dvt.ShapeAnimationUtils._breakIntoSubpaths(oldPoints);
-  var newSubpaths = dvt.ShapeAnimationUtils._breakIntoSubpaths(newPoints);
-  //sort subpaths in order of decreasing length
-  dvt.ShapeAnimationUtils._sortSubpaths(oldSubpaths);
-  dvt.ShapeAnimationUtils._sortSubpaths(newSubpaths);
-  for (var i = 0; i < Math.max(oldSubpaths.length, newSubpaths.length); i++) {
-    var subpathUpdatedOldPoints = [];
-    var subpathUpdatedNewPoints = [];
-    var subpathOldPoints = null;
-    var subpathNewPoints = null;
-    //if one of the paths has fewer subpaths, treat the missing ones like empty subpaths
-    if (i < oldSubpaths.length) {
-      subpathOldPoints = oldSubpaths[i];
-    }
-    else {
-      //start empty subpath at start of first subpath
-      subpathOldPoints = ['M', oldPoints[1], oldPoints[2]];
-      //close empty subpath if analog subpath is closed
-      if (newSubpaths[i][newSubpaths[i].length - 1] == 'Z') {
-        subpathOldPoints.push('Z');
-      }
-    }
-    if (i < newSubpaths.length) {
-      subpathNewPoints = newSubpaths[i];
-    }
-    else {
-      //start empty subpath at start of first subpath
-      subpathNewPoints = ['M', newPoints[1], newPoints[2]];
-      //close empty subpath if analog subpath is closed
-      if (oldSubpaths[i][oldSubpaths[i].length - 1] == 'Z') {
-        subpathNewPoints.push('Z');
-      }
-    }
-    dvt.ShapeAnimationUtils._assimilateSubpaths(subpathOldPoints, subpathNewPoints, subpathUpdatedOldPoints, subpathUpdatedNewPoints);
-
-    //add the updated subpaths to the results
-    updatedOldPoints = updatedOldPoints.concat(subpathUpdatedOldPoints);
-    updatedNewPoints = updatedNewPoints.concat(subpathUpdatedNewPoints);
-  }
-
-  return {updatedOldPath: updatedOldPoints, updatedNewPath: updatedNewPoints};
-};
-
-
-/**
- * @private
- * Break a path down into subpaths.
- */
-dvt.ShapeAnimationUtils._breakIntoSubpaths = function(points) {
-  var ar = [];
-  var startIndex = 0;
-  //start at index 1 in order to skip the leading M
-  for (var i = 1; i < points.length; i++) {
-    if (points[i] == 'M' || points[i] == 'm') {
-      ar.push(points.slice(startIndex, i));
-      startIndex = i;
-    }
-  }
-  //if no closed subpaths were found, use the original array
-  if (ar.length < 1) {
-    ar.push(points);
-  }
-  //push the last subpath
-  else if (startIndex < points.length) {
-    ar.push(points.slice(startIndex));
-  }
-  return ar;
-};
-
-
-/**
- * @private
- * Sort subpaths in order of decreasing length.
- */
-dvt.ShapeAnimationUtils._sortSubpaths = function(arSubpaths) {
-  arSubpaths.sort(dvt.ShapeAnimationUtils._compareSubpaths);
-};
-
-
-/**
- * @private
- * Comparison function for sorting subpaths in order of decreasing length.
- */
-dvt.ShapeAnimationUtils._compareSubpaths = function(subpath1, subpath2) {
-  var length1 = dvt.ShapeAnimationUtils._calcSubpathLength(subpath1);
-  var length2 = dvt.ShapeAnimationUtils._calcSubpathLength(subpath2);
-  if (length1 > length2) {
-    return -1;
-  }
-  if (length2 > length1) {
-    return 1;
-  }
-  return 0;
-};
-
-
-/**
- * @private
- * Calculate the length of a subpath.
- */
-dvt.ShapeAnimationUtils._calcSubpathLength = function(points) {
-  var currX = 0;
-  var currY = 0;
-  var prevX = 0;
-  var prevY = 0;
-  var startX = 0;
-  var startY = 0;
-  var totalLength = 0;
-  for (var i = 0; i < points.length; ) {
-    var command = points[i];
-    switch (command) {
-      case 'M':
-        startX = points[i + 1];
-        startY = points[i + 2];
-        break;
-      case 'L':
-        currX = points[i + 1];
-        currY = points[i + 2];
-        break;
-      case 'C':
-        currX = points[i + 5];
-        currY = points[i + 6];
-        break;
-      case 'Q':
-        currX = points[i + 3];
-        currY = points[i + 4];
-        break;
-      case 'A':
-        currX = points[i + 6];
-        currY = points[i + 7];
-        break;
-      case 'Z':
-        currX = startX;
-        currY = startY;
-        break;
-
-      default:
-        break;
-    }
-
-    totalLength += Math.sqrt((currX - prevX) * (currX - prevX) + (currY - prevY) * (currY - prevY));
-
-    i = dvt.ShapeAnimationUtils._getNextCommandIndex(points, i + 1);
-    prevX = currX;
-    prevY = currY;
-  }
-  return totalLength;
-};
-
-
-/**
- * @private
- * Assimilate old and new subpaths to make them compatible for animating.
- */
-dvt.ShapeAnimationUtils._assimilateSubpaths = function(oldPoints, newPoints, updatedOldPoints, updatedNewPoints) {
-  //turn ending Z command into L so that we can animate the L segment
-  var bModCloseOld = dvt.ShapeAnimationUtils._modifyClosePath(oldPoints);
-  var bModCloseNew = dvt.ShapeAnimationUtils._modifyClosePath(newPoints);
-
-  //make closed paths start at top left corner (to user's eye)
-  //make paths proceed in clockwise direction (to user's eye)
-  if (bModCloseOld || (oldPoints[oldPoints.length - 2] == oldPoints[1] && oldPoints[oldPoints.length - 1] == oldPoints[2])) {
-    oldPoints = dvt.ShapeAnimationUtils._makePathStartAtTopLeft(oldPoints);
-    oldPoints = dvt.ShapeAnimationUtils._makePathClockwise(oldPoints);
-  }
-  if (bModCloseNew || (newPoints[newPoints.length - 2] == newPoints[1] && newPoints[newPoints.length - 1] == newPoints[2])) {
-    newPoints = dvt.ShapeAnimationUtils._makePathStartAtTopLeft(newPoints);
-    newPoints = dvt.ShapeAnimationUtils._makePathClockwise(newPoints);
-  }
-
-  //make paths contain the same number of commands
-  dvt.ShapeAnimationUtils._makePathsSameLength(oldPoints, newPoints);
-
-  dvt.ShapeAnimationUtils._assimilatePathCommands(oldPoints, newPoints, updatedOldPoints, updatedNewPoints);
-
-  //re-add Z after assimilating subpaths, if necessary
-  if (bModCloseOld) {
-    oldPoints.push('Z');
-  }
-  if (bModCloseNew) {
-    newPoints.push('Z');
-  }
-};
-
-
-/**
- * @private
- * Assimilate old and new path commands to make them compatible for animating.
- */
-dvt.ShapeAnimationUtils._assimilatePathCommands = function(oldPoints, newPoints, updatedOldPoints, updatedNewPoints) {
-  var iOld = 0;
-  var iNew = 0;
-  //previous point on old path
-  var prevOldX = 0;
-  var prevOldY = 0;
-  //previous point on new path
-  var prevNewX = 0;
-  var prevNewY = 0;
-
-  //flags for whether the paths need to be closed
-  var bCloseNew = false;
-  var bCloseOld = false;
-
-  while (iOld > -1 || iNew > -1) {
-    var oldCommand = iOld > -1 ? oldPoints[iOld] : null;
-    var newCommand = iNew > -1 ? newPoints[iNew] : null;
-
-    var iNextOld = iOld > -1 ? dvt.ShapeAnimationUtils._getNextCommandIndex(oldPoints, iOld + 1) : -1;
-    var iNextNew = iNew > -1 ? dvt.ShapeAnimationUtils._getNextCommandIndex(newPoints, iNew + 1) : -1;
-
-    //if the drawing commands are the same, just copy the points from the original path to the assimilated path
-    if (oldCommand == newCommand) {
-      for (var i = iNew; i < iNextNew; i++) {
-        updatedNewPoints.push(newPoints[i]);
-      }
-      for (var i = iOld; i < iNextOld; i++) {
-        updatedOldPoints.push(oldPoints[i]);
-      }
-    }
-    //if the new path is longer than the old one, or if we've included a dummy command, pad out the old assimilated path
-    else if (!oldCommand || oldCommand == 'tmp') {
-      if (newCommand == 'L') {
-        updatedNewPoints.push('L', newPoints[iNew + 1], newPoints[iNew + 2]);
-        updatedOldPoints.push('L', prevOldX, prevOldY);
-      }
-      else if (newCommand == 'Q') {
-        updatedNewPoints.push('Q', newPoints[iNew + 1], newPoints[iNew + 2], newPoints[iNew + 3], newPoints[iNew + 4]);
-        updatedOldPoints.push('Q', prevOldX, prevOldY, prevOldX, prevOldY);
-      }
-      else if (newCommand == 'C') {
-        updatedNewPoints.push('C', newPoints[iNew + 1], newPoints[iNew + 2], newPoints[iNew + 3], newPoints[iNew + 4], newPoints[iNew + 5], newPoints[iNew + 6]);
-        updatedOldPoints.push('C', prevOldX, prevOldY, prevOldX, prevOldY, prevOldX, prevOldY);
-      }
-      else if (newCommand == 'A') {
-        updatedNewPoints.push('A', newPoints[iNew + 1], newPoints[iNew + 2], newPoints[iNew + 3], newPoints[iNew + 4], newPoints[iNew + 5], newPoints[iNew + 6], newPoints[iNew + 7]);
-        updatedOldPoints.push('A', 0, 0, newPoints[iNew + 3], newPoints[iNew + 4], newPoints[iNew + 5], prevOldX, prevOldY);
-      }
-      else if (newCommand == 'Z') {
-        updatedNewPoints.push('Z');
-        updatedOldPoints.push('Z');
-      }
-    }
-    //if the old path is longer than the new one, or if we've included a dummy command, pad out the new assimilated path
-    else if (!newCommand || newCommand == 'tmp') {
-      if (oldCommand == 'L') {
-        updatedNewPoints.push('L', prevNewX, prevNewY);
-        updatedOldPoints.push('L', oldPoints[iOld + 1], oldPoints[iOld + 2]);
-      }
-      else if (oldCommand == 'Q') {
-        updatedNewPoints.push('Q', prevNewX, prevNewY, prevNewX, prevNewY);
-        updatedOldPoints.push('Q', oldPoints[iOld + 1], oldPoints[iOld + 2], oldPoints[iOld + 3], oldPoints[iOld + 4]);
-      }
-      else if (oldCommand == 'C') {
-        updatedNewPoints.push('C', prevNewX, prevNewY, prevNewX, prevNewY, prevNewX, prevNewY);
-        updatedOldPoints.push('C', oldPoints[iOld + 1], oldPoints[iOld + 2], oldPoints[iOld + 3], oldPoints[iOld + 4], oldPoints[iOld + 5], oldPoints[iOld + 6]);
-      }
-      else if (oldCommand == 'A') {
-        updatedNewPoints.push('A', 0, 0, oldPoints[iOld + 3], oldPoints[iOld + 4], oldPoints[iOld + 5], prevNewX, prevNewY);
-        updatedOldPoints.push('A', oldPoints[iOld + 1], oldPoints[iOld + 2], oldPoints[iOld + 3], oldPoints[iOld + 4], oldPoints[iOld + 5], oldPoints[iOld + 6], oldPoints[iOld + 7]);
-      }
-      else if (oldCommand == 'Z') {
-        updatedNewPoints.push('Z');
-        updatedOldPoints.push('Z');
-      }
-    }
-    //if the drawing commands are different, convert them to like, equivalent commands
-    else {
-      if (oldCommand == 'L') {
-        if (newCommand == 'Q') {
-          updatedNewPoints.push('Q', newPoints[iNew + 1], newPoints[iNew + 2], newPoints[iNew + 3], newPoints[iNew + 4]);
-          //flatten the curve using a control point at the center of the line
-          updatedOldPoints.push('Q', prevOldX + .5 * (oldPoints[iOld + 1] - prevOldX), prevOldY + .5 * (oldPoints[iOld + 2] - prevOldY), oldPoints[iOld + 1], oldPoints[iOld + 2]);
-        }
-        else if (newCommand == 'C') {
-          updatedNewPoints.push('C', newPoints[iNew + 1], newPoints[iNew + 2], newPoints[iNew + 3], newPoints[iNew + 4], newPoints[iNew + 5], newPoints[iNew + 6]);
-          //flatten the curve using two control points at the center of the line
-          updatedOldPoints.push('C', prevOldX + .5 * (oldPoints[iOld + 1] - prevOldX), prevOldY + .5 * (oldPoints[iOld + 2] - prevOldY),
-                                prevOldX + .5 * (oldPoints[iOld + 1] - prevOldX), prevOldY + .5 * (oldPoints[iOld + 2] - prevOldY),
-                                oldPoints[iOld + 1], oldPoints[iOld + 2]);
-        }
-        else if (newCommand == 'A') {
-          //hard to map from L to A, so instead treat as two subpaths, L and A
-          updatedNewPoints.push('L', prevNewX, prevNewY,
-              'A', newPoints[iNew + 1], newPoints[iNew + 2], newPoints[iNew + 3], newPoints[iNew + 4], newPoints[iNew + 5], newPoints[iNew + 6], newPoints[iNew + 7]);
-          updatedOldPoints.push('L', oldPoints[iOld + 1], oldPoints[iOld + 2],
-                                'A', 0, 0, newPoints[iNew + 3], newPoints[iNew + 4], newPoints[iNew + 5], oldPoints[iOld + 1], oldPoints[iOld + 2]);
-        }
-        else if (newCommand == 'Z') {
-          bCloseNew = true;
-          updatedNewPoints.push('L', prevNewX, prevNewY);
-          updatedOldPoints.push('L', oldPoints[iOld + 1], oldPoints[iOld + 2]);
-        }
-      }
-      else if (oldCommand == 'Q') {
-        if (newCommand == 'L') {
-          //flatten the curve using a control point at the center of the line
-          updatedNewPoints.push('Q', prevNewX + .5 * (newPoints[iNew + 1] - prevNewX), prevNewY + .5 * (newPoints[iNew + 2] - prevNewY), newPoints[iNew + 1], newPoints[iNew + 2]);
-          updatedOldPoints.push('Q', oldPoints[iOld + 1], oldPoints[iOld + 2], oldPoints[iOld + 3], oldPoints[iOld + 4]);
-        }
-        else if (newCommand == 'C') {
-          updatedNewPoints.push('C', newPoints[iNew + 1], newPoints[iNew + 2], newPoints[iNew + 3], newPoints[iNew + 4], newPoints[iNew + 5], newPoints[iNew + 6]);
-          //make both cubic control points coincide with single quadratic control point
-          updatedOldPoints.push('C', oldPoints[iOld + 1], oldPoints[iOld + 2], oldPoints[iOld + 1], oldPoints[iOld + 2], oldPoints[iOld + 3], oldPoints[iOld + 4]);
-        }
-        else if (newCommand == 'A') {
-          //hard to map from Q to A, so instead treat as two subpaths, Q and A
-          updatedNewPoints.push('Q', prevNewX, prevNewY, prevNewX, prevNewY,
-              'A', newPoints[iNew + 1], newPoints[iNew + 2], newPoints[iNew + 3], newPoints[iNew + 4], newPoints[iNew + 5], newPoints[iNew + 6], newPoints[iNew + 7]);
-          updatedOldPoints.push('Q', oldPoints[iOld + 1], oldPoints[iOld + 2], oldPoints[iOld + 3], oldPoints[iOld + 4],
-                                'A', 0, 0, newPoints[iNew + 3], newPoints[iNew + 4], newPoints[iNew + 5], oldPoints[iOld + 3], oldPoints[iOld + 4]);
-        }
-        else if (newCommand == 'Z') {
-          bCloseNew = true;
-          updatedNewPoints.push('Q', prevNewX, prevNewY, prevNewX, prevNewY);
-          updatedOldPoints.push('Q', oldPoints[iOld + 1], oldPoints[iOld + 2], oldPoints[iOld + 3], oldPoints[iOld + 4]);
-        }
-      }
-      else if (oldCommand == 'C') {
-        if (newCommand == 'L') {
-          //flatten the curve using two control points at the center of the line
-          updatedNewPoints.push('C', prevNewX + .5 * (newPoints[iNew + 1] - prevNewX), prevNewY + .5 * (newPoints[iNew + 2] - prevNewY),
-              prevNewX + .5 * (newPoints[iNew + 1] - prevNewX), prevNewY + .5 * (newPoints[iNew + 2] - prevNewY),
-              newPoints[iNew + 1], newPoints[iNew + 2]);
-          updatedOldPoints.push('C', oldPoints[iOld + 1], oldPoints[iOld + 2], oldPoints[iOld + 3], oldPoints[iOld + 4], oldPoints[iOld + 5], oldPoints[iOld + 6]);
-        }
-        else if (newCommand == 'Q') {
-          //make both cubic control points coincide with single quadratic control point
-          updatedNewPoints.push('C', newPoints[iNew + 1], newPoints[iNew + 2], newPoints[iNew + 1], newPoints[iNew + 2], newPoints[iNew + 3], newPoints[iNew + 4]);
-          updatedOldPoints.push('C', oldPoints[iOld + 1], oldPoints[iOld + 2], oldPoints[iOld + 3], oldPoints[iOld + 4], oldPoints[iOld + 5], oldPoints[iOld + 6]);
-        }
-        else if (newCommand == 'A') {
-          //hard to map from C to A, so instead treat as two subpaths, C and A
-          updatedNewPoints.push('C', prevNewX, prevNewY, prevNewX, prevNewY, prevNewX, prevNewY,
-              'A', newPoints[iNew + 1], newPoints[iNew + 2], newPoints[iNew + 3], newPoints[iNew + 4], newPoints[iNew + 5], newPoints[iNew + 6], newPoints[iNew + 7]);
-          updatedOldPoints.push('C', oldPoints[iOld + 1], oldPoints[iOld + 2], oldPoints[iOld + 3], oldPoints[iOld + 4], oldPoints[iOld + 5], oldPoints[iOld + 6],
-                                'A', 0, 0, newPoints[iNew + 3], newPoints[iNew + 4], newPoints[iNew + 5], oldPoints[iOld + 5], oldPoints[iOld + 6]);
-        }
-        else if (newCommand == 'Z') {
-          bCloseNew = true;
-          updatedNewPoints.push('C', prevNewX, prevNewY, prevNewX, prevNewY, prevNewX, prevNewY);
-          updatedOldPoints.push('C', oldPoints[iOld + 1], oldPoints[iOld + 2], oldPoints[iOld + 3], oldPoints[iOld + 4], oldPoints[iOld + 5], oldPoints[iOld + 6]);
-        }
-      }
-      else if (oldCommand == 'A') {
-        if (newCommand == 'L') {
-          //hard to map from A to L, so instead treat as two subpaths, A and L
-          updatedNewPoints.push('L', newPoints[iNew + 1], newPoints[iNew + 2],
-              'A', 0, 0, oldPoints[iOld + 3], oldPoints[iOld + 4], oldPoints[iOld + 5], newPoints[iNew + 1], newPoints[iNew + 2]);
-          updatedOldPoints.push('L', prevOldX, prevOldY,
-                                'A', oldPoints[iOld + 1], oldPoints[iOld + 2], oldPoints[iOld + 3], oldPoints[iOld + 4], oldPoints[iOld + 5], oldPoints[iOld + 6], oldPoints[iOld + 7]);
-        }
-        else if (newCommand == 'Q') {
-          //hard to map from A to Q, so instead treat as two subpaths, A and Q
-          updatedNewPoints.push('Q', newPoints[iNew + 1], newPoints[iNew + 2], newPoints[iNew + 3], newPoints[iNew + 4],
-              'A', 0, 0, oldPoints[iOld + 3], oldPoints[iOld + 4], oldPoints[iOld + 5], newPoints[iNew + 3], newPoints[iNew + 4]);
-          updatedOldPoints.push('Q', prevOldX, prevOldY, prevOldX, prevOldY,
-                                'A', oldPoints[iOld + 1], oldPoints[iOld + 2], oldPoints[iOld + 3], oldPoints[iOld + 4], oldPoints[iOld + 5], oldPoints[iOld + 6], oldPoints[iOld + 7]);
-        }
-        else if (newCommand == 'C') {
-          //hard to map from A to C, so instead treat as two subpaths, A and C
-          updatedNewPoints.push('C', newPoints[iNew + 1], newPoints[iNew + 2], newPoints[iNew + 3], newPoints[iNew + 4], newPoints[iNew + 5], newPoints[iNew + 6],
-              'A', 0, 0, oldPoints[iOld + 3], oldPoints[iOld + 4], oldPoints[iOld + 5], newPoints[iNew + 5], newPoints[iNew + 6]);
-          updatedOldPoints.push('C', prevOldX, prevOldY, prevOldX, prevOldY, prevOldX, prevOldY,
-                                'A', oldPoints[iOld + 1], oldPoints[iOld + 2], oldPoints[iOld + 3], oldPoints[iOld + 4], oldPoints[iOld + 5], oldPoints[iOld + 6], oldPoints[iOld + 7]);
-        }
-        else if (newCommand == 'Z') {
-          bCloseNew = true;
-          updatedNewPoints.push('A', 0, 0, oldPoints[iOld + 3], oldPoints[iOld + 4], oldPoints[iOld + 5], prevNewX, prevNewY);
-          updatedOldPoints.push('A', oldPoints[iOld + 1], oldPoints[iOld + 2], oldPoints[iOld + 3], oldPoints[iOld + 4], oldPoints[iOld + 5], oldPoints[iOld + 6], oldPoints[iOld + 7]);
-        }
-      }
-      else if (oldCommand == 'Z') {
-        bCloseOld = true;
-        if (newCommand == 'L') {
-          updatedNewPoints.push('L', newPoints[iNew + 1], newPoints[iNew + 2]);
-          updatedOldPoints.push('L', prevOldX, prevOldY);
-        }
-        else if (newCommand == 'Q') {
-          updatedNewPoints.push('Q', newPoints[iNew + 1], newPoints[iNew + 2], newPoints[iNew + 3], newPoints[iNew + 4]);
-          updatedOldPoints.push('Q', prevOldX, prevOldY, prevOldX, prevOldY);
-        }
-        else if (newCommand == 'C') {
-          updatedNewPoints.push('C', newPoints[iNew + 1], newPoints[iNew + 2], newPoints[iNew + 3], newPoints[iNew + 4], newPoints[iNew + 5], newPoints[iNew + 6]);
-          updatedOldPoints.push('C', prevOldX, prevOldY, prevOldX, prevOldY, prevOldX, prevOldY);
-        }
-        else if (newCommand == 'A') {
-          updatedNewPoints.push('A', newPoints[iNew + 1], newPoints[iNew + 2], newPoints[iNew + 3], newPoints[iNew + 4], newPoints[iNew + 5], newPoints[iNew + 6], newPoints[iNew + 7]);
-          updatedOldPoints.push('A', 0, 0, newPoints[iNew + 3], newPoints[iNew + 4], newPoints[iNew + 5], prevOldX, prevOldY);
-        }
-      }
-    }
-
-    //save the previous points on the paths
-    if (iNextOld > -1 && oldCommand != 'Z' && oldCommand != 'tmp') {
-      prevOldX = oldPoints[iNextOld - 2];
-      prevOldY = oldPoints[iNextOld - 1];
-    }
-    if (iNextNew > -1 && newCommand != 'Z' && newCommand != 'tmp') {
-      prevNewX = newPoints[iNextNew - 2];
-      prevNewY = newPoints[iNextNew - 1];
-    }
-
-    //increment the command indices
-    iOld = iNextOld;
-    iNew = iNextNew;
-
-    if (iOld >= oldPoints.length || iOld < 0) {
-      iOld = -1;
-    }
-    if (iNew >= newPoints.length || iNew < 0) {
-      iNew = -1;
-    }
-  }
-
-  if (bCloseOld || bCloseNew) {
-    updatedNewPoints.push('Z');
-    updatedOldPoints.push('Z');
-  }
-
-
-};
-
-
-/**
- * @private
- * Make sure a closed path is oriented in a clockwise direction (to the user's eye).
- */
-dvt.ShapeAnimationUtils._makePathClockwise = function(points) {
-  var bClockwise = dvt.ShapeAnimationUtils._isPathClockwise(points);
-  if (!bClockwise) {
-    //don't worry about ending Z, because that should have been converted to L before this
-    var newPoints = ['M'];
-
-    var i = dvt.ShapeAnimationUtils._getPrevCommandIndex(points, points.length - 1);
-    for (; i > -1; ) {
-      var command = points[i];
-      //push endpoint first, to finish previous command, then push new command
-      switch (command) {
-        case 'M':
-          //assume this is beginning M and only need to finish previous command
-          newPoints.push(points[i + 1], points[i + 2]);
-          break;
-        case 'L':
-          newPoints.push(points[i + 1], points[i + 2]);
-          newPoints.push(command);
-          break;
-        case 'Q':
-          newPoints.push(points[i + 3], points[i + 4]);
-          newPoints.push(command);
-          newPoints.push(points[i + 1], points[i + 2]);
-          break;
-        case 'C':
-          newPoints.push(points[i + 5], points[i + 6]);
-          newPoints.push(command);
-          //need to reverse order of control points
-          newPoints.push(points[i + 3], points[i + 4]);
-          newPoints.push(points[i + 1], points[i + 2]);
-          break;
-        case 'A':
-          newPoints.push(points[i + 6], points[i + 7]);
-          newPoints.push(command);
-          newPoints.push(points[i + 1], points[i + 2], points[i + 3], points[i + 4]);
-          //need to reverse the sweep angle
-          newPoints.push((points[i + 5] == 0) ? 1 : 0);
-          break;
-      }
-
-      i = dvt.ShapeAnimationUtils._getPrevCommandIndex(points, i - 1);
-    }
-
-    return newPoints;
-  }
-  return points;
-};
-
-
-/**
- * @private
- * Determine if a path is oriented in a clockwise direction (to the user's eye).
- */
-dvt.ShapeAnimationUtils._isPathClockwise = function(points) {
-  //http://en.wikipedia.org/wiki/Curve_orientation
-  //orientation of a simple 2d polygon is directly related to sign of the angle at any vertex of the convex hull of the
-  //polygon
-  //the point with min x,y values must be on convex hull
-  //    [ 1 xa ya ]
-  //O = [ 1 xb yb ]
-  //    [ 1 xc yc ]
-  //det(O) = (xb*yc + xa*yb + ya*xc) - (ya*xb + yb*xc + xa*yc)
-  //if det(O) < 0, polygon is clockwise
-  //if det(O) > 0, polygon is counter-clockwise
-  //det(O) != 0 if points A,B,C are non-collinear
-  //TO DO: if det(O) == 0, we could try to find a different point on convex hull...
-  var polygon = [];
-  var topLeftIndex = 0;
-  var minX = Number.MAX_VALUE;
-  var minY = Number.MAX_VALUE;
-  //this is a closed shape, so the last command will simply connect to the first point again
-  var endIndex = dvt.ShapeAnimationUtils._getPrevCommandIndex(points, points.length - 1);
-  for (var i = 1; i < endIndex; ) {
-    var iNext = dvt.ShapeAnimationUtils._getNextCommandIndex(points, i);
-    if (iNext - 2 > 0) {
-      if (points[iNext - 1] != 'Z') {
-        var xx = points[iNext - 2];
-        var yy = points[iNext - 1];
-        polygon.push(xx, yy);
-
-        //top left to user is (minX, minY) coords
-        //(make minY primary and minX secondary because it seems typical to start path at left side of top edge)
-        if ((yy < minY) || (yy == minY && xx < minX)) {
-          minX = xx;
-          minY = yy;
-          topLeftIndex = polygon.length - 2;
-        }
-      }
-    }
-    i = iNext + 1;
-  }
-
-  var xa = 0;
-  var ya = 0;
-  var xb = minX;
-  var yb = minY;
-  var xc = 0;
-  var yc = 0;
-  if (topLeftIndex > 0) {
-    xa = polygon[topLeftIndex - 2];
-    ya = polygon[topLeftIndex - 1];
-  }
-  else {
-    xa = polygon[polygon.length - 2];
-    ya = polygon[polygon.length - 1];
-  }
-  if (topLeftIndex < polygon.length - 2) {
-    xc = polygon[topLeftIndex + 2];
-    yc = polygon[topLeftIndex + 3];
-  }
-  else {
-    xc = polygon[0];
-    yc = polygon[1];
-  }
-  var detO = (xb * yc + xa * yb + ya * xc) - (ya * xb + yb * xc + xa * yc);
-  //normally, path is counter-clockwise if detO > 0, but because the positive y-axis points
-  //downward in our coordinate system, the orientation is reversed
-  if (detO < 0) {
-    return false;
-  }
-
-  return true;
-};
-
-
-/**
- * @private
- * Make a closed path start at the top left corner (to the user's eye).
- */
-dvt.ShapeAnimationUtils._makePathStartAtTopLeft = function(points) {
-  var topLeftIndex = 0;
-  var minX = Number.MAX_VALUE;
-  var minY = Number.MAX_VALUE;
-  var iPrev = 0;
-  //this is a closed shape, so the last command will simply connect to the first point again
-  var endIndex = dvt.ShapeAnimationUtils._getPrevCommandIndex(points, points.length - 1);
-  for (var i = 1; i < endIndex; ) {
-    var iNext = dvt.ShapeAnimationUtils._getNextCommandIndex(points, i);
-    if (iNext - 2 > 0) {
-      //don't worry about ending Z because it should have been replaced with L before this
-      if (points[iNext - 1] != 'Z') {
-        var xx = points[iNext - 2];
-        var yy = points[iNext - 1];
-
-        //top left to user is (minX, minY) coords
-        //(make minY primary and minX secondary because it seems typical to start path at left side of top edge)
-        if ((yy < minY) || (yy == minY && xx < minX)) {
-          minX = xx;
-          minY = yy;
-          topLeftIndex = iPrev;
-        }
-      }
-    }
-    i = iNext + 1;
-    iPrev = iNext;
-  }
-
-  if (topLeftIndex > 0) {
-    var iNext = dvt.ShapeAnimationUtils._getNextCommandIndex(points, topLeftIndex + 1);
-    var newPoints = ['M'];
-    //concat the top left point through the end of the array
-    var arSlice = points.slice(iNext - 2, points.length);
-    newPoints = newPoints.concat(arSlice);
-    //concat the first command after the initial M through the top left point command
-    arSlice = points.slice(3, iNext);
-    newPoints = newPoints.concat(arSlice);
-    return newPoints;
-  }
-  return points;
-};
-
-
-/**
- * @private
- * Get the number of parameters for the given drawing command.
- */
-dvt.ShapeAnimationUtils._getNumParamsForCommand = function(command) {
-  switch (command) {
-    case 'H':
-    case 'h':
-    case 'V':
-    case 'v':
-      return 1;
-    case 'M':
-    case 'm':
-    case 'L':
-    case 'l':
-    case 'T':
-    case 't':
-      return 2;
-    case 'Q':
-    case 'q':
-    case 'S':
-    case 's':
-      return 4;
-    case 'C':
-    case 'c':
-      return 6;
-    case 'A':
-    case 'a':
-      return 7;
-  }
-  return 0;
-};
-
-
-/**
- * @private
- * Turn implicit commands, like "L x1 y1 x2 y2 ..." into explicit commands, like "L x1 y1 L x2 y2 ..."
- */
-dvt.ShapeAnimationUtils._makeImplicitCommandsExplicit = function(points) {
-  for (var i = 0; i < points.length; ) {
-    var command = points[i];
-    var numParams = dvt.ShapeAnimationUtils._getNumParamsForCommand(command);
-    switch (command) {
-      //if M is followed by multiple coord pairs, subsequent pairs are treated as L
-      case 'M':
-        if (i + numParams + 1 < points.length && !isNaN(points[i + numParams + 1])) {
-          points.splice(i + numParams + 1, 0, 'L');
-        }
-        break;
-      //if m is followed by multiple coord pairs, subsequent pairs are treated as l
-      case 'm':
-        if (i + numParams + 1 < points.length && !isNaN(points[i + numParams + 1])) {
-          points.splice(i + numParams + 1, 0, 'l');
-        }
-        break;
-      case 'Z':
-      case 'z':
-        break;
-      default:
-        if (i + numParams + 1 < points.length && !isNaN(points[i + numParams + 1])) {
-          points.splice(i + numParams + 1, 0, command);
-        }
-        break;
-    }
-    i += (numParams + 1);
-  }
-};
-
-
-/**
- * @private
- * Turn lowercase relative commands into uppercase absolute commands.
- */
-dvt.ShapeAnimationUtils._makeRelativeCommandsAbsolute = function(points) {
-  var currX = 0;
-  var currY = 0;
-  var startX = 0;
-  var startY = 0;
-  for (var i = 0; i < points.length; ) {
-    var command = points[i];
-    switch (command) {
-      case 'm':
-        points[i] = 'M';
-        if (i > 0) {
-          points[i + 1] = currX + points[i + 1];
-          points[i + 2] = currY + points[i + 2];
-        }
-        currX = points[i + 1];
-        currY = points[i + 2];
-        startX = currX;
-        startY = currY;
-        break;
-      case 'l':
-        points[i] = 'L';
-        points[i + 1] = currX + points[i + 1];
-        points[i + 2] = currY + points[i + 2];
-        currX = points[i + 1];
-        currY = points[i + 2];
-        break;
-      case 'h':
-        points[i] = 'H';
-        points[i + 1] = currX + points[i + 1];
-        currX = points[i + 1];
-        break;
-      case 'v':
-        points[i] = 'V';
-        points[i + 1] = currY + points[i + 1];
-        currY = points[i + 1];
-        break;
-      case 'c':
-        points[i] = 'C';
-        points[i + 1] = currX + points[i + 1];
-        points[i + 2] = currY + points[i + 2];
-        points[i + 3] = currX + points[i + 3];
-        points[i + 4] = currY + points[i + 4];
-        points[i + 5] = currX + points[i + 5];
-        points[i + 6] = currY + points[i + 6];
-        currX = points[i + 5];
-        currY = points[i + 6];
-        break;
-      case 's':
-        points[i] = 'S';
-        points[i + 1] = currX + points[i + 1];
-        points[i + 2] = currY + points[i + 2];
-        points[i + 3] = currX + points[i + 3];
-        points[i + 4] = currY + points[i + 4];
-        currX = points[i + 3];
-        currY = points[i + 4];
-        break;
-      case 'q':
-        points[i] = 'Q';
-        points[i + 1] = currX + points[i + 1];
-        points[i + 2] = currY + points[i + 2];
-        points[i + 3] = currX + points[i + 3];
-        points[i + 4] = currY + points[i + 4];
-        currX = points[i + 3];
-        currY = points[i + 4];
-        break;
-      case 't':
-        points[i] = 'T';
-        points[i + 1] = currX + points[i + 1];
-        points[i + 2] = currY + points[i + 2];
-        currX = points[i + 1];
-        currY = points[i + 2];
-        break;
-      case 'a':
-        points[i] = 'A';
-        points[i + 6] = currX + points[i + 6];
-        points[i + 7] = currY + points[i + 7];
-        currX = points[i + 6];
-        currY = points[i + 7];
-        break;
-      case 'z':
-        points[i] = 'Z';
-        currX = startX;
-        currY = startY;
-        break;
-
-        //need to update curr point for absolute commands
-      case 'M':
-        currX = points[i + 1];
-        currY = points[i + 2];
-        startX = currX;
-        startY = currY;
-        break;
-      case 'L':
-        currX = points[i + 1];
-        currY = points[i + 2];
-        break;
-      case 'H':
-        currX = points[i + 1];
-        break;
-      case 'V':
-        currY = points[i + 1];
-        break;
-      case 'C':
-        currX = points[i + 5];
-        currY = points[i + 6];
-        break;
-      case 'S':
-        currX = points[i + 3];
-        currY = points[i + 4];
-        break;
-      case 'Q':
-        currX = points[i + 3];
-        currY = points[i + 4];
-        break;
-      case 'T':
-        currX = points[i + 1];
-        currY = points[i + 2];
-        break;
-      case 'A':
-        currX = points[i + 6];
-        currY = points[i + 7];
-        break;
-      case 'Z':
-        currX = startX;
-        currY = startY;
-        break;
-
-      default:
-        break;
-    }
-    i = dvt.ShapeAnimationUtils._getNextCommandIndex(points, i + 1);
-  }
-};
-
-
-/**
- * @private
- * Turn shorthand commands, like H and V, into verbose commands, like L.
- */
-dvt.ShapeAnimationUtils._makeShorthandCommandsVerbose = function(points) {
-  var currX = 0;
-  var currY = 0;
-  var startX = 0;
-  var startY = 0;
-  for (var i = 0; i < points.length; ) {
-    var command = points[i];
-    switch (command) {
-      case 'M':
-        currX = points[i + 1];
-        currY = points[i + 2];
-        startX = currX;
-        startY = currY;
-        break;
-      case 'L':
-        currX = points[i + 1];
-        currY = points[i + 2];
-        break;
-      case 'H':
-        currX = points[i + 1];
-        points[i] = 'L';
-        points.splice(i + 2, 0, currY);
-        break;
-      case 'V':
-        currY = points[i + 1];
-        points[i] = 'L';
-        points.splice(i + 1, 0, currX);
-        break;
-      case 'C':
-        currX = points[i + 5];
-        currY = points[i + 6];
-        break;
-      case 'S':
-        var j = dvt.ShapeAnimationUtils._getPrevCommandIndex(points, i - 1);
-        //assume first control point is coincident with current point
-        var newCp1x = currX;
-        var newCp1y = currY;
-        if (points[j] == 'C') {
-          //first control point becomes reflection of previous control point
-          var cp2x = points[j + 3];
-          var cp2y = points[j + 4];
-          newCp1x = currX + (currX - cp2x);
-          newCp1y = currY + (currY - cp2y);
-        }
-        points[i] = 'C';
-        points.splice(i + 1, 0, newCp1x, newCp1y);
-
-        currX = points[i + 5];
-        currY = points[i + 6];
-        break;
-      case 'Q':
-        currX = points[i + 3];
-        currY = points[i + 4];
-        break;
-      case 'T':
-        var j = dvt.ShapeAnimationUtils._getPrevCommandIndex(points, i - 1);
-        //assume control point is coincident with current point
-        var newCpx = currX;
-        var newCpy = currY;
-        if (points[j] == 'Q') {
-          //control point becomes reflection of previous control point
-          var cpx = points[j + 1];
-          var cpy = points[j + 2];
-          newCpx = currX + (currX - cpx);
-          newCpy = currY + (currY - cpy);
-        }
-        points[i] = 'Q';
-        points.splice(i + 1, 0, newCpx, newCpy);
-
-        currX = points[i + 3];
-        currY = points[i + 4];
-        break;
-      case 'A':
-        currX = points[i + 6];
-        currY = points[i + 7];
-        break;
-      case 'Z':
-        currX = startX;
-        currY = startY;
-        break;
-
-      default:
-        break;
-    }
-    i = dvt.ShapeAnimationUtils._getNextCommandIndex(points, i + 1);
-  }
-};
-
-
-/**
- * @private
- * Make sure subpaths start with M.
- */
-dvt.ShapeAnimationUtils._makeSubpathsExplicit = function(points) {
-  var startX = 0;
-  var startY = 0;
-  for (var i = 0; i < points.length; i++) {
-    if (points[i] == 'Z') {
-      if (i + 1 < points.length) {
-        if (points[i + 1] != 'M' && points[i + 1] != 'm') {
-          points.splice(i + 1, 0, 'M', startX, startY);
-        }
-      }
-    }
-    else if (points[i] == 'M') {
-      startX = points[i + 1];
-      startY = points[i + 2];
-    }
-  }
-};
-
-
-/**
- * @private
- * Transform the coords in the path by the given matrix.
- */
-dvt.ShapeAnimationUtils._transformPathCoords = function(points, mat) {
-  var p = null;
-  for (var i = 0; i < points.length; ) {
-    var command = points[i];
-    switch (command) {
-      case 'M':
-      case 'L':
-        p = mat.transformPoint(new dvt.Point(points[i + 1], points[i + 2]));
-        points[i + 1] = p.x;
-        points[i + 2] = p.y;
-        break;
-      case 'Q':
-        p = mat.transformPoint(new dvt.Point(points[i + 1], points[i + 2]));
-        points[i + 1] = p.x;
-        points[i + 2] = p.y;
-        p = mat.transformPoint(new dvt.Point(points[i + 3], points[i + 4]));
-        points[i + 3] = p.x;
-        points[i + 4] = p.y;
-        break;
-      case 'C':
-        p = mat.transformPoint(new dvt.Point(points[i + 1], points[i + 2]));
-        points[i + 1] = p.x;
-        points[i + 2] = p.y;
-        p = mat.transformPoint(new dvt.Point(points[i + 3], points[i + 4]));
-        points[i + 3] = p.x;
-        points[i + 4] = p.y;
-        p = mat.transformPoint(new dvt.Point(points[i + 5], points[i + 6]));
-        points[i + 5] = p.x;
-        points[i + 6] = p.y;
-        break;
-      case 'A':
-        //need to transform the radii, so transform each radius extent separately and compare relative to
-        //transformed origin
-        var pOrig = mat.transformPoint(new dvt.Point(0, 0));
-        var pRadX = mat.transformPoint(new dvt.Point(points[i + 1], 0));
-        var pRadY = mat.transformPoint(new dvt.Point(0, points[i + 2]));
-        var newRadX = Math.sqrt((pRadX.x - pOrig.x) * (pRadX.x - pOrig.x) + (pRadX.y - pOrig.y) * (pRadX.y - pOrig.y));
-        var newRadY = Math.sqrt((pRadY.x - pOrig.x) * (pRadY.x - pOrig.x) + (pRadY.y - pOrig.y) * (pRadY.y - pOrig.y));
-        points[i + 1] = newRadX;
-        points[i + 2] = newRadY;
-
-        p = mat.transformPoint(new dvt.Point(points[i + 6], points[i + 7]));
-        points[i + 6] = p.x;
-        points[i + 7] = p.y;
-        break;
-
-      default:
-        break;
-    }
-    i = dvt.ShapeAnimationUtils._getNextCommandIndex(points, i + 1);
-  }
-};
 /**
  * @param {dvt.Context} context The rendering context.
  * @param {function} callback The function that should be called to dispatch component events.
@@ -3166,17 +1603,9 @@ dvt.BaseDiagram.prototype.Init = function(context, callback, callbackObj) {
   //: force text to scale linearly
   this.getCtx().getStage().getElem().setAttributeNS(null, 'text-rendering', 'geometricPrecision');
 
-  this._layoutOffset;
-  this._layoutViewport = null;
-  this._layoutViewportContainerId = null;
-  this._initAnim;
-  //: flag used to disable the init anim on PPR
-  this._bInitAnimEnabled = true;
-
   this._linksPane = new dvt.Container(context);
   this._nodesPane = new dvt.Container(context);
   this._topPane = new dvt.Container(context);
-  this._animationDuration = dvt.PanZoomCanvas.DEFAULT_ANIMATION_DURATION;
   this.InitializeZoomLimits();
 };
 
@@ -3196,22 +1625,12 @@ dvt.BaseDiagram.prototype.InitComponentInternal = function() {
 };
 
 /**
- * Sets the animation duration (in seconds)
- * @param {string} animationDuration the animation duration (in seconds)
- */
-dvt.BaseDiagram.prototype.setAnimationDuration = function(animationDuration) {
-  this._animationDuration = animationDuration;
-  if (this.getPanZoomCanvas()) {
-    this.getPanZoomCanvas().setAnimationDuration(animationDuration);
-  }
-};
-
-/**
  * Gets the animation duration (in seconds)
  * @return {number} the animation duration (in seconds)
  */
 dvt.BaseDiagram.prototype.getAnimationDuration = function() {
-  return this._animationDuration;
+  //subclasses should override
+  return dvt.PanZoomCanvas.DEFAULT_ANIMATION_DURATION;
 };
 
 /**
@@ -3295,19 +1714,11 @@ dvt.BaseDiagram.prototype.GetAllNodes = function() {
 };
 
 /**
- * Get the number of nodes in diagram
- * @return {Number} number of nodes
+ * Gets an array of root ids
+ * @return {array} array of root ids
  */
-dvt.BaseDiagram.prototype.getNodeCount = function() {
-  return this.GetAllNodes().length;
-};
-
-/**
- * Get the number of links in diagram
- * @return {Number} number of links
- */
-dvt.BaseDiagram.prototype.getLinkCount = function() {
-  return this.GetAllLinks().length;
+dvt.BaseDiagram.prototype.GetAllRoots = function() {
+  return [];
 };
 
 /**
@@ -3418,55 +1829,6 @@ dvt.BaseDiagram.prototype.SetZoomingEnabled = function(zoomingEnabled) {
  */
 dvt.BaseDiagram.prototype.IsZoomingEnabled = function() {
   return this._zoomingEnabled;
-};
-
-/**
- * Sets the initial animation
- * @param {string} anim the data change animation: "auto" or "none"
- */
-dvt.BaseDiagram.prototype.setInitAnim = function(anim) {
-  this._initAnim = anim;
-};
-
-/**
- * Gets initial animation
- * @return {string} the initial animation: "auto" or "none"
- */
-dvt.BaseDiagram.prototype.getInitAnim = function() {
-  return this._initAnim;
-};
-
-/**
- * Sets initial animation flag
- * @param {boolean} enabled true if initial animation enabled
- */
-dvt.BaseDiagram.prototype.setInitAnimEnabled = function(enabled) {
-  this._bInitAnimEnabled = enabled;
-};
-
-/**
- * Chacks whether initial animation enabled
- * @return {boolean} true if initial animation enabled
- * @protected
- */
-dvt.BaseDiagram.prototype.IsInitAnimEnabled = function() {
-  return this._bInitAnimEnabled;
-};
-
-/**
- * Sets the data change animation
- * @param {string} anim the data change animation: "auto" or "none"
- */
-dvt.BaseDiagram.prototype.setDataChangeAnim = function(anim) {
-  this._dataChangeAnim = anim;
-};
-
-/**
- * Gets the data change animation
- * @return {string} the data change animation: "auto" or "none"
- */
-dvt.BaseDiagram.prototype.getDataChangeAnim = function() {
-  return this._dataChangeAnim;
 };
 
 /**
@@ -3641,10 +2003,9 @@ dvt.BaseDiagram.prototype.CreateLayoutContextLink = function(link, startId, endI
  * @protected
  * Apply the layout context
  * @param {DvtDiagramLayoutContext} layoutContext The layout context
- * @param {dvt.Animator} animator The animator to animate the changes into
  * @param {boolean} bSaveOffset Flag for saving the layout offset (true for the top level)
  */
-dvt.BaseDiagram.prototype.ApplyLayoutContext = function(layoutContext, animator, bSaveOffset) {
+dvt.BaseDiagram.prototype.ApplyLayoutContext = function(layoutContext, bSaveOffset) {
   //: apply container padding that was set while laying out the container's children
   var topContainerPadding = layoutContext.getContainerPadding();
   if (topContainerPadding) {
@@ -3652,7 +2013,7 @@ dvt.BaseDiagram.prototype.ApplyLayoutContext = function(layoutContext, animator,
     if (containerId) {
       var containerNode = this.getNodeById(containerId);
       if (containerNode) {
-        containerNode.setContainerPadding(dvt.BaseDiagram.getContainerPadding(topContainerPadding), animator);
+        containerNode.setContainerPadding(dvt.BaseDiagram.getContainerPadding(topContainerPadding));
       }
     }
   }
@@ -3662,7 +2023,6 @@ dvt.BaseDiagram.prototype.ApplyLayoutContext = function(layoutContext, animator,
   var miny = Number.MAX_VALUE;
   for (var ni = 0; ni < layoutContext.getNodeCount(); ni++) {
     var nc = layoutContext.getNodeByIndex(ni);
-    var node = this.getNodeById(nc.getId());
     var pos = nc.getPosition();
     if (pos) {
       minx = Math.min(minx, pos['x']);
@@ -3677,7 +2037,6 @@ dvt.BaseDiagram.prototype.ApplyLayoutContext = function(layoutContext, animator,
   }
   for (var li = 0; li < layoutContext.getLinkCount(); li++) {
     var lc = layoutContext.getLinkByIndex(li);
-    var link = this.getLinkById(lc.getId());
     var points = lc.getPoints();
     if (points) {
       var controlPoints = dvt.DiagramLinkUtils.GetControlPoints(points);
@@ -3696,81 +2055,68 @@ dvt.BaseDiagram.prototype.ApplyLayoutContext = function(layoutContext, animator,
     }
   }
 
-  var lopt = this.CalcLayoutOffset(- minx, - miny);
+  var lopt = new dvt.Point(- minx, - miny);
   var tx = lopt.x;
   var ty = lopt.y;
-
+  var dirtyLayoutContext = layoutContext.getDirtyContext();
   for (var ni = 0; ni < layoutContext.getNodeCount(); ni++) {
     var nc = layoutContext.getNodeByIndex(ni);
-    nc.ContentOffset = new dvt.DiagramPoint(lopt.x, lopt.y); // adjust content offset that is used by global layout
+    if (nc.getContainerId()) {
+      nc.ContentOffset = new dvt.DiagramPoint(lopt.x, lopt.y); // adjust content offset that is used by global layout
+    }
+    if (!dirtyLayoutContext[nc.getId()])
+      continue;
     var node = this.getNodeById(nc.getId());
     var pos = nc.getPosition();
     if (pos) {
-      node.SetPosition(pos['x'] + tx, pos['y'] + ty, animator);
+      node.SetPosition(pos['x'] + tx, pos['y'] + ty);
     }
-    this.ApplyLabelPosition(nc, node, dvt.DiagramLayoutUtils.convertDiagramPointToPoint(pos), animator);
+    this.ApplyLabelPosition(nc, node, dvt.DiagramLayoutUtils.convertDiagramPointToPoint(pos));
 
     //apply new container padding
     if (node.isDisclosed()) {
       var containerPadding = nc.getContainerPadding();
       if (containerPadding) {
-        node.setContainerPadding(dvt.BaseDiagram.getContainerPadding(containerPadding), animator);
+        node.setContainerPadding(dvt.BaseDiagram.getContainerPadding(containerPadding));
       }
     }
   }
-  if (!this._bCrossedZoomThreshold) {
-    for (var li = 0; li < layoutContext.getLinkCount(); li++) {
-      var lc = layoutContext.getLinkByIndex(li);
-      var link = this.getLinkById(lc.getId());
-      var linkOffset = this.GetLinkTranslationOffset(link, lc, lopt, animator);
-      var linkOffsetX = linkOffset.x, linkOffsetY = linkOffset.y;
-      var points = lc.getPoints();
-      if (points) {
-        //: turn list of points into path commands compatible for animating
-        if (points.length > 0 && !isNaN(points[0])) {
-          points = dvt.DiagramLinkUtils.ConvertToPath(points);
-        }
 
-        var translatedPoints = [];
-        for (var i = 0; i < points.length;) {
-          if (isNaN(points[i])) {
-            translatedPoints.push(points[i]);
-            i++;
-          }
-          else {
-            translatedPoints.push(points[i] + linkOffsetX);
-            translatedPoints.push(points[i + 1] + linkOffsetY);
-            i += 2;
-          }
-        }
-        if (animator && link.getPoints()) {
-          if (translatedPoints.length > 0 && isNaN(translatedPoints[0])) {
-            //: transition between old and new paths
-            var obj = dvt.ShapeAnimationUtils.getAssimilatedPaths(link.getPoints(), translatedPoints);
-            link.setPoints(obj.updatedOldPath);
-            animator.addProp(dvt.Animator.TYPE_PATH, link, link.getPoints, link.setPoints, obj.updatedNewPath);
-            //set the unmodified, simpler path at the end of the transition
-            dvt.Playable.appendOnEnd(animator, function() {
-              link.setPoints(translatedPoints);
-            });
-          }
-          else {
-            animator.addProp(dvt.Animator.TYPE_POLYLINE, link, link.getPoints, link.setPoints, translatedPoints);
-          }
+  for (var li = 0; li < layoutContext.getLinkCount(); li++) {
+    var lc = layoutContext.getLinkByIndex(li);
+    if (!dirtyLayoutContext[lc.getId()])
+      continue;
+    var link = this.getLinkById(lc.getId());
+    var linkOffset = this.GetLinkTranslationOffset(link, lc, lopt);
+    var linkOffsetX = linkOffset.x, linkOffsetY = linkOffset.y;
+    var points = lc.getPoints();
+    if (points) {
+      //: turn list of points into path commands compatible for animating
+      if (points.length > 0 && !isNaN(points[0])) {
+        points = dvt.DiagramLinkUtils.ConvertToPath(points);
+      }
+
+      var translatedPoints = [];
+      for (var i = 0; i < points.length;) {
+        if (isNaN(points[i])) {
+          translatedPoints.push(points[i]);
+          i++;
         }
         else {
-          link.setPoints(translatedPoints);
+          translatedPoints.push(points[i] + linkOffsetX);
+          translatedPoints.push(points[i + 1] + linkOffsetY);
+          i += 2;
         }
       }
-      this.ApplyLabelPosition(lc, link, new dvt.Point(-linkOffsetX, -linkOffsetY), animator);
+      link.setPoints(translatedPoints);
     }
+    this.ApplyLabelPosition(lc, link, new dvt.Point(-linkOffsetX, -linkOffsetY));
   }
 
   //save viewport from layout, if specified
   var layoutViewport = layoutContext.getViewport();
   if (layoutViewport) {
     this._layoutViewport = new dvt.Rectangle(layoutViewport['x'] + tx, layoutViewport['y'] + ty, layoutViewport['w'], layoutViewport['h']);
-    this._layoutViewportContainerId = layoutContext.getContainerId();
   }
 
   if (bSaveOffset)
@@ -3782,11 +2128,10 @@ dvt.BaseDiagram.prototype.ApplyLayoutContext = function(layoutContext, animator,
  * @param {dvt.BaseDiagramLink} link link
  * @param {DvtDiagramLayoutContextLink} lc layout context for the link
  * @param {dvt.Point} lopt layout offset point
- * @param {dvt.Animator} animator The animator to animate the changes into
  * @return {dvt.Point} translation offset for the link
  * @protected
  */
-dvt.BaseDiagram.prototype.GetLinkTranslationOffset = function(link, lc, lopt, animator) {
+dvt.BaseDiagram.prototype.GetLinkTranslationOffset = function(link, lc, lopt) {
   var offset = new dvt.Point(0, 0);
   if (!link.getGroupId()) {
     //top level container - use top level layout offset
@@ -3798,8 +2143,8 @@ dvt.BaseDiagram.prototype.GetLinkTranslationOffset = function(link, lc, lopt, an
     var node = this.getNodeById(link.getGroupId());
     while (node) {
       var padding = node.getContainerPadding();
-      offset['x'] -= padding['left'] - node.GetPosition(animator)['x'];
-      offset['y'] -= padding['top'] - node.GetPosition(animator)['y'];
+      offset['x'] -= padding['left'] - node.GetPosition()['x'];
+      offset['y'] -= padding['top'] - node.GetPosition()['y'];
       var containerId = node.getGroupId();
       node = containerId != ancestorId ? this.getNodeById(containerId) : null;
     }
@@ -3814,51 +2159,11 @@ dvt.BaseDiagram.prototype.GetLinkTranslationOffset = function(link, lc, lopt, an
 
 /**
  * Gets viewport if it was set by the layout
- * @param {dvt.Animator} animator The animator into which the transitions should be rendered (optional)
  * @return {dvt.Rectangle} layout viewport
  * @protected
  */
-dvt.BaseDiagram.prototype.GetLayoutViewport = function(animator) {
-  var viewport;
-  if (this._layoutViewport) {
-    viewport = new dvt.Rectangle(this._layoutViewport.x, this._layoutViewport.y, this._layoutViewport.w, this._layoutViewport.h);
-    //if the layout viewport was specified inside a container, map the
-    //rectangle in the container's coords to coords in the content pane
-    //of the panZoomCanvas (NOTE: can't use stageToLocal/localToStage
-    //because that doesn't take into account any positions stored in
-    //the animator)
-    if (this._layoutViewportContainerId) {
-      var node = this.getNodeById(this._layoutViewportContainerId);
-      while (node) {
-        //use the position stored in the animator, if available
-        var tx = node.getTranslateX();
-        var ty = node.getTranslateY();
-        if (animator) {
-          var animTx = animator.getDestVal(node, node.getTranslateX);
-          var animTy = animator.getDestVal(node, node.getTranslateY);
-          if (animTx || animTx == 0) {
-            tx = animTx;
-          }
-          if (animTy || animTy == 0) {
-            ty = animTy;
-          }
-        }
-
-        //accumulate the translation changes
-        viewport.x += tx;
-        viewport.y += ty;
-
-        var containerId = node.getGroupId();
-        if (containerId) {
-          node = this.getNodeById(containerId);
-        }
-        else {
-          node = null;
-        }
-      }
-    }
-  }
-  return viewport;
+dvt.BaseDiagram.prototype.GetLayoutViewport = function() {
+  return this._layoutViewport;
 };
 
 /**
@@ -3876,34 +2181,20 @@ dvt.BaseDiagram.prototype.IsLayoutViewport = function() {
  */
 dvt.BaseDiagram.prototype.ClearLayoutViewport = function() {
   this._layoutViewport = null;
-  this._layoutViewportContainerId = null;
-};
-
-// - HTML5 HV: ROOT NODE'S X COORDINATE CHANGED AFTER EXPAND/COLLAPSE
-/**
- * Gets layout offset
- * @param {number} x x coordinate
- * @param {number} y y coordinate
- * @return {dvt.Point} layout offset
- * @protected
- */
-dvt.BaseDiagram.prototype.CalcLayoutOffset = function(x, y) {
-  return new dvt.Point(x, y);
 };
 
 /**
  * Adjusts the minimum zoom level of the panZoomCanvas if the diagram minZoom was set to 0.0
  * Will return the resulting view bounds if there were calculated
- * @param {dvt.Animator} animator (optional) an animator containing updated positions for nodes/links
  * @param {dvt.Rectangle} fitBounds (optional) the zoom-to-fit bounds, if known
  * @return {dvt.Rectangle} the bounds required to zoom to fit all content
  * @protected
  */
-dvt.BaseDiagram.prototype.AdjustMinZoom = function(animator, fitBounds) {
+dvt.BaseDiagram.prototype.AdjustMinZoom = function(fitBounds) {
   if (this.getMinZoom() == 0.0) {
     // Auto adjust minzoom of panzoomcanvas
     var panZoomCanvas = this.getPanZoomCanvas();
-    var minZoomFitBounds = fitBounds ? fitBounds : this.GetViewBounds(animator);
+    var minZoomFitBounds = fitBounds ? fitBounds : this.GetViewBounds();
     var minScale = this.CalculateMinimumScale(minZoomFitBounds);
     panZoomCanvas.setMinZoom(this.GetMinZoomFactor() * Math.min(minScale, panZoomCanvas.getMaxZoom()));
     return minZoomFitBounds;
@@ -3938,25 +2229,10 @@ dvt.BaseDiagram.prototype.CalculateMinimumScale = function(bounds) {
 
 /**
  * Gets view bounds
- * @param {dvt.Animator} animator The animator into which the transitions should be rendered (optional)
- * @param {array} arNodeIds array of node ids
- * @param {array} arLinkIds array of link ids
  * @return {dvt.Rectangle} view bounds
  * @protected
  */
-dvt.BaseDiagram.prototype.GetViewBounds = function(animator, arNodeIds, arLinkIds) {
-  return this.CalcViewBounds(animator, arNodeIds, arLinkIds);
-};
-
-/**
- * Calculates view bounds
- * @param {dvt.Animator} animator The animator into which the transitions should be rendered (optional)
- * @param {array} arNodeIds array of node ids
- * @param {array} arLinkIds array of link ids
- * @return {dvt.Rectangle} view bounds
- * @protected
- */
-dvt.BaseDiagram.prototype.CalcViewBounds = function(animator, arNodeIds, arLinkIds) {
+dvt.BaseDiagram.prototype.GetViewBounds = function() {
   var bounds = null;
   var dims;
   var tx;
@@ -3967,57 +2243,17 @@ dvt.BaseDiagram.prototype.CalcViewBounds = function(animator, arNodeIds, arLinkI
   var linkId;
   var bx;
   var by;
-  var stagePoint1;
-  var localPoint1;
-  var stagePoint2;
-  var localPoint2;
-  var nodeParent;
-  var linkParent;
-  var contentPane = this.getPanZoomCanvas().getContentPane();
 
-  //if a list of nodes wasn't provided, then use all nodes
-  if (!arNodeIds) {
-    arNodeIds = this.GetAllNodes();
-  }
-
+  var arNodeIds = this.GetAllRoots();
   for (var i = 0; i < arNodeIds.length; i++) {
     nodeId = arNodeIds[i];
     node = this.getNodeById(nodeId);
-    //BUG FIX #16472982: don't take hidden ancestor node into account
-    //when calculating view bounds
-    if (node && node.getVisible() && !node.isHiddenAncestor()) {
-      dims = node.GetNodeBounds(animator);
-      tx = null;
-      ty = null;
-      if (animator) {
-        tx = animator.getDestVal(node, node.getTranslateX);
-        ty = animator.getDestVal(node, node.getTranslateY);
-      }
-      if (tx == null) {
-        tx = node.getTranslateX();
-      }
-      if (ty == null) {
-        ty = node.getTranslateY();
-      }
+    if (node && node.getVisible()) {
+      dims = node.GetNodeBounds();
+      tx = node.getTranslateX();
+      ty = node.getTranslateY();
       dims.x += tx;
       dims.y += ty;
-
-      //need to manually walk container tree because positions
-      //may be in animator
-      //map dims to contentPane of panZoomCanvas if node in container
-      var groupId = node.getGroupId();
-      if (groupId) {
-        nodeParent = node.getParent();
-        stagePoint1 = this.LocalToStage(new dvt.Point(dims.x, dims.y), nodeParent, animator);
-        localPoint1 = this.StageToLocal(stagePoint1, contentPane, animator);
-        stagePoint2 = this.LocalToStage(new dvt.Point(dims.x + dims.w, dims.y + dims.h), nodeParent, animator);
-        localPoint2 = this.StageToLocal(stagePoint2, contentPane, animator);
-        dims.x = localPoint1.x;
-        dims.y = localPoint1.y;
-        dims.w = localPoint2.x - localPoint1.x;
-        dims.h = localPoint2.y - localPoint1.y;
-      }
-
       if (!bounds) {
         bounds = dims;
       }
@@ -4033,32 +2269,15 @@ dvt.BaseDiagram.prototype.CalcViewBounds = function(animator, arNodeIds, arLinkI
   }
 
   //if a list of links wasn't provided, then use all links
-  if (!arLinkIds) {
-    arLinkIds = this.GetAllLinks();
-  }
-
+  var arLinkIds = this.GetAllLinks();
   for (var i = 0; i < arLinkIds.length; i++) {
     linkId = arLinkIds[i];
     link = this.getLinkById(linkId);
     if (link && link.getVisible()) {
-      dims = link.GetLinkBounds(animator);
-
-      //need to manually walk container tree because positions
-      //may be in animator
-      //map dims to contentPane of panZoomCanvas if link in container
-      var groupId = link.getGroupId();
-      if (groupId) {
-        linkParent = link.getParent();
-        stagePoint1 = this.LocalToStage(new dvt.Point(dims.x, dims.y), linkParent, animator);
-        localPoint1 = this.StageToLocal(stagePoint1, contentPane, animator);
-        stagePoint2 = this.LocalToStage(new dvt.Point(dims.x + dims.w, dims.y + dims.h), linkParent, animator);
-        localPoint2 = this.StageToLocal(stagePoint2, contentPane, animator);
-        dims.x = localPoint1.x;
-        dims.y = localPoint1.y;
-        dims.w = localPoint2.x - localPoint1.x;
-        dims.h = localPoint2.y - localPoint1.y;
+      dims = link.GetLinkBounds();
+      if (link.getGroupId()) {
+        continue;
       }
-
       if (!bounds) {
         bounds = dims;
       }
@@ -4115,75 +2334,6 @@ dvt.BaseDiagram.RotateBounds = function(bounds, rotAngle, rotPoint) {
   var maxY = Math.max(Math.max(tl.y, tr.y), Math.max(bl.y, br.y));
 
   return new dvt.Rectangle(minX, minY, maxX - minX, maxY - minY);
-};
-
-/**
- * Convert a point from stage coords to local coords.
- * @param {dvt.Point}  point  point in stage coords
- * @param {dvt.Displayable}  displayable  displayable defining local coordinate system
- * @param {dvt.Animator}  animator  optional animator containing coordinate transforms
- * @return {dvt.Point}
- * @protected
- */
-dvt.BaseDiagram.prototype.StageToLocal = function(point, displayable, animator) {
-  var pathToStage = displayable.getPathToStage();
-  var mat;
-  var retPoint = point;
-  for (var i = pathToStage.length - 1; i >= 0; i--) {
-    displayable = pathToStage[i];
-
-    mat = displayable.getMatrix().clone();
-    var tx = null;
-    var ty = null;
-    if (animator) {
-      tx = animator.getDestVal(displayable, displayable.getTranslateX);
-      ty = animator.getDestVal(displayable, displayable.getTranslateY);
-    }
-    if (tx != null) {
-      mat._tx = tx;
-    }
-    if (ty != null) {
-      mat._ty = ty;
-    }
-
-    mat.invert();
-    retPoint = mat.transformPoint(retPoint);
-  }
-  return retPoint;
-};
-
-/**
- * Convert a point from local coords to stage coords.
- * @param {dvt.Point}  point  point in local coords
- * @param {dvt.Displayable}  displayable  displayable defining local coordinate system
- * @param {dvt.Animator}  animator  optional animator containing coordinate transforms
- * @return {dvt.Point}
- * @protected
- */
-dvt.BaseDiagram.prototype.LocalToStage = function(point, displayable, animator) {
-  var pathToStage = displayable.getPathToStage();
-  var mat;
-  var retPoint = point;
-  for (var i = 0; i < pathToStage.length; i++) {
-    displayable = pathToStage[i];
-
-    mat = displayable.getMatrix().clone();
-    var tx = null;
-    var ty = null;
-    if (animator) {
-      tx = animator.getDestVal(displayable, displayable.getTranslateX);
-      ty = animator.getDestVal(displayable, displayable.getTranslateY);
-    }
-    if (tx != null) {
-      mat._tx = tx;
-    }
-    if (ty != null) {
-      mat._ty = ty;
-    }
-
-    retPoint = mat.transformPoint(retPoint);
-  }
-  return retPoint;
 };
 
 /**
@@ -4295,38 +2445,13 @@ dvt.BaseDiagram.getLayoutContainerPadding = function(containerPadding)
 };
 
 /**
- * Render node and updates corresponding layout context for the node
- * @param {DvtDiagramLayoutContextNode} nodeContext
- */
-dvt.BaseDiagram.prototype.renderNodeFromContext = function(nodeContext) {
-  //subclasses should override
-};
-
-
-/**
- * Updates layout context for the node
- * @param {DvtDiagramLayoutContextNode} nodeContext node context
- * @param {dvt.BaseDiagramNode} node diagram node
- */
-dvt.BaseDiagram.prototype.UpdateNodeLayoutContext = function(nodeContext, node) {
-  var padding = node.isDisclosed() ? node.getContainerPadding() : null;
-  if (padding)
-    nodeContext.setContainerPadding(padding.top, padding.right, padding.bottom, padding.left);
-  nodeContext.setBounds(dvt.DiagramLayoutUtils.convertRectToDiagramRect(node.getLayoutBounds()));
-  nodeContext.setContentBounds(dvt.DiagramLayoutUtils.convertRectToDiagramRect(node.getContentBounds()));
-  nodeContext.setLabelBounds(dvt.DiagramLayoutUtils.convertRectToDiagramRect(node.getLabelBounds()));
-  nodeContext.IsRendered = true;
-};
-
-/**
  * Updates layout context for the node/link
  * @param {DvtDiagramLayoutContextNode | DvtDiagramLayoutContextNode} objc node or link context
  * @param {dvt.BaseDiagramNode | dvt.BaseDiagramLink} obj diagram node or link
  * @param {dvt.Point} pos position of node or link
- * @param {dvt.Animator} animator The animator into which the transitions should be rendered (optional)
  * @protected
  */
-dvt.BaseDiagram.prototype.ApplyLabelPosition = function(objc, obj, pos, animator) {
+dvt.BaseDiagram.prototype.ApplyLabelPosition = function(objc, obj, pos) {
   var labelBounds = objc.getLabelBounds();
   labelBounds = dvt.DiagramLayoutUtils.convertDiagramRectToRect(labelBounds);
   var labelPos = objc.getLabelPosition();
@@ -4335,40 +2460,14 @@ dvt.BaseDiagram.prototype.ApplyLabelPosition = function(objc, obj, pos, animator
     var translatedPos = new dvt.Point(labelPos['x'] - pos.x, labelPos['y'] - pos.y);
     var labelRotAngle = objc.getLabelRotationAngle();
     var labelRotPoint = dvt.DiagramLayoutUtils.convertDiagramPointToPoint(objc.getLabelRotationPoint());
-    if (animator) {
-      animator.addProp(dvt.Animator.TYPE_RECTANGLE, obj, obj.getLabelBounds, obj.setLabelBounds, labelBounds);
-
-      // If the label position hasn't been initialized, don't try to animate.
-      // This could happen if the container is initially collapsed.
-      if (!obj.getLabelPosition()) {
-        obj.setLabelPosition(translatedPos);
-      }
-      else {
-        animator.addProp(dvt.Animator.TYPE_POINT, obj, obj.getLabelPosition, obj.setLabelPosition, translatedPos);
-      }
-
-      if (labelRotAngle != null) {
-        animator.addProp(dvt.Animator.TYPE_NUMBER, obj, obj.getLabelRotationAngle, obj.setLabelRotationAngle, labelRotAngle);
-      }
-      if (labelRotPoint) {
-        if (!obj.getLabelRotationPoint()) {
-          obj.setLabelRotationPoint(labelRotPoint);
-        }
-        else {
-          animator.addProp(dvt.Animator.TYPE_POINT, obj, obj.getLabelRotationPoint, obj.setLabelRotationPoint, labelRotPoint);
-        }
-      }
+    obj.setLabelBounds(labelBounds);
+    obj.setLabelPosition(translatedPos);
+    obj.setLabelAlignments(objc.getLabelHalign(), objc.getLabelValign());
+    if (labelRotAngle != null) {
+      obj.setLabelRotationAngle(labelRotAngle);
     }
-    else {
-      obj.setLabelBounds(labelBounds);
-      obj.setLabelPosition(translatedPos);
-      obj.setLabelAlignments(objc.getLabelHalign(), objc.getLabelValign());
-      if (labelRotAngle != null) {
-        obj.setLabelRotationAngle(labelRotAngle);
-      }
-      if (labelRotPoint) {
-        obj.setLabelRotationPoint(labelRotPoint);
-      }
+    if (labelRotPoint) {
+      obj.setLabelRotationPoint(labelRotPoint);
     }
   }
 };
@@ -4381,12 +2480,11 @@ dvt.BaseDiagram.prototype.getLayoutOffset = function() {
   return this._layoutOffset ? this._layoutOffset : new dvt.Point(0, 0);
 };
 
-
 /**
-  * Returns the custom obj keyboard bounding box
-  * @param {dvt.BaseDiagramNode | dvt.BaseDiagramLink} obj diagram node or link
-  * @return {dvt.Rectangle} keyboard bounding box of rectangle
-  */
+ * Returns the custom obj keyboard bounding box
+ * @param {dvt.BaseDiagramNode | dvt.BaseDiagramLink} obj diagram node or link
+ * @return {dvt.Rectangle} keyboard bounding box of rectangle
+ */
 dvt.BaseDiagram.prototype.getCustomObjKeyboardBoundingBox = function(obj) {
   var objCoords = obj.getElem().getBoundingClientRect();
   var contentPaneCoords = this.getPanZoomCanvas().getContentPane().getElem().getBoundingClientRect();
@@ -4713,14 +2811,6 @@ dvt.BaseDiagramNode.prototype.Init = function(context, nodeId, diagram) {
   this._bDisclosed = false;
   this._selected = false;
   this._selectable = true;
-
-  this._labelObj;
-  this._labelPos;
-  this._labelRotAngle;
-  this._labelRotPoint;
-
-  this._outLinkIds;
-  this._inLinkIds;
 };
 
 /**
@@ -4742,18 +2832,21 @@ dvt.BaseDiagramNode.prototype.getData = function() {
 
 /**
  * Get the layout bounds in coordinates relative to this node
+ * @param {boolean} forceDims true to force dimensions measurements
  * @return {dvt.Rectangle} layout bounds
  */
-dvt.BaseDiagramNode.prototype.getLayoutBounds = function() {
-  return this.getContentBounds();
+dvt.BaseDiagramNode.prototype.getLayoutBounds = function(forceDims) {
+  return this.getContentBounds(forceDims);
 };
 
 /**
  * Get the content bounds in coordinates relative to this node.
+ * @param {boolean} forceDims true to force dimensions measurements
  * @return {dvt.Rectangle} content bounds
  */
-dvt.BaseDiagramNode.prototype.getContentBounds = function() {
-  return new dvt.Rectangle(0, 0, this.getWidth(), this.getHeight());
+dvt.BaseDiagramNode.prototype.getContentBounds = function(forceDims) {
+  //subclasses should override
+  return null;
 };
 
 
@@ -4765,7 +2858,7 @@ dvt.BaseDiagramNode.prototype.getContentBounds = function() {
 dvt.BaseDiagramNode.prototype.setLabelPosition = function(pos) {
   if (pos) {
     this._labelPos = pos;
-    dvt.BaseDiagramNode.PositionLabel(this._labelObj, pos, this.getLabelBounds(),
+    dvt.BaseDiagramNode.PositionLabel(this._labelObj, pos, this.getLabelBounds(true),
         this.getLabelRotationAngle(),
         this.getLabelRotationPoint());
   }
@@ -4781,9 +2874,10 @@ dvt.BaseDiagramNode.prototype.getLabelPosition = function() {
 
 /**
  * Gets label dimensions
+ * @param {boolean} forceDims true to force dimensions measurements
  * @return {dvt.Rectangle} The bounds of the label
  */
-dvt.BaseDiagramNode.prototype.getLabelBounds = function() {
+dvt.BaseDiagramNode.prototype.getLabelBounds = function(forceDims) {
   return null;
 };
 
@@ -4809,9 +2903,8 @@ dvt.BaseDiagramNode.prototype.getContainerPadding = function() {
  * @param {number} right Right padding
  * @param {number} bottom Bottom padding
  * @param {number} left Left padding
- * @param {dvt.Animator} animator The animator into which the transitions should be rendered (optional)
  */
-dvt.BaseDiagramNode.prototype.setContainerPadding = function(top, right, bottom, left, animator) {
+dvt.BaseDiagramNode.prototype.setContainerPadding = function(top, right, bottom, left) {
 };
 
 /**
@@ -4864,29 +2957,12 @@ dvt.BaseDiagramNode.prototype.isSelectable = function() {
 };
 
 /**
- * Sets hidden ancestor flag on the node
- * @param {boolean} bHiddenAncestor true if the node is hidden ancestor
- * @param {dvt.Animator} animator The animator into which the transitions should be rendered (optional)
- */
-dvt.BaseDiagramNode.prototype.setHiddenAncestor = function(bHiddenAncestor, animator) {
-  this._bHiddenAncestor = bHiddenAncestor;
-};
-
-/**
- * Checks whether the node is hidden ancestor
- * @return {boolean} true if a node is a hidden ancestor
- */
-dvt.BaseDiagramNode.prototype.isHiddenAncestor = function() {
-  return this._bHiddenAncestor;
-};
-
-/**
  * Sets label rotation angle
  * @param {number} angle angle of label rotation
  */
 dvt.BaseDiagramNode.prototype.setLabelRotationAngle = function(angle) {
   this._labelRotAngle = angle;
-  dvt.BaseDiagramNode.PositionLabel(this._labelObj, this.getLabelPosition(), this.getLabelBounds(), angle, this.getLabelRotationPoint());
+  dvt.BaseDiagramNode.PositionLabel(this._labelObj, this.getLabelPosition(), this.getLabelBounds(true), angle, this.getLabelRotationPoint());
 };
 
 /**
@@ -4903,7 +2979,7 @@ dvt.BaseDiagramNode.prototype.getLabelRotationAngle = function() {
  */
 dvt.BaseDiagramNode.prototype.setLabelRotationPoint = function(point) {
   this._labelRotPoint = point;
-  dvt.BaseDiagramNode.PositionLabel(this._labelObj, this.getLabelPosition(), this.getLabelBounds(), this.getLabelRotationAngle(), point);
+  dvt.BaseDiagramNode.PositionLabel(this._labelObj, this.getLabelPosition(), this.getLabelBounds(true), this.getLabelRotationAngle(), point);
 };
 
 /**
@@ -4916,34 +2992,16 @@ dvt.BaseDiagramNode.prototype.getLabelRotationPoint = function() {
 
 /**
  * Gets node bounds after layout is done
- * @param {dvt.Animator} animator Optional animator for the component that is used to animate transition from an old state to a new one
  * @return {dvt.Rectangle} node bounds after layout is done
  * @protected
  */
-dvt.BaseDiagramNode.prototype.GetNodeBounds = function(animator) {
-  var nodeBounds = this.getLayoutBounds();
+dvt.BaseDiagramNode.prototype.GetNodeBounds = function() {
+  var nodeBounds = this.getLayoutBounds(true);
   var bounds = new dvt.Rectangle(nodeBounds.x, nodeBounds.y, nodeBounds.w, nodeBounds.h);
-
-  var labelPos = null;
-  if (animator) {
-    labelPos = animator.getDestVal(this, this.getLabelPosition);
-  }
-  if (!labelPos) {
-    labelPos = this.getLabelPosition();
-  }
-  var labelRotAngle = null;
-  var labelRotPoint = null;
-  if (animator) {
-    labelRotAngle = animator.getDestVal(this, this.getLabelRotationAngle);
-    labelRotPoint = animator.getDestVal(this, this.getLabelRotationPoint);
-  }
-  if (labelRotAngle == null) {
-    labelRotAngle = this.getLabelRotationAngle();
-  }
-  if (!labelRotPoint) {
-    labelRotPoint = this.getLabelRotationPoint();
-  }
-  var labelBounds = this.getLabelBounds();
+  var labelPos = labelPos = this.getLabelPosition();
+  var labelRotAngle = this.getLabelRotationAngle();
+  var labelRotPoint = this.getLabelRotationPoint();
+  var labelBounds = this.getLabelBounds(true);
   if (labelPos && labelBounds) {
     //take label rotation into account
     if (labelRotAngle != null) {
@@ -5005,40 +3063,20 @@ dvt.BaseDiagramNode.PositionLabel = function(label, pos, bounds, rotAngle, rotPo
  * Sets position of the node
  * @param {number} xx x coordinate for the node
  * @param {number} yy y coordinate for the node
- * @param {dvt.Animator} animator Optional animator for the component that is used to animate transition from an old state to a new one
  * @protected
  */
-dvt.BaseDiagramNode.prototype.SetPosition = function(xx, yy, animator) {
-  if (animator) {
-    animator.addProp(dvt.Animator.TYPE_NUMBER, this, this.getTranslateX, this.setTranslateX, xx);
-    animator.addProp(dvt.Animator.TYPE_NUMBER, this, this.getTranslateY, this.setTranslateY, yy);
-  }
-  else {
-    this.setTranslate(xx, yy);
-  }
+dvt.BaseDiagramNode.prototype.SetPosition = function(xx, yy) {
+  this.setTranslate(xx, yy);
 };
 
 /**
  * Gets position of the node
- * @param {dvt.Animator} animator Optional animator for the component that is used to animate transition from an old state to a new one
  * @return {dvt.Point} node position
  * @protected
  */
-dvt.BaseDiagramNode.prototype.GetPosition = function(animator) 
+dvt.BaseDiagramNode.prototype.GetPosition = function()
 {
-  var xx;
-  var yy;
-  if (animator) {
-    xx = animator.getDestVal(this, this.getTranslateX);
-    yy = animator.getDestVal(this, this.getTranslateY);
-  }
-  if (xx == null) {
-    xx = this.getTranslateX();
-  }
-  if (yy == null) {
-    yy = this.getTranslateY();
-  }
-  return new dvt.Point(xx, yy);
+  return new dvt.Point(this.getTranslateX(), this.getTranslateY());
 };
 
 // Implementation of DvtKeyboardNavigable interface
@@ -5062,7 +3100,9 @@ dvt.BaseDiagramNode.prototype.getKeyboardBoundingBox = function(targetCoordinate
   // to stage coordinates, based on code in dvt.Displayable.getDimensions()
   if (this._customNodeContent)
     return this._diagram.getCustomObjKeyboardBoundingBox(this);
+
   else {
+
     var bounds = this.getContentBounds(targetCoordinateSpace);
     var stageP1 = this.localToStage(new dvt.Point(bounds.x, bounds.y));
     var stageP2 = this.localToStage(new dvt.Point(bounds.x + bounds.w, bounds.y + bounds.h));
@@ -5189,23 +3229,6 @@ dvt.BaseDiagramNode.prototype.getGroupId = function() {
   return null;
 };
 
-
-/**
- * Retrieves the position of child node pane if exists
- * @param {dvt.Animator} animator The animator into which the transitions should be rendered (optional)
- * @return {dvt.Point} position of child node pane if exists
- * @protected
- */
-dvt.BaseDiagramNode.prototype.GetChildNodePanePosition = function(animator) {
-  //: take translate of childNodePane into account for
-  //layout context localToGlobal when laying out cross-container links
-  if (this._childNodePane) {
-    var xx = animator ? animator.getDestVal(this._childNodePane, this._childNodePane.getTranslateX, true) : this._childNodePane.getTranslateX();
-    var yy = animator ? animator.getDestVal(this._childNodePane, this._childNodePane.getTranslateY, true) : this._childNodePane.getTranslateY();
-    return new dvt.Point(xx, yy);
-  }
-  return null;
-};
 /**
  * @constructor
  * @class The base class for diagram links
@@ -5230,18 +3253,8 @@ dvt.Obj.createSubclass(dvt.BaseDiagramLink, dvt.Container, 'dvt.BaseDiagramLink'
 dvt.BaseDiagramLink.prototype.Init = function(context, linkId, diagram) {
   dvt.BaseDiagramLink.superclass.Init.call(this, context, null, linkId);
   this._diagram = diagram;
-  this._arPoints;
-  this._points;
-  this._pathCmds;
-  this._labelObj;
-  this._labelPos;
-  this._labelRotAngle;
-  this._labelRotPoint;
   this._selected = false;
   this._selectable = true;
-  this._shape;
-  this._endConnector;
-  this._startConnector;
 };
 
 /**
@@ -5576,19 +3589,11 @@ dvt.BaseDiagramLink.prototype.CreateConnector = function(points, connectorType, 
 
 /**
  * Gets link bounds
- * @param {dvt.Animator} animator Optional animator for the component that is used to animate transition from an old state to a new one
  * @return {dvt.Rectangle} link bounds
  */
-dvt.BaseDiagramLink.prototype.GetLinkBounds = function(animator) {
+dvt.BaseDiagramLink.prototype.GetLinkBounds = function() {
   var linkBounds = new dvt.Rectangle(Number.MAX_VALUE, Number.MAX_VALUE, - Number.MAX_VALUE, - Number.MAX_VALUE);
-  var points = null;
-  if (animator) {
-    points = animator.getDestVal(this, this.getPoints);
-  }
-  if (!points) {
-    points = this.getPoints();
-  }
-
+  var points = this.getPoints();
   if (points) {
     var controlPoints = dvt.DiagramLinkUtils.GetControlPoints(points);
     var controlPoint;
@@ -5609,28 +3614,10 @@ dvt.BaseDiagramLink.prototype.GetLinkBounds = function(animator) {
       linkBounds.h = maxY - minY;
     }
   }
-
   var bounds = new dvt.Rectangle(linkBounds.x, linkBounds.y, linkBounds.w, linkBounds.h);
-
-  var labelPos = null;
-  if (animator) {
-    labelPos = animator.getDestVal(this, this.getLabelPosition);
-  }
-  if (labelPos == null) {
-    labelPos = this.getLabelPosition();
-  }
-  var labelRotAngle = null;
-  var labelRotPoint = null;
-  if (animator) {
-    labelRotAngle = animator.getDestVal(this, this.getLabelRotationAngle);
-    labelRotPoint = animator.getDestVal(this, this.getLabelRotationPoint);
-  }
-  if (labelRotAngle == null) {
-    labelRotAngle = this.getLabelRotationAngle();
-  }
-  if (!labelRotPoint) {
-    labelRotPoint = this.getLabelRotationPoint();
-  }
+  var labelPos = this.getLabelPosition();
+  var labelRotAngle = this.getLabelRotationAngle();
+  var labelRotPoint = this.getLabelRotationPoint();
   var labelBounds = this.getLabelBounds();
   if (labelPos && labelBounds) {
     //take label rotation into account
@@ -5792,11 +3779,12 @@ dvt.BaseDiagramLink.PositionLabel = function(label, pos, bounds, rotAngle, rotPo
  * @param {String} strokeAlpha  alpha for the link underlay
  * @param {number} strokeWidthOffset offset for the stroke that is going to be added to the link width
  *                in order to create an underlay
+ * @param {Object=} styleObj The optional style object to be applied to the underlay
  * @param {string=} styleClass The optional class to be applied to the underlay
  * @return {DvtDiagramLinkUnderlay} link underlay
  * @protected
  */
-dvt.BaseDiagramLink.prototype.CreateUnderlay = function(strokeColor, strokeAlpha, strokeWidthOffset, styleClass) {
+dvt.BaseDiagramLink.prototype.CreateUnderlay = function(strokeColor, strokeAlpha, strokeWidthOffset, styleObj, styleClass) {
   if (!strokeAlpha && strokeAlpha != 0) {
     strokeAlpha = 1;
   }
@@ -5806,7 +3794,7 @@ dvt.BaseDiagramLink.prototype.CreateUnderlay = function(strokeColor, strokeAlpha
 
   var strokeWidth = this.GetAppliedLinkWidth() + strokeWidthOffset;
   var stroke = new dvt.SolidStroke(strokeColor, strokeAlpha, strokeWidth);
-  return new DvtDiagramLinkUnderlay(this.getCtx(), this._pathCmds, stroke, styleClass);
+  return new DvtDiagramLinkUnderlay(this.getCtx(), this._pathCmds, stroke, styleObj, styleClass);
 };
 
 
@@ -5816,13 +3804,14 @@ dvt.BaseDiagramLink.prototype.CreateUnderlay = function(strokeColor, strokeAlpha
  * @param {String} strokeAlpha  alpha for the link underlay
  * @param {number} strokeWidthOffset offset for the stroke that is going to be added to the link width
  *                in order to create an underlay
+ * @param {Object=} styleObj The optional style object to be applied to the underlay
  * @param {string=} styleClass The optional class to be applied to the underlay
  * @return {DvtDiagramLinkUnderlay} feedback underlay used for the hover, selection effects. The underlay includes the link and the connectors
  * @protected
  */
-dvt.BaseDiagramLink.prototype.CreateFeedbackUnderlay = function(strokeColor, strokeAlpha, strokeWidthOffset, styleClass) {
+dvt.BaseDiagramLink.prototype.CreateFeedbackUnderlay = function(strokeColor, strokeAlpha, strokeWidthOffset, styleObj, styleClass) {
 
-  var feedbackUnderlay = this.CreateUnderlay(strokeColor, strokeAlpha, strokeWidthOffset, styleClass);
+  var feedbackUnderlay = this.CreateUnderlay(strokeColor, strokeAlpha, strokeWidthOffset, styleObj, styleClass);
 
   if (this._startConnector && this.getStartConnectorType())
     feedbackUnderlay.addUnderlayStart(this._points, this.getStartConnectorType(), this.getConnectorTemplate(dvt.DiagramLinkConnectorUtils.START_CONNECTOR), this);
@@ -5956,7 +3945,7 @@ dvt.BaseDiagramLink.prototype.setLabelAlignments = function(halign, valign) {
 dvt.BaseDiagramLink.prototype.getGroupId = function() {
   return null;
 };
-// Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
+// Copyright (c) 2011, 2017, Oracle and/or its affiliates. All rights reserved.
 /**
  * Dvt Diagram layout utils
  */
@@ -5964,74 +3953,11 @@ dvt.DiagramLayoutUtils = {};
 
 dvt.Obj.createSubclass(dvt.DiagramLayoutUtils, dvt.Obj, 'dvt.DiagramLayoutUtils');
 
-dvt.DiagramLayoutUtils.gridLayout = function(layoutContext) {
-  var maxNodeBounds = dvt.DiagramLayoutUtils.getMaxNodeBounds(layoutContext);
-  var nodeSize = Math.max(maxNodeBounds['w'], maxNodeBounds['h']);
-  var nodeCount = layoutContext.getNodeCount();
-  var linkCount = layoutContext.getLinkCount();
-  var size = Math.floor(Math.sqrt(nodeCount));
-
-  //var space = linkCount > 0 ? 2*nodeSize : 1.25*nodeSize;
-  var padding = 0;
-  var layoutAttrs = layoutContext.getLayoutAttributes();
-  if (layoutAttrs && layoutAttrs['padding']) {
-    padding = layoutAttrs['padding'];
-  }
-  else {
-    padding = linkCount > 0 ? nodeSize : .25 * nodeSize;
-  }
-  var space = nodeSize + padding;
-
-  var cols = Math.ceil(nodeCount / size);
-  var rows = size;
-  var startx = - (cols - 1) * space / 2;
-  var starty = - (rows - 1) * space / 2;
-  for (var ni = 0; ni < nodeCount; ni++) {
-    var node = layoutContext.getNodeByIndex(ni);
-    var col = Math.floor(ni / size);
-    var row = ni % size;
-    var currX = startx + space * col;
-    var currY = starty + space * row;
-    dvt.DiagramLayoutUtils.centerNodeAndLabel(node, currX, currY);
-  }
-};
-
-dvt.DiagramLayoutUtils.getMaxNodeBounds = function(layoutContext) {
-  var nodeCount = layoutContext.getNodeCount();
-  var maxW = 0;
-  var maxH = 0;
-  for (var ni = 0; ni < nodeCount; ni++) {
-    var node = layoutContext.getNodeByIndex(ni);
-    var bounds = node.getBounds();
-    maxW = Math.max(bounds['w'], maxW);
-    maxH = Math.max(bounds['h'], maxH);
-    var labelBounds = node.getLabelBounds();
-    if (labelBounds) {
-      maxW = Math.max(labelBounds['w'], maxW);
-      maxH = Math.max(bounds['h'] + labelBounds['h'], maxH);
-    }
-  }
-  return new dvt.DiagramRectangle(0, 0, maxW, maxH);
-};
-
-dvt.DiagramLayoutUtils.centerNodeAndLabel = function(node, x, y) {
-  var bounds = node.getContentBounds();
-  node.setPosition(new dvt.DiagramPoint(x - bounds['x'] - bounds['w'] * .5, y - bounds['y'] - bounds['h'] * .5));
-  dvt.DiagramLayoutUtils.positionNodeLabel(node);
-};
-
-dvt.DiagramLayoutUtils.positionNodeLabel = function(node) {
-  var nodeBounds = node.getBounds();
-  var nodePos = node.getPosition();
-  var nodeLabelBounds = node.getLabelBounds();
-  if (nodeLabelBounds) {
-    //center label below node
-    var labelX = nodeBounds['x'] + nodePos['x'] + .5 * (nodeBounds['w'] - nodeLabelBounds['w']);
-    var labelY = nodeBounds['y'] + nodePos['y'] + nodeBounds['h'];
-    node.setLabelPosition(new dvt.DiagramPoint(labelX, labelY));
-  }
-};
-
+/**
+ * Converts dvt.Rectangle to dvt.DiagramRectangle
+ * @param {dvt.Rectangle} rect
+ * @return {dvt.DiagramRectangle}
+ */
 dvt.DiagramLayoutUtils.convertRectToDiagramRect = function(rect) {
   if (rect === undefined || rect == null)
     return null;
@@ -6039,6 +3965,11 @@ dvt.DiagramLayoutUtils.convertRectToDiagramRect = function(rect) {
     return new dvt.DiagramRectangle(rect.x, rect.y, rect.w, rect.h);
 };
 
+/**
+ * Converts dvt.Point to dvt.DiagramPoint
+ * @param {dvt.Point} point
+ * @return {dvt.DiagramPoint}
+ */
 dvt.DiagramLayoutUtils.convertPointToDiagramPoint = function(point) {
   if (point === undefined || point == null)
     return null;
@@ -6046,6 +3977,11 @@ dvt.DiagramLayoutUtils.convertPointToDiagramPoint = function(point) {
     return new dvt.DiagramPoint(point.x, point.y);
 };
 
+/**
+ * Converts dvt.DiagramRectangle to dvt.Rectangle
+ * @param {dvt.DiagramRectangle} diagramRect
+ * @return {dvt.Rectangle}
+ */
 dvt.DiagramLayoutUtils.convertDiagramRectToRect = function(diagramRect) {
   if (!diagramRect) {
     return null;
@@ -6055,6 +3991,11 @@ dvt.DiagramLayoutUtils.convertDiagramRectToRect = function(diagramRect) {
   }
 };
 
+/**
+ * Converts dvt.Rectangle to dvt.Point
+ * @param {dvt.DiagramPoint} diagramPoint
+ * @return {dvt.Point}
+ */
 dvt.DiagramLayoutUtils.convertDiagramPointToPoint = function(diagramPoint) {
   if (!diagramPoint) {
     return null;
@@ -6070,12 +4011,13 @@ dvt.DiagramLayoutUtils.convertDiagramPointToPoint = function(diagramPoint) {
  * @param {dvt.Context} context the rendering context
  * @param {array} points link points
  * @param {dvt.Stroke} stroke for the link underlay
+ * @param {Object=} styleObj The optional style object to be applied to the underlay
  * @param {string=} styleClass The optional class to be applied to the underlay
  */
-var DvtDiagramLinkUnderlay = function(context, points, stroke, styleClass)
+var DvtDiagramLinkUnderlay = function(context, points, stroke, styleObj, styleClass)
 {
   DvtDiagramLinkUnderlay.superclass.Init.call(this, context);
-  this.Init(context, points, stroke, styleClass);
+  this.Init(context, points, stroke, styleObj, styleClass);
 };
 
 dvt.Obj.createSubclass(DvtDiagramLinkUnderlay, dvt.Container, 'DvtDiagramLinkUnderlay');
@@ -6085,10 +4027,11 @@ dvt.Obj.createSubclass(DvtDiagramLinkUnderlay, dvt.Container, 'DvtDiagramLinkUnd
  * @param {dvt.Context} context the rendering context
  * @param {array} points link points
  * @param {dvt.Stroke} stroke for the link underlay
+ * @param {Object=} styleObj The optional style object to be applied to the underlay
  * @param {string=} styleClass The optional class to be applied to the underlay
  * @protected
  */
-DvtDiagramLinkUnderlay.prototype.Init = function(context, points, stroke, styleClass)
+DvtDiagramLinkUnderlay.prototype.Init = function(context, points, stroke, styleObj, styleClass)
 {
   if (!points)
     points = ['M', 0, 0, 'L', 1, 0];
@@ -6101,10 +4044,7 @@ DvtDiagramLinkUnderlay.prototype.Init = function(context, points, stroke, styleC
   this._underlay = new dvt.Path(context, points);
   this._underlay.setStroke(stroke);
   this._underlay.setFill(null);
-  if (styleClass) {
-    this._styleClass = styleClass;
-    this._underlay.setClassName(styleClass);
-  }
+  this._underlay.setStyle(styleObj).setClassName(styleClass);
   this.addChild(this._underlay);
 
   this._underlayStart = null;
@@ -6166,9 +4106,6 @@ DvtDiagramLinkUnderlay.prototype.CreateConnectorUnderlay = function(points, conn
   stroke.setFixedWidth(false);
 
   var connectorUnderlay = dvt.DiagramLinkConnectorUtils.CreateConnectorShape(this.getCtx(), connectorType, connectorTemplate, stroke, parentLink);
-  if (this._styleClass) {
-    connectorUnderlay.setClassName(this._styleClass);
-  }
 
   dvt.DiagramLinkConnectorUtils.TransformConnector(connectorUnderlay,
       connectorType,
@@ -6928,8 +4865,6 @@ dvt.DiagramLinkConnectorUtils.getStandardConnectorOffset = function(connectorTyp
       return 0;
   }
 };
-dvt.exportProperty(dvt.BaseDiagram.prototype, 'setInitAnim', dvt.BaseDiagram.prototype.setInitAnim);
-
 dvt.exportProperty(DvtDiagramLayoutContext.prototype, 'getLayout', DvtDiagramLayoutContext.prototype.getLayout);
 dvt.exportProperty(DvtDiagramLayoutContext.prototype, 'getLayoutAttributes', DvtDiagramLayoutContext.prototype.getLayoutAttributes);
 dvt.exportProperty(DvtDiagramLayoutContext.prototype, 'getNodeById', DvtDiagramLayoutContext.prototype.getNodeById);
@@ -6948,6 +4883,7 @@ dvt.exportProperty(DvtDiagramLayoutContext.prototype, 'setContainerPadding', Dvt
 dvt.exportProperty(DvtDiagramLayoutContext.prototype, 'getContainerPadding', DvtDiagramLayoutContext.prototype.getContainerPadding);
 dvt.exportProperty(DvtDiagramLayoutContext.prototype, 'getCurrentViewport', DvtDiagramLayoutContext.prototype.getCurrentViewport);
 dvt.exportProperty(DvtDiagramLayoutContext.prototype, 'getCommonContainer', DvtDiagramLayoutContext.prototype.getCommonContainer);
+dvt.exportProperty(DvtDiagramLayoutContext.prototype, 'getEventData', DvtDiagramLayoutContext.prototype.getEventData);
 
 dvt.exportProperty(DvtDiagramLayoutContextNode.prototype, 'getId', DvtDiagramLayoutContextNode.prototype.getId);
 dvt.exportProperty(DvtDiagramLayoutContextNode.prototype, 'getBounds', DvtDiagramLayoutContextNode.prototype.getBounds);
@@ -7010,6 +4946,167 @@ dvt.exportProperty(dvt, 'DiagramRectangle', dvt.DiagramRectangle);
 })(dvt);
 
 (function(dvt) {
+//
+// $Header: dsstools/modules/dvt-shared-js/src/META-INF/bi/sharedJS/toolkit/diagram/DvtDiagramStyleUtils.js /st_jdevadf_jet.trunk/4 2017/09/08 16:48:23  Exp $
+//
+// DvtDiagramStyleUtils.js
+//
+// Copyright (c) 2017, Oracle and/or its affiliates. All rights reserved.
+//
+//    NAME
+//     DvtDiagramStyleUtils.js - <one-line expansion of the name>
+//
+//    DESCRIPTION
+//     <short description of component this file declares/defines>
+//
+//    NOTES
+//     <other useful comments, qualifications, etc. >
+//
+//    MODIFIED  (MM/DD/YY)
+//       04/28/17 - Created
+//
+/**
+ * Style related utility functions for dvt.Diagram.
+ * @class
+ */
+var DvtDiagramStyleUtils = new Object();
+
+dvt.Obj.createSubclass(DvtDiagramStyleUtils, dvt.Obj);
+
+/**
+ * If the option node style attribute is a string, converts it to object
+ * @param {object} optionsObject  node options object
+ * @param {string} attribute  node attribute
+ */
+DvtDiagramStyleUtils.prepareNodeStyle = function(optionsObject, attribute) {
+  if (optionsObject && optionsObject[attribute] != null &&
+          !(optionsObject[attribute] instanceof Object)) {
+    optionsObject[attribute] = dvt.CSSStyle.cssStringToObject(optionsObject[attribute]);
+  }
+};
+
+/**
+ * If the option style attribute is a string, converts it to link style object
+ * @param {object} optionsObject  link options object
+ * @param {string} attribute  link style attribute
+ */
+DvtDiagramStyleUtils.prepareLinkStyle = function(optionsObject, attribute) {
+  //The link style attribute can be string or object.
+  if (optionsObject && optionsObject[attribute] != null) {
+    //The style object represents the CSS style of the link.
+    if (optionsObject[attribute] instanceof Object) {
+      if (optionsObject[attribute]['_type'] == null)
+        optionsObject[attribute]['_type'] = DvtDiagramLink.CUSTOM_STYLE;
+    } else {
+      //The style string represents Link style type with following values: solid, dash, dot, dashDot.
+      //convert style string to equivalent style object
+      optionsObject[attribute] = dvt.DiagramLinkUtils.getStrokeObject(optionsObject[attribute]);
+    }
+  }
+};
+
+/**
+ * Returns default styles for the diagram nodes
+ * @param {dvt.Diagram} comp the diagram
+ * @return {object} default style object for the nodes
+ */
+DvtDiagramStyleUtils.getNodeDefaultStyles = function(comp) {
+  var nodeDefaults = comp.getOptions()['styleDefaults']['nodeDefaults'];
+  //If default background/container style is specified in options nodeDefaults, make sure it is an object
+  //Note: don't need to convert 'backgroundSvgStyle' and 'containerSvgStyle', since those properties
+  //do not support string values
+  DvtDiagramStyleUtils.prepareNodeStyle(nodeDefaults, 'backgroundStyle');
+  DvtDiagramStyleUtils.prepareNodeStyle(nodeDefaults, 'containerStyle');
+  return nodeDefaults;
+};
+
+/**
+ * Gets the node option object for the given node data.
+ * Merges the default node properties with properties for the specific node
+ * @param {dvt.Diagram} comp the diagram
+ * @param {object} nodeData node data
+ * @param {object} nodeDefaults default styles for the diagarm nodes
+ * @return {object} node data object with applied styles
+ */
+DvtDiagramStyleUtils.getNodeStyles = function(comp, nodeData, nodeDefaults) {
+  var convertedNodeData = DvtDiagramNode.ConvertNodeData(nodeData);
+  if (comp.getOptions()['nodeProperties']) {
+    var styleProps = dvt.JsonUtils.clone(comp.getOptions()['nodeProperties'](nodeData));
+    //If background/container style is specified in nodeData, make sure it is an object before merging
+    DvtDiagramStyleUtils.prepareNodeStyle(styleProps, 'backgroundStyle');
+    DvtDiagramStyleUtils.prepareNodeStyle(styleProps, 'containerStyle');
+    convertedNodeData = dvt.JsonUtils.merge(convertedNodeData, styleProps, {'_origData': true});
+  }
+  return dvt.JsonUtils.merge(convertedNodeData, nodeDefaults, {'_origData': true});
+};
+
+/**
+ * Returns default styles for the diagram links or promoted links
+ * @param {dvt.Diagram} comp the diagram
+ * @param {string} option option to retrieve - 'linkDefaults' or 'promotedLinks'
+ * @return {object} default style object for the specified type of links
+ */
+DvtDiagramStyleUtils.getLinkDefaultStyles = function(comp, option) {
+  var linkDefaults = comp.getOptions()['styleDefaults'][option];
+  //If linkDefaults has style attribute, make sure it is an object
+  DvtDiagramStyleUtils.prepareLinkStyle(linkDefaults, 'style');
+  //Merge the link default style from options with the link default style from Diagram style defaults
+  var attr = comp.getCtx().isCustomElement() ? 'svgStyle' : 'style';
+  linkDefaults['style'] = dvt.JsonUtils.merge(linkDefaults[attr], linkDefaults['_style']);
+  if (comp.getCtx().isCustomElement()) {
+    dvt.ArrayUtils.forEach(['_type'], function(entry) {delete linkDefaults['style'][entry]});
+  }
+  return linkDefaults;
+};
+
+/**
+ * Gets the link option object for the given link data.
+ * Merges the default link properties with properties for the specific link
+ * @param {dvt.Diagram} comp the diagram
+ * @param {object} linkData link data
+ * @param {object} linkDefaults default styles for the diagarm links
+ * @return {object} link data object with applied styles
+ */
+DvtDiagramStyleUtils.getLinkStyles = function(comp, linkData, linkDefaults) {
+  var convertedLinkData = DvtDiagramLink.ConvertLinkData(linkData);
+  if (comp.getOptions()['linkProperties']) {
+    var styleProps = dvt.JsonUtils.clone(comp.getOptions()['linkProperties'](linkData));
+    //If linkData has style attribute, make sure it is an object
+    DvtDiagramStyleUtils.prepareLinkStyle(styleProps, 'style');
+    convertedLinkData = dvt.JsonUtils.merge(convertedLinkData, styleProps, {'_origData': true});
+  }
+  return dvt.JsonUtils.merge(convertedLinkData, linkDefaults, {'_origData': true});
+};
+
+/**
+ * Returns the animation duration in seconds for the specified diagram.  This duration is
+ * intended to be passed to the animation handler, and is not in the same units
+ * as the API.
+ * @param {dvt.Diagram} diagram
+ * @return {number} The animation duration in seconds.
+ */
+DvtDiagramStyleUtils.getAnimationDuration = function(diagram) {
+  return dvt.StyleUtils.getTimeMilliseconds(diagram.getOptions()['styleDefaults']['animationDuration']) / 1000;
+};
+
+/**
+ * Returns the display animation for the specified diagram.
+ * @param {dvt.Diagram} diagram
+ * @return {string}
+ */
+DvtDiagramStyleUtils.getAnimationOnDisplay = function(diagram) {
+  return diagram.getOptions()['animationOnDisplay'];
+};
+
+
+/**
+ * Returns the data change animation for the specified diagram.
+ * @param {dvt.Diagram} diagram
+ * @return {string}
+ */
+DvtDiagramStyleUtils.getAnimationOnDataChange = function(diagram) {
+  return diagram.getOptions()['animationOnDataChange'];
+};
 /**
  * @param {dvt.Context} context The rendering context.
  * @param {function} callback The function that should be called to dispatch component events.
@@ -7070,33 +5167,8 @@ dvt.Diagram.newInstance = function(context, callback, callbackObj) {
  */
 dvt.Diagram.prototype.PreRender = function() {
   if (!this.IsResize() && this._bRendered) {
-    if (this.getDataChangeAnim() != 'none') {
-      //save the state
-      this._oldDataAnimState = {
-        'id': this.getId(),
-        'getId': function() {return this['id']},
-        'options': this.getOptions(),
-        'getOptions': function() {return this['options'];},
-        'panZoomMatrix': this.getPanZoomCanvas().getContentPane().getMatrix(),
-        'getPanZoomMatrix': function() {return this['panZoomMatrix'];},
-        'nodes': this._nodes ? this.GetAllNodesMap() : {},
-        'roots': this._arRootIds ? this.GetRootNodeObjects() : [],
-        'links': this._links ? this.GetAllLinkObjects() : [],
-        'linkIds' : this.GetAllLinks(),
-        'getNodes': function() {return this['nodes'];},
-        'getRoots': function() {return this['roots'];},
-        'getLinks': function() {return this['links'];},
-        'getLinkIds': function() {return this['linkIds'];}
-      };
-
-      // Also expose functions directly, since it will be called by internal code that is renamed.
-      this._oldDataAnimState.getOptions = this._oldDataAnimState['getOptions'];
-      this._oldDataAnimState.getPanZoomMatrix = this._oldDataAnimState['getPanZoomMatrix'];
-      this._oldDataAnimState.getId = this._oldDataAnimState['getId'];
-      this._oldDataAnimState.getNodes = this._oldDataAnimState['getNodes'];
-      this._oldDataAnimState.getRoots = this._oldDataAnimState['getRoots'];
-      this._oldDataAnimState.getLinks = this._oldDataAnimState['getLinks'];
-      this._oldDataAnimState.getLinkIds = this._oldDataAnimState['getLinkIds'];
+    if (DvtDiagramStyleUtils.getAnimationOnDataChange(this) != 'none') {
+      this._oldDataAnimState = new DvtDiagramDataAnimationState(this);
     }
     this._currentViewport = this.getPanZoomCanvas().getViewport();
     this._bRendered = false;
@@ -7106,6 +5178,11 @@ dvt.Diagram.prototype.PreRender = function() {
   }
   if (!this.IsResize()) {
     this.ResetNodesAndLinks();
+    this._oldLayoutContext = this._layoutContext;
+    this._layoutContext = null;
+  }
+  else if (this._layoutContext) {
+    this._layoutContext.setEventData(null);
   }
 };
 
@@ -7124,7 +5201,8 @@ dvt.Diagram.prototype.ResetNodesAndLinks = function() {
   this._arLinkIds = [];
   // Make sure we're not holding references to any obsolete nodes/links
   this._highlightedObjects = null;
-  this._promotedLinksMap = null;
+  this._promotedLinksMap = null; //Map of promoted links. Key: promoted link id -> promoted link object
+  this._linkToPromotedMap = null; //Map of original links converted to promoted. Key: link id -> promoted link id
   this._collapsedNodes = null;
   this.getOptions()['nodes'] = [];
   this.getOptions()['links'] = [];
@@ -7165,14 +5243,16 @@ dvt.Diagram.prototype._onAnimationEnd = function() {
  */
 dvt.Diagram.prototype.animateUpdate = function(animationHandler, oldDiagramState) {
   var playable = new dvt.CustomAnimation(this.getCtx(), null, animationHandler.getAnimationDuration());
-  var oldMat = oldDiagramState.getPanZoomMatrix();
+  var oldMat = oldDiagramState.PanZoomMatrix;
   var newMat = this.getPanZoomCanvas().getContentPane().getMatrix();
   if (!oldMat.equals(newMat)) {
     this.getPanZoomCanvas().getContentPane().setMatrix(oldMat);
     playable.getAnimator().addProp(dvt.Animator.TYPE_MATRIX, this.getPanZoomCanvas().getContentPane(), this.getPanZoomCanvas().getContentPane().getMatrix, this.getPanZoomCanvas().getContentPane().setMatrix, newMat);
   }
-  animationHandler.constructAnimation(oldDiagramState.getRoots(), this._arRootIds ? this.GetRootNodeObjects() : []);
-  animationHandler.constructAnimation(oldDiagramState.getLinks(), this._links ? this.GetAllLinkObjects() : []);
+  var newNodes = oldDiagramState.IsPartialUpdate ? oldDiagramState.getNewNodes() : this.GetRootNodeObjects();
+  var newLinks = oldDiagramState.IsPartialUpdate ? oldDiagramState.getNewLinks() : this.GetAllLinkObjects();
+  animationHandler.constructAnimation(oldDiagramState.getNodes(), newNodes);
+  animationHandler.constructAnimation(oldDiagramState.getLinks(), newLinks);
   animationHandler.add(playable, DvtDiagramDataAnimationHandler.UPDATE);
 };
 
@@ -7211,7 +5291,7 @@ dvt.Diagram.prototype._resolveDeferredData = function(dataSource, nodeData) {
 dvt.Diagram.prototype._renderDeferredData = function(renderCount, dataSource, nodeData, resolvedData) {
   if (renderCount === this._renderCount) {
     if (resolvedData != null) {
-      nodeData['nodes'] = dvt.JsonUtils.clone(resolvedData['nodes']);
+      nodeData['nodes'] = resolvedData['nodes'];
       //add links to top level links option
       if (Array.isArray(resolvedData['links'])) {
         this.getOptions()['links'] = this.getOptions()['links'].concat(resolvedData['links']);
@@ -7290,14 +5370,6 @@ dvt.Diagram.prototype._discoverLinks = function(dataSource, containerData) {
 };
 
 /**
- * Data source event handler
- * @param {Object} event event data
- */
-dvt.Diagram.prototype.handleDataSourceEvent = function(event) {
-  this.render(this.getOptions(), this.Width, this.Height);
-};
-
-/**
  * Helper method that attaches and removes data source event handlers
  * @param {oj.DiagramDataSource} dataSource diagram data source
  * @param {boolean} attach true to attach listeners, false to remove listeners
@@ -7306,18 +5378,24 @@ dvt.Diagram.prototype.handleDataSourceEvent = function(event) {
 dvt.Diagram.prototype._setDataSourceListeners = function(dataSource, attach) {
   if (!dataSource)
     return;
-  if (!this._dataSourceEventHandler) {
-    this._dataSourceEventHandler = this.handleDataSourceEvent.bind(this);
+  if (!this._dataSourceAddEventHandler) {
+    this._dataSourceAddEventHandler = this.handleDataSourceChangeEvent.bind(this, 'add');
+  }
+  if (!this._dataSourceRemoveEventHandler) {
+    this._dataSourceRemoveEventHandler = this.handleDataSourceChangeEvent.bind(this, 'remove');
+  }
+  if (!this._dataSourceChangeEventHandler) {
+    this._dataSourceChangeEventHandler = this.handleDataSourceChangeEvent.bind(this, 'change');
   }
   if (attach) {
-    dataSource['on']('ADD', this._dataSourceEventHandler);
-    dataSource['on']('REMOVE', this._dataSourceEventHandler);
-    dataSource['on']('CHANGE', this._dataSourceEventHandler);
+    dataSource['on']('add', this._dataSourceAddEventHandler);
+    dataSource['on']('remove', this._dataSourceRemoveEventHandler);
+    dataSource['on']('change', this._dataSourceChangeEventHandler);
   }
   else {
-    dataSource['off']('ADD', this._dataSourceEventHandler);
-    dataSource['off']('REMOVE', this._dataSourceEventHandler);
-    dataSource['off']('CHANGE', this._dataSourceEventHandler);
+    dataSource['off']('add', this._dataSourceAddEventHandler);
+    dataSource['off']('remove', this._dataSourceRemoveEventHandler);
+    dataSource['off']('change', this._dataSourceChangeEventHandler);
   }
 };
 
@@ -7347,38 +5425,30 @@ dvt.Diagram.prototype.Render = function() {
 
 /**
  * Renders a Diagram component after it was initialized.
- * @param {dvt.Animator=} animator Optional animator for the component that is used to animate transition from an old state to a new one
  * @protected
  */
-dvt.Diagram.prototype.RenderComponentInternal = function(animator) {
+dvt.Diagram.prototype.RenderComponentInternal = function() {
   var emptyDiagram = false;
   if (!this._bRendered && !this.IsResize()) {
     this._setDataSourceListeners(this.getOptions()['data'], true);
-    this.prepareNodes();
-    this.renderLinks();
-
-    //check whether nodes were filtered out
-    //Object.keys is not available on REL13 so we need to generate the keys to array ourselves
-    var keys = [];
-    for (var key in this._nodes) {
-      keys.push(key);
-    }
-    emptyDiagram = keys.length === 0;
+    this.prepareNodes(this.getOptions()['nodes']);
+    this.renderLinks(this.getOptions()['links']);
     this.getCtx().setKeyboardFocusArray([this]);
   }
-
+  //check whether the diagram is empty
+  emptyDiagram = Object.keys(this._nodes).length === 0;
   if (!emptyDiagram) {
     // the child is going to be removed by  _processContent() function or layout failure function
     if (!this.contains(this._oldPanZoomCanvas))
       this.addChild(this._oldPanZoomCanvas);
 
-    var res = this.layout(animator);
+    var res = this.layout();
     var thisRef = this;
     var renderCount = this._renderCount;
     res.then(
         function() {
           if (renderCount === thisRef._renderCount) {
-            thisRef._processContent(animator, emptyDiagram);
+            thisRef._processContent(emptyDiagram);
           }
         }, //success
         function() {
@@ -7392,17 +5462,16 @@ dvt.Diagram.prototype.RenderComponentInternal = function(animator) {
     );
   }
   else { //empty diagram - nothing to layout, might need to run data change animation
-    this._processContent(animator, emptyDiagram);
+    this._processContent(emptyDiagram);
   }
 };
 
 /**
  * Process diagram content after layout is done - zoom to fit, animate if it is necessary
- * @param {dvt.Animator=} animator Optional animator for the component that is used to animate transition from an old state to a new one
  * @param {boolean} bEmptyDiagram True if diagram is empty
  * @private
  */
-dvt.Diagram.prototype._processContent = function(animator, bEmptyDiagram) {
+dvt.Diagram.prototype._processContent = function(bEmptyDiagram) {
   var calcViewBounds;
   if (!bEmptyDiagram) {
     this.removeChild(this._oldPanZoomCanvas);
@@ -7411,9 +5480,9 @@ dvt.Diagram.prototype._processContent = function(animator, bEmptyDiagram) {
     this._updateKeyboardFocusEffect();
     calcViewBounds = this._cachedViewBounds == null;
     if (calcViewBounds) {
-      this._cachedViewBounds = this.GetViewBounds(animator);
+      this._cachedViewBounds = this.GetViewBounds();
     }
-    this._fitContent(animator);
+    this._fitContent();
   }
   this._oldPanZoomCanvas = null;
 
@@ -7421,11 +5490,17 @@ dvt.Diagram.prototype._processContent = function(animator, bEmptyDiagram) {
   // Stop any animation in progress
   this.StopAnimation(true);
 
-  //initial animation
-  if (!this._bRendered && this.getInitAnim() && !this._oldDataAnimState) {
-    this.Animation = dvt.BlackBoxAnimationHandler.getInAnimation(this.getCtx(), this.getInitAnim(), this, null, this.getAnimationDuration());
+  // Construct the new animation playable
+  var animationOnDisplay = DvtDiagramStyleUtils.getAnimationOnDisplay(this);
+  var animationOnDataChange = DvtDiagramStyleUtils.getAnimationOnDataChange(this);
+
+  if (!this._bRendered && animationOnDisplay !== 'none' && !this._oldDataAnimState) {
+    //initial animation
+    this.Animation = dvt.BlackBoxAnimationHandler.getInAnimation(this.getCtx(),
+                     dvt.BlackBoxAnimationHandler.ALPHA_FADE, this, null,
+                     DvtDiagramStyleUtils.getAnimationDuration(this));
   }
-  else if (this.getDataChangeAnim() != 'none' && this._oldDataAnimState) {
+  else if (animationOnDataChange !== 'none' && this._oldDataAnimState) {
     this._deleteContainer = new dvt.Container(this.getCtx(), 'Delete Container');
     this.addChild(this._deleteContainer);
     var ah = new DvtDiagramDataAnimationHandler(this.getCtx(), this._deleteContainer, this._oldDataAnimState, this);
@@ -7452,7 +5527,7 @@ dvt.Diagram.prototype._processContent = function(animator, bEmptyDiagram) {
   if (this.IsPanningEnabled()) {
     var contentDim = this._cachedViewBounds;
     if (contentDim != null) {
-      var zoom = this.getPanZoomCanvas().getZoom(animator);
+      var zoom = this.getPanZoomCanvas().getZoom();
       this.ConstrainPanning(contentDim.x, contentDim.y, contentDim.w, contentDim.h, zoom);
     }
   }
@@ -7465,13 +5540,12 @@ dvt.Diagram.prototype._processContent = function(animator, bEmptyDiagram) {
 
 /**
  * Fit and position diagram content into container if necessary
- * @param {dvt.Animator=} animator Optional animator for the component that is used to animate transition from an old state to a new one
  * @private
  */
-dvt.Diagram.prototype._fitContent = function(animator) {
+dvt.Diagram.prototype._fitContent = function() {
   var pzc = this.getPanZoomCanvas();
   if (!this._bRendered) {
-    this.AdjustMinZoom(animator, this._cachedViewBounds);
+    this.AdjustMinZoom(this._cachedViewBounds);
     //if we're rendering null xml, it may be for a maximize/restore,
     //so don't automatically zoom-to-fit
     if (!this.IsResize()) {
@@ -7488,11 +5562,14 @@ dvt.Diagram.prototype._fitContent = function(animator) {
     pzc.setZoomingEnabled(this.IsZoomingEnabled());
     pzc.setZoomToFitEnabled(this.IsZoomingEnabled());
   }
-  else if (this.IsResize()) {
+  else if (this.IsResize() || this._partialUpdate) {
     // Update the min zoom if it's unspecified
-    var viewBounds = this.AdjustMinZoom(animator, this._cachedViewBounds);
-    var fitBounds = this.IsLayoutViewport() ? this.GetLayoutViewport() :
+    var viewBounds = this.AdjustMinZoom(this._cachedViewBounds);
+    var bLayoutViewport = this.IsLayoutViewport();
+    var fitBounds = bLayoutViewport ? this.GetLayoutViewport() :
                     viewBounds ? viewBounds : this._cachedViewBounds;
+    if (bLayoutViewport)
+      pzc.setZoomToFitPadding(0);
     pzc.setZoomToFitEnabled(true);
     pzc.zoomToFit(null, fitBounds);
     pzc.setZoomToFitEnabled(this.IsZoomingEnabled());
@@ -7511,8 +5588,6 @@ dvt.Diagram.prototype.SetOptions = function(options) {
   this.SetPanningEnabled(this.Options['panning'] != 'none');
   this.SetZoomingEnabled(this.Options['zooming'] != 'none');
   this.setControlPanelBehavior('hidden');
-  this.setDataChangeAnim(this.Options['animationOnDataChange']);
-  this.setInitAnim(this.Options['animationOnDisplay'] == 'auto' ? dvt.BlackBoxAnimationHandler.ALPHA_FADE : null);
   this.setSelectionMode(this.Options['selectionMode']);
   this.setEmptyText(this.Options['emptyText'] ? this.Options['emptyText'] : dvt.Bundle.getTranslation(this.Options, 'labelNoData', dvt.Bundle.UTIL_PREFIX, 'NO_DATA'));
 };
@@ -7561,7 +5636,7 @@ dvt.Diagram.prototype.getPanDirection = function() {
  * @override
  */
 dvt.Diagram.prototype.getAnimationDuration = function() {
-  return dvt.StyleUtils.getTimeMilliseconds(this.getOptions()['styleDefaults']['animationDuration']) / 1000;
+  return DvtDiagramStyleUtils.getAnimationDuration(this);
 };
 
 /**
@@ -7585,9 +5660,9 @@ dvt.Diagram.prototype.processEvent = function(event, source) {
 /**
  * Prepare diagram nodes for layout. The nodes will not be rendered at this time.
  * The nodes will be rendered during layout or after layout is done.
+ * @param {array} nodesData an array of node data objects
  */
-dvt.Diagram.prototype.prepareNodes = function() {
-  var nodesData = this.getOptions()['nodes'];
+dvt.Diagram.prototype.prepareNodes = function(nodesData) {
   if (!nodesData)
     return;
   this._prepareNodes(null, nodesData);
@@ -7602,32 +5677,20 @@ dvt.Diagram.prototype.prepareNodes = function() {
 
 /**
  * Renders diagram links
+ * @param {array} linksData an array of link data objects
  */
-dvt.Diagram.prototype.renderLinks = function() {
-  var linksData = this.getOptions()['links'];
+dvt.Diagram.prototype.renderLinks = function(linksData) {
   if (!linksData)
     return;
 
-  var linkDefaults = this.getOptions()['styleDefaults']['linkDefaults'];
-  //If linkDefaults has style attribute, make sure it is an object
-  this._prepareLinkStyle(linkDefaults, 'style');
-  //Merge the link default style from options with the link default style from Diagram style defaults
-  linkDefaults['style'] = dvt.JsonUtils.merge(linkDefaults['style'], linkDefaults['_style']);
+  var linkDefaults = DvtDiagramStyleUtils.getLinkDefaultStyles(this, 'linkDefaults');
   for (var i = 0; i < linksData.length; i++) {
     var linkData = linksData[i];
     if (this._isLinkPromoted(linkData)) {
       continue;
     }
 
-    var convertedLinkData = DvtDiagramLink.ConvertLinkData(linkData);
-    if (this.getOptions()['linkProperties']) {
-      var styleProps = dvt.JsonUtils.clone(this.getOptions()['linkProperties'](linkData));
-      //If linkData has style attribute, make sure it is an object
-      this._prepareLinkStyle(styleProps, 'style');
-      convertedLinkData = dvt.JsonUtils.merge(convertedLinkData, styleProps);
-    }
-    linkData = dvt.JsonUtils.merge(convertedLinkData, linkDefaults);
-
+    linkData = DvtDiagramStyleUtils.getLinkStyles(this, linkData, linkDefaults);
     var link = DvtDiagramLink.newInstance(this, linkData, false);
     var linkId = link.getId();
     this._arLinkIds.push(linkId);
@@ -7644,12 +5707,12 @@ dvt.Diagram.prototype.renderLinks = function() {
   }
   // render promoted links
   if (this._promotedLinksMap) {
-    var promotedLinkDefaults = this.getOptions()['styleDefaults']['promotedLink'];
-    //If promoted linkDefaults has style attribute, make sure it is an object
-    this._prepareLinkStyle(promotedLinkDefaults, 'style');
-    //Merge the promoted link default style from options with the default style from Diagram style defaults
-    promotedLinkDefaults['style'] = dvt.JsonUtils.merge(promotedLinkDefaults['style'], promotedLinkDefaults['_style']);
+    var promotedLinkDefaults = DvtDiagramStyleUtils.getLinkDefaultStyles(this, 'promotedLink');
     for (var promotedLinkId in this._promotedLinksMap) {
+      if (this._links[promotedLinkId]) {
+        //in case of a data source event a link might be already rendered, no need to rerender
+        continue;
+      }
       var linkData = this._promotedLinksMap[promotedLinkId];
       linkData = dvt.JsonUtils.merge(linkData, promotedLinkDefaults);
       var link = DvtDiagramLink.newInstance(this, linkData, true);
@@ -7669,58 +5732,13 @@ dvt.Diagram.prototype.renderLinks = function() {
 };
 
 /**
- * If the option style attribute is a string, converts it to link style object
- * @param {object} optionsObject  link options object
- * @param {string} attribute  link style attribute
- * @private
- */
-dvt.Diagram.prototype._prepareLinkStyle = function(optionsObject, attribute) {
-  //The link style attribute can be string or object.
-  if (optionsObject && optionsObject[attribute] != null) {
-    //The style object represents the CSS style of the link.
-    if (optionsObject[attribute] instanceof Object) {
-      if (optionsObject[attribute]['_type'] == null)
-        optionsObject[attribute]['_type'] = DvtDiagramLink.CUSTOM_STYLE;
-    } else {
-      //The style string represents Link style type with following values: solid, dash, dot, dashDot.
-      //convert style string to equivalent style object
-      optionsObject[attribute] = dvt.DiagramLinkUtils.getStrokeObject(optionsObject[attribute]);
-    }
-  }
-};
-
-/**
  * Layout diagram nodes and links
- * @param {dvt.Animator} animator Optional animator for the component that is used to animate transition from an old state to a new one
  * @return {object} Promise or Promise like object that implements then function - then function should be executed after layout is done
  */
-dvt.Diagram.prototype.layout = function(animator) {
+dvt.Diagram.prototype.layout = function() {
   var layoutFunc = this.getOptions()['layout'];
-  var layoutContext = this.CreateEmptyLayoutContext();
-  var nodeIds = {};
-
-  // add all nodes starting with root nodes
-  for (var n = 0; n < this._arRootIds.length; n++) {
-    var nodeId = this._arRootIds[n];
-    if (!this.getNodeById(nodeId))
-      continue;
-    nodeIds[nodeId] = true;
-    var lcRootNode = this.CreateLayoutContextNode(this.getNodeById(nodeId), null, this._bRendered ? false : true, layoutContext);
-    this._addChildLayoutContext(this.getNodeById(nodeId), lcRootNode, layoutContext, nodeIds);
-    layoutContext.addNode(lcRootNode);
-  }
-
-  // add all links
-  for (var linkId in this._links) {
-    var link = this.getLinkById(linkId);
-    if (!link)
-      continue;
-    var startId = link.getData()['startNode'];
-    var endId = link.getData()['endNode'];
-    if (nodeIds[startId] && nodeIds[endId]) {
-      layoutContext.addLink(this.CreateLayoutContextLink(link, startId, endId, null, layoutContext));
-    }
-  }
+  var layoutContext = this._getLayoutContext();
+  layoutContext.setDirtyContext({});
 
   // pass the current viewport to the layout
   if (this._currentViewport) {
@@ -7731,6 +5749,13 @@ dvt.Diagram.prototype.layout = function(animator) {
   }
 
   if (layoutFunc && typeof layoutFunc == 'function') {
+    //prerender all leaf nodes, without calculating sizes
+    var rootNodesCount = layoutContext.getNodeCount();
+    for (var i = 0; i < rootNodesCount; i++) {
+      var rootNode = layoutContext.getNodeByIndex(i);
+      this.renderLeafNodeFromContext(rootNode);
+    }
+
     var thisRef = this;
     var promise = layoutFunc(layoutContext);
     if (!promise) {
@@ -7746,13 +5771,15 @@ dvt.Diagram.prototype.layout = function(animator) {
         function(response) {
           if (thisRef._renderCount === renderCount || thisRef.IsResize()) {
             thisRef.setAlphas(1.0);
+            if (thisRef._oldDataAnimState)
+              thisRef._oldDataAnimState.updateStateFromLayoutContext(layoutContext);
             //render nodes if they not rendered yet
             var rootNodesCount = layoutContext.getNodeCount();
             for (var i = 0; i < rootNodesCount; i++) {
               var rootNode = layoutContext.getNodeByIndex(i);
-              thisRef.renderNodeFromContext(rootNode);
+              thisRef.renderNodeFromContext(rootNode, true);
             }
-            thisRef.ApplyLayoutContext(layoutContext, animator, true);
+            thisRef.ApplyLayoutContext(layoutContext, true);
           }
         },
         function(error) {
@@ -7798,14 +5825,31 @@ dvt.Diagram.prototype.GetAllLinks = function() {
 };
 
 /**
+ * Gets a copy of the map of all links
+ * @return {object} map of all links
+ * @protected
+ */
+dvt.Diagram.prototype.GetAllLinksMap = function() {
+  var linksMap = {};
+  if (this._links) {
+    for (var linkId in this._links) {
+      linksMap[linkId] = this._links[linkId];
+    }
+  }
+  return linksMap;
+};
+
+/**
  * Gets an array of all link objects
  * @return {array} array of all link objects
  * @protected
  */
 dvt.Diagram.prototype.GetAllLinkObjects = function() {
   var allLinks = [];
-  for (var linkId in this._links) {
-    allLinks.push(this._links[linkId]);
+  if (this._links) {
+    for (var linkId in this._links) {
+      allLinks.push(this._links[linkId]);
+    }
   }
   return allLinks;
 };
@@ -7824,8 +5868,10 @@ dvt.Diagram.prototype.GetAllNodes = function() {
  */
 dvt.Diagram.prototype.GetAllNodesMap = function() {
   var nodesMap = {};
-  for (var nodeId in this._nodes) {
-    nodesMap[nodeId] = this._nodes[nodeId];
+  if (this._nodes) {
+    for (var nodeId in this._nodes) {
+      nodesMap[nodeId] = this._nodes[nodeId];
+    }
   }
   return nodesMap;
 };
@@ -7837,10 +5883,19 @@ dvt.Diagram.prototype.GetAllNodesMap = function() {
  */
 dvt.Diagram.prototype.GetAllNodeObjects = function() {
   var allNodes = [];
-  for (var nodeId in this._nodes) {
-    allNodes.push(this._nodes[nodeId]);
+  if (this._nodes) {
+    for (var nodeId in this._nodes) {
+      allNodes.push(this._nodes[nodeId]);
+    }
   }
   return allNodes;
+};
+
+/**
+ * @override
+ */
+dvt.Diagram.prototype.GetAllRoots = function() {
+  return this._arRootIds;
 };
 
 /**
@@ -7850,7 +5905,7 @@ dvt.Diagram.prototype.GetAllNodeObjects = function() {
  */
 dvt.Diagram.prototype.GetRootNodeObjects = function() {
   var roots = [];
-  for (var i = 0; i < this._arRootIds.length; i++) {
+  for (var i = 0; this._arRootIds && i < this._arRootIds.length; i++) {
     var root = this._nodes[this._arRootIds[i]];
     if (root) {
       roots.push(root);
@@ -7870,7 +5925,7 @@ dvt.Diagram.prototype.HandleZoomEvent = function(event) {
       if (this.IsPanningEnabled()) {
         var zoom = event.getNewZoom();
         // Calculate the new content dimensions based on the new zoom
-        var contentDim = this._cachedViewBounds ? this._cachedViewBounds : this.GetViewBounds(event.getAnimator());
+        var contentDim = this._cachedViewBounds ? this._cachedViewBounds : this.GetViewBounds();
         this.ConstrainPanning(contentDim.x, contentDim.y, contentDim.w, contentDim.h, zoom);
       }
       break;
@@ -7878,7 +5933,7 @@ dvt.Diagram.prototype.HandleZoomEvent = function(event) {
       //do not override a viewport returned from the layout engine
       if (!this.IsLayoutViewport()) {
         // Calculate the new content dimensions based on the new zoom
-        var contentDim = this._cachedViewBounds ? this._cachedViewBounds : this.GetViewBounds(event.getAnimator());
+        var contentDim = this._cachedViewBounds ? this._cachedViewBounds : this.GetViewBounds();
         event.setZoomToFitBounds(contentDim);
       }
       break;
@@ -8202,24 +6257,81 @@ dvt.Diagram.prototype.processDefaultFocusEffect = function(nodeId, focused) {
 };
 
 /**
- * @override
+ * Updates nodes dimensions for the specified node context. Renders the node if it is necessary.
+ * @param {DvtDiagramLayoutContextNode} nodeContext
  */
-dvt.Diagram.prototype.renderNodeFromContext = function(nodeContext) {
+
+dvt.Diagram.prototype.updateNodeDims = function(nodeContext) {
+  if (!nodeContext.IsRendered) {
+    this.renderNodeFromContext(nodeContext, true);
+  }
+  else {
+    var node = this.getNodeById(nodeContext.getId());
+    nodeContext.setBounds(dvt.DiagramLayoutUtils.convertRectToDiagramRect(node.getLayoutBounds(true)));
+    nodeContext.setContentBounds(dvt.DiagramLayoutUtils.convertRectToDiagramRect(node.getContentBounds(true)));
+    nodeContext.setLabelBounds(dvt.DiagramLayoutUtils.convertRectToDiagramRect(node.getLabelBounds(true)));
+  }
+};
+
+/**
+ * Render leaf nodes only for the given node from layout context:
+ * if the node is a leaf it will be rendered,
+ * if the node is a container - walk down to the leaf nodes and render them
+ * @param {DvtDiagramLayoutContextNode} nodeContext
+ */
+dvt.Diagram.prototype.renderLeafNodeFromContext = function(nodeContext) {
+  var node = this.getNodeById(nodeContext.getId());
+  if (node.isDisclosed()) {
+    var childNodes = nodeContext.getChildNodes();
+    for (var i = 0; i < childNodes.length; i++) {
+      var childNode = childNodes[i];
+      this.renderLeafNodeFromContext(childNode);
+    }
+  }
+  else {
+    this.renderNodeFromContext(nodeContext, false);
+  }
+};
+
+/**
+ * Render node and updates corresponding layout context for the node
+ * @param {DvtDiagramLayoutContextNode} nodeContext
+ * @param {boolean} forceDims flag that indicates that a node should be measured after rendering
+ */
+dvt.Diagram.prototype.renderNodeFromContext = function(nodeContext, forceDims) {
   if (!nodeContext.IsRendered) {
     var node = this.getNodeById(nodeContext.getId());
     if (node.isDisclosed()) {
       //render all child nodes and apply layout context
       var layoutContext = this.CreateEmptyLayoutContext();
+      layoutContext.setDirtyContext(nodeContext.LayoutContext ?
+          nodeContext.LayoutContext.getDirtyContext() : null);
+      if (this._oldDataAnimState)
+        this._oldDataAnimState.updateStateFromLayoutContext(layoutContext);
       var childNodes = nodeContext.getChildNodes();
+
+      //render all child nodes without measurements
       for (var i = 0; i < childNodes.length; i++) {
         var childNode = childNodes[i];
-        this.renderNodeFromContext(childNode);
+        this.renderNodeFromContext(childNode, false);
         layoutContext.addNode(childNode);
       }
+      //update child nodes dimensions after rendering is done
+      for (var i = 0; i < childNodes.length; i++) {
+        this.updateNodeDims(childNodes[i]);
+      }
+
       this.ApplyLayoutContext(layoutContext);
     }
     node.render();
-    this.UpdateNodeLayoutContext(nodeContext, node);
+    //update node layout context
+    var padding = node.isDisclosed() ? node.getContainerPadding() : null;
+    if (padding)
+      nodeContext.setContainerPadding(padding.top, padding.right, padding.bottom, padding.left);
+    nodeContext.setBounds(dvt.DiagramLayoutUtils.convertRectToDiagramRect(node.getLayoutBounds(forceDims)));
+    nodeContext.setContentBounds(dvt.DiagramLayoutUtils.convertRectToDiagramRect(node.getContentBounds(forceDims)));
+    nodeContext.setLabelBounds(dvt.DiagramLayoutUtils.convertRectToDiagramRect(node.getLabelBounds(forceDims)));
+    nodeContext.IsRendered = true;
   }
 };
 
@@ -8231,26 +6343,12 @@ dvt.Diagram.prototype.renderNodeFromContext = function(nodeContext) {
  * @private
  */
 dvt.Diagram.prototype._prepareNodes = function(parent, nodesData) {
-  var nodeDefaults = this.getOptions()['styleDefaults']['nodeDefaults'];
+  if (!nodesData)
+    return;
 
-  //If default background/container style is specified in options nodeDefaults, make sure it is an object
-  //Note: don't need to convert 'backgroundSvgStyle' and 'containerSvgStyle', since those properties
-  //do not support string values
-  this._prepareNodeStyle(nodeDefaults, 'backgroundStyle');
-  this._prepareNodeStyle(nodeDefaults, 'containerStyle');
+  var nodeDefaults = DvtDiagramStyleUtils.getNodeDefaultStyles(this);
   for (var i = 0; i < nodesData.length; i++) {
-    var nodeData = nodesData[i];
-
-    var convertedNodeData = DvtDiagramNode.ConvertNodeData(nodeData);
-    if (this.getOptions()['nodeProperties']) {
-      var styleProps = dvt.JsonUtils.clone(this.getOptions()['nodeProperties'](nodeData));
-      //If background/container style is specified in nodeData, make sure it is an object before merging
-      this._prepareNodeStyle(styleProps, 'backgroundStyle');
-      this._prepareNodeStyle(styleProps, 'containerStyle');
-      convertedNodeData = dvt.JsonUtils.merge(convertedNodeData, styleProps);
-    }
-    nodeData = dvt.JsonUtils.merge(convertedNodeData, nodeDefaults);
-
+    var nodeData = DvtDiagramStyleUtils.getNodeStyles(this, nodesData[i], nodeDefaults);
     var node = DvtDiagramNode.newInstance(this, nodeData);
     var nodeId = node.getId();
     if (parent) {
@@ -8262,7 +6360,7 @@ dvt.Diagram.prototype._prepareNodes = function(parent, nodesData) {
     }
     this._arNodeIds.push(nodeId);
     // if child nodes option is defined and the node is disclosed, process the data
-    if (nodeData['nodes']) {
+    if (nodeData['nodes'] && nodeData['nodes'].length > 0) {
       if (this._isNodeDisclosed(nodeId)) {
         node.setDisclosed(true);
         this._prepareNodes(node, nodeData['nodes']);
@@ -8279,19 +6377,6 @@ dvt.Diagram.prototype._prepareNodes = function(parent, nodesData) {
         this.getNodesPane().addChild(node);
       this._nodes[nodeId] = node;
     }
-  }
-};
-
-/**
- * If the option node style attribute is a string, converts it to object
- * @param {object} optionsObject  node options object
- * @param {string} attribute  node attribute
- * @private
- */
-dvt.Diagram.prototype._prepareNodeStyle = function(optionsObject, attribute) {
-  if (optionsObject && optionsObject[attribute] != null &&
-          !(optionsObject[attribute] instanceof Object)) {
-    optionsObject[attribute] = dvt.CSSStyle.cssStringToObject(optionsObject[attribute]);
   }
 };
 
@@ -8344,30 +6429,70 @@ dvt.Diagram.prototype.collapse = function(nodeId) {
 
 /**
  * Adds child layout context to the parent layout context
- * @param {DvtDiagramNode} parentNode perent node
+ * @param {DvtDiagramNode} parentNode parent node
  * @param {DvtDiagramLayoutContextNode} lcParentNode parent layout context
  * @param {DvtDiagramLayoutContext} layoutContext diagram layout context
- * @param {array} nodeIds array of nodes added to layout context
+ * @param {boolean} bRenderAfter flag that indicates that node is not rendered yet,
+ *                  it will be render during layout or after layout is done
  * @private
  */
-dvt.Diagram.prototype._addChildLayoutContext = function(parentNode, lcParentNode, layoutContext, nodeIds) {
-
+dvt.Diagram.prototype._addLayoutContextForChildNodes = function(parentNode, lcParentNode, layoutContext, bRenderAfter) {
   if (parentNode.isDisclosed()) {
     var arChildIds = parentNode.getChildNodeIds();
-    var lcChildNodes = [];
-    for (var j = 0; j < arChildIds.length; j++) {
-      var childNode = this.getNodeById(arChildIds[j]);
-      if (childNode.getVisible()) {
-        nodeIds[childNode.getId()] = true;
-        var lcChildNode = this.CreateLayoutContextNode(childNode, null, this._bRendered ? false : true, layoutContext);
-        layoutContext.addNodeToMap(lcChildNode);
-        lcChildNode.setParentNode(lcParentNode);
-        lcChildNodes.push(lcChildNode);
-        this._addChildLayoutContext(childNode, lcChildNode, layoutContext, nodeIds);
-      }
-    }
+    var lcChildNodes = this._createLayoutContextForChildNodes(lcParentNode, layoutContext, arChildIds, bRenderAfter);
     lcParentNode.setChildNodes(lcChildNodes);
   }
+};
+
+/**
+ * Append new nodes to existing child nodes - happens during add event.
+ * @param {DvtDiagramNode} parentNode parent node
+ * @param {DvtDiagramLayoutContextNode} lcParentNode parent layout context
+ * @param {DvtDiagramLayoutContext} layoutContext diagram layout context
+ * @param {array} nodes array of nodes data to append to the layout context
+ * @param {number} index an index where the nodes should be added
+ * @private
+ */
+dvt.Diagram.prototype._appendLayoutContextForChildNodes = function(parentNode, lcParentNode, layoutContext, nodes, index) {
+  if (parentNode.isDisclosed()) {
+    var arChildIds = nodes.reduce(function(acc, obj) {
+      acc.push(obj['id']);
+      return acc;
+    }, []);
+    var lcChildNodes = this._createLayoutContextForChildNodes(lcParentNode, layoutContext, arChildIds, true);
+    var lcChildNodesExisting = lcParentNode.getChildNodes() || [];
+    lcChildNodes = dvt.ArrayUtils.insert(lcChildNodesExisting, lcChildNodes, index);
+    lcParentNode.setChildNodes(lcChildNodes);
+    lcParentNode.setDisclosed(true);
+    lcParentNode.SetContainerPaddingObj(dvt.BaseDiagram.getLayoutContainerPadding(parentNode.getContainerPadding()));
+    lcParentNode.UpdateParentNodes();
+  }
+};
+
+/**
+ * Creates layout context for child nodes specified by array of ids.
+ * @param {DvtDiagramLayoutContextNode} lcParentNode parent layout context
+ * @param {DvtDiagramLayoutContext} layoutContext diagram layout context
+ * @param {array} arChildIds array of child ids
+ * @param {boolean} bRenderAfter flag that indicates that node is not rendered yet,
+ *                  it will be render during layout or after layout is done
+ * @return {array} array of layout context for the child nodes
+ * @private
+ */
+dvt.Diagram.prototype._createLayoutContextForChildNodes = function(lcParentNode, layoutContext, arChildIds, bRenderAfter) {
+  var lcChildNodes = [];
+  for (var j = 0; j < arChildIds.length; j++) {
+    var childNode = this.getNodeById(arChildIds[j]);
+    if (childNode.getVisible()) {
+      var lcChildNode = this.CreateLayoutContextNode(childNode, null, bRenderAfter, layoutContext);
+      lcChildNode.copyFrom(this._oldLayoutContext ? this._oldLayoutContext.getNodeById(arChildIds[j]) : null);
+      layoutContext.addNodeToMap(lcChildNode);
+      lcChildNode.setParentNode(lcParentNode);
+      lcChildNodes.push(lcChildNode);
+      this._addLayoutContextForChildNodes(childNode, lcChildNode, layoutContext, bRenderAfter);
+    }
+  }
+  return lcChildNodes;
 };
 
 /**
@@ -8415,6 +6540,9 @@ dvt.Diagram.prototype._isLinkPromoted = function(linkData) {
     return false;
   }
 
+  // Use two maps to maintain promoted links.
+  // One for promoted link data objects - used for rendering and layout.
+  // One for keeping track of original links converted to promoted - used in data source events.
   var linkId = DvtDiagramLink.GetPromotedLinkId(startPromotedId, endPromotedId);
   if (!this._promotedLinksMap)
     this._promotedLinksMap = {};
@@ -8428,6 +6556,9 @@ dvt.Diagram.prototype._isLinkPromoted = function(linkData) {
   else {
     this._promotedLinksMap[linkId]['_links'].push(linkData);
   }
+  if (!this._linkToPromotedMap)
+    this._linkToPromotedMap = {};
+  this._linkToPromotedMap[linkData['id']] = linkId;
   return true;
 };
 
@@ -8519,14 +6650,14 @@ dvt.Diagram.prototype.ShowLinkCreationFeedback = function(event) {
         var startStagePos = this.getEventManager().DragSource.getDragCoords();
         var startLocalPos = this.getPanZoomCanvas().getContentPane().stageToLocal({x: startStagePos.x, y: startStagePos.y});
         var linkDefaults = this.getOptions()['styleDefaults']['linkDefaults'];
-        this._prepareLinkStyle(linkDefaults, 'style');
+        DvtDiagramStyleUtils.prepareLinkStyle(linkDefaults, 'style');
         //get additional styles from callback
         var styleCallback = this.getOptions()['dnd']['drag']['ports']['linkStyle'];
         if (styleCallback && typeof styleCallback === 'function') {
           var linkFeedbackStyle = styleCallback({'dataContext': obj.getDataContext(), 'portElement': obj.__dragPort});
           if (linkFeedbackStyle) {
             linkDefaults['style'] = dvt.JsonUtils.merge(linkFeedbackStyle['svgStyle'], linkDefaults['style']);
-            linkDefaults['svgClassName'] = linkFeedbackStyle['svgClassName'] ? linkFeedbackStyle['svgClassName'] : linkDefaults['svgClassName'];
+            linkDefaults['svgClassName'] = linkFeedbackStyle['svgClassName'] || linkDefaults['className'];
           }
         }
         var linkData = {
@@ -8552,6 +6683,364 @@ dvt.Diagram.prototype.ShowLinkCreationFeedback = function(event) {
 dvt.Diagram.prototype.HideLinkCreationFeedback = function() {
   this.getNodesPane().removeChild(this._linkCreationFeedBack);
   this._linkCreationFeedBack = null;
+};
+
+/**
+ * Data source change event handler
+ * @param {string} type event type - add, remove or change
+ * @param {Object} event event data
+ */
+dvt.Diagram.prototype.handleDataSourceChangeEvent = function(type, event) {
+  var animationOnDataChange = DvtDiagramStyleUtils.getAnimationOnDataChange(this);
+  if (animationOnDataChange !== 'none') {
+    this._oldDataAnimState = new DvtDiagramDataAnimationState(this, type, event);
+  }
+
+  this._currentViewport = this.getPanZoomCanvas().getViewport();
+  //reset pan constrains
+  if (this.IsPanningEnabled()) {
+    var pzc = this.getPanZoomCanvas();
+    pzc.setMinPanY(null);
+    pzc.setMaxPanY(null);
+    pzc.setMinPanX(null);
+    pzc.setMaxPanX(null);
+  }
+  var nodes = event['data']['nodes'];
+  var links = event['data']['links'];
+  var parentId, parentNode;
+  if (type == 'add') {
+    parentId = event['parentId'];
+    parentNode = parentId ? this.getNodeById(parentId) : null;
+    if (parentNode) {
+      parentNode.appendChildNodesData(nodes, event['index']);
+      if (this._isNodeDisclosed(parentId)) {
+        parentNode.setDisclosed(true);
+        this._prepareNodes(parentNode, nodes);
+      }
+    }
+    else {
+      this._prepareNodes(null, nodes);
+    }
+    this.renderLinks(links);
+  }
+  else if (type == 'change') {
+    if (nodes) {
+      var nodeDefaults = DvtDiagramStyleUtils.getNodeDefaultStyles(this);
+      for (var i = 0; i < nodes.length; i++) {
+        var node = this.getNodeById(nodes[i]['id']);
+        if (node) {
+          var newData = DvtDiagramStyleUtils.getNodeStyles(this, nodes[i], nodeDefaults);
+          node.setData(newData);
+        }
+      }
+    }
+    if (links) {
+      // there are multiple way a link might change including start and end node change,
+      // the link might also be inside of a promoted link. Plain data update is not sufficient for the link
+      this._removeLinks(links);
+      this.renderLinks(links);
+    }
+  }
+  else if (type == 'remove') {
+    parentId = event['parentId'];
+    parentNode = parentId ? this.getNodeById(parentId) : null;
+    if (parentNode) {
+      this._removeNodes(parentNode, nodes);
+      parentNode.removeChildNodesData(nodes);
+      if (!parentNode.getData()['nodes'] || parentNode.getData()['nodes'].length === 0) {
+        parentNode.setDisclosed(false);
+      }
+    }
+    else {
+      this._removeNodes(null, nodes);
+    }
+    this._removeLinks(links);
+  }
+  //update animation state with new nodes and links objects if necessary
+  this._oldDataAnimState && this._oldDataAnimState.updateStateFromEvent(type, event);
+
+
+  this._updateLayoutContext(type, event);
+  var emptyDiagram = this.GetAllNodes().length === 0;
+  if (!emptyDiagram) {
+    this._renderCount++;
+    var res = this.layout();
+    var thisRef = this;
+    var renderCount = this._renderCount;
+    res.then(
+        function() {
+          if (renderCount === thisRef._renderCount) {
+            thisRef._partialUpdate = true;
+            thisRef._processContent(false);
+            thisRef._partialUpdate = false;
+          }
+        }, //success
+        function() {
+          if (renderCount === thisRef._renderCount) {
+            thisRef.removeChild(thisRef._oldPanZoomCanvas);
+            thisRef._oldPanZoomCanvas = null;
+            thisRef._bRendered = true;
+            this._currentViewport = null;
+          }
+        } //failure
+    );
+  }
+  else {
+    this._processContent(emptyDiagram);
+  }
+};
+
+/**
+ * Updates existing layout context according to the event type and data - changes, adds or remvoes nodes and links
+ * @param {string} type event type
+ * @param {Object} event DiagramDataSource event
+ * @private
+ */
+dvt.Diagram.prototype._updateLayoutContext = function(type, event) {
+  if (!this._layoutContext) {
+    this._layoutContext = this.CreateEmptyLayoutContext();
+  }
+  var layoutContext = this._layoutContext;
+  layoutContext.setEventData({'type': type, 'data': event});
+
+  var nodes = event['data']['nodes'];
+  var links = event['data']['links'];
+  var i, nc, nodeId, pc, parentNode, linkId;
+  if (event['parentId']) {
+    pc = layoutContext.getNodeById(event['parentId']);
+    parentNode = this.getNodeById(event['parentId']);
+  }
+  if (type == 'add') {
+    if (nodes) {
+      // Add layout context for the nodes - either append node context
+      // to the existing parent or add node context to the top level
+      if (pc && parentNode) {
+        pc.Reset();
+        this._appendLayoutContextForChildNodes(parentNode, pc, layoutContext, nodes, event['index']);
+      }
+      else {
+        for (i = 0; i < nodes.length; i++) {
+          nodeId = nodes[i]['id'];
+          if (!this.getNodeById(nodeId))
+            continue;
+          nc = this.CreateLayoutContextNode(this.getNodeById(nodeId), null, true, layoutContext);
+          this._addLayoutContextForChildNodes(this.getNodeById(nodeId), nc, layoutContext, true);
+          layoutContext.addNode(nc);
+        }
+      }
+    }
+    if (links) {
+      for (i = 0; i < links.length; i++) {
+        linkId = links[i]['id'];
+        var link = this.getLinkById(linkId) || this.getLinkById(this._linkToPromotedMap[linkId]);
+        if (link) {
+          if (layoutContext.getLinkById(link.getId())) { // links exists - case of promoted link
+            continue;
+          }
+          var startId = link.getData()['startNode'];
+          var endId = link.getData()['endNode'];
+          if (layoutContext.getNodeById(startId) && layoutContext.getNodeById(endId)) {
+            layoutContext.addLink(this.CreateLayoutContextLink(link, startId, endId, null, layoutContext));
+          }
+        }
+      }
+    }
+  }
+  else if (type == 'change') {
+    if (nodes) {
+      // Update nodes
+      for (i = 0; i < nodes.length; i++) {
+        nodeId = nodes[i]['id'];
+        nc = layoutContext.getNodeById(nodeId);
+        nc.Reset();
+        nc.UpdateParentNodes();
+      }
+    }
+    if (links) {
+      // Update links - since link data could be updated in a number of ways
+      // including updating start and end nodes, the promoted links might be affected.
+      // To update links - remove links that don't exist anymore. Then go throught
+      // list of updated link data, find corresponding link context and recreate it.
+      for (i = layoutContext.getLinkCount() - 1; i >= 0; i--) {
+        var lc = layoutContext.getLinkByIndex(i);
+        if (!this._links[lc.getId()]) {
+          layoutContext.removeLink(lc);
+        }
+      }
+      for (i = 0; i < links.length; i++) {
+        linkId = links[i]['id'];
+        var link = this.getLinkById(linkId) || this.getLinkById(this._linkToPromotedMap[linkId]);
+        if (link) {
+          layoutContext.removeLink(layoutContext.getLinkById(link.getId()));
+          var startId = link.getData()['startNode'];
+          var endId = link.getData()['endNode'];
+          if (layoutContext.getNodeById(startId) && layoutContext.getNodeById(endId)) {
+            layoutContext.addLink(this.CreateLayoutContextLink(link, startId, endId, null, layoutContext));
+          }
+        }
+      }
+    }
+  }
+  else if (type == 'remove') {
+    if (nodes) {
+      // Remove node context for the requested nodes,
+      // set parent nodes as not rendered,
+      // update disclosure state of the parent node
+      for (i = 0; i < nodes.length; i++) {
+        nodeId = nodes[i]['id'];
+        nc = layoutContext.getNodeById(nodeId);
+        layoutContext.removeNode(pc, nc);
+      }
+      if (pc && parentNode) {
+        pc.Reset();
+        pc.UpdateParentNodes();
+        pc.setDisclosed(parentNode.isDisclosed());
+      }
+    }
+    // Run through layout context for the links and remove all the links
+    // that do not exist in the links map. Even if the links might not be
+    // specified for the removal by the event, connecting links will be
+    // removed when corresponding start or end node is removed.
+    for (i = layoutContext.getLinkCount() - 1; i >= 0; i--) {
+      var lc = layoutContext.getLinkByIndex(i);
+      if (!this._links[lc.getId()]) {
+        layoutContext.removeLink(lc);
+      }
+    }
+  }
+};
+
+/**
+ * @private
+ * Returns layout context object. Crates one of necessary
+ * @return {DvtDiagramLayoutContext} layout context for the diagram
+ */
+dvt.Diagram.prototype._getLayoutContext = function() {
+  if (!this._layoutContext) {
+    var layoutContext = this.CreateEmptyLayoutContext();
+    // add all nodes starting with root nodes
+    for (var n = 0; n < this._arRootIds.length; n++) {
+      var nodeId = this._arRootIds[n];
+      if (!this.getNodeById(nodeId))
+        continue;
+      var bRenderAfter = this._bRendered ? false : true;
+      var rootNode = this.getNodeById(nodeId);
+      var lcRootNode = this.CreateLayoutContextNode(rootNode, null, bRenderAfter, layoutContext);
+      lcRootNode.copyFrom(this._oldLayoutContext ? this._oldLayoutContext.getNodeById(nodeId) : null);
+      this._addLayoutContextForChildNodes(rootNode, lcRootNode, layoutContext, bRenderAfter);
+      layoutContext.addNode(lcRootNode);
+    }
+    // add all links
+    for (var linkId in this._links) {
+      var link = this.getLinkById(linkId);
+      if (!link)
+        continue;
+      var startId = link.getData()['startNode'];
+      var endId = link.getData()['endNode'];
+      if (layoutContext.getNodeById(startId) && layoutContext.getNodeById(endId)) {
+        var lcLink = this.CreateLayoutContextLink(link, startId, endId, null, layoutContext);
+        lcLink.copyFrom(this._oldLayoutContext ? this._oldLayoutContext.getLinkById(linkId) : null);
+        layoutContext.addLink(lcLink);
+      }
+    }
+    this._layoutContext = layoutContext;
+    this._oldLayoutContext = null;
+  }
+  return this._layoutContext;
+};
+
+/**
+ * @private
+ * Removes specified nodes
+ * @param {DvtDiagramNode} parent parend node
+ * @param {array} nodesData an array of nodes data objects to remove
+ */
+dvt.Diagram.prototype._removeNodes = function(parent, nodesData) {
+  if (!nodesData || (parent && !parent.isDisclosed())) {
+    return;
+  }
+
+  var linksToRemove = [];
+  for (var i = 0; i < nodesData.length; i++) {
+    var nodeId = nodesData[i]['id'];
+    var node = this.getNodeById(nodeId);
+    //remove child nodes
+    this._removeNodes(node, node.getData()['nodes']);
+    //remove all links connected to the node
+    for (var linkId in this._links) {
+      var link = this.getLinkById(linkId);
+      if (!link)
+        continue;
+      if (link.getStartId() == nodeId || link.getEndId() == nodeId) {
+        linksToRemove.push(link.getData());
+      }
+    }
+
+    //remove itself
+    if (parent) {
+      parent.removeChildNode(node);
+    }
+    else {
+      dvt.ArrayUtils.removeItem(this._arRootIds, nodeId);
+      this.getNodesPane().removeChild(node);
+    }
+    dvt.ArrayUtils.removeItem(this._arNodeIds, nodeId);
+    this._nodes[nodeId] = null;
+  }
+  this._removeLinks(linksToRemove);
+};
+
+/**
+ * @private
+ * Removes specified links
+ * @param {array} linksData an array of link data objects to remove
+ */
+dvt.Diagram.prototype._removeLinks = function(linksData) {
+  if (!linksData || linksData.length == 0) {
+    return;
+  }
+  for (var i = 0; i < linksData.length; i++) {
+    var linkId = linksData[i]['id'];
+    var link = this.getLinkById(linkId);
+    if (link) {
+      var parent = link.getParent();
+      parent.removeChild(link);
+      var startNode = this.getNodeById(link.getStartId());
+      var endNode = this.getNodeById(link.getEndId());
+      startNode && startNode.removeOutLinkId(linkId);
+      endNode && endNode.removeInLinkId(linkId);
+      dvt.ArrayUtils.removeItem(this._arLinkIds, linkId);
+      this._links[linkId] = null;
+    }
+    else if (this._linkToPromotedMap[linkId]) {
+      var promotedLinkId = this._linkToPromotedMap[linkId];
+      var promotedLink = this._links[promotedLinkId];
+      var data = promotedLink ? promotedLink.getData()['_links'] : null;
+      if (data && data.length == 1 && data[0]['id'] == linkId) {
+        //just remove the promoted link
+        var parent = promotedLink.getParent();
+        parent.removeChild(promotedLink);
+        var startNode = this.getNodeById(promotedLink.getStartId());
+        var endNode = this.getNodeById(promotedLink.getEndId());
+        startNode && startNode.removeOutLinkId(promotedLinkId);
+        endNode && endNode.removeInLinkId(promotedLinkId);
+        dvt.ArrayUtils.removeItem(this._arLinkIds, promotedLink.getId());
+        this._links[promotedLink.getId()] = null;
+        this._promotedLinksMap[promotedLink.getId()] = null;
+        this._linkToPromotedMap[linkId] = null;
+      }
+      else if (data) {
+        // don't remove the promoted link, but update its links data
+        // don't need to update layout context for the link, since it has a reference to the data
+        for (var i = 0; i < data.length; i++) {
+          if (data[i]['id'] == linkId) {
+            data.splice(i, 1);
+          }
+        }
+        this._linkToPromotedMap[linkId] = null;
+      }
+    }
+  }
 };
 
 //
@@ -8709,9 +7198,297 @@ DvtDiagramDefaults.VERSION_1 = {
 };
 
 /**
+ * @override
+ */
+DvtDiagramDefaults.prototype.getNoCloneObject = function() {
+  return {'data': true };
+};
+
+/**
  * Contains overrides for the 'alta' skin.
  */
 DvtDiagramDefaults.SKIN_ALTA = {
+};
+//
+// $Header: dsstools/modules/dvt-shared-js/src/META-INF/bi/sharedJS/toolkit/diagram/DvtDiagramDataAnimationState.js /st_jdevadf_jet.trunk/1 2017/06/19 15:30:24  Exp $
+//
+// DvtDiagramDataAminationState.js
+//
+// Copyright (c) 2017, Oracle and/or its affiliates. All rights reserved.
+//
+//    NAME
+//     DvtDiagramDataAminationState.js - <one-line expansion of the name>
+//
+//    DESCRIPTION
+//     <short description of component this file declares/defines>
+//
+//    NOTES
+//     <other useful comments, qualifications, etc. >
+//
+//    MODIFIED  (MM/DD/YY)
+//       06/05/17 - Created
+//
+/**
+ * @protected
+ * Defines the data animation state for DvtDiagram
+ * @class DvtDiagramDataAnimationState
+ * @constructor
+ * @param {dvt.Diagram} diagram the parent diagram component
+ * @param {string} type event type
+ * @param {Object} event event data
+ * initializing this context
+ */
+var DvtDiagramDataAnimationState = function(diagram, type, event) {
+  this.Init(diagram, type, event);
+};
+
+dvt.Obj.createSubclass(DvtDiagramDataAnimationState, dvt.Obj, 'DvtDiagramDataAnimationState');
+
+
+/**
+ * @protected
+ * Initialize the data animation state.
+ * @param {dvt.Diagram} diagram the parent diagram component
+ * @param {string} type event type
+ * @param {Object} event event data
+ */
+DvtDiagramDataAnimationState.prototype.Init = function(diagram, type, event) {
+  this._diagram = diagram;
+  this._nodes = [];
+  this._newNodes = [];
+  this._links = [];
+  this._newLinks = [];
+  this._processedObjMap = {};
+  this.PanZoomMatrix = this._diagram.getPanZoomCanvas().getContentPane().getMatrix();
+  this.IsPartialUpdate = type && event ? true : false;
+  this.NodesMap = this._diagram.GetAllNodesMap();
+  this.LinksMap = this._diagram.GetAllLinksMap();
+  this._setNodes(type, event);
+  this._setLinks(type, event);
+};
+
+/**
+ * Get the id of the state.
+ * @return {string}
+ */
+DvtDiagramDataAnimationState.prototype.getId = function() {
+  return this._diagram.getId();
+};
+
+/**
+ * Gets options for the diagram state
+ * @return {object} option
+ */
+DvtDiagramDataAnimationState.prototype.getOptions = function() {
+  return this._diagram.getOptions();
+};
+
+/**
+ * Gets nodes used for diagram animation
+ * @return {array} flat array of nodes - roots for complete refresh
+ *                or an array of modified nodes for partial update
+ */
+DvtDiagramDataAnimationState.prototype.getNodes = function() {
+  return this._nodes;
+};
+
+/**
+ * Gets links used for diagram animation
+ * @return {array} an array of links to animate
+ */
+DvtDiagramDataAnimationState.prototype.getLinks = function() {
+  return this._links;
+};
+
+/**
+ * Gets an array of new nodes in the updated diagram, that should be used for animation
+ * @return {array} an array of new node states
+ */
+DvtDiagramDataAnimationState.prototype.getNewNodes = function() {
+  return this._newNodes;
+};
+
+/**
+ * Gets an array of new links in the updated diagram, that should be used for animation
+ * @return {array} an array of new link states
+ */
+DvtDiagramDataAnimationState.prototype.getNewLinks = function() {
+  return this._newLinks;
+};
+
+/**
+ * Updates states using objects from event - populates new links and nodes arrays with new objects.
+ * Done as a second step during event updates.
+ * @param {string} type event type if applicable
+ * @param {Object} event event data
+ */
+DvtDiagramDataAnimationState.prototype.updateStateFromEvent = function(type, event) {
+  if (!event)
+    return;
+  var nodes = event['data']['nodes'];
+  var links = event['data']['links'];
+  var i, link, linkId;
+  if (type == 'add') {
+    //update nodes
+    for (i = 0; nodes && i < nodes.length; i++) {
+      var node = this._diagram.getNodeById(nodes[i]['id']);
+      if (node) {
+        // animate new nodes if they are added to the top level
+        // or already disclosed container
+        if (this._wasParentDisclosed === true)
+          this._newNodes.push(node);
+        this._processedObjMap[node.getId()] = true;
+      }
+    }
+    for (i = 0; links && i < links.length; i++) {
+      linkId = links[i]['id'];
+      link = this._diagram.getLinkById(linkId) ||
+          (this._diagram._linkToPromotedMap && this._diagram.getLinkById(this._diagram._linkToPromotedMap[linkId]));
+      if (link) {
+        this._newLinks.push(link);
+        this._processedObjMap[link.getId()] = true;
+      }
+    }
+  }
+  else if (type == 'change') {
+    for (i = 0; links && i < links.length; i++) {
+      linkId = links[i]['id'];
+      link = this._diagram.getLinkById(linkId) ||
+              (this._diagram._linkToPromotedMap && this._diagram.getLinkById(this._diagram._linkToPromotedMap[linkId]));
+      if (link) {
+        this._newLinks.push(link);
+        this._processedObjMap[link.getId()] = true;
+      }
+    }
+  }
+  // we don't have to do anything for remove, since old objects are populated and new ones are not created
+};
+
+/**
+ * Updates states using objects from dirty content. The objects processed earlier during event updates will be skipped.
+ * @param {DvtDiagramLayoutContext} layoutContext diagram layout context
+ */
+DvtDiagramDataAnimationState.prototype.updateStateFromLayoutContext = function(layoutContext) {
+  if (this.IsPartialUpdate) {
+    var dirtyLayoutContext = layoutContext.getDirtyContext();
+    for (var objId in dirtyLayoutContext) {
+      if (this._processedObjMap[objId] || this._processedObjMap[objId]) {
+        continue;
+      }
+      var obj = this._diagram.getNodeById(objId) || this._diagram.getLinkById(objId);
+      if (obj instanceof DvtDiagramNode) {
+        this._nodes.push(obj.getAnimationState());
+        this._newNodes.push(obj);
+        this._processedObjMap[objId] = true;
+      }
+      else if (obj instanceof DvtDiagramLink) {
+        this._links.push(obj.getAnimationState());
+        this._newLinks.push(obj);
+        this._processedObjMap[objId] = true;
+      }
+    }
+  }
+};
+
+/**
+ * Sets nodes used for diagram animation
+ * @param {string} type event type if applicable
+ * @param {Object} event event data
+ * @private
+ */
+DvtDiagramDataAnimationState.prototype._setNodes = function(type, event) {
+  if (this.IsPartialUpdate) {
+    var nodes = event['data']['nodes'];
+    var parentId = event['parentId'];
+    if (type == 'add') {
+      this._addAncestorStates(parentId);
+    }
+    else if (type == 'change') {
+      for (var i = 0; nodes && i < nodes.length; i++) {
+        var node = this._diagram.getNodeById(nodes[i]['id']);
+        if (node) {
+          this._addAncestorStates(node.getGroupId());
+          this._nodes.push(node.getAnimationState());
+          this._newNodes.push(node);
+          this._processedObjMap[node.getId()] = true;
+        }
+      }
+    }
+    else if (type == 'remove') {
+      this._addAncestorStates(parentId);
+      if (nodes && !parentId) {
+        for (var i = 0; i < nodes.length; i++) {
+          var node = this._diagram.getNodeById(nodes[i]['id']);
+          if (node) {
+            this._nodes.push(node);
+            this._processedObjMap[node.getId()] = true;
+          }
+        }
+      }
+    }
+  }
+  else {
+    this._nodes = this._diagram.GetRootNodeObjects();
+  }
+};
+
+/**
+ * Sets links used for diagram animation
+ * @param {string} type event type if applicable
+ * @param {Object} event event data
+ * @private
+ */
+DvtDiagramDataAnimationState.prototype._setLinks = function(type, event) {
+  if (this.IsPartialUpdate) {
+    var links = event['data']['links'];
+    if (!links)
+      return;
+    var i, link, linkId;
+    if (type == 'change') {
+      for (i = 0; i < links.length; i++) {
+        linkId = links[i]['id'];
+        link = this._diagram.getLinkById(linkId) ||
+                (this._diagram._linkToPromotedMap && this._diagram.getLinkById(this._diagram._linkToPromotedMap[linkId]));
+        if (link) {
+          this._links.push(link.getAnimationState());
+          this._processedObjMap[link.getId()] = true;
+        }
+      }
+    }
+    else if (type == 'remove') {
+      for (i = 0; i < links.length; i++) {
+        linkId = links[i]['id'];
+        link = this._diagram.getLinkById(linkId) ||
+                (this._diagram._linkToPromotedMap && this._diagram.getLinkById(this._diagram._linkToPromotedMap[linkId]));
+        if (link) {
+          this._links.push(link);
+          this._processedObjMap[link.getId()] = true;
+        }
+      }
+    }
+  }
+  else {
+    this._links = this._diagram.GetAllLinkObjects();
+  }
+};
+
+/**
+ * Populates new and old states for updated container nodes
+ * @param {string} parentId id for updated container
+ * @private
+ */
+DvtDiagramDataAnimationState.prototype._addAncestorStates = function(parentId) {
+  var parentNode = parentId ? this._diagram.getNodeById(parentId) : null;
+  // use this member during add nodes operation - animate new nodes when they are
+  // added to to the top level or an already disclosed container
+  this._wasParentDisclosed = parentNode ? parentNode.isDisclosed() : true;
+  while (parentNode) {
+    var oldState = parentNode.getAnimationState(parentNode.getId() === parentId);
+    this._nodes.push(oldState);
+    this._newNodes.push(parentNode);
+    this._processedObjMap[parentNode.getId()] = true;
+    parentNode = parentNode.getGroupId() ? this._diagram.getNodeById(parentNode.getGroupId()) : null;
+  }
 };
 /**
  * Animation handler for Diagram
@@ -8778,7 +7555,7 @@ DvtDiagramDataAnimationHandler.prototype.getNewDiagram = function() {
  * @return {number} the animation duration
  */
 DvtDiagramDataAnimationHandler.prototype.getAnimationDuration = function() {
-  return dvt.StyleUtils.getTimeMilliseconds(this._oldDiagram.getOptions()['styleDefaults']['animationDuration']) / 1000;
+  return DvtDiagramStyleUtils.getAnimationDuration(this._oldDiagram);
 };
 
 /**
@@ -8822,6 +7599,10 @@ DvtDiagramDataAnimationHandler.prototype.constructAnimation = function(oldList, 
         else if (oldLinksCount < newLinksCount && !skip[newLink.getId()]) { //collapse
           this._constructExpandCollapseAnimation(newLink, oldLinksMap, skip, false);
         }
+        else if (oldLinksCount == newLinksCount) {
+          //a single link inside of promoted - plain update
+          newLink.animateUpdate(this, oldLink);
+        }
       }
     }
     //check for inserts
@@ -8829,7 +7610,7 @@ DvtDiagramDataAnimationHandler.prototype.constructAnimation = function(oldList, 
       oldLink = oldLinksMap[id];
       newLink = newLinksMap[id];
       // if no match found, check if the link is invisible, do nothing for invisible link
-      if (!oldLink && (dvt.ArrayUtils.getIndex(this.getOldDiagram().getLinkIds(), newLink.getId()) == -1)) {
+      if (!oldLink && !this.getOldDiagram().LinksMap[newLink.getId()]) {
         newLink.animateInsert(this);
       }
     }
@@ -8876,6 +7657,9 @@ DvtDiagramDataAnimationHandler._expandLinksArrayToMap = function(linkArray) {
   var list = {};
   for (var i = 0; i < linkArray.length; i++) {
     var link = linkArray[i];
+    if (!link) {
+      continue;
+    }
     if (link.isPromoted()) {
       var consolidatedLinks = link.getData()['_links'];
       for (var li = 0; li < consolidatedLinks.length; li++) {
@@ -9060,9 +7844,7 @@ DvtDiagramEventManager.prototype.GetDragSourceType = function(event) {
     }
     var dragPort;
     if (this._linkDragSelector) {
-      var dragCoords = this.DragSource.getDragCoords();
-      var absolutePos = this._context.stageToPageCoords(dragCoords.x, dragCoords.y);
-      dragPort = this._getPortElement(document.elementFromPoint(absolutePos.x, absolutePos.y), this._linkDragSelector);
+      dragPort = this._getPortElement(document.elementFromPoint(event.getNativeEvent().clientX, event.getNativeEvent().clientY), this._linkDragSelector);
       if (dragPort) {
         this.LinkCreationStarted = true;
         obj.__dragPort = dragPort;
@@ -9321,8 +8103,8 @@ DvtDiagramEventManager.prototype.GetDropEventPayload = function(event) {
     }
     var bounds = obj.getDimensions(this._context.getStage());
     var relNodePos = bounds ? this._diagram.getPanZoomCanvas().getContentPane().stageToLocal({x: bounds.x, y: bounds.y}) : null;
-    payload['nodeX'] = relNodePos ? relPos.x - relNodePos.x : null;
-    payload['nodeY'] = relNodePos ? relPos.y - relNodePos.y : null;
+    payload['nodeX'] = relNodePos ? relPos.x - relNodePos.x + offsetX : null;
+    payload['nodeY'] = relNodePos ? relPos.y - relNodePos.y + offsetY : null;
   }
   else if (obj instanceof DvtDiagramLink) {
     payload['linkContext'] = obj.getDataContext();
@@ -9514,11 +8296,18 @@ DvtDiagramLink.prototype.Init = function(context, diagram, data, promoted) {
 
 /**
  * Gets the data object
- *
  * @return {object} the data object
  */
 DvtDiagramLink.prototype.getData = function() {
   return this._data;
+};
+
+/**
+ * Sets the data object
+ * @param {object} data the data object
+ */
+DvtDiagramLink.prototype.setData = function(data) {
+  this._data = data;
 };
 
 /**
@@ -9695,28 +8484,37 @@ DvtDiagramLink._renderLinkShape = function(diagram, linkData, container) {
   var className = linkData['svgClassName'] || linkData['className'];
   shape.setFill(null);
   shape.setClassName(className);
-  //If the linkstyle is an object directly apply it on the link
-  if (linkStyle && linkStyle instanceof Object) {
-    var strokeType = dvt.Stroke.SOLID; //default stroke type for link style object
-    if (linkStyle['_type'] == DvtDiagramLink.CUSTOM_STYLE) {
-      if (linkStyle['strokeDasharray']) {
-        strokeType = dvt.Stroke.DASHED; //Set the stroke type to dashed only if the stroke dash array is specified
-        linkStyle['strokeDasharray'] = dvt.DiagramLinkUtils.processStrokeDashArray(linkStyle['strokeDasharray']);
-      }
-    } else {
-      strokeType = dvt.DiagramLinkUtils.ConvertLinkStyleToStrokeType(linkStyle['_type']);
-    }
 
-    stroke.setType(strokeType, linkStyle['strokeDasharray'], linkStyle['strokeDashoffset']);
-    //Remove already processed style attributes
-    var styleObj = dvt.JsonUtils.clone(linkStyle);
-    dvt.ArrayUtils.forEach(['_type', 'strokeDasharray', 'strokeDashoffset'], function(entry) {delete styleObj[entry]});
-    //set the style object directly in style
-    shape.setStyle(styleObj);
-  } else {
-    //Use default stroke type if no link style is specified
-    var strokeType = dvt.DiagramLinkUtils.ConvertLinkStyleToStrokeType(linkStyle);
-    stroke.setType(strokeType, dvt.DiagramLinkUtils.GetStrokeDash(strokeType), dvt.DiagramLinkUtils.GetStrokeDashOffset(strokeType));
+  if (container.getCtx().isCustomElement()) {
+    // Don't need to do anything special for links, just apply the style to the shape
+    shape.setStyle(linkStyle);
+  }
+  else {
+    // Support for original link styles for widgets: string type  and a style object type
+    //If the linkstyle is an object directly apply it on the link
+    if (linkStyle && linkStyle instanceof Object) {
+      var strokeType = dvt.Stroke.SOLID; //default stroke type for link style object
+      if (linkStyle['_type'] == DvtDiagramLink.CUSTOM_STYLE) {
+        if (linkStyle['strokeDasharray']) {
+          strokeType = dvt.Stroke.DASHED; //Set the stroke type to dashed only if the stroke dash array is specified
+          linkStyle['strokeDasharray'] = dvt.DiagramLinkUtils.processStrokeDashArray(linkStyle['strokeDasharray']);
+        }
+      } else {
+        strokeType = dvt.DiagramLinkUtils.ConvertLinkStyleToStrokeType(linkStyle['_type']);
+      }
+
+      stroke.setType(strokeType, linkStyle['strokeDasharray'], linkStyle['strokeDashoffset']);
+      //Remove already processed style attributes
+      var styleObj = dvt.JsonUtils.clone(linkStyle);
+      dvt.ArrayUtils.forEach(['_type', 'strokeDasharray', 'strokeDashoffset'], function(entry) {delete styleObj[entry]});
+      //set the style object directly in style
+      shape.setStyle(styleObj);
+    }
+    else {
+      //Use default stroke type if no link style is specified
+      var strokeType = dvt.DiagramLinkUtils.ConvertLinkStyleToStrokeType(linkStyle);
+      stroke.setType(strokeType, dvt.DiagramLinkUtils.GetStrokeDash(strokeType), dvt.DiagramLinkUtils.GetStrokeDashOffset(strokeType));
+    }
   }
 
   shape.setStroke(stroke);
@@ -9821,7 +8619,8 @@ DvtDiagramLink.prototype._showFeedback = function(bHovered, bSelected) {
   }
 
   if (!this._linkUnderlay) {
-    this._linkUnderlay = this.CreateFeedbackUnderlay('#000000', 1, 0);
+    // the styles will be applied for custom elements only, since svgStyle && svgClassName are not supported for widgets
+    this._linkUnderlay = this.CreateFeedbackUnderlay('#000000', 1, 0, this.getData()['svgStyle'], this.getData()['svgClassName']);
     this.addChildAt(this._linkUnderlay, 0);
   }
   var color = bSelected ? this.getData()['selectionColor'] : this.getData()['hoverOuterColor'];
@@ -9859,6 +8658,9 @@ DvtDiagramLink.prototype._hideFeedback = function() {
  * @override
  */
 DvtDiagramLink.prototype.ApplyLinkStyle = function(stroke, bUnderlay) {
+  // don't need to modify stroke for custom elements, the styles should be directly applied to the link shape and underlay shape
+  if (this.getCtx().isCustomElement())
+    return;
   var linkStyle = this.GetAppliedLinkStyle();
   if (linkStyle && linkStyle instanceof Object) {
     if (linkStyle['_type'] == DvtDiagramLink.CUSTOM_STYLE) {
@@ -9979,7 +8781,7 @@ DvtDiagramLink.prototype.getNextNavigable = function(event)
     //if the focus was set through mouse click, set start node as a center of navigation
     var node = this.getKeyboardFocusNode();
     if (!node)
-      node = this.GetDiagram().getNodeById(this.getStartId(this));
+      node = this.GetDiagram().getNodeById(this.getStartId());
 
     //find next link - if up counter-clockwise, down - clockwise
     var nextLink = this;
@@ -10303,7 +9105,7 @@ DvtDiagramLink.prototype.ClearDropEffect = function() {
  */
 DvtDiagramLink.prototype._createDropEffect = function(styleClass) {
   var hitDetectionOffset = this.getData()['_hitDetectionOffset'];
-  this._dropEffect = this.CreateFeedbackUnderlay('#000000', 0, hitDetectionOffset, styleClass);
+  this._dropEffect = this.CreateFeedbackUnderlay('#000000', 0, hitDetectionOffset, null, styleClass);
   this._dropEffect.setMouseEnabled(false);
   this.addChild(this._dropEffect);
 };
@@ -10325,6 +9127,38 @@ DvtDiagramLink.ConvertLinkData = function(linkData) {
     'categories': linkData['categories'],
     '_origData': linkData
   };
+};
+
+/**
+ * Returns an object that contains data used to animate node from one state to another
+ * @return {object}
+ */
+DvtDiagramLink.prototype.getAnimationState = function() {
+  var label, shape, state;
+  if (this._labelObj) {
+    label = {'matrix' : this._labelObj.getMatrix()};
+    label.getMatrix = function() {return label['matrix']};
+  }
+  if (this.getShape()) {
+    shape = {'stroke': this.getShape().getStroke().clone()};
+    shape.getStroke = function() {return shape['stroke']};
+  }
+  var includedLinks = this.isPromoted() ? this.getData()['_links'] : null;
+  state = {
+    'partialUpdate' : true,
+    'id': this.getId(),
+    'promoted': this.isPromoted(),
+    'includedLinks' : includedLinks,
+    'points' : this.getPoints(),
+    'shape': shape,
+    _labelObj: label
+  };
+  state.getId = function() {return state['id']};
+  state.isPromoted = function() {return state['promoted']};
+  state.getData = function() {return {'_links' : state['includedLinks']}};
+  state.getPoints = function() {return state['points']};
+  state.getShape = function() {return state['shape']};
+  return state;
 };
 /**
  * @constructor
@@ -10373,6 +9207,14 @@ DvtDiagramNode.prototype.getData = function() {
 };
 
 /**
+ * Sets the data object
+ * @param {object} data the data object
+ */
+DvtDiagramNode.prototype.setData = function(data) {
+  this._data = data;
+};
+
+/**
  * Gets the node id
  * @return {string} node id
  */
@@ -10397,24 +9239,20 @@ DvtDiagramNode.prototype.getActiveElementId = function() {
 /**
  * @override
  */
-DvtDiagramNode.prototype.getContentBounds = function() {
+DvtDiagramNode.prototype.getContentBounds = function(forceDims) {
+  if (!this._contentDims && forceDims) {
+    this._contentDims = this._calcContentDims();
+  }
   return this._contentDims;
 };
 
 /**
  * @override
  */
-DvtDiagramNode.prototype.getLabelBounds = function() {
-  //: return saved label dimensions, because getting
-  //them dynamically seems to return different sizes based on zoom
+DvtDiagramNode.prototype.getLabelBounds = function(forceDims) {
   var bounds = null;
-  if (this._labelObj) {
-    if (this._labelDims) {
-      bounds = this._labelDims;
-    }
-    else {
-      bounds = this._labelObj.getDimensions();
-    }
+  if (this._labelObj && forceDims) {
+    bounds = this._labelObj.getDimensions();
   }
   return bounds;
 };
@@ -10464,6 +9302,7 @@ DvtDiagramNode.prototype.GetIcon = function() {
  * Renders diagram node
  */
 DvtDiagramNode.prototype.render = function() {
+  this._cleanUp();
   var nodeData = this.getData();
   if (this._diagram.getOptions()['renderer']) {
     this._applyCustomNodeContent(this._diagram.getOptions()['renderer'], this._getState(), null);
@@ -10485,11 +9324,10 @@ DvtDiagramNode.prototype.render = function() {
       DvtDiagramNode._renderNodeBackground(this._diagram, nodeData, this);
       DvtDiagramNode._renderNodeIcon(this._diagram, nodeData, this);
     }
-    DvtDiagramNode._addHoverSelectionStrokes(this.getSelectionShape(), nodeData);
+    DvtDiagramNode._addHoverSelectionDefaultStrokes(this.getSelectionShape(), nodeData);
   }
   DvtDiagramNode._renderNodeLabels(this._diagram, nodeData, this);
   this._setDraggableStyleClass();
-  this._contentDims = this._calcContentDims();
   DvtDiagramNode._renderContainerButton(this._diagram, nodeData, this);
   this.setAriaRole('img');
   this.UpdateAriaLabel();
@@ -10519,6 +9357,11 @@ DvtDiagramNode.prototype._applyCustomNodeContent = function(renderer, state, pre
   }
   var context = contextHandler(this.getElem(), this._customNodeContent, childContent, nodeData, state, prevState);
   var nodeContent = renderer(context);
+
+  //   - support null case on updates for custom elements
+  if (!nodeContent && this._customNodeContent && this.getCtx().isCustomElement()) {
+    return;
+  }
 
   //remove content if the new and old content do not match, the new content might be null
   if (this._customNodeContent && nodeContent != this._customNodeContent) {
@@ -10556,6 +9399,11 @@ DvtDiagramNode.prototype._applyCustomNodeContent = function(renderer, state, pre
  * @private
  */
 DvtDiagramNode._renderNodeBackground = function(diagram, nodeData, container) {
+  // TODO: removing node background for custom elements,
+  // since we can't properly support svg style and class name at the moment
+  if (diagram.getCtx().isCustomElement())
+    return;
+
   var backgroundStyle = nodeData['backgroundSvgStyle'] || nodeData['backgroundStyle'];
   var styleObj = dvt.JsonUtils.clone(backgroundStyle);
   var backgroundProps = [dvt.CSSStyle.WIDTH,
@@ -10591,7 +9439,8 @@ DvtDiagramNode._renderNodeBackground = function(diagram, nodeData, container) {
     if (styleObj)
       dvt.ArrayUtils.forEach(backgroundProps, function(entry) {delete styleObj[dvt.CSSStyle.cssStringToObjectProperty(entry)]});
     //Set the style and class attributes for node background
-    backgroundRect.setStyle(styleObj).setClassName(nodeData['backgroundClassName']);
+    var bgClassName = nodeData['backgroundSvgClassName'] || nodeData['backgroundClassName'];
+    backgroundRect.setStyle(styleObj).setClassName(bgClassName);
 
     container.addChild(backgroundRect);
     container.setSelectionShape(backgroundRect);
@@ -10631,7 +9480,7 @@ DvtDiagramNode._renderNodeIcon = function(diagram, nodeData, container) {
       iconMarker.setAlpha(icon['opacity']);
     }
     if (icon['borderColor']) {
-      iconMarker.setStroke(new dvt.SolidStroke(icon['borderColor'], icon['borderWidth']));
+      iconMarker.setStroke(new dvt.SolidStroke(icon['borderColor'], 1, icon['borderWidth']));
     }
     var style = icon['svgStyle'] || icon['style'];
     var className = icon['svgClassName'] || icon['className'];
@@ -10709,10 +9558,6 @@ DvtDiagramNode._setIconPosition = function(diagram, nodeData, container) {
  * @private
  */
 DvtDiagramNode._renderNodeLabels = function(diagram, nodeData, container) {
-  if (container._labelObj) {
-    container.removeChild(container._labelObj);
-    container._labelObj = null;
-  }
   var rtl = dvt.Agent.isRightToLeft(diagram.getCtx());
   var halign = rtl ? dvt.OutputText.H_ALIGN_RIGHT : dvt.OutputText.H_ALIGN_LEFT;
   if (nodeData['label']) {
@@ -10754,12 +9599,12 @@ DvtDiagramNode.createText = function(ctx, strText, style, halign, valign) {
 };
 
 /**
- * Adds hover selection strokes to the node
+ * Adds default hover selection strokes to the node
  * @param {dvt.Shape} selectionShape selection shape for the node
  * @param {object} nodeData node data
  * @private
  */
-DvtDiagramNode._addHoverSelectionStrokes = function(selectionShape, nodeData) {
+DvtDiagramNode._addHoverSelectionDefaultStrokes = function(selectionShape, nodeData) {
   //Apply the selected, and hover strokes
   var hoverInnerColor = nodeData['hoverInnerColor'];
   var hoverOuterColor = nodeData['hoverOuterColor'];
@@ -10769,13 +9614,42 @@ DvtDiagramNode._addHoverSelectionStrokes = function(selectionShape, nodeData) {
   his.setFixedWidth(true);
   var hos = new dvt.SolidStroke(hoverOuterColor, 1, 8);
   hos.setFixedWidth(true);
-  var sis = new dvt.SolidStroke(selectionColor, 1, 2);
+  var sis = new dvt.SolidStroke(hoverInnerColor, 1, 2);
   sis.setFixedWidth(true);
-  var sos = new dvt.SolidStroke(selectionColor, 1, 4);
+  var sos = new dvt.SolidStroke(selectionColor, 1, 6);
   sos.setFixedWidth(true);
   var shis = new dvt.SolidStroke(hoverInnerColor, 1, 4);
   shis.setFixedWidth(true);
   var shos = new dvt.SolidStroke(selectionColor, 1, 8);
+  shos.setFixedWidth(true);
+  selectionShape.setHoverStroke(his, hos).setSelectedStroke(sis, sos).setSelectedHoverStroke(shis, shos);
+};
+
+/**
+ * Adds hover selection strokes to the node which has OUTER stroke alignment
+ * @param {dvt.Shape} selectionShape selection shape for the node
+ * @param {object} nodeData node data
+ * @private
+ */
+DvtDiagramNode._addHoverSelectionOuterStrokes = function(selectionShape, nodeData) {
+  //Apply the selected, and hover strokes
+  var hoverInnerColor = nodeData['hoverInnerColor'];
+  var hoverOuterColor = nodeData['hoverOuterColor'];
+  var selectionColor = nodeData['selectionColor'];
+  // For OUTER stroke alignment, the stroke is applied on the outer edge of the path of the selection shape.
+  // The outer stroke will circumscribe inner stroke and the width of outer stroke won't be reduced by inner stroke.
+  // The outer stroke visible width will be same as specified.
+  var his = new dvt.SolidStroke(hoverInnerColor, 1, 2);
+  his.setFixedWidth(true);
+  var hos = new dvt.SolidStroke(hoverOuterColor, 1, 2);
+  hos.setFixedWidth(true);
+  var sis = new dvt.SolidStroke(hoverInnerColor, 1, 1);
+  sis.setFixedWidth(true);
+  var sos = new dvt.SolidStroke(selectionColor, 1, 2);
+  sos.setFixedWidth(true);
+  var shis = new dvt.SolidStroke(hoverInnerColor, 1, 2);
+  shis.setFixedWidth(true);
+  var shos = new dvt.SolidStroke(selectionColor, 1, 2);
   shos.setFixedWidth(true);
   selectionShape.setHoverStroke(his, hos).setSelectedStroke(sis, sos).setSelectedHoverStroke(shis, shos);
 };
@@ -10795,13 +9669,18 @@ DvtDiagramNode.prototype.setSelectionShape = function(selectionShape) {
  * @return {dvt.Shape} the shape that should be used for displaying selection and hover feedback
  */
 DvtDiagramNode.prototype.getSelectionShape = function() {
-  if (!this._selectionShape && this._contentDims) { // create selection shape in necessary
-    var selectionShape = new dvt.Rect(this._diagram.getCtx(), this._contentDims.x, this._contentDims.y, this._contentDims.w, this._contentDims.h);
-    selectionShape.setInvisibleFill();
-    this.setSelectionShape(selectionShape);
-    this.addChildAt(selectionShape, 0);
-    DvtDiagramNode._addHoverSelectionStrokes(selectionShape, this.getData());
-    this._selectionShape = selectionShape;
+  if (!this._selectionShape) { // create selection shape in necessary
+    var contentDims = this.getContentBounds(true);
+    if (contentDims) {
+      var selectionShape = new dvt.Rect(this._diagram.getCtx(), contentDims.x, contentDims.y, contentDims.w, contentDims.h);
+      selectionShape.setInvisibleFill();
+      // Selection shape stroke alignment is set to OUTER.
+      selectionShape.setStrokeAlignment(dvt.Stroke.OUTER);
+      this.setSelectionShape(selectionShape);
+      this.addChildAt(selectionShape, 0);
+      DvtDiagramNode._addHoverSelectionOuterStrokes(selectionShape, this.getData());
+      this._selectionShape = selectionShape;
+    }
   }
   return this._selectionShape;
 };
@@ -11123,6 +10002,16 @@ DvtDiagramNode.prototype.animateUpdate = function(animationHandler, oldNode) {
   }
   // 2. both nodes are disclosed containers - node size, background and child nodes could change
   else if (this.isDisclosed() && oldNode.isDisclosed()) {
+    //label
+    if (oldNode._labelObj && this._labelObj) {
+      var oldMat = oldNode._labelObj.getMatrix();
+      var newMat = this._labelObj.getMatrix();
+      if (!oldMat.equals(newMat)) {
+        this._labelObj.setMatrix(oldMat);
+        playable.getAnimator().addProp(dvt.Animator.TYPE_MATRIX, this._labelObj, this._labelObj.getMatrix, this._labelObj.setMatrix, newMat);
+      }
+    }
+
     if (this._diagram.getOptions()['renderer']) {
       this._animateCustomUpdate(animationHandler, oldNode);
     }
@@ -11143,18 +10032,20 @@ DvtDiagramNode.prototype.animateUpdate = function(animationHandler, oldNode) {
         }
       }
 
-      //construct animation for child nodes
-      var newChildNodes = [], oldChildNodes = [];
-      var newChildIds = this.getChildNodeIds();
-      for (var i = 0; i < newChildIds.length; i++) {
-        newChildNodes.push(this.GetDiagram().getNodeById(newChildIds[i]));
+      if (!oldNode['partialUpdate']) {
+        //construct animation for child nodes
+        var newChildNodes = [], oldChildNodes = [];
+        var newChildIds = this.getChildNodeIds();
+        for (var i = 0; i < newChildIds.length; i++) {
+          newChildNodes.push(this.GetDiagram().getNodeById(newChildIds[i]));
+        }
+        var oldChildIds = oldNode.getChildNodeIds();
+        var oldNodes = animationHandler.getOldDiagram().NodesMap;
+        for (var i = 0; i < oldChildIds.length; i++) {
+          oldChildNodes.push(oldNodes[oldChildIds[i]]);
+        }
+        animationHandler.constructAnimation(oldChildNodes, newChildNodes);
       }
-      var oldChildIds = oldNode.getChildNodeIds();
-      var oldNodes = animationHandler.getOldDiagram().getNodes();
-      for (var i = 0; i < oldChildIds.length; i++) {
-        oldChildNodes.push(oldNodes[oldChildIds[i]]);
-      }
-      animationHandler.constructAnimation(oldChildNodes, newChildNodes);
     }
   }
   // 3. disclosure state changed - animate disclosure
@@ -11181,20 +10072,12 @@ DvtDiagramNode.prototype._animateCustomUpdate = function(animationHandler, oldNo
     return;
   }
 
-  //attach old node for custom animation
-  this.getParent().addChild(oldNode);
-
   // scales for sizing and positioning
   var scaleTo = newBounds.w / oldBounds.w;  //used for old node
   var scaleFrom = oldBounds.w / newBounds.w;  //used for new node
 
   //create animator to animate position
   var playable = new dvt.CustomAnimation(this.getCtx(), null, animationHandler.getAnimationDuration());
-
-  //animate old node position
-  var newNodeCenter = new dvt.Point(this.getTranslateX() + newBounds.w * .5, this.getTranslateY() + newBounds.h * .5);
-  playable.getAnimator().addProp(dvt.Animator.TYPE_NUMBER, oldNode, oldNode.getTranslateX, oldNode.setTranslateX, newNodeCenter.x - oldBounds.w * scaleTo * .5);
-  playable.getAnimator().addProp(dvt.Animator.TYPE_NUMBER, oldNode, oldNode.getTranslateY, oldNode.setTranslateY, newNodeCenter.y - oldBounds.h * scaleTo * .5);
 
   //animate new node position
   var oldNodeCenter = new dvt.Point(oldNode.getTranslateX() + oldBounds.w * .5, oldNode.getTranslateY() + oldBounds.h * .5);
@@ -11206,24 +10089,36 @@ DvtDiagramNode.prototype._animateCustomUpdate = function(animationHandler, oldNo
   playable.getAnimator().addProp(dvt.Animator.TYPE_NUMBER, this, this.getTranslateY, this.setTranslateY, newTy);
   animationHandler.add(playable, DvtDiagramDataAnimationHandler.UPDATE);
 
-  // animate scale and fade out old node
-  var scaleOldToNew = new dvt.AnimScaleTo(this.getCtx(), oldNode, new dvt.Point(scaleTo, scaleTo), animationHandler.getAnimationDuration());
-  animationHandler.add(scaleOldToNew, DvtDiagramDataAnimationHandler.UPDATE);
-
-  var fadeOut = new dvt.AnimFadeOut(this.getCtx(), oldNode, animationHandler.getAnimationDuration());
-  animationHandler.add(fadeOut, DvtDiagramDataAnimationHandler.UPDATE);
-  var thisRef = this;
-  dvt.Playable.appendOnEnd(fadeOut, function() {thisRef.getParent().removeChild(oldNode)});
-
   // animate scale and fade in new node
   this.setScaleX(scaleFrom);
   this.setScaleY(scaleFrom);
   var scaleNewToOld = new dvt.AnimScaleTo(this.getCtx(), this, new dvt.Point(1, 1), animationHandler.getAnimationDuration());
   animationHandler.add(scaleNewToOld, DvtDiagramDataAnimationHandler.UPDATE);
 
-  this.setAlpha(0);
-  var fadeIn = new dvt.AnimFadeIn(this.getCtx(), this, animationHandler.getAnimationDuration());
-  animationHandler.add(fadeIn, DvtDiagramDataAnimationHandler.UPDATE);
+  var oldNodeContent = oldNode['partialUpdate'] ? oldNode['origContent'] : oldNode;
+  if (oldNodeContent) {
+    // animate old node - can do this for partial updates
+    //attach old node for custom animation
+    this.getParent().addChild(oldNodeContent);
+
+    //animate old node position
+    var newNodeCenter = new dvt.Point(this.getTranslateX() + newBounds.w * .5, this.getTranslateY() + newBounds.h * .5);
+    playable.getAnimator().addProp(dvt.Animator.TYPE_NUMBER, oldNodeContent, oldNode.getTranslateX, oldNodeContent.setTranslateX, newNodeCenter.x - oldBounds.w * scaleTo * .5);
+    playable.getAnimator().addProp(dvt.Animator.TYPE_NUMBER, oldNodeContent, oldNode.getTranslateY, oldNodeContent.setTranslateY, newNodeCenter.y - oldBounds.h * scaleTo * .5);
+
+    // animate scale and fade out old node
+    var scaleOldToNew = new dvt.AnimScaleTo(this.getCtx(), oldNodeContent, new dvt.Point(scaleTo, scaleTo), animationHandler.getAnimationDuration());
+    animationHandler.add(scaleOldToNew, DvtDiagramDataAnimationHandler.UPDATE);
+
+    var fadeOut = new dvt.AnimFadeOut(this.getCtx(), oldNodeContent, animationHandler.getAnimationDuration());
+    animationHandler.add(fadeOut, DvtDiagramDataAnimationHandler.UPDATE);
+    var thisRef = this;
+    dvt.Playable.appendOnEnd(fadeOut, function() {thisRef.getParent().removeChild(oldNodeContent)});
+
+    this.setAlpha(0);
+    var fadeIn = new dvt.AnimFadeIn(this.getCtx(), this, animationHandler.getAnimationDuration());
+    animationHandler.add(fadeIn, DvtDiagramDataAnimationHandler.UPDATE);
+  }
 };
 
 /**
@@ -11303,7 +10198,6 @@ DvtDiagramNode.prototype.animateInsert = function(animationHandler) {
   this.setAlpha(0);
   animationHandler.add(new dvt.AnimFadeIn(this.getCtx(), this, animationHandler.getAnimationDuration()), DvtDiagramDataAnimationHandler.INSERT);
 };
-
 
 /**
  * Retrieves current state for the node
@@ -11402,6 +10296,29 @@ DvtDiagramNode.prototype.addChildNodeId = function(id)
 };
 
 /**
+ * Removes id of a child node from the array of child nodes
+ * @param {string} id child id
+ */
+DvtDiagramNode.prototype.removeChildNodeId = function(id)
+{
+  if (this._childNodeIds) {
+    dvt.ArrayUtils.removeItem(this._childNodeIds, id);
+  }
+};
+
+/**
+ * Removes child node
+ * @param {DvtDiagramNode} childNode child node
+ */
+DvtDiagramNode.prototype.removeChildNode = function(childNode)
+{
+  if (childNode) {
+    this.removeChildNodeId(childNode.getId());
+    this._childNodePane.removeChild(childNode);
+  }
+};
+
+/**
  * Gets visible child nodes for the node
  * @return {array} an array of visible child nodes
  */
@@ -11466,11 +10383,10 @@ DvtDiagramNode.prototype.handleDisclosure = function(event) {
  * @private
  */
 DvtDiagramNode._renderContainer = function(diagram, nodeData, container) {
-  if (container._containerShape) {
-    container.removeChild(container._containerShape);
-    container._containerShape = null;
-  }
-  var containerStyleObj = nodeData['containerSvgStyle'] || nodeData['containerStyle'];
+  // TODO: removing container styles for custom elements,
+  // since we can't properly support svg style and class name at the moment
+  var containerStyleObj = diagram.getCtx().isCustomElement() ? null :
+      nodeData['containerSvgStyle'] || nodeData['containerStyle'];
   var styleObj = dvt.JsonUtils.clone(containerStyleObj);
   var containerProps = [dvt.CSSStyle.BACKGROUND_COLOR,
                         dvt.CSSStyle.BORDER_COLOR,
@@ -11505,8 +10421,12 @@ DvtDiagramNode._renderContainer = function(diagram, nodeData, container) {
   //Parse out the CSS properties which are already applied on the DOM
   if (styleObj)
     dvt.ArrayUtils.forEach(containerProps, function(entry) {delete styleObj[dvt.CSSStyle.cssStringToObjectProperty(entry)]});
-  //Set the style and class attributes for node container
-  containerShape.setStyle(styleObj).setClassName(nodeData['containerClassName']);
+  // Set the style and class attributes for node container
+  // TODO: removing container styles for custom elements,
+  // since we can't properly support svg style and class name at the moment
+  var containerClassName = diagram.getCtx().isCustomElement() ? null :
+              nodeData['containerSvgClassName'] || nodeData['containerClassName'];
+  containerShape.setStyle(styleObj).setClassName(containerClassName);
 
   container.addChildAt(containerShape, 0);
   container.setSelectionShape(containerShape);
@@ -11547,10 +10467,6 @@ DvtDiagramNode._getNodeCSSStyle = function(styleObj, styleCSS, properties) {
  * @param {DvtDiagramNode} container parent container
  */
 DvtDiagramNode._renderContainerButton = function(diagram, nodeData, container) {
-  if (container._containerButton) {
-    container.removeChild(container._containerButton);
-    container._containerButton = null;
-  }
   if (!container.isContainer() || nodeData['showDisclosure'] == 'off') {
     return;
   }
@@ -11572,9 +10488,10 @@ DvtDiagramNode._renderContainerButton = function(diagram, nodeData, container) {
   var containerButton = new dvt.Button(diagram.getCtx(), imgEna, imgOvr, imgDwn, null, null, container.handleDisclosure, container);
 
   container.addChild(containerButton);
-  if (container._contentDims) {
-    var x = dvt.Agent.isRightToLeft(diagram.getCtx()) ? container._contentDims.x + container._contentDims.w - iconEna['width'] : container._contentDims.x;
-    var y = container._contentDims.y;
+  var contentDims = container.getContentBounds(true);
+  if (contentDims) {
+    var x = dvt.Agent.isRightToLeft(diagram.getCtx()) ? contentDims.x + contentDims.w - iconEna['width'] : contentDims.x;
+    var y = contentDims.y;
     containerButton.setTranslate(x, y);
   }
   container._containerButton = containerButton;
@@ -11656,14 +10573,16 @@ DvtDiagramNode.prototype._createDropEffect = function(styleClass) {
   // create a rectangle as a drop effect
   if (this._customNodeContent || this.isDisclosed() || this._background ||
       (this._shape && this._shape instanceof dvt.ImageMarker)) {
-    dropEffectShape = new dvt.Rect(this._diagram.getCtx(), this._contentDims.x, this._contentDims.y,
-        this._contentDims.w,
-        this._contentDims.h);
-    var borderRadius = this._customNodeContent ? null : this.isDisclosed() ? this._containerShape.getRx() :
-        this._background ? this._background.getRx() : null;
-    if (borderRadius) {
-      dropEffectShape.setRx(borderRadius);
-      dropEffectShape.setRy(borderRadius);
+    var contentDims = this.getContentBounds(true);
+    if (contentDims) {
+      dropEffectShape = new dvt.Rect(this._diagram.getCtx(), contentDims.x, contentDims.y,
+          contentDims.w, contentDims.h);
+      var borderRadius = this._customNodeContent ? null : this.isDisclosed() ? this._containerShape.getRx() :
+          this._background ? this._background.getRx() : null;
+      if (borderRadius) {
+        dropEffectShape.setRx(borderRadius);
+        dropEffectShape.setRy(borderRadius);
+      }
     }
   }
   //otherwise copy node shape
@@ -11710,6 +10629,141 @@ DvtDiagramNode.ConvertNodeData = function(nodeData) {
   };
 };
 
+/**
+ * Removes and resets objects for the rendered node to prepare the node for rerendering
+ * @param {dvt.Container} saveContainer a temporary container that keeps node content for animation
+ * @private
+ */
+DvtDiagramNode.prototype._cleanUp = function(saveContainer) {
+  if (this._containerShape) {
+    this.removeChild(this._containerShape);
+    saveContainer && saveContainer.addChild(this._containerShape);
+    this._containerShape = null;
+  }
+  if (this._background) {
+    this.removeChild(this._background);
+    saveContainer && saveContainer.addChild(this._background);
+    this._background = null;
+  }
+  if (this._shape) {
+    this.removeChild(this._shape);
+    saveContainer && saveContainer.addChild(this._shape);
+    this._shape = null;
+  }
+  if (this._labelObj) {
+    this.removeChild(this._labelObj);
+    saveContainer && saveContainer.addChild(this._labelObj);
+    this._labelObj = null;
+  }
+  if (this._containerButton) {
+    this.removeChild(this._containerButton);
+    saveContainer && saveContainer.addChild(this._containerButton);
+    this._containerButton = null;
+  }
+  if (this._customNodeContent) {
+    // reparent child node pane - it is likely to be attached
+    // to an element inside of custom content
+    if (this._childNodePane) {
+      this._childNodePane.setParent(null);
+      this.addChild(this._childNodePane);
+    }
+    if (this._customNodeContent.namespaceURI === dvt.ToolkitUtils.SVG_NS) {
+      this.getContainerElem().removeChild(this._customNodeContent);
+      saveContainer && dvt.ToolkitUtils.appendChildElem(saveContainer.getContainerElem(), this._customNodeContent);
+    }
+    else if (this._customNodeContent instanceof dvt.BaseComponent) {
+      this.removeChild(this._customNodeContent);
+      saveContainer && saveContainer.addChild(this._customNodeContent);
+    }
+    this._customNodeContent = null;
+  }
+  this._contentDims = null;
+};
+
+/**
+ * Returns an object that contains data used to animate node from one state to another
+ * @param {boolean} keepOrigContent a flag that indicated that original node content should be preserved for animation
+ * @return {object}
+ */
+DvtDiagramNode.prototype.getAnimationState = function(keepOrigContent) {
+  var shape, label, containerShape, state, origContent;
+  var contentBounds = this.getContentBounds();
+  if (this._shape) {
+    shape = {
+      'centerDimensions': this._shape.getCenterDimensions(),
+      'fill': this._shape.getFill()
+    };
+    shape.getCenterDimensions = function() {return shape['centerDimensions']};
+    shape.getFill = function() {return shape['fill']};
+  }
+  if (this._labelObj) {
+    label = {'matrix' : this._labelObj.getMatrix()};
+    label.getMatrix = function() {return label['matrix']};
+  }
+  if (this.isDisclosed() && this._containerShape) {
+    containerShape = {
+      'fill': this._containerShape.getFill(),
+      'width': this._containerShape.getWidth(),
+      'height': this._containerShape.getHeight()
+    };
+    containerShape.getFill = function() {return containerShape['fill']};
+    containerShape.getWidth = function() {return containerShape['width']};
+    containerShape.getHeight = function() {return containerShape['height']};
+  }
+  if (keepOrigContent || (this.isDisclosed() && this._diagram.getOptions()['renderer'])) {
+    //move the original node content to a temporary container,
+    //that will be used for animation
+    origContent = new dvt.Container(this.getCtx());
+    this._cleanUp(origContent);
+    origContent.setTranslate(this.getTranslateX(), this.getTranslateY());
+  }
+  state = { 'partialUpdate' : true,
+    'id': this.getId(),
+    'disclosed': this.isDisclosed(),
+    'tx': this.getTranslateX(),
+    'ty': this.getTranslateY(),
+    'contentBounds' : contentBounds,
+    'origContent' : origContent,
+    _shape: shape,
+    _labelObj: label,
+    _containerShape: containerShape
+  };
+  state.getId = function() {return state['id']};
+  state.isDisclosed = function() {return state['disclosed']};
+  state.getTranslateX = function() {return state['tx']};
+  state.getTranslateY = function() {return state['ty']};
+  state.getContentBounds = function() {return state['contentBounds']};
+  return state;
+};
+
+/**
+ * Appends child nodes data to the object
+ * @param {array} childNodesData an array of data objects for the node
+ * @param {number} index to insert nodes
+ */
+DvtDiagramNode.prototype.appendChildNodesData = function(childNodesData, index) {
+  if (!(this._data['nodes'] instanceof Array))
+    this._data['nodes'] = [];
+  this._data['nodes'] = dvt.ArrayUtils.insert(this._data['nodes'], childNodesData, index);
+};
+
+/**
+ * Removes child data objects from the array of child data
+ * @param {array} childNodesData nodes data to remove
+ */
+DvtDiagramNode.prototype.removeChildNodesData = function(childNodesData) {
+  if (this._data['nodes'] instanceof Array) {
+    for (var i = 0; i < childNodesData.length; i++) {
+      var removeNodeId = childNodesData[i]['id'];
+      for (var j = 0; j < this._data['nodes'].length; j++) {
+        if (this._data['nodes'][j]['id'] === removeNodeId) {
+          this._data['nodes'].splice(j, 1);
+          break;
+        }
+      }
+    }
+  }
+};
 /**
  *  Provides automation services for a DVT diagram component.
  *  @class  DvtDiagramAutomation
@@ -11799,7 +10853,7 @@ DvtDiagramAutomation.prototype._parseSubId = function(subId) {
  * @return {Number} number of nodes
  */
 DvtDiagramAutomation.prototype.getNodeCount = function() {
-  return this._diagram.getNodeCount();
+  return this._diagram.GetAllNodes().length;
 };
 
 /**
@@ -11807,7 +10861,7 @@ DvtDiagramAutomation.prototype.getNodeCount = function() {
  * @return {Number} number of links
  */
 DvtDiagramAutomation.prototype.getLinkCount = function() {
-  return this._diagram.getLinkCount();
+  return this._diagram.GetAllLinks().length;
 };
 
 /**
@@ -11854,6 +10908,10 @@ DvtDiagramAutomation.prototype.getLink = function(linkIndex) {
     data['endNode'] = link.getEndId();
     data['startConnectorType'] = link.getStartConnectorType();
     data['endConnectorType'] = link.getEndConnectorType();
+    data['promoted'] = link.isPromoted();
+    if (link.isPromoted()) {
+      data['links'] = dvt.JsonUtils.clone(link.getData()['_links']);
+    }
     return data;
   }
   return null;
@@ -11897,7 +10955,10 @@ DvtDiagramAutomation.prototype.getPromotedLink = function(startIndex, endIndex) 
  * @private
  */
 DvtDiagramAutomation.prototype._getLinkStyleFromObject = function(linkStyle) {
-  if (linkStyle && linkStyle instanceof Object) {
+  if (this._diagram.getCtx().isCustomElement()) {
+    return dvt.CSSStyle.cssObjectToString(linkStyle);
+  }
+  else if (linkStyle && linkStyle instanceof Object) {
     //For custom link style, convert the object to string
     if (linkStyle['_type'] == DvtDiagramLink.CUSTOM_STYLE) {
       var styleObj = dvt.JsonUtils.clone(linkStyle);

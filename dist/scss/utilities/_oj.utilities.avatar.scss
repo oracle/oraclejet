@@ -1,0 +1,27 @@
+// Copyright (c) 2014, 2017, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+//*****************************************************************************
+// mixin to override avatar colors
+//
+// Example usage:
+//
+// $demoAvatarColorA: #800080;
+//
+// .demo-avatar-a {
+//   @include oj-avatar-overrides (
+//     $avatarInnerBgColor:      $demoAvatarColorA,
+//     $avatarOuterBorderColor: $demoAvatarColorA);
+// }
+//
+//*****************************************************************************
+@mixin oj-avatar-overrides (
+    $avatarInnerBgColor:                        null,
+    $avatarOuterBorderColor:                   null
+ )
+ {
+   .oj-avatar-has-initials .oj-avatar-inner {
+     background-color: $avatarInnerBgColor;
+   }
+   .oj-avatar-outer {
+     border-color: $avatarOuterBorderColor;
+   }
+ }

@@ -25,7 +25,7 @@ oj.DataCollectionEditUtils.basicHandleEditEnd = function(event, ui)
         ui = event.detail;
     }
     input = $(ui['cellContext']['parentElement']).find('.oj-component-initnode')[0];
-    widgetConstructor = oj.Components.getWidgetConstructor(input);
+    widgetConstructor = oj.Components.__GetWidgetConstructor(input);
     cancel = ui['cancelEdit'];
     if (cancel)
     {
@@ -61,7 +61,7 @@ oj.DataCollectionEditUtils.basicHandleRowEditEnd = function(event, ui)
     var inputComponents = $(ui['rowContext']['parentElement']).find('.oj-component-initnode');
     for (i = 0; i < inputComponents.length; i++)
     {
-      widgetConsructor = oj.Components.getWidgetConstructor(inputComponents[i]);
+      widgetConsructor = oj.Components.__GetWidgetConstructor(inputComponents[i]);
       cancel = ui['cancelEdit'];
       try
       {

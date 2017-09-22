@@ -21,13 +21,14 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore'],
  * @class Utility methods for setting up pull to refresh on content inside a container.
  * @since 1.2.0
  * @export
+ * @ojstatus preview
  *
  * @classdesc
  * This class provides functions for adding pull to refresh functionality to any container element which hosts refreshable content.
- * By default this class will generate default panel, which consists of the refresh icon, primary, and secondary text.  The application
+ * By default this class will generate a default panel, which consists of a refresh icon, a primary text, and a secondary text.  The application
  * can use the callback to provide their own panel.  When the release happens, the refresh function will be invoked and application should
- * use this to execute any logic required to refresh the content inside the panel.  For example, fetching new cotent for the ListView inside
- * the container.  The application must resolve or reject the Promise so that this class can do the neccessary cleanup.
+ * use this to execute any logic required to refresh the content inside the panel.  For example, fetching new content for the ListView inside
+ * the container.  The application must resolve or reject the Promise so that this class can do the necessary cleanup.
  *
  * <h3 id="touch-section">
  *   Touch End User Information
@@ -56,9 +57,9 @@ oj.PullToRefreshUtils = {};
  *                  Specifically, when using this with ListView, the ListView element might not necessarily be the scrollable element, but is one of its ancestors instead.
  * @param {function()} refreshFunc the function to invoke when refresh is triggered.  It must return a Promise.
  * @param {Object=} options optional values that controls aspects of pull to refresh
- * @param {number} options.threshold the number of pixel to pull until refresh is triggered
- * @param {string} options.primaryText the primary text to display
- * @param {string} options.secondaryText the secondary text to display
+ * @param {number} options.threshold the number of pixels to pull until refresh is triggered.  If not specified, a default value will be calculated based on the height of the panel consisting the refresh icon, primary text, and secondary text.
+ * @param {string} options.primaryText the primary text to display.  The primary text is usually used to describe the pull action.  If not specified then no primary text will be displayed.
+ * @param {string} options.secondaryText the secondary text to display.  The secondary text is used to add supplementary text.  If not specified then no secondary text will be displayed.
  *
  * @see #tearDownPullToRefresh
  */
@@ -78,7 +79,7 @@ oj.PullToRefreshUtils.setupPullToRefresh = function(element, refreshFunc, option
 
     // prepend it to the panel
     panel = $(element);
-    panel.prepend(outer);
+    panel.prepend(outer); //@HTMLUpdateOK; outer is created by the component
 
     panel
     .on("touchstart.pulltorefresh", function(event) 
@@ -145,6 +146,12 @@ oj.PullToRefreshUtils.setupPullToRefresh = function(element, refreshFunc, option
         // make sure the page doesn't scrolls
         event.preventDefault();
 
+        // checks if we are in the middle of closing the panel
+        if ($.data(content[0], "data-closing") != null)
+        {
+            return;
+        }
+
         // checks if we are still in the loading stage
         if ($.data(content[0], "data-loading") != null)
         {
@@ -209,12 +216,20 @@ oj.PullToRefreshUtils.setupPullToRefresh = function(element, refreshFunc, option
         start = $.data(content[0], "data-pullstart");
         if (start == null)
         {
-             return;
+            return;
+        }
+
+        // checks if we are in the middle of closing the panel
+        if ($.data(content[0], "data-closing") != null)
+        {
+            return;
         }
 
         // checks if we are still in the loading stage
         if ($.data(content[0], "data-loading") != null)
         {
+            height = $.data(content[0], "data-panelheight");
+            content.css("height", height);
             return;
         }
 
@@ -310,6 +325,9 @@ oj.PullToRefreshUtils._handleRelease = function(event, element, content, refresh
         // hide the link
         content.prev().prev().css("position", "");
 
+        // mark that we are in the middle of closing the panel, we want this to complete without interruption
+        $.data(content[0], "data-closing", true);
+
         content.on("transitionend", listener);
         content.css("height", 0);
     }, function(e)
@@ -330,6 +348,9 @@ oj.PullToRefreshUtils._handleRelease = function(event, element, content, refresh
 
         // hide the link
         content.prev().prev().css("position", "");
+
+        // mark that we are in the middle of closing the panel, we want this to complete without interruption
+        $.data(content[0], "data-closing", true);
 
         content.on("transitionend", listener);
         content.css("height", 0);
@@ -517,6 +538,7 @@ oj.PullToRefreshUtils._cleanup = function(content)
     $.removeData(content[0], "data-pullstart");
     $.removeData(content[0], "data-pullstart-horiz");
     $.removeData(content[0], "data-loading");
+    $.removeData(content[0], "data-closing");
 
     // only clear if it's the default panel, give app full control on custom content
     icon = content.find(".oj-pulltorefresh-icon");

@@ -37,6 +37,12 @@ oj.ListViewDndContext.C_KEY = 67;
 oj.ListViewDndContext.V_KEY = 86;
 oj.ListViewDndContext.X_KEY = 88;
 
+oj.ListViewDndContext.CUT_COMMAND = "cut";
+oj.ListViewDndContext.COPY_COMMAND = "copy";
+oj.ListViewDndContext.PASTE_COMMAND = "paste";
+oj.ListViewDndContext.PASTE_BEFORE_COMMAND = "pasteBefore";
+oj.ListViewDndContext.PASTE_AFTER_COMMAND = "pasteAfter";
+
 /**
  * Clears the internal of dnd context.  Called by _resetInternal in ListView.
  */
@@ -394,16 +400,29 @@ oj.ListViewDndContext.prototype._unsetDraggable = function(target)
  */
 oj.ListViewDndContext.prototype._invokeDndCallback = function(dndType, callbackType, event, ui)
 {
-        var options, callback, returnValue;
+    var options, callback, returnValue;
 
-        options = dndType === 'drag' ? this._getDragOptions() : this._getDropOptions();
-        if (options)
+    options = dndType === 'drag' ? this._getDragOptions() : this._getDropOptions();
+    if (options)
+    {
+        // First let the callback decide if data can be accepted
+        callback = options[callbackType];          
+        if (callback && typeof callback == 'function')
         {
-            // First let the callback decide if data can be accepted
-            callback = options[callbackType];          
-            if (callback && typeof callback == 'function')
+            try
             {
-                try
+                if (this.listview.ojContext._IsCustomElement())
+                {
+                    // For custom element, pass original DOM event and ignore return value.
+                    callback(event.originalEvent, ui);
+
+                    // preventDefault is called on the original event
+                    if (event.originalEvent.defaultPrevented)
+                    {
+                        event.preventDefault();
+                    }
+                }
+                else
                 {
                     // Hoist dataTransfer object from DOM event to jQuery event
                     event.dataTransfer = event.originalEvent.dataTransfer;
@@ -411,18 +430,23 @@ oj.ListViewDndContext.prototype._invokeDndCallback = function(dndType, callbackT
                     // Invoke callback function
                     returnValue = callback(event, ui);
                 }
-                catch (e)
-                {
-                    oj.Logger.error('Error: ' + e);
-                }
             }
-            else
+            catch (e)
             {
-                return -1;
+                oj.Logger.error('Error: ' + e);
             }
         }
-  
-        return returnValue;
+        else
+        {
+            returnValue = -1;
+        }
+    }
+    else
+    {
+        returnValue = -1;
+    }
+
+    return returnValue;
 };
 
 /**
@@ -441,10 +465,10 @@ oj.ListViewDndContext.prototype._setDragItemDataTransfer = function(event, dataT
         data = this.listview._getDataForItem(items[i]);
         if (data)
         {
-            // for Elements we'll use the the innerHTML in data transfer
-            if (data.innerHTML && data.tagName && data.tagName == "LI")
+            // for Elements we'll use the the inner HTML in data transfer
+            if (data.innerHTML && data.tagName && data.tagName == "LI") // @HTMLUpdateOK
             {
-                itemDataArray.push(data.innerHTML);
+                itemDataArray.push(data.innerHTML); // @HTMLUpdateOK
             }
             else
             {
@@ -548,6 +572,11 @@ oj.ListViewDndContext.prototype._setDragItemImage = function(nativeEvent, items)
             left = Math.max(0, target.offsetLeft - items[0].offsetLeft) + target.offsetWidth/2;
             top = offsetTop + target.offsetHeight/2;
         }
+        else
+        {
+            left = Math.max(0, nativeEvent.offsetX);
+            top = Math.max(0, nativeEvent.offsetY);
+        }
 
         clone = $(items[0].cloneNode(true));
         clone.removeClass("oj-selected oj-focus oj-hover")
@@ -559,6 +588,12 @@ oj.ListViewDndContext.prototype._setDragItemImage = function(nativeEvent, items)
                  .css({"width":this.listview.element.css("width"),
                        "height":items[0].offsetHeight * 2})
                  .append(clone); //@HTMLUpdateOK
+    }
+
+    // copying class might not be sufficient since it could be on the custom element root
+    if (this.listview.isCardLayout())
+    {
+        dragImage.addClass("oj-listview-card-layout");
     }
 
     $("body").append(dragImage); //@HTMLUpdateOK
@@ -614,12 +649,6 @@ oj.ListViewDndContext.prototype._handleDragStart = function(event)
 
         if (items.length > 0)
         {
-            // if reordering, make sure there's only one item, otherwise it's invalid
-            if (options == null && items.length > 1)
-            {
-                return false;
-            }
-
             this.m_dragItems = items;
             this.m_currentDragItem = $(items[0]);
 
@@ -695,7 +724,8 @@ oj.ListViewDndContext.prototype._handleDragEnd = function(event)
 
         for (i=0; i<this.m_dragItems.length; i++)
         {
-            $(this.m_dragItems[i]).removeClass("oj-listview-drag-item");           
+            $(this.m_dragItems[i]).removeClass("oj-listview-drag-item")
+                                  .css("display", "");           
         }
     }
 
@@ -731,13 +761,6 @@ oj.ListViewDndContext.prototype._matchDragDataType = function(event)
     var dragDataTypes, options, allowedTypes, allowedTypeArray, i;
 
     options = this._getDropOptions();
-  
-    // if no drop option is specified and reordering is enable, we'll allow drop
-    if (this._isItemReordering() && options == null)
-    {
-        return true;
-    }
-
     if (options && options['dataTypes'])
     {
         allowedTypes = options['dataTypes'];
@@ -949,12 +972,6 @@ oj.ListViewDndContext.prototype._handleDragOver = function(event)
 {
     var item, dropTarget, i, returnValue, index, emptyItem;
 
-    // must have drop or reorder option specified 
-    if (this._getDropOptions() == null && !this._isItemReordering())
-    {
-        return;
-    }
-
     // do any neccessary group item
     this._adjustGroupItemStyle();
 
@@ -964,15 +981,26 @@ oj.ListViewDndContext.prototype._handleDragOver = function(event)
         // take out the current drag item and create drop target
         item = $(this.m_dragItems[0]);
 
-        dropTarget = this._createDropTarget(item);
+        // this will check for matching data types
+        returnValue = this._invokeDropCallback('dragOver', event, {'item': item.get(0)});
 
-        for (i=0; i<this.m_dragItems.length; i++)
+        // note drop is allowed in the case where reordering is enabled, but only if there's no dragOver callback
+        // to prevent the drop
+        if ((returnValue === -1 && this._isItemReordering()) || returnValue === false || event.isDefaultPrevented())
         {
-            $(this.m_dragItems[i]).addClass("oj-listview-drag-item");           
-        }
+            dropTarget = this._createDropTarget(item);
 
-        dropTarget.insertBefore(item); //@HTMLUpdateOK
-        this.m_dropTargetIndex = dropTarget.index();
+            for (i=0; i<this.m_dragItems.length; i++)
+            {
+                // we have to override inline style instead of doing it inside style class since
+                // custom style class could override it
+                $(this.m_dragItems[i]).addClass("oj-listview-drag-item")
+                                      .css("display", "none");           
+            }
+
+            dropTarget.insertBefore(item); //@HTMLUpdateOK
+            this.m_dropTargetIndex = dropTarget.index();
+        }
     }
     else
     {
@@ -983,7 +1011,7 @@ oj.ListViewDndContext.prototype._handleDragOver = function(event)
             // this will check for matching data types
             returnValue = this._invokeDropCallback('dragOver', event, {'item': item.get(0)});
 
-            // note drop is allowed in the case where reordering is enabled, but only if there's no dragStart callback
+            // note drop is allowed in the case where reordering is enabled, but only if there's no dragOver callback
             // to prevent the drop
             if ((returnValue === -1 && this._isItemReordering()) || returnValue === false || event.isDefaultPrevented())
             {
@@ -1159,6 +1187,15 @@ oj.ListViewDndContext.prototype._handleDrop = function(event)
         ui['reorder'] = false;
     }
 
+    // cleanup artifacts before firing events
+    if (this.m_currentDropItem != null)
+    {
+        this.m_currentDropItem.removeClass("oj-valid-drop");
+    }
+    this._cleanupDropTarget();
+    this._restoreGroupItemStyle();
+    this._destroyDragImage();
+
     // fire drop event
     returnValue = this._invokeDropCallback('drop', event, ui);
 
@@ -1173,15 +1210,6 @@ oj.ListViewDndContext.prototype._handleDrop = function(event)
         // the drop should be complete regardless the value of callback
         event.preventDefault();
     }
-
-    // cleanup
-    if (this.m_currentDropItem != null)
-    {
-        this.m_currentDropItem.removeClass("oj-valid-drop");
-    }
-    this._cleanupDropTarget();
-    this._restoreGroupItemStyle();
-    this._destroyDragImage();
 
     // reset drop variables
     this.m_currentDropItem = null;
@@ -1201,15 +1229,12 @@ oj.ListViewDndContext.prototype._handleDrop = function(event)
 
 /*********************************** Context menu ***********************************************/
 /**
- * Add a default context menu to listview if there is none. If there is
- * a context menu set on the listview options we use that one. Add listeners
- * for context menu before show and select.
- * @param {string=} contextMenu the contextMenu selector
- * @private
+ * Prepares the context menu before it is opened.  Invoked by notifyContextMenuGesture.
+ * @param {Element} contextMenu the context menu root element
  */
-oj.ListViewDndContext.prototype.addContextMenu = function(contextMenu)
+oj.ListViewDndContext.prototype.prepareContextMenu = function(contextMenu)
 {
-    var self = this, id, menuContainer, listItems, menuItemsSet;
+    var self = this, menuContainer, listItems, menuItemsSet;
 
     // only add context menu if item reordering is enabled
     if (!this._isItemReordering())
@@ -1217,106 +1242,142 @@ oj.ListViewDndContext.prototype.addContextMenu = function(contextMenu)
         return;
     }
 
-    if (contextMenu == undefined)
+    menuContainer = $(contextMenu);
+    if (this.m_contextMenu != contextMenu)
     {
-        contextMenu = this.listview.GetOption("contextMenu");
+        this.m_contextMenu = contextMenu;
+
+        if (contextMenu.tagName === "OJ-MENU")
+        {
+            contextMenu.addEventListener("ojBeforeOpen", this._handleContextMenuBeforeOpen.bind(this));
+            contextMenu.addEventListener("ojAction", this._handleContextMenuSelect.bind(this));
+        }
+        else
+        {
+            menuContainer.on("ojbeforeopen", this._handleContextMenuBeforeOpen.bind(this));
+            menuContainer.on("ojselect", this._handleContextMenuSelect.bind(this));
+        }
     }
 
-    // check whether context menu is specified by app
-    if (contextMenu != null)
+    menuItemsSet = this._getCommands(contextMenu, function(menuItem, command)
     {
-        // this keeps track of which menu items were generated by the listview dynamically
-        // this way on a refresh we know to recreate them in case there was a locale or
-        // translations change
-        if (this.m_menuItemsSet == null)
+        var newListItem = self._buildContextMenuItem(command, menuItem.tagName);
+        if (menuItem.tagName === "OJ-OPTION")
         {
-            this.m_menuItemsSet = [];
+            menuItem.innerHTML = newListItem.get(0).innerHTML; // @HTMLUpdateOK
+            $(menuItem).attr('data-oj-command', newListItem.attr('data-oj-command'));
         }
-        
-        menuContainer = $(contextMenu);
-        listItems = menuContainer.find('[data-oj-command]');
-        menuItemsSet = [];
-        listItems.each(function() {
-            var command, anchor, newListItem;
-            anchor = $(this).children('a');
-            if (anchor.length === 0)
+        else
+        {
+            newListItem.get(0).className = $(menuItem).get(0).className;
+            $(menuItem).replaceWith(newListItem); //@HTMLUpdateOK                        
+        }        
+    });
+
+    // this keeps track of which menu items were generated by the listview dynamically
+    // this way on a refresh we know to recreate them in case there was a locale or
+    // translations change
+    this.m_menuItemsSet = menuItemsSet;
+
+    if (menuItemsSet.length > 0)
+    {
+        if (menuContainer.data('oj-ojMenu'))
+        {
+            if (contextMenu.tagName === "OJ-MENU")
             {
-                // transform menu item as needed
-                if ($(this).attr('data-oj-command').indexOf('oj-listview-') == 0)
-                {
-                    command = $(this).attr('data-oj-command').substring(12);
-                    newListItem = self._buildContextMenuItem(command);
-                    newListItem.get(0).className = $(this).get(0).className;
-                    $(this).replaceWith(newListItem); //@HTMLUpdateOK
-                }
+                contextMenu.refresh();
             }
             else
             {
-                // menu item been processed already
-                command = $(this).attr('data-oj-command');
-
-                // mapping for paste
-                if (command == "pasteBefore")
-                {
-                    command = "paste-before";
-                }
-                else if (command == "pasteAfter")
-                {
-                    command = "paste-after";
-                }
+                $(contextMenu).ojMenu('refresh');
             }
- 
-            if (command != null)
-            {
-                menuItemsSet.push(command);
-            }
-        });
-
-        this.m_menuItemsSet = menuItemsSet;
-
-        if (menuItemsSet.length > 0)
-        {
-            if (menuContainer.data('oj-ojMenu'))
-            {
-                menuContainer.ojMenu('refresh');
-            }
-
-            menuContainer.on("ojbeforeopen", this._handleContextMenuBeforeOpen.bind(this));
-            menuContainer.on("ojselect", this._handleContextMenuSelect.bind(this));
         }
     }
 };
 
 /**
- * Builds a menu for a command, takes care of submenus where appropriate
- * @param {string} command the command that the datagrid should build a menu item for
+ * Retrieves a list of commands from the context menu.
+ * @param {Element} contextMenu the context menu element
+ * @param {function(Element, string)=} callback the function to invoke on each menu item found
+ * @return {Array} a list of commands
  * @private
  */
-oj.ListViewDndContext.prototype._buildContextMenuItem = function(command)
+oj.ListViewDndContext.prototype._getCommands = function(contextMenu, callback)
+{
+    var capabilities, listItems;
+
+    capabilities = [];
+    listItems = $(contextMenu).find('[data-oj-command]');
+    listItems.each(function() {
+        var command, anchor, newListItem;
+        anchor = $(this).children('a');
+        if (anchor.length === 0)
+        {
+            if ($(this).attr('data-oj-command').indexOf('oj-listview-') == 0)
+            {
+                command = $(this).attr('data-oj-command').substring(12);
+                if (callback)
+                {
+                    callback(this, command);
+                }
+            }
+        }
+        else
+        {
+            command = $(this).attr('data-oj-command');
+
+            // mapping for paste
+            if (command == oj.ListViewDndContext.PASTE_BEFORE_COMMAND)
+            {
+                command = "paste-before";
+            }
+            else if (command == oj.ListViewDndContext.PASTE_AFTER_COMMAND)
+            {
+                command = "paste-after";
+            }
+        }
+
+        if (command)
+        {
+            capabilities.push(command);
+        }
+    });
+
+    return capabilities;
+};
+
+/**
+ * Builds a menu for a command, takes care of submenus where appropriate
+ * @param {string} command the command that the listview should build a menu item for
+ * @param {string} tagName to use to create the menu item
+ * @private
+ */
+oj.ListViewDndContext.prototype._buildContextMenuItem = function(command, tagName)
 {
     if (command === 'paste-before')
     {
-        return this._buildContextMenuListItem('pasteBefore');
+        return this._buildContextMenuListItem(oj.ListViewDndContext.PASTE_BEFORE_COMMAND, tagName);
     }
     else if (command === 'paste-after')
     {
-        return this._buildContextMenuListItem('pasteAfter');
+        return this._buildContextMenuListItem(oj.ListViewDndContext.PASTE_AFTER_COMMAND, tagName);
     }
     else
     {
-        return this._buildContextMenuListItem(command);
+        return this._buildContextMenuListItem(command, tagName);
     }
 };
 
 /**
  * Builds a context menu list item from a command
  * @param {string} command the string to look up command value for as well as translation
+ * @param {string} tagName to use to create the menu item
  * @return {Object} a jQuery object with HTML containing a list item
  * @private
  */
-oj.ListViewDndContext.prototype._buildContextMenuListItem = function(command)
+oj.ListViewDndContext.prototype._buildContextMenuListItem = function(command, tagName)
 {
-    var listItem = $('<li></li>');
+    var listItem = $(document.createElement(tagName));
     listItem.attr('data-oj-command', command);
     listItem.append(this._buildContextMenuLabel(command)); //@HTMLUpdateOK
     return listItem;
@@ -1405,30 +1466,33 @@ oj.ListViewDndContext.prototype._handlePaste = function(event, item, position)
 /**
  * Select handler for context menu items
  * @param {Event} event jQuery event object
- * @param {Object} ui additional info from event
+ * @param {Object=} ui additional info from event
  * @private
  */
 oj.ListViewDndContext.prototype._handleContextMenuSelect = function(event, ui)
 {
+    var item;
+
     // should never happen
     if (this.m_contextMenuItem == null)
     {
         return;
     }
 
-    switch(ui.item.attr("data-oj-command")) 
+    item = ui ? ui.item : $(event.target);
+    switch(item.attr("data-oj-command")) 
     {
-        case "cut":
+        case oj.ListViewDndContext.CUT_COMMAND:
             this._handleCut(event);
             break;
-        case "copy":
+        case oj.ListViewDndContext.COPY_COMMAND:
             this._handleCopy(event);
             break;
-        case "paste":
+        case oj.ListViewDndContext.PASTE_COMMAND:
             var inside = true;
-        case "pasteBefore":
+        case oj.ListViewDndContext.PASTE_BEFORE_COMMAND:
             var before = true;
-        case "pasteAfter":
+        case oj.ListViewDndContext.PASTE_AFTER_COMMAND:
             var position = "after";
             if (inside)
             {
@@ -1461,11 +1525,11 @@ oj.ListViewDndContext.prototype._appendToMenuContainer = function(menuContainer,
     {
         if (command == "paste-before")
         {
-            command = "pasteBefore";
+            command = oj.ListViewDndContext.PASTE_BEFORE_COMMAND;
         }
         else if (command == "paste-after")
         {
-            command = "pasteAfter";
+            command = oj.ListViewDndContext.PASTE_AFTER_COMMAND;
         }
 
         // show the menu item
@@ -1477,7 +1541,7 @@ oj.ListViewDndContext.prototype._appendToMenuContainer = function(menuContainer,
 /**
  * Before open handler so that ListView can customize content of context menu based on item
  * @param {Event} event jQuery event object
- * @param {Object} ui ui object
+ * @param {Object=} ui ui object
  * @private
  */
 oj.ListViewDndContext.prototype._handleContextMenuBeforeOpen = function(event, ui)
@@ -1491,11 +1555,14 @@ oj.ListViewDndContext.prototype._handleContextMenuBeforeOpen = function(event, u
     menuContainer.find("[data-oj-command]")
                  .addClass("oj-disabled");
 
-    item = ui['openOptions']['launcher'];
+    item = ui ? ui['openOptions']['launcher'] : event['detail']['openOptions']['launcher'];
     if (item == null || this.m_menuItemsSet == null || this.m_menuItemsSet.length == 0)
     {
         // refresh to take effect
-        menuContainer.ojMenu("refresh");
+        if (menuContainer.get(0).tagName != "OJ-MENU")
+        {
+            menuContainer.ojMenu("refresh");
+        }
         return;
     }
 
@@ -1521,7 +1588,10 @@ oj.ListViewDndContext.prototype._handleContextMenuBeforeOpen = function(event, u
     }
 
     // refresh to take effect
-    menuContainer.ojMenu("refresh");
+    if (menuContainer.get(0).tagName != "OJ-MENU")
+    {
+        menuContainer.ojMenu("refresh");
+    }
 
     this.m_contextMenuItem = item;
 };
@@ -1532,58 +1602,75 @@ oj.ListViewDndContext.prototype._handleContextMenuBeforeOpen = function(event, u
  * @return {boolean} true if key event is handled, false otherwise
  * @private
  */
-
 oj.ListViewDndContext.prototype.HandleKeyDown = function(event)
 {
-    var keyCode, active, position;
-
-    // only add context menu if item reordering is enabled
-    if (!this._isItemReordering() || this.m_menuItemsSet == null || this.m_menuItemsSet.length == 0)
-    {
-        return false;
-    }
+    var keyCode, contextMenu, commands, active, position;
 
     if (event.ctrlKey || event.metaKey)
     {
         keyCode = event.keyCode;
-        if (keyCode === oj.ListViewDndContext.X_KEY && this.m_menuItemsSet.indexOf("cut") > -1)
+        // quickly short circuit it if it's not one of the supported keys
+        if (keyCode === oj.ListViewDndContext.X_KEY || keyCode === oj.ListViewDndContext.C_KEY || oj.ListViewDndContext.V_KEY)
         {
-            this._handleCut(event);
-            return true;
-        }
-        else if (keyCode === oj.ListViewDndContext.C_KEY && this.m_menuItemsSet.indexOf("copy") > -1)
-        {
-            this._handleCopy(event);
-            return true;
-        }
-        else if (keyCode === oj.ListViewDndContext.V_KEY)
-        {
-            if (this.m_clipboard != null)
+            // only if item reordering is enabled
+            if (!this._isItemReordering())
             {
-                active = $(this._getActiveItem());
-                if (active.children().first().hasClass(this.listview.getGroupItemStyleClass()))
+                return false;
+            }
+
+            // capabilities depends on what's specified in context menu
+            contextMenu = this.listview.ojContext._GetContextMenu();
+            if (contextMenu == null)
+            {
+                return false;
+            }
+
+            // no clipboard commands found
+            commands = this._getCommands(contextMenu);
+            if (commands.length == 0)
+            {
+                return false;
+            }
+
+            if (keyCode === oj.ListViewDndContext.X_KEY && commands.indexOf("cut") > -1)
+            {
+                this._handleCut(event);
+                return true;
+            }
+            else if (keyCode === oj.ListViewDndContext.C_KEY && commands.indexOf("copy") > -1)
+            {
+                this._handleCopy(event);
+                return true;
+            }
+            else if (keyCode === oj.ListViewDndContext.V_KEY)
+            {
+                if (this.m_clipboard != null)
                 {
-                    if (this.m_menuItemsSet.indexOf("paste") > -1)
+                    active = $(this._getActiveItem());
+                    if (active.children().first().hasClass(this.listview.getGroupItemStyleClass()))
                     {
-                        position = "inside";
+                        if (commands.indexOf("paste") > -1)
+                        {
+                            position = "inside";
+                        }
                     }
-                }
-                else
-                {
-                    if (this.m_menuItemsSet.indexOf("paste-before") > -1)
-                    {  
-                        position = "before";
+                    else
+                    {
+                        if (commands.indexOf("paste-before") > -1)
+                        {  
+                            position = "before";
+                        }
+                        else if (commands.indexOf("paste-after") > -1)
+                        {  
+                            position = "after";
+                        }
                     }
-                    else if (this.m_menuItemsSet.indexOf("paste-after") > -1)
-                    {  
-                        position = "after";
+     
+                    if (position != null)
+                    {   
+                        this._handlePaste(event, active, position);
+                        return true;
                     }
-                }
- 
-                if (position != null)
-                {   
-                    this._handlePaste(event, active, position);
-                    return true;
                 }
             }
         }

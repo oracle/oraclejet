@@ -38,7 +38,7 @@
 //     $altButtonOutlinedChromeBorderColorSelected: $demoPurple);
 // }
 //
-// Note: This mixin does not support buttonsets
+// Note: This mixin supports push buttons and single toggle buttonsets
 //*****************************************************************************
 @mixin oj-button-state-overrides (
 
@@ -185,7 +185,8 @@
 
  )
 {
-
+    &.oj-buttonset .oj-button-jqui.oj-default.oj-button-full-chrome,     // toggle button
+    &.oj-buttonset .oj-button-jqui.oj-focus-only.oj-button-full-chrome,  // toggle button
     &.oj-button-jqui.oj-default.oj-button-full-chrome,                   // jqui only
     &.oj-button-jqui.oj-focus-only.oj-button-full-chrome,                // jqui only
     &.oj-button.oj-default.oj-button-full-chrome .oj-button-button,      // custom element only
@@ -200,13 +201,16 @@
         text-shadow: $altButtonTextShadow ;
     }
 
+    &.oj-buttonset .oj-button.oj-default.oj-button-full-chrome .oj-button-icon,
+    &.oj-buttonset .oj-button.oj-focus-only.oj-button-full-chrome .oj-button-icon,
     &.oj-button.oj-default.oj-button-full-chrome .oj-button-icon,
     &.oj-button.oj-focus-only.oj-button-full-chrome .oj-button-icon {
         color: $altButtonIconColor; 
     }
 
+    &.oj-buttonset .oj-button-jqui.oj-hover.oj-button-full-chrome:not(.oj-active),  // toggle button
     &.oj-button-jqui.oj-hover.oj-button-full-chrome:not(.oj-active),                // jqui only
-    &.oj-button.oj-hover.oj-button-full-chrome:not(.oj-active) .oj-button-button {  // custom element only
+    &.oj-button.oj-hover.oj-button-full-chrome:not(.oj-active) .oj-button-button {   // custom element only 
         background-color: $altButtonBgColorHover;
         @include oj-background-image($altButtonBgImageHover);
         border-color: $altButtonBorderColorHover; 
@@ -215,10 +219,12 @@
         text-shadow: $altButtonTextShadowHover;
     }
 
+    &.oj-buttonset .oj-button.oj-hover.oj-button-full-chrome:not(.oj-active) .oj-button-icon,
     &.oj-button.oj-hover.oj-button-full-chrome:not(.oj-active) .oj-button-icon {
         color: $altButtonIconColorHover; 
     }
 
+    &.oj-buttonset .oj-button-jqui.oj-active.oj-button-full-chrome,  // toggle only
     &.oj-button-jqui.oj-active.oj-button-full-chrome,                // jqui only
     &.oj-button.oj-active.oj-button-full-chrome .oj-button-button {  // custom element only
         background-color: $altButtonBgColorActive;
@@ -230,10 +236,12 @@
         opacity: $altButtonOpacityActive;
     }
 
+    &.oj-buttonset .oj-button.oj-active.oj-button-full-chrome .oj-button-icon,
     &.oj-button.oj-active.oj-button-full-chrome .oj-button-icon {
         color: $altButtonIconColorActive; 
     }
     
+    &.oj-buttonset .oj-button-jqui.oj-selected.oj-button-full-chrome:not(.oj-disabled),  // jqui only
     &.oj-button-jqui.oj-selected.oj-button-full-chrome:not(.oj-disabled),                // jqui only
     &.oj-button.oj-selected.oj-button-full-chrome:not(.oj-disabled) .oj-button-button {  // custom element only
         background-color: $altButtonBgColorSelected;
@@ -244,6 +252,7 @@
         text-shadow: $altButtonTextShadowSelected;
     }
     
+    &.oj-buttonset .oj-button-jqui.oj-selected.oj-hover.oj-button-full-chrome:not(.oj-disabled),  // toggle button
     &.oj-button-jqui.oj-selected.oj-hover.oj-button-full-chrome:not(.oj-disabled),                // jqui only
     &.oj-button.oj-selected.oj-hover.oj-button-full-chrome:not(.oj-disabled) .oj-button-button {  // custom element only
         background-color: $altButtonBgColorSelectedHover;
@@ -254,14 +263,17 @@
         text-shadow: $altButtonTextShadowSelectedHover;
     }
     
+    &.oj-buttonset .oj-button.oj-selected.oj-button-full-chrome:not(.oj-disabled) .oj-button-icon,
     &.oj-button.oj-selected.oj-button-full-chrome:not(.oj-disabled) .oj-button-icon  {
         color: $altButtonIconColorSelected; 
     }
 
+    &.oj-buttonset .oj-button.oj-selected.oj-hover.oj-button-full-chrome:not(.oj-disabled) .oj-button-icon,
     &.oj-button.oj-selected.oj-hover.oj-button-full-chrome:not(.oj-disabled) .oj-button-icon  {
         color: $altButtonIconColorSelectedHover; 
     }
 
+    &.oj-buttonset .oj-button-jqui.oj-disabled.oj-button-full-chrome,  // toggle button
     &.oj-button-jqui.oj-disabled.oj-button-full-chrome,                // jqui only
     &.oj-button.oj-disabled.oj-button-full-chrome .oj-button-button {  // custom element only
         background-color: $altButtonBgColorDisabled;
@@ -270,10 +282,12 @@
         opacity: $altButtonOpacityDisabled;
     }
 
+    &.oj-buttonset .oj-button.oj-disabled.oj-button-full-chrome .oj-button-icon,
     &.oj-button.oj-disabled.oj-button-full-chrome .oj-button-icon  {
         color: $altButtonIconColorDisabled; 
     }
 
+    &.oj-buttonset .oj-button-jqui.oj-disabled.oj-selected.oj-button-full-chrome,  // toggle button
     &.oj-button-jqui.oj-disabled.oj-selected.oj-button-full-chrome,                // jqui only
     &.oj-button.oj-disabled.oj-selected.oj-button-full-chrome .oj-button-button {  // custom element only
         color: $altButtonTextColorSelectedDisabled;
@@ -281,6 +295,7 @@
         border-color: $altButtonBorderColorSelectedDisabled;
     }
 
+    &.oj-buttonset .oj-button.oj-disabled.oj-selected.oj-button-full-chrome .oj-button-icon,
     &.oj-button.oj-disabled.oj-selected.oj-button-full-chrome .oj-button-icon { 
         color: $altButtonIconColorSelectedDisabled;
     }
@@ -295,7 +310,8 @@
     //----------------------------------
 
 
-
+    &.oj-buttonset .oj-button-jqui.oj-default.oj-button-half-chrome,     // toggle button
+    &.oj-buttonset .oj-button-jqui.oj-focus-only.oj-button-half-chrome,  // toggle button
     &.oj-button-jqui.oj-default.oj-button-half-chrome,                   // jqui only
     &.oj-button-jqui.oj-focus-only.oj-button-half-chrome,                // jqui only
     &.oj-button.oj-default.oj-button-half-chrome .oj-button-button,      // custom element only
@@ -303,6 +319,7 @@
         color: $altButtonHalfChromeTextColor;
     }
 
+    &.oj-buttonset .oj-button-jqui.oj-hover.oj-button-half-chrome:not(.oj-active):not(.oj-selected),  // toggle button
     &.oj-button-jqui.oj-hover.oj-button-half-chrome:not(.oj-active):not(.oj-selected),                // jqui only
     &.oj-button.oj-hover.oj-button-half-chrome:not(.oj-active):not(.oj-selected) .oj-button-button {  // custom element only
         color: $altButtonHalfChromeTextColorHover;
@@ -310,6 +327,7 @@
         border-color: $altButtonHalfChromeBorderColorHover;
     }
 
+    &.oj-buttonset .oj-button-jqui.oj-active.oj-button-half-chrome,  // toggle button
     &.oj-button-jqui.oj-active.oj-button-half-chrome,                // jqui only
     &.oj-button.oj-active.oj-button-half-chrome .oj-button-button {  // custom element only
         color: $altButtonHalfChromeTextColorActive;
@@ -318,6 +336,7 @@
         opacity: $altButtonHalfChromeOpacityActive;
     }
 
+    &.oj-buttonset .oj-button-jqui.oj-selected.oj-button-half-chrome:not(.oj-disabled),  // toggle button
     &.oj-button-jqui.oj-selected.oj-button-half-chrome:not(.oj-disabled),                // jqui only
     &.oj-button.oj-selected.oj-button-half-chrome:not(.oj-disabled) .oj-button-button {  // custom element only
         color: $altButtonHalfChromeTextColorSelected;
@@ -325,6 +344,7 @@
         border-color: $altButtonHalfChromeBorderColorSelected;
     }
 
+    &.oj-buttonset .oj-button-jqui.oj-selected.oj-hover.oj-button-half-chrome:not(.oj-disabled),  // toggle button
     &.oj-button-jqui.oj-selected.oj-hover.oj-button-half-chrome:not(.oj-disabled),                // jqui only
     &.oj-button.oj-selected.oj-hover.oj-button-half-chrome:not(.oj-disabled) .oj-button-button {  // custom element only
         color: $altButtonHalfChromeTextColorSelectedHover;
@@ -332,12 +352,14 @@
         border-color: $altButtonHalfChromeBorderColorSelectedHover;
     }
 
+    &.oj-buttonset .oj-button-jqui.oj-disabled.oj-button-half-chrome:not(.oj-selected),  // toggle button
     &.oj-button-jqui.oj-disabled.oj-button-half-chrome:not(.oj-selected),                // jqui only
     &.oj-button.oj-disabled.oj-button-half-chrome:not(.oj-selected) .oj-button-button {  // custom element only
         color: $altButtonHalfChromeTextColorDisabled;
         opacity: $altButtonHalfChromeOpacityDisabled;
     }
 
+    &.oj-buttonset .oj-button-jqui.oj-disabled.oj-selected.oj-button-half-chrome,  // toggle button
     &.oj-button-jqui.oj-disabled.oj-selected.oj-button-half-chrome,                // jqui only
     &.oj-button.oj-disabled.oj-selected.oj-button-half-chrome .oj-button-button {  // custom element only
         color: $altButtonHalfChromeTextColorSelectedDisabled;
@@ -345,31 +367,38 @@
         border-color: $altButtonHalfChromeBorderColorSelectedDisabled;
     }
 
+    &.oj-buttonset .oj-button.oj-default.oj-button-half-chrome .oj-button-icon,
     &.oj-button.oj-default.oj-button-half-chrome .oj-button-icon,
     &.oj-button.oj-focus-only.oj-button-half-chrome .oj-button-icon {
         color: $altButtonHalfChromeIconColor; 
     }
 
+    &.oj-buttonset .oj-button.oj-hover.oj-button-half-chrome:not(.oj-active):not(.oj-selected) .oj-button-icon,
     &.oj-button.oj-hover.oj-button-half-chrome:not(.oj-active):not(.oj-selected) .oj-button-icon {
         color: $altButtonHalfChromeIconColorHover; 
     }
 
+    &.oj-buttonset .oj-button.oj-active.oj-button-half-chrome .oj-button-icon,
     &.oj-button.oj-active.oj-button-half-chrome .oj-button-icon {
         color: $altButtonHalfChromeIconColorActive; 
     }
 
+    &.oj-buttonset .oj-button.oj-selected.oj-button-half-chrome:not(.oj-disabled) .oj-button-icon,
     &.oj-button.oj-selected.oj-button-half-chrome:not(.oj-disabled) .oj-button-icon {
         color: $altButtonHalfChromeIconColorSelected; 
     }
 
+    &.oj-buttonset .oj-button.oj-selected.oj-hover.oj-button-half-chrome:not(.oj-disabled) .oj-button-icon,
     &.oj-button.oj-selected.oj-hover.oj-button-half-chrome:not(.oj-disabled) .oj-button-icon {
         color: $altButtonHalfChromeIconColorSelectedHover; 
     }
 
+    &.oj-buttonset .oj-button.oj-disabled.oj-button-half-chrome:not(.oj-selected) .oj-button-icon,
     &.oj-button.oj-disabled.oj-button-half-chrome:not(.oj-selected) .oj-button-icon {
         color: $altButtonHalfChromeIconColorDisabled;
     }
     
+    &.oj-buttonset .oj-button.oj-disabled.oj-selected.oj-button-half-chrome .oj-button-icon, 
     &.oj-button.oj-disabled.oj-selected.oj-button-half-chrome .oj-button-icon { 
         color: $altButtonHalfChromeIconColorSelectedDisabled;
     }
@@ -384,7 +413,8 @@
     //----------------------------------
 
 
-
+    &.oj-buttonset .oj-button-jqui.oj-default.oj-button-outlined-chrome,     // toggle button
+    &.oj-buttonset .oj-button-jqui.oj-focus-only.oj-button-outlined-chrome,  // toggle button
     &.oj-button-jqui.oj-default.oj-button-outlined-chrome,                   // jqui only
     &.oj-button-jqui.oj-focus-only.oj-button-outlined-chrome,                // jqui only
     &.oj-button.oj-default.oj-button-outlined-chrome .oj-button-button,      // custom element only
@@ -393,6 +423,7 @@
         border-color: $altButtonOutlinedChromeBorderColor;
     }
 
+    &.oj-buttonset .oj-button-jqui.oj-hover.oj-button-outlined-chrome:not(.oj-active):not(.oj-selected),  // toggle button
     &.oj-button-jqui.oj-hover.oj-button-outlined-chrome:not(.oj-active):not(.oj-selected),                // jqui only
     &.oj-button.oj-hover.oj-button-outlined-chrome:not(.oj-active):not(.oj-selected) .oj-button-button {  // custom element only
         color: $altButtonOutlinedChromeTextColorHover;
@@ -400,6 +431,7 @@
         border-color: $altButtonOutlinedChromeBorderColorHover;
     }
 
+    &.oj-buttonset .oj-button-jqui.oj-active.oj-button-outlined-chrome,  // toggle button
     &.oj-button-jqui.oj-active.oj-button-outlined-chrome,                // jqui only
     &.oj-button.oj-active.oj-button-outlined-chrome .oj-button-button {  // custom element only
         color: $altButtonOutlinedChromeTextColorActive;
@@ -408,6 +440,7 @@
         opacity: $altButtonOutlinedChromeOpacityActive;
     }
 
+    &.oj-buttonset .oj-button-jqui.oj-selected.oj-button-outlined-chrome:not(.oj-disabled),  // toggle button
     &.oj-button-jqui.oj-selected.oj-button-outlined-chrome:not(.oj-disabled),                // jqui only
     &.oj-button.oj-selected.oj-button-outlined-chrome:not(.oj-disabled) .oj-button-button {  // custom element only
         color: $altButtonOutlinedChromeTextColorSelected;
@@ -415,6 +448,7 @@
         border-color: $altButtonOutlinedChromeBorderColorSelected;
     }
 
+    &.oj-buttonset .oj-button-jqui.oj-selected.oj-hover.oj-button-outlined-chrome:not(.oj-disabled), // toggle button
     &.oj-button-jqui.oj-selected.oj-hover.oj-button-outlined-chrome:not(.oj-disabled),                // jqui only
     &.oj-button.oj-selected.oj-hover.oj-button-outlined-chrome:not(.oj-disabled) .oj-button-button {  // custom element only
         color: $altButtonOutlinedChromeTextColorSelectedHover;
@@ -422,6 +456,7 @@
         border-color: $altButtonOutlinedChromeBorderColorSelectedHover;
     }
 
+    &.oj-buttonset .oj-button-jqui.oj-disabled.oj-button-outlined-chrome:not(.oj-selected),  // toggle button
     &.oj-button-jqui.oj-disabled.oj-button-outlined-chrome:not(.oj-selected),                // jqui only
     &.oj-button.oj-disabled.oj-button-outlined-chrome:not(.oj-selected) .oj-button-button {  // custom element only
         color: $altButtonOutlinedChromeTextColorDisabled;
@@ -429,6 +464,7 @@
         border-color: $altButtonOutlinedChromeBorderColorDisabled;
     }
 
+    &.oj-buttonset .oj-button-jqui.oj-disabled.oj-selected.oj-button-outlined-chrome,  // toggle button
     &.oj-button-jqui.oj-disabled.oj-selected.oj-button-outlined-chrome,                // jqui only
     &.oj-button.oj-disabled.oj-selected.oj-button-outlined-chrome .oj-button-button {  // custom element only
         color: $altButtonOutlinedChromeTextColorSelectedDisabled;
@@ -436,31 +472,39 @@
         border-color: $altButtonOutlinedChromeBorderColorSelectedDisabled;
     }
 
+    &.oj-buttonset .oj-button.oj-default.oj-button-outlined-chrome .oj-button-icon,
+    &.oj-buttonset .oj-button.oj-focus-only.oj-button-outlined-chrome .oj-button-icon,
     &.oj-button.oj-default.oj-button-outlined-chrome .oj-button-icon,
     &.oj-button.oj-focus-only.oj-button-outlined-chrome .oj-button-icon {
         color: $altButtonOutlinedChromeIconColor; 
     }
 
+    &.oj-buttonset .oj-button.oj-hover.oj-button-outlined-chrome:not(.oj-active):not(.oj-selected) .oj-button-icon,
     &.oj-button.oj-hover.oj-button-outlined-chrome:not(.oj-active):not(.oj-selected) .oj-button-icon {
         color: $altButtonOutlinedChromeIconColorHover; 
     }
 
+    &.oj-buttonset .oj-button.oj-active.oj-button-outlined-chrome .oj-button-icon,
     &.oj-button.oj-active.oj-button-outlined-chrome .oj-button-icon {
         color: $altButtonOutlinedChromeIconColorActive; 
     }
 
+    &.oj-buttonset .oj-button.oj-selected.oj-button-outlined-chrome:not(.oj-disabled) .oj-button-icon,
     &.oj-button.oj-selected.oj-button-outlined-chrome:not(.oj-disabled) .oj-button-icon {
         color: $altButtonOutlinedChromeIconColorSelected; 
     }
 
+    &.oj-buttonset .oj-button.oj-selected.oj-hover.oj-button-outlined-chrome:not(.oj-disabled) .oj-button-icon,
     &.oj-button.oj-selected.oj-hover.oj-button-outlined-chrome:not(.oj-disabled) .oj-button-icon {
         color: $altButtonOutlinedChromeIconColorSelectedHover; 
     }
 
+    &.oj-buttonset .oj-button.oj-disabled.oj-button-outlined-chrome:not(.oj-selected) .oj-button-icon,
     &.oj-button.oj-disabled.oj-button-outlined-chrome:not(.oj-selected) .oj-button-icon {
         color: $altButtonOutlinedChromeIconColorDisabled;
     }
     
+    &.oj-buttonset .oj-button.oj-disabled.oj-selected.oj-button-outlined-chrome .oj-button-icon,
     &.oj-button.oj-disabled.oj-selected.oj-button-outlined-chrome .oj-button-icon { 
         color: $altButtonOutlinedChromeIconColorSelectedDisabled;
     }

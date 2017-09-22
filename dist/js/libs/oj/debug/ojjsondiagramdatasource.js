@@ -129,6 +129,11 @@ oj.JsonDiagramDataSource.prototype._updateLocalData = function(parentData, child
     var thisRef = this;
     childData.then(
       function(data) {
+        if (!parentData && !thisRef.data) {
+          //top level data were initially set to null, 
+          //create an object before setting its nodes and links properties
+          thisRef.data = {};
+        }
         if (Array.isArray(data['nodes'])) {
           if (parentData) {
             parentData['nodes'] = data['nodes'];

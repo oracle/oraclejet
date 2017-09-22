@@ -18,6 +18,10 @@
             }      
         }
 
+        oj-navigation-list {
+          display: block;
+        }
+
         /*Navlist root node*/
         .oj-navigationlist,
         .oj-navigationlist-listview-container {
@@ -40,7 +44,7 @@
         }
         /* navigation list divider used in horizontal navlist to separate buttons*/
         .oj-navigationlist-horizontal .oj-navigationlist-divider {
-            border-color: $navigationBarItemDividerColor;
+            border-color: $navigationListHorizontalItemDividerColor;
             border-style: solid;
             border-width: 0 1px 0 0;
             font-size: 0;
@@ -65,7 +69,7 @@
 
         .oj-navigationlist-item-element:not(.oj-navigationlist-item) {
           display: block;
-          line-height: 0; //IE bug: IE is adding lineheight on top of actual contents height when display:block.
+          line-height: 0; //IE bug: IE is adding lineheight on top of actual contents height when display:block. 
         }
         
         .oj-navigationlist-item-element {
@@ -95,11 +99,11 @@
         }
         
         .oj-navigationlist-page-level.oj-navigationlist-vertical .oj-navigationlist-item::before {
-            min-height: $navigationListPageLevelItemMinHeight;
+            min-height: $tabBarItemMinHeight;
         }
         
         .oj-navigationlist-page-level.oj-navigationlist-vertical .oj-navigationlist-item-label {
-            font-size: $navigationListPageLevelItemFontSize;
+            font-size: $tabBarItemFontSize;
         }
 
         /* Styling for expand/collapse icons holder */
@@ -242,7 +246,7 @@
         .oj-navigationlist-vertical.oj-navigationlist-page-level .oj-navigationlist-item.oj-hover.oj-selected .oj-navigationlist-item-icon
         {
           .oj-contrast-marker & {
-              color: $navigationListPageLevelItemContrastLabelColorSelected;
+              color: $tabBarItemContrastLabelColorSelected;
           }
         }
 
@@ -470,7 +474,7 @@
         .oj-navigationlist-page-level.oj-navigationlist-expanded:not(.oj-navigationlist-icon-only).oj-navigationlist-vertical .oj-navigationlist-item
         {
             $tmpPadding: 0;//Need to define out side if to pass ruby sass build
-            $tmpItemBorderWidth: oj-shorthand-property-value-left($navigationListPageLevelItemBorderWidth);
+            $tmpItemBorderWidth: oj-shorthand-property-value-left($tabBarItemBorderWidth);
             @if $tmpItemBorderWidth == 0 {
                 $tmpPadding:  $navigationListItemStartEndPadding; 
             }@else {
@@ -479,33 +483,33 @@
             // need to override both ltr and rtl because default expanded navlist will have selection border based on direction.
             @include oj-rtl() {
                 padding-right: $tmpPadding;
-                border-width: 0 oj-shorthand-property-value-left($navigationListPageLevelItemBorderWidth) oj-shorthand-property-value-bottom($navigationListPageLevelItemBorderWidth) oj-shorthand-property-value-right($navigationListPageLevelItemBorderWidth);
+                border-width: 0 oj-shorthand-property-value-left($tabBarItemBorderWidth) oj-shorthand-property-value-bottom($tabBarItemBorderWidth) oj-shorthand-property-value-right($tabBarItemBorderWidth);
             }
             @include oj-ltr() {
                 padding-left: $tmpPadding;
-                border-width: 0 oj-shorthand-property-value-right($navigationListPageLevelItemBorderWidth) oj-shorthand-property-value-bottom($navigationListPageLevelItemBorderWidth) oj-shorthand-property-value-left($navigationListPageLevelItemBorderWidth);
+                border-width: 0 oj-shorthand-property-value-right($tabBarItemBorderWidth) oj-shorthand-property-value-bottom($tabBarItemBorderWidth) oj-shorthand-property-value-left($tabBarItemBorderWidth);
             }
             border-style: solid;
             border-radius: 0;
-            border-color: $navigationListPageLevelItemBorderColor;
+            border-color: $tabBarItemBorderColor;
         }
 
         .oj-navigationlist-page-level.oj-navigationlist-expanded:not(.oj-navigationlist-icon-only).oj-navigationlist-vertical .oj-navigationlist-item:first-of-type {
 
             // need to override both ltr and rtl as it was overriden above for border-width.
             @include oj-rtl() {
-                border-top-width: oj-shorthand-property-value-top($navigationListPageLevelItemBorderWidth);
+                border-top-width: oj-shorthand-property-value-top($tabBarItemBorderWidth);
             }
             @include oj-ltr() {
-                border-top-width: oj-shorthand-property-value-top($navigationListPageLevelItemBorderWidth);
+                border-top-width: oj-shorthand-property-value-top($tabBarItemBorderWidth);
             }
-            border-top-left-radius: $navigationListPageLevelItemBorderRadius;
-            border-top-right-radius: $navigationListPageLevelItemBorderRadius;
+            border-top-left-radius: $tabBarItemBorderRadius;
+            border-top-right-radius: $tabBarItemBorderRadius;
         }
         
         .oj-navigationlist-page-level.oj-navigationlist-expanded:not(.oj-navigationlist-icon-only).oj-navigationlist-vertical .oj-navigationlist-item:last-of-type {
-            border-bottom-left-radius: $navigationListPageLevelItemBorderRadius;
-            border-bottom-right-radius: $navigationListPageLevelItemBorderRadius;
+            border-bottom-left-radius: $tabBarItemBorderRadius;
+            border-bottom-right-radius: $tabBarItemBorderRadius;
         }
 
         /*Start of icons only navlist*/
@@ -572,7 +576,7 @@
             .oj-navigationlist-page-level.oj-navigationlist-vertical.oj-navigationlist-icon-only .oj-navigationlist-item-icon
             {
                 $tmpPadding: 0;//Need to define out side if to pass ruby sass build
-                $tmpSelectionBorderWidth: oj-shorthand-property-value-left($navigationListPageLevelIconOnlyItemBorderWidth);
+                $tmpSelectionBorderWidth: oj-shorthand-property-value-left($tabBarIconOnlyItemBorderWidth);
                 @if $tmpSelectionBorderWidth == 0 {
                     $tmpPadding:  $navigationListIconOnlyIconStartEndPadding; 
                 }@else {
@@ -592,38 +596,38 @@
             {
                 // need to override both ltr and rtl because default expanded navlist will have selection border based on direction.
                 @include oj-rtl() {
-                    border-width: 0 oj-shorthand-property-value-left($navigationListPageLevelIconOnlyItemBorderWidth) oj-shorthand-property-value-bottom($navigationListPageLevelIconOnlyItemBorderWidth) oj-shorthand-property-value-right($navigationListPageLevelIconOnlyItemBorderWidth);
+                    border-width: 0 oj-shorthand-property-value-left($tabBarIconOnlyItemBorderWidth) oj-shorthand-property-value-bottom($tabBarIconOnlyItemBorderWidth) oj-shorthand-property-value-right($tabBarIconOnlyItemBorderWidth);
                 }
                 @include oj-ltr() {
-                    border-width: 0 oj-shorthand-property-value-right($navigationListPageLevelIconOnlyItemBorderWidth) oj-shorthand-property-value-bottom($navigationListPageLevelIconOnlyItemBorderWidth) oj-shorthand-property-value-left($navigationListPageLevelIconOnlyItemBorderWidth);
+                    border-width: 0 oj-shorthand-property-value-right($tabBarIconOnlyItemBorderWidth) oj-shorthand-property-value-bottom($tabBarIconOnlyItemBorderWidth) oj-shorthand-property-value-left($tabBarIconOnlyItemBorderWidth);
                 }
                 border-style: solid;
                 border-radius: 0;
-                border-color: $navigationListPageLevelItemBorderColor;
+                border-color: $tabBarItemBorderColor;
             }
 
             .oj-navigationlist-page-level.oj-navigationlist-icon-only.oj-navigationlist-vertical .oj-navigationlist-item:first-of-type {
 
                 // need to override both ltr and rtl as it was overriden above for border-width.
                 @include oj-rtl() {
-                    border-top-width: oj-shorthand-property-value-top($navigationListPageLevelIconOnlyItemBorderWidth);
+                    border-top-width: oj-shorthand-property-value-top($tabBarIconOnlyItemBorderWidth);
                 }
                 @include oj-ltr() {
-                    border-top-width: oj-shorthand-property-value-top($navigationListPageLevelIconOnlyItemBorderWidth);
+                    border-top-width: oj-shorthand-property-value-top($tabBarIconOnlyItemBorderWidth);
                 }
-                border-top-left-radius: $navigationListPageLevelItemBorderRadius;
-                border-top-right-radius: $navigationListPageLevelItemBorderRadius;
+                border-top-left-radius: $tabBarItemBorderRadius;
+                border-top-right-radius: $tabBarItemBorderRadius;
             }
 
             .oj-navigationlist-page-level.oj-navigationlist-icon-only.oj-navigationlist-vertical .oj-navigationlist-item:last-of-type {
-                border-bottom-left-radius: $navigationListPageLevelItemBorderRadius;
-                border-bottom-right-radius: $navigationListPageLevelItemBorderRadius;
+                border-bottom-left-radius: $tabBarItemBorderRadius;
+                border-bottom-right-radius: $tabBarItemBorderRadius;
             }
             
             .oj-navigationlist-page-level.oj-navigationlist-vertical .oj-navigationlist-item.oj-selected {
-                background-color: $navigationListPageLevelItemBgColorSelected;
+                background-color: $tabBarItemBgColorSelected;
                 .oj-contrast-marker & {
-                  background-color: $navigationListPageLevelItemContrastBgColorSelected;
+                  background-color: $tabBarItemContrastBgColorSelected;
                 }
             }
         }
@@ -650,42 +654,42 @@
         /* Start of Page Level navlist styles*/
 
         .oj-navigationlist-page-level.oj-navigationlist-vertical .oj-navigationlist-item.oj-selected {
-            border-color: $navigationListPageLevelItemBorderColorSelected;
+            border-color: $tabBarItemBorderColorSelected;
         }
         
          .oj-navigationlist-page-level.oj-navigationlist-vertical:not(.oj-navigationlist-icon-only) .oj-navigationlist-item.oj-selected {
-            background-color: $navigationListPageLevelItemBgColorSelected;
+            background-color: $tabBarItemBgColorSelected;
             .oj-contrast-marker & {
-                background-color: $navigationListPageLevelItemContrastBgColorSelected;
+                background-color: $tabBarItemContrastBgColorSelected;
             }
         }
 
         .oj-navigationlist-page-level.oj-navigationlist-vertical:not(.oj-navigationlist-icon-only)  .oj-navigationlist-item:not(.oj-disabled) a.oj-navigationlist-item-content  .oj-navigationlist-item-label {
-            color: $navigationListPageLevelItemLabelColorDefault;
+            color: $tabBarItemLabelColorDefault;
             .oj-contrast-marker & {
                 color: $navigationListItemContrastLabelColorDefault;
             }
         }
         .oj-navigationlist-page-level.oj-navigationlist-vertical:not(.oj-navigationlist-icon-only) .oj-navigationlist-item:not(.oj-disabled) .oj-navigationlist-item-icon
         {
-            color: $navigationListPageLevelItemIconColorDefault;
+            color: $tabBarItemIconColorDefault;
             .oj-contrast-marker & {
                 color: $navigationListItemContrastLabelColorDefault;
             }
         }
         .oj-navigationlist-page-level.oj-navigationlist-vertical:not(.oj-navigationlist-icon-only)  .oj-navigationlist-item.oj-selected a.oj-navigationlist-item-content  .oj-navigationlist-item-label {
-            color: $navigationListPageLevelItemLabelColorSelected;
+            color: $tabBarItemLabelColorSelected;
             .oj-contrast-marker & {
-                color: $navigationListPageLevelItemContrastLabelColorSelected;
+                color: $tabBarItemContrastLabelColorSelected;
             }
-            font-weight: $navigationListPageLevelItemFontWeightSelected;
+            font-weight: $tabBarItemFontWeightSelected;
         }
 
         .oj-navigationlist-page-level.oj-navigationlist-vertical:not(.oj-navigationlist-icon-only) .oj-navigationlist-item.oj-selected:not(.oj-hover) .oj-navigationlist-item-icon
         {
-            color: $navigationListPageLevelItemIconColorSelected;
+            color: $tabBarItemIconColorSelected;
             .oj-contrast-marker & {
-                color: $navigationListPageLevelItemContrastLabelColorSelected;
+                color: $tabBarItemContrastLabelColorSelected;
             }
         }
         
@@ -705,24 +709,24 @@
         .oj-navigationlist-page-level.oj-navigationlist-vertical:not(.oj-navigationlist-icon-only) .oj-navigationlist-item.oj-hover.oj-selected .oj-navigationlist-item-icon
         {
             .oj-contrast-marker & {
-                color: $navigationListPageLevelItemContrastLabelColorSelected;
+                color: $tabBarItemContrastLabelColorSelected;
             }
         }
         // bg and border colors for hover or active  are same.
         .oj-navigationlist-page-level.oj-navigationlist-vertical .oj-navigationlist-item.oj-active.oj-hover:not(.oj-selected),
         .oj-navigationlist-page-level.oj-navigationlist-vertical .oj-navigationlist-item.oj-active:not(.oj-selected){
-            background-color: $navigationListPageLevelItemBgColorActive;
-            @if $navigationListPageLevelItemBgColorActive != null {
+            background-color: $tabBarItemBgColorActive;
+            @if $tabBarItemBgColorActive != null {
                 .oj-contrast-marker & {
                     background-color: $navigationListItemContrastBgColorHover;
                 }
             }
 
             @include oj-rtl() {
-                border-right-color: $navigationListPageLevelItemBorderColorActive;
+                border-right-color: $tabBarItemBorderColorActive;
             }
             @include oj-ltr() {
-                border-left-color: $navigationListPageLevelItemBorderColorActive;
+                border-left-color: $tabBarItemBorderColorActive;
             }
 
         }
@@ -845,11 +849,11 @@
 
         .oj-navigationlist-horizontal .oj-navigationlist-item-element {
             box-sizing: border-box;
-            min-height: $navigationBarMinHeight;
+            min-height: $navigationListHorizontalMinHeight;
         }
         
         .oj-navigationlist-page-level.oj-navigationlist-horizontal .oj-navigationlist-item-element {
-            min-height: $navigationBarPageLevelItemMinHeight;
+            min-height: $tabBarHorizontalItemMinHeight;
         }
 
         .oj-navigationlist-horizontal  .oj-selected > a.oj-navigationlist-item-content > .oj-navigationlist-item-label{
@@ -857,24 +861,19 @@
         }
 
         .oj-navigationlist-horizontal .oj-navigationlist-item.oj-selected {
-            background-color: $navigationBarItemBgColorSelected;
+            background-color: $navigationListHorizontalItemBgColorSelected;
             .oj-contrast-marker & {
-              background-color: $navigationBarItemContrastBgColorSelected
+              background-color: $navigationListHorizontalItemContrastBgColorSelected
             }
         }
         .oj-navigationlist-horizontal .oj-navigationlist-item-label {
                 @include oj-align-self-property(center);
         }
-        .oj-navigationlist-horizontal .oj-navigationlist-item {
-            border-color:  $navigationBarItemBorderColor;
-        }
-        .oj-navigationlist-horizontal .oj-navigationlist-item.oj-selected {
-            border-color:  $navigationBarItemBorderColorSelected;
-        }
+        
         //Padding around icon in horizontal list
         .oj-navigationlist-horizontal .oj-navigationlist-item-icon
         {
-            margin: $navigationBarIconMargin;
+            margin: $navigationListHorizontalIconMargin;
         }
 
         /*End of common horizontal navigationlist styles */
@@ -883,10 +882,10 @@
         //Padding for horizontal icons only list
         .oj-navigationlist-horizontal.oj-navigationlist-icon-only .oj-navigationlist-item {
            @include oj-ltr() {
-                margin-left: $navigationBarIconOnlyItemMargin;
+                margin-left: $navigationListHorizontalIconOnlyItemMargin;
            }
            @include oj-rtl() {
-                margin-right: $navigationBarIconOnlyItemMargin;
+                margin-right: $navigationListHorizontalIconOnlyItemMargin;
            }
         }
         .oj-navigationlist-horizontal.oj-navigationlist-icon-only .oj-navigationlist-item:first-child {
@@ -897,7 +896,7 @@
                 margin-right:0;
            }
         }
-        @if $navigationBarIconOnlyStyle == circle {
+        @if $navigationListHorizontalIconOnlyStyle == circle {
             .oj-navigationlist-horizontal.oj-navigationlist-icon-only .oj-navigationlist-item.oj-selected,
             .oj-navigationlist-horizontal.oj-navigationlist-icon-only .oj-navigationlist-item.oj-hover {
                 background-color: transparent;
@@ -920,13 +919,13 @@
         }
         @else {
             .oj-navigationlist-horizontal.oj-navigationlist-icon-only .oj-navigationlist-item {
-                border-width: $navigationBarItemBorderWidth;
+                border-width: $navigationListHorizontalItemBorderWidth;
                 border-style: solid;
             }
             .oj-navigationlist-page-level.oj-navigationlist-horizontal .oj-navigationlist-item.oj-selected {
-                background-color: $navigationBarPageLevelItemBgColorSelected;
+                background-color: $tabBarHorizontalItemBgColorSelected;
                 .oj-contrast-marker & {
-                  background-color: $navigationBarPageLevelItemContrastBgColorSelected
+                  background-color: $tabBarHorizontalItemContrastBgColorSelected
                 }
             }
         }
@@ -935,7 +934,7 @@
         /*Start of  horizontal navigationlist styles excluding icons only*/
 
         .oj-navigationlist-horizontal:not(.oj-navigationlist-icon-only) .oj-navigationlist-item {
-            border-width: $navigationBarItemBorderWidth;
+            border-width: $navigationListHorizontalItemBorderWidth;
             border-style: solid;
         }
 
@@ -956,22 +955,22 @@
 
         .oj-navigationlist-horizontal:not(.oj-navigationlist-icon-only) .oj-navigationlist-item-content {
             @include oj-justify-content-property(center);
-            padding: $navigationBarItemPadding;
+            padding: $navigationListHorizontalItemPadding;
         }
         
         .oj-navigationlist-horizontal.oj-navigationlist-stack-icon-label:not(.oj-navigationlist-icon-only) .oj-navigationlist-item-content {
-            padding: $navigationBarStackedItemPadding;
+            padding: $navigationListHorizontalStackedItemPadding;
         }
 
             //Add Space between icon and text
         .oj-navigationlist-horizontal:not(.oj-navigationlist-stack-icon-label):not(.oj-navigationlist-icon-only) .oj-navigationlist-item-icon {
             @include oj-align-self-property(center);
             @include oj-ltr() {
-                margin-right: $navigationBarIconToTextPadding;
+                margin-right: $navigationListHorizontalIconToTextPadding;
             }
 
             @include oj-rtl() {
-                margin-left: $navigationBarIconToTextPadding;
+                margin-left: $navigationListHorizontalIconToTextPadding;
             }
         }
 
@@ -980,11 +979,11 @@
         /*Start of  horizontal stacked icon label navigationlist styles */
 
         .oj-navigationlist-horizontal.oj-navigationlist-stack-icon-label .oj-navigationlist-item-element {
-            min-height: $navigationBarStackedIconMinHeight;
+            min-height: $navigationListHorizontalStackedIconMinHeight;
         }
         
         .oj-navigationlist-page-level.oj-navigationlist-horizontal.oj-navigationlist-stack-icon-label .oj-navigationlist-item-element {
-            min-height: $navigationBarPageLevelItemStackedIconMinHeight;
+            min-height: $tabBarHorizontalItemStackedIconMinHeight;
         }
             //Horizontal divider
         .oj-navigationlist-horizontal.oj-navigationlist-stack-icon-label:not(.oj-navigationlist-icon-only) .oj-navigationlist-divider {
@@ -1000,38 +999,38 @@
 
         /*End of  horizontal stacked icon label navigationlist styles */
 
-        /* Start of App Level navbar styles */
+        /* Start of App Level horizontal navlist styles */
 
         .oj-navigationlist-app-level.oj-navigationlist-horizontal .oj-navigationlist-item-label {
-            font-size: $navigationBarFontSize;
+            font-size: $navigationListHorizontalFontSize;
         }
         .oj-navigationlist-page-level.oj-navigationlist-horizontal .oj-navigationlist-item-label {
-            font-size: $navigationBarPageLevelItemFontSize;
+            font-size: $tabBarHorizontalItemFontSize;
         }
         .oj-navigationlist-app-level.oj-navigationlist-horizontal .oj-navigationlist-item:not(.oj-disabled) a.oj-navigationlist-item-content > .oj-navigationlist-item-label{
-            color: $navigationBarItemLabelColorDefault;
+            color: $navigationListHorizontalItemLabelColorDefault;
             .oj-contrast-marker & {
               color: $navigationListItemContrastLabelColorDefault;
             }
         }
         .oj-navigationlist-app-level.oj-navigationlist-horizontal .oj-navigationlist-item:not(.oj-disabled):not(.oj-hover):not(.oj-selected) .oj-navigationlist-item-icon
         {
-            color: $navigationBarItemIconColorDefault;
+            color: $navigationListHorizontalItemIconColorDefault;
             .oj-contrast-marker & {
               color: $navigationListItemContrastLabelColorDefault;
             }
         }
         .oj-navigationlist-app-level.oj-navigationlist-horizontal .oj-navigationlist-item.oj-selected a.oj-navigationlist-item-content > .oj-navigationlist-item-label {
-            color: $navigationBarItemLabelColorSelected;
+            color: $navigationListHorizontalItemLabelColorSelected;
             .oj-contrast-marker & {
-              color: $navigationBarItemContrastLabelColorSelected;
+              color: $navigationListHorizontalItemContrastLabelColorSelected;
             }
         }
         .oj-navigationlist-app-level.oj-navigationlist-horizontal:not(.oj-navigationlist-icon-only) .oj-navigationlist-item.oj-selected:not(.oj-hover) .oj-navigationlist-item-icon
         {
-            color: $navigationBarItemIconColorSelected;
+            color: $navigationListHorizontalItemIconColorSelected;
             .oj-contrast-marker & {
-                color: $navigationBarItemContrastLabelColorSelected;
+                color: $navigationListHorizontalItemContrastLabelColorSelected;
             }
         }
         .oj-navigationlist-app-level.oj-navigationlist-horizontal .oj-navigationlist-item.oj-hover:not(.oj-selected){
@@ -1045,67 +1044,67 @@
             color: $navigationListItemIconColorHover;
         }
 
-        /* End of App Level navbar styles */
+        /* End of App Level horizontal navlist styles */
 
-        /* Start of Page Level navbar styles*/
+        /* Start of Page Level horizontal navlist styles*/
         //Add border to horizontal list item
         .oj-navigationlist-page-level.oj-navigationlist-horizontal:not(.oj-navigationlist-icon-only) .oj-navigationlist-item {
           border-radius: 0;
-          border-width: $navigationBarPageLevelItemBorderWidth;
+          border-width: $tabBarHorizontalItemBorderWidth;
           @include oj-ltr() {
-            border-right-width: oj-shorthand-property-value-left($navigationBarPageLevelItemBorderWidth);
+            border-right-width: oj-shorthand-property-value-left($tabBarHorizontalItemBorderWidth);
             border-left-width: 0;
           }
 
           @include oj-rtl() {
-            border-left-width: oj-shorthand-property-value-left($navigationBarPageLevelItemBorderWidth);
+            border-left-width: oj-shorthand-property-value-left($tabBarHorizontalItemBorderWidth);
             border-right-width:0;
           }
-          border-color: $navigationListPageLevelItemBorderColor;
+          border-color: $tabBarHorizontalItemBorderColor;
         }
         
         .oj-navigationlist-page-level.oj-navigationlist-horizontal:not(.oj-navigationlist-icon-only) .oj-navigationlist-item:first-of-type {
 
           @include oj-ltr() {
-            border-left-width: oj-shorthand-property-value-left($navigationBarPageLevelItemBorderWidth);
-            border-top-left-radius: $navigationListPageLevelItemBorderRadius;
-            border-bottom-left-radius: $navigationListPageLevelItemBorderRadius;
+            border-left-width: oj-shorthand-property-value-left($tabBarHorizontalItemBorderWidth);
+            border-top-left-radius: $tabBarItemBorderRadius;
+            border-bottom-left-radius: $tabBarItemBorderRadius;
           }
 
           @include oj-rtl() {
-            border-right-width: oj-shorthand-property-value-left($navigationBarPageLevelItemBorderWidth);
-            border-top-right-radius: $navigationListPageLevelItemBorderRadius;
-            border-bottom-right-radius: $navigationListPageLevelItemBorderRadius;
+            border-right-width: oj-shorthand-property-value-left($tabBarHorizontalItemBorderWidth);
+            border-top-right-radius: $tabBarItemBorderRadius;
+            border-bottom-right-radius: $tabBarItemBorderRadius;
           }
         }
         //Add border to icon only horizontal list item
         .oj-navigationlist-page-level.oj-navigationlist-horizontal.oj-navigationlist-icon-only .oj-navigationlist-item {
           border-radius: 0;
-          border-width: $navigationBarPageLevelIconOnlyItemBorderWidth;
+          border-width: $tabBarHorizontalIconOnlyItemBorderWidth;
           @include oj-ltr() {
-            border-right-width: oj-shorthand-property-value-left($navigationBarPageLevelIconOnlyItemBorderWidth);
+            border-right-width: oj-shorthand-property-value-left($tabBarHorizontalIconOnlyItemBorderWidth);
             border-left-width: 0;
           }
 
           @include oj-rtl() {
-            border-left-width: oj-shorthand-property-value-left($navigationBarPageLevelIconOnlyItemBorderWidth);
+            border-left-width: oj-shorthand-property-value-left($tabBarHorizontalIconOnlyItemBorderWidth);
             border-right-width:0;
           }
-          border-color: $navigationListPageLevelItemBorderColor;
+          border-color: $tabBarHorizontalItemBorderColor;
         }
         
         .oj-navigationlist-page-level.oj-navigationlist-horizontal.oj-navigationlist-icon-only .oj-navigationlist-item:first-of-type {
 
           @include oj-ltr() {
-            border-left-width: oj-shorthand-property-value-left($navigationBarPageLevelIconOnlyItemBorderWidth);
-            border-top-left-radius: $navigationListPageLevelItemBorderRadius;
-            border-bottom-left-radius: $navigationListPageLevelItemBorderRadius;
+            border-left-width: oj-shorthand-property-value-left($tabBarHorizontalIconOnlyItemBorderWidth);
+            border-top-left-radius: $tabBarItemBorderRadius;
+            border-bottom-left-radius: $tabBarItemBorderRadius;
           }
 
           @include oj-rtl() {
-            border-right-width: oj-shorthand-property-value-left($navigationBarPageLevelIconOnlyItemBorderWidth);
-            border-top-right-radius: $navigationListPageLevelItemBorderRadius;
-            border-bottom-right-radius: $navigationListPageLevelItemBorderRadius;
+            border-right-width: oj-shorthand-property-value-left($tabBarHorizontalIconOnlyItemBorderWidth);
+            border-top-right-radius: $tabBarItemBorderRadius;
+            border-bottom-right-radius: $tabBarItemBorderRadius;
           }
         }
 
@@ -1113,29 +1112,34 @@
         .oj-navigationlist-page-level.oj-navigationlist-horizontal:not(.oj-navigationlist-icon-only) .oj-navigationlist-item.oj-navigationlist-item-last-child {  
 
           @include oj-ltr() {
-            border-top-right-radius: $navigationListPageLevelItemBorderRadius;
-            border-bottom-right-radius: $navigationListPageLevelItemBorderRadius;
+            border-top-right-radius: $tabBarItemBorderRadius;
+            border-bottom-right-radius: $tabBarItemBorderRadius;
           }
 
           @include oj-rtl() {
-            border-top-left-radius: $navigationListPageLevelItemBorderRadius;
-            border-bottom-left-radius: $navigationListPageLevelItemBorderRadius;
+            border-top-left-radius: $tabBarItemBorderRadius;
+            border-bottom-left-radius: $tabBarItemBorderRadius;
           }
         }
 
         .oj-navigationlist-page-level.oj-navigationlist-horizontal.oj-navigationlist-icon-only .oj-navigationlist-item.oj-selected,
         .oj-navigationlist-page-level.oj-navigationlist-horizontal:not(.oj-navigationlist-icon-only) .oj-navigationlist-item.oj-selected {
-            border-color:  $navigationListPageLevelItemBorderColorSelected;
+            border-color:  $tabBarHorizontalItemBorderColorSelected;
+        }
+
+        .oj-navigationlist-page-level.oj-navigationlist-horizontal.oj-navigationlist-icon-only .oj-navigationlist-item.oj-hover:not(.oj-selected),
+        .oj-navigationlist-page-level.oj-navigationlist-horizontal:not(.oj-navigationlist-icon-only) .oj-navigationlist-item.oj-hover:not(.oj-selected) {
+            border-color:  $tabBarHorizontalItemBorderColorHover;
         }
 
         .oj-navigationlist-page-level.oj-navigationlist-horizontal:not(.oj-navigationlist-icon-only) .oj-navigationlist-item.oj-selected {
-            background-color: $navigationBarPageLevelItemBgColorSelected;
+            background-color: $tabBarHorizontalItemBgColorSelected;
             .oj-contrast-marker & {
-                background-color: $navigationBarPageLevelItemContrastBgColorSelected;
+                background-color: $tabBarHorizontalItemContrastBgColorSelected;
             }
         }
         .oj-navigationlist-page-level.oj-navigationlist-horizontal:not(.oj-navigationlist-icon-only)  .oj-navigationlist-item:not(.oj-disabled) a.oj-navigationlist-item-content  .oj-navigationlist-item-label {
-            color: $navigationListPageLevelItemLabelColorDefault;
+            color: $tabBarItemLabelColorDefault;
             .oj-contrast-marker & {
               color: $navigationListItemContrastLabelColorDefault;
             }
@@ -1143,25 +1147,25 @@
 
         .oj-navigationlist-page-level.oj-navigationlist-horizontal .oj-navigationlist-item:not(.oj-disabled):not(.oj-hover):not(.oj-selected) .oj-navigationlist-item-icon
         {
-            color: $navigationListPageLevelItemIconColorDefault;
+            color: $tabBarItemIconColorDefault;
             .oj-contrast-marker & {
               color: $navigationListItemContrastLabelColorDefault;
             }
         }
 
         .oj-navigationlist-page-level.oj-navigationlist-horizontal:not(.oj-navigationlist-icon-only)  .oj-navigationlist-item.oj-selected a.oj-navigationlist-item-content  .oj-navigationlist-item-label {
-            color: $navigationBarPageLevelItemLabelColorSelected;
-            font-weight: $navigationListPageLevelItemFontWeightSelected;
+            color: $tabBarHorizontalItemLabelColorSelected;
+            font-weight: $tabBarItemFontWeightSelected;
             .oj-contrast-marker & {
-              color: $navigationBarPageLevelItemContrastLabelColorSelected;
+              color: $tabBarHorizontalItemContrastLabelColorSelected;
             }
         }
 
         .oj-navigationlist-page-level.oj-navigationlist-horizontal:not(.oj-navigationlist-icon-only) .oj-navigationlist-item.oj-selected:not(.oj-hover) .oj-navigationlist-item-icon
         {
-            color: $navigationBarPageLevelItemIconColorSelected;
+            color: $tabBarHorizontalItemIconColorSelected;
             .oj-contrast-marker & {
-                color: $navigationBarPageLevelItemContrastLabelColorSelected;
+                color: $tabBarHorizontalItemContrastLabelColorSelected;
             }
         }
         .oj-navigationlist-page-level.oj-navigationlist-horizontal .oj-navigationlist-item.oj-hover:not(.oj-selected) a.oj-navigationlist-item-content > .oj-navigationlist-item-label{
@@ -1174,8 +1178,8 @@
 
         .oj-navigationlist-page-level.oj-navigationlist-horizontal .oj-navigationlist-item.oj-active.oj-hover:not(.oj-selected),
         .oj-navigationlist-page-level.oj-navigationlist-horizontal .oj-navigationlist-item.oj-active:not(.oj-selected){
-            background-color: $navigationListPageLevelItemBgColorActive;
-            @if $navigationListPageLevelItemBgColorActive != null {
+            background-color: $tabBarItemBgColorActive;
+            @if $tabBarItemBgColorActive != null {
                 .oj-contrast-marker & {
                     background-color: $navigationListItemContrastBgColorHover;
                 }
@@ -1183,9 +1187,9 @@
         }
         .oj-navigationlist-page-level.oj-navigationlist-horizontal:not(.oj-navigationlist-icon-only) .oj-navigationlist-item.oj-active.oj-hover:not(.oj-selected),
         .oj-navigationlist-page-level.oj-navigationlist-horizontal:not(.oj-navigationlist-icon-only) .oj-navigationlist-item.oj-active:not(.oj-selected) {
-            border-color: $navigationListPageLevelItemBorderColorActive;
+            border-color: $tabBarItemBorderColorActive;
         }
-        /*End of Page Level navbar styles*/
+        /*End of Page Level horizontal navlist styles*/
 
         /*Start of sliding navlist*/
             /*Hide siblings of parent node while showing the list*/
@@ -1387,18 +1391,18 @@
 
         .oj-navigationlist-horizontal.oj-navigationlist-app-level.oj-navigationlist-expanded.oj-navigationlist-icon-only .oj-navigationlist-item.oj-selected:not(.oj-hover) .oj-navigationlist-item-icon {
             .oj-contrast-marker & {
-                color: $navigationBarItemContrastLabelColorSelected;
+                color: $navigationListHorizontalItemContrastLabelColorSelected;
             }
         }
         .oj-navigationlist-horizontal.oj-navigationlist-page-level.oj-navigationlist-expanded.oj-navigationlist-icon-only .oj-navigationlist-item.oj-selected:not(.oj-hover) .oj-navigationlist-item-icon {
             .oj-contrast-marker & {
-                color: $navigationBarPageLevelItemContrastLabelColorSelected;
+                color: $tabBarHorizontalItemContrastLabelColorSelected;
             }
         }
         
         .oj-navigationlist-vertical.oj-navigationlist-page-level.oj-navigationlist-expanded.oj-navigationlist-icon-only .oj-navigationlist-item.oj-selected:not(.oj-hover) .oj-navigationlist-item-icon {
             .oj-contrast-marker & {
-                color: $navigationListPageLevelItemContrastLabelColorSelected;
+                color: $tabBarItemContrastLabelColorSelected;
             }
         }
 
@@ -1428,6 +1432,14 @@
         /* Override  default options*/
         $navigationListDefaultOptions: ();
         $navigationListAnimationDefaults: ();
+
+        @if ($navigationListHorizontalAddAnimation) {
+            $navigationListAnimationDefaults: map-merge($navigationListAnimationDefaults, (addHorizontalItem: $navigationListHorizontalAddAnimation));
+        }
+
+        @if ($navigationListHorizontalRemoveAnimation) {
+            $navigationListAnimationDefaults: map-merge($navigationListAnimationDefaults, (removeHorizontalItem: $navigationListHorizontalRemoveAnimation));
+        }
 
         @if ($navigationListAddAnimation) {
             $navigationListAnimationDefaults: map-merge($navigationListAnimationDefaults, (add: $navigationListAddAnimation));
@@ -1465,9 +1477,9 @@
             $navigationListDefaultOptions: map-merge($navigationListDefaultOptions, (animation: $navigationListAnimationDefaults));
         }
 
-        @if ($navigationListHierarchyMenuDisplayThresholdLevelOptionDefault)
+        @if ($navigationListHierarchyMenuThresholdOptionDefault)
         {
-          $navigationListDefaultOptions: map-merge($navigationListDefaultOptions, (hierarchyMenuDisplayThresholdLevel: $navigationListHierarchyMenuDisplayThresholdLevelOptionDefault));
+          $navigationListDefaultOptions: map-merge($navigationListDefaultOptions, (hierarchyMenuDisplayThresholdLevel: $navigationListHierarchyMenuThresholdOptionDefault));
         }
         
         .oj-navigationlist-option-defaults {

@@ -14,7 +14,7 @@
         @if $initialVisibility == hidden {
           oj-list-view:not(.oj-complete) {
             visibility: hidden;
-          }      
+          }
         }
 
         /* Styling for the listview widget container */
@@ -42,6 +42,7 @@
         .oj-listview:focus,
         .oj-listview-element:focus,
         .oj-listview-expand-icon:focus,
+        .oj-listview-expanding-icon:focus,
         .oj-listview-collapse-icon:focus,
         .oj-listview-group-item:focus,
         .oj-listview-item-element:focus,
@@ -159,7 +160,14 @@
             }
             @include oj-rtl() {
                 right: 1px;
-            }            
+            }
+        }
+
+        /* Styling on expand/collapse icon when it has focus highlight */
+        .oj-listview-expanding-icon.oj-focus-highlight::before,
+        .oj-listview-expand-icon.oj-focus-highlight::before,
+        .oj-listview-collapse-icon.oj-focus-highlight::before {
+            @include oj-browser-focus-outline-approximation($primaryTextColor);
         }
 
         /* Styling on focused list item */
@@ -240,11 +248,8 @@
         /* Styling on the status text, such as fetching data */
         .oj-listview-status-message {
             position: absolute;
+            padding: $panelPadding;
             display: none;
-            background-color: $dataGridStatusBgColor;
-            border: 1px $dataGridCellBorderColor solid;
-            padding: 5px;
-            top: 50%;
         }
 
         /* Styling for the empty list text */
@@ -258,7 +263,21 @@
         .oj-listview-expand-icon,
         .oj-listview-collapse-icon {
             padding: 9px;
-            outline-offset: -9px;
+        }
+
+        /* Styling for the load icon while expanding */
+        .oj-listview-expanding-icon {
+            @extend .oj-fwk-icon-load;
+            padding-top: 9px;
+            padding-bottom: 9px;
+            @include oj-rtl() {
+                margin-right: 16px;
+                margin-left: 9px;
+            }
+            @include oj-ltr() {
+                margin-left: 16px;
+                margin-right: 9px;
+            }
         }
 
         /* Styling for group item when card layout is used */
@@ -286,6 +305,27 @@
             }
             background-size: 0;
             box-sizing: border-box;
+        }
+
+        /* Styling for group content when listview is filling the entire width and card layout is used */
+        /* for now, first level group header or no group headers only */
+        .oj-listview.oj-full-width.oj-listview-card-layout > .oj-listview-element > li > .oj-listview-group,
+        .oj-listview.oj-full-width > .oj-listview-card-layout > li > .oj-listview-group {
+            @include oj-rtl() {
+                margin-left: oj-shorthand-property-value-left($listViewCardMargin);
+                margin-right: oj-shorthand-property-value-right($listViewCardMargin);
+            }
+            @include oj-ltr() {
+                margin-right: oj-shorthand-property-value-left($listViewCardMargin);
+                margin-left: oj-shorthand-property-value-right($listViewCardMargin);
+            }
+        }
+
+        /* Styling for group header when listview is filling the entire width */
+        /* for now, first level group header only */
+        .oj-listview.oj-full-width > .oj-listview-element > li > .oj-listview-group-item {
+            border-left-style: none;
+            border-right-style: none;
         }
 
         /* Styling for the drill icon */
@@ -323,7 +363,7 @@
             height: 40px;
             margin: auto;
             @include oj-icon-content(
-                $icon: oj-image-url("pull_to_refresh_full.gif"),
+                $icon: oj-image-url("spinner_full.gif"),
                 $lowResProportion: 0.25
             );
         }
@@ -331,26 +371,17 @@
         /* Styling for the affordance icon */
         .oj-listview-drag-handle {
             @extend .oj-fwk-icon;
-
-            width: 28px;
-            height: 18px;
-            @include oj-icon-content(
-                 $icon: oj-image-url("move_handle.svg")
-            ); 
+            @extend .oj-fwk-icon-move-handle;
             cursor: move;
-        }
-
-        .oj-listview-drag-handle::before {
-            width: inherit;
-            height: inherit;
         }
 
         /* Styling for the affordance icon when card layout is used */
         .oj-listview-card-layout .oj-listview-drag-handle {
             @extend .oj-fwk-icon-drag;
-      
-            @extend .oj-fwk-icon;
-
+            background-image: none;
+            width: auto;
+            height: auto;
+            font-size: 16px;
         }
 
         /* Styling for the drag image */
@@ -366,36 +397,35 @@
             display: none;
         }
 
-        /* Styling item that is draggable (no affordance) */											 	        
+        /* Styling item that is draggable (no affordance) */
         .oj-listview-item.oj-draggable {
             cursor: move;
         }
-        
-        /* Styling for the item that is being moved using drag */											 	
+
+        /* Styling for the item that is being moved using drag */
         .oj-listview-item.oj-drag {
             box-shadow: $largeBoxShadow;
             border-top: 1px solid $dataGridCellDragImageBorderColor;
             border-bottom: 1px solid $dataGridCellDragImageBorderColor;
         }
-        
-        /* Styling all drop targets in the list */											 			
+
+        /* Styling all drop targets in the list */
         .oj-listview-item.oj-drop {
             box-sizing: border-box;
             border: 1px solid $dropTarget2Color;
-            background-color: $dropTarget1Color;    
-        }            
+            background-color: $dropTarget1Color;
+        }
 
-        /* Styling on empty list as drop targets in the list */											 			
+        /* Styling on empty list as drop targets in the list */
         .oj-listview-empty-text.oj-drop {
-            background-color: $dropTarget1Color;    
-        }            
+            background-color: $dropTarget1Color;
+        }
 
         /* Styling for an item that is cut during a context menu cut operation */
         .oj-listview-cut {
             opacity: 0.8;
         }
 
-        /* note that currently animation is the only option defaults */
         $listViewDefaultOptions: ();
         $listViewAnimationDefaults: ();
 
@@ -410,7 +440,7 @@
         @if ($listViewUpdateAnimation) {
             $listViewAnimationDefaults: map-merge($listViewAnimationDefaults, (update: $listViewUpdateAnimation));
         }
- 
+
         @if ($listViewExpandAnimation) {
             $listViewAnimationDefaults: map-merge($listViewAnimationDefaults, (expand: $listViewExpandAnimation));
         }
@@ -425,6 +455,10 @@
 
         @if ($listViewAnimationDefaults) {
             $listViewDefaultOptions: map-merge($listViewDefaultOptions, (animation: $listViewAnimationDefaults));
+        }
+
+        @if ($loadingIndicatorDelayDuration) {
+            $listViewDefaultOptions: map-merge($listViewDefaultOptions, (showIndicatorDelay: $loadingIndicatorDelayDuration));
         }
 
         .oj-listview-option-defaults {

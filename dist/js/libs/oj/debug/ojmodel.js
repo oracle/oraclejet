@@ -816,7 +816,7 @@ oj.Model.prototype.customURL = null;
  * The validate callback should return nothing if the attributes are valid, or an error string or object if the validation fails<br>
  * <p>
  *  
- * @type {function(Object,Object)|(string|Object|null)}
+ * @type {function(Object,Object):(string|Object|null)|null}
  */
 oj.Model.prototype.validate = null;
 
@@ -3048,7 +3048,7 @@ oj.Collection = function(models, options) {
 };
 
 
-// Subclass from oj.Object 
+// Subclass from oj.Object exte
 oj.Object.createSubclass(oj.Collection, oj.Object, "oj.Collection");
 
 /**
@@ -3100,7 +3100,7 @@ oj.Collection.prototype._modelIndices = [];
  * @export
  * @desc The data service's server URL.
  * 
- * @type String
+ * @type {String|function():string}
  */
 oj.Collection.prototype.url = null;
 
@@ -3285,7 +3285,7 @@ oj.Collection.prototype.Init = function()
  *                  the collection<br>
  *                  <b>url</b>: the URL string to use to get records from the data service<br>
  *                  <b>initialize</b>: a user callback function to be called when this collection is created.  
- *                  Called with collection, models, options.<br>
+ *                  Called in the context of the collection and passed: models, options.<br>
  *                  <b>comparator</b>: a user callback used on sort calls. May also be set to false to prevent 
  *                  sorting.  See [comparator]{@link oj.Collection#comparator}<br>
  *                  <b>fetchSize</b>: the number of records to be fetched on each round trip to the server.  
@@ -3391,10 +3391,8 @@ oj.Collection._init = function(collection, models, options, properties) {
     }
     if (models != null) {
         options.noparse = true;
-        modelList = (models instanceof Array) ? models : [models];    
-        for (i = 0; i < modelList.length; i=i+1) {
-            collection.add(modelList[i], options);
-        }
+        modelList = (models instanceof Array) ? models : [models];
+        collection._addInternal(modelList, options, true, false);
     }
     collection._setLength();
     if (!models) {
@@ -3426,7 +3424,7 @@ oj.Collection.prototype._setChangeAt = function(start, count) {
     for (var at = start; at < start+count; at++) {
         if (this['changes'].indexOf(at) === -1) {
             this['changes'].push(at);
-            this['changes'].sort(function(a,b) { return a-b;});
+            //this['changes'].sort(function(a,b) { return a-b;});
         }
     }
 };
@@ -3943,7 +3941,10 @@ oj.Collection.prototype._addInternal = function(m, options, fillIn, deferred) {
             options = options || {};
             options['fillIn'] = true;
         }
-        if (needSort && existingModel === undefined && !sort && at === undefined && collection._getLength() > 1) {
+        var comparator = options['comparator'] || collection._hasComparator();
+        // If we're filling in to a blank, also check that there's no comparator
+        var fillInSort = !fillIn || (fillIn && comparator);
+        if (fillInSort && needSort && existingModel === undefined && !sort && at === undefined && collection._getLength() > 1) {
             if (index > -1) {
                 cid = collection._getModel(index)['cid'];
             }
@@ -3990,7 +3991,13 @@ oj.Collection.prototype._addInternal = function(m, options, fillIn, deferred) {
         else {
             // Make sure model is not already in there
             if (!force) {
-                existingModel = collection._getLocal(newModel);
+                if (fillIn) {
+                  // Only bother if we have a real id set--comparing cids on a fill in is useless
+                  existingModel = !newModel.isNew() ? collection._getLocal(newModel) : undefined;
+                }
+                else {
+                  existingModel = collection._getLocal(newModel);
+                }
                 if (existingModel && fillIn && at !== existingModel.index) {
                     // We're filling in a virtual collection: we should *not* be finding the new model already in 
                     // the collection if we're not merging and not forcing: this indicates duplicate ids
@@ -5032,6 +5039,7 @@ oj.Collection.prototype._addxhr = function(xhr) {
         }
         // Listen to this xhr to know when to remove it
         var self = this;
+        this._xhrs.push(xhr);
         xhr.done(function() {
             // Find the xhr
             var loc = self._xhrs ? self._xhrs.indexOf(xhr) : -1;
@@ -5040,7 +5048,6 @@ oj.Collection.prototype._addxhr = function(xhr) {
                 self._xhrs.splice(loc, 1);
             }   
         });
-        this._xhrs.push(xhr);
     }
 };
 

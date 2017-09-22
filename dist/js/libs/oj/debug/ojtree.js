@@ -17,6 +17,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojdnd'],
   *  @ignore
   *  @export
   *  @classdesc  Common Tree/node state
+  *  @protected
   *  @constructor
   */
 function TreeUtils()
@@ -450,6 +451,7 @@ oj.TreeDndContext.prototype._dragStart =  function(e)
    //  Call app callback in drag options
    if (dnd.dragStartCallback)
    {
+     adata = this._getDraggedItemArray($nodes) ;
      ret = dnd.dragStartCallback(e, { "item" : adata}) ;
      if (e.isDefaultPrevented() || (typeof ret === 'boolean' && (!ret)))
      {
@@ -1769,6 +1771,25 @@ oj.TreeDndContext.prototype._clearDropClasses = function($var)
 } ;
 
 
+/**
+  *  Return an array of node elements 
+  *  @private
+  */
+oj.TreeDndContext.prototype._getDraggedItemArray = function($nodes)
+{
+   var a = [] ;
+
+   if ($nodes)
+   {
+      $nodes.each(function ()
+                  {
+                    a.push(this) ;
+                  });
+   }
+
+   return a ;
+} ;
+
 
 /**
   *  Reset this context's data
@@ -2339,6 +2360,8 @@ oj.TreeDndContext._DND_INTERNAL_DT_REORDER ="_ojtreereorder" ;   // internal dat
   * @ojcomponent oj.ojTree
   * @augments oj.baseComponent
   * @since 0.6
+  * @ignore
+  * @deprecated This component is deprecated. Use oj.ojTreeView instead.
   *
   * @classdesc
   * <h3 id="treeOverview-section">
@@ -4492,6 +4515,7 @@ $ul.css('max-height', '') ;   //JRM
        */
      rename : function(node, text)
      {
+       text = this._escapeHtml(text) ;
        this._renameNode(node, text) ;
      },
 
@@ -4651,22 +4675,7 @@ $ul.css('max-height', '') ;   //JRM
          return this._setType(node, str) ;
      },
 
-     /**
-       * Returns the subcomponent node element represented by the locator object <span class="code-caption">subId</span> property.</br>
-       * (See also <a href="#getSubIdByNode">getSubIdByNode</a>.)
-       *
-       * @expose
-       * @public
-       * @instance
-       * @override
-       * @memberof oj.ojTree
-       * @param {Object} locator An Object containing at minimum a "subId" property whose value is a string.<p>
-       * The general format of a subId string is: &nbsp; &nbsp; <span class="code-caption">"oj-tree-node['node id']['request']"</span></br>
-       * The <span class="code-caption">"request"</span> value can be <span class="code-caption">"title</span>, 
-       * <span class="code-caption">"icon"</span>, <span class="code-caption">"link"</span>, 
-       * or <span class="code-caption">"disclosure"</span>.
-       * @return {Element|null} the subcomponent element located by the subId string passed in locator, or null if not found.<p>
-       */
+     // @inheritdoc
      getNodeBySubId: function(locator)
      {
         if (! locator)  {
@@ -4677,16 +4686,19 @@ $ul.css('max-height', '') ;   //JRM
      },
 
      /**
-       * Returns the subid string for a child DOM element of a node.  Refer to
-       * <a href="#getNodeBySubId">getNodeBySubId</a> for a list of subId's.</br>
+       * {@ojinclude "name":"getSubIdByNodeDesc"}
        *
        * @expose
-       * @public
-       * @instance
-       * @override
        * @memberof oj.ojTree
-       * @param {Element} node  child DOM element of a node.<p>
-       * @return {Object|null}  an object with a "subId" property containing the subid for the DOM element, or <code class="prettyprint">null</code> if not found.<p>
+       * @instance
+       * @since 2.1.0
+       * @ignore
+       *
+       * @param {!Element} node {@ojinclude "name":"getSubIdByNodeNodeParam"}
+       * @returns {Object|null} {@ojinclude "name":"getSubIdByNodeReturn"}
+       *
+       * @example <caption>{@ojinclude "name":"getSubIdByNodeCaption"}</caption>
+       * {@ojinclude "name":"getSubIdByNodeExample"}
        */
      getSubIdByNode: function(node)
      {
@@ -4694,7 +4706,8 @@ $ul.css('max-height', '') ;   //JRM
      },
 
      /**
-       * Returns a context object for the specified tree node. This includes the subid for the node as the subId property.
+       * Returns a context object for the specified tree node. This includes the subid for the 
+       * node as the subId property.
        * Additional Tree component information is also included. </br>
        *
        * @expose
@@ -5371,7 +5384,7 @@ $ul.css('max-height', '') ;   //JRM
        //}
 
        var div  = node.parents("div").eq(0) ;
-       var ctor = oj.Components.getWidgetConstructor(div) ;
+       var ctor = oj.Components.__GetWidgetConstructor(div) ;
 
        if (ctor && o) {
          ctor("getCI", o) ;
@@ -5389,7 +5402,7 @@ $ul.css('max-height', '') ;   //JRM
 //   _referenceData : function(node, o)
 //   {
 //      var div   = node.parents("div").eq(0) ;
-//      var ctor  = oj.Components.getWidgetConstructor(div) ;
+//      var ctor  = oj.Components.__GetWidgetConstructor(div) ;
 //
 //      if (ctor && o) {
 //        ctor("getDB", o) ;
@@ -5699,7 +5712,8 @@ $ul.css('max-height', '') ;   //JRM
      },
 
      /**
-       *  Changes the text title of a node
+       *  Changes the text title of a node. (Text is already expected to have been escaped
+       *  prior to this call.)
        *  @private
        */
      _renameNode : function(node, text)
@@ -5710,17 +5724,20 @@ $ul.css('max-height', '') ;   //JRM
        this.__rollback();
        t  = this["getText"](node) ;
 
-       if (node && node.length) {
+       if (node && node.length)
+       {
           var rslt = this._emitEvent({"obj"  : node,
                                       "func" : "rename",
                                       "title" : text,
-                                      "prevTitle": t}, "before") ;
+                                      "prevTitle": t
+                                     }, "before") ;
           if (typeof rslt == "boolean" && (!rslt)) {
             return ;
           }
        }
 
-       if (node && node.length && this._set_text.apply(this, Array.prototype.slice.call(arguments)))  {
+       if (node && node.length && this._set_text.apply(this, Array.prototype.slice.call(arguments)))
+       {
          this._emitEvent({ "obj" : node, "title" : text, "prevTitle" : t}, "rename");
        }
      },
@@ -6498,8 +6515,7 @@ $ul.css('max-height', '') ;   //JRM
 
 
       /**
-        *  Deselect all nodes.  Nodes can be deselected all together with a "deselectAll" event,
-        *  single optionChangeor separately with "deselect" events.
+        *  Deselect all selected nodes, or a specified context node and its selected children.
         *  @private
         */
      _deselectAll : function(context)
@@ -6521,7 +6537,6 @@ $ul.css('max-height', '') ;   //JRM
         $.each(ret, function() {
             _this._deselect(this) ;
         }) ;
-
      },
 
 
@@ -10864,46 +10879,46 @@ if ((! newVal) && (! this.options["contextMenu"])) {
                               "top"      : "0px",
                               "height"   : (this._data.core.li_height - 2) + "px",
                               "lineHeight" : (this._data.core.li_height - 2) + "px",
-                              "width"    : "150px" // will be set a bit further down
+                              "width"    : "150px" // will be set later below
                              },
                     "blur" : $.proxy(function ()
-                      {
+                    {
                         var i = obj.children(".oj-tree-rename-input"),
                             v = i.val();
-                        if (v === "")  {
+
+                        v = this._escapeHtml(v) ;
+                        if (v === "")
+                        {
                           v = t;
                         }
                         h1.remove();
                         i.remove();                    // rollback purposes
                         this._set_text(obj, t);        // rollback purposes
-                        this._renameNode(obj, v);
+                        if (v != t)     // if different node text, perform rename with prior before event
+                        {
+                          this._renameNode(obj, v);
+                        }
                         callback.call(this, obj, v, t);
                         obj.css("position","");
                     }, this),
 
                     "keyup" : function (event)
-                      {
-                        var key = event.keyCode || event.which;
-// ignore first enter, it appears to be left
-// over from hitting enter on the menu rename item????!!!
-if (! _this._done) {
-  _this._done=true ;
-  return false;
-}
-                        if(key == 27)  {
-_this._done = false ;
-                           this.value = t;
-                           this.blur();
-                           return;
-                        }
-                        else if(key == 13)  {
-_this._done = false ;
-                           this.blur();
-                           return;
-                        }
-                        else  {
-                           h2.width(Math.min(h1.text("pW" + this.value).width(),w));
-                        }
+                    {
+                       var key = event.keyCode || event.which;
+                       if(key == 27)        // Esc
+                       {
+                          this.value = t;
+                          this.blur();
+                          return;
+                       }
+                       else if(key == 13)   // Enter
+                       {
+                          this.blur();
+                          return;
+                       }
+                       else  {
+                          h2.width(Math.min(h1.text("pW" + this.value).width(), w));
+                       }
                     },
 
                     "keypress" : function(event)
@@ -11349,7 +11364,7 @@ _this._done = false ;
      *
      * To find the icon DOM node for a Tree node, the locator object should have the following:
      * <ul>
-     * <li><b>subId</b>: "oj-tree-node['node id']['icon']"</li>
+     * <li>{<b> subId</b> : "oj-tree-node['node id']<b>['icon']</b>" }</li>
      * </ul>
      *
      * @ojsubid icon
@@ -11365,7 +11380,7 @@ _this._done = false ;
      * To find the disclosure (expand/collapse) icon DOM node for a Tree node, the locator object should
      * have the following:
      * <ul>
-     * <li><b>subId</b>: "oj-tree-node['node id']['disclosure']"</li>
+     * <li>{<b> subId</b> : "oj-tree-node['node id']<b>['disclosure']</b>" }</li>
      * </ul>
      *
      * @ojsubid disclosure
@@ -11380,7 +11395,7 @@ _this._done = false ;
      *
      * To find the node title DOM node for a Tree node, the locator object should have the following:
      * <ul>
-     * <li><b>subId</b>: "oj-tree-node['node id']['title']"</li>
+     * <li>{<b> subId</b> : "oj-tree-node['node id']<b>['title']</b>" }</li>
      * </ul>
      *
      * @ojsubid title
@@ -11395,7 +11410,7 @@ _this._done = false ;
      *
      * To find the link DOM element for a Tree node, the locator object should have the following:
      * <ul>
-     * <li><b>subId</b>: "oj-tree-node['node id']['link']"</li>
+     * <li>{<b> subId</b> : "oj-tree-node['node id']<b>['link']</b>" }</li>
      * </ul>
      *
      * @ojsubid link

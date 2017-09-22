@@ -318,6 +318,7 @@ oj.CollectionPagingDataSource.prototype._hasMore = function()
  * Set or change the number of models in a page
  * 
  * @param {number} n page size
+ * @private
  */
 oj.CollectionPagingDataSource.prototype._setPageSize = function(n)
 {

@@ -26,6 +26,11 @@
       margin-bottom: 10px;
     }
 
+    /* prevent messaging content from overflowing the container */
+    .oj-messaging-inline-container {
+      overflow: hidden;
+    }
+
     /* wraps all messaging content that displays inline */
     .oj-messaging-inline-container .oj-message {
       padding: 10px;
@@ -108,18 +113,12 @@
       padding-top:20px;
     }
 
-    .oj-message-content {
-      display: inline-block;
-      width:95%;
-      word-wrap: break-word;
-    }
     /* 
      * wraps the message summary and detail parts 
-     * 1. IE requires width to be set in addition to max-width. 324 is 95% of 340px
      */
-    .oj-messaging-popup-container .oj-message-content {
-      max-width: 324px;
-      width:95%; /* 1 */
+    .oj-message-content {
+      display: inline-block;
+      word-wrap: break-word;
     }
 
     /**
@@ -179,11 +178,14 @@
     }
 
     //------------------------------------------
-    // icons
+    // icons. 
     //------------------------------------------
 
+    // use flex: 0 0 auto (which is the same as flex:none) 
+    // so that the icon doesn't get cut off or stretch. It's
+    // a fixed size - the width set on the icon.
     .oj-message-status-icon {
-      display: inline-block;
+      @include oj-flex-property(0 0 auto);
       position: relative;
       top: 3px;
     }
@@ -206,5 +208,56 @@
     .oj-message-status-icon.oj-message-confirmation-icon {
       @extend .oj-fwk-icon-status-confirmation;
     }
+    
+    // Note window animation defaults
+    //----------------------------------
+    // The defaults is specified as json in a font-family style so that it can
+    // be retrieved in JS with oj.ThemeUtils.parseJSONFromFontFamily  
+    
+    $noteWindowAnimationDefaults: ();
+ 
+    @if ($noteWindowOpenAnimation) {
+      $noteWindowAnimationDefaults: map-merge($noteWindowAnimationDefaults, (open: $noteWindowOpenAnimation));
+    }
+ 
+    @if ($noteWindowCloseAnimation) {
+      $noteWindowAnimationDefaults: map-merge($noteWindowAnimationDefaults, (close: $noteWindowCloseAnimation));
+    }
+
+    $noteWindowDefaultOptions: ();
+ 
+    @if ($noteWindowAnimationDefaults) {
+      $noteWindowDefaultOptions: map-merge($noteWindowDefaultOptions, (animation: $noteWindowAnimationDefaults));
+    }
+
+    .oj-messaging-popup-option-defaults {
+      font-family: oj-json-from-map($noteWindowDefaultOptions);
+    }
+
+    // Inline messaging animation defaults
+    //-------------------------------------
+    // The defaults is specified as json in a font-family style so that it can
+    // be retrieved in JS with oj.ThemeUtils.parseJSONFromFontFamily  
+    
+    $messageInlineAnimationDefaults: ();
+ 
+    @if ($messageInlineOpenAnimation) {
+      $messageInlineAnimationDefaults: map-merge($messageInlineAnimationDefaults, (open: $messageInlineOpenAnimation));
+    }
+ 
+    @if ($messageInlineCloseAnimation) {
+      $messageInlineAnimationDefaults: map-merge($messageInlineAnimationDefaults, (close: $messageInlineCloseAnimation));
+    }
+
+    $messageInlineDefaultOptions: ();
+ 
+    @if ($messageInlineAnimationDefaults) {
+      $messageInlineDefaultOptions: map-merge($messageInlineDefaultOptions, (animation: $messageInlineAnimationDefaults));
+    }
+
+    .oj-messaging-inline-option-defaults {
+      font-family: oj-json-from-map($messageInlineDefaultOptions);
+    }
+
   }
 }

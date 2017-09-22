@@ -139,10 +139,10 @@ dvt.Obj.createCallback = function(thisPtr, func) {
 dvt.Obj.defineConstant = function(constValue) {
   return constValue;
 };
-// Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
+// Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
 /**
  * Utilities for Arrays.
- * @class dvt.ArrayUtils  
+ * @class dvt.ArrayUtils
  */
 dvt.ArrayUtils = new Object();
 
@@ -363,6 +363,50 @@ dvt.ArrayUtils.getLastIndex = function(array, item)
     }
   }
   return -1;
+};
+
+/**
+ * Removes an item from the array if the item exists i the array
+ * @param {array} array
+ * @param {Object} item
+ */
+dvt.ArrayUtils.removeItem = function(array, item) 
+{
+  var index = dvt.ArrayUtils.getIndex(array, item);
+  if (index > -1) {
+    array.splice(index, 1);
+  }
+};
+
+/**
+ * Inserts array2 in to array1 at the specified index
+ * @param {array} array1 host array
+ * @param {array} array2 array that contains items to be inserted
+ * @param {number} index index where items should be added
+ * @return {array} a new array that contains a result of insert oparation
+ */
+dvt.ArrayUtils.insert = function(array1, array2, index) 
+{
+  if (!dvt.ArrayUtils.isArray(array1)) {
+    return null;
+  }
+  else if (!dvt.ArrayUtils.isArray(array2)) {
+    return array1;
+  }
+
+  var retArray;
+  if (index === 0) {
+    retArray = array2.concat(array1);
+  }
+  else if (index > 0 && index < array1.length) {
+    var tempArray = array1.splice(0, index);
+    tempArray = tempArray.concat(array2);
+    retArray = tempArray.concat(array1);
+  }
+  else {
+    retArray = array1.concat(array2);
+  }
+  return retArray;
 };
 
 /**
@@ -630,15 +674,15 @@ dvt.Context = function(container, id, referenceDiv) {
 
   this._dndEventManagers = [];
 
-  this._defaultFontFamily = dvt.Context._DEFAULT_FONT_FAMILY;
-  this._defaultFontSize = dvt.Context._DEFAULT_FONT_SIZE;
-  this._normalizedFontFamilyCache = {};
-  this._customElement = false;
-
   this.Init(this._implFactory, this._root, id);
 
   // Add the stage element
   dvt.ToolkitUtils.appendChildElem(this._root, this._stage.getElem());
+
+  // Since we only support JET in this toolkit version, we're providing a public oj reference
+  // for the JET libraries which can be used to access loggers. Use string literals to access
+  // the oj object and JET classes.
+  this['oj'] = null;
 };
 
 dvt.Obj.createSubclass(dvt.Context, dvt.Obj);
@@ -656,10 +700,13 @@ dvt.Context._DATATIP_POPUP_STYLE_CLASS = 'OraDVTDatatipPopup';
 dvt.Context._TOOLTIP_POPUP_STYLE_CLASS = 'OraDVTTooltipPopup';
 
 /** @private @const */
-dvt.Context._DEFAULT_FONT_FAMILY = "'Helvetica Neue',Helvetica,Arial,sans-serif";
+dvt.Context._DEFAULT_FONT_FAMILY = "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif";
 
 /** @private @const */
 dvt.Context._DEFAULT_FONT_SIZE = '12px';
+
+/** @private @const */
+dvt.Context._DEFAULT_FONT_WEIGHT = '400';
 
 /** @private */
 dvt.Context._id = 0;
@@ -678,9 +725,12 @@ dvt.Context.prototype.Init = function(implFactory, root, id) {
   this._stage = new DvtStage(this, root, stageId);     // TODO use naming utils
   dvt.Context._id++;
 
-  // Apply the default font properties to the stage for inheritance
-  dvt.ToolkitUtils.setAttrNullNS(this._stage.getElem(), 'font-family', this.getDefaultFontFamily());
-  dvt.ToolkitUtils.setAttrNullNS(this._stage.getElem(), 'font-size', this.getDefaultFontSize());
+  // Apply the default font properties to the stage for inheritance. Note that these
+  // aren't so much defaults, as the most commonly used styles.
+  this._normalizedFontFamilyCache = {};
+  this.setDefaultFontFamily(dvt.Context._DEFAULT_FONT_FAMILY);
+  this.setDefaultFontSize(dvt.Context._DEFAULT_FONT_SIZE);
+  this.setDefaultFontWeight(dvt.Context._DEFAULT_FONT_WEIGHT);
 
   this._tooltipManagers = new Object();
   this._customTooltipManagers = new Object();
@@ -739,6 +789,26 @@ dvt.Context.prototype.setDefaultFontSize = function(fontSize) {
   if (fontSize) {
     this._defaultFontSize = fontSize;
     dvt.ToolkitUtils.setAttrNullNS(this._stage.getElem(), 'font-size', this.getDefaultFontSize());
+  }
+};
+
+/**
+ * Returns the default CSS font weight that is applied to the stage.
+ * @return {string}
+ */
+dvt.Context.prototype.getDefaultFontWeight = function() {
+  return this._defaultFontWeight;
+};
+
+/**
+ * Sets the default CSS font weight that is applied to the stage. This method should be called before
+ * the component is rendered to ensure the component checks its font weight against the correct default font weight.
+ * @param {string} fontWeight The default font size
+ */
+dvt.Context.prototype.setDefaultFontWeight = function(fontWeight) {
+  if (fontWeight) {
+    this._defaultFontWeight = fontWeight;
+    dvt.ToolkitUtils.setAttrNullNS(this._stage.getElem(), 'font-weight', this.getDefaultFontWeight());
   }
 };
 
@@ -1120,8 +1190,7 @@ dvt.Context.resetCaches = function() {
 
   if (typeof dvt.AfComponent != 'undefined')
     dvt.AfStyleUtils.resetStyles();
-  dvt.OutputText._cache = null;
-  dvt.TextUtils._cachedTextDimensions = {};
+  dvt.TextUtils.clearCaches();
 
   if (dvt.LedGaugeRenderer)
     dvt.LedGaugeRenderer._cache = null;
@@ -8816,7 +8885,7 @@ dvt.SolidFill.prototype.equals = function(fill) {
   else
     return false;
 };
-// Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
+// Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
 /*-------------------------------------------------------------------------*/
 /*   dvt.Stroke                 Base stroke properties                      */
 /*-------------------------------------------------------------------------*/
@@ -8859,6 +8928,24 @@ dvt.Stroke.MITER = 'miter';
 //DvtSTROKE.SQUARE  ;     // same as for join
 //DvtSTROKE.ROUND   ;     //  ..   .  ..  ..
 dvt.Stroke.BUTT = 'butt';
+
+
+//Stroke Alignment Types
+/**
+ * Stroke Alignment Type - Outer
+ * @const
+ */
+dvt.Stroke.OUTER = 'outer';
+/**
+ * Stroke Alignment Type - Inner
+ * @const
+ */
+dvt.Stroke.INNER = 'inner';
+/**
+ * Stroke Alignment Type - Center
+ * @const
+ */
+dvt.Stroke.CENTER = 'center';
 
 
 /**
@@ -13200,10 +13287,13 @@ dvt.Touch.prototype.Init = function(touch) {
  * @constructor
  * Keeps track of the current state of touches and fires higher-level logical events
  * @extends {dvt.Obj}
+ * @param {string} id Id for the this TouchManager instance
+ * @param {dvt.Context} context An application specific context
+ * @param {dvt.EventManager} eventManager The event manager for this TouchManager instance.
  * @class dvt.TouchManager
  */
-dvt.TouchManager = function(id, context) {
-  this.Init(id, context);
+dvt.TouchManager = function(id, context, eventManager) {
+  this.Init(id, context, eventManager);
 };
 
 dvt.Obj.createSubclass(dvt.TouchManager, dvt.Obj);
@@ -13222,10 +13312,12 @@ dvt.TouchManager.HOVER_TOUCH_KEY = 'hoverTouch';
  * Helper method called by the constructor to initialize this object.
  * @param {string} id Id for the this TouchManager instance
  * @param {dvt.Context} context An application specific context
+ * @param {dvt.EventManager} eventManager The event manager for this TouchManager instance.
  */
-dvt.TouchManager.prototype.Init = function(id, context) {
+dvt.TouchManager.prototype.Init = function(id, context, eventManager) {
   this._context = context;
   this._id = id;
+  this._eventManager = eventManager;
 
   // Total number of touches on the screen
   this._touchCount = 0;
@@ -13492,17 +13584,23 @@ dvt.TouchManager.prototype.fireLogicalEvents = function(touchEvent) {
         if (info['fireClick']) {
           var touchClickEvt = new dvt.ComponentTouchEvent(dvt.ComponentTouchEvent.TOUCH_CLICK_TYPE, touch, targetObj, null, nativeEvent);
           touchClickEvt.touchEvent = touchEvent;
-          this.FireListener(touchClickEvt);
-
           if (this._doubleTapAttemptStarted) {
             var prevTapObj = this._doubleTapAttemptObj;
+
             this.resetDoubleTap();
-            if (targetObj == prevTapObj) {
+
+            if (targetObj == prevTapObj || prevTapObj.contains(targetObj)) {
               var touchDblClickEvt = new dvt.ComponentTouchEvent(dvt.ComponentTouchEvent.TOUCH_DOUBLE_CLICK_TYPE, touch, targetObj, null, nativeEvent);
               touchDblClickEvt.touchEvent = touchEvent;
               this.FireListener(touchDblClickEvt);
             }
-          } else {
+            else // if the new target is different from the previous, process a click because the user is not intending to double-tap
+              this.FireListener(touchClickEvt);
+          }
+          else {
+            // fire click event and begin waiting to process a double tap
+            this.FireListener(touchClickEvt);
+
             this.resetDoubleTap();
             this._doubleTapTimer.start();
             this._doubleTapAttemptStarted = true;
@@ -14001,14 +14099,13 @@ dvt.TouchManager.prototype.processTouchMove = function(touchEvent) {
       info['touchMoved'] = (pageDx > 3 || pageDy > 3);
     }
 
-    // If the move ever goes out of the initial object, don't fire a click
-    if (info['fireClick']) {
-      if (info[dvt.TouchManager.TOUCH_MODE] == dvt.TouchManager.TOUCH_MODE_LONG_PRESS) {
-      } else {
-        if (info['currentObj'] != info['startTarget']) {
-          info['fireClick'] = false;
-        }
-      }
+    // If the move ever goes out of the initial object and we are not currently executing a marquee, don't fire a click
+    // : Marquee (currently applicable to chart only) is excluded because this check assumes the elements to be compared
+    // are already rendered, and the marquee object is dynamically added after receiving a touch move event.
+    // DvtChartEventManager will handle resetting the state of the touch manager if we do not want to fire a click.
+    if (info['touchMoved'] || (info['fireClick'] && info[dvt.TouchManager.TOUCH_MODE] != dvt.TouchManager.TOUCH_MODE_LONG_PRESS &&
+        info['currentObj'] != info['startTarget'] && info['currentObj'] != this._eventManager.getMarqueeGlassPane())) {
+      info['fireClick'] = false;
     }
 
   }
@@ -15398,7 +15495,7 @@ dvt.DisplayableUtils.isAncestor = function(ancestor, descendant) {
 };
 
 
-// Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
+// Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
 /*---------------------------------------------------------------------*/
 /*  dvt.PathUtils()       Utility functions for SVG paths               */
 /*---------------------------------------------------------------------*/
@@ -15411,9 +15508,6 @@ dvt.PathUtils.SPLINE_TYPE_MONOTONE_VERTICAL = 'mv';
 dvt.PathUtils.SPLINE_TYPE_MONOTONE_HORIZONTAL = 'mh';
 dvt.PathUtils.SPLINE_TYPE_CARDINAL_CLOSED = 'cc';
 dvt.PathUtils.SPLINE_TYPE_CARDINAL = 'c';
-
-/** @private **/
-dvt.PathUtils._MIN_CORNER_RADIUS = 2.5;
 
 /**
  * Returns a path command for a move to the specified coordinates
@@ -15632,7 +15726,7 @@ dvt.PathUtils._parseBorderRadiusItem = function(item, multiplier) {
   if (item.indexOf('%') != -1) {
     radius = Math.min(50, parseFloat(item)) * .01 * multiplier;
   }
-  return radius < dvt.PathUtils._MIN_CORNER_RADIUS ? 0 : radius;
+  return radius;
 };
 
 /**
@@ -16329,7 +16423,11 @@ dvt.TextUtils = {};
 dvt.Obj.createSubclass(dvt.TextUtils, dvt.Obj);
 
 /** @private */
-dvt.TextUtils._cachedTextDimensions = {};
+dvt.TextUtils._cachedTextWidth = {};
+/** @private */
+dvt.TextUtils._cachedRepTextDimensions = {};
+/** @private */
+dvt.TextUtils._canvasCtx = document.createElement('CANVAS').getContext('2d');
 /** @const */
 dvt.TextUtils.EMPTY_TEXT_BUFFER = 2;
 
@@ -16355,33 +16453,42 @@ dvt.TextUtils.getMaxTextDimensions = function(textArray) {
 };
 
 /**
+ * Returns the maximum width for the texts and styles in the specified arrays. It can take
+ * an array of styles that corresponds with texts in textArray or a single style to be applied for allthe texts
+ * @param {dvt.Context} context
+ * @param {array} textStringArray An array of text strings.
+ * @param {=dvt.CSSStyle|array} cssStyle Single style or array of styles to be used for the texts
+ * @return {Number}
+ */
+dvt.TextUtils.getMaxTextStringWidth = function(context, textStringArray, cssStyle) {
+  var maxWidth = 0;
+  var isStyleArray = dvt.ArrayUtils.isArray(cssStyle);
+
+  for (var i = 0; i < textStringArray.length; i++) {
+    if (textStringArray[i] == null || textStringArray[i].length == 0)
+      continue;
+
+    var style = !cssStyle ? null : isStyleArray ? cssStyle[i] : cssStyle;
+    var textWidth = dvt.TextUtils.getTextStringWidth(context, textStringArray[i], style);
+
+    if (textWidth > maxWidth)
+      maxWidth = textWidth;
+  }
+
+  return maxWidth;
+};
+
+/**
  * Returns the text dimensions (width and height) given a textString and cssStyle. It looks up the the cache,
  * and creates a text elem only if the value is not found in the cache.
  * @param {dvt.Context} context
  * @param {string} textString
  * @param {dvt.CSSStyle} cssStyle
- * @return {dvt.Rectangle} The text dimensions. Only the w and h should be used. The x and y are meaningless.
+ * @return {dvt.Rectangle} The text dimensions.
  */
 dvt.TextUtils.getTextStringDimensions = function(context, textString, cssStyle) {
-  // Look for the value in the cache and return it if found. Otherwise, create an elem and measure the dimensions.
-  var cachedDims = dvt.OutputText.getCachedDimensions(textString, cssStyle);
-  if (cachedDims != null)
-    return cachedDims;
-  else {
-    var text = new dvt.OutputText(context, textString);
-    text.setCSSStyle(cssStyle);
-    return text.getDimensions();
-  }
-};
-
-/**
- * Returns the text width given a dvt.OutputText.
- * @param {dvt.OutputText} text
- * @return {number} The text height.
- */
-dvt.TextUtils.getTextWidth = function(text) {
-  // getDimensions is already optimized to take advantage of cache. This function exists only for API consistency.
-  return text.getDimensions().w;
+  var cachedRepDimensions = dvt.TextUtils._getRepresentativeDimensions(context, cssStyle);
+  return new dvt.Rectangle(0, cachedRepDimensions.y, dvt.TextUtils.getTextStringWidth(context, textString, cssStyle), cachedRepDimensions.h);
 };
 
 /**
@@ -16392,16 +16499,20 @@ dvt.TextUtils.getTextWidth = function(text) {
  * @return {number} The text width.
  */
 dvt.TextUtils.getTextStringWidth = function(context, textString, cssStyle) {
-  return dvt.TextUtils.getTextStringDimensions(context, textString, cssStyle).w;
-};
+  if (textString == null || textString.length == 0)
+    return 0;
+  // Look for the value in the cache and return it if found.
+  var cssStyleKey = (cssStyle != null) ? cssStyle.hashCodeForTextMeasurement() : '';
+  var cacheKey = textString + cssStyleKey;
+  var cachedDims = dvt.TextUtils._cachedTextWidth[cacheKey];
 
-/**
- * Returns the text height given a dvt.OutputText.
- * @param {dvt.OutputText} text
- * @return {number} The text height.
- */
-dvt.TextUtils.getTextHeight = function(text) {
-  return dvt.TextUtils.guessTextDimensions(text).h;
+  if (cachedDims != null)
+    return cachedDims;
+  else {
+    var width = dvt.TextUtils._getCanvasTextWidth(context, textString, cssStyle);
+    dvt.TextUtils._cachedTextWidth[cacheKey] = width;
+    return width;
+  }
 };
 
 /**
@@ -16415,66 +16526,42 @@ dvt.TextUtils.getTextStringHeight = function(context, cssStyle) {
 };
 
 /**
- * Conservatively estimates the width and height of the specified text object.  This function uses a cache to
- * guess the width and height of the specified text string.  This function relies on the fact that
- * all text strings with the same CSS style return the same height from getDimensions.  Users of
- * this function can avoid expensive getDimensions calls when checking to see if a text string
- * would fit in a certain size.
- * @param {dvt.OutputText} text
- * @param {number=} minChars The minimum number of characters that should be displayed before ellipsis if
- *                            truncation occurs. If this argument is skipped, the default is 1 character.
- * @return {Object} An object with fields w, h, and wMin.  w and h correspond to the conservative estimate of the
- *                  text size, while wMin corresponds to the minimum width necessary to show truncated text with the
- *                  specified minimum number of characters.
- */
-dvt.TextUtils.guessTextDimensions = function(text, minChars) {
-  var textString = text.getTextString();
-  var cachedDims = dvt.TextUtils._getRepresentativeDimensions(text.getCtx(), text.getCSSStyle());
-
-  // Use the cached size to guess at the string length
-  var w = cachedDims.w * dvt.TextUtils._getTextLength(textString);
-
-  // Esimate the minimum truncated length using fudge factor and by estimating the ellipsis as one character
-  minChars = (isNaN(minChars) || minChars == null) ? 1 : minChars;
-  var wMin = Math.min(0.3 * w, cachedDims.w * ((0.3 * minChars) + 1));
-
-  if ((text instanceof dvt.MultilineText) || (text instanceof dvt.BackgroundMultilineText))
-    return {w: w, h: cachedDims.h * text.getLineCount(), wMin: wMin};
-  return {w: w, h: cachedDims.h, wMin: wMin};
-};
-
-/**
- * Fits text in the provided space. This function uses dvt.TextUtils.guessTextDimensions before calling setMaxWidth
- * in order to avoid expensive getDimensions calls. It adds the text to the container, and removes it if the text cannot
- * fit at all in the container.
- * @param {dvt.OutputText} text
+ * Fits text in the provided space. It adds the text to the container, and removes it if the text cannot
+ * fit at all in the container and noRemove is not true.
+ * @param {dvt.OutputText|dvt.BackgroundOutputText|dvt.MultilineText|dvt.BackgroundMultilineText} text
  * @param {number} maxWidth The maximum width of the text
  * @param {number} maxHeight The maximum height of the text
  * @param {dvt.Container} container The parent of the text
  * @param {number=} minChars The minimum number of characters that should be displayed before ellipsis if
  *                            truncation occurs. If this argument is skipped, the default is 1 character.
+ * @param {boolean=} noRemove Flag for whether or not text should be removed from parent if it does not fit.
  * @return {boolean} false if the text cannot fit at all, true otherwise.
  */
-dvt.TextUtils.fitText = function(text, maxWidth, maxHeight, container, minChars) {
-  minChars = (isNaN(minChars) || minChars == null) ? 1 : minChars;
+dvt.TextUtils.fitText = function(text, maxWidth, maxHeight, container, minChars, noRemove) {
   var untruncatedTextString = text.getTextString();
 
-  var guess = dvt.TextUtils._guessFit(text, maxWidth, maxHeight, container, minChars);
-  if (guess == true) {
-    container.addChild(text);
-    return true;
-  }
-  else if (guess == false) {
-    // Remove from parent in this case to be consistent
-    var parent = text.getParent();
-    if (parent)
-      parent.removeChild(text);
+  // Initial checks for OutputText
+  if (text instanceof dvt.OutputText) {
+    var textDims = dvt.TextUtils.getTextStringDimensions(text.getCtx(), untruncatedTextString, text.getCSSStyle());
 
-    return false;
+    // Safe to quit if height doesn't fit.
+    if (textDims.h > maxHeight) {
+      // Remove from parent in this case to be consistent
+      if (!noRemove)
+        text.removeFromParent();
+      return false;
+    }
+
+    // Truncation is not necessary if the width <= maxWidth.
+    if (textDims.w <= maxWidth) {
+      container.addChild(text);
+      return true;
+    }
   }
 
   // At this point, truncation may be needed.  Try to truncate the text.
   container.addChild(text);
+  minChars = ((typeof(minChars) != 'number') || minChars == null) ? 1 : minChars;
 
   if (text instanceof dvt.MultilineText || text instanceof dvt.BackgroundMultilineText) {
     // dvt.OutputText will manage removal from container and setting of untruncated text string
@@ -16487,8 +16574,9 @@ dvt.TextUtils.fitText = function(text, maxWidth, maxHeight, container, minChars)
 
   // Check if the truncated text can fit
   if (text.getTextString() == '') {
-    container.removeChild(text);
-    // If removing text from DOM bc it doesn't fit, reset the original text
+    if (!noRemove)
+      container.removeChild(text);
+    // Reset the original text
     text.setTextString(untruncatedTextString);
     return false;
   }
@@ -16507,11 +16595,11 @@ dvt.TextUtils.fitText = function(text, maxWidth, maxHeight, container, minChars)
  * @param {dvt.Rectangle} space The available space to render the emtpy text message in
  * @param {dvt.EventManager} eventManager The event manager to associate any tooltips with for truncated text
  * @param {dvt.CSSStyle} style The CSS style to apply to the empty text
- * @return {dvt.OutputText}
+ * @return {dvt.MultilineText}
  */
 dvt.TextUtils.renderEmptyText = function(container, textStr, space, eventManager, style) {
   // Create and position the text
-  var text = new dvt.OutputText(container.getCtx(), textStr, space.x + space.w / 2, space.y + space.h / 2);
+  var text = new dvt.MultilineText(container.getCtx(), textStr, space.x + space.w / 2, space.y + space.h / 2);
   if (style)
     text.setCSSStyle(style);
   text.alignCenter();
@@ -16541,48 +16629,8 @@ dvt.TextUtils.centerTextVertically = function(text, centerY) {
     text.setY(centerY);
     text.alignMiddle();
   }
-  else {
-    var textHeight = 0;
-    if (text instanceof dvt.OutputText)
-      textHeight = dvt.TextUtils.getTextHeight(text);
-    else if (text instanceof dvt.MultilineText)
-      textHeight = text.getDimensions().h;
-    text.setY(centerY - textHeight / 2);
-  }
-};
-
-/**
- * Uses estimates to quickly determine whether the text can fit in the specified area.  Returns true if the text will
- * definitely fit, false if the text will definitely not fit, and null if further calculation is needed.
- * @param {dvt.OutputText} text
- * @param {number} maxWidth The maximum width of the text
- * @param {number} maxHeight The maximum height of the text
- * @param {dvt.Container} container The parent of the text
- * @param {number} minChars The minimum number of characters that should be displayed before ellipsis
- * @return {object} false if the text won't fit, true if it will, null if further calculation needed
- * @private
- */
-dvt.TextUtils._guessFit = function(text, maxWidth, maxHeight, container, minChars) {
-  if (text instanceof dvt.MultilineText) {
-    // Can optimize in the future if needed
-    return null;
-  }
-  else {
-    // Estimate the dims conservatively
-    var estimatedDims = dvt.TextUtils.guessTextDimensions(text, minChars);
-
-    // The "estimated" height is always accurate and estimated min width is conservative. Safe to quit if it doesn't
-    // fit. Don't quit if the string is short, since the cache is less accurate.
-    if (estimatedDims.h > maxHeight || (estimatedDims.wMin > maxWidth && dvt.TextUtils._getTextLength(text.getTextString()) > 3))
-      return false;
-
-    // The estimated width is conservative, ensuring that truncation is not necessary if the estimate < maxWidth.
-    if (estimatedDims.w < maxWidth)
-      return true;
-
-    // No determination could be made
-    return null;
-  }
+  else
+    text.setY(centerY - text.getDimensions().h / 2);
 };
 
 
@@ -16601,7 +16649,7 @@ dvt.TextUtils._truncateOutputText = function(text, maxWidth, minChars) {
   }
 
   // Initial check using accurate dimensions
-  var dims = text.measureDimensions();
+  var dims = text.getDimensions();
   if (dims.w <= maxWidth)
     return;
 
@@ -16615,7 +16663,7 @@ dvt.TextUtils._truncateOutputText = function(text, maxWidth, minChars) {
   // If so, don't need to call getDimensions() at all, and only need to setTextString() at the very end.
   var truncatedTextString = textString.substring(0, maxNumChars) + dvt.OutputText.ELLIPSIS;
   text.setTextString(truncatedTextString);
-  dims = text.measureDimensions();
+  dims = text.getDimensions();
 
   // Add characters if initial guess is too short.  Keep track of the previous string and dims in case we overshoot
   var prevTextString = truncatedTextString;
@@ -16634,7 +16682,7 @@ dvt.TextUtils._truncateOutputText = function(text, maxWidth, minChars) {
     maxNumChars += estimatedIncrement;
     truncatedTextString = textString.substring(0, maxNumChars) + dvt.OutputText.ELLIPSIS;
     text.setTextString(truncatedTextString);
-    dims = text.measureDimensions();
+    dims = text.getDimensions();
 
     // If we overshot and the increment was only 1, then restore the old string
     if (estimatedIncrement == 1 && dims.w > maxWidth) {
@@ -16660,7 +16708,7 @@ dvt.TextUtils._truncateOutputText = function(text, maxWidth, minChars) {
     maxNumChars -= 1;
     truncatedTextString = textString.substring(0, maxNumChars) + dvt.OutputText.ELLIPSIS;
     text.setTextString(truncatedTextString);
-    dims = text.measureDimensions();
+    dims = text.getDimensions();
   }
 };
 
@@ -16686,15 +16734,21 @@ dvt.TextUtils._getTextLength = function(textString) {
 dvt.TextUtils._getRepresentativeDimensions = function(context, cssStyle) {
   // Check whether a cached size is already available
   var cssStyleKey = (cssStyle != null) ? cssStyle.hashCodeForTextMeasurement() : '';
-  var cachedDims = dvt.TextUtils._cachedTextDimensions[cssStyleKey];
+  var cachedDims = dvt.TextUtils._cachedRepTextDimensions[cssStyleKey];
   if (cachedDims == null) {
     var text = new dvt.OutputText(context, dvt.OutputText.REPRESENTATIVE_TEXT);
     text.alignAuto();
     text.setCSSStyle(cssStyle);
-    var dims = text.measureDimensions();
+
+    // Add to the stage to obtain correct measurements
+    var stage = text.getCtx().getStage();
+    stage.addChild(text);
+    var dims = text.GetSvgDimensions();
+    stage.removeChild(text);
+
     // Cache the dims of a single character. Conservative because real strings are not solely longest characters.
     cachedDims = {x: dims.x, y: dims.y, w: 0.50 * dims.w, h: dims.h};
-    dvt.TextUtils._cachedTextDimensions[cssStyleKey] = cachedDims;
+    dvt.TextUtils._cachedRepTextDimensions[cssStyleKey] = cachedDims;
   }
   return cachedDims;
 };
@@ -16719,6 +16773,60 @@ dvt.TextUtils.getBaselineTranslation = function(text) {
     }
   }
   return 0;
+};
+
+/**
+ * Returns the text width using canvas measurements.
+ * @param {dvt.Context} context
+ * @param {string} text
+ * @param {dvt.CSSStyle} cssStyle
+ * @return {number} the text width
+ * @private
+ */
+dvt.TextUtils._getCanvasTextWidth = function(context, text, cssStyle) {
+  var fontStyle = (cssStyle ? cssStyle.getStyle('font-style') : null) || 'normal';
+  var fontVariant = (cssStyle ? cssStyle.getStyle('font-variant') : null) || 'normal';
+  var fontWeight = (cssStyle ? cssStyle.getStyle('font-weight') : null) || 'normal';
+  var fontFamily = (cssStyle ? cssStyle.getStyle('font-family') : null) || context.getDefaultFontFamily() || '';
+  var fontSize = (cssStyle ? cssStyle.getFontSize() : null) || context.getDefaultFontSize() || '12px';
+
+  // include 'px' if fontSize is just a number
+  if (!isNaN(fontSize))
+    fontSize += 'px';
+
+  // IE and Edge canvases have issues processing '-apple-system' fonts.
+  if (dvt.Agent.isPlatformIE())
+    fontFamily = fontFamily.replace(/-apple-system(-\w+)*,?/g, '');
+
+  dvt.TextUtils._canvasCtx.font = fontStyle + ' ' + fontVariant + ' ' + fontWeight + ' ' + fontSize + ' ' + fontFamily;
+  return dvt.TextUtils._canvasCtx.measureText(text).width;
+};
+
+/**
+ * Clears the caches used by dvt.TextUtils
+ */
+dvt.TextUtils.clearCaches = function() {
+  dvt.TextUtils._cachedTextWidth = {};
+  dvt.TextUtils._cachedRepTextDimensions = {};
+};
+
+/**
+ * Calculate the optimal text size based on the bounds provided.
+ * @param {dvt.Context} context
+ * @param {string} textString
+ * @param {dvt.CSSStyle} cssStyle
+ * @param {dvt.Rectangle} bounds The bounds to fit the label
+ * @return {string} the optimal font size with the unit 'px'
+ */
+dvt.TextUtils.getOptimalFontSize = function(context, textString, cssStyle, bounds) {
+  cssStyle = cssStyle ? cssStyle.clone() : new dvt.CSSStyle();
+  for (var i = Math.max(Math.min(bounds.w / textString.length, bounds.h / 2), 9); i < 51; i += 1) {
+    cssStyle.setFontSize('font-size', i + 'px');
+    var textDim = dvt.TextUtils.getTextStringDimensions(context, textString, cssStyle);
+    if (textDim.w > bounds.w || textDim.h > bounds.h)
+      return Math.min(i - 1, 50) + 'px';
+  }
+  return '50px';
 };
 // Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 /**
@@ -17815,7 +17923,7 @@ dvt.Displayable.prototype.SetProperty = function(name, value) {
 
 /**
  * Helper function to set the specified SVG attribute on the DOM element.  Optimizes getters by storing a copy of the
- * value using SetAttr so that DOM access isn't required. If the property value has been updated in the DOM, then
+ * value using SetAttr so that DOM access isn't required. If the property value has been updated, then
  * SvgPropertyChanged will be called to allow for additional processing if needed.
  * @param {string} name The name of the attribute.
  * @param {string} value The value of the attribute.
@@ -17834,7 +17942,7 @@ dvt.Displayable.prototype.SetSvgProperty = function(name, value, defaultValue) {
 
 
 /**
- * Callback that is notified whenever an SVG DOM property is changed by SetSvgProperty. Subclasses can override to
+ * Callback that is notified whenever the value of a property is changed by SetSvgProperty. Subclasses can override to
  * perform additional processing, such as updating the selection feedback, when properties are changed.
  * @param {string} name The name of the attribute.
  * @protected
@@ -19510,7 +19618,7 @@ DvtStage.prototype.disableSelection = function(target) {
     return false;
   };
 };
-// Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
+// Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
 /**
  *  Abstract base class for shape displayables.
  *  @extends {dvt.Container}
@@ -19662,6 +19770,7 @@ dvt.Shape.prototype.UpdateSelectionEffect = function() {
       this.removeChild(this.InnerShape);
     }
     this.InnerShape = this.copyShape();
+    this.InnerShape._setOuterShape(this);
     this.InnerShape.setMouseEnabled(false);
     this.InnerShape.setFill(this.getFill());
     this.InnerShape.setStyle(this.getStyle()).setClassName(this.getClassName());
@@ -19674,6 +19783,49 @@ dvt.Shape.prototype.UpdateSelectionEffect = function() {
   }
 };
 
+/**
+ * Sets the outer shape of this shape
+ * @param {dvt.Shape} shape The outer shape of this shape
+ * @private
+ */
+dvt.Shape.prototype._setOuterShape = function(shape) {
+  this._outerShape = shape;
+};
+
+/**
+ * Get the inner shape stroke based on the hover/selection state of the shape
+ * @return {dvt.Stroke} inner shape hover/selection stroke
+ * @protected
+ */
+dvt.Shape.prototype.GetHoverSelectionInnerStroke = function() {
+  var innerStroke;
+  if (this.InnerShape) {
+    if (this.isSelected()) {
+      innerStroke = this.isHoverEffectShown() ? this.SelectedHoverInnerStroke : this.SelectedInnerStroke;
+    } else if (this.isHoverEffectShown()) {
+      innerStroke = this.HoverInnerStroke;
+    }
+  }
+  return innerStroke;
+};
+
+/**
+ * Get the outer shape stroke based on the hover/selection state of the shape
+ * @return {dvt.Stroke} outer shape hover/selection stroke
+ * @protected
+ */
+dvt.Shape.prototype.GetHoverSelectionOuterStroke = function() {
+  var outerStroke;
+  if (this._outerShape) {
+    if (this._outerShape.isSelected()) {
+      outerStroke = this._outerShape.isHoverEffectShown() ? this._outerShape.SelectedHoverOuterStroke :
+          this._outerShape.SelectedOuterStroke;
+    } else if (this._outerShape.isHoverEffectShown()) {
+      outerStroke = this._outerShape.HoverOuterStroke;
+    }
+  }
+  return outerStroke;
+};
 
 /**
  * Sets the hover inner and outer strokes for this shape.
@@ -22163,7 +22315,7 @@ dvt.ImageMarker.prototype.setHollow = function(fc, strokeWidth) {
   dvt.ImageMarker.superclass.setHollow.call(this, fc, strokeWidth);
   var hollow = this.isHollow();
   if (hollow) {
-    this._imageContainer = this._elem.parentElement;
+    this._imageContainer = this._elem.parentNode;
     this._imageContainer.removeChild(this._elem);
   }
   else if (!hollow && this._imageContainer)
@@ -22479,7 +22631,7 @@ dvt.Polyline.prototype.copyShape = function()
 {
   return new dvt.Polyline(this.getCtx(), this.getPoints());
 };
-// Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
+// Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
 /**
  * Rectangle displayable.
  * @param {dvt.Context} context
@@ -22512,6 +22664,7 @@ dvt.Rect._cssAttrs = ['background-color', 'border-color', 'border-width'];
  */
 dvt.Rect.prototype.Init = function(context, x, y, w, h, id) {
   dvt.Rect.superclass.Init.call(this, context, 'rect', id);
+  this._strokeAlignment = dvt.Stroke.CENTER; //default stroke alignment
   this.setX(x).setY(y).setWidth(w).setHeight(h);
 };
 
@@ -22674,6 +22827,158 @@ dvt.Rect.prototype.setCSSStyle = function(style) {
 
 
 /**
+ * @override
+ */
+dvt.Rect.prototype.SetSvgProperty = function(name, value, defaultValue) {
+  if (value !== this.GetProperty(name)) {
+    this.SetProperty(name, value);
+    this._setAttributeWithStroke(name, value, defaultValue);
+    this.SvgPropertyChanged(name);
+  }
+  return this;
+};
+
+
+/**
+ * Function to set the specified SVG attribute on the DOM element based on stroke alignment.
+ * @param {string} name The name of the attribute.
+ * @param {string} value The value of the attribute.
+ * @param {string=} defaultValue The default value of the attribute, which can be provided to optimize performance.
+ * @private
+ */
+dvt.Rect.prototype._setAttributeWithStroke = function(name, value, defaultValue) {
+  if (value != null && this._strokeAlignment != dvt.Stroke.CENTER) {
+    // Resize the Rect so that the stroke appears like it is applied on the outer/inner edge of the rectangle path.
+    // Directly modify the rect attributes in DOM. The rect attributes in DOM and
+    // the underlying rect properties (x/y/height/width) are expected to be out of sync.
+    // TO DO: This does not fix correct rx/ry attributes
+    var strokeOffset = this._getStrokeOffset();
+    switch (name) {
+      case 'x':
+      case 'y': value -= strokeOffset; break;
+      case 'width':
+      case 'height': value += (strokeOffset * 2); break;
+    }
+  }
+  dvt.ToolkitUtils.setAttrNullNS(this._elem, name, value, defaultValue);
+};
+
+
+/**
+ * Specifies the stroke alignment of the rectangle.
+ * Supported values are dvt.Stroke.OUTER | dvt.Stroke.INNER | dvt.Stroke.CENTER (default)
+ *
+ * This functionality is similar to proposed SVG 'stroke-alignment' property which isn't supported yet.
+ *
+ * For CENTER stroke alignment (default), the stroke is applied along the path of rectangle.
+ * If inner stroke and outer stroke are specified, the inner stroke will be applied on top of outer stroke.
+ * The inner/outer strokes will overlap and are center aligned along the path of the rectangle.
+ * Since the inner stroke obfuscates outer stroke, the visible width of outer stroke will be reduced by inner stroke.
+ *
+ * For OUTER stroke alignment, the stroke is applied on the outer edge of the path of the rectangle.
+ * If inner stroke and outer stroke are specified, the outer stroke will circumscribe inner stroke.
+ * And both the strokes will be rendered outside the specified bounds of the rectangle.
+ * Visible width of outer stroke won't be reduced by inner stroke and it will remain same as specified.
+ *
+ * For INNER stroke alignment, the stroke is applied on the inner edge of the path of the rectangle.
+ * If inner stroke and outer stroke are specified, the outer stroke will circumscribe inner stroke.
+ * And both the strokes will be rendered inside the specified bounds of the rectangle.
+ * Visible width of outer stroke won't be reduced by inner stroke and it will remain same as specified.
+ *
+ * @param {string} alignment the stroke alignment
+ */
+dvt.Rect.prototype.setStrokeAlignment = function(alignment) {
+  // Update element stroke dimensions if the stroke alignment has changed.
+  if (this._strokeAlignment != alignment) {
+    this._strokeAlignment = alignment;
+    this._updateElemStrokeDimensions();
+  }
+};
+
+
+/**
+ * Returns the stroke alignment of the rectangle.
+ * Supported values are dvt.Stroke.OUTER | dvt.Stroke.INNER | dvt.Stroke.CENTER (default)
+ *
+ * @return {string} the stroke alignment
+ */
+dvt.Rect.prototype.getStrokeAlignment = function() {
+  return this._strokeAlignment;
+};
+
+
+/**
+ * Update element stroke dimensions based on the stroke alignment
+ * @private
+ */
+dvt.Rect.prototype._updateElemStrokeDimensions = function() {
+  this._setAttributeWithStroke('x', this.getX(), 0);
+  this._setAttributeWithStroke('y', this.getY(), 0);
+  this._setAttributeWithStroke('width', this.getWidth());
+  this._setAttributeWithStroke('height', this.getHeight());
+};
+
+
+/**
+ * Returns the stroke offset based on the stroke alignment
+ * @return {number} The stroke offset
+ * @private
+ */
+dvt.Rect.prototype._getStrokeOffset = function() {
+  var strokeOffset = 0;
+  var stroke = this.getStroke();
+  if (stroke) {
+    // When stroke alignment is OUTER, the strokeOffset needs to account for inner stroke width
+    if (this._strokeAlignment == dvt.Stroke.OUTER) {
+      strokeOffset = stroke.getWidth() / 2;
+      // Get the inner rect stroke
+      var innerStroke = this.GetHoverSelectionInnerStroke();
+      if (innerStroke != null)
+        strokeOffset += innerStroke.getWidth();
+
+    // When stroke alignment is INNER, the strokeOffset needs to account for outer stroke width
+    } else if (this._strokeAlignment == dvt.Stroke.INNER) {
+      strokeOffset = -stroke.getWidth() / 2;
+      // Get the outer rect stroke
+      var outerStroke = this.GetHoverSelectionOuterStroke();
+      if (outerStroke != null)
+        strokeOffset -= outerStroke.getWidth();
+    }
+  }
+  return strokeOffset;
+};
+
+
+/**
+ * @override
+ */
+dvt.Rect.prototype.setStroke = function(stroke) {
+  dvt.Rect.superclass.setStroke.call(this, stroke);
+  // Update element stroke dimensions if the stroke alignment is not CENTER
+  if (this._strokeAlignment != dvt.Stroke.CENTER) {
+    this._updateElemStrokeDimensions();
+  }
+};
+
+
+/**
+ * @override
+ */
+dvt.Rect.prototype.GetElemDimensionsWithStroke = function() {
+  var dims = dvt.Rect.superclass.GetElemDimensionsWithStroke.call(this);
+  //Update the element dimesions if the stroke alignment is not CENTER
+  if (dims && this._strokeAlignment != dvt.Stroke.CENTER) {
+    var strokeOffset = this._getStrokeOffset();
+    dims.x -= strokeOffset;
+    dims.y -= strokeOffset;
+    dims.w += (strokeOffset * 2);
+    dims.h += (strokeOffset * 2);
+  }
+  return dims;
+};
+
+
+/**
   *  Sets the top left position of the rectangle.
   *  @param {number} x  The <code>x</code> coordinate of the top left coordinate of the rectangle.
   *  @param {number} y  The <code>y</code> coordinate of the top left coordinate of the rectangle.
@@ -22729,6 +23034,7 @@ dvt.Rect.prototype.copyShape = function()
 {
   var copy = new dvt.Rect(this.getCtx(), this.getX(), this.getY(), this.getWidth(), this.getHeight());
   copy.setRx(this.getRx()).setRy(this.getRy());
+  copy.setStrokeAlignment(this.getStrokeAlignment());
   return copy;
 };
 
@@ -22746,7 +23052,7 @@ dvt.Rect.prototype.getDimensionsSelf = function(targetCoordinateSpace) {
   var bounds = new dvt.Rectangle(this.getX(), this.getY(), this.getWidth(), this.getHeight());
   return this.ConvertCoordSpaceRect(bounds, targetCoordinateSpace);
 };
-// Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
+// Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
 /**
  * Creates an instance of dvt.OutputText.
  * @extends {dvt.Shape}
@@ -22943,14 +23249,12 @@ dvt.OutputText.prototype._getIEAlignmentOffset = function() {
   var align = this.getHorizAlignment();
   var isRTL = dvt.Agent.isRightToLeft();
 
-  // Note that this.measureDimensions().w gets called at most once in the statement below.
-  // Not assigning it to a var up front to avoid the perf hit in the two cases that just return zero.
   if (align == dvt.OutputText.H_ALIGN_LEFT)
-    return isRTL ? this.measureDimensions().w : 0;
+    return isRTL ? dvt.TextUtils.getTextStringWidth(this.getCtx(), this.getTextString(), this.getCSSStyle()) : 0;
   else if (align == dvt.OutputText.H_ALIGN_CENTER)
-    return isRTL ? this.measureDimensions().w / 2 : -this.measureDimensions().w / 2;
+    return isRTL ? dvt.TextUtils.getTextStringWidth(this.getCtx(), this.getTextString(), this.getCSSStyle()) / 2 : -1 * (dvt.TextUtils.getTextStringWidth(this.getCtx(), this.getTextString(), this.getCSSStyle()) / 2);
   else if (align == dvt.OutputText.H_ALIGN_RIGHT)
-    return isRTL ? 0 : -this.measureDimensions().w;
+    return isRTL ? 0 : -1 * dvt.TextUtils.getTextStringWidth(this.getCtx(), this.getTextString(), this.getCSSStyle());
 };
 
 
@@ -22976,7 +23280,7 @@ dvt.OutputText.prototype.setY = function(y) {
 
 /**
  * Convenience function for specifying the font size. This function will clone the CSSStyle and apply it to the component.
- * @param {string} size The font-size which can be in the format '9', '9px', or 'xx-small'
+ * @param {string|number} size The font-size which can be in the format 9, '9', '9px', or 'xx-small'
  */
 dvt.OutputText.prototype.setFontSize = function(size) {
   var style = this.getCSSStyle();
@@ -23246,9 +23550,10 @@ dvt.OutputText.prototype.setCSSStyle = function(style) {
     }
 
     val = style.getStyle('font-weight');
-    if (val) {
+    if (val && val != this.getCtx().getDefaultFontWeight())
       dvt.ToolkitUtils.setAttrNullNS(elem, 'font-weight', val);
-    }
+    else
+      dvt.ToolkitUtils.removeAttrNullNS(elem, 'font-weight');
 
     //NOTE: svg does not recognize css "text-align" attribute,
     //call alignCenter, alignLeft, alignRight... if needed.
@@ -23390,120 +23695,14 @@ dvt.OutputText.prototype.UpdateSelectionEffect = function() {
 
 
 /**
- * Calculate the optimal text size based on the bounds provided.
- * @param {dvt.Rectangle} bounds The bounds to fit the label
- * @return {number}
+ * @override
  */
-dvt.OutputText.prototype.getOptimalFontSize = function(bounds) {
-  for (var i = Math.max(Math.min(bounds.w / this.getTextString().length, bounds.h / 2), 9); i < 51; i += 1) {
-    this.setFontSize(i);
-    var textDim = this.measureDimensions();
-    if (textDim.w > bounds.w || textDim.h > bounds.h)
-      return Math.min(i - 1, 50);
-  }
-  return 50;
-};
-
-
-/**
- * Optimized version of getDimensions.  Unlike getDimensions, this function will always returns useful dimensions,
- * adding the object to the DOM as needed.  The current implementation achieves improvements in performance by
- * storing the text calculations in a LRU cache, taking advantage of the fact that dimensions calculations do
- * not depend on container information.
- * @param {dvt.Displayable=} targetCoordinateSpace The displayable defining the target coordinate space.
- * @return {dvt.Rectangle} The bounds of the text
- */
-dvt.OutputText.prototype.measureDimensions = function(targetCoordinateSpace) {
-  // TODO : measureDimensions is now hooked into getDimensions, so it need not exist.  We can integrate into
-  // getDimensions as soon as we have time to rename all usages.  The tricky part is just that dvt.Text also has a
-  // measureDimensions call, so renames will need to be carefully done.
-  var textString = this.getTextString() != null ? this.getTextString() : '';
+dvt.OutputText.prototype.getDimensions = function(targetCoordinateSpace) {
   var hAlign = this.getHorizAlignment();
   var vAlign = this.getVertAlignment();
 
-  // Initialize the cache if not done already.  The cache stores the stage relative dims of text at (0,0).
-  if (!dvt.OutputText._cache)
-    dvt.OutputText._cache = new dvt.Cache();
-
-  // Create the key for cache, which is a combination of all attrs that affect dimensions calculations.
-  var cssStyle = this.getCSSStyle();
-  var cssStyleKey = (cssStyle != null) ? cssStyle.hashCodeForTextMeasurement() : '';
-  var cacheKey = (textString.length > 0) ? textString + cssStyleKey : '';
-
-  // Look for the value in the cache and add it if not found. Calculate the localDims.
-  var localDims;
-  var stageDims = dvt.OutputText._cache.get(cacheKey);
-  if (stageDims != null) // Cache hit found, convert from stage coords to local and return.
-    localDims = new dvt.Rectangle(stageDims.x + this.getX(), stageDims.y + this.getY(), stageDims.w, stageDims.h);
-  else {
-    // No cache hit.  Find the stage coords and add to cache.
-    // Adjust the alignment to top-left for text caching
-    if (!dvt.Agent.isPlatformIE()) { // avoid infinite recursion in IE
-      this.alignLeft();
-    }
-
-    this.alignAuto();
-
-    var attached = false;
-    var stage = this.getCtx().getStage();
-    var disp = this.getParent();
-    while (disp) {
-      if (disp == stage) {
-        attached = true;
-        break;
-      }
-      disp = disp.getParent();
-    }
-
-    if (attached) {
-      // If we're already attached to the DOM, get the real local dimensions and cache the stage dimensions by removing
-      // x and y offsets.
-      localDims = this.GetSvgDimensions();
-    }
-
-    // For Firefox, localDims is null for disconnected elements
-    if (!localDims)
-      localDims = new dvt.Rectangle(0, 0, 0, 0);
-
-    // If the object is not connected to the DOM, it will return incorrect size of 0.
-    if (localDims.w <= 0 && localDims.h <= 0 && textString.length > 0) {
-      // Saves the parent and the index
-      var parent = this.getParent();
-      var index;
-      if (parent) {
-        index = parent.getChildIndex(this);
-      }
-      // Add to the stage to obtain correct measurements
-      stage.addChild(this);
-      localDims = this.GetSvgDimensions();
-      stage.removeChild(this);
-      // Restore the parent
-      if (parent) {
-        parent.addChildAt(this, index);
-      }
-    }
-
-    // Restore the alignment
-    if (dvt.Agent.isPlatformIE()) { // avoid infinite recursion in IE
-
-      // Adjust the dimensions that's stored in the cache so that it's the alignLeft value
-      if (hAlign === dvt.OutputText.H_ALIGN_RIGHT) {
-        localDims.x += localDims.w;
-      }
-      else if (hAlign === dvt.OutputText.H_ALIGN_CENTER) {
-        localDims.x += localDims.w / 2;
-      }
-    }
-    else {
-      this.setHorizAlignment(hAlign);
-    }
-    this.setVertAlignment(vAlign);
-
-    // Convert to stage dims by removing own x and y.
-    stageDims = new dvt.Rectangle(0, localDims.y - this.getY(), localDims.w, localDims.h);
-    dvt.OutputText._cache.put(cacheKey, stageDims);
-    localDims.x = this.getX();
-  }
+  var localDims = dvt.TextUtils.getTextStringDimensions(this.getCtx(), this.getTextString(), this.getCSSStyle());
+  localDims.x = this.getX();
 
   // Adjust dimensions for text alignment.  We do this because we don't take alignment into account in the cache, and
   // also because browsers return inconsistently calculated dimensions based on alignment.
@@ -23513,11 +23712,13 @@ dvt.OutputText.prototype.measureDimensions = function(targetCoordinateSpace) {
     localDims.x -= localDims.w / 2;
 
   if (vAlign === dvt.OutputText.V_ALIGN_TOP)
-    localDims.y -= stageDims.y;
+    localDims.y = this.getY();
   else if (vAlign === dvt.OutputText.V_ALIGN_BOTTOM)
-    localDims.y -= (stageDims.y + stageDims.h);
+    localDims.y = this.getY() - localDims.h;
   else if (vAlign === dvt.OutputText.V_ALIGN_MIDDLE)
-    localDims.y -= (stageDims.y + stageDims.h / 2);
+    localDims.y = this.getY() - localDims.h / 2;
+  else if (vAlign === dvt.OutputText.V_ALIGN_AUTO)
+    localDims.y += this.getY();
 
   // Transform to the target coord space and return
   return (!targetCoordinateSpace || targetCoordinateSpace === this) ? localDims : this.ConvertCoordSpaceRect(localDims, targetCoordinateSpace);
@@ -23560,36 +23761,7 @@ dvt.OutputText.needsTextAnchorAdjustment = function() {
   // Don't adjust anchor in Batik environment.
   return dvt.Agent.isRightToLeft() && !dvt.Agent.isEnvironmentBatik();
 };
-
-
-/**
- * Returns the bounds of the displayable relative to the target coordinate space.  If the target
- * coordinate space is not specified, returns the bounds relative to this displayable.  This function does not take
- * into account any child displayables.
- * @param {dvt.Displayable} targetCoordinateSpace The displayable defining the target coordinate space.
- * @return {dvt.Rectangle} The bounds of the displayable relative to the target coordinate space.
- */
-dvt.OutputText.prototype.getDimensionsSelf = function(targetCoordinateSpace) {
-  // Note: In the near future, we will not support children for shapes, so this routine will be refactored into the
-  //       existing getDimensions calls.  For now, components must be aware of the presence of children to use this.
-  return this.measureDimensions(targetCoordinateSpace);
-};
-
-/**
- * Returns the cached text dimensions for a textString and cssStyle, or null if no cached size is available.
- * @param {string} textString
- * @param {dvt.CSSStyle} cssStyle
- * @return {dvt.Rectangle} The text dimensions. Only the w and h should be used. The x and y are meaningless.
- */
-dvt.OutputText.getCachedDimensions = function(textString, cssStyle) {
-  // Create the key for cache, which is a combination of all attrs that affect dimensions calculations.
-  var cssStyleKey = (cssStyle != null) ? cssStyle.hashCodeForTextMeasurement() : '';
-  var cacheKey = (textString.length > 0) ? textString + cssStyleKey : '';
-
-  // Look for the value in the cache and return it if found or null otherwise.
-  return dvt.OutputText._cache ? dvt.OutputText._cache.get(cacheKey) : null;
-};
-// Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
+// Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
 /**
  * Creates an instance of dvt.BackgroundOutputText.
  * @extends {dvt.Container}
@@ -23724,7 +23896,7 @@ dvt.BackgroundOutputText.prototype.setY = function(y) {
 
 /**
  * Convenience function for specifying the font size. This function will clone the CSSStyle and apply it to the component.
- * @param {string} size The font-size which can be in the format '9', '9px', or 'xx-small'
+ * @param {string|number} size The font-size which can be in the format 9, '9', '9px', or 'xx-small'
  */
 dvt.BackgroundOutputText.prototype.setFontSize = function(size) {
   this.TextInstance.setFontSize(size);
@@ -23886,29 +24058,6 @@ dvt.BackgroundOutputText.prototype.getMatrix = function() {
   return this.TextInstance.getMatrix();
 };
 
-
-/**
- * Calculate the optimal text size based on the bounds provided.
- * @param {dvt.Rectangle} bounds The bounds to fit the label
- * @return {number}
- */
-dvt.BackgroundOutputText.prototype.getOptimalFontSize = function(bounds) {
-  return this.TextInstance.getOptimalFontSize(bounds);
-};
-
-
-/**
- * Optimized version of getDimensions.  Unlike getDimensions, this function will always returns useful dimensions,
- * adding the object to the DOM as needed.  The current implementation achieves improvements in performance by
- * storing the text calculations in a LRU cache, taking advantage of the fact that dimensions calculations do
- * not depend on container information.
- * @param {dvt.Displayable=} targetCoordinateSpace The displayable defining the target coordinate space.
- * @return {dvt.Rectangle} The bounds of the text
- */
-dvt.BackgroundOutputText.prototype.measureDimensions = function(targetCoordinateSpace) {
-  return this.getDimensions(targetCoordinateSpace);
-};
-
 /**
  * Returns the bounds of the output text relative to the target coordinate space.  If the target
  * coordinate space is not specified, returns the bounds relative to this displayable.
@@ -23924,11 +24073,11 @@ dvt.BackgroundOutputText.prototype.getTextDimensions = function(targetCoordinate
  */
 dvt.BackgroundOutputText.prototype.getDimensions = function(targetCoordinateSpace) {
   // include the bounds of the rectangle background for the dimensions
-  var dims = this.TextInstance.getDimensions(targetCoordinateSpace);
+  var dims = this.TextInstance.getDimensions();
   var padding = dims.h * dvt.BackgroundOutputText._PADDING;
   dims.x -= padding;
   dims.w += (2 * padding);
-  return dims;
+  return this.ConvertCoordSpaceRect(dims, targetCoordinateSpace);
 };
 
 /**
@@ -23947,17 +24096,6 @@ dvt.BackgroundOutputText.prototype.copyShape = function() {
  */
 dvt.BackgroundOutputText.needsTextAnchorAdjustment = function(context) {
   return this.TextInstance.needsTextAnchorAdjustment(context);
-};
-
-/**
- * @this {dvt.BackgroundOutputText}
- * Returns the cached text dimensions for a textString and cssStyle, or null if no cached size is available.
- * @param {string} textString
- * @param {dvt.CSSStyle} cssStyle
- * @return {dvt.Rectangle} The text dimensions. Only the w and h should be used. The x and y are meaningless.
- */
-dvt.BackgroundOutputText.getCachedDimensions = function(textString, cssStyle) {
-  return this.TextInstance.getCachedDimensions(textString, cssStyle);
 };
 
 /**
@@ -24577,7 +24715,7 @@ dvt.MultilineText.prototype.wrapText = function(maxWidth, maxHeight, minChars, b
     currentLine.setTextString(newString);
     currentLine.setUntruncatedTextString(null);
 
-    if (!dvt.TextUtils.fitText(currentLine, maxWidth, Infinity, this, minChars)) {
+    if (!dvt.TextUtils.fitText(currentLine, maxWidth, Infinity, this, minChars, true)) {
       if (isInitialSplit) // First piece of text does not fit at all. Returns false because no part of the text object will fit.
         return false;
       else // Subsequent piece of text doesn't fit at all.  Returns true because previous pieces of text had fit.
@@ -24633,11 +24771,21 @@ dvt.MultilineText.prototype.wrapText = function(maxWidth, maxHeight, minChars, b
  * @override
  */
 dvt.MultilineText.prototype.GetSvgDimensions = function(targetCoordinateSpace) {
-  var dimensions;
-  dvt.ArrayUtils.forEach(this._getTextLines(), function(entry) {
-    dimensions = dimensions ? dimensions.getUnion(entry.measureDimensions(targetCoordinateSpace)) : entry.measureDimensions(targetCoordinateSpace);
+  var textLines = this._getTextLines();
+  if (textLines.length == 0)
+    return new dvt.Rectangle(0, 0, 0, 0);
+
+  var dimensions = new dvt.Rectangle(Infinity, Infinity, 0, 0);
+  dvt.ArrayUtils.forEach(textLines, function(entry) {
+    // getUnion takes into account padding and covers cases that don't apply
+    // for Multiline, so calculating dimensions here
+    var entryDims = entry.getDimensions();
+    dimensions.x = Math.min(dimensions.x, entryDims.x);
+    dimensions.y = Math.min(dimensions.y, entryDims.y);
+    dimensions.w = Math.max(dimensions.w, entryDims.w);
+    dimensions.h += entryDims.h;
   });
-  return dimensions ? dimensions : new dvt.Rectangle(0, 0, 0, 0);
+  return this.ConvertCoordSpaceRect(dimensions, targetCoordinateSpace);
 };
 
 /**
@@ -24654,7 +24802,7 @@ dvt.MultilineText.prototype.getLineCount = function() {
  */
 dvt.MultilineText.prototype.getLineHeight = function() {
   if (!this._lineHeight)
-    this._lineHeight = this._textInstance.measureDimensions().h;
+    this._lineHeight = dvt.TextUtils.getTextStringHeight(this.getCtx(), this.getCSSStyle());
 
   return this._lineHeight;
 };
@@ -24700,13 +24848,6 @@ dvt.MultilineText.prototype.getUntruncatedTextString = function() {
  */
 dvt.MultilineText.prototype.setUntruncatedTextString = function(textString) {
   // noop
-};
-
-/**
- * @override
- */
-dvt.MultilineText.prototype.measureDimensions = function(targetCoordinateSpace) {
-  return this.GetSvgDimensions(targetCoordinateSpace);
 };
 
 /**
@@ -24765,7 +24906,7 @@ dvt.MultilineText.prototype.setVertAlignment = function(align) {
     this.alignBottom();
 };
 
-// Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
+// Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
 /**
  * Read-only text object that supports wrapping.
  * @extends {dvt.Container}
@@ -24827,8 +24968,12 @@ dvt.BackgroundMultilineText.prototype.GetTextDimensionsForRealign = function() {
 /**
  * @override
  */
-dvt.BackgroundMultilineText.prototype.measureDimensions = function() {
-  return this.TextInstance.measureDimensions();
+dvt.BackgroundMultilineText.prototype.getDimensions = function(targetCoordinateSpace) {
+  var dims = this.TextInstance.getDimensions();
+  var padding = dims.h * dvt.BackgroundOutputText._PADDING / this.getLineCount();
+  dims.x -= padding;
+  dims.w += (2 * padding);
+  return this.ConvertCoordSpaceRect(dims, targetCoordinateSpace);
 };
 
 //// Functions added so that dvt.BackgroundMultilineText can be used in the same instances as dvt.MultilineText
@@ -28251,9 +28396,6 @@ dvt.SimpleScrollableContainer.prototype._onMouseWheel = function(event) {
   this._showScrollbar();
 
   var delta = event.wheelDelta != null ? event.wheelDelta : 0;
-  // Firefox flips the mouse wheel delta
-  if (dvt.Agent.isPlatformGecko())
-    delta *= -1;
 
   var newTranslate = -1 * (this._isHorizontalScrolling ? this._container.getTranslateX() : this._container.getTranslateY()) - 4 * delta;
   var minTranslate = 0;
@@ -31298,10 +31440,11 @@ dvt.KeyboardHandler.prototype.processKeyUp = function(event, triggerType)
  * @param {DvtKeyboardNavigable} currentNavigable The DvtKeyboardNavigable item with current focus
  * @param {dvt.KeyboardEvent} event
  * @param {Array} navigableItems An array of items that could receive focus next
- * @param {Boolean} ignoreBounds (optional) Ignore the _isInBounds check when finding the next navigable
+ * @param {Boolean=} ignoreBounds Ignore the _isInBounds check when finding the next navigable
+ * @param {dvt.Displayable=} targetCoordinateSpace The displayable defining the target coordinate space
  * @return {DvtKeyboardNavigable} The next navigable
  */
-dvt.KeyboardHandler.getNextNavigable = function(currentNavigable, event, navigableItems, ignoreBounds) 
+dvt.KeyboardHandler.getNextNavigable = function(currentNavigable, event, navigableItems, ignoreBounds, targetCoordinateSpace) 
 {
   var nextNavigable = null;
   var nextNavigableDelta = 0;
@@ -31318,7 +31461,7 @@ dvt.KeyboardHandler.getNextNavigable = function(currentNavigable, event, navigab
   }
 
   // get the bounds of the current navigable
-  var currentBounds = currentNavigable.getKeyboardBoundingBox();
+  var currentBounds = currentNavigable.getKeyboardBoundingBox(targetCoordinateSpace);
   var candidateBounds;
 
   for (var i = 0; i < navigableItems.length; i++)
@@ -31328,7 +31471,7 @@ dvt.KeyboardHandler.getNextNavigable = function(currentNavigable, event, navigab
     if (currentNavigable === navigable)
       continue;
 
-    candidateBounds = navigable.getKeyboardBoundingBox();
+    candidateBounds = navigable.getKeyboardBoundingBox(targetCoordinateSpace);
 
     if (ignoreBounds || dvt.KeyboardHandler._isInBounds(currentBounds, candidateBounds, direction))
     {
@@ -31558,12 +31701,17 @@ dvt.KeyboardHandler.getNextAdjacentNavigable = function(current, event, listOfOb
   // Only another in contact object with better attributes will have higher precedence
   var nextInContact = false;
 
+  // Whether or not the for loop has encountered the current object
+  var hasFoundCurrent = false;
+
   for (var i = 0; i < listOfObjects.length; i++)
   {
     var object = listOfObjects[i];
 
-    if (object === current)
+    if (object === current) {
+      hasFoundCurrent = true;
       continue;
+    }
 
     if (!dvt.KeyboardHandler._isValidDestination(object, current, keycode))
       continue;
@@ -31574,6 +31722,13 @@ dvt.KeyboardHandler.getNextAdjacentNavigable = function(current, event, listOfOb
       continue;
 
     var distance = dvt.KeyboardHandler._calcDistanceAngleWeighted(object, current, keycode);
+
+    // : If there is another object with the exact same position as the current one, only navigate to that
+    // object if it is positioned later (index-wise) in the listOfObjects. Otherwise, the navigation will get trapped
+    // between the two (or more) overlapping objects forever since the algorithm always navigates to the closest object.
+    if (distance == 0 && !hasFoundCurrent)
+      continue;
+
     // Make sure incontact flag have highest precedence
     if ((!nextInContact && inContact) ||
         (distance < nextDistance && ((nextInContact && inContact) || !nextInContact)))
@@ -31853,6 +32008,10 @@ dvt.MarqueeHandler.prototype.processDragMove = function(relPos, ctrlKey) {
 
     // Initiate the marquee
     this._marquee = new dvt.Rect(this._context, this._bounds.x, this._bounds.y, this._bounds.w, this._bounds.h);
+
+    // marquee element should not receive pointer events
+    this._marquee.getElem().setAttribute('pointer-events', 'none');
+
     if (this._resizeHoriz) {
       this._marquee.setX(this._origPt.x);
       this._marquee.setWidth(0);
@@ -31988,6 +32147,15 @@ dvt.MarqueeHandler.prototype.getCursor = function(relPos) {
     return 'crosshair';
   else
     return 'inherit';
+};
+
+/**
+ * Returns the glasspane object. Used in cases on device where we need to check in the current target of a touchMove
+ * is the marquee handler's glasspane.
+ * @return {dvt.Rect} The glasspane rect for this marquee handler.
+ */
+dvt.MarqueeHandler.prototype.getGlassPane = function() {
+  return this._glassPane;
 };
 /**
  * Handler used for pan and zoom operations.
@@ -32434,6 +32602,16 @@ dvt.CategoryRolloverHandler._HOVER_DELAY = 50;
 dvt.CategoryRolloverHandler._HOVER_TIMEOUT = 1000;
 
 /**
+ * The delay for processing a rollout event to update highlighted items when not in highlight mode.
+ * This case is possible if a legend item is filtered and then navigated away from quickly enough such that we
+ * do not call the roll over callback and enter highlight mode. This creates a case where _bHighlightMode is false, yet
+ * we received a rollout event that is expected to update the highlighted categories.
+ * @const
+ * @private
+ */
+dvt.CategoryRolloverHandler._ROLLOUT_TIMEOUT = 250;
+
+/**
  * The default fade out opacity.
  * @const
  * @private
@@ -32473,9 +32651,10 @@ dvt.CategoryRolloverHandler.prototype.processEvent = function(event, objs, initi
       this._highlightModeTimeout = null;
     }
   }
-  else if (type == 'out' && this._bHighlightMode) {
-    // Process rollout if a highlight has occurred.
-    this._hoverDelayCallback = setTimeout(this.GetRolloutCallback(event, objs, bAnyMatched, customAlpha), this._hoverDelay);
+  else if (type == 'out') {
+    // Process rollout if a highlight has occurred, or after the rollout delay has elapsed.
+    var rolloutDelay = this._bHighlightMode ? this._hoverDelay : dvt.CategoryRolloverHandler._ROLLOUT_TIMEOUT;
+    this._hoverDelayCallback = setTimeout(this.GetRolloutCallback(event, objs, bAnyMatched, customAlpha), rolloutDelay);
   }
 };
 
@@ -32707,7 +32886,6 @@ dvt.EventManager.prototype.Init = function(context, callback, callbackObj) {
   // Initialize the higher level event handlers.  These handlers are exposed as protected fields
   // so that subclasses can fully customize the behavior of this event manager.
   this._selectionHandler = null;
-  this._marqueeHandler = null;
   this.PopupHandler = new DvtPopupBehaviorHandler(context, callback, callbackObj);
   this.ClientBehaviorHandler = this.CreateClientBehaviorHandler(context, callback, callbackObj);
   this.KeyboardHandler = null;
@@ -32727,7 +32905,7 @@ dvt.EventManager.prototype.Init = function(context, callback, callbackObj) {
 
   this.TouchManager = null;
   if (dvt.Agent.isTouchDevice())
-    this.TouchManager = new dvt.TouchManager('touchmanager', this._context);
+    this.TouchManager = new dvt.TouchManager('touchmanager', this._context, this);
 
   // The DvtKeyboardNavigable item that currently has keyboard focus
   this._focusedObj = null;
@@ -32981,13 +33159,13 @@ dvt.EventManager.prototype.getPopupHandler = function() {
 };
 
 /**
- * Sets the marquee handler to use with this event manager.
- * @param {dvt.MarqueeHandler} handler The marquee handler to use.
+ * Returns the glasspane of the marquee handler for this event manager, if one exists.
+ * @return {dvt.Rect} The glasspane for a dvt.MarqueeHandler
+ * subclasses can override like DvtChartEventManager
  */
-dvt.EventManager.prototype.setMarqueeHandler = function(handler) {
-  this._marqueeHandler = handler;
+dvt.EventManager.prototype.getMarqueeGlassPane = function() {
+  return null;
 };
-
 
 /**
  * Sets the drag source to use with this event manager.
@@ -33835,13 +34013,6 @@ dvt.EventManager.prototype.PreOnMouseMove = function(event) {
 dvt.EventManager.prototype.OnMouseMove = function(event) {
   var pageX = event.pageX;
   var pageY = event.pageY;
-  var relPos = this._context.pageToStageCoords(pageX, pageY);
-
-  if (this._marqueeHandler) {
-    var marqueeEvent = this._marqueeHandler.processDragMove(relPos, event.ctrlKey);
-    if (marqueeEvent)
-      this._callback.call(this._callbackObj, marqueeEvent);
-  }
 
   var target = this.GetCurrentTargetForEvent(event);
   var obj = this.GetLogicalObject(target);
@@ -34035,13 +34206,6 @@ dvt.EventManager.prototype.OnMouseDown = function(event) {
     this.CustomTooltipManager.closeActionTooltip();
   }
 
-  if (this._marqueeHandler) {
-    var relPos = this._context.pageToStageCoords(event.pageX, event.pageY);
-    var marqueeEvent = this._marqueeHandler.processDragStart(relPos, event.ctrlKey);
-    if (marqueeEvent)
-      this._callback.call(this._callbackObj, marqueeEvent);
-  }
-
   // Drag and Drop Support
   var target = this.GetCurrentTargetForEvent(event);
   var obj = this.GetLogicalObject(target);
@@ -34072,12 +34236,6 @@ dvt.EventManager.prototype.PreOnMouseUp = function(event) {
  * @param {dvt.MouseEvent} event  Mouse Up event
  */
 dvt.EventManager.prototype.OnMouseUp = function(event) {
-  if (this._marqueeHandler) {
-    var relPos = this._context.pageToStageCoords(event.pageX, event.pageY);
-    var marqueeEvent = this._marqueeHandler.processDragEnd(relPos, event.ctrlKey);
-    if (marqueeEvent)
-      this._callback.call(this._callbackObj, marqueeEvent);
-  }
   var target = this.GetCurrentTargetForEvent(event);
   var obj = this.GetLogicalObject(target);
   if (!this.GetEventInfo(event, dvt.EventManager._EVENT_INFO_POPUP_DISPLAYED_KEY)) {
@@ -35451,16 +35609,6 @@ dvt.EventManager.prototype.HandleTouchActionsStart = function(event) {
     this._touchMap[touch.identifier][dvt.TouchManager.PREV_HOVER_OBJ] = obj;
   }
 
-  // Marquee selection
-  if (this._marqueeHandler) {
-    var relPos = this._context.pageToStageCoords(touchX, touchY);
-    var marqueeEvent = this._marqueeHandler.processDragStart(relPos);
-    if (marqueeEvent) {
-      event.preventDefault();
-      this._callback.call(this._callbackObj, marqueeEvent);
-    }
-  }
-
   // Category rollover support
   if (obj)
     this.ProcessRolloverEvent(event, obj, true);
@@ -35529,18 +35677,6 @@ dvt.EventManager.prototype.HandleTouchActionsMove = function(event) {
     obj = this.GetLogicalObject(targetObj);
   }
 
-  var touchX = touch.pageX;
-  var touchY = touch.pageY;
-  var relPos = this._context.pageToStageCoords(touchX, touchY);
-
-  if (this._marqueeHandler) {
-    var marqueeEvent = this._marqueeHandler.processDragMove(relPos, event.ctrlKey);
-    if (marqueeEvent) {
-      event.preventDefault();
-      this._callback.call(this._callbackObj, marqueeEvent);
-    }
-  }
-
   // Category rollover support
   if (obj)
     this.ProcessRolloverEvent(event, obj, true);
@@ -35604,15 +35740,6 @@ dvt.EventManager.prototype.HandleTouchActionsEnd = function(event, touch) {
 
   var touchX = touch.pageX;
   var touchY = touch.pageY;
-  var relPos = this._context.pageToStageCoords(touchX, touchY);
-
-  if (this._marqueeHandler) {
-    var marqueeEvent = this._marqueeHandler.processDragEnd(relPos, event.ctrlKey);
-    if (marqueeEvent) {
-      event.preventDefault();
-      this._callback.call(this._callbackObj, marqueeEvent);
-    }
-  }
 
   this._processTouchSelection(obj);
 
@@ -36068,8 +36195,9 @@ dvt.EventManager.prototype._handleDropTargetEventHelper = function(event, eventT
   if (callback) {
     var eventPayload = this.GetDropEventPayload(event);
     var callbackValue = callback($event, eventPayload);
-    if (callbackValue != null) {
+    if (callbackValue != null && !this._context.isCustomElement()) {
       // If there's a return value, don't handle dataTypes
+      // Custom element syntax does not support return values
       return callbackValue;
     }
   }
@@ -36554,7 +36682,7 @@ DvtCustomTooltip.prototype.Render = function() {
 
       text._menu = menuItem;
 
-      var dimensions = text.measureDimensions();
+      var dimensions = text.getDimensions();
       dimensions.y = topTextY + runningHeight;
       var textWidth = dimensions.w;
       textWidths.push(dimensions);
@@ -37122,8 +37250,7 @@ dvt.HtmlTooltipManager.prototype.hideTooltip = function()
 
     // Use JQuery .remove() to cleanup DOM to prevent memory leaks
     // when using JET knockout templates
-    // : Don't do this for HtmlRichTooltip because the contents are not rerendered every time
-    if (typeof $ != 'undefined' && !(this instanceof DvtHtmlRichTooltipManager)) {
+    if (typeof $ != 'undefined' && this._bCleanupChildren) {
       $(tooltip).children().remove();
     }
   }
@@ -37329,8 +37456,8 @@ dvt.HtmlTooltipManager.prototype.positionTip = function(x, y)
 
   // X Position
   var tooltipX = x;
-  tooltipX = Math.max(tooltipX, viewportBounds.x + dvt.HtmlTooltipManager._VIEWPORT_BUFFER); // Prevent left overflow
-  tooltipX = Math.min(tooltipX, viewportBounds.x + viewportBounds.w - tooltipWidth - dvt.HtmlTooltipManager._VIEWPORT_BUFFER); // Prevent right overflow
+  tooltipX = Math.max(tooltipX, viewportBounds.x); // Prevent left overflow
+  tooltipX = Math.min(tooltipX, viewportBounds.x + viewportBounds.w - tooltipWidth); // Prevent right overflow
 
   // If page is scrolled, force a width on the tooltip so that it doesn't crunch at the edges. Workaround for browser issue.
   if (Math.abs(viewportBounds.x) > dvt.HtmlTooltipManager._VIEWPORT_BUFFER) {
@@ -37380,6 +37507,11 @@ dvt.HtmlTooltipManager.prototype.getCustomTooltip = function(tooltipFunc, dataCo
 
   if (tooltipElem.style.borderColor)
     this._isCustomBorderColor = true;
+
+  // Set a flag for whether to cleanup tooltip elements when hideTooltip() is called by checking for the
+  // _templateCleanup callback which is added to the dataContext after the renderer is  called on the JET side.
+  // We should only cleanup children for knockout templates which will be recreated on the next show call.
+  this._bCleanupChildren = dataContext['_templateCleanup'] != null;
 
   // If the tooltipElem has been populated by the app and a null returned, don't overwrite it.
   if (!tooltip && tooltipElem.hasChildNodes())

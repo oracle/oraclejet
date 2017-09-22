@@ -20,53 +20,63 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore'], function(oj, 
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#custom-animation-section"></a>
  * </h3>
  *
- * <p>Applications can customize animations triggered by actions in some components by listening for <code class="prettyprint">animateStart/animateEnd</code>
+ * <p>Applications can customize animations triggered by actions in some components by listening for <code class="prettyprint">ojAnimateStart/ojAnimateEnd</code>
  *    events and override action specific animations.  See the documentation of individual components for support details of <code
- *    class="prettyprint">animateStart/animateEnd</code> events and the associated actions.</p>
- * <p>To customize an animation, applications first listen to <code class="prettyprint">animateStart</code> event and cancel the default animation.  Then
+ *    class="prettyprint">ojAnimateStart/ojAnimateEnd</code> events and the associated actions.</p>
+ * <p>To customize an animation, applications first listen to <code class="prettyprint">ojAnimateStart</code> event and cancel the default animation.  Then
  *    specify the new animation in one of several ways:</p>
  * <ul>
- *   <li>Call one of the animation effect methods in oj.AnimationUtils.
- *   <li>Call a 3rd-party animation function with a Javascript API, such as jQuery, GreenSock, Velocity.js, etc.
- *   <li>Define action specific CSS style classes on the animated item.
+ *   <li>Call one of the animation effect methods in oj.AnimationUtils.</li>
+ *   <li>Call a 3rd-party animation function with a Javascript API, such as jQuery, GreenSock, Velocity.js, etc.</li>
+ *   <li>Define action-specific CSS style classes on the animated item.  When an action triggers animation, a marker class of the form "oj-animate-&lt;action&gt;" 
+ *       (e.g. "oj-animate-open") is added to the animated element.  After a slight delay, a second marker class of the form "oj-animate-&lt;action&gt;-active"
+ *       (e.g. "oj-animate-open-active") is added.  This allows application to define CSS transition on the element.</li>
  * </ul>
  *
  * <h4>Examples</h4>
  * <br>
  * <i>Customize a default "open" animation with oj.AnimationUtils method:</i>
  * <pre class="prettyprint"><code>
- * $( ".selector" ).on( "ojanimatestart", function( event, ui ) {
- *   if (ui.action == "open") {
+ * myComponent.addEventListener( "ojAnimateStart", function( event ) {
+ *   if (event.detail.action == "open") {
  *     event.preventDefault();
- *     oj.AnimationUtils.slideIn(ui.element).then(ui.endCallback);
+ *     oj.AnimationUtils.slideIn(event.detail.element).then(event.detail.endCallback);
  *   }
  * });
  * </code></pre>
  * <br>
  * <i>Customize a default "close" animation with jQuery method:</i>
  * <pre class="prettyprint"><code>
- * $( ".selector" ).on( "ojanimatestart", function( event, ui ) {
- *   if (ui.action == "close") {
+ * myComponent.addEventListener( "ojAnimateStart", function( event ) {
+ *   if (event.detail.action == "close") {
  *     event.preventDefault();
- *     $(ui.element).fadeOut(ui.endCallback);
+ *     $(event.detail.element).fadeOut(event.detail.endCallback);
  *   }
  * });
  * </code></pre>
  * <br>
  * <i>Customize a default "update" animation with CSS style classes:</i>
  * <pre class="prettyprint"><code>
- * $( ".selector" ).on( "ojanimatestart", function( event, ui ) {
- *   if (ui.action == "update") {
+ * // Cancel the default animation in the event listener
+ * myComponent.addEventListener( "ojAnimateStart", function( event ) {
+ *   if (event.detail.action == "update") {
  *     event.preventDefault();
- *     ui.endCallback();
+ *     event.detail.endCallback();
  *   }
  * });
+ *
  * </code></pre>
  *
  * <pre class="prettyprint"><code>
+ * /* Define new animation in CSS
+ *    Different selectors may be needed to target the CSS correctly *&#47;
+ *
+ * /* State to animate from is marked by oj-animate-&lt;action&gt; class *&#47; 
  * .selector .oj-animate-update {
  *   color: red;
  * }
+ *
+ * /* State to animate to is marked by oj-animate-&lt;action&gt; and oj-animate-&lt;action&gt;-active classes *&#47; 
  * .selector .oj-animate-update.oj-animate-update-active {
  *   transition: color 1s;
  *   color: black;
@@ -102,6 +112,28 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore'], function(oj, 
  */
 oj.AnimationUtils = {};
 
+// Return a platform-dependent property or event name from a base name
+oj.AnimationUtils._getName = function(element, baseName)
+{
+  if (!oj.AnimationUtils._nameMap)
+  {
+    oj.AnimationUtils._nameMap = {};
+    var nameMap = oj.AnimationUtils._nameMap;
+    var style = element.style;
+    
+    // Property names
+    nameMap['backfaceVisibility'] = (style['webkitBackfaceVisibility'] !== undefined) ? 'webkitBackfaceVisibility' : 'backfaceVisibility';
+    nameMap['transform'] = (style['webkitTransform'] !== undefined) ? 'webkitTransform' : 'transform';
+    nameMap['transformOrigin'] = (style['webkitTransformOrigin'] !== undefined) ? 'webkitTransformOrigin' : 'transformOrigin';
+    nameMap['transition'] = (style['webkitTransition'] !== undefined) ? 'webkitTransition' : 'transition';
+    
+    // Event names
+    nameMap['transitionend'] = (style['webkitTransition'] !== undefined) ? 'webkitTransitionEnd' : 'transitionend';
+  }
+  
+  return oj.AnimationUtils._nameMap[baseName];
+};
+
 /**
  * Main utility function for starting a css transition on an element.<br>
  * Currently this function assumes the following:<br>
@@ -120,117 +152,160 @@ oj.AnimationUtils = {};
  */
 oj.AnimationUtils._animate = function(element, fromState, toState, options, transProps, persistProps)
 {
-  var jelem = $(element);
   var propArray = [].concat(transProps);
 
-  var promise = new Promise(
-    function(resolve, reject)
-    {
-      /** @type {function(jQuery.event=)} */
-      var endListener = function(event) {
-        var idx = propArray.indexOf(event.originalEvent.propertyName);
-        if (idx > -1)
-        {
-          if (propArray.length > 1)
-          {
-            propArray.splice(idx, 1);
-          }
-          else
-          {
-            resolvePromise();
-          }
-        }
-      };
-      var promiseResolved = false;
-      var resolvePromise = function() {
-        if (!promiseResolved)
-        {
-          jelem.off('transitionend webkitTransitionEnd', endListener);
-
-          resolve(true);
-          promiseResolved = true;          
-        }
-      };
-
-      // For css transition, specify the transition value when applying the toState
-      // since we don't want to trigger the transition prematurely.
-      if (toState['css'] == null)
+  var doAnimate = function(resolve, reject)
+  {
+    var endListener = function(event) {
+      var idx = propArray.indexOf(event.propertyName);
+      if (idx > -1)
       {
-        toState['css'] = {};
+        if (propArray.length > 1)
+        {
+          propArray.splice(idx, 1);
+        }
+        else
+        {
+          resolvePromise();
+        }
       }
-      toState['css']['transition'] = oj.AnimationUtils._createTransitionValue(transProps, options);
+    };
+    var requestId = 0;
+    var promiseResolved = false;
+    var resolvePromise = function() {
+      if (!promiseResolved)
+      {
+        if (requestId)
+        {
+          window.cancelAnimationFrame(requestId);
+          requestId = 0;
+        }
+        
+        element.removeEventListener(oj.AnimationUtils._getName(element, 'transitionend'), endListener);
 
-      // Save the orignal style so that we can restore it later if needed
-      var effectCount = oj.AnimationUtils._saveStyle(jelem, fromState, toState, options, persistProps || transProps);
+        if (resolve)
+        {
+          resolve(true);
+        }
+        promiseResolved = true;          
+      }
+    };
 
-      oj.AnimationUtils._applyState(jelem, fromState, effectCount > 1);
+    // For css transition, specify the transition value when applying the toState
+    // since we don't want to trigger the transition prematurely.
+    if (toState == null)
+    {
+      toState = {};
+    }
+    if (toState['css'] == null)
+    {
+      toState['css'] = {};
+    }
+    toState['css'][oj.AnimationUtils._getName(element, 'transition')] = oj.AnimationUtils._createTransitionValue(transProps, options);
 
-      jelem.on('transitionend webkitTransitionEnd', endListener);
+    // Save the orignal style so that we can restore it later if needed
+    var effectCount = oj.AnimationUtils._saveStyle(element, fromState, toState, options, persistProps || transProps);
+
+    oj.AnimationUtils._applyState(element, fromState, effectCount > 1);
+
+    element.addEventListener(oj.AnimationUtils._getName(element, 'transitionend'), endListener);
+
+    var duration = options['duration'];
+    var delay = options['delay'];
+    var skipPromise = options['_skipPromise'];
+
+    function transitionFunc() {
+      requestId = 0;
+      oj.AnimationUtils._applyState(element, toState, effectCount > 1);
+    }
+
+    if (fromState == null)
+    {
+      // If there is no fromState, assume that we are transitioning from the
+      // current state to a new state, so just apply toState immediately.
+      transitionFunc();
+    }
+    else
+    {
+      if (!options['_noReflow'])
+      {
+        // If the final state is the same as current state,
+        // requestAnimationFrame may not trigger a transition.  Need to force
+        // a reflow after applying the initial state by getting one of several 
+        // properties that cause reflow.
+        //
+        // Assign it to an export object so that Closure compiler will not remove
+        // this as dead code
+        oj.AnimationUtils._x = element.offsetWidth;
+      }
 
       // Add the toState after a delay.  This is necessary to trigger css 
-      // transition.  Use setTimeout instead of requestAnimationFrame because 
-      // the later is not reliable for triggering transition on Firefox.
-      window.setTimeout(function()
-      {
-        oj.AnimationUtils._applyState(jelem, toState, effectCount > 1);
-
-        // There are situations in which the transitionend event is never
-        // fired (e.g. removing the transiton property or setting the display
-        // property to none.)
-        // Add a timeout to avoid having unresolved promise.
-        setTimeout(resolvePromise, oj.AnimationUtils._calcEffectTime(jelem) + 100);
-      }, 20);
-    }
-  );
-
-  return promise.then(function() {
-    // Remove any temporary effect class when the promise is fulfilled.
-    // Do not remove them in the endListener, since the promise fulfillment
-    // callback is not in the same animation frame and occurs later than
-    // the endListener.  Because any caller cleanup is done on promise
-    // fulfillment, the element may flash if we remove the class too early.
-
-    if (fromState && fromState['addClass'])
-    {
-      jelem.removeClass(fromState['addClass']);
+      // transition.
+      requestId = window.requestAnimationFrame(transitionFunc);
     }
     
-    if (toState && toState['addClass'])
+    var totalMs = oj.AnimationUtils._getTotalTiming(duration, delay);
+    if (!skipPromise)
     {
-      jelem.removeClass(toState['addClass']);
+      // There are situations in which the transitionend event is never
+      // fired (e.g. removing the transiton property or setting the display
+      // property to none.)
+      // Add a timeout to avoid having unresolved promise.
+      setTimeout(resolvePromise, totalMs + 100);
     }
+  };
 
-    oj.AnimationUtils._restoreStyle(jelem);
-  });
+  // Special option to skip promise to reduce overhead.  A side effect is that
+  // no clean up will be done on the element, which is fine if the element is
+  // temporary
+  if (options['_skipPromise'])
+  {
+    doAnimate(null, null);
+    return null;
+  }
+  else
+  {
+    var promise = new Promise(doAnimate);
+    return promise.then(function() {
+      // Remove any temporary effect class when the promise is fulfilled.
+      // Do not remove them in the endListener, since the promise fulfillment
+      // callback is not in the same animation frame and occurs later than
+      // the endListener.  Because any caller cleanup is done on promise
+      // fulfillment, the element may flash if we remove the class too early.
+
+      if (fromState && fromState['addClass'])
+      {
+        $(element).removeClass(fromState['addClass']);
+      }
+      
+      if (toState && toState['addClass'])
+      {
+        $(element).removeClass(toState['addClass']);
+      }
+
+      oj.AnimationUtils._restoreStyle(element);
+    });
+  }
 };
 
 // Save the element style from a property set
-oj.AnimationUtils._saveCssValues = function(jelem, css, savedStyle, persistProps)
+oj.AnimationUtils._saveCssValues = function(element, css, savedStyle, persistProps)
 {
+  var style = element.style;
+
   for (var cssProp in css)
   {
-    var prop = oj.AnimationUtils._getCamelCasePropName(cssProp);
-
-    if (!savedStyle.hasOwnProperty(prop) && (!persistProps || persistProps.indexOf(prop) == -1))
+    if (!savedStyle.hasOwnProperty(cssProp) && (!persistProps || persistProps.indexOf(cssProp) == -1))
     {
-      var style = jelem[0].style;
-
-      if (style[prop] === undefined)
-      {
-        savedStyle[prop] = style[oj.AnimationUtils._getWebkitPropName(prop)];
-      }
-      else
-      {
-        savedStyle[prop] = style[prop];
-      }
+      savedStyle[cssProp] = style[cssProp];
     }
   }
 };
 
 // Save the original element style before animating it
-oj.AnimationUtils._saveStyle = function(jelem, fromState, toState, options, persistProps)
+oj.AnimationUtils._saveStyle = function(element, fromState, toState, options, persistProps)
 {
-  var savedStyle = jelem.data('_ojSavedStyle') || {};
+  var savedStyle = element._ojSavedStyle || {};
   var fromStateCss = (fromState && fromState['css']) ? fromState['css'] : {};
   var toStateCss = (toState && toState['css']) ? toState['css'] : {};
 
@@ -239,36 +314,41 @@ oj.AnimationUtils._saveStyle = function(jelem, fromState, toState, options, pers
     persistProps = null;
   }
 
-  oj.AnimationUtils._saveCssValues(jelem, fromStateCss, savedStyle, persistProps);
-  oj.AnimationUtils._saveCssValues(jelem, toStateCss, savedStyle, persistProps);
+  oj.AnimationUtils._saveCssValues(element, fromStateCss, savedStyle, persistProps);
+  oj.AnimationUtils._saveCssValues(element, toStateCss, savedStyle, persistProps);
 
-  jelem.data('_ojSavedStyle', savedStyle);
+  element._ojSavedStyle = savedStyle;
 
   // Remember how many times this is called to allow composite animation
-  var effectCount = jelem.data('_ojEffectCount') || 0;
-  jelem.data('_ojEffectCount', ++effectCount);
+  var effectCount = element._ojEffectCount || 0;
+  element._ojEffectCount = ++effectCount;
   
   return effectCount;
 };
 
 // Restore the original element style
-oj.AnimationUtils._restoreStyle = function(jelem)
+oj.AnimationUtils._restoreStyle = function(element)
 {
-  var effectCount = jelem.data('_ojEffectCount');
+  var effectCount = element._ojEffectCount;
 
   // In case of composite animation, restore style when the last effect has ended
   if (effectCount > 1)
   {
-    jelem.data('_ojEffectCount', effectCount - 1);
+    element._ojEffectCount = effectCount - 1;
   }
   else
   {
-    var savedStyle = jelem.data('_ojSavedStyle');
+    var savedStyle = element._ojSavedStyle;
     if (savedStyle)
     {
-      jelem.css(savedStyle);
-      jelem.removeData('_ojSavedStyle');
-      jelem.removeData('_ojEffectCount');
+      var style = element.style;
+      for (var prop in savedStyle)
+      {
+        style[prop] = savedStyle[prop];
+      }
+
+      delete element._ojSavedStyle;
+      delete element._ojEffectCount;
     }
   }
 };
@@ -308,7 +388,12 @@ oj.AnimationUtils._getCamelCasePropName = function(propName)
 // Get the corresponding hyphenated property name
 oj.AnimationUtils._getHyphenatedPropName = function(propName)
 {
-  return propName.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
+  var newName = propName.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
+  if (newName.indexOf('webkit') == 0)
+  {
+    newName = '-' + newName;
+  }
+  return newName;
 };
 
 // Get the corresponding webkit-prefixed property name
@@ -318,13 +403,11 @@ oj.AnimationUtils._getWebkitPropName = function(propName)
 };
 
 // Concatenate value for style property that allows multiple values 
-oj.AnimationUtils._concatMultiValue = function(jelem, state, propName, defaultPrefix, separator)
+oj.AnimationUtils._concatMultiValue = function(element, state, propName, defaultPrefix, separator)
 {
   if (state['css'][propName])
   {
-    propName = oj.AnimationUtils._getCamelCasePropName(propName);
-
-    var currPropValue = jelem[0].style[propName] || jelem[0].style[oj.AnimationUtils._getWebkitPropName(propName)];
+    var currPropValue = element.style[propName];
     if (currPropValue && currPropValue.indexOf(defaultPrefix) != 0)
     {
       state['css'][propName] = currPropValue + separator + state['css'][propName];
@@ -332,40 +415,145 @@ oj.AnimationUtils._concatMultiValue = function(jelem, state, propName, defaultPr
   }
 };
 
-oj.AnimationUtils._applyState = function(jelem, state, isComposite)
+oj.AnimationUtils._splitTransform = function(transform)
+{
+  var array = [];
+
+  if (transform && transform != 'none')
+  {
+    var index;
+    
+    while ((index = transform.indexOf(')')) > 0)
+    {
+      var funcExpr = transform.substr(0, index + 1);
+      array.push(funcExpr.trim());
+      transform = transform.slice(index + 1);
+    }
+  }
+  
+  return array;
+};
+
+oj.AnimationUtils._getTransformFuncName = function(funcExpr)
+{
+  var index = funcExpr.indexOf('(');
+  if (index >= 1)
+  {
+    return funcExpr.substr(0, index);
+  }
+  
+  return funcExpr;
+};
+
+// Apply the transform style
+oj.AnimationUtils._applyTransform = function(element, newTransform)
+{
+  var oldTransform = element.style[oj.AnimationUtils._getName(element, 'transform')];
+  var oldTransformArray = oj.AnimationUtils._splitTransform(oldTransform);
+  var newTransformArray = oj.AnimationUtils._splitTransform(newTransform);
+  var extraTransformArray = [];
+  
+  for (var i = 0; i < newTransformArray.length; i++)
+  {
+    var funcName = oj.AnimationUtils._getTransformFuncName(newTransformArray[i]);
+    var match = false;
+
+    if (funcName)
+    {
+      for (var j = 0; j < oldTransformArray.length; j++)
+      {
+        // Search for funcName + '(' since some transform functions can be the
+        // prefix of other functions such as translate and translateZ.
+        if (oldTransformArray[j].indexOf(funcName + '(') == 0)
+        {
+          // Replace any matching old transform function with the new one
+          oldTransformArray[j] = newTransformArray[i];
+          match = true;
+        }
+      }
+    }
+
+    // Keep track of any new transform function that wasn't specified    
+    if (!match)
+    {
+      extraTransformArray.push(newTransformArray[i]);
+    }
+  }
+  
+  // Concatenate the updated transform list with newly added list
+  oldTransformArray = oldTransformArray.concat(extraTransformArray);
+
+  // Return the transform list as a string  
+  return oldTransformArray.join(' ');
+};
+
+oj.AnimationUtils._applyState = function(element, state, isComposite)
 {
   if (state)
   {
     if (state['css'])
     {
+      var transitionPropName = oj.AnimationUtils._getName(element, 'transition');
+      var transformPropName = oj.AnimationUtils._getName(element, 'transform');
+      
       // For composite animation, we need to concatenate certain property values
       // instead of replacing them
       if (isComposite)
       {
-        oj.AnimationUtils._concatMultiValue(jelem, state, 'transform', 'none', ' ');
-        oj.AnimationUtils._concatMultiValue(jelem, state, 'transition', 'all', ', ');
+        oj.AnimationUtils._concatMultiValue(element, state, transitionPropName, 'all', ', ');
       }
 
-      jelem.css(state['css']);    
+      if (state['css'][transformPropName])
+      {
+        state['css'][transformPropName] = oj.AnimationUtils._applyTransform(element, state['css'][transformPropName]);
+      }
+
+      var style = element.style;
+      var newStyle = state['css'];
+      for (var prop in newStyle)
+      {
+        style[prop] = newStyle[prop];
+      }
     }
     
     if (state['addClass'])
     {
-      jelem.addClass(state['addClass']);
+      $(element).addClass(state['addClass']);
     }
     
     if (state['removeClass'])
     {
-      jelem.removeClass(state['removeClass']);
+      $(element).removeClass(state['removeClass']);
     }
   }
 };
 
-oj.AnimationUtils._calcCssTime = function(jelem, cssProp, prefix)
+// Get a timing value in millisecond from a string such as duration and delay
+oj.AnimationUtils._getTimingValue = function(timingStr)
 {
-  var propertyStr = jelem.css(cssProp);
-  var delayStr = jelem.css(prefix + 'Delay');
-  var durationStr = jelem.css(prefix + 'Duration');
+  var timingValue = parseFloat(timingStr);
+  if (isNaN(timingValue))
+  {
+    return 0;
+  }
+  
+  return (timingStr.indexOf('ms') > -1) ? timingValue : timingValue * 1000;
+};
+
+oj.AnimationUtils._getTotalTiming = function(duration, delay)
+{
+  var durationMs = oj.AnimationUtils._getTimingValue(duration);
+  if (durationMs > 0)
+  {
+    var delayMs = delay ? oj.AnimationUtils._getTimingValue(delay) : 0;
+    return (durationMs + delayMs);
+  }
+  
+  return 0;
+};
+
+oj.AnimationUtils._calcCssTime = function(propertyStr, delayStr, durationStr)
+{
   var propertyArray = propertyStr.split(',');
   var delayArray = delayStr.split(',');
   var durationArray = durationStr.split(',');
@@ -377,23 +565,29 @@ oj.AnimationUtils._calcCssTime = function(jelem, cssProp, prefix)
   for (var i = 0; i < propertyLen; i++)
   {
     var duration = durationArray[i % durationLen];
-    var durationMs = (duration.indexOf('ms') > -1) ? parseFloat(duration) : parseFloat(duration) * 1000;
-    if (durationMs > 0)
-    {
-      var delay = delayArray[i % delayLen];
-      var delayMs = (delay.indexOf('ms') > -1) ? parseFloat(delay) : parseFloat(delay) * 1000;
+    var delay = delayArray[i % delayLen];
+    var totalMs = oj.AnimationUtils._getTotalTiming(duration, delay);
 
-      maxTime = Math.max(maxTime, delayMs + durationMs);
-    }
+    maxTime = Math.max(maxTime, totalMs);
   }
 
   return maxTime;  
 };
 
-oj.AnimationUtils._calcEffectTime = function(jelem)
+oj.AnimationUtils._calcEffectTime = function(element)
 {
-  var animationTime = oj.AnimationUtils._calcCssTime(jelem, 'animationName', 'animation');
-  var transitionTime = oj.AnimationUtils._calcCssTime(jelem, 'transitionProperty', 'transition');
+  var style = window.getComputedStyle(element);
+  var propertyStr, delayStr, durationStr;
+  
+  propertyStr = style['animationName'] || style['webkitAnimationName'];
+  delayStr = style['animationDelay'] || style['webkitAnimationDelay'];
+  durationStr = style['animationDuration'] || style['webkitAnimationDuration'];
+  var animationTime = oj.AnimationUtils._calcCssTime(propertyStr, delayStr, durationStr);
+
+  propertyStr = style['transitionProperty'] || style['webkitTransitionProperty'];
+  delayStr = style['transitionDelay'] || style['webkitTransitionDelay'];
+  durationStr = style['transitionDuration'] || style['webkitTransitionDuration'];
+  var transitionTime = oj.AnimationUtils._calcCssTime(propertyStr, delayStr, durationStr);
   
   return Math.max(animationTime, transitionTime);
 };
@@ -416,7 +610,7 @@ oj.AnimationUtils._fillEmptyOptions = function(targetOptions, sourceOptions)
  *                        in oj.AnimationUtils, or an object that specifies the
  *                        effect method and its options, such as:
  *                        {'effect': 'fadeOut', 'endOpacity': 0.5}, or an array of the above.
- * @param {jQuery=} component  the component that contains the HTML element
+ * @param {Object=} component  the component that contains the HTML element
  *                             to animate.  If this is specified, animation events will
  *                             be triggered on the component via jQuery UI _trigger(),
  *                             so that listeners specified as event options will work.
@@ -428,6 +622,9 @@ oj.AnimationUtils._fillEmptyOptions = function(targetOptions, sourceOptions)
  */
 oj.AnimationUtils.startAnimation = function(element, action, effects, component)
 {
+  // Temporary fix for callers that are passing in jQuery object
+  element = $(element)[0];
+
   var promise = new Promise(
     function(resolve, reject)
     {    
@@ -441,10 +638,11 @@ oj.AnimationUtils.startAnimation = function(element, action, effects, component)
         {
           jelem.removeClass(fromMarker);
           jelem.removeClass(toMarker);
+          oj.AnimationUtils._restoreStyle(element);
           resolve(true);
           
           var ui = {'action': action, 'element': element};
-          if (component)
+          if (component && component._trigger)
           {
             component._trigger('animateEnd', null, ui);
           }
@@ -463,13 +661,18 @@ oj.AnimationUtils.startAnimation = function(element, action, effects, component)
         resolvePromise();
       };
 
+      // This will add a ref count so that the style is not restored until
+      // all effects and user-defined css transitions have ended.  Otherwise
+      // there may be screen flash if 'persist' != 'all'.
+      oj.AnimationUtils._saveStyle(element, null, null, null, null);
+
       // Trigger ojanimatestart event so that app can prevent default animation 
       // and define custom effect in JS
       var event = $.Event('ojanimatestart');
       var ui = {'action': action, 'element': element, 'endCallback': eventCallback};
       var defaultPrevented;
 
-      if (component)
+      if (component && component._trigger)
       {
         // _trigger() returns false if preventDefault has been called
         defaultPrevented = !component._trigger('animateStart', null, ui);
@@ -532,15 +735,36 @@ oj.AnimationUtils.startAnimation = function(element, action, effects, component)
 
       // Add marker class so that app can define custom effect in CSS      
       jelem.addClass(fromMarker);
-      window.setTimeout(function() {
+      var requestId = window.requestAnimationFrame(function() {
+        requestId = 0;
+        
         jelem.addClass(toMarker);
         
-        // Set a timeout to resolve the promise.  We can't rely on
-        // transitionend event since there can be multiple transition
-        // properties, or the transition is never triggered, or the transition
-        // is cancelled.
-        setTimeout(markerCallback, oj.AnimationUtils._calcEffectTime(jelem) + 100);
-      }, 20);
+        var totalMs = oj.AnimationUtils._calcEffectTime(element);
+        if (totalMs > 0)
+        {
+          // Set a timeout to resolve the promise.  We can't rely on
+          // transitionend event since there can be multiple transition
+          // properties, or the transition is never triggered, or the transition
+          // is cancelled.
+          setTimeout(markerCallback, totalMs + 100);
+        }
+        else
+        {
+          markerCallback();
+        }
+      });
+      
+      // In case we are in the background and requestAnimationFrame is not
+      // called, have a timeout that cancel the request and resolve promise
+      setTimeout(function() {
+        if (requestId)
+        {
+          window.cancelAnimationFrame(requestId);
+          requestId = 0;
+          markerCallback();
+        }
+      }, 1000);
     }
   );
   
@@ -599,7 +823,7 @@ oj.AnimationUtils._fade = function(element, options, effect, startOpacity, endOp
     if (options['endOpacity'])
       toState['css']['opacity'] = options['endOpacity'];
   }
- 
+
   return oj.AnimationUtils._animate(element, fromState, toState, options, ['opacity']);
 };
 
@@ -722,38 +946,226 @@ oj.AnimationUtils.collapse = function(element, options)
   return oj.AnimationUtils._expandCollapse(element, options, false);
 };
 
+// Wrap table row content and return an array of wrapper elements to animate
+oj.AnimationUtils._wrapRowContent = function(row, rowHeight)
+{
+  var wrappers = [];
+  var cells = row.children;
+  var cellsPadding = [];
+  var cellsTextAlign = [];
+  
+  // Collect all the needed style before modifying the DOM.  Otherwise it
+  // causes additional reflow and takes more time.
+
+  row._ojSavedHeight = row.style['height'];
+
+  for (var i = 0; i < cells.length; i++)
+  {
+    var cell = cells[i];
+    var cellStyle = window.getComputedStyle(cell);
+    cellsPadding.push(cellStyle['padding']);
+    cellsTextAlign.push(cellStyle['textAlign']);
+
+    // Remember the inline padding style (not computed style)
+    cell._ojSavedPadding = cell.style['padding'];
+  }
+
+  // Start modifying the DOM
+  
+  for (var i = 0; i < cells.length; i++)
+  {
+    var cell = cells[i];
+
+    // Create the outer wrapper
+    var outerWrapper = document.createElement('div');
+    outerWrapper.style['overflow'] = 'hidden;';
+    
+    // Create the inner wrapper    
+    var innerWrapper = document.createElement('div');
+    innerWrapper.style['display'] = 'table-cell';
+    innerWrapper.style['verticalAlign'] = 'middle';
+    innerWrapper.style['boxSizing'] = 'border-box';
+    innerWrapper.style['height'] = rowHeight;
+    innerWrapper.style['padding'] = cellsPadding[i];
+    innerWrapper.style['textAlign'] = cellsTextAlign[i];
+    
+    // Append inner wrapper to outer wrapper
+    outerWrapper.appendChild(innerWrapper); //@HTMLUpdateOK; innerWrapper is constructed by component code and is not using string passed in through any APIs.
+
+    // Transfer children of cell to inner wrapper
+    while (cell.firstChild)
+    {
+      innerWrapper.appendChild(cell.firstChild); //@HTMLUpdateOK; cell.firstChild is constructed by component code and is not using string passed in through any APIs.
+    }
+
+    // Finally append the outer wrapper back to the cell
+    cell.appendChild(outerWrapper); //@HTMLUpdateOK; outerWrapper is constructed by component code and is not using string passed in through any APIs.
+    
+    // Set the cell padding to 0 so that it can be completely collapsed
+    cell.style['padding'] = '0';
+    
+    wrappers.push(outerWrapper);
+  };
+  
+  // Set the row height to 0 so that it can be completely collapsed
+  row.style['height'] = '0';
+  
+  return wrappers;
+};
+
+// Unwrap table row content
+oj.AnimationUtils._unwrapRowContent = function(row)
+{
+  var cells = row.children;
+  
+  for (var i = 0; i < cells.length; i++)
+  {
+    var cell = cells[i];
+
+    var outerWrapper = cell.children[0];
+    if (outerWrapper)
+    {
+      var innerWrapper = outerWrapper.children[0];
+      if (innerWrapper)
+      {
+        while (innerWrapper.firstChild)
+        {
+          cell.appendChild(innerWrapper.firstChild); //@HTMLUpdateOK; innerWrapper.firstChild is constructed by component code and is not using string passed in through any APIs.
+        }
+      }
+      
+      // Remove the outer wrapper will also remove the inner wrapper
+      cell.removeChild(outerWrapper);
+    }
+
+    // Restore any inline padding style to the cell
+    cell.style['padding'] = cell._ojSavedPadding;
+    delete cell._ojSavedPadding;        
+  }
+
+  // Restore any inline height style to the row
+  row.style['height'] = row._ojSavedHeight;
+  delete row._ojSavedHeight;
+};
+
+// Expand or collapse a table row
+oj.AnimationUtils._expandCollapseRow = function(element, options, isExpand)
+{
+  var promise;
+  var rowHeight = element.offsetHeight + 'px';
+  var wrappers = oj.AnimationUtils._wrapRowContent(element, rowHeight);
+  var wrapperOptions = $.extend({}, options);
+
+  // Set the known max height into the options so that each cell doesn't
+  // have to recalculate it
+  if (isExpand)
+  {
+    if (!wrapperOptions['endMaxHeight'])
+    {
+      wrapperOptions['endMaxHeight'] = rowHeight;
+    }
+  }
+  else
+  {
+    if (!wrapperOptions['startMaxHeight'])
+    {
+      wrapperOptions['startMaxHeight'] = rowHeight;
+    }
+  }
+  
+  // Set persist option so that we don't need to restore the style after 
+  // animation.  The wrapper will be removed anyway.
+  wrapperOptions['persist'] = 'all';
+  
+  // Set internal _noReflow option so that we don't force reflow on Firefox.
+  // New elements will naturally cause reflow.
+  wrapperOptions['_noReflow'] = true;
+  
+  if (wrappers.length)
+  {
+    // Animate all the cells
+    for (var i = 0; i < wrappers.length; i++)
+    {
+      // We only need one promise/row.  Skip promise for all cells except first.
+      if (i == 0)
+      {
+        wrapperOptions['_skipPromise'] = false;
+        promise = oj.AnimationUtils._expandCollapse(wrappers[i], wrapperOptions, isExpand);
+      }
+      else
+      {
+        wrapperOptions['_skipPromise'] = true;
+        oj.AnimationUtils._expandCollapse(wrappers[i], wrapperOptions, isExpand);
+      }
+    }
+  }
+  else
+  {
+    promise = Promise.resolve();
+  }
+
+  return promise.then(function() {
+    if (options == null || options['persist'] != 'all')
+    {
+      oj.AnimationUtils._unwrapRowContent(element);
+    }
+  });
+};
+
+// Determine the min/max width/height used for animation
+oj.AnimationUtils._getSizeLimit = function(element, style, optionValue, isLower, isWidth)
+{
+  var limitValue = optionValue;
+
+  if (!limitValue)
+  {
+    if (isLower)
+    {
+      limitValue = '0';
+    }
+    else
+    {
+      var cssValue = isWidth ? style['maxWidth'] : style['maxHeight'];
+      if (cssValue !== "none")
+      {
+        limitValue = cssValue;
+      }
+      else
+      {
+        limitValue = (isWidth ? element.offsetWidth : element.offsetHeight) + 'px';
+      }
+    }
+  }
+  
+  return limitValue;
+};
+
 oj.AnimationUtils._expandCollapse = function(element, options, isExpand)
 {
+  // Handle the case where the element is a <tr> element.  We need to wrap the
+  // content of every child <td> and animate the wrappers because the min height
+  // of <tr> and <td> are limited by their contents.
+  if (element && element.tagName == 'TR')
+  {
+    return oj.AnimationUtils._expandCollapseRow(element, options, isExpand);
+  }
+  
   options = oj.AnimationUtils._mergeOptions(isExpand ? 'expand' : 'collapse', options);
 
   var fromState = {};
   var toState = {};
 
   var direction = options['direction'] || "height";
-  var ele = $(element);
-  var width = ele.outerWidth();
-  var height = ele.outerHeight();
 
-  var maxWidth = ele.css("maxWidth");
-  var maxHeight = ele.css("maxHeight");
   var fromCSS = fromState['css'] = {};
   var toStateCSS = toState['css'] = {};
 
-  if(maxWidth !== "none")
-  {
-    width = maxWidth;
-  }
-
-  if(maxHeight !== "none")
-  {
-    height = maxHeight;
-  }
-
-  var transProps = [];  
+  var style = window.getComputedStyle(element);
+  var transProps = [];
   if(direction === "both" || direction === "height") 
   {
-    var startMaxHeight = options['startMaxHeight'] || (isExpand ? 0 : height);
-    var endMaxHeight = options['endMaxHeight'] || (isExpand ? height : 0);
+    var startMaxHeight = oj.AnimationUtils._getSizeLimit(element, style, options['startMaxHeight'], isExpand, false);
+    var endMaxHeight = oj.AnimationUtils._getSizeLimit(element, style, options['endMaxHeight'], !isExpand, false);
 
     fromCSS['maxHeight'] = startMaxHeight;
     toStateCSS['maxHeight'] = endMaxHeight;
@@ -762,15 +1174,21 @@ oj.AnimationUtils._expandCollapse = function(element, options, isExpand)
 
   if(direction === "both" || direction === "width") 
   {
-    var startMaxWidth = options['startMaxWidth'] || (isExpand ? 0 : width);
-    var endMaxWidth = options['endMaxWidth'] || (isExpand ? width : 0);
-
+    var startMaxWidth = oj.AnimationUtils._getSizeLimit(element, style, options['startMaxWidth'], isExpand, true);
+    var endMaxWidth = oj.AnimationUtils._getSizeLimit(element, style, options['endMaxWidth'], !isExpand, true);
+    
     fromCSS['maxWidth'] = startMaxWidth;
     toStateCSS['maxWidth'] = endMaxWidth;
     transProps.push('maxWidth');
   }
+  
+  // expand and collapse needs overflow hidden to hide the content
+  fromCSS['overflow'] = options['overflow'] ? options['overflow'] : 'hidden';
+  
+  var persistProps = [].concat(transProps);
+  persistProps.push('overflow');
 
-  return oj.AnimationUtils._animate(ele[0], fromState, toState, options, transProps);
+  return oj.AnimationUtils._animate(element, fromState, toState, options, transProps, persistProps);
 };
 
 /**
@@ -835,18 +1253,19 @@ oj.AnimationUtils._zoom = function(element, options, isIn)
   var toState = {};
 
   var axis = options['axis'] || "both";
-  var ele = $(element);
     
   var scale = axis === "both" ? "scale" : (axis === "x" ? "scaleX" : "scaleY");
   var fromCSS = fromState['css'] = {};
   var toStateCSS = toState['css'] = {};
+  var transformPropName = oj.AnimationUtils._getName(element, 'transform');
+  var transformOriginPropName = oj.AnimationUtils._getName(element, 'transformOrigin');
 
-  fromCSS['transform'] = scale + "(" + (isIn ? 0 : 1) + ") translateZ(0)";
-  toStateCSS['transform'] = scale + "(" + (isIn ? 1 : 0) + ") translateZ(0)";
+  fromCSS[transformPropName] = scale + "(" + (isIn ? 0 : 1) + ") translateZ(0)";
+  toStateCSS[transformPropName] = scale + "(" + (isIn ? 1 : 0) + ") translateZ(0)";
 
-  fromCSS['transformOrigin'] = options['transformOrigin'] || "center";
+  fromCSS[transformOriginPropName] = options['transformOrigin'] || "center";
 
-  return oj.AnimationUtils._animate(ele[0], fromState, toState, options, ['transform']);
+  return oj.AnimationUtils._animate(element, fromState, toState, options, [transformPropName]);
 };
 
 /**
@@ -919,7 +1338,6 @@ oj.AnimationUtils._slide = function(element, options, isIn)
   var toState = {};
 
   var direction = options['direction'] || "start";
-  var ele = $(element);
 
   var offsetX = '0';
   var offsetY = '0';
@@ -936,45 +1354,44 @@ oj.AnimationUtils._slide = function(element, options, isIn)
   }
   else
   {
-    var outerWidth = ele.outerWidth();
-    var outerHeight = ele.outerHeight();
     var isRTL = oj.DomUtils.getReadingDirection() === "rtl";
 
     switch (direction)
     {
       case 'left':
-        offsetX = (isIn ? outerWidth : -outerWidth) + 'px';
+        offsetX = (isIn ? element.offsetWidth : -element.offsetWidth) + 'px';
         break;
       case 'right':
-        offsetX = (isIn ? -outerWidth : outerWidth) + 'px';
+        offsetX = (isIn ? -element.offsetWidth : element.offsetWidth) + 'px';
         break;
       case 'top':
-        offsetY = (isIn ? outerHeight : -outerHeight) + 'px';
+        offsetY = (isIn ? element.offsetHeight : -element.offsetHeight) + 'px';
         break;
       case 'bottom':
-        offsetY = (isIn ? -outerHeight : outerHeight) + 'px';
+        offsetY = (isIn ? -element.offsetHeight : element.offsetHeight) + 'px';
         break;
       case 'end':
-        offsetX = ((isIn ? -outerWidth : outerWidth) * (isRTL ? -1 : 1)) + 'px';
+        offsetX = ((isIn ? -element.offsetWidth : element.offsetWidth) * (isRTL ? -1 : 1)) + 'px';
         break;
       default: // 'start'
-        offsetX = ((isIn ? outerWidth : -outerWidth) * (isRTL ? -1 : 1)) + 'px';
+        offsetX = ((isIn ? element.offsetWidth : -element.offsetWidth) * (isRTL ? -1 : 1)) + 'px';
         break;
     }
   }
   
+  var transformPropName = oj.AnimationUtils._getName(element, 'transform');
   if (isIn)
   {
-    fromCSS["transform"] = "translate(" + offsetX + "," + offsetY + ") translateZ(0)";
-    toStateCSS["transform"] = "translate(0,0) translateZ(0)";
+    fromCSS[transformPropName] = "translate(" + offsetX + "," + offsetY + ") translateZ(0)";
+    toStateCSS[transformPropName] = "translate(0,0) translateZ(0)";
   }
   else
   {
-    fromCSS["transform"] = "translate(0,0) translateZ(0)";
-    toStateCSS["transform"] = "translate(" + offsetX + "," + offsetY + ") translateZ(0)";
+    fromCSS[transformPropName] = "translate(0,0) translateZ(0)";
+    toStateCSS[transformPropName] = "translate(" + offsetX + "," + offsetY + ") translateZ(0)";
   }
 
-  return oj.AnimationUtils._animate(ele[0], fromState, toState, options, ['transform']);
+  return oj.AnimationUtils._animate(element, fromState, toState, options, [transformPropName]);
 };
 
 /**
@@ -1015,10 +1432,8 @@ oj.AnimationUtils.ripple = function(element, options)
   var fromState = {};
   var toState = {};
 
-  var ele = $(element);
- 
-  var width = ele.outerWidth();
-  var height = ele.outerHeight();
+  var width = element.offsetWidth;
+  var height = element.offsetHeight;
 
   // The rippler need its own container since setting overflow on the target
   // element may not work if the element has no explicit height, which can be
@@ -1027,31 +1442,33 @@ oj.AnimationUtils.ripple = function(element, options)
   var rippler = $("<div class='oj-animation-effect-ripple oj-animation-rippler'>");
   
   // prepend the rippler instead of append so that it doesn't obscure other children
-  var position = (ele.css('position') == 'static') ? ele.position() : {'left':0, 'top':0};
-  ele.prepend(container); //@HTMLUpdateOK; container is constructed by component code and is not using string passed in through any APIs.
+  var style = window.getComputedStyle(element);
+  var position = (style['position'] == 'static') ? {'left':element.offsetLeft, 'top':element.offsetTop} : {'left':0, 'top':0};
+  element.insertBefore(container[0], element.firstChild); //@HTMLUpdateOK; container is constructed by component code and is not using string passed in through any APIs.
   container.css({'left': position['left'] + 'px', 
                  'top': position['top'] + 'px',
                  'width': width + 'px',
                  'height': height + 'px'});
   
-  container.prepend(rippler); //@HTMLUpdateOK; container is constructed by component code and is not using string passed in through any APIs.
+  container.prepend(rippler); //@HTMLUpdateOK; rippler is constructed by component code and is not using string passed in through any APIs.
   
   var fromCSS = fromState['css'] = {};
   var toStateCSS = toState['css'] = {};
+  var transformPropName = oj.AnimationUtils._getName(element, 'transform');
 
   oj.AnimationUtils._setRippleOptions(fromCSS, rippler, container, options);
   
-  fromCSS['transform'] = "scale(0) translateZ(0)";
+  fromCSS[transformPropName] = "scale(0) translateZ(0)";
   fromCSS['opacity'] = options["startOpacity"] || rippler.css('opacity');
   
-  toStateCSS['transform'] = "scale(1) translateZ(0)";
+  toStateCSS[transformPropName] = "scale(1) translateZ(0)";
   toStateCSS['opacity'] = options["endOpacity"] || 0;
   
   // Always persist the ripple state so that it remains invisible until removed.
   // Otherwise it may re-appear briefly on mobile Safari.
   options['persist'] = 'all';
 
-  return oj.AnimationUtils._animate(rippler[0], fromState, toState, options, ['transform', 'opacity']).
+  return oj.AnimationUtils._animate(rippler[0], fromState, toState, options, [transformPropName, 'opacity']).
           then(function() 
           {
             container.remove();
@@ -1240,15 +1657,20 @@ oj.AnimationUtils._flip = function(element, options, effect, startAngle, endAngl
   // perspective() must precede rotate() in the transform value in order for it to work
   transform = 'perspective(' + perspective + ') ' + rotateFunc;
 
-  fromCss['transform'] = transform + startAngle + ')';
-  fromCss['backfaceVisibility'] = backfaceVisibility;
-  fromCss['transformOrigin'] = transformOrigin;
+  // Safari still requires webkit prefix for backfaceVisibility property
+  var backfaceVisPropName = oj.AnimationUtils._getName(element, 'backfaceVisibility');
+  var transformPropName = oj.AnimationUtils._getName(element, 'transform');
+  var transformOriginPropName = oj.AnimationUtils._getName(element, 'transformOrigin');
+  
+  fromCss[transformPropName] = transform + startAngle + ')';
+  fromCss[backfaceVisPropName] = backfaceVisibility;
+  fromCss[transformOriginPropName] = transformOrigin;  
 
-  toCss['transform'] = transform + endAngle + ')';
+  toCss[transformPropName] = transform + endAngle + ')';
 
   // backfaceVisibility and transformOrigin affects the final look of the element,
   // so they should be persisted if the persist option is set.
-  return oj.AnimationUtils._animate(element, fromState, toState, options, ['transform'], ['transform', 'backfaceVisibility', 'transformOrigin']);
+  return oj.AnimationUtils._animate(element, fromState, toState, options, [transformPropName], [transformPropName, backfaceVisPropName, transformOriginPropName]);
 };
 
 /**
@@ -1325,6 +1747,34 @@ oj.AnimationUtils.flipIn = function(element, options)
 oj.AnimationUtils.flipOut = function(element, options)
 {
   return oj.AnimationUtils._flip(element, options, 'flipOut', '0deg', '180deg');
+};
+
+/**
+ * Animaton effect method for adding transition to a HTML element.  Caller should
+ * set the new style immediately before calling this method.  This is for internal
+ * use only.
+ *
+ * @param {Element} element  the HTML element to animate
+ * @param {Object} options Options applicable to the specific animation effect.
+ * @param {string=} options.delay  The delay from the time the animation is applied to time the 
+ * animation should begin. This may be specified in either seconds (by specifying s as the unit) or milliseconds 
+ * (by specifying ms as the unit). Default is "0s".
+ * @param {string=} options.duration The duration that an animation should take to complete. This may be 
+ * specified in either seconds (by specifying s as the unit) or milliseconds (by specifying ms as the unit). 
+ * Default is "400ms".
+ * @param {string=} options.timingFunction  One of the valid values for either CSS transition-timing-function or CSS 
+ * animation-timing-function. Default is "ease".
+ * @param {Array} options.transitionProperties  An array of properties to transition.
+ * @return {Promise|IThenable} a promise that will be resolved when the animation ends
+ *
+ * @export
+ * @ignore
+ */
+oj.AnimationUtils.addTransition = function(element, options)
+{
+  options = oj.AnimationUtils._mergeOptions('addTransition', options);
+   
+  return oj.AnimationUtils._animate(element, null, null, options, options['transitionProperties']);
 };
 
 });

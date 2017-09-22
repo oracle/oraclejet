@@ -10,7 +10,6 @@
 @import "widgets/oj.alta.windows.tags.lists";
 @import "widgets/oj.alta.windows.utilities";
 
-
 // shared
 @import "widgets/oj.alta.windows.icons";
 @import "widgets/oj.alta.windows.resizable";
@@ -25,13 +24,15 @@
 @import "widgets/oj.alta.windows.tabs";
 @import "widgets/oj.alta.windows.train";
 @import "widgets/oj.alta.windows.navigationlist";
+@import "widgets/oj.alta.windows.tabbar";
 @import "widgets/oj.alta.windows.offcanvas";
 
 // behavior
 @import "widgets/oj.alta.windows.animation";
-@import "widgets/oj.alta.windows.progressbar";
+@import "widgets/oj.alta.windows.progress";
 @import "widgets/oj.alta.windows.pulltorefresh";
 @import "widgets/oj.alta.windows.swipetoreveal";
+@import "widgets/oj.alta.windows.switcher";
 
 // secondary windows
 @import "widgets/oj.alta.windows.dialog";
@@ -48,6 +49,7 @@
 @import "widgets/oj.alta.windows.pagingcontrol";
 @import "widgets/oj.alta.windows.table";
 @import "widgets/oj.alta.windows.tree";
+@import "widgets/oj.alta.windows.treeview";
 @import "widgets/oj.alta.windows.datagrid";
 @import "widgets/oj.alta.windows.rowexpander";
 @import "widgets/oj.alta.windows.listview";
@@ -87,6 +89,8 @@
 @import "widgets/oj.alta.windows.formcontrol.slider";
 @import "widgets/oj.alta.windows.formcontrol.colorpalette";
 @import "widgets/oj.alta.windows.formcontrol.colorspectrum";
+// mostly used by form controls
+@import "widgets/oj.alta.windows.option";
 
 // responsive
 @import "widgets/oj.alta.windows.flex";
@@ -103,3 +107,7 @@
 // file upload
 @import "widgets/oj.alta.windows.filepicker";
 @import "widgets/oj.alta.windows.progresslist";
+
+//icon
+@import "widgets/oj.alta.windows.avatar";
+@import "widgets/oj.alta.windows.iconcircle";

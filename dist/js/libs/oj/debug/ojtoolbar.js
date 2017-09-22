@@ -22,13 +22,20 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
  * 
  * @classdesc
  * <h3 id="toolbarOverview-section">
- *   JET Toolbar Component
+ *   JET Toolbar
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#toolbarOverview-section"></a>
  * </h3>
  * 
- * <p>Description: Themeable, WAI-ARIA-compliant toolbar component.
+ * <p>Description: Themeable, WAI-ARIA-compliant toolbar element.
  * 
- * <p>The JET Toolbar component can contain [JET Buttons]{@link oj.ojButton}, [JET Buttonsets]{@link oj.ojButtonset}, and non-focusable content 
+ * <pre class="prettyprint"><code>&lt;oj-toolbar id="myToolbar">
+ *     &lt;oj-button id="myButton">
+ *          &lt;span>My Button&lt;/span>
+ *     &lt;/oj-button>
+ * &lt;/oj-toolbar>
+ * </code></pre>
+ * 
+ * <p>The JET Toolbar can contain [JET Buttons]{@link oj.ojButton}, [JET Menu Buttons]{@link oj.ojMenuButton}, [JET Buttonsets]{@link oj.ojButtonset}, and non-focusable content 
  * such as separator icons.  Toolbar provides WAI-ARIA-compliant focus management.
  * 
  * <p>A toolbar that contains radios should contain all radios in the radio group.
@@ -109,84 +116,28 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
  * is changed post-create, the toolbar must be <code class="prettyprint">refresh()</code>ed, or the page must be reloaded. 
  * 
  * 
- * <h3 id="pseudos-section">
- *   Pseudo-selectors
- *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#pseudos-section"></a>
- * </h3>
- * 
- * <p>The <code class="prettyprint">:oj-toolbar</code> pseudo-selector can be used in jQuery expressions to select JET Toolbars.  For example:
- * 
- * <pre class="prettyprint">
- * <code>$( ":oj-toolbar" ) // selects all JET Toolbars on the page
- * $myEventTarget.closest( ":oj-toolbar" ) // selects the closest ancestor that is a JET Toolbar
- * </code></pre>
- * 
- * 
  * <h3 id="binding-section">
  *   Declarative Binding
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#binding-section"></a>
  * </h3>
  * 
- * <p>For components like Toolbar and Menu that contain a number of like items, applications may wish to use a <code class="prettyprint">foreach</code> Knockout binding 
+ * <p>For elements like Toolbar and Menu that contain a number of like items, applications may wish to use a <code class="prettyprint">foreach</code> Knockout binding 
  * to stamp out the contents.  This binding cannot live on the same node as the JET <code class="prettyprint">ojComponent</code> binding, and must instead live on a nested 
  * virtual element as follows:
  * 
  * <pre class="prettyprint">
- * <code>&lt;div id="myToolbar"
- *      data-bind="ojComponent: {component: 'ojToolbar'}">
+ * <code>&lt;oj-toolbar id="myToolbar">
  *     &lt;!-- ko foreach: myButtons -->
- *         &lt;button data-bind="attr: {id: id}, 
- *                            ojComponent: { component: 'ojButton', label: label }">
- *         &lt;/button>
+ *         &lt;oj-button data-bind="attr: {id: id, label: label}">
+ *         &lt;/oj-buton>
  *     &lt;!-- /ko -->
- * &lt;/div>
- * </code></pre>
- * 
- * 
- * <h3 id="jqui2jet-section">
- *   JET for jQuery UI developers
- *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#jqui2jet-section"></a>
- * </h3>
- * 
- * <ol>
- *   <li>All JQUI and JET components inherit <code class="prettyprint">disable()</code> and <code class="prettyprint">enable()</code> methods from the base class.  This API 
- *       duplicates the functionality of the <code class="prettyprint">disabled</code> option.  In JET, to keep the API as lean as possible, we 
- *       have chosen not to document these methods outside of this section.</li>
- * </ol>
- * 
- * <p>Also, event names for all JET components are prefixed with "oj", instead of component-specific prefixes like "toolbar" or "menu".  
- * E.g. if JQUI had a toolbar component, and if it followed the usual pattern, then it would have a <code class="prettyprint">toolbarcreate</code> 
- * event, while JET's is called <code class="prettyprint">ojcreate</code>, as shown in the doc for that event.
- * Reason:  This makes the API more powerful.  It allows apps to listen to "foo" events from <em>all</em> JET components via:
- * 
- * <pre class="prettyprint">
- * <code>$( ".selector" ).on( "ojfoo", myFunc);
- * </code></pre>
- * 
- * or to "foo" events only from JET Toolbars (the JQUI functionality) via:
- * 
- * <pre class="prettyprint">
- * <code>$( ".selector" ).on( "ojfoo", ":oj-toolbar", myFunc);
+ * &lt;/oj-toolbar>
  * </code></pre>
  * 
  * 
  * <!-- - - - - Above this point, the tags are for the class.
  *              Below this point, the tags are for the constructor (initializer). - - - - - - -->
  * 
- * 
- * @desc Creates a JET Toolbar.
- * 
- * @param {Object=} options a map of option-value pairs to set on the component
- * 
- * @example <caption>Initialize the toolbar with no options specified:</caption>
- * $( ".selector" ).ojToolbar();
- * 
- * @example <caption>Initialize the toolbar with a callback specified:</caption>
- * $( ".selector" ).ojToolbar( { "create": function( event, ui ) {} } );
- * 
- * @example <caption>Initialize the toolbar via the JET <code class="prettyprint">ojComponent</code> binding:</caption>
- * &lt;div id="beverages" data-bind="ojComponent: { component: 'ojToolbar', 
- *                                               create: setupToolbar }">
  */
 oj.__registerWidget("oj.ojToolbar", $['oj']['baseComponent'], {
     widgetEventPrefix : "oj", 
@@ -216,16 +167,16 @@ oj.__registerWidget("oj.ojToolbar", $['oj']['baseComponent'], {
          * @default Varies by theme. <code class="prettyprint">"half"</code> if <code class="prettyprint">$toolbarChromingOptionDefault</code> 
          *          not specified in theme.
          *
-         * @example <caption>Initialize the toolbar with the <code class="prettyprint">chroming</code> option specified:</caption>
-         * $( ".selector" ).ojToolbar( { "chroming": "half" } );
+         ** @example <caption>Initialize the Toolbar with the <code class="prettyprint">chroming</code> attribute specified:</caption>
+         * &lt;oj-toolbar chroming='half'>&lt;/oj-toolbar>
          *
-         * @example <caption>Get or set the <code class="prettyprint">chroming</code> option, after initialization:</caption>
+         * @example <caption>Get or set the <code class="prettyprint">chroming</code> property after initialization:</caption>
          * // getter
-         * var display = $( ".selector" ).ojToolbar( "option", "chroming" );
+         * var chromingValue = myToolbar.chroming;
          *
          * // setter
-         * $( ".selector" ).ojToolbar( "option", "chroming", "full" );
-         * 
+         * myToolbar.chroming = 'half';
+         *
          * @example <caption>Set the default in the theme (SCSS) :</caption>
          * $toolbarChromingOptionDefault: half !default;
          */
@@ -236,15 +187,11 @@ oj.__registerWidget("oj.ojToolbar", $['oj']['baseComponent'], {
          * <code class="prettyprint">disabled</code> option.  The following 
          * one-liner can be used to disable or enable all buttons in a toolbar:
          * 
-         * <pre class="prettyprint">
-         * <code>$("#myToolbar").find(":oj-button").ojButton("option", "disabled", myBoolean);
-         * </code></pre>
-         * 
-         * 
          * @member
          * @name disabled
          * @memberof oj.ojToolbar
          * @instance
+         * @ignore
          */
         // disabled option declared in superclass, but we still want the above API doc
         
@@ -257,19 +204,9 @@ oj.__registerWidget("oj.ojToolbar", $['oj']['baseComponent'], {
          * @name create
          * @memberof oj.ojToolbar
          * @instance
+         * @ignore
          * @property {Event} event <code class="prettyprint">jQuery</code> event object
          * @property {Object} ui Empty object included for consistency with other events
-         * 
-         * @example <caption>Initialize the toolbar with the <code class="prettyprint">create</code> callback specified:</caption>
-         * $( ".selector" ).ojToolbar({
-         *     "create": function( event, ui ) {}
-         * });
-         * 
-         * @example <caption>Bind an event listener to the <code class="prettyprint">ojcreate</code> event:</caption>
-         * $( ".selector" ).on( "ojcreate", function( event, ui ) {
-         *     // verify that the component firing the event is a component of interest
-         *     if ($(event.target).is(".mySelector")) {}
-         * });
          */
         // create event declared in superclass, but we still want the above API doc
     },
@@ -289,7 +226,7 @@ oj.__registerWidget("oj.ojToolbar", $['oj']['baseComponent'], {
             .addClass( "oj-toolbar oj-component" )
             .attr( "role", "toolbar" );
 
-        this._setup(true);
+        this._setup();
     },
 
     // Override to set custom launcher
@@ -320,8 +257,7 @@ oj.__registerWidget("oj.ojToolbar", $['oj']['baseComponent'], {
             // Reason: to make them re-fetch their chroming option, in case it's still set to the default dynamic getter, 
             // which takes its value from the containing buttonset or toolbar if present.
             // TBD: Consider only calling refresh() on children that haven't had their chroming option set, i.e. those still using the dynamic getter.
-            this.$buttonsets.ojButtonset( "refresh" );
-            this.$topLevelButtons.ojButton( "refresh" );
+            this._refreshChildren();
         }
     },
 
@@ -349,16 +285,18 @@ oj.__registerWidget("oj.ojToolbar", $['oj']['baseComponent'], {
      * @instance
      * 
      * @example <caption>Invoke the <code class="prettyprint">refresh</code> method:</caption>
-     * $( ".selector" ).ojToolbar( "refresh" );
+     * myToolbar.refresh();
      */
     refresh: function() {
         this._super();
-        this._setup(false);
+        this._setup();
     },
     
-    _setup: function(isCreate) { // Private, not an override (not in base class).  Method name unquoted so will be safely optimized (renamed) by GCC as desired.
+    _setup: function() { // Private, not an override (not in base class).  Method name unquoted so will be safely optimized (renamed) by GCC as desired.
         var self = this;
         this.isRtl = this._GetReadingDirection() === "rtl";
+        
+        this.$enabledButtons = undefined;
         
         // When toolbar is binding listeners to buttons, use the Toolbar's eventNamespace, not the Button's 
         // eventNamespace, to facilitate later unbinding only the Toolbar listeners.
@@ -370,41 +308,132 @@ oj.__registerWidget("oj.ojToolbar", $['oj']['baseComponent'], {
         // - Likewise, focus mgmt can't just break if app listener stops propagation.
         // - Both of these problems still happen when using the delegation / selector overload of .on(); there is no special JQ bubbling magic.
 
-        this.$buttons = this.element.find( ":oj-button" )
-            .unbind( "keydown" + this.eventNamespace )
-            .bind( "keydown" + this.eventNamespace, function(event) { 
-                self._handleKeyDown(event, $(this)); 
-            })
+        if (this._IsCustomElement())
+        {
+            // defer setting up button-specific event handling until the first focusin event is triggered
+            this._focusinListener = function(event) {
+                self._handleInitialFocus();
+            }
+            this.element[0].addEventListener("focusin", this._focusinListener, true);
             
+            // find any current supported children to refresh in case they were already initialized and need to update their 'chroming' values
+            this.$topLevelChildren = this.element.find( "oj-button" ).add(this.element.find( "oj-menu-button" ))
+                    .add(this.element.find( "oj-buttonset-one" )).add(this.element.find( "oj-buttonset-many" ));
+            
+            // refresh the top-level buttons, and refresh the buttonsets to make them refresh their buttons, so that all toolbar buttons are refreshed.
+            // Reason: to make them re-fetch their chroming option, in case it's still set to the default dynamic getter, 
+            // which takes its value from the containing buttonset or toolbar if present.
+            // TBD: Consider only calling refresh() on children that haven't had their chroming option set, i.e. those still using the dynamic getter.
+            this._refreshChildren();
+        }
+        else
+        {
+            this.$buttons = this.element.find( ":oj-button" )
+                .unbind( "keydown" + this.eventNamespace )
+                .bind( "keydown" + this.eventNamespace, function(event) { 
+                    self._handleKeyDown(event, $(this)); 
+                })
+                
+                .unbind( "click" + this.eventNamespace )
+                .bind( "click" + this.eventNamespace, function(event) {
+                    if ( !$(this).ojButton("option", "disabled") ) { 
+                        // Normally the button will be tabbable after the click, since (a) if we reach here, the clicked button is enabled, and 
+                        // (b) an unchecked radio before the click will normally be checked after the click.  But just in case it's unchecked 
+                        // (e.g. due to app listener), we let callee run it thru _mapToTabbable() before using, as usual.
+                        self._setTabStop( $(this) );
+                    }
+                })
+                .unbind( "focus" + this.eventNamespace )
+                .bind( "focus" + this.eventNamespace, function(event) { 
+                    self._handleFocus( $(this) );
+                });
+            
+            // refresh the top-level buttons, and refresh the buttonsets to make them refresh their buttons, so that all toolbar buttons are refreshed.
+            // Reason: to make them re-fetch their chroming option, in case it's still set to the default dynamic getter, 
+            // which takes its value from the containing buttonset or toolbar if present.
+            // TBD: Consider only calling refresh() on children that haven't had their chroming option set, i.e. those still using the dynamic getter.
+            this.$buttonsets = this.element.find( ":oj-buttonset" )
+                .ojButtonset( "refresh" );
+            this.$topLevelButtons = this.$buttons.not( this.$buttonsets.find( ":oj-button" ) )
+                .ojButton( "refresh" );
+        }
+    },
+    
+    _handleFocus: function( $button ) { 
+        if (!this._IsCustomElement() && this.$enabledButtons == null) {
+            // the subset of Toolbar buttons that are enabled.  Disabled buttons are not tabbable.
+            this.$enabledButtons = this.$buttons.filter(function(index) {
+                return !$( this ).ojButton( "option", "disabled" );
+            });
+            
+            this._initTabindexes(this._lastTabStop == null);
+            this.$enabledButtons[0].focus();
+        }
+        else
+            this._setTabStop($button);
+    },
+    
+    // For custom element only, we setup this handler for any focusin event on the toolbar. We then remove this handler, and setup the rest of the handlers we need
+    // once all of our children have finished being initialized.
+    _handleInitialFocus: function() { // Private, not an override (not in base class).  Method name unquoted so will be safely optimized (renamed) by GCC as desired.
+        var self = this;
+        // remove this event handling as we only want to run this setup logic on the first focusin event
+        this.element[0].removeEventListener("focusin", this._focusinListener, true);
+
+        var $topLevelButtons = this.element.find( "oj-button" ).add(this.element.find( "oj-menu-button" ));
+        var $buttonsets = this.element.find( "oj-buttonset-one" ).add(this.element.find( "oj-buttonset-many" ));
+        this.$topLevelChildren = $topLevelButtons.add($buttonsets);
+        this.$buttons = $topLevelButtons.add($buttonsets.find( ".oj-button" ))
+            .unbind( "keydown" + this.eventNamespace )
+            .bind( "keydown" + this.eventNamespace, function(event) {
+                var $button = $(this);
+                self._handleKeyDown(event, $button); 
+            })
+
             .unbind( "click" + this.eventNamespace )
             .bind( "click" + this.eventNamespace, function(event) {
-                if ( !$(this).ojButton("option", "disabled") ) { 
+                var $button = $(this);
+                if (!$button.hasClass( "oj-disabled" ))
+                {
                     // Normally the button will be tabbable after the click, since (a) if we reach here, the clicked button is enabled, and 
                     // (b) an unchecked radio before the click will normally be checked after the click.  But just in case it's unchecked 
                     // (e.g. due to app listener), we let callee run it thru _mapToTabbable() before using, as usual.
-                    self._setTabStop( $(this) );
+                    self._setTabStop($button);
                 }
             })
-            .unbind( "focus" + this.eventNamespace )
-            .bind( "focus" + this.eventNamespace, function(event) { 
-                self._setTabStop( $(this) );
+            .unbind( "focusin" + this.eventNamespace )
+            .bind( "focusin" + this.eventNamespace, function(event) { 
+                var $button = $(this);
+                self._handleFocus($button);
             });
-        
-        // refresh the top-level buttons, and refresh the buttonsets to make them refresh their buttons, so that all toolbar buttons are refreshed.
-        // Reason: to make them re-fetch their chroming option, in case it's still set to the default dynamic getter, 
-        // which takes its value from the containing buttonset or toolbar if present.
-        // TBD: Consider only calling refresh() on children that haven't had their chroming option set, i.e. those still using the dynamic getter.
-        this.$buttonsets = this.element.find( ":oj-buttonset" )
-            .ojButtonset( "refresh" );
-        this.$topLevelButtons = this.$buttons.not( this.$buttonsets.find( ":oj-button" ) )
-            .ojButton( "refresh" );
-
-        // the subset of Toolbar buttons that are enabled.  Disabled buttons are not tabbable.
-        this.$enabledButtons = this.$buttons.filter(function(index) {
-            return !$( this ).ojButton( "option", "disabled" );
-        });
-        
-        this._initTabindexes(isCreate);
+            
+            // the subset of Toolbar buttons that are enabled.  Disabled buttons are not tabbable.
+            this.$enabledButtons = this.$buttons.filter(function(index) {
+                return !($(this).hasClass( "oj-disabled" ));
+            });
+            
+            this._initTabindexes(this._lastTabStop == null);
+            this._getButtonFocusElem(this.$enabledButtons[0]).focus();
+    },
+    
+    // Returns the focusable inner element of the button.
+    _getButtonFocusElem: function(button) { // Private, not an override (not in base class).  Method name unquoted so will be safely optimized (renamed) by GCC as desired.
+        if (this._IsCustomElement())
+        {
+            var $button = $(button);
+            if ($button.hasClass( "oj-button-toggle" ))
+            {
+                // the underlying input element is one of the button's children
+                return $button.children( "input" )[0];
+            }
+            else
+            {
+                // the underlying button element is the first child of an oj-button / oj-menu-button
+                return $button.children( "button" )[0];
+            }
+        }
+        else
+            return button;
     },
     
     // For create, make only the first enabled button tabbable.  (We decided to have Shift-Tab go to first, not last, button.)
@@ -416,7 +445,15 @@ oj.__registerWidget("oj.ojToolbar", $['oj']['baseComponent'], {
         // even for refreshes where we'll wind up keeping the same tabstop, must make everything untabbable first, to ensure any new buttons become untabbable.
         var $last = $(this._lastTabStop);
         this._lastTabStop = undefined;
-        this.$buttons.attr( "tabindex", "-1" );
+        
+        if (this._IsCustomElement()) {
+            for (var i = 0; i < this.$buttons.length; i++) {
+                this._getButtonFocusElem(this.$buttons[i]).setAttribute( "tabindex", "-1" );
+            }
+        }
+        else
+            this.$buttons.attr( "tabindex", "-1" );
+        
         var $newTabStop; // callee might map this to radio groupmate
         
         // TBD: for refreshes when $last is a disabled radio with a checked enabled groupmate and they are in the toolbar, the groupmate would be 
@@ -478,7 +515,7 @@ oj.__registerWidget("oj.ojToolbar", $['oj']['baseComponent'], {
             } else {
                 // elem is unchecked radio in real (not "") group, which is tabbable iff no groupmate is checked.  Per above doc, we know that 
                 // all of its potentially checked groupmates are in $enabledButtons.
-                var $checkedRadio = _radioGroup(elem, $enabledButtons).filter(":checked");
+                 var $checkedRadio = _radioGroup(elem, $enabledButtons).filter(":checked");
                 return ($checkedRadio.length ? $checkedRadio[0] : elem);
             }
         });
@@ -495,7 +532,11 @@ oj.__registerWidget("oj.ojToolbar", $['oj']['baseComponent'], {
 //        console.log("in _setTabStop: " + window.setTabStopCounter++ + ".  Orig (premap) button checked: " + $button[0].checked); // + " and is:");
 //        console.log($button[0]);
         
-        $button = this._mapToTabbable( $button );
+        if (this._IsCustomElement())
+            $button = this._mapToTabbable($(this._getButtonFocusElem($button[0])));
+        else
+            $button = this._mapToTabbable( $button );
+        
         var button = $button[0]; // button is undefined iff $button is empty iff we need to clear all tabstops b/c there are no enabled buttons to make tabbable
         var last = this._lastTabStop; // last is undefined iff $(last) is empty iff there are no existing tabstops to clear (b/c _initTabindexes just ran 
                                       // or previously there were no enabled buttons to make tabbable)
@@ -545,7 +586,7 @@ oj.__registerWidget("oj.ojToolbar", $['oj']['baseComponent'], {
                 // compliant radios support up/down arrows, and since JAWS automatically instructs the user to use up/down arrows even 
                 // when the radio group is inside a role=toolbar, we now support up/down arrows for radios via the fall-thru above
                 // (but still focus only, not select).
-                $enabledButtons.eq(newIndex).focus();
+                this._getButtonFocusElem($enabledButtons.eq(newIndex)[0]).focus();
                 break;
             
             // Don't need Space/Enter handlers.  For all buttons except already-checked radios in some browsers, Space/Enter fire a click event 
@@ -570,8 +611,34 @@ oj.__registerWidget("oj.ojToolbar", $['oj']['baseComponent'], {
         // which takes its value from the containing toolbar, which is no longer present.
         // Call refresh *after* removing _OJ_CONTAINER_ATTR, so the buttons/sets no longer detect that they're in a toolbar.
         // TBD: Consider only calling refresh() on children that haven't had their chroming option set, i.e. those still using the dynamic getter.
-        this.$buttonsets.ojButtonset( "refresh" );
-        this.$topLevelButtons.ojButton( "refresh" );
+        this._refreshChildren();
+    },
+    
+    // Refreshes the toolbar's child components.
+    _refreshChildren: function() { // Private, not an override (not in base class).  Method name unquoted so will be safely optimized (renamed) by GCC as desired.
+        if (!this._IsCustomElement()) {
+            this.$buttonsets.ojButtonset( "refresh" );
+            this.$topLevelButtons.ojButton( "refresh" );
+        }
+        else {
+            // This relies on the button and buttonset components being implemented with JQUI - this will need to be revisited once that is no longer the case
+            for (var i = 0; i < this.$topLevelChildren.length; i++)
+            {
+                var child = this.$topLevelChildren[i];
+                if (child.tagName == "OJ-BUTTON" || child.tagName == "OJ-MENU-BUTTON")
+                {
+                    // must check to make sure the child button element has been initialized
+                    if (oj.Components.__GetWidgetConstructor(this._getButtonFocusElem(child), "ojButton"))
+                        child.refresh();
+                }
+                else if (child.tagName == "OJ-BUTTONSET-ONE" || child.tagName == "OJ-BUTTONSET-MANY")
+                {
+                    // must check to make sure the child buttonset element has been initialized
+                    if (oj.Components.__GetWidgetConstructor(child, "ojButtonset"))
+                        child.refresh();
+                }
+            }
+        }
     }
     
     // API doc for inherited methods with no JS in this file:
@@ -583,10 +650,8 @@ oj.__registerWidget("oj.ojToolbar", $['oj']['baseComponent'], {
      * @name oj.ojToolbar#widget
      * @memberof oj.ojToolbar
      * @instance
+     * @ignore
      * @return {jQuery} the root element of the component
-     * 
-     * @example <caption>Invoke the <code class="prettyprint">widget</code> method:</caption>
-     * var widget = $( ".selector" ).ojToolbar( "widget" );
      */
 
     /**
@@ -597,9 +662,7 @@ oj.__registerWidget("oj.ojToolbar", $['oj']['baseComponent'], {
      * @name oj.ojToolbar#destroy
      * @memberof oj.ojToolbar
      * @instance
-     * 
-     * @example <caption>Invoke the <code class="prettyprint">destroy</code> method:</caption>
-     * $( ".selector" ).ojToolbar( "destroy" );
+     * @ignore
      */
     
     // Fragments:
@@ -660,12 +723,12 @@ oj.__registerWidget("oj.ojToolbar", $['oj']['baseComponent'], {
      *       </td>
      *       <td>
      * <pre class="prettyprint">
-     * <code>&lt;div id="myToolbar" aria-label="Foo" aria-controls="bar">
-     *   &lt;button ...>&lt;/button>
+     * <code>&lt;oj-toolbar id="myToolbar" aria-label="Foo" aria-controls="bar">
+     *   &lt;oj-button ...>&lt;/oj-button>
      *   &lt;span role="separator" aria-orientation="vertical"
      *         class="oj-toolbar-separator">&lt;/span>
-     *   &lt;button ...>&lt;/button>
-     * &lt;/div>
+     *   &lt;oj-button ...>&lt;/oj-button>
+     * &lt;/oj-toolbar>
      * </code></pre>
      *       </td>
      *     </tr>
@@ -677,10 +740,10 @@ oj.__registerWidget("oj.ojToolbar", $['oj']['baseComponent'], {
      * <pre class="prettyprint">
      * <code>&lt;!-- These classes can be mixed and matched, and can also be applied to the 
      *      oj-toolbars element seen in the next example. -->
-     * &lt;div id="myToolbar" aria-label="Foo" aria-controls="bar"
+     * &lt;oj-toolbar id="myToolbar" aria-label="Foo" aria-controls="bar"
      *      class="oj-toolbar-top-border oj-toolbar-bottom-border oj-toolbar-no-chrome">
      *   &lt;!-- toolbar contents -->
-     * &lt;/div>
+     * &lt;/oj-toolbar>
      * </code></pre>
      *       </td>
      *     </tr>
@@ -701,11 +764,11 @@ oj.__registerWidget("oj.ojToolbar", $['oj']['baseComponent'], {
      * <pre class="prettyprint">
      * <code>&lt;div class="oj-toolbars">
      *   &lt;div class="oj-toolbar-row">
-     *     &lt;div id="toolbar1" ...>...&lt;/div>
-     *     &lt;div id="toolbar2" ...>...&lt;/div>
+     *     &lt;oj-toolbar id="toolbar1" ...>...&lt;/oj-toolbar>
+     *     &lt;oj-toolbar id="toolbar2" ...>...&lt;/oj-toolbar>
      *   &lt;/div>
      *   &lt;div class="oj-toolbar-row">
-     *     &lt;div id="toolbar3" ...>...&lt;/div>
+     *     &lt;oj-toolbar id="toolbar3" ...>...&lt;/oj-toolbar>
      *   &lt;/div>
      * &lt;/div>
      * </code></pre>
@@ -779,14 +842,9 @@ oj.Components.setDefaultOptions({
 var ojToolbarMeta = {
   "properties": {
     "chroming": {
-      "type": "string"
-    },
-    "disabled": {}
-  },
-  "methods": {
-    "destroy": {},
-    "refresh": {},
-    "widget": {}
+      "type": "string",
+      "enumValues": ["half", "full", "outlined"]
+    }
   },
   "extension": {
     _WIDGET_NAME: "ojToolbar"

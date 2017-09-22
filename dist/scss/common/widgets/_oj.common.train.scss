@@ -166,7 +166,7 @@
       border-color: $trainBorderColorActive;
     }
     
-    // To prevenet bleeding of button color onto icon due to anti-aliasing 
+    // To prevent bleeding of button color onto icon due to anti-aliasing 
     @if $trainButtonDiameter ==  $trainIconDiameter{
       .oj-train-step-list-item.oj-confirmation .oj-train-button,
       .oj-train-step-list-item.oj-info .oj-train-button,
@@ -286,7 +286,6 @@
       justify-content: center;
       width: $trainIconDiameter;
       height: $trainIconDiameter;
-      font-size: 14px;
       @include oj-border-radius(50%);
       color: $trainButtonTextColor;
       box-sizing: border-box;

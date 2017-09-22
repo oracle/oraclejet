@@ -26,9 +26,16 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojdatasource-common', 'ojs/ojmodel'], funct
  * @export
  * @class oj.CollectionTableDataSource
  * @extends oj.TableDataSource
- * @classdesc Object representing data used by table component
+ * @classdesc Object representing data available from an {@link oj.Collection} object, such as an external data source.  This data source can be used by [ListView]{@link oj.ojListView}, [NavigationList]{@link oj.ojNavigationList}, 
+ *            [TabBar]{@link oj.ojTabBar}, and [Table]{@link oj.ojTable}.<br><br>
+ *            See the <a href="../jetCookbook.html?component=table&demo=ojCollectionTable">Table - Using oj.Collection</a> demo for an example.<br><br>
+ *            Refer to {@link oj.TableDataSource} for other data sources that represent tabular data.
  * @param {oj.Collection} data data supported by the components
- * @param {Object|null} options Array of options for the TableDataSource
+ * @param {Object|null} options Options for the TableDataSource
+ * @param {string} options.startFetch Control whether to start initial fetch when the TableDataSource is bound to a component.  Valid values are:<br><br>
+ *                                    <b>"enabled"</b> (default) - Start initial fetch automatically when the TableDataSource is bound to a component.<br>
+ *                                    <b>"disabled"</b> - Do not start initial fetch automatically.  Application will call the <a href="#fetch">fetch()</a> method to
+ *                                                        start the first fetch.
  * @constructor
  */
 oj.CollectionTableDataSource = function(data, options)
@@ -69,10 +76,10 @@ oj.CollectionTableDataSource.prototype.comparator = null;
 
 /**
  * Initializes the instance.
- * @export
- * @expose
- * @memberof! oj.CollectionTableDataSource
+ * @memberof oj.CollectionTableDataSource
  * @instance
+ * @override
+ * @protected
  */
 oj.CollectionTableDataSource.prototype.Init = function()
 {
@@ -84,7 +91,6 @@ oj.CollectionTableDataSource.prototype.Init = function()
  * 
  * @param {number} index Index for which to return the row data. 
  * @param {Object=} options Options to control the at.
- * @param {number} options.fetchSize fetch size to use if the call needs to fetch more records from the server, if virtualized.  Overrides the overall fetchSize setting <p>
  * @return {Promise} Promise resolves to a compound object which has the structure below. If the index is out of range, Promise resolves to null.<p>
  * <table>
  * <tbody>
@@ -95,7 +101,7 @@ oj.CollectionTableDataSource.prototype.Init = function()
  * </table>
  * @export
  * @expose
- * @memberof! oj.CollectionTableDataSource
+ * @memberof oj.CollectionTableDataSource
  * @instance
  */
 oj.CollectionTableDataSource.prototype.at = function(index, options)
@@ -147,7 +153,7 @@ oj.CollectionTableDataSource.prototype.at = function(index, options)
  * </table>  
  * @export
  * @expose
- * @memberof! oj.CollectionTableDataSource
+ * @memberof oj.CollectionTableDataSource
  * @instance
  */
 oj.CollectionTableDataSource.prototype.fetch = function(options)
@@ -177,7 +183,7 @@ oj.CollectionTableDataSource.prototype.fetch = function(options)
  * </table>
  * @export
  * @expose
- * @memberof! oj.CollectionTableDataSource
+ * @memberof oj.CollectionTableDataSource
  * @instance
  */
 oj.CollectionTableDataSource.prototype.get = function(id, options)
@@ -187,14 +193,15 @@ oj.CollectionTableDataSource.prototype.get = function(id, options)
   var model = this._collection.get(id, options);
   
   var self = this;
-  var row;
+  var row, wrappedRow;
   return new Promise(function(resolve, reject) 
   {
     if (model != null)
     {
       model.then(function(resolvedModel)
       {
-        row = {'data': resolvedModel['attributes'], 'index': resolvedModel['index'], 'key': resolvedModel['id']};
+        wrappedRow = self._wrapWritableValue(resolvedModel, resolvedModel['attributes']);
+        row = {'data': wrappedRow, 'index': resolvedModel['index'], 'key': resolvedModel['id']};
         resolve(row);
       },
       function(e)
@@ -218,7 +225,7 @@ oj.CollectionTableDataSource.prototype.get = function(id, options)
  * @return {Promise} promise object triggering done when complete.
  * @export
  * @expose
- * @memberof! oj.CollectionTableDataSource
+ * @memberof oj.CollectionTableDataSource
  * @instance
  */
 oj.CollectionTableDataSource.prototype.sort = function(criteria)
@@ -265,7 +272,7 @@ oj.CollectionTableDataSource.prototype.sort = function(criteria)
  * @returns {number} total size of data
  * @export
  * @expose
- * @memberof! oj.CollectionTableDataSource
+ * @memberof oj.CollectionTableDataSource
  * @instance
  */
 oj.CollectionTableDataSource.prototype.totalSize = function()
@@ -300,7 +307,7 @@ oj.CollectionTableDataSource.prototype.totalSize = function()
  *                  "unknown" if the totalSize is unknown
  * @export
  * @expose
- * @memberof! oj.CollectionTableDataSource
+ * @memberof oj.CollectionTableDataSource
  * @instance 
  */
 oj.CollectionTableDataSource.prototype.totalSizeConfidence = function()
@@ -346,22 +353,30 @@ oj.CollectionTableDataSource.prototype._addCollectionEventListeners = function()
         {
           self._startIndex = startIndex;
           self._pageSize = pageSize;
+          var endIndex = 0;
+          
+          if (self._collection.totalResults > 0 || 
+            self._collection.hasMore)
+          {
+            endIndex = startIndex + pageSize;
+          }
           
           // paged fetch
           self._isFetchingForAt = true;
-          event.IterativeAt(startIndex, startIndex + pageSize).then(function(modelArray)
+          event.IterativeAt(startIndex, endIndex).then(function(modelArray)
           {
             self._isFetchingForAt = false;
             var rowArray = [];
             var keyArray = [];
-            var i, modelClone;
+            var i, model, wrappedRow;
             for (i = 0; i < modelArray.length; i++)
             {
               if (modelArray[i] != null)
               {
-                modelClone = modelArray[i].clone();
-                rowArray.push(modelClone['attributes']);
-                keyArray.push(modelClone['id']);
+                model = modelArray[i];
+                wrappedRow = self._wrapWritableValue(model, model['attributes']);
+                rowArray.push(wrappedRow);
+                keyArray.push(model['id']);
               }
             }
             var result = {'data': rowArray, 'keys': keyArray, 'startIndex': startIndex};
@@ -380,13 +395,14 @@ oj.CollectionTableDataSource.prototype._addCollectionEventListeners = function()
     var rowArray = [];
     var keyArray = [];
     var indexArray = [];
-    var i, modelClone;
+    var i, model, wrappedRow;
     for (i = 0; i < modelArray.length; i++)
     {
-      modelClone = modelArray[i].clone();
-      rowArray.push(modelClone['attributes']);
-      keyArray.push(modelClone['id']);
-      indexArray.push(modelClone['index']);
+      model = modelArray[i];
+      wrappedRow = self._wrapWritableValue(model, model['attributes']);
+      rowArray.push(wrappedRow);
+      keyArray.push(model['id']);
+      indexArray.push(model['index']);
     }
     oj.TableDataSource.superclass.handleEvent.call(self, oj.TableDataSource.EventType['ADD'], {'data': rowArray, 'keys': keyArray, 'indexes': indexArray});
   });
@@ -394,13 +410,14 @@ oj.CollectionTableDataSource.prototype._addCollectionEventListeners = function()
     var rowArray = [];
     var keyArray = [];
     var indexArray = [];
-    var i, modelClone;
+    var i, model;
     for (i = 0; i < modelArray.length; i++)
     {
-      modelClone = modelArray[i].clone();
-      rowArray.push(modelClone['attributes']);
-      keyArray.push(modelClone['id']);
-      indexArray.push(modelClone['index']);
+      model = modelArray[i];
+      // no need to wrapWritableValue as we are just deleting
+      rowArray.push(model['attributes']);
+      keyArray.push(model['id']);
+      indexArray.push(model['index']);
     }
     oj.TableDataSource.superclass.handleEvent.call(self, oj.TableDataSource.EventType['REMOVE'], {'data': rowArray, 'keys': keyArray, 'indexes': indexArray});
   });
@@ -471,12 +488,13 @@ oj.CollectionTableDataSource.prototype._fetchInternal = function(options)
         {
           var rowArray = [];
           var keyArray = [];
-          var i,  modelClone;
+          var i,  model, wrappedRow;
           for (i = 0; i < actual['models'].length; i++)
           {
-            modelClone = actual['models'][i].clone();
-            rowArray[i] = modelClone['attributes'];
-            keyArray[i] = modelClone['id'];
+            model = actual['models'][i];
+            wrappedRow = self._wrapWritableValue(model, model['attributes']);
+            rowArray[i] = wrappedRow;
+            keyArray[i] = model['id'];
           }
           result = {'data': rowArray, 'keys': keyArray, 'startIndex': self._startIndex};
           
@@ -552,14 +570,13 @@ oj.CollectionTableDataSource.prototype._getRowArray = function()
   var endIndex = this._collection.size() - 1;
   var rowArray = [];
   var keyArray = [];
-  var i, wrappedRow, model, modelClone;
+  var i, wrappedRow, model;
   for (i = 0; i <= endIndex; i++)
   {
     model = this._collection.at(i);
-    modelClone = model.clone();
-    wrappedRow = this._wrapWritableValue(modelClone, modelClone['attributes']);
+    wrappedRow = this._wrapWritableValue(model, model['attributes']);
     rowArray[i] = wrappedRow;
-    keyArray[i] = modelClone['id'];
+    keyArray[i] = model['id'];
   }
   return {'data': rowArray, 'keys': keyArray, 'startIndex': this._startIndex};
 };
@@ -571,7 +588,7 @@ oj.CollectionTableDataSource.prototype._getRowArray = function()
  *         Returns null if the feature is not recognized.
  * @export
  * @expose
- * @memberof! oj.CollectionTableDataSource
+ * @memberof oj.CollectionTableDataSource
  * @instance
  */
 oj.CollectionTableDataSource.prototype.getCapability = function(feature)

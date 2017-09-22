@@ -16,13 +16,18 @@ oj.DefaultNavListHandler = function (widget, root, component) {
   this.m_widget = widget;
   this.m_root = root;
   this.m_component = component;
+  if(this.m_widget.GetOption(this.m_widget.OPTION_EDGE) === this.m_widget.OPTION_EDGE_END){
+    this.m_root.addClass(this.m_widget.getNavListEndEdgeStyleClass());
+  }
 };
 /**
  * Restore Listview element
  * @private
  */
 oj.DefaultNavListHandler.prototype.Destroy = function () {
-  this.m_root.removeClass('oj-navigationlist-expanded oj-navigationlist-vertical');
+  this.m_root.removeClass(this.m_widget.getNavListExpandedStyleClass())
+              .removeClass(this.m_widget.getNavListVerticalStyleClass())
+              .removeClass(this.m_widget.getNavListEndEdgeStyleClass());
 };
 /**
  * Expand group Item
@@ -143,7 +148,8 @@ oj.DefaultNavListHandler.prototype.SetState = function (item, state) {
 };
 
 oj.DefaultNavListHandler.prototype.Init = function (opts) {
-  this.m_root.addClass('oj-navigationlist-expanded oj-navigationlist-vertical');
+  this.m_root.addClass(this.m_widget.getNavListExpandedStyleClass())
+              .addClass(this.m_widget.getNavListVerticalStyleClass());
 };
 
 /**
@@ -165,14 +171,6 @@ oj.DefaultNavListHandler.prototype.IsSelectable = function (item) {
  */
 oj.DefaultNavListHandler.prototype.RestoreItem = function (item, itemContent, sublist) {
 
-};
-
-/**
- * In case of sliding navigation List, Collapses the current visible list if it is not the top level list
- * @private
- */
-oj.DefaultNavListHandler.prototype.CollapseCurrentList = function (event) {
-  //DO Nothing
 };
 
 /**
@@ -272,6 +270,9 @@ oj.DefaultNavListHandler.prototype.OptionUpdated = function(key, value, flags) {
 
 oj.HorizontalNavListHandler = function (widget, root, component) {
   oj.HorizontalNavListHandler.superclass.constructor.call(this, widget, root, component);
+  if(this.m_widget.GetOption(this.m_widget.OPTION_EDGE) === this.m_widget.OPTION_EDGE_BOTTOM){
+    this.m_root.addClass(this.m_widget.getNavListBottomEdgeStyleClass());
+  }
 };
 
 // Subclass from oj.Object
@@ -279,8 +280,10 @@ oj.Object.createSubclass(oj.HorizontalNavListHandler, oj.DefaultNavListHandler, 
 
 oj.HorizontalNavListHandler.prototype.Destroy = function () {
 
-  this.m_root.removeClass('oj-navigationlist-expanded oj-navigationlist-horizontal');
-  this.m_root.find('.' + this.m_widget.DIVIDER_STYLE_CLASS).remove();
+  this.m_root.removeClass(this.m_widget.getNavListExpandedStyleClass())
+            .removeClass(this.m_widget.getHorizontalNavListStyleClass())
+            .removeClass(this.m_widget.getNavListBottomEdgeStyleClass());
+  this.m_root.find('.' + this.m_widget.getDividerStyleClass()).remove();
   
   this.m_widget.ojContext._off(this.m_widget.ojContext.element, '.overflow');
   this._destroyOverflowMenu();
@@ -312,10 +315,8 @@ oj.HorizontalNavListHandler.prototype.HandleArrowKeys = function (keyCode, isExt
   }
 
   var processed = _ojNavigationListView.superclass.HandleArrowKeys.call(this.m_widget, keyCode, isExtend, event);
-  if (this.m_widget.GetOption('edge') === 'top') {
     var current = this.m_widget.m_active['elem'];
     current[0].scrollIntoView(false);
-  }
   return processed;
 };
 
@@ -357,8 +358,8 @@ oj.HorizontalNavListHandler.prototype.BeforeRenderComplete = function () {
 oj.HorizontalNavListHandler.prototype._addSeparator = function (elem, index) {
   var $elem = $(elem);
   var previousElement = $elem.prev();
-  if (index > 0 && $elem.is(':visible') && previousElement.length && !previousElement.is("li." + this.m_widget.DIVIDER_STYLE_CLASS)) {
-    $elem.before('<li role="separator" class="' + this.m_widget.DIVIDER_STYLE_CLASS + '"></li>'); //@HTMLUpdateOK
+  if (index > 0 && previousElement.length && !previousElement.is("li." + this.m_widget.getDividerStyleClass())) {
+    $elem.before('<li role="separator" class="' + this.m_widget.getDividerStyleClass() + '"></li>'); //@HTMLUpdateOK
   }
 };
 
@@ -370,14 +371,14 @@ oj.HorizontalNavListHandler.prototype.ItemInsertComplete = function (elem, conte
 oj.HorizontalNavListHandler.prototype.ItemRemoveComplete = function (elem) {
   var $elem = $(elem),
     previousElement = $elem.prev();
-  if (previousElement.length && previousElement.is("li." + this.m_widget.DIVIDER_STYLE_CLASS)) {
+  if (previousElement.length && previousElement.is("li." + this.m_widget.getDividerStyleClass())) {
     previousElement.remove();
   } else {
     // Means,this could be the first element,
     //so ensure that divider is not present on next element which is going to be the first one.
     //This is needed because when complete observable array is updated with new set of records, first new records will be added before removing old ones.
     var nextElement = $elem.next();
-    if (nextElement.is("li." + this.m_widget.DIVIDER_STYLE_CLASS)) {
+    if (nextElement.is("li." + this.m_widget.getDividerStyleClass())) {
       nextElement.remove();
     }
   }
@@ -391,12 +392,19 @@ oj.HorizontalNavListHandler.prototype.IsSelectable = function (item) {
 
 oj.HorizontalNavListHandler.prototype.Init = function(opts) {
   var self = this;
-  this.m_root.addClass('oj-navigationlist-expanded oj-navigationlist-horizontal');
+  this.m_root.addClass(this.m_widget.getNavListExpandedStyleClass())
+            .addClass(this.m_widget.getHorizontalNavListStyleClass());
   this.m_widget.ojContext._on(this.m_widget.ojContext.element, {
-    "click .oj-navigationlist-overflow-menu-item a.oj-navigationlist-item-content": self._launchOverflowMenu.bind(self),
-    "keydown .oj-navigationlist-overflow-menu-item a.oj-navigationlist-item-content": function(event) {
-      if (event.keyCode === $.ui.keyCode.SPACE) {
+    "click" : function(event) {
+      if($(event.target).closest("." + self.m_widget.getOverflowItemStyleClass() + " a." + self.m_widget.getItemContentStyleClass()).length > 0) {
         self._launchOverflowMenu(event);
+      }
+    },
+    "keydown" : function(event) {
+      if($(event.target).closest("." + self.m_widget.getOverflowItemStyleClass() + " a." + self.m_widget.getItemContentStyleClass()).length > 0) {
+        if (event.keyCode === $.ui.keyCode.SPACE) {
+          self._launchOverflowMenu(event);
+        }  
       }
     }
   });
@@ -421,9 +429,8 @@ oj.HorizontalNavListHandler.prototype.SetOptions = function(options) {
 
 oj.HorizontalNavListHandler.prototype.GetAnimationEffect = function(action) {
   if (action === 'add' ||
-    action === 'remove' ||
-    action === 'update') {
-    return "none";
+    action === 'remove') {
+    return _ojNavigationListView.superclass.getAnimationEffect.call(this.m_widget, action + 'HorizontalItem');
   }
   return _ojNavigationListView.superclass.getAnimationEffect.apply(this.m_widget, arguments);
 };
@@ -436,13 +443,13 @@ oj.HorizontalNavListHandler.prototype.GetNodeBySubId = function(locator) {
     menuItems,
     index;
 
-  if (subId === 'oj-navigationlist-item' && this.m_overflowMenuItems.length > 0) {
+  if (subId === this.m_widget.getItemSubIdKey() && this.m_overflowMenuItems.length > 0) {
     overflowMenu = this._getOverflowMenu();
     key = locator['key'];
     menuItems = overflowMenu.find('.oj-menu-item');
 
     for (index = 0; index < menuItems.length; index++) {
-      if ($(menuItems[index]).data('key') === key) {
+      if (this.m_widget.compareValues($(menuItems[index]).data('key'),key)) {
         item = menuItems[index];
         this._launchOverflowMenu(null);
         break;
@@ -456,7 +463,7 @@ oj.HorizontalNavListHandler.prototype.GetSubIdByNode = function(node) {
   var subId = null, key, item;
   item = $(node).closest(".oj-menu-item");
 
-  if (this._getOverflowMenu() !== null && item.closest('.' + this.m_widget.NAVLIST_OVERFLOW_MENU)[0] !== this._getOverflowMenu()[0]) {
+  if (this._getOverflowMenu() !== null && item.closest('.' + this.m_widget.getOverflowMenuStyleClass())[0] !== this._getOverflowMenu()[0]) {
     return null;
   }
 
@@ -464,7 +471,7 @@ oj.HorizontalNavListHandler.prototype.GetSubIdByNode = function(node) {
     key = item.data('key');
     if (key != null) {
       subId = {
-        'subId': 'oj-navigationlist-item',
+        'subId': this.m_widget.getItemSubIdKey(),
         'key': key
       };
     }
@@ -565,17 +572,17 @@ oj.HorizontalNavListHandler.prototype._calculateThreshold = function() {
 };
 
 oj.HorizontalNavListHandler.prototype._getItems = function() {
-  return this.m_root.find("." + this.m_widget.getItemElementStyleClass() + ":not(." + this.m_widget.NAVLIST_OVERFLOW_MENU_ITEM + ")");
+  return this.m_root.find("." + this.m_widget.getItemElementStyleClass() + ":not(." + this.m_widget.getOverflowItemStyleClass() + ")");
 };
 
 oj.HorizontalNavListHandler.prototype._hasSeparators = function() {
-  return this.m_root.hasClass(this.m_widget.NAVLIST_DIVIDERS_STYLE_CLASS);
+  return this.m_root.hasClass(this.m_widget.getNavListItemsDividerStyleClass());
 };
 
 oj.HorizontalNavListHandler.prototype._showOrHideItem = function(item, show) {
   var separator;
   if (this._hasSeparators()) {
-    separator = item.prev('.' + this.m_widget.DIVIDER_STYLE_CLASS);
+    separator = item.prev('.' + this.m_widget.getDividerStyleClass());
   }
   if (show) {
     item.show();
@@ -604,8 +611,8 @@ oj.HorizontalNavListHandler.prototype._applyThreshold = function(threshold) {
     return;
   }
 
-  this.m_root.find('.' + this.m_widget.LAST_ITEM_STYLE_CLASS)
-    .removeClass(this.m_widget.LAST_ITEM_STYLE_CLASS);
+  this.m_root.find('.' + this.m_widget.getLastItemStyleClass())
+    .removeClass(this.m_widget.getLastItemStyleClass());
 
   if (threshold === -1 || threshold >= items.length) {
     if(this.m_overflowMenuItem) { //if overflow item is already added need to hide it
@@ -640,16 +647,16 @@ oj.HorizontalNavListHandler.prototype._applyThreshold = function(threshold) {
       lastVisibleChild = $item;
       self._showOrHideItem($item, true);
       if (self.m_overflowMenuItem && self.m_overflowMenuItem.hasClass('oj-focus') &&
-        self.m_widget.GetKey(item) === self.m_widget.GetOption('currentItem')) {
+        self.m_widget.compareValues(self.m_widget.GetKey(item), self.m_widget.GetOption('currentItem'))) {
         self.m_widget.ActiveAndFocus(lastVisibleChild, null);
       }
     }
   });
 
   if (isOverflowItemVisible) {
-    this._getOverflowMenuButton().addClass(this.m_widget.LAST_ITEM_STYLE_CLASS);
+    this._getOverflowMenuButton().addClass(this.m_widget.getLastItemStyleClass());
   } else {
-    lastVisibleChild.addClass(this.m_widget.LAST_ITEM_STYLE_CLASS);
+    lastVisibleChild.addClass(this.m_widget.getLastItemStyleClass());
   }
 
 
@@ -689,16 +696,15 @@ oj.HorizontalNavListHandler.prototype._getOverflowMenuButton = function() {
     labelElement = $(document.createElement('span'));
     iconElement = $(document.createElement('span'));
     items = this._getItems();
-    lastItem = items.last();
     overflowMenuItem.uniqueId()
       .attr('role', 'presentation')
       .addClass(this.m_widget.getItemElementStyleClass())
       .addClass(this.m_widget.getItemStyleClass())
-      .addClass(this.m_widget.NAVLIST_OVERFLOW_MENU_ITEM)
+      .addClass(this.m_widget.getOverflowItemStyleClass())
       .addClass('oj-default')
       .append(anchorElement);// @HTMLUpdateOK constructed by component and not using string passed through any API
     anchorElement.addClass(this.m_widget.getFocusedElementStyleClass())
-      .addClass(this.m_widget.ITEM_CONTENT_STYLE_CLASS);
+      .addClass(this.m_widget.getItemContentStyleClass());
     anchorElement.attr('role', 'button')
       .attr('aria-haspopup', 'true')
       .attr('aria-pressed', 'false')
@@ -708,19 +714,19 @@ oj.HorizontalNavListHandler.prototype._getOverflowMenuButton = function() {
       .append(iconElement)// @HTMLUpdateOK constructed by component and not using string passed through any API
       .append(labelElement);// @HTMLUpdateOK label text is read from resource bundle and it was properly escaped
 
-    if (!this.m_root.find('ul:first').hasClass(this.m_widget._NAVLIST_HAS_ICONS)) {
-      anchorElement.addClass(this.m_widget._NAVLIST_ITEM_HAS_NO_ICON);
+    if (!this.m_root.find('ul:first').hasClass(this.m_widget.getHasIconsStyleClass())) {
+      anchorElement.addClass(this.m_widget.getHasNoIconStyleClass());
     }
 
     labelElement.text(this.m_widget.ojContext.getTranslatedString('overflowItemLabel')) // @HTMLUpdateOK
-      .addClass(this.m_widget._ITEM_LABEL_STYLE_CLASS);
+      .addClass(this.m_widget.getItemLabelStyleClass());
 
-    iconElement.addClass(this.m_widget._ITEM_ICON_STYLE_CLASS)
+    iconElement.addClass(this.m_widget.getItemIconStyleClass())
       .addClass("oj-fwk-icon")
-      .addClass(this.m_widget.NAVLIST_OVERFLOW_ITEM_ICON);
+      .addClass(this.m_widget.getOverflowItemIconStyleClass());
 
     overflowMenuItem[0].key = overflowMenuItem.attr('id');
-    lastItem.after(overflowMenuItem);// @HTMLUpdateOK constructed by component and not using string passed through any API
+    this.m_root.find('.'+this.m_widget.GetStyleClass()).append(overflowMenuItem);// @HTMLUpdateOK constructed by component and not using string passed through any API
     this._addSeparator(overflowMenuItem, items.length);
     this.m_overflowMenuItem = overflowMenuItem;
   }
@@ -741,7 +747,7 @@ oj.HorizontalNavListHandler.prototype._getOverflowMenu = function() {
 
   if (!this.m_overflowMenu) {
     overflowMenu = $(document.createElement('ul'));
-    overflowMenu.addClass(this.m_widget.NAVLIST_OVERFLOW_MENU).hide()
+    overflowMenu.addClass(this.m_widget.getOverflowMenuStyleClass()).hide()
     this.m_root.append(overflowMenu);// @HTMLUpdateOK constructed by component and not using string passed through any API
 
     // create menu markup
@@ -801,7 +807,7 @@ oj.HorizontalNavListHandler.prototype._toggleOverflowBtnSelection = function(sel
   if (this.m_overflowMenuItem && this.m_overflowMenuItems.length > 0) {
     if(selectedItem) {
       for (i = 0; i < this.m_overflowMenuItems.length; i++) {
-        if (this.m_overflowMenuItems[i]["key"] === selectedItem) {
+        if (this.m_widget.compareValues(this.m_overflowMenuItems[i]["key"], selectedItem)) {
           overflowItemSelected = true;
           break;
         }
@@ -815,13 +821,13 @@ oj.HorizontalNavListHandler.prototype._toggleOverflowBtnSelection = function(sel
 };
 
 oj.HorizontalNavListHandler.prototype.__handleOverflowMenuOpen = function(event, ui) {
-  this._getOverflowMenuButton().find('.' + this.m_widget.ITEM_CONTENT_STYLE_CLASS).attr('tabindex', '0');
+  this._getOverflowMenuButton().find('.' + this.m_widget.getItemContentStyleClass()).attr('tabindex', '0');
 };
 
 oj.HorizontalNavListHandler.prototype.__handleOverflowMenuClose = function(event, ui) {
   var selectedItem = this.m_widget.ojContext.option('selection');
   this._toggleOverflowBtnSelection(selectedItem);
-  this._getOverflowMenuButton().find('.' + this.m_widget.ITEM_CONTENT_STYLE_CLASS).focus();
+  this._getOverflowMenuButton().find('.' + this.m_widget.getItemContentStyleClass()).focus();
 };
 
 oj.HorizontalNavListHandler.prototype.__handleOverflowMenuSelection = function(event, ui) {
@@ -851,11 +857,11 @@ oj.HorizontalNavListHandler.prototype.__handleOverflowMenuSelection = function(e
 
 
 oj.HorizontalNavListHandler.prototype._getItemLabel = function(item) {
-  var titleElement = item.find('.' + this.m_widget._NAVLIST_ITEM_TITLE + ':first');
+  var titleElement = item.find('.' + this.m_widget.getItemTitleStyleClass() + ':first');
   if (titleElement.length > 0) {
     return titleElement.text();
   } else {
-    return item.find('.' + this.m_widget._ITEM_LABEL_STYLE_CLASS + ':first').text();
+    return item.find('.' + this.m_widget.getItemLabelStyleClass() + ':first').text();
   }
 };
 
@@ -872,11 +878,13 @@ oj.CollapsibleNavListHandler = function (widget, root, component) {
 oj.Object.createSubclass(oj.CollapsibleNavListHandler, oj.DefaultNavListHandler, "oj.CollapsibleNavListHandler");
 
 oj.CollapsibleNavListHandler.prototype.Destroy = function () {
-  this.m_root.removeClass('oj-navigationlist-collapsible oj-navigationlist-vertical');
+  this.m_root.removeClass(this.m_widget.getNavListCollapsibleStyleClass())
+              .removeClass(this.m_widget.getNavListVerticalStyleClass());
 };
 
 oj.CollapsibleNavListHandler.prototype.Init = function (opts) {
-  this.m_root.addClass('oj-navigationlist-collapsible oj-navigationlist-vertical');
+  this.m_root.addClass(this.m_widget.getNavListCollapsibleStyleClass())
+              .addClass(this.m_widget.getNavListVerticalStyleClass());
 };
 
 oj.CollapsibleNavListHandler.prototype.Expand = function (groupItem, animate, event) {
@@ -932,7 +940,8 @@ oj.SlidingNavListHandler = function (widget, root, component) {
 oj.Object.createSubclass(oj.SlidingNavListHandler, oj.CollapsibleNavListHandler, "oj.SlidingNavListHandler");
 
 oj.SlidingNavListHandler.prototype.Destroy = function () {
-  this.m_root.removeClass('oj-navigationlist-slider oj-navigationlist-vertical');
+  this.m_root.removeClass('oj-navigationlist-slider')
+              .removeClass(this.m_widget.getNavListVerticalStyleClass());
   this._toolbar.remove();
 };
 /**
@@ -952,7 +961,7 @@ oj.SlidingNavListHandler.prototype._slideAnimation = function (item, isMovingNex
   var action, promise;
 
   action = isMovingNext ? "sliderExpand" : "sliderCollapse";
-  promise = this.m_widget.StartAnimation(list_root, action, this.m_widget.getAnimationEffect(action));
+  promise = this.m_widget.StartAnimation(/** @type {Element} */ (list_root.get(0)), action, this.m_widget.getAnimationEffect(action));
   promise.then(function () {
     self._slideAnimationComplete(item, isMovingNext, focusableElement, event, hasFocusAncestor);
     animationResolve(null);
@@ -981,7 +990,7 @@ oj.SlidingNavListHandler.prototype._slideAnimationComplete = function (item, isM
     if (event && event.button === 0) {
       this.m_widget.AvoidFocusHighLight(true);
     }
-    this.m_widget.ActiveAndFocus(focusableElement, event);
+    this.m_widget.SetCurrentItem(focusableElement, event);
     this.m_widget.AvoidFocusHighLight(false);
   }
   if (!isMovingNext) {
@@ -1055,7 +1064,7 @@ oj.SlidingNavListHandler.prototype.Expand = function (groupItem, animate, event)
   //For ios, it is needed to set aria-hidden.
   target.siblings().attr('aria-hidden', 'true');
   target.children('.' + this.m_widget.getGroupItemStyleClass())
-    .children('.' + this.m_widget.ITEM_CONTENT_STYLE_CLASS)
+    .children('.' + this.m_widget.getItemContentStyleClass())
     .attr('aria-hidden', 'true');
   sublist.removeAttr('aria-hidden');
 
@@ -1086,7 +1095,7 @@ oj.SlidingNavListHandler.prototype.Collapse = function (target, key, animate, ev
     parentlist = target.parent();
 
   target.children('.' + this.m_widget.getGroupItemStyleClass())
-    .children('.' + this.m_widget.ITEM_CONTENT_STYLE_CLASS)
+    .children('.' + this.m_widget.getItemContentStyleClass())
     .removeAttr('aria-hidden');
   currentList.attr('aria-hidden', 'true');
   target.siblings().removeAttr('aria-hidden');
@@ -1184,7 +1193,31 @@ oj.SlidingNavListHandler.prototype.BeforeRenderComplete = function () {
 };
 
 oj.SlidingNavListHandler.prototype.Init = function (opts) {
-  this.m_root.addClass('oj-navigationlist-slider oj-navigationlist-vertical');
+  var self =  this;
+  this.m_widget.ojContext._on(this.m_widget.ojContext.element, {
+    "click": function(event) {
+      if ($(event.target).closest('.oj-navigationlist-previous-link, .oj-navigationlist-previous-button').length > 0) {
+        self.CollapseCurrentList(event);
+      }
+    },
+    "keydown": function(event) {
+      if ($(event.target).closest('.oj-navigationlist-previous-link, .oj-navigationlist-previous-button').length > 0) {
+        if (event.keyCode === $.ui.keyCode.ENTER) {
+          self.CollapseCurrentList(event);
+        }
+      }
+
+      if ($(event.target).closest('.' + self.m_widget.GetStyleClass()).length > 0) {
+        //check for default prevented as it might have already processed for quiting f2 mode
+        if (event.keyCode === $.ui.keyCode.ESCAPE && !event.isDefaultPrevented()) {
+          self.CollapseCurrentList(event);
+        }
+      }
+    }
+  });
+
+  this.m_root.addClass('oj-navigationlist-slider')
+              .addClass(this.m_widget.getNavListVerticalStyleClass());
   opts.element.addClass('oj-navigationlist-current');
   this._buildSlidingNavListHeader(opts);
   this._initializeHierarchicalView();
@@ -1234,7 +1267,7 @@ oj.SlidingNavListHandler.prototype._buildSlidingNavListHeader = function (opts) 
 };
 
 /**
- * In case of sliding navigation List, Collapses the current visible list if it is not the top level list
+ * Collapses the current visible list if it is not the top level list
  * @private
  */
 oj.SlidingNavListHandler.prototype.CollapseCurrentList = function (event) {
@@ -1274,7 +1307,7 @@ oj.SlidingNavListHandler.prototype._initializeHierarchicalView = function () {
         item = expandedItems.pop(); // remove item from list
         currentKey = self.m_widget.GetKey(item[0]);
         self.m_widget.CollapseItem($(item), event, true, currentKey, true, true);
-        if (targetItemKey === currentKey) {
+        if (self.m_widget.compareValues(targetItemKey, currentKey)) {
           break;
         }
       }
@@ -1475,19 +1508,19 @@ oj.SlidingNavListHandler.prototype.GetNodeBySubId = function (locator) {
 };
 
 oj.SlidingNavListHandler.prototype.GetSubIdByNode = function (node) {
-  if (this._prevButton && this._prevButton[0] === node) {
+  if ($(node).closest(this._prevButton).length > 0) {
     return {
       'subId': 'oj-navigationlist-previous-link'
     };
   }
 
-  if (this._hviewBtn && this._hviewBtn[0] === node) {
+  if ($(node).closest(this._hviewBtn).length > 0) {
     return {
       'subId': 'oj-navigationlist-hierarchical-button'
     };
   }
 
-  if (this._hviewMenu && this._hviewMenu[0] === node) {
+  if ($(node).closest(this._hviewMenu).length > 0) {
     return {
       'subId': 'oj-navigationlist-hierarchical-menu'
     };
@@ -1519,33 +1552,154 @@ var _NavigationListUtils = {
 var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
   /** @lends _ojNavigationListView.prototype */
   {
-
-    ITEM_CONTENT_STYLE_CLASS: 'oj-navigationlist-item-content',
-    NAVLIST_DIVIDERS_STYLE_CLASS: 'oj-navigationlist-item-dividers',
-    LAST_ITEM_STYLE_CLASS: 'oj-navigationlist-item-last-child',
+    OPTION_DRILL_MODE: 'drillMode',
+    OPTION_DRILL_MODE_NONE: 'none',
+    OPTION_DRILL_MODE_COLLAPSIBLE: 'collapsible',
+    OPTION_DRILL_MODE_SLIDING: 'sliding',
+    OPTION_DISPLAY: 'display',
+    OPTION_DISPLAY_ICONS: 'icons',
+    OPTION_DISPLAY_ALL: 'all',
+    OPTION_EDGE: 'edge',
+    OPTION_EDGE_TOP: 'top',
+    OPTION_EDGE_END: 'end',
+    OPTION_EDGE_START: 'start',
+    OPTION_EDGE_BOTTOM: 'bottom',
+    OPTION_SELECTION: 'selection',
+    OPTION_CURRENT_ITEM: 'currentItem',
+    TAG_NAME_TAB_BAR:'oj-tab-bar',
+    NAVLIST_ITEM_SUBID_KEY: {
+      'navlist': 'oj-navigationlist-item',
+      'tabbar': 'oj-tabbar-item'
+    },
+    NAVLIST_EXPANDED_STYLE_CLASS: {
+      'navlist': 'oj-navigationlist-expanded',
+      'tabbar': 'oj-tabbar-expanded'
+    },
+    NAVLIST_COLLAPSIBLE_STYLE_CLASS: {
+      'navlist': 'oj-navigationlist-collapsible',
+      'tabbar': 'oj-tabbar-collapsible'
+    },
+    NAVLIST_VERTICAL_STYLE_CLASS: {
+      'navlist': 'oj-navigationlist-vertical',
+      'tabbar': 'oj-tabbar-vertical'
+    },
+    
+    ITEM_CONTENT_STYLE_CLASS: {
+      'navlist':'oj-navigationlist-item-content',
+      'tabbar':'oj-tabbar-item-content'
+    },
+    NAVLIST_DIVIDERS_STYLE_CLASS: {
+      'navlist':'oj-navigationlist-item-dividers',
+      'tabbar':'oj-tabbar-item-dividers'
+    },
+    LAST_ITEM_STYLE_CLASS: {
+      'navlist':'oj-navigationlist-item-last-child',
+      'tabbar':'oj-tabbar-item-last-child'
+    },
     EXPANDED_STYLE_CLASS: 'oj-expanded',
     COLLAPSED_STYLE_CLASS: 'oj-collapsed',
     SLIDING_NAVLIST_CURRENT_STYLE_CLASS: 'oj-navigationlist-current',
-    DIVIDER_STYLE_CLASS: 'oj-navigationlist-divider',
-    NAVLIST_OVERFLOW_MENU_ITEM: 'oj-navigationlist-overflow-menu-item',
-    NAVLIST_OVERFLOW_MENU: 'oj-navigationlist-overflow-menu',
-    NAVLIST_OVERFLOW_ITEM_ICON: 'oj-navigationlist-overflow-item-icon',
-    _CATEGORY_DIVIDER_STYLE_CLASS: 'oj-navigationlist-category-divider',
-    _ITEM_LABEL_STYLE_CLASS: 'oj-navigationlist-item-label',
-    _ICON_ONLY_STYLE_CLASS: 'oj-navigationlist-icon-only',
-    _ITEM_ICON_STYLE_CLASS: 'oj-navigationlist-item-icon',
-    _HORIZONTAL_NAVLIST_STYLE_CLASS: 'oj-navigationlist-horizontal',
-    _NAVLIST_HAS_ICONS: 'oj-navigationlist-has-icons',
-    _NAVLIST_ITEM_HAS_NO_ICON: 'oj-navigationlist-item-no-icon',
-    _NAVLIST_ITEM_TITLE: 'oj-navigationlist-item-title',
-    _NAVLIST_STYLE_CLASS: 'oj-navigationlist',
-    _NAVLIST_TOUCH_STYLE_CLASS: 'oj-navigationlist-touch',
-    _NAVLIST_LISTVIEW_CONTAINER_STYLE_CLASS: 'oj-navigationlist-listview-container',
+    DIVIDER_STYLE_CLASS: {
+      'navlist':'oj-navigationlist-divider',
+      'tabbar':'oj-tabbar-divider'
+    },
+    NAVLIST_OVERFLOW_MENU_ITEM: {
+      'navlist':'oj-navigationlist-overflow-menu-item',
+      'tabbar':'oj-tabbar-overflow-menu-item'
+    },
+    NAVLIST_OVERFLOW_MENU: {
+      'navlist':'oj-navigationlist-overflow-menu',
+      'tabbar':'oj-tabbar-overflow-menu'
+    },
+    NAVLIST_OVERFLOW_ITEM_ICON: {
+      'navlist':'oj-navigationlist-overflow-item-icon',
+      'tabbar':'oj-tabbar-overflow-item-icon'
+    },
+    _CATEGORY_DIVIDER_STYLE_CLASS: {
+      'navlist':'oj-navigationlist-category-divider',
+      'tabbar':'oj-tabbar-category-divider'
+    },
+    _ITEM_LABEL_STYLE_CLASS: {
+      'navlist':'oj-navigationlist-item-label',
+      'tabbar':'oj-tabbar-item-label'
+    },
+    _ICON_ONLY_STYLE_CLASS: {
+      'navlist':'oj-navigationlist-icon-only',
+      'tabbar':'oj-tabbar-icon-only'
+    },
+    _ITEM_ICON_STYLE_CLASS: {
+      'navlist':'oj-navigationlist-item-icon',
+      'tabbar':'oj-tabbar-item-icon'
+    },
+    _HORIZONTAL_NAVLIST_STYLE_CLASS: {
+      'navlist':'oj-navigationlist-horizontal',
+      'tabbar':'oj-tabbar-horizontal'
+    },
+    _NAVLIST_END_EDGE_STYLE_CLASS: {
+      'navlist':'oj-navigationlist-vertical-end',
+      'tabbar':'oj-tabbar-vertical-end'
+    },
+    _NAVLIST_BOTTOM_EDGE_STYLE_CLASS: {
+      'navlist':'oj-navigationlist-horizontal-bottom',
+      'tabbar':'oj-tabbar-horizontal-bottom'
+    },
+    _NAVLIST_HAS_ICONS: {
+      'navlist': 'oj-navigationlist-has-icons',
+      'tabbar': 'oj-tabbar-has-icons'
+    },
+    _NAVLIST_ITEM_HAS_NO_ICON: {
+      'navlist': 'oj-navigationlist-item-no-icon',
+      'tabbar': 'oj-tabbar-item-no-icon'
+    },
+    _NAVLIST_ITEM_TITLE: {
+      'navlist':'oj-navigationlist-item-title',
+      'tabbar':'oj-tabbar-item-title'
+    },
+    _NAVLIST_STYLE_CLASS: {
+      'navlist': 'oj-navigationlist',
+      'tabbar': 'oj-tabbar'
+    },
+    _NAVLIST_TOUCH_STYLE_CLASS: {
+      'navlist': 'oj-navigationlist-touch',
+      'tabbar':'oj-tabbar-touch'
+    },
+    _NAVLIST_LISTVIEW_CONTAINER_STYLE_CLASS: {
+      'navlist':'oj-navigationlist-listview-container',
+      'tabbar':'oj-tabbar-listview-container'
+    },
     _IS_TITLE_ATTR_ADDED_DUE_TO_TRUNCATION: 'IsTitleAttrDueToTruncation',
     _APPLICATION_LEVEL_NAV_STYLE_CLASS: 'oj-navigationlist-app-level',
     _PAGE_LEVEL_NAV_STYLE_CLASS: 'oj-navigationlist-page-level',
     _NAVLIST_ITEM_ICON_HAS_TITLE: 'navigationListItemIconHastitle',
-    _NAVLIST_NO_FOLLOW_LINK_CLASS: 'oj-navigationlist-nofollow-link',
+    _NAVLIST_NO_FOLLOW_LINK_CLASS: {
+      'navlist':'oj-navigationlist-nofollow-link',
+      'tabbar':'oj-tabbar-nofollow-link'
+    },
+    _CONTAINER_STYLE_CLASS : {
+      'navlist': 'oj-navigationlist-listview',
+      'tabbar': 'oj-tabbar-listview'
+    },
+    _ELEMENT_STYLE_CLASS : {
+      'navlist': 'oj-navigationlist-element',
+      'tabbar': 'oj-tabbar-element'
+    },
+    _FOCUSED_ELEMENT_STYLE_CLASS : {
+      'navlist': 'oj-navigationlist-focused-element',
+      'tabbar': 'oj-tabbar-focused-element'
+    },
+    _ITEM_ELEMENT_STYLE_CLASS : {
+      'navlist': 'oj-navigationlist-item-element',
+      'tabbar': 'oj-tabbar-item-element'
+    },
+    _ITEM_STYLE_CLASS : {
+      'navlist': 'oj-navigationlist-item',
+      'tabbar': 'oj-tabbar-item'
+    },
+    _OPTION_DEFAULT_STYLE_CLASS: {
+      'navlist': 'oj-navigationlist-option-defaults',
+      'tabbar': 'oj-tabbar-option-defaults'
+    },
+    
     /**
      * Returns Item label text
      * @returns {string|null} Item label
@@ -1556,16 +1710,16 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
         return $.trim(itemContent.text());
       }
       //When using arbitrary content, extract item title from element having marker class .oj-navigationlist-item-title.
-      return $.trim(itemContent.find('.' + this._NAVLIST_ITEM_TITLE).text());
+      return $.trim(itemContent.find('.' + this.getItemTitleStyleClass()).text());
     },
     /**
      * Returns Item content root element.
      * @returns {Object} Returns jquery object for item content root
      */
     getItemContentElement: function (item) {
-      var itemContent = item.children('.' + this.ITEM_CONTENT_STYLE_CLASS);
+      var itemContent = item.children('.' + this.getItemContentStyleClass());
       if (itemContent.length === 0) {
-        itemContent = item.children('.' + this.getGroupItemStyleClass()).children('.' + this.ITEM_CONTENT_STYLE_CLASS);
+        itemContent = item.children('.' + this.getGroupItemStyleClass()).children('.' + this.getItemContentStyleClass());
         if (itemContent.length === 0) { //This case is when item label is invoked before complete initialization of listview
           itemContent = item.children('.' + this.getGroupItemStyleClass()).children(':not(.' + this.getExpandIconStyleClass() + '):not(.' + this.getCollapseIconStyleClass() + ')');
         }
@@ -1578,6 +1732,20 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
      */
     isRtl: function () {
       return this.ojContext._GetReadingDirection() === "rtl";
+    },
+
+    _initNavigationMode: function(rootElement) {
+      var tagName = rootElement[0].tagName.toLowerCase();
+      
+      if(tagName === this.TAG_NAME_TAB_BAR) {
+        this._navigationMode = 'tabbar';
+      } else {
+          this._navigationMode = 'navlist'; //if user uses div jquery widget continue with application level
+      }
+    },
+
+    _getNavigationMode: function() {
+      return this._navigationMode;
     },
     /**
      * Called by content handler once content of all items are rendered
@@ -1612,20 +1780,20 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
     _restoreContent: function (list) {
       var i, item, itemContent, itemIcon, focusableItem, sublist, items = list.children();
       list.removeAttr('style')
-        .removeClass(this._NAVLIST_HAS_ICONS)
+        .removeClass(this.getHasIconsStyleClass())
         .removeAttr('aria-hidden');
       for (i = 0; i < items.length; i++) {
         item = items[i];
         item = $(item);
-        if (item.hasClass(this.DIVIDER_STYLE_CLASS)) {
+        if (item.hasClass(this.getDividerStyleClass())) {
           item.remove();
           continue;
         }
         itemContent = this.getItemContentElement(item);
-        itemContent.removeClass(this.ITEM_CONTENT_STYLE_CLASS)
-          .removeClass(this._NAVLIST_ITEM_HAS_NO_ICON)
+        itemContent.removeClass(this.getItemContentStyleClass())
+          .removeClass(this.getHasNoIconStyleClass())
           .removeAttr('aria-haspopup');
-        itemIcon = itemContent.children('.' + this._ITEM_ICON_STYLE_CLASS);
+        itemIcon = itemContent.children('.' + this.getItemIconStyleClass());
         if (itemIcon && itemIcon.length > 0) {
           itemIcon.removeAttr('role');
           itemIcon.removeAttr('aria-label');
@@ -1642,7 +1810,7 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
         focusableItem.removeAttr('role')
           .removeAttr('aria-hidden')
           .removeAttr('aria-pressed');
-        itemContent.children('.' + this._ITEM_LABEL_STYLE_CLASS)
+        itemContent.children('.' + this.getItemLabelStyleClass())
           .contents().unwrap();
         if (focusableItem.data(this._IS_TITLE_ATTR_ADDED_DUE_TO_TRUNCATION)) {
           focusableItem.removeAttr('title');
@@ -1662,7 +1830,7 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
      * @protected
      */
     IsNodeEditableOrClickable: function (node) {
-      if (node.hasClass(this.ITEM_CONTENT_STYLE_CLASS) || node.hasClass(this.getExpandIconStyleClass()) || node.hasClass(this.getCollapseIconStyleClass())) {
+      if (node.hasClass(this.getItemContentStyleClass()) || node.hasClass(this.getExpandIconStyleClass()) || node.hasClass(this.getCollapseIconStyleClass())) {
         return false;
       }
       return _ojNavigationListView.superclass.IsNodeEditableOrClickable.apply(this, arguments);
@@ -1677,7 +1845,7 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
     IsElementEditableOrClickable: function (node) {
       var nodeName = node.prop("nodeName");
       //Exclude navlist item content <a> tag from below list and also checking for oj-component class as it is needed for toggle button.
-      return (nodeName.match(/^INPUT|SELECT|OPTION|BUTTON|^A\b|TEXTAREA/) && !node.hasClass(this.ITEM_CONTENT_STYLE_CLASS)) || node.hasClass('oj-component');
+      return (nodeName.match(/^INPUT|SELECT|OPTION|BUTTON|^A\b|TEXTAREA/) && !node.hasClass(this.getItemContentStyleClass())) || node.hasClass('oj-component');
     },
     /**
      * Prepare options to initialize ListView base class
@@ -1783,14 +1951,15 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
      * @override
      */
     init: function (navlistopts) {
-      var opts,
+      var opts, 
         self = this,
         element = navlistopts.ojContext.element;
-
-      element.addClass(this._NAVLIST_STYLE_CLASS);
+      this._initNavigationMode(element);
+      
+      element.addClass(this.getNavListStyleClass());
 
       if (oj.DomUtils.isTouchSupported()) {
-        element.addClass(this._NAVLIST_TOUCH_STYLE_CLASS);
+        element.addClass(this.getNavListTouchStyleClass());
       }
 
       this._list = element.children('ul:first');
@@ -1798,73 +1967,53 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
         this._list = $(document.createElement("ul"));
         element.append(this._list); //@HTMLUpdateOK
       }
+      
       var listViewContainer = $(document.createElement("div"));
-      listViewContainer.addClass(this._NAVLIST_LISTVIEW_CONTAINER_STYLE_CLASS);
+      listViewContainer.addClass(this.getNavListContainerStyleClass());
+
       this._list.wrap(listViewContainer); // @HTMLUpdateOK
       opts = this._prepareListViewOptions(navlistopts);
-
+     
       _ojNavigationListView.superclass.init.call(this, opts);
       this.element.removeClass('oj-component-initnode');
       this.ojContext._on(this.ojContext.element, {
         "mouseup": function (event) {
           self._clearActiveState(event);
         },
-        "click .oj-navigationlist-previous-link": function (event) {
-          self._collapseCurrentList(event);
-        },
-        "keydown .oj-navigationlist-previous-link": function (event) {
-          if (event.keyCode === $.ui.keyCode.ENTER) {
-            self._collapseCurrentList(event);
+        "mouseover": function (event) {
+          if($(event.target).closest("a." + self.getItemContentStyleClass()).length > 0) {
+            var $itemLink = $(event.target).closest("a." + self.getItemContentStyleClass());
+            var $label = $itemLink.find('.' + self.getItemLabelStyleClass());
+            //Add title attribute only when the text is truncated.
+            if ($label[0].offsetWidth < $label[0].scrollWidth && !$itemLink.attr('title')) {
+              $itemLink.attr('title', $label.text().trim());
+              $itemLink.data(self._IS_TITLE_ATTR_ADDED_DUE_TO_TRUNCATION, 'true');
+            }
           }
         },
-        "click .oj-navigationlist-previous-button": function (event) {
-          self._collapseCurrentList(event);
-        },
-        "keydown .oj-navigationlist-previous-button": function (event) {
-          if (event.keyCode === $.ui.keyCode.ENTER) {
-            self._collapseCurrentList(event);
+        "mouseout": function (event) {
+          if($(event.target).closest("a." + self.getItemContentStyleClass()).length > 0) {
+            //Remove title attribute on mouseleave.
+            var $itemLink = $(event.target).closest("a." + self.getItemContentStyleClass());
+            if ($itemLink.data(self._IS_TITLE_ATTR_ADDED_DUE_TO_TRUNCATION)) {
+              $itemLink.removeData(self._IS_TITLE_ATTR_ADDED_DUE_TO_TRUNCATION);
+              $itemLink.removeAttr('title');
+            }
+            self._clearActiveState(event);
           }
-        },
-        "keydown .oj-navigationlist-element": function (event) {
-          //check for default prevented as it might have already processed for quiting f2 mode
-          if (event.keyCode === $.ui.keyCode.ESCAPE && !event.isDefaultPrevented()) {
-            self._collapseCurrentList(event);
-          }
-        },
-        "mouseenter a.oj-navigationlist-item-content": function (event) {
-          var $itemLink = $(event.currentTarget);
-          var $label = $itemLink.find('.' + self._ITEM_LABEL_STYLE_CLASS);
-          //Add title attribute only when the text is truncated.
-          if ($label[0].offsetWidth < $label[0].scrollWidth && !$itemLink.attr('title')) {
-            $itemLink.attr('title', $label.text().trim());
-            $itemLink.data(self._IS_TITLE_ATTR_ADDED_DUE_TO_TRUNCATION, 'true');
-          }
-        },
-        "mouseleave a.oj-navigationlist-item-content": function (event) {
-          //Remove title attribute on mouseleave.
-          var $itemLink = $(event.currentTarget);
-          if ($itemLink.data(self._IS_TITLE_ATTR_ADDED_DUE_TO_TRUNCATION)) {
-            $itemLink.removeData(self._IS_TITLE_ATTR_ADDED_DUE_TO_TRUNCATION);
-            $itemLink.removeAttr('title');
-          }
-          self._clearActiveState(event);
         }
       });
-    },
-
-    _collapseCurrentList: function (event) {
-      this.m_listHandler.CollapseCurrentList(event);
     },
 
     _initListHandler: function () {
       var drillMode = this.ojContext.options['drillMode'];
       var edge = this.ojContext.options['edge'];
       
-      if (drillMode === 'sliding') {
+      if (drillMode === this.OPTION_DRILL_MODE_SLIDING) {
         this.m_listHandler = new oj.SlidingNavListHandler(this, this.ojContext.element, this.ojContext);
-      } else if (drillMode === 'collapsible') {
+      } else if (drillMode === this.OPTION_DRILL_MODE_COLLAPSIBLE) {
         this.m_listHandler = new oj.CollapsibleNavListHandler(this, this.ojContext.element, this.ojContext);
-      } else if (drillMode === 'none' && edge === 'top') {
+      } else if (drillMode === this.OPTION_DRILL_MODE_NONE && (edge === this.OPTION_EDGE_TOP || edge === this.OPTION_EDGE_BOTTOM)) {
         this.m_listHandler = new oj.HorizontalNavListHandler(this, this.ojContext.element, this.ojContext);
       } else {
         this.m_listHandler = new oj.DefaultNavListHandler(this, this.ojContext.element, this.ojContext);
@@ -1878,7 +2027,7 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
     _setNavigationLevel: function (navigationLevel) {
       var drillMode = this.ojContext.options['drillMode'];
       if (drillMode === 'none') {
-        if (navigationLevel === 'application') {
+        if (navigationLevel === 'application' || this.ojContext.element[0].tagName.toLowerCase() === 'oj-navigation-list') {
           this.ojContext.element.addClass(this._APPLICATION_LEVEL_NAV_STYLE_CLASS);
           this.ojContext.element.removeClass(this._PAGE_LEVEL_NAV_STYLE_CLASS);
         } else if (navigationLevel === 'page') {
@@ -1949,38 +2098,120 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
       this._clearActiveState(event);
       _ojNavigationListView.superclass.HandleTouchEndOrCancel.apply(this, arguments);
     },
+    getItemContentStyleClass: function() {
+      return this.ITEM_CONTENT_STYLE_CLASS[this._getNavigationMode()];
+    },
+    getNavListExpandedStyleClass: function() {
+      return this.NAVLIST_EXPANDED_STYLE_CLASS[this._getNavigationMode()];
+    },
+    getNavListCollapsibleStyleClass: function() {
+      return this.NAVLIST_COLLAPSIBLE_STYLE_CLASS[this._getNavigationMode()];
+    },
+    getNavListVerticalStyleClass: function() {
+      return this.NAVLIST_VERTICAL_STYLE_CLASS[this._getNavigationMode()];
+    },
+    getNavListItemsDividerStyleClass: function() {
+      return this.NAVLIST_DIVIDERS_STYLE_CLASS[this._getNavigationMode()];
+    },
+    getLastItemStyleClass: function() {
+      return this.LAST_ITEM_STYLE_CLASS[this._getNavigationMode()];
+    },
+    getDividerStyleClass: function() {
+      return this.DIVIDER_STYLE_CLASS[this._getNavigationMode()];
+    },
+    getOverflowItemStyleClass: function() {
+      return this.NAVLIST_OVERFLOW_MENU_ITEM[this._getNavigationMode()];
+    },
+    getOverflowMenuStyleClass: function() {
+      return this.NAVLIST_OVERFLOW_MENU[this._getNavigationMode()];
+    },
+    getOverflowItemIconStyleClass: function() {
+      return this.NAVLIST_OVERFLOW_ITEM_ICON[this._getNavigationMode()];
+    },
+    getCategoryDividerStyleClass: function() {
+      return this._CATEGORY_DIVIDER_STYLE_CLASS[this._getNavigationMode()];
+    },
+    getItemLabelStyleClass: function() {
+      return this._ITEM_LABEL_STYLE_CLASS[this._getNavigationMode()];
+    },
+    getIconOnlyStyleClass: function() {
+      return this._ICON_ONLY_STYLE_CLASS[this._getNavigationMode()];
+    },
+    getItemIconStyleClass: function() {
+      return this._ITEM_ICON_STYLE_CLASS[this._getNavigationMode()];
+    },
+    getHorizontalNavListStyleClass: function() {
+      return this._HORIZONTAL_NAVLIST_STYLE_CLASS[this._getNavigationMode()];
+    },
+    getNavListEndEdgeStyleClass: function(){
+      return this._NAVLIST_END_EDGE_STYLE_CLASS[this._getNavigationMode()];
+    },
+    getNavListBottomEdgeStyleClass: function(){
+      return this._NAVLIST_BOTTOM_EDGE_STYLE_CLASS[this._getNavigationMode()];
+    },
+    getHasIconsStyleClass: function() {
+      return this._NAVLIST_HAS_ICONS[this._getNavigationMode()];
+    },
+    getHasNoIconStyleClass: function() {
+      return this._NAVLIST_ITEM_HAS_NO_ICON[this._getNavigationMode()];
+    },
+    getItemTitleStyleClass: function() {
+      return this._NAVLIST_ITEM_TITLE[this._getNavigationMode()];
+    },
+    getNavListStyleClass: function() {
+      return this._NAVLIST_STYLE_CLASS[this._getNavigationMode()];
+    },
+    getNavListTouchStyleClass: function() {
+      return this._NAVLIST_TOUCH_STYLE_CLASS[this._getNavigationMode()];
+    },
+    getNavListContainerStyleClass: function() {
+      return this._NAVLIST_LISTVIEW_CONTAINER_STYLE_CLASS[this._getNavigationMode()];
+    },
+    getNoFollowLinkStyleClass: function() {
+      return this._NAVLIST_NO_FOLLOW_LINK_CLASS[this._getNavigationMode()];
+    },
+    getItemSubIdKey: function(){
+      if(this.ojContext.element[0].tagName.toLowerCase() === this.TAG_NAME_TAB_BAR){
+       return this.NAVLIST_ITEM_SUBID_KEY['tabbar'] 
+      } 
+      return this.NAVLIST_ITEM_SUBID_KEY['navlist'];
+    },
+
     /**
      * Returns Navlist specific container style class
      * @override
      * @protected
      */
     GetContainerStyleClass: function () {
-      return "oj-navigationlist-listview";
+      return this._CONTAINER_STYLE_CLASS[this._getNavigationMode()];
     },
+
     /**
      * Returns Navlist specific root element style class
      * @override
      * @protected
      */
     GetStyleClass: function () {
-      return "oj-navigationlist-element";
+      return this._ELEMENT_STYLE_CLASS[this._getNavigationMode()];
     },
+
     /**
      * Returns Navlist specific Item style class
      * @override
      */
     getItemStyleClass: function () {
-      return "oj-navigationlist-item";
+      return this._ITEM_STYLE_CLASS[this._getNavigationMode()];
     },
+
     getFocusedElementStyleClass: function () {
-      return "oj-navigationlist-focused-element";
+      return this._FOCUSED_ELEMENT_STYLE_CLASS[this._getNavigationMode()];
     },
     /**
      * Returns Navlist specific Item element style class
      * @override
      */
     getItemElementStyleClass: function () {
-      return "oj-navigationlist-item-element";
+      return this._ITEM_ELEMENT_STYLE_CLASS[this._getNavigationMode()];
     },
     /**
      * Returns Navlist specific collapse icon style class
@@ -2031,6 +2262,14 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
     getGroupCollapseStyleClass: function () {
       return this.getGroupExpandStyleClass();
     },
+    
+    /**
+     * Override options default style class
+     * @return {string} the option defaults style class
+     */
+    getOptionDefaultsStyleClass: function() {
+        return this._OPTION_DEFAULT_STYLE_CLASS[this._getNavigationMode()];
+    },    
     /**
      * Override expand animation behaviour to support differnet types of navlists.
      * Returns a Promise that resolves when animation completes
@@ -2143,11 +2382,11 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
       if (keyCode === $.ui.keyCode.HOME || keyCode === $.ui.keyCode.END) {
         var item;
         if (keyCode === $.ui.keyCode.HOME) {
-          item = this.element.find('.' + this.ITEM_CONTENT_STYLE_CLASS + ':visible').first().closest('.' + this.getItemElementStyleClass());
+          item = this.element.find('.' + this.getItemContentStyleClass() + ':visible').first().closest('.' + this.getItemElementStyleClass());
         } else {
-          item = this.element.find('.' + this.ITEM_CONTENT_STYLE_CLASS + ':visible').last().closest('.' + this.getItemElementStyleClass());
+          item = this.element.find('.' + this.getItemContentStyleClass() + ':visible').last().closest('.' + this.getItemElementStyleClass());
         }
-        this.ActiveAndFocus(item, event);
+        this.SetCurrentItem(item, event);
         event.preventDefault();
       } else {
         var processed = this.HandleSelectionOrActiveKeyDown(event);
@@ -2279,7 +2518,7 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
             selectedItem = context && context.extraData && context.extraData['items'];
           if (selectedItem) {
             //extraData['items'] is a jquery object(not an array) and in case of navlist it will always have single item.
-            context.extraData['item'] = selectedItem;
+            context.extraData['item'] = this.ojContext._IsCustomElement() ? (selectedItem.length === 0 ? null: selectedItem[0]):selectedItem;
             context.extraData['items'] = undefined;
           }
           
@@ -2311,14 +2550,7 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
         options['edge'] != null);
     },
 
-    /**
-     * Override options default style class
-     * @return {string} the option defaults style class
-     */
-    getOptionDefaultsStyleClass: function()
-    {
-        return "oj-navigationlist-option-defaults";
-    },
+
     /**
      * Sets multiple options
      * @param {Object} options the options object
@@ -2350,6 +2582,9 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
       }
       return result;
     },
+    compareValues: function(value1, value2){
+      return value1 == value2 || oj.Object.compareValues(value1, value2);
+    },
     /**
      * Set Selection option.
      * @param {Object} options the options object
@@ -2361,7 +2596,7 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
         newSelectionValue = options['selection'];
         if (!!newSelectionValue) {
           var selection = this.GetOption('selection');
-          if (!selection || selection.length === 0 || selection[0] !== newSelectionValue) {
+          if (!selection || selection.length === 0 || !this.compareValues(selection[0],newSelectionValue)) {
             var item = this.FindElementByKey(newSelectionValue);
             if (item && this.IsSelectable(item)) {
               var shouldSelect = this._fireBeforeSelectEvent(null, $(item));
@@ -2407,7 +2642,7 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
      * @override
      */
     getWidgetConstructor: function () {
-      return oj.Components.getWidgetConstructor(this.ojContext.element);
+      return oj.Components.__GetWidgetConstructor(this.ojContext.element);
     },
     /**
      * Override to skip intermediate nodes(only in case of collapsible) and disabled items from selection.
@@ -2442,7 +2677,7 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
     },
     _initiateNavigation: function (item) {
 
-      if (this.ojContext.element.hasClass(this._NAVLIST_NO_FOLLOW_LINK_CLASS)) {
+      if (this.ojContext.element.hasClass(this.getNoFollowLinkStyleClass())) {
         return false;
       }
 
@@ -2463,13 +2698,11 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
       return false;
     },
     _isSelected: function (item) {
-      var selection, key, index;
+      var selection, key;
 
       selection = this.GetOption("selection");
       key = this.GetKey(item[0]);
-
-      index = selection.indexOf(key);
-      if (index > -1) {
+      if(selection && selection.length === 1 && this.compareValues(selection[0], key)) {
         return true;
       }
       return false;
@@ -2493,7 +2726,7 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
      */
     itemRenderComplete: function (elem, context) {
       var $item = $(elem);
-      if ($item.hasClass(this._CATEGORY_DIVIDER_STYLE_CLASS)) {
+      if ($item.hasClass(this.getCategoryDividerStyleClass())) {
         $item.removeClass(this.getItemElementStyleClass());
         $item.removeClass(this.getFocusedElementStyleClass());
         $item.removeClass(this.getItemStyleClass());
@@ -2505,7 +2738,7 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
       var groupItemClass = this.getGroupItemStyleClass();
       var collapseIconClass = this.getCollapseIconStyleClass();
       var expandIconClass = this.getExpandIconStyleClass();
-      var itemIconClass = this._ITEM_ICON_STYLE_CLASS;
+      var itemIconClass = this.getItemIconStyleClass();
       var groupItem = $item.children('.' + groupItemClass);
       var itemContent;
       if (groupItem.length > 0) {
@@ -2524,8 +2757,8 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
       } else {
         itemContent = $item.children().first();
       }
-      itemContent.addClass(this.ITEM_CONTENT_STYLE_CLASS);
-      var icon = itemContent.wrapInner('<span class="' + this._ITEM_LABEL_STYLE_CLASS + '"></span>').find('.' + itemIconClass); //@HTMLUpdateOK
+      itemContent.addClass(this.getItemContentStyleClass());
+      var icon = itemContent.wrapInner('<span class="' + this.getItemLabelStyleClass() + '"></span>').find('.' + itemIconClass); //@HTMLUpdateOK
       if (icon.length > 0) {
         icon.insertBefore(icon.parent()); // @HTMLUpdateOK
 
@@ -2534,16 +2767,16 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
         }
 
         if (this.ojContext.options['display'] === 'icons') {
-          this.ojContext.element.addClass(this._ICON_ONLY_STYLE_CLASS);
+          this.ojContext.element.addClass(this.getIconOnlyStyleClass());
           var itemLabel = this.getItemLabel($item);
           icon.attr('aria-label', itemLabel);
           icon.attr('role', 'img');
           this._setToolTipOnIcon(icon, itemLabel);
         }
 
-        $item.closest('ul').addClass(this._NAVLIST_HAS_ICONS);
+        $item.closest('ul').addClass(this.getHasIconsStyleClass());
       } else {
-        itemContent.addClass(this._NAVLIST_ITEM_HAS_NO_ICON);
+        itemContent.addClass(this.getHasNoIconStyleClass());
       }
 
       if ($item.hasClass('oj-disabled')) {
@@ -2577,7 +2810,7 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
       
       if(!item) {
         subId = locator['subId'];
-        if (subId === 'oj-navigationlist-item') {
+        if (subId === this.getItemSubIdKey()) {
           key = locator['key'];
           item = this.FindElementByKey(key);
         }
@@ -2604,7 +2837,7 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
 			  key = this.GetKey(item[0]);
 			  if (key != null) {
 				subId = {
-				  'subId': 'oj-navigationlist-item',
+				  'subId': this.getItemSubIdKey(),
 				  'key': key
 				};
 			  }
@@ -2625,7 +2858,7 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
     getContextByNode: function (node) {
       var context = _ojNavigationListView.superclass.getContextByNode.call(this, node);
       if (context && context['subId'] == 'oj-listview-item') {
-        context['subId'] = 'oj-navigationlist-item';
+        context['subId'] = this.getItemSubIdKey();
         return context;
       }
       return null;
@@ -2644,7 +2877,7 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
      * @private
      */
     _resetNavlist: function () {
-      this.ojContext.element.removeClass(this._ICON_ONLY_STYLE_CLASS);
+      this.ojContext.element.removeClass(this.getIconOnlyStyleClass());
       this.ojContext.element.removeClass(this._APPLICATION_LEVEL_NAV_STYLE_CLASS);
       this.ojContext.element.removeClass(this._PAGE_LEVEL_NAV_STYLE_CLASS);
       this._restoreContent(this.element);
@@ -2662,7 +2895,7 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
       if (this._list.is(':empty')) {
         this._list.remove();
       }
-      this.ojContext.element.removeClass(this._NAVLIST_STYLE_CLASS + ' ' + this._NAVLIST_TOUCH_STYLE_CLASS);
+      this.ojContext.element.removeClass(this.getNavListStyleClass() + ' ' + this.getNavListTouchStyleClass());
       this.ojContext._off(this.element, "click");
       this.ojContext._off(this.element, "focus");
       this.ojContext._off(this.element, "blur");
@@ -2686,37 +2919,37 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
    *
    * @classdesc
    * <h3 id="navlistOverview-section">
-   *   JET Navigation List Component
+   *   JET Navigation List
    *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#navlistOverview-section"></a>
    * </h3>
    *
-   * <p>Description:  The JET Navigation List enhances a HTML list element into a themable, WAI-ARIA compliant, mobile friendly component with advance interactive features.
+   * <p>Description: JET Navigation List enhances a HTML list element into a themable, WAI-ARIA compliant, mobile friendly component with advance interactive features.
    *
    * <p>The JET Navigation List gets its data in following ways. </p>
    * <ul>
-   * <li><b>Using table datasource</b>. This is typically used in case of flat list.There are several types of TableDataSource that
-   * are available out of the box like oj.ArrayTableDataSource,oj.CollectionTableDataSource.NOTE: oj.PagingTableDataSource is not supported by navigation list.
+   * <li><b>Using table datasource</b>. This is typically used in case of flat list. There are several types of TableDataSource that
+   * are available out of the box like <a href="oj.ArrayTableDataSource.html">oj.ArrayTableDataSource</a>,<a href="oj.CollectionTableDataSource.html">oj.CollectionTableDataSource</a>. <p> NOTE: oj.PagingTableDataSource is not supported by navigation list.
    * For large amount of data, It is recommended to use hierarhcial navigation list with tree data source.</li>
    * <li><b>Using TreeDataSource</b>.  This is typically used to display hierarchical navigation list.  There are several types
-   * of TreeDataSource that are available out of the box like oj.JsonTreeDataSource, oj.CollectionTreeDataSource </li>
+   * of TreeDataSource that are available out of the box like <a href="oj.JsonTreeDataSource.html">oj.JsonTreeDataSource</a>, <a href="oj.CollectionTreeDataSource.html">oj.CollectionTreeDataSource</a> </li>
    * <li><b>Using static content </b>. The structure of the content can be either flat or hierarhical.</li>
    * </ul>
    * <p>Example of flat static content</p>
    * <pre class="prettyprint">
    * <code>
-   * &lt;div id="navigationlist">
+   * &lt;oj-navigation-list>
    *  &lt;ul>
    *   &lt;li>&lt;a href="#">Item 1&lt;/a>&lt;/li>
    *   &lt;li>&lt;a href="#">Item 2&lt;/a>&lt;/li>
    *   &lt;li>&lt;a href="#">Item 3&lt;/a>&lt;/li>
    *  &lt;/ul>
-   * &lt;/div>
+   * &lt;/oj-navigation-list>
    * </code></pre>
    *
    * <p>Example of hierarchical static content</p>
    * <pre class="prettyprint">
    * <code>
-   * &lt;div id="navigationlist">
+   * &lt;oj-navigation-list>
    *  &lt;ul >
    *   &lt;li>&lt;a href="#">Item 1&lt;/a>&lt;/li>
    *   &lt;li>&lt;a href="#">Item 2&lt;/a>&lt;/li>
@@ -2732,7 +2965,7 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
    *   &lt;li>&lt;a href="#">Item 4&lt;/a>&lt;/li>
    *   &lt;li>&lt;a href="#">Item 5&lt;/a>&lt;/li>
    *  &lt;/ul>
-   * &lt;/div>
+   * &lt;/oj-navigation-list>
    * </code></pre>
    * <h4 id="treeJSON-section"> JSON Tree Node Format</h4>
    * </br>
@@ -2780,9 +3013,17 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
    *</code></pre>
    *</p></br>
    * <p>Any list item can be disabled by adding the <code class="prettyprint">oj-disabled</code> class to that element.  As with any DOM change, doing so post-init
-   * requires a <code class="prettyprint">refresh()</code> of the component.
-   *
-   *
+   * requires a <code class="prettyprint">refresh()</code> of the element.
+   * 
+   * <h3 id="key-section">
+   *   Key
+   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#key-section"></a>
+   * </h3>
+   * <p>Key is an identifier which uniquely identifies an item in Navigation List. 
+   *  <ul>
+   *  <li>When static html is used, it will be the <code class="prettyprint">id</code> attribute of <code class="prettyprint">&lt;li></code>. If no <code class="prettyprint">id</code> is specified then component will generate an id and will use it as key.</li>
+   *  <li>When data source is used, it will be the <code class="prettyprint">id</code> attribute of item's data object.
+   *  </ul>
    * <h3 id="icons-section">
    *   Icons
    *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#icons-section"></a>
@@ -2791,11 +3032,11 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
    * <p>Sublist icons are inserted automatically.  To add other icons to list items, include them in the markup and include the <code class="prettyprint">oj-navigationlist-item-icon</code> class, as follows:
    *
    * <pre class="prettyprint">
-   * <code>&lt;div id="navigationlist">
+   * <code>&lt;oj-navigation-list>
    *   &lt;ul>    
    *     &lt;li id="foo">&lt;a href="#">&lt;span class="oj-navigationlist-item-icon demo-icon-font-24 demo-palette-icon-24">&lt;/span>Foo&lt;/a>&lt;/li>
    *   &lt;/ul>
-   *  &lt;/div>
+   *  &lt;/oj-navigation-list>
    * </code></pre>
    *
    * <h3 id="styling-section">
@@ -2836,8 +3077,8 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
    *   </thead>
    *   <tbody>
    *     <tr>
-   *       <td><kbd>component</kbd></td>
-   *       <td>A reference to the NavigationList widget constructor.</td>
+   *       <td><kbd>componentElement</kbd></td>
+   *       <td>oj-navigation-list element.</td>
    *     </tr>
    *     <tr>
    *       <td><kbd>datasource</kbd></td>
@@ -2849,7 +3090,7 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
    *     </tr>
    *     <tr>
    *       <td><kbd>key</kbd></td>
-   *       <td>The key of the item.</td>
+   *       <td>The <a href="#key-section">Key</a> of the item.</td>
    *     </tr>
    *     <tr>
    *       <td><kbd>data</kbd></td>
@@ -2878,7 +3119,7 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
    *     </tr>
    *     <tr>
    *       <td><kbd>parentKey</kbd></td>
-   *       <td>The key of the parent item.  The parent key is null for root node.</td>
+   *       <td>The <a href="#key-section">Key</a> of the parent item.  The parent key is null for root node.</td>
    *     </tr>
    *     <tr>
    *       <td><kbd>leaf</kbd></td>
@@ -2926,46 +3167,83 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
    * </h3>
    *
    * <p>The only supported way to set the reading direction (LTR or RTL) is to set the <code class="prettyprint">"dir"</code> attribute on the
-   * <code class="prettyprint">&lt;html></code> element of the page.  As with any JET component, in the unusual case that the reading direction
+   * <code class="prettyprint">&lt;html></code> element of the page.  As with any JET custom element, in the unusual case that the reading direction
    * is changed post-init, the navigation list must be <code class="prettyprint">refresh()</code>ed, or the page must be reloaded.
    *
    *
-   * <h3 id="pseudos-section">
-   *   Pseudo-selectors
-   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#pseudos-section"></a>
+   * <h3 id="animation-section">
+   *   Animation
+   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#animation-section"></a>
    * </h3>
    *
-   * <p>The <code class="prettyprint">:oj-navigationlist</code> pseudo-selector can be used in jQuery expressions to select JET Navigation Lists.  For example:
+   * <p>Applications can customize animations triggered by actions in Navigation List by either listening for <code class="prettyprint">animateStart/animateEnd</code>
+   *    events or overriding action specific style classes on the animated item.  See the documentation of <a href="oj.AnimationUtils.html">oj.AnimationUtils</a> 
+   *    class for details.</p>
    *
-   * <pre class="prettyprint">
-   * <code>$( ":oj-navigationlist" ) // selects all JET Navigation lists on the page
-   * $myEventTarget.closest( ":oj-navigationlist" ) // selects the closest ancestor that is a JET Navigation lists
-   * </code></pre>
+   * <p>The following are actions and their corresponding sass variables in which applications can use to customize animation effects.  
+   * <table class="keyboard-table">
+   *   <thead>
+   *     <tr>
+   *       <th>Action</th>
+   *       <th>Sass Variable</th>
+   *       <th>Description</th>
+   *     </tr>
+   *   </thead>
+   *   <tbody>
+   *     <tr>
+   *       <td rowspan="2"><kbd>add</kbd></td>
+   *       <td>$navigationListHorizontalAddAnimation</td>
+   *       <td>When a new item is added to the oj.TableDataSource associated with Horizontal Navigation List.</td>
+   *     </tr>
+   *     <tr>
+   *       <td>$navigationListAddAnimation</td>
+   *       <td>When a new item is added to the oj.TableDataSource associated with Vertical Navigation List.</td>
+   *     </tr>
+   *     <tr>
+   *       <td rowspan="2"><kbd>remove</kbd></td>
+   *       <td>$navigationListHorizontalRemoveAnimation</td>
+   *       <td>When an existing item is removed from the oj.TableDataSource associated with Horizontal Navigation List.</td>
+   *     </tr>
+   *     <tr>
+   *       <td>$navigationListRemoveAnimation</td>
+   *       <td>When an existing item is removed from the oj.TableDataSource associated with Vertical Navigation List.</td>
+   *     </tr>   
+   *     <tr>
+   *       <td><kbd>update</kbd></td>
+   *       <td>$navigationListUpdateAnimation</td>
+   *       <td>When an existing item is updated in the oj.TableDataSource associated with Navigation List.</td>
+   *     </tr>
+   *     <tr>
+   *       <td rowspan="2"><kbd>expand</kbd></td>
+   *       <td>$navigationListExpandAnimation</td>
+   *       <td>When user expands a group item.</td>
+   *     </tr>
+   *       <td>$navigationListSliderExpandAnimation</td>
+   *       <td>When user expands a group item in sliding navigation list.</td>
+   *     </tr>   
+   *     <tr>
+   *       <td rowspan="2"><kbd>collapse</kbd></td>
+   *       <td>$navigationListCollapseAnimation</td>
+   *       <td>When user collapses a group item.</td>
+   *     </tr>
+   *     <tr>
+   *       <td>$navigationListSliderCollapseAnimation</td>
+   *       <td>When user collapses a group item in sliding navigation list.</td>
+   *     </tr>   
+   *     <tr>
+   *       <td><kbd>pointerUp</kbd></td>
+   *       <td>$navigationListPointerUpAnimation</td>
+   *       <td>When user finish pressing an item (on touch).</td>
+   *     </tr>
+   *   </tbody>
+   * </table>
    *
-   * <!-- - - - - Above this point, the tags are for the class.
-   *              Below this point, the tags are for the constructor (initializer). - - - - - - -->
-   *
-   *
-   * @desc Creates a JET Navigation List.
-   *
-   * @param {Object=} options a map of option-value pairs to set on the component
-   *
-   * @example <caption>Initialize the Navigation list with no options specified:</caption>
-   * $( ".selector" ).ojNavigationList();
-   *
-   * @example <caption>Initialize the Navigation list with some options and callbacks specified:</caption>
-   * $( ".selector" ).ojNavigationList( { "drillMode": "none", "beforeSelect": function( event, ui ) {} } );
-   *
-   * @example <caption>Initialize the Navigation list via the JET <code class="prettyprint">ojComponent</code> binding:</caption>
-   * &lt;div id="navigationlist" data-bind="ojComponent: { component: 'ojNavigationList',
-   *                                         drillMode: 'none',
-   *                                         beforeSelect: beforeSelectItem }">
    */
   oj.__registerWidget("oj.ojNavigationList", $['oj']['baseComponent'], {
     widgetEventPrefix: 'oj',
     options: {
       /**
-       * Key of the current item.  Current item is the list item which is having active focus.  Note that if currentItem
+       * <a href="#key-section">Key</a> of the current item.  Current item is the list item which is having active focus.  Note that if currentItem
        * is set to an item that is currently not available (not fetched or
        * inside a collapsed parent node), then the value is ignored.
        *
@@ -2973,14 +3251,16 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
        * @public
        * @instance
        * @memberof! oj.ojNavigationList
-       * @type {Object}
+       * @type {Object|string}
        * @default <code class="prettyprint">null</code>
-       *
+       * @ojwriteback
+       * @example <caption>Initialize the Navigation List with the <code class="prettyprint">current-item</code> attribute specified:</caption>
+       *  &lt;oj-navigation-list current-item='settings'> ... &lt;/oj-navigation-list>
        * @example <caption>Get the current item:</caption>
-       * $( ".selector" ).ojNavigationList("option", "currentItem");
+       * var currentItem = myNavList.currentItem;
        *
        * @example <caption>Set the current item on the NavigationList during initialization:</caption>
-       * $(".selector").ojNavigationList({"currentItem", "item2"});
+       * myNavList.currentItem = "newItem";
        */
       currentItem: null,
       /**
@@ -3000,12 +3280,15 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
        * @ojvalue {string} "collapsible" Allows user to expand and collapse group items. If there are more than two levels in hierarchy, <code class="prettyprint">sliding</code> is preferered drill mode.
        * @ojvalue {string} "sliding" This is typically used for hierarchical lists. This allows user to view one level at a time.
        *
-       * @example <caption>Initialize the menu with the <code class="prettyprint">drillMode</code> option specified:</caption>
-       * $( ".selector" ).ojNavigationList({ drillMode: "collapsible" });
+       * @example <caption>Initialize the Navigation List with the <code class="prettyprint">drill-mode</code> attribute specified:</caption>
+       *  &lt;oj-navigation-list drill-mode='collapsible'> ... &lt;/oj-navigation-list>
+       *  
+       * @example <caption>Set <code class="prettyprint">drillMode</code> property:</caption>
+       * myNavList.drillMode = "collapsible";
        *
-       * @example <caption>Get the <code class="prettyprint">drillMode</code> option, after initialization:</caption>
+       * @example <caption>Get the <code class="prettyprint">drillMode</code> property:</caption>
        * // getter
-       * var drillMode = $( ".selector" ).ojNavigationList( "option", "drillMode" );
+       * var drillMode = myNavList.drillMode;
        */
       drillMode: "none",
       /**
@@ -3019,31 +3302,39 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
        * @ojvalue {string} "top" This renders list items horizontally.
        * @ojvalue {string} "start" This renders list items vertically.
        * @default <code class="prettyprint">"start"</code>
+       * @example <caption>Initialize the Navigation List with the <code class="prettyprint">edge</code> attribute specified:</caption>
+       *  &lt;oj-navigation-list edge='top'> ... &lt;/oj-navigation-list>
+       *  
+       * @example <caption>Get the edge:</caption>
+       * var edge = myNavList.edge;
+       *
+       * @example <caption>Set the edge on the Navigation List:</caption>
+       * myNavList.edge = "top";
        */
       edge: "start",
       /**
        * Specifies the level at which user can see hiearchical menu button.This is only valid when <code class="prettyprint">drillMode</code> set to <code class="prettyprint">sliding</code>.
        * Default value is 0, shows hiearchical menu always. If value is -1, then it will never be shown.
        *
-       * <p>The default value for hierarchyMenuDisplayThresholdLevel varies by theme.  Each theme can set its default by setting
+       * <p>The default value for hierarchyMenuThreshold varies by theme.  Each theme can set its default by setting
        * <code class="prettyprint">$navigationListHierarchyMenuDisplayThresholdLevelOptionDefault</code> as seen in the example below.
        *
        * @expose
-       * @name hierarchyMenuDisplayThresholdLevel
+       * @name hierarchyMenuThreshold
        * @memberof oj.ojNavigationList
        * @instance
        * @type {number|null}
        * @default Varies by theme. <code class="prettyprint">"0"</code> if not specified in theme.
-       *
-       * @example <caption>Initialize the navigation list with the <code class="prettyprint">hierarchyMenuDisplayThresholdLevel</code> option specified:</caption>
-       * $( ".selector" ).ojNavigationList( { "hierarchyMenuDisplayThresholdLevel": "4" } );
-       *
-       * @example <caption>Get or set the <code class="prettyprint">hierarchyMenuDisplayThresholdLevel</code> option, after initialization:</caption>
+       * 
+       * @example <caption>Initialize the Navigation List with the <code class="prettyprint">hierarchy-menu-threshold</code> attribute specified:</caption>
+       *  &lt;oj-navigation-list hierarchy-menu-threshold='4'> ... &lt;/oj-navigation-list>
+       *  
+       * @example <caption>Get or set the <code class="prettyprint">hierarchyMenuThreshold</code> property:</caption>
        * // getter
-       * var display = $( ".selector" ).ojNavigationList( "option", "hierarchyMenuDisplayThresholdLevel" );
+       * var hierarchyMenuThreshold = myNavList.hierarchyMenuThreshold;
        *
        * // setter
-       * $( ".selector" ).ojNavigationList( "option", "hierarchyMenuDisplayThresholdLevel", "4" );
+       * myNavList.hierarchyMenuThreshold = "4";
        *
        * @example <caption>Set the default in the theme (SCSS) :</caption>
        * $navigationListHierarchyMenuDisplayThresholdLevelOptionDefault: -1 !default;
@@ -3058,21 +3349,39 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
        * @expose
        * @instance
        * @memberof oj.ojNavigationList
+       * @example <caption>Initialize the Navigation List with the <code class="prettyprint">root-label</code> attribute specified:</caption>
+       *  &lt;oj-navigation-list root-label='Global Navigation'> ... &lt;/oj-navigation-list>
+       *  
+       * @example <caption>Get or set the <code class="prettyprint">rootLabel</code> property:</caption>
+       * // getter
+       * var rootLabel = myNavList.rootLabel;
+       *
+       * // setter
+       * myNavList.rootLabel = "4";
        */
       rootLabel: null,
       /**
-       * Item key of currently selected list item. If the value is modified
+       * Item <a href="#key-section">Key</a> of currently selected list item. If the value is modified
        * by an application, navigation list UI is modified to match the new value.
-       * @type {string|null}
+       * @type {Object|string}
        * @default <code class="prettyprint">null</code>
        * @expose
        * @instance
        * @memberof oj.ojNavigationList
+       * @ojwriteback
+       * @example <caption>Initialize the Navigation List with the <code class="prettyprint">selection</code> attribute specified:</caption>
+       *  &lt;oj-navigation-list selection='settings'> ... &lt;/oj-navigation-list>
+       *  
+       * @example <caption>Get the selection:</caption>
+       * var selection = myNavList.selection;
+       *
+       * @example <caption>Set the selection on the Navigation List:</caption>
+       * myNavList.selection = "settings";
        */
       selection: null,
       /**
        * Specifies which items in NavigationList should be expanded. Specifies "all" value to expand all items.  Specifies
-       * an array of keys to expand specific items.
+       * an array of <a href="#key-section">Key</a>s to expand specific items.
        *
        * The default value is "auto", which means that NavigationList will determine which items are expanded by default.
        * Specifically, if drillMode is set to "none", then all items are expanded, any other values for
@@ -3083,9 +3392,17 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
        * method.
        * @type {Array|string}
        * @default <code class="prettyprint">[]</code>
-       * @expose
+       * @ignore
        * @instance
        * @memberof oj.ojNavigationList
+       * @example <caption>Initialize the Navigation List with the <code class="prettyprint">expanded</code> attribute specified:</caption>
+       *  &lt;oj-navigation-list expanded='all'> ... &lt;/oj-navigation-list>
+       *  
+       * @example <caption>Get the expanded:</caption>
+       * var expanded = myNavList.expanded;
+       *
+       * @example <caption>Set the expanded on the Navigation List:</caption>
+       * myNavList.expanded = ["settings"];
        */
       expanded: "auto",
       /**
@@ -3099,12 +3416,16 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
        * @instance
        * @type {oj.TableDataSource|oj.TreeDataSource}
        * @default <code class="prettyprint">null</code>
+       * @example <caption>Initialize the Navigation List with the <code class="prettyprint">data</code> attribute specified:</caption>
+       *  &lt;oj-navigation-list data='[[tableDataSource]]'> ... &lt;/oj-navigation-list>
+       * @example <caption>Get the data:</caption>
+       * var dataSource = myNavList.data;
        *
-       * @example <caption>Initialize the NavigationList with a one-dimensional array:</caption>
-       * $( ".selector" ).ojNavigationList({ "data": new oj.ArrayTableDataSource([1,2,3])});
-       *
-       * @example <caption>Initialize the NavigationList with an oj.Collection:</caption>
-       * $( ".selector" ).ojNavigationList({ "data": new oj.CollectionTableDataSource(collection)});
+       * @example <caption>Set the data attribute using one-dimensional array:</caption>
+       * myNavList.data = new oj.ArrayTableDataSource([1,2,3]);
+       * 
+       * @example <caption>Set the data attribute using oj.Collection:</caption>
+       * myNavList.data = new oj.CollectionTableDataSource(collection);
        */
       data: null,
       /**
@@ -3118,24 +3439,25 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
        * @instance
        * @type {string}
        * @ojvalue {string} "all" Display both the label and icons.
-       * @ojvalue {string} "icons" Display only the icons.This option
+       * @ojvalue {string} "icons" Display only the icons.
        * @default <code class="prettyprint">"all"</code>
-       *
-       * @example <caption>Initialize the NavigationList with the <code class="prettyprint">display</code> option specified:</caption>
-       * $( ".selector" ).ojNavigationList( { "display": "icons" } );
-       *
-       * @example <caption>Get or set the <code class="prettyprint">display</code> option, after initialization:</caption>
+       * @example <caption>Initialize the Navigation List with the <code class="prettyprint">display</code> attribute specified:</caption>
+       *  &lt;oj-navigation-list display='icons'> ... &lt;/oj-navigation-list>
+       * 
+       * @example <caption>Get or set the <code class="prettyprint">display</code> property:</caption>
        * // getter
-       * var display = $( ".selector" ).ojNavigationList( "option", "display" );
+       * var display = myNavList.display;
        *
        * // setter
-       * $( ".selector" ).ojNavigationList( "option", "display", "icons" );
+       * myNavList.display = "icons";
        */
       display: "all",
       /**
        * Navigation List supports two different look-and-feel depends on its usage level, one is <code class="prettyprint">application</code> level and other is <code class="prettyprint">page</code> level.
        *
        * @expose
+       * @ignore
+       * @deprecated Use <code class="prettyprint">oj-navigation-tabs</code> custom element for <code class="prettyprint">page</code> level navigation list. In future <code class="prettyprint">ojNavigationList</code> will only support <code class="prettyprint">application</code> level by default.
        * @memberof oj.ojNavigationList
        * @instance
        * @type {string}
@@ -3144,19 +3466,19 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
        * @default <code class="prettyprint">"page"</code>
        *
        * @example <caption>Initialize the NavigationList with the <code class="prettyprint">navigationLevel</code> option specified:</caption>
-       * $( ".selector" ).ojNavigationList( { "navigationLevel": "application" } );
+       *  &lt;oj-navigation-list navigation-level='application'> ... &lt;/oj-navigation-list>
        *
        * @example <caption>Get or set the <code class="prettyprint">navigationLevel</code> option, after initialization:</caption>
        * // getter
-       * var display = $( ".selector" ).ojNavigationList( "option", "navigationLevel" );
+       * var display = navList.navigationLevel;
        *
        * // setter
-       * $( ".selector" ).ojNavigationList( "option", "navigationLevel", "application" );
+       * navList.navigationLevel = "application";
        */
       navigationLevel: "page",
        /**
        * Specifies the overflow behaviour. 
-       * NOTE: This is only applicable when <code class="prettyprint">edge</code> option set to <code class="prettyprint">top</code>
+       * NOTE: This is only applicable when <code class="prettyprint">edge</code> attribute set to <code class="prettyprint">top</code>
        * @expose
        * @memberof oj.ojNavigationList
        * @instance
@@ -3165,19 +3487,18 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
        * @ojvalue {string} "hidden" overflow is clipped, and the rest of the content will be invisible.
        * @default <code class="prettyprint">"hidden"</code>
        * @since 3.0.0
-       * @example <caption>Initialize the NavigationList with the <code class="prettyprint">overflow</code> option specified:</caption>
-       * $( ".selector" ).ojNavigationList( { "overflow": "popup" } );
-       *
-       * @example <caption>Get or set the <code class="prettyprint">overflow</code> option, after initialization:</caption>
+       * @example <caption>Initialize the Navigation List with the <code class="prettyprint">overflow</code> attribute specified:</caption>
+       *  &lt;oj-navigation-list overflow='popup'> ... &lt;/oj-navigation-list>
+       * @example <caption>Get or set the <code class="prettyprint">overflow</code> property:</caption>
        * // getter
-       * var display = $( ".selector" ).ojNavigationList( "option", "overflow" );
+       * var overflow = myNavList.overflow;
        *
        * // setter
-       * $( ".selector" ).ojNavigationList( "option", "overflow", "hidden" );
+       * myNavList.overflow = "hidden";
        */
       overflow: "hidden",
       /**
-       * The item option contains a subset of options for items.
+       * The item property contains a subset of properties for items.
        *
        * @expose
        * @memberof! oj.ojNavigationList
@@ -3187,9 +3508,14 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
         /**
          * The renderer function that renders the content of the item. See <a href="#context-section">itemContext</a>
          * in the introduction to see the object passed into the renderer function.
-         * The function returns either a String or a DOM element of the content inside the item.
-         * If the developer chooses to manipulate the list element directly, the function should return
-         * nothing. If no renderer is specified, Navigation List will treat the data as a String.
+         * The function should return one of the following: 
+         * <ul>
+         *   <li>An Object with the following property:
+         *     <ul><li>insert: HTMLElement | string - A string or a DOM element of the content inside the item.</li></ul>
+         *   </li>
+         *   <li>undefined: If the developer chooses to manipulate the item element directly, the function should return undefined.</li>
+         * </ul>
+         * If no renderer is specified, Navigation List will treat the data as a String.
          *
          * @expose
          * @alias item.renderer
@@ -3197,14 +3523,15 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
          * @instance
          * @type {function(Object)|null}
          * @default <code class="prettyprint">null</code>
-         *
-         * @example <caption>Initialize the NavigationList with a renderer:</caption>
-         * $( ".selector" ).ojNavigationList({ "data":data, "item": { "renderer": function(itemContext) {
-         *                                            return itemContext['data'].get('FIRST_NAME');}}});
-         *
-         * @example <caption>Get or set the <code class="prettyprint">renderer</code> option, after initialization:</caption>
+         * @example <caption>Initialize the Navigation List with the <code class="prettyprint">item.renderer</code> attribute specified:</caption>
+         *  &lt;oj-navigation-list item.renderer="{{oj.KnockoutTemplateUtils.getRenderer('template', true)}}"> ... &lt;/oj-navigation-list>
+         *  
+         * @example <caption>Get or set the <code class="prettyprint">renderer</code> property:</caption>
          * // set the renderer function
-         * $( ".selector" ).ojNavigationList( "option", "item.renderer", myFunction});
+         * myNavList.item.renderer = rendererFn;
+         * 
+         * // get the renderer function
+         * var rendererFn = myNavList.item.renderer;
          */
         renderer: null,
         /**
@@ -3219,29 +3546,39 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
          * @default <code class="prettyprint">true</code>
          *
          * @example <caption>Initialize the NavigationList such that the first 3 items are not selectable:</caption>
-         * $( ".selector" ).ojNavigationList({ "data":data, "item": { "selectable": function(itemContext) {
-         *                                            return itemContext['index'] > 3;}}});
+         *  <oj-navigation-list item.selectable="[[skipFirstThreeElementsFn]]"></oj-navigation-list>
+         *  
+         *  var skipFirstThreeElementsFn = function(itemContext) {
+         *                                      return itemContext['index'] > 3; 
+         *                                 }
          */
         selectable: true
-          /**
-           * The knockout template used to render the content of the item.
-           *
-           * This attribute is only exposed via the <code class="prettyprint">ojComponent</code> binding, and is not a
-           * component option.
-           *
-           * @ojbindingonly
-           * @name item.template
-           * @memberof! oj.ojNavigationList
-           * @instance
-           * @type {string|null}
-           * @default <code class="prettyprint">null</code>
-           *
-           * @example <caption>Specify the <code class="prettyprint">template</code> when initializing NavigationList:</caption>
-           * // set the template
-           * &lt;div id="navlist" data-bind="ojComponent: {component: 'ojNavigationList', data: dataSource, template: 'my_template'}"&gt;&lt;/div&gt;
-           */
+
       },
       //Events
+      /**
+       * Triggered when the default animation of a particular action is about to start.  The default animation can be cancelled by calling event.preventDefault.
+       *
+       * @expose
+       * @event
+       * @memberof oj.ojNavigationList
+       * @instance
+       * @property {Object} action the action that starts the animation.  See <a href="#animation-section">animation</a> section for a list of actions.
+       * @property {Object} element the target of animation.  
+       * @property {function} endCallback if the event listener calls event.preventDefault to cancel the default animation, it must call the endCallback function when it finishes its own animation handling and when any custom animation ends.
+       */
+      animateStart: null,
+      /**
+       * Triggered when the default animation of a particular action has ended.  Note this event will not be triggered if application cancelled the default animation on animateStart.
+       *
+       * @expose
+       * @event
+       * @memberof oj.ojNavigationList
+       * @instance
+       * @property {Object} action the action that started the animation.  See <a href="#animation-section">animation</a> section for a list of actions.
+       * @property {Object} element the target of animation.  
+       */
+      animateEnd: null,
       /**
        * <p>Triggered before this list item is selected.
        * To prevent the item selection, return <code class="prettyprint">false</code> from event handler or invoke <code class="prettyprint">event.preventDefault()</code>.
@@ -3250,156 +3587,72 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
        *
        * @expose
        * @event
-       * @memberof! oj.ojNavigationList
+       * @memberof oj.ojNavigationList
        * @instance
-       * @property {Event} event <code class="prettyprint">jQuery</code> event object
-       * @property {Object} ui Parameters
-       * @property {Object} ui.key Selected list item key.
-       * @property {jQuery} ui.item Selected list item.
-       *
-       * @example <caption>Initialize the Navigation List with the <code class="prettyprint">beforeSelect</code> callback specified:</caption>
-       * $( ".selector" ).ojNavigationList({
-       *     "beforeSelect": function( event, ui ) {}
-       * });
-       *
-       * @example <caption>Bind an event listener to the <code class="prettyprint">ojbeforeselect</code> event:</caption>
-       * $( ".selector" ).on( "ojbeforeselect", function( event, ui ) {
-       *      // verify that the component firing the event is a component of interest 
-       *      if ($(event.target).is(".mySelector")) {} 
-       * } );
+       * @property {Object|string} key Selected list item <a href="#key-section">Key</a>.
+       * @property {Element} item Selected list item.
        */
       beforeSelect: null,
       /**
-       * Triggered before an item is collapse via the <code class="prettyprint">expanded</code> option,
+       * Triggered before an item is collapse via the <code class="prettyprint">expanded</code> property,
        * the <code class="prettyprint">collapse</code> method, or via the UI.
        * To prevent the item being collapsed, return <code class="prettyprint">false</code> from event handler or invoke <code class="prettyprint">event.preventDefault()</code>.
        *
        * @expose
        * @event
-       * @memberof! oj.ojNavigationList
+       * @memberof oj.ojNavigationList
        * @instance
-       * @property {Event} event <code class="prettyprint">jQuery</code> event object
-       * @property {Object} ui Parameters
-       * @property {Object} ui.key the key of the item to be collapse
-       * @property {jQuery} ui.item the item to be collapse
-       *
-       * @example <caption>Initialize the NavigationList with the <code class="prettyprint">beforeCollapse</code> callback specified:</caption>
-       * $( ".selector" ).ojNavigationList({
-       *     "beforeCollapse": function( event, ui ) {
-       *         // return false to veto the event, which prevents the item to collapse
-       *     }
-       * });
-       *
-       * @example <caption>Bind an event listener to the <code class="prettyprint">ojbeforecollapse</code> event:</caption>
-       * $( ".selector" ).on( "ojbeforecollapse", function( event, ui ) {
-       *      // verify that the component firing the event is a component of interest 
-       *      if ($(event.target).is(".mySelector")) {} 
-       * } );
+       * @property {Object|string} key the <a href="#key-section">Key</a> of the item to be collapse
+       * @property {Element} item the item to be collapse
        */
       beforeCollapse: null,
       /**
-       * Triggered before the current item is changed via the <code class="prettyprint">currentItem</code> option or via the UI.
+       * Triggered before the current item is changed via the <code class="prettyprint">currentItem</code> property or via the UI.
        * To prevent the item being focused, return <code class="prettyprint">false</code> from event handler or invoke <code class="prettyprint">event.preventDefault()</code>.
        * @expose
        * @event
-       * @memberof! oj.ojNavigationList
+       * @memberof oj.ojNavigationList
        * @instance
-       * @property {Event} event <code class="prettyprint">jQuery</code> event object
-       * @property {Object} ui Parameters
-       * @property {Object} ui.previousKey the key of the previous item
-       * @property {jQuery} ui.previousItem the previous item
-       * @property {Object} ui.key the key of the new current item
-       * @property {jQuery} ui.item the new current item
-       *
-       * @example <caption>Initialize the NavigationList with the <code class="prettyprint">beforeCurrentItem</code> callback specified:</caption>
-       * $( ".selector" ).ojNavigationList({
-       *     "beforeCurrentItem": function( event, ui ) {
-       *         // return false to veto the event, which prevents the item to become focus
-       *     }
-       * });
-       *
-       * @example <caption>Bind an event listener to the <code class="prettyprint">ojbeforecurrentitem</code> event:</caption>
-       * $( ".selector" ).on( "ojbeforecurrentitem", function( event, ui ) {
-       *      // verify that the component firing the event is a component of interest 
-       *      if ($(event.target).is(".mySelector")) {} 
-       * } );
+       * @property {Object|string} previousKey the <a href="#key-section">Key</a> of the previous item
+       * @property {Element} previousItem the previous item
+       * @property {Object|string} key the <a href="#key-section">Key</a> of the new current item
+       * @property {Element} item the new current item
        */
       beforeCurrentItem: null,
       /**
-       * Triggered after an item has been collapsed via the <code class="prettyprint">expanded</code> option,
+       * Triggered after an item has been collapsed via the <code class="prettyprint">expanded</code> property,
        * the <code class="prettyprint">collapse</code> method, or via the UI.
        *
        * @expose
        * @event
-       * @memberof! oj.ojNavigationList
+       * @memberof oj.ojNavigationList
        * @instance
-       * @property {Event} event <code class="prettyprint">jQuery</code> event object
-       * @property {Object} ui Parameters
-       * @property {Object} ui.key The key of the item that was just collapsed.
-       * @property {jQuery} ui.item The list item that was just collapsed.
-       *
-       * @example <caption>Initialize the NavigationList with the <code class="prettyprint">expand</code> callback specified:</caption>
-       * $( ".selector" ).ojNavigationList({
-       *     "collapse": function( event, ui ) {}
-       * });
-       *
-       * @example <caption>Bind an event listener to the <code class="prettyprint">ojcollapse</code> event:</caption>
-       * $( ".selector" ).on( "ojcollapse", function( event, ui ) {
-       *      // verify that the component firing the event is a component of interest 
-       *      if ($(event.target).is(".mySelector")) {} 
-       * } );
+       * @property {Object|string} key The <a href="#key-section">Key</a> of the item that was just collapsed.
+       * @property {Element} item The list item that was just collapsed.
        */
       collapse: null,
       /**
-       * Triggered before an item is expand via the <code class="prettyprint">expanded</code> option,
+       * Triggered before an item is expand via the <code class="prettyprint">expanded</code> property,
        * the <code class="prettyprint">expand</code> method, or via the UI.
        * To prevent the item being expanded, return <code class="prettyprint">false</code> from event handler or invoke <code class="prettyprint">event.preventDefault()</code>.
        * @expose
        * @event
-       * @memberof! oj.ojNavigationList
+       * @memberof oj.ojNavigationList
        * @instance
-       * @property {Event} event <code class="prettyprint">jQuery</code> event object
-       * @property {Object} ui Parameters
-       * @property {Object} ui.key the key of the item to be expand
-       * @property {jQuery} ui.item the item to be expand
-       *
-       * @example <caption>Initialize the NavigationList with the <code class="prettyprint">beforeExpand</code> callback specified:</caption>
-       * $( ".selector" ).ojNavigationList({
-       *     "beforeExpand": function( event, ui ) {
-       *         // return false to veto the event, which prevents the item to expand
-       *     }
-       * });
-       *
-       * @example <caption>Bind an event listener to the <code class="prettyprint">ojbeforeexpand</code> event:</caption>
-       * $( ".selector" ).on( "ojbeforeexpand", function( event, ui ) {
-       *      // verify that the component firing the event is a component of interest 
-       *      if ($(event.target).is(".mySelector")) {} 
-       * } );
+       * @property {Object|string} key the <a href="#key-section">Key</a> of the item to be expand
+       * @property {Element} item the item to be expand
        */
       beforeExpand: null,
       /**
-       * Triggered after an item has been expanded via the <code class="prettyprint">expanded</code> option,
+       * Triggered after an item has been expanded via the <code class="prettyprint">expanded</code> property,
        * the <code class="prettyprint">expand</code> method, or via the UI.
        *
        * @expose
        * @event
-       * @memberof! oj.ojNavigationList
+       * @memberof oj.ojNavigationList
        * @instance
-       * @property {Event} event <code class="prettyprint">jQuery</code> event object
-       * @property {Object} ui Parameters
-       * @property {Object} ui.key The key of the item that was just expanded.
-       * @property {jQuery} ui.item The list item that was just expanded.
-       *
-       * @example <caption>Initialize the NavigationList with the <code class="prettyprint">expand</code> callback specified:</caption>
-       * $( ".selector" ).ojNavigationList({
-       *     "expand": function( event, ui ) {}
-       * });
-       *
-       * @example <caption>Bind an event listener to the <code class="prettyprint">ojexpand</code> event:</caption>
-       * $( ".selector" ).on( "ojexpand", function( event, ui ) {
-       *      // verify that the component firing the event is a component of interest 
-       *      if ($(event.target).is(".mySelector")) {} 
-       * } );
+       * @property {Object|string} key The <a href="#key-section">Key</a> of the item that was just expanded.
+       * @property {Element} item The list item that was just expanded.
        */
       expand: null
     },
@@ -3421,6 +3674,11 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
      */
     _AfterCreate: function () {
       this._super();
+      
+      // inject helper functions for ContentHandler and custom renderer to use
+      var self = this;
+      this.navlist._FixRendererContext = function(context) { return self._FixRendererContext(context); };
+      this.navlist._WrapCustomElementRenderer = function(renderer) { return self._WrapCustomElementRenderer(renderer) };
       this.navlist.afterCreate();
     },
     /**
@@ -3442,13 +3700,13 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
      */
     _setup: function () {
       var key, opts;
+      this.navlist = new _ojNavigationListView();
+
       for (key in this.options) {
         this._validateOptionValues(key, this.options[key]);
       }
-      this._validateOptionsForIconsOnlyAndHorizontalList(this.options['drillMode'], this.options['display'], this.options['edge']);
-
-      this.navlist = new _ojNavigationListView();
-
+      this._validateOptionsForIconsOnlyAndHorizontalList(this.options[this.navlist.OPTION_DRILL_MODE], this.options[this.navlist.OPTION_DISPLAY], this.options[this.navlist.OPTION_EDGE]);
+      
       opts = {};
       opts.ojContext = this;
       opts = $.extend(this.options, opts);
@@ -3479,10 +3737,10 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
      * Expand an item.<p>
      * Note when vetoable is set to false, beforeExpand event will still be fired but the event cannot be veto.<p>
      *
-     * @expose
+     * @ignore
      * @memberof oj.ojNavigationList
      * @instance
-     * @param {Object} key the key of the item to expand
+     * @param {Object|string} key the <a href="#key-section">Key</a> of the item to expand
      * @param {boolean} vetoable if event is vetoable
      * @param {boolean} animate true if animate the expand operation, false otherwise
      */
@@ -3493,10 +3751,10 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
      * Collapse an item.<p>
      * Note when vetoable is set to false, beforeCollapse event will still be fired but the event cannot be veto.<p>
      *
-     * @expose
+     * @ignore
      * @memberof oj.ojNavigationList
      * @instance
-     * @param {Object} key the key of the item to collapse
+     * @param {Object|string} key the <a href="#key-section">Key</a> of the item to collapse
      * @param {boolean} vetoable if event is vetoable
      * @param {boolean} animate true if animate the collapse operation, false otherwise
      */
@@ -3506,7 +3764,7 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
     /**
      * Gets the key of currently expanded items.
      *
-     * @expose
+     * @ignore
      * @memberof oj.ojNavigationList
      * @instance
      * @return {Array} array of keys of currently expanded items
@@ -3515,29 +3773,32 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
       return this.navlist.getExpanded();
     },
     _validateOptionsForIconsOnlyAndHorizontalList: function (drillMode, display, edge) {
-      if (drillMode !== 'none') {
-        if (display === 'icons') {
+      if (drillMode !== this.navlist.OPTION_DRILL_MODE_NONE) {
+        if (display === this.navlist.OPTION_DISPLAY_ICONS) {
           throw "Icon only navigation list should have drillMode set to 'none'.";
         }
-        if (edge === 'top') {
+        if (edge === this.navlist.OPTION_EDGE_TOP) {
           throw "Horizontal navigation list should have drillMode set to 'none'.";
         }
       }
     },
     _validateOptionValues: function (key, value) {
       var valid = true;
-      if (key === "drillMode") {
-        valid = (value === 'none' || value === 'collapsible' || value === 'sliding');
-      } else if (key === "display") {
-        valid = (value === 'all' || value === 'icons');
-      } else if (key === "edge") {
-        valid = (value === 'top' || value === 'start');
+      if (key === this.navlist.OPTION_DRILL_MODE) {
+        valid = (value === this.navlist.OPTION_DRILL_MODE_NONE || value === this.navlist.OPTION_DRILL_MODE_COLLAPSIBLE || value === this.navlist.OPTION_DRILL_MODE_SLIDING);
+      } else if (key === this.navlist.OPTION_DISPLAY) {
+        valid = (value === this.navlist.OPTION_DISPLAY_ALL || value === this.navlist.OPTION_DISPLAY_ICONS);
+      } else if (key === this.navlist.OPTION_EDGE) {
+        if(this.element[0].tagName.toLowerCase() === this.navlist.TAG_NAME_TAB_BAR){
+          valid = (value === this.navlist.OPTION_EDGE_TOP || value === this.navlist.OPTION_EDGE_START ||
+                  value === this.navlist.OPTION_EDGE_END || value === this.navlist.OPTION_EDGE_BOTTOM);
+        } else {
+          valid = (value === this.navlist.OPTION_EDGE_TOP || value === this.navlist.OPTION_EDGE_START);
+        }
       }
-
       if (!valid) {
         throw "Invalid value: " + value + " for key: " + key;
       }
-
     },
     /**
      * Set single option
@@ -3549,17 +3810,30 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
      * @private
      */
     _setOption: function (key, value) {
+      var flags, extraData;
       this._validateOptionValues(key, value);
       switch (key) {
-      case "drillMode":
-        this._validateOptionsForIconsOnlyAndHorizontalList(value, this.options['display'], this.options['edge']);
+      case this.navlist.OPTION_DRILL_MODE:
+        this._validateOptionsForIconsOnlyAndHorizontalList(value, this.options[this.navlist.OPTION_DISPLAY], this.options[this.navlist.OPTION_EDGE]);
         break;
-      case "display":
-        this._validateOptionsForIconsOnlyAndHorizontalList(this.options['drillMode'], value, this.options['edge']);
+      case this.navlist.OPTION_DISPLAY:
+        this._validateOptionsForIconsOnlyAndHorizontalList(this.options[this.navlist.OPTION_DRILL_MODE], value, this.options[this.navlist.OPTION_EDGE]);
         break;
-      case "edge":
-        this._validateOptionsForIconsOnlyAndHorizontalList(this.options['drillMode'], this.options['display'], value);
+      case this.navlist.OPTION_EDGE:
+        this._validateOptionsForIconsOnlyAndHorizontalList(this.options[this.navlist.OPTION_DRILL_MODE], this.options[this.navlist.OPTION_DISPLAY], value);
         break;
+      case this.navlist.OPTION_SELECTION:
+        extraData = this.navlist.getItems([value])[0];
+        flags = {'_context': {extraData: {'item': this._IsCustomElement() ? extraData : $(extraData)}}};
+        break;
+      case this.navlist.OPTION_CURRENT_ITEM:
+        extraData = this.navlist.getItems([value])[0];
+        flags = {'_context': {extraData: {'item': this._IsCustomElement() ? extraData : $(extraData)}}};
+        break;  
+      }
+      if (flags)
+      {
+        return this._super(key, value, flags);
       }
       return this._super(key, value);
     },
@@ -3573,11 +3847,15 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
     _setOptions: function (options, flags) {
       var key, result = this.navlist.setOptions(options, flags);
 
+      var nonSkippedOptions = {};
       for (key in options) {
         if (result.skipOptions.indexOf(key) < 0) {
-          this._setOption(key, options[key], flags);
+            nonSkippedOptions[key] = options[key];
         }
       }
+      // Should call _super as that's where the old and new option value checking
+      // logic lives. _setOption should not be called directly.
+      this._super(nonSkippedOptions, flags);
 
       if (result.needRefresh) {
         this.navlist.refresh();
@@ -3622,7 +3900,7 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
      * @instance
      *
      * @example <caption>Invoke the <code class="prettyprint">refresh</code> method:</caption>
-     * $( ".selector" ).ojNavigationList( "refresh" );
+     *  myNavList.refresh();
      */
     refresh: function () {
       this._super();
@@ -3636,12 +3914,37 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
      * <p>This method does not accept any arguments.
      * 
      * @expose
+     * @ignore
      * @memberof oj.ojNavigationList
      * @instance
      * @return {Promise} A Promise that resolves when the component is ready.
      */
     whenReady: function () {
       return this.navlist.whenReady();
+    },
+     /**
+     * Sets up resources needed by navlist
+     * @memberof! oj.ojNavigationList
+     * @instance
+     * @override
+     * @protected
+     */
+    _SetupResources: function()
+    {
+        this._super();
+        this.navlist.setupResources();
+    },
+    /**
+     * Release resources held by navlist
+     * @memberof! oj.ojNavigationList
+     * @instance
+     * @override
+     * @protected
+     */
+    _ReleaseResources: function()
+    {
+        this._super();
+        this.navlist.releaseResources();
     },
     /**
      * Destroy the Navigation List
@@ -3651,7 +3954,19 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
     _destroy: function () {
       this.navlist.destroy();
       this._super();
-      delete this.navlist;
+    },
+
+    //** @inheritdoc */
+    _CompareOptionValues: function(option, value1, value2)
+    {
+      switch(option)
+      {
+         case 'currentItem':
+         case 'selection':
+            return oj.Object.compareValues(value1, value2);
+         default:
+            return this._super(option, value1, value2);
+      }
     }
 
     // Fragments:
@@ -3826,7 +4141,7 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
      *       <td>Displays horizontal Navigation List with icon and label stacked. Applicable only when <code class="prettyprint">edge</code> is <code class="prettyprint">top</code>.</td>
      *       <td>
      *          <pre class="prettyprint">
-     *<code>&lt;div id="navigationlist" class="oj-navigationlist-stack-icon-label" >
+     *<code>&lt;oj-navigation-list class="oj-navigationlist-stack-icon-label" >
      *  &lt;ul>    
      *    &lt;li id="foo">
      *      &lt;a href="#">
@@ -3836,7 +4151,7 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
      *      &lt;/a>
      *    &lt;/li>
      *  &lt;/ul>
-     *&lt;/div>
+     *&lt;/oj-navigation-list>
      *</code></pre>
      *       </td>
      *     </tr>
@@ -3845,7 +4160,7 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
      *       <td>Use this class to add horizontal divider line between two categories of items.</td>
      *       <td>
      *          <pre class="prettyprint">
-     *<code>&lt;div id="navigationlist">
+     *<code>&lt;oj-navigation-list>
      *  &lt;ul>
      *    &lt;li ...> &lt;/li>
      *    &lt;li class="oj-navigationlist-category-divider"> &lt;/li>    
@@ -3858,7 +4173,7 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
      *    &lt;/li>
      *    &lt;li ...> &lt;/li>
      *  &lt;/ul>
-     *&lt;/div>
+     *&lt;/oj-navigation-list>
      *</code></pre>
      *       </td>     
      *     </tr>
@@ -3867,7 +4182,7 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
      *       <td>Use this class to add icon to list item.</td>
      *       <td>
      *          <pre class="prettyprint">
-     *<code>&lt;div id="navigationlist">
+     *<code>&lt;oj-navigation-list>
      *  &lt;ul>    
      *    &lt;li id="foo">
      *      &lt;a href="#">
@@ -3877,12 +4192,12 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
      *      &lt;/a>
      *    &lt;/li>
      *  &lt;/ul>
-     *&lt;/div></code></pre>
+     *&lt;/oj-navigation-list></code></pre>
      *       </td>
      *     </tr>
      *     <tr>
      *       <td>oj-navigationlist-item-title</td>
-     *       <td>When arbitrary content is placed in side item, mark item title using this marker class.
+     *       <td>When arbitrary content is placed inside item's content area, it's title text can be marked using this style class. This helps component in identifying the Item's label.
      *       </td>
      *       <td>
      * <pre class="prettyprint">
@@ -3897,10 +4212,10 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
      *     </tr>
      *     <tr>
      *       <td>oj-navigationlist-item-text-wrap</td>
-     *       <td>Use this class to wrap item label text. Note: On IE11, this is not supported when <code class="prettyprint">overflow</code> option is set to <code class="prettyprint">popup</code>.</td>
+     *       <td>Use this class to wrap item label text. Note: On IE11, this is not supported when <code class="prettyprint">overflow</code> attribute is set to <code class="prettyprint">popup</code>.</td>
      *       <td>
      *          <pre class="prettyprint">
-     *<code>&lt;div id="navigationlist" class="oj-navigationlist-item-text-wrap" >
+     *<code>&lt;oj-navigation-list class="oj-navigationlist-item-text-wrap" >
      *  &lt;ul>    
      *    &lt;li id="foo">
      *      &lt;a href="#">
@@ -3910,7 +4225,7 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
      *      &lt;/a>
      *    &lt;/li>
      *  &lt;/ul>
-     *&lt;/div>
+     *&lt;/oj-navigation-list>
      *</code></pre>
      *       </td>     
      *     </tr>
@@ -3919,7 +4234,7 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
      *       <td>Use this class to show dividers between horizontal navigation list items.</td>
      *       <td>
      *          <pre class="prettyprint">
-     *<code>&lt;div id="navigationlist" class="oj-navigationlist-item-dividers" >
+     *<code>&lt;oj-navigation-list class="oj-navigationlist-item-dividers" >
      *  &lt;ul>    
      *    &lt;li id="foo">
      *       &lt;a href="#">
@@ -3928,7 +4243,7 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
      *       &lt;/a>
      *    &lt;/li>
      *  &lt;/ul>
-     *&lt;/div>
+     *&lt;/oj-navigation-list>
      *</code></pre>
      *       </td>     
      *     </tr>     
@@ -3939,7 +4254,7 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
      *       </td>
      *       <td rowspan="4">
      *          <pre class="prettyprint">
-     *<code>&lt;div id="navigationlist" class="oj-sm-condense" >
+     *<code>&lt;oj-navigation-list class="oj-sm-condense" >
      *  &lt;ul>    
      *    &lt;li id="foo">
      *      &lt;a href="#">
@@ -3948,7 +4263,7 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
      *      &lt;/a>
      *    &lt;/li>
      *  &lt;/ul>
-     *&lt;/div>
+     *&lt;/oj-navigation-list>
      *</code></pre>
      *       </td>      
      *     </tr>
@@ -3969,11 +4284,11 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
      *     </tr>
      *     <tr>
      *       <td>oj-navigationlist-nofollow-link</td>
-     *       <td> Use this class to prevent automatic navigation to the url specified on <code class="prettyprint">&lt;a></code> tag's <code class="prettyprint">href</code> attribute. In this case, navigation can be handled programmatically by using <code class="prettyprint">optionChange</code> event.
+     *       <td> Use this class to prevent automatic navigation to the url specified on <code class="prettyprint">&lt;a></code> tag's <code class="prettyprint">href</code> attribute. In this case, navigation can be handled programmatically by using <code class="prettyprint">selectionChanged</code> event. This is useful to execute some custom logic before browser triggers navigation.
      *       </td>
      *       <td>
      *          <pre class="prettyprint">
-     *<code>&lt;div id="navigationlist" class="oj-navigationlist-nofollow-link" >
+     *<code>&lt;oj-navigation-list class="oj-navigationlist-nofollow-link" >
      *  &lt;ul>    
      *    &lt;li id="foo">&lt;a href="folder/foo.html">
      *      &lt;span 
@@ -3981,7 +4296,7 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
      *      Foo&lt;/a>
      *    &lt;/li>
      *  &lt;/ul>
-     *&lt;/div>
+     *&lt;/oj-navigation-list>
      *</code></pre>
      *       </td>     
      *     </tr>
@@ -4000,23 +4315,23 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
     // SubId Locators *****************************************************
 
     /**
-     * <p>Sub-ID for the ojNavigationList component's list item element.</p>
+     * <p>Sub-ID for the oj-navigtion-list component's list item element.</p>
      *
      * <p>
      * To lookup the list items the locator object should have the following:
      * <ul>
      * <li><b>subId</b>: 'oj-navigationlist-item'</li>
-     * <li><b>key</b>: the key of the item</li>
+     * <li><b>key</b>: the <a href="#key-section">Key</a> of the item</li>
      * </ul>
      *
      * @ojsubid oj-navigationlist-item
      * @memberof oj.ojNavigationList
      *
      * @example <caption>Get the list item element with key 'foo':</caption>
-     * var node = $( ".selector" ).ojNavigationList( "getNodeBySubId", {'subId': 'oj-navigationlist-item', 'key': 'foo'} );
+     * var node = myNavList.getNodeBySubId({'subId': 'oj-navigationlist-item', 'key': 'foo'} );
      */
     /**
-     * <p>Sub-ID for the ojNavigationList component's previous link element.</p>
+     * <p>Sub-ID for the oj-navigtion-list component's previous link element.</p>
      *
      * To lookup the previous link the locator object should have the following:
      * <ul>
@@ -4026,10 +4341,10 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
      * @memberof oj.ojNavigationList
      *
      * @example <caption>Get the previous link element:</caption>
-     * var node = $( ".selector" ).ojNavigationList( "getNodeBySubId", {'subId': 'oj-navigationlist-previous-link'} );
+     * var node = myNavList.getNodeBySubId({'subId': 'oj-navigationlist-previous-link'} );
      */
     /**
-     * <p>Sub-ID for the ojNavigationList component's hierarchical menu button element.
+     * <p>Sub-ID for the oj-navigtion-list component's hierarchical menu button element.
      * See the <a href="#getNodeBySubId">getNodeBySubId</a> method for details.</p>
      *
      * To lookup the hierarchical menu button the locator object should have the following:
@@ -4041,10 +4356,10 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
      * @memberof oj.ojNavigationList
      *
      * @example <caption>Get the hierarchical menu button element:</caption>
-     * var node = $( ".selector" ).ojNavigationList( "getNodeBySubId", {'subId': 'oj-navigationlist-hierarchical-button'} );
+     * var node = myNavList.getNodeBySubId({'subId': 'oj-navigationlist-hierarchical-button'} );
      */
     /**
-     * <p>Sub-ID for the ojNavigationList component's hierarchical menu element.</p>
+     * <p>Sub-ID for the oj-navigation-list component's hierarchical menu element.</p>
      *
      * To lookup the hierarchical menu the locator object should have the following:
      * <ul>
@@ -4055,15 +4370,15 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
      * @memberof oj.ojNavigationList
      *
      * @example <caption>Get the hierarchical menu element:</caption>
-     * var node = $( ".selector" ).ojNavigationList( "getNodeBySubId", {'subId': 'oj-navigationlist-hierarchical-menu'} );
+     * var node = myNavList.getNodeBySubId({'subId': 'oj-navigationlist-hierarchical-menu'} );
      */
 
     // Node Context Objects *********************************************
     /**
-     * <p>Context for the ojNavigationList component's items.</p>
+     * <p>Context for the oj-navigation-list component's items.</p>
      *
      * @property {number} index the zero based item index relative to its parent
-     * @property {Object} key the key of the item
+     * @property {Object|string} key the <a href="#key-section">Key</a> of the item
      * @property {Element} parent the parent group item.  Only available if item has a parent.
      * @property {boolean} group whether the item is a group.
      *
@@ -4084,52 +4399,910 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
   });
 }());
 
+// DOCLETS
+/**
+   * @ojcomponent oj.ojTabBar
+   * @augments oj.baseComponent
+   * @ojstatus preview
+   * @since 4.0.0
+   *
+   * @classdesc
+   * <h3 id="navlistOverview-section">
+   *   JET Tab Bar
+   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#navlistOverview-section"></a>
+   * </h3>
+   *
+   * <p>Description: JET Tab Bar enhances a HTML list element into a themable, WAI-ARIA compliant, mobile friendly component with advance interactive features.
+   *
+   * <p>The JET Tab Bar gets its data in following ways. </p>
+   * <ul>
+   * <li><b>Using table datasource</b>. There are several types of TableDataSource that
+   * are available out of the box like  <a href="oj.ArrayTableDataSource.html">oj.ArrayTableDataSource</a>,<a href="oj.CollectionTableDataSource.html">oj.CollectionTableDataSource</a>. <p> NOTE: oj.PagingTableDataSource is not supported by tab bar.</li>
+   * <li><b>Using static content </b>.  The structure of the content should be flat as shown below. </li>
+   * </ul>
+   * <p>Example of flat static content</p>
+   * <pre class="prettyprint">
+   * <code>
+   * &lt;oj-tab-bar>
+   *  &lt;ul>
+   *   &lt;li>&lt;a href="#">Item 1&lt;/a>&lt;/li>
+   *   &lt;li>&lt;a href="#">Item 2&lt;/a>&lt;/li>
+   *   &lt;li>&lt;a href="#">Item 3&lt;/a>&lt;/li>
+   *  &lt;/ul>
+   * &lt;/oj-tab-bar>
+   * </code></pre>
+   * <p>Any list item can be disabled by adding the <code class="prettyprint">oj-disabled</code> class to that element.  As with any DOM change, doing so post-init
+   * requires a <code class="prettyprint">refresh()</code> of the element.
+   *
+   * <h3 id="key-section">
+   *   Key
+   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#key-section"></a>
+   * </h3>
+   * <p>Key is an identifier which uniquely identifies an item in tabbar. 
+   *  <ul>
+   *  <li>When static html is used, it will be the <code class="prettyprint">id</code> attribute of <code class="prettyprint">&lt;li></code>. If no <code class="prettyprint">id</code> is specified then component will generate an id and will use it as key.</li>
+   *  <li>When data source is used, it will be the <code class="prettyprint">id</code> attribute of item's data object.
+   *  </ul>
+   * <h3 id="icons-section">
+   *   Icons
+   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#icons-section"></a>
+   * </h3>
+   *
+   * <p>Sublist icons are inserted automatically.  To add other icons to list items, include them in the markup and include the <code class="prettyprint">oj-tabbar-item-icon</code> class, as follows:
+   *
+   * <pre class="prettyprint">
+   * <code>&lt;oj-tab-bar>
+   *   &lt;ul>    
+   *     &lt;li id="foo">&lt;a href="#">&lt;span class="oj-tabbar-item-icon demo-icon-font-24 demo-palette-icon-24">&lt;/span>Foo&lt;/a>&lt;/li>
+   *   &lt;/ul>
+   *  &lt;/oj-tab-bar>
+   * </code></pre>
+   *
+   * <h3 id="styling-section">
+   *   Styling
+   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#styling-section"></a>
+   * </h3>
+   *
+   * {@ojinclude "name":"stylingDoc"}
+   * <h3 id="touch-section">
+   *   Touch End User Information
+   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#touch-section"></a>
+   * </h3>
+   *
+   * {@ojinclude "name":"touchDoc"}
+   *
+   * <h3 id="keyboard-section">
+   *   Keyboard End User Information
+   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#keyboard-section"></a>
+   * </h3>
+   * {@ojinclude "name":"keyboardDoc"}
+   *
+   * <p>Disabled items will not receive keyboard focus and do not allow any interaction.
+   *
+   *<h3 id="context-section">
+   *   Item Context
+   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#context-section"></a>
+   * </h3>
+   *
+   * <p>For all item options, developers can specify a function as the return value.  The function takes a single argument, which is an object that contains contextual information about the particular item.  This gives developers the flexibility to return different value depending on the context.</p>
+   *
+   * <p>The context paramter contains the following keys:</p>
+   * <table class="keyboard-table">
+   *   <thead>
+   *     <tr>
+   *       <th>Key</th>
+   *       <th>Description</th>
+   *     </tr>
+   *   </thead>
+   *   <tbody>
+   *     <tr>
+   *       <td><kbd>componentElement</kbd></td>
+   *       <td>oj-tab-bar element.</td>
+   *     </tr>
+   *     <tr>
+   *       <td><kbd>datasource</kbd></td>
+   *       <td>A reference to the data source object. (Not available for static content)</td>
+   *     </tr>
+   *     <tr>
+   *       <td><kbd>index</kbd></td>
+   *       <td>The index of the item, where 0 is the index of the first item.</td>
+   *     </tr>
+   *     <tr>
+   *       <td><kbd>key</kbd></td>
+   *       <td>The <a href="#key-section">Key</a> of the item.</td>
+   *     </tr>
+   *     <tr>
+   *       <td><kbd>data</kbd></td>
+   *       <td>The data object for the item.</td>
+   *     </tr>
+   *     <tr>
+   *       <td><kbd>parentElement</kbd></td>
+   *       <td>The list item element.  The renderer can use this to directly append content.</td>
+   *     </tr>
+   *   </tbody>
+   * </table>
+   *
+   * <p></p>
+   * <h3 id="perf-section">
+   *   Performance
+   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#perf-section"></a>
+   * </h3>
+   *
+   * <h4>Data Set Size</h4>
+   * <p>As a rule of thumb, it's recommended that applications limit the amount of data to display.  Displaying large
+   * number of items in Tab Bar makes it hard for user to find what they are looking for, but affects the load time.
+   *
+   * <h4>Item Content</h4>
+   * <p>Tab Bar allows developers to specify arbitrary content inside its item. In order to minimize any negative effect on
+   * performance, you should avoid putting a large number of heavy-weight components inside because as you add more complexity
+   * to the structure, the effect will be multiplied because there can be many items in the Tab Bar.</p>
+   *
+   * <h3 id="a11y-section">
+   *   Accessibility
+   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#a11y-section"></a>
+   * </h3>
+   * <p>See also the <a href="#styling-section">oj-focus-highlight</a> discussion.
+   * <p>Disabled content: JET supports an accessible luminosity contrast ratio,
+   * as specified in <a href="http://www.w3.org/TR/WCAG20/#visual-audio-contrast-contrast">WCAG 2.0 - Section 1.4.3 "Contrast"</a>,
+   * in the themes that are accessible.  (See the "Theming" chapter of the JET Developer Guide for more information on which
+   * themes are accessible.)  Note that Section 1.4.3 says that text or images of text that are part of an inactive user
+   * interface component have no contrast requirement.  Because disabled content may not meet the minimum contrast ratio
+   * required of enabled content, it cannot be used to convey meaningful information.<p>
+   *
+   *
+   * <h3 id="rtl-section">
+   *   Reading direction
+   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#rtl-section"></a>
+   * </h3>
+   *
+   * <p>The only supported way to set the reading direction (LTR or RTL) is to set the <code class="prettyprint">"dir"</code> attribute on the
+   * <code class="prettyprint">&lt;html></code> element of the page.  As with any JET custom element, in the unusual case that the reading direction
+   * is changed post-init, the tab bar must be <code class="prettyprint">refresh()</code>ed, or the page must be reloaded.
+   *
+   *
+   * <h3 id="animation-section">
+   *   Animation
+   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#animation-section"></a>
+   * </h3>
+   *
+   * <p>Applications can customize animations triggered by actions in Tab Bar by either listening for <code class="prettyprint">animateStart/animateEnd</code>
+   *    events or overriding action specific style classes on the animated item.  See the documentation of <a href="oj.AnimationUtils.html">oj.AnimationUtils</a> 
+   *    class for details.</p>
+   *
+   * <p>The following are actions and their corresponding sass variables in which applications can use to customize animation effects.  
+   * <table class="keyboard-table">
+   *   <thead>
+   *     <tr>
+   *       <th>Action</th>
+   *       <th>Sass Variable</th>
+   *       <th>Description</th>
+   *     </tr>
+   *   </thead>
+   *   <tbody>
+   *     <tr>
+   *       <td rowspan="2"><kbd>add</kbd></td>
+   *       <td>$tabBarHorizontalAddAnimation</td>
+   *       <td>When a new item is added to the oj.TableDataSource associated with Horizontal Tab Bar.</td>
+   *     </tr>
+   *     <tr>
+   *       <td>$tabBarAddAnimation</td>
+   *       <td>When a new item is added to the oj.TableDataSource associated with Vertical Tab Bar.</td>
+   *     </tr>
+   *     <tr>
+   *       <td rowspan="2"><kbd>remove</kbd></td>
+   *       <td>$tabBarHorizontalRemoveAnimation</td>
+   *       <td>When an existing item is removed from the oj.TableDataSource associated with Horizontal Tab Bar.</td>
+   *     </tr>
+   *     <tr>
+   *       <td>$tabBarRemoveAnimation</td>
+   *       <td>When an existing item is removed from the oj.TableDataSource associated with Vertical Tab Bar.</td>
+   *     </tr>   
+   *     <tr>
+   *       <td><kbd>update</kbd></td>
+   *       <td>$tabBarUpdateAnimation</td>
+   *       <td>When an existing item is updated in the oj.TableDataSource associated with TabBar.</td>
+   *     </tr>
+   *     <tr>
+   *       <td><kbd>pointerUp</kbd></td>
+   *       <td>$tabBarPointerUpAnimation</td>
+   *       <td>When user finish pressing an item (on touch).</td>
+   *     </tr>
+   *   </tbody>
+   * </table>
+   *
+   */
+   /**
+       * <a href="#key-section">Key</a> of the current item.  Current item is the list item which is having active focus.  Note that if currentItem
+       * is set to an item that is currently not available (not fetched or
+       * inside a collapsed parent node), then the value is ignored.
+       *
+       * @expose
+       * @public
+       * @instance
+       * @name currentItem
+       * @memberof! oj.ojTabBar
+       * @type {string|Object}
+       * @default <code class="prettyprint">null</code>
+       * @ojwriteback
+       *
+       * @example <caption>Initialize the Tab Bar with the <code class="prettyprint">current-item</code> attribute specified:</caption>
+       *  &lt;oj-tab-bar current-item='settings'> ... &lt;/oj-tab-bar>
+       * @example <caption>Get the current item:</caption>
+       * var currentItem = myTabBar.currentItem;
+       *
+       * @example <caption>Set the current item on the tabbar:</caption>
+       * myTabBar.currentItem = "newItem";
+       */
+      
+      /**
+       * The position of the Tab Bar. Valid Values: top, bottom, start and end.
+       * @expose
+       * @name edge
+       * @memberof oj.ojTabBar
+       * @instance
+       * @type {string|null}
+       * @ojvalue {string} "top" This renders list items horizontally. Generally used when tab bar placed on top of content section.
+       * @ojvalue {string} "bottom" This renders list items horizontally. Generally used when tab bar placed on bottom of content section.
+       * @ojvalue {string} "start" This renders list items vertically. Generally used when tab bar placed on left/start of content section.
+       * @ojvalue {string} "end" This renders list items vertically. Generally used when tab bar placed on right/end of content section.
+       * @default <code class="prettyprint">"start"</code>
+       * @example <caption>Initialize the Tab Bar with the <code class="prettyprint">edge</code> attribute specified:</caption>
+       *  &lt;oj-tab-bar edge='top'> ... &lt;/oj-tab-bar>
+       * @example <caption>Get the edge:</caption>
+       * var edge = myTabBar.edge;
+       *
+       * @example <caption>Set the edge on the tabbar:</caption>
+       * myTabBar.edge = "top";
+       */
+
+      
+      /**
+       * Item <a href="#key-section">Key</a> of currently selected list item. If the value is modified
+       * by an application, tab bar UI is modified to match the new value.
+       * @type {Object|string}
+       * @name selection
+       * @default <code class="prettyprint">null</code>
+       * @ojwriteback
+       * @expose
+       * @instance
+       * @memberof oj.ojTabBar
+       * @example <caption>Initialize the Tab Bar with the <code class="prettyprint">selection</code> attribute specified:</caption>
+       *  &lt;oj-tab-bar selection='settings'> ... &lt;/oj-tab-bar>
+       *  
+       * @example <caption>Get the selection:</caption>
+       * var selection = myTabBar.selection;
+       *
+       * @example <caption>Set the selection on the tabbar:</caption>
+       * myTabBar.selection = "settings";
+       */
+      
+      /**
+       * The data source for the Tab Bar accepts either a oj.TableDataSource.
+       * See the data source section in the introduction for out of the box data source types.
+       * If the data attribute is not specified, the child elements are used as content.  If there's no
+       * content specified, then an empty list is rendered.
+       *
+       * @expose
+       * @name data
+       * @memberof! oj.ojTabBar
+       * @instance
+       * @type {oj.TableDataSource}
+       * @default <code class="prettyprint">null</code>
+       * @example <caption>Initialize the Tab Bar with the <code class="prettyprint">data</code> attribute specified:</caption>
+       *  &lt;oj-tab-bar data='[[tableDataSource]]'> ... &lt;/oj-tab-bar>
+       * @example <caption>Get the data:</caption>
+       * var dataSource = myTabBar.data;
+       *
+       * @example <caption>Set the data attribute using one-dimensional array:</caption>
+       * myTabBar.data = new oj.ArrayTableDataSource([1,2,3]);
+       * 
+       * @example <caption>Set the data attribute using oj.Collection:</caption>
+       * myTabBar.data = new oj.CollectionTableDataSource(collection);
+       */
+
+      /**
+       * Whether to display both the label and icons (<code class="prettyprint">"all"</code>) or just the icons (<code class="prettyprint">"icons"</code>).
+       * In the latter case, the label is displayed in a tooltip instead, unless a tooltip was already supplied at create time.
+       * Note: <code class="prettyprint">display="icons"</code> is valid only when <code class="prettyprint">drillMode=none</code> and tab bar is a flat list.
+       * It is also mandatory to provide icons for each item as stated in <a href="#icons-section">icons section</a>.
+       *
+       * @expose
+       * @memberof oj.ojTabBar
+       * @instance
+       * @name display
+       * @type {string}
+       * @ojvalue {string} "all" Display both the label and icons.
+       * @ojvalue {string} "icons" Display only the icons.
+       * @default <code class="prettyprint">"all"</code>
+       * @example <caption>Initialize the Tab Bar with the <code class="prettyprint">display</code> attribute specified:</caption>
+       *  &lt;oj-tab-bar display='icons'> ... &lt;/oj-tab-bar>
+       *  
+       * @example <caption>Get or set the <code class="prettyprint">display</code> property:</caption>
+       * // getter
+       * var display = myTabBar.display;
+       *
+       * // setter
+       * myTabBar.display = "icons";
+       */
+
+       /**
+       * Specifies the overflow behaviour. 
+       * NOTE: This is only applicable when <code class="prettyprint">edge</code> attribute set to <code class="prettyprint">top</code>
+       * @expose
+       * @memberof oj.ojTabBar
+       * @name overflow
+       * @instance
+       * @type {string}
+       * @ojvalue {string} "popup" popup menu will be shown with overflowed items.
+       * @ojvalue {string} "hidden" overflow is clipped, and the rest of the content will be invisible.
+       * @default <code class="prettyprint">"hidden"</code>
+       * @example <caption>Initialize the Tab Bar with the <code class="prettyprint">overflow</code> attribute specified:</caption>
+       *  &lt;oj-tab-bar overflow='popup'> ... &lt;/oj-tab-bar>
+       * @example <caption>Get or set the <code class="prettyprint">overflow</code> property:</caption>
+       * // getter
+       * var overflow = myTabBar.overflow;
+       *
+       * // setter
+       * myTabBar.overflow = "popup";
+       */
+
+      /**
+       * The item property contains a subset of properties for items.
+       *
+       * @expose
+       * @memberof! oj.ojTabBar
+       * @instance
+       * @name item
+       */
+        /**
+         * The renderer function that renders the content of the item. See <a href="#context-section">itemContext</a>
+         * in the introduction to see the object passed into the renderer function.
+         * The function should return one of the following: 
+         * <ul>
+         *   <li>An Object with the following property:
+         *     <ul><li>insert: HTMLElement | string - A string or a DOM element of the content inside the item.</li></ul>
+         *   </li>
+         *   <li>undefined: If the developer chooses to manipulate the item element directly, the function should return undefined.</li>
+         * </ul>
+         * If no renderer is specified, Tab Bar will treat the data as a String.
+         *
+         * @expose
+         * @name item.renderer
+         * @memberof! oj.ojTabBar
+         * @instance
+         * @type {function(Object)|null}
+         * @default <code class="prettyprint">null</code>
+         * @example <caption>Initialize the Tab Bar with the <code class="prettyprint">item.renderer</code> attribute specified:</caption>
+         *  &lt;oj-tab-bar item.renderer="{{oj.KnockoutTemplateUtils.getRenderer('template', true)}}"> ... &lt;/oj-tab-bar>
+         *  
+         * @example <caption>Get or set the <code class="prettyprint">renderer</code> property:</caption>
+         * // set the renderer function
+         * myTabBar.item.renderer = rendererFn;
+         * 
+         * // get the renderer function
+         * var rendererFn = myTabBar.item.renderer;
+         */
+        /**
+         * Whether the item is selectable.
+         * See <a href="#context-section">itemContext</a> in the introduction to see the object passed into the selectable function.
+         *
+         * @expose
+         * @name item.selectable
+         * @memberof! oj.ojTabBar
+         * @instance
+         * @type {function(Object)|boolean}
+         * @default <code class="prettyprint">true</code>
+         *
+         * @example <caption>Initialize the Tab bar such that the first 3 items are not selectable:</caption>
+         *  &lt;oj-tab-bar item.selectable="[[skipFirstThreeElementsFn]]">&lt;/oj-tab-bar>
+         *  
+         *  var skipFirstThreeElementsFn = function(itemContext) {
+         *                                      return itemContext['index'] > 3; 
+         *                                 }
+         */
+      //Events
+      /**
+       * Triggered when the default animation of a particular action is about to start.  The default animation can be cancelled by calling event.preventDefault.
+       *
+       * @expose
+       * @event
+       * @name animateStart
+       * @memberof oj.ojTabBar
+       * @instance
+       * @property {Object} action the action that starts the animation.  See <a href="#animation-section">animation</a> section for a list of actions.
+       * @property {Object} element the target of animation.  
+       * @property {function} endCallback if the event listener calls event.preventDefault to cancel the default animation, it must call the endCallback function when it finishes its own animation handling and when any custom animation ends.
+       */
+      /**
+       * Triggered when the default animation of a particular action has ended.  Note this event will not be triggered if application cancelled the default animation on animateStart.
+       *
+       * @expose
+       * @event
+       * @name animateEnd
+       * @memberof oj.ojTabBar
+       * @instance
+       * @property {Object} action the action that started the animation.  See <a href="#animation-section">animation</a> section for a list of actions.
+       * @property {Object} element the target of animation.  
+       */
+
+      /**
+       * <p>Triggered before this list item is selected.
+       * To prevent the item selection, return <code class="prettyprint">false</code> from event handler or invoke <code class="prettyprint">event.preventDefault()</code>.
+       * <p>The <code class="prettyprint">ui.key</code> contains item key which uniquely identifies the item.
+       * <code class="prettyprint">ui.item</code> payload field contains item element being selected.
+       *
+       * @expose
+       * @event
+       * @name beforeSelect
+       * @memberof oj.ojTabBar
+       * @instance
+       * @property {Object|string} key Selected list item <a href="#key-section">Key</a>.
+       * @property {Element} item Selected list item.
+       */
+
+ 
+      /**
+       * Triggered before the current item is changed via the <code class="prettyprint">currentItem</code> property or via the UI.
+       * To prevent the item being focused, return <code class="prettyprint">false</code> from event handler or invoke <code class="prettyprint">event.preventDefault()</code>.
+       * @expose
+       * @event
+       * @memberof oj.ojTabBar
+       * @name beforeCurrentItem
+       * @instance
+       * @property {Object|string} previousKey the <a href="#key-section">Key</a> of the previous item
+       * @property {Element} previousItem the previous item
+       * @property {Object|string} key the <a href="#key-section">Key</a> of the new current item
+       * @property {Element} item the new current item
+       */
+
+    /**
+     * {@ojinclude "name":"nodeContextDoc"}
+     * @param {!Element} node - {@ojinclude "name":"nodeContextParam"}
+     * @returns {Object|null} {@ojinclude "name":"nodeContextReturn"}
+     *
+     * @example {@ojinclude "name":"nodeContextExample"}
+     * @method
+     * @expose
+     * @name getContextByNode
+     * @instance
+     * @memberof oj.ojTabBar
+     */
+
+    /**
+     * Refreshes the visual state of the Tab Bar. JET components require a <code class="prettyprint">refresh()</code> after the DOM is
+     * programmatically changed underneath the component.
+     * <p>This method does not accept any arguments.
+     *
+     * @expose
+     * @memberof oj.ojTabBar
+     * @instance
+     * @name refresh
+     * @method
+     * @example <caption>Invoke the <code class="prettyprint">refresh</code> method:</caption>
+     *  myTabBar.refresh();
+     */
+    // Fragments:
+
+    /**
+     * <table class="keyboard-table">
+     *   <thead>
+     *     <tr>
+     *       <th>Target</th>
+     *       <th>Gesture</th>
+     *       <th>Action</th>
+     *     </tr>
+     *   </thead>
+     *   <tbody>
+     *     <tr>
+     *       <td rowspan="2">List Item</td>
+     *       <td><kbd>Tap</kbd></td>
+     *       <td>Selects the item.</td>
+     *     </tr>
+     *     <tr>
+     *       <td><kbd>Press & Hold</kbd></td>
+     *       <td>Display context menu</td>
+     *     </tr>
+     *     <tr>
+     *       <td>Overflow Menu button</td>
+     *       <td><kbd>Tap</kbd></td>
+     *       <td>Open menu. Refer <a href="oj.ojButton.html#touch-section">menu button</a> touch documentation. Note: This is applicable only for Horizontal Tab Bar when <code class="prettyprint">overflow</code> is set to <code class="prettyprint">popup</code>. </td>
+     *     </tr>
+     *   </tbody>
+     * </table>
+     *
+     * @ojfragment touchDoc - Used in touch gesture section of classdesc, and standalone gesture doc
+     * @memberof oj.ojTabBar
+     */
+
+    /**
+     * <table class="keyboard-table">
+     *   <thead>
+     *     <tr>
+     *       <th>Target</th>
+     *       <th>Key</th>
+     *       <th>Action</th>
+     *     </tr>
+     *   </thead>
+     *   <tbody>
+     *     <tr>
+     *       <td rowspan="9">List Item</td>
+     *       <td><kbd>Enter</kbd> or <kbd>Space</kbd></td>
+     *       <td>Selects list item.</td>
+     *     </tr>
+     *     <tr>
+     *       <td><kbd>UpArrow</kbd></td>
+     *       <td>Moves focus to the previous visible list item.</td>
+     *     </tr>
+     *     <tr>
+     *       <td><kbd>DownArrow</kbd></td>
+     *       <td>Moves focus to the next  visible list item</td>
+     *     </tr>
+     *     <tr>
+     *       <td><kbd>RightArrow</kbd> (<kbd>LeftArrow</kbd> in RTL)</td>
+     *       <td>For horizontal tab bar,focus will be moved to next visible item.
+     *       </td>
+     *     </tr>
+     *     <tr>
+     *       <td><kbd>LeftArrow</kbd> (<kbd>RightArrow</kbd> in RTL)</td>
+     *       <td>For horizontal tab bar,focus will be moved to previous visible item.</td>
+     *     </tr>
+     *     <tr>
+     *       <td><kbd>Home</kbd></td>
+     *       <td>Moves focus to the first visible list item.</td>
+     *     </tr>
+     *     <tr>
+     *       <td><kbd>End</kbd></td>
+     *       <td>Moves focus to the last visible list item.</td>
+     *     </tr>
+     *     <tr>
+     *       <td><kbd>F2</kbd></td>
+     *       <td>If focus is on a list item, pressing F2 will make its contents accessible using TAB.</td>
+     *     </tr>
+     *     <tr>
+     *       <td><kbd>Esc</kbd></td>
+     *       <td>When F2 mode is enabled, press Esc to exit F2 mode.</td>
+     *     </tr>
+     *     <tr>
+     *       <td>Overflow Menu button</td>
+     *       <td><kbd>Enter or Space</kbd></td>
+     *       <td>Open menu. Refer <a href="oj.ojButton.html#touch-section">menu button</a> touch documentation. Note: This is applicable only for Horizontal Tab Bar when <code class="prettyprint">overflow</code> is set to <code class="prettyprint">popup</code>. </td>
+     *     </tr>     
+     *   </tbody>
+     * </table>
+     *
+     *
+     * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
+     * @memberof oj.ojTabBar
+     */
+
+    /**
+     * {@ojinclude "name":"ojStylingDocIntro"}
+     * <table class="generic-table styling-table">
+     *   <thead>
+     *     <tr>
+     *       <th>{@ojinclude "name":"ojStylingDocClassHeader"}</th>
+     *       <th>{@ojinclude "name":"ojStylingDocDescriptionHeader"}</th>
+     *       <th>{@ojinclude "name":"ojStylingDocExampleHeader"}</th>
+     *     </tr>
+     *   </thead>
+     *   <tbody>
+     *     <tr>
+     *       <td>oj-tabbar-stack-icon-label</td>
+     *       <td>Displays horizontal Tab Bar with icon and label stacked. Applicable only when <code class="prettyprint">edge</code> is <code class="prettyprint">top</code>.</td>
+     *       <td>
+     *          <pre class="prettyprint">
+     *<code>&lt;oj-tab-bar class="oj-tabbar-stack-icon-label" >
+     *  &lt;ul>    
+     *    &lt;li id="foo">
+     *      &lt;a href="#">
+     *        &lt;span class="oj-tabbar-item-icon demo-icon-font-24 demo-palette-icon-24">
+     *        &lt;/span>
+     *        Foo
+     *      &lt;/a>
+     *    &lt;/li>
+     *  &lt;/ul>
+     *&lt;/oj-tab-bar>
+     *</code></pre>
+     *       </td>
+     *     </tr>
+     *     <tr>
+     *       <td>oj-tabbar-category-divider</td>
+     *       <td>Use this class to add horizontal divider line between two categories of items.</td>
+     *       <td>
+     *          <pre class="prettyprint">
+     *<code>&lt;oj-tab-bar>
+     *  &lt;ul>
+     *    &lt;li ...> &lt;/li>
+     *    &lt;li class="oj-tabbar-category-divider"> &lt;/li>    
+     *    &lt;li id="foo">
+     *      &lt;a href="#">
+     *        &lt;span class="oj-tabbar-item-icon demo-icon-font-24 demo-palette-icon-24">
+     *        &lt;/span>
+     *        Foo
+     *      &lt;/a>
+     *    &lt;/li>
+     *    &lt;li ...> &lt;/li>
+     *  &lt;/ul>
+     *&lt;/oj-tab-bar>
+     *</code></pre>
+     *       </td>     
+     *     </tr>
+     *     <tr>
+     *       <td>oj-tabbar-item-icon</td>
+     *       <td>Use this class to add icon to list item.</td>
+     *       <td>
+     *          <pre class="prettyprint">
+     *<code>&lt;oj-tab-bar>
+     *  &lt;ul>    
+     *    &lt;li id="foo">
+     *      &lt;a href="#">
+     *        &lt;span class="oj-tabbar-item-icon demo-icon-font-24 demo-palette-icon-24">
+     *        &lt;/span>
+     *        Foo
+     *      &lt;/a>
+     *    &lt;/li>
+     *  &lt;/ul>
+     *&lt;/oj-tab-bar></code></pre>
+     *       </td>
+     *     </tr>
+     *     <tr>
+     *       <td>oj-tabbar-item-title</td>
+     *       <td>When arbitrary content is placed inside item's content area, it's title text can be marked using this style class. This helps component in identifying the Item's label.
+     *       </td>
+     *       <td>
+     * <pre class="prettyprint">
+     * <code>&lt;li>
+     *   &lt;div>
+     *     &lt;span class="oj-tabbar-item-title">Play&lt;/span>
+     *     &lt;button>Button&lt;/button>
+     *   &lt;/div>
+     * &lt;/li>
+     * </code></pre>
+     *       </td>
+     *     </tr>
+     *     <tr>
+     *       <td>oj-tabbar-item-text-wrap</td>
+     *       <td>Use this class to wrap item label text. Note: On IE11, this is not supported when <code class="prettyprint">overflow</code> attribute is set to <code class="prettyprint">popup</code>.</td>
+     *       <td>
+     *          <pre class="prettyprint">
+     *<code>&lt;oj-tab-bar class="oj-tabbar-item-text-wrap" >
+     *  &lt;ul>    
+     *    &lt;li id="foo">
+     *      &lt;a href="#">
+     *        &lt;span class="oj-tabbar-item-icon demo-icon-font-24 demo-palette-icon-24">
+     *        &lt;/span>
+     *        Foo
+     *      &lt;/a>
+     *    &lt;/li>
+     *  &lt;/ul>
+     *&lt;/oj-tab-bar>
+     *</code></pre>
+     *       </td>     
+     *     </tr>
+     *     <tr>
+     *       <td>oj-tabbar-item-dividers</td>
+     *       <td>Use this class to show dividers between horizontal tab bar items.</td>
+     *       <td>
+     *          <pre class="prettyprint">
+     *<code>&lt;oj-tab-bar class="oj-tabbar-item-dividers" >
+     *  &lt;ul>    
+     *    &lt;li id="foo">
+     *       &lt;a href="#">
+     *         &lt;span class="oj-tabbar-item-icon demo-icon-font-24 demo-palette-icon-24">&lt;/span>
+     *         Foo
+     *       &lt;/a>
+     *    &lt;/li>
+     *  &lt;/ul>
+     *&lt;/oj-tab-bar>
+     *</code></pre>
+     *       </td>     
+     *     </tr>     
+     *     </tr>
+     *     <tr>
+     *       <td>oj-sm-condense</td>
+     *       <td>Use this class to condense horizontal tab bar items on small screens and larger.
+     *       </td>
+     *       <td rowspan="4">
+     *          <pre class="prettyprint">
+     *<code>&lt;oj-tab-bar class="oj-sm-condense" >
+     *  &lt;ul>    
+     *    &lt;li id="foo">
+     *      &lt;a href="#">
+     *        &lt;span class="oj-tabbar-item-icon demo-icon-font-24 demo-palette-icon-24">&lt;/span>
+     *        Foo
+     *      &lt;/a>
+     *    &lt;/li>
+     *  &lt;/ul>
+     *&lt;/oj-tab-bar>
+     *</code></pre>
+     *       </td>      
+     *     </tr>
+     *     <tr>
+     *       <td>oj-md-condense</td>
+     *       <td>Use this class to condense horizontal tab bar items on medium screens and larger.
+     *       </td>
+     *     </tr>
+     *     <tr>
+     *       <td>oj-lg-condense</td>
+     *       <td>Use this class to condense horizontal tab bar items on large screens and larger.
+     *       </td>
+     *     </tr>
+     *     <tr>
+     *       <td>oj-xl-condense</td>
+     *       <td>Use this class to condense horizontal tab bar items on extra large screens and larger.
+     *       </td>
+     *     </tr>
+     *     <tr>
+     *       <td>oj-tabbar-nofollow-link</td>
+     *       <td> Use this class to prevent automatic navigation to the url specified on <code class="prettyprint">&lt;a></code> tag's <code class="prettyprint">href</code> attribute. In this case, navigation can be handled programmatically by using <code class="prettyprint">selectionChanged</code> event. This is useful to execute some custom tasks before browser triggers navigation.
+     *       </td>
+     *       <td>
+     *          <pre class="prettyprint">
+     *<code>&lt;oj-tab-bar class="oj-tabbar-nofollow-link" >
+     *  &lt;ul>    
+     *    &lt;li id="foo">&lt;a href="folder/foo.html">
+     *      &lt;span 
+     *        class="oj-tabbar-item-icon demo-icon-font-24 demo-palette-icon-24">&lt;/span>
+     *      Foo&lt;/a>
+     *    &lt;/li>
+     *  &lt;/ul>
+     *&lt;/oj-tab-bar>
+     *</code></pre>
+     *       </td>     
+     *     </tr>
+     *     <tr>
+     *       <td>oj-focus-highlight</td>
+     *       <td>{@ojinclude "name":"ojFocusHighlightDoc"}</td>
+     *       <td></td>
+     *     </tr>
+     *   </tbody>
+     * </table>
+     *
+     * @ojfragment stylingDoc - Used in Styling section of classdesc, and standalone Styling doc
+     * @memberof oj.ojTabBar
+     */
+
+    // SubId Locators *****************************************************
+
+    /**
+     * <p>Sub-ID for the oj-tab-bar component's list item element.</p>
+     *
+     * <p>
+     * To lookup the list items the locator object should have the following:
+     * <ul>
+     * <li><b>subId</b>: 'oj-tabbar-item'</li>
+     * <li><b>key</b>: the <a href="#key-section">Key</a> of the item</li>
+     * </ul>
+     *
+     * @ojsubid oj-tabbar-item
+     * @memberof oj.ojTabBar
+     *
+     * @example <caption>Get the list item element with key 'foo':</caption>
+     * var node = myTabBar.getNodeBySubId({'subId': 'oj-tabbar-item', 'key': 'foo'} );
+     */
+    
+
+    // Node Context Objects *********************************************
+    /**
+     * <p>Context for the oj-tab-bar component's items.</p>
+     *
+     * @property {number} index the zero based item index
+     * @property {Object|string} key the <a href="#key-section">Key</a> of the item
+     *
+     * @ojnodecontext oj-tabbar-item
+     * @memberof oj.ojTabBar
+     */
 (function() {
 var ojNavigationListMeta = {
   "properties": {
     "currentItem": {
-      "type": "Object"
+      "type": "any",
+      "writeback": true
     },
     "data": {},
     "display": {
-      "type": "string"
+      "type": "string",
+      "enumValues": ["all", "icons"]
     },
     "drillMode": {
-      "type": "string"
+      "type": "string",
+      "enumValues": ["sliding", "collapsible", "none"]
     },
     "edge": {
-      "type": "string"
+      "type": "string",
+      "enumValues": ["top", "start"]
     },
-    "expanded": {
-      "type": "Array|string"
-    },
-    "hierarchyMenuDisplayThresholdLevel": {
+    "hierarchyMenuThreshold": {
       "type": "number"
     },
-    "item": {},
-    "navigationLevel": {
-      "type": "string"
+    "item": {
+      "type": "object",
+      "properties": {
+        "renderer": {},
+        "selectable": {}
+      }
+    },
+    "overflow": {
+      "type": "string",
+      "enumValues": ["popup", "hidden"]
     },
     "rootLabel": {
       "type": "string"
     },
     "selection": {
-      "type": "string"
+      "type": "any",
+      "writeback": true
     }
   },
-  "methods": {
+  "events": {
+    "animateEnd": {},
+    "animateStart": {},
+    "beforeCollapse": {},
+    "beforeCurrentItem": {},
+    "beforeExpand": {},
+    "beforeSelect": {},
     "collapse": {},
-    "expand": {},
-    "getContextByNode": {},
-    "getExpanded": {},
-    "refresh": {},
-    "whenReady": {}
+    "expand": {}
+  },
+  "methods": {
+    "getContextByNode": {}
   },
   "extension": {
+    _ALIASED_PROPS: {"hierarchyMenuThreshold":"hierarchyMenuDisplayThresholdLevel"},
     _WIDGET_NAME: "ojNavigationList"
   }
 };
 oj.CustomElementBridge.registerMetadata('oj-navigation-list', 'baseComponent', ojNavigationListMeta);
 oj.CustomElementBridge.register('oj-navigation-list', {'metadata': oj.CustomElementBridge.getMetadata('oj-navigation-list')});
+  
+var ojTabBarMeta = {
+  "properties": {
+    "currentItem": {
+      "type": "any",
+      "writeback": true
+    },
+    "data": {},
+    "display": {
+      "type": "string",
+      "enumValues": ["all", "icons"]
+    },
+    "edge": {
+      "type": "string",
+      "enumValues": ["top", "start", "end", "bottom"]
+    },
+    "item": {
+      "type": "object",
+      "properties": {
+        "renderer": {},
+        "selectable": {}
+      }
+    },
+    "overflow": {
+      "type": "string",
+      "enumValues": ["popup", "hidden"]
+    },
+    "selection": {
+      "type": "any",
+      "writeback": true
+    }
+  },
+  "events": {
+    "animateEnd": {},
+    "animateStart": {},
+    "beforeCurrentItem": {},
+    "beforeSelect": {}
+  },
+  "methods": {
+    "getContextByNode": {}
+  },
+  "extension": {
+    _WIDGET_NAME: "ojNavigationList"
+  }
+};
+
+oj.CustomElementBridge.registerMetadata('oj-tab-bar', 'baseComponent', ojTabBarMeta);
+oj.CustomElementBridge.register('oj-tab-bar', {
+    'metadata': oj.CustomElementBridge.getMetadata('oj-tab-bar')});
+
 })();
 });

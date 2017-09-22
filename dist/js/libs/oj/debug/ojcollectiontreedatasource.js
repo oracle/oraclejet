@@ -181,7 +181,11 @@ oj.CollectionNodeSet.prototype.getChildNodeSet = function(index) {
   return this.childNodeSet[index];
 };
 /**
- * oj.Collection based implementation of TreeDataSource
+ * @class oj.CollectionTreeDataSource
+ * @classdesc TreeDataSource implementation that represents hierachical data available from an {@link oj.Collection} object, such as an external data source.  This data source can be used by [ListView]{@link oj.ojListView}, 
+ *            [NavigationList]{@link oj.ojNavigationList}, and [TreeView]{@link oj.ojTreeView}.<br><br>
+ *            See the <a href="../jetCookbook.html?component=treeView&demo=collection">Tree View - Data Source: Collection</a> demo for an example.<br><br>
+ *            Refer to {@link oj.TreeDataSource} for other data sources that represent hierarachical data.
  * @param {Object} options an object containing the following options:<p>
  * root: an oj.Collection specifying the root level Collection<p>
  * childCollectionCallback: a function(oj.Collection,oj.Model):oj.Collection callback to return a child collection given a root and model representing the parent<p>
@@ -756,9 +760,9 @@ oj.CollectionTreeDataSource.prototype.fetchDescendants = function(parent, callba
 
 /**
  * Performs a sort operation on the tree data.
- * @param {Object} criteria the sort criteria.  It must contain the following properties: key, direction<p>
- * criteria.key the key identifying the attribute (column) to sort on<p>
- * criteria.direction the sort direction, valid values are "ascending", "descending", "none" (default)<p>
+ * @param {Object} criteria the sort criteria.  It must contain the following properties: key, direction
+ * @param {Object} criteria.key the key identifying the attribute (column) to sort on
+ * @param {string} criteria.direction the sort direction, valid values are "ascending", "descending", "none" (default)
  * @param {function({status: Object})} callbacks.success the callback to invoke when the sort completed successfully.<p>
  * callbacks.error the callback to invoke when sort failed.
  * @export

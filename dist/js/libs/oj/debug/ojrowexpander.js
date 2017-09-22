@@ -421,8 +421,8 @@ oj.MergedNodeSet.prototype._getRelativeIndex = function(index)
         }   
         else
         {
-            // second set
-            return {'set': this.m_nodeSet2, 'index': index - (this.m_mergeAt+1)};
+            // second set, do not assume the second node set is zero indexed
+            return {'set': this.m_nodeSet2, 'index': index - this.m_mergeAt - 1 + this.m_nodeSet2.getStart()};
         }
     }
 };
@@ -493,11 +493,9 @@ oj.NodeSetWrapper.prototype.getCount = function()
     // accordingly
     if (this.m_range != null)
     {
-        if (this.m_range['start'] > nodeStart)
-        {
-            nodeCount = Math.min(0, nodeCount - (this.m_range['start'] - nodeStart));
-        }
-        else if (this.m_range['start'] < nodeStart)
+        // if the count was provided it is to limit what may be beneath it
+        nodeCount = Math.min(this.m_range['count'], nodeCount);
+        if (this.m_range['start'] < nodeStart)
         {
             // this is an invalid NodeSet, so just return 0
             nodeCount = 0;
@@ -516,7 +514,7 @@ oj.NodeSetWrapper.prototype.getCount = function()
  */
 oj.NodeSetWrapper.prototype.getData = function(index)
 {
-    return this.m_nodeSet.getData(index);
+    return this.m_nodeSet.getData(this._getRelativeIndex(index));
 };
 
 /**
@@ -534,7 +532,7 @@ oj.NodeSetWrapper.prototype.getMetadata = function(index)
 {
     var metadata, rowKey;
 
-    metadata = this.m_nodeSet.getMetadata(index);
+    metadata = this.m_nodeSet.getMetadata(this._getRelativeIndex(index));
     metadata['index'] = index;
     metadata['parentKey'] = this.getParent();
     rowKey = metadata['key'];
@@ -568,6 +566,23 @@ oj.NodeSetWrapper.prototype.getChildNodeSet = function(index)
     }
     return null;
 };
+
+/**
+ * Gets the relative index to the underlying nodeSet. Since the nodeSetWrapper basically adjusts the indexes relative the flattened model
+ * where the wrapped node set indexes are relative to the parent node.
+ * @param {number} index the index of the node/row in which we want to retrieve the index of in child node set
+ * @return {number} the index of the node in the wrapped node set
+ * @private
+ */
+oj.NodeSetWrapper.prototype._getRelativeIndex = function(index) 
+{
+    if (this.m_range == null)
+    {
+        return index;
+    }
+    return index - this.m_range['start'] + this.m_nodeSet.getStart();
+};
+
 /**
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
@@ -766,7 +781,7 @@ oj.FlattenedTreeDataSource.prototype._getFetchSizeToUse = function(count)
     {
         if (count === -1)
         {
-            return Math.min(fetchSize, count);
+            return Math.min(fetchSize, maxCount);
         }
         return fetchSize;
     } 
@@ -806,8 +821,9 @@ oj.FlattenedTreeDataSource.prototype.fetchRows = function(range, callbacks)
  */ 
 oj.FlattenedTreeDataSource.prototype._fetchRowsFromChildren = function(range, callbacks)
 {
-    var maxFetchSize, lastEntry, parent, count, index, depth, processed, nodeSet, fetchSize;
+    var maxFetchSize, lastEntry, parent, count, index, depth, processed, nodeSet, fetchSize, fetchRange, lastEntryKey, lastEntryCount;
 
+    
     // this condition should always be true since in high watermark scrolling we are
     // always asking for rows after the current last row
     if (range['start'] > this._getLastIndex())
@@ -816,9 +832,11 @@ oj.FlattenedTreeDataSource.prototype._fetchRowsFromChildren = function(range, ca
         // initial fetch
         if (this._getLastIndex() < 0)
         {
+            fetchRange = {};
+            fetchRange['start'] = range['start'];
             // adjust fetch count if neccessary
-            range['count'] = Math.min(maxFetchSize, range['count']);
-            this.m_wrapped.fetchChildren(null, range, {"success": function(nodeSet){this._handleFetchSuccess(nodeSet, null, 0, range, 0, callbacks);}.bind(this), "error": function(status){this._handleFetchError(status, callbacks);}.bind(this)});
+            fetchRange['count'] = Math.min(maxFetchSize, range['count']);
+            this.m_wrapped.fetchChildren(null, fetchRange, {"success": function(nodeSet){this._handleFetchSuccess(nodeSet, null, 0, range, fetchRange, 0, callbacks);}.bind(this), "error": function(status){this._handleFetchError(status, callbacks);}.bind(this)});
 
             return;
         }
@@ -834,35 +852,35 @@ oj.FlattenedTreeDataSource.prototype._fetchRowsFromChildren = function(range, ca
             if (count === -1 || index < count-1)
             {
                 fetchSize = this._getFetchSizeToUse(count);
-                range['start'] = index+1;
+                fetchRange = {};
+                fetchRange['start'] = index+1;
                 if (count === -1)
                 {
-                    range['count'] = Math.min(fetchSize, range['count']);
+                    fetchRange['count'] = Math.min(fetchSize, range['count']);
                 }
                 else
                 {
-                    range['count'] = Math.min(maxFetchSize, Math.min(Math.min(fetchSize, range['count']), count - range['start']));
+                    fetchRange['count'] = Math.min(maxFetchSize, Math.min(Math.min(fetchSize, range['count']), count - fetchRange['start']));
                 }
-                this.m_wrapped.fetchChildren(parent, range, {"success": function(nodeSet){this._handleFetchSuccess(nodeSet, parent, depth, range, count, callbacks);}.bind(this), "error": function(status){this._handleFetchError(status, callbacks);}.bind(this)});
+                this.m_wrapped.fetchChildren(parent, fetchRange, {"success": function(nodeSet){this._handleFetchSuccess(nodeSet, parent, depth, range, fetchRange, count, callbacks);}.bind(this), "error": function(status){this._handleFetchError(status, callbacks);}.bind(this)});
             }
-            else if (index === count-1)
-            {
-                // if this is the last child within the parent, then we are done
-                nodeSet = new oj.EmptyNodeSet(null, range['start']);
-                // invoke original success callback
-                if (callbacks != null && callbacks['success'] != null)
-                {
-                    callbacks['success'].call(null, nodeSet);
-                }
-                // busy not handled by the _handleFetchSuccess in this case
-                this.m_busy = false;                                    
-            }
+            // if this is the last child within the parent, then we still need to see if there are ancestors available to fetch
             else
             {
-                // fetch size is greater than the number of children remaining to fetch
-                // so we'll need to go up the path (recursively if necessary) and see if
-                // if we need to fetch from ancestors.
-                processed = this._fetchFromAncestors(parent, depth, callbacks, maxFetchSize);
+                lastEntryKey = lastEntry['key'];
+                lastEntryCount = this.m_wrapped.getChildCount(lastEntryKey);
+                if (this._isExpanded(lastEntryKey) && (lastEntryCount === -1 || lastEntryCount > 0))
+                {
+                    // if the last entry was expanded and has children fetch its children
+                    processed = this._fetchFromAncestors(lastEntry, depth + 1, range, callbacks, maxFetchSize);
+                }                       
+                else
+                {
+                    // fetch size is greater than the number of children remaining to fetch
+                    // so we'll need to go up the path (recursively if necessary) and see if
+                    // if we need to fetch from ancestors.
+                    processed = this._fetchFromAncestors(parent, depth, range, callbacks, maxFetchSize);
+                }
                 if (!processed)
                 {
                     // nothing is used from node set, just return a empty node set
@@ -883,6 +901,8 @@ oj.FlattenedTreeDataSource.prototype._fetchRowsFromChildren = function(range, ca
     // the only case we'll ended up here is if the max count has been reached or
     // for some reason the caller is asking for count = 0
     this.handleMaxCountReached(range, callbacks);
+    // busy can't be set by max count reached because it can be overwritten by wrapped datasource
+    this.m_busy = false;
 };
 
 /**
@@ -949,68 +969,118 @@ oj.FlattenedTreeDataSource.prototype._handleFetchError = function(status, callba
  * @param {Object} nodeSet the set of fetched nodes
  * @param {Object} parent the parent key of the fetch operation
  * @param {number} depth the depth of the nodes
- * @param {Object} range the request range for the fetch operation
+ * @param {Object} originalRange the request range for the fetch operation
+ * @param {Object} requestedRange the request range for the fetch operation
  * @param {number} count the child count of the parent, -1 if count is unknown
  * @param {Object} callbacks the original callbacks passed to the fetch operation
+ * @param {Object=} options the original callbacks passed to the fetch operation
  * @private
  */
-oj.FlattenedTreeDataSource.prototype._handleFetchSuccess = function(nodeSet, parent, depth, range, count, callbacks)
+oj.FlattenedTreeDataSource.prototype._handleFetchSuccess = function(nodeSet, parent, depth, originalRange, requestedRange, count, callbacks, options)
 {
-    var toExpand, processed, queue, prevNodeSetInfo;
-
-    // handle result nodeSet
+    var toExpand, flattenedRange, queue, prevNodeSetInfo;
     toExpand = [];
-    // wrap it to inject additional metadata
-    nodeSet = new oj.NodeSetWrapper(nodeSet, this.insertMetadata.bind(this), range);
+
+    // first proccess the node set to get the rows to expand with the indexes        
     this._processNodeSet(nodeSet, parent, depth, toExpand);
 
-    // if child count is unknown and the result fetched from parent is less than what we asked for 
-    // and it's not a root node, go up one level and try to fetch results from its grandparent
-    if (count === -1 && nodeSet.getCount() === 0 && parent != null && depth > 0)
-    {
-        processed = this._fetchFromAncestors(parent, depth, callbacks);
-        if (!processed)
+    flattenedRange = {start: originalRange['start'], count: nodeSet.getCount()};
+    nodeSet = new oj.NodeSetWrapper(nodeSet, this.insertMetadata.bind(this), flattenedRange);
+    
+    // expand the fetched nodes to get the node set as full as possible from the original fetch
+    if (toExpand.length !== 0)
+    {                     
+        // there are rows to expand, so we'll need to combine the nodeset after
+        // we got the expanded nodeset
+        queue = [];
+        queue.push(toExpand);
+
+        // we'll reuse the syncExpandRows method, which is used to combine nested expanding
+        // nodeset, the only difference is we'll include the callbacks here, see handleExpandSuccess method
+        prevNodeSetInfo = {};
+        prevNodeSetInfo['callbacks'] = 
         {
-            // if nothing is fetched from ancestors, then just return the original empty set
-            if (callbacks != null && callbacks['success'] != null)
-            {
-                callbacks['success'].call(null, nodeSet);
-            }
-        }
+            "success": function(newNodeSet){this._verifyFetchResults(newNodeSet, parent, depth, originalRange, requestedRange, count, callbacks, options);}.bind(this), 
+            "error": function(status){this._handleFetchError(status, callbacks);}.bind(this)
+        };
+        prevNodeSetInfo['nodeSet'] = nodeSet;
+        prevNodeSetInfo['keys'] = [];
+
+        this._syncExpandRows(queue, prevNodeSetInfo);
     }
     else
     {
-        if (toExpand.length === 0)
+        this._verifyFetchResults(nodeSet, parent, depth, originalRange, requestedRange, count, callbacks, options)
+    }    
+};
+
+/**
+ * Process success callback from fetchChildren, fetchFromAncestors or expand after a fetch children
+ * @param {Object} nodeSet the set of fetched nodes
+ * @param {Object} parent the parent key of the fetch operation
+ * @param {number} depth the depth of the nodes
+ * @param {Object} originalRange the request range for the fetch operation
+ * @param {Object} requestedRange the request range for the fetch operation
+ * @param {number} count the child count of the parent, -1 if count is unknown
+ * @param {Object} callbacks the original callbacks passed to the fetch operation
+ * @param {Object=} options the original callbacks passed to the fetch operation
+ * @private
+ */
+oj.FlattenedTreeDataSource.prototype._verifyFetchResults = function(nodeSet, parent, depth, originalRange, requestedRange, count, callbacks, options)
+{
+    var prevNodeSet, lastNodeIndex, lastNodeKey, mergedNodeSet, remainingRange, remainingOptions, processed;
+;
+    if (options != undefined)
+    {
+        // if there is a previousNodeSet merge it with the new one to try and fulfill the original fetch size
+        prevNodeSet = options['prevNodeSet'];
+        if (prevNodeSet != undefined)
         {
-            // invoke original success callback
-            if (callbacks != null && callbacks['success'] != null)
-            {
-                callbacks['success'].call(null, nodeSet);
-            }
+            lastNodeIndex = prevNodeSet.getStart() + prevNodeSet.getCount() - 1;
+            lastNodeKey = prevNodeSet.getMetadata(lastNodeIndex)['key'];
+            mergedNodeSet = new oj.MergedNodeSet(prevNodeSet, nodeSet, lastNodeKey);
+        }
+    }
+
+    // if the nodeSet contains less nodes than orignially requested, attempt to fetch the remainder from the ancestors
+    if (nodeSet.getCount() < originalRange['count'] && parent != null && depth > 0)
+    {
+        remainingRange = {};
+        remainingRange['start'] = originalRange['start'] + nodeSet.getCount();
+        remainingRange['count'] = originalRange['count'] - nodeSet.getCount();
+        
+        remainingOptions = {};
+        remainingOptions['prevNodeSet'] = mergedNodeSet == null ? nodeSet : mergedNodeSet;
+        
+        processed = this._fetchFromAncestors(parent, depth, remainingRange, callbacks, undefined, remainingOptions);        
+    }
+    // if we overfetched because of expanded children then trim the nodeSet by wrapping the nodeSet in the correct range
+    else if (nodeSet.getCount() > originalRange['count'])
+    {
+        var difference = nodeSet.getCount() - originalRange['count'];
+        if (mergedNodeSet != null)
+        {
+            mergedNodeSet = new oj.NodeSetWrapper(mergedNodeSet, this.insertMetadata.bind(this), {'start': mergedNodeSet.getStart(), 'count': (mergedNodeSet.getCount() - difference)});
+            // remove entries that will not be passed back via the wrapped range
+            this._removeEntry(mergedNodeSet.getStart() + mergedNodeSet.getCount(), difference);
         }
         else
         {
-            // there are rows to expand, so we'll need to combine the nodeset after
-            // we got the expanded nodeset
-            queue = [];
-            queue.push(toExpand);
-
-            // we'll reuse the syncExpandRows method, which is used to combine nested expanding
-            // nodeset, the only difference is we'll include the callbacks here, see handleExpandSuccess method
-            prevNodeSetInfo = {};
-            prevNodeSetInfo['callbacks'] = callbacks;
-            prevNodeSetInfo['nodeSet'] = nodeSet;
-            prevNodeSetInfo['keys'] = [];
-
-            this._syncExpandRows(queue, prevNodeSetInfo);
+            nodeSet = new oj.NodeSetWrapper(nodeSet, this.insertMetadata.bind(this), {'start': nodeSet.getStart(), 'count': (nodeSet.getCount() - difference)});
+            // remove entries that will not be passed back via the wrapped range
+            this._removeEntry(nodeSet.getStart() + nodeSet.getCount(), difference);            
         }
     }
 
-    // reset flag except the case when there's more rows to expand
-    if (queue === undefined)
+    if (!processed)
     {
-        this.m_busy = false;
+        if (callbacks != null && callbacks['success'] != null)
+        {
+            callbacks['success'].call(null, mergedNodeSet == null ? nodeSet : mergedNodeSet);
+        }
     }
+
+    this.m_busy = false;
 };
 
 /**
@@ -1031,13 +1101,16 @@ oj.FlattenedTreeDataSource.prototype.getChildCount = function(parent)
  * @param {number} depth the depth of the nodes
  * @param {Object} callbacks the original callbacks passed to the fetch operation
  * @param {number=} maxFetchSize maximum fetch size, optional
+ * @param {Object=} options 
  * @return {boolean} true if results are fetched, false if nothing is fetched
  * @private
  */
-oj.FlattenedTreeDataSource.prototype._fetchFromAncestors = function(parent, depth, callbacks, maxFetchSize)
+oj.FlattenedTreeDataSource.prototype._fetchFromAncestors = function(parent, depth, range, callbacks, maxFetchSize, options)
 {
-    var options, remainToFetch, current, i, currEntry, currDepth, count, index, countUnknown, range, fetchSize;
+    var remainToFetch, current, i, currEntry, currDepth, count, index, countUnknown, fetchSize, batchFetchOptions, fetchRange, fetchedChildren;
 
+    fetchedChildren = false;
+    
     if (maxFetchSize === undefined)
     {
         maxFetchSize = this._getMaxFetchSize();
@@ -1048,11 +1121,10 @@ oj.FlattenedTreeDataSource.prototype._fetchFromAncestors = function(parent, dept
     // if we need to fetch from ancestors.
     if (this._isBatchFetching())
     {
-        options = {'queueOnly': true};
+        batchFetchOptions = {'queueOnly': true};
     }
 
     fetchSize = this._getFetchSizeToUse(-1);
-    remainToFetch = fetchSize;
     current = this._getLastIndex();
     for (i=current-1; i>=0; i--)
     {
@@ -1067,51 +1139,49 @@ oj.FlattenedTreeDataSource.prototype._fetchFromAncestors = function(parent, dept
             countUnknown = (count === -1);
             if (countUnknown || index < count-1)
             {
-                range = {};
-                range['start'] = index+1;
+                fetchRange = {};
+                fetchRange['start'] = index+1;
                 if (countUnknown)
                 {
-                    range['count'] = Math.min(maxFetchSize, Math.max(0, remainToFetch));
+                    fetchRange['count'] = Math.min(maxFetchSize, Math.max(0, fetchSize));
                     // if count is unknown, we cannot do batch fetch
-                    options = undefined;
+                    batchFetchOptions = undefined;
                     // stop going up parents
                 }
                 else
                 {
-                    range['count'] = Math.min(maxFetchSize, Math.min(remainToFetch, count - range['start']));
+                    fetchRange['count'] = Math.min(maxFetchSize, Math.min(fetchSize, count - fetchRange['start']));
                 }
 
                 // if there's nothing to fetch, quit
-                if (range['count'] == 0)
+                if (fetchRange['count'] == 0)
                 {
                     break;
                 }
                 
                 // it's always attached at the end
-                this.m_wrapped.fetchChildren(parent, range, {"success": function(nodeSet){this._handleFetchSuccess(nodeSet, parent, currDepth, range, count, callbacks);}.bind(this), "error": function(status){this._handleFetchError(status, callbacks);}.bind(this)}, options);
-
-                // go up one level
-                depth = currDepth;
-                // update remaining fetch count
-                remainToFetch = Math.max(0, remainToFetch - range['count']);
-
-                // done if count is unknown or we've reach the root or we've reach total number of rows we want to fetch
-                if (countUnknown || currDepth === 0 || remainToFetch === 0)                
-                {
-                    break;
-                }
+                this.m_wrapped.fetchChildren(parent, fetchRange, {"success": function(nodeSet){this._handleFetchSuccess(nodeSet, parent, currDepth, range, fetchRange, count, callbacks, options);}.bind(this), "error": function(status){this._handleFetchError(status, callbacks);}.bind(this)}, batchFetchOptions);
+                
+                fetchedChildren = true;
+                
+                break;
+            }
+            else
+            {
+                depth -= 1;
             }
         }
     }            
 
     // if batching is used, fire a final fetch children call to flush the queue
-    if (options != undefined)
+    if (batchFetchOptions != null)
     {
-        this.m_wrapped.fetchChildren(parent, {'start': range['count'], 'count': 0}, {"success": function(nodeSet){this._handleFetchSuccess(nodeSet, parent, currDepth, range, count, callbacks);}.bind(this), "error": function(status){this._handleFetchError(status, callbacks);}.bind(this)});
+        this.m_wrapped.fetchChildren(parent, {'start': range['count'], 'count': 0}, {"success": function(nodeSet){this._handleFetchSuccess(nodeSet, parent, currDepth, range, fetchRange, count, callbacks, options);}.bind(this), "error": function(status){this._handleFetchError(status, callbacks);}.bind(this)});
+        fetchedChildren = true;
     }
 
     // return false if no results are fetched
-    return (remainToFetch != fetchSize);
+    return fetchedChildren;
 };
 
 /**
@@ -2195,8 +2265,6 @@ oj.FlattenedTreeDataSource.prototype.handleMaxCountReached = function(range, cal
     {
         callbacks['error'].call(null);
     }
-    
-    this.m_busy = false;    
 };
 
 /**
@@ -2339,15 +2407,20 @@ oj.FlattenedTreeDataSource.prototype.getCapability = function(feature)
 /**
  * @ojcomponent oj.ojRowExpander
  * @augments oj.baseComponent
+ * @since 1.0.0
  *
  * @classdesc
  * <h3 id="rowexpanderOverview-section">
- *   JET RowExpander Component
+ *   JET RowExpander
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#rowexpanderOverview-section"></a>
  * </h3>
- * <p>Description: A JET RowExpander is a component that is primarily used inside the JET Table and JET DataGrid widgets.  It enables hierarchical data to be display in a JET Table and JET DataGrid.</p>
+ * <p>Description: A JET RowExpander is primarily used inside the JET Table and JET DataGrid.  It enables hierarchical data to be display in a JET Table and JET DataGrid.</p>
  *
  * <p>To enable expand and collapse of rows, developers must specify oj.FlattenedTreeTableDataSource as data when used within JET Table and oj.FlattenedTreeDataGridDataSource as data when used within JET DataGrid.</p>
+ *
+ * <pre class="prettyprint"><code>&lt;oj-row-expander
+ *   context='{{$context}}'>
+ * &lt;/oj-row-expander></code></pre>
  *
  * <h3 id="touch-section">
  *   Touch End User Information
@@ -2368,8 +2441,8 @@ oj.FlattenedTreeDataSource.prototype.getCapability = function(feature)
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#rtl-section"></a>
  * </h3>
  *
- * <p>The location of the row expander will be reversed in RTL reading direction.</p>
- * <p>As with any JET component, in the unusual case that the directionality (LTR or RTL) changes post-init, the component containing the row expander (JET Table or JET DataGrid) must be <code class="prettyprint">refresh()</code>ed.
+ * <p>The location of the RowExpander will be reversed in RTL reading direction.</p>
+ * <p>In the unusual case that the directionality (LTR or RTL) changes post-init, the component containing the RowExpander (JET Table or JET DataGrid) must be <code class="prettyprint">refresh()</code>ed.
  *
  * <h3 id="perf-section">
  *   Performance
@@ -2389,7 +2462,7 @@ oj.__registerWidget('oj.ojRowExpander', $['oj']['baseComponent'],
                  * The context object obtained from the column renderer (Table) or cell renderer (DataGrid)
                  *
                  * @expose
-                 * @memberof! oj.ojRowExpander
+                 * @memberof oj.ojRowExpander
                  * @instance
                  * @type {Object}
                  * @default <code class="prettyprint">null</code>
@@ -2397,64 +2470,45 @@ oj.__registerWidget('oj.ojRowExpander', $['oj']['baseComponent'],
                  */
                 context: null,
                 /**
-                 * Specifies if the row expander is expanded.  The default value is determined by the <code class="prettyprint">context</code> obtained from the column renderer (Table) or cell renderer (DataGrid), or null if no context is specified.
+                 * Specifies if the RowExpander is expanded.  The default value is determined by the <code class="prettyprint">context</code> obtained from the column renderer (Table) or cell renderer (DataGrid), or null if no context is specified.
                  * See <a href="#perf-section">performance</a> for recommended usage regarding initial expansion state.
                  *
                  * @expose
-                 * @memberof! oj.ojRowExpander
+                 * @memberof oj.ojRowExpander
                  * @instance
                  * @type {boolean|null}
                  * @default <code class="prettyprint">null</code>
+                 * @ojwriteback
                  *
-                 * @example <caption>Initialize the row expander with the <code class="prettyprint">expanded</code> option specified:</caption>
-                 * $( ".selector" ).ojRowExpander( { "expanded": true } );
+                 * @example <caption>Initialize the RowExpander with the <code class="prettyprint">expanded</code> attribute specified:</caption>
+                 * &lt;oj-row-expander expanded='true'>&lt;/oj-row-expander>
                  *
-                 * @example <caption>Get or set the <code class="prettyprint">expanded</code> option, after initialization:</caption>
+                 * @example <caption>Get or set the <code class="prettyprint">expanded</code> property after initialization:</caption>
                  * // getter
-                 * var expanded = $( ".selector" ).ojRowExpander( "option", "expanded" );
+                 * var expandedValue = myRowExpander.expanded;
                  *
                  * // setter
-                 * $( ".selector" ).ojRowExpander( "option", "expanded", true );
+                 * myRowExpander.expanded = false;
                  */
                  expanded: null,
                 /**
-                 * Triggered when a expand is performed on the row expander
+                 * Triggered when a expand is performed on the RowExpander
                  *
                  * @expose
                  * @event
-                 * @memberof! oj.ojRowExpander
+                 * @memberof oj.ojRowExpander
                  * @instance
-                 * @property {Event} event <code class="prettyprint">jQuery</code> event object
-                 * @property {Object} ui Parameters
-                 * @property {string} ui.rowKey the key of the row expanded
-                 *
-                 * @example <caption>Initialize the row expander with the <code class="prettyprint">expand</code> callback specified:</caption>
-                 * $( ".selector" ).ojRowExpander({
-                 *     "expand": function( event, ui ) {}
-                 * });
-                 *
-                 * @example <caption>Bind an event listener to the <code class="prettyprint">ojexpand</code> event:</caption>
-                 * $( ".selector" ).on( "ojexpand", function( event, ui ) {} );
+                 * @property {string} rowKey the key of the expanded row
                  */
                 expand: null,
                 /**
-                 * Triggered when a collapse is performed on the row expander
+                 * Triggered when a collapse is performed on the RowExpander
                  *
                  * @expose
                  * @event
-                 * @memberof! oj.ojRowExpander
+                 * @memberof oj.ojRowExpander
                  * @instance
-                 * @property {Event} event <code class="prettyprint">jQuery</code> event object
-                 * @property {Object} ui Parameters
-                 * @property {string} ui.rowKey the key of the row collapsed
-                 *
-                 * @example <caption>Initialize the row expander with the <code class="prettyprint">collapse</code> callback specified:</caption>
-                 * $( ".selector" ).ojRowExpander({
-                 *     "collapse": function( event, ui ) {}
-                 * });
-                 *
-                 * @example <caption>Bind an event listener to the <code class="prettyprint">ojcollapse</code> event:</caption>
-                 * $( ".selector" ).on( "ojcollapse", function( event, ui ) {} );
+                 * @property {string} rowKey the key of the collapsed row
                  */
                 collapse: null
             },
@@ -2486,7 +2540,7 @@ oj.__registerWidget('oj.ojRowExpander', $['oj']['baseComponent'],
     /**
      * Create the row expander
      * @override
-     * @memberof! oj.ojRowExpander
+     * @memberof oj.ojRowExpander
      * @protected
      */
     _ComponentCreate: function()
@@ -2502,7 +2556,7 @@ oj.__registerWidget('oj.ojRowExpander', $['oj']['baseComponent'],
     _initContent : function ()
     {
         var self = this, context;
-        
+
         context = this.options['context'];
         //component now widget constructor or non existent
         if (context['component'] != null)
@@ -2513,7 +2567,7 @@ oj.__registerWidget('oj.ojRowExpander', $['oj']['baseComponent'],
         {
             var widgetElem = context['componentElement'];
             widgetElem = $(widgetElem).hasClass('oj-component-initnode') ? widgetElem : $(widgetElem).find('.oj-component-initnode')[0];
-            this.component = oj.Components.getWidgetConstructor(widgetElem)('instance');
+            this.component = oj.Components.__GetWidgetConstructor(widgetElem)('instance');
         }
         this.datasource = context['datasource'];
 
@@ -2582,11 +2636,11 @@ oj.__registerWidget('oj.ojRowExpander', $['oj']['baseComponent'],
         this.handleActiveKeyChangeCallback = this._handleActiveKeyChangeEvent.bind(this);
         if (this.component._IsCustomElement())
         {
-            $(this.component.element).on('ojBeforeCurrentCell', this.handleActiveKeyChangeCallback);  
+            $(this.component.element).on('ojBeforeCurrentCell', this.handleActiveKeyChangeCallback);
         }
         else
         {
-            $(this.component.element).on('ojbeforecurrentcell', this.handleActiveKeyChangeCallback);              
+            $(this.component.element).on('ojbeforecurrentcell', this.handleActiveKeyChangeCallback);
         }
     },
     /**
@@ -2614,17 +2668,18 @@ oj.__registerWidget('oj.ojRowExpander', $['oj']['baseComponent'],
             this.options['expanded'] = this.iconState === 'collapsed' ? false : true;
         }
     },
+
     /**
-     * Refresh the row expander having made external modifications
+     * Redraw the RowExpander element.
      *
      * <p>This method does not accept any arguments.
      *
      * @expose
-     * @memberof! oj.ojRowExpander
+     * @memberof oj.ojRowExpander
      * @instance
      *
      * @example <caption>Invoke the <code class="prettyprint">refresh</code> method:</caption>
-     * $( ".selector" ).ojRowExpander( "refresh" );
+     * myRowExpander.refresh();
      */
     refresh: function()
     {
@@ -2637,7 +2692,7 @@ oj.__registerWidget('oj.ojRowExpander', $['oj']['baseComponent'],
      * <p>This method does not accept any arguments.
      *
      * @expose
-     * @memberof! oj.ojRowExpander
+     * @memberof oj.ojRowExpander
      * @instance
      * @private
      * @example <caption>Invoke the <code class="prettyprint">refresh</code> method:</caption>
@@ -2759,9 +2814,9 @@ oj.__registerWidget('oj.ojRowExpander', $['oj']['baseComponent'],
         this.icon = $(document.createElement('a')).attr('href', '#').attr('aria-labelledby', this._getLabelledBy()).addClass(this.classNames['icon']).addClass(this.classNames['clickable']);
         this.element.append(iconSpacer.append(this.toucharea.append(this.icon))); //@HTMLUpdateOK
 
-        self = this;        
+        self = this;
         this._focusable({
-            'element': self.icon, 
+            'element': self.icon,
             'applyHighlight': true
         });
     },
@@ -2849,7 +2904,7 @@ oj.__registerWidget('oj.ojRowExpander', $['oj']['baseComponent'],
         if (ui == null)
         {
             ui = event.detail;
-        }        
+        }
         if (ui['currentCell'] != null)
         {
             rowKey = ui['currentCell']['type'] == 'cell' ? ui['currentCell']['keys']['row'] :  ui['currentCell']['key'];
@@ -2896,13 +2951,13 @@ oj.__registerWidget('oj.ojRowExpander', $['oj']['baseComponent'],
     _handleKeyDownEvent: function(event)
     {
         var rowKey, code, context, ancestorInfo, ancestors, i;
-        var targetContext = oj.Components.getWidgetConstructor(this.component.element.get(0))('getContextByNode', event.target);
-        
+        var targetContext = oj.Components.__GetWidgetConstructor(this.component.element.get(0))('getContextByNode', event.target);
+
         if (targetContext == null)
         {
             return;
         }
-        
+
         rowKey = targetContext['key'];
         if (rowKey == null)
         {
@@ -2953,7 +3008,7 @@ oj.__registerWidget('oj.ojRowExpander', $['oj']['baseComponent'],
                 }
             }
         }
-        return;        
+        return;
     },
     /**
      * Put row expander in a loading state.  This is called during expand/collapse.
@@ -2965,7 +3020,7 @@ oj.__registerWidget('oj.ojRowExpander', $['oj']['baseComponent'],
         this.iconState = 'loading';
         this._setIconStateClass();
     },
-    
+
     /**
      * Handle an expand event coming from the datasource,
      * update the icon and the aria-expand property
@@ -2983,11 +3038,11 @@ oj.__registerWidget('oj.ojRowExpander', $['oj']['baseComponent'],
             this._ariaExpanded(true);
             this._updateContextState('expanded');
 
-            // if the event is triggered by initial setting of expanded, we should not 
+            // if the event is triggered by initial setting of expanded, we should not
             // fire expand or option change event
             var expanded = this.options['expanded'];
             if (expanded == null || (expanded != null && !expanded))
-            {                
+            {
                 this._trigger('expand', null, {'rowKey': rowKey});
                 this._updateExpandedState(true);
             }
@@ -3008,9 +3063,9 @@ oj.__registerWidget('oj.ojRowExpander', $['oj']['baseComponent'],
             this.iconState = 'collapsed';
             this._setIconStateClass();
             this._ariaExpanded(false);
-            this._updateContextState('collapsed');            
+            this._updateContextState('collapsed');
 
-            // if the event is triggered by initial setting of expanded, we should not 
+            // if the event is triggered by initial setting of expanded, we should not
             // fire expand or option change event
             var expanded = this.options['expanded'];
             if (expanded == null || (expanded != null && expanded))
@@ -3027,7 +3082,7 @@ oj.__registerWidget('oj.ojRowExpander', $['oj']['baseComponent'],
      */
     _updateExpandedState: function(expanded)
     {
-        this._setOption('expanded', expanded, {'changed':true, '_context': {'internalSet': true}});
+        this.option('expanded', expanded, {'changed':true, '_context': {'internalSet': true, 'writeback':true}});
     },
     /**
      * Update context state
@@ -3039,7 +3094,7 @@ oj.__registerWidget('oj.ojRowExpander', $['oj']['baseComponent'],
         var context = this.options['context'];
         context['state'] = newState;
         // need to reuse the same object so mark it as changed ourselves
-        this._setOption('context', context, {'changed':true, '_context': {'internalSet': true}});        
+        this.option('context', context, {'changed':true, '_context': {'internalSet': true}});
     },
     /**
      * Fire the expand or collapse on the datasource and the oj event on the widget
@@ -3071,29 +3126,8 @@ oj.__registerWidget('oj.ojRowExpander', $['oj']['baseComponent'],
     {
         this.icon.attr('aria-expanded', bool);
     },
-    /**
-     * Return the subcomponent node represented by the documented locator attribute values.
-     * <p>
-     * To lookup the expand/collapse icon the locator object should have the following:
-     * <ul>
-     * <li><b>subId</b>: 'oj-rowexpander-disclosure'</li>
-     * </ul>
-     *
-     * @expose
-     * @memberof! oj.ojRowExpander
-     * @instance
-     * @override
-     * @param {Object} locator An Object containing at minimum a subId property
-     *        whose value is a string, documented by the component, that allows
-     *         the component to look up the subcomponent associated with that
-     *        string.  It contains:<p>
-     *        component: optional - in the future there may be more than one
-     *        component contained within a page element<p>
-     *        subId: the string, documented by the component, that the component
-     *        expects in getNodeBySubId to locate a particular subcomponent
-     * @returns {Element|null} the subcomponent located by the subId string passed
-     *          in locator, if found.<p>
-     */
+
+    // @inheritdoc
     getNodeBySubId: function(locator)
     {
         var subId;
@@ -3112,21 +3146,7 @@ oj.__registerWidget('oj.ojRowExpander', $['oj']['baseComponent'],
         return null;
     },
 
-    /**
-     * Returns the subId string for the given child DOM node.  For more details, see
-     * <a href="#getNodeBySubId">getNodeBySubId</a>.
-     *
-     * @expose
-     * @override
-     * @memberof oj.ojRowExpander
-     * @instance
-     *
-     * @param {!Element} node - child DOM node
-     * @return {Object|null} The subId for the DOM node, or <code class="prettyprint">null</code> when none is found.
-     *
-     * @example <caption>Get the subId for a certain DOM node:</caption>
-     * var subId = $( ".selector" ).ojRowExpander( "getSubIdByNode", nodeInsideComponent );
-     */
+    // @inheritdoc
     getSubIdByNode: function(node)
     {
         if (node === this.icon.get(0))
@@ -3184,7 +3204,7 @@ oj.__registerWidget('oj.ojRowExpander', $['oj']['baseComponent'],
      *   </thead>
      *   <tbody>
      *     <tr>
-     *       <td rowspan="2">Focused Row or Cell with Row Expander</td>
+     *       <td rowspan="2">Focused Row or Cell with RowExpander</td>
      *       <td><kbd>Ctrl + RightArrow</kbd></td>
      *       <td>Expand</td>
      *     </tr>
@@ -3206,20 +3226,14 @@ oj.__registerWidget('oj.ojRowExpander', $['oj']['baseComponent'],
     //////////////////     SUB-IDS     //////////////////
 
     /**
-     * <p>Sub-ID for the ojRowExpander component's icon.</p>
+     * <p>Sub-ID for the ojRowExpander's icon.</p>
      *
      * @ojsubid oj-rowexpander-disclosure
      * @memberof oj.ojRowExpander
      *
-     * @example <caption>Get the icon from the row expander component:</caption>
-     * var node = $( ".selector" ).ojRowExpander( "getNodeBySubId", {'subId': 'oj-rowexpander-disclosure'} );
+     * @example <caption>Get the icon from the RowExpander:</caption>
+     * var node = myRowExpander.getNodeBySubId({subId: 'oj-rowexpander-disclosure'});
      */
-    
-    /**
-     * @deprecated Use the <a href="#oj-rowexpander-disclosure">oj-rowexpander-disclosure</a> option instead. 
-     * @ojsubid oj-rowexpander-icon
-     * @memberof oj.ojRowExpander
-     */    
 });
 
 (function() {
@@ -3229,13 +3243,9 @@ var ojRowExpanderMeta = {
       "type": "object"
     },
     "expanded": {
-        "type": "boolean"
+        "type": "boolean",
+        "writeback": true
     }
-  },
-  "methods": {
-    "getNodeBySubId": {},
-    "getSubIdByNode": {},
-    "refresh": {}
   },
   "events": {
     "collapse": {},

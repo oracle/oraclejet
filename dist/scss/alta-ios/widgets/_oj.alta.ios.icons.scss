@@ -28,6 +28,8 @@ $oj-fwk-icon-cross03: "e60e" !default;
 $oj-fwk-icon-cross: "e608" !default;
 $oj-fwk-icon-drag: "e610" !default;
 $oj-fwk-icon-folderhierarchy: "e611" !default;
+$oj-fwk-icon-grid: "e900" !default;
+$oj-fwk-icon-list: "e901" !default;
 $oj-fwk-icon-arrowbox-n: "e902" !default;
 $oj-fwk-icon-info: "i" !default;
 $oj-fwk-icon-warning: "!" !default;
@@ -44,6 +46,7 @@ $oj-fwk-icon-dots-vertical: "e61a" !default;
 
 
 @import "../../common/widgets/oj.common.icons";
+@import "oj.alta.ios.sprite";
 
 @if $includeIconClasses != false {
   @include module-include-once("alta.ios.icons") {

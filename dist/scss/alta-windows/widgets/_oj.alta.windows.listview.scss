@@ -30,12 +30,12 @@
 
         /* Styling for the expand icon */
         .oj-listview-expand-icon{
-          @extend .oj-fwk-icon-caret03-n;
+          @extend .oj-fwk-icon-caret03-s;
         }
         
         /* Styling for the collapse icon */
         .oj-listview-collapse-icon {
-           @extend .oj-fwk-icon-caret03-s;
+           @extend .oj-fwk-icon-caret03-end;
         }
 
         ul.oj-listview-element:not(.oj-listview-card-layout):last-child,
@@ -72,12 +72,6 @@
         ul.oj-listview-element:not(.oj-listview-card-layout) .oj-listview-item.oj-drag {
             border-top: 1px solid $dataGridCellDragImageBorderColor;
             border-bottom: 1px solid $dataGridCellDragImageBorderColor;
-        }
-
-        /* Styling for the affordance icon */
-        .oj-listview-drag-handle {
-            width: 40px;
-            height: 23px;
         }
   }
 }

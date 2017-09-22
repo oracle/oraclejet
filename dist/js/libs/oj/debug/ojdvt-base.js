@@ -112,10 +112,10 @@ oj.ShapeAttributeGroupHandler.prototype.getValueRamp = function() {
   return oj.ShapeAttributeGroupHandler._attributeValues;
 };
 /**
- * Defines whether the component will automatically render in response to
+ * Defines whether the element will automatically render in response to
  * changes in size. If set to <code class="prettyprint">off</code>, then the
  * application is responsible for calling <code class="prettyprint">refresh</code>
- * to render the component at the new size.
+ * to render the element at the new size.
  * @expose
  * @name trackResize
  * @memberof oj.dvtBaseComponent
@@ -124,11 +124,22 @@ oj.ShapeAttributeGroupHandler.prototype.getValueRamp = function() {
  * @ojvalue {string} "on"
  * @ojvalue {string} "off"
  * @default <code class="prettyprint">"on"</code>
+ * 
+ * @example <caption>Initialize the data visualization element with the 
+ * <code class="prettyprint">track-resize</code> attribute specified:</caption>
+ * &lt;oj-some-dvt track-resize='off'>&lt;/oj-some-dvt>
+ * 
+ * @example <caption>Get or set the <code class="prettyprint">trackResize</code> 
+ * property after initialization:</caption>
+ * // getter
+ * var value = myComponent.trackResize;
+ * 
+ * // setter
+ * myComponent.trackResize="off";
  */
 
 /**
- * <p>This component should be bound to an HTML div element, and the SVG DOM that it generates should be treated as a
- * black box, as it is subject to change.  This component should not be extended.</p>
+ * <p>The SVG DOM that this component generates should be treated as a black box, as it is subject to change.</p>
  *
  * @ojfragment warning
  * @memberof oj.dvtBaseComponent
@@ -141,11 +152,11 @@ oj.ShapeAttributeGroupHandler.prototype.getValueRamp = function() {
  * </h3>
  *
  * <p>The application is responsible for populating the shortDesc value in the
- * component options object with meaningful descriptors when the component does
+ * component properties object with meaningful descriptors when the component does
  * not provide a default descriptor.</p>
  *
  * @ojfragment a11y
- * @memberof oj.ojChart
+ * @memberof oj.dvtBaseComponent
  */
 
 /**
@@ -155,7 +166,7 @@ oj.ShapeAttributeGroupHandler.prototype.getValueRamp = function() {
  * </h3>
  *
  * <p>The application is responsible for populating the shortDesc value in the
- * component options object with meaningful descriptors when the component does
+ * component properties object with meaningful descriptors when the component does
  * not provide a default descriptor.  Since component terminology for keyboard
  * and touch shortcuts can conflict with those of the application, it is the
  * application's responsibility to provide these shortcuts, possibly via a help
@@ -182,9 +193,9 @@ oj.ShapeAttributeGroupHandler.prototype.getValueRamp = function() {
 
 /**
  * <h4>Tracking Resize</h4>
- * <p>By default, the component will track resizes and render at the new size. This functionality adds a small
- * overhead to the initial render for simple components like gauges or spark charts, which become noticable when
- * using large numbers of these simple components. To disable resize tracking, set <code class="prettyprint">trackResize</code>
+ * <p>By default, the element will track resizes and render at the new size. This functionality adds a small
+ * overhead to the initial render for simple elements like gauges or spark charts, which become noticable when
+ * using large numbers of these simple elements. To disable resize tracking, set <code class="prettyprint">trackResize</code>
  * to <code class="prettyprint">off</code>. The application can manually request a re-render at any time by calling
  * the <code class="prettyprint">refresh</code> function.
  * </p>
@@ -197,6 +208,7 @@ oj.ShapeAttributeGroupHandler.prototype.getValueRamp = function() {
  * Class to help set css properties on the component root options object
  * @param {Object} object The root options object from which this path should be resolved
  * @param {string} path The string path within the options object to resolve
+ * @protected
  * @constructor
  * @ignore
  */
@@ -325,7 +337,7 @@ oj.ColorAttributeGroupHandler = function(matchRules) {
 oj.Object.createSubclass(oj.ColorAttributeGroupHandler, oj.AttributeGroupHandler, "oj.ColorAttributeGroupHandler");
 
 /** @private */
-oj.ColorAttributeGroupHandler._DEFAULT_COLORS = ['#267db3', '#68c182', '#fad55c', '#ed6647', 
+oj.ColorAttributeGroupHandler._DEFAULT_COLORS = ['#237bb1', '#68c182', '#fad55c', '#ed6647', 
   '#8561c8', '#6ddbdb', '#ffb54d', '#e371b2', '#47bdef', '#a2bf39', '#a75dba', '#f7f37b'];
 
 /** @private */
@@ -745,6 +757,9 @@ oj.__registerWidget('oj.dvtBaseComponent', $['oj']['baseComponent'], {
     else
       this._context = new dvt.Context(this.element[0], null, this._referenceDiv[0]);
 
+    // Store JET reference on context so toolkit can access things like loggers
+    this._context['oj'] = oj;
+
     // Set the reading direction on the context
     this._context.setReadingDirection(this._GetReadingDirection());
 
@@ -756,9 +771,6 @@ oj.__registerWidget('oj.dvtBaseComponent', $['oj']['baseComponent'], {
 
     // Pass back method for cleaning up renderer context
     this._context.setFixContextCallback(this._FixRendererContext.bind(this));
-
-    // Set the root font-family
-    this._context.setDefaultFontFamily(this._referenceDiv.css('font-family'));
 
     this._context.setCustomElement(this._IsCustomElement());
 
@@ -786,7 +798,7 @@ oj.__registerWidget('oj.dvtBaseComponent', $['oj']['baseComponent'], {
 
     // Pass the environment and widget constructor through the options for JET specific behavior
     this.options['_environment'] = 'jet';
-    this.options['_widgetConstructor'] = oj.Components.getWidgetConstructor(this.element);
+    this.options['_widgetConstructor'] = oj.Components.__GetWidgetConstructor(this.element);
   },
 
   //** @inheritdoc */
@@ -1062,10 +1074,7 @@ oj.__registerWidget('oj.dvtBaseComponent', $['oj']['baseComponent'], {
     }
     
     // Remove any pending busy states
-    if (this._readyResolveFunc) {
-      this._readyResolveFunc();
-      this._readyResolveFunc = null;
-    }
+    this._MakeReady();
 
     // Call super last for destroy
     this._super();
@@ -1155,7 +1164,7 @@ oj.__registerWidget('oj.dvtBaseComponent', $['oj']['baseComponent'], {
     else if (type === 'optionChange') {
       this._UserOptionChange(event['key'], event['value'], event['optionMetadata']);
     }
-    else if (type === 'touchHoldRelease' && this.options['contextMenu']) {
+    else if (type === 'touchHoldRelease' && this._GetContextMenu()) {
       this._OpenContextMenu($.Event(event['nativeEvent']), 'touch');
     }
     else if (type === 'ready') {
@@ -1236,7 +1245,7 @@ oj.__registerWidget('oj.dvtBaseComponent', $['oj']['baseComponent'], {
     // Fix 18498656: If the component is not attached to a visible subtree of the DOM, rendering will fail because
     // getBBox calls will not return the correct values.
     // Note: Checking offsetParent() does not work here since it returns false for position: fixed.
-    if(!this._context.isReadyToRender()){
+    if(!this._context.isReadyToRender()) {
       this._renderNeeded = true;
       this._MakeReady();
     }
@@ -1244,6 +1253,9 @@ oj.__registerWidget('oj.dvtBaseComponent', $['oj']['baseComponent'], {
       // If flowing layout is supported, don't pass width and height to the component render method
       this._width = this._IsFlowingLayoutSupported() ? null : this.element.width();
       this._height = this._IsFlowingLayoutSupported() ? null : this.element.height();
+      
+      // Set the root font-family
+      this._context.setDefaultFontFamily(this._referenceDiv.css('font-family'));
 
       // Add the width, height, and locale as private fields in the options for debugging purposes
       this.options['_width'] = this._width;
@@ -1252,7 +1264,7 @@ oj.__registerWidget('oj.dvtBaseComponent', $['oj']['baseComponent'], {
 
       // Add draggable attribute if DnD is supported
       if (this.options['dnd'])
-        this.element.attr('draggable', true); 
+        this.element.attr('draggable', true);
 
       // Merge css styles with with json options object
       this._ProcessStyles();
@@ -1264,12 +1276,14 @@ oj.__registerWidget('oj.dvtBaseComponent', $['oj']['baseComponent'], {
         // Skip the resize render if Promises are not fully resolved because
         // the component will be rerendered with the new width/height when all
         // Promises are fully resolved
-        if (this._numDeferredObjs === 0)
-          this._renderComponent(isResize);
+        if (this._numDeferredObjs === 0) {
+          this._RenderComponent(this._optionsCopy, isResize);
+        }
       } else {
         // Component rendering will be done when all Promises are fully resolved
-        if (this._resolveDeferredDataItems())
-          this._renderComponent();
+        if (this._resolveDeferredDataItems()) {
+          this._RenderComponent(this._optionsCopy);
+        }
       }
 
       this._renderNeeded = false;
@@ -1280,28 +1294,56 @@ oj.__registerWidget('oj.dvtBaseComponent', $['oj']['baseComponent'], {
   _NotifyShown: function()
   {
     this._super();
-    if(this._renderNeeded)
-      this._Render();
+    this._notifyShownAttached();
   },
 
   //** @inheritdoc */
   _NotifyAttached: function()
   {
     this._super();
+    this._notifyShownAttached();
+  },
+
+  //** @inheritdoc */
+  _NotifyDetached : function() 
+  {
+    this._super();
+    this._notifyHiddenDetached();
+  },
+
+  //** @inheritdoc */
+  _NotifyHidden : function() 
+  {
+    this._super();
+    this._notifyHiddenDetached();
+  },
+
+  /**
+   * Helper method to perform common logic for when 
+   * a DVT is hidden or detached from the DOM.
+   * @memberof oj.dvtBaseComponent
+   * @instance
+   * @private
+   */
+  _notifyShownAttached: function()
+  {
     if(this._renderNeeded)
       this._Render();
   },
 
-  //** @inheritdoc */
-  _NotifyDetached : function() {
-    this._super();
+  /**
+   * Helper method to perform common logic for when 
+   * a DVT is shown or detached from the DOM.
+   * @memberof oj.dvtBaseComponent
+   * @instance
+   * @private
+   */
+  _notifyHiddenDetached: function() 
+  {
     this._context.hideTooltips();
-  },
 
-  //** @inheritdoc */
-  _NotifyHidden : function() {
-    this._super();
-    this._context.hideTooltips();
+    // Remove any pending busy states
+    this._MakeReady();
   },
 
   /**
@@ -1349,7 +1391,7 @@ oj.__registerWidget('oj.dvtBaseComponent', $['oj']['baseComponent'], {
    * @protected
    */
   _GetDvtComponent: function(element) {
-    var widget = oj.Components.getWidgetConstructor(element)("instance");
+    var widget = oj.Components.__GetWidgetConstructor(element)("instance");
     if (widget) {
       return widget._component;
     }
@@ -1471,6 +1513,7 @@ oj.__registerWidget('oj.dvtBaseComponent', $['oj']['baseComponent'], {
     // Make a copy of options except for data options with the noClone parameter on DvtJsonUtils.
     // Cloning shouldn't be expensive if we're skipping data.
     this._optionsCopy =  dvt.JsonUtils.clone(this.options, null, this._GetComponentNoClonePaths());
+    this._FixCustomRenderers(this._optionsCopy);
     this._numDeferredObjs = 0;
 
     var self = this;
@@ -1548,7 +1591,7 @@ oj.__registerWidget('oj.dvtBaseComponent', $['oj']['baseComponent'], {
       this._numDeferredObjs--;
       (new DvtJsonPath(optionsTo, path)).setValue(value, true);
       if (this._numDeferredObjs === 0) {
-        this._renderComponent();
+        this._RenderComponent(this._optionsCopy);
         this._optionsCopy = null;
       }
     }
@@ -1556,12 +1599,13 @@ oj.__registerWidget('oj.dvtBaseComponent', $['oj']['baseComponent'], {
 
   /**
    * Renders the component.
+   * @param {Object} options The options to render the component with
    * @param {boolean} isResize True if we are rendering due to a resize event.
-   * @private
+   * @protected
    * @instance
    * @memberof oj.dvtBaseComponent
    */
-  _renderComponent : function(isResize) {
+  _RenderComponent : function(options, isResize) {
     // Cleanup
     this._CleanAllTemplates();
 
@@ -1572,7 +1616,7 @@ oj.__registerWidget('oj.dvtBaseComponent', $['oj']['baseComponent'], {
     if (bRemoveResizeListener)
       this._removeResizeListener();
 
-    this._component.render(isResize ? null : this._optionsCopy, this._width, this._height);
+    this._component.render(isResize ? null : options, this._width, this._height);
 
     if (bRemoveResizeListener)
       this._addResizeListener();
@@ -1616,7 +1660,7 @@ oj.__registerWidget('oj.dvtBaseComponent', $['oj']['baseComponent'], {
    * Returns a promise that is resolved when the component is finished rendering.
    * This can be used to determine when it is okay to call automation and other APIs on the component.
    * @returns {Promise}
-   * @expose
+   * @ignore
    * @instance
    * @memberof oj.dvtBaseComponent
    */
@@ -1693,12 +1737,77 @@ oj.__registerWidget('oj.dvtBaseComponent', $['oj']['baseComponent'], {
       this.options['tooltip'] = {'renderer' : tooltip};
     }
     else if (tooltip && tooltip['_renderer']) {
-      var self = this;
-      this.options['tooltip'] = {
-        'renderer' : this._GetTemplateRenderer(tooltip['_renderer'], 'tooltip'),
-        '_templateCleanup': function() { self._CleanTemplate('tooltip'); }
-      };
+      this.options['tooltip'] = {'renderer' : this._GetTemplateRenderer(tooltip['_renderer'], 'tooltip')};
     }
+  },
+
+  /**
+   * Returns a wrapper function for custom elements that converts an object
+   * returned by a custom renderer into an old format supported by widgets 
+   * and toolkit code.
+   * @param {Function} origRenderer Renderer function called to create custom content
+   * @return {Function} A wrapper function that will used to convert result into toolkit format
+   * @protected
+   * @memberof oj.dvtBaseComponent
+   */
+  _WrapCustomElementRenderer: function (origRenderer) {
+    var self = this;
+    var customRenderer = function (context) {
+      //add dvt context for the knockout template rendering
+      context['_dvtcontext'] = self._context; 
+      var obj = origRenderer(context);
+      
+      // template cleanup section - template name and cleanup function are passed through context
+      if (context['_templateName'] && context['_templateCleanup']) {
+        self._AddTemplate(context['_templateName'], context['_templateCleanup']);
+      }
+      
+      //tooltip case: don't check 'insert' property, if 'preventDefault' is set to true
+      if (obj && obj['preventDefault'] !== true && obj['insert'] ) {
+        var insertObj = obj['insert'];
+        // handle returns for knockout template renderer
+        if (insertObj.classList && insertObj.classList.contains("oj-dvtbase")) {
+          return self._GetDvtComponent(insertObj);
+        }
+        return insertObj;
+      }
+      else {
+        return null;
+      }
+    }
+    return customRenderer;
+  },
+
+  /**
+   * Iterates through custom renderer options and replaces them with wrapper  
+   * functions that supports format accepted by DVT Toolkit components
+   * @param {Object} options Options for rendering the component
+   * @protected
+   * @memberof oj.dvtBaseComponent
+   */
+  _FixCustomRenderers: function (options) {
+    if (this._IsCustomElement()) {
+      var renderers = this._GetComponentRendererOptions();
+      for(var i = 0; i < renderers.length; i++) {
+        var optionPath = renderers[i];
+        var path = new DvtJsonPath(options, optionPath);
+        var value = path.getValue();
+        if (value) {
+          path.setValue(this._WrapCustomElementRenderer(value), true);
+        }
+      }
+    }
+  },
+
+  /**
+   * Returns an array of options that contain custom renderer paths 
+   * for the given component.
+   * @return {Array}
+   * @protected
+   * @memberof oj.dvtBaseComponent
+   */
+  _GetComponentRendererOptions: function() {
+    return ['tooltip/renderer'];
   },
 
   /**
@@ -1721,10 +1830,9 @@ oj.__registerWidget('oj.dvtBaseComponent', $['oj']['baseComponent'], {
 
       var elem = dummyDiv.children[0];
       if (elem) {
-        // Save a reference to the dummyDiv for ko cleanup to prevent memory leaks
-        if (!self._templateMap[templateName])
-          self._templateMap[templateName] = [];
-        self._templateMap[templateName].push(dummyDiv);
+        // Save a reference to cleanup function for the dummyDiv 
+        // for ko cleanup to prevent memory leaks
+        self._AddTemplate(templateName, function(){$(dummyDiv).remove();});
 
         dummyDiv.removeChild(elem);
         $(dummyDiv).remove();
@@ -1760,10 +1868,9 @@ oj.__registerWidget('oj.dvtBaseComponent', $['oj']['baseComponent'], {
 
       var elem = dummyDiv.children[0];
       if (elem) {
-        // Save a reference to the dummyDiv for ko cleanup to prevent memory leaks
-        if (!self._templateMap[templateName])
-          self._templateMap[templateName] = [];
-        self._templateMap[templateName].push(dummyDiv);
+        // Save a reference to cleanup function for the dummyDiv 
+        // for ko cleanup to prevent memory leaks
+        self._AddTemplate(templateName, function(){$(dummyDiv).remove();});
 
         // The dummy div can be removed for custom svg elements, but need to be
         // kept around for stamped DVTs so the oj components aren't removed.
@@ -1786,8 +1893,9 @@ oj.__registerWidget('oj.dvtBaseComponent', $['oj']['baseComponent'], {
    * @memberof oj.dvtBaseComponent
    */
   _CleanAllTemplates: function() {
-    for (var templateName in this._templateMap)
-      $(this._templateMap[templateName]).remove();
+    for (var templateName in this._templateMap) {
+      this._CleanTemplate(templateName);
+    }    
     this._templateMap = {};
   },
 
@@ -1799,14 +1907,77 @@ oj.__registerWidget('oj.dvtBaseComponent', $['oj']['baseComponent'], {
    */
   _CleanTemplate: function(templateName) {
     if (this._templateMap[templateName]) {
-      $(this._templateMap[templateName]).remove();
+      var length = this._templateMap[templateName].length;
+      for (var i = 0; i < length; i++) {
+        this._templateMap[templateName][i]();
+      }
       this._templateMap[templateName] = [];
+    }
+  },
+
+  /**
+   * Adds a cleanup function that should be used to cleanup a specific template. 
+   * @param {string} templateName The name of the template to clean
+   * @param {Function} cleanupCallback A callback function to cleanup the template
+   * @protected
+   * @memberof oj.dvtBaseComponent
+   */
+  _AddTemplate: function(templateName, cleanupCallback) {
+    if (!this._templateMap[templateName]) {
+      this._templateMap[templateName] = [];
+    }
+    this._templateMap[templateName].push(cleanupCallback);    
+  },
+
+  //** @inheritdoc */
+  _CompareOptionValues: function(option, value1, value2)
+  {
+    switch(option)
+    {
+      case 'hiddenCategories':
+      case 'highlightedCategories':
+      case 'selection':
+        return oj.Object.compareValues(value1, value2);
+      default:
+        return this._super(option, value1, value2);
     }
   }
 
 }, true);
 
 (function() {
+
+// Consider a string with at least one digit a valid SVG path
+var _SHAPE_REGEXP = /\d/;
+// Default shape types supported by DvtSimpleMarker
+var _SHAPE_ENUMS = {
+  "circle": true,
+  "ellipse": true,
+  "square": true,
+  "rectangle": true,
+  "diamond": true,
+  "triangleUp": true,
+  "triangleDown": true,
+  "plus": true,
+  "human": true,
+  "star": true
+};
+
+function shapeParseFunction(shapeAttrs, shapeEnums) {
+  var shapes = shapeEnums || _SHAPE_ENUMS;
+  return function(value, name, meta, defaultParseFunction) {
+    if (shapeAttrs[name]) {
+      if (_SHAPE_REGEXP.test(value))
+        return value;
+      else if (!shapes[value])
+        throw new Error("Found: '" + value + "'. Expected one of the following: " + Object.keys(shapeEnums).toString());
+      else
+        return value;
+    }
+    return defaultParseFunction(value);
+  };
+};
+
 var dvtBaseComponentMeta = {
   "properties": {
     "trackResize": {
@@ -1867,7 +2038,8 @@ var dvtBaseComponentMeta = {
   },
   "methods": {},
   "extension": {
-    _WIDGET_NAME: "dvtBaseComponent"
+    _WIDGET_NAME: "dvtBaseComponent",
+    _DVT_PARSE_FUNC: shapeParseFunction
   }
 };
 oj.CustomElementBridge.registerMetadata('dvtBaseComponent', 'baseComponent', dvtBaseComponentMeta);

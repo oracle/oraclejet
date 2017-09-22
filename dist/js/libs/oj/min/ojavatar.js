@@ -1,0 +1,7 @@
+/**
+ * Copyright (c) 2014, 2017, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ */
+"use strict";
+define(["ojs/ojcore","ojs/ojcomponentcore","ojs/ojcomposite"],function(a){a.gf.register("oj-avatar",{view:{inline:'\x3cdiv class\x3d"oj-avatar-outer" data-bind\x3d"css: !$props.initials || $props.src ? \'oj-avatar-\'  + $props.size : \'oj-avatar-has-initials oj-avatar-\'+ $props.size"aria-hidden\x3d"true"\x3e  \x3cdiv class\x3d"oj-avatar-inner"\x3e    \x3c!-- ko if: $props.src --\x3e    \x3cdiv class\x3d"oj-avatar-background-image"         data-bind\x3d"style:{\'background-image\':\'url(\' + $props.src + \')\'}"\x3e      \x3cdiv class\x3d"oj-avatar-initials" data-bind\x3d"text: $props.initials"\x3e\x3c/div\x3e    \x3c/div\x3e    \x3c!-- /ko --\x3e    \x3c!-- ko if: $props.initials \x26\x26 !$props.src --\x3e    \x3cdiv class\x3d"oj-avatar-initials" data-bind\x3d"text: $props.initials"\x3e\x3c/div\x3e    \x3c!-- /ko --\x3e    \x3c!-- ko if: !$props.initials \x26\x26 !$props.src --\x3e    \x3cdiv class\x3d"oj-avatar-placeholder"\x3e\x3c/div\x3e    \x3c!-- /ko --\x3e  \x3c/div\x3e\x3c/div\x3e'},
+metadata:{inline:{properties:{initials:{description:"Initials for avatar, used if no image",type:"string"},src:{description:"Source for background image",type:"string"},size:{description:"Size of the avatar",type:"string",enumValues:"xxs xs sm md lg xl xxl".split(" "),value:"md"}}}}})});

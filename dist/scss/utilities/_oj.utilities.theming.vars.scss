@@ -2,8 +2,8 @@
 
 //-------------------------------------------------------------
 // private function
-// 
-// adds a map of variable name and value to a list, 
+//
+// adds a map of variable name and value to a list,
 // for example it could add this to the list passed in:
 // {name: "$interaction1Color", value: "#07ac02"}
 //-------------------------------------------------------------
@@ -15,23 +15,23 @@
 
 //-------------------------------------------------------------
 // PALETTE
-// 
+//
 // Creates a list of palette var names and values, as in:
-//   [ 
+//   [
 //    {name: "$interaction1Color", value: "#07ac02"},
 //    {name: "$interaction2Color", value: "#ebeced"},
 //        --- etc ---
 //   ]
 //
 // A list is used instead of a map to control the order.
-// 
-// This in turn can be used to send var names and values 
+//
+// This in turn can be used to send var names and values
 // to the client like so:
 //   .demo-palette-list {
 //     font-family: oj-json(oj-theming-palette-colors());
 //   }
 //
-// and on the client in the js 
+// and on the client in the js
 //    var themingVarValues = self.parseJSONFromFontFamily("demo-palette-list");
 //
 //-------------------------------------------------------------
@@ -83,7 +83,7 @@
 //        --- etc ---
 //   ]
 //
-// see the doc for oj-theming-palette-colors 
+// see the doc for oj-theming-palette-colors
 // for info on how you might use this list
 //-------------------------------------------------------------
 
@@ -99,6 +99,7 @@
   $colorList: _oj-theming-add-var($colorList, '$headerTextColor', $headerTextColor);
   $colorList: _oj-theming-add-var($colorList, '$contrastTextColor', $contrastTextColor);
   $colorList: _oj-theming-add-var($colorList, '$textColorDisabled', $textColorDisabled);
+  $colorList: _oj-theming-add-var($colorList, '$textColorError', $textColorError);
   $colorList: _oj-theming-add-var($colorList, '$linkTextColor', $linkTextColor);
   $colorList: _oj-theming-add-var($colorList, '$linkTextColorDisabled', $linkTextColorDisabled);
   $colorList: _oj-theming-add-var($colorList, '$linkTextColorVisited', $linkTextColorVisited);
@@ -227,10 +228,18 @@
   $colorList: _oj-theming-add-var($colorList, '$trainConnectorBgColor', $trainConnectorBgColor);
   $colorList: _oj-theming-add-var($colorList, '$trainContinuousConnectorBgColorSelected', $trainContinuousConnectorBgColorSelected);
 
-  $colorList: _oj-theming-add-var($colorList, '$progressbarBgColor', $progressbarBgColor);
-  $colorList: _oj-theming-add-var($colorList, '$progressbarValueBgColor', $progressbarValueBgColor);
-  $colorList: _oj-theming-add-var($colorList, '$progressbarBorderColor', $progressbarBorderColor);
+  $colorList: _oj-theming-add-var($colorList, '$progressBarBgColor', $progressBarBgColor);
+  $colorList: _oj-theming-add-var($colorList, '$progressValueBgColor', $progressValueBgColor);
+  $colorList: _oj-theming-add-var($colorList, '$progressBarBorderColor', $progressBarBorderColor);
   $colorList: _oj-theming-add-var($colorList, '$progressCircleBgColor', $progressCircleBgColor);
+
+  $colorList: _oj-theming-add-var($colorList, '$filePickerBgColor', $filePickerBgColor);
+  $colorList: _oj-theming-add-var($colorList, '$filePickerBgColorActive', $filePickerBgColorActive);
+  $colorList: _oj-theming-add-var($colorList, '$filePickerBorderColor', $filePickerBorderColor);
+  $colorList: _oj-theming-add-var($colorList, '$filePickerTextColor', $filePickerTextColor);
+
+  $colorList: _oj-theming-add-var($colorList, '$avatarInnerBgColor', $avatarInnerBgColor);
+  $colorList: _oj-theming-add-var($colorList, '$iconCircleInnerBgColor', $iconCircleInnerBgColor);
 
   @return $colorList;
 }
@@ -244,7 +253,7 @@
 //        --- etc ---
 //   ]
 //
-// see the doc for oj-theming-palette-colors 
+// see the doc for oj-theming-palette-colors
 // for info on how you might use this list
 //-------------------------------------------------------------
 
@@ -284,8 +293,6 @@
   $colorList: _oj-theming-add-var($colorList, '$panel5BgColor', $panel5BgColor);
   $colorList: _oj-theming-add-var($colorList, '$panel5BorderColor', $panel5BorderColor);
 
-  $colorList: _oj-theming-add-var($colorList, '$tabsPanelBgColor', $tabsPanelBgColor);
-  $colorList: _oj-theming-add-var($colorList, '$tabsPanelBorderColor', $tabsPanelBorderColor);
   $colorList: _oj-theming-add-var($colorList, '$tabsNavTextColor', $tabsNavTextColor);
   $colorList: _oj-theming-add-var($colorList, '$tabsNavBorderColorSelected', $tabsNavBorderColorSelected);
   $colorList: _oj-theming-add-var($colorList, '$tabsNavAccentBorderColorSelected', $tabsNavAccentBorderColorSelected);
@@ -307,32 +314,56 @@
   $colorList: _oj-theming-add-var($colorList, '$navigationListItemIconOnlyBgColorHover', $navigationListItemIconOnlyBgColorHover);
   $colorList: _oj-theming-add-var($colorList, '$navigationListItemIconOnlyBgColorSelected', $navigationListItemIconOnlyBgColorSelected);
   $colorList: _oj-theming-add-var($colorList, '$navigationListIconOnlyIconColorSelected', $navigationListIconOnlyIconColorSelected);
-  $colorList: _oj-theming-add-var($colorList, '$navigationListPageLevelItemLabelColorDefault', $navigationListPageLevelItemLabelColorDefault);
-  $colorList: _oj-theming-add-var($colorList, '$navigationListPageLevelItemIconColorDefault', $navigationListPageLevelItemIconColorDefault);
-  $colorList: _oj-theming-add-var($colorList, '$navigationListPageLevelItemBorderColor', $navigationListPageLevelItemBorderColor);
-  $colorList: _oj-theming-add-var($colorList, '$navigationListPageLevelItemLabelColorSelected', $navigationListPageLevelItemLabelColorSelected);
-  $colorList: _oj-theming-add-var($colorList, '$navigationListPageLevelItemIconColorSelected', $navigationListPageLevelItemIconColorSelected);
-  $colorList: _oj-theming-add-var($colorList, '$navigationListPageLevelItemBorderColorSelected', $navigationListPageLevelItemBorderColorSelected);
-  $colorList: _oj-theming-add-var($colorList, '$navigationListPageLevelItemBgColorSelected', $navigationListPageLevelItemBgColorSelected);
-  $colorList: _oj-theming-add-var($colorList, '$navigationListPageLevelItemBgColorActive', $navigationListPageLevelItemBgColorActive);
-  $colorList: _oj-theming-add-var($colorList, '$navigationListPageLevelItemBorderColorActive', $navigationListPageLevelItemBorderColorActive);
   $colorList: _oj-theming-add-var($colorList, '$navigationListItemContrastLabelColorDefault', $navigationListItemContrastLabelColorDefault);
   $colorList: _oj-theming-add-var($colorList, '$navigationListItemContrastLabelColorHover', $navigationListItemContrastLabelColorHover);
   $colorList: _oj-theming-add-var($colorList, '$navigationListItemContrastBgColorHover', $navigationListItemContrastBgColorHover);
   $colorList: _oj-theming-add-var($colorList, '$navigationListItemContrastLabelColorSelected', $navigationListItemContrastLabelColorSelected);
   $colorList: _oj-theming-add-var($colorList, '$navigationListItemContrastBgColorSelected', $navigationListItemContrastBgColorSelected);
   $colorList: _oj-theming-add-var($colorList, '$navigationListItemContrastLabelColorDisabled', $navigationListItemContrastLabelColorDisabled);
-  $colorList: _oj-theming-add-var($colorList, '$navigationBarItemBorderColor', $navigationBarItemBorderColor);
-  $colorList: _oj-theming-add-var($colorList, '$navigationBarItemLabelColorDefault', $navigationBarItemLabelColorDefault);
-  $colorList: _oj-theming-add-var($colorList, '$navigationBarItemIconColorDefault', $navigationBarItemIconColorDefault);
-  $colorList: _oj-theming-add-var($colorList, '$navigationBarItemDividerColor', $navigationBarItemDividerColor);
-  $colorList: _oj-theming-add-var($colorList, '$navigationBarItemBgColorSelected', $navigationBarItemBgColorSelected);
-  $colorList: _oj-theming-add-var($colorList, '$navigationBarItemBorderColorSelected', $navigationBarItemBorderColorSelected);
-  $colorList: _oj-theming-add-var($colorList, '$navigationBarItemLabelColorSelected', $navigationBarItemLabelColorSelected);
-  $colorList: _oj-theming-add-var($colorList, '$navigationBarItemIconColorSelected', $navigationBarItemIconColorSelected);
-  $colorList: _oj-theming-add-var($colorList, '$navigationBarPageLevelItemLabelColorSelected', $navigationBarPageLevelItemLabelColorSelected);
-  $colorList: _oj-theming-add-var($colorList, '$navigationBarPageLevelItemIconColorSelected', $navigationBarPageLevelItemIconColorSelected);
-  $colorList: _oj-theming-add-var($colorList, '$navigationBarPageLevelItemBgColorSelected', $navigationBarPageLevelItemBgColorSelected);
+  $colorList: _oj-theming-add-var($colorList, '$navigationListHorizontalItemBorderColor', $navigationListHorizontalItemBorderColor);
+  $colorList: _oj-theming-add-var($colorList, '$navigationListHorizontalItemLabelColorDefault', $navigationListHorizontalItemLabelColorDefault);
+  $colorList: _oj-theming-add-var($colorList, '$navigationListHorizontalItemIconColorDefault', $navigationListHorizontalItemIconColorDefault);
+  $colorList: _oj-theming-add-var($colorList, '$navigationListHorizontalItemDividerColor', $navigationListHorizontalItemDividerColor);
+  $colorList: _oj-theming-add-var($colorList, '$navigationListHorizontalItemBgColorSelected', $navigationListHorizontalItemBgColorSelected);
+  $colorList: _oj-theming-add-var($colorList, '$navigationListHorizontalItemBorderColorSelected', $navigationListHorizontalItemBorderColorSelected);
+  $colorList: _oj-theming-add-var($colorList, '$navigationListHorizontalItemLabelColorSelected', $navigationListHorizontalItemLabelColorSelected);
+  $colorList: _oj-theming-add-var($colorList, '$navigationListHorizontalItemIconColorSelected', $navigationListHorizontalItemIconColorSelected);
+
+  $colorList: _oj-theming-add-var($colorList, '$tabBarItemBorderColor', $tabBarItemBorderColor);
+  $colorList: _oj-theming-add-var($colorList, '$tabBarItemLabelColorDefault', $tabBarItemLabelColorDefault);
+  $colorList: _oj-theming-add-var($colorList, '$tabBarItemIconColorDefault', $tabBarItemIconColorDefault);
+  $colorList: _oj-theming-add-var($colorList, '$tabBarItemBorderColorHover', $tabBarItemBorderColorHover);
+  $colorList: _oj-theming-add-var($colorList, '$tabBarItemBgColorHover', $tabBarItemBgColorHover);
+  $colorList: _oj-theming-add-var($colorList, '$tabBarItemIconColorHover', $tabBarItemIconColorHover);
+  $colorList: _oj-theming-add-var($colorList, '$tabBarItemIconOnlyBgColorHover', $tabBarItemIconOnlyBgColorHover);
+  $colorList: _oj-theming-add-var($colorList, '$tabBarItemLabelColorSelected', $tabBarItemLabelColorSelected);
+  $colorList: _oj-theming-add-var($colorList, '$tabBarItemIconColorSelected', $tabBarItemIconColorSelected);
+  $colorList: _oj-theming-add-var($colorList, '$tabBarItemBorderColorSelected', $tabBarItemBorderColorSelected);
+  $colorList: _oj-theming-add-var($colorList, '$tabBarItemBgColorSelected', $tabBarItemBgColorSelected);
+  $colorList: _oj-theming-add-var($colorList, '$tabBarItemIconOnlyBgColorSelected', $tabBarItemIconOnlyBgColorSelected);
+  $colorList: _oj-theming-add-var($colorList, '$tabBarIconOnlyIconColorSelected', $tabBarIconOnlyIconColorSelected);
+  $colorList: _oj-theming-add-var($colorList, '$tabBarItemBgColorActive', $tabBarItemBgColorActive);
+  $colorList: _oj-theming-add-var($colorList, '$tabBarItemBorderColorActive', $tabBarItemBorderColorActive);
+  $colorList: _oj-theming-add-var($colorList, '$tabBarItemOutlineColorFocus', $tabBarItemOutlineColorFocus);
+  $colorList: _oj-theming-add-var($colorList, '$tabBarItemLabelColorDisabled', $tabBarItemLabelColorDisabled);
+  $colorList: _oj-theming-add-var($colorList, '$tabBarIconColorDisabled', $tabBarIconColorDisabled);
+  $colorList: _oj-theming-add-var($colorList, '$tabBarCategoryDividerColor', $tabBarCategoryDividerColor);
+  $colorList: _oj-theming-add-var($colorList, '$tabBarItemContrastLabelColorDefault', $tabBarItemContrastLabelColorDefault);
+  $colorList: _oj-theming-add-var($colorList, '$tabBarItemContrastLabelColorHover', $tabBarItemContrastLabelColorHover);
+  $colorList: _oj-theming-add-var($colorList, '$tabBarItemContrastBgColorHover', $tabBarItemContrastBgColorHover);
+  $colorList: _oj-theming-add-var($colorList, '$tabBarItemContrastLabelColorSelected', $tabBarItemContrastLabelColorSelected);
+  $colorList: _oj-theming-add-var($colorList, '$tabBarItemContrastBgColorSelected', $tabBarItemContrastBgColorSelected);
+  $colorList: _oj-theming-add-var($colorList, '$tabBarItemContrastLabelColorDisabled', $tabBarItemContrastLabelColorDisabled);
+  $colorList: _oj-theming-add-var($colorList, '$tabBarHorizontalItemBorderColor', $tabBarHorizontalItemBorderColor);
+  $colorList: _oj-theming-add-var($colorList, '$tabBarHorizontalItemDividerColor', $tabBarHorizontalItemDividerColor);
+  $colorList: _oj-theming-add-var($colorList, '$tabBarHorizontalItemLabelColorSelected', $tabBarHorizontalItemLabelColorSelected);
+  $colorList: _oj-theming-add-var($colorList, '$tabBarHorizontalItemIconColorSelected', $tabBarHorizontalItemIconColorSelected);
+  $colorList: _oj-theming-add-var($colorList, '$tabBarHorizontalItemBgColorSelected', $tabBarHorizontalItemBgColorSelected);
+  $colorList: _oj-theming-add-var($colorList, '$tabBarHorizontalItemBorderColorSelected', $tabBarHorizontalItemBorderColorSelected);
+  $colorList: _oj-theming-add-var($colorList, '$tabBarHorizontalItemBorderColorHover', $tabBarHorizontalItemBorderColorHover);
+  $colorList: _oj-theming-add-var($colorList, '$tabBarHorizontalItemContrastBgColorSelected', $tabBarHorizontalItemContrastBgColorSelected);
+  $colorList: _oj-theming-add-var($colorList, '$tabBarHorizontalItemContrastLabelColorSelected', $tabBarHorizontalItemContrastLabelColorSelected);
+
 
   @return $colorList;
 }
@@ -341,7 +372,7 @@
 
 
 //-------------------------------------------------------------
-// FORMS 
+// FORMS
 //
 // Creates a list of var names and values for the 'Forms' category, as in:
 //   [{name: "$formControlLabelColor", value: "#666"},
@@ -349,7 +380,7 @@
 //        --- etc ---
 //   ]
 //
-// see the doc for oj-theming-palette-colors 
+// see the doc for oj-theming-palette-colors
 // for info on how you might use this list
 //-------------------------------------------------------------
 
@@ -404,9 +435,6 @@
   $colorList: _oj-theming-add-var($colorList, '$radioCheckboxItemBgColorActive', $radioCheckboxItemBgColorActive);
   $colorList: _oj-theming-add-var($colorList, '$radioCheckboxItemDividerColorActive', $radioCheckboxItemDividerColorActive);
   $colorList: _oj-theming-add-var($colorList, '$radioCheckboxLabelColorSelected', $radioCheckboxLabelColorSelected);
-
-  $colorList: _oj-theming-add-var($colorList, '$inputSearchBgColor', $inputSearchBgColor);
-  $colorList: _oj-theming-add-var($colorList, '$inputSearchBgColorDisabled', $inputSearchBgColorDisabled);
 
   $colorList: _oj-theming-add-var($colorList, '$sliderThumbBgColor', $sliderThumbBgColor);
   $colorList: _oj-theming-add-var($colorList, '$sliderThumbBorderColor', $sliderThumbBorderColor);
@@ -468,16 +496,16 @@
   $colorList: _oj-theming-add-var($colorList, '$switchTrackBorderColorSelectedDisabled', $switchTrackBorderColorSelectedDisabled);
   $colorList: _oj-theming-add-var($colorList, '$switchThumbBgColorSelectedDisabled', $switchThumbBgColorSelectedDisabled);
   $colorList: _oj-theming-add-var($colorList, '$switchThumbBorderColorSelectedDisabled', $switchThumbBorderColorSelectedDisabled);
-  
+
 
   $colorList: _oj-theming-add-var($colorList, '$colorSpectrumBorderColor', $colorSpectrumBorderColor);
   $colorList: _oj-theming-add-var($colorList, '$colorSpectrumThumbBorderColor', $colorSpectrumThumbBorderColor);
   $colorList: _oj-theming-add-var($colorList, '$colorspectrumThumbBorderColorDisabled', $colorspectrumThumbBorderColorDisabled);
-  
+
   $colorList: _oj-theming-add-var($colorList, '$colorPaletteTextColor', $colorPaletteTextColor);
   $colorList: _oj-theming-add-var($colorList, '$colorPaletteSwatchInnerBorderColor', $colorPaletteSwatchInnerBorderColor);
   $colorList: _oj-theming-add-var($colorList, '$colorPaletteSwatchOuterBorderColorSelected', $colorPaletteSwatchOuterBorderColorSelected);
-  
+
 
   @return $colorList;
 }
@@ -496,7 +524,7 @@
 //        --- etc ---
 //   ]
 //
-// see the doc for oj-theming-palette-colors 
+// see the doc for oj-theming-palette-colors
 // for info on how you might use this list
 //-------------------------------------------------------------
 
@@ -547,16 +575,12 @@
   $colorList: _oj-theming-add-var($colorList, '$indexerTextColorDisabled', $indexerTextColorDisabled);
 
 
-  $colorList: _oj-theming-add-var($colorList, '$treeTextColor', $treeTextColor);
-  $colorList: _oj-theming-add-var($colorList, '$treeNodeBgColorHover', $treeNodeBgColorHover);
-  $colorList: _oj-theming-add-var($colorList, '$treeNodeBgColorSelected', $treeNodeBgColorSelected);
-  $colorList: _oj-theming-add-var($colorList, '$treeNodeBgColorHoverSelected', $treeNodeBgColorHoverSelected);
-  $colorList: _oj-theming-add-var($colorList, '$treeNodeBgColorSelectedInactive', $treeNodeBgColorSelectedInactive);
-  $colorList: _oj-theming-add-var($colorList, '$treeNodeBorderColorHover', $treeNodeBorderColorHover);
-  $colorList: _oj-theming-add-var($colorList, '$treeNodeBorderColorSelected', $treeNodeBorderColorSelected);
-  $colorList: _oj-theming-add-var($colorList, '$treeNodeBorderColorHoverSelected', $treeNodeBorderColorHoverSelected);
-  $colorList: _oj-theming-add-var($colorList, '$treeNodeBorderColorSelectedInactive', $treeNodeBorderColorSelectedInactive);
-  $colorList: _oj-theming-add-var($colorList, '$treeDndMarkerLineColor', $treeDndMarkerLineColor);
+  $colorList: _oj-theming-add-var($colorList, '$treeViewTextColor', $treeViewTextColor);
+  $colorList: _oj-theming-add-var($colorList, '$treeViewItemBgColorHover', $treeViewItemBgColorHover);
+  $colorList: _oj-theming-add-var($colorList, '$treeViewItemBgColorSelected', $treeViewItemBgColorSelected);
+  $colorList: _oj-theming-add-var($colorList, '$treeViewItemBgColorSelectedInactive', $treeViewItemBgColorSelectedInactive);
+  $colorList: _oj-theming-add-var($colorList, '$treeViewDropLineColor', $treeViewDropLineColor);
+  $colorList: _oj-theming-add-var($colorList, '$treeViewDropMarkerColor', $treeViewDropMarkerColor);
 
   $colorList: _oj-theming-add-var($colorList, '$swipeToRevealActionTextColor', $swipeToRevealActionTextColor);
   $colorList: _oj-theming-add-var($colorList, '$swipeToRevealActionBgColor', $swipeToRevealActionBgColor);
@@ -575,12 +599,12 @@
 // VISUALIZATIONS
 //
 // Creates a list of var names and values for the 'Visualizations' category, as in:
-//   [{name: "$dvtCategory1Color", value: "#267db3"},
+//   [{name: "$dvtCategory1Color", value: "#237bb1"},
 //    {name: "$dvtCategory2Color", value: "#68c182"},
 //        --- etc ---
 //   ]
 //
-// see the doc for oj-theming-palette-colors 
+// see the doc for oj-theming-palette-colors
 // for info on how you might use this list
 //-------------------------------------------------------------
 
@@ -648,6 +672,24 @@
   $colorList: _oj-theming-add-var($colorList, '$dvtTimelineSeriesBgColor', $dvtTimelineSeriesBgColor);
   $colorList: _oj-theming-add-var($colorList, '$dvtTimelineSeriesLabelColor', $dvtTimelineSeriesLabelColor);
   $colorList: _oj-theming-add-var($colorList, '$dvtTimelineSeriesEmptyTextColor', $dvtTimelineSeriesEmptyTextColor);
+  $colorList: _oj-theming-add-var($colorList, '$dvtGanttBgColor', $dvtGanttBgColor);
+  $colorList: _oj-theming-add-var($colorList, '$dvtGanttBorderColor', $dvtGanttBorderColor);
+  $colorList: _oj-theming-add-var($colorList, '$dvtGanttHorizontalGridlineColor', $dvtGanttHorizontalGridlineColor);
+  $colorList: _oj-theming-add-var($colorList, '$dvtGanttVerticalGridlineColor', $dvtGanttVerticalGridlineColor);
+  $colorList: _oj-theming-add-var($colorList, '$dvtGanttEmptyTextColor', $dvtGanttEmptyTextColor);
+  $colorList: _oj-theming-add-var($colorList, '$dvtGanttRowBgColor', $dvtGanttRowBgColor);
+  $colorList: _oj-theming-add-var($colorList, '$dvtGanttTaskBgColor', $dvtGanttTaskBgColor);
+  $colorList: _oj-theming-add-var($colorList, '$dvtGanttMilestoneBgColor', $dvtGanttMilestoneBgColor);
+  $colorList: _oj-theming-add-var($colorList, '$dvtGanttTaskBorderColorSelected', $dvtGanttTaskBorderColorSelected);
+  $colorList: _oj-theming-add-var($colorList, '$dvtGanttMajorAxisBgColor', $dvtGanttMajorAxisBgColor);
+  $colorList: _oj-theming-add-var($colorList, '$dvtGanttMajorAxisBorderColor', $dvtGanttMajorAxisBorderColor);
+  $colorList: _oj-theming-add-var($colorList, '$dvtGanttMajorAxisLabelColor', $dvtGanttMajorAxisLabelColor);
+  $colorList: _oj-theming-add-var($colorList, '$dvtGanttMajorAxisSeparatorColor', $dvtGanttMajorAxisSeparatorColor);
+  $colorList: _oj-theming-add-var($colorList, '$dvtGanttMinorAxisBgColor', $dvtGanttMinorAxisBgColor);
+  $colorList: _oj-theming-add-var($colorList, '$dvtGanttMinorAxisBorderColor', $dvtGanttMinorAxisBorderColor);
+  $colorList: _oj-theming-add-var($colorList, '$dvtGanttMinorAxisLabelColor', $dvtGanttMinorAxisLabelColor);
+  $colorList: _oj-theming-add-var($colorList, '$dvtGanttMinorAxisSeparatorColor', $dvtGanttMinorAxisSeparatorColor);
+  $colorList: _oj-theming-add-var($colorList, '$dvtGanttDependencyLineColor', $dvtGanttDependencyLineColor);
 
   @return $colorList;
 }
@@ -663,15 +705,15 @@
 //             'forms':          oj-theming-forms-colors(),
 //             'collections':    oj-theming-collections-colors(),
 //             'visualizations': oj-theming-visualizations-colors());
-//    
 //
-// This in turn can be used to send var names and values 
+//
+// This in turn can be used to send var names and values
 // to the client like so:
 //   .demo-var-map {
 //     font-family: oj-json(oj-theming-colors-map());
 //   }
 //
-// and on the client in the js 
+// and on the client in the js
 //    var themingVarMap = self.parseJSONFromFontFamily("demo-var-map");
 //    var paletteList = themingVarMap['palette'];
 //-------------------------------------------------------------
@@ -686,4 +728,114 @@
               'visualizations': oj-theming-visualizations-colors());
 
   @return $colorMap;
+}
+
+
+
+
+
+
+@function _oj-theming-var-renamed($renamedVarFound, $oldVarName, $newVarName, $generalMessage: null)
+{
+  @if (variable-exists($oldVarName) == true)
+  {
+    $message: null;
+
+    @if ($generalMessage != null)
+    {
+      $message: $generalMessage + " Specifically ";
+    }
+
+    $message: $message + "var $#{$oldVarName} has been renamed to $#{$newVarName}.";
+
+    @debug $message;
+    @return true;
+  }
+  @else
+  {
+    @return $renamedVarFound;
+  }
+}
+
+
+@mixin oj-theming-vars-renamed()
+{
+
+  $renamedVarFound: false;
+
+  $renamedHierMenuThrehsoldVar: "$navigationListHierarchyMenuDisplayThresholdLevelOptionDefault has been renamed to $navigationListHierarchyMenuThresholdOptionDefault.Please rename it in your theming files.";
+  $renamedVarFound: _oj-theming-var-renamed($renamedVarFound, navigationListHierarchyMenuDisplayThresholdLevelOptionDefault, navigationListHierarchyMenuThresholdOptionDefault, $renamedHierMenuThrehsoldVar);
+
+  // navigationBar vars, use renamedNavBarVars
+  $renamedNavBarVars: "ALL $navigationBar* VARS HAVE BEEN RENAMED. In your theming files please search for '$navigationBar' and replace it with '$navigationListHorizontal'.";
+  $renamedVarFound: _oj-theming-var-renamed($renamedVarFound, navigationBarItemBorderColor, navigationListHorizontalItemBorderColor, $renamedNavBarVars);
+  $renamedVarFound: _oj-theming-var-renamed($renamedVarFound, navigationBarItemLabelColorDefault, navigationListHorizontalItemLabelColorDefault, $renamedNavBarVars);
+  $renamedVarFound: _oj-theming-var-renamed($renamedVarFound, navigationBarItemIconColorDefault,navigationListHorizontalItemIconColorDefault, $renamedNavBarVars);
+  $renamedVarFound: _oj-theming-var-renamed($renamedVarFound, navigationBarItemDividerColor, navigationListHorizontalItemDividerColor, $renamedNavBarVars);
+  $renamedVarFound: _oj-theming-var-renamed($renamedVarFound, navigationBarItemBgColorSelected, navigationListHorizontalItemBgColorSelected, $renamedNavBarVars);
+  $renamedVarFound: _oj-theming-var-renamed($renamedVarFound, navigationBarItemBorderColorSelected, navigationListHorizontalItemBorderColorSelected, $renamedNavBarVars);
+  $renamedVarFound: _oj-theming-var-renamed($renamedVarFound, navigationBarItemLabelColorSelected, navigationListHorizontalItemLabelColorSelected, $renamedNavBarVars);
+  $renamedVarFound: _oj-theming-var-renamed($renamedVarFound, navigationBarItemIconColorSelected, navigationListHorizontalItemIconColorSelected, $renamedNavBarVars);
+  $renamedVarFound: _oj-theming-var-renamed($renamedVarFound, navigationBarFontSize, navigationListHorizontalFontSize, $renamedNavBarVars);
+  $renamedVarFound: _oj-theming-var-renamed($renamedVarFound, navigationBarMinHeight, navigationListHorizontalMinHeight, $renamedNavBarVars);
+  $renamedVarFound: _oj-theming-var-renamed($renamedVarFound, navigationBarItemBorderWidth, navigationListHorizontalItemBorderWidth, $renamedNavBarVars);
+  $renamedVarFound: _oj-theming-var-renamed($renamedVarFound, navigationBarItemPadding, navigationListHorizontalItemPadding, $renamedNavBarVars);
+  $renamedVarFound: _oj-theming-var-renamed($renamedVarFound, navigationBarIconMargin, navigationListHorizontalIconMargin, $renamedNavBarVars);
+  $renamedVarFound: _oj-theming-var-renamed($renamedVarFound, navigationBarIconToTextPadding, navigationListHorizontalIconToTextPadding, $renamedNavBarVars);
+  $renamedVarFound: _oj-theming-var-renamed($renamedVarFound, navigationBarStackedIconMinHeight, navigationListHorizontalStackedIconMinHeight,  $renamedNavBarVars);
+  $renamedVarFound: _oj-theming-var-renamed($renamedVarFound, navigationBarStackedItemPadding, navigationListHorizontalStackedItemPadding, $renamedNavBarVars);
+  $renamedVarFound: _oj-theming-var-renamed($renamedVarFound, navigationBarIconOnlyStyle, navigationListHorizontalIconOnlyStyle, $renamedNavBarVars);
+  $renamedVarFound: _oj-theming-var-renamed($renamedVarFound, navigationBarIconOnlyItemMargin, navigationListHorizontalIconOnlyItemMargin, $renamedNavBarVars);
+  $renamedVarFound: _oj-theming-var-renamed($renamedVarFound, navigationBarItemContrastBgColorSelected, navigationListHorizontalItemContrastBgColorSelected, $renamedNavBarVars);
+  $renamedVarFound: _oj-theming-var-renamed($renamedVarFound, navigationBarItemContrastLabelColorSelected,  navigationListHorizontalItemContrastLabelColorSelected, $renamedNavBarVars);
+
+  // navigationListPageLevel, use renamedNavListPageVars
+  $renamedNavListPageVars: "ALL $navigationListPageLevel* VARS HAVE BEEN RENAMED. In your theming files please search for '$navigationListPageLevel' and replace it with '$tabBar'.";
+  $renamedVarFound: _oj-theming-var-renamed($renamedVarFound, navigationListPageLevelItemBorderColor, navigationTabsItemBorderColor, $renamedNavListPageVars);
+  $renamedVarFound: _oj-theming-var-renamed($renamedVarFound, navigationListPageLevelItemLabelColorDefault,navigationTabsItemLabelColorDefault, $renamedNavListPageVars);
+  $renamedVarFound: _oj-theming-var-renamed($renamedVarFound, navigationListPageLevelItemIconColorDefault, navigationTabsItemIconColorDefault, $renamedNavListPageVars);
+  $renamedVarFound: _oj-theming-var-renamed($renamedVarFound, navigationListPageLevelItemLabelColorSelected, navigationTabsItemLabelColorSelected, $renamedNavListPageVars);
+  $renamedVarFound: _oj-theming-var-renamed($renamedVarFound, navigationListPageLevelItemIconColorSelected, navigationTabsItemIconColorSelected, $renamedNavListPageVars);
+  $renamedVarFound: _oj-theming-var-renamed($renamedVarFound, navigationListPageLevelItemBorderColorSelected, navigationTabsItemBorderColorSelected, $renamedNavListPageVars);
+  $renamedVarFound: _oj-theming-var-renamed($renamedVarFound, navigationListPageLevelItemBgColorSelected, navigationTabsItemBgColorSelected, $renamedNavListPageVars);
+  $renamedVarFound: _oj-theming-var-renamed($renamedVarFound, navigationListPageLevelItemBgColorActive, navigationTabsItemBgColorActive, $renamedNavListPageVars);
+  $renamedVarFound: _oj-theming-var-renamed($renamedVarFound, navigationListPageLevelItemBorderColorActive, navigationTabsItemBorderColorActive, $renamedNavListPageVars);
+  $renamedVarFound: _oj-theming-var-renamed($renamedVarFound, navigationListPageLevelIconOnlyItemBorderWidth, navigationTabsIconOnlyItemBorderWidth, $renamedNavListPageVars);
+  $renamedVarFound: _oj-theming-var-renamed($renamedVarFound, navigationListPageLevelItemFontWeightSelected, navigationTabsItemFontWeightSelected, $renamedNavListPageVars);
+  $renamedVarFound: _oj-theming-var-renamed($renamedVarFound, navigationListPageLevelItemBorderRadius, navigationTabsItemBorderRadius, $renamedNavListPageVars);
+  $renamedVarFound: _oj-theming-var-renamed($renamedVarFound, navigationListPageLevelItemBorderWidth, navigationTabsItemBorderWidth, $renamedNavListPageVars);
+  $renamedVarFound: _oj-theming-var-renamed($renamedVarFound, navigationListPageLevelItemMinHeight, navigationTabsItemMinHeight, $renamedNavListPageVars);
+  $renamedVarFound: _oj-theming-var-renamed($renamedVarFound, navigationListPageLevelItemFontSize, navigationTabsItemFontSize, $renamedNavListPageVars);
+  $renamedVarFound: _oj-theming-var-renamed($renamedVarFound, navigationListPageLevelItemContrastLabelColorSelected, navigationTabsItemContrastLabelColorSelected, $renamedNavListPageVars);
+  $renamedVarFound: _oj-theming-var-renamed($renamedVarFound, navigationListPageLevelItemContrastBgColorSelected, navigationTabsItemContrastBgColorSelected, $renamedNavListPageVars);
+
+  // navigationBarPageLevel vars, use renamedNavBarPageVars
+  $renamedNavBarPageVars: "ALL $navigationBarPageLevel* VARS HAVE BEEN RENAMED. In your theming files please search for '$navigationBarPageLevel' and replace it with '$tabBarHorizontal'.";
+  $renamedVarFound: _oj-theming-var-renamed($renamedVarFound, navigationBarPageLevelItemLabelColorSelected, navigationTabsHorizontalItemLabelColorSelected, $renamedNavBarPageVars);
+  $renamedVarFound: _oj-theming-var-renamed($renamedVarFound, navigationBarPageLevelItemIconColorSelected, navigationTabsHorizontalItemIconColorSelected, $renamedNavBarPageVars);
+  $renamedVarFound: _oj-theming-var-renamed($renamedVarFound, navigationBarPageLevelItemBgColorSelected, navigationTabsHorizontalItemBgColorSelected, $renamedNavBarPageVars);
+  $renamedVarFound: _oj-theming-var-renamed($renamedVarFound, navigationBarPageLevelItemBorderWidth, navigationTabsHorizontalItemBorderWidth, $renamedNavBarPageVars);
+  $renamedVarFound: _oj-theming-var-renamed($renamedVarFound, navigationBarPageLevelIconOnlyItemBorderWidth, navigationTabsHorizontalIconOnlyItemBorderWidth, $renamedNavBarPageVars);
+  $renamedVarFound: _oj-theming-var-renamed($renamedVarFound, navigationBarPageLevelItemFontSize, navigationTabsHorizontalItemFontSize, $renamedNavBarPageVars);
+  $renamedVarFound: _oj-theming-var-renamed($renamedVarFound, navigationBarPageLevelItemMinHeight, navigationTabsHorizontalItemMinHeight, $renamedNavBarPageVars);
+  $renamedVarFound: _oj-theming-var-renamed($renamedVarFound, navigationBarPageLevelItemStackedIconMinHeight, navigationTabsHorizontalItemStackedIconMinHeight, $renamedNavBarPageVars);
+  $renamedVarFound: _oj-theming-var-renamed($renamedVarFound, navigationBarPageLevelItemContrastBgColorSelected, navigationTabsHorizontalItemContrastBgColorSelected, $renamedNavBarPageVars);
+  $renamedVarFound: _oj-theming-var-renamed($renamedVarFound, navigationBarPageLevelItemContrastLabelColorSelected, navigationTabsHorizontalItemContrastLabelColorSelected, $renamedNavBarPageVars);
+
+  //progressbar renamed to progressBar
+  $renamedProgressVars: "oj-progressbar has been renamed to oj-progress.  Variables used in only oj-progress bar have been renamed from progressbar to progressBar.  Variables used in both circle and bar oj-progress have been renamed from progressbar to progress.";
+  $renamedVarFound: _oj-theming-var-renamed($renamedVarFound, progressbarBgColor, progressBarBgColor, $renamedProgressVars);
+  $renamedVarFound: _oj-theming-var-renamed($renamedVarFound, progressbarValueBgColor, progressValueBgColor, $renamedProgressVars);
+  $renamedVarFound: _oj-theming-var-renamed($renamedVarFound, progressbarBorderColor, progressBarBorderColor, $renamedProgressVars);
+  $renamedVarFound: _oj-theming-var-renamed($renamedVarFound, progressbarBorderRadius, progressBarBorderRadius, $renamedProgressVars);
+  $renamedVarFound: _oj-theming-var-renamed($renamedVarFound, progressbarBorderStyle, progressBarBorderStyle, $renamedProgressVars);
+  $renamedVarFound: _oj-theming-var-renamed($renamedVarFound, progressbarIndeterminateOverlayCapacity, progressBarIndeterminateOverlayOpacity, $renamedProgressVars);
+  $renamedVarFound: _oj-theming-var-renamed($renamedVarFound, includeProgressbarClasses, includeProgressClasses, $renamedProgressVars);
+
+
+
+  @if ($renamedVarFound == true)
+  {
+    @error "Please check the warnings above and rename the relevant variables before continuing."
+  }
 }

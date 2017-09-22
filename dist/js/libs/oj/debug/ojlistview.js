@@ -54,6 +54,14 @@ oj.DataSourceContentHandler.prototype.notifyShown = function()
 };
 
 /**
+ * Handles when the listview is re-attached to the DOM (ex: when a children of CCA gets re-attached from slotting)
+ */
+oj.DataSourceContentHandler.prototype.notifyAttached = function()
+{
+    // by default do nothing, to be override by subclass
+};
+
+/**
  * Destroy the content handler
  * @protected
  */
@@ -111,7 +119,7 @@ oj.DataSourceContentHandler.prototype.RenderContent = function()
 {
     var presentation, row;
 
-    this.signalTaskStart(); // signal method task start
+    this.signalTaskStart("rendering content"); // signal method task start
 
     this.setRootAriaProperties();
     if (this.shouldUseGridRole() && this.isCardLayout() && !this.IsHierarchical())
@@ -154,7 +162,8 @@ oj.DataSourceContentHandler.prototype.FindElementByKey = function(key)
     for (i=0; i<children.length; i++)
     {
         elem = children[i];
-        if (key == this.GetKey(elem))
+        // use == for the string number compare case
+        if (key == this.GetKey(elem) || oj.Object.compareValues(key, this.GetKey(elem)))
         {
             return elem;
         }
@@ -197,7 +206,7 @@ oj.DataSourceContentHandler.prototype.addItem = function(parentElement, index, d
 
     item = document.createElement("li");
     $(item).uniqueId();
-    childElements = $(parentElement).children('.'+this.m_widget.getItemElementStyleClass()+', .'+this.m_widget.getEmptyTextStyleClass());
+    childElements = $(parentElement).children('.'+this.m_widget.getItemElementStyleClass()+', .'+this.m_widget.getEmptyTextStyleClass()+', .oj-listview-temp-item');
     if (index === childElements.length)
     {
         referenceNode = null;
@@ -225,14 +234,14 @@ oj.DataSourceContentHandler.prototype.replaceItem = function(item, index, data, 
     var parentElement, position, newItem;
 
     // animate hiding of existing item first
-    this.signalTaskStart(); // signal replace item animation start. Ends in _handleReplaceTransitionEnd() defined in TableDataSourceContentHandler
+    this.signalTaskStart("replace item"); // signal replace item animation start. Ends in _handleReplaceTransitionEnd() defined in TableDataSourceContentHandler
 
     // now actually replace the item
     parentElement = item.parentNode;
     position = $(parentElement).children().index(item);
     newItem = document.createElement("li");
     // this should trigger ko.cleanNode if applicable
-    $(item).replaceWith(newItem);
+    $(item).replaceWith(newItem); //@HTMLUpdateOK; newItem is constructed by the component and not yet manipulated by the application
 
     this._addOrReplaceItem(newItem, position, parentElement, index, data, metadata, callback);    
 };
@@ -409,11 +418,11 @@ oj.DataSourceContentHandler.prototype.shouldUseGridRole = function()
     return this.m_widget.ShouldUseGridRole();
 };
 
-oj.DataSourceContentHandler.prototype.signalTaskStart = function()
+oj.DataSourceContentHandler.prototype.signalTaskStart = function(description)
 {
     if (this.m_widget) // check that widget exists (e.g. not destroyed)
     {
-        this.m_widget.signalTaskStart();
+        this.m_widget.signalTaskStart("DataSource ContentHandler "+description);
     }
 };
 
@@ -505,6 +514,32 @@ oj.TableDataSourceContentHandler.prototype.notifyShown = function()
 };
 
 /**
+ * @override
+ */
+oj.TableDataSourceContentHandler.prototype.notifyAttached = function()
+{
+    var currentFetchTrigger, scroller, fetchTrigger;
+
+    // this should only be populated in highwatermark scrolling case with scroller specified
+    currentFetchTrigger = this._getFetchTrigger();
+    if (currentFetchTrigger != undefined && this.m_domScroller != null)
+    {
+        // this should force the fetch trigger to recalculate
+        scroller = this._getScroller();
+        fetchTrigger = this._getFetchTrigger();
+        if (currentFetchTrigger != fetchTrigger)
+        {
+            // update fetch trigger
+            this.m_domScroller.setFetchTrigger(fetchTrigger);
+        }
+
+        // check again whether the viewport is satisfied
+        this.checkViewport();
+    }
+
+};
+
+/**
  * Is loadMoreOnScroll
  * @return {boolean} true or false
  * @private
@@ -538,7 +573,10 @@ oj.TableDataSourceContentHandler.prototype._getScroller = function()
        if ($.contains(scroller, this.m_root))
        {
            // might as well calculate offset here
-           this._fetchTrigger = oj.DomScroller.calculateOffsetTop(scroller, this.m_root);
+           if (this._fetchTrigger === undefined)
+           {
+               this._fetchTrigger = oj.DomScroller.calculateOffsetTop(scroller, this.m_root) + this._getLoadingIndicatorHeight();
+           }
            return scroller;
        }
     }
@@ -554,7 +592,34 @@ oj.TableDataSourceContentHandler.prototype._getScroller = function()
  */
 oj.TableDataSourceContentHandler.prototype._getFetchTrigger = function()
 {
+    if (this._fetchTrigger === undefined)
+    {
+        this._fetchTrigger = this._getLoadingIndicatorHeight();
+    }
     return this._fetchTrigger;
+};
+
+/**
+ * Calculates the height of the loading indicator
+ * @return {number} the height of the loading indicator
+ * @private
+ */
+oj.TableDataSourceContentHandler.prototype._getLoadingIndicatorHeight = function()
+{
+    var container, icon, height;
+
+    container = $(document.createElement("div"));
+    container.addClass(this.m_widget.getItemStyleClass())
+             .css({"visibility":"hidden", "overflow":"hidden", "position":"absolute"});
+    icon = $(document.createElement("div"));
+    icon.addClass("oj-icon oj-listview-loading-icon")
+    container.append(icon); // @HTMLUpdateOK
+
+    $(this.m_widget.getRootElement()).append(container); // @HTMLUpdateOK
+    height = container.get(0).offsetHeight;
+    container.remove();
+
+    return height;
 };
 
 /**
@@ -575,56 +640,6 @@ oj.TableDataSourceContentHandler.prototype.setDataSource = function(dataSource)
         
     if (dataSource != null)
     {
-        if (this._isLoadMoreOnScroll())
-        {
-            self = this;
-            this.m_domScrollerMaxCountFunc = function(result)
-            {
-                if (result != null)
-                {
-                    self.signalTaskStart(); // signal task start
-
-                    // remove any loading indicator, which is always added to the end after fetch
-                    self._removeLoadingIndicator();
-
-                    if (self.IsReady())
-                    {
-                        self.signalTaskStart(); // start a dummy task to be paired with the fetchEnd() call below if no new data were fetched.
-                    }
-                    self._handleFetchedData(result); // will call fetchEnd(), which signals a task end. Started either in fetchRows() or in a dummy task not involving data fetch.
-
-                    // always append the loading indicator at the end except the case when max limit has been reached
-                    if (result['maxCountLimit'])
-                    {
-                        self._handleScrollerMaxRowCount();
-                    }
-                    else
-                    {
-                        self._appendLoadingIndicator();
-                    }
-
-                    self.signalTaskEnd(); // signal domscroller fetch end. Started in this.m_domScroller._handleScrollerScrollTop monkey patched below
-                    self.signalTaskEnd(); // signal task end
-                }
-                else if (result === undefined)
-                {
-                    // when there's no more data
-                    self._removeLoadingIndicator();
-                    self.signalTaskEnd(); // signal domscroller fetch end. Started in this.m_domScroller._handleScrollerScrollTop monkey patched below
-                }
-            };
-
-            this.m_domScroller = new oj.DomScroller(this._getScroller(), dataSource, {'fetchSize' : this._getFetchSize(), 'fetchTrigger' : this._getFetchTrigger(), 'maxCount' : this._getMaxCount(), 'success': this.m_domScrollerMaxCountFunc, 'error': this.signalTaskEnd});
-
-            // Monkey patch this.m_domScroller's _handleScrollerScrollTop() to signal a task start before starting data fetch
-            this.m_domScroller._handleScrollerScrollTop = function(scrollTop, maxScrollTop)
-            {
-                if (maxScrollTop - scrollTop <= 1)
-                    self.signalTaskStart(); // signal domscroller data fetching. Ends either in success call (m_domScrollerMaxCountFunc) or in error call (self.signalTaskEnd)
-                oj.DomScroller.prototype._handleScrollerScrollTop.call(this, scrollTop, maxScrollTop);
-            }
-        }
-
         this.m_handleModelSyncEventListener = this.handleModelSyncEvent.bind(this);
         this.m_handleModelSortEventListener = this.handleModelSortEvent.bind(this);
         this.m_handleModelAddEventListener = this.handleModelAddEvent.bind(this);
@@ -690,6 +705,16 @@ oj.TableDataSourceContentHandler.prototype._removeLoadingIndicator = function()
 };
 
 /**
+ * Whether there are more items to fetch when scroll policy loadMoreOnScroll is used.
+ * @return {boolean} true if there are more items to fetch, false otherwise.
+ * @protected
+ */
+oj.TableDataSourceContentHandler.prototype.hasMoreToFetch = function()
+{
+    return (this.m_loadingIndicator != null);
+};
+
+/**
  * Add required attributes to item after it is rendered by the renderer
  * @param {Element} item the item element to modify
  * @param {Object} context the item context 
@@ -738,36 +763,53 @@ oj.TableDataSourceContentHandler.prototype.afterRenderItem = function(item, cont
  */
 oj.TableDataSourceContentHandler.prototype.afterRenderItemForInsertEvent = function(item, context)
 {
-    var elem, height, itemStyleClass, content, action = "add", promise;
+    var elem, itemStyleClass, content, self, busyContext, action = "add", promise;
 
-    this.signalTaskStart(); // signal post rendering processing start. Ends at the end of the method.
+    this.signalTaskStart("after render item from model insert event"); // signal post rendering processing start. Ends at the end of the method.
+
+    item.setAttribute("data-oj-context", "");
 
     this.afterRenderItem(item, context);
 
     // hide it before starting animation to show added item
     elem = $(item);
-    height = elem.outerHeight();
 
-    itemStyleClass = this.m_widget.getItemStyleClass();
+    itemStyleClass = item.className;
     elem.children().wrapAll("<div></div>"); //@HTMLUpdateOK
-    elem.removeClass(itemStyleClass)
-        .addClass("oj-listview-item-add-remove-transition");
+    item.className = "oj-listview-temp-item oj-listview-item-add-remove-transition";
 
     content = elem.children().first();
-    content.addClass(itemStyleClass); 
-
-    this.signalTaskStart(); // signal add animation start. Ends in _handleAddTransitionEnd().
-
-    promise = this.m_widget.StartAnimation(item, action);
-
-    // now show it
-    var self = this;
-    promise.then(function(val)
+    content[0].className = itemStyleClass; 
+    // transfer key and role for FindElementByKey lookup
+    content[0].key = item.key;
+    content.attr("role", item.getAttribute("role"));
+    if (elem[0].hasAttribute("aria-selected"))
     {
-        self._handleAddTransitionEnd(context, item);
-    });
+        content.attr("aria-selected", item.getAttribute("aria-selected"));
+    }
 
-    this.signalTaskEnd(); // signal post rendering processing end. Started at the beginning of the method.
+    self = this;
+    busyContext = oj.Context.getContext(item).getBusyContext();    
+    busyContext.whenReady().then(function()
+    {
+        if (self.m_widget == null)
+        {
+            return;
+        }
+
+        self.signalTaskStart("kick off animation for insert item"); // signal add animation start. Ends in _handleAddTransitionEnd().
+
+        promise = self.m_widget.StartAnimation(item, action);
+
+        // now show it
+        promise.then(function(val)
+        {
+            item.removeAttribute("data-oj-context");
+            self._handleAddTransitionEnd(context, item);
+        });
+
+        self.signalTaskEnd(); // signal post rendering processing end. Started at the beginning of the method.
+    });
 };
 
 /**
@@ -811,7 +853,8 @@ oj.TableDataSourceContentHandler.prototype._shouldAppendLoadingIndicator = funct
     return this._isLoadMoreOnScroll() && 
            results != null && 
            results['keys'] && results['keys'].length > 0 &&
-           (this.m_dataSource.totalSize() == -1 || this.m_dataSource.totalSize() > results['keys'].length);
+           ((this.m_dataSource.totalSize() == -1 && results['keys'].length >= this._getFetchSize()) || 
+            (this.m_dataSource.totalSize() > results['keys'].length && results['keys'].length >= this._getFetchSize()));
 };
 
 /**
@@ -832,7 +875,7 @@ oj.TableDataSourceContentHandler.prototype.fetchRows = function(forceFetch)
 {
     var initFetch = true, options, self, promise;
 
-    this.signalTaskStart(); // signal method task start
+    this.signalTaskStart("fetching rows"); // signal method task start
 
     // checks if we are already fetching cells
     if (this.IsReady())
@@ -850,7 +893,7 @@ oj.TableDataSourceContentHandler.prototype.fetchRows = function(forceFetch)
             // signal fetch started. 
             // For pagingTableDataSource, ends in fetchEnd() if successful. 
             // Otherwise, _handleFetchError() runs, and then fetchEnd() runs. So ends in fetchEnd() always.
-            this.signalTaskStart();
+            this.signalTaskStart("fetch for pagingdatasource");
         }
 
         if (initFetch || forceFetch)
@@ -859,7 +902,7 @@ oj.TableDataSourceContentHandler.prototype.fetchRows = function(forceFetch)
             // Cannot end in _handleFetchError() to be consistent with pagingTableDataSource behavior (see comment above)
             if (initFetch)
             {
-                this.signalTaskStart(); 
+                this.signalTaskStart("first fetch"); 
             }
 
             options = {'fetchType': 'init', 'startIndex': 0};
@@ -883,6 +926,7 @@ oj.TableDataSourceContentHandler.prototype.fetchRows = function(forceFetch)
                                  $(self.m_root).empty();
 
                                  self._handleFetchedData(value); 
+
                                  // append loading indicator at the end as needed
                                  if (self._shouldAppendLoadingIndicator(value))
                                  {
@@ -938,6 +982,92 @@ oj.TableDataSourceContentHandler.prototype._handleFetchSuccess = function(data, 
 };
 
 /**
+ * Register the DomScroller
+ * @private
+ */
+oj.TableDataSourceContentHandler.prototype._registerDomScroller = function()
+{
+  var self = this;
+  this.m_domScrollerMaxCountFunc = function (result) 
+  {
+    if (result != null) 
+    {
+      self.signalTaskStart("handle results when maxCountLimit reached"); // signal task start
+
+      // remove any loading indicator, which is always added to the end after fetch
+      self._removeLoadingIndicator();
+
+      if (self.IsReady()) {
+        self.signalTaskStart("dummy task"); // start a dummy task to be paired with the fetchEnd() call below if no new data were fetched.
+      }
+      self._handleFetchedData(result); // will call fetchEnd(), which signals a task end. Started either in fetchRows() or in a dummy task not involving data fetch.
+
+      // always append the loading indicator at the end except the case when max limit has been reached
+      if (result['maxCountLimit']) {
+        self._handleScrollerMaxRowCount();
+      } else if (self._shouldAppendLoadingIndicator(result)) {
+        self._appendLoadingIndicator();
+      }
+
+      self.signalTaskEnd(); // signal domscroller fetch end. Started in this.m_domScroller._handleScrollerScrollTop monkey patched below
+      self.signalTaskEnd(); // signal task end
+    } else 
+    {
+      // when there's no more data or any other unexpected cases
+      self._removeLoadingIndicator();
+      self.signalTaskEnd(); // signal domscroller fetch end. Started in this.m_domScroller._handleScrollerScrollTop monkey patched below
+    }
+  };
+
+  this.m_domScroller = new oj.DomScroller(this._getScroller(), this.m_dataSource, {'fetchSize': this._getFetchSize(), 'fetchTrigger': this._getFetchTrigger(), 'maxCount': this._getMaxCount(), 'initialRowCount': this.m_root.childElementCount, 'success': this.m_domScrollerMaxCountFunc, 'error': this.signalTaskEnd});
+
+  // Monkey patch this.m_domScroller's _handleScrollerScrollTop() to signal a task start before starting data fetch
+  this.m_domScroller._handleScrollerScrollTop = function (scrollTop, maxScrollTop) 
+  {
+    if (maxScrollTop - scrollTop <= 1)
+      self.signalTaskStart("starts highwatermark scrolling"); // signal domscroller data fetching. Ends either in success call (m_domScrollerMaxCountFunc) or in error call (self.signalTaskEnd)
+    oj.DomScroller.prototype._handleScrollerScrollTop.call(this, scrollTop, maxScrollTop);
+  }
+}
+
+oj.TableDataSourceContentHandler.prototype._pushToEventQueue = function(event)
+{
+    if (this.m_eventQueue == undefined)
+    {
+        this.m_eventQueue = [];
+    };
+
+    this.m_eventQueue.push(event);
+};
+
+oj.TableDataSourceContentHandler.prototype._clearEventQueue = function()
+{
+    if (this.m_eventQueue != null)
+    {
+        this.m_eventQueue.length = 0;
+    }
+};
+
+oj.TableDataSourceContentHandler.prototype._processEventQueue = function()
+{
+    var event;
+
+    if (this.m_eventQueue != null && this.m_eventQueue.length > 0)
+    {
+        // we'll just need to handle one event at a time since processEventQueue will be triggered whenever an event is done processing
+        event = this.m_eventQueue.shift();
+        if (event.type == 'add')
+        {
+            this.handleModelAddEvent(event.event);
+        }
+        else if (event.type == 'remove')
+        {
+            this.handleModelRemoveEvent(event.event);
+        }
+    }
+};
+
+/**
  * Model add event handler.  Called when either a new row of data is added to the data source, or a set of rows are added as a result of
  * highwater mark scrolling.
  * @param {Object} event the add model event
@@ -952,7 +1082,14 @@ oj.TableDataSourceContentHandler.prototype.handleModelAddEvent = function(event)
         return;
     }
 
-    this.signalTaskStart(); // signal method task start
+    // if listview is busy, queue it for processing later
+    if (!this.IsReady())
+    {
+        this._pushToEventQueue({type: 'add', event: event});
+        return;
+    }
+
+    this.signalTaskStart("handling model add event"); // signal method task start
     data = event['data'];
     keys = event['keys'];
     indexes = event['indexes'];
@@ -960,14 +1097,14 @@ oj.TableDataSourceContentHandler.prototype.handleModelAddEvent = function(event)
     {
         for (i=0; i<data.length; i++)
         {
-            this.signalTaskStart(); // signal add item start
+            this.signalTaskStart("handling model add event for item: "+keys[i]); // signal add item start
             this.addItem(this.m_root, indexes[i], data[i], this.getMetadata(indexes[i], keys[i], data[i]), this.afterRenderItemForInsertEvent.bind(this));
             this.signalTaskEnd(); // signal add item end
         }
 
         if (this.IsReady())
         {
-            this.signalTaskStart(); // start a dummy task to be paired with the fetchEnd() call below if no new data were fetched.
+            this.signalTaskStart("dummy task"); // start a dummy task to be paired with the fetchEnd() call below if no new data were fetched.
         }
         // do whatever post fetch processing
         this.fetchEnd(); // signals a task end. Started either in fetchRows() or in a dummy task not involving data fetch.
@@ -983,6 +1120,8 @@ oj.TableDataSourceContentHandler.prototype.handleModelAddEvent = function(event)
  */
 oj.TableDataSourceContentHandler.prototype._handleAddTransitionEnd = function(context, elem)
 {
+    var itemStyleClass;
+
     // this could have been called after listview is destroyed
     if (this.m_widget == null)
     {
@@ -991,10 +1130,10 @@ oj.TableDataSourceContentHandler.prototype._handleAddTransitionEnd = function(co
     }
 
     // cleanup
-    $(elem).removeClass("oj-listview-item-add-remove-transition")
-           .addClass(this.m_widget.getItemStyleClass())
-           .children().children().unwrap(); //@HTMLUpdateOK
+    itemStyleClass = $(elem).children().first().attr("class");
+    $(elem).children().children().unwrap(); //@HTMLUpdateOK
 
+    elem.className = itemStyleClass;
     this.m_widget.itemInsertComplete(elem, context);
 
     this.signalTaskEnd(); // signal add animation end. Started in afterRenderItemForInsertEvent();
@@ -1015,14 +1154,21 @@ oj.TableDataSourceContentHandler.prototype.handleModelRemoveEvent = function(eve
         return;
     }
 
-    this.signalTaskStart(); // signal method task start 
+    // if listview is busy, hold that off until later
+    if (!this.IsReady())
+    {
+        this._pushToEventQueue({type: 'remove', event: event});
+        return;
+    }
+
+    this.signalTaskStart("handling model remove event"); // signal method task start 
 
     for (i=0; i<keys.length; i++)
     {
         elem = this.FindElementByKey(keys[i]);
         if (elem != null)
         {
-            this.signalTaskStart(); // signal removeItem start
+            this.signalTaskStart("handling model remove event for item: "+keys[i]); // signal removeItem start
             this._removeItem(elem);
             this.signalTaskEnd(); // signal removeItem end
         }
@@ -1043,15 +1189,14 @@ oj.TableDataSourceContentHandler.prototype._removeItem = function(elem)
 {
     var itemStyleClass, self = this, action = "remove", item, promise;
 
-    this.signalTaskStart(); // signal method task start
+    this.signalTaskStart("removing an item"); // signal method task start
 
-    itemStyleClass = this.m_widget.getItemStyleClass();
     elem = $(elem);
+    itemStyleClass = elem.get(0).className;
     elem.children().wrapAll("<div class='"+itemStyleClass+"'></div>"); // @HtmlUpdateOK
-    elem.removeClass(itemStyleClass)
-        .addClass("oj-listview-item-add-remove-transition");
+    elem.get(0).className = "oj-listview-item-add-remove-transition";
 
-    this.signalTaskStart(); // signal remove item animation start. Ends in _handleRemoveTransitionEnd()
+    this.signalTaskStart("kick off animation to remove an item"); // signal remove item animation start. Ends in _handleRemoveTransitionEnd()
 
     item = /** @type {Element} */ (elem.get(0));
     promise = this.m_widget.StartAnimation(item, action);
@@ -1117,7 +1262,7 @@ oj.TableDataSourceContentHandler.prototype.handleModelChangeEvent = function(eve
         return;
     }
 
-    this.signalTaskStart(); // signal method task start
+    this.signalTaskStart("handling model change event"); // signal method task start
     data = event['data'];
     indexes = event['indexes'];
     for (i=0; i<keys.length; i++)
@@ -1125,7 +1270,7 @@ oj.TableDataSourceContentHandler.prototype.handleModelChangeEvent = function(eve
         elem = this.FindElementByKey(keys[i]);
         if (elem != null)
         {
-            this.signalTaskStart(); // signal replace item start
+            this.signalTaskStart("handling model change event for item: "+keys[i]); // signal replace item start
             this.replaceItem(elem, indexes[i], data[i], this.getMetadata(indexes[i], keys[i], data[i]), this.afterRenderItemForChangeEvent.bind(this));
             this.signalTaskEnd(); // signal replace item end
         }
@@ -1144,7 +1289,7 @@ oj.TableDataSourceContentHandler.prototype.afterRenderItemForChangeEvent = funct
 {
     var self = this, action = "update", promise;
 
-    this.signalTaskStart(); // signal method task start
+    this.signalTaskStart("after render item for model change event"); // signal method task start
 
     // adds all neccessary wai aria role and classes
     this.afterRenderItem(item, context);
@@ -1191,7 +1336,10 @@ oj.TableDataSourceContentHandler.prototype.handleModelResetEvent = function(even
         return;
     }
 
-    this.signalTaskStart(); // signal method task start
+    this.signalTaskStart("handling model reset event"); // signal method task start
+
+    // since we are refetching everything, we should just clear out any outstanding model events
+    this._clearEventQueue();
 
     // empty everything (later) and clear cache
     this.m_widget.ClearCache();
@@ -1224,7 +1372,11 @@ oj.TableDataSourceContentHandler.prototype._handleFetchedData = function(dataObj
     {
         this._handleFetchSuccess(data, keys);
 
-        // do whatever post fetch processing
+        if (this.m_domScroller == null && this._isLoadMoreOnScroll())
+        {
+            this._registerDomScroller();
+        }
+
         this.fetchEnd();
     }
 };
@@ -1242,7 +1394,7 @@ oj.TableDataSourceContentHandler.prototype.handleModelSyncEvent = function(event
         return;
     }
 
-    this.signalTaskStart(); // signal method task start
+    this.signalTaskStart("handling model sync event"); // signal method task start
 
     // when paging control is used clear the list, note in paging control loadMore mode
     // the startIndex would not be null and we don't want to clear the list in that case
@@ -1270,7 +1422,10 @@ oj.TableDataSourceContentHandler.prototype.handleModelSortEvent = function(event
         return;
     }
 
-    this.signalTaskStart(); // signal method task start
+    this.signalTaskStart("handling model sort event"); // signal method task start
+
+    // since we are refetching everything, we should just clear out any outstanding model events
+    this._clearEventQueue();
 
     // empty everything (later) and clear cache
     this.m_widget.ClearCache();
@@ -1312,7 +1467,7 @@ oj.TableDataSourceContentHandler.prototype.checkViewport = function()
 {
     var self = this, fetchPromise;
 
-    this.signalTaskStart(); // signal method task start
+    this.signalTaskStart("checking viewport"); // signal method task start
 
     // if loadMoreOnScroll then check if we have underflow and do a fetch if we do
     if (this.m_domScroller != null && this.m_dataSource.totalSize() > 0 && this.IsReady())
@@ -1320,10 +1475,13 @@ oj.TableDataSourceContentHandler.prototype.checkViewport = function()
         fetchPromise = this.m_domScroller.checkViewport();
         if (fetchPromise != null)
         {
-            this.signalTaskStart(); // signal fetchPromise started. Ends in promise resolution below
+            this.signalTaskStart("got promise from checking viewport"); // signal fetchPromise started. Ends in promise resolution below
             fetchPromise.then(function(result)
             {
-                self.m_domScrollerMaxCountFunc(result);
+                if (result != null)
+                {
+                    self.m_domScrollerMaxCountFunc(result);
+                }
                 self.signalTaskEnd(); // signal checkViewport task end. Started above before fetchPromise resolves here;
             }, null);
         }
@@ -1398,7 +1556,7 @@ oj.TreeDataSourceContentHandler.prototype.IsHierarchical = function()
  */
 oj.TreeDataSourceContentHandler.prototype.fetchRows = function(forceFetch)
 {
-    this.signalTaskStart(); // signal method task start
+    this.signalTaskStart("fetching rows"); // signal method task start
 
     oj.TreeDataSourceContentHandler.superclass.fetchRows.call(this, forceFetch);
 
@@ -1409,8 +1567,26 @@ oj.TreeDataSourceContentHandler.prototype.fetchRows = function(forceFetch)
 
 oj.TreeDataSourceContentHandler.prototype.fetchChildren = function(start, parent, parentElem, successCallback)
 {
-    var range;
-    this.signalTaskStart(); // signal method task start
+    var anchor, collapseClass, expandingClass, range;
+    this.signalTaskStart("fetching children from index: "+start); // signal method task start
+
+    // root node would not have expand/collapse icon
+    if (parent != null)
+    {
+        anchor = parentElem.parentNode.firstElementChild.firstElementChild.firstElementChild;
+        if (anchor)
+        {
+            anchor = $(anchor);
+            collapseClass = this.m_widget.getCollapseIconStyleClass();
+            // switch to loading icon
+            if (anchor.hasClass(collapseClass))
+            {
+                expandingClass = this.m_widget.getExpandingIconStyleClass();
+                anchor.removeClass(collapseClass)
+                      .addClass(expandingClass);
+            }
+        }
+    } 
 
     // no need to check ready since multiple fetch from different parents can occur at the same time
     this.m_fetching = true;
@@ -1424,7 +1600,7 @@ oj.TreeDataSourceContentHandler.prototype._handleFetchSuccess = function(nodeSet
 {
     var start, count, endIndex, fragment, i, data, metadata, item, content;
 
-    this.signalTaskStart(); // signal method task start
+    this.signalTaskStart("handling successful fetch"); // signal method task start
 
     start = nodeSet.getStart();
     count = nodeSet.getCount();
@@ -1466,7 +1642,7 @@ oj.TreeDataSourceContentHandler.prototype.afterRenderItem = function(item, conte
     var groupStyleClass, itemStyleClass, groupItemStyleClass, groupCollapseStyleClass, focusedStyleClass,
         collapseClass, content, icon, groupItem;
 
-    this.signalTaskStart(); // signal method task start
+    this.signalTaskStart("after rendering an item"); // signal method task start
 
     oj.TreeDataSourceContentHandler.superclass.afterRenderItem.call(this, item, context);
 
@@ -1549,7 +1725,7 @@ oj.TreeDataSourceContentHandler.prototype.afterRenderItem = function(item, conte
 
 oj.TreeDataSourceContentHandler.prototype._handleFetchError = function(status)
 {
-    this.signalTaskStart(); // signal method task start
+    this.signalTaskStart("handling fetch error: "+status); // signal method task start
 
     // TableDataSource aren't giving me any error message
     oj.Logger.error(status);
@@ -1563,7 +1739,7 @@ oj.TreeDataSourceContentHandler.prototype.Expand = function(item, successCallbac
 {
     var parentKey, parentElem;
 
-    this.signalTaskStart(); // signal method task start
+    this.signalTaskStart("expanding an item"); // signal method task start
 
     parentKey = this.GetKey(item[0]);
     parentElem = item.children("ul")[0];
@@ -1644,10 +1820,15 @@ oj.StaticContentHandler.prototype.notifyShown = function()
     // do nothing since all items are present
 };
 
+oj.StaticContentHandler.prototype.notifyAttached = function()
+{
+    // do nothing since all items are present
+};
+
 oj.StaticContentHandler.prototype.RenderContent = function()
 {
     var root = this.m_root;
-    if (this.shouldUseGridRole() && this.isCardLayout() && !this.IsHierarchical())
+    if (this.shouldUseGridRole() && this.isCardLayout() && !this.IsHierarchical() && $(root).children("li").length > 0)
     {
         // in card layout, this is going to be a single row, N columns grid
         // so we'll need to wrap all <li> within a row
@@ -1705,10 +1886,15 @@ oj.StaticContentHandler.prototype.restoreContent = function(elem, depth)
     items = elem.children;
     for (i=0; i<items.length; i++)
     {
-        item = items[i];
-        this.unsetAriaProperties(item);
+        item = $(items[i]);
+        // skip children that are not modified, this could happen if ko:foreach backed by an observable array is used to generate
+        // the content, and the observable array has changed
+        if (!item.hasClass(itemElementStyleClass))
+        {
+            continue;
+        }
 
-        item = $(item);
+        this.unsetAriaProperties(item.get(0));
         item.removeClass(itemElementStyleClass)
             .removeClass(itemStyleClass)
             .removeClass(this.m_widget.getDepthStyleClass(depth))
@@ -2061,6 +2247,62 @@ oj.StaticContentHandler.prototype.shouldUseGridRole = function()
     return this.m_widget.ShouldUseGridRole();
 };
 /**
+ * Partial Map impl, replace with ES6 Map when possible.
+ * @constructor
+ * @ignore
+ */
+oj.KeyMap = function()
+{
+};
+
+oj.KeyMap.prototype.set = function(key, value)
+{
+    var index;
+
+    if (this._mapKeys === undefined && this._mapValues === undefined)
+    {
+        this._mapKeys = [];
+        this._mapValues = [];
+    }
+
+    index = this._mapKeys.indexOf(key);
+    if (index > -1)
+    {
+        this._mapValues.splice(index, 1, value);
+    }
+    else
+    {
+        this._mapKeys.push(key);
+        this._mapValues.push(value);
+    }
+};
+
+oj.KeyMap.prototype.get = function(key)
+{
+    var index;
+    if (this._mapKeys && this._mapValues)
+    {
+        index = this._mapKeys.indexOf(key);
+        if (index > -1 && this._mapValues.length > index)
+        {
+            return this._mapValues[index];
+        }
+    }
+
+    return null;
+};
+
+oj.KeyMap.prototype.deleteValue = function(value)
+{
+    var current = this._mapValues.indexOf(value);
+    while (current > -1)
+    {
+        this._mapValues.splice(current, 1);
+        current = this._mapValues.indexOf(value, current);
+    }
+};
+
+/**
  * todo: create common utility class between combobox and listview
  * @private
  */
@@ -2118,11 +2360,11 @@ oj._ojListView = _ListViewUtils.clazz(Object,
 
         this.readinessStack = [];
         this.element = opts.element;
-        this.signalTaskStart(); // Move component out of ready state; component is initializing. End in afterCreate()
-
         this.ojContext = opts.ojContext;
         this.OuterWrapper = opts.OuterWrapper;
         this.options = opts;
+
+        this.signalTaskStart("Initializing"); // Move component out of ready state; component is initializing. End in afterCreate()
 
         this.element
             .uniqueId()
@@ -2217,6 +2459,10 @@ oj._ojListView = _ListViewUtils.clazz(Object,
             {
                 self.HandleKeyDown(event);
             },
+            "keyup": function(event) 
+            {
+                self.HandleKeyUp(event);
+            },
             "ojpanmove": function(event)
             {
                 self._handleMouseUpOrPanMove(event);
@@ -2268,8 +2514,6 @@ oj._ojListView = _ListViewUtils.clazz(Object,
             });
         }
 
-        this.ojContext.document.bind("touchend.ojlistview touchcancel.ojlistview", this.HandleTouchEndOrCancel.bind(this));
-
         this._registerScrollHandler();
 
         this.ojContext._focusable({
@@ -2282,6 +2526,22 @@ oj._ojListView = _ListViewUtils.clazz(Object,
         });
     },
     /**
+     * Setup resources on listview after connect
+     * Invoked by widget
+     */        
+    setupResources: function()
+    {
+        this.ojContext.document.bind("touchend.ojlistview touchcancel.ojlistview", this.HandleTouchEndOrCancel.bind(this));
+    },
+    /**
+     * Release resources held by listview after disconnect
+     * Invoked by widget
+     */        
+    releaseResources: function()
+    {
+        this.ojContext.document.off(".ojlistview");
+    },
+    /**
      * Initialize the listview after creation
      * Invoked by widget
      */        
@@ -2290,7 +2550,6 @@ oj._ojListView = _ListViewUtils.clazz(Object,
         var container;
 
         this._buildList();
-        this._addContextMenu();
         this._initContentHandler();
 
         // register a resize listener        
@@ -2308,13 +2567,10 @@ oj._ojListView = _ListViewUtils.clazz(Object,
         // reset content, wai aria properties, and ready state
         this._resetInternal();
 
-        this.signalTaskStart(); // signal method task start
+        this.signalTaskStart("Refresh"); // signal method task start
 
         // set the wai aria properties 
         this.SetAriaProperties();
-
-        // recreate the context menu
-        this._addContextMenu();
 
         // recreate the content handler
         this._initContentHandler();
@@ -2346,8 +2602,6 @@ oj._ojListView = _ListViewUtils.clazz(Object,
 
         //  - DomUtils.unwrap() will avoid unwrapping if the node is being destroyed by Knockout
         oj.DomUtils.unwrap(this.element, this._getListContainer()); 
-
-        this.ojContext.document.off(".ojlistview");
     },
 
     /**
@@ -2402,6 +2656,12 @@ oj._ojListView = _ListViewUtils.clazz(Object,
     {
         // restore scroll position as needed since some browsers reset scroll position 
         this.syncScrollPosition();
+
+        // call ContentHandler in case action is neccessarily
+        if (this.m_contentHandler != null)
+        {
+            this.m_contentHandler.notifyAttached();
+        }
     },
 
     /**
@@ -2468,18 +2728,29 @@ oj._ojListView = _ListViewUtils.clazz(Object,
         if (subId === 'oj-listview-disclosure' || subId === 'oj-listview-icon')
         {
             key = locator['key'];
-            item = this.FindElementByKey(key);
-            if (item != null)
+            if (key != null)
             {
-                // this should be the anchor
-                anchor = $(item).find('.oj-clickable-icon-nocontext').first();
-                if (anchor.hasClass(this.getExpandIconStyleClass()) || anchor.hasClass(this.getCollapseIconStyleClass()))
+                item = this.FindElementByKey(key);
+                if (item != null)
                 {
-                    return anchor.get(0);
+                    // this should be the anchor
+                    anchor = $(item).find('.oj-clickable-icon-nocontext').first();
+                    if (this._isExpandCollapseIcon(anchor))
+                    {
+                        return anchor.get(0);
+                    }
                 }
             }     
-
         }
+        else if (subId === 'oj-listview-item')
+        {
+            key = locator['key'];
+            if (key != null)
+            {
+                return this.FindElementByKey(key);
+            }
+        }
+
         // Non-null locators have to be handled by the component subclasses
         return null;
     },
@@ -2495,7 +2766,7 @@ oj._ojListView = _ListViewUtils.clazz(Object,
         var item, key;
 
         // check to see if it's expand/collapse icon
-        if (node != null && $(node).hasClass(this.getExpandIconStyleClass()) || $(node).hasClass(this.getCollapseIconStyleClass()))
+        if (node != null && this._isExpandCollapseIcon(node))
         {
             item = this.FindItem(node);
             if (item != null && item.length > 0)
@@ -2531,7 +2802,7 @@ oj._ojListView = _ListViewUtils.clazz(Object,
             if (key != null)
             {
                 parent = item.parent();
-                index = parent.children("li").index(item);
+                index = parent.children("."+this.getItemElementStyleClass()).index(item);
                 context = {'subId': 'oj-listview-item', 'key': key, 'index': index};
 
                 // group item should return the li
@@ -2609,22 +2880,6 @@ oj._ojListView = _ListViewUtils.clazz(Object,
         else
         {
             return $.data(item, "data");
-        }
-    },
-
-    /**
-     * Add a default context menu to the list if there is none. If there is
-     * a context menu set on the listview we use that one. Add listeners
-     * for context menu before show and select.
-     * @param {string=} contextMenu the context menu selector
-     * @private
-     */
-    _addContextMenu: function(contextMenu)
-    {
-        // currently context menu is only needed for item reordering
-        if (this.m_dndContext != null)
-        {
-            this.m_dndContext.addContextMenu(contextMenu);
         }
     },
 
@@ -2722,21 +2977,6 @@ oj._ojListView = _ListViewUtils.clazz(Object,
 
         if (this.ShouldRefresh(options))
         {
-            // if data option is updated, and that no update current or selection option
-            // are specified, clear them
-            if (options['data'] != null)
-            {
-                if (options['currentItem'] == null)
-                {
-                    this.SetOption('currentItem', null);
-                }
-
-                if (options['selection'] == null)
-                {
-                    this._clearSelection(true);
-                }
-            }
-
             // data updated, need to refresh
             return true;
         }
@@ -2754,7 +2994,7 @@ oj._ojListView = _ListViewUtils.clazz(Object,
 
                 if (Array.isArray(expanded))
                 {
-                    this.signalTaskStart(); // signal task start
+                    this.signalTaskStart("Set expanded option"); // signal task start
 
                     // collapse all expanded items first
                     this._collapseAll();
@@ -2830,11 +3070,6 @@ oj._ojListView = _ListViewUtils.clazz(Object,
 
             // update aria-selected on item
             this.UpdateItemAriaProperties(options['selectionMode']);
-        }
-
-        if (options['contextMenu'] != null)
-        {
-            this._addContextMenu(options['contextMenu']);
         }
 
         if (options['scrollTop'] != null)
@@ -2932,11 +3167,24 @@ oj._ojListView = _ListViewUtils.clazz(Object,
     },
 
     /**
-     * Invoke whenever a task is started. Moves the component out of the ready state if necessary.
+     * Compose a description for busy state
+     * @param {string} description the description
+     * @return {string} the busy state description
+     * @private
      */
-    signalTaskStart: function()
+    _getBusyDescription: function(description)
     {
-        var self = this, busyContext;
+        var id = this.ojContext._IsCustomElement() ? this.getRootElement().attr("id") : this.element.attr("id");
+        return "The component identified by '" + id + "', " + description;
+    },
+
+    /**
+     * Invoke whenever a task is started. Moves the component out of the ready state if necessary.
+     * @param {string=} description the description of the task
+     */
+    signalTaskStart: function(description)
+    {
+        var self = this, busyContext, options;
         if (this.readinessStack)
         {
             if (this.readinessStack.length == 0)
@@ -2948,7 +3196,8 @@ oj._ojListView = _ListViewUtils.clazz(Object,
 
                 // whenReady is deprecated in favor of page busystate (but we still need to support old syntax)
                 busyContext = oj.Context.getContext(this.element[0]).getBusyContext();
-                self.busyStateResolve = busyContext.addBusyState({});
+                options = description != null ? {'description' : this._getBusyDescription(description)} : {};
+                self.busyStateResolve = busyContext.addBusyState(options);
             }
             this.readinessStack.push(1);
         }
@@ -2971,6 +3220,15 @@ oj._ojListView = _ListViewUtils.clazz(Object,
                 this.busyStateResolve = null;
             }
         }
+    },
+
+    /**
+     * Checks whether ListView is in ready state.  Called by the ContentHandler.
+     * @return {boolean} true if ListView is in ready state, false otherwise
+     */     
+    isReady: function()
+    {
+        return (this.busyStateResolve == null);
     },
 
     /**
@@ -3017,7 +3275,8 @@ oj._ojListView = _ListViewUtils.clazz(Object,
      */
     isCardLayout: function()
     {
-        return this.element.hasClass("oj-listview-card-layout");
+        var elem = this.ojContext._IsCustomElement() ? this.getRootElement() : this.element;
+        return elem.hasClass("oj-listview-card-layout");
     },
 
     /**
@@ -3037,7 +3296,7 @@ oj._ojListView = _ListViewUtils.clazz(Object,
     {
         var data, fetchSize, self;
 
-        this.signalTaskStart(); // signal method task start
+        this.signalTaskStart("Initialize ContentHandler"); // signal method task start
 
         data = this.GetOption("data");
         if (data != null)
@@ -3186,10 +3445,16 @@ oj._ojListView = _ListViewUtils.clazz(Object,
      */
     _buildStatus: function()
     {
-        var root = $(document.createElement("div"));
+        var icon, root;
+
+        icon = $(document.createElement("div"));
+        icon.addClass("oj-icon oj-listview-loading-icon");
+
+        root = $(document.createElement("div"));        
         root.addClass("oj-listview-status-message oj-listview-status")
             .attr({"id": this._createSubId("status"), 
                    "role": "status"});
+        root.append(icon); // @HTMLUpdateOK
 
         return root;
     },
@@ -3243,11 +3508,56 @@ oj._ojListView = _ListViewUtils.clazz(Object,
      */
     showStatusText: function()
     {
-        var msg = this.ojContext.getTranslatedString("msgFetchingData");
+        var msg, self = this, statusHeight, container, containerHeight;
 
-        this.m_status.text(msg)
-                     .css("left", this.element.outerWidth()/2 - this.m_status.outerWidth()/2)
-                     .show();        
+        // it's already shown
+        if (this.m_showStatusTimeout)
+        {
+            return;
+        }
+
+        this.m_showStatusTimeout = setTimeout(function()
+        {
+            // remove any empty text div
+            $(document.getElementById(self._createSubId('empty'))).remove();        
+
+            msg = self.ojContext.getTranslatedString("msgFetchingData");
+
+            container = self._getListContainer();
+            self.m_status.attr("aria-label", msg)
+                         .css("left", Math.max(0, container.outerWidth()/2 - self.m_status.outerWidth()/2))
+                         .css("top", Math.max(0, container.outerHeight()/2 - self.m_status.outerHeight()/2))
+                         .show();        
+
+            // make sure the container is tall enough to show the indicator
+            if (self.m_minHeightSet === undefined)
+            {
+                statusHeight = self.m_status.get(0).offsetHeight;
+                containerHeight = container.get(0).offsetHeight;
+                container.css('minHeight', Math.max(containerHeight, statusHeight + self._getListContainerBorderWidth()));
+                self.m_minHeightSet = true;
+            }
+
+            self.m_showStatusTimeout = null;
+        }, this._getShowStatusDelay());
+    },
+
+    /**
+     * Retrieve the delay before showing status
+     * @return {number} the delay in ms
+     * @private
+     */
+    _getShowStatusDelay: function()
+    {
+        var delay;
+
+        if (this.defaultOptions == null)
+        {
+            this.defaultOptions = oj.ThemeUtils.parseJSONFromFontFamily(this.getOptionDefaultsStyleClass());
+        }
+        delay = parseInt(this.defaultOptions['showIndicatorDelay'], 10);
+
+        return isNaN(delay) ? 0 : delay;
     },
 
     /**
@@ -3256,6 +3566,11 @@ oj._ojListView = _ListViewUtils.clazz(Object,
      */
     hideStatusText: function()
     {
+        if (this.m_showStatusTimeout)
+        {
+            clearTimeout(this.m_showStatusTimeout);
+            this.m_showStatusTimeout = null;
+        }
         this.m_status.hide();
     },
 
@@ -3444,8 +3759,7 @@ oj._ojListView = _ListViewUtils.clazz(Object,
             // cannot be non-function
             return null;
         }
-
-        return renderer;
+        return this._WrapCustomElementRenderer(renderer);
     },
 
     /**
@@ -3464,8 +3778,6 @@ oj._ojListView = _ListViewUtils.clazz(Object,
      */
     itemRemoveComplete: function(elem)
     {
-        var prop;
-
         // if it's the current focus item, clear currentItem option
         if (this.m_active != null && this.m_active['elem'] && $(this.m_active['elem']).get(0) == elem)
         {
@@ -3475,17 +3787,7 @@ oj._ojListView = _ListViewUtils.clazz(Object,
         // disassociate element from key map
         if (elem != null && elem.id && this.m_keyElemMap != null)
         {
-            for (prop in this.m_keyElemMap)
-            {
-                if (this.m_keyElemMap.hasOwnProperty(prop))
-                {
-                    if (this.m_keyElemMap[prop] === elem.id)
-                    {
-                        delete this.m_keyElemMap[prop];
-                        return;
-                    }
-                }
-            }
+            this.m_keyElemMap.deleteValue(elem.id);
         }
     },
 
@@ -3515,7 +3817,7 @@ oj._ojListView = _ListViewUtils.clazz(Object,
             {
                 for (i=0; i<selection.length; i++)
                 {
-                    if (selection[i] == context['key'])
+                    if (selection[i] == context['key'] || oj.Object.compareValues(selection[i], context['key']))
                     {
                         this._applySelection(elem, selection[i]);
                     
@@ -3525,8 +3827,8 @@ oj._ojListView = _ListViewUtils.clazz(Object,
                             if (selection.length > 1)
                             {
                                 // we'll have to modify the value
-                                selectedItems = $(this.FindElementByKey(context['key']));
-                                this.SetOption("selection", [context['key']], {'_context': {originalEvent: null, internalSet: true, extraData: {'items': selectedItems}}, 'changed': true});
+                                selectedItems = this.FindElementByKey(context['key']);
+                                this._setSelectionOption([context['key']], null, selectedItems);
                             }
                             break;
                         }
@@ -3536,7 +3838,7 @@ oj._ojListView = _ListViewUtils.clazz(Object,
             else
             {
                 // the selection is invalid, remove it from selection
-                index = selection.indexOf(context['key']);
+                index = this.GetIndexOf(selection, context['key']);
                 if (index > -1)
                 {
                     // clone before modifying
@@ -3548,7 +3850,7 @@ oj._ojListView = _ListViewUtils.clazz(Object,
                     {
                         selectedItems[i] = this.FindElementByKey(clone[i]);
                     }
-                    this.SetOption("selection", clone, {'_context': {originalEvent: null, internalSet: true, extraData: {'items': $(selectedItems)}}, 'changed': true});
+                    this._setSelectionOption(clone, null, selectedItems);
                 }                
             }
         }
@@ -3745,11 +4047,17 @@ oj._ojListView = _ListViewUtils.clazz(Object,
             return false;
         }
 
+        // prepare the context menu that have listview specific menu items
+        if (this.m_dndContext != null)
+        {
+            this.m_dndContext.prepareContextMenu(this.ojContext._GetContextMenu());
+        }
+
         // set the item right click on active
         parent = $(event['target']).closest("."+this.getItemElementStyleClass());       
         if (parent.length > 0 && !this.SkipFocus($(parent[0])))
         {
-            this.ActiveAndFocus($(parent[0]), null);
+            this.SetCurrentItem($(parent[0]), null);
         }
 
         launcher = this.element;
@@ -3839,7 +4147,16 @@ oj._ojListView = _ListViewUtils.clazz(Object,
             elem = $(elem.get(0).firstElementChild);            
         }
 
-        selector = "a, input, select, textarea, button, object, .oj-component-initnode";
+        // a group cell could have contained a cell element, which should be skip also
+        if (elem.children().first().hasClass("oj-listview-cell-element"))
+        {
+            elem = $(elem.get(0).firstElementChild);            
+        }
+
+        // should exclude non-visible elements, but doing a visible check here causes re-layout and since it's done 
+        // on every item on render, it becomes expensive.  Do the filter later in enableTabbableElements, which is only 
+        // triggered by entering actionable mode.
+        selector = "a, input, select, textarea, button, object, .oj-component-initnode, [tabIndex]";
         elem.find(selector).each(function(index)
         {
             $(this).removeAttr("data-first").removeAttr("data-last");
@@ -3921,6 +4238,7 @@ oj._ojListView = _ListViewUtils.clazz(Object,
                 });
 
         // mark first and last tabbable element for fast retrieval later
+        elems = elems.filter(":visible");
         elems.first().attr("data-first", "true");
         elems.last().attr("data-last", "true");
     },
@@ -4019,7 +4337,6 @@ oj._ojListView = _ListViewUtils.clazz(Object,
     {
         var items, i, item;
 
-
         items = this._getItemsCache();
         for (i=0; i<items.length; i++)
         {
@@ -4027,7 +4344,7 @@ oj._ojListView = _ListViewUtils.clazz(Object,
             // make sure item can receive focus
             if (!this.SkipFocus(item))
             {
-                this.ActiveAndFocus(item, event);
+                this.SetCurrentItem(item, event);
                 break;
             }
         }
@@ -4092,17 +4409,25 @@ oj._ojListView = _ListViewUtils.clazz(Object,
 
         // event.relatedTarget would be null if focus out of page
         // the other check is to make sure the blur is not caused by shifting focus within listview
-        if (!this._isFocusBlurTriggeredByDescendent(event))
+        if (!this._isFocusBlurTriggeredByDescendent(event) && !this.m_preActive)
         {
             this._getListContainer().removeClass("oj-focus-ancestor");
             this.UnhighlightActive();
 
             // remove tab index from focus item and restore tab index on list
+            // and remove any aria-labelled by set by card navigation
             if (this.m_active != null)
             {
                 this._resetTabIndex(this.m_active['elem']);
+                this._removeSkipItemAriaLabel(this.m_active['elem']);
             }
             this.SetRootElementTabIndex();
+        }
+
+        // remove focus class on blur of expand/collapse icon
+        if (this._isExpandCollapseIcon(event.target))
+        {
+            this._focusOutHandler($(event.target));
         }
     },
 
@@ -4194,6 +4519,23 @@ oj._ojListView = _ListViewUtils.clazz(Object,
         {
             event.preventDefault();
         }
+
+        this.m_keyProcessed = processed;
+    },
+
+    /**
+     * Event handler for whenever press up occurred
+     * @param {Event} event keyup event
+     * @protected
+     */
+    HandleKeyUp: function(event)
+    {
+        // popup process esc key on keyup so we have to stop keyup from bubbling
+        if (event.keyCode == this.ESC_KEY && this.m_keyProcessed)
+        {
+            event.stopPropagation();
+        }
+        this.m_keyProcessed = undefined;
     },
 
     /**
@@ -4269,11 +4611,19 @@ oj._ojListView = _ListViewUtils.clazz(Object,
 
         // focus on item, we need to do it on mousedown instead of click otherwise click handler will
         // steal focus from popup and causes it to close prematurely
-        this._makeFocusable(this.m_active != null ? this.m_active['elem'] : null, item);
+        this._makeFocusable(item);
         // checks whether focus is already inside some in item, if it is don't try to steal focus away from it (combobox)
         if (!item.get(0).contains(document.activeElement))
         {
             this._focusItem(item);
+        }
+
+        // make sure ul is not tabbable
+        this.RemoveRootElementTabIndex();
+        // reset tab index must be done after focusing another item
+        if (this.m_active != null)
+        {
+            this._resetTabIndex(this.m_active['elem']);
         }
 
         // need this on touchend
@@ -4686,7 +5036,7 @@ oj._ojListView = _ListViewUtils.clazz(Object,
 
         if (this.m_keyElemMap != null)
         {
-            id = this.m_keyElemMap[key];
+            id = this.m_keyElemMap.get(key);
             if (id != null)
             {
                 return document.getElementById(id);
@@ -4695,6 +5045,36 @@ oj._ojListView = _ListViewUtils.clazz(Object,
 
         // ask the content handler
         return this.m_contentHandler.FindElementByKey(key);
+    },
+
+    /**
+     * Special version of array indexOf to take care of object comparison cases
+     * @param {Array} arr the array
+     * @param {Object} key the key to find the index for in the array
+     * @return {number} the index of the key in the array, or -1 if the key does not exists in the array
+     */
+    GetIndexOf: function(arr, key)
+    {
+        var i;
+        for (i=0; i<arr.length; i++)
+        {
+            if (key == arr[i] || oj.Object.compareValues(key, arr[i]))
+            {
+                return i;
+            }
+        }
+
+        return -1;
+    },
+
+    /**
+     * Checks whether element is an expand/collapse icon
+     * @param {Element|jQuery} elem the element to check
+     * @return {boolean} true if it's an expand/collapse icon, false otherwise
+     */
+    _isExpandCollapseIcon: function(elem)
+    {
+        return $(elem).hasClass(this.getExpandIconStyleClass()) || $(elem).hasClass(this.getCollapseIconStyleClass());
     },
     /************************************ end helper methods *****************************/
 
@@ -4806,23 +5186,25 @@ oj._ojListView = _ListViewUtils.clazz(Object,
             case this.UP_KEY:
                 if (this.isCardLayout() && $(current).hasClass(this.getItemStyleClass()))
                 {
-                    // pending ER, we do not support up/down key for card layout just yet
-                    break;
+                    this._gotoItemAbove(current, isExtend, event);
+                }
+                else
+                {
+                    this._gotoPrevItem(current, isExtend, event);
                 }
 
-                this._gotoPrevItem(current, isExtend, event);
-                
                 // according to James we should still consume the event even if list view did not perform any action
                 processed = true;
                 break;
             case this.DOWN_KEY:
                 if (this.isCardLayout() && $(current).hasClass(this.getItemStyleClass()))
                 {
-                    // pending ER, we do not support up/down key for card layout just yet
-                    break;
+                    this._gotoItemBelow(current, isExtend, event);
                 }
-
-                this._gotoNextItem(current, isExtend, event);
+                else
+                {
+                    this._gotoNextItem(current, isExtend, event);
+                }
 
                 // according to James we should still consume the event even if list view did not perform any action
                 processed = true;
@@ -4885,11 +5267,11 @@ oj._ojListView = _ListViewUtils.clazz(Object,
             }
             else
             {
-                this.ActiveAndFocus(next, event);
+                this.SetCurrentItem(next, event);
                 this.m_isNavigate = true;
-
-                this._handleLastItemKeyboardFocus(next);
             }
+
+            this._handleLastItemKeyboardFocus(next);
         }
     },
 
@@ -4926,7 +5308,209 @@ oj._ojListView = _ListViewUtils.clazz(Object,
             }
             else
             {
-                this.ActiveAndFocus(prev, event);
+                this.SetCurrentItem(prev, event);
+                this.m_isNavigate = true;
+            }
+        }
+    },
+
+    /**
+     * Calculate the number of the columns in this group
+     * @param {jQuery} children the children iterator
+     * @return {number} the number of columns
+     * @private
+     */
+    _getColumnCount: function(children)
+    {
+        var count, offsetTop, currentOffsetTop;
+
+        children.each(function(index)
+        {
+            offsetTop = this.offsetTop;
+
+            if (currentOffsetTop === undefined)
+            {
+                currentOffsetTop = offsetTop;
+            }
+            else if (currentOffsetTop != offsetTop)
+            {
+                // on a different row, return immediately
+                return false;
+            }
+
+            count = index;
+        });
+
+        return count + 1;
+    },
+
+    /**
+     * Inform screen reader that X number of items have been skipped during up/down arrow key navigation
+     * @param {jQuery} next the item to navigate to
+     * @param {number} count number of items skipped
+     * @private
+     */
+    _updateSkipItemAriaLabel: function(next, count)
+    {
+        var id, root, focusElem;
+
+        id = this._createSubId("extra_info");
+        if (this.m_skipAriaLabelText == null)
+        {
+            root = $(document.createElement("div"));
+            root.addClass("oj-helper-hidden-accessible")
+                .attr("id", id); 
+            this._getListContainer().append(root); // @HTMLUpdateOK
+            this.m_skipAriaLabelText = root;
+        }
+        this.m_skipAriaLabelText.text(this.ojContext.getTranslatedString("accessibleNavigateSkipItems", {'numSkip': count}));        
+
+        focusElem = this.getFocusItem(next);
+        // make sure it has an id for aria-labelledby
+        focusElem.uniqueId()
+                 .attr("aria-labelledby", id+" "+focusElem.prop("id"));
+    },
+
+    /**
+     * Undo what _updateSkipItemAriaLabel did to active element
+     * @param {jQuery} current the item to remove aria property from
+     * @private
+     */
+    _removeSkipItemAriaLabel: function(current)
+    {
+        var focusElem = this.getFocusItem(current);
+        if (focusElem.length > 0)
+        {
+            focusElem.get(0).removeAttribute("aria-labelledby");
+        }
+    },
+
+    /**
+     * Go to the item above the current item in the list
+     * @private
+     */
+    _gotoItemAbove: function(current, isExtend, event)
+    {
+        var parent, items, numOfCols, index, aboveIndex, above, numOfItemSkip;
+
+        // if it's a group, just go to the previous item (which would be the last focusable item in the previous group)
+        if (!current.hasClass(this.getItemStyleClass()))
+        {
+            this._gotoPrevItem(current);
+            return;
+        }
+
+        parent = current.parent();
+        items = parent.children("li."+this.getItemStyleClass())
+        numOfCols = this._getColumnCount(items);
+        index = items.index(current);
+        aboveIndex = index - numOfCols;
+        if (aboveIndex < 0)
+        {
+            // go to header, or stop if there's no header
+            if (parent.hasClass(this.getGroupStyleClass()))
+            {
+                above = parent.parent();
+                numOfItemSkip = index;
+            }
+        }
+        else
+        {
+            above = $(items.get(aboveIndex));
+            numOfItemSkip = numOfCols - 1;
+        }
+
+        if (above.length > 0)
+        {
+            // make sure it's focusable, otherwise no-op
+            if (this.SkipFocus(above))
+            {
+                return;
+            }
+
+            if (isExtend)
+            {
+                this._extendSelection(above, event);
+                this.m_isNavigate = false;
+            }
+            else
+            {
+                if (numOfItemSkip != undefined && numOfItemSkip > 0)
+                {
+                    this._updateSkipItemAriaLabel(above, numOfItemSkip);
+                }
+                this.SetCurrentItem(above, event);
+                this.m_isNavigate = true;
+            }
+        }
+    },
+
+    /**
+     * Go to the item below the current item in the list
+     * @private
+     */
+    _gotoItemBelow: function(current, isExtend, event)
+    {
+        var parent, items, numOfCols, index, belowIndex, numOfRows, below, numOfItemSkip;
+
+        // if it's a group, just go to the next item (which would be the first focusable item in the next group)
+        if (!current.hasClass(this.getItemStyleClass()))
+        {
+            this._gotoNextItem(current);
+            return;
+        }
+
+        parent = current.parent();
+        items = parent.children("li."+this.getItemStyleClass())
+        numOfCols = this._getColumnCount(items);
+        index = items.index(current);
+        belowIndex = index + numOfCols;
+        if (belowIndex >= items.length)
+        {
+            numOfRows = Math.ceil(items.length/numOfCols);
+            numOfItemSkip = (items.length - 1) - index;
+            // if the current item is not on the last row, then go to the last item within group
+            if (index < Math.max(0, (numOfRows - 1)*numOfCols))
+            {
+                below = items.last();
+                // skip one less since going to an item within the same group
+                numOfItemSkip--;
+            }
+            else
+            {
+                // go to header, or stop if there's no header
+                if (parent.hasClass(this.getGroupStyleClass()))
+                {
+                    below = parent.parent().next("li."+this.getItemElementStyleClass());
+                }
+            }
+        }
+        else
+        {
+            below = $(items.get(belowIndex));
+            numOfItemSkip = numOfCols - 1;
+        }
+
+        if (below.length > 0)
+        {
+            // make sure it's focusable, otherwise no-op
+            if (this.SkipFocus(below))
+            {
+                return;
+            }
+
+            if (isExtend)
+            {
+                this._extendSelection(below, event);
+                this.m_isNavigate = false;
+            }
+            else
+            {
+                if (numOfItemSkip != undefined && numOfItemSkip > 0)
+                {
+                    this._updateSkipItemAriaLabel(below, numOfItemSkip);
+                }
+                this.SetCurrentItem(below, event);
                 this.m_isNavigate = true;
             }
         }
@@ -5040,7 +5624,7 @@ oj._ojListView = _ListViewUtils.clazz(Object,
         var removeAttr, isGroupItem;
 
         removeAttr = true;
-        if (item.attr("role") === "presentation" || oj.AgentUtils.getAgentInfo()['browser'] === oj.AgentUtils.BROWSER.CHROME)
+        if (item.attr("role") === "presentation")
         {
             removeAttr = false;
         }
@@ -5059,22 +5643,14 @@ oj._ojListView = _ListViewUtils.clazz(Object,
 
     /**
      * Make an item focusable
-     * @param {jQuery|null} previousItem the item previously has focus
      * @param {jQuery} item the item to focus
      * @private
      */
-    _makeFocusable: function(previousItem, item)
+    _makeFocusable: function(item)
     {
         if (this.GetFocusMode() === this.FOCUS_MODE_ITEM)
         {
-            if (previousItem != null)
-            {
-                this._resetTabIndex(previousItem);
-            }
             this._setTabIndex(item);
-
-            // make sure ul is not tabbable
-            this.RemoveRootElementTabIndex();
         }
         else
         {
@@ -5107,10 +5683,24 @@ oj._ojListView = _ListViewUtils.clazz(Object,
     },
 
     /**
+     * Sets the selection option with a new value
+     * @param {Object} newValue the new value for selection option
+     * @param {Event|null} event the DOM event
+     * @param {Element} currentElem the current item DOM element
+     * @private
+     */
+    _setCurrentItemOption: function(newValue, event, currentElem)
+    {
+        var extra = {'item': this.ojContext._IsCustomElement() ? currentElem : $(currentElem)}; 
+        this.SetOption("currentItem", newValue, {'_context': {originalEvent: event, internalSet: true, extraData: extra}, 'changed': true});
+    },
+
+    /**
      * Sets the active item
      * @param {jQuery} item the item to set as active
      * @param {Event} event the event that triggers set active
      * @param {boolean=} skipFocus true if to skip focusing the item
+     * @return {boolean} true if item becomes active, false for all other cases
      * @private
      */
     _setActive: function(item, event, skipFocus)
@@ -5136,12 +5726,15 @@ oj._ojListView = _ListViewUtils.clazz(Object,
                     {
                         this.m_dndContext._unsetDraggable(ui['previousItem']);                    
                     }
+
+                    // remove aria-labelledby set by arrow key navigation
+                    this._removeSkipItemAriaLabel(ui['previousItem']);
                 }
 
                 cancelled = !this.Trigger("beforeCurrentItem", event, ui);
                 if (cancelled) 
                 {
-                    return;
+                    return false;
                 }
 
                 active = {'key': key, 'elem': item};
@@ -5156,12 +5749,31 @@ oj._ojListView = _ListViewUtils.clazz(Object,
                 // update tab index
                 if (skipFocus === undefined || !skipFocus)
                 {
-                    this._makeFocusable(ui['previousItem'], item);
+                    // make item focusable
+                    this._makeFocusable(item);
+
                     // style should be updated before currentItem change event is fired
                     this.HighlightActive();
+
+                    // focus on it only for non-click events or when done programmatically
+                    // the issue is we can't shift focus on click since it will steal focus from the popups
+                    // the focusing on item is done already on mousedown
+                    if (event == null || (event.originalEvent && event.originalEvent.type != "click"))
+                    {
+                        this._focusItem(item);
+                    }
+
+                    // reset tabindex of previous focus item, note this has to be done after focusing on a new item
+                    // because in Chrome 57, resetting tabindex on a focus item will cause a blur event
+                    // note also it seems this only happens when removing tabindex, if you set it to -1 this does not happen
+                    this.RemoveRootElementTabIndex();
+                    if (ui['previousItem'])
+                    {
+                        this._resetTabIndex(ui['previousItem']);
+                    }
                 }
-                // update current option
-                this.SetOption("currentItem", key, {'_context': {originalEvent: event, internalSet: true, extraData: {'item': item}}, 'changed': true});
+
+                return true;
             }
             else if (key == this.m_active['key'])
             {
@@ -5171,7 +5783,9 @@ oj._ojListView = _ListViewUtils.clazz(Object,
                 // update tab index
                 if (skipFocus === undefined || !skipFocus)
                 {
-                    this._makeFocusable(null, item);
+                    this._makeFocusable(item);
+                    // make sure ul is not tabbable
+                    this.RemoveRootElementTabIndex();
                 }
             }
         }
@@ -5180,6 +5794,8 @@ oj._ojListView = _ListViewUtils.clazz(Object,
             // item is null, just clears the current values
             this.m_active = null;
         }
+
+        return false;
     },
 
     /**
@@ -5239,11 +5855,30 @@ oj._ojListView = _ListViewUtils.clazz(Object,
             return;
         }
 
-        this.ActiveAndFocus(item, event, this.ShouldUseGridRole() ? event.target != item.get(0) : true);
+        this.SetCurrentItem(item, event, this.ShouldUseGridRole() ? event.target != item.get(0) : true);
     },
 
+    /**
+     * Sets the active item and bring focus to it.  Update the currentItem option.
+     * @protected
+     */
+    SetCurrentItem: function(item, event, skipFocus)
+    {
+        var proceed = this.ActiveAndFocus(item, event, skipFocus);
+        if (proceed)
+        {
+            this._setCurrentItemOption(this.GetKey(item[0]), event, item.get(0));
+        }
+    },
+
+    /**
+     * Sets the active item and bring focus to it.
+     * @protected
+     */
     ActiveAndFocus: function(item, event, skipFocus)
     {
+        var proceed = false;
+
         // make sure that it is visible
         this._scrollToVisible(item[0]);
 
@@ -5251,16 +5886,12 @@ oj._ojListView = _ListViewUtils.clazz(Object,
         this.UnhighlightActive();
 
         // update active and frontier
-        this._setActive(item, event);
+        proceed = this._setActive(item, event, skipFocus);
 
         // highlight active
         this.HighlightActive();
 
-        // put browser focus on item
-        if (skipFocus === undefined || !skipFocus)
-        {
-            this._focusItem(item);
-        }
+        return proceed;
     },
     /************************************ end Active item ******************************/
 
@@ -5312,22 +5943,32 @@ oj._ojListView = _ListViewUtils.clazz(Object,
         for (i=0; i<selection.length; i++)
         {
             elem = this.FindElementByKey(selection[i]);
-            if (elem != null)
+            if (elem == null || (elem != null && this.IsSelectable(elem)))
             {
-                if (this.IsSelectable(elem))
-                {
-                    filtered.push(selection[i]);
+                filtered.push(selection[i]);
 
-                    // if single selection mode, we can stop
-                    if (!this._isMultipleSelection())
-                    {
-                        break;
-                    }
+                // if single selection mode, we can stop
+                if (!this._isMultipleSelection())
+                {
+                    break;
                 }
             }
         }
 
         return filtered;
+    },
+
+    /**
+     * Sets the selection option with a new value
+     * @param {Object} newValue the new value for selection option
+     * @param {Event|null} event the DOM event
+     * @param {Array.<Element>=} selectedElems an array of DOM Elements 
+     * @private
+     */
+    _setSelectionOption: function(newValue, event, selectedElems)
+    {
+        var extra = {'items': this.ojContext._IsCustomElement() ? selectedElems : (selectedElems == null ? $({}) : $(selectedElems))}; 
+        this.SetOption("selection", newValue, {'_context': {originalEvent: event, internalSet: true, extraData: extra}, 'changed': true});
     },
 
     /**
@@ -5464,8 +6105,16 @@ oj._ojListView = _ListViewUtils.clazz(Object,
     {
         if (this._isMultipleSelection())
         {
-            // treat this as like ctrl+click
-            this._augmentSelectionAndFocus(item, event);
+            if (event.shiftKey)
+            {
+                // for touch device with keyboard support
+                this._extendSelection(item, event);
+            }
+            else
+            {
+                // treat this as like ctrl+click
+                this._augmentSelectionAndFocus(item, event);
+            }
         }
         else
         {
@@ -5485,7 +6134,7 @@ oj._ojListView = _ListViewUtils.clazz(Object,
 
         if (updateOption)
         {
-            this.SetOption("selection", [], {'_context': {originalEvent: null, internalSet: true, extraData: {'items': $()}}, 'changed': true});
+            this._setSelectionOption([], null, null);
         }
 
         // clear selection frontier also
@@ -5554,6 +6203,9 @@ oj._ojListView = _ListViewUtils.clazz(Object,
         // highlights the items between active item and new item
         this._highlightRange(from, to, event);
         this.HighlightActive();
+
+        // make sure that it is visible
+        this._scrollToVisible(to[0]);
     },
 
     /**
@@ -5599,7 +6251,7 @@ oj._ojListView = _ListViewUtils.clazz(Object,
         }
 
         // trigger the optionChange event
-        this.SetOption("selection", selection, {'_context': {originalEvent: event, internalSet: true, extraData: {'items': $(selectedItems)}}, 'changed': true});
+        this._setSelectionOption(selection, event, selectedItems);
     },
 
     /**
@@ -5613,9 +6265,9 @@ oj._ojListView = _ListViewUtils.clazz(Object,
         // update map that keeps track of key->element
         if (this.m_keyElemMap == null)
         {
-            this.m_keyElemMap = {};
+            this.m_keyElemMap = new oj.KeyMap();
         }
-        this.m_keyElemMap[key] = $(element).attr("id");
+        this.m_keyElemMap.set(key, $(element).attr("id"));
 
         // highlight selection
         this._highlightElem(element, 'oj-selected');
@@ -5630,7 +6282,7 @@ oj._ojListView = _ListViewUtils.clazz(Object,
      */
     _augmentSelectionAndFocus: function(item, event, selection)
     {
-        var active, key, currentActive, index, selectedItems, i;
+        var active, key, currentActive, proceed = false, index, selectedItems, i;
 
         active = item;
         key = this.GetKey(item[0]);
@@ -5653,7 +6305,12 @@ oj._ojListView = _ListViewUtils.clazz(Object,
             this.UnhighlightActive();
 
             // update active cell and frontier
-            this._setActive(active, event);
+            proceed = this._setActive(active, event);
+            if (proceed)
+            {
+                // update current option
+                this._setCurrentItemOption(key, event, active.get(0));
+            }
 
             // highlight index
             this.HighlightActive();
@@ -5666,12 +6323,12 @@ oj._ojListView = _ListViewUtils.clazz(Object,
             // update selection if it was cleared
             if (selection != null && selection.length == 0)
             {
-                this.SetOption("selection", selection, {'_context': {originalEvent: event, internalSet: true, extraData: {'items': $([])}}, 'changed': true});
+                this._setSelectionOption(selection, event, []);
             }
             return;
         }
 
-        index = selection.indexOf(key);
+        index = this.GetIndexOf(selection, key);
         if (index > -1)
         {
             // it was selected, deselect it
@@ -5692,7 +6349,7 @@ oj._ojListView = _ListViewUtils.clazz(Object,
         }
 
         // trigger option change
-        this.SetOption("selection", selection, {'_context': {originalEvent: event, internalSet: true, extraData: {'items': $(selectedItems)}}, 'changed': true});
+        this._setSelectionOption(selection, event, selectedItems);
     },
 
     /**
@@ -5711,7 +6368,7 @@ oj._ojListView = _ListViewUtils.clazz(Object,
         item = this.m_active['elem'];
         key = this.m_active['key'];        
 
-        index = selection.indexOf(key);
+        index = this.GetIndexOf(selection, key);
         if (index > -1)
         {
             if (skipIfNotSelected)
@@ -5754,7 +6411,7 @@ oj._ojListView = _ListViewUtils.clazz(Object,
         }
 
         // trigger option change
-        this.SetOption("selection", selection, {'_context': {originalEvent: event, internalSet: true, extraData: {'items': $(selectedItems)}}, 'changed': true});
+        this._setSelectionOption(selection, event, selectedItems);
     },
 
     /**
@@ -5841,6 +6498,17 @@ oj._ojListView = _ListViewUtils.clazz(Object,
                 if (first.length > 0)
                 {
                     first[0].focus();
+
+                    if (this._isExpandCollapseIcon(first))
+                    {
+                        this._focusInHandler(first);
+                    }
+
+                    // check if it's group item
+                    if (!current.hasClass(this.getItemStyleClass()))
+                    { 
+                        current = current.children("."+this.getGroupItemStyleClass()).first();
+                    }
                     current.removeClass("oj-focus-highlight");
                 }
             }
@@ -5952,15 +6620,15 @@ oj._ojListView = _ListViewUtils.clazz(Object,
      */
     getAnimationEffect: function(action)
     {
-        var defaultOptions;
+        var defaultAnimations;
 
-        if (this.defaultAnimations == null)
+        if (this.defaultOptions == null)
         {
-            defaultOptions = oj.ThemeUtils.parseJSONFromFontFamily(this.getOptionDefaultsStyleClass());
-            this.defaultAnimations = defaultOptions['animation'];
+            this.defaultOptions = oj.ThemeUtils.parseJSONFromFontFamily(this.getOptionDefaultsStyleClass());
         }
 
-        return this.defaultAnimations[action];
+        defaultAnimations = this.defaultOptions['animation'];
+        return defaultAnimations == null ? null : defaultAnimations[action];
     },
 
     /**
@@ -6071,7 +6739,7 @@ oj._ojListView = _ListViewUtils.clazz(Object,
             }
         }
 
-        this.signalTaskStart(); // signal method task start
+        this.signalTaskStart("Expand item: "+key); // signal method task start
 
         if (animate)
         {
@@ -6111,9 +6779,9 @@ oj._ojListView = _ListViewUtils.clazz(Object,
      */
     _expandSuccess: function(groupItem, animate, event, ui, fireEvent)
     {
-        var item, collapseClass, expandClass, groupItemStyleClass, key, expanded, clone, animationPromise, self = this;
+        var item, collapseClass, expandingClass, expandClass, groupItemStyleClass, key, expanded, clone, animationPromise, self = this;
 
-        this.signalTaskStart(); // signal method task start
+        this.signalTaskStart("Handle results from successful expand"); // signal method task start
 
         // save the key for use when expand complete
         groupItem.key = ui['key'];
@@ -6128,8 +6796,12 @@ oj._ojListView = _ListViewUtils.clazz(Object,
         // update icon
         collapseClass = this.getCollapseIconStyleClass();
         expandClass = this.getExpandIconStyleClass();
+        expandingClass = this.getExpandingIconStyleClass();
         groupItemStyleClass = this.getGroupItemStyleClass();
-        item.children("."+groupItemStyleClass).find("."+collapseClass).removeClass(collapseClass).addClass(expandClass);
+        item.children("."+groupItemStyleClass).find("."+collapseClass+", ."+expandingClass)
+                                              .removeClass(collapseClass)
+                                              .removeClass(expandingClass)
+                                              .addClass(expandClass);
 
         // fire expand event after expand animation completes
         if (fireEvent)
@@ -6183,7 +6855,7 @@ oj._ojListView = _ListViewUtils.clazz(Object,
 
         if (animate)
         {
-            this.signalTaskStart(); // signal task start
+            this.signalTaskStart("Animate expand of group item"); // signal task start
 
             groupItem.children().each(function()
             {
@@ -6198,7 +6870,7 @@ oj._ojListView = _ListViewUtils.clazz(Object,
 
             groupItem.css("maxHeight", totalHeight+"px");
 
-            this.signalTaskStart(); // signal expand animation started. Ends in _handleExpandTransitionEnd()
+            this.signalTaskStart("Kick off expand animation"); // signal expand animation started. Ends in _handleExpandTransitionEnd()
 
             // now show it
             elem = /** @type {Element} */ (groupItem.get(0));
@@ -6328,7 +7000,7 @@ oj._ojListView = _ListViewUtils.clazz(Object,
             return;
         }
 
-        this.signalTaskStart(); // signal method task start
+        this.signalTaskStart("Collapse item: "+key); // signal method task start
 
         if (animate)
         {
@@ -6405,7 +7077,7 @@ oj._ojListView = _ListViewUtils.clazz(Object,
 
         if (animate)
         {
-            this.signalTaskStart(); // signal task start
+            this.signalTaskStart("Animate collapse"); // signal task start
 
             groupItem.children().each(function()
             {
@@ -6418,7 +7090,7 @@ oj._ojListView = _ListViewUtils.clazz(Object,
             // max-height = 0 needs to stick around, especially needed for static content
             effect['persist'] = 'all';
 
-            this.signalTaskStart(); // signal collapse animation started. Ends in _handleCollapseTransitionEnd()
+            this.signalTaskStart("Kick off collapse animation"); // signal collapse animation started. Ends in _handleCollapseTransitionEnd()
 
             // now hide it
             elem = /** @type {Element} */ (groupItem.get(0));
@@ -6479,7 +7151,7 @@ oj._ojListView = _ListViewUtils.clazz(Object,
     {
         var self, items;
 
-        this.signalTaskStart(); // signal method task start
+        this.signalTaskStart("Collapse all"); // signal method task start
 
         self = this;
         items = this._getItemsCache();
@@ -6523,7 +7195,7 @@ oj._ojListView = _ListViewUtils.clazz(Object,
      */
     getWidgetConstructor: function () 
     {
-        return oj.Components.getWidgetConstructor(this.element);
+        return oj.Components.__GetWidgetConstructor(this.element);
     },
     
     /*********************************** Style Classes *********************************************/
@@ -6643,6 +7315,15 @@ oj._ojListView = _ListViewUtils.clazz(Object,
     {
         return "oj-listview-expand-icon";
     },
+
+    /**
+     * To be change by NavList
+     * @return {string} the expanding icon style class
+     */
+    getExpandingIconStyleClass: function()
+    {
+        return "oj-listview-expanding-icon";
+    },
     
     /**
      * To be change by NavList
@@ -6689,7 +7370,8 @@ oj._ojListView = _ListViewUtils.clazz(Object,
     _preventMouseWheelOverscroll: function(scroller, event)
     {
         var delta = event.originalEvent.wheelDelta;
-        if (isNaN(delta))
+        // should only be applicable to TableDataSourceContentHandler for now
+        if (isNaN(delta) || this.m_contentHandler.hasMoreToFetch === undefined)
         {
             return;
         }
@@ -6697,7 +7379,7 @@ oj._ojListView = _ListViewUtils.clazz(Object,
         if (delta < 0)
         {
             // scroll down
-            if ((scroller.scrollTop + scroller.clientHeight + Math.abs(delta)) >= scroller.scrollHeight)
+            if (this.m_contentHandler.hasMoreToFetch() && (scroller.scrollTop + scroller.clientHeight + Math.abs(delta)) >= scroller.scrollHeight)
             { 
                 scroller.scrollTop = scroller.scrollHeight;
                 event.preventDefault();
@@ -6706,7 +7388,7 @@ oj._ojListView = _ListViewUtils.clazz(Object,
         else
         {
             // scroll up
-            if ((scroller.scrollTop - delta) <= 0)
+            if (scroller.scrollTop > 0 && (scroller.scrollTop - delta) <= 0)
             {
                 scroller.scrollTop = 0;
                 event.preventDefault();
@@ -7084,29 +7766,33 @@ oj._ojListView = _ListViewUtils.clazz(Object,
  *
  * <p>Example of flat static content</p>
  * <pre class="prettyprint">
- * <code>&lt;ul id="listView" data-bind="ojComponent: {component: 'ojListView'}">
- *   &lt;li>&lt;a id="item1" href="#">Item 1&lt;/a>&lt;/li>
- *   &lt;li>&lt;a id="item2" href="#">Item 2&lt;/a>&lt;/li>
- *   &lt;li>&lt;a id="item3" href="#">Item 3&lt;/a>&lt;/li>
- * &lt;/ul>
+ * <code>&lt;oj-list-view id="listView">
+ *   &lt;ul>
+ *     &lt;li>&lt;a id="item1" href="#">Item 1&lt;/a>&lt;/li>
+ *     &lt;li>&lt;a id="item2" href="#">Item 2&lt;/a>&lt;/li>
+ *     &lt;li>&lt;a id="item3" href="#">Item 3&lt;/a>&lt;/li>
+ *   &lt;/ul>
+ * &lt;/oj-list-view>
  * </code></pre>
  *
  * <p>Example of hierarchical static content</p>
  * <pre class="prettyprint">
- * <code>&lt;ul id="listView" data-bind="ojComponent: {component: 'ojListView'}">
- *   &lt;li>&lt;a id="group1" href="#">Group 1&lt;/a>
- *     &lt;ul>
- *       &lt;li>&lt;a id="item1-1" href="#">Item 1-1&lt;/a>&lt;/li>
- *       &lt;li>&lt;a id="item1-2" href="#">Item 1-2&lt;/a>&lt;/li>
- *     &lt;/ul>
- *   &lt;/li>
- *   &lt;li>&lt;a id="group2" href="#">Group 2&lt;/a>
- *     &lt;ul>
- *       &lt;li>&lt;a id="item2-1" href="#">Item 2-1&lt;/a>&lt;/li>
- *       &lt;li>&lt;a id="item2-2" href="#">Item 2-2&lt;/a>&lt;/li>
- *     &lt;/ul>
- *   &lt;/li>
- * &lt;/ul>
+ * <code>&lt;oj-list-view id="listView">
+ *   &lt;ul>
+ *     &lt;li>&lt;a id="group1" href="#">Group 1&lt;/a>
+ *       &lt;ul>
+ *         &lt;li>&lt;a id="item1-1" href="#">Item 1-1&lt;/a>&lt;/li>
+ *         &lt;li>&lt;a id="item1-2" href="#">Item 1-2&lt;/a>&lt;/li>
+ *       &lt;/ul>
+ *     &lt;/li>
+ *     &lt;li>&lt;a id="group2" href="#">Group 2&lt;/a>
+ *       &lt;ul>
+ *         &lt;li>&lt;a id="item2-1" href="#">Item 2-1&lt;/a>&lt;/li>
+ *         &lt;li>&lt;a id="item2-2" href="#">Item 2-2&lt;/a>&lt;/li>
+ *       &lt;/ul>
+ *     &lt;/li>
+ *   &lt;/ul>
+ * &lt;/oj-list-view>
  * </code></pre>
  *
  * <h3 id="touch-section">
@@ -7140,8 +7826,8 @@ oj._ojListView = _ListViewUtils.clazz(Object,
  *   </thead>
  *   <tbody>
  *     <tr>
- *       <td><kbd>component</kbd></td>
- *       <td>A reference to the ListView widget constructor.</td>
+ *       <td><kbd>componentElement</kbd></td>
+ *       <td>A reference to the root element of ListView.</td>
  *     </tr>
  *     <tr>
  *       <td><kbd>datasource</kbd></td>
@@ -7199,6 +7885,13 @@ oj._ojListView = _ListViewUtils.clazz(Object,
  * <p>Application must ensure that the context menu is available and setup with the
  * appropriate clipboard menu items so that keyboard-only users are able to reorder items
  * just by using the keyboard.  
+ *
+ * <h3 id="styling-section">
+ *   Styling
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#styling-section"></a>
+ * </h3>
+ * 
+ * {@ojinclude "name":"stylingDoc"}
  *
  * <h3 id="perf-section">
  *   Performance
@@ -7281,9 +7974,9 @@ oj.__registerWidget('oj.ojListView', $['oj']['baseComponent'],
     options:
             {
                /**
-                * The current item.  This is typically the item the user navigated to.  Note that if current
-                * is set to an item that is currently not available (not fetched in highwater mark scrolling case or
-                * inside a collapsed parent node), then the value is ignored.
+                * The item that currently have keyboard focus.  Note that if current item
+                * is set to an item that is not available in the view (either not fetched in highwater mark scrolling case or
+                * hidden inside a collapsed parent node), then the value is not applied.
                 *
                 * @expose
                 * @public
@@ -7291,12 +7984,17 @@ oj.__registerWidget('oj.ojListView', $['oj']['baseComponent'],
                 * @memberof! oj.ojListView
                 * @type {Object}
                 * @default <code class="prettyprint">null</code>
+                * @ojwriteback
                 *
-                * @example <caption>Get the current item:</caption>
-                * $( ".selector" ).ojListView("option", "currentItem");
+                * @example <caption>Initialize the ListView with the <code class="prettyprint">current-item</code> attribute specified:</caption>
+                * &lt;oj-list-view current-item='{{myCurrentItem}}'>&lt;/oj-list-view>
                 *
-                * @example <caption>Set the current item on the ListView during initialization:</caption>
-                * $(".selector").ojListView({"currentItem", "item2"});
+                * @example <caption>Get or set the <code class="prettyprint">currentItem</code> property after initialization:</caption>
+                * // getter
+                * var currentItemValue = myListView.currentItem;
+                *
+                * // setter
+                * myListView.currentItem = "item2";
                 */
                 currentItem: null,
                 /**
@@ -7311,11 +8009,15 @@ oj.__registerWidget('oj.ojListView', $['oj']['baseComponent'],
                  * @type {oj.TableDataSource|oj.TreeDataSource}
                  * @default <code class="prettyprint">null</code>
                  *
-                 * @example <caption>Initialize the ListView with a one-dimensional array:</caption>
-                 * $( ".selector" ).ojListView({ "data": new oj.ArrayTableDataSource([1,2,3])});
+                 * @example <caption>Initialize the ListView with the <code class="prettyprint">data</code> attribute specified:</caption>
+                 * &lt;oj-list-view data='{{myDataSource}}'>&lt;/oj-list-view>
                  *
-                 * @example <caption>Initialize the ListView with an oj.Collection:</caption>
-                 * $( ".selector" ).ojListView({ "data": new oj.CollectionTableDataSource(collection)});
+                 * @example <caption>Get or set the <code class="prettyprint">data</code> property after initialization:</caption>
+                 * // getter
+                 * var dataValue = myListView.data;
+                 *
+                 * // setter
+                 * myListView.data = myDataSource;
                  */
                 data: null,
                 /**
@@ -7346,10 +8048,10 @@ oj.__registerWidget('oj.ojListView', $['oj']['baseComponent'],
                     * would be a oj.Model object.  Note that when static HTML is used, then the value would be the html string of the selected item.<br><br>
                     * This property is required unless the application calls setData itself in a dragStart callback function.
                     * @property {function} items.dragStart  (optional) A callback function that receives the "dragstart" event and context information as arguments:<br><br>
-                    * <code class="prettyprint">function(event, ui)</code><br><br>
+                    * <code class="prettyprint">function(event, context)</code><br><br>
                     * Parameters:<br><br>
-                    * <code class="prettyprint">event</code>: The jQuery event object<br><br>
-                    * <code class="prettyprint">ui</code>: Context object with the following properties:<br>
+                    * <code class="prettyprint">event</code>: The DOM event object<br><br>
+                    * <code class="prettyprint">context</code>: Context object with the following properties:<br>
                     * <ul>
                     *   <li><code class="prettyprint">items</code>: An array of objects, with each object representing the data of one selected item
                     *   </li>
@@ -7360,15 +8062,11 @@ oj.__registerWidget('oj.ojListView', $['oj']['baseComponent'],
                     * @property {function} items.drag  (optional) A callback function that receives the "drag" event as argument:<br><br>
                     * <code class="prettyprint">function(event)</code><br><br>
                     * Parameters:<br><br>
-                    * <code class="prettyprint">event</code>: The jQuery event object
+                    * <code class="prettyprint">event</code>: The DOM event object
                     * @property {function} items.dragEnd  (optional) A callback function that receives the "dragend" event as argument:<br><br>
                     * <code class="prettyprint">function(event)</code><br><br>
                     * Parameters:<br><br>
-                    * <code class="prettyprint">event</code>: The jQuery event object<br>
-                    *
-                    * @example <caption>Initialize the ListView such that only leaf items are focusable:</caption>
-                    * $( ".selector" ).ojListView({ "data":data, "dnd": {"drag": {"items": { "dataTypes": ["application/ojlistviewitems+json"],
-                    *                                                                        "dragEnd": handleDragEnd}}});
+                    * <code class="prettyprint">event</code>: The DOM event object<br>
                     */
                    drag: null,
                    /**
@@ -7382,55 +8080,47 @@ oj.__registerWidget('oj.ojListView', $['oj']['baseComponent'],
                     * @property {string | Array.string} items.dataTypes  A data type or an array of data types this component can accept.<br><br>
                     * This property is required unless dragEnter, dragOver, and drop callback functions are specified to handle the corresponding events.
                     * @property {function} items.dragEnter  (optional) A callback function that receives the "dragenter" event and context information as arguments:<br><br>
-                    * <code class="prettyprint">function(event, ui)</code><br><br>
+                    * <code class="prettyprint">function(event, context)</code><br><br>
                     * Parameters:<br><br>
-                    * <code class="prettyprint">event</code>: The jQuery event object<br><br>
-                    * <code class="prettyprint">ui</code>: Context object with the following properties:<br>
+                    * <code class="prettyprint">event</code>: The DOM event object<br><br>
+                    * <code class="prettyprint">context</code>: Context object with the following properties:<br>
                     * <ul>
                     *   <li><code class="prettyprint">item</code>: the item being entered
                     *   </li>
                     * </ul><br><br>
-                    * This function should return false to indicate the dragged data can be accepted or true otherwise.  Any explict return value will be passed back to jQuery.  Returning false
-                    * will cause jQuery to call stopPropagation and preventDefault on the event, and calling preventDefault is required by HTML5 Drag and Drop to indicate acceptance of data.<br><br>
-                    * If this function doesn't return a value, dataTypes will be matched against the drag data types to determine if the data is acceptable.  If there is a match, event.preventDefault
-                    * will be called to indicate that the data can be accepted.
+                    * This function should call <code class="prettyprint">event.preventDefault</code> to indicate the dragged data can be accepted.<br><br>
                     * @property {function} items.dragOver  (optional) A callback function that receives the "dragover" event and context information as arguments:<br><br>
-                    * <code class="prettyprint">function(event, ui)</code><br><br>
+                    * <code class="prettyprint">function(event, context)</code><br><br>
                     * Parameters:<br><br>
-                    * <code class="prettyprint">event</code>: The jQuery event object<br><br>
-                    * <code class="prettyprint">ui</code>: Context object with the following properties:<br>
+                    * <code class="prettyprint">event</code>: The DOM event object<br><br>
+                    * <code class="prettyprint">context</code>: Context object with the following properties:<br>
                     * <ul>
                     *   <li><code class="prettyprint">item</code>: the item being dragged over
                     *   </li>
                     * </ul><br><br>
-                    * Similar to dragEnter, this function should return false to indicate the dragged data can be accepted or true otherwise.  If this function doesn't return a value,
-                    * dataTypes will be matched against the drag data types to determine if the data is acceptable.       
+                    * Similar to dragEnter, this function should call <code class="prettyprint">event.preventDefault</code> to indicate the dragged data can be accepted.  
                     * @property {function} items.dragLeave  (optional) A callback function that receives the "dragleave" event and context information as arguments:<br><br>
-                    * <code class="prettyprint">function(event, ui)</code>
+                    * <code class="prettyprint">function(event, context)</code>
                     * Parameters:<br><br>
-                    * <code class="prettyprint">event</code>: The jQuery event object<br><br>
-                    * <code class="prettyprint">ui</code>: Context object with the following properties:<br>
+                    * <code class="prettyprint">event</code>: The DOM event object<br><br>
+                    * <code class="prettyprint">context</code>: Context object with the following properties:<br>
                     * <ul>
                     *   <li><code class="prettyprint">item</code>: the item that was last entered
                     *   </li>
                     * </ul><br><br>
                     * @property {function} items.drop  (required) A callback function that receives the "drop" event and context information as arguments:<br><br>
-                    * <code class="prettyprint">function(event, ui)</code><br><br>
+                    * <code class="prettyprint">function(event, context)</code><br><br>
                     * Parameters:<br><br>
-                    * <code class="prettyprint">event</code>: The jQuery event object<br><br>
-                    * <code class="prettyprint">ui</code>: Context object with the following properties:<br>
+                    * <code class="prettyprint">event</code>: The DOM event object<br><br>
+                    * <code class="prettyprint">context</code>: Context object with the following properties:<br>
                     * <ul>
                     *   <li><code class="prettyprint">item</code>: the item being dropped on
                     *   <li><code class="prettyprint">position</code>: the drop position relative to the item being dropped on
                     *   <li><code class="prettyprint">reorder</code>: true if the drop was a reorder in the same listview, false otherwise
                     *   </li>
                     * </ul><br><br>
-                    * This function should return false to indicate the dragged data is accepted or true otherwise.<br><br>
+                    * This function should call <code class="prettyprint">event.preventDefault</code> to indicate the dragged data is accepted.<br><br>
                     * If the application needs to look at the data for the item being dropped on, it can use the getDataForVisibleItem method.
-                    *
-                    * @example <caption>Initialize the ListView such that only leaf items are focusable:</caption>
-                    * $( ".selector" ).ojListView({ "data":data, "dnd": {"drop": {"items": { "dataTypes": ["application/ojlistviewitems+json"],
-                    *                                                                        "drop": handleDrop}}});
                     */
                    drop: null,
                    /**
@@ -7455,8 +8145,15 @@ oj.__registerWidget('oj.ojListView', $['oj']['baseComponent'],
                            * @type {string}
                            * @default <code class="prettyprint">disabled</code>
                            * 
-                           * @example <caption>Initialize the listview to enable item reorder:</caption>
-                           * $( ".selector" ).ojListView({ "data":data, "dnd" : {"reorder":{"items":"enabled"}}});
+                           * @example <caption>Initialize the ListView with the <code class="prettyprint">reorder</code> attribute specified:</caption>
+                           * &lt;oj-list-view dnd.reorder.items='enabled'>&lt;/oj-list-view>
+                           *
+                           * @example <caption>Get or set the <code class="prettyprint">reorder</code> property after initialization:</caption>
+                           * // getter
+                           * var reorderValue = myListView.dnd.reorder.items;
+                           *
+                           * // setter
+                           * myListView.dnd.reorder.items = 'enabled';
                            */
                           items:'disabled'
                    }
@@ -7473,8 +8170,15 @@ oj.__registerWidget('oj.ojListView', $['oj']['baseComponent'],
                  * @ojvalue {string} "collapsible" group item can be expanded or collapsed by user.
                  * @ojvalue {string} "none" the expand state of a group item cannot be changed by user.
                  *
-                 * @example <caption>Initialize the list view with a fixed expanded state:</caption>
-                 * $( ".selector" ).ojListView({ "drillMode": "none" });
+                 * @example <caption>Initialize the ListView with the <code class="prettyprint">drill-mode</code> attribute specified:</caption>
+                 * &lt;oj-list-view drill-mode='none'>&lt;/oj-list-view>
+                 *
+                 * @example <caption>Get or set the <code class="prettyprint">drillMode</code> property after initialization:</caption>
+                 * // getter
+                 * var drillModeValue = myListView.drillMode;
+                 *
+                 * // setter
+                 * myListView.drillMode = 'none';
                  */
                 drillMode: "collapsible",
                 /**
@@ -7489,7 +8193,7 @@ oj.__registerWidget('oj.ojListView', $['oj']['baseComponent'],
                  * by default.  To retrieve the keys of currently expanded items, use the <code class="prettyprint">getExpanded</code>
                  * method.
                  *
-                 * @expose
+                 * @ignore
                  * @memberof! oj.ojListView
                  * @instance
                  * @type {Array.<Object>|string}
@@ -7509,6 +8213,16 @@ oj.__registerWidget('oj.ojListView', $['oj']['baseComponent'],
                  * @default <code class="prettyprint">sticky</code>
                  * @ojvalue {string} "static" The group header position updates as user scrolls.
                  * @ojvalue {string} "sticky" this is the default.  The group header is fixed at the top when user scrolls.
+                 *
+                 * @example <caption>Initialize the ListView with the <code class="prettyprint">group-header-position</code> attribute specified:</caption>
+                 * &lt;oj-list-view group-header-position='static'>&lt;/oj-list-view>
+                 *
+                 * @example <caption>Get or set the <code class="prettyprint">groupHeaderPosition</code> property after initialization:</caption>
+                 * // getter
+                 * var groupHeaderPositionValue = myListView.groupHeaderPosition;
+                 *
+                 * // setter
+                 * myListView.groupHeaderPosition = 'static';
                  */
                 groupHeaderPosition: "sticky",
                 /**
@@ -7530,17 +8244,28 @@ oj.__registerWidget('oj.ojListView', $['oj']['baseComponent'],
                      * @type {function(Object)|boolean}
                      * @default <code class="prettyprint">true</code>
                      *
-                     * @example <caption>Initialize the ListView such that only leaf items are focusable:</caption>
-                     * $( ".selector" ).ojListView({ "data":data, "item": { "focusable": function(itemContext) {
-                     *                                            return itemContext['leaf'];}}});
+                     * @example <caption>Initialize the ListView with the <code class="prettyprint">focusable</code> attribute specified:</caption>
+                     * &lt;oj-list-view item.focusable='{{myFocusableFunc}}'>&lt;/oj-list-view>
+                     *
+                     * @example <caption>Get or set the <code class="prettyprint">focusable</code> property after initialization:</caption>
+                     * // getter
+                     * var focusable = myListView.item.focusable;
+                     *
+                     * // setter
+                     * myListView.item.focusable = myFocusableFunc;
                      */
                     focusable: true,
                     /**
                      * The renderer function that renders the content of the item. See <a href="#context-section">itemContext</a>
                      * in the introduction to see the object passed into the renderer function.
-                     * The function returns either a String or a DOM element of the content inside the item.
-                     * If the developer chooses to manipulate the list element directly, the function should return
-                     * nothing. If no renderer is specified, ListView will treat the data as a String.
+                     * The function should return one of the following: 
+                     * <ul>
+                     *   <li>An Object with the following property:
+                     *     <ul><li>insert: HTMLElement | string - A string or a DOM element of the content inside the item.</li></ul>
+                     *   </li>
+                     *   <li>undefined: If the developer chooses to manipulate the list element directly, the function should return undefined.</li>
+                     * </ul>
+                     * If no renderer is specified, ListView will treat the data as a string.
                      *
                      * @expose
                      * @alias item.renderer
@@ -7549,13 +8274,15 @@ oj.__registerWidget('oj.ojListView', $['oj']['baseComponent'],
                      * @type {function(Object)|null}
                      * @default <code class="prettyprint">null</code>
                      *
-                     * @example <caption>Initialize the ListView with a renderer:</caption>
-                     * $( ".selector" ).ojListView({ "data":data, "item": { "renderer": function(itemContext) {
-                     *                                            return itemContext['data'].get('FIRST_NAME');}}});
+                     * @example <caption>Initialize the ListView with the <code class="prettyprint">renderer</code> attribute specified:</caption>
+                     * &lt;oj-list-view item.renderer='{{myRendererFunc}}'>&lt;/oj-list-view>
                      *
-                     * @example <caption>Get or set the <code class="prettyprint">renderer</code> option, after initialization:</caption>
-                     * // set the renderer function
-                     * $( ".selector" ).ojListView( "option", "item.renderer", myFunction});
+                     * @example <caption>Get or set the <code class="prettyprint">renderer</code> property after initialization:</caption>
+                     * // getter
+                     * var renderer = myListView.item.renderer;
+                     *
+                     * // setter
+                     * myListView.item.renderer = myRendererFunc;
                      */
                     renderer: null,
                     /**
@@ -7570,9 +8297,16 @@ oj.__registerWidget('oj.ojListView', $['oj']['baseComponent'],
                      * @type {function(Object)|boolean}
                      * @default <code class="prettyprint">true</code>
                      *
-                     * @example <caption>Initialize the ListView such that the first 3 items are not selectable:</caption>
-                     * $( ".selector" ).ojListView({ "data":data, "item": { "selectable": function(itemContext) {
-                     *                                            return itemContext['index'] > 3;}}});
+
+                     * @example <caption>Initialize the ListView with the <code class="prettyprint">selectable</code> attribute specified:</caption>
+                     * &lt;oj-list-view item.selectable='{{mySelectableFunc}}'>&lt;/oj-list-view>
+                     *
+                     * @example <caption>Get or set the <code class="prettyprint">selectable</code> property after initialization:</caption>
+                     * // getter
+                     * var selectable = myListView.item.selectable;
+                     *
+                     * // setter
+                     * myListView.item.selectable = mySelectableFunc;
                      */
                     selectable: true
                     /**
@@ -7606,8 +8340,15 @@ oj.__registerWidget('oj.ojListView', $['oj']['baseComponent'],
                  * @ojvalue {string} "auto" the behavior is determined by the component.
                  * @ojvalue {string} "loadMoreOnScroll" additional data is fetched when the user scrolls to the bottom of the ListView.
                  *
-                 * @example <caption>Initialize the list view with a fixed expanded state:</caption>
-                 * $( ".selector" ).ojListView({ "scrollPolicy": "loadMoreOnScroll" });
+                 * @example <caption>Initialize the ListView with the <code class="prettyprint">scroll-policy</code> attribute specified:</caption>
+                 * &lt;oj-list-view scroll-policy='loadMoreOnScroll'>&lt;/oj-list-view>
+                 *
+                 * @example <caption>Get or set the <code class="prettyprint">scrollPolicy</code> property after initialization:</caption>
+                 * // getter
+                 * var scrollPolicyValue = myListView.scrollPolicy;
+                 *
+                 * // setter
+                 * myListView.scrollPolicy = 'loadMoreOnScroll';
                  */
                 scrollPolicy: "auto",
                 /**
@@ -7633,12 +8374,39 @@ oj.__registerWidget('oj.ojListView', $['oj']['baseComponent'],
                  * @property {number} maxCount the maximum total number of rows to fetch
                  * @default <code class="prettyprint">500</code>
                  * @property {Element|null} scroller the element which listview uses to determine the scroll position as well as the maximum scroll position.  For example in a lot of mobile use cases where ListView occupies the entire screen, developers should set the scroller option to document.body
+
+                 * @example <caption>Initialize the ListView with the <code class="prettyprint">scroll-policy-options</code> attribute specified:</caption>
+                 * &lt;oj-list-view scroll-policy-options.fetch-size='30'>&lt;/oj-list-view>
+                 *
+                 * @example <caption>Get or set the <code class="prettyprint">scroll-policy-options</code> attribute after initialization:</caption>
+                 * // getter
+                 * var fetchSizeValue = myListView.scrollPolicyOptions.fetchSize;
+                 *
+                 * // setter
+                 * myListView.scrollPolicyOptions.fetchSize = 30;
+
+                 * @example <caption>Initialize the ListView with the <code class="prettyprint">scroll-policy-options</code> attribute specified:</caption>
+                 * &lt;!-- Using dot notation -->
+                 * &lt;oj-list-view scroll-policy-options.fetch-size='30' scroll-policy-options.max-count='1000'>&lt;/oj-list-view>
+                 *
+                 * @example <caption>Get or set the <code class="prettyprint">scrollPolicyOptions</code> property after initialization:</caption>
+                 * // Get one
+                 * var fetchSizeValue = myDataGrid.scrollPolicyOptions.fetchSize;
+                 *
+                 * // Get all
+                 * var scrollPolicyOptionsValues = myDataGrid.scrollPolicyOptions;
+                 *
+                 * // Set one, leaving the others intact
+                 * myListView.setProperty('scrollPolicyOptions.fetchSize', 30);
+                 *
+                 * // Set all.
+                 * myListView.scrollPolicyOptions = {fetchSize: 30, maxCount: 1000};
                  */
                 scrollPolicyOptions: {'fetchSize': 25, 'maxCount': 500},
                 /**
                  * The vertical scroll position of ListView.
                  *
-                 * @expose
+                 * @ignore
                  * @memberof! oj.ojListView
                  * @instance
                  * @type {number}
@@ -7656,9 +8424,17 @@ oj.__registerWidget('oj.ojListView', $['oj']['baseComponent'],
                  * @instance
                  * @type {Array.<Object>}
                  * @default <code class="prettyprint">[]</code>
+                 * @ojwriteback
                  *
-                 * @example <caption>Initialize the list view with specific selection:</caption>
-                 * $( ".selector" ).ojListView({ "data":data, "selection": ["item1", "item2"] });
+                 * @example <caption>Initialize the ListView with the <code class="prettyprint">selection</code> attribute specified:</caption>
+                 * &lt;oj-list-view selection='{{mySelection}}'>&lt;/oj-list-view>
+                 *
+                 * @example <caption>Get or set the <code class="prettyprint">selection</code> property after initialization:</caption>
+                 * // getter
+                 * var selectionValue = myListView.selection;
+                 *
+                 * // setter
+                 * myListView.selection = ['item1', 'item2', 'item3'];
                  */
                 selection: [],
                 /**
@@ -7674,8 +8450,15 @@ oj.__registerWidget('oj.ojListView', $['oj']['baseComponent'],
                  * @ojvalue {string} "single" only one item can be selected at a time.
                  * @ojvalue {string} "multiple": multiple items can be selected at the same time.
                  *
-                 * @example <caption>Initialize the list view to enable multiple selection:</caption>
-                 * $( ".selector" ).ojListView({ "data":data, "selectionMode": "multiple" });
+                 * @example <caption>Initialize the ListView with the <code class="prettyprint">selection-mode</code> attribute specified:</caption>
+                 * &lt;oj-list-view selection-mode='multiple'>&lt;/oj-list-view>
+                 *
+                 * @example <caption>Get or set the <code class="prettyprint">selectionMode</code> property after initialization:</caption>
+                 * // getter
+                 * var selectionModeValue = myListView.selectionMode;
+                 *
+                 * // setter
+                 * myListView.selectionMode = 'multiple';
                  */
                 selectionMode: "none",
                 /**
@@ -7685,24 +8468,9 @@ oj.__registerWidget('oj.ojListView', $['oj']['baseComponent'],
                  * @event
                  * @memberof oj.ojListView
                  * @instance
-                 * @property {Event} event <code class="prettyprint">jQuery</code> event object
-                 * @property {Object} ui Parameters
-                 * @property {Object} ui.action the action that starts the animation.  See <a href="#animation-section">animation</a> section for a list of actions.
-                 * @property {Object} ui.element the target of animation.  
-                 * @property {function} ui.endCallback if the event listener calls event.preventDefault to cancel the default animation, it must call the endCallback function when it finishes its own animation handling and when any custom animation ends.
-                 *
-                 * @example <caption>Initialize the ListView with the <code class="prettyprint">animateStart</code> callback specified:</caption>
-                 * $( ".selector" ).ojListView({
-                 *     "animateStart": function( event, ui ) {
-                 *         // call event.preventDefault to stop default animation
-                 *     }
-                 * });
-                 *
-                 * @example <caption>Bind an event listener to the <code class="prettyprint">ojanimatestart</code> event:</caption>
-                 * $( ".selector" ).on( "ojanimatestart", function( event, ui ) {
-                 *     // verify that the component firing the event is a component of interest 
-                 *     if ($(event.target).is(".mySelector")) {} 
-                 * });
+                 * @property {Object} action the action that starts the animation.  See <a href="#animation-section">animation</a> section for a list of actions.
+                 * @property {Element} element the target of animation.  
+                 * @property {function} endCallback if the event listener calls event.preventDefault to cancel the default animation, it must call the endCallback function when it finishes its own animation handling and when any custom animation ends.
                  */
                 animateStart: null,
                 /**
@@ -7712,22 +8480,8 @@ oj.__registerWidget('oj.ojListView', $['oj']['baseComponent'],
                  * @event
                  * @memberof oj.ojListView
                  * @instance
-                 * @property {Event} event <code class="prettyprint">jQuery</code> event object
-                 * @property {Object} ui Parameters
-                 * @property {Object} ui.action the action that started the animation.  See <a href="#animation-section">animation</a> section for a list of actions.
-                 * @property {Object} ui.element the target of animation.  
-                 *
-                 * @example <caption>Initialize the ListView with the <code class="prettyprint">animateEnd</code> callback specified:</caption>
-                 * $( ".selector" ).ojListView({
-                 *     "animateEnd": function( event, ui ) {
-                 *     }
-                 * });
-                 *
-                 * @example <caption>Bind an event listener to the <code class="prettyprint">ojanimateend</code> event:</caption>
-                 * $( ".selector" ).on( "ojanimateend", function( event, ui ) {
-                 *     // verify that the component firing the event is a component of interest 
-                 *     if ($(event.target).is(".mySelector")) {} 
-                 * });
+                 * @property {Object} action the action that started the animation.  See <a href="#animation-section">animation</a> section for a list of actions.
+                 * @property {Element} element the target of animation.  
                  */
                 animateEnd: null,
                 /**
@@ -7737,25 +8491,10 @@ oj.__registerWidget('oj.ojListView', $['oj']['baseComponent'],
                  * @event
                  * @memberof oj.ojListView
                  * @instance
-                 * @property {Event} event <code class="prettyprint">jQuery</code> event object
-                 * @property {Object} ui Parameters
-                 * @property {Object} ui.previousKey the key of the previous item
-                 * @property {jQuery} ui.previousItem the previous item
-                 * @property {Object} ui.key the key of the new current item
-                 * @property {jQuery} ui.item the new current item
-                 *
-                 * @example <caption>Initialize the ListView with the <code class="prettyprint">beforeCurrentItem</code> callback specified:</caption>
-                 * $( ".selector" ).ojListView({
-                 *     "beforeCurrentItem": function( event, ui ) {
-                 *         // return false to veto the event, which prevents the item to become focus
-                 *     }
-                 * });
-                 *
-                 * @example <caption>Bind an event listener to the <code class="prettyprint">ojbeforecurrentitem</code> event:</caption>
-                 * $( ".selector" ).on( "ojbeforecurrentitem", function( event, ui ) {
-                 *     // verify that the component firing the event is a component of interest 
-                 *     if ($(event.target).is(".mySelector")) {} 
-                 * });
+                 * @property {Object} previousKey the key of the previous item
+                 * @property {Element} previousItem the previous item
+                 * @property {Object} key the key of the new current item
+                 * @property {Element} item the new current item
                  */
                 beforeCurrentItem: null,
                 /**
@@ -7766,23 +8505,8 @@ oj.__registerWidget('oj.ojListView', $['oj']['baseComponent'],
                  * @event
                  * @memberof oj.ojListView
                  * @instance
-                 * @property {Event} event <code class="prettyprint">jQuery</code> event object
-                 * @property {Object} ui Parameters
-                 * @property {Object} ui.key the key of the item to be expanded
-                 * @property {jQuery} ui.item the item to be expanded
-                 *
-                 * @example <caption>Initialize the ListView with the <code class="prettyprint">beforeExpand</code> callback specified:</caption>
-                 * $( ".selector" ).ojListView({
-                 *     "beforeExpand": function( event, ui ) {
-                 *         // return false to veto the event, which prevents the item to expand
-                 *     }
-                 * });
-                 *
-                 * @example <caption>Bind an event listener to the <code class="prettyprint">ojbeforeexpand</code> event:</caption>
-                 * $( ".selector" ).on( "ojbeforeexpand", function( event, ui ) {
-                 *     // verify that the component firing the event is a component of interest 
-                 *     if ($(event.target).is(".mySelector")) {} 
-                 * });
+                 * @property {Object} key the key of the item to be expanded
+                 * @property {Element} item the item to be expanded
                  */
                 beforeExpand: null,
                 /**
@@ -7793,23 +8517,8 @@ oj.__registerWidget('oj.ojListView', $['oj']['baseComponent'],
                  * @event
                  * @memberof oj.ojListView
                  * @instance
-                 * @property {Event} event <code class="prettyprint">jQuery</code> event object
-                 * @property {Object} ui Parameters
-                 * @property {Object} ui.key the key of the item to be collapsed
-                 * @property {jQuery} ui.item the item to be collapsed
-                 *
-                 * @example <caption>Initialize the ListView with the <code class="prettyprint">beforeCollapse</code> callback specified:</caption>
-                 * $( ".selector" ).ojListView({
-                 *     "beforeCollapse": function( event, ui ) {
-                 *         // return false to veto the event, which prevents the item to collapse
-                 *     }
-                 * });
-                 *
-                 * @example <caption>Bind an event listener to the <code class="prettyprint">ojbeforecollapse</code> event:</caption>
-                 * $( ".selector" ).on( "ojbeforecollapse", function( event, ui ) {
-                 *     // verify that the component firing the event is a component of interest 
-                 *     if ($(event.target).is(".mySelector")) {} 
-                 * });
+                 * @property {Object} key the key of the item to be collapsed
+                 * @property {Element} item the item to be collapsed
                  */
                 beforeCollapse: null,
                 /**
@@ -7820,21 +8529,8 @@ oj.__registerWidget('oj.ojListView', $['oj']['baseComponent'],
                  * @event
                  * @memberof oj.ojListView
                  * @instance
-                 * @property {Event} event <code class="prettyprint">jQuery</code> event object
-                 * @property {Object} ui Parameters
-                 * @property {Object} ui.key The key of the item that was just collapsed.
-                 * @property {jQuery} ui.item The list item that was just collapsed.
-                 *
-                 * @example <caption>Initialize the ListView with the <code class="prettyprint">expand</code> callback specified:</caption>
-                 * $( ".selector" ).ojListView({
-                 *     "collapse": function( event, ui ) {}
-                 * });
-                 *
-                 * @example <caption>Bind an event listener to the <code class="prettyprint">ojcollapse</code> event:</caption>
-                 * $( ".selector" ).on( "ojcollapse", function( event, ui ) {
-                 *     // verify that the component firing the event is a component of interest 
-                 *     if ($(event.target).is(".mySelector")) {} 
-                 * });
+                 * @property {Object} key The key of the item that was just collapsed.
+                 * @property {Element} item The list item that was just collapsed.
                  */
                 collapse: null,
                 /**
@@ -7844,21 +8540,7 @@ oj.__registerWidget('oj.ojListView', $['oj']['baseComponent'],
                  * @event
                  * @memberof oj.ojListView
                  * @instance
-                 * @property {Event} event <code class="prettyprint">jQuery</code> event object
-                 * @property {Object} ui Parameters
-                 * @property {Element[]} ui.items an array of items in which the copy action is performed on
-                 *
-                 * @example <caption>Initialize the ListView with the <code class="prettyprint">copy</code> callback specified:</caption>
-                 * $( ".selector" ).ojListView({
-                 *     "copy": function( event, ui ) {
-                 *     }
-                 * });
-                 *
-                 * @example <caption>Bind an event listener to the <code class="prettyprint">ojcopy</code> event:</caption>
-                 * $( ".selector" ).on( "ojcopy", function( event, ui ) {
-                 *     // verify that the component firing the event is a component of interest 
-                 *     if ($(event.target).is(".mySelector")) {} 
-                 * });
+                 * @property {Element[]} items an array of items in which the copy action is performed on
                  */
                 copy: null,
                 /**
@@ -7868,21 +8550,7 @@ oj.__registerWidget('oj.ojListView', $['oj']['baseComponent'],
                  * @event
                  * @memberof oj.ojListView
                  * @instance
-                 * @property {Event} event <code class="prettyprint">jQuery</code> event object
-                 * @property {Object} ui Parameters
-                 * @property {Element[]} ui.items an array of items in which the cut action is performed on
-                 *
-                 * @example <caption>Initialize the ListView with the <code class="prettyprint">cut</code> callback specified:</caption>
-                 * $( ".selector" ).ojListView({
-                 *     "cut": function( event, ui ) {
-                 *     }
-                 * });
-                 *
-                 * @example <caption>Bind an event listener to the <code class="prettyprint">ojcut</code> event:</caption>
-                 * $( ".selector" ).on( "ojcut", function( event, ui ) {
-                 *     // verify that the component firing the event is a component of interest 
-                 *     if ($(event.target).is(".mySelector")) {} 
-                 * });
+                 * @property {Element[]} items an array of items in which the cut action is performed on
                  */
                 cut: null,
                 /**
@@ -7893,64 +8561,10 @@ oj.__registerWidget('oj.ojListView', $['oj']['baseComponent'],
                  * @event
                  * @memberof oj.ojListView
                  * @instance
-                 * @property {Event} event <code class="prettyprint">jQuery</code> event object
-                 * @property {Object} ui Parameters
-                 * @property {Object} ui.key The key of the item that was just expanded.
-                 * @property {jQuery} ui.item The list item that was just expanded.
-                 *
-                 * @example <caption>Initialize the ListView with the <code class="prettyprint">expand</code> callback specified:</caption>
-                 * $( ".selector" ).ojListView({
-                 *     "expand": function( event, ui ) {}
-                 * });
-                 *
-                 * @example <caption>Bind an event listener to the <code class="prettyprint">ojexpand</code> event:</caption>
-                 * $( ".selector" ).on( "ojexpand", function( event, ui ) {
-                 *     // verify that the component firing the event is a component of interest 
-                 *     if ($(event.target).is(".mySelector")) {} 
-                 * });
+                 * @property {Object} key The key of the item that was just expanded.
+                 * @property {Element} item The list item that was just expanded.
                  */
                 expand: null,
-                /**
-                 * Fired whenever a supported component option changes, whether due to user interaction or programmatic
-                 * intervention.  If the new value is the same as the previous value, no event will be fired.  The event 
-                 * listener will receive two parameters described below:
-                 *
-                 * @expose
-                 * @event
-                 * @memberof oj.ojListView
-                 * @instance
-                 * @property {Event} event <code class="prettyprint">jQuery</code> event object
-                 * @property {Object} ui event payload
-                 * @property {string} ui.option the name of the option that is changing
-                 * @property {boolean} ui.previousValue the previous value of the option
-                 * @property {boolean} ui.value the current value of the option
-                 * @property {?Object} ui.subproperty - an Object holding information about the subproperty that changed.
-                 * @property {string} ui.subproperty.path - the subproperty path that changed.
-                 * @property {Object} ui.subproperty.previousValue - an Object holding the previous value of the subproperty.
-                 * @property {Object} ui.subproperty.value - an Object holding the current value of the subproperty.
-                 * @property {jQuery} ui.item the current item (only available for option <code class="prettyprint">"currentItem"</code>)
-                 * @property {jQuery} ui.items the selected items (only available for option <code class="prettyprint">"selection"</code>)
-                 * @property {Object} ui.optionMetadata information about the option that is changing
-                 * @property {string} ui.optionMetadata.writeback <code class="prettyprint">"shouldWrite"</code> or
-                 *           <code class="prettyprint">"shouldNotWrite"</code>.  For use by the JET writeback mechanism.
-                 *
-                 * @example <caption>Initialize component with the <code class="prettyprint">optionChange</code> callback</caption>
-                 * $(".selector").ojListView({
-                 *   'optionChange': function (event, ui) {
-                 *        if (ui['option'] === 'selection') { // handle selection change }
-                 *    }
-                 * });
-                 * @example <caption>Bind an event listener to the ojoptionchange event</caption>
-                 * $(".selector").on({
-                 *   'ojoptionchange': function (event, ui) {
-                 *     // verify that the component firing the event is a component of interest 
-                 *     if ($(event.target).is(".mySelector")) { 
-                 *         window.console.log("option that changed is: " + ui['option']);
-                 *     }
-                 *   };
-                 * });
-                 */
-                optionChange: null,
                 /**
                  * Triggered when the paste action is performed on an item via context menu or keyboard shortcut.
                  *
@@ -7958,28 +8572,14 @@ oj.__registerWidget('oj.ojListView', $['oj']['baseComponent'],
                  * @event
                  * @memberof oj.ojListView
                  * @instance
-                 * @property {Event} event <code class="prettyprint">jQuery</code> event object
-                 * @property {Object} ui Parameters
-                 * @property {Element} ui.item the element in which the paste action is performed on
-                 *
-                 * @example <caption>Initialize the ListView with the <code class="prettyprint">paste</code> callback specified:</caption>
-                 * $( ".selector" ).ojListView({
-                 *     "paste": function( event, ui ) {
-                 *     }
-                 * });
-                 *
-                 * @example <caption>Bind an event listener to the <code class="prettyprint">ojpaste</code> event:</caption>
-                 * $( ".selector" ).on( "ojpaste", function( event, ui ) {
-                 *     // verify that the component firing the event is a component of interest 
-                 *     if ($(event.target).is(".mySelector")) {} 
-                 * });
+                 * @property {Element} item the element in which the paste action is performed on
                  */
                 paste: null,
                 /**
                  * Triggered after all items in the ListView has been rendered.  Note that in the highwatermark scrolling case,
                  * all items means the items that are fetched so far.
                  *
-                 * @expose
+                 * @ignore
                  * @event
                  * @deprecated Use the <a href="#whenReady">whenReady</a> method instead. 
                  * @memberof oj.ojListView
@@ -8006,23 +8606,9 @@ oj.__registerWidget('oj.ojListView', $['oj']['baseComponent'],
                  * @event
                  * @memberof oj.ojListView
                  * @instance
-                 * @property {Event} event <code class="prettyprint">jQuery</code> event object
-                 * @property {Object} ui Parameters
-                 * @property {Element[]} ui.items an array of items that are moved
-                 * @property {string} ui.position the drop position relative to the reference item.  Possible values are "before", "after", "inside"
-                 * @property {Element} ui.reference the item where the moved items are drop on
-                 *
-                 * @example <caption>Initialize the ListView with the <code class="prettyprint">reorder</code> callback specified:</caption>
-                 * $( ".selector" ).ojListView({
-                 *     "reorder": function( event, ui ) {
-                 *     }
-                 * });
-                 *
-                 * @example <caption>Bind an event listener to the <code class="prettyprint">ojreorder</code> event:</caption>
-                 * $( ".selector" ).on( "ojreorder", function( event, ui ) {
-                 *     // verify that the component firing the event is a component of interest 
-                 *     if ($(event.target).is(".mySelector")) {} 
-                 * });
+                 * @property {Element[]} items an array of items that are moved
+                 * @property {string} position the drop position relative to the reference item.  Possible values are "before", "after", "inside"
+                 * @property {Element} reference the item where the moved items are drop on
                  */
                 reorder: null
             },
@@ -8065,11 +8651,38 @@ oj.__registerWidget('oj.ojListView', $['oj']['baseComponent'],
     {
         this._super();
 
-        // inject helper function for ContentHandler to use
+        // inject helper function for ContentHandler and custom renderer to use
         var self = this;
         this.listview._FixRendererContext = function(context) { return self._FixRendererContext(context) };
+        this.listview._WrapCustomElementRenderer = function(renderer) { return self._WrapCustomElementRenderer(renderer) };
 
         this.listview.afterCreate();
+    },
+
+    /**
+     * Sets up resources needed by listview
+     * @memberof! oj.ojListView
+     * @instance
+     * @override
+     * @protected
+     */
+    _SetupResources: function()
+    {
+        this._super();
+        this.listview.setupResources();
+    },
+
+    /**
+     * Release resources held by listview
+     * @memberof! oj.ojListView
+     * @instance
+     * @override
+     * @protected
+     */
+    _ReleaseResources: function()
+    {
+        this._super();
+        this.listview.releaseResources();
     },
 
     /**
@@ -8128,7 +8741,8 @@ oj.__registerWidget('oj.ojListView', $['oj']['baseComponent'],
     _setOption: function(key, value, flags)
     {
         // checks whether value is valid for the key
-        var valid = true;
+        var valid = true, extraData;
+
         if (key == "selectionMode")
         {
             valid = (value == "none" || value == "single" || value == "multiple");
@@ -8152,7 +8766,13 @@ oj.__registerWidget('oj.ojListView', $['oj']['baseComponent'],
             // inject additional metadata for selection
             if (key == "selection")
             {
-                flags = {'_context': {extraData: {'items': $(this.listview.getItems(value))}}}
+                extraData = this.listview.getItems(value);
+                flags = {'_context': {extraData: {'items': this._IsCustomElement() ? extraData : $(extraData)}}};
+            }
+            else if (key == "currentItem")
+            {
+                extraData = this.listview.getItems([value])[0];
+                flags = {'_context': {extraData: {'items': this._IsCustomElement() ? extraData : $(extraData)}}};
             }
 
             this._super(key, value, flags);
@@ -8245,46 +8865,13 @@ oj.__registerWidget('oj.ojListView', $['oj']['baseComponent'],
         return this.listview.whenReady();
     },
 
-    /**
-     * Return the subcomponent node represented by the documented locator attribute values.
-     * <p>
-     * To lookup the disclosure icon the locator object should have the following:
-     * <ul>
-     * <li><b>subId</b>: 'oj-listview-disclosure'</li>
-     * <li><b>key</b>: the key of the item</li>
-     * </ul>
-     *
-     * @expose
-     * @memberof oj.ojListView
-     * @instance
-     * @override
-     * @param {Object} locator An Object containing at minimum a subId property
-     *        whose value is a string, documented by the component, that allows
-     *         the component to look up the subcomponent associated with that
-     *        string.  It contains:<p>
-     *        component: optional - in the future there may be more than one
-     *        component contained within a page element<p>
-     *        subId: the string, documented by the component, that the component
-     *        expects in getNodeBySubId to locate a particular subcomponent
-     * @returns {Array.<(Element|null)>|Element|null} the subcomponent located by the subId string passed
-     *          in locator, if found.<p>
-     */
+    // @inheritdoc
     getNodeBySubId: function(locator)
     {
         return this.listview.getNodeBySubId(locator);
     },
 
-    /**
-     * <p>Returns the subId string for the given child DOM node.  For more details, see
-     * <a href="#getNodeBySubId">getNodeBySubId</a>.
-     *
-     * @expose
-     * @memberof oj.ojListView
-     * @instance
-     * @override
-     * @param {!Element} node - child DOM node
-     * @return {Object|null} The subId for the DOM node, or <code class="prettyprint">null</code> when none is found.
-     */
+    // @inheritdoc
     getSubIdByNode: function(node)
     {
         return this.listview.getSubIdByNode(node);
@@ -8328,7 +8915,7 @@ oj.__registerWidget('oj.ojListView', $['oj']['baseComponent'],
      * Expand an item.<p>
      * Note when vetoable is set to false, beforeExpand event will still be fired but the event cannot be veto.<p>
      *
-     * @expose
+     * @ignore
      * @memberof oj.ojListView
      * @instance
      * @param {Object} key the key of the item to expand
@@ -8343,7 +8930,7 @@ oj.__registerWidget('oj.ojListView', $['oj']['baseComponent'],
      * Collapse an item.<p>
      * Note when vetoable is set to false, beforeCollapse event will still be fired but the event cannot be veto.<p>
      *
-     * @expose
+     * @ignore
      * @memberof oj.ojListView
      * @instance
      * @param {Object} key the key of the item to collapse
@@ -8357,7 +8944,7 @@ oj.__registerWidget('oj.ojListView', $['oj']['baseComponent'],
     /**
      * Gets the key of currently expanded items.
      *
-     * @expose
+     * @ignore
      * @memberof oj.ojListView
      * @instance
      * @return {Array} array of keys of currently expanded items
@@ -8399,6 +8986,19 @@ oj.__registerWidget('oj.ojListView', $['oj']['baseComponent'],
     scrollToItem: function (item)
     {
         this.listview.scrollToItem(item);
+    },
+
+    //** @inheritdoc */
+    _CompareOptionValues: function(option, value1, value2)
+    {
+        switch(option)
+        {
+            case 'currentItem':
+            case 'selection':
+                return oj.Object.compareValues(value1, value2);
+            default:
+                return this._super(option, value1, value2);
+        }
     }
 
     // Fragments
@@ -8545,35 +9145,68 @@ oj.__registerWidget('oj.ojListView', $['oj']['baseComponent'],
  * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
  * @memberof oj.ojListView
  */
+
+/**
+ * {@ojinclude "name":"ojStylingDocIntro"}
+ * 
+ * <table class="generic-table styling-table">
+ *   <thead>
+ *     <tr>
+ *       <th>{@ojinclude "name":"ojStylingDocClassHeader"}</th>
+ *       <th>{@ojinclude "name":"ojStylingDocDescriptionHeader"}</th>
+ *     </tr>
+ *   </thead>
+ *   <tbody>
+ *     <tr>
+ *       <td>oj-listview-card-layout</td>
+ *       <td>Shows items as cards and lay them out in a grid.</td>
+ *       </td>
+ *     </tr>
+ *     <tr>
+ *       <td>oj-full-width</td>
+ *       <td>Use when ListView occupies the entire width of the page.</td>
+ *       </td>
+ *     </tr>
+ *     <tr>
+ *       <td>oj-focus-highlight</td>
+ *       <td>{@ojinclude "name":"ojFocusHighlightDoc"}</td>
+ *     </tr>
+ *   </tbody>
+ * </table>
+ *
+ * @ojfragment stylingDoc - Used in Styling section of classdesc, and standalone Styling doc
+ * @memberof oj.ojListView
+ */
 });
 
 //////////////////     SUB-IDS     //////////////////
 
 /**
- * <p>Sub-ID for the ojListView component's disclosure icon in group items.  See the <a href="#getNodeBySubId">getNodeBySubId</a>
+ * <p>Sub-ID for ListView's disclosure icon in group items.  See the <a href="#getNodeBySubId">getNodeBySubId</a>
  * method for details.</p>
  *
  * @deprecated Use the <a href="#oj-listview-disclosure">oj-listview-disclosure</a> option instead. 
  * @ojsubid oj-listview-icon
  * @memberof oj.ojListView
  *
+
  * @example <caption>Get the disclosure icon for the group item with key 'foo':</caption>
- * var node = $( ".selector" ).ojListView( "getNodeBySubId", {'subId': 'oj-listview-icon', 'key': 'foo'} );
+ * var node = myListView.getNodeBySubId( {'subId': 'oj-listview-icon', 'key': 'foo'} );
  */
 
 /**
- * <p>Sub-ID for the ojListView component's disclosure icon in group items.  See the <a href="#getNodeBySubId">getNodeBySubId</a>
+ * <p>Sub-ID for ListView's disclosure icon in group items.  See the <a href="#getNodeBySubId">getNodeBySubId</a>
  * method for details.</p>
  *
  * @ojsubid oj-listview-disclosure
  * @memberof oj.ojListView
  *
  * @example <caption>Get the disclosure icon for the group item with key 'foo':</caption>
- * var node = $( ".selector" ).ojListView( "getNodeBySubId", {'subId': 'oj-listview-disclosure', 'key': 'foo'} );
+ * var node = myListView.getNodeBySubId( {'subId': 'oj-listview-disclosure', 'key': 'foo'} );
  */
 
 /**
- * <p>Context for the ojListView component's items.</p>
+ * <p>Context for items within ListView.</p>
  *
  * @property {number} index the zero based item index relative to its parent
  * @property {Object} key the key of the item
@@ -8588,7 +9221,8 @@ oj.__registerWidget('oj.ojListView', $['oj']['baseComponent'],
 var ojListViewMeta = {
   "properties": {
     "currentItem": {
-      "type": "string"
+      "type": "any",
+      "writeback": true
     },
     "data": {},
     "dnd": {
@@ -8642,9 +9276,6 @@ var ojListViewMeta = {
       "type": "string",
       "enumValues": ["collapsible", "none"]
     },
-    "expanded": {
-      "type": "Array<string>|string"
-    },
     "groupHeaderPosition": {
       "type": "string",
       "enumValues": ["sticky", "static"]
@@ -8673,7 +9304,7 @@ var ojListViewMeta = {
       }
     },
     "selection": {
-      "type": "Array<string>",
+      "type": "Array<any>",
       "writeback": true
     },
     "selectionMode": {
@@ -8695,15 +9326,9 @@ var ojListViewMeta = {
     "reorder": {}
   },
   "methods": {
-    "collapse": {},
-    "expand": {},
     "getContextByNode": {},
     "getDataForVisibleItem": {},
-    "getExpanded": {},
     "getIndexerModel": {},
-    "getNodeBySubId": {},
-    "getSubIdByNode": {},
-    "refresh": {},
     "scrollToItem": {}
   },
   "extension": {
@@ -8711,20 +9336,7 @@ var ojListViewMeta = {
     _WIDGET_NAME: "ojListView"
   }
 };
-var _ARRAY_REGEXP = /^\[.*\]/;
-var listviewParseFunction = function(value, name, meta, defaultParseFunction) {
-  if (name == "expanded") {
-    if (_ARRAY_REGEXP.test(value)) {
-      return JSON.parse(value);
-    }
-    return value;
-  }
-  else 
-    return defaultParseFunction(value);
-};
 oj.CustomElementBridge.registerMetadata('oj-list-view', 'baseComponent', ojListViewMeta);
-oj.CustomElementBridge.register('oj-list-view', {
-  'metadata': oj.CustomElementBridge.getMetadata('oj-list-view'),
-  'parseFunction': listviewParseFunction});
+oj.CustomElementBridge.register('oj-list-view', {'metadata': oj.CustomElementBridge.getMetadata('oj-list-view')});
 })();
 });

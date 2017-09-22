@@ -160,6 +160,7 @@ oj.NumberConverter.prototype.parse = function (value)
  * <code class="prettyprint">oj-validator.range.number.messageSummary.rangeOverflow</code>.
  * @export
  * @constructor
+ * @augments oj.Validator
  * @since 0.7
  * 
  */
@@ -168,7 +169,7 @@ oj.NumberRangeValidator = function _NumberRangeValidator(options)
   this.Init(options);
 };
 
-// Subclass from oj.Object 
+// Subclass from oj.Validator 
 oj.Object.createSubclass(oj.NumberRangeValidator, oj.Validator, "oj.NumberRangeValidator");
 
 /**
@@ -407,6 +408,7 @@ oj.NumberRangeValidator.prototype.getHint = function ()
  * useGrouping. NOTE: minimumSignificantDigits and maximumSignificantDigits are not supported.</li>
  * <li>Using a custom decimal, currency or percent format pattern. specified using the 'pattern' property</li>
  * <li>Using the decimalFormat option to define a compact pattern, such as "1M" and "1 million".</li>
+ * <li>Using the currencyFormat option to define a compact pattern, such as "$1M" and "$1 million".</li>
  * <li>Using the roundingMode and roundDuringParse options to round the number HALF_UP, HALF_DOWN, or HALF_EVEN.</li>
  * </ul>
  * <p>
@@ -428,7 +430,7 @@ oj.NumberRangeValidator.prototype.getHint = function ()
  * @property {Object=} options - an object literal used to provide optional information to 
  * initialize the converter.
  * @property {string=} options.style - sets the style of number formatting. Allowed values are "decimal" 
- * (the default), "currency" or "percent". When a number is formatted as a decimal, the decimal 
+ * (the default), "currency", "percent" or "unit". When a number is formatted as a decimal, the decimal 
  * character is replaced with the most appropriate symbol for the locale. In English this is a 
  * decimal point ("."), while in many locales it is a decimal comma (","). If grouping is enabled the 
  * locale dependent grouping separator is also used. These symbols are also used for numbers 
@@ -446,6 +448,15 @@ oj.NumberRangeValidator.prototype.getHint = function ()
  * we pass {style:'currency', currency:'EUR', currencyDisplay:'symbol'} and we will get "€1,000.35"
  * If the page locale is "fr-FR", with the same options, we will get: "1 000,35 €"
  * </p>
+ * @property {string=} options.unit - Mandatory when style is "unit". Allowed values: 
+ * "byte" or "bit". It is used for formatting only. It can not be used for parsing.
+ * <p> 
+ * It is used to format digital units like 10Mb for bit unit or 10MB for byte unit. 
+ * There is no need to specify the scale of the unit. We automatically detect it.
+ * For example 1024 is formatted as 1KB and ?1048576? as 1MB.
+ * The user can also specify 'minimumFractionDigits' and  'maximumFractionDigits' to be displayed, 
+ * otherwise we use the locale's default max and min fraction digits.
+ * </p> 
  * @property {string=} options.currencyDisplay - if the number is using currency formatting, specifies 
  * if the currency will be displayed using its "code" (as an ISO 4217 alphabetic currency code), 
  * "symbol" (a localized currency symbol (e.g. $ for US dollars, £ for Great British pounds, and so 
@@ -472,6 +483,22 @@ oj.NumberRangeValidator.prototype.getHint = function ()
  * (e.g., 2K -> 2000), so it can only be used
  * in a readOnly EditableValue because readOnly EditableValue components do not call
  * the converter's parse function.
+ * </p>
+ * @property {string=} options.currencyFormat -
+ * specifies the currency format length to use when style is set to "currency". 
+ * Allowed values are : "standard"(default), "short" and "long". 'standard' is equivalent to not 
+ * specifying the 'currencyFormat' attribute, in that case the locale's default currency pattern 
+ * is used for formatting.
+ * Similar to decimalFormat, currencyFormat can only be used for formatting. It can not be used for parsing.
+ * <p>
+ * The user can also specify 'minimumFractionDigits' and  'maximumFractionDigits' to display. 
+ * When not present we use the locale's default max and min fraction digits.
+ * </p>
+ * <p>
+ * There is no need to specify the scale; we automatically detect greatest scale that is less or 
+ * equal than the input number. For example  1000000 is formatted as "$1M" or "1 million dollar" and
+ * 1000 is formatted as "$1K" or " 1 thousand dollar" for short and long formats respectively.
+ * The pattern for the short and long number is locale dependent and uses plural rules for the particular locale.
  * </p>
  * @property {number=} options.minimumIntegerDigits - sets the minimum number of digits before the 
  * decimal place (known as integer digits). The number is padded with leading zeros if it would not 
@@ -547,16 +574,39 @@ oj.NumberRangeValidator.prototype.getHint = function ()
  * @example <caption>To parse a value as currency using a custom (CLDR) pattern</caption>
  * var options = {pattern: '¤#,##0', currency: 'USD'};
  * 
+ * @example <caption>To format a value as digital bit unit</caption>
+ * var options = {style:'unit', unit:'bit'};
+ * converter = converterFactory.createConverter(options);
+ * var nb = 1024;
+ * converter.format(nb, localeElements, options);--> 1Kb<br/>
+ * 
+ * @example <caption>To format a value as digital byte unit</caption>
+ * var options = {style:'unit', unit:'byte'};
+ * converter = converterFactory.createConverter(options);
+ * var nb = 1024;
+ * converter.format(nb, localeElements, options);--> 1KB<br/>
+ *
  * @example <caption>The following decimalFormat examples are in en locale.
  * To format a value as short (default for fraction digits is based on the locale)</caption>
  * var options = {style:’decimal’, decimalFormat:’short’};
  * converter = converterFactory.createConverter(options);
  * converter.format(12345);--> 12.354K<br/>
  * 
+ * @example <caption>Same as above for currencyFormat.
+ * To format a value as short (default for fraction digits is based on the locale)</caption>
+ * var options = {style:'currency', currency: 'USD', currencyFormat:'short'};
+ * converter = converterFactory.createConverter(options);
+ * converter.format(1234);--> $1.23K<br/>
+ * 
  * @example <caption>To format a value as long (default for fraction digits is based on the locale):</caption>
  * var options = {style:’decimal’, decimalFormat:’long’};
  * converter = converterFactory.createConverter(options);
  * converter.format(12345);--> 12.345 thousand<br/>
+ * 
+ * @example <caption>To format a value as long currency format:</caption>
+ * var options = {style:'currency',  currency: 'USD', currencyFormat:'long'};
+ * converter = converterFactory.createConverter(options);
+ * converter.format(1234);--> $1.23 thousand<br/>
  * 
  * @example <caption>To format a value as short with minimum fraction digits:</caption>
  * options = { style:’decimal’, decimalFormat:’short’, 
@@ -1105,6 +1155,7 @@ oj.Validation.__registerDefaultValidatorFactory(oj.ValidatorFactory.VALIDATOR_TY
  * useGrouping. NOTE: minimumSignificantDigits and maximumSignificantDigits are not supported.</li>
  * <li>Using a custom decimal, currency or percent format pattern. specified using the 'pattern' property</li>
  * <li>Using the decimalFormat option to define a compact pattern, such as "1M" and "1 million".</li>
+ * <li>Using the currencyFormat option to define a compact pattern, such as "$1M" and "$1 million".</li>
  * <li>Using the roundingMode and roundDuringParse options to round the number HALF_UP, HALF_DOWN, or HALF_EVEN.</li>
  * </ul>
  * <p>
@@ -1126,7 +1177,7 @@ oj.Validation.__registerDefaultValidatorFactory(oj.ValidatorFactory.VALIDATOR_TY
  * @property {Object=} options - an object literal used to provide optional information to 
  * initialize the converter.
  * @property {string=} options.style - sets the style of number formatting. Allowed values are "decimal" 
- * (the default), "currency" or "percent". When a number is formatted as a decimal, the decimal 
+ * (the default), "currency", "percent" or "unit". When a number is formatted as a decimal, the decimal 
  * character is replaced with the most appropriate symbol for the locale. In English this is a 
  * decimal point ("."), while in many locales it is a decimal comma (","). If grouping is enabled the 
  * locale dependent grouping separator is also used. These symbols are also used for numbers 
@@ -1144,6 +1195,15 @@ oj.Validation.__registerDefaultValidatorFactory(oj.ValidatorFactory.VALIDATOR_TY
  * we pass {style:'currency', currency:'EUR', currencyDisplay:'symbol'} and we will get "€1,000.35"
  * If the page locale is "fr-FR", with the same options, we will get: "1 000,35 €"
  * </p>
+ * @property {string=} options.unit - Mandatory when style is "unit". Allowed values: 
+ * "byte" or "bit". It is used for formatting only. It can not be used for parsing.
+ * <p> 
+ * It is used to format digital units like 10Mb for bit unit or 10MB for byte unit. 
+ * There is no need to specify the scale of the unit. We automatically detect it.
+ * For example 1024 is formatted as 1KB and 1048576 as 1MB.
+ * The user can also specify 'minimumFractionDigits' and  'maximumFractionDigits' to be displayed, 
+ * otherwise we use the locale's default max and min fraction digits.
+ * </p> 
  * @property {string=} options.currencyDisplay - if the number is using currency formatting, specifies 
  * if the currency will be displayed using its "code" (as an ISO 4217 alphabetic currency code), 
  * "symbol" (a localized currency symbol (e.g. $ for US dollars, £ for Great British pounds, and so 
@@ -1170,6 +1230,22 @@ oj.Validation.__registerDefaultValidatorFactory(oj.ValidatorFactory.VALIDATOR_TY
  * (e.g., 2K -> 2000), so it can only be used
  * in a readOnly EditableValue because readOnly EditableValue components do not call
  * the converter's parse function.
+ * </p>
+ * @property {string=} options.currencyFormat -
+ * specifies the currency format length to use when style is set to "currency". 
+ * Allowed values are : "standard"(default), "short" and "long". 'standard' is equivalent to not 
+ * specifying the 'currencyFormat' attribute, in that case the locale's default currency pattern 
+ * is used for formatting.
+ * Similar to decimalFormat, currencyFormat can only be used for formatting. It can not be used for parsing.
+ * <p>
+ * The user can also specify 'minimumFractionDigits' and  'maximumFractionDigits' to display. 
+ * When not present we use the locale's default max and min fraction digits.
+ * </p>
+ * <p>
+ * There is no need to specify the scale; we automatically detect greatest scale that is less or 
+ * equal than the input number. For example  1000000 is formatted as "$1M" or "1 million dollar" and
+ * 1000 is formatted as "$1K" or " 1 thousand dollar" for short and long formats respectively.
+ * The pattern for the short and long number is locale dependent and uses plural rules for the particular locale.
  * </p>
  * @property {number=} options.minimumIntegerDigits - sets the minimum number of digits before the 
  * decimal place (known as integer digits). The number is padded with leading zeros if it would not 
@@ -1244,6 +1320,16 @@ oj.Validation.__registerDefaultValidatorFactory(oj.ValidatorFactory.VALIDATOR_TY
  * 
  * @example <caption>To parse a value as currency using a custom (CLDR) pattern</caption>
  * var options = {pattern: '¤#,##0', currency: 'USD'};
+ * 
+ * @example <caption>To format a value as digital bit unit</caption>
+ * var options = {style:'unit', unit:'bit'};
+ * var nb = 1024;
+ * converter.format(nb, localeElements, options);--> 1Kb<br/>
+ * 
+ * @example <caption>To format a value as digital byte unit</caption>
+ * var options = {style:'unit', unit:'byte'};
+ * var nb = 1024;
+ * converter.format(nb, localeElements, options);--> 1KB<br/>
  * 
  * @example <caption>The following decimalFormat examples are in en locale.
  * To format a value as short (default for fraction digits is based on the locale)</caption>
@@ -1378,6 +1464,8 @@ OraNumberConverter = (function () {
   var _toRawFixed;
   var _toExponentialPrecision;
   var _toCompactNumber;
+  var _toDigitalByte;
+ var _throwMissingUnit;
   var instance;
   var _regionMatches;
   var _expandAffix;
@@ -1412,6 +1500,12 @@ OraNumberConverter = (function () {
     'HALF_DOWN': 'floor',
     'DEFAULT': 'round'
   };
+
+  var _DIGITAL_KILO = 1024;
+  var _DIGITAL_MEGA = 1024 * 1024;
+  var _DIGITAL_GIGA = 1024 * 1024 * 1024;
+  var _DIGITAL_TERA = 1024 * 1024 * 1024 * 1024;
+
 
   //prepend or append count zeros to a string.
   _zeroPad = function (str, count, left) {
@@ -1502,7 +1596,6 @@ OraNumberConverter = (function () {
         numberingSystemKey;
     var lenient = options['lenientParse'];
     numberSettings['lenientParse'] = lenient || 'full';
-    
     //pattern passed in options
     if (options['pattern'] !== undefined && options['pattern'].length > 0) {
       pat = options['pattern'];
@@ -1527,21 +1620,26 @@ OraNumberConverter = (function () {
       }
       key += numberSettings['numberingSystemKey'];
       pat = localeElementsMainNode['numbers'][key]['standard'];
+      //check if decimalFormat is set
       var decFormatLength = options['decimalFormat'];
-      if (decFormatLength !== undefined && options['style'] === 'decimal') {
+      //if not, check for currencyFormat
+      if (decFormatLength === undefined)
+        decFormatLength = options['currencyFormat'];
+      //if either decimalFormat or currencyFormat is set, save it in number settings
+      if (decFormatLength !== undefined && (options['style'] === 'decimal' || options['style'] === 'currency')) {
         numberSettings['shortDecimalFormat'] = localeElementsMainNode['numbers']['decimalFormats-numberSystem-latn'][decFormatLength]['decimalFormat'];
       }
     }
     var decimalSeparator = localeElementsMainNode['numbers'][numberSettings['numberingSystem']]['decimal'];
-    var groupSeparator= localeElementsMainNode['numbers'][numberSettings['numberingSystem']]['group'];
+    var groupSeparator = localeElementsMainNode['numbers'][numberSettings['numberingSystem']]['group'];
     var separators = options['separators'];
-    if(separators !== undefined) {
+    if (separators !== undefined) {
       numberSettings['separators'] = separators;
       var dec = separators['decimal'];
       var grp = separators['group'];
-      if( dec !== undefined && dec !== '')
+      if (dec !== undefined && dec !== '')
         decimalSeparator = separators['decimal'];
-      if(grp !== undefined)
+      if (grp !== undefined)
         groupSeparator = separators['group'];
     }
     var mainNodeKey = oj.OraI18nUtils.getLocaleElementsMainNodeKey(localeElements);
@@ -1558,6 +1656,8 @@ OraNumberConverter = (function () {
     numberSettings['currencyDisplay'] = options['currencyDisplay'];
     if (options['currency'] !== undefined)
       numberSettings['currencyCode'] = options['currency'].toUpperCase();
+    if (options['unit'] !== undefined)
+      numberSettings['unit'] = options['unit'].toLowerCase();
     numberSettings['style'] = options['style'];
     _applyPatternImpl(options, pat, localeElementsMainNode, numberSettings);
     if (options['pattern'] === undefined) {
@@ -1584,7 +1684,7 @@ OraNumberConverter = (function () {
 
   _throwMissingCurrency = function (prop) {
     var typeError = new TypeError('The property "currency" is required when' +
-        'the property "' + prop + '" is "currency". An accepted value is a ' +
+        ' the property "' + prop + '" is "currency". An accepted value is a ' +
         'three-letter ISO 4217 currency code.');
     var errorInfo = {
       'errorCode': 'optionTypesMismatch',
@@ -1599,15 +1699,32 @@ OraNumberConverter = (function () {
     throw typeError;
   };
 
-  _throwUnsupportedParseOption = function () {
-    var error, errorInfo,
-        code = "unsupportedParseFormat",
-        msg = "long and short decimalFormats are not supported for parsing";
+  _throwMissingUnit = function (prop) {
+    var typeError = new TypeError('The property "unit" is required when' +
+        ' the property "' + prop + '" is "unit". An accepted value is  ' +
+        '"byte" or "bit".');
+    var errorInfo = {
+      'errorCode': 'optionTypesMismatch',
+      'parameterMap': {
+        'propertyName': prop, // the driving property
+        'propertyValue': 'unit', // the driving property's value
+        'requiredPropertyName': 'unit', // the required property name
+        'requiredPropertyValueValid': 'byte or bit'
+      }
+    };
+    typeError['errorInfo'] = errorInfo;
+    throw typeError;
+  };
+
+  _throwUnsupportedParseOption = function (val) {
+    var error, errorInfo;
+    var code = "unsupportedParseFormat";
+    var msg = "long and short " + val + " are not supported for parsing";
     error = new Error(msg);
     errorInfo = {
       'errorCode': code,
       'parameterMap': {
-        'value': 'decimal'
+        'shortFormats': val
       }
     };
     error['errorInfo'] = errorInfo;
@@ -1618,21 +1735,69 @@ OraNumberConverter = (function () {
   // provided. parse does not support short and long decimalFormat.
   _validateNumberOptions = function (options, caller) {
     var getOption = oj.OraI18nUtils.getGetOption(options, caller);
-    var s = getOption('style', 'string', ['currency', 'decimal', 'percent', 'perMill'],
+    var s = getOption('style', 'string', ['currency', 'decimal', 'percent', 'unit', 'perMill'],
         'decimal');
-    if (s === 'decimal') {
-      s = getOption('decimalFormat', 'string', ['standard', 'short', 'long']);
+    if (s === 'decimal' || s === 'currency') {
+      var fmt = (s === 'decimal') ? 'decimalFormat' : 'currencyFormat';
+      s = getOption(fmt, 'string', ['standard', 'short', 'long']);
       if (caller === 'OraNumberConverter.parse' && s !== undefined && s !== 'standard') {
-        _throwUnsupportedParseOption();
+        _throwUnsupportedParseOption(fmt);
       }
     }
     var c = getOption('currency', 'string');
     if (s === 'currency' && c === undefined) {
       _throwMissingCurrency("style");
     }
+
+    c = getOption('unit', 'string');
+    if (s === 'unit' && c === undefined) {
+      _throwMissingUnit("style");
+    }
+
     var roundingMode = getOption('roundingMode', 'string', ['HALF_UP', 'HALF_DOWN', 'HALF_EVEN'],
         'DEFAULT');
     var lenientParse = getOption('lenientParse', 'string', ['none', 'full'], 'full');
+  };
+
+  //_toDigitalByte does compact formatting like 300MB, 300Mb
+  _toDigitalByte = function (number, options, numberSettings, localeElements) {
+    var scale;
+    var count;
+    
+    if (number >= _DIGITAL_TERA) {
+      scale = "digital-tera";
+      count = number / _DIGITAL_TERA;
+    }
+    else if (number >= _DIGITAL_GIGA) {
+      scale = "digital-giga";
+      count = number / _DIGITAL_GIGA;
+    }
+    else if (number >= _DIGITAL_MEGA) {
+      scale = "digital-mega";
+      count = number / _DIGITAL_MEGA;
+    }
+    else if (number >= _DIGITAL_KILO) {
+      scale = "digital-kilo";
+      count = number / _DIGITAL_KILO;
+    }
+    else {
+      scale = "digital-";
+      count = number;
+    }
+    //Find the corresponding entry in resource budle under units section
+    //scale -> 'digital-kilo-bit' or 'digital-kilo-byte'
+    scale = scale + numberSettings['unit'];
+    var lang = numberSettings['lang'];
+    //get plural rule: one, many, etc..
+    var plural = numberSettings['plurals'][lang](count);
+    //plural -> 'unitPattern-count-one' or 'unitPattern-count-many'
+    plural = "unitPattern-count-" + plural;
+    //format the number
+    var fmt = _toRawFixed(count, options, numberSettings);
+    //format the number based on plural rule: "{0} Gb", etc..
+    var entry = localeElements['units']['narrow'][scale][plural];
+    fmt = oj.OraI18nUtils.formatString(entry, [fmt]);
+    return fmt;
   };
 
   //_toCompactNumber does compact formatting like 3000->3K for short
@@ -1706,6 +1871,8 @@ OraNumberConverter = (function () {
     if (decimalFormatType !== undefined)
       s = decimalFormatType.substr(zeros + tokens[0].length);
     fmt = _toRawFixed(number, options, numberSettings);
+    var regExp = /'\.'/g;
+    s = s.replace(regExp, ".");
     s = prefix + fmt + s;
     return s;
   };
@@ -1772,10 +1939,11 @@ OraNumberConverter = (function () {
     numberString = split[ 0 ];
     split = numberString.split('.');
     var right = split.length > 1 ? split[ 1 ] : "";
+    var precision;
     //round the number only if it has decimal points
     if (split.length > 1 && right.length > exponent)
     {
-      var precision = Math.min(numberSettings['maximumFractionDigits'],
+      precision = Math.min(numberSettings['maximumFractionDigits'],
           right.length - exponent);
       var mode = options['roundingMode'] || 'DEFAULT';
       number = _roundNumber(number, precision, mode);
@@ -1800,7 +1968,7 @@ OraNumberConverter = (function () {
       right = numberString.slice(-exponent, numberString.length) + right;
       numberString = numberString.slice(0, -exponent);
     }
-    if (precision > 0 && right.length >0) {
+    if (precision > 0 && right.length > 0) {
       right = decimalSeparator +
           ((right.length > precision) ? right.slice(0, precision) :
               _zeroPad(right, precision, false));
@@ -1884,11 +2052,11 @@ OraNumberConverter = (function () {
       else {
         c = parseInt(parts[1][scale - 1], 10);
       }
-      if (c % 2 == 0) {
+      if (c % 2 === 0) {
         mode = _roundingModeMap['HALF_DOWN'];
       }
       else {
-        mode = _roundingModeMap['HALF_UP']
+        mode = _roundingModeMap['HALF_UP'];
       }
     }
     return mode;
@@ -1948,18 +2116,24 @@ OraNumberConverter = (function () {
     else if (numberSettings['isPerMill'] === true)
       number *= 1000;
     //expand the number
-    if ((options['style'] === 'decimal')
-        && options['decimalFormat'] !== undefined
-        && options['decimalFormat'] !== 'standard')
+    var formatType = options['decimalFormat'];
+    if (formatType === undefined)
+      formatType = options['currencyFormat'];
+    var optStyle = options['style'];
+    if ((optStyle === 'decimal' || optStyle === 'currency')
+        && formatType !== undefined
+        && formatType !== 'standard')
       number = _toCompactNumber(number, options, numberSettings);
     else if (numberSettings['useExponentialNotation'] === true)
       number = _toExponentialPrecision(number, numberSettings);
+    else if (optStyle === 'unit')
+      number = _toDigitalByte(number, options, numberSettings, localeElementsMainNode);
     else
       number = _toRawFixed(number, options, numberSettings);
     var ret = "";
     //add negative prefix and suffix if number is negative
     //and the new formatted value isn't zero
-    if (value < 0 && (number - 0 != 0)) {
+    if (value < 0 && (number - 0 !== 0)) {
       ret += numberSettings['negativePrefix'] + number +
           numberSettings['negativeSuffix'];
     }
@@ -2076,7 +2250,7 @@ OraNumberConverter = (function () {
       }
     }
     if (!exactMatch) {
-      if(numberSettings['lenientParse'] === 'full') {
+      if (numberSettings['lenientParse'] === 'full') {
         ret = _lenientParseNumber(num, numberSettings);
         ret[2] = true;
       }
@@ -2296,7 +2470,7 @@ OraNumberConverter = (function () {
       ret = parseFloat(p);
     }
     else {
-      if(numberSettings['lenientParse'] === 'full') {
+      if (numberSettings['lenientParse'] === 'full') {
         p = _lenientParseNumber(numStr, numberSettings);
         ret = parseFloat(p[0] + p[1]);
       }
@@ -2306,7 +2480,7 @@ OraNumberConverter = (function () {
     }
     return  _getParsedValue(ret, options, numberSettings, str);
   };
-     
+
   /* This module handles the  parsing of a number pattern.
    * It sets prefix, suffix, minimum and maximum farcation digits, 
    * miimum  integer digits and grouping size. 
@@ -2486,7 +2660,7 @@ OraNumberConverter = (function () {
               }
               else if (ch === _CURRENCY) {
                 if (options['currency'] === undefined)
-                  _throwMissingCurrency("pattern");
+                  _throwMissingCurrency("style");
                 // Use lookahead to determine if the currency sign
                 // is doubled or not.
                 options['style'] = 'currency';
@@ -2758,11 +2932,16 @@ OraNumberConverter = (function () {
     if (options['style'] === 'decimal' && options['decimalFormat'] !== undefined) {
       resOptions['decimalFormat'] = options['decimalFormat'];
     }
+    if (options['style'] === 'currency' && options['currencyFormat'] !== undefined) {
+      resOptions['currencyFormat'] = options['currencyFormat'];
+    }
     if (options['style'] === 'currency') {
       resOptions['currency'] = options['currency'];
       resOptions['currencyDisplay'] = (options['currencyDisplay'] ===
           undefined) ? 'symbol' : options['currencyDisplay'];
     }
+    if (options['unit'] !== undefined)
+      resOptions['unit'] = options['unit'];
     if (options['pattern'] !== undefined)
       resOptions['pattern'] = options['pattern'];
     var roundingMode = options['roundingMode'];
@@ -2791,15 +2970,20 @@ OraNumberConverter = (function () {
        * @param {Object} localeElements - the instance of LocaleElements  
        * bundle
        * @param {Object=} options - Containing the following properties:<br>
-       * - <b>style.</b>  is one of the String values "decimal", "currency"  
-       * or "percent". The default is "decimal".<br>
+       * - <b>style.</b>  is one of the String values "decimal", "currency",  
+       * "percent" or "unit". The default is "decimal".<br>
        * - <b>decimalFormat.</b> is used in conjuction with "decimal" style. 
-       * It can have one of the string values "short", "long". It is used for 
-       * compact number formatting. For example 3000 is displayed
+       * It can have one of the string values "short", "long", "standard". "standard"
+       * is the default. It is used for compact number formatting. For example 3000 is displayed
        *  as 3K for "short" and 3 thousand for "long". We take into consideration
        *  the locale's plural rules for the compact pattern.<br> 
        * - <b>currency.</b> An ISO 4217 alphabetic currency code. Mandatory 
        *  when style is "currency".<br>
+       * - <b>unit.</b> Mandatory when style is "unit". Allowed values are "byte" or "bit".<br> 
+       * - <b>currencyFormat.</b> is used in conjuction with "currency" style. 
+       * It can have one of the string values "short", "long", "standard". "standard"
+       * is the default. It is used for compact currency formatting. For example $3000 is displayed
+       *  as $3K for "short" and 3 thousand US Dollar for "long".<br> 
        * - <b>currencyDisplay.</b> is one of the String values "code", 
        * "symbol", or "name", specifying whether to display the currency as  
        * an ISO 4217 alphabetic currency code, 
@@ -2912,14 +3096,19 @@ OraNumberConverter = (function () {
        * @param {Object} localeElements - the instance of LocaleElements 
        * bundle
        * @param {Object=} options containing the following properties:<br>
-       * - <b>style.</b> "decimal", "currency" or "percent". The default is 
+       * - <b>style.</b> "decimal", "currency", "percent" or "unit". The default is 
        * "decimal".<br>
-       * - <b>decimalFormat.</b> It can have one of the string values "short", "long".
-       *  It is used for compact number formatting. For example 3000 is displayed
+       * - <b>unit.</b> one of the strings "byte" or "bit" when the style is "unit".<br>
+       * - <b>decimalFormat.</b> It can have one of the string values "short", "long", "standard".
+       * "standard" is the default. It is used for compact number formatting. For example 3000 is displayed
        *  as 3K for "short" and 3 thousand for "long". We take into consideration
        *  the locale's plural rules for the compact pattern.<br> 
        * - <b>currency.</b> An ISO 4217 alphabetic currency code. Mandatory 
        * when when style is "currency".<br>
+       * - <b>currencyFormat.</b> is used in conjuction with "currency" style. 
+       * It can have one of the string values "short", "long", "standard". "standard"
+       * is the default. It is used for compact currency formatting. For example $3000 is displayed
+       *  as $3K for "short" and 3 thousand US Dollar for "long".<br> 
        * - <b>currencyDisplay.</b> is one of the String values "code", 
        * "symbol", or "name", specifying whether to display the currency as 
        * an ISO 4217 alphabetic currency code,

@@ -104,6 +104,7 @@ oj.ValueBinding = function(){};
  * @type {oj.InvalidComponentTracker}
  * @default <code class="prettyprint">null</code>
  * @since 0.7
+ * @ignore
  */
 /** prevent preceding jsdoc from applying to following line of code */
 
@@ -406,6 +407,7 @@ oj.ComponentBinding.getDefaultInstance().setupManagedAttributes(
  * @class
  * @export
  * @since 0.7
+ * @ignore
  */
 oj.InvalidComponentTracker = function()
 {

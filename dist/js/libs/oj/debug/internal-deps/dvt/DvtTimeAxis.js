@@ -524,9 +524,7 @@ dvt.TimeAxis.prototype._prepareScaleDatesLabels = function(scale, originalScale,
     var nextTime = dates[j + 1];
 
     // update maximum label width and height
-    this.addChild(label);
     var dim = label.getDimensions();
-    this.removeChild(label);
     if (this._isVertical)
     {
       var lengthDim = dim.h;
@@ -1543,10 +1541,10 @@ DvtTimeAxisRenderer._renderAxisTicksLabels = function(timeAxis, startPos, endPos
   {
     var date = dates[i];
     var next = dates[i + 1];
+    var label = labels[i];
 
     var currentPos = dvt.TimeAxis.getDatePosition(timeAxis._start, timeAxis._end, date, length);
     var nextPos = dvt.TimeAxis.getDatePosition(timeAxis._start, timeAxis._end, next, length);
-    var maxLength = nextPos - currentPos;
 
     if (currentPos != 0)
     {
@@ -1560,12 +1558,52 @@ DvtTimeAxisRenderer._renderAxisTicksLabels = function(timeAxis, startPos, endPos
       tickElem.time = date;
     }
 
+    // Label may have been truncated in the previous render. Start fresh for this render:
+    if (label.isTruncated())
+      label.setTextString(label.getUntruncatedTextString());
+    var truncateStart = false;
+
     if (timeAxis.isVertical())
-      DvtTimeAxisRenderer._addAxisLabel(block, labels[i], labelStart + ((axisEnd - labelStart) / 2), currentPos + ((nextPos - currentPos) / 2), axisEnd - labelStart, nextPos - currentPos, labelClass);
-    else if (!isRTL)
-      DvtTimeAxisRenderer._addAxisLabel(block, labels[i], currentPos + ((nextPos - currentPos) / 2), labelStart + ((axisEnd - labelStart) / 2), maxLength, maxLabelHeight, labelClass);
+    {
+      label.alignCenter(); // set horizontal bounding box reference point to be horizontally center
+      DvtTimeAxisRenderer._addAxisLabel(block, label, labelStart + ((axisEnd - labelStart) / 2), currentPos + ((nextPos - currentPos) / 2), axisEnd - labelStart, nextPos - currentPos, labelClass);
+    }
     else
-      DvtTimeAxisRenderer._addAxisLabel(block, labels[i], length - (currentPos + ((nextPos - currentPos) / 2)), labelStart + ((axisEnd - labelStart) / 2), maxLength, maxLabelHeight, labelClass);
+    {
+      // First and Last label can get cut off because first currentPos/last next date can be before/past the overall start/end time ( - date in major axis is getting cut off in some cases)
+      // Have the first and last label be truncated with ellipses if necessary, whilst maintaining the same position as if inter-tick region is not cut off.
+      if (i === 0 && currentPos < 0) // first label currentPos is before the overall start time pos (at pos 0)
+      {
+        var labelWidth = label.getDimensions().w;
+        var maxLength = nextPos - Math.max(0, ((nextPos - currentPos - labelWidth) / 2));
+        // Can't simply take center of inter-tick region and alignCenter() for first label treatment if the label is going to be truncated
+        // Instead, align right and manually calculate label placement
+        if (!isRTL)
+          label.alignRight();
+        var horizPos = Math.max(0, maxLength);
+        truncateStart = true;
+      }
+      else if (i === dates.length - 2 && nextPos > length) // last label nextPos is after the overall end time pos (at pos length)
+      {
+        labelWidth = label.getDimensions().w;
+        maxLength = length - currentPos - Math.max(0, ((nextPos - currentPos - labelWidth) / 2));
+        // Can't simply take center of inter-tick region and alignCenter() for last label treatment if the label is going to be truncated
+        // Instead, align right and manually calculate label placement
+        if (isRTL)
+          label.alignRight();
+        horizPos = Math.max(currentPos, (currentPos + ((nextPos - currentPos) / 2)) - (labelWidth / 2));
+      }
+      else
+      {
+        maxLength = nextPos - currentPos;
+        // take center of inter-tick region and alignCenter()
+        horizPos = currentPos + ((nextPos - currentPos) / 2);
+        label.alignCenter(); // set horizontal bounding box reference point to be horizontally center
+      }
+      var labelY = labelStart + ((axisEnd - labelStart) / 2);
+      var labelX = !isRTL ? horizPos : length - horizPos;
+      DvtTimeAxisRenderer._addAxisLabel(block, label, labelX, labelY, maxLength, maxLabelHeight, labelClass, truncateStart);
+    }
   }
 };
 
@@ -1575,24 +1613,35 @@ DvtTimeAxisRenderer._renderAxisTicksLabels = function(timeAxis, startPos, endPos
  * @param {dvt.Container} container The container to render into.
  * @param {dvt.OutputText} label The label text object
  * @param {number} x The x coordinate of the label bounding box's reference point
- * @param {number} y The y coordinate of the label bounding box's reference point
+ * @param {number} y The y coordinate of the label (assuming bounding box's reference point at vertical center of the label)
  * @param {number} maxLength The maximum length of the label area
  * @param {number} maxHeight The maximum height of the label area
  * @param {string=} labelClass The class to be applied on the text element
+ * @param {boolean=} truncateStart Whether to truncate beginning characters and add ellipses to the front (as opposed to normal truncation and ellipsis from the back)
  * @private
  */
-DvtTimeAxisRenderer._addAxisLabel = function(container, label, x, y, maxLength, maxHeight, labelClass)
+DvtTimeAxisRenderer._addAxisLabel = function(container, label, x, y, maxLength, maxHeight, labelClass, truncateStart)
 {
-  label.setX(x);
-  label.setY(y);
-  if (label.isTruncated())
-    label.setTextString(label.getUntruncatedTextString());
-  dvt.TextUtils.fitText(label, maxLength, maxHeight, container);
+  var fit = dvt.TextUtils.fitText(label, maxLength, maxHeight, container);
 
-  // align text horizontally
-  label.alignCenter();
-  // align text vertically
-  dvt.TextUtils.centerTextVertically(label, y);
+  if (truncateStart && label.isTruncated() && fit)
+  {
+    // label truncated from the back at this point. Since truncation from the start is desired,
+    // manually move the ellipsis to the front and add/remove characters accordingly
+    var textString = label.getTextString();
+    var untruncatedTextString = label.getUntruncatedTextString();
+    if (textString !== untruncatedTextString)
+    {
+      var numTruncatedChars = label.getTextString().length - 1;
+      var indexEnd = untruncatedTextString.length;
+      var indexStart = Math.max(0, indexEnd - numTruncatedChars);
+      var truncatedStartString = dvt.OutputText.ELLIPSIS + untruncatedTextString.substring(indexStart, indexEnd);
+      label.setTextString(truncatedStartString);
+    }
+  }
+
+  label.setX(x);
+  dvt.TextUtils.centerTextVertically(label, y); // align text vertically
 
   if (labelClass)
     label.getImpl().getElem().setAttribute('class', labelClass);

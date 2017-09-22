@@ -66,8 +66,40 @@ oj.DataSource.prototype.Init = function()
  */
  
 /**
- * Base class for all tree structure DataSource.  Implementations must implement all of the functions documented here.
-
+ * @class oj.TreeDataSource
+ * @classdesc Abstract class representing hierarchical (tree) data that can be used by different components such as [Indexer]{@link oj.ojIndexer}, [ListView]{@link oj.ojListView}, [NavigationList]{@link oj.ojNavigationList},
+ * and [TreeView]{@link oj.ojTreeView}.<br><br>
+ * This class is not used directly and is used as the base to implement other subclasses.  Implementations of TreeDataSource must implement all of the methods documented here.<br><br>
+ * JET provides the following implementations:<br><br>
+ * <table class="generic-table">
+ *   <thead>
+ *     <th>Subclass</th>
+ *     <th>When to Use</th>
+ *     <th>Use with</th>
+ *   </thead>
+ *   <tbody>
+ *     <tr>
+ *       <td>{@link oj.CollectionTreeDataSource}</td>
+ *       <td>When the data is available from an {@link oj.Collection} object, such as an external data source.</td>
+ *       <td>ListView<br>NavigationList<br>TreeView<br></td>
+ *     </tr>
+ *     <tr>
+ *       <td>{@link oj.IndexerModelTreeDataSource}</td>
+ *       <td>When the data has a tree-like structure that is displayed in a ListView with Indexer.</td>
+ *       <td>ListView (with Indexer)<br></td>
+ *     </tr>
+ *     <tr>
+ *       <td>{@link oj.JsonTreeDataSource}</td>
+ *       <td>When the data is available from an array of JSON objects that represent tree nodes.</td>
+ *       <td>ListView<br>NavigationList<br>TreeView<br></td>
+ *     </tr>
+ *   </tbody>
+ * </table>
+ * <br>Refer to the documentation and demos of individual components for more information on how to use them with the TreeDataSource subclasses.</br><br>
+ * In case specialized behavior is needed, new subclass can be created by using [oj.Object.createSubclass]{@link oj.Object#createSubclass}.  New subclass can be based on 
+ * TreeDataSource, in which case all methods must be implemented, or it can be based on an existing subclass, in which case only methods that require different behavior need 
+ * to be overridden.
+ *            
  * @param {Object} data data supported by the component
  * @export
  * @extends oj.DataSource
@@ -89,7 +121,7 @@ oj.Object.createSubclass(oj.TreeDataSource, oj.DataSource, "oj.TreeDataSource");
  * @return {number} the number of children for the specified parent.
  * @method
  * @name getChildCount
- * @memberof! oj.TreeDataSource
+ * @memberof oj.TreeDataSource
  * @instance
  */
 
@@ -109,7 +141,7 @@ oj.Object.createSubclass(oj.TreeDataSource, oj.DataSource, "oj.TreeDataSource");
  *        flushed and executed in the order they are queued.  This flag is ignored if the datasource does not support batching.
  * @method
  * @name fetchChildren
- * @memberof! oj.TreeDataSource
+ * @memberof oj.TreeDataSource
  * @instance
  */
 
@@ -121,25 +153,25 @@ oj.Object.createSubclass(oj.TreeDataSource, oj.DataSource, "oj.TreeDataSource");
  * @param {function(oj.NodeSet)} callbacks.success the callback to invoke when fetch completed successfully.
  * @param {function({status: Object})} callbacks.error the callback to invoke when fetch children failed.
  * @param {Object=} options optional parameters for this operation.
- * @param {number=} options.start the index related to parent in which to begin fetching descendants from.  If this is not specified, then 
+ * @param {number=} options.start the index related to parent in which to begin fetching descendants from.  If this is not specified, then value zero will be used.
  * @param {number=} options.maxCount the maximum number of children to fetch.  If a non-positive number is specified, then the value is ignored and
  *        there is no maximum fetch count.
  * @method
  * @name fetchDescendants
- * @memberof! oj.TreeDataSource
+ * @memberof oj.TreeDataSource
  * @instance
  */
 
 /**
  * Performs a sort operation on the tree data.
- * @param {Object} criteria the sort criteria.  It must contain the following properties: key, direction
- * @param {Object} criteria.key the key identifying the attribute (column) to sort on
- *        {string} criteria.direction the sort direction, valid values are "ascending", "descending", "none" (default)
+ * @param {Object} criteria the sort criteria.  It must contain the following properties: key, direction.
+ * @param {Object} criteria.key the key identifying the attribute (column) to sort on.
+ * @param {string} criteria.direction the sort direction, valid values are "ascending", "descending", "none" (default)
  * @param {function()} callbacks.success the callback to invoke when the sort completed successfully.  
  * @param {function({status: Object})} callbacks.error the callback to invoke when sort failed.
  * @method
  * @name sort
- * @memberof! oj.TreeDataSource
+ * @memberof oj.TreeDataSource
  * @instance
  */
 
@@ -150,7 +182,7 @@ oj.Object.createSubclass(oj.TreeDataSource, oj.DataSource, "oj.TreeDataSource");
  *         criteria.direction the sort direction, valid values are "ascending", "descending", "none" (default)
  * @method
  * @name getSortCriteria
- * @memberof! oj.TreeDataSource
+ * @memberof oj.TreeDataSource
  * @instance
  */
 
@@ -166,7 +198,7 @@ oj.Object.createSubclass(oj.TreeDataSource, oj.DataSource, "oj.TreeDataSource");
  * @param {function({status: Object})} callbacks.error the callback to invoke when move failed.
  * @method
  * @name move
- * @memberof! oj.TreeDataSource
+ * @memberof oj.TreeDataSource
  * @instance
  */ 
 
@@ -181,7 +213,7 @@ oj.Object.createSubclass(oj.TreeDataSource, oj.DataSource, "oj.TreeDataSource");
  * @return {string} returns "valid" if the move is valid, "invalid" otherwise.
  * @method
  * @name moveOK
- * @memberof! oj.TreeDataSource
+ * @memberof oj.TreeDataSource
  * @instance
  */ 
 
@@ -196,7 +228,7 @@ oj.Object.createSubclass(oj.TreeDataSource, oj.DataSource, "oj.TreeDataSource");
  *         For "batchFetch", the valid return values are: "enable", "disable".  
  * @method
  * @name getCapability
- * @memberof! oj.TreeDataSource
+ * @memberof oj.TreeDataSource
  * @instance
  */
 
@@ -215,7 +247,44 @@ oj.Object.createSubclass(oj.TreeDataSource, oj.DataSource, "oj.TreeDataSource");
 /**
  * @export
  * @class oj.TableDataSource
- * @classdesc Abstract object representing data used by table component.  Implementations of TableDataSource must implement all of the functions documented here.
+ * @classdesc Abstract class representing tabular data that can be used by different components such as [ListView]{@link oj.ojListView}, [NavigationList]{@link oj.ojNavigationList},
+ * [PagingControl]{@link oj.ojPagingControl}, [TabBar]{@link oj.ojTabBar}, and [Table]{@link oj.ojTable}.<br><br>
+ * This class is not used directly and is used as the base to implement other subclasses.  Implementations of TableDataSource must implement all of the methods documented here.<br><br>
+ * JET provides the following implementations:<br><br>
+ * <table class="generic-table">
+ *   <thead>
+ *     <th>Subclass</th>
+ *     <th>When to Use</th>
+ *     <th>Use with</th>
+ *   </thead>
+ *   <tbody>
+ *     <tr>
+ *       <td>{@link oj.ArrayTableDataSource}</td>
+ *       <td>When the data is available from an array.</td>
+ *       <td>ListView<br>NavigationList<br>TabBar<br>Table<br></td>
+ *     </tr>
+ *     <tr>
+ *       <td>{@link oj.CollectionTableDataSource}</td>
+ *       <td>When the data is available from an {@link oj.Collection} object, such as an external data source.</td>
+ *       <td>ListView<br>NavigationList<br>TabBar<br>Table<br></td>
+ *     </tr>
+ *     <tr>
+ *       <td>{@link oj.FlattenedTreeTableDataSource}</td>
+ *       <td>When the data has a tree-like structure that is displayed in a Table with RowExpander.</td>
+ *       <td>Table (with RowExpander)<br></td>
+ *     </tr>
+ *     <tr>
+ *       <td>{@link oj.PagingTableDataSource}</td>
+ *       <td>When paging functionality is needed on top of other TableDataSource implementations.</td>
+ *       <td>ListView<br>PagingControl<br>Table<br></td>
+ *     </tr>
+ *   </tbody>
+ * </table>
+ * <br>Refer to the documentation and demos of individual components for more information on how to use them with the TableDataSource subclasses.</br><br>
+ * In case specialized behavior is needed, new subclass can be created by using [oj.Object.createSubclass]{@link oj.Object#createSubclass}.  New subclass can be based on 
+ * TableDataSource, in which case all methods must be implemented, or it can be based on an existing subclass, in which case only methods that require different behavior need 
+ * to be overridden.
+ *            
  * @extends oj.DataSource
  * @param {Object} data data supported by the components
  * @param {Object=} options Options for the TableDataSource
@@ -245,10 +314,10 @@ oj.Object.createSubclass(oj.TableDataSource, oj.DataSource, "oj.TableDataSource"
 
 /**
  * Initializes the instance.
- * @export
- * @expose
- * @memberof! oj.TableDataSource
+ * @memberof oj.TableDataSource
  * @instance
+ * @override
+ * @protected
  */
 oj.TableDataSource.prototype.Init = function()
 {
@@ -258,7 +327,7 @@ oj.TableDataSource.prototype.Init = function()
 /**
  * @export
  * @expose
- * @memberof! oj.TableDataSource
+ * @memberof oj.TableDataSource
  * @desc The sort criteria. Whenever sort() is called with the criteria parameter, that value is copied to this
  * property. If sort() is called with empty sort criteria then the criteria set in this property is used.
  * 
@@ -273,7 +342,6 @@ oj.TableDataSource.prototype.sortCriteria = null;
  * 
  * @param {number} index Index for which to return the row data. 
  * @param {Object=} options Options to control the at.
- * @param {number} options.fetchSize fetch size to use if the call needs to fetch more records from the server, if virtualized.  Overrides the overall fetchSize setting <p>
  * @return {Promise} Promise resolves to a compound object which has the structure below. If the index is out of range, Promise resolves to null.<p>
  * <table>
  * <tbody>
@@ -284,7 +352,7 @@ oj.TableDataSource.prototype.sortCriteria = null;
  * </table>
  * @method
  * @name at
- * @memberof! oj.TableDataSource
+ * @memberof oj.TableDataSource
  * @instance
  */
 
@@ -304,7 +372,7 @@ oj.TableDataSource.prototype.sortCriteria = null;
  * </table>  
  * @method
  * @name fetch
- * @memberof! oj.TableDataSource
+ * @memberof oj.TableDataSource
  * @instance
  */
 
@@ -323,7 +391,7 @@ oj.TableDataSource.prototype.sortCriteria = null;
  * </table>
  * @method
  * @name get
- * @memberof! oj.TableDataSource
+ * @memberof oj.TableDataSource
  * @instance
  */
 
@@ -332,7 +400,7 @@ oj.TableDataSource.prototype.sortCriteria = null;
  * @param {string} feature the feature in which its capabilities is inquired.  Currently the only valid feature is "sort".
  * @return {string|null} the name of the feature.  For "sort", the valid return values are: "full", "none".  
  *         Returns null if the feature is not recognized.
- * @memberof! oj.TableDataSource
+ * @memberof oj.TableDataSource
  * @instance
  * @method
  * @name getCapability
@@ -346,7 +414,7 @@ oj.TableDataSource.prototype.sortCriteria = null;
  * @return {Promise} promise object triggering done when complete.
  * @method
  * @name sort
- * @memberof! oj.TableDataSource
+ * @memberof oj.TableDataSource
  * @instance
  */
 
@@ -356,7 +424,7 @@ oj.TableDataSource.prototype.sortCriteria = null;
  * @returns {number} total size of data
  * @method
  * @name totalSize
- * @memberof! oj.TableDataSource
+ * @memberof oj.TableDataSource
  * @instance
  */
 
@@ -368,7 +436,7 @@ oj.TableDataSource.prototype.sortCriteria = null;
  *                  "unknown" if the totalSize is unknown
  * @export
  * @expose
- * @memberof! oj.TableDataSource
+ * @memberof oj.TableDataSource
  * @instance 
  */
 oj.TableDataSource.prototype.totalSizeConfidence = function()
@@ -672,7 +740,7 @@ oj.Object.createSubclass(oj.DataGridDataSource, oj.DataSource, "oj.DataGridDataS
  * Fetch a range of cells from the data source.
  * @method
  * @name fetchCells
- * @memberof! oj.DataGridDataSource
+ * @memberof oj.DataGridDataSource
  * @instance
  * @param {Array.<Object>} cellRange Information about the cell range.  A cell range is defined by an array 
  *        of range info for each axis, where each range contains three properties: axis, start, count.

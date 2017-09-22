@@ -36,8 +36,7 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
  */
 
 (function() {
-
-  oj.__registerWidget("oj.ojResizable", $['oj']['baseComponent'], {
+$.widget("oj.ojResizable", {
     version: "1.0.0",
     widgetEventPrefix: "oj",
     options: {
@@ -326,7 +325,7 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
      * $( ".selector" ).on( "ojcreate", function( event, ui ) {} );
      */
     // note - jqui has on("resizecreate", ... need to verify if we need some form of "ojcreate".
-    _ComponentCreate: function()
+    _create: function()
     {
       this._super();
 
@@ -1134,18 +1133,6 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
 
 (function() {
 
-  var /** @const */ _destroyTitlebar = true;
-  var /** @const */ _placeHolderPrefix = "ojDialogPlaceHolder-";
-  var /** @const */ _placeHolderFooterPrefix = "ojDialogPlaceHolderFooter-";
-  var /** @const */ _placeHolderHeaderPrefix = "ojDialogPlaceHolderHeader-";
-  var /** @const */ _wrapperPrefix = "ojDialogWrapper-";
-
-  // var /** @const */ _padYDelta = 2;   // add a small amount of padding so that the scrollbar does not inadvertantly show up.
-  var /** @const */ _padYDelta = 0;   // add a small amount of padding so that the scrollbar does not inadvertantly show up.
-
-  var /** @const */ _resizeDelay = 30;   // delay between body refresh during resize
-  // var /** @const */ _resizeDelay = 0;   // delay between body refresh during resize
-
   /**
    * @ojcomponent oj.ojDialog
    * @augments oj.baseComponent
@@ -1216,25 +1203,15 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
    *</ul>
    *
    * In most cases, you will want to use the default <code class="prettyprint">height:auto</code>, since this will automatically adjust the height based on the content.
-   *
-   * <p> Dialog dimensions can be set using rootAttributes:
+   * Users can change the dialog dimensions using style attributes:
    *
    * <pre class="prettyprint">
    * <code>
-   *  &lt;div id="wideDialog" title="Wide Dialog" style=""
-   *       data-bind="ojComponent:{component: 'ojDialog', initialVisibility: 'show',
-   *		  rootAttributes: { style: 'width: 400px; min-width: 100px; max-width 500px;'}}"&gt;
-   *       &lt;div class="oj-dialog-body"&gt;
-   *         &lt;p&gt; Dialog Text
-   *       &lt;/div&gt;
-   *  &lt;/div&gt;
-   * </code></pre>
-   *
-   *
-   * To dynamically change a dialog dimension (e.g., change a dimension after the dialog has been created), the 'widget' syntax is required:
-   * <pre class="prettyprint">
-   * <code>
-   * $("#wideDialog").ojDialog('widget').css{'width', '400px'}
+   * &lt;oj-dialog id="wideDialog" title="Wide Dialog" style="width: 400px; min-width: 100px; max-width 500px;"&gt; 
+   *    &lt;div slot="body"&gt;
+   *       &lt;p&gt; Dialog Text
+   *    &lt;/div&gt;
+   * &lt;/oj-dialog&gt;
    * </code></pre>
    *
    * <h3 id="accessibility-section">
@@ -1250,8 +1227,8 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
    *  &lt;div class="ojdialog ..." role="dialog"&gt;
    * </code></pre>
    *
-   * This can be changed using the role option. WAI-ARIA recommends that role="dialog" be used if the dialog expects input (such as text input),
-   * otherwise, use the role option to assign role="alertdialog".
+   * This can be changed using the role attribute. WAI-ARIA recommends that role="dialog" be used if the dialog expects input (such as text input),
+   * otherwise, use the role attribute to assign role="alertdialog".
    *
    * <h4> aria-labelledby </h4>
    *
@@ -1318,22 +1295,18 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
    *
    *<h3>Additional Examples</h3>
    *
-   * <p> The following defines a basic dialog, with a cancel and an ok button in the footer:
+   * <p> The following defines a basic dialog, with an ok button in the footer:
    *
    * <pre class="prettyprint">
    * <code>
-   *
-   * &lt;div id="dialog" class="ojDialog" title="ojDialog Title"&gt;
-   *     &lt;div class="oj-dialog-body"&gt;
-   *         &lt;p&gt;Dialog Text&lt;/p&gt;
-   *     &lt;/div&gt;
-   *     &lt;div class="oj-dialog-footer"&gt;
-   *        &lt;button id="buttonCancel" data-bind="ojComponent:
-   *              { component: 'ojButton', label: 'OK'}"&gt; &lt;/button&gt;
-   *        &lt;button data-bind="ojComponent:
-   *              { component: 'ojButton', label: 'Cancel'}"&gt; &lt;/button&gt;
-   *     &lt;/div&gt;
-   * &lt;/div&gt;
+   * &lt;oj-dialog id="dialogWithFooter" title="Dialog with Footer" style="width: 400px; min-width: 100px; max-width 500px;"&gt; 
+   *    &lt;div slot="body"&gt;
+   *       &lt;p&gt; Dialog Text
+   *    &lt;/div&gt;
+   *    &lt;div slot="footer"&gt;
+   *       &lt;oj-button id="okButton"&gt; OK &lt;/oj-button&gt;
+   *    &lt;/div&gt;
+   * &lt;/oj-dialog&gt;
    *
    * </code></pre>
    *
@@ -1343,147 +1316,15 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
    *
    * <pre class="prettyprint">
    * <code>
-   *
-   * &lt;div id="dialog" class="ojDialog" title="ojDialog Title"&gt;
-   *   &lt;div class="oj-dialog-header" aria-labelledby="dialog-title-id"&gt;
-   *     &lt;span id="dialog-title-id" class="oj-dialog-title"&gt; User Defined Header&lt;/span&gt;
+   * &lt;oj-dialog id="dialog" title="Dialog Title"&gt; 
+   *    &lt;div slot="header"&gt;
+   *       &lt;span id="dialog-title-id" class="oj-dialog-title"&gt; User Defined Header&lt;/span&gt;
    *    &lt;/div&gt;
-   *    &lt;div class="oj-dialog-body"&gt;
-   *        &lt;p&gt;Dialog Text&lt;/p&gt;
-   *        &lt;br&gt;
+   *    &lt;div slot="body"&gt;
+   *       &lt;p&gt; Dialog Text
    *    &lt;/div&gt;
-   *    &lt;div class="oj-dialog-footer"&gt;
-   *       &lt;button data-bind="ojComponent:
-   *           { component: 'ojButton', label: 'OK'}"&gt; &lt;/button&gt;
-   *       &lt;button id="buttonCancel" class="" data-bind="ojComponent:
-   *           { component: 'ojButton', label: 'Cancel'}"&gt; &lt;/button&gt;
-   *    &lt;/div&gt;
-   * &lt;/div&gt;
-   *
+   * &lt;/oj-dialog&gt;
    * </code></pre>
-   *
-   * <h3 id="jqui2jet-section">
-   *   JET for jQuery UI developers
-   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#jqui2jet-section"></a>
-   * </h3>
-   *
-   * This section summarizes the major differences between the JQueryUI dialog and the JET dialog API.
-   *
-   * <h4> Options added to JET Dialog </h4>
-   *
-   * <p>
-   * One additional option has been added to the JET dialog:
-   *
-   * <p>
-   * <table class="keyboard-table">
-   *   <thead>
-   *     <tr>
-   *       <th>JQueryUI Dialog Option</th>
-   *       <th>JET Dialog Option </th>
-   *     </tr>
-   *   </thead>
-   *   <tbody>
-   *     <tr>
-   *       <td></td>
-   *       <td><code class="prettyprint">role</code></td>
-   *     </tr>
-   *   </tbody>
-   * </table>
-   *
-   * The JET Dialog option allows the developer to set the WAI-ARIA role. The <td><code class="prettyprint">role </code></td> option is not part of the JQueryUI dialog.
-   *
-   * <h4> Options Renamed between JQueryUI Dialog and JET Dialog </h4>
-   *
-   * <p>
-   * The following options have been renamed between the JQueryUI dialog and the JET dialog.
-   *
-   * <p>
-   * <table class="keyboard-table">
-   *   <thead>
-   *     <tr>
-   *       <th>JQueryUI Dialog Option</th>
-   *       <th>JET Dialog Option </th>
-   *     </tr>
-   *   </thead>
-   *   <tbody>
-   *     <tr>
-   *       <td><code class="prettyprint">autoOpen </code></td>
-   *       <td><code class="prettyprint">initialVisibility</code></td>
-   *     </tr>
-   *     <tr>
-   *       <td><code class="prettyprint">closeOnEscape </code></td>
-   *       <td><code class="prettyprint">cancelBehavior</code></td>
-   *     </tr>
-   *     <tr>
-   *       <td><code class="prettyprint">draggable</code></td>
-   *       <td><code class="prettyprint">dragAffordance</code></td>
-   *     </tr>
-   *     <tr>
-   *       <td><code class="prettyprint">modal</code></td>
-   *       <td><code class="prettyprint">modality</code></td>
-   *     </tr>
-   *     <tr>
-   *       <td><code class="prettyprint">resizable</code></td>
-   *       <td><code class="prettyprint">resizeBehavior</code></td>
-   *     </tr>
-   *   </tbody>
-   * </table>
-   *
-   * <p>Also note that the JQueryUI dialog defines these options as booleans, while the JET dialog defines these options as strings.
-   * <h4> Options in JQueryUI Dialog but not In JET Dialog </h4>
-   *
-   * <p>
-   * The following options are part of the JQueryUI dialog but are not options in JET Dialog:
-   *
-   * <p>
-   * <table class="keyboard-table">
-   *   <thead>
-   *     <tr>
-   *       <th>JQueryUI Dialog Option</th>
-   *       <th>JET Dialog Approach </th>
-   *     </tr>
-   *   </thead>
-   *   <tbody>
-   *     <tr>
-   *       <td><code class="prettyprint">appendTo</code></td>
-   *       <td>Use the jquery <code class="prettyprint">appendTo()</code> instead</td>
-   *     </tr>
-   *     <tr>
-   *       <td><code class="prettyprint">button</code></td>
-   *       <td>Buttons are added directly to HTML markup</td>
-   *     </tr>
-   *     <tr>
-   *       <td><code class="prettyprint">width</code>, <code class="prettyprint">height</code></td>
-   *       <td>Use css variables <code class="prettyprint">width</code>, <code class="prettyprint">height</code></td>
-   *     </tr>
-   *     <tr>
-   *       <td><code class="prettyprint">minWidth</code>, <code class="prettyprint">maxWidth</code>, <code class="prettyprint">minHeight</code>, <code class="prettyprint">maxHeight</code></td>
-   *       <td>Use css variables <code class="prettyprint">min-width</code>, <code class="prettyprint">max-width</code>, <code class="prettyprint">min-height</code>, <code class="prettyprint">max-height</code></td>
-   *     </tr>
-   *     <tr>
-   *       <td><code class="prettyprint">show</code>, <code class="prettyprint">hide</code></td>
-   *       <td>Use css classes instead, e.g., <code class="prettyprint">display: none</code> to hide an element</td>
-   *     </tr>
-   *   </tbody>
-   * </table>
-   *
-   *
-   * <h4> Event Names </h4>
-   *
-   * <p>Event names for all JET components are prefixed with "oj", instead of component-specific prefixes like "dialog".
-   * E.g. the JQUI <code class="prettyprint">dialogcreate</code> event is <code class="prettyprint">ojcreate</code> in JET, as shown in the doc for that event.
-   *
-   *
-   * <!-- - - - - Above this point, the tags are for the class.
-   *              Below this point, the tags are for the constructor (initializer). - - - - - - -->
-   *
-   *
-   * @desc Creates a JET Dialog.
-   * @param {Object=} options a map of option-value pairs to set on the component
-   * @example <caption>Initialize a (modal) dialog with no options specified:</caption>
-   * $( ".selector" ).ojDialog();
-   * @example <caption>Create a modeless dialog: </caption>
-   * $("#dialog").ojDialog(modality: "modeless"});
    */
 
   oj.__registerWidget("oj.ojDialog", $['oj']['baseComponent'], {
@@ -1514,14 +1355,14 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
          * @default <code class="prettyprint">"icon"</code>
          *
          * @example <caption>Initialize the dialog to disable the default <code class="prettyprint">cancelBehavior</code></caption>
-         * $(".selector" ).ojDialog( {cancelBehavior: "none" } );
+         * &lt;oj-dialog cancel-behavior="none" &gt;&lt;/oj-dialog&gt;
          *
-         * @example <caption>Get or set the <code class="prettyprint">cancelBehavior</code> option, after initialization:</caption>
+         * @example <caption>Get or set the <code class="prettyprint">cancelBehavior</code> property, after initialization:</caption>
          * // getter
-         * var cancelBehavior = $(".selector" ).ojDialog( "option", "cancelBehavior" );
+         * var cancelBehavior = myDialog.cancelBehavior;
          *
          * // setter
-         * $(".selector" ).ojDialog( "option", "cancelBehavior", "none");
+         * myDialog.cancelBehavior = "none";
          *
          * @example <caption>Set the default in the theme (SCSS) :</caption>
          * $dialogCancelBehaviorOptionDefault: none !default;
@@ -1540,20 +1381,21 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
          * @default <code class="prettyprint">"title-bar"</code>
          *
          * @example <caption>Initialize the dialog to disable dragging <code class="prettyprint">dragAffordance</code></caption>
-         * $(".selector" ).ojDialog( {dragAffordance: "none" } );
+         * &lt;oj-dialog drag-affordance="none" &gt;&lt;/oj-dialog&gt;
          *
-         * @example <caption>Get or set the <code class="prettyprint">dragAffordance</code> option, after initialization:</caption>
+         * @example <caption>Get or set the <code class="prettyprint">dragAffordance</code> property, after initialization:</caption>
          * // getter
-         * var dragAffordance = $(".selector" ).ojDialog( "option", "dragAffordance" );
+         * var dragAffordance = myDialog.dragAffordance;
          *
          * // setter
-         * $(".selector" ).ojDialog( "option", "dragAffordance", "none");
+         * myDialog.dragAffordance = "none";
          */
         dragAffordance: "title-bar",
         /**
          * <p> Set the initial visibility of the dialog.
          * If set to <code class="prettyprint">"show"</code>, the dialog will automatically open upon initialization.
-         * If <code class="prettyprint">"hide"</code>, the dialog will stay hidden until the <a href="#method-open"><code class="prettyprint">open()</code></a> method is called.
+         * If <code class="prettyprint">"hide"</code>, the dialog will stay hidden until 
+         * the <a href="#method-open"><code class="prettyprint">open()</code></a> method is called.
          *
          * @expose
          * @memberof oj.ojDialog
@@ -1561,17 +1403,16 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
          * @type {string}
          * @default <code class="prettyprint">"hide"</code>
          *
-         * @example <caption>Initialize the dialog with the <code class="prettyprint">initialVisibility</code> option specified:</caption>
-         * $(".selector" ).ojDialog( {initialVisibility: "show" } );
+         * @example <caption>Initialize the dialog with the <code class="prettyprint">initialVisibility</code> property:</caption>
+         * &lt;oj-dialog initial-visibility="show" &gt;&lt;/oj-dialog&gt;
          *
-         * @example <caption>Get or set the <code class="prettyprint">initialVisibility</code> option, after initialization:</caption>
+         * @example <caption>Get or set the <code class="prettyprint">initialVisibility</code> property, after initialization:</caption>
          * // getter
-         * var initialVisibility = $(".selector" ).ojDialog( "option", "initialVisibility" );
+         * var initialVisibility = myDialog.initialVisibility;
          *
          * // setter
-         * $(".selector" ).ojDialog( "option", "initialVisibility", "show");
+         * myDialog.initialVisibility = "show";
          */
-        // initialVisibility: "show",
         initialVisibility: "hide",
         /**
          *
@@ -1592,113 +1433,188 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
          * @type {string}
          *
          * @example <caption>Initialize the dialog to a specific modality <code class="prettyprint">modality</code></caption>
-         * $(".selector" ).ojDialog( {modality: "modal" } );
+         * &lt;oj-dialog modality="modeless" &gt;&lt;/oj-dialog&gt;
          *
-         * @example <caption>Get or set the <code class="prettyprint">modality</code> option, after initialization:</caption>
+         * @example <caption>Get or set the <code class="prettyprint">modality</code> property, after initialization:</caption>
          * // getter
-         * var modality = $(".selector" ).ojDialog( "option", "modality" );
+         * var modality = myDialog.modality;
          *
          * // setter
-         * $(".selector" ).ojDialog( "option", "modality", "modal");
+         * myDialog.modality = "modeless";
          */
         modality: "modal",
-        // todo: link to position utility?
-        // JQUi doc had { ..., of: button}} - what does this mean?
-
         /**
-         * <p>Position object is defined by the jquery position API and is used to establish the location the
-         * dialog will appear relative to another element.  The postion object contains the following properties:
-         * "my", "at", "of", "colision", "using" and "within".</p>
-         *
-         * <p>The "my" and "at" properties defines aligment points relative to the dialog and other element.  The
-         * "my" property represents the dialogs alignment where the "at" property represents the other element
-         * that can be identified by "of" or defauts to the launcher when the dialog opens.  The values of these
-         * properties describe a "horizontal vertical" location.</p>
-         *
-         * <p>Acceptable "horizontal" alignments values are: "right", "center", "left", "start", "end".  Note: Jet has
-         * added "start" and "end" options to be more RTL friendly.  The Jet values of "start" and "end" normalize
-         * to "right" or "left" depending on the direction of the document.</p>
-         *
-         * <p>Acceptable "vertical" alignment values are: "top", "center" and "bottom".</p>
-         *
-         * The following is a short summary of the most interesting positon properties:
-         * <ul>
-         *   <li><code class="prettyprint">my</code> - A "vertical horizontal" rule that defines the location of the dialog
-         *       used for alignment.</li>
-         *   <li><code class="prettyprint">at</code> - A "vertical horizontal" rule that defines the location of the
-         *       other element for used alignment. The other element is defined by "of" or defaults to the open launcher
-         *       argument if not specified.</li>
-         * </ul>
-         *
-         * @expose
-         * @memberof oj.ojDialog
-         * @instance
-         * @type {Object}
-         * @default <code class="prettyprint">{my: "center", at: "center", collision: "fit"}</code>
-         *
-         * @example <caption>Initialize the dialog with <code class="prettyprint">position</code> option specified:</caption>
-         * $( ".selector" ).ojDialog( { "position": {"my": "left top", "at": "right top"} } );
-         *
-         * @example <caption>Get or set the <code class="prettyprint">position</code> option, after initialization:</caption>
-         * // getter
-         * var position = $( ".selector" ).ojDialog( "option", "position" );
-         *
-         * // setter
-         * $( ".selector" ).ojDialog( "option", "position", {"my": "start bottom", "at": "end+14 top" } );
-         */
-        position: {
-          /**
+           * <p>Position object is used to establish the location the dialog will appear relative to
+           * another element. Positioning defines "my" alignment "at" the alignment "of" some other
+           * thing which can be "offset" by so many pixels.</p>
            *
+           * <p>The "my" and "at" properties defines aligment points relative to the dialog and other
+           * element.  The "my" property represents the dialog's alignment where the "at" property
+           * represents the other element that can be identified by "of". The values of these properties
+           * describe horizontal and vertical alignments.</p>
+           *
+           * @deprecated <a href="http://api.jqueryui.com/position/">jQuery UI
+           * position</a> syntax is deprectated in v4.0.0; Use of a percent unit with
+           * "my" or "at" is not supported.
            * @expose
-           * @alias position.my
-           * @memberof! oj.ojDialog
-           * @instance
-           * @type {string}
-           * @default <code class="prettyprint">"center"</code>
-           *
-           */
-          my: "center",
-          /**
-           *
-           * @expose
-           * @alias position.at
-           * @memberof! oj.ojDialog
-           * @instance
-           * @type {string}
-           * @default <code class="prettyprint">"center"</code>
-           *
-           */
-          at: "center",
-          /**
-           *
-           * @expose
-           * @alias position.of
-           * @memberof! oj.ojDialog
+           * @memberof oj.ojDialog
            * @instance
            * @type {Object}
-           * @default <code class="prettyprint">"window"</code>
+           * @example <caption>Initialize the dialog with <code class="prettyprint">position</code>
+           *           property specified:</caption>
+           * &lt;oj-dialog position.my.horizontal="left"
+           *           position.my.vertical="top"
+           *           position.at.horizontal="right"
+           *           position.at.vertical="top" &gt;&lt;/oj-dialog&gt;
            *
+           * @example <caption>Get or set the <code class="prettyprint">position</code> property,
+           *          after initialization:</caption>
+           * // getter
+           * var position = myDialog.position;
+           *
+           * // setter
+           * myDialog.position =
+           *    {"my": {"horizontal": "start", "vertical": "bottom"},
+           *     "at": {"horizontal": "end", "vertical": "top" },
+           *     "offset": {"x": 0, "y":5}};
            */
-          of: window,
-          /**
-           *
-           * @expose
-           * @alias position.collision
-           * @memberof! oj.ojDialog
-           * @instance
-           * @type {string}
-           * @default <code class="prettyprint">"fit"</code>
-           *
-           */
-          collision: "fit",
-          // Ensure the titlebar is always visible
-          using: function(pos) {
-            var topOffset = $(this).css(pos).offset().top;
-            if (topOffset < 0) {
-              $(this).css("top", pos.top - topOffset);
-            }
-          }
-        },
+        position :
+            {
+              /**
+               * Defines which edge on the dialog to align with the target ("of") element.
+               *
+               * @expose
+               * @memberof! oj.ojDialog
+               * @instance
+               * @alias position.my
+               * @type {{horizontal:string, vertical:string}}
+               * @default <code class="prettyprint">{"horizontal":"center","vertical":"center"}</code>
+               */
+              my : {
+                /**
+                 * @expose
+                 * @memberof! oj.ojDialog
+                 * @instance
+                 * @alias position.my.horizontal
+                 * @type {string}
+                 * @default <code class="prettyprint">center</code>
+                 * @ojvalue {string} "start" evaluates to "left" in LTR mode and "right" in RTL mode.
+                 * @ojvalue {string} "end" evaluates to "right" in LTR mode and "left" in RTL mode.
+                 * @ojvalue {string} "left"
+                 * @ojvalue {string} "center"
+                 * @ojvalue {string} "right"
+                 */
+                horizontal: 'center',
+                /**
+                 * @expose
+                 * @memberof! oj.ojDialog
+                 * @instance
+                 * @alias position.my.vertical
+                 * @type {string}
+                 * @default <code class="prettyprint">center</code>
+                 * @ojvalue {string} "top"
+                 * @ojvalue {string} "center"
+                 * @ojvalue {string} "bottom"
+                 */
+                vertical: 'center'
+              },
+              /**
+               * Defines a point offset in pixels from the ("my") alignment.
+               * @expose
+               * @memberof! oj.ojDialog
+               * @instance
+               * @alias position.offset
+               * @type {{x:number, y:number}}
+               */
+              offset: {
+                /**
+                 * @expose
+                 * @memberof! oj.ojDialog
+                 * @instance
+                 * @alias position.offset.x
+                 * @type {number}
+                 * @default <code class="prettyprint">0</code>
+                 */
+                x: 0,
+                /**
+                 * @expose
+                 * @memberof! oj.ojDialog
+                 * @instance
+                 * @alias position.offset.y
+                 * @type {number}
+                 * @default <code class="prettyprint">0</code>
+                 */
+                y: 0
+              },
+              /**
+               * Defines which position on the target element ("of") to align the positioned element
+               * against.
+               *
+               * @expose
+               * @memberof! oj.ojDialog
+               * @instance
+               * @alias position.at
+               * @type {{horizontal:string, vertical:string}}
+               * @default <code class="prettyprint">{"horizontal":"center","vertical":"center"}</code>
+               */
+              at : {
+                /**
+                 * @expose
+                 * @memberof! oj.ojDialog
+                 * @instance
+                 * @alias position.at.horizontal
+                 * @type {string}
+                 * @default <code class="prettyprint">center</code>
+                 * @ojvalue {string} "start" evaluates to "left" in LTR mode and "right" in RTL mode.
+                 * @ojvalue {string} "end" evaluates to "right" in LTR mode and "left" in RTL mode.
+                 * @ojvalue {string} "left"
+                 * @ojvalue {string} "center"
+                 * @ojvalue {string} "right"
+                 */
+                horizontal: 'center',
+                /**
+                 * @expose
+                 * @memberof! oj.ojDialog
+                 * @instance
+                 * @alias position.at.vertical
+                 * @type {string}
+                 * @default <code class="prettyprint">center</code>
+                 * @ojvalue {string} "top"
+                 * @ojvalue {string} "center"
+                 * @ojvalue {string} "bottom"
+                 */
+                vertical: 'center'
+              },
+              /**
+               * Which element to position the dialog against. If the value is a string,
+               * it should be a selector or the literal string valueof <code class="prettyprint">window</code>.
+               * Otherwise, a point of x,y.
+               * @expose
+               * @memberof! oj.ojDialog
+               * @instance
+               * @alias position.of
+               * @type {string|{x, number, y: number}}
+               */
+              of : 'window',
+              /**
+              *
+              * @expose
+              * @alias position.collision
+              * @memberof! oj.ojDialog
+              * @instance
+              * @type {string}
+              * @default <code class="prettyprint">"fit"</code>
+              *
+              */
+              collision : 'fit',
+              // Ensure the titlebar is always visible
+              using: function(pos) {
+                  var topOffset = $(this).css(pos).offset().top;
+                  if (topOffset < 0) {
+                    $(this).css("top", pos.top - topOffset);
+                  }
+               }
+            },
         /**
          *
          * The resizeBehavior of the dialog. "resizable" (default) makes the dialog resizable.
@@ -1711,15 +1627,15 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
          * @default <code class="prettyprint">"resizable"</code>
          *
          * @example <caption>Initialize the dialog to a specific resizeBehavior <code class="prettyprint">resizeBehavior</code></caption>
-         * $(".selector" ).ojDialog( {resizeBehavior: "none" } );
+         * &lt;oj-dialog resize-behavior="none" &gt;&lt;/oj-dialog&gt;
          *
-         * @example <caption>Get or set the <code class="prettyprint">resizeBehavior</code> option, after initialization:</caption>
+         * @example <caption>Get or set the <code class="prettyprint">resizeBehavior</code> property, after initialization:</caption>
+         *
          * // getter
-         * var resizeBehavior = $(".selector" ).ojDialog( "option", "resizeBehavior" );
+         * var resizeBehavior = myDialog.resizeBehavior;
          *
          * // setter
-         * $(".selector" ).ojDialog( "option", "resizeBehavior", "none");
-         *
+         * myDialog.resizeBehavior = "none";
          * @example <caption>Set the default in the theme (SCSS) :</caption>
          * $dialogResizeBehaviorOptionDefault: none !default;
          */
@@ -1735,15 +1651,15 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
          * @type {string}
          * @default <code class="prettyprint">"dialog"</code>
          *
-         * @example <caption>Initialize the dialog with the <code class="prettyprint">role</code></caption> option specified:</caption>
-         * $(".selector" ).ojDialog( {role: "alertdialog" } );
+         * @example <caption>Initialize the dialog with the <code class="prettyprint">role</code></caption> property specified:</caption>
+         * &lt;oj-dialog role="alertdialog" &gt;&lt;/oj-dialog&gt;
          *
-         * @example <caption>Get or set the <code class="prettyprint">role</code> option, after initialization:</caption>
+         * @example <caption>Get or set the <code class="prettyprint">role</code> property, after initialization:</caption>
          * // getter
-         * var role = $(".selector" ).ojDialog( "option", "role" );
+         * var role = myDialog.role;
          *
          * // setter
-         * $(".selector" ).ojDialog( "option", "role", "alertdialog");
+         * myDialog.role = "alertdialog";
          */
         role: "dialog",
         /**
@@ -1756,208 +1672,85 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
          * @type {string|null}
          *
          * @example <caption>Initialize the dialog to a specific title <code class="prettyprint">title</code></caption>
-         * $(".selector" ).ojDialog( {title: "Title of Dialog" } );
+         * &lt;oj-dialog title="Title of Dialog" &gt;&lt;/oj-dialog&gt;
          *
-         * @example <caption>Get or set the <code class="prettyprint">title</code> option, after initialization:</caption>
+         * @example <caption>Get or set the <code class="prettyprint">title</code> property, after initialization:</caption>
          * // getter
-         * var title = $(".selector" ).ojDialog( "option", "title" );
+         * var title = myDialog.title;
          *
          * // setter
-         * $(".selector" ).ojDialog( "option", "title", "Title of Dialog");
+         * myDialog.title = "Title of Dialog";
          */
         title: null,
         ///////////////////////////////////////////////////////
         // events
         ///////////////////////////////////////////////////////
 
-        /**
-         * Triggered when a dialog is about to close. If cancelled, the dialog will not close.
-         *
-         * @expose
-         * @event
-         * @name beforeClose
-         * @memberof oj.ojDialog
-         * @instance
-         * @property {Event} event <code class="prettyprint">jQuery</code> event object
-         * @property {Object} ui Currently empty
-         *
-         * @example <caption>Initialize the dialog with the <code class="prettyprint">beforeClose</code> callback specified:</caption>
-         * $( ".selector" ).ojDialog({
-         *     "beforeClose": function( event, ui ) {}
-         * });
-         *
-         * @example <caption>Bind an event listener to the <code class="prettyprint">ojbeforeclose</code> event:</caption>
-           * $( ".selector" ).on( "ojbeforeclose", function( event, ui )
-           *   {
-           *     // verify that the component firing the event is a component of interest
-           *     if ($(event.target).is(".mySelector")) {}
-           * } );
-         */
-
+          /**
+           * Triggered before the dialog is dismissed via the
+           * <code class="prettyprint">close()</code> method. The close can be cancelled by calling
+           * <code class="prettyprint">event.preventDefault()</code>.
+           *
+           * @expose
+           * @event
+           * @memberof oj.ojDialog
+           * @instance
+           * @property {Event} event a custom event
+           */
         beforeClose: null,
-        /**
-         * Triggered when the dialog is about to to open.
-         *
-         * @expose
-         * @event
-         * @name beforeOpen
-         * @memberof oj.ojDialog
-         * @instance
-         * @property {Event} event <code class="prettyprint">jQuery</code> event object
-         * @property {Object} ui Currently empty
-         *
-         * @example <caption>Initialize the dialog with the <code class="prettyprint">beforeOpen</code> callback specified:</caption>
-         * $( ".selector" ).ojDialog({
-         *     "beforeOpen": function( event, ui ) {}
-         * });
-         *
-         * @example <caption>Bind an event listener to the <code class="prettyprint">ojbeforeopen</code> event:</caption>
-         * $( ".selector" ).on( "ojbeforeopen", function( event, ui )
-         *   {
-         *     // verify that the component firing the event is a component of interest
-         *     if ($(event.target).is(".mySelector")) {}
-         *   } );
-         */
-
+          /**
+           * Triggered before the dialog is launched via the <code class="prettyprint">open()</code>
+           * method. The open can be cancelled by calling
+           * <code class="prettyprint">event.preventDefault()</code>.
+           *
+           * @expose
+           * @event
+           * @memberof oj.ojDialog
+           * @instance
+           * @property {Event} event a custom event
+           */
         beforeOpen: null,
-        // * @name close
-        /**
-         * Triggered when the dialog is closed.
-         *
-         * @expose
-         * @event
-         * @name oj.ojDialog#close
-         * @memberof oj.ojDialog
-         * @instance
-         * @property {Event} event <code class="prettyprint">jQuery</code> event object
-         * @property {Object} ui Currently empty
-         *
-         * @example <caption>Initialize the dialog with the <code class="prettyprint">close</code> callback specified:</caption>
-         * $( ".selector" ).ojDialog({
-         *     "close": function( event, ui ) {}
-         * });
-         *
-         * @example <caption>Bind an event listener to the <code class="prettyprint">ojclose</code> event:</caption>
-         * $( ".selector" ).on( "ojclose", function( event, ui )
-         *   {
-         *     // verify that the component firing the event is a component of interest
-         *     if ($(event.target).is(".mySelector")) {}
-         *   } );
-         */
-
+          /**
+           * Triggered after the dialog is dismissed via the
+           * <code class="prettyprint">close()</code> method.
+           *
+           * @expose
+           * @event
+           * @memberof oj.ojDialog
+           * @instance
+           * @property {Event} event a custom event
+           */
         close: null,
-        /**
-         * Triggered when the dialog gains focus.
-         *
-         * @expose
-         * @event
-         * @name focus
-         * @memberof oj.ojDialog
-         * @instance
-         * @property {Event} event <code class="prettyprint">jQuery</code> event object
-         * @property {Object} ui Currently empty
-         *
-         * @example <caption>Initialize the dialog with the <code class="prettyprint">focus</code> callback specified:</caption>
-         * $( ".selector" ).ojDialog({
-         *     "focus": function( event, ui ) {}
-         * });
-         *
-         * @example <caption>Bind an event listener to the <code class="prettyprint">ojfocus</code> event:</caption>
-         * $( ".selector" ).on( "ojfocus", function( event, ui )
-         *   {
-         *     // verify that the component firing the event is a component of interest
-         *     if ($(event.target).is(".mySelector")) {}
-         *   } );
-         */
-
+          /**
+           * Triggered after focus has been transfered to the dialog.
+           *
+           * @expose
+           * @event
+           * @memberof oj.ojDialog
+           * @instance
+           * @property {Event} event a custom event
+           */
         focus: null,
-        /**
-         * Triggered when the dialog is opened.
-         *
-         * @expose
-         * @event oj.ojDialog#open
-         * @name open
-         * @memberof oj.ojDialog
-         * @instance
-         * @property {Event} event <code class="prettyprint">jQuery</code> event object
-         * @property {Object} ui Currently empty
-         *
-         * @example <caption>Initialize the dialog with the <code class="prettyprint">open</code> callback specified:</caption>
-         * $( ".selector" ).ojDialog({
-         *     "open": function( event, ui ) {}
-         * });
-         *
-         * @example <caption>Bind an event listener to the <code class="prettyprint">ojopen</code> event:</caption>
-         * $( ".selector" ).on( "ojopen", function( event, ui )
-         *   {
-         *     // verify that the component firing the event is a component of interest
-         *     if ($(event.target).is(".mySelector")) {}
-         *   } );
-         */
+          /**
+           * Triggered after the dialog is launched via the <code class="prettyprint">open()</code>
+           * method.
+           *
+           * @expose
+           * @event
+           * @memberof oj.ojDialog
+           * @instance
+           * @property {Event} event a custom event
+           */
         open: null,
         /**
          * Triggered when the dialog is being resized.
          *
          * @expose
          * @event
-         * @name resize
          * @memberof oj.ojDialog
          * @instance
-         * @property {Event} event <code class="prettyprint">jQuery</code> event object
-         * @property {Object} ui Currently empty
-         *
-         * <ul>
-         * <li>
-         * <div><strong>event</strong></div>
-         * <div>Type: <a href="http://api.jquery.com/Types/#Event">Event</a>
-         * </div>
-         * <div></div>
-         * </li>
-         * <li>
-         * <div><strong>ui</strong></div>
-         * <div>Type: <a href="http://api.jquery.com/Types/#Object">Object</a>
-         * </div>
-         * <div></div>
-         * <ul>
-         * <li>
-         * <div><strong>originalPosition</strong></div>
-         * <div>Type: <a href="http://api.jquery.com/Types/#Object">Object</a>
-         * </div>
-         * <div>The CSS position of the dialog prior to being resized.</div>
-         * </li>
-         * <li>
-         * <div><strong>position</strong></div>
-         * <div>Type: <a href="http://api.jquery.com/Types/#Object">Object</a>
-         * </div>
-         * <div>The current CSS position of the dialog.</div>
-         * </li>
-         * <li>
-         * <div><strong>originalSize</strong></div>
-         * <div>Type: <a href="http://api.jquery.com/Types/#Object">Object</a>
-         * </div>
-         * <div>The size of the dialog prior to being resized.</div>
-         * </li>
-         * <li>
-         * <div><strong>size</strong></div>
-         * <div>Type: <a href="http://api.jquery.com/Types/#Object">Object</a>
-         * </div>
-         * <div>The current size of the dialog.</div>
-         * </li>
-         * </ul>
-         * </li>
-         * </ul>
-         *
-         * @example <caption>Initialize the dialog with the <code class="prettyprint">resize</code> callback specified:</caption>
-         * $( ".selector" ).ojDialog({
-         *     "resize": function( event, ui ) {}
-         * });
-         *
-         * @example <caption>Bind an event listener to the <code class="prettyprint">ojresize</code> event:</caption>
-         * $( ".selector" ).on( "ojresize", function( event, ui )
-         *   {
-         *     // verify that the component firing the event is a component of interest
-         *     if ($(event.target).is(".mySelector")) {}
-         *   } );
+         * @property {Event} event a custom event
+
          */
         resize: null,
         /**
@@ -1965,11 +1758,9 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
          *
          * @expose
          * @event
-         * @name resizeStart
          * @memberof oj.ojDialog
          * @instance
-         * @property {Event} event <code class="prettyprint">jQuery</code> event object
-         * @property {Object} ui Currently empty
+         * @property {Event} event a custom event
          *
          * <ul>
          * <li>
@@ -2011,18 +1802,6 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
          * </ul>
          * </li>
          * </ul>
-         *
-         * @example <caption>Initialize the dialog with the <code class="prettyprint">resizeStart</code> callback specified:</caption>
-         * $( ".selector" ).ojDialog({
-         *     "resizeStart": function( event, ui ) {}
-         * });
-         *
-         * @example <caption>Bind an event listener to the <code class="prettyprint">ojresizestart</code> event:</caption>
-         * $( ".selector" ).on( "ojresizestart", function( event, ui )
-         *   {
-         *     // verify that the component firing the event is a component of interest
-         *     if ($(event.target).is(".mySelector")) {}
-         *   } );
          */
         resizeStart: null,
         /**
@@ -2030,11 +1809,9 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
          *
          * @expose
          * @event
-         * @name resizeStop
          * @memberof oj.ojDialog
          * @instance
-         * @property {Event} event <code class="prettyprint">jQuery</code> event object
-         * @property {Object} ui Currently empty
+         * @property {Event} event a custom event
          *
          * <ul>
          * <li>
@@ -2077,99 +1854,87 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
          * </li>
          * </ul>
          *
-         * @example <caption>Initialize the dialog with the <code class="prettyprint">resizeStop</code> callback specified:</caption>
-         * $( ".selector" ).ojDialog({
-         *     "resizeStop": function( event, ui ) {}
-         * });
-         *
-         * @example <caption>Bind an event listener to the <code class="prettyprint">ojresizestop</code> event:</caption>
-         * $( ".selector" ).on( "ojresizestop", function( event, ui )
-         *   {
-         *     // verify that the component firing the event is a component of interest
-         *     if ($(event.target).is(".mySelector")) {}
-         *   } );
          */
         resizeStop: null,
-       /**
-         * Triggered when a default animation is about to start, such as when the component is being opened/closed or a child
-         * item is being added/removed. The default animation can be cancelled by calling
-         * <code class="prettyprint">event.preventDefault</code>.
-         *
-         * @expose
-         * @event
-         * @memberof! oj.ojDialog
-         * @instance
-         * @property {Event} event <code class="prettyprint">jQuery</code> event object
-         * @property {Object} ui Parameters
-         * @property {string} ui.action The action that is starting the animation. The number of actions can vary from component to component. Suggested values are:
-         *                    <ul>
-         *                      <li>"open" - when a dialog component is opened</li>
-         *                      <li>"close" - when a dialog component is closed</li>
-         *                    </ul>
-         * @property {Element} ui.element target of animation
-         * @property {function} ui.endCallback If the event listener calls event.preventDefault to cancel the default animation, It must call the endCallback function when it finishes its own animation handling and any custom animation has ended.
-         *
-         * @example <caption>Bind an event listener to the <code class="prettyprint">animatestart</code> event to override the default "open" animation:</caption>
-         * $( ".selector" ).ojDialog({"animateStart": function( event, ui )
-         *   {
-         *     // verify that the component firing the event is a component of interest and action is open
-         *     if (ui.action === "open") {
-         *       event.preventDefault();
-         *       oj.AnimationUtils.slideIn(ui.element).then(ui.endCallback);
-         *   }
-         * } );
-         *
-         * @example <caption>Bind an event listener to the <code class="prettyprint">ojanimatestart</code> event to override the default "close" animation:</caption>
-         * $( ".selector" ).on( "ojanimatestart", function( event, ui )
-         *   {
-         *     // verify that the component firing the event is a component of interest and action is close
-         *     if ($(event.target).is(".mySelector") && ui.action == "close") {
-         *       event.preventDefault();
-         *       oj.AnimationUtils.slideOut(ui.element).then(ui.endCallback);
-         *   } );
-         *
-         * @example <caption>The default open and close animations are controlled via the theme (SCSS) :</caption>
-         * $dialogOpenAnimation: ((effect: "zoomIn"), "fadeIn")  !default;
-         * $dialogCloseAnimation: ((effect: "zoomOut", persist: "all"), "fadeOut")  !default;
-         */
+          /**
+           * Triggered when a default animation is about to start, such as when the component is
+           * being opened/closed or a child item is being added/removed. The default animation can
+           * be cancelled by calling <code class="prettyprint">event.preventDefault</code>.
+           *
+           * @expose
+           * @event
+           * @memberof oj.ojDialog
+           * @instance
+           * @property {CustomEvent} event a custom event
+           * @property {Object} event.detail an object containing component specific event info
+           * @property {string} event.detail.action The action that is starting the animation.
+           *            The number of actions can vary from component to component.
+           *            Suggested values are:
+           *                    <ul>
+           *                      <li>"open" - when a dialog component is opened</li>
+           *                      <li>"close" - when a dialog component is closed</li>
+           *                    </ul>
+           * @property {Element} event.detail.element target of animation
+           * @property {function} event.detail.endCallback If the event listener calls
+           *            event.preventDefault to cancel the default animation, It must call the
+           *            endCallback function when it finishes its own animation handling and any
+           *            custom animation has ended.
+           *
+           * @example <caption>Bind an event listener to the
+           *          <code class="prettyprint">onOjAnimateStart</code> property to override the default
+           *          "close" animation:</caption>
+           * myDialog.onOjAnimateStart = function( event )
+           *   {
+           *     // verify that the component firing the event is a component of interest and action
+           *      is close
+           *     if (event.detail.action == "close") {
+           *       event.preventDefault();
+           *       oj.AnimationUtils.slideOut(event.detail.element).then(event.detail.endCallback);
+           *   };
+           *
+           * @example <caption>The default open and close animations are controlled via the theme
+           *          (SCSS) :</caption>
+           * $dialogOpenAnimation: ((effect: "zoomIn"), "fadeIn")  !default;
+           * $dialogCloseAnimation: ((effect: "zoomOut", persist: "all"), "fadeOut")  !default;
+           */
+
         animateStart: null,
-        /**
-         * Triggered when a default animation has ended, such as when the component is being opened/closed or a child item is
-         * being added/removed. This event is not triggered if the application has called preventDefault on the animateStart
-         * event.
-         *
-         * @expose
-         * @event
-         * @memberof! oj.ojDialog
-         * @instance
-         * @property {Event} event <code class="prettyprint">jQuery</code> event object
-         * @property {Object} ui Parameters
-         * @property {string} ui.action The action that is starting the animation. The number of actions can vary from component to component. Suggested values are:
-         *                    <ul>
-         *                      <li>"open" - when a dialog component is opened</li>
-         *                      <li>"close" - when a dialog component is closed</li>
-         *                    </ul>
-         * @property {Element} ui.element target of animation
-         *
-         * @example <caption>Bind an event listener to the <code class="prettyprint">animateend</code> event to listen for "open" ending animation:</caption>
-         * $( ".selector" ).ojDialog({"animateEnd": function( event, ui )
-         *   {
-         *     // verify that the component firing the event is a component of interest and action is open
-         *     if (ui.action === "open") {}
-         *   }
-         * } );
-         *
-         * @example <caption>Bind an event listener to the <code class="prettyprint">ojanimateend</code> event to listen for the "close" ending animation:</caption>
-         * $( ".selector" ).on( "ojanimateend", function( event, ui )
-         *   {
-         *     // verify that the component firing the event is a component of interest and action is close
-         *     if ($(event.target).is(".mySelector") && ui.action == "close") {}
-         *   } );
-         *
-         * @example <caption>The default open and close animations are controlled via the theme (SCSS) :</caption>
-         * $dialogOpenAnimation: (effect: "zoomIn", fade: true)  !default;
-         * $dialogCloseAnimation: (effect: "zoomOut", fade: true)  !default;
-         */
+          /**
+           * Triggered when a default animation has ended, such as when the component is being
+           * opened/closed or a child item is being added/removed. This event is not triggered if
+           * the application has called preventDefault on the animateStart
+           * event.
+           *
+           * @expose
+           * @event
+           * @memberof oj.ojDialog
+           * @instance
+           * @property {Event} event a custom event
+           * @property {Object} event.detail an object containing component specific event info
+           * @property {Element} event.detail.element target of animation
+           * @property {string} event.detail.action The action that is starting the animation.
+           *                   The number of actions can vary from component to component.
+           *                   Suggested values are:
+           *                    <ul>
+           *                      <li>"open" - when a dialog component is opened</li>
+           *                      <li>"close" - when a dialog component is closed</li>
+           *                    </ul>
+           *
+           * @example <caption>Bind an event listener to the
+           *          <code class="prettyprint">onOjAnimateEnd</code> property to listen for the "close"
+           *          ending animation:</caption>
+           * myDialog.onOjAnimateEnd = function( event )
+           *   {
+           *     // verify that the component firing the event is a component of interest and action
+           *      is close
+           *     if (event.detail.action == "close") {}
+           *   };
+           *
+           * @example <caption>The default open and close animations are controlled via the theme
+           *          (SCSS) :</caption>
+           * $dialogOpenAnimation: (effect: "zoomIn", fade: true)  !default;
+           * $dialogCloseAnimation: (effect: "zoomOut", fade: true)  !default;
+           */
         animateEnd: null
       },
       /**
@@ -2179,10 +1944,9 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
        * @override
        * @return {void}
        */
-    _ComponentCreate: function()
-    {
+    _ComponentCreate: function() {
       this._super();
-      // _create: function() {
+
       this.originalCss = {
         display: this.element[0].style.display,
         width: this.element[0].style.width,
@@ -2192,111 +1956,274 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
         parent: this.element.parent(),
         index: this.element.parent().children().index(this.element)
       };
+
+      // pull the title attribute from the root element moving to an option
       this.originalTitle = this.element.attr("title");
       this.options.title = this.options.title || this.originalTitle;
+      this.element.removeAttr("title");
 
-      this._createWrapper();
-
-      this.element
-        .show()
-        .removeAttr("title")
-        // .addClass("oj-dialog-content oj-component-content")
-        .addClass("oj-dialog-content oj-dialog-default-content")
-        .appendTo(this.uiDialog);  // @HTMLUpdateOK
-
-      this.userDefinedDialogHeader = false;
-
-      //
-      // If there is not nested content,
-      // simply find the first oj-dialog-header
-      //
-      var nestedContent = this.element.find(".oj-dialog");
-
-      if (!nestedContent.length) {
-
-        this._userDefinedHeader = this.element.find(".oj-dialog-header");
-        if (this._userDefinedHeader.length) {
-          this.userDefinedDialogHeader = true;
-        }
-      }
-      else {
-
-        //
-        // For nested content,
-        // look for a header that is NOT contained with an oj-dialog-body
-        //
-
-        var allDialogHeaders = this.element.find('.oj-dialog-header');
-
-        var that = this;
-
-        //this.element('.oj-dialog-header').each(function(index, li) {
-        allDialogHeaders.each(function(index, li) {
-
-          var dialogHeader = $(li);
-          var isNestedDialog = dialogHeader.closest('.oj-dialog-body');
-
-          //
-          // If the header is not nested within an .oj-dialog-body,
-          // then it IS a user-defined header.
-          //
-          if (!isNestedDialog.length) {
-            // this._userDefinedHeader = dialogHeader;
-            that._userDefinedHeader = dialogHeader;
-            // this.userDefinedDialogHeader = true;
-            that.userDefinedDialogHeader = true;
-            return false;
-          }
+      this.element.hide();
+      this.element.uniqueId();
+      this.element.addClass("oj-dialog oj-component");
+      this.element.attr({
+          // Setting tabIndex makes the div focusable
+          'tabIndex': -1
         });
-      }
 
-      if (this.userDefinedDialogHeader) {
+      if (!this._IsCustomElement() || !this.element[0].hasAttribute["role"])
+        this.element.attr("role", this.options.role)
 
-        this._createPlaceHolderHeader(this._userDefinedHeader);
-        this._userDefinedHeader.prependTo(this.uiDialog);   // @HTMLUpdateOK
-        this._userDefinedTitle = this._userDefinedHeader.find(".oj-dialog-title");
+     this._on(this.element, {"keydown": this._keydownHandler.bind(this)});
 
-        if (this.options.cancelBehavior === "icon") {
+     // fixup references to header, body and footer.  assumption is they will be immediate children
+     // of the root node.
+     this.userDefinedDialogHeader = false;
 
-          this._createCloseButton(this._userDefinedHeader);
+     if (!this._IsCustomElement()) {
 
-          //
-          // Insert oj-dialog-title between oj-dialog-header and oj-dialog-header-close-wrapper
-          //
-          if (this._userDefinedTitle.length) {
-            this._userDefinedTitle.insertAfter(this.closeButton); // @HTMLUpdateOK
+        var children = this.element.children();
+        for (var i = 0; i < children.length; i++) {
+          var child = $(children[i]);
+          if (child.is(".oj-dialog-header")) {
+            this.userDefinedDialogHeader = true;
+            this._userDefinedHeader = child;
+            this._userDefinedHeaderDiv = children[i];
+          }
+          else if (child.is(".oj-dialog-body")) {
+
+            this._createContentDiv();
+            this._uiDialogContent = $(this._contentDiv);
+            //
+            // insert content after the body, e.g.
+            // <div class='oj-dialog-body'>
+            // <div class='oj-dialog-content'>
+            //
+            this.element[0].insertBefore(this._contentDiv, children[i]); // @HTMLUpdateOK
+            oj.Components.subtreeAttached(this._contentDiv);
+            //
+            // Then make content the parent of body, e.g.
+            // <div class='oj-dialog-content'>
+            //   <div class='oj-dialog-body'>
+            //
+            this._contentDiv.appendChild(children[i]); // @HTMLUpdateOK
+            oj.Components.subtreeAttached(children[i]);
+
+            this._uiDialogBody = child;
+            this._uiDialogBodyDiv = children[i];
+          }
+          else if (child.is(".oj-dialog-footer")) {
+            this._uiDialogFooter = child;
+            this._uiDialogFooterDiv = children[i];
           }
         }
+     }
 
-        if (this._userDefinedTitle.length) {
-            // create an id for the user-defined title (if it does not aleady have one).
-            this._userDefinedTitle.uniqueId();
-            // to meet accessibility requirements for user-defined headers,
-            // associate the title id with the .oj-dialog aria-labelledby.
-            this.uiDialog.attr({"aria-labelledby": this._userDefinedTitle.attr("id")});
-          }
-      } else {
-        this._createTitlebar();
-      }
+     if (this._IsCustomElement()) {
+       this._processSlottedChildren();
+     }
 
-      this.uiDialogFooter = this.element.children(".oj-dialog-footer");
-      this._createPlaceHolderFooter(this.uiDialogFooter);
+     // fixup dialog header
+     if (this.userDefinedDialogHeader) {
+       this._userDefinedTitleDiv = this._userDefinedHeaderDiv.querySelector('.oj-dialog-title');
+       this._userDefinedTitle = $(this._userDefinedTitleDiv);
 
-      if (this.uiDialogFooter.length) {
-        this.uiDialogFooter.addClass("oj-helper-clearfix");
-        this.uiDialogFooter.appendTo(this.uiDialog);   // @HTMLUpdateOK
-      }
+       if (this.options.cancelBehavior === "icon") {
+         this._createCloseButton(this._userDefinedHeaderDiv);
+         //
+         // Insert oj-dialog-title between oj-dialog-header and oj-dialog-header-close-wrapper
+         //
+         if (this._userDefinedTitleDiv != null) {
+           this.closeButtonDiv.parentElement.appendChild(this._userDefinedTitleDiv); // @HTMLUpdateOK
+           oj.Components.subtreeAttached(this.closeButtonDiv);
+         }
+       }
+
+       if (this._userDefinedTitleDiv != null) {
+         // create an id for the user-defined title
+         this._userDefinedTitle.uniqueId();
+         // to meet accessibility requirements for user-defined headers,
+          // associate the title id with the .oj-dialog aria-labelledby.
+          this.element.attr({"aria-labelledby": this._userDefinedTitle.attr("id")});
+        }
+     } else {
+       this._createTitlebar();
+     }
 
       if (this.options.dragAffordance === "title-bar" && $.fn.draggable) {
         this._makeDraggable();
       }
 
-      this._setupFocus(this.uiDialog);
-      this._isOpen = false;
+      // body was not provided. insert the content between the header and footer
+      if (!this._uiDialogContent) {
+
+        this._createContentDiv();
+        this._uiDialogContent = $(this._contentDiv);
+        var content =  $(this._contentDiv);
+
+        if (this._userDefinedHeader) {
+          this.element[0].insertBefore(this._contentDiv, this._userDefinedHeaderDiv); // @HTMLUpdateOK
+        } else if (this._uiDialogTitlebar) {
+          this.element[0].insertBefore(this._contentDiv, this._uiDialogTitlebarDiv); // @HTMLUpdateOK
+        } else if (this._uiDialogFooter) {
+          this.element[0].insertBefore(this._uiDialogFooterDiv, this._contentDiv); // @HTMLUpdateOK
+        } else {
+          this.element[0].appendChild(this._contentDiv); // @HTMLUpdateOK
+        }
+        oj.Components.subtreeAttached(this._contentDiv);
+      }
+
+      this._setupFocus(this.element);
+
+      // fixup the position option set via the widget constructor
+      var options = this.options;
+      options["position"] = oj.PositionUtils.coerceToJet(options["position"]);
     },
-    //
-    // support for auto-open.
-    //
+
+
+    // Create the header slot element
+    _createHeaderSlot: function() {
+
+      if (this._userDefinedHeader) return;
+
+      this._headerSlot = document.createElement("div");
+      this._headerSlot.classList.add("oj-dialog-header");
+
+      this.element[0].appendChild(this._headerSlot); // @HTMLUpdateOK
+      oj.Components.subtreeAttached(this._headerSlot);
+
+      this.userDefinedDialogHeader = true;
+      this._userDefinedHeaderDiv = this._headerSlot;
+      this._userDefinedHeader = $(this._headerSlot);
+
+    },
+
+    // Create the footer slot element.
+    _createFooterSlot: function() {
+
+      if (this._uiDialogFooter) return;
+
+      this._footerSlot = document.createElement("div");
+
+      this.element[0].appendChild(this._footerSlot); // @HTMLUpdateOK
+      oj.Components.subtreeAttached(this._footerSlot);
+      this._uiDialogFooterDiv = this._footerSlot;
+      this._uiDialogFooter = $(this._footerSlot);
+
+    },
+
+    _createContentDiv: function() {
+      this._contentDiv = document.createElement("div");
+      this._contentDiv.classList.add("oj-dialog-content", "oj-dialog-default-content");
+    },
+
+    // Create the body slot element
+    _createBodySlot: function() {
+
+      // only create the wrapper once.
+      if (this._uiDialogBody) return;
+
+      this._createContentDiv();
+
+      this.element[0].appendChild(this._contentDiv);  // @HTMLUpdateOK
+      oj.Components.subtreeAttached(this._contentDiv);
+
+      this._bodySlot = document.createElement("div");
+
+      this._contentDiv.appendChild(this._bodySlot); // @HTMLUpdateOK
+      this._uiDialogContent = $(this._contentDiv);
+
+      this._uiDialogBodyDiv = this._bodySlot;
+      this._uiDialogBody = $(this._bodySlot);
+    },
+
+
+    // Process any slotted children and move them into the correct location
+    _processSlottedChildren: function() {
+
+      if (this._footerSlot != null) {
+        this.element[0].removeChild(this._footerSlot);
+      }
+      if (this._headerSlot != null) {
+        this.element[0].removeChild(this._headerSlot);
+      }
+      if (this._bodySlot != null) {
+        this.element[0].removeChild(this._bodySlot);
+      }
+
+      var slotMap = oj.CustomElementBridge.getSlotMap(this.element[0]);
+      for (var slot in slotMap) {
+        if (slotMap.hasOwnProperty(slot)) {
+          if (slot != "header" && slot != "footer" && slot != "body" && slot != "") {
+            // silently remove as per custom component slot behavior
+            slotMap[slot].parentNode.removeChild(slotMap[slot]);
+          }
+        }
+      }
+
+      if (slotMap.hasOwnProperty("header")) {
+        this._createHeaderSlot();
+      }
+
+      // Note that the default slot is the body slot.
+      if (slotMap.hasOwnProperty("body") || slotMap.hasOwnProperty("")) {
+        this._createBodySlot();
+      }
+
+      if (slotMap.hasOwnProperty("footer")) {
+        this._createFooterSlot();
+      }
+
+      var slotParent = this._bodySlot;
+      for (var slot in slotMap) {
+        if (slotMap.hasOwnProperty(slot)) {
+          switch (slot) {
+          case "header":
+            // Note - the header is wrapped with the title for accessibility,
+            // so we add the oj-dialog-header class during wrap process.
+            slotParent = this._headerSlot;
+            break;
+          case "footer":
+            slotParent = this._footerSlot;
+            // slotMap[slot][0].classList.add("oj-dialog-footer");
+            // slotMap[slot][0].classList.add("oj-helper-clearfix");
+            break;
+          case "body":
+          case "":
+            slotParent = this._bodySlot;
+            // slotMap[slot][0].classList.add("oj-dialog-body");
+            break;
+          }
+
+          var slotElements = slotMap[slot];
+          if (slotElements != null) {
+            for (var i = 0; i < slotElements.length; i++) {
+              slotParent.appendChild(slotElements[i]); // @HTMLUpdateOK
+              switch (slot) {
+              case "header":
+                break;
+              case "footer":
+                slotParent = this._footerSlot;
+                slotMap[slot][i].classList.add("oj-dialog-footer");
+                slotMap[slot][i].classList.add("oj-helper-clearfix");
+                break;
+              case "body":
+              case "":
+                slotParent = this._bodySlot;
+                slotMap[slot][i].classList.add("oj-dialog-body");
+                break;
+              }
+            }
+          }
+        }
+      }
+    },
+
+    /**
+     * @memberof oj.ojDialog
+     * @instance
+     * @protected
+     * @override
+     */
     _AfterCreateEvent: function() {
 
       if (this.options.initialVisibility === "show") {
@@ -2305,31 +2232,21 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
 
     },
     /**
-     * Remove the dialog functionality completely.
-     * This will return the element back to its pre-init state.
-     *
-     * <p>This method does not accept any arguments.
-     *
-     * @method
-     * @name oj.ojDialog#destroy
      * @memberof oj.ojDialog
      * @instance
-     *
-     * @example <caption>Invoke the <code class="prettyprint">destroy</code> method:</caption>
-     * var destroy = $( ".selector" ).ojDialog( "destroy" );
+     * @protected
+     * @override
      */
     _destroy: function() {
 
-      // Remove the resize delay.
-      if (this._delayId)
-        window.clearTimeout(this._delayId);
+      this._off(this.element, "keydown");
 
       if (this.isOpen())
         this._closeImplicitly();
 
       this._setWhenReady("none");
 
-      var isDraggable = this.uiDialog.hasClass("oj-draggable");
+      var isDraggable = this.element.hasClass("oj-draggable");
 
       if (this._resizableComponent) {
         if (this._resizableComponent("instance"))
@@ -2337,21 +2254,11 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
         this._resizableComponent = null;
       }
 
-      if (this.uiDialogFooter.length) {
-        this.uiDialogFooter.removeClass("oj-helper-clearfix");
-        $('#' + this._placeHolderFooterId).replaceWith(this.uiDialogFooter); // @HTMLUpdateOK
-      }
-
       this._destroyCloseButton();
 
       if (this.userDefinedDialogHeader) {
-
         // remove any unique id from the user-defined header's title
         this._userDefinedTitle.removeUniqueId();
-
-        var header = this.uiDialog.find(".oj-dialog-header");
-        if (header)
-          $('#' + this._placeHolderHeaderId).replaceWith(header); // @HTMLUpdateOK
       }
 
       if (this.uiDialogTitle) {
@@ -2359,48 +2266,35 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
         this.uiDialogTitle = null;
       }
 
+      if (this._uiDialogContent) {
+        if (this._uiDialogBody) {
+          // unwrap the dialog body from the content element.
+          this._uiDialogBody.insertAfter(this._uiDialogContent);  // @HTMLUpdateOK safe manipulation
+        }
+        this._uiDialogContent.remove();
+        this._uiDialogBody = this._uiDialogContent = null;
+      }
+
       this.element
         .removeUniqueId()
-        .removeClass("oj-dialog-content oj-dialog-default-content")
+        .removeClass("oj-dialog oj-component")
         .css(this.originalCss);
 
-      if (this.uiDialog)
-        this.uiDialog.stop(true, true);
-
-      this.element.unwrap();
+      this.element.stop(true, true);
 
       if (this.originalTitle) {
         this.element.attr("title", this.originalTitle);
       }
 
       // causes testing problems.
-      if (_destroyTitlebar) {
-        if (this.uiDialogTitlebar) {
-          this.uiDialogTitlebar.remove();
-          this.uiDialogTitlebar = null;
-        }
+
+      if (this._uiDialogTitlebar) {
+        this._uiDialogTitlebar.remove();
+        this._uiDialogTitlebar = null;
       }
 
       delete this._popupServiceEvents;
-      delete this._isOpen;
       this._super();
-    },
-    /**
-     * Returns a <code class="prettyprint">jQuery</code> object containing the generated wrapper.
-     *
-     * <p>This method does not accept any arguments.
-     *
-     * @expose
-     * @name oj.ojDialog#widget
-     * @memberof oj.ojDialog
-     * @instance
-     * @return {jQuery} the dialog
-     *
-     * @example <caption>Invoke the <code class="prettyprint">widget</code> method:</caption>
-     * var widget = $( ".selector" ).ojDialog( "widget" );
-     */
-    widget: function() {
-      return this.uiDialog;
     },
     disable: $.noop,
     enable: $.noop,
@@ -2411,13 +2305,14 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
      * @method
      * @memberof oj.ojDialog
      * @instance
-     * @property {Event} event <code class="prettyprint">jQuery</code> event object
      * @return {void}
      * @fires oj.ojDialog#beforeClose
      * @fires oj.ojDialog#close
+     * @fires oj.ojDialog#ojAnimationStart
+     * @fires oj.ojDialog#ojAnimationEnd
      *
      * @example <caption>Invoke the <code class="prettyprint">close</code> method:</caption>
-     * var close = $( ".selector" ).ojDialog( "close" );
+     * myDialog.close();
      */
     close: function(event) {
       if (this._isOperationPending("close", [event]))
@@ -2431,8 +2326,6 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
       }
 
       this._setWhenReady("close");
-
-      this._isOpen = false;
       this._focusedElement = null;
 
       if (!this.opener.filter(":focusable").focus().length) {
@@ -2447,7 +2340,7 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
       if (this.options.modality === 'modal'){
          var forEach = Array.prototype.forEach;
          // Find elements within dialog that have accesskey and remove marker added during open
-         var elementsInDialogWithAccesskey = this.element[0].parentElement.getElementsByClassName('oj-helper-element-in-dialog-with-accesskey');
+         var elementsInDialogWithAccesskey = this.element[0].getElementsByClassName('oj-helper-element-in-dialog-with-accesskey');
          forEach.call(elementsInDialogWithAccesskey, function(element){
             element.classList.remove('oj-helper-element-in-dialog-with-accesskey');
          });
@@ -2462,7 +2355,7 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
 
       /** @type {!Object.<oj.PopupService.OPTION, ?>} */
       var psOptions = {};
-      psOptions[oj.PopupService.OPTION.POPUP] = this.uiDialog;
+      psOptions[oj.PopupService.OPTION.POPUP] = this.element;
       psOptions[oj.PopupService.OPTION.CONTEXT] = {"closeEvent" : event};
       oj.PopupService.getInstance().close(psOptions);
     },
@@ -2519,20 +2412,22 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
     },
     /**
      * Returns true if the dialog is currently open.
-     *
-     * <p>This method does not accept any arguments.
+     * This method does not accept any arguments.
      *
      * @method
      * @name oj.ojDialog#isOpen
      * @memberof oj.ojDialog
      * @instance
-     * @property {Event} event <code class="prettyprint">jQuery</code> event object
+     * @return {boolean} <code>true</code> if the dialog is open.
      *
      * @example <caption>Invoke the <code class="prettyprint">isOpen</code> method:</caption>
-     * var isOpen = $( ".selector" ).ojDialog( "isOpen" );
+     * var isOpen = myDialog.isOpen();
      */
     isOpen: function() {
-      return this._isOpen;
+      var status = oj.ZOrderUtils.getStatus(this.element);
+      return (status === oj.ZOrderUtils.STATUS.OPENING ||
+              status === oj.ZOrderUtils.STATUS.OPEN ||
+              status === oj.ZOrderUtils.STATUS.CLOSING);
     },
     /**
      * Opens the dialog.
@@ -2544,9 +2439,11 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
      * @return {void}
      * @fires oj.ojDialog#beforeOpen
      * @fires oj.ojDialog#open
+     * @fires oj.ojDialog#ojAnimationStart
+     * @fires oj.ojDialog#ojAnimationEnd
      *
      * @example <caption>Invoke the <code class="prettyprint">open</code> method:</caption>
-     * var open = $( ".selector" ).ojDialog( "open" );
+     * var open = myDialog.open();
      */
     open: function(event) {
       if (this._isOperationPending("open", [event]))
@@ -2565,24 +2462,23 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
 
       this._setWhenReady("open");
 
-      this._isOpen = true;
       this.opener = $(this.document[0].activeElement);
 
       if (this.options.resizeBehavior === "resizable") {
         this._makeResizable();
       }
 
-
       // normalize alignments, so that start and end keywords work as expected.
       var isRtl = this._GetReadingDirection() === "rtl";
-      var position = oj.PositionUtils.normalizeHorizontalAlignment(this.options.position, isRtl);
+      var position = oj.PositionUtils.coerceToJqUi(this.options["position"]);
+      position = oj.PositionUtils.normalizeHorizontalAlignment(position, isRtl);
 
       // if modality is set to modal, prevent accesskey events
       // from being triggered while dialog is open
       if (this.options.modality === 'modal'){
          var forEach = Array.prototype.forEach
          // Mark elements within the dialog that have an accesskey attr. Those shouldn't have accesskey attr removed
-         var elementsInDialogWithAccesskey = this.element[0].parentElement.querySelectorAll('[accesskey]');
+         var elementsInDialogWithAccesskey = this.element[0].querySelectorAll('[accesskey]');
          forEach.call(elementsInDialogWithAccesskey, function(element){
             element.classList.add('oj-helper-element-in-dialog-with-accesskey');
          });
@@ -2599,13 +2495,14 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
 
       /** @type {!Object.<oj.PopupService.OPTION, ?>} */
       var psOptions = {};
-      psOptions[oj.PopupService.OPTION.POPUP] = this.uiDialog;
+      psOptions[oj.PopupService.OPTION.POPUP] = this.element;
       psOptions[oj.PopupService.OPTION.LAUNCHER] = this.opener;
       psOptions[oj.PopupService.OPTION.POSITION] = position;
       psOptions[oj.PopupService.OPTION.MODALITY] = this.options.modality;
       psOptions[oj.PopupService.OPTION.EVENTS] = this._getPopupServiceEvents();
       psOptions[oj.PopupService.OPTION.LAYER_SELECTORS] = "oj-dialog-layer";
       psOptions[oj.PopupService.OPTION.LAYER_LEVEL] = oj.PopupService.LAYER_LEVEL.TOP_LEVEL;
+      psOptions[oj.PopupService.OPTION.CUSTOM_ELEMENT] = this._IsCustomElement();
       oj.PopupService.getInstance().open(psOptions);
     },
     /**
@@ -2630,7 +2527,7 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
       rootElement.parent().addClass('oj-animate-open');
 
       var animationOptions = (oj.ThemeUtils.parseJSONFromFontFamily('oj-dialog-option-defaults') ||
-        {})["animation"]
+        {})["animation"];
       if (animationOptions && animationOptions["open"])
       {
         return oj.AnimationUtils.startAnimation(rootElement[0], "open",
@@ -2664,10 +2561,11 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
      * @name oj.ojDialog#refresh
      * @memberof oj.ojDialog
      * @instance
+     * @override
      * @return {void}
      *
      * @example <caption>Invoke the <code class="prettyprint">refresh</code> method:</caption>
-     * var open = $( ".selector" ).ojDialog( "refresh" );
+     * myDialog.refresh();
      */
     refresh: function()
     {
@@ -2679,7 +2577,7 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
       if (hasFocus && hasFocus.length > 0)
       {
         // if dialog already has focus then return
-          if (oj.DomUtils.isAncestorOrSelf(this.uiDialog[0], hasFocus[0])) {
+          if (oj.DomUtils.isAncestorOrSelf(this.element[0], hasFocus[0])) {
               return;
           }
       }
@@ -2691,37 +2589,36 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
       // 4. The close button
       // 5. The dialog itself
 
-      // var hasFocus = this.element.find("[autofocus]");
-      // var hasFocus = this._focusedElement;
-
       if (!hasFocus) {
         hasFocus = this.element.find("[autofocus]");
       }
       if (!hasFocus.length) {
-          hasFocus = this.element.find(":tabbable");
+        hasFocus = this._uiDialogContent.find(":tabbable");
       }
       if (!hasFocus.length) {
-          if (this.uiDialogFooter.length)
-              hasFocus = this.uiDialogFooter.find(":tabbable");
+        if (this._uiDialogFooter && this._uiDialogFooter.length) {
+          hasFocus = this._uiDialogFooter.find(":tabbable");
+        }
       }
       if (!hasFocus.length) {
         if (this.closeButton)
           hasFocus = this.closeButton.filter(":focusable");
       }
       if (!hasFocus.length) {
-        hasFocus = this.uiDialog;
+        hasFocus = this.element;
       }
 
-      hasFocus.eq(0).focus();
-      this._trigger("focus");
-
+      if (hasFocus.length > 0) {
+        hasFocus.eq(0).focus();
+        this._trigger("focus");
+      }
     },
 
     '_keepFocus': function(event) {
       function checkFocus() {
         var activeElement = this.document[0].activeElement,
-          isActive = this.uiDialog[0] === activeElement ||
-          $.contains(this.uiDialog[0], activeElement);
+            // isActive = this._uiDialogContent[0] === activeElement || $.contains(this._uiDialogContent[0], activeElement);
+          isActive = this.element === activeElement || $.contains(this.element, activeElement);
         if (!isActive) {
           this._focusTabbable();
         }
@@ -2734,117 +2631,83 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
       return !isNaN(parseInt(value, 10));
     },
 
-    _createWrapper: function() {
+    _keydownHandler: function (event)
+    {
 
-      this._isResizing = false;
-
-      // make sure that the element has a unique id.
-      this.element.uniqueId();
-      this._elementId = this.element.attr('id');
-
-      if (this.OuterWrapper) {
-         // make sure that the outer wrapper has a unique id when using custom element syntax
-         this.uiDialog = $(this.OuterWrapper);
-         this.uiDialog.uniqueId();
-         this._wrapperId = this.uiDialog.attr('id');
-      } else {
-         this._wrapperId = _wrapperPrefix + this._elementId;
-         this.uiDialog = $("<div>");
-         this.uiDialog.insertBefore(this.element);   // @HTMLUpdateOK
+      if (this.options.cancelBehavior !== "none" && !event.isDefaultPrevented() && event.keyCode &&
+          event.keyCode === $.ui.keyCode.ESCAPE) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        this.close(event);
+        return;
       }
-      this.uiDialog.addClass("oj-dialog oj-component")
-        .hide()
-        .attr({
-          // Setting tabIndex makes the div focusable
-          'tabIndex': -1,
-          'role': this.options.role,
-          'id': this._wrapperId
-        });
 
-      this._on(this.uiDialog, {
-        keyup: function(event) {
+      if (event.keyCode !== $.ui.keyCode.TAB) {
+        return;
+      }
 
-        },
-        keydown: function(event) {
+      // prevent tabbing out of dialogs
+      // var tabbables = this._uiDialogContent.find(":tabbable"),
+      var tabbables = this.element.find(":tabbable"),
+          first = tabbables.filter(":first"),
+          last = tabbables.filter(":last");
 
-          if (this.options.cancelBehavior != "none" && !event.isDefaultPrevented() && event.keyCode &&
-            event.keyCode === $.ui.keyCode.ESCAPE) {
-            event.preventDefault();
-            event.stopImmediatePropagation();
-            this.close(event);
-            return;
-          }
+      var index;
 
-          if (event.keyCode !== $.ui.keyCode.TAB) {
-            return;
-          }
+      if (!event.shiftKey)
+      {
 
-          // prevent tabbing out of dialogs
-          var tabbables = this.uiDialog.find(":tabbable"),
-            first = tabbables.filter(":first"),
-            last = tabbables.filter(":last");
+        // if (event.target === last[0] || event.target === this._uiDialogContent[0]) {
 
-          var index;
+        // Check document.activeElement instead of event.target since descendant 
+        // elements such as ojTable may change focus when handling Tab key.
+        // This aligns with browser behavior because it determines next tabstop
+        // based on activeElement.        
+        if (document.activeElement === last[0] || document.activeElement === this.element[0]) {
+          first.focus();
+          event.preventDefault();
+        } else {
 
-          if (!event.shiftKey) {
+          //
+          // Make sure the first dialog tabbable (the header icon)
+          // does not tab out of the dialog.
+          //
+          index = tabbables.index(document.activeElement);
 
-            if (event.target === last[0] || event.target === this.uiDialog[0]) {
-              first.focus();
+          if (index === 0) {
+            if (tabbables[1]) {
+              tabbables[1].focus();
               event.preventDefault();
-            }
-            else {
-
-              //
-              // Make sure the first dialog tabbable (the header icon)
-              // does not tab out of the dialog.
-              //
-              index = tabbables.index(document.activeElement);
-
-              if (index == 0) {
-                if (tabbables[1]) {
-                  tabbables[1].focus();
-                  event.preventDefault();
-                }
-              }
-            }
-
-          } else if (event.shiftKey) {
-
-            //
-            // For SHIFT-TAB, we reverse the tab order.
-            //
-
-            if (event.target === first[0] || event.target === this.uiDialog[0]) {
-              last.focus();
-              event.preventDefault();
-            }
-            else {
-
-              //
-              // Make sure the second dialog tabbable tabs back to the header
-              //
-              index = tabbables.index(document.activeElement);
-
-              if (index == 1) {
-                if (tabbables[0]) {
-                  tabbables[0].focus();
-                  event.preventDefault();
-                }
-              }
             }
           }
         }
-      });
-
-      // We assume that any existing aria-describedby attribute means
-      // that the dialog content is marked up properly
-      // otherwise we brute force the content as the description
-      if (!this.element.find("[aria-describedby]").length) {
-        this.uiDialog.attr({
-          "aria-describedby": this.element.uniqueId().attr("id")
-        });
       }
+      else if (event.shiftKey) {
+        //
+        // For SHIFT-TAB, we reverse the tab order.
+        //
 
+        // Check document.activeElement instead of event.target since descendant 
+        // elements such as ojTable may change focus when handling Tab key.
+        // This aligns with browser behavior because it determines next tabstop
+        // based on activeElement.
+        if (document.activeElement === first[0] || document.activeElement === this.element[0]) {
+          last.focus();
+          event.preventDefault();
+        } else {
+          //
+          // Make sure the second dialog tabbable tabs back to the header
+          //
+          index = tabbables.index(document.activeElement);
+
+          if (index === 1) {
+            if (tabbables[0]) {
+              tabbables[0].focus();
+              event.preventDefault();
+            }
+          }
+        }
+      }
     },
 
     //
@@ -2872,24 +2735,65 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
 
     _destroyCloseButton: function() {
 
-      if (this.closeButton) {
-        this.closeButton.remove();
+      if (this.closeButtonDiv != null) {
+        if (this.closeButtonDiv.parentElement) {
+          oj.Components.subtreeDetached(this.closeButtonDiv);
+          this.closeButtonDiv.parentElement.removeChild(this.closeButtonDiv); // @HTMLUpdateOK
+        }
+
         this.closeButton = null;
       }
+
     },
 
-    _createCloseButton: function(domDestination) {
+    //
+    // Create a close button.
+    // Needed for user-defined headers.
+    //
+    _createCloseButton: function(divParentElement) {
 
-      this.closeButton = $("<button><\button>")
-        .addClass('oj-dialog-header-close-wrapper');
+      // use oj-button for custom element implementations
+      if (this._IsCustomElement()) {
 
-      this.closeButton.ojButton(
-        {display: 'icons',
-         chroming: 'half',
-         label: this.getTranslatedString('labelCloseIcon'),
-         icons: {start: 'oj-component-icon oj-fwk-icon-cross'}})
-        .attr("tabindex", "1")
-        .appendTo(domDestination); // @HTMLUpdateOK
+        this.closeButtonDiv = document.createElement('oj-button');
+        this.closeButtonDiv.classList.add('oj-dialog-header-close-wrapper');
+        this.closeButtonDiv.setAttribute('data-oj-binding-provider', 'none')
+        this.closeButtonDiv.setAttribute('display', 'icons')
+        this.closeButtonDiv.setAttribute('chroming', 'half')
+        
+        var closeButtonLabel = document.createElement('span');
+        closeButtonLabel.textContent = this.getTranslatedString('labelCloseIcon');
+        
+        var closeButtonStartIcon = document.createElement('span');
+        closeButtonStartIcon.className = 'oj-fwk-icon oj-fwk-icon-cross';
+        closeButtonStartIcon.setAttribute('slot', 'startIcon');
+        
+        this.closeButtonDiv.appendChild(closeButtonStartIcon);
+        this.closeButtonDiv.appendChild(closeButtonLabel);
+        
+        divParentElement.appendChild(this.closeButtonDiv); // @HTMLUpdateOK
+        oj.Components.subtreeAttached(this.closeButtonDiv);
+
+        this.closeButton = $(this.closeButtonDiv);
+
+      }
+
+      if (!this._IsCustomElement()) {
+
+        this.closeButton = $("<button><\button>")
+          .addClass('oj-dialog-header-close-wrapper');
+
+        this.closeButton.ojButton(
+          {display: 'icons',
+           chroming: 'half',
+           label: this.getTranslatedString('labelCloseIcon'),
+           icons: {start: 'oj-component-icon oj-fwk-icon-cross'}})
+          .attr("tabindex", "1")
+          .appendTo(divParentElement); // @HTMLUpdateOK
+
+        this.closeButtonDiv = this.closeButton[0];
+
+      }
 
       this._on(this.closeButton, {
         click: function(event) {
@@ -2897,7 +2801,6 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
           event.stopImmediatePropagation();
           this.close(event);
         },
-
       });
 
       // no need to do this - buttons handle focus on their own.
@@ -2907,16 +2810,16 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
     },
 
     _createTitlebar: function() {
-      var uiDialogTitle;
-      var headerClasses;
 
-      headerClasses = "oj-dialog-header oj-helper-clearfix";
+      this._uiDialogTitlebarDiv = document.createElement("div");
+      this._uiDialogTitlebarDiv.classList.add("oj-dialog-header");
+      this._uiDialogTitlebarDiv.classList.add("oj-helper-clearfix");
+      this.element[0].insertBefore(this._uiDialogTitlebarDiv, this.element[0].firstChild);  // @HTMLUpdateOK
+      oj.Components.subtreeAttached(this._uiDialogTitlebarDiv);
 
-      this.uiDialogTitlebar = $("<div>")
-        .addClass(headerClasses)
-        .prependTo(this.uiDialog);   // @HTMLUpdateOK
+      this._uiDialogTitlebar = $(this._uiDialogTitlebarDiv);
 
-      this._on(this.uiDialogTitlebar, {
+      this._on(this._uiDialogTitlebar, {
         mousedown: function(event) {
           // Don't prevent click on close button (#8838)
           // Focusing a dialog that is partially scrolled out of view
@@ -2930,31 +2833,35 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
           }
           if (!isCloseButton) {
             // Set focus to the dialog if we are dragging by the header
-            this.uiDialog.focus();
+            this.element.focus();
           }
         }
       });
 
       if (this.options.cancelBehavior === "icon") {
-        this._createCloseButton(this.uiDialogTitlebar);
+        this._createCloseButton(this._uiDialogTitlebarDiv);
       }
 
-      uiDialogTitle = $("<span>")
-        .uniqueId()
-        .addClass("oj-dialog-title")
-        .appendTo(this.uiDialogTitlebar);  // @HTMLUpdateOK
-      this._title(uiDialogTitle);
+      var uiDialogTitleDiv = document.createElement("div");
+      uiDialogTitleDiv.classList.add("oj-dialog-title");
+      $(uiDialogTitleDiv).uniqueId();
+      this._uiDialogTitlebarDiv.appendChild(uiDialogTitleDiv) // @HTMLUpdateOK
+      oj.Components.subtreeAttached(uiDialogTitleDiv);
 
-      this.uiDialog.attr({
-        "aria-labelledby": uiDialogTitle.attr("id")
+      this._title(uiDialogTitleDiv);
+
+      this.element.attr({
+        "aria-labelledby": uiDialogTitleDiv.id
       });
     },
+
     _title: function(title) {
       if (!this.options.title) {
-        title.html("&#160;");   // @HTMLUpdateOK
+        title.innerHTML = "&#160;";  // @HTMLUpdateOK
       }
-      title.text(this.options.title);
+      title.textContent = this.options.title;
     },
+
     _makeDraggable: function() {
       var that = this,
         options = this.options;
@@ -2966,9 +2873,8 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
         };
       }
 
-      this.uiDialog.draggable({
+      this.element.draggable({
         addClasses: false,
-        cancel: ".oj-dialog-content, .oj-dialog-header-close",
         handle: ".oj-dialog-header",
         containment: "document",
         start: function(event, ui) {
@@ -2976,7 +2882,7 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
           that._positionDescendents();
           that._trigger("dragStart", event, filteredUi(ui));
         },
-        'drag': function(event, ui) {
+        drag: function(event, ui) {
           //
           // call positionDescendents so that any descendents,
           // such as a pulldown menu, will be repositioned as the dialog is dragged.
@@ -2989,9 +2895,9 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
           var top = ui.offset.top - that.document.scrollTop();
 
           options.position = {
-            "my": "left top",
-            "at": "left" + ( left >= 0 ? "+" : "" ) + left + " " +
-              "top" + ( top >= 0 ? "+" : "" ) + top,
+            "my": {"horizontal": "left", "vertical": "top"},
+            "at": {"horizontal": "left", "vertical": "top"},
+            "offset": {"x": left >= 0 ? left : 0, "y": top >= 0 ? top : 0},
             "of": window
           };
 
@@ -3001,7 +2907,7 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
         }
       });
 
-      this.uiDialog.addClass("oj-draggable");
+      this.element.addClass("oj-draggable");
 
     },
     _makeResizable: function() {
@@ -3009,7 +2915,7 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
       var that = this,
         options = this.options,
         // handles = options.resizable,
-        position = this.uiDialog.css("position"),
+        position = this.element.css("position"),
         // resizeHandles = typeof handles === "string" ? handles : "n,e,s,w,se,sw,ne,nw";
 
         resizeHandles = "n,e,s,w,se,sw,ne,nw";
@@ -3023,7 +2929,7 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
         };
       }
 
-      this._resizableComponent = this.uiDialog['ojResizable'].bind(this.uiDialog);
+      this._resizableComponent = this.element['ojResizable'].bind(this.element);
 
       this._resizableComponent({
         cancel: ".oj-dialog-content",
@@ -3057,20 +2963,20 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
       // Extended position objects with better names to support RTL.
       //
       var isRtl = this._GetReadingDirection() === "rtl";
-      var position = oj.PositionUtils.normalizeHorizontalAlignment(this.options.position, isRtl);
-      this.uiDialog.position(position);
+      var position = oj.PositionUtils.coerceToJqUi(this.options["position"]);
+      position = oj.PositionUtils.normalizeHorizontalAlignment(position, isRtl);
+      this.element.position(position);
 
       this._positionDescendents();
     },
     _positionDescendents: function() {
 
       // trigger refresh of descendents
-      oj.PopupService.getInstance().triggerOnDescendents(this.uiDialog, oj.PopupService.EVENT.POPUP_REFRESH);
+      oj.PopupService.getInstance().triggerOnDescendents(this.element, oj.PopupService.EVENT.POPUP_REFRESH);
     },
     _setOption: function(key, value, flags) {
       /*jshint maxcomplexity:15*/
-      var isDraggable, isResizable,
-        uiDialog = this.uiDialog;
+      var isDraggable, isResizable;
 
       // don't allow a dialog to be disabled.
       if (key === "disabled") {
@@ -3084,11 +2990,11 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
         case "dragAffordance":
 
           // isDraggable = uiDialog.is(":data(oj-draggable)");
-          isDraggable = uiDialog.hasClass("oj-draggable");
+          isDraggable = this.element.hasClass("oj-draggable");
 
           if (isDraggable && value === "none") {
-            uiDialog.draggable("destroy");
-            this.uiDialog.removeClass("oj-draggable");
+            this.element.draggable("destroy");
+            this.element.removeClass("oj-draggable");
           }
 
           if (!isDraggable && value === "title-bar") {
@@ -3098,8 +3004,13 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
           break;
 
         case "position":
+          // convert to the internal position format and reevaluate the position.
+          var options = this.options;
+          options["position"] = oj.PositionUtils.coerceToJet(value, options["position"]);
           this._position();
-          break;
+
+          // setting the option is handled here.  don't call on super.
+          return;
 
         case "resizeBehavior":
 
@@ -3108,7 +3019,7 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
             isResizable = true;
 
           // currently resizable, becoming non-resizable
-          if (isResizable && value != "resizable") {
+          if (isResizable && value !== "resizable") {
             // uiDialog._resizableComponent("destroy");
             if (this._resizableComponent("instance"))
               this._resizableComponent("destroy");
@@ -3123,11 +3034,11 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
           break;
 
         case "title":
-          this._title(this.uiDialogTitlebar.find(".oj-dialog-title"));
+          this._title(this._uiDialogTitlebar.find(".oj-dialog-title"));
           break;
 
         case "role":
-          uiDialog.attr("role", value);
+          this.element.attr("role", value);
           break;
 
         case "modality":
@@ -3135,7 +3046,7 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
           {
             /** @type {!Object.<oj.PopupService.OPTION, ?>} */
             var psOptions = {};
-            psOptions[oj.PopupService.OPTION.POPUP] = this.uiDialog;
+            psOptions[oj.PopupService.OPTION.POPUP] = this.element;
             psOptions[oj.PopupService.OPTION.MODALITY] = value;
             oj.PopupService.getInstance().changeOptions(psOptions);
           }
@@ -3156,72 +3067,76 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
             if (this.userDefinedDialogHeader) {
 
               this._destroyCloseButton();
-              this._createCloseButton(this._userDefinedHeader);
+              this._createCloseButton(this._userDefinedHeaderDiv);
 
               //
               // Insert oj-dialog-title between oj-dialog-header and oj-dialog-header-close-wrapper
               //
-              this._userDefinedTitle = this._userDefinedHeader.find(".oj-dialog-title");
-              if (this._userDefinedTitle.length)
-                // this._userDefinedTitle.insertAfter(this.uiDialogTitlebarCloseWrapper);  // @HTMLUpdateOK
-                this._userDefinedTitle.insertAfter(this.closeButton);  // @HTMLUpdateOK
+              this._userDefinedTitleDiv = this._userDefinedHeaderDiv.querySelector('.oj-dialog-title');
+              this._userDefinedTitle = $(this._userDefinedTitleDiv);
+
+              if (this._userDefinedTitleDiv != null) {
+                this.closeButtonDiv.parentElement.appendChild(this._userDefinedTitleDiv); // @HTMLUpdateOK
+                oj.Components.subtreeAttached(this._userDefinedTitleDiv);
+              }
 
             } else {
+
               this._destroyCloseButton();
-              this._createCloseButton(this.uiDialogTitlebar);
+              this._createCloseButton(this._uiDialogTitlebarDiv);
 
-              this.standardTitle = this.uiDialogTitlebar.find(".oj-dialog-title");
-              if (this.standardTitle.length)
-                // this.standardTitle.insertAfter(this.uiDialogTitlebarCloseWrapper);  // @HTMLUpdateOK
-                this.standardTitle.insertAfter(this.closeButton);  // @HTMLUpdateOK
+              this.standardTitleDiv = this._uiDialogTitlebarDiv.querySelector(".oj-dialog-title");
+              this.standardTitle = $(this.standardTitleDiv);
 
+              if (this.standardTitleDiv != null) {
+                this.closeButtonDiv.parentElement.insertBefore(this.closeButtonDiv, this.standardTitleDiv);  // @HTMLUpdateOK
+                oj.Components.subtreeAttached(this.standardTitleDiv);
+              }
             }
-
           }
-
           break;
-
       }
     },
-    _createPlaceHolderFooter: function(domElement) {
 
-      this._placeHolderFooterId = _placeHolderFooterPrefix + this._elementId;
-
-      this._placeHolderFooter = $("<div>")
-        .hide()
-        .attr({'id': this._placeHolderFooterId});
-
-      this._placeHolderFooter.insertBefore(domElement);  // @HTMLUpdateOK
-
-    },
-    _createPlaceHolderHeader: function(domElement) {
-
-      this._placeHolderHeaderId = _placeHolderHeaderPrefix + this._elementId;
-
-      this._placeHolderHeader = $("<div>")
-        .hide()
-        .attr({'id': this._placeHolderHeaderId});
-
-      this._placeHolderHeader.insertBefore(domElement);  // @HTMLUpdateOK
-
-    },
-    getNodeBySubId: function(locator)
-    {
-      if (locator == null)
-      {
+    getNodeBySubId: function(locator) {
+      if (locator === null) {
         return this.element ? this.element[0] : null;
+      }
+
+      function _escapeId(id) {
+        var targetId = [];
+        var regex = /\w|_|-/;
+
+        for (var i = 0; i < id.length; i++) {
+          var c = id.substring(i, i + 1);
+          if (regex.test(c))
+            targetId.push(c);
+          else
+            targetId.push("\\" + c);
+        }
+        return targetId.join("");
       }
 
       var subId = locator['subId'];
 
-      switch (subId) {
+      //
+      // Use slot structure to return body and footer subids.
+      //
+      if (this._IsCustomElement() && (subId === "oj-dialog-footer" || subId === "oj-dialog-body")) {
+        if (subId === "oj-dialog-body") {
+          return this._uiDialogBodyDiv.querySelector('.oj-dialog-body');
+        }
+        else if (subId === "oj-dialog-footer") {
+          return this._uiDialogFooterDiv.querySelector('.oj-dialog-footer');
+        }
+      } else {
+
+        // General case
+        switch (subId) {
 
         case "oj-dialog-header":
-          // "oj-dialog-body" is deprecated as of 1.2
-        case "oj-dialog-body":
         case "oj-dialog-footer":
         case "oj-dialog-content":
-        case "oj-dialog-header-close-wrapper":
         case "oj-resizable-n":
         case "oj-resizable-e":
         case "oj-resizable-s":
@@ -3231,19 +3146,47 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
         case "oj-resizable-ne":
         case "oj-resizable-nw":
 
-          var dotSubId = "." + subId;
-          if (!this.widget().find(dotSubId))
+          var selector = this.element[0].nodeName + '[id="' + _escapeId(this.element.attr("id")) + '"] > ';
+          selector +=  "." + subId;
+          var node = this.element.parent().find(selector);
+          if (!node || node.length === 0)
             return null;
-          return (this.widget().find(dotSubId)[0]);
+
+          return (node[0]);
           break;
 
           // "oj-dialog-close-icon" is deprecated as of 1.2
           // use "oj-dialog-close" instead.
-          // "oj-dialog-close" is deprecated as of 2.1.?
+          // "oj-dialog-close" is deprecated as of 2.1.*
         case "oj-dialog-close-icon":
         case "oj-dialog-close":
           return null;
           break;
+
+          // "oj-dialog-body" is deprecated as of 1.2
+        case "oj-dialog-body":
+          var selector = this.element[0].nodeName + '[id="' + _escapeId(this.element.attr("id")) + '"] > ';
+          selector += ".oj-dialog-content > ";
+          selector +=  "." + subId;
+          var node = this.element.parent().find(selector);
+          if (!node || node.length === 0)
+            return null;
+
+          return (node[0]);
+          break;
+
+        case "oj-dialog-header-close-wrapper":
+          var selector = this.element[0].nodeName + '[id="' + _escapeId(this.element.attr("id")) + '"] > ';
+          selector += ".oj-dialog-header > ";
+          selector +=  "." + subId;
+          var node = this.element.parent().find(selector);
+          if (!node || node.length === 0)
+            return null;
+
+          return (node[0]);
+          break;
+
+        }
       }
 
       // Non-null locators have to be handled by the component subclasses
@@ -3292,8 +3235,7 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
      * @private
      * @return {void}
      */
-    _surrogateRemoveHandler: function()
-    {
+    _surrogateRemoveHandler: function() {
       var element = this.element;
       element.remove();
     },
@@ -3303,10 +3245,8 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
      * @private
      * @return {!Object.<oj.PopupService.EVENT, function(...)>}
      */
-    _getPopupServiceEvents: function()
-    {
-      if (!this._popupServiceEvents)
-      {
+    _getPopupServiceEvents: function() {
+      if (!this._popupServiceEvents) {
         /** @type {!Object.<oj.PopupService.EVENT, function(...)>} **/
         var events = this._popupServiceEvents = {};
         events[oj.PopupService.EVENT.POPUP_CLOSE] = this._closeImplicitly.bind(this);
@@ -3376,7 +3316,79 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
         return mediator.isOperationPending(this, operation, operation, args);
       else
         return false;
-    }
+    },
+    /**
+     * Notifies the component that its subtree has been removed from the document
+     * programmatically after the component has been created.
+     *
+     * @memberof oj.ojDialog
+     * @instance
+     * @protected
+     * @override
+     */
+     _NotifyDetached: function()
+     {
+       // detaching an open popup results in implicit dismissal
+       if (oj.ZOrderUtils.getStatus(this.element) === oj.ZOrderUtils.STATUS.OPEN)
+         this._closeImplicitly();
+
+       this._super();
+     }
+
+    /**
+     * <p>The default slot is the dialog's body. The <code class="prettyprint">&lt;oj-dialog></code> 
+     * element accepts DOM nodes as children for the default slot.
+     * The default slot can also be named with "body". 
+     * For styling, the default body slot will be rendered with the <code class="prettyprint">oj-dialog-body</code> class.
+     *
+     * @ojchild Default
+     * @memberof oj.ojDialog
+     *
+     * @example <caption>Initialize the Dialog with body content:</caption>
+     * &lt;oj-dialog>
+     *   &lt;div>Dialog Content&lt;/div>
+     * &lt;/oj-dialog>
+     *
+     * @example <caption>Initialize the Dialog with body content, explicitly naming the body slot:</caption>
+     * &lt;oj-dialog>
+     *   &lt;div slot="body">Dialog Content&lt;/div>
+     * &lt;/oj-dialog>
+     */
+
+    /**
+     * <p>The <code class="prettyprint">footer</code> slot is for the dialog's footer area. 
+     * The <code class="prettyprint">&lt;oj-dialog></code> element accepts DOM nodes as children
+     * with the footer slot.
+     * For styling, the footer body slot will be rendered with the <code class="prettyprint">oj-dialog-footer</code> class.
+     *
+     * @ojslot footer
+     * @memberof oj.ojDialog
+     *
+     * @example <caption>Initialize the Dialog with body and footer content:</caption>
+     * &lt;oj-dialog>
+     *   &lt;div>Dialog Content&lt;/div>
+     *   &lt;div slot='footer'>Footer Content&lt;/div>
+     * &lt;/oj-dialog>
+     */     
+     
+    /**
+     * <p>The <code class="prettyprint">header</code> slot is for the dialog's header area. 
+     * The  <code class="prettyprint">&lt;oj-dialog></code> element accepts DOM nodes as children
+     * with the header slot.
+     * For styling, the header slot will be rendered with the <code class="prettyprint">oj-dialog-header</code> class.
+     * </p>
+     * If a header slot is not specified by the user, a header will automatically be created.
+     * The automatically generated header will contain a close button, and the header title will be set
+     * to the dialog title.
+     * @ojslot header
+     * @memberof oj.ojDialog
+     *
+     * @example <caption>Initialize the Dialog with header and body content:</caption>
+     * &lt;oj-dialog>
+     *   &lt;div slot='header'>Header Content&lt;/div>
+     *   &lt;div>Dialog Content&lt;/div>
+     * &lt;/oj-dialog>
+     */     
 
     /**
      * <table class="keyboard-table">
@@ -3441,9 +3453,7 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
      *   <tbody>
      *     <tr>
      *       <td>oj-dialog-header</td>
-     *       <td><p>Optional markup. If oj-dialog-header is omitted, a header will automatically be created.
-     *        <p>For automically created headers (when <code class="prettyprint"> oj-dialog-header </code>
-     *        is not part of the user's markup), the title of the header is the dialog title, and a close button is created.
+     *       <td><p> Class automatically generated on the header slot.</td>
      *       </td>
      *     </tr>
      *     <tr>
@@ -3452,11 +3462,11 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
      *     </tr>
      *     <tr>
      *       <td>oj-dialog-body</td>
-     *       <td><p> Expected markup. Formats the body of the dialog.</td>
+     *       <td><p> Class automatically generated on the default (body) slot.</td>
      *     </tr>
      *     <tr>
      *       <td>oj-dialog-footer</td>
-     *       <td><p> Optional markup. Formats the footer of the dialog. Omit if the dialog has no footer. </td>
+     *       <td><p> Class automatically generated on the footer slot.</td>
      *     </tr>
      *     <tr>
      *       <td>oj-dialog-footer-separator</td>
@@ -3470,7 +3480,7 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
      *     <p>See the demo section for a live example of the footer separator. </td>
      *     </tr>
      *     <tr>
-     *       <td>oj-progressbar-embedded</td>
+     *       <td>oj-progress-bar-embedded</td>
      *       <td><p> Optional markup. Used to format a progress bar embedded in the dialog header.</td>
      *     </tr>
      *     <tr>
@@ -3498,7 +3508,7 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
      * @memberof oj.ojDialog
      *
      * @example <caption>Get the node for the dialog header:</caption>
-     * var node = $( ".selector" ).ojDialog( "getNodeBySubId", {'subId': 'oj-dialog-header'} );
+     * var node = myComponent.getNodeBySubId({'subId': 'oj-dialog-header'});
      */
 
     /**
@@ -3508,7 +3518,7 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
      * @memberof oj.ojDialog
      *
      * @example <caption>Get the node for the dialog footer:</caption>
-     * var node = $( ".selector" ).ojDialog( "getNodeBySubId", {'subId': 'oj-dialog-footer'} );
+     * var node = myComponent.getNodeBySubId({'subId': 'oj-dialog-footer'});
      */
 
     /**
@@ -3519,7 +3529,7 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
      * @deprecated This sub-ID is not needed.  Since the application supplies this element, it can supply a unique ID by which the element can be accessed.
      *
      * @example <caption>Get the node for the dialog body:</caption>
-     * var node = $( ".selector" ).ojDialog( "getNodeBySubId", {'subId': 'oj-dialog-body'} );
+     * var node = myComponent.getNodeBySubId({'subId': 'oj-dialog-body'});
      */
 
     /**
@@ -3529,7 +3539,7 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
      * @memberof oj.ojDialog
      *
      * @example <caption>Get the node for the dialog content:</caption>
-     * var node = $( ".selector" ).ojDialog( "getNodeBySubId", {'subId': 'oj-dialog-content'} );
+     * var node = myComponent.getNodeBySubId({'subId': 'oj-dialog-content'});
      */
 
     /**
@@ -3539,7 +3549,7 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
      * @memberof oj.ojDialog
      *
      * @example <caption>Get the node for the dialog header-close-wrapper:</caption>
-     * var node = $( ".selector" ).ojDialog( "getNodeBySubId", {'subId': 'oj-dialog-header-close-wrapper'} );
+     * var node = myComponent.getNodeBySubId({'subId': 'oj-dialog-header-close-wrapper'});
      */
 
     /**
@@ -3550,7 +3560,7 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
      * @deprecated this sub-ID is deprecated.
      *
      * @example <caption>Get the node for the dialog close-icon:</caption>
-     * var node = $( ".selector" ).ojDialog( "getNodeBySubId", {'subId': 'oj-dialog-close-icon'} );
+     * var node = myComponent.getNodeBySubId({'subId': 'oj-dialog-close-icon'});
      */
 
     /**
@@ -3561,7 +3571,7 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
      * @deprecated this sub-ID is deprecated.
      *
      * @example <caption>Get the node for the dialog close affordance:</caption>
-     * var node = $( ".selector" ).ojDialog( "getNodeBySubId", {'subId': 'oj-dialog-close'} );
+     * var node = myComponent.getNodeBySubId({'subId': 'oj-dialog-close'});
      */
 
     /**
@@ -3571,7 +3581,7 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
      * @memberof oj.ojDialog
      *
      * @example <caption>Get the node for the dialog header:</caption>
-     * var node = $( ".selector" ).ojDialog( "getNodeBySubId", {'subId': 'oj-resizable-n'} );
+     * var node = myComponent.getNodeBySubId({'subId': 'oj-resizable-n'});
      */
 
     /**
@@ -3581,7 +3591,7 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
      * @memberof oj.ojDialog
      *
      * @example <caption>Get the node for the dialog header:</caption>
-     * var node = $( ".selector" ).ojDialog( "getNodeBySubId", {'subId': 'oj-resizable-s'} );
+     * var node = myComponent.getNodeBySubId({'subId': 'oj-resizable-s'});
      */
 
     /**
@@ -3591,7 +3601,7 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
      * @memberof oj.ojDialog
      *
      * @example <caption>Get the node for the dialog header:</caption>
-     * var node = $( ".selector" ).ojDialog( "getNodeBySubId", {'subId': 'oj-resizable-e'} );
+     * var node = myComponent.getNodeBySubId({'subId': 'oj-resizable-e'});
      */
 
     /**
@@ -3601,7 +3611,7 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
      * @memberof oj.ojDialog
      *
      * @example <caption>Get the node for the dialog header:</caption>
-     * var node = $( ".selector" ).ojDialog( "getNodeBySubId", {'subId': 'oj-resizable-w'} );
+     * var node = myComponent.getNodeBySubId({'subId': 'oj-resizable-w'});
      */
 
     /**
@@ -3611,7 +3621,7 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
      * @memberof oj.ojDialog
      *
      * @example <caption>Get the node for the dialog header:</caption>
-     * var node = $( ".selector" ).ojDialog( "getNodeBySubId", {'subId': 'oj-resizable-ne'} );
+     * var node = myComponent.getNodeBySubId({'subId': 'oj-resizable-ne'});
      */
 
     /**
@@ -3621,7 +3631,7 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
      * @memberof oj.ojDialog
      *
      * @example <caption>Get the node for the dialog header:</caption>
-     * var node = $( ".selector" ).ojDialog( "getNodeBySubId", {'subId': 'oj-resizable-nw'} );
+     * var node = myComponent.getNodeBySubId({'subId': 'oj-resizable-nw'});
      */
 
     /**
@@ -3631,7 +3641,7 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
      * @memberof oj.ojDialog
      *
      * @example <caption>Get the node for the dialog header:</caption>
-     * var node = $( ".selector" ).ojDialog( "getNodeBySubId", {'subId': 'oj-resizable-sw'} );
+     * var node = myComponent.getNodeBySubId({'subId': 'oj-resizable-sw'});
      */
 
     /**
@@ -3641,11 +3651,8 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
      * @memberof oj.ojDialog
      *
      * @example <caption>Get the node for the dialog header:</caption>
-     * var node = $( ".selector" ).ojDialog( "getNodeBySubId", {'subId': 'oj-resizable-se'} );
+     * var node = myComponent.getNodeBySubId({'subId': 'oj-resizable-se'});
      */
-
-
-
   });
 
   oj.Components.setDefaultOptions(
@@ -3672,50 +3679,106 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
 
 }());
 
-
-(function() {
-var ojDialogMeta = {
-  "properties": {
-    "cancelBehavior": {
-      "type": "string"
+(function () {
+  var ojDialogMeta = {
+    "properties" : {
+      "cancelBehavior" : {
+        "type" : "string",
+        "enumValues" : ["icon", "escape", "none"]
+      },
+      "dragAffordance" : {
+        "type" : "string",
+        "enumValues" : ["title-bar", "none"]
+      },
+      "initialVisibility" : {
+        "type" : "string",
+        "enumValues" : ["hide", "show"]
+      },
+      "modality" : {
+        "type" : "string",
+        "enumValues" : ["modal", "modeless"]
+      },
+      "position" : {
+        "type" : "object",
+        "properties" : {
+          "my" : {
+            "type" : "object|string",
+            "properties" : {
+              "horizontal" : {
+                "type" : "string",
+                "enumValues" : ["start", "end", "left", "center", "right"]
+              },
+              "vertical" : {
+                "type" : "string",
+                "enumValues" : ["top", "center", "bottom"]
+              }
+            }
+          },
+          "at" : {
+            "type" : "object|string",
+            "properties" : {
+              "horizontal" : {
+                "type" : "string",
+                "enumValues" : ["start", "end", "left", "center", "right"]
+              },
+              "vertical" : {
+                "type" : "string",
+                "enumValues" : ["top", "center", "bottom"]
+              }
+            }
+          },
+          "offset" : {
+            "type" : "object",
+            "properties" : {
+              "x" : {
+                "type" : "number"
+              },
+              "y" : {
+                "type" : "number"
+              }
+            }
+          },
+          "of" : {
+            "type" : "string|{x:number, y:number}"
+          },
+          "collision" : {
+            "type" : "string",
+            "enumValues" : ["flip", "fit", "flipfit", "none"]
+          }
+        }
+      },
+      "resizeBehavior" : {
+        "type" : "string",
+        "enumValues" : ["resizable", "none"]
+      }
     },
-    "dragAffordance": {
-      "type": "string"
+    "events" : {
+      "animateEnd" : {},
+      "animateStart" : {},
+      "beforeClose" : {},
+      "beforeOpen" : {},
+      "close" : {},
+      "open" : {},
+      "focus" : {},
+      "resize" : {},
+      "resizeStart" : {},
+      "resizeStop" : {},
+      "drag" : {},
+      "dragStart" : {},
+      "dragStop" : {}
     },
-    "initialVisibility": {
-      "type": "string"
+    "methods" : {
+      "close" : {},
+      "isOpen" : {},
+      "open" : {},
+      "refresh" : {}
     },
-    "modality": {
-      "type": "string"
-    },
-    "position": {
-      "type": "Object"
-    },
-    "resizeBehavior": {
-      "type": "string"
-    },
-    "role": {
-      "type": "string"
-    },
-    "title": {
-      "type": "string"
-    },
-    "widget": {}
-  },
-  "methods": {
-    "close": {},
-    "destroy": {},
-    "isOpen": {},
-    "open": {},
-    "refresh": {},
-    "whenReady": {}
-  },
-  "extension": {
-    _INNER_ELEM: 'div',
-    _WIDGET_NAME: "ojDialog"
-  }
-};
-oj.CustomElementBridge.registerMetadata('oj-dialog', 'baseComponent', ojDialogMeta);
-oj.CustomElementBridge.register('oj-dialog', {'metadata': oj.CustomElementBridge.getMetadata('oj-dialog')});
+    "extension" : {
+      _WIDGET_NAME : "ojDialog"
+    }
+  };
+  oj.CustomElementBridge.registerMetadata('oj-dialog', 'baseComponent', ojDialogMeta);
+  oj.CustomElementBridge.register('oj-dialog', {'metadata' : oj.CustomElementBridge.getMetadata('oj-dialog')});
 })();
+
 });

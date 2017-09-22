@@ -54,6 +54,6 @@ oj.TimezoneData._bundleNames = [];
 (function()
 {
   oj.TimezoneData.__registerBundleName('/timezoneData');
-  oj.TimezoneData.__mergeIntoLocaleElements(ojtd||{});
+  oj.TimezoneData.__mergeIntoLocaleElements(typeof ojtd === 'undefined' ? {}: ojtd);
 })();
 });

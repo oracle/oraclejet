@@ -18,25 +18,22 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/in
  *
  * @classdesc
  * <h3 id="treemapOverview-section">
- *   JET Treemap Component
+ *   JET Treemap
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#treemapOverview-section"></a>
  * </h3>
  *
- * <p>Treemap component for JET. Treemaps are used to display hierarchical data across two dimensions, represented by
+ * <p>Treemaps are used to display hierarchical data across two dimensions, represented by
  * the size and color of the treemap nodes. Treemaps are generally preferred over sunbursts when emphasizing the data
  * for the leaf nodes.</p>
  *
- * {@ojinclude "name":"warning"}
- *
  * <pre class="prettyprint">
  * <code>
- * &lt;div data-bind="ojComponent: {
- *   component: 'ojTreemap',
- *   nodes: [{value: 100, color: "#FFFF00", label: "Total Sales",
- *            nodes: [{value: 75, color: "#00FF00", label: "Candy"},
- *                    {value: 20, color: "#FFFF00", label: "Fruit"},
- *                    {value: 15, color: "#FF0000", label: "Vegetables"}]}]
- * }"/>
+ * &lt;oj-treemap
+ *    nodes='[{"value": 100, "color": "#FFFF00", "label": "Total Sales",
+ *             "nodes": [{"value": 75, "color": "#00FF00", "label": "Candy"},
+ *                       {"value": 20, "color": "#FFFF00", "label": "Fruit"},
+ *                       {"value": 15, "color": "#FF0000", "label": "Vegetables"}]}]'>
+ * &lt;/oj-treemap>
  * </code>
  * </pre>
  *
@@ -68,31 +65,21 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/in
  * </p>
  *
  * <h4>Data Set Size</h4>
- * <p>As a rule of thumb, it's recommended that applications only set usable data densities on this component.
+ * <p>As a rule of thumb, it's recommended that applications only set usable data densities on this element.
  *    Applications can enable progressive reveal of data through drilling or aggregate small nodes to reduce the
  *    displayed data set size.
  * </p>
- *
- * <h4>Style Attributes</h4>
- * <p>Use the highest level options property available. For example, consider using  attributes on
- *    <code class="prettyprint">nodeDefaults</code>, instead of attributes on the individual nodes. The component can
- *    take advantage of these higher level attributes to apply the style properties on containers, saving expensive DOM
- *    calls.
+ * 
+ * <h4>Styling</h4>
+ * <p>Use the highest level property available. For example, consider setting styling properties on
+ *    <code class="prettyprint">nodeDefaults</code>, instead of styling properties
+ *    on the individual nodes. The treemap can take advantage of these higher level properties to apply the style properties on
+ *    containers, saving expensive DOM calls.
  * </p>
  *
  * {@ojinclude "name":"trackResize"}
  *
  * {@ojinclude "name":"rtl"}
- *
- * @desc Creates a JET Treemap.
- * @example <caption>Initialize the Treemap with no options specified:</caption>
- * $(".selector").ojTreemap();
- *
- * @example <caption>Initialize the Treemap with some options:</caption>
- * $(".selector").ojTreemap({nodes: [{value: 75, color: "#00FF00", label: "Candy"}, {value: 20, color: "#FFFF00", label: "Fruit"}, {value: 15, color: "#FF0000", label: "Vegetables"}]});
- *
- * @example <caption>Initialize the Treemap via the JET <code class="prettyprint">ojComponent</code> binding:</caption>
- * &lt;div data-bind="ojComponent: {component: 'ojTreemap'}">
  */
 oj.__registerWidget('oj.ojTreemap', $['oj']['dvtBaseComponent'],
   {
@@ -101,10 +88,8 @@ oj.__registerWidget('oj.ojTreemap', $['oj']['dvtBaseComponent'],
     /**
      * Triggered immediately before any node in the treemap is drilled into. The drill event can be vetoed if the beforeDrill callback returns false.
      *
-     * @property {Object} data event payload
-     * @property {string} data.id the id of the drilled object
-     * @property {Object} data.data  the data object of the drilled node
-     * @property {Object} data.component the widget constructor for the chart. The 'component' is bound to the associated jQuery element so can be called directly as a function
+     * @property {string} id the id of the drilled object
+     * @property {Object} data the data object of the drilled node
      *
      * @expose
      * @event
@@ -115,10 +100,8 @@ oj.__registerWidget('oj.ojTreemap', $['oj']['dvtBaseComponent'],
     /**
      * Triggered during a drill gesture (double click if selection is enabled, single click otherwise).
      *
-     * @property {Object} data event payload
-     * @property {string} data.id the id of the drilled object
-     * @property {Object} data.data  the data object of the drilled node
-     * @property {Object} data.component the widget constructor for the chart. The 'component' is bound to the associated jQuery element so can be called directly as a function
+     * @property {string} id the id of the drilled object
+     * @property {Object} data the data object of the drilled node
      *
      * @expose
      * @event
@@ -251,10 +234,14 @@ oj.__registerWidget('oj.ojTreemap', $['oj']['dvtBaseComponent'],
         }
       }
       else if(type == 'drill') {
-        if(event['id'] && this._trigger('beforeDrill', null, {'id': event['id'], 'data': event['data'], 'component': event['component']})) {
+        var eventData = {'id': event['id'], 'data': event['data']};
+        if (!this._IsCustomElement())
+          eventData['component'] = event['component'];
+             
+        if(event['id'] && this._trigger('beforeDrill', null, eventData)) {
           this._UserOptionChange('rootNode', event['id']);
           this._Render();
-          this._trigger('drill', null, {'id': event['id'], 'data': event['data'], 'component': event['component']});
+          this._trigger('drill', null, eventData);
         }
       }
       else {
@@ -262,6 +249,11 @@ oj.__registerWidget('oj.ojTreemap', $['oj']['dvtBaseComponent'],
       }
     },
     
+    //** @inheritdoc */
+    _GetComponentRendererOptions: function() {
+      return ['tooltip/renderer', 'nodeContent/renderer'];
+    },
+
     //** @inheritdoc */
     _ProcessOptions: function() {
       this._super();
@@ -373,11 +365,11 @@ oj.__registerWidget('oj.ojTreemap', $['oj']['dvtBaseComponent'],
  *   <tbody>
  *     <tr>
  *       <td><kbd>Tab</kbd></td>
- *       <td>Move focus to next component.</td>
+ *       <td>Move focus to next element.</td>
  *     </tr>
  *     <tr>
  *       <td><kbd>Shift + Tab</kbd></td>
- *       <td>Move focus to previous component.</td>
+ *       <td>Move focus to previous element.</td>
  *     </tr>
  *     <tr>
  *       <td><kbd>UpArrow</kbd></td>
@@ -468,6 +460,783 @@ oj.__registerWidget('oj.ojTreemap', $['oj']['dvtBaseComponent'],
  * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
  * @memberof oj.ojTreemap
  */
+/**
+ * Specifies the animation duration in milliseconds. For data change animations with multiple stages, this attribute defines the duration of each stage. For example, if an animation contains two stages, the total duration will be two times this attribute's value.
+ * @expose
+ * @name animationDuration
+ * @memberof oj.ojTreemap
+ * @instance
+ * @type {number}
+ * @default <code class="prettyprint">null</code>
+ */
+/**
+ * Specifies the animation that is applied on data changes.
+ * @expose
+ * @name animationOnDataChange
+ * @memberof oj.ojTreemap
+ * @instance
+ * @type {string}
+ * @ojvalue {string} "auto"
+ * @ojvalue {string} "none"
+ * @default <code class="prettyprint">"none"</code>
+ */
+/**
+ * Specifies the animation that is shown on initial display.
+ * @expose
+ * @name animationOnDisplay
+ * @memberof oj.ojTreemap
+ * @instance
+ * @type {string}
+ * @ojvalue {string} "auto"
+ * @ojvalue {string} "none"
+ * @default <code class="prettyprint">"none"</code>
+ */
+/**
+ * The color that is displayed during a data change animation when a node is updated.
+ * @expose
+ * @name animationUpdateColor
+ * @memberof oj.ojTreemap
+ * @instance
+ * @type {string}
+ * @default <code class="prettyprint">null</code>
+ */
+/**
+ * An array of category strings used for filtering. Nodes with any category matching an item in this array will be filtered.
+ * @expose
+ * @name hiddenCategories
+ * @memberof oj.ojTreemap
+ * @instance
+ * @type {Array.<string>}
+ * @default <code class="prettyprint">null</code>
+ */
+/**
+ * An array of category strings used for highlighting. Nodes matching all categories in this array will be highlighted.
+ * @expose
+ * @name highlightedCategories
+ * @memberof oj.ojTreemap
+ * @instance
+ * @type {Array.<string>}
+ * @default <code class="prettyprint">null</code>
+ */
+/**
+ * The matching condition for the highlightedCategories property. By default, highlightMatch is 'all' and only items whose categories match all of the values specified in the highlightedCategories array will be highlighted. If highlightMatch is 'any', then items that match at least one of the highlightedCategories values will be highlighted.
+ * @expose
+ * @name highlightMatch
+ * @memberof oj.ojTreemap
+ * @instance
+ * @type {string}
+ * @ojvalue {string} "any"
+ * @ojvalue {string} "all"
+ * @default <code class="prettyprint">"all"</code>
+ */
+/**
+ * Defines the behavior applied when hovering over the nodes.
+ * @expose
+ * @name hoverBehavior
+ * @memberof oj.ojTreemap
+ * @instance
+ * @type {string}
+ * @ojvalue {string} "dim"
+ * @ojvalue {string} "none"
+ * @default <code class="prettyprint">"none"</code>
+ */
+/**
+ * Specifies initial hover delay in ms for highlighting nodes.
+ * @expose
+ * @name hoverBehaviorDelay
+ * @memberof oj.ojTreemap
+ * @instance
+ * @type {number}
+ * @default <code class="prettyprint">null</code>
+ */
+/**
+ * An object defining custom node content for the treemap. Only leaf nodes with no child nodes will have the custom content rendered.
+ * @expose
+ * @name nodeContent
+ * @memberof oj.ojTreemap
+ * @instance
+ * @type {object}
+ * @default <code class="prettyprint">null</code>
+ */
+/**
+ * A function that returns custom node content. The function takes a dataContext argument, 
+ * provided by the treemap, with the following properties: 
+ * <ul>
+ *   <li>bounds: Object containing (x, y, width, height) of the node area. 
+ *   The x and y coordinates are relative to the top, left corner of the element.</li>
+ *   <li>id: The id of the node.</li> <li>data: The data object of the node.</li>
+ *   <li>componentElement: The treemap element.</li>
+ * </ul>
+ * The function should return an Object with the following property: 
+ * <ul>
+ *   <li>insert: HTMLElement - An HTML element, which will be overlaid on top of the treemap. 
+ *   This HTML element will block interactivity of the treemap by default, but the CSS pointer-events 
+ *   property can be set to 'none' on this element if the treemap's interactivity is desired. 
+ *   </li>
+ * </ul>
+ * @expose
+ * @name nodeContent.renderer
+ * @memberof! oj.ojTreemap
+ * @instance
+ * @type {function(object)}
+ * @default <code class="prettyprint">null</code>
+ */
+/**
+ *  An object containing an optional callback function for tooltip customization. 
+ * @expose
+ * @name tooltip
+ * @memberof oj.ojTreemap
+ * @instance
+ * @type {object}
+ * @default <code class="prettyprint">null</code>
+ */
+/**
+ * A function that returns a custom tooltip. The function takes a dataContext argument,
+ * provided by the treemap, with the following properties:
+ * <ul>
+ *   <li>parentElement: The tooltip element. The function can directly modify or append content to this element.</li>
+ *   <li>id: The id of the hovered node.</li>
+ *   <li>label: The label of the hovered node.</li>
+ *   <li>value: The value of the hovered node.</li>
+ *   <li>color: The color of the hovered node.</li>
+ *   <li>data: The data object of the hovered node.</li>
+ *   <li>componentElement: The treemap element.</li>
+ * </ul>
+ *  The function should return an Object that contains only one of the two properties:
+ *  <ul>
+ *    <li>insert: HTMLElement | string - An HTML element, which will be appended to the tooltip, or a tooltip string.</li> 
+ *    <li>preventDefault: <code>true</code> - Indicates that the tooltip should not be displayed. It is not necessary to return {preventDefault:false} to display tooltip, since this is a default behavior.</li> 
+ *  </ul>
+ * @expose
+ * @name tooltip.renderer
+ * @memberof! oj.ojTreemap
+ * @instance
+ * @type {function(object)}
+ * @default <code class="prettyprint">null</code>
+ */
+/**
+ * Specifies whether gaps are displayed between groups. Gaps can be useful for drawing attention to the differences between groups.
+ * @expose
+ * @name groupGaps
+ * @memberof oj.ojTreemap
+ * @instance
+ * @type {string}
+ * @ojvalue {string} "all"
+ * @ojvalue {string} "none"
+ * @ojvalue {string} "outer"
+ * @default <code class="prettyprint">"outer"</code>
+ */
+/**
+ * The number of levels of nodes to display. By default all nodes are displayed.
+ * @expose
+ * @name displayLevels
+ * @memberof oj.ojTreemap
+ * @instance
+ * @type {number}
+ * @default <code class="prettyprint">null</code>
+ */
+/**
+ * Specifies the layout of the treemap. The squarified layout results in nodes that are as square as possible, for easier comparison of node sizes. The sliceAndDice layouts are useful for animation, as the ordering of the data is maintained. SliceAndDice layouts are also useful for small form factor treemaps.
+ * @expose
+ * @name layout
+ * @memberof oj.ojTreemap
+ * @instance
+ * @type {string}
+ * @ojvalue {string} "sliceAndDiceHorizontal"
+ * @ojvalue {string} "sliceAndDiceVertical"
+ * @ojvalue {string} "squarified"
+ * @default <code class="prettyprint">"squarified"</code>
+ */
+/**
+ * An array of objects with the following properties that defines the data for the nodes. Also accepts a Promise for deferred data rendering. No data will be rendered if the Promise is rejected.
+ * @expose
+ * @name nodes
+ * @memberof oj.ojTreemap
+ * @instance
+ * @type {Array.<object>|Promise}
+ * @default <code class="prettyprint">null</code>
+ */
+/**
+ * An array of objects with properties for the child nodes.
+ * @expose
+ * @name nodes[].nodes
+ * @memberof! oj.ojTreemap
+ * @instance
+ * @type {Array.<object>}
+ * @default <code class="prettyprint">null</code>
+ */
+/**
+ * The id of the node.
+ * @expose
+ * @name nodes[].id
+ * @memberof! oj.ojTreemap
+ * @instance
+ * @type {string}
+ * @default <code class="prettyprint">null</code>
+ */
+/**
+ * An optional array of category strings corresponding to this data item. This enables highlighting and filtering of individual data items through interactions with the legend and other visualization elements. The categories array of each node is required to be a superset of the categories array of its parent node. If not specified, the ids of the node and its ancestors will be used.
+ * @expose
+ * @name nodes[].categories
+ * @memberof! oj.ojTreemap
+ * @instance
+ * @type {Array.<string>}
+ * @default <code class="prettyprint">null</code>
+ */
+/**
+ * The value of the node. The value determines the relative size of the node.
+ * @expose
+ * @name nodes[].value
+ * @memberof! oj.ojTreemap
+ * @instance
+ * @type {number}
+ * @default <code class="prettyprint">null</code>
+ */
+/**
+ * The fill color of the node.
+ * @expose
+ * @name nodes[].color
+ * @memberof! oj.ojTreemap
+ * @instance
+ * @type {string}
+ * @default <code class="prettyprint">null</code>
+ */
+/**
+ * The CSS style class to apply to the node. The style class and inline style will override any other styling specified through the options. For tooltip interactivity, it's recommended to also pass a representative color to the node color attribute.
+ * @ignore
+ * @name nodes[].className
+ * @memberof! oj.ojTreemap
+ * @instance
+ * @type {string}
+ * @default <code class="prettyprint">null</code>
+ * @deprecated This attribute is deprecated, use the svgClassName attribute instead.
+ */
+/**
+ * The inline style to apply to the node. The style class and inline style will override any other styling specified through the options. For tooltip interactivity, it's recommended to also pass a representative color to the node color attribute.
+ * @ignore
+ * @name nodes[].style
+ * @memberof! oj.ojTreemap
+ * @instance
+ * @type {object}
+ * @default <code class="prettyprint">null</code>
+ * @deprecated This attribute is deprecated, use the svgStyle attribute instead.
+ */
+/**
+ * The CSS style class to apply to the node. The style class and inline style will override any other styling specified through the properties. For tooltip interactivity, it's recommended to also pass a representative color to the node color attribute.
+ * @expose
+ * @name nodes[].svgClassName
+ * @memberof! oj.ojTreemap
+ * @instance
+ * @type {string}
+ * @default <code class="prettyprint">null</code>
+ */
+/**
+ * The inline style to apply to the node. The style class and inline style will override any other styling specified through the properties. For tooltip interactivity, it's recommended to also pass a representative color to the node color attribute.
+ * @expose
+ * @name nodes[].svgStyle
+ * @memberof! oj.ojTreemap
+ * @instance
+ * @type {object}
+ * @default <code class="prettyprint">null</code>
+ */
+/**
+ * The label for this node.
+ * @expose
+ * @name nodes[].label
+ * @memberof! oj.ojTreemap
+ * @instance
+ * @type {string}
+ * @default <code class="prettyprint">null</code>
+ */
+/**
+ * Specifies whether drilling is enabled for the node. Drillable nodes will show a pointer cursor on hover and fire an <code class="prettyprint">ojDrill</code> event on click (double click if selection is enabled). To enable drilling for all nodes at once, use the drilling attribute in the top level.
+ * @expose
+ * @name nodes[].drilling
+ * @memberof! oj.ojTreemap
+ * @instance
+ * @type {string}
+ * @ojvalue {string} "on"
+ * @ojvalue {string} "off"
+ * @ojvalue {string} "inherit"
+ * @default <code class="prettyprint">"inherit"</code>
+ */
+/**
+ * The description of this node. This is used for accessibility and also for customizing the tooltip text.
+ * @expose
+ * @name nodes[].shortDesc
+ * @memberof! oj.ojTreemap
+ * @instance
+ * @type {string}
+ * @default <code class="prettyprint">null</code>
+ */
+/**
+ * The pattern used to fill the node.
+ * @expose
+ * @name nodes[].pattern
+ * @memberof! oj.ojTreemap
+ * @instance
+ * @type {string}
+ * @ojvalue {string} "smallChecker"
+ * @ojvalue {string} "smallCrosshatch"
+ * @ojvalue {string} "smallDiagonalLeft"
+ * @ojvalue {string} "smallDiagonalRight"
+ * @ojvalue {string} "smallDiamond"
+ * @ojvalue {string} "smallTriangle"
+ * @ojvalue {string} "largeChecker"
+ * @ojvalue {string} "largeCrosshatch"
+ * @ojvalue {string} "largeDiagonalLeft"
+ * @ojvalue {string} "largeDiagonalRight"
+ * @ojvalue {string} "largeDiamond"
+ * @ojvalue {string} "largeTriangle"
+ * @ojvalue {string} "none"
+ * @default <code class="prettyprint">"none"</code>
+ */
+/**
+ * The CSS style object defining the style of the label. The CSS white-space property can be defined with value "nowrap" to disable default text wrapping.
+ * @expose
+ * @name nodes[].labelStyle
+ * @memberof! oj.ojTreemap
+ * @instance
+ * @type {object}
+ * @default <code class="prettyprint">null</code>
+ */
+/**
+ * The label display behavior for leaf nodes.
+ * @expose
+ * @name nodes[].labelDisplay
+ * @memberof! oj.ojTreemap
+ * @instance
+ * @type {string}
+ * @ojvalue {string} "off"
+ * @ojvalue {string} "node"
+ * @default <code class="prettyprint">"node"</code>
+ */
+/**
+ * The label display behavior for group nodes.
+ * @expose
+ * @name nodes[].groupLabelDisplay
+ * @memberof! oj.ojTreemap
+ * @instance
+ * @type {string}
+ * @ojvalue {string} "node"
+ * @ojvalue {string} "off"
+ * @ojvalue {string} "header"
+ * @default <code class="prettyprint">"header"</code>
+ */
+/**
+ * The horizontal alignment for labels displayed within the node.
+ * @expose
+ * @name nodes[].labelHalign
+ * @memberof! oj.ojTreemap
+ * @instance
+ * @type {string}
+ * @ojvalue {string} "start"
+ * @ojvalue {string} "end"
+ * @ojvalue {string} "center"
+ * @default <code class="prettyprint">"center"</code>
+ */
+/**
+ * The vertical alignment for labels displayed within the node.
+ * @expose
+ * @name nodes[].labelValign
+ * @memberof! oj.ojTreemap
+ * @instance
+ * @type {string}
+ * @ojvalue {string} "top"
+ * @ojvalue {string} "bottom"
+ * @ojvalue {string} "center"
+ * @default <code class="prettyprint">"center"</code>
+ */
+/**
+ * Specifies whether or not the node will be selectable.
+ * @expose
+ * @name nodes[].selectable
+ * @memberof! oj.ojTreemap
+ * @instance
+ * @type {string}
+ * @ojvalue {string} "off"
+ * @ojvalue {string} "auto"
+ * @default <code class="prettyprint">"auto"</code>
+ */
+/**
+ * An object defining the properties for the node header.
+ * @expose
+ * @name nodes[].header
+ * @memberof! oj.ojTreemap
+ * @instance
+ * @type {object}
+ * @default <code class="prettyprint">null</code>
+ */
+/**
+ * The horizontal alignment of the header title.
+ * @expose
+ * @name nodes[].header.labelHalign
+ * @memberof! oj.ojTreemap
+ * @instance
+ * @type {string}
+ * @ojvalue {string} "center"
+ * @ojvalue {string} "end"
+ * @ojvalue {string} "start"
+ * @default <code class="prettyprint">"start"</code>
+ */
+/**
+ * The CSS style object defining the style of the header title.
+ * @expose
+ * @name nodes[].header.labelStyle
+ * @memberof! oj.ojTreemap
+ * @instance
+ * @type {object}
+ * @default <code class="prettyprint">null</code>
+ */
+/**
+ * Specifies whether isolate behavior is enabled on the node.
+ * @expose
+ * @name nodes[].header.isolate
+ * @memberof! oj.ojTreemap
+ * @instance
+ * @type {string}
+ * @ojvalue {string} "off"
+ * @ojvalue {string} "on"
+ * @default <code class="prettyprint">"on"</code>
+ */
+/**
+ * Specifies whether the node color should be displayed in the header.
+ * @expose
+ * @name nodes[].header.useNodeColor
+ * @memberof! oj.ojTreemap
+ * @instance
+ * @type {string}
+ * @ojvalue {string} "on"
+ * @ojvalue {string} "off"
+ * @default <code class="prettyprint">"off"</code>
+ */
+/**
+ * An object defining default properties for the nodes.
+ * @expose
+ * @name nodeDefaults
+ * @memberof oj.ojTreemap
+ * @instance
+ * @type {object}
+ * @default <code class="prettyprint">null</code>
+ */
+/**
+ * The CSS style object defining the style of the label. The CSS white-space property can be defined with value "nowrap" to disable default text wrapping.
+ * @expose
+ * @name nodeDefaults.labelStyle
+ * @memberof! oj.ojTreemap
+ * @instance
+ * @type {object}
+ * @default <code class="prettyprint">null</code>
+ */
+/**
+ * The label display behavior for leaf nodes.
+ * @expose
+ * @name nodeDefaults.labelDisplay
+ * @memberof! oj.ojTreemap
+ * @instance
+ * @type {string}
+ * @ojvalue {string} "off"
+ * @ojvalue {string} "node"
+ * @default <code class="prettyprint">"node"</code>
+ */
+/**
+ * The label display behavior for group nodes.
+ * @expose
+ * @name nodeDefaults.groupLabelDisplay
+ * @memberof! oj.ojTreemap
+ * @instance
+ * @type {string}
+ * @ojvalue {string} "node"
+ * @ojvalue {string} "off"
+ * @ojvalue {string} "header"
+ * @default <code class="prettyprint">"header"</code>
+ */
+/**
+ * The horizontal alignment for labels displayed within the node.
+ * @expose
+ * @name nodeDefaults.labelHalign
+ * @memberof! oj.ojTreemap
+ * @instance
+ * @type {string}
+ * @ojvalue {string} "start"
+ * @ojvalue {string} "end"
+ * @ojvalue {string} "center"
+ * @default <code class="prettyprint">"center"</code>
+ */
+/**
+ * The minimum number of visible characters needed in order to render a truncated label. If the minimum is not met when calculating the truncated label then the label is not displayed.
+ * @expose
+ * @name nodeDefaults.labelMinLength
+ * @memberof! oj.ojTreemap
+ * @instance
+ * @type {number}
+ * @default <code class="prettyprint">1</code>
+ */
+/**
+ * The vertical alignment for labels displayed within the node.
+ * @expose
+ * @name nodeDefaults.labelValign
+ * @memberof! oj.ojTreemap
+ * @instance
+ * @type {string}
+ * @ojvalue {string} "top"
+ * @ojvalue {string} "bottom"
+ * @ojvalue {string} "center"
+ * @default <code class="prettyprint">"center"</code>
+ */
+/**
+ * The color of the node hover feedback.
+ * @expose
+ * @name nodeDefaults.hoverColor
+ * @memberof! oj.ojTreemap
+ * @instance
+ * @type {string}
+ * @default <code class="prettyprint">null</code>
+ */
+/**
+ * The inner color of the node selection feedback.
+ * @expose
+ * @name nodeDefaults.selectedInnerColor
+ * @memberof! oj.ojTreemap
+ * @instance
+ * @type {string}
+ * @default <code class="prettyprint">null</code>
+ */
+/**
+ * The outer color of the node selection feedback.
+ * @expose
+ * @name nodeDefaults.selectedOuterColor
+ * @memberof! oj.ojTreemap
+ * @instance
+ * @type {string}
+ * @default <code class="prettyprint">null</code>
+ */
+/**
+ * An object defining default properties for the node header.
+ * @expose
+ * @name nodeDefaults.header
+ * @memberof! oj.ojTreemap
+ * @instance
+ * @type {object}
+ * @default <code class="prettyprint">null</code>
+ */
+/**
+ * The background color of the node headers.
+ * @expose
+ * @name nodeDefaults.header.backgroundColor
+ * @memberof! oj.ojTreemap
+ * @instance
+ * @type {string}
+ * @default <code class="prettyprint">null</code>
+ */
+/**
+ * The border color of the node headers.
+ * @expose
+ * @name nodeDefaults.header.borderColor
+ * @memberof! oj.ojTreemap
+ * @instance
+ * @type {string}
+ * @default <code class="prettyprint">null</code>
+ */
+/**
+ * The background color of the node hover feedback.
+ * @expose
+ * @name nodeDefaults.header.hoverBackgroundColor
+ * @memberof! oj.ojTreemap
+ * @instance
+ * @type {string}
+ * @default <code class="prettyprint">null</code>
+ */
+/**
+ * The inner color of the node hover feedback.
+ * @expose
+ * @name nodeDefaults.header.hoverInnerColor
+ * @memberof! oj.ojTreemap
+ * @instance
+ * @type {string}
+ * @default <code class="prettyprint">null</code>
+ */
+/**
+ * The outer color of the node hover feedback.
+ * @expose
+ * @name nodeDefaults.header.hoverOuterColor
+ * @memberof! oj.ojTreemap
+ * @instance
+ * @type {string}
+ * @default <code class="prettyprint">null</code>
+ */
+/**
+ * The background color of the node selection feedback.
+ * @expose
+ * @name nodeDefaults.header.selectedBackgroundColor
+ * @memberof! oj.ojTreemap
+ * @instance
+ * @type {string}
+ * @default <code class="prettyprint">null</code>
+ */
+/**
+ * The inner color of the node selection feedback.
+ * @expose
+ * @name nodeDefaults.header.selectedInnerColor
+ * @memberof! oj.ojTreemap
+ * @instance
+ * @type {string}
+ * @default <code class="prettyprint">null</code>
+ */
+/**
+ * The outer color of the node selection feedback.
+ * @expose
+ * @name nodeDefaults.header.selectedOuterColor
+ * @memberof! oj.ojTreemap
+ * @instance
+ * @type {string}
+ * @default <code class="prettyprint">null</code>
+ */
+/**
+ * The horizontal alignment of the header title.
+ * @expose
+ * @name nodeDefaults.header.labelHalign
+ * @memberof! oj.ojTreemap
+ * @instance
+ * @type {string}
+ * @ojvalue {string} "center"
+ * @ojvalue {string} "end"
+ * @ojvalue {string} "start"
+ * @default <code class="prettyprint">"start"</code>
+ */
+/**
+ * The CSS style string defining the style of the header title.
+ * @expose
+ * @name nodeDefaults.header.labelStyle
+ * @memberof! oj.ojTreemap
+ * @instance
+ * @type {object}
+ * @default <code class="prettyprint">null</code>
+ */
+/**
+ * Specifies whether isolate behavior is enabled on the node.
+ * @expose
+ * @name nodeDefaults.header.isolate
+ * @memberof! oj.ojTreemap
+ * @instance
+ * @type {string}
+ * @ojvalue {string} "off"
+ * @ojvalue {string} "on"
+ * @default <code class="prettyprint">"on"</code>
+ */
+/**
+ * Specifies whether the node color should be displayed in the header.
+ * @expose
+ * @name nodeDefaults.header.useNodeColor
+ * @memberof! oj.ojTreemap
+ * @instance
+ * @type {string}
+ * @ojvalue {string} "on"
+ * @ojvalue {string} "off"
+ * @default <code class="prettyprint">"off"</code>
+ */
+/**
+ * Specifies the visual effect for separating the nodes from each other. This allows for adjacent nodes of the same color to be distinguished.
+ * @expose
+ * @name nodeSeparators
+ * @memberof oj.ojTreemap
+ * @instance
+ * @type {string}
+ * @ojvalue {string} "bevels"
+ * @ojvalue {string} "gaps"
+ * @default <code class="prettyprint">"gaps"</code>
+ */
+/**
+ * Specifies the selection mode.
+ * @expose
+ * @name selectionMode
+ * @memberof oj.ojTreemap
+ * @instance
+ * @type {string}
+ * @ojvalue {string} "none"
+ * @ojvalue {string} "single"
+ * @ojvalue {string} "multiple"
+ * @default <code class="prettyprint">"multiple"</code>
+ */
+/**
+ * Specifies whether the nodes are sorted by size. When sorting is enabled, nodes that have the same parent are sorted in order of descending size.
+ * @expose
+ * @name sorting
+ * @memberof oj.ojTreemap
+ * @instance
+ * @type {string}
+ * @ojvalue {string} "on"
+ * @ojvalue {string} "off"
+ * @default <code class="prettyprint">"off"</code>
+ */
+/**
+ * Specifies the label describing the color metric of the treemap. This label will be used in the legend.
+ * @expose
+ * @name colorLabel
+ * @memberof oj.ojTreemap
+ * @instance
+ * @type {string}
+ * @default <code class="prettyprint">null</code>
+ */
+/**
+ * Specifies the label describing the size metric of the treemap. This label will be used in the legend.
+ * @expose
+ * @name sizeLabel
+ * @memberof oj.ojTreemap
+ * @instance
+ * @type {string}
+ * @default <code class="prettyprint">null</code>
+ */
+/**
+* Specifies whether drilling is enabled. Drillable nodes will show a pointer cursor on hover and fire an <code class="prettyprint">ojBeforeDrill</code> and <code class="prettyprint">ojDrill</code> event on click (double click if selection is enabled). Drilling on a node causes a property change to the rootNode attribute. The displayLevels attribute can be used in conjunction with drilling to display very deep hieracrchies. Use "on" to enable drilling for all nodes. To enable or disable drilling on individual nodes use the drilling attribute in each node.
+* @expose
+ * @name drilling
+ * @memberof oj.ojTreemap
+ * @instance
+ * @type {string}
+ * @ojvalue {string} "on"
+ * @ojvalue {string} "off"
+ * @default <code class="prettyprint">"off"</code>
+ */
+/**
+ * The id of the root node. When specified, only the root node and children of the root will be displayed.
+ * @expose
+ * @name rootNode
+ * @memberof oj.ojTreemap
+ * @instance
+ * @type {string}
+ * @default <code class="prettyprint">null</code>
+ */
+/**
+ * An array containing the ids of the initially selected nodes.
+ * @expose
+ * @name selection
+ * @memberof oj.ojTreemap
+ * @instance
+ * @type {Array.<string>}
+ * @default <code class="prettyprint">null</code>
+ */
+/**
+ * The id of the initially isolated node.
+ * @expose
+ * @name isolatedNode
+ * @memberof oj.ojTreemap
+ * @instance
+ * @type {string}
+ * @default <code class="prettyprint">null</code>
+ */
+/**
+ * Data visualizations require a press and hold delay before triggering tooltips and rollover effects on mobile devices to avoid interfering with page panning, but these hold delays can make applications seem slower and less responsive. For a better user experience, the application can remove the touch and hold delay when data visualizations are used within a non scrolling container or if there is sufficient space outside of the visualization for panning. If touchResponse is touchStart the element will instantly trigger the touch gesture and consume the page pan events. If touchResponse is auto, the element will behave like touchStart if it determines that it is not rendered within scrolling content and if panning is not available for those elements that support the feature. 
+ * @expose
+ * @name touchResponse
+ * @memberof oj.ojTreemap
+ * @instance
+ * @type {string}
+ * @ojvalue {string} "touchStart"
+ * @ojvalue {string} "auto"
+ * @default <code class="prettyprint">"auto"</code>
+ */
+
 
 // SubId Locators **************************************************************
 
@@ -480,7 +1249,7 @@ oj.__registerWidget('oj.ojTreemap', $['oj']['dvtBaseComponent'],
  * @memberof oj.ojTreemap
  *
  * @example <caption>Get the node at index 0 in the first layer, index 1 in the second:</caption>
- * var nodes = $( ".selector" ).ojTreemap( "getNodeBySubId", {'subId': 'oj-treemap-node', 'indexPath': [0, 1]} );
+ * var nodes = myTreemap.getNodeBySubId( {'subId': 'oj-treemap-node', 'indexPath': [0, 1]} );
  */
 
 /**
@@ -496,7 +1265,7 @@ oj.__registerWidget('oj.ojTreemap', $['oj']['dvtBaseComponent'],
  * @instance
  * 
  * @example <caption>Get the tooltip object of the treemap, if displayed:</caption>
- * var nodes = $( ".selector" ).ojTreemap( "getNodeBySubId", {'subId': 'oj-treemap-tooltip'} );
+ * var nodes =  myTreemap.getNodeBySubId( {'subId': 'oj-treemap-tooltip'} );
  */
 // Node Context Objects ********************************************************
 
@@ -507,48 +1276,6 @@ oj.__registerWidget('oj.ojTreemap', $['oj']['dvtBaseComponent'],
  *
  * @ojnodecontext oj-treemap-node
  * @memberof oj.ojTreemap
- */
-
-/**
- * The knockout template used to render the content of the tooltip.
- *
- * This attribute is only exposed via the <code class="prettyprint">ojComponent</code> binding, and is not a
- * component option. The following variables are also passed into the template:
- *  <ul> 
- *   <li>parentElement: The tooltip element. The function can directly modify or append content to this element.</li> 
- *   <li>id: The id of the hovered node.</li> 
- *   <li>label: The label of the hovered node.</li> 
- *   <li>value: The value of the hovered node.</li> 
- *   <li>color: The color of the hovered node.</li>
- *  </ul>
- *
- * @ojbindingonly
- * @name tooltip.template
- * @memberof! oj.ojTreemap
- * @instance
- * @type {string|null}
- * @default <code class="prettyprint">null</code>
- */
-
-/**
- * The knockout template used to render the custom content of the leaf node.
- *
- * This attribute is only exposed via the <code class="prettyprint">ojComponent</code> binding, and is not a
- * component option. The following variables are also passed into the template:
- *  <ul> 
- *    <li>bounds: Object containing (x, y, width, height) of the bounds the node area. 
- *    The x and y coordinates are relative to the top, left corner of the component.</li> 
- *    <li>data: The data object for the node.</li> 
- *    <li>id: The id of the node.</li> 
- *    <li>component: The widget constructor for the treemap. The 'component' is bound to the associated jQuery element so can be called directly as a function.</li> 
- *  </ul>
- *
- * @ojbindingonly
- * @name nodeContent.template
- * @memberof! oj.ojTreemap
- * @instance
- * @type {string|null}
- * @default <code class="prettyprint">null</code>
  */
 /**
  * Ignore tag only needed for DVTs that have jsDoc in separate _doc.js files.
@@ -689,7 +1416,7 @@ var ojTreemapMeta = {
       }
     },
     "nodes": {
-      "type": "Array<object>"
+      "type": "Array<object>|Promise"
     },
     "nodeContent": {
       "type": "object",

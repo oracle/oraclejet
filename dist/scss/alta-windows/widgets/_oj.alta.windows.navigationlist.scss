@@ -30,10 +30,10 @@
             @include oj-flex-property(0 0 auto);
         }
 
-        // Icons only bar should have same color as icons with text color.
+        // Icons only horizontal navlist should have same color as icons with text color.
         .oj-navigationlist-page-level.oj-navigationlist-horizontal.oj-navigationlist-icon-only .oj-navigationlist-item .oj-navigationlist-item-icon
         {
-            color: $navigationListPageLevelItemIconColorDefault;
+            color: $tabBarItemIconColorDefault;
             .oj-contrast-marker & {
               color: $navigationListItemContrastLabelColorDefault;
             }
@@ -41,7 +41,7 @@
 
         .oj-navigationlist-page-level.oj-navigationlist-horizontal.oj-navigationlist-icon-only .oj-navigationlist-item.oj-selected:not(.oj-hover) .oj-navigationlist-item-icon
         {
-            color: $navigationListPageLevelItemIconColorSelected;
+            color: $tabBarItemIconColorSelected;
             .oj-contrast-marker & {
                 color: $navigationListItemContrastLabelColorSelected;
             }
@@ -58,7 +58,7 @@
             @extend .oj-fwk-icon-caret-s;
         }
         .oj-navigationlist-collapsible .oj-navigationlist-collapse-icon{
-            @extend .oj-fwk-icon-caret-n;
+            @extend .oj-fwk-icon-caret-end;
         }
         .oj-navigationlist-slider .oj-navigationlist-collapse-icon{
             @extend .oj-fwk-icon-caret-end;

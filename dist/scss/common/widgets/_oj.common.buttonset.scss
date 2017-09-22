@@ -15,10 +15,12 @@
     /* --------------------------------------------------------------- */
 
     // This is to prevent the flash of unstyled content before the html becomes JET components.
+    // Note: It is intentional that the oj-radioset and oj-checkboxset below do not have the '.' before it.
+    // This selector matches the custom element name, not a class name.
     @if $initialVisibility == hidden {
-      oj-buttonset:not(.oj-complete) {
+      oj-buttonset-one:not(.oj-complete), oj-buttonset-many:not(.oj-complete) {
         visibility: hidden;
-      }      
+      }   
     }
 
     /* oj-buttonset-multi is present iff it's a multi-button buttonset, which is the only kind of buttonset to which 
@@ -41,7 +43,7 @@
         @include oj-flex-property(1);
         overflow: hidden;
     }
-
+    
     // Apply the default width setting to equal-width buttonsets. Apps can override this rule as needed.
     .oj-buttonset-width-equal .oj-buttonset-multi,
     .oj-buttonset-width-equal.oj-buttonset-multi {
@@ -51,7 +53,7 @@
     // Applying oj-buttonset-width-auto will force buttonset buttons' widths to be determined by the total width of their icons/label contents, overriding any theming defaults
     // app can set oj-buttonset-width-auto on buttonset or on an ancestor such as toolbar or document
     .oj-buttonset-width-auto .oj-buttonset-multi .oj-button, 
-    .oj-buttonset-width-auto.oj-buttonset-multi .oj-button {
+    .oj-buttonset-width-auto.oj-buttonset-multi .oj-button{
         @include oj-flex-property(auto);
     }
 

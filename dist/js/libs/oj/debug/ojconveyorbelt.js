@@ -53,6 +53,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
  *  - itemStyleClass: Style class name for the DOM element of an item in the conveyor,
  *  - hiddenStyleClass: Style class name used to hide a DOM element
  * @param {Object} agentInfo Browser user agent information.
+ * @protected
  * @constructor
  * @ignore
  */
@@ -1698,20 +1699,15 @@ ConveyorBeltCommon._SWIPE_THRESHOLD = .33;
  * 
  * @classdesc
  * <h3 id="conveyorBeltOverview-section">
- *   JET ConveyorBelt Component
+ *   JET ConveyorBelt
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#conveyorBeltOverview-section"></a>
  * </h3>
  * 
- * <p>Description: Container component that manages overflow for its child
- * components and allows scrolling among them.
+ * <p>Description: Container element that manages overflow for its child
+ * elements and allows scrolling among them.
  * 
- * <p>A JET ConveyorBelt can be created from any 
- * <code class="prettyprint">&lt;div></code> element that contains
- * multiple child elements at the same level to scroll among.  The root must be
- * a <code class="prettyprint">&lt;div></code> element because the ConveyorBelt 
- * will create additional DOM elements between the root and the scrollable child
- * elements.  
- * <p>The size of the ConveyorBelt must somehow be constrained in order for 
+ * <p>Child elements of the ConveyorBelt must all be siblings at the same level.
+ * The size of the ConveyorBelt must somehow be constrained in order for 
  * there to be overflow to manage, for example by specifying CSS 
  * <code class="prettyprint">max-width</code> or
  * <code class="prettyprint">max-height</code>.  
@@ -1719,24 +1715,21 @@ ConveyorBeltCommon._SWIPE_THRESHOLD = .33;
  * ConveyorBelt, then ConveyorBelt will ensure that they are laid out
  * appropriately for its orientation.  However, if the elements to be scrolled
  * among are contained by a single nested descendant element, the 
- * <code class="prettyprint">contentParent</code>, then it is up to calling code
+ * <code class="prettyprint">content-parent</code>, then it is up to calling code
  * to ensure that the elements are laid out appropriately.  For example, 
  * elements can be forced horizontal by using CSS
  * <code class="prettyprint">white-space:nowrap</code>, or vertical by using 
- * <code class="prettyprint">display:block</code>, before creating the 
- * ConveyorBelt.  
+ * <code class="prettyprint">display:block</code>.
  * 
- * <pre class="prettyprint">
- * <code>
- * &lt;div id="conveyorBelt" style="max-width:100px;"
- *      data-bind="ojComponent: {component: 'ojConveyorBelt'}">
- *   &lt;button id="button1">Alpha&lt;/button>
- *   &lt;button id="button2">Beta&lt;/button>
- *   &lt;button id="button3">Gamma&lt;/button>
- *   &lt;button id="button4">Delta&lt;/button>
- *   &lt;button id="button5">Epsilon&lt;/button>
- *   &lt;button id="button6">Zeta&lt;/button>
- * &lt;/div>
+ * <pre class="prettyprint"><code>
+ * &lt;oj-conveyor-belt>
+ *   &lt;oj-button>Alpha&lt;/oj-button>
+ *   &lt;oj-button>Beta&lt;/oj-button>
+ *   &lt;oj-button>Gamma&lt;/oj-button>
+ *   &lt;oj-button>Delta&lt;/oj-button>
+ *   &lt;oj-button>Epsilon&lt;/oj-button>
+ *   &lt;oj-button>Zeta&lt;/oj-button>
+ * &lt;/oj-conveyor-belt>
  * </code></pre>
  *
  *
@@ -1795,46 +1788,41 @@ ConveyorBeltCommon._SWIPE_THRESHOLD = .33;
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#rtl-section"></a>
  * </h3>
  * 
- * <p>As with any JET component, in the unusual case that the directionality 
+ * <p>As with any JET element, in the unusual case that the directionality 
  * (LTR or RTL) changes post-init, the conveyorBelt must be 
  * <code class="prettyprint">refresh()</code>ed.
- * 
- * 
- * <h3 id="pseudos-section">
- *   Pseudo-selectors
- *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#pseudos-section"></a>
- * </h3>
- * 
- * <p>The <code class="prettyprint">:oj-conveyorbelt</code> pseudo-selector can 
- * be used in jQuery expressions to select JET ConveyorBelt.  For example:
- * 
- * <pre class="prettyprint">
- * <code>$( ":oj-conveyorbelt" ) // selects all JET ConveyorBelts on the page
- * $myEventTarget.closest( ":oj-conveyorbelt" ) // selects the closest ancestor that is a JET ConveyorBelt
- * </code></pre>
- * 
- * 
- * <h3 id="jqui2jet-section">
- *   JET for jQuery UI developers
- *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#jqui2jet-section"></a>
- * </h3>
- * 
- * <p>Event names for all JET components are prefixed with "oj", instead of 
- * component-specific prefixes like "conveyorBelt".  
- * 
- * <!-- - - - - Above this point, the tags are for the class.
- *              Below this point, the tags are for the constructor (initializer). - - - - - - -->
- * 
- * @desc Creates a JET ConveyorBelt. 
- * @example <caption>Initialize the conveyorBelt with no options specified:</caption>
- * $( ".selector" ).ojConveyorBelt();
- * 
- * @example <caption>Initialize the conveyorBelt with some options specified:</caption>
- * $( ".selector" ).ojConveyorBelt( { "orientation": "vertical" } );
- * 
- * @example <caption>Initialize the conveyorBelt via the JET 
- * <code class="prettyprint">ojComponent</code> binding:</caption>
- * &lt;div id="conveyorBelt" data-bind="ojComponent: { component: 'ojConveyorBelt', orientation: 'vertical'}">
+ */
+/**
+ * <p>The &lt;oj-conveyor-belt> element manages overflow for its child elements and allows scrolling among them.
+ * Child elements of the &lt;oj-conveyor-belt> must all be siblings at the same level.</p>
+ * <p>If the elements to be scrolled among are nested descendants and not direct
+ * children of the conveyor belt, the <code class="prettyprint">content-parent</code> 
+ * attribute should specify the nested elements direct parent.</p>
+ *
+ * @ojchild Default
+ * @memberof oj.ojConveyorBelt
+ *
+ * @example <caption>Initialize the conveyor belt with child content specified:</caption>
+ * &lt;oj-conveyor-belt>
+ *   &lt;oj-button>Alpha&lt;/oj-button>
+ *   &lt;oj-button>Beta&lt;/oj-button>
+ *   &lt;oj-button>Gamma&lt;/oj-button>
+ *   &lt;oj-button>Delta&lt;/oj-button>
+ *   &lt;oj-button>Epsilon&lt;/oj-button>
+ *   &lt;oj-button>Zeta&lt;/oj-button>
+ * &lt;/oj-conveyor-belt>
+ *
+ * @example <caption>Initialize the conveyor belt with nested child content
+ * specified:</caption>
+ * &lt;oj-conveyor-belt content-parent='#myContentElem'>
+ *   &lt;div id='myContentElem'>
+ *     &lt;oj-button>Item 1&lt;/oj-button>
+ *     &lt;oj-button>Item 2&lt;/oj-button>
+ *     &lt;oj-button>Item 3&lt;/oj-button>
+ *     &lt;oj-button>Item 4&lt;/oj-button>
+ *     &lt;oj-button>Item 5&lt;/oj-button>
+ *   &lt;/div>
+ * &lt;/oj-conveyor-belt>
  */
 (function()
 {
@@ -1857,37 +1845,38 @@ oj.__registerWidget("oj.ojConveyorBelt", $['oj']['baseComponent'],
      * @default <code class="prettyprint">"horizontal"</code>
      *
      * @example <caption>Initialize the conveyorBelt with the 
-     * <code class="prettyprint">orientation</code> option specified:</caption>
-     * $( ".selector" ).ojConveyorBelt( { "orientation": "vertical" } );
+     * <code class="prettyprint">orientation</code> attribute specified:</caption>
+     * &lt;oj-conveyor-belt orientation='vertical'>
+     * &lt;/oj-conveyor-belt>
      * 
      * @example <caption>Get or set the <code class="prettyprint">orientation</code> 
-     * option after initialization:</caption>
+     * property after initialization:</caption>
      * // getter
-     * var orientation = $( ".selector" ).ojConveyorBelt( "option", "orientation" );
+     * var orientation = myConveyorBelt.orientation;
      * 
      * // setter
-     * $( ".selector" ).ojConveyorBelt( "option", "orientation", "vertical" );
+     * myConveyorBelt.orientation = 'vertical';
      */
     orientation: "horizontal",
     /** 
      * Specify the selector of the descendant DOM element in the conveyorBelt
      * that directly contains the items to scroll among.  
      * 
-     * <p>This option is <code class="prettyprint">null</code> by default, 
+     * <p>This attribute value is <code class="prettyprint">null</code> by default, 
      * meaning that the items to scroll among are direct children of the 
-     * conveyorBelt DOM element.  In some cases, the items to scroll among
-     * are not direct children of the conveyorBelt DOM element, but are instead
-     * nested in a descendant DOM element.  In such cases, this option should be 
+     * oj-conveyor-belt.  In some cases, the items to scroll among
+     * are not direct children of the oj-conveyor-belt, but are instead
+     * nested in a descendant DOM element.  In such cases, this attribute should be 
      * specified to point to the descendant DOM element whose direct children
      * are the items to scroll among.  For example, if the items to scroll
      * among are buttons in a buttonset, the buttons are direct children of 
      * the DOM element representing the buttonset.  The buttonset would be 
      * the direct child of the conveyorBelt.  If the 
      * <code class="prettyprint">id</code> of the buttonset DOM element were
-     * <code class="prettyprint">'myContentDiv'</code>, then contentParent
-     * would be specified as <code class="prettyprint">'#myContentDiv'</code>.
+     * <code class="prettyprint">'myContentElem'</code>, then content-parent
+     * would be specified as <code class="prettyprint">'#myContentElem'</code>.
      * 
-     * <p><b>WARNING:</b> The selector specified for this option should match 
+     * <p><b>WARNING:</b> The selector specified for this attribute should match 
      * only a single descendant DOM element.  If multiple elements are matched, 
      * then only the first one will be used.  Applications should not depend on 
      * this behavior because we reserve the right to change it in the future in 
@@ -1900,40 +1889,36 @@ oj.__registerWidget("oj.ojConveyorBelt", $['oj']['baseComponent'],
      * @default <code class="prettyprint">null</code>
      *
      * @example <caption>Initialize the conveyorBelt with the 
-     * <code class="prettyprint">contentParent</code> option specified:</caption>
-     * // HTML
-     * &lt;div>                       // conveyorBelt DOM element
-     *   &lt;div id="myContentDiv">     // contentParent DOM element
-     *     &lt;button>Item 1&lt;/button>     // items to scroll among... 
-     *     &lt;button>Item 2&lt;/button>
-     *     &lt;button>Item 3&lt;/button>
-     *     &lt;button>Item 4&lt;/button>
-     *     &lt;button>Item 5&lt;/button>
+     * <code class="prettyprint">content-parent</code> attribute specified:</caption>
+     * &lt;oj-conveyor-belt content-parent='#myContentElem'>
+     *   &lt;div id='myContentElem'>
+     *     &lt;oj-button>Item 1&lt;/oj-button>
+     *     &lt;oj-button>Item 2&lt;/oj-button>
+     *     &lt;oj-button>Item 3&lt;/oj-button>
+     *     &lt;oj-button>Item 4&lt;/oj-button>
+     *     &lt;oj-button>Item 5&lt;/oj-button>
      *   &lt;/div>
-     * &lt;/div>
-     * 
-     * // JS
-     * $( ".selector" ).ojConveyorBelt( { "contentParent": "#myContentDiv" } );
+     * &lt;/oj-conveyor-belt>
      * 
      * @example <caption>Get or set the <code class="prettyprint">contentParent</code> 
-     * option after initialization:</caption>
+     * property after initialization:</caption>
      * // getter
-     * var contentParent = $( ".selector" ).ojConveyorBelt( "option", "contentParent" );
+     * var contentParent = myConveyorBelt.contentParent;
      * 
      * // setter
-     * $( ".selector" ).ojConveyorBelt( "option", "contentParent", "#myContentDiv" );
+     * myConveyorBelt.contentParent = '#myContentElem';
      */
     contentParent: null
     
     /**
      * To avoid tight coupling between a ConveyorBelt and its contents, JET 
      * ConveyorBelt does not support the <code class="prettyprint">disabled</code> 
-     * option.
+     * attribute.
      * 
      * <p><b>WARNING:</b> Applications should not depend on this behavior 
      * because we reserve the right to change it in the future in order to 
      * support <code class="prettyprint">disabled</code> and propagate it to 
-     * child components of ConveyorBelt.  
+     * child elements of ConveyorBelt.  
      * 
      * @member
      * @name disabled
@@ -1941,8 +1926,9 @@ oj.__registerWidget("oj.ojConveyorBelt", $['oj']['baseComponent'],
      * @instance
      * @type {boolean}
      * @default <code class="prettyprint">false</code>
+     * @ignore
      */
-    // disabled option declared in superclass, but we still want the above API doc
+    // disabled attribute declared in superclass, but we still want the above API doc
 
     // Events
 
@@ -1953,16 +1939,7 @@ oj.__registerWidget("oj.ojConveyorBelt", $['oj']['baseComponent'],
      * @name create
      * @memberof oj.ojConveyorBelt
      * @instance
-     * @property {Event} event <code class="prettyprint">jQuery</code> event object
-     * @property {Object} ui Currently empty
-     *
-     * @example <caption>Initialize the conveyorBelt with the <code class="prettyprint">create</code> callback specified:</caption>
-     * $( ".selector" ).ojConveyorBelt({
-     *     "create": function( event, ui ) {}
-     * });
-     *
-     * @example <caption>Bind an event listener to the <code class="prettyprint">ojcreate</code> event:</caption>
-     * $( ".selector" ).on( "ojcreate", function( event, ui ) {} );
+     * @ignore
      */
     // create event declared in superclass, but we still want the above API doc
   },
@@ -1984,7 +1961,7 @@ oj.__registerWidget("oj.ojConveyorBelt", $['oj']['baseComponent'],
     elem.addClass("oj-conveyorbelt oj-component");
     
     var options = this.options;
-    //FIX : log warning message when "disabled" option set
+    //FIX : log warning message when "disabled" attribute set
     if (options.disabled)
     {
       oj.Logger.warn(_WARNING_DISABLED_OPTION);
@@ -1996,9 +1973,9 @@ oj.__registerWidget("oj.ojConveyorBelt", $['oj']['baseComponent'],
 
   // This method currently runs at create, init, and refresh time (since refresh() is called by _init()).
   /**
-   * Refreshes the visual state of the conveyorBelt. JET components require a 
-   * <code class="prettyprint">refresh()</code> or re-init after the DOM is 
-   * programmatically changed underneath the component.
+   * Refreshes the visual state of the conveyorBelt. JET elements require a 
+   * <code class="prettyprint">refresh()</code> after the DOM is 
+   * programmatically changed underneath the element.
    * 
    * <p>This method does not accept any arguments.
    * 
@@ -2007,7 +1984,7 @@ oj.__registerWidget("oj.ojConveyorBelt", $['oj']['baseComponent'],
    * @instance
    * 
    * @example <caption>Invoke the <code class="prettyprint">refresh</code> method:</caption>
-   * $( ".selector" ).ojConveyorBelt( "refresh" );
+   * myConveyorBelt.refresh();
    */
   refresh: function() // Override of public base class method.  
   {
@@ -2244,7 +2221,7 @@ oj.__registerWidget("oj.ojConveyorBelt", $['oj']['baseComponent'],
         bRecreate = (options.orientation != value);
         break;
       case "disabled":
-        //FIX : log warning message when "disabled" option set
+        //FIX : log warning message when "disabled" attribute set
         oj.Logger.warn(_WARNING_DISABLED_OPTION);
         break;
     }
@@ -2486,7 +2463,7 @@ oj.__registerWidget("oj.ojConveyorBelt", $['oj']['baseComponent'],
     return busyContext.addBusyState(busyStateOptions);
   },
   
-  //** @inheritdoc */
+  // @inheritdoc
   getNodeBySubId: function(locator)
   {
     if (locator == null)
@@ -2512,7 +2489,7 @@ oj.__registerWidget("oj.ojConveyorBelt", $['oj']['baseComponent'],
     return null;
   },
 
-  //** @inheritdoc */
+  // @inheritdoc
   getSubIdByNode: function(node) {
     var startIndicator = this.getNodeBySubId({'subId':'oj-conveyorbelt-start-overflow-indicator'});
     var endIndicator = this.getNodeBySubId({'subId':'oj-conveyorbelt-end-overflow-indicator'});
@@ -2535,7 +2512,7 @@ oj.__registerWidget("oj.ojConveyorBelt", $['oj']['baseComponent'],
     return null;
   }
   
-  // start jsdoc fragments /////////////////////////////////////////////////////
+  // start API doc fragments /////////////////////////////////////////////////////
   
   /**
    * <p>Sub-ID for the start overflow indicator of a horizontal ConveyorBelt.</p>
@@ -2544,7 +2521,7 @@ oj.__registerWidget("oj.ojConveyorBelt", $['oj']['baseComponent'],
    * @memberof oj.ojConveyorBelt
    *
    * @example <caption>Get the start overflow indicator:</caption>
-   * var node = $( ".selector" ).ojConveyorBelt( "getNodeBySubId", {'subId': 'oj-conveyorbelt-start-overflow-indicator'} );
+   * var node = myConveyorBelt.getNodeBySubId({'subId': 'oj-conveyorbelt-start-overflow-indicator'} );
    */
   
   /**
@@ -2554,7 +2531,7 @@ oj.__registerWidget("oj.ojConveyorBelt", $['oj']['baseComponent'],
    * @memberof oj.ojConveyorBelt
    *
    * @example <caption>Get the end overflow indicator:</caption>
-   * var node = $( ".selector" ).ojConveyorBelt( "getNodeBySubId", {'subId': 'oj-conveyorbelt-end-overflow-indicator'} );
+   * var node = myConveyorBelt.getNodeBySubId({'subId': 'oj-conveyorbelt-end-overflow-indicator'} );
    */
   
   /**
@@ -2564,7 +2541,7 @@ oj.__registerWidget("oj.ojConveyorBelt", $['oj']['baseComponent'],
    * @memberof oj.ojConveyorBelt
    *
    * @example <caption>Get the top overflow indicator:</caption>
-   * var node = $( ".selector" ).ojConveyorBelt( "getNodeBySubId", {'subId': 'oj-conveyorbelt-top-overflow-indicator'} );
+   * var node = myConveyorBelt.getNodeBySubId({'subId': 'oj-conveyorbelt-top-overflow-indicator'} );
    */
   
   /**
@@ -2574,7 +2551,7 @@ oj.__registerWidget("oj.ojConveyorBelt", $['oj']['baseComponent'],
    * @memberof oj.ojConveyorBelt
    *
    * @example <caption>Get the bottom overflow indicator:</caption>
-   * var node = $( ".selector" ).ojConveyorBelt( "getNodeBySubId", {'subId': 'oj-conveyorbelt-bottom-overflow-indicator'} );
+   * var node = myConveyorBelt.getNodeBySubId({'subId': 'oj-conveyorbelt-bottom-overflow-indicator'} );
    */
 
   /**
@@ -2612,14 +2589,14 @@ oj.__registerWidget("oj.ojConveyorBelt", $['oj']['baseComponent'],
    * @memberof oj.ojConveyorBelt
    */
   
-  // end jsdoc fragments ///////////////////////////////////////////////////////
+  // end API doc fragments ///////////////////////////////////////////////////////
   
 }); // end of oj.__registerWidget
 
 // start static members and functions //////////////////////////////////////////
 
-//FIX : log warning message when "disabled" option set
-var _WARNING_DISABLED_OPTION = "JET ConveyorBelt: 'disabled' option not supported";
+//FIX : log warning message when "disabled" property set
+var _WARNING_DISABLED_OPTION = "JET ConveyorBelt: 'disabled' property not supported";
 
 //make sure the collapseEventTimeout param is less than the one used in the unit tests
 //in order to ensure that the filmStrip listener gets the resize event before the unit test

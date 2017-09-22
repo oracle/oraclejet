@@ -92,6 +92,10 @@ dvt.Overview._DEFAULT_WINDOW_BORDER_WIDTH = 1;
 dvt.Overview.prototype.Init = function(context, callback, callbackObj) 
 {
   dvt.Overview.superclass.Init.call(this, context);
+
+  // Create the defaults object
+  this.initDefaults();
+
   this._callback = callback;
   this._callbackObj = callbackObj;
 
@@ -126,6 +130,13 @@ dvt.Overview.prototype.Init = function(context, callback, callbackObj)
   this._initPos = 0;
 };
 
+/**
+ * Initializes the component defaults.
+ */
+dvt.Overview.prototype.initDefaults = function()
+{
+  this.Defaults = new DvtOverviewDefaults();
+};
 
 /**
  * To support Chart zoom and scroll feature
@@ -206,6 +217,13 @@ dvt.Overview.prototype.isAnimationOnClick = function()
  */
 dvt.Overview.prototype.render = function(obj, width, height) 
 {
+  // Store the size
+  if (width != null && height != null)
+  {
+    this.Width = width;
+    this.Height = height;
+  }
+
   if (obj == null)
   {
     // sets the correct time where the sliding window starts
@@ -223,18 +241,12 @@ dvt.Overview.prototype.render = function(obj, width, height)
     // clean out existing elements since they will be regenerate
     this.removeChildren();
   }
-
-  // Store the size
-  if (width != null && height != null)
+  else
   {
-    this.Width = width;
-    this.Height = height;
-  }
+    this.SetOptions(obj);
 
-  // If new xml is provided, parse it and apply the properties
-  if (obj)
-  {
-    var props = this.Parse(obj);
+    // If new xml is provided, parse it and apply the properties
+    var props = this.Parse(this.Options);
     this._applyParsedProperties(props);
   }
 
@@ -277,9 +289,18 @@ dvt.Overview.prototype.render = function(obj, width, height)
     this.longScrollToPos(this._initPos);
 };
 
+/**
+ * @override
+ */
+dvt.Overview.prototype.SetOptions = function(options)
+{
+  // Combine the user options with the defaults and store
+  this.Options = this.Defaults.calcOptions(options);
+};
+
 dvt.Overview.prototype.getParser = function(obj)
 {
-  return new DvtOverviewParser(this);
+  return new dvt.OverviewParser(this);
 };
 
 dvt.Overview.prototype.Parse = function(obj) 
@@ -313,50 +334,48 @@ dvt.Overview.prototype._applyParsedProperties = function(props)
     this._rightMargin = 0;
 
   this._orientation = props.orientation;
-  this._overviewPosition = props.overviewPosition;
   this._isRtl = props.isRtl;
   if (props.featuresOff != null)
     this._featuresOff = props.featuresOff.split(' ');
   if (props.minimumWindowSize != null && props.minimumWindowSize > 0)
     this._minimumWindowSize = props.minimumWindowSize;
 
-  this._borderStyles = props.borderStyles;
   this._timeAxisInfo = props.timeAxisInfo;
   if (props.timeAxisInfo != null)
     this._ticks = this._timeAxisInfo.ticks;
   this._formattedTimeRanges = props.formattedTimeRanges;
 
-  this._borderTopStyle = props.borderTopStyle;
-  this._borderTopColor = props.borderTopColor;
+  this._borderTopStyle = DvtOverviewStyleUtils.getBorderTopStyle(this.Options);
+  this._borderTopColor = DvtOverviewStyleUtils.getBorderTopColor(this.Options);
 
-  this._windowBackgroundColor = props.windowBackgroundColor;
-  this._windowBackgroundAlpha = props.windowBackgroundAlpha;
-  this._windowBorderTopStyle = props.windowBorderTopStyle;
-  this._windowBorderRightStyle = props.windowBorderRightStyle;
-  this._windowBorderBottomStyle = props.windowBorderBottomStyle;
-  this._windowBorderLeftStyle = props.windowBorderLeftStyle;
-  this._windowBorderTopColor = props.windowBorderTopColor;
-  this._windowBorderRightColor = props.windowBorderRightColor;
-  this._windowBorderBottomColor = props.windowBorderBottomColor;
-  this._windowBorderLeftColor = props.windowBorderLeftColor;
+  this._windowBackgroundColor = DvtOverviewStyleUtils.getWindowBackgroundColor(this.Options);
+  this._windowBackgroundAlpha = DvtOverviewStyleUtils.getWindowBackgroundAlpha(this.Options);
+  this._windowBorderTopStyle = DvtOverviewStyleUtils.getWindowBorderTopStyle(this.Options);
+  this._windowBorderRightStyle = DvtOverviewStyleUtils.getWindowBorderRightStyle(this.Options);
+  this._windowBorderBottomStyle = DvtOverviewStyleUtils.getWindowBorderBottomStyle(this.Options);
+  this._windowBorderLeftStyle = DvtOverviewStyleUtils.getWindowBorderLeftStyle(this.Options);
+  this._windowBorderTopColor = DvtOverviewStyleUtils.getWindowBorderTopColor(this.Options);
+  this._windowBorderRightColor = DvtOverviewStyleUtils.getWindowBorderRightColor(this.Options);
+  this._windowBorderBottomColor = DvtOverviewStyleUtils.getWindowBorderBottomColor(this.Options);
+  this._windowBorderLeftColor = DvtOverviewStyleUtils.getWindowBorderLeftColor(this.Options);
 
-  this._handleTextureColor = props.handleTextureColor;
-  this._handleFillColor = props.handleFillColor;
-  this._handleBackgroundImage = props.handleBackgroundImage;
-  this._handleWidth = props.handleWidth;
-  this._handleHeight = props.handleHeight;
+  this._handleTextureColor = DvtOverviewStyleUtils.getHandleTextureColor(this.Options);
+  this._handleFillColor = DvtOverviewStyleUtils.getHandleFillColor(this.Options);
+  this._handleBackgroundImage = DvtOverviewStyleUtils.getHandleBackgroundImage(this.Options);
+  this._handleWidth = DvtOverviewStyleUtils.getHandleWidth(this.Options);
+  this._handleHeight = DvtOverviewStyleUtils.getHandleHeight(this.Options);
 
-  this._overviewBackgroundColor = props.overviewBackgroundColor;
-  this._currentTimeIndicatorColor = props.currentTimeIndicatorColor;
-  this._timeIndicatorColor = props.timeIndicatorColor;
-  this._timeAxisBarColor = props.timeAxisBarColor;
-  this._timeAxisBarOpacity = props.timeAxisBarOpacity;
+  this._overviewBackgroundColor = DvtOverviewStyleUtils.getOverviewBackgroundColor(this.Options);
+  this._currentTimeIndicatorColor = DvtOverviewStyleUtils.getCurrentTimeIndicatorColor(this.Options);
+  this._timeIndicatorColor = DvtOverviewStyleUtils.getTimeIndicatorColor(this.Options);
+  this._timeAxisBarColor = DvtOverviewStyleUtils.getTimeAxisBarColor(this.Options);
+  this._timeAxisBarOpacity = DvtOverviewStyleUtils.getTimeAxisBarAlpha(this.Options);
 
   // chart specific options: left and right filter panels
-  this._leftFilterPanelColor = props.leftFilterPanelColor;
-  this._leftFilterPanelAlpha = props.leftFilterPanelAlpha;
-  this._rightFilterPanelColor = props.rightFilterPanelColor;
-  this._rightFilterPanelAlpha = props.rightFilterPanelAlpha;
+  this._leftFilterPanelColor = DvtOverviewStyleUtils.getLeftFilterPanelColor(this.Options);
+  this._leftFilterPanelAlpha = DvtOverviewStyleUtils.getLeftFilterPanelAlpha(this.Options);
+  this._rightFilterPanelColor = DvtOverviewStyleUtils.getRightFilterPanelColor(this.Options);
+  this._rightFilterPanelAlpha = DvtOverviewStyleUtils.getRightFilterPanelAlpha(this.Options);
 };
 
 
@@ -388,7 +407,7 @@ dvt.Overview.prototype.isVertical = function()
 
 dvt.Overview.prototype.isOverviewAbove = function()
 {
-  return (this._overviewPosition == 'above');
+  return (this.Options['overviewPosition'] == 'above');
 };
 
 // Sets the left and right margins, used by chart
@@ -1355,9 +1374,7 @@ dvt.Overview.prototype.addLabel = function(pos, text, width, height, maxWidth, i
     label.setCSSStyle(labelStyle);
     if (this.isRTL())
     {
-      this.addChild(label);
       var dim = label.getDimensions();
-      this.removeChild(label);
       label.setX(Math.max(4, this.Width - dim.w - 4));
     }
   }
@@ -1373,9 +1390,7 @@ dvt.Overview.prototype.addLabel = function(pos, text, width, height, maxWidth, i
     label.setCSSStyle(labelStyle);
     if (this.isHorizontalRTL())
     {
-      this.addChild(label);
       dim = label.getDimensions();
-      this.removeChild(label);
       label.setX(pos - Math.min(dim.w, maxWidth) - padding);
     }
   }
@@ -2490,31 +2505,78 @@ dvt.Overview.prototype.destroy = function() {
   dvt.Overview.superclass.destroy.call(this);
 };
 /**
+ * Default values and utility functions for component versioning.
+ * @class
+ * @constructor
+ * @extends {dvt.BaseComponentDefaults}
+ */
+var DvtOverviewDefaults = function()
+{
+  this.Init({'alta': DvtOverviewDefaults.VERSION_1});
+};
+
+dvt.Obj.createSubclass(DvtOverviewDefaults, dvt.BaseComponentDefaults);
+
+/**
+ * Contains overrides for version 1.
+ * @const
+ */
+DvtOverviewDefaults.VERSION_1 = {
+  'overviewPosition': 'below',
+  'style': {
+    'currentTimeIndicatorColor': '#c000d1',
+    'handleFillColor': '#ffffff',
+    'handleTextureColor': '#b3c6db',
+    'leftFilterPanelAlpha': 0.7,
+    'leftFilterPanelColor': '#ffffff',
+    'overviewBackgroundColor': '#e6ecf3',
+    'rightFilterPanelAlpha': 0.7,
+    'rightFilterPanelColor': '#ffffff',
+    'timeAxisBarColor': '#e5e5e5',
+    'timeAxisBarAlpha': 1,
+    'timeIndicatorColor': '#bcc7d2',
+    'windowBackgroundAlpha': 1,
+    'windowBackgroundColor': '#ffffff',
+    'windowBorderBottomColor': '#4f4f4f',
+    'windowBorderBottomStyle': 'solid',
+    'windowBorderLeftColor': '#4f4f4f',
+    'windowBorderLeftStyle': 'solid',
+    'windowBorderRightColor': '#4f4f4f',
+    'windowBorderRightStyle': 'solid',
+    'windowBorderTopColor': '#4f4f4f',
+    'windowBorderTopStyle': 'solid'
+  }
+};
+/**
  * Overview JSON Parser
- * @param {dvt.Overview} overview The owning Overview component.
+ * @param {dvt.Overview} view The owning Overview component.
  * @class
  * @constructor
  * @extends {dvt.Obj}
  */
-var DvtOverviewParser = function(view) 
+dvt.OverviewParser = function(view) 
 {
   this.Init(view);
 };
 
-dvt.Obj.createSubclass(DvtOverviewParser, dvt.Obj);
+dvt.Obj.createSubclass(dvt.OverviewParser, dvt.Obj);
 
-DvtOverviewParser.prototype.Init = function(view) 
+/**
+ * Initializes the component parser.
+ * @param {dvt.Overview} view The dvt.Overview instance.
+ */
+dvt.OverviewParser.prototype.Init = function(view) 
 {
   this._view = view;
 };
 
 
 /**
- * Parses the JSON object and returns the root node of the timeRangeSelector
- * @param {data} JSON object describing the component.
- * @return {object} An object containing the parsed properties
+ * Parses the JSON object and returns the root node of the overview.
+ * @param {object} data The object describing the component.
+ * @return {object} An object containing the parsed properties.
  */
-DvtOverviewParser.prototype.parse = function(data) 
+dvt.OverviewParser.prototype.parse = function(data) 
 {
   // for now all the JSON contains should be options and no data, that could change in the future.
   var options = data;
@@ -2526,11 +2588,11 @@ DvtOverviewParser.prototype.parse = function(data)
 
 /**
  * Parses the attributes on the root node.
- * @param {dvt.XmlNode} xmlNode The xml node defining the root
- * @return {object} An object containing the parsed properties
+ * @param {object} options The options object defining the root.
+ * @return {object} An object containing the parsed properties.
  * @protected
  */
-DvtOverviewParser.prototype.ParseRootAttributes = function(options) 
+dvt.OverviewParser.prototype.ParseRootAttributes = function(options) 
 {
   // The object that will be populated with parsed values and returned
   var ret = new Object();
@@ -2595,104 +2657,19 @@ DvtOverviewParser.prototype.ParseRootAttributes = function(options)
   if (options['rtl'] != null)
     ret.isRtl = options['rtl'].toString();
 
-  // should come from skin
-  ret.handleFillColor = '#FFFFFF';
-  ret.handleTextureColor = '#B3C6DB';
-  ret.windowBackgroundColor = '#FFFFFF';
-  ret.windowBackgroundAlpha = 1;
-  ret.windowBorderTopStyle = 'solid';
-  ret.windowBorderRightStyle = 'solid';
-  ret.windowBorderBottomStyle = 'solid';
-  ret.windowBorderLeftStyle = 'solid';
-  ret.windowBorderTopColor = '#4F4F4F';
-  ret.windowBorderRightColor = '#4F4F4F';
-  ret.windowBorderBottomColor = '#4F4F4F';
-  ret.windowBorderLeftColor = '#4F4F4F';
-  ret.overviewBackgroundColor = '#E6ECF3';
-  ret.currentTimeIndicatorColor = '#C000D1';
-  ret.timeIndicatorColor = '#BCC7D2';
-  ret.timeAxisBarColor = '#e5e5e5';
-  ret.timeAxisBarOpacity = 1;
-  ret.leftFilterPanelColor = '#FFFFFF';
-  ret.leftFilterPanelAlpha = 0.7;
-  ret.rightFilterPanelColor = '#FFFFFF';
-  ret.rightFilterPanelAlpha = 0.7;
-
-  // apply any styles overrides
-  if (options['style'] != null)
-  {
-    if (options['style']['handleFillColor'] != null)
-      ret.handleFillColor = options['style']['handleFillColor'];
-
-    if (options['style']['handleTextureColor'] != null)
-      ret.handleTextureColor = options['style']['handleTextureColor'];
-
-    if (options['style']['handleBackgroundImage'] != null)
-      ret.handleBackgroundImage = options['style']['handleBackgroundImage'];
-
-    if (options['style']['handleWidth'] != null)
-      ret.handleWidth = options['style']['handleWidth'];
-
-    if (options['style']['handleHeight'] != null)
-      ret.handleHeight = options['style']['handleHeight'];
-
-    if (options['style']['windowBackgroundColor'] != null)
-      ret.windowBackgroundColor = options['style']['windowBackgroundColor'];
-
-    if (options['style']['windowBackgroundAlpha'] != null)
-      ret.windowBackgroundAlpha = options['style']['windowBackgroundAlpha'];
-
-    if (options['style']['windowBorderTopStyle'] != null)
-      ret.windowBorderTopStyle = options['style']['windowBorderTopStyle'];
-
-    if (options['style']['windowBorderRightStyle'] != null)
-      ret.windowBorderRightStyle = options['style']['windowBorderRightStyle'];
-
-    if (options['style']['windowBorderBottomStyle'] != null)
-      ret.windowBorderBottomStyle = options['style']['windowBorderBottomStyle'];
-
-    if (options['style']['windowBorderLeftStyle'] != null)
-      ret.windowBorderLeftStyle = options['style']['windowBorderLeftStyle'];
-
-    if (options['style']['windowBorderTopColor'] != null)
-      ret.windowBorderTopColor = options['style']['windowBorderTopColor'];
-
-    if (options['style']['windowBorderRightColor'] != null)
-      ret.windowBorderRightColor = options['style']['windowBorderRightColor'];
-
-    if (options['style']['windowBorderBottomColor'] != null)
-      ret.windowBorderBottomColor = options['style']['windowBorderBottomColor'];
-
-    if (options['style']['windowBorderLeftColor'] != null)
-      ret.windowBorderLeftColor = options['style']['windowBorderLeftColor'];
-
-    if (options['style']['overviewBackgroundColor'] != null)
-      ret.overviewBackgroundColor = options['style']['overviewBackgroundColor'];
-
-    if (options['style']['currentTimeIndicatorColor'] != null)
-      ret.currentTimeIndicatorColor = options['style']['currentTimeIndicatorColor'];
-
-    if (options['style']['timeIndicatorColor'] != null)
-      ret.timeIndicatorColor = options['style']['timeIndicatorColor'];
-
-    if (options['style']['leftFilterPanelColor'] != null)
-      ret.leftFilterPanelColor = options['style']['leftFilterPanelColor'];
-
-    if (options['style']['leftFilterPanelAlpha'] != null)
-      ret.leftFilterPanelAlpha = options['style']['leftFilterPanelAlpha'];
-
-    if (options['style']['rightFilterPanelColor'] != null)
-      ret.rightFilterPanelColor = options['style']['rightFilterPanelColor'];
-
-    if (options['style']['rightFilterPanelAlpha'] != null)
-      ret.rightFilterPanelAlpha = options['style']['rightFilterPanelAlpha'];
-  }
-
   return ret;
 };
 
-// convinient method to calculate the width based on start time/end time and viewport end time
-DvtOverviewParser.prototype.calculateWidth = function(startTime, endTime, viewportStartTime, viewportEndTime, viewportEndPos)
+/**
+ * Convenient method to calculate the width based on start time/end time and viewport end time
+ * @param {number} startTime The start time of the component.
+ * @param {number} endTime The end time of the component.
+ * @param {number} viewportStartTime The viewport start time of the component.
+ * @param {number} viewportEndTime The viewport end time of the component.
+ * @param {number} viewportEndPos The position of the end of the viewport.
+ * @return {number} The calculated width.
+ */
+dvt.OverviewParser.prototype.calculateWidth = function(startTime, endTime, viewportStartTime, viewportEndTime, viewportEndPos)
 {
   var number = viewportEndPos * (endTime - startTime);
   var denominator = (viewportEndTime - viewportStartTime);
@@ -3036,6 +3013,336 @@ DvtOverviewEventManager.prototype._onTouchDragEnd = function(event)
 };
 dvt.exportProperty(dvt, 'Overview', dvt.Overview);
 dvt.exportProperty(dvt.Overview.prototype, 'render', dvt.Overview.prototype.render);
+/**
+ * Style related utility functions for dvt.Overview.
+ * @class
+ */
+var DvtOverviewStyleUtils = new Object();
+
+dvt.Obj.createSubclass(DvtOverviewStyleUtils, dvt.Obj);
+
+/**
+ * Gets the handle fill color.
+ * @param {object} options The object containing data and specifications for the component.
+ * @return {string} The handle fill color.
+ */
+DvtOverviewStyleUtils.getHandleFillColor = function(options)
+{
+  if (options['_hfc'] != null)
+    return options['_hfc'];
+  else
+    return options['style']['handleFillColor'];
+};
+
+/**
+ * Gets the handle texture color.
+ * @param {object} options The object containing data and specifications for the component.
+ * @return {string} The handle texture color.
+ */
+DvtOverviewStyleUtils.getHandleTextureColor = function(options)
+{
+  if (options['_htc'] != null)
+    return options['_htc'];
+  else
+    return options['style']['handleTextureColor'];
+};
+
+/**
+ * Gets the handle background image.
+ * @param {object} options The object containing data and specifications for the component.
+ * @return {string} The handle background image.
+ */
+DvtOverviewStyleUtils.getHandleBackgroundImage = function(options)
+{
+  if (options['_hbi'] != null)
+    return options['_hbi'];
+  else
+    return options['style']['handleBackgroundImage'];
+};
+
+/**
+ * Gets the handle width.
+ * @param {object} options The object containing data and specifications for the component.
+ * @return {number} The handle width.
+ */
+DvtOverviewStyleUtils.getHandleWidth = function(options)
+{
+  if (options['_hw'] != null)
+    return options['_hw'];
+  else
+    return options['style']['handleWidth'];
+};
+
+/**
+ * Gets the handle height.
+ * @param {object} options The object containing data and specifications for the component.
+ * @return {number} The handle height.
+ */
+DvtOverviewStyleUtils.getHandleHeight = function(options)
+{
+  if (options['_hh'] != null)
+    return options['_hh'];
+  else
+    return options['style']['handleHeight'];
+};
+
+/**
+ * Gets the top border color.
+ * @param {object} options The object containing data and specifications for the component.
+ * @return {string} The top border color.
+ */
+DvtOverviewStyleUtils.getBorderTopColor = function(options)
+{
+  if (options['_btc'] != null)
+    return options['_btc'];
+  else
+    return options['style']['borderTopColor'];
+};
+
+/**
+ * Gets the top border style.
+ * @param {object} options The object containing data and specifications for the component.
+ * @return {string} The top border style.
+ */
+DvtOverviewStyleUtils.getBorderTopStyle = function(options)
+{
+  if (options['_bts'] != null)
+    return options['_bts'];
+  else
+    return options['style']['borderTopStyle'];
+};
+
+/**
+ * Gets the window background color.
+ * @param {object} options The object containing data and specifications for the component.
+ * @return {string} The window background color.
+ */
+DvtOverviewStyleUtils.getWindowBackgroundColor = function(options)
+{
+  if (options['_wbc'] != null)
+    return options['_wbc'];
+  else
+    return options['style']['windowBackgroundColor'];
+};
+
+/**
+ * Gets the window background opacity.
+ * @param {object} options The object containing data and specifications for the component.
+ * @return {number} The window background opacity.
+ */
+DvtOverviewStyleUtils.getWindowBackgroundAlpha = function(options)
+{
+  return options['style']['windowBackgroundAlpha'];
+};
+
+/**
+ * Gets the top window border style.
+ * @param {object} options The object containing data and specifications for the component.
+ * @return {string} The top window border style.
+ */
+DvtOverviewStyleUtils.getWindowBorderTopStyle = function(options)
+{
+  if (options['_wbts'] != null)
+    return options['_wbts'];
+  else
+    return options['style']['windowBorderTopStyle'];
+};
+
+/**
+ * Gets the right window border style.
+ * @param {object} options The object containing data and specifications for the component.
+ * @return {string} The right window border style.
+ */
+DvtOverviewStyleUtils.getWindowBorderRightStyle = function(options)
+{
+  if (options['_wbrs'] != null)
+    return options['_wbrs'];
+  else
+    return options['style']['windowBorderRightStyle'];
+};
+
+/**
+ * Gets the bottom window border style.
+ * @param {object} options The object containing data and specifications for the component.
+ * @return {string} The bottom window border style.
+ */
+DvtOverviewStyleUtils.getWindowBorderBottomStyle = function(options)
+{
+  if (options['_wbbs'] != null)
+    return options['_wbbs'];
+  else
+    return options['style']['windowBorderBottomStyle'];
+};
+
+/**
+ * Gets the left window border style.
+ * @param {object} options The object containing data and specifications for the component.
+ * @return {string} The left window border style.
+ */
+DvtOverviewStyleUtils.getWindowBorderLeftStyle = function(options)
+{
+  if (options['_wbls'] != null)
+    return options['_wbls'];
+  else
+    return options['style']['windowBorderLeftStyle'];
+};
+
+/**
+ * Gets the top window border color.
+ * @param {object} options The object containing data and specifications for the component.
+ * @return {string} The top window border color.
+ */
+DvtOverviewStyleUtils.getWindowBorderTopColor = function(options)
+{
+  if (options['_wbtc'] != null)
+    return options['_wbtc'];
+  else
+    return options['style']['windowBorderTopColor'];
+};
+
+/**
+ * Gets the right window border color.
+ * @param {object} options The object containing data and specifications for the component.
+ * @return {string} The right window border color.
+ */
+DvtOverviewStyleUtils.getWindowBorderRightColor = function(options)
+{
+  if (options['_wbrc'] != null)
+    return options['_wbrc'];
+  else
+    return options['style']['windowBorderRightColor'];
+};
+
+/**
+ * Gets the bottom window border color.
+ * @param {object} options The object containing data and specifications for the component.
+ * @return {string} The bottom window border color.
+ */
+DvtOverviewStyleUtils.getWindowBorderBottomColor = function(options)
+{
+  if (options['_wbbc'] != null)
+    return options['_wbbc'];
+  else
+    return options['style']['windowBorderBottomColor'];
+};
+
+/**
+ * Gets the left window border color.
+ * @param {object} options The object containing data and specifications for the component.
+ * @return {string} The left window border color.
+ */
+DvtOverviewStyleUtils.getWindowBorderLeftColor = function(options)
+{
+  if (options['_wblc'] != null)
+    return options['_wblc'];
+  else
+    return options['style']['windowBorderLeftColor'];
+};
+
+/**
+ * Gets the overview background color.
+ * @param {object} options The object containing data and specifications for the component.
+ * @return {string} The overview background color.
+ */
+DvtOverviewStyleUtils.getOverviewBackgroundColor = function(options)
+{
+  if (options['_obc'] != null)
+    return options['_obc'];
+  else
+    return options['style']['overviewBackgroundColor'];
+};
+
+/**
+ * Gets the current time indicator color.
+ * @param {object} options The object containing data and specifications for the component.
+ * @return {string} The current time indicator color.
+ */
+DvtOverviewStyleUtils.getCurrentTimeIndicatorColor = function(options)
+{
+  if (options['_ctic'] != null)
+    return options['_ctic'];
+  else
+    return options['style']['currentTimeIndicatorColor'];
+};
+
+/**
+ * Gets the time axis bar color.
+ * @param {object} options The object containing data and specifications for the component.
+ * @return {string} The time axis bar color.
+ */
+DvtOverviewStyleUtils.getTimeAxisBarColor = function(options)
+{
+  if (options['_tabc'] != null)
+    return options['_tabc'];
+  else
+    return options['style']['timeAxisBarColor'];
+};
+
+/**
+ * Gets the time axis bar opacity.
+ * @param {object} options The object containing data and specifications for the component.
+ * @return {number} The time axis bar opacity.
+ */
+DvtOverviewStyleUtils.getTimeAxisBarAlpha = function(options)
+{
+  if (options['_tabo'] != null)
+    return options['_tabo'];
+  else
+    return options['style']['timeAxisBarAlpha'];
+};
+
+/**
+ * Gets the time indicator color.
+ * @param {object} options The object containing data and specifications for the component.
+ * @return {string} The time indicator color.
+ */
+DvtOverviewStyleUtils.getTimeIndicatorColor = function(options)
+{
+  if (options['_tic'] != null)
+    return options['_tic'];
+  else
+    return options['style']['timeIndicatorColor'];
+};
+
+/**
+ * Gets the left filter panel color.
+ * @param {object} options The object containing data and specifications for the component.
+ * @return {string} The left filter panel color.
+ */
+DvtOverviewStyleUtils.getLeftFilterPanelColor = function(options)
+{
+  return options['style']['leftFilterPanelColor'];
+};
+
+/**
+ * Gets the left filter panel opacity.
+ * @param {object} options The object containing data and specifications for the component.
+ * @return {number} The left filter panel opacity.
+ */
+DvtOverviewStyleUtils.getLeftFilterPanelAlpha = function(options)
+{
+  return options['style']['leftFilterPanelAlpha'];
+};
+
+/**
+ * Gets the right filter panel color.
+ * @param {object} options The object containing data and specifications for the component.
+ * @return {string} The right filter panel color.
+ */
+DvtOverviewStyleUtils.getRightFilterPanelColor = function(options)
+{
+  return options['style']['rightFilterPanelColor'];
+};
+
+/**
+ * Gets the right filter panel opacity.
+ * @param {object} options The object containing data and specifications for the component.
+ * @return {number} The right filter panel opacity.
+ */
+DvtOverviewStyleUtils.getRightFilterPanelAlpha = function(options)
+{
+  return options['style']['rightFilterPanelAlpha'];
+};
 })(dvt);
 
   return dvt;

@@ -1,7 +1,7 @@
 // Copyright (c) 2014, 2017, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
-// NOTE: The mixins defined in these files are needed 
-// based on our current supported browsers. Mixins in this 
-// file will be removed when we no longer need to use vendor 
+// NOTE: The mixins defined in these files are needed
+// based on our current supported browsers. Mixins in this
+// file will be removed when we no longer need to use vendor
 // prefixes for a particular property.
 
 
@@ -15,19 +15,19 @@
 //****************************************************
 @mixin oj-display-flex-property ()
 {
-   display: -webkit-flex;  
-   display: flex;          
+   display: -webkit-flex;
+   display: flex;
 }
 
 @mixin oj-display-inline-flex-property ()
 {
-   display: -webkit-inline-flex;  
-   display: inline-flex;         
+   display: -webkit-inline-flex;
+   display: inline-flex;
 }
 
 @mixin oj-flex-property ($flexValue)
 {
-    // IE11 doesn't support flex:initial, 
+    // IE11 doesn't support flex:initial,
     // so if they pass in 'initial' set it explicitly to '0 1 auto'
     // http://www.w3.org/TR/css-flexbox-1/#flex-common
     @if ($flexValue == initial)
@@ -44,7 +44,7 @@
     //}
 
 
-    -webkit-flex: $flexValue; 
+    -webkit-flex: $flexValue;
     flex: $flexValue;
 }
 
@@ -66,13 +66,13 @@
 }
 
 @mixin oj-align-self-property($alignSelfValue) {
-  
+
   -webkit-align-self: $alignSelfValue;
   align-self: $alignSelfValue;
 }
 
 @mixin oj-align-content-property($alignContentValue) {
-  
+
   -webkit-align-content: $alignContentValue;
   align-content: $alignContentValue;
 }
@@ -122,7 +122,7 @@
 {
   -webkit-will-change: $willChangeValue;
   -ms-will-change: $willChangeValue;
-  -mos-will-change: $willChangeValue;
+  -moz-will-change: $willChangeValue;
 
   // cssLint doesn't yet support this property.
   // tracking bug https://github.com/CSSLint/parser-lib/issues/121
@@ -131,26 +131,26 @@
 
 @mixin oj-column-width-property ($columnWidthValue)
 {
-  -webkit-column-width: $columnWidthValue; 
-     -moz-column-width: $columnWidthValue; 
-          column-width: $columnWidthValue; 
+  -webkit-column-width: $columnWidthValue;
+     -moz-column-width: $columnWidthValue;
+          column-width: $columnWidthValue;
 }
 
 @mixin oj-column-gap-property ($columnGapValue)
 {
-  -webkit-column-gap: $columnGapValue; 
-     -moz-column-gap: $columnGapValue; 
-          column-gap: $columnGapValue; 
+  -webkit-column-gap: $columnGapValue;
+     -moz-column-gap: $columnGapValue;
+          column-gap: $columnGapValue;
 }
 
 @mixin oj-break-inside-property ($breakInsideValue)
 {
   // -moz-column-break-inside doesn't work on FF 24 on windows
   // try adding page-break-inside as well
-     -moz-column-break-inside: $breakInsideValue; 
-  -webkit-column-break-inside: $breakInsideValue; 
-      -ms-column-break-inside: $breakInsideValue; 
-                 break-inside: $breakInsideValue; 
+     -moz-column-break-inside: $breakInsideValue;
+  -webkit-column-break-inside: $breakInsideValue;
+      -ms-column-break-inside: $breakInsideValue;
+                 break-inside: $breakInsideValue;
 }
 
 @mixin oj-column-count-property ($columnCountValue)
@@ -185,13 +185,13 @@
 
 @mixin oj-placeholder ()
 {
-  // tried comma separating these, didn't work, meaning tried this: 
+  // tried comma separating these, didn't work, meaning tried this:
   //    &::-webkit-input-placeholder,
   //    &::-moz-placeholder,
   //    &:-ms-input-placeholder{
   //      @content
   //    }
-  
+
   &::-webkit-input-placeholder {
    @content
   }
@@ -209,7 +209,7 @@
 {
     -ms-user-select: $userSelectValue;
     -webkit-user-select: $userSelectValue;
-    -moz-user-select: $userSelectValue;    
+    -moz-user-select: $userSelectValue;
     user-select:$userSelectValue;
 }
 
@@ -248,7 +248,7 @@
   @-webkit-keyframes #{$name} {
     @content
   }
-  
+
   @keyframes #{$name} {
     @content
   }

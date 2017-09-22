@@ -25,15 +25,17 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojdatasource-common'], function(oj, $)
 /**
  * @export
  * @class oj.PagingTableDataSource
- * @classdesc Object representing data used by the paging component.
+ * @classdesc Object representing data that supports paging functionality.  This data source can be used by [ListView]{@link oj.ojListView}, [PagingControl]{@link oj.ojPagingControl}, and [Table]{@link oj.ojTable}.
  *            <p>This class implements the {@link oj.PagingModel} interface and 
  *            publish all of the oj.PagingModel event types, which can be
  *            listened to using the [on()]{@link oj.PagingTableDataSource#on}
  *            method.</p>
+ *            See the <a href="../jetCookbook.html?component=pagingControl&demo=basicPagingTable">Paging Control - Paging Table</a> demo for an example.<br><br>
+ *            Refer to {@link oj.TableDataSource} for other data sources that represent tabular data.
  * @extends oj.TableDataSource
  * @implements oj.PagingModel
  * @param {Object} dataSource
- * @param {Object|null} options Array of options for the PagingControlDataSource
+ * @param {Object|null} options Options for the PagingTableDataSource.  No option is currently supported.
  * @constructor
  */
 oj.PagingTableDataSource = function(dataSource, options)
@@ -72,10 +74,10 @@ oj.Object.createSubclass(oj.PagingTableDataSource, oj.TableDataSource, "oj.Pagin
 
 /**
  * Initializes the instance.
- * @export
- * @expose
- * @memberof! oj.PagingTableDataSource
+ * @memberof oj.PagingTableDataSource
  * @instance
+ * @override
+ * @protected
  */
 oj.PagingTableDataSource.prototype.Init = function()
 {
@@ -87,7 +89,7 @@ oj.PagingTableDataSource.prototype.Init = function()
  * @return {Object} the underlying oj.DataSource.
  * @export
  * @expose
- * @memberof! oj.PagingTableDataSource
+ * @memberof oj.PagingTableDataSource
  * @instance
  */
 oj.PagingTableDataSource.prototype.getWrappedDataSource = function()
@@ -100,7 +102,7 @@ oj.PagingTableDataSource.prototype.getWrappedDataSource = function()
  * @return {number} The current page
  * @export
  * @expose
- * @memberof! oj.PagingTableDataSource
+ * @memberof oj.PagingTableDataSource
  * @instance
  */
 oj.PagingTableDataSource.prototype.getPage = function()
@@ -120,7 +122,7 @@ oj.PagingTableDataSource.prototype.getPage = function()
  * @return {Promise} promise object triggering done when complete..
  * @export
  * @expose
- * @memberof! oj.PagingTableDataSource
+ * @memberof oj.PagingTableDataSource
  * @instance
  */
 oj.PagingTableDataSource.prototype.setPage = function(value, options)
@@ -180,7 +182,7 @@ oj.PagingTableDataSource.prototype.setPage = function(value, options)
  * @return {number} The current page start index
  * @export
  * @expose
- * @memberof! oj.PagingTableDataSource
+ * @memberof oj.PagingTableDataSource
  * @instance
  */
 oj.PagingTableDataSource.prototype.getStartItemIndex = function()
@@ -198,7 +200,7 @@ oj.PagingTableDataSource.prototype.getStartItemIndex = function()
  * @return {number} The current page end index
  * @export
  * @expose
- * @memberof! oj.PagingTableDataSource
+ * @memberof oj.PagingTableDataSource
  * @instance
  */
 oj.PagingTableDataSource.prototype.getEndItemIndex = function()
@@ -211,7 +213,7 @@ oj.PagingTableDataSource.prototype.getEndItemIndex = function()
  * @return {number} The total number of pages
  * @export
  * @expose
- * @memberof! oj.PagingTableDataSource
+ * @memberof oj.PagingTableDataSource
  * @instance
  */
 oj.PagingTableDataSource.prototype.getPageCount = function()
@@ -238,7 +240,7 @@ oj.PagingTableDataSource.prototype.getPageCount = function()
  * </table>
  * @export
  * @expose
- * @memberof! oj.PagingTableDataSource
+ * @memberof oj.PagingTableDataSource
  * @instance
  */
 oj.PagingTableDataSource.prototype.at = function(index, options)
@@ -262,7 +264,7 @@ oj.PagingTableDataSource.prototype.at = function(index, options)
  * </table>  
  * @export
  * @expose
- * @memberof! oj.PagingTableDataSource
+ * @memberof oj.PagingTableDataSource
  * @instance
  */
 oj.PagingTableDataSource.prototype.fetch = function(options)
@@ -332,7 +334,7 @@ oj.PagingTableDataSource.prototype.fetch = function(options)
  * </table>
  * @export
  * @expose
- * @memberof! oj.PagingTableDataSource
+ * @memberof oj.PagingTableDataSource
  * @instance
  */
 oj.PagingTableDataSource.prototype.get = function(id, options)
@@ -347,7 +349,7 @@ oj.PagingTableDataSource.prototype.get = function(id, options)
  *         Returns null if the feature is not recognized.
  * @export
  * @expose
- * @memberof! oj.PagingTableDataSource
+ * @memberof oj.PagingTableDataSource
  * @instance
  */
 oj.PagingTableDataSource.prototype.getCapability = function(feature)
@@ -363,7 +365,7 @@ oj.PagingTableDataSource.prototype.getCapability = function(feature)
  * @param {function(Object)} eventHandler event handler function
  * @export
  * @expose
- * @memberof! oj.PagingTableDataSource
+ * @memberof oj.PagingTableDataSource
  * @instance
  */
 oj.PagingTableDataSource.prototype.on = function(eventType, eventHandler)
@@ -413,7 +415,7 @@ oj.PagingTableDataSource.prototype.on = function(eventType, eventHandler)
  * @param {function(Object)} eventHandler event handler function
  * @export
  * @expose
- * @memberof! oj.PagingTableDataSource
+ * @memberof oj.PagingTableDataSource
  * @instance
  */
 oj.PagingTableDataSource.prototype.off = function(eventType, eventHandler)
@@ -451,7 +453,7 @@ oj.PagingTableDataSource.prototype.off = function(eventType, eventHandler)
  * @return {Promise} promise object triggering done when complete.
  * @export
  * @expose
- * @memberof! oj.PagingTableDataSource
+ * @memberof oj.PagingTableDataSource
  * @instance
  */
 oj.PagingTableDataSource.prototype.sort = function(criteria)
@@ -464,7 +466,7 @@ oj.PagingTableDataSource.prototype.sort = function(criteria)
  * @returns {number} total size of data
  * @export
  * @expose
- * @memberof! oj.PagingTableDataSource
+ * @memberof oj.PagingTableDataSource
  * @instance
  */
 oj.PagingTableDataSource.prototype.totalSize = function()
@@ -480,7 +482,7 @@ oj.PagingTableDataSource.prototype.totalSize = function()
  *                  "unknown" if the totalSize is unknown
  * @export
  * @expose
- * @memberof! oj.PagingTableDataSource
+ * @memberof oj.PagingTableDataSource
  * @instance 
  */
 oj.PagingTableDataSource.prototype.totalSizeConfidence = function()

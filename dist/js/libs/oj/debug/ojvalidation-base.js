@@ -872,13 +872,120 @@ oj.OraI18nUtils._normalizeIsoString = function (isoString)
 
   return datePortion + timePortion;
 };
+
+/**
+ * formats a parameterized string
+ * 
+ * @param {string} str string to be formatted. EX: "{0} bytes"
+ * @param {Array} params array of parameters to be substituted in the string
+ * @returns {string} The formatted string
+ * @since 4.0.0
+ */
+oj.OraI18nUtils.formatString = function (str, params)
+{
+  var i;
+  var token;
+  var len = params.length;
+  
+  for (i = 0; i < len; i++)
+  {
+    token = '{' + i + '}';
+    str = str.replace(token, params[i]);
+  }
+  return str;
+};
+
+/**
+ * Returns a person's initials
+ * 
+ * @param {string} firstName first name
+ * @param {string} lastName last name or surname
+ * @returns {string} uppercase concatenation of first letter of first name and first letter
+ * of last name.
+ * There are the following special cases:
+ * - If the name is Arabic characters, it returns empty string.
+ * - If the name is Hindi characters, it returns the first letter of the first name.
+ * - If the name is Thai characters, it returns the first letter of the first name.
+ * - If the name is Korean characters, it returns the first name.
+ * - If the name is Japanese or Chinese characters, it returns the last name.
+ *   
+ * @since 4.0.0
+ */
+oj.OraI18nUtils.getInitials = function (firstName, lastName)
+{
+  //We assume the names are valid. We test the first character only.
+  var c = 0; 
+  var c1 = 0;
+  var u;
+  if(firstName !== undefined && firstName.length > 0)
+    c = firstName.charCodeAt(0);
+  
+  // Arabic characters. Return empty string
+  if(c >= 0x0600 && c <= 0x06FF)
+    return "";
+  
+  // Hindi characters. Return first letter of the first name
+  if(c >= 0x0900 && c <= 0x097F)
+    return firstName.charAt(0);
+  
+  // Thai characters. Return first letter of the first name
+  if(c >= 0x0E00 && c <= 0x0E7F)
+    return firstName.charAt(0);
+  
+  // Korean characters. Return first name
+  if((c >= 0x1100 && c <= 0x11FF) || (c >= 0x3130 && c <= 0x318F) || 
+     (c >= 0xA960 && c <= 0xA97F) || (c >= 0xAC00 && c <= 0xD7FF))
+    return firstName;
+  
+  // Japanese and Chinese characters. Return last name
+  if(lastName !== undefined && lastName.length > 0)
+    c = lastName.charCodeAt(0);
+  if((c >= 0x2E80 && c <= 0x2FDF) || (c >= 0x3000 && c <= 0x312F) ||
+     (c >= 0x3190 && c <= 0x31FF) || (c >= 0x3300 && c <= 0x4DBF) ||
+     (c >= 0x4E00 && c <= 0x9FFF) || (c >= 0xF900 && c <= 0xFAFF))
+     return lastName;
+   
+  //Handle surrogate characters for Japanese and Chinese characters.  
+  if(c >= 0xD800 && c <= 0xDBFF) {
+    if(lastName.length < 2)
+      return "";
+    c1 = lastName.charCodeAt(1);
+    //c1 must be in DC00-DFFF range
+    if(c1 < 0xDC00 || c1 > 0xDFFF)
+      return "";
+    //Convert high and low surrogates into unicode scalar.
+    u =  ((c - 0xD800) * 0x400) + (c1 - 0xDC00) + 0x10000;
+    //test the blocks
+    if((u >= 0x1B000 && u <= 0x1B0FF) || (u >= 0x1F200 && u <= 0x1F2FF) ||
+       (u >= 0x20000 && u <= 0x2A6DF) || (u >= 0x2A700 && u <= 0x2B73F) ||
+       (u >= 0x2B740 && u <= 0x2B81F) || (u >= 0x2B820 && u <= 0x2CEAF) ||
+       (u >= 0x2F800 && u <= 0x2FA1F))
+      return lastName;
+  }
+  
+  //return default
+  c = "";
+  c1 = "";
+  if(firstName !== undefined && firstName.length > 0)
+    c = firstName.charAt(0).toUpperCase();
+  if(lastName !== undefined && lastName.length > 0)
+    c1 = lastName.charAt(0).toUpperCase();
+  return c + c1;
+};
+
+
 /**
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
  */
 
 /**
- * The ojvalidation module.
+ * Used to register and retrieve converterFactories and validationFactories.
+ * There is no need to call the constructor.
+ * @see oj.Validation.converterFactory
+ * @see oj.Validation.validatorFactory
+ * @see oj.ConverterFactory
+ * @see oj.ValidatorFactory
  * @name oj.Validation
  * @class 
  * @export
@@ -907,18 +1014,69 @@ oj.Validation._CONTRACTS = {'converter' : {name: "oj.ConverterFactory",  type: o
                             'validator': {name: "oj.ValidatorFactory", type: oj.ValidatorFactory}};
 
 /**
- * Module method to register and retrieve converter factory instances by name. 
+ * Method to register and retrieve converter factory instances by name. 
  * When passed only the name, an existing factory (registered for the name) is returned. Callers can 
- * expect to get back the default 'number' and 'datetime' converters. 
+ * expect to get back the default 'number', 'datetime', or 'color' converters. 
  * When passed two arguments, a new factory for the name is registered. If the name already exists 
  * the new instance replaces the old one. 
  * 
- * @param {string} type a case insensitive name of the converter factory. 
+ * @param {string} type a case insensitive name of the converter factory. e.g., 'number' (or
+ * oj.ConverterFactory.CONVERTER_TYPE_NUMBER), 'datetime' (or oj.ConverterFactory.CONVERTER_TYPE_DATETIME),
+ * or 'color' (or oj.ConverterFactory.CONVERTER_TYPE_COLOR).
  * @param {Object=} instance the instance of the factory that implements the contract for 
  * oj.ConverterFactory.
  * 
  * @export
  * @see oj.ConverterFactory
+ * @example <caption>Initialize a JET datetime converter instance using options
+ * and use it in a knockout-binding and bind it to the
+ * converter attribute on the JET form element.</caption>
+ * ----- Javascript ViewModel----
+ * self.converter = ko.observable(
+    oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).
+      createConverter({formatType: 'date', dateFormat: 'full'}));
+ * ----- HTML -----
+ * &lt;oj-input-date value="{{endDate}}" converter="[[converter]]">&lt/oj-input-date>
+ * @example <caption>Create your own converter, register it, and use it when displaying information
+ * on the page to the user.</caption>
+ * ----- Javascript -----
+ * RelativeDateTimeConverterFactory = (function () {
+ *  function _createRelativeDateTimeConverter(options)
+ *  {
+ *    // this is a custom converter (code not shown here) that formats the datetime into "Today" or 
+ *    // "Tomorrow", or "This Week"/"Next Week", etc.
+ *    return new RelativeDateTimeConverter(options);
+ *  }
+ *  return {
+ *    'createConverter': function (options) {
+ *      return _createRelativeDateTimeConverter(options);
+ *    }
+ *  };
+ *  }());
+ * oj.Validation.converterFactory("relativeDate", RelativeDateTimeConverterFactory);
+ *  // Use our custom relativeDate converter.
+ *  // In this demo, we want to see in the Schedule For column the words 
+ *  // Today or Tomorrow so we set the relativeField option's value
+ *  // to 'day'. If we want to see This Week, we'd set it to 'week', etc.
+ *  var rdConverter =  oj.Validation.converterFactory("relativeDate")
+ *  .createConverter({relativeField: 'day', year: "numeric", month: "numeric", day: "numeric"});
+ *  ...
+ *  // Our custom converter's format function returns an object with 'value' and 'title'.
+ *  // We put the 'value' in innerHTML so the user can read it. E.g., Today or Tomorrow.
+ *  // And we put the actual date in the title. The user can read it when they hover over
+ *  // the word Today or Tomorrow.
+ *  content = rdConverter.format(context.row.ScheduleFor);
+ *  span.setAttribute('title', content.title);
+ *  span.innerHTML = content.value;
+ * ...
+ * @example <caption>On your JET form component that has a 'converter' attribute,
+ * set the 'converter' attribute using "type" of a registered converter. This 
+ * could be a JET Converter or a oj.Converter 
+ * (or Object that duck-types it) that you wrote. (it must implement parse and format
+ * since our JET form components call format and parse.</caption>
+ * &lt;oj-input-date value="{{date}}" 
+ * converter= '{"type":"datetime", 
+ * "options": {"year": "numeric", "month": "long", "day": "numeric"}}'> &lt;/oj-input-date>
  */
 oj.Validation.converterFactory = function (type, instance)
 {
@@ -941,7 +1099,7 @@ oj.Validation.converterFactory = function (type, instance)
 };
 
 /**
- * Module method to register and retrieve validator factory instances by name. 
+ * Method to register and retrieve validator factory instances by name. 
  * When passed only the name, an existing factory (registered for the name) is returned. 
  * When passed two arguments, a new factory for the name is registered. If the name already exists 
  * the new instance replaces the old one. 
@@ -949,7 +1107,39 @@ oj.Validation.converterFactory = function (type, instance)
  * @param {string} type a case insensitive name of the validator factory. 
  * @param {Object=} instance the instance of the factory that implements the contract for 
  * oj.ValidatorFactory.
- * 
+ * @example <caption>Initialize a JET validator instance using options
+ * and use it in a knockout-binding and bind it to the
+ * validators attribute on the JET form element.</caption>
+ * ----- Javascript ViewModel----
+ * var options = {min: 5, max: 10};
+ * var validator =
+ * oj.Validation.validatorFactory(
+ * oj.ValidatorFactory.VALIDATOR_TYPE_LENGTH).createValidator(options);
+ * self.validator = ko.observable([validator]);
+ * ----- HTML -----
+ * &lt;oj-input-text validators="[[validator]]">&lt/oj-input-text>
+ * @example <caption>An easier usage is to return an Object since the validators option
+ * takes an array where each item is either an instance that duck types oj.Validator, 
+ * or is an Object literal containing type and options.</caption>
+ * ----- Javascript ViewModel -----
+ * self.validators = ko.computed(function() {
+ * return [{type: 'numberRange', options: { min: 10000.05, max: 25000.95, 
+ * hint: {inRange: 'Enter a value between {min} and {max}.'}}}];
+ * });
+ * ----- HTML -----
+ * &lt;oj-input-text id="numberRange1" value="{{numberValue1}}" validators="[[validators]]">
+ * &lt;/oj-input-text>
+ * @example <caption>Get a registered validator with your options, and calls its validate method
+ * on your own value.</caption>
+ * var reqValOptions = {
+ *   'hint': reqTrans['hint'] || null,
+ *   'label': this._getLabelText(), 
+ *   'messageSummary': reqTrans['messageSummary'] || null,
+ *   'messageDetail': reqTrans['messageDetail'] || null
+ * };
+ * var vf = oj.Validation.validatorFactory(oj.ValidatorFactory.VALIDATOR_TYPE_REQUIRED);
+ * var requiredValidator = vf.createValidator(reqValOptions);
+ * var isValid = validator.validate(value);
  * @export
  * @see oj.ValidatorFactory
  */
@@ -975,7 +1165,8 @@ oj.Validation.validatorFactory = function (type, instance)
 
 /**
  * Returns the default converter factory instances for the supported types as defined by the 
- * oj.ConverterFactory.
+ * oj.ConverterFactory. Instead of calling this method, it should be 
+ * sufficient to use oj.Validation.converterFactory.
  * 
  * @param {string} type The default converter factory for the type. Supported types are 'number' and 
  * 'datetime'
@@ -983,6 +1174,7 @@ oj.Validation.validatorFactory = function (type, instance)
  * 
  * @export
  * @see oj.ConverterFactory
+ * @see oj.Validation.converterFactory
  * 
  */
 oj.Validation.getDefaultConverterFactory = function (type)
@@ -992,7 +1184,8 @@ oj.Validation.getDefaultConverterFactory = function (type)
 
 /**
  * Returns the default validator factory instance for the requested types as defined by the 
- * oj.ValidatorFactory.
+ * oj.ValidatorFactory.  Instead of calling this method, it should be 
+ * sufficient to use oj.Validation.validatorFactory.
  * 
  * @param {string} type The default converter factory for the type. Supported types are 'number' and 
  * 'datetime'
@@ -1000,6 +1193,7 @@ oj.Validation.getDefaultConverterFactory = function (type)
  * 
  * @export
  * @see oj.ValidatorFactory
+ * @see oj.Validation.validatorFactory
  */
 oj.Validation.getDefaultValidatorFactory = function (type)
 {
@@ -1136,7 +1330,8 @@ oj.Validation._registerFactory = function(name, instance, factories, contractDef
 
 /**
  * Contract for a ConverterFactory that provides a factory method to create a converter instance for 
- * the requested type. JET provides two factory implementations for number and datetime types that 
+ * the requested type. JET provides three factory implementations for number and datetime 
+ * and color types that 
  * implement this contract. Customers can register custom converter factories for the supported 
  * types or create and register factories for new types altogether.
  * 
@@ -1147,6 +1342,7 @@ oj.Validation._registerFactory = function(name, instance, factories, contractDef
  * @see oj.Validation
  * @see oj.NumberConverterFactory
  * @see oj.DateTimeConverterFactory
+ * @see oj.ColorConverterFactory
  */
 oj.ConverterFactory = 
 {
@@ -1154,6 +1350,13 @@ oj.ConverterFactory =
    * Default type for a factory used to create number converters. This type is passed to the 
    * [Validation.converterFactory]{@link oj.Validation#converterFactory} method to retrieve the 
    * number converter factory of type {@link oj.NumberConverterFactory}. 
+   * @example <caption>Create a JET number converter with options</caption>
+   * var convFactory = oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_NUMBER);
+   * var converter  =  convFactory.createConverter({
+   *  style: 'currency', 
+   *  currency: 'USD', 
+   *  currencyDisplay: 'symbol', 
+   *  pattern: '¤ ##,##0.00'});
    * @expose
    * @const
    * @member
@@ -1165,6 +1368,11 @@ oj.ConverterFactory =
    * Default type for a factory used to create datetime converters. This type is passed to the 
    * [Validation.converterFactory]{@link oj.Validation#converterFactory} method to retrieve the 
    * datetime converter factory of type {@link oj.DateTimeConverterFactory}. 
+   * @example <caption>Create a JET dateTime converter with options</caption>
+   * var dateTimeCvtr = oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME);
+   * var dateOptions = {day: 'numeric', month: 'numeric'};
+   * var dayMonthConverter = dateTimeCvtr.createConverter(dateOptions);
+   * 
    * @expose
    * @const
    * @member
@@ -1175,7 +1383,10 @@ oj.ConverterFactory =
   /**
    * Default type for a factory used to create color converters. This type is passed to the 
    * [Validation.converterFactory]{@link oj.Validation#converterFactory} method to retrieve the 
-   * color converter factory of type {@link oj.ColorConverterFactory}. 
+   * color converter factory of type {@link oj.ColorConverterFactory}.
+   * @example <caption>Create a JET color converter with options</caption>
+   * this._convFactory = oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_COLOR);
+   * this._convHex  =  this._convFactory.createConverter({"format": "hex"})
    * @expose
    * @const
    * @member
@@ -1197,6 +1408,39 @@ oj.ConverterFactory =
    * var dateTimeCvtr = oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME);
    * var dateOptions = {day: 'numeric', month: 'numeric'};
    * var dayMonthConverter = dateTimeCvtr.createConverter(dateOptions);
+   * @example <caption>Create your own ConverterFactory and Converter, register the Converter on your
+   * ConverterFactory, and use it when displaying information
+   * on the page to the user.</caption>
+   * ----- Javascript -----
+   * RelativeDateTimeConverterFactory = (function () {
+   *  function _createRelativeDateTimeConverter(options)
+   *  {
+   *    // this is a custom converter (code not shown here) that formats the datetime into "Today" or 
+   *    // "Tomorrow", or "This Week"/"Next Week", etc.
+   *    return new RelativeDateTimeConverter(options);
+   *  }
+   *  return {
+   *    'createConverter': function (options) {
+   *      return _createRelativeDateTimeConverter(options);
+   *    }
+   *  };
+   *  }());
+   * oj.Validation.converterFactory("relativeDate", RelativeDateTimeConverterFactory);
+   *  // Use our custom relativeDate converter.
+   *  // In this demo, we want to see in the Schedule For column the words 
+   *  // Today or Tomorrow so we set the relativeField option's value
+   *  // to 'day'. If we want to see This Week, we'd set it to 'week', etc.
+   *  var rdConverter =  oj.Validation.converterFactory("relativeDate")
+   *  .createConverter({relativeField: 'day', year: "numeric", month: "numeric", day: "numeric"});
+   *  ...
+   *  // Our custom converter's format function returns an object with 'value' and 'title'.
+   *  // We put the 'value' in innerHTML so the user can read it. E.g., Today or Tomorrow.
+   *  // And we put the actual date in the title. The user can read it when they hover over
+   *  // the word Today or Tomorrow.
+   *  content = rdConverter.format(context.row.ScheduleFor);
+   *  span.setAttribute('title', content.title);
+   *  span.innerHTML = content.value;
+   * ...
    */
   createConverter : function(options) {}  
 };
@@ -1225,7 +1469,11 @@ oj.ValidatorFactory =
   /**
    * Default type for a factory used to create required validators. This type is passed to the 
    * [Validation.validatorFactory]{@link oj.Validation#validatorFactory} method to retrieve the 
-   * required validator factory of type {@link oj.RequiredValidatorFactory}. 
+   * required validator factory of type {@link oj.RequiredValidatorFactory}.
+   * @example <caption>Create a JET required validator</caption>
+   * var rvf = oj.Validation.validatorFactory(oj.ValidatorFactory.VALIDATOR_TYPE_REQUIRED); 
+   * var options = {'hint' : 'a value is required for this field'};
+   * var requiredValidator = rvf.createValidator(options);
    * @expose
    * @const
    * @member
@@ -1236,7 +1484,15 @@ oj.ValidatorFactory =
   /**
    * Default type for a factory used to create regExp validators. This type is passed to the 
    * [Validation.validatorFactory]{@link oj.Validation#validatorFactory} method to retrieve the 
-   * regExp validator factory of type {@link oj.RegExpValidatorFactory}. 
+   * regExp validator factory of type {@link oj.RegExpValidatorFactory}.
+   * @example <caption>Create a JET regexp validator</caption>
+   * var validatorFactory = 
+   * oj.Validation.validatorFactory(oj.ValidatorFactory.VALIDATOR_TYPE_REGEXP);
+   * var options =  
+   * {pattern: '[a-zA-Z0-9]{3,}', 
+   * hint: 'enter at least 3 letters or numbers.',
+   * messageDetail: 'You must enter at least 3 letters or numbers.'}
+   * var validator = validatorFactory.createValidator(options);
    * @expose
    * @const
    * @member
@@ -1247,7 +1503,13 @@ oj.ValidatorFactory =
   /**
    * Default type for a factory used to create numberRange validators. This type is passed to the 
    * [Validation.validatorFactory]{@link oj.Validation#validatorFactory} method to retrieve the 
-   * numberRange validator factory of type {@link oj.NumberRangeValidatorFactory}. 
+   * numberRange validator factory of type {@link oj.NumberRangeValidatorFactory}.
+   * @example <caption>Create a JET numberrange validator</caption>
+   * var validatorFactory = 
+   * oj.Validation.validatorFactory(oj.ValidatorFactory.VALIDATOR_TYPE_NUMBERRANGE); 
+   * var options = {min: 10000.05, max: 25000.95, 
+   * hint: {inRange: 'Enter a value between {min} and {max}.'}};
+   * var validator = validatorFactory.createValidator(options);
    * @expose
    * @const
    * @member
@@ -1258,7 +1520,12 @@ oj.ValidatorFactory =
   /**
    * Default type for a factory used to create length validators. This type is passed to the 
    * [Validation.validatorFactory]{@link oj.Validation#validatorFactory} method to retrieve the 
-   * length validator factory of type {@link oj.LengthValidatorFactory}. 
+   * length validator factory of type {@link oj.LengthValidatorFactory}.
+   * @example <caption>Create a JET length validator</caption>
+   * var validatorFactory = 
+   * oj.Validation.validatorFactory(oj.ValidatorFactory.VALIDATOR_TYPE_LENGTH); 
+   * var options = {min: 5, max: 10};
+   * var validator = validatorFactory.createValidator(options);
    * @expose
    * @const
    * @member
@@ -1270,6 +1537,12 @@ oj.ValidatorFactory =
    * Default type for a factory used to create required validators. This type is passed to the 
    * [Validation.validatorFactory]{@link oj.Validation#validatorFactory} method to retrieve the 
    * dateTimeRange validator factory of type {@link oj.DateTimeRangeValidatorFactory}. 
+   * @example <caption>Create a JET datetime validator</caption>
+   * var validator = 
+   * oj.Validation.validatorFactory(oj.ValidatorFactory.VALIDATOR_TYPE_DATETIMERANGE)
+   * .createValidator({{max: oj.IntlConverterUtils.dateToLocalIso(new Date()),
+   * min: oj.IntlConverterUtils.dateToLocalIso(new Date(2000, 00, 01)),
+   * hint: {'inRange': 'Enter a date that falls in the current millennium.'}}); 
    * @expose
    * @const
    * @member
@@ -1280,7 +1553,14 @@ oj.ValidatorFactory =
   /**
    * Default type for a factory used to create date restriction validators. This type is passed to 
    * the [Validation.validatorFactory]{@link oj.Validation#validatorFactory} method to retrieve the 
-   * dateRestriction validator factory of type {@link oj.DateRestrictionValidatorFactory}. 
+   * dateRestriction validator factory of type {@link oj.DateRestrictionValidatorFactory}.
+   * @example <caption>Create a JET dateRestriction validator</caption>
+   * var validatorFactory = 
+   * oj.Validation.validatorFactory(oj.ValidatorFactory.VALIDATOR_TYPE_DATERESTRICTION);
+   * var options = {dayFormatter : self.aprilFoolsFormatter, // your own formatter code
+   * message : {messageDayMetaData : 'You can\'t fool me! Try a different date.'}};
+   * var validator = validatorFactory.createValidator(options);
+   * 
    * @expose
    * @const
    * @member
@@ -1290,13 +1570,25 @@ oj.ValidatorFactory =
           
   /**
    * Creates an immutable validator instance of the type the factory implements. 
+   * For the specific options parameters, see the Validator jsdoc for the validator you
+   * are creating, e.g., oj.RequiredValidator if you are creating a required validator.
    * 
+   * @example <caption>create an instance of the required validator using the factory</caption>
+   * var rvf = oj.Validation.validatorFactory(oj.ValidatorFactory.VALIDATOR_TYPE_REQUIRED); 
+   * var options = {'hint' : 'a value is required for this field'};
+   * var requiredValidator = rvf.createValidator(options);
    * @param {(Object|null)} options an object literal containing properties required by the validator 
    * for its initialization. The properties provided in the options is implementation specific.
    * 
    * @return {Object} a validator instance.
    * @throws {TypeError} if an unrecognized type was provided 
    * @expose
+   * @see oj.DateRestrictionValidator
+   * @see oj.DateTimeRangeValidator
+   * @see oj.LengthValidator
+   * @see oj.NumberRangeValidator
+   * @see oj.RegExpValidator
+   * @see oj.RequiredValidator
    */
   createValidator : function(options) {}  
 };
@@ -1412,7 +1704,9 @@ oj.Converter.prototype.resolvedOptions = function ()
  */
 oj.ConverterError = function (summary, detail)
 {
-  var message = new oj.Message(summary, detail, oj.Message.SEVERITY_LEVEL['ERROR']);
+  var message = {summary: summary, 
+                 detail: detail, 
+                 severity: oj.Message.SEVERITY_LEVEL['ERROR']};
   this.Init(message); 
 };
 
@@ -1420,12 +1714,14 @@ oj.ConverterError.prototype = new Error();
 
 /**
  * Initializes the instance. 
- * @param {Object} message instance of oj.Message
+ * @param {Object} message an Object that duck-types oj.Message which is an 
+ * Object with summary, detail, and severity properties.
  * @export
  */
 oj.ConverterError.prototype.Init = function (message)
 {
-  var detail = message['detail'], summary = message['summary'];
+  var detail = message['detail'];
+  var summary = message['summary'];
   this._message = message;
 
   // so browser can get to e.name and e.message 
@@ -1434,9 +1730,11 @@ oj.ConverterError.prototype.Init = function (message)
 };
 
 /**
- * Returns an instance of oj.Message.
+ * Returns an Object that duck-types oj.Message which is an 
+ * Object with summary, detail, and severity properties.
  * 
- * @return {Object} instance of oj.Message
+ * @return {Object} an Object that duck-types oj.Message which is an 
+ * Object with summary, detail, and severity properties.
  * @export
  */
 oj.ConverterError.prototype.getMessage = function ()
@@ -1453,6 +1751,54 @@ oj.ConverterError.prototype.getMessage = function ()
  */
 
 /**
+ *  @example <caption>Create a Validator and implement its methods.</caption>
+ * 
+ *  var TimeIncrementValidator = function () { };
+ *  //Need to be a subclass of oj.Validator
+ *  oj.Object.createSubclass(TimeIncrementValidator, oj.Validator, "TimeIncrementValidator");
+ *  //Below validate function will perform the necessary validation
+ *  TimeIncrementValidator.prototype.validate = function (value)
+ *  {
+ *    if (!value)
+ *    {
+ *      return value;
+ *    }
+ *    value = oj.IntlConverterUtils.isoToLocalDate(value);
+ *    var minutes = value.getMinutes();
+ *    //Check if the minute is in increment of 15 by taking a modulo
+ *    if ((minutes % 15) !== 0)
+ *    {
+ *      throw new oj.ValidatorError("Uh oh, not an increment value.", "Hey put the increment value not " + value);
+ *    }
+ *    else 
+ *    {
+ *      return value;
+ *    }
+ *  };
+ *  
+ *  //No hint for this validator
+ *  TimeIncrementValidator.prototype.getHint = function ()
+ *  {
+ *    return null;
+ *  };
+ * @example <caption>Create a Validator and implement its methods. Bind it to the
+ * JET form component which will call this 'validate' to validate the user's input.</caption>
+ *  // Validator that ensures endDate is never less than start date
+ *  self.endDateValidator = {  
+ *    'validate' : function(value)
+ *    {
+ *      var value =  oj.IntlConverterUtils.isoToLocalDate(value); 
+ *      var start = oj.IntlConverterUtils.isoToLocalDate(self.startDate());
+ *      if (value && !(value.getFullYear() > start.getFullYear() || 
+ *      {
+ *        throw new oj.ValidatorError('End Date cannot be less than Start Date');
+ *      }
+ *    },
+ *    'getHint' : function() { return "End Date needs to be greater than Start Date");}
+ *  };
+ *  -- HTML --
+ *  &lt;oj-input-date id="nextday" value="{{endDate}}" 
+ *  validators="{{[weekendDateValidator, endDateValidator]}}">&lt;/oj-input-date>
  * @constructor
  * @export
  * @since 0.6
@@ -1477,8 +1823,26 @@ oj.Validator.prototype.Init = function()
 
 
 /**
- * Vaidates the value.
+ * Validates the value.
  * 
+ * @example <caption>Create a Validator and implement the validate method. Bind it to the
+ * JET form component which will call this 'validate' to validate the user's input.</caption>
+ *  // Validator that ensures endDate is never less than start date
+ *  self.endDateValidator = {  
+ *    'validate' : function(value)
+ *    {
+ *      var value =  oj.IntlConverterUtils.isoToLocalDate(value); 
+ *      var start = oj.IntlConverterUtils.isoToLocalDate(self.startDate());
+ *      if (value && !(value.getFullYear() > start.getFullYear() || 
+ *      {
+ *        throw new oj.ValidatorError('End Date cannot be less than Start Date');
+ *      }
+ *    },
+ *    'getHint' : function() { return "End Date needs to be greater than Start Date");}
+ *  };
+ *  -- HTML --
+ *  &lt;oj-input-date id="nextday" value="{{endDate}}" 
+ *  validators="{{[weekendDateValidator, endDateValidator]}}">&lt;/oj-input-date>
  * @param {Object} value to be validated
  * @return {*} a boolean true if validation passes.
  * @throws Error if validation fails
@@ -1490,6 +1854,19 @@ oj.Validator.prototype.Init = function()
 
 /**
  * Returns a hint that describes the validator rule.
+ * @example <caption>Create a Validator and implement the getHint method. Bind it to the
+ * JET form component which will show the hint.</caption>
+ *  // Validator that ensures endDate is never less than start date
+ *  self.endDateValidator = {  
+ *    'validate' : function(value)
+ *    {
+ *      ...
+ *    },
+ *    'getHint' : function() { return "End Date needs to be greater than Start Date");}
+ *  };
+ *  -- HTML --
+ *  &lt;oj-input-date id="nextday" value="{{endDate}}" 
+ *  validators="{{[weekendDateValidator, endDateValidator]}}">&lt;/oj-input-date>
  * @returns {*} a hint string or null
  * @method getHint
  * @memberof oj.Validator
@@ -1503,14 +1880,27 @@ oj.Validator.prototype.Init = function()
  * 
  * @param {string} summary a localized String that provides a summary of the error
  * @param {string} detail a localized String that provides a detail of the error
+ * @example <caption>throw new oj.ValidationError from custom validator's validate method</caption> 
+ *  // A custom validator whose validate method ensures that the value is not 'junk'.
+ *  self.noJunkValidator = {
+ *  'validate' : function (value)
+ *  {
+ *    value = value + "";
+ *    if (value && value.toLowerCase()  === "junk")
+ *    {
+ *      throw new oj.ValidatorError("Invalid value", "You cannot enter a value that is 'junk'!!");
+ *    }
+ *    return true;
+ *    }
+ *  };
  * @constructor
  * @export
  */
 oj.ValidatorError = function (summary, detail)
 {
-  var message = new oj.Message(summary, 
-                               detail, 
-                               oj.Message.SEVERITY_LEVEL['ERROR']);
+  var message = {summary: summary, 
+                 detail: detail, 
+                 severity: oj.Message.SEVERITY_LEVEL['ERROR']};
   this.Init(message); 
 };
 
@@ -1518,12 +1908,15 @@ oj.ValidatorError.prototype = new Error();
 
 /**
  * Initializes the instance. 
- * @param {Object} message an instance of oj.Message
+ * @param {Object} message an Object that duck-types oj.Message which is an 
+ * Object with summary, detail, and severity keys. The severity is
+ * oj.Message.SEVERITY_LEVEL['ERROR'].
  * @export
  */
 oj.ValidatorError.prototype.Init = function (message)
 {
-  var detail = message['detail'], summary = message['summary'];
+  var detail = message['detail'];
+  var summary = message['summary'];
   this._message = message;
 
   // so browser can get to e.name and e.message 
@@ -1532,9 +1925,19 @@ oj.ValidatorError.prototype.Init = function (message)
 };
 
 /**
- * Returns an instance of oj.Message.
+ * Returns an Object that duck-types oj.Message which is an 
+ * Object with summary, detail, and severity properties. The severity is
+ * oj.Message.SEVERITY_LEVEL['ERROR']
  * 
- * @returns {Object} instance of oj.Message
+ * @example <caption>get the oj.ValidationError that was thrown and get the message</caption> 
+ * var ojmessage = valError.getMessage();
+ * var severity = ojmessage['severity'] || oj.Message.SEVERITY_LEVEL['ERROR'];
+ * var summary = ojmessage['summary'];
+ * var detail = ojmessage['detail'];
+ * @returns {Object} an Object that duck-types oj.Message which is an 
+ * Object with summary, detail, and severity properties.
+ * The severity is
+ * oj.Message.SEVERITY_LEVEL['ERROR']
  * @export
  */
 oj.ValidatorError.prototype.getMessage = function ()
@@ -1580,6 +1983,7 @@ oj.ValidatorError.prototype.getMessage = function ()
  * 
  * @export
  * @constructor
+ * @augments oj.Validator
  * @since 0.6
  * 
  */
@@ -2411,6 +2815,7 @@ oj.Validation.__registerDefaultValidatorFactory(oj.ValidatorFactory.VALIDATOR_TY
  * "The value {value} must contain at least 3 alphanumeric characters"<br/>
  * @export
  * @constructor
+ * @augments oj.Validator 
  * @since 0.6
  */
 oj.RegExpValidator = function (options)
@@ -2511,7 +2916,7 @@ oj.RegExpValidator.prototype.validate = function (value)
  * A message to be used as hint, when giving a hint on the expected pattern. There is no default 
  * hint for this property.
  * 
- * @returns {String|null} a hint message or null if no hint is available in the options
+ * @returns {string|null} a hint message or null if no hint is available in the options
  * @memberof oj.RegExpValidator
  * @instance
  * @export
@@ -2878,6 +3283,29 @@ oj.IntlConverterUtils._normalizeIsoString = function(isoString)
 {
   return oj.OraI18nUtils._normalizeIsoString(isoString);
 };
+
+/**
+ * Returns a person's initials
+ * 
+ * @param {string} firstName first name
+ * @param {string} lastName last name
+ * @returns {string} uppercase concatenation of first letter of first name and first letter
+ * of last name.
+ * There are the following special cases:
+ * - If the name is Arabic characters, it returns empty string.
+ * - If the name is Hindi characters, it returns the first letter of the first name.
+ * - If the name is Thai characters, it returns the first letter of the first name.
+ * - If the name is Korean characters, it returns the first name.
+ * - If the name is Japanese or Chinese characters, it returns the last name.
+ * 
+ * @export  
+ * @since 4.0.0
+ */
+oj.IntlConverterUtils.getInitials = function(firstName, lastName) 
+{
+  return oj.OraI18nUtils.getInitials(firstName, lastName);
+};
+
 /**
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
@@ -2987,6 +3415,7 @@ oj.IntlConverterUtils._normalizeIsoString = function(isoString)
  * <code class="prettyprint">oj-validator.length.messageSummary.tooShort</code>.
  * @export
  * @constructor
+ * @augments oj.Validator
  * @since 0.7
  */
 oj.LengthValidator = function (options)
@@ -3020,7 +3449,7 @@ oj.LengthValidator.defaults =
   'countBy': 'codeUnit'
 };
 
-// Subclass from oj.Object 
+// Subclass from oj.Validator 
 oj.Object.createSubclass(oj.LengthValidator, oj.Validator, "oj.LengthValidator");
 
 /**

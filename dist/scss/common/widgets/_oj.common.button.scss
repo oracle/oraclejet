@@ -23,16 +23,19 @@
     input#{$selector}.oj-button[type="button"], // doesn't support icons
     input#{$selector}.oj-button[type="submit"], // doesn't support icons
     input#{$selector}.oj-button[type="reset"], // doesn't support icons
+    #{$selector}.oj-buttonset .oj-button-text-only .oj-button-text, // toggle button custom element case
     #{$selector}.oj-button-text-only .oj-button-text { // button types that do support icons but don't have any
         padding: 0 $buttonTextToEdgePadding;
     }
 
     /* The text span of buttons with text, a left icon, but no right icon */
+    #{$selector}.oj-buttonset .oj-button-text-icon-start .oj-button-text, // toggle button custom element case
     #{$selector}.oj-button-text-icon-start .oj-button-text {
         @include oj-ltr() {
             padding: 0 $buttonTextToEdgePadding 0 0;
         }
     }
+    #{$selector}.oj-buttonset .oj-button-text-icon-end .oj-button-text, // toggle button custom element case
     #{$selector}.oj-button-text-icon-end .oj-button-text {
         @include oj-rtl() {
             padding: 0 $buttonTextToEdgePadding 0 0;
@@ -40,11 +43,13 @@
     }
 
     /* The text span of buttons with text, a right icon, but no left icon */
+    #{$selector}.oj-buttonset .oj-button-text-icon-end .oj-button-text, // toggle button custom element case
     #{$selector}.oj-button-text-icon-end .oj-button-text {
         @include oj-ltr() {
             padding: 0 0 0 $buttonTextToEdgePadding;
         }
     }
+    #{$selector}.oj-buttonset .oj-button-text-icon-start .oj-button-text, // toggle button custom element case
     #{$selector}.oj-button-text-icon-start .oj-button-text {
         @include oj-rtl() {
             padding: 0 0 0 $buttonTextToEdgePadding;
@@ -52,11 +57,14 @@
     }
 
     /* The text span of buttons with text and both icons */
+    #{$selector}.oj-buttonset .oj-button-text-icons .oj-button-text, // toggle button custom element case
     #{$selector}.oj-button-text-icons .oj-button-text { 
         padding: 0;
     }
 
     /* The left icon of buttons with text and a left icon, with or without a right icon */
+    #{$selector}.oj-buttonset .oj-button-text-icon-start .oj-button-icon.oj-start, // toggle button custom element case
+    #{$selector}.oj-buttonset .oj-button-text-icons .oj-button-icon.oj-start,      // toggle button custom element case
     #{$selector}.oj-button-text-icon-start .oj-button-icon.oj-start, 
     #{$selector}.oj-button-text-icons .oj-button-icon.oj-start {
         // because this is a contextual selector it has a higher specificity,
@@ -68,6 +76,8 @@
             margin-left:  $buttonIconToEdgePadding;
         }
     }
+    #{$selector}.oj-buttonset .oj-button-text-icon-end .oj-button-icon.oj-end,   // toggle button custom element case
+    #{$selector}.oj-buttonset .oj-button-text-icons .oj-button-icon.oj-end,      // toggle button custom element case
     #{$selector}.oj-button-text-icon-end .oj-button-icon.oj-end, 
     #{$selector}.oj-button-text-icons .oj-button-icon.oj-end { 
         // because this is a contextual selector it has a higher specificity,
@@ -81,6 +91,7 @@
     }
 
     /* The left icon of buttons with 2 icons and no text */
+    #{$selector}.oj-buttonset .oj-button-icons-only .oj-button-icon.oj-start,   // toggle button custom element case
     #{$selector}.oj-button-icons-only .oj-button-icon.oj-start {
         // because this is a contextual selector it has a higher specificity,
         // so using margin-right: and margin-left: instead of margin: so that
@@ -91,6 +102,7 @@
             margin-left:  $buttonIconOnlyPadding; // between-icon padding lives on left icon
         }
     }
+    #{$selector}.oj-buttonset .oj-button-icons-only .oj-button-icon.oj-end,   // toggle button custom element case
     #{$selector}.oj-button-icons-only .oj-button-icon.oj-end {
         // because this is a contextual selector it has a higher specificity,
         // so using margin-right: and margin-left: instead of margin: so that
@@ -103,6 +115,7 @@
     }
 
     /* The icon of buttons with with 1 icon (whether start or end) and no text */
+    #{$selector}.oj-buttonset .oj-button-icon-only .oj-button-icon,   // toggle button custom element case
     #{$selector}.oj-button-icon-only .oj-button-icon { 
         // because this is a contextual selector it has a higher specificity,
         // so using margin-right: and margin-left: instead of margin: so that
@@ -113,6 +126,8 @@
     }
 
     /* The right icon of buttons with text and a right icon, with or without a left icon */
+    #{$selector}.oj-buttonset .oj-button-text-icon-end .oj-button-icon.oj-end,   // toggle button custom element case
+    #{$selector}.oj-buttonset .oj-button-text-icons .oj-button-icon.oj-end,      // toggle button custom element case
     #{$selector}.oj-button-text-icon-end .oj-button-icon.oj-end, 
     #{$selector}.oj-button-text-icons .oj-button-icon.oj-end { 
         // because this is a contextual selector it has a higher specificity,
@@ -124,6 +139,8 @@
             margin-left: $buttonIconToTextPadding;
         }
     }
+    #{$selector}.oj-buttonset .oj-button-text-icon-start .oj-button-icon.oj-start,   // toggle button custom element case
+    #{$selector}.oj-buttonset .oj-button-text-icons .oj-button-icon.oj-start,        // toggle button custom element case
     #{$selector}.oj-button-text-icon-start .oj-button-icon.oj-start, 
     #{$selector}.oj-button-text-icons .oj-button-icon.oj-start {
         // because this is a contextual selector it has a higher specificity,
@@ -137,6 +154,7 @@
     }
 
     /* The right icon of buttons with 2 icons and no text */
+    #{$selector}.oj-buttonset .oj-button-icons-only .oj-button-icon.oj-end,   // toggle button custom element case
     #{$selector}.oj-button-icons-only .oj-button-icon.oj-end {
         // because this is a contextual selector it has a higher specificity,
         // so using margin-right: and margin-left: instead of margin: so that
@@ -147,6 +165,7 @@
             margin-right: $buttonIconOnlyPadding;
         }
     }
+    #{$selector}.oj-buttonset .oj-button-icons-only .oj-button-icon.oj-start,    // toggle button custom element case
     #{$selector}.oj-button-icons-only .oj-button-icon.oj-start {
         // because this is a contextual selector it has a higher specificity,
         // so using margin-right: and margin-left: instead of margin: so that
@@ -190,26 +209,40 @@
       }      
     }
 
+    .oj-button {  // root element jqui/button or custom element/oj-button
+        // height and width set on the root and the container button will inherit that value
+        height: $buttonHeight;
+        
+        // set inline-flex on root node
+        @include oj-display-inline-flex-property;
+        
+        // AltaWeb spec says 3px spacing (i.e. margin) between buttons, so 1.5px margin on left and right.
+        // Since Buttons are inline-flex, the spacing is approximately 3px whenever the HTML has any 
+        // whitespace between the elements, which is usually the case. Therefore leaving off left/right margins.
+        margin-bottom: $wrappableMarginBottom;
+
+        // Required for buttons to line up in FF (see Bug 23025205)
+        vertical-align: middle;
+        
+        font-size: $buttonFontSize;
+    }
+    
+    // inherit height and width from container if set
+    .oj-button-button {  // custom element only
+        width: inherit;
+        height: inherit;
+    }
+
     .oj-button-jqui,     // jqui only
     .oj-button-button {  // custom element only
-        @include oj-display-inline-flex-property;
-
         @include oj-justify-content-property(center);
         min-width: 0; // By default, flex items won't shrink below their minimum content size unless min-width specified
 
         // vertically center containing items
         @include oj-align-items-property(center);
 
-        // Required for buttons to line up in FF (see Bug 23025205)
-        vertical-align: middle;
-
         padding: 0; 
-        border: 1px solid;   
-        
-        // AltaWeb spec says 3px spacing (i.e. margin) between buttons, so 1.5px margin on left and right.
-        // Since Buttons are inline-flex, the spacing is approximately 3px whenever the HTML has any 
-        // whitespace between the elements, which is usually the case. Therefore leaving off left/right margins.
-        margin-bottom: $wrappableMarginBottom;
+        border: 1px solid;       
         
         white-space: nowrap; 
         overflow: hidden;
@@ -217,13 +250,10 @@
         @include oj-border-radius( $buttonBorderRadius );
         box-sizing: border-box;
         
-        height: $buttonHeight;
-        
         // font-size and font-family are needed for the
         // case where you use a button tag to create
         // the button, the font family and size aren't
         // inherited on a button tag.
-        font-size: $buttonFontSize;
         font-family: inherit;
         
         // Prevent flash as button clicks 300ms after the tap on touch devices.
@@ -252,7 +282,8 @@
     }
 
     /* The <label> of toggle (radio and checkbox) buttons or <div> of <button> type buttons*/
-    .oj-button-label {
+    .oj-button-label,
+    .oj-button-label oj-option {
         cursor: inherit; // follow oj-button's lead
         
         // very important: make <label> fill up the containing oj-button <span> so all clicks, hovers, etc. are received by the <label>
@@ -287,24 +318,23 @@
 
     // Alternate button sizes
     //----------------------------------
-
-    .oj-button-jqui.oj-button-sm,                // jqui only
-    .oj-button.oj-button-sm .oj-button-button {  // custom element only
-        height: $buttonSmallHeight;
+    
+    .oj-button.oj-button-sm,
+    .oj-buttonset.oj-button-sm .oj-button-jqui    {  // custom element buttonset    
+        height: $buttonSmallHeight;        
         line-height: $buttonSmallHeight;
         font-size: $buttonSmallFontSize;
     }
-
-    .oj-button-jqui.oj-button-lg,                // jqui only
-    .oj-button.oj-button-lg .oj-button-button {  // custom element only
+        
+    .oj-button.oj-button-lg,
+    .oj-buttonset.oj-button-lg .oj-button-jqui    {  // custom element buttonset
         height: $buttonLargeHeight;
         line-height: $buttonLargeHeight;
         font-size: $buttonLargeFontSize;
     }
-
-
-    .oj-button-jqui.oj-button-xl,                // jqui only
-    .oj-button.oj-button-xl .oj-button-button {  // custom element only
+    
+    .oj-button.oj-button-xl,
+    .oj-buttonset.oj-button-xl .oj-button-jqui    {  // custom element buttonset
         height: $buttonXlargeHeight;
         line-height: $buttonXlargeHeight;
         font-size: $buttonXlargeFontSize;

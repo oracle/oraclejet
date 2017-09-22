@@ -27,7 +27,8 @@ oj._JsonTreeNodeDataSource = function()
     this.id = null;
     this.depth = 0;
     this.parent = null;
-    this.children = [];
+    /** @type {Array} */
+    this.children = null;
     this.title = null;
     this.attr = null;
     this.leaf = null;
@@ -81,6 +82,11 @@ oj._JsonTreeNodeDataSource.prototype._descending = function(key)
 oj._JsonTreeNodeDataSource.prototype._sortRecursive = function(criteria)
 {
     var key = criteria['key'];
+    if (this.children == null)
+    {
+        return this;
+    }
+
     if (criteria['direction'] === 'ascending')
     {
         this.children.sort(this._ascending(key));
@@ -93,17 +99,46 @@ oj._JsonTreeNodeDataSource.prototype._sortRecursive = function(criteria)
     {
         this.children[i]._sortRecursive(criteria);
     }
+
     return this;
 };
 
 ///////////// JsonTreeDataSource //////////////////   
 
 /**
- * A json object based implementation of the TreeDataSource.
- * @param {Object} data the json object
+ * @class oj.JsonTreeDataSource
+ * @classdesc TreeDataSource implementation that represents hierachical data available from an array of JSON objects.  This data source can be used by [ListView]{@link oj.ojListView}, 
+ *            [NavigationList]{@link oj.ojNavigationList}, and [TreeView]{@link oj.ojTreeView}.<br><br>
+ *            See the <a href="../jetCookbook.html?component=treeView&demo=json">Tree View - Data Source: JSON</a> demo for an example.<br><br>
+ *            Refer to {@link oj.TreeDataSource} for other data sources that represent hierarachical data.
+ * @param {Object} data An array of JSON objects that represent the root nodes.
+ *                      <p>Each node object can contain the following properties:</p>
+ *                      <p>attr - an object of name-value pairs that represents data for the node.</p>
+ *                      <p>children - an array of JSON objects that represent child nodes.</p> 
  * @constructor
  * @export
  * @extends oj.TreeDataSource
+ * @example
+ * // First initialize the tree data.  This can be defined locally or read from file.
+ * var treeData = [
+ *                  {"attr": {"id": "dir1", "title": "Directory 1"},
+ *                   "children": [
+ *                     {"attr": {"id": "subdir1", "title": "Subdirectory 1"},
+ *                      "children": [
+ *                        {"attr": {"id": "file1", "title": "File 1"}},
+ *                        {"attr": {"id": "file2", "title": "File 2"}},
+ *                        {"attr": {"id": "file3", "title": "File 3"}}
+ *                      ]}
+ *                   ]},
+ *                  {"attr": {"id": "dir2", "title": "Directory 2"},
+ *                   "children": [
+ *                     {"attr": {"id": "file4", "title": "File 4"}},
+ *                     {"attr": {"id": "file5", "title": "File 5"}},
+ *                   ]}
+ *                ];
+ *
+ * // Then create a JsonTreeDataSource object with the tree data
+ * var dataSource = new oj.JsonTreeDataSource(treeData);
  */
 oj.JsonTreeDataSource = function(data)
 {
@@ -141,6 +176,7 @@ oj.JsonTreeDataSource.prototype.Init = function()
  * @param {Object} source the json object.
  * @param {number=} depth used recursively for depth calculation.
  * @return target
+ * @private
  */
 oj.JsonTreeDataSource.prototype._createTreeDataSource = function(c, target, source, depth)
 {
@@ -163,6 +199,8 @@ oj.JsonTreeDataSource.prototype._createTreeDataSource = function(c, target, sour
             {
                 children = source[prop];
             }
+
+            target.children = [];
 
             depth++;
             for (j = 0; j < children.length; j++)
@@ -255,7 +293,7 @@ oj.JsonTreeDataSource.prototype.getChildCount = function(parentKey)
  */
 oj.JsonTreeDataSource.prototype.fetchChildren = function(parentKey, range, callbacks, options)
 {
-    var i, childStart, childEnd, nodeSet, results, parent, node;
+    var i, childStart, childEnd, nodeSet, results, parent, childCount, node;
 
     childStart = 0;
     childEnd = 0;
@@ -268,16 +306,19 @@ oj.JsonTreeDataSource.prototype.fetchChildren = function(parentKey, range, callb
 
     parent = this._searchTreeById(this.data, parentKey);
 
+    // should never be null but this prevents blowing up if someone tries to call fetchChildren on a leaf
+    childCount = parent.children != null ? parent.children.length : 0;
+
     if (!range)
     {
         range = [];
         range['start'] = 0;
-        range['count'] = parent.children.length;
+        range['count'] = childCount;
     }
 
     if (!range['count'])
     {
-        range['count'] = parent.children.length;
+        range['count'] = childCount;
     }
 
     if (!range['start'])
@@ -286,7 +327,7 @@ oj.JsonTreeDataSource.prototype.fetchChildren = function(parentKey, range, callb
     }
 
     childStart = range['start'];
-    childEnd = Math.min(parent.children.length, childStart + range['count']);
+    childEnd = Math.min(childCount, childStart + range['count']);
 
     // now populate results from data array
     for (i = childStart; i < childEnd; i += 1)
@@ -312,7 +353,7 @@ oj.JsonTreeDataSource.prototype.fetchChildren = function(parentKey, range, callb
         {
             node.parent = parent.children[i].parent;
         }
-        if(parent.children[i].children.length > 0)
+        if(parent.children[i].children != null)
         {
             node.leaf = false;
         }
@@ -346,7 +387,7 @@ oj.JsonTreeDataSource.prototype.fetchChildren = function(parentKey, range, callb
  */
 oj.JsonTreeDataSource.prototype.fetchDescendants = function(parentKey, callbacks, maxCount)
 {
-    var range, i, childStart, childEnd, nodeSet, results, parent;
+    var range, i, childStart, childEnd, nodeSet, results, parent, childCount;
 
     childStart = 0;
     childEnd = 0;
@@ -359,17 +400,20 @@ oj.JsonTreeDataSource.prototype.fetchDescendants = function(parentKey, callbacks
 
     parent = this._searchTreeById(this.data, parentKey);
 
+    // should never be null but this prevents blowing up if someone tries to call fetchDescendants on a leaf
+    childCount = parent.children != null ? parent.children.length : 0;
+
     range = [];
     range['start'] = 0;
-    range['count'] = parent.children.length;
+    range['count'] = childCount;
 
     childStart = range['start'];
-    childEnd = Math.min(parent.children.length, childStart + range['count']);
+    childEnd = Math.min(childCount, childStart + range['count']);
 
     // now populate results from data array
     for (i = childStart; i < childEnd; i += 1)
     {       
-	if(parent.children[i].children.length > 0)
+        if (parent.children[i].children != null)
         {
             parent.children[i].leaf = false;
         }
@@ -455,6 +499,10 @@ oj.JsonTreeDataSource.prototype.move = function(nodeToMove, referenceNode, posit
         if (pos == "inside")
         {
             this._updateDepth(moveNode, moveNode.depth - (refNode.depth + 1));
+            if (refNode.children == null)
+            {
+                refNode.children = [];
+            }
             refNode.children.push(moveNode);
         }
         else if (pos == "before")
@@ -510,7 +558,7 @@ oj.JsonTreeDataSource.prototype.move = function(nodeToMove, referenceNode, posit
  * Performs a sort operation on the tree data.
  * @param {Object} criteria the sort criteria.  It must contain the following properties: key, direction
  * @param {Object} criteria.key the key identifying the attribute (column) to sort on
- *        {string} criteria.direction the sort direction, valid values are "ascending", "descending", "none" (default)
+ * @param {string} criteria.direction the sort direction, valid values are "ascending", "descending", "none" (default)
  * @param {function()} callbacks.success the callback to invoke when the sort completed successfully.  
  * @param {function({status: Object})} callbacks.error the callback to invoke when sort failed.
  * @export
@@ -878,7 +926,7 @@ oj.JsonNodeSet.prototype.getChildNodeSet = function(index) {
 
     depth = this.m_nodes[index].depth;
     results = this.m_nodes[index].children;
-    if(results.length == 0)
+    if(results == null || results.length == 0)
     {
         return null;
     }

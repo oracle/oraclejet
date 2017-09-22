@@ -3,17 +3,17 @@
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
-define(['ojs/ojcore', 'knockout', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojcolor','ojs/ojslider', 'jqueryui-amd/widgets/draggable', 'ojs/ojtouchproxy', 'ojs/ojeditablevalue'],
-       function(oj, ko, $)
+define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojcolor','ojs/ojslider', 'jqueryui-amd/widgets/draggable', 'ojs/ojtouchproxy', 'ojs/ojeditablevalue'],
+       function(oj, $)
 {
 
 /*----------------------------------------------------------------
-   ojColorSpectrum    JET Color (spectrum) component
+   ojColorSpectrum    JET Color (spectrum) element
    Depends:   jquery.ui.core.js
               jquery.ui.widget.js
 ------------------------------------------------------------------*/
 
-(function () 
+(function ()
 {
   /*
   function debugObj(o)  {
@@ -50,7 +50,7 @@ function  _getHslFromRgb(color)
    var hsl = _rgbToHsl(color.getRed(), color.getGreen(), color.getBlue()) ;
 
    hsl[0] *= 360 ;    // hsl was returned in [0,1] so transform into
-   hsl[1] *= 100 ;    // [0,360] for hue, and [0,100] for 
+   hsl[1] *= 100 ;    // [0,360] for hue, and [0,100] for
    hsl[2] *= 100 ;    // saturation/luminance
    hsl.push(color.getAlpha());
 
@@ -97,19 +97,22 @@ function _rgbToHsl(r, g, b)
 /**
   * @ojcomponent oj.ojColorSpectrum
   * @augments oj.editableValue
-  * @since 0.6
+  * @since 3.0.0
+  * @ojstatus preview
   *
-  * @classdesc  Class representing a JET Spectrum Color Picker
+  * @classdesc
 
   * <h3 id="colorSpectrumOverview-section">
-  *   JET Color Spectrum Component
+  *   JET Color Spectrum
   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#colorSpectrumOverview-section"></a>
   * </h3>
   *
-  * The ojColorSpectrum component allows a custom color value to be retrieved from a display
-  * containing a saturation/luminosity spectrum, and hue and opacity sliders.  As the spectrum/sliders
-  * are manipulated, the component fires <code class="prettyprint">optionChange</code> "value" and
-  * "rawValue events so that the app can update its UI to show the selected color in context.
+  * The JET Color Spectrum element allows a custom color value to be retrieved from a display
+  * containing a saturation/luminosity spectrum, and hue and opacity sliders.
+  * <pre class="prettyprint">
+  * <code>&lt;oj-color-spectrum value="{{colorValue}}">
+  * &lt;/oj-color-spectrum>
+  * </code></pre>
   * </p></br>
   *
   * <h3 id="touch-section">
@@ -128,75 +131,73 @@ function _rgbToHsl(r, g, b)
   * {@ojinclude "name":"keyboardDoc"}
   * </br>
   *
-  * @desc Creates a JET color spectrum component.
-  * @param {Object=} options a map of option-value pairs to set on the component
-  *
-  * @example <caption>Initialize the Color Spectrum component with options:</caption>
-  * $( ".selector" ).ojColorSpectrum( {"value": oj.Color.RED} );
   *
   */
-  oj.__registerWidget("oj.ojColorSpectrum", $['oj']['editableValue'], 
+  oj.__registerWidget("oj.ojColorSpectrum", $['oj']['editableValue'],
   {
-     widgetEventPrefix : "oj", 
-     defaultElement    : "<input>", 
+     widgetEventPrefix : "oj",
+     defaultElement    : "<input>",
 
      options: {
 
-         /** Disables the color spectrum if set to <code class="prettyprint">true</code>.
-           *
-           * @member
-           * @name disabled
-           * @memberof oj.ojColorspectrum
-           * @instance
-           * @type {boolean}
-           * @default <code class="prettyprint">false</code>
-           *
-           * @example <caption>Initialize the color spectrum with the <code class="prettyprint">disabled</code> option specified:</caption>
-           * $( ".selector" ).ojColorSpectrum( { "disabled": true } );
-           *
-           * @example <caption>Get or set the <code class="prettyprint">disabled</code> option, after initialization:</caption>
-           * // getter
-           * var disabled = $( ".selector" ).ojColorSpectrum( "option", "disabled" );
-           *
-           * // setter
-           * $( ".selector" ).ojColorSpectrum( "option", "disabled", true );
-           */
-           // disabled option declared in superclass, but we still want the above API doc
+          /**
+          * Labelled-by is used to establish a relationship between this and another element.
+          * A common use is to tie the oj-label and the oj-color-spectrum together.
+          * The oj-label custom element has an id, and you use the labelled-by attribute
+          * to tie the two elements together.
+          *
+          * @example <caption>Initialize the color spectrum with the <code class="prettyprint">labelled-by</code> attribute specified:</caption>
+          * &ltoj-label id="labelId">Name:&lt/oj-label>
+          * &ltoj-color-spectrum labelled-by="labelId">&lt;/oj-color-spectrum>
+          *
+          * @example <caption>Get or set the <code class="prettyprint">labelledBy</code> property, after initialization:</caption>
+          * // getter
+          * var labelledBy = myColorSpectrum.labelledBy;
+          *
+          * // setter
+          * myColorSpectrum.labelledBy = "labelId";
+          *
+          * @expose
+          * @type {?string}
+          * @public
+          * @instance
+          * @memberof oj.ojColorSpectrum
+          */
+         labelledBy: null,
 
          /**
-           * The value of the component representing the current color.
+           * The value of the element representing the current color.
            * @member
            * @type {oj.Color}
            * @default <code class="prettyprint">null</code>
+           * @ojwriteback
            * @expose
            * @instance
            * @memberof oj.ojColorSpectrum
-           * @example <caption>Specify the initial spectrum color</caption>
-           * <code>
-           *&lt;div id="myeditor" aria-label="My Spectrum" 
-           *  data-bind="ojComponent: {
-           *                        component:    'ojColorSpectrum',
-           *                        value:        oj.Color.RED,
-           *                        optionChange: myOptionChange
-           *                      }" &gt;&lt;/div&gt;
-           * </code>
-           * @example <caption>Programatically change the current spectrum color</caption>
-           * <code>
-           *  $("#myeditor").ojColorSpectrum("option", "value", new oj.Color("rgba(128, 255, 240, 0.7)")) ;
+           * @example <caption>Initialize the color spectrum with the <code class="prettyprint">value</code> attribute specified:</caption>
+           * &ltoj-color-spectrum value='{{myColor}}'>&lt;/oj-color-spectrum>
+           *
+           * @example <caption>Get or set the <code class="prettyprint">value</code> property, after initialization:</caption>
+           * // getter
+           * var color = myColorSpectrum.value;
+           *
+           * // setter
+           * myColorSpectrum.value = new oj.Color('rgb(0,0,0)');
            * </code>
            */
          value:         null,
 
          /**
-           * The <code class="prettyprint">rawValue</code> is the read-only option for retrieving the 
+           * The <code class="prettyprint">rawValue</code> is the read-only option for retrieving the
            * transient value of the component.<p>
            * The <code class="prettyprint">rawValue</code> updates to display the transient
-           * changes of the spectrum thumb, and the hue and opacity sliders. The difference in behavior 
+           * changes of the spectrum thumb, and the hue and opacity sliders. The difference in behavior
            * between the <code class="prettyprint">rawValue</code> and <code class="prettyprint">value</code>
            * is that <code class="prettyprint">rawValue</code> will be updated as the spectrum thumb or
-           * hue/opacity sliders are moved, whereas the <code class="prettyprint">value</code> option is
+           * hue/opacity sliders are moved, whereas the <code class="prettyprint">value</code> attribute is
            * updated only after the respective thumb is released (or after a key press).
            * </p>
+           * @ignore
            * @member
            * @type {oj.Color}
            * @default n/a
@@ -204,30 +205,9 @@ function _rgbToHsl(r, g, b)
            * @instance
            * @memberof oj.ojColorSpectrum
            * @readonly
+           * @ojwriteback
            */
          rawValue: null,
-
-         /** Disables the component if set to <code class="prettyprint">true</code>.
-           *
-           * @member
-           * @name disabled
-           * @memberof oj.ojColorSpectrum
-           * @instance
-           * @type {boolean}
-           * @default <code class="prettyprint">false</code>
-           *
-           * @example <caption>Initialize the spectrum component with the <code class="prettyprint">disabled</code> option specified:</caption>
-           * $( ".selector" ).ojColorSpectrum( { "disabled": true, . . . } );
-           *
-           * @example <caption>Get or set the <code class="prettyprint">disabled</code> option, after initialization:</caption>
-           * // getter
-           * var disabled = $("#myeditor").ojColorSpectrum( "option", "disabled" );
-           *
-           * // setter
-           * $("#myeditor").ojColorSpectrum( "option", "disabled", true );
-           */
-           // disabled option declared in superclass, but we still want the above API doc
-         disabled:      false,
 
      },   // end options
 
@@ -239,37 +219,40 @@ function _rgbToHsl(r, g, b)
        }
 
        var subId = locator['subId'],
-           ret   = null;
+           ret   = this._super(locator);
 
-       switch (subId)
+       if (!ret)
        {
-         case 'oj-spectrum' :
-                                     ret = this._$spectrum[0];
-                                     break ;
-         case 'oj-spectrum-thumb' : 
-                                     ret = this._$spectrumThumb[0];
-                                     break ;
-         case 'oj-hue-slider-bar' :
-                                     ret = this._$hueSlider.ojSlider("getNodeBySubId", {'subId': 'oj-slider-bar'}) ;
-                                     break ;
-         case 'oj-hue-slider-bar-value' :
-                                     ret = this._$hueSlider.ojSlider("getNodeBySubId", {'subId': 'oj-slider-bar-value'}) ;
-                                     break ;
-         case 'oj-hue-slider-thumb' :
-                                     ret = this._$hueSlider.ojSlider("getNodeBySubId", {'subId': 'oj-slider-thumb-0'}) ;
-                                     break ;
-         case 'oj-opacity-slider-bar' :
-                                     ret = this._$alphaSlider.ojSlider("getNodeBySubId", {'subId': 'oj-slider-bar'}) ;
-                                     break ;
-         case 'oj-opacity-slider-bar-value' :
-                                     ret = this._$alphaSlider.ojSlider("getNodeBySubId", {'subId': 'oj-slider-bar-value'}) ;
-                                     break ;
-         case 'oj-opacity-slider-thumb' :
-                                     ret = this._$alphaSlider.ojSlider("getNodeBySubId", {'subId': 'oj-slider-thumb-0'}) ;
-                                     break ;
-      }
+         switch (subId)
+         {
+           case 'oj-spectrum' :
+                                      ret = this._$spectrum[0];
+                                      break ;
+           case 'oj-spectrum-thumb' :
+                                      ret = this._$spectrumThumb[0];
+                                      break ;
+           case 'oj-hue-slider-bar' :
+                                      ret = this._$hueSlider.ojSlider("getNodeBySubId", {'subId': 'oj-slider-bar'}) ;
+                                      break ;
+           case 'oj-hue-slider-bar-value' :
+                                      ret = this._$hueSlider.ojSlider("getNodeBySubId", {'subId': 'oj-slider-bar-value'}) ;
+                                      break ;
+           case 'oj-hue-slider-thumb' :
+                                      ret = this._$hueSlider.ojSlider("getNodeBySubId", {'subId': 'oj-slider-thumb-0'}) ;
+                                      break ;
+           case 'oj-opacity-slider-bar' :
+                                      ret = this._$alphaSlider.ojSlider("getNodeBySubId", {'subId': 'oj-slider-bar'}) ;
+                                      break ;
+           case 'oj-opacity-slider-bar-value' :
+                                      ret = this._$alphaSlider.ojSlider("getNodeBySubId", {'subId': 'oj-slider-bar-value'}) ;
+                                      break ;
+           case 'oj-opacity-slider-thumb' :
+                                      ret = this._$alphaSlider.ojSlider("getNodeBySubId", {'subId': 'oj-slider-thumb-0'}) ;
+                                      break ;
+         }
+       }
 
-      return ret ;
+       return ret ;
      },
 
      //** @inheritdoc */
@@ -308,7 +291,10 @@ function _rgbToHsl(r, g, b)
           }
         }
 
-        return {'subId': subId} ;
+        if (subId != null)
+          return {'subId': subId};
+        else
+          return this._super(elem);
      },
 
      /**
@@ -325,9 +311,9 @@ function _rgbToHsl(r, g, b)
            this._clearListeners() ;
            this._destroySliders() ;
            this._removeMarkup() ;          // remove our markup from dom
-           
+
            this._$boundElem.removeClass("oj-colorspectrum");
-           
+
            this._clear() ;
         }
 
@@ -346,9 +332,15 @@ function _rgbToHsl(r, g, b)
 
     _AfterCreate: function()
     {
+      var label;
+
       this._super();
 
-      var label = this._GetLabelElement();
+      this._updateLabelledBy(null, this.options['labelledBy'],this._$spectrumThumb);
+
+      // custom element's use oj-label.
+      if (!this._IsCustomElement())
+        label = this._GetLabelElement();
 
       // Apply the label to the thumb
       if (label)
@@ -357,7 +349,7 @@ function _rgbToHsl(r, g, b)
         var labelId = label.attr('id');
         if (!labelId)
         {
-          oj.Logger.warn("JET Color Spectrum: The label for this component needs an id in order " + 
+          oj.Logger.warn("JET Color Spectrum: The label for this component needs an id in order " +
             "to be accessible");
         }
         else
@@ -382,7 +374,8 @@ function _rgbToHsl(r, g, b)
        */
      _setOption: function (key, newval, flags)
      {
-        var change ;
+        var change;
+        var originalValue = this.options["labelledBy"];
 
         switch (key)
         {
@@ -390,6 +383,9 @@ function _rgbToHsl(r, g, b)
                                break ;
            case "disabled"  :  change = this._setOptDisabled(newval, true) ;
                                break ;
+           case "labelledBy":  // remove the old one and add the new one
+                               this._updateLabelledBy(originalValue, newval,this._$spectrumThumb);
+                               break;
         }
 
         this._super(key, newval, flags);
@@ -410,8 +406,9 @@ function _rgbToHsl(r, g, b)
            val = new oj.Color(val) ;
         }
         catch (e) {
-          oj.Logger("ojColorSpectrum: invalid rawValue (" + val + "), defaulting to black") ;
-           val = oj.Color.BLACK ;
+          oj.Logger("ojColorSpectrum (id='" + this.element.attr("id") +
+                    "'): invalid rawValue (" + val + "), defaulting to black") ;
+          val = oj.Color.BLACK ;
         }
        }
 
@@ -424,6 +421,16 @@ function _rgbToHsl(r, g, b)
        }
      },
 
+   /**
+    * If custom element, get the labelledBy option, and set this
+    * onto the root dom element as aria-labelledby. We append "|label" so it matches the id that
+    * is on the oj-label's label element.
+    * @memberof oj.ojColorSpectrum
+    * @instance
+    * @private
+    */
+    _updateLabelledBy : oj.EditableValueUtils._updateLabelledBy,
+
      /**
        * @memberof oj.ojColorSpectrum
        * @private
@@ -432,16 +439,16 @@ function _rgbToHsl(r, g, b)
      {
        var ret = ((val1.getRed()   === val2.getRed())   &&
                   (val1.getGreen() === val2.getGreen()) &&
-                  (val1.getBlue()  === val2.getBlue())  && 
+                  (val1.getBlue()  === val2.getBlue())  &&
                   (val1.getAlpha() === val2.getAlpha())) ;
        return ret;
      },
 
      /**
-       * Compares two color values (oj.Colors) 
+       * Compares two color values (oj.Colors)
        * @param {oj.Color}  color1   a color object to compare.
        * @param {oj.Color}  color2   a color object to compare.
-       * @returns {boolean}  true    if colors match, else false. 
+       * @returns {boolean}  true    if colors match, else false.
        * @private
        */
      _compareColorValues  :  function(color1, color2)
@@ -514,7 +521,7 @@ function _rgbToHsl(r, g, b)
        var  hue, sat, lum, alpha ;
        var  isHueSlider, isAlphaSlider ;
        var  $targ ;
-     
+
        if (! this._sliderSetup) {
          return ;
        }
@@ -538,7 +545,7 @@ function _rgbToHsl(r, g, b)
        sat   = this._satVal ;
        lum   = this._lumVal ;
        alpha = this._alphaVal;
-     
+
        if (isHueSlider)
        {
          hue = ui.value ;
@@ -546,10 +553,10 @@ function _rgbToHsl(r, g, b)
          //  Update alpha slider gradient
          this._updateAlphaBG(hue, sat, lum)
 
-         // Update the spectrum 
+         // Update the spectrum
          this._setSpectrumHue(hue, sat, lum, alpha, false) ;
        }
-       else 
+       else
        {
          // Alpha slider
          alpha = ui.value ;
@@ -589,7 +596,7 @@ function _rgbToHsl(r, g, b)
      /**
        *  Apply the hue to the spectrum, and optionally moves the spectrum thumb.
        *  @param {number}  hue   hue value in [0,360].
-       *  @param {number}  sat   saturation value in [1, 100]. 
+       *  @param {number}  sat   saturation value in [1, 100].
        *  @param {number}  lum   luminosity value in [1,100].
        *  @param {boolean=}  moveThumb  if true the spectrum thumb is also moved.
        *  @private
@@ -663,10 +670,10 @@ function _rgbToHsl(r, g, b)
      /**
        *  Returns the thumb center's displacement into the spectrum for the
        *  given saturation and luminosity values.
-       *  @param {number}  sat   saturation value in [1, 100]. 
+       *  @param {number}  sat   saturation value in [1, 100].
        *  @param {number}  lum   luminosity value in [1,100].
        *  @returns {Object}  Object containing {x: , y:} where x and y are displacements
-       *                     into the spectrum div. 
+       *                     into the spectrum div.
        *  @private
        */
      _getSatLumSpectrumPosition : function(sat, lum)
@@ -690,7 +697,7 @@ function _rgbToHsl(r, g, b)
      {
         var c ;
 
-        if (((sat < 30) && (lum > 70)) || (lum > 70)) 
+        if (((sat < 30) && (lum > 70)) || (lum > 70))
         {
           c = "black" ;
         }
@@ -698,7 +705,7 @@ function _rgbToHsl(r, g, b)
         {
           c = "white" ;
         }
-        
+
         this._$spectrumThumb.css('border-color', c) ;
      },
        */
@@ -737,7 +744,7 @@ function _rgbToHsl(r, g, b)
        * Handle click on the spectrum
        * @param {Event}  e the associated event.
        * @private
-       */ 
+       */
      _spectrumClick : function(e)
      {
         if (this._disabled)
@@ -746,7 +753,7 @@ function _rgbToHsl(r, g, b)
         }
 
         var pos   = this._$spectrum.offset(),    // get click position relative
-            xDisp = e.pageX - pos.left,          // relative to spectrum 
+            xDisp = e.pageX - pos.left,          // relative to spectrum
             yDisp = e.pageY - pos.top,           // top left
             hue, sat, lum,
             o ;
@@ -841,7 +848,7 @@ function _rgbToHsl(r, g, b)
 
      /**
        * Handle keyup on the spectrum
-       * @param {Event} e  the associated event. 
+       * @param {Event} e  the associated event.
        * @private
        */
      _keyUp : function(e)
@@ -854,7 +861,7 @@ function _rgbToHsl(r, g, b)
        this._setAriaText(this._hueVal, satLum.s, satLum.l, this._alphaVal);
 
        //  Fire the completing "value" event
-       var newVal = this.options["rawValue"] 
+       var newVal = this.options["rawValue"]
        this._SetValue(newVal, e);
      },
 
@@ -890,11 +897,11 @@ function _rgbToHsl(r, g, b)
      },
 
      /**
-       * Handle drag and end drag of spectrum thumb
-       * @param {Event} e  the associated event. 
-       * @param {Object} ui. 
+       * Handle drag and end dragstop of spectrum thumb
+       * @param {Event} e  the associated event.
+       * @param {Object} ui.
        * @private
-       */ 
+       */
      _thumbDrag : function(e, ui)
      {
         var  cx, cy, off1, off2 ;
@@ -903,7 +910,7 @@ function _rgbToHsl(r, g, b)
         // Left and right sides
         if (ui.position.left < (-this._spectrumThumbRadius))
         {
-          ui.position.left = - this._spectrumThumbRadius ; 
+          ui.position.left = - this._spectrumThumbRadius ;
           cx = 0 ;
         }
         else  if ((ui.position.left + this._spectrumThumbRadius) >= this._spectrumWidth)
@@ -915,7 +922,7 @@ function _rgbToHsl(r, g, b)
         // Top and bottom sides
         if (ui.position.top < (-this._spectrumThumbRadius))
         {
-          ui.position.top = - this._spectrumThumbRadius ; 
+          ui.position.top = - this._spectrumThumbRadius ;
           cy = 0 ;
         }
         else if ((ui.position.top + this._spectrumThumbRadius) >= this._spectrumHeight)
@@ -940,7 +947,7 @@ function _rgbToHsl(r, g, b)
         }
 
         if (e.type === "drag")
-        { 
+        {
           this._xThumb = cx ;
           this._yThumb = cy ;
         }
@@ -956,7 +963,7 @@ function _rgbToHsl(r, g, b)
      /**
        *  Handle previous spectrum thumb reposition by updating the alpha
        *  slider background, and changing rawValue and value option values.
-       *  @param {Event}  e        the associated event. 
+       *  @param {Event}  e        the associated event.
        *  @param {number} xCenter  the x value relative to the left side of the spectrum
        *  @param {number} yCenter  the y value relative to the top of the spectrum
        *  @private
@@ -964,12 +971,12 @@ function _rgbToHsl(r, g, b)
      _handleThumbMoved : function(e, xCenter, yCenter)
      {
         var hue, sat, lum, o, color, aria = false ;
- 
+
         hue = this._hueVal ;
         o   = this._getSatLumFromPosition(xCenter, yCenter) ;
         sat = o.s;
         lum = o.l;
-       
+
         // Update alpha slider background
         this._updateAlphaBG(hue, sat, lum)
 
@@ -982,7 +989,7 @@ function _rgbToHsl(r, g, b)
           this._SetValue(color, e.originalEvent);
           aria = true ;
         }
-        
+
         this._value = color ;
 
         this._setSatLum(sat, lum) ;
@@ -1021,14 +1028,14 @@ function _rgbToHsl(r, g, b)
         var grad ;
         var from = "hsla(" + hue + "," + sat + "%," + lum + "%, 0)" ;
         var to   = "hsla(" + hue + "," + sat + "%," + lum + "%, 1.0)" ;
-        
+
         // Reverse the gradient if RTL
         if (this._isRtl)
-        {                   
+        {
           grad = to ;  to = from;  from = grad ;
         }
         grad = "linear-gradient(90deg, " +  from + ", " + to + ")" ;
-        
+
         grad = grad + "," + this._alphaBgUrl;
 
         this._disabledAlphaBG = grad;
@@ -1061,7 +1068,7 @@ function _rgbToHsl(r, g, b)
      *  @param {number} sat  saturation value in [0,100]
      *  @param {number} lum  luminosity value in [0,100]
      *  @private
-     */  
+     */
      _setSatLum: function(sat, lum)
      {
        this._satVal = sat;
@@ -1111,7 +1118,7 @@ function _rgbToHsl(r, g, b)
      _setup :  function()
      {
         // Add markup as a child of this component's DOM element
-        this._$boundElem.append(this._markup) ;      //@HTMLUpdateOk (contained strings are sanitized) 
+        this._$boundElem.append(this._markup) ;      //@HTMLUpdateOk (contained strings are sanitized)
         this._$boundElem.addClass("oj-colorspectrum");
 
 //-------------------------------------------------------------------------------------
@@ -1140,10 +1147,10 @@ $(".oj-colorspectrum-alpha").uniqueId();
         this._spectrumWidth    = this._$spectrum.width() ;
         this._spectrumHeight   = this._$spectrum.height() ;
 
-        this._$spectrumThumb.attr("aria-describedby", 
+        this._$spectrumThumb.attr("aria-describedby",
         this._$boundElem.find(".oj-colorspectrum-thumb-description").uniqueId().attr("id"));
 
-        this._alphaBgUrl = "url('" + 
+        this._alphaBgUrl = "url('" +
                            oj.Config.getResourceUrl('common/images/spectrum-opacity-slider-bg.png') + "')";
         this._alphaBgUrl =  this._alphaBgUrl.replace("js", "css") ;
 
@@ -1300,7 +1307,7 @@ $(".oj-colorspectrum-alpha").uniqueId();
       *  Enable/disable the hue and alpha sliders
       *  @param {boolean} enable true if sliders are to be enabled, false for disable
       *  @private
-      */ 
+      */
     _enableSliders : function(enable)
     {
        var disabled = ! enable ;
@@ -1335,6 +1342,11 @@ $(".oj-colorspectrum-alpha").uniqueId();
          bg = this._$alphaBarBack.css("background") ;
          if (bg && bg.length > 0)
           this._disabledAlphaBG = bg;
+        
+         // remove the inline  style background override
+         // otherwise the background of the disabled ojSlider would be overridden
+         this._$hueBarBack.css("background", '');
+         this._$alphaBarBack.css("background", '');
 
          this._$hueSlider.ojSlider("option",   "disabled", disabled) ;
          this._$alphaSlider.ojSlider("option", "disabled", disabled) ;
@@ -1365,7 +1377,7 @@ $(".oj-colorspectrum-alpha").uniqueId();
     /**
       * Unbind all mouse/keyboard event listeners
       * @private
-      */ 
+      */
     _clearListeners : function()
     {
        this._$spectrum.off("click") ;
@@ -1378,24 +1390,24 @@ $(".oj-colorspectrum-alpha").uniqueId();
          this._tearDownTouch(this._$spectrumThumb);
        }
     },
- 
+
     /**
       *  Clear resources
       *  @private
       */
      _clear : function()
      {
-        this._markup            = 
+        this._markup            =
         this._$boundElem        =
         this._$editorContainer  =
         this._$hue              =
-        this._$alpha            = 
+        this._$alpha            =
         this._$editorContainer  =
         this._$hueSlider        =
         this._$alphaSlider      =
         this._$spectrum         =
         this._$spectrumThumb    =
-        this._spectrumThumbSize = 
+        this._spectrumThumbSize =
         this._strings           =
         this._mouseMoveHandler  =
         this._mouseUpHandler    = null ;
@@ -1404,7 +1416,7 @@ $(".oj-colorspectrum-alpha").uniqueId();
     /**
       * Setup touch support
       * @private
-      */ 
+      */
     _setupTouch: function (elem) {
       this._touchProxy = oj._TouchProxy.addTouchListeners(elem);
     },
@@ -1412,7 +1424,7 @@ $(".oj-colorspectrum-alpha").uniqueId();
     /**
       * End touch support
       * @private
-      */ 
+      */
     _tearDownTouch: function (elem) {
       oj._TouchProxy.removeTouchListeners(elem);
     },
@@ -1440,23 +1452,23 @@ $(".oj-colorspectrum-alpha").uniqueId();
     },
 
     /**
-     * Returns the element's value. Normally, this is a call to this.element.val(), but for some 
-     * components, it could be something else. E.g., for ojRadioset the element's value is really the 
-     * value of the selected radio in the set. 
-     * 
+     * Returns the element's value. Normally, this is a call to this.element.val(), but for some
+     * components, it could be something else. E.g., for ojRadioset the element's value is really the
+     * value of the selected radio in the set.
+     *
      * @override
      * @memberof oj.ojColorSpectrum
      * @instance
      * @protected
      */
-    _GetElementValue : function () 
+    _GetElementValue : function ()
     {
       return this._value;
     },
 
     /**
      * Called when the display value on the element needs to be updated. This method updates the
-     * (content) element value. 
+     * (content) element value.
      *
      * @param {String} displayValue of the new string to be displayed
      *
@@ -1488,9 +1500,9 @@ $(".oj-colorspectrum-alpha").uniqueId();
 
     /**
      * Returns the default styleclass for the component. All input components must override.
-     * 
+     *
      * @return {string}
-     * 
+     *
      * @memberof oj.ojColorSpectrum
      * @instance
      * @protected
@@ -1501,14 +1513,14 @@ $(".oj-colorspectrum-alpha").uniqueId();
       return "oj-colorspectrum";
     },
 
-    /** 
+    /**
      * Helper function to escape Cross site script text
-     * 
+     *
      * @param {string} escapeMe
      * @return {jQuery|string}
      * @ignore
      */
-    _EscapeXSS : function (escapeMe) 
+    _EscapeXSS : function (escapeMe)
     {
       return $("<span>" + escapeMe + "</span>").text();
     }
@@ -1631,6 +1643,46 @@ $(".oj-colorspectrum-alpha").uniqueId();
        * @memberof oj.ojColorSpectrum
        */
 
+      /**
+       * Sets a property or a single subproperty for complex properties and notifies the component
+       * of the change, triggering a [property]Changed event.
+       * 
+       * @function setProperty
+       * @param {string} property - The property name to set. Supports dot notation for subproperty access.
+       * @param {*} value - The new value to set the property to.
+       * 
+       * @expose
+       * @memberof oj.ojColorSpectrum
+       * @instance
+       * 
+       * @example <caption>Set a single subproperty of a complex property:</caption>
+       * myComponent.setProperty('complexProperty.subProperty1.subProperty2', "someValue");
+       */ 
+      /**
+       * Retrieves a value for a property or a single subproperty for complex properties.
+       * @function getProperty
+       * @param {string} property - The property name to get. Supports dot notation for subproperty access.
+       * @return {*}
+       * 
+       * @expose
+       * @memberof oj.ojColorSpectrum
+       * @instance
+       * 
+       * @example <caption>Get a single subproperty of a complex property:</caption>
+       * var subpropValue = myComponent.getProperty('complexProperty.subProperty1.subProperty2');
+       */ 
+      /**
+       * Performs a batch set of properties.
+       * @function setProperties
+       * @param {Object} properties - An object containing the property and value pairs to set.
+       * 
+       * @expose
+       * @memberof oj.ojColorSpectrum
+       * @instance
+       * 
+       * @example <caption>Set a batch of properties:</caption>
+       * myComponent.setProperties({"prop1": "value1", "prop2.subprop": "value2", "prop3": "value3"});
+       */ 
        /// ///////////////     SUB-IDS     //////////////////
        /**
         * <p>Sub-ID for the vertical hue slider bar.</p>
@@ -1639,9 +1691,9 @@ $(".oj-colorspectrum-alpha").uniqueId();
         * @memberof oj.ojColorSpectrum
         *
         * @example <caption>Get the node for the hue slider bar:</caption>
-        * var node = $(".selector").ojColorSpectrum("getNodeBySubId", {'subId': 'oj-hue-slider-bar'} );
+        * var node = myColorSpectrum.getNodeBySubId({'subId': 'oj-hue-slider-bar'} );
         */
-    
+
        /**
         * <p>Sub-ID for the vertical hue slider bar value.</p>
         *
@@ -1649,7 +1701,7 @@ $(".oj-colorspectrum-alpha").uniqueId();
         * @memberof oj.ojColorSpectrum
         *
         * @example <caption>Get the node for the hue slider bar value:</caption>
-        * var node = $(".selector").ojColorSpectrum("getNodeBySubId", {'subId': 'oj-hue-slider-bar-value'} );
+        * var node = myColorSpectrum.getNodeBySubId( {'subId': 'oj-hue-slider-bar-value'} );
         */
 
        /**
@@ -1659,7 +1711,7 @@ $(".oj-colorspectrum-alpha").uniqueId();
         * @memberof oj.ojColorSpectrum
         *
         * @example <caption>Get the node for the hue slider thumb:</caption>
-        * var node = $(".selector").ojColorSpectrum("getNodeBySubId", {'subId': 'oj-hue-slider-thumb'} );
+        * var node = myColorSpectrum.getNodeBySubId({'subId': 'oj-hue-slider-thumb'} );
         */
 
        /**
@@ -1669,9 +1721,9 @@ $(".oj-colorspectrum-alpha").uniqueId();
         * @memberof oj.ojColorSpectrum
         *
         * @example <caption>Get the node for the opacity slider bar:</caption>
-        * var node = $(".selector").ojColorSpectrum("getNodeBySubId", {'subId': 'oj-opacity-slider-bar'} );
+        * var node = myColorSpectrum.getNodeBySubId({'subId': 'oj-opacity-slider-bar'} );
         */
-    
+
        /**
         * <p>Sub-ID for the horizontal opacity slider bar value.</p>
         *
@@ -1679,7 +1731,7 @@ $(".oj-colorspectrum-alpha").uniqueId();
         * @memberof oj.ojColorSpectrum
         *
         * @example <caption>Get the node for the opacity slider bar value:</caption>
-        * var node = $(".selector").ojColorSpectrum("getNodeBySubId", {'subId': 'oj-opacity-slider-bar-value'} );
+        * var node = myColorSpectrum.getNodeBySubId({'subId': 'oj-opacity-slider-bar-value'} );
         */
 
        /**
@@ -1689,9 +1741,9 @@ $(".oj-colorspectrum-alpha").uniqueId();
         * @memberof oj.ojColorSpectrum
         *
         * @example <caption>Get the node for the opacity slider thumb:</caption>
-        * var node = $(".selector").ojColorSpectrum("getNodeBySubId", {'subId': 'oj-opacity-slider-thumb'} );
+        * var node = myColorSpectrum.getNodeBySubId({'subId': 'oj-opacity-slider-thumb'} );
         */
-    
+
        /**
         * <p>Sub-ID for the saturation/luminosity spectrum. </p>
         *
@@ -1699,7 +1751,7 @@ $(".oj-colorspectrum-alpha").uniqueId();
         * @memberof oj.ojColorSpectrum
         *
         * @example <caption>Get the node for the saturation/luminosity spectrum:</caption>
-        * var node = $(".selector").ojColorSpectrum("getNodeBySubId", {'subId': 'oj-spectrum'} );
+        * var node = myColorSpectrum.getNodeBySubId( {'subId': 'oj-spectrum'} );
         *
         */
 
@@ -1710,11 +1762,31 @@ $(".oj-colorspectrum-alpha").uniqueId();
         * @memberof oj.ojColorSpectrum
         *
         * @example <caption>Get the node for the saturation/luminosity spectrum thumb:</caption>
-        * var node = $(".selector").ojColorSpectrum("getNodeBySubId", {'subId': 'oj-spectrum-thumb'} );
+        * var node = myColorSpectrum.getNodeBySubId({'subId': 'oj-spectrum-thumb'} );
         *
         */
 
   }) ;    // end    $.widget("oj.ojColorSpectrum"
+
+})();
+
+(function() {
+var ojColorSpectrumMeta = {
+  "properties": {
+    "labelledBy": {
+      "type": "string"
+    },    
+    "value": {
+      "writeback": true
+    }
+  },
+  "methods": {},
+  "extension": {
+    _WIDGET_NAME: "ojColorSpectrum"
+  }
+};
+oj.CustomElementBridge.registerMetadata('oj-color-spectrum', 'editableValue', ojColorSpectrumMeta);
+oj.CustomElementBridge.register('oj-color-spectrum', {'metadata': oj.CustomElementBridge.getMetadata('oj-color-spectrum')});
 
 })();
 

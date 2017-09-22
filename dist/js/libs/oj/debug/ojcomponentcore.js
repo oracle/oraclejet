@@ -101,7 +101,8 @@ oj.Components.createDynamicPropertyGetter = function(callback)
 };
 
 /**
- * Retrieves widget constructor associated with the HTML element
+ * This method should only be used for JQueryUI components and will return null if used
+ * with a custom element. Retrieves widget constructor associated with the HTML element
  * or null if none is found. The returned constructor is already bound to the associated
  * JQuery element, so it can be invoked as a function directly. For example:
  * <pre>
@@ -115,6 +116,21 @@ oj.Components.createDynamicPropertyGetter = function(callback)
  * @export
  */
 oj.Components.getWidgetConstructor = function(element, widgetName)
+{
+  if (!oj.BaseCustomElementBridge.getRegistered(element.tagName))
+    return oj.Components.__GetWidgetConstructor(element, widgetName);
+  return null;
+};
+
+/**
+ * Internal version for components to call which won't return null for 
+ * custom elements. See public method for jsDoc.
+ * @param {?Element|?Node} element - HTML element
+ * @param {string=} widgetName - optional widget name
+ * @return {Function|null} widget constructor
+ * @ignore
+ */
+oj.Components.__GetWidgetConstructor = function(element, widgetName)
 {
   var jelem = $(element);
 
@@ -139,7 +155,6 @@ oj.Components.getWidgetConstructor = function(element, widgetName)
       }
     }
   }
-
   return null;
 };
 
@@ -159,7 +174,7 @@ oj.Components.subtreeAttached = function(node)
   _applyToComponents(node,
     function(instance)
     {
-      instance._NotifyAttached();
+      instance.__handleSubtreeAttached();
     }
   );
 };
@@ -180,7 +195,7 @@ oj.Components.subtreeDetached = function(node)
   _applyToComponents(node,
     function(instance)
     {
-      instance._NotifyDetached();
+      instance.__handleSubtreeDetached();
     }
   );
 };
@@ -188,24 +203,42 @@ oj.Components.subtreeDetached = function(node)
 /**
  * Notifies JET framework that a subtree possibly containing JET components is no longer hidden with display:none style
  * This method should be called by the application if the 'display' style is being changed from 'hidden' programmatically,
- * such as when JQuery's .show() method is called
+ * such as when JQuery's .show() method is called. 
+ * For cases where subtree is shown on initial render, this method should be called with the options parameter set to
+ * {'initialRender':true}, that will result in _NotifyInitShown() calls to the subtree components.
+ * All oj-defer elements in the entire subtree will be activated. Note that subtreeShown currently notifies the entire
+ * subtree as well. This generally means that only non-nested oj-defer elements make sense in a subtree.
  *
  * @param {!Element} node - the root of the subtree
+ * @param {Object=} options Options to control subtreeShown
+ * @param {boolean} options.initialRender The index at which to start fetching records.
  * @see oj.Components.subtreeHidden
  * @export
  */
-oj.Components.subtreeShown = function(node)
+oj.Components.subtreeShown = function(node, options)
 {
-  oj.DomUtils.fixResizeListeners(node);
+  options = options || {};
+  var isInitialRender = options['initialRender'];
+  if (!isInitialRender)
+  {
+    oj.DomUtils.fixResizeListeners(node);
+  }
+  _activateDescendantDeferElements(node);
 
   _applyToComponents(node,
     function(instance)
     {
-      instance._NotifyShown();
+      if (isInitialRender)
+      {
+        instance._NotifyInitShown();
+      }
+      else
+      {
+        instance._NotifyShown();
+      }
     }
   );
 };
-
 
 /**
  * Notifies JET framework that a subtree possibly containing JET components has been hidden  with display:none style
@@ -281,30 +314,34 @@ oj.Components.__getDefaultOptions = function(hierarchyNames)
 */
 oj.Components.getComponentElementByNode = function(node)
 { 
-  if (node == null){
+  if (node == null)
+  {
     return null;
   }
   var containingComposite = (oj.Composite ? oj.Composite.getContainingComposite(node) : null);
-  if (containingComposite){
+  if (containingComposite)
+  { // node is in or is a composite, return composite
     return containingComposite;
-  }
-  if (node.hasAttribute('data-oj-internal')){
-    if (node.parentNode.hasAttribute('data-oj-surrogate-id')){ // internal component is a popup
+  } else if (node.hasAttribute('data-oj-internal'))
+  {// node is an internal component
+    if (node.parentNode.hasAttribute('data-oj-surrogate-id'))
+    { // internal component is a popup
       node = document.querySelector('[data-oj-popup-' + node.id + '-parent]'); // retrieves popups parent element
       return oj.Components.getComponentElementByNode(node);
     }
     return oj.Components.getComponentElementByNode(node.parentNode);
-  }
-  if (_isComponentElement(node)){
+  } else if (_isComponentElement(node))
+  { // node is a component element
     return node;
-  }
-  if (node.classList.contains('oj-component')){
+  } else if (node.classList.contains('oj-component'))
+  { // node is component wrapper
     node = node.querySelector('.oj-component-initnode:not([data-oj-internal])') || node;
-    if (oj.Components.getWidgetConstructor(node)){
+    if (_isJQueryUI(node))
+    {
       return node;
     }
-  }
-  if (node.hasAttribute('data-oj-containerid')){ // node is non-internal component popup e.g listbox
+  } else if (node.hasAttribute('data-oj-containerid'))
+  { // node is non-internal component popup e.g listbox
       node = document.getElementById(node.getAttribute('data-oj-containerid'));
       return oj.Components.getComponentElementByNode(node);
   }
@@ -352,14 +389,18 @@ oj.Components.getNodeBySubId = function(componentElement, locator)
 */
 oj.Components.getComponentOption = function(componentElement, option)
 { 
-  if (!_isComponentElement(componentElement)){
+  if (!_isComponentElement(componentElement))
+  {
     throw new Error('node is not a component element');
-  } else if (_isCompositeOrCustom(componentElement)){
-    if (componentElement['getProperty']){
+  } else if (_isCompositeOrCustom(componentElement))
+  {
+    if (componentElement['getProperty'])
+    {
       return componentElement['getProperty'].call(componentElement, option);
     }
-  } else {
-    return oj.Components.getWidgetConstructor(componentElement)('option', option);
+  } else 
+  {
+    return oj.Components.__GetWidgetConstructor(componentElement)('option', option);
   }
 };
 
@@ -373,14 +414,18 @@ oj.Components.getComponentOption = function(componentElement, option)
 */
 oj.Components.setComponentOption = function(componentElement, option, value)
 { 
-  if (!_isComponentElement(componentElement)){
+  if (!_isComponentElement(componentElement))
+  {
     throw new Error('node is not a component element');
-  } else if (_isCompositeOrCustom(componentElement)){
-    if (componentElement['setProperty']){
+  } else if (_isCompositeOrCustom(componentElement))
+  {
+    if (componentElement['setProperty'])
+    {
       componentElement['setProperty'].call(componentElement, option, value);
     }
-  } else {
-    oj.Components.getWidgetConstructor(componentElement)('option', option, value);
+  } else 
+  {
+    oj.Components.__GetWidgetConstructor(componentElement)('option', option, value);
   }
 };
 
@@ -395,14 +440,18 @@ oj.Components.setComponentOption = function(componentElement, option, value)
 */
 oj.Components.callComponentMethod = function(componentElement, method, methodArguments)
 {
-  if (!_isComponentElement(componentElement)){
+  if (!_isComponentElement(componentElement))
+  {
     throw new Error('node is not a component element');
-  } else if (_isCompositeOrCustom(componentElement)){
-    if (componentElement[method]){
+  } else if (_isCompositeOrCustom(componentElement))
+  {
+    if (componentElement[method])
+    {
       return componentElement[method].apply(componentElement, [].slice.call(arguments, 2));
     }
-  } else {
-    return oj.Components.getWidgetConstructor(componentElement).apply($(componentElement), [].slice.call(arguments, 1));
+  } else 
+  {
+    return oj.Components.__GetWidgetConstructor(componentElement).apply($(componentElement), [].slice.call(arguments, 1));
   }
 };
 
@@ -483,15 +532,49 @@ function _accumulateValues(target, source, valueInArray)
  */
  function _isCompositeOrCustom(node)
  {
-  return oj.BaseCustomElementBridge.isRegistered(node.tagName);
+  return oj.BaseCustomElementBridge.getRegistered(node.tagName);
  }
+
+/**
+ * @ignore
+ */
+ function _isJQueryUI(node)
+ {
+  return oj.Components.__GetWidgetConstructor(node) ? true: false;
+ }
+
 
 /**
  * @ignore
  */
  function _isComponentElement(node)
  {
-  return (_isCompositeOrCustom(node) || oj.Components.getWidgetConstructor(node));
+  return (_isCompositeOrCustom(node) || _isJQueryUI(node));
+ }
+
+/**
+ * @ignore
+ */
+ function _activateDescendantDeferElements(node)
+ {
+    if (node instanceof $)
+    {
+      node = node[0];
+    }
+    
+    if (node instanceof Element)
+    {
+      if (node.tagName != null && 
+        node.tagName.toLowerCase() == 'oj-defer')
+      {
+        node['_activate']();
+      }
+      var descendantDeferredNodes = node.getElementsByTagName('oj-defer'); 
+      for (var i = 0; i < descendantDeferredNodes.length; i++)
+      { 
+        descendantDeferredNodes[i]['_activate']();
+      }
+    }
  }
 
 /**
@@ -576,6 +659,7 @@ $.widget('oj.' + _BASE_COMPONENT,
     /**
      * {@ojinclude "name":"contextMenuDoc"}
      *
+     * @ignore
      * @expose
      * @memberof oj.baseComponent
      * @instance
@@ -632,6 +716,7 @@ $.widget('oj.' + _BASE_COMPONENT,
      * $( ".selector" ).ojFoo( "widget" ).css( "height", "100px" );
      * $( ".selector" ).ojFoo( "widget" ).addClass( "my-class" );
      *
+     * @ignore
      * @expose
      * @memberof oj.baseComponent
      * @instance
@@ -644,37 +729,41 @@ $.widget('oj.' + _BASE_COMPONENT,
      * <p>A collection of translated resources from the translation bundle, or <code class="prettyprint">null</code> if this
      * component has no resources.  Resources may be accessed and overridden individually or collectively, as seen in the examples.
      *
-     * <p>If this component has (or inherits) translations, their documentation immediately follows this doc entry.
+     * <p>If this component has translations, their documentation immediately follows this doc entry.
      *
      * @member
      * @name translations
      * @memberof oj.baseComponent
      * @instance
      * @type {Object}
-     * @default an object containing all resources relevant to the component and all its superclasses, or <code class="prettyprint">null</code> if none
+     * @default an object containing all resources relevant to the component, or <code class="prettyprint">null</code> if none
      *
-     * @example <caption>Initialize the component, overriding some translated resources.  This syntax leaves the other translations intact at create
-     * time, but not if called after create time:</caption>
-     * // Foo is InputDate, InputNumber, etc.
-     * $( ".selector" ).ojFoo({ "translations": { someKey: "someValue",
-     *                                            someOtherKey: "someOtherValue" } });
+     * @example <caption>Initialize the component, overriding some translated resources and leaving the others intact:</caption>
+     * &lt;!-- Using dot notation -->
+     * &lt;oj-some-element translations.some-key='some value' translations.some-other-key='some other value'>&lt;/oj-some-element>
+     * 
+     * &lt;!-- Using JSON notation -->
+     * &lt;oj-some-element translations='{"someKey":"some value", "someOtherKey":"some other value"}'>&lt;/oj-some-element>
      *
-     * @example <caption>Get or set the <code class="prettyprint">translations</code> option, after initialization:</caption>
-     * // Get one.  (Foo is InputDate, InputNumber, etc.)
-     * var value = $( ".selector" ).ojFoo( "option", "translations.someResourceKey" );
+     * @example <caption>Get or set the <code class="prettyprint">translations</code> property after initialization:</caption>
+     * // Get one
+     * var value = myComponent.translations.someKey;
      *
-     * // Get all.  (Foo is InputDate, InputNumber, etc.)
-     * var values = $( ".selector" ).ojFoo( "option", "translations" );
+     * // Set one, leaving the others intact. Always use the setProperty API for 
+     * // subproperties rather than setting a subproperty directly.
+     * myComponent.setProperty('translations.someKey', 'some value');
      *
-     * // Set one, leaving the others intact.  (Foo is InputDate, InputNumber, etc.)
-     * $( ".selector" ).ojFoo( "option", "translations.someResourceKey", "someValue" );
+     * // Get all
+     * var values = myComponent.translations;
      *
-     * // Set many.  Any existing resource keys not listed are lost.  (Foo is InputDate, InputNumber, etc.)
-     * $( ".selector" ).ojFoo( "option", "translations", { someKey: "someValue",
-     *                                                     someOtherKey: "someOtherValue" } );
+     * // Set all.  Must list every resource key, as those not listed are lost.
+     * myComponent.translations = {
+     *     someKey: 'some value',
+     *     someOtherKey: 'some other value'
+     * };
      *
      */
-    // translations option is initialized programmatically, so this top-level API doc lives in this virtual comment.
+    // translations property is initialized programmatically, so this top-level API doc lives in this virtual comment.
     // Translations for all components are listed and JSDoc'ed in rt\src\main\resources\nls\root\ojtranslations.js.
     // That JSDoc appears in the same generated doc page as this top-level doc.
 
@@ -716,6 +805,7 @@ $.widget('oj.' + _BASE_COMPONENT,
      *   };
      * });
      *
+     * @ignore
      * @memberof oj.baseComponent
      * @expose
      * @event
@@ -742,6 +832,7 @@ $.widget('oj.' + _BASE_COMPONENT,
      *   };
      * });
      *
+     * @ignore
      * @memberof oj.baseComponent
      * @expose
      * @event
@@ -761,6 +852,8 @@ $.widget('oj.' + _BASE_COMPONENT,
   refresh: function()
   {
     this._propertyContext = null;
+    // if application sets the context menu after initialization, it must refresh the component
+    this._SetupContextMenu();
   },
 
   /**
@@ -960,7 +1053,7 @@ $.widget('oj.' + _BASE_COMPONENT,
    */
   _ComponentCreate : function ()
   {
-    // Store widget name, so that oj.Components.getWidgetConstructor() can get widget from the element
+    // Store widget name, so that oj.Components.__GetWidgetConstructor() can get widget from the element
     _storeWidgetName(this.element, this.widgetName);
     
     // namespace facilitates removing activeable and hoverable handlers handlers separately
@@ -995,7 +1088,6 @@ $.widget('oj.' + _BASE_COMPONENT,
     // same for activeable and hoverable handlers
     this.activeableEventNamespace = this.eventNamespace + "activeable";
     this.hoverableEventNamespace = this.eventNamespace + "hoverable";
-    this._setupContextMenu(true, null);
   },
 
   /**
@@ -1264,7 +1356,11 @@ $.widget('oj.' + _BASE_COMPONENT,
 
 
   /**
-   * <p>Compares 2 option values for equality and returns true if they are equal; false otherwise.
+   * Compares 2 option values for equality and returns true if they are equal; false otherwise.
+   * This method is called before _setOptions()/_internalSetOptions() to prevent an extra call 
+   * with the same values when observables are written back. Components should override this 
+   * method for options with non primitive writeback values like Arrays or Objects and ensure 
+   * their metadata has writeback properties correctly indicated.
    *
    * @param {String} option - the name of the option
    * @param {Object} value1 first value
@@ -1277,7 +1373,17 @@ $.widget('oj.' + _BASE_COMPONENT,
    */
   _CompareOptionValues : function (option, value1, value2)
   {
-    return value1 == value2;
+    // We process the metadata for custom elements for writeback properties and save them on the component. 
+    // For jQuery syntax, components are expected to override this method to check writeback values since 
+    // there's not always a straightforward mapping of custom element to jQuery widget name.
+    if (this._IsCustomElement() && this._getWritebackOption(option))
+    {
+      return oj.Object.compareValues(value1, value2);
+    }
+    else
+    {
+      return value1 == value2;
+    }
   },
 
 
@@ -1341,10 +1447,10 @@ $.widget('oj.' + _BASE_COMPONENT,
   // Subclasses should doc their sub-id's in the Sub-ID's section, via the ojsubid tag, not by overriding
   // and extending this method doc, which should remain general purpose.
   /**
-   * <p>Returns the component DOM node indicated by the <code class="prettyprint">locator</code> parameter.
+   * <p>Returns the DOM node indicated by the <code class="prettyprint">locator</code> parameter.
    *
    * <p>If the <code class="prettyprint">locator</code> or its <code class="prettyprint">subId</code> is
-   * <code class="prettyprint">null</code>, then this method returns the element on which this component was initialized.
+   * <code class="prettyprint">null</code>, then this method returns this element.
    *
    * <p>If a non-null <code class="prettyprint">subId</code> is provided but no corresponding node
    * can be located, then this method returns <code class="prettyprint">null</code>.
@@ -1354,11 +1460,12 @@ $.widget('oj.' + _BASE_COMPONENT,
    * @expose
    * @memberof oj.baseComponent
    * @instance
+   * @ignore
    *
    * @param {Object} locator An Object containing, at minimum, a <code class="prettyprint">subId</code>
-   * property, whose value is a string that identifies a particular DOM node in this component.
+   * property, whose value is a string that identifies a particular DOM node in this element.
    *
-   * <p>If this component has (or inherits) any subIds, then they are documented in the
+   * <p>If this component has any subIds, then they are documented in the
    * <a href="#subids-section">Sub-ID's</a> section of this document.
    *
    * <p>Some components may support additional fields of the
@@ -1368,8 +1475,7 @@ $.widget('oj.' + _BASE_COMPONENT,
    * <code class="prettyprint">locator</code>, or <code class="prettyprint">null</code> if none is found.
    *
    * @example <caption>Get the node for a certain subId:</caption>
-   * // Foo is ojInputNumber, ojInputDate, etc.
-   * var node = $( ".selector" ).ojFoo( "getNodeBySubId", {'subId': 'oj-some-sub-id'} );
+   * var node = myComponent.getNodeBySubId({'subId': 'oj-some-sub-id'});
    */
   getNodeBySubId: function(locator)
   {
@@ -1383,7 +1489,7 @@ $.widget('oj.' + _BASE_COMPONENT,
   },
 
   /**
-   * <p>Returns the subId string for the given DOM node in this component.  For details, see
+   * <p>Returns the subId string for the given DOM node in this element.  For details, see
    * <a href="#getNodeBySubId">getNodeBySubId</a> and the <a href="#subids-section">Sub-ID's</a>
    * section of this document.
    * 
@@ -1393,7 +1499,7 @@ $.widget('oj.' + _BASE_COMPONENT,
    * @memberof oj.baseComponent
    */
   /**
-   * DOM node in this component
+   * DOM node in this element
    * 
    * @ojfragment getSubIdByNodeNodeParam
    * @memberof oj.baseComponent
@@ -1411,8 +1517,7 @@ $.widget('oj.' + _BASE_COMPONENT,
    * @memberof oj.baseComponent
    */
   /**
-   * // Foo is ojInputNumber, ojInputDate, etc.
-   * var locator = $( ".selector" ).ojFoo( "getSubIdByNode", nodeInsideComponent );
+   * var locator = myComponent.getSubIdByNode(nodeInsideElement);
    * 
    * @ojfragment getSubIdByNodeExample
    * @memberof oj.baseComponent
@@ -1426,6 +1531,7 @@ $.widget('oj.' + _BASE_COMPONENT,
    * @expose
    * @memberof oj.baseComponent
    * @instance
+   * @ignore
    *
    * @param {!Element} node {@ojinclude "name":"getSubIdByNodeNodeParam"}
    * @returns {Object|null} {@ojinclude "name":"getSubIdByNodeReturn"}
@@ -1452,8 +1558,6 @@ $.widget('oj.' + _BASE_COMPONENT,
     oj.DomUtils.dispatchEvent(this.element[0], new CustomEvent("_ojDestroy"));
 
     this._super();
-
-    this._removeContextMenuBehavior(this.options.contextMenu);
 
     //remove hover and active listeners
 //    this.widget().off(this.eventNamespace);
@@ -1491,6 +1595,7 @@ $.widget('oj.' + _BASE_COMPONENT,
    * <p>This method has several overloads, which get and set component options and their fields.  The functionality is unchanged from
    * that provided by JQUI.  See the examples for details on each overload.
    *
+   * @ignore
    * @expose
    * @memberof oj.baseComponent
    * @instance
@@ -1613,15 +1718,33 @@ $.widget('oj.' + _BASE_COMPONENT,
     var context = flags ? flags['_context'] : null;
     var internalSet = context ? context.internalSet : false;
 
-    // Avoid _setOption() calls for internal sets, since component's _setOption()
-    // and setOptions() overrides do not expect to be called in that case
-    if (internalSet)
+    // This method can be called twice with the same value for writeback properties
+    // so we need to go through the options object and only pass through the changed values
+    var newOptions = {};
+    for (var option in options)
     {
-      this._internalSetOptions(options, flags);
+      var newValue = options[option];
+      var oldValue = this.options[option];
+      // The changed flag is set when components have updated an object or array value in place
+      var changed = flags && flags['changed'];
+      if (changed || !this._CompareOptionValues(option, oldValue, newValue))
+      {
+        newOptions[option] = newValue;
+      }
     }
-    else
+
+    if (Object.keys(newOptions).length > 0)
     {
-      this._setOptions(options, flags);
+      // Avoid _setOption() calls for internal sets, since component's _setOption()
+      // and setOptions() overrides do not expect to be called in that case
+      if (internalSet)
+      {
+        this._internalSetOptions(newOptions, flags);
+      }
+      else
+      {
+        this._setOptions(newOptions, flags);
+      }
     }
 
     return this;
@@ -1658,15 +1781,16 @@ $.widget('oj.' + _BASE_COMPONENT,
   {
     for (var key in options)
     {
-      this._setOption(key, options[key], flags);
+      var value = options[key];
+      this._setOption(key, value, flags);
     }
 
     return this;
   },
 
   /**
-   * <p>Overridden to set oj-hover and oj-focus classes.
-   *
+   * Overridden to set oj-hover and oj-focus classes.
+   * Components should not call this method directly, but instead call option().
    * @memberof oj.baseComponent
    * @instance
    * @protected
@@ -1715,8 +1839,11 @@ $.widget('oj.' + _BASE_COMPONENT,
         this._settingNestedKey = null;
       }
 
+      // if contextMenu option wasn't set before, we'll need to start detect gesture
       if ( key === "contextMenu" )
-        this._setupContextMenu(false, originalValue);
+      {
+        this._SetupContextMenu();
+      }
     }
 
     this._optionChanged(key, value, originalValue, flags);
@@ -1731,7 +1858,10 @@ $.widget('oj.' + _BASE_COMPONENT,
    */
   _optionChanged: function(key, value, originalValue, flags)
   {
-    // TODO: add option change notification
+    // Assume that all values are different from originalValues as we do equality
+    // checking before calling this method or trust components that have set the 
+    // 'changed' flag to indicate that they updated in place for an Object or Array
+    // since we won't see any difference for those cases.
     var changed = false;
     var context = null;
 
@@ -1745,7 +1875,6 @@ $.widget('oj.' + _BASE_COMPONENT,
 
     if (flags)
     {
-      changed = flags['changed'];
       context = flags['_context'];
 
       if (context)
@@ -1758,49 +1887,44 @@ $.widget('oj.' + _BASE_COMPONENT,
       }
     }
 
-
-    if (changed || !this._CompareOptionValues(key, originalValue, value))
+    optionMetadata = optionMetadata || {};
+    optionMetadata['writeback'] =  writeback ? "shouldWrite" : "shouldNotWrite";
+    
+    if (readOnly)
     {
-
-      optionMetadata = optionMetadata || {};
-      optionMetadata['writeback'] =  writeback ? "shouldWrite" : "shouldNotWrite";
-      
-      if (readOnly)
-      {
-        optionMetadata['readOnly'] = true;
-      }
-
-      var optionChangeData =
-      {
-        "option" : key,
-        "previousValue" : originalValue,
-        "value" : value,
-        "optionMetadata" : optionMetadata
-      };
-
-      var subkey = (flags == null) ? null : flags['subkey'];
-      // Walk previousValue object and find the subproperty previousValue
-      if (subkey)
-      {
-        var subprops = subkey.split('.');
-        var originalSubpropValue = originalValue;
-        subprops.forEach(function(subprop) {
-          if (!originalSubpropValue)
-            return;
-          originalSubpropValue = originalSubpropValue[subprop];
-        });
-        var subproperty = flags['subproperty'];
-        subproperty['previousValue'] = originalSubpropValue;
-        optionChangeData['subproperty'] = subproperty;
-      }
-
-      if (extraData != null)
-      {
-        optionChangeData = $.extend({}, extraData, optionChangeData);
-      }
-
-      this._trigger("optionChange", originalEvent, optionChangeData);
+      optionMetadata['readOnly'] = true;
     }
+
+    var optionChangeData =
+    {
+      "option" : key,
+      "previousValue" : originalValue,
+      "value" : value,
+      "optionMetadata" : optionMetadata
+    };
+
+    var subkey = (flags == null) ? null : flags['subkey'];
+    // Walk previousValue object and find the subproperty previousValue
+    if (subkey)
+    {
+      var subprops = subkey.split('.');
+      var originalSubpropValue = originalValue;
+      subprops.forEach(function(subprop) {
+        if (!originalSubpropValue)
+          return;
+        originalSubpropValue = originalSubpropValue[subprop];
+      });
+      var subproperty = flags['subproperty'];
+      subproperty['previousValue'] = originalSubpropValue;
+      optionChangeData['subproperty'] = subproperty;
+    }
+
+    if (extraData != null)
+    {
+      optionChangeData = $.extend({}, extraData, optionChangeData);
+    }
+
+    this._trigger("optionChange", originalEvent, optionChangeData);
   },
 
   /**
@@ -1809,17 +1933,15 @@ $.widget('oj.' + _BASE_COMPONENT,
    * <a href="#_ReleaseResources">_ReleaseResources</a> will release resources
    * help by this component, and is called during destroy.
    * </p>
-   * <p> This base class default implementation does nothing.
-   * </p>
    *  Component subclasses can opt in by overriding _SetupResources and
-  *   _ReleaseResources.
+   *   _ReleaseResources.
    * @memberof oj.baseComponent
    * @instance
    * @protected
    */
   _SetupResources: function ()
   {
-    // default implementation does nothing.
+    this._SetupContextMenu();
   },
 
   /**
@@ -1828,17 +1950,15 @@ $.widget('oj.' + _BASE_COMPONENT,
    * <a href="#_SetupResources">_SetupResources</a> will set up resources
    * needed by this component, and is called during _create.
    * </p>
-   * <p> This base class default implementation does nothing.
-   * </p>
    *  Component subclasses can opt in by overriding _SetupResources and
-  *   _ReleaseResources.
+   *   _ReleaseResources.
    * @memberof oj.baseComponent
    * @instance
    * @protected
    */
   _ReleaseResources: function()
   {
-    // default implementation does nothing.
+    this._ReleaseContextMenu();
   },
 
   /**
@@ -1918,6 +2038,9 @@ $.widget('oj.' + _BASE_COMPONENT,
     var eventName, detail = {}, cancelable, rootElement = this._getRootElement();
     if (type === 'optionChange') {
       var property = oj.CustomElementBridge.getPropertyForAlias(rootElement, data['option']);
+      if (!oj.CustomElementBridge.isKnownProperty(rootElement, property)) {
+        return {'proceed':true, 'event':null};        
+      }
       eventName = oj.__AttributeUtils.propertyNameToChangeEventType(property);
 
       // Copy over component specific optionChange event properties, promoting those exposed
@@ -2027,305 +2150,74 @@ $.widget('oj.' + _BASE_COMPONENT,
   },
 
   /**
-   * <p>Call this method from _AfterCreate() and _setOption("contextMenu").
+   * Handler 
+   * @param {Element} contextMenu root element of context menu
+   * @param {Event} event the dom event
+   * @param {string} eventType the type of event
+   * @private
+   */
+  _handleContextMenuGesture: function(contextMenu, event, eventType)
+  {
+      // For components like Button where "effectively disabled" --> "not focusable", keyboard CM launch is impossible, so
+      // allowing right-click access would be an a11y issue.  If there's ever a need to enable this for focusable effectively
+      // disabled components, we can always replace the _IsEffectivelyDisabled() call with a new protected method whose
+      // baseComponent impl returns _IsEffectivelyDisabled().
+      if (this._IsEffectivelyDisabled())
+        return;
+
+      // contextMenu should reference the latest one from the scope
+      var menu;
+      if (contextMenu.tagName === "OJ-MENU")
+      {
+        menu = contextMenu;
+      }
+      else
+      {
+        var constructor = oj.Components.__GetWidgetConstructor(contextMenu, "ojMenu");
+        menu = constructor && constructor("instance");
+        if (!menu)
+          throw new Error('Invalid JET Menu.'); // keeping old behavior
+      }
+
+      this._NotifyContextMenuGesture(menu, event, eventType);
+
+      // todo: modify NotifyContextMenuGesture contract so we don't need to check visible
+      if ($(contextMenu).is(":visible"))
+      {
+        event.preventDefault(); // don't show native context menu
+      }
+  },
+
+  /**
+   * <p>Call this method from _SetupResources().  It sets up listeners needed to detect context menu gestures.
    *
-   * <p>- This method first removes contextMenu listeners/attr from the component root node.
-   * <p>- Then, if the component's "contextMenu" option is set, then it sets those things on the component root node.
-   *
-   * <p>We don't look for the menu until _getContextMenu() is called on the first launch,
+   * <p>We don't look for the menu until context menu gesture has been detected on the first launch,
    * so that the menu needn't be inited before this component.
    *
    * <p>If needed, override <code class="prettyprint">_NotifyContextMenuGesture()</code>, not this private method.
    *
    * @memberof oj.baseComponent
    * @instance
-   * @private
+   * @protected
    */
-  _setupContextMenu: function(isCreateTime, oldContextMenuOption)
+  _SetupContextMenu: function()
   {
-    this._removeContextMenuBehavior(oldContextMenuOption);
-
-    if ( this.options.contextMenu )
-    {
-        var rootNode = this.widget();
-        var initNode = this.element;
-
-        // if the context menu was specified via DOM attr of the init node at create time, and if that node is
-        // different than the root node (i.e. if this component wraps itself in a new root node in
-        // _ComponentCreate()), then remove the attr from the init node.
-        if (isCreateTime && !initNode.is(rootNode))
-            initNode.removeAttr("contextmenu");
-
-        // if menu elem exists already and has an id, then set id on the *root* node's contextmenu DOM attr
-        var id = $(this.options.contextMenu).attr("id");
-        if (id)
-            rootNode.attr("contextmenu", id);
-
-        var self = this;
-
-        //, on Chrome preventDefault on "keyup" will avoid triggering contextmenu event
-        //which will display native contextmenu.This also need to be added on document as event target is not menu launcher.
-        this._preventKeyUpEventIfMenuOpen = function(event){
-          if (event.which == 121 && event.shiftKey) // Shift-F10
-          {
-            if (self._getContextMenuNode().is(":visible"))
-              event.preventDefault();
-          }
-        };
-
-        // Note: Whether or not we use Hammer to detect press-hold, this code would need to do the following things seen below:
-        //
-        // (1) Prevent the compatibility mousedown event from triggering Menu's clickAway logic.
-        // (2) Prevent press-hold from also generating a click (unless Hammer does this automatically; I'm guessing it doesn't).
-        // (3) Ensure we don't respond to *both* press-hold and contextmenu events on Android.
-        //
-        // So the only thing that Hammer would replace is:
-        //
-        // (4) Detecting the press-hold.
-        //
-        // Not currently using Hammer for (4), since:
-        //
-        // - This code predates Hammer, and was already stable after extensive iteration / fine-tuning.
-        // - We use the same listeners for parts of 1-4. If moved 4 off to Hammer (separate listener), just need to ensure that
-        //   we don't introduce any race conditions, etc.  (May be easy or hard, just need to look.)
-        // - Hammer only wants to have one instance per DOM node, else they fight to control some things like touch-action. So
-        //   a prereq for having this baseComponent logic put Hammer on components is to work out a protocol for super- and sub-
-        //   classes to share the same instance and not step on each other.  Not insurmountable; just need to have the conversation.
-        //   Tracked by ER 21357133, which links to detailed wiki.
-
-        var pressHoldThreshold = oj.DomUtils.PRESS_HOLD_THRESHOLD; // launch CM at 750ms per UX spec
-        var isPressHold = false; // to prevent pressHold from generating a click
-
-        var touchInProgress = false;
-
-        // 5px is Hammer default.  (Didn't check whether they apply that separately to x and y like us, or to the hypotenuse,
-        // but it's within a couple px either way -- think 3-4-5 triangle.)
-        var maxAllowedMovement = 5;
-        var touchPageX;
-        var touchPageY;
-
-        var doubleOpenTimer; // to prevent double open.  see usage below.
-        var doubleOpenThreshold = 300; // made up this number.  TBD: Tweak as needed to make all platforms happy.
-        var doubleOpenType = null; // "touchstart" or "contextmenu"
-
-        var launch = function(event, eventType, pressHold) {
-            // ensure that pressHold doesn't result in a click.  Set this before the bailouts below.
-            isPressHold = pressHold;
-
-            var menu = self._getContextMenu();
-
-            // In Mobile Safari only, mousedown fires *after* the touchend, which causes at least 2 problems:
-            // 1) CM launches after 750ms (good), then disappears when lift finger (bad), because touchend -->
-            // mousedown, which calls Menu's "clikAway" mousedown listener, which dismisses Menu.
-            // 2) The isPressHold logic needs to reset the isPressHold ivar on any event that can start a click,
-            // including mousedown.  This problem causes the mousedown listener to incorrectly clear the ivar
-            // after a pressHold, which broke the whole mechanism.
-            // SOLUTION FOR 1-2:  On each launch (at 750ms), set a one-time touchend listener that will set a
-            // var and clear it 50ms later.  While the var is set, both mousedown listeners can disregard the
-            // mousedown.  Make the var a static var in Menu, since Menu's listener is static, and since this
-            // launcher component can get/set it via an (effectively static) menu method.
-            // NON-SOLUTIONS:  Cancelling touchstart or touchend, via pD() and sP(), doesn't cancel iPad's mousedown.
-            // Cancelling mousedown from here doesn't work even if capture phase, since ojMenu's listener is capture phase.
-            // TIMING: The following block should be before the doubleOpen bailout.
-            if (isPressHold)
-            {
-                rootNode.one( "touchend" + self.contextMenuEventNamespace, function( event ) {
-                    var touchendMousedownThreshold = 50; // 50ms.  Make as small as possible to prevent unwanted side effects.
-                    menu.__contextMenuPressHoldJustEnded(true);
-                    setTimeout(function() {
-                        menu.__contextMenuPressHoldJustEnded(false);
-                    }, touchendMousedownThreshold);
-                });
-            }
-
-            // On platforms like Android Chrome where long presses already fire the contextmenu event, the pressHold
-            // logic causes the menu to open twice, once for the pressHold, once for the contextmenu.  There's no
-            // guarantee which will happen first, but as long as they happen within doubleOpenThreshold ms
-            // of each other, this logic should prevent the double open.
-            // Note: Another option is a platform-specific solution where we only use pressHold for platforms that need
-            // it (that don't already fire a contextmenu event for pressHold), but architectural preference is to avoid
-            // platform-specific solutions if possible.
-            if ((doubleOpenType === "touchstart" && event.type === "contextmenu")
-                    || (doubleOpenType === "contextmenu" && event.type === "touchstart"))
-            {
-                doubleOpenType = null;
-                clearTimeout(doubleOpenTimer);
-                return;
-            }
-
-            // If a nested element or component already showed a JET context menu for this event, don't replace it with ours.
-            // Hack: must check defaultPrevented on the nested event too, because for touchstart events on iOS7 at least, when
-            // the outer component reaches this point, event is a different JQ wrapper event than the one on which the inner
-            // component previously called preventDefault, although they both wrap the same native originalEvent.  The new wrapper
-            // never had its isDefaultPrevented field set to the returnTrue method, so must check the nested originalEvent.
-            // This never seems to happen with right-click and Shift-F10 events.  Has nothing to do with the setTimeout: the events
-            // received by the rootNode.on("touchstart"...) code are different (firstWrapper==secondWrapper returns false).
-            // TODO: link to JQ bug once filed.
-            if (event.isDefaultPrevented() || (event.originalEvent && event.originalEvent.defaultPrevented))
-                return;
-
-            // For components like Button where "effectively disabled" --> "not focusable", keyboard CM launch is impossible, so
-            // allowing right-click access would be an a11y issue.  If there's ever a need to enable this for focusable effectively
-            // disabled components, we can always replace the _IsEffectivelyDisabled() call with a new protected method whose
-            // baseComponent impl returns _IsEffectivelyDisabled().
-            if (self._IsEffectivelyDisabled())
-                return;
-
-            self._NotifyContextMenuGesture(menu, event, eventType);
-
-            // if _NotifyContextMenuGesture() (or subclass override of it) actually opened the CM, and if that launch wasn't
-            // cancelled by a beforeOpen listener...
-            if (menu.widget().is(":visible"))
-            {
-                event.preventDefault(); // don't show native context menu
-                document.addEventListener("keyup", self._preventKeyUpEventIfMenuOpen);
-
-                // see double-open comments above
-                if (event.type === "touchstart" || event.type === "contextmenu")
-                {
-                    doubleOpenType = event.type;
-                    doubleOpenTimer = setTimeout(function(){
-                        doubleOpenType = null;
-                    }, doubleOpenThreshold);
-                }
-            }
-        };
-
-        // At least some of the time, the pressHold gesture also fires a click event same as a short tap.  Prevent that here.
-        this._clickListener = function( event ) {
-            if (isPressHold) {
-                // For Mobile Safari capture phase at least, returning false doesn't work; must use pD() and sP() explicitly.
-                event.preventDefault();
-                event.stopPropagation();
-                isPressHold = false;
-            }
-        };
-
-        // Use capture phase to make sure we cancel it before any regular bubble listeners hear it.
-        rootNode[0].addEventListener("click", this._clickListener, true);
-
-        rootNode
-            .on( "touchstart" + this.contextMenuEventNamespace + " " +
-                 "mousedown" + this.contextMenuEventNamespace + " " +
-                 "keydown" + this.contextMenuEventNamespace + " ", function( event ) {
-                // for mousedown-after-touchend Mobile Safari issue explained above where __contextMenuPressHoldJustEnded is set.
-                if (event.type === "mousedown" && self._getContextMenu().__contextMenuPressHoldJustEnded())
-                    return;
-
-                // reset isPressHold flag for all events that can start a click.
-                isPressHold = false;
-
-                // start a pressHold timer on touchstart.  If not cancelled before 750ms by touchend/etc., will launch the CM.
-                // isolate the context menu long tap to a single touch point.
-                if (event.type === "touchstart" && event.originalEvent["touches"].length === 1) {
-                    // note starting position so touchmove handler can tell if touch moved too much
-                    var firstTouch = event.originalEvent["touches"][0];
-                    touchPageX = firstTouch["pageX"];
-                    touchPageY = firstTouch["pageY"];
-
-                    touchInProgress = true;
-                    this._contextMenuPressHoldTimer = setTimeout(launch.bind(undefined, event, "touch", true), pressHoldThreshold);
-                }
-
-                return true;
-            })
-
-            // if the touch moves too much, it's not a pressHold
-            .on( "touchmove" + this.contextMenuEventNamespace, function( event ) {
-                var firstTouch = event.originalEvent["touches"][0];
-                if (Math.abs(touchPageX - firstTouch["pageX"]) > maxAllowedMovement
-                    || Math.abs(touchPageY - firstTouch["pageY"]) > maxAllowedMovement)
-                {
-                    touchInProgress = false;
-                    clearTimeout(this._contextMenuPressHoldTimer);
-                }
-                return true;
-            })
-
-            // if the touch ends before the 750ms is up, it's not a long enough pressHold to show the CM
-            .on( "touchend" + this.contextMenuEventNamespace + " " +
-                 "touchcancel" + this.contextMenuEventNamespace, function( event ) {
-                touchInProgress = false;
-                clearTimeout(this._contextMenuPressHoldTimer);
-                return true;
-            })
-            .on( "keydown" + this.contextMenuEventNamespace + " " +
-                 "contextmenu" + this.contextMenuEventNamespace, function( event ) {
-                if (event.type === "contextmenu" // right-click.  pressHold for Android but not iOS
-                        || (event.which == 121 && event.shiftKey)) // Shift-F10
-                {
-                    var eventType = touchInProgress ? "touch" : event.type === "keydown" ? "keyboard" : "mouse";
-                    launch(event, eventType, false);
-                }
-
-                return true;
-            })
-
-            // Does 2 things:
-            // 1) Prevents native context menu / callout from appearing in Mobile Safari.  E.g. for links, native CM has "Open in New Tab".
-            // 2) In Mobile Safari and Android Chrome, prevents pressHold from selecting the text and showing the selection handles and (in Safari) the Copy/Define callout.
-            // In UX discussion, we decided to prevent both of these things for all JET components for now.  If problems, can always, say, add protected method allowing
-            // subclass to opt out (e.g. if they need 1 and/or 2 to work).
-            // Per discussion with architects, do #2 only for touch devices, so that text selection isn't prevented on desktop.  Since #1
-            // is a no-op for non-touch, we can accomplish this by omitting the entire style class, which does 1 and 2, for non-touch.
-            // Per comments in scss file, the suppression of 1 and 2 has issues in old versions of Mobile Safari.
-            .addClass(oj.DomUtils.isTouchSupported() ? "oj-menu-context-menu-launcher" : undefined);
-    }
-  },
-
-
-  /**
-   * <p>Lazy getter for the context menu.
-   *
-   * <p>This method should be called only by the "user is launching the context menu" listeners, which should only be registered
-   * if the "contextMenu" option is set.  Do not call at create time.
-   *
-   * <p>We wait until menu-launch time to lazily get the menu, to avoid an init-order dependency.  It should be OK to
-   * init the component before its context menu.
-   *
-   * @return the JET Menu component pointed to by the "contextMenu" option
-   * @throws if no Menu found, which is app error since Menu should be inited by the time this is called
-   *
-   * @memberof oj.baseComponent
-   * @instance
-   * @private
-   */
-  _getContextMenu: function()
-  {
-    var constructor = oj.Components.getWidgetConstructor(this._getContextMenuNode()[0], "ojMenu");
-
-    // The JET Menu of the first element found.
-    // Per architect discussion, get it every time rather than caching the menu.
-    var contextMenu = constructor && constructor("instance");
-
-    // if no element found, or if element has no JET Menu
+    var contextMenu = this._GetContextMenu();
     if (!contextMenu)
-      throw new Error('"contextMenu" option set to "' + this.options.contextMenu + '", which does not reference a valid JET Menu.');
-
-    if (!this._contextMenuListenerSet) {
-      var self = this;
-
-      // must use "on" syntax rather than clobbering whatever "close" handler the app may have set via the menu's "option" syntax
-      contextMenu.widget().on( "ojclose" + this.contextMenuEventNamespace , function( event, ui ) {
-        document.removeEventListener("keyup", self._preventKeyUpEventIfMenuOpen);
-      });
-
-      this._contextMenuListenerSet = true;
+    {
+      contextMenu = this._GetDefaultContextMenu();
     }
 
-    return contextMenu;
-  },
+    if (contextMenu && this._contextMenuGestureInit === undefined)
+    {    
+      this._contextMenuGestureInit = contextMenu;
 
-  /**
-   * @return JQ obj containing the DOM node referenced by the contextMenu option.  Empty if no element found.
-   *
-   * @memberof oj.baseComponent
-   * @instance
-   * @private
-   */
-  _getContextMenuNode: function()
-  {
-    return $(this.options.contextMenu).first();
+      var self = this;
+      oj.GestureUtils.startDetectContextMenuGesture(this.widget()[0], function(event, eventType)
+      {
+        self._handleContextMenuGesture(contextMenu, event, eventType);
+      }); 
+    }
   },
 
   /**
@@ -2335,21 +2227,37 @@ $.widget('oj.' + _BASE_COMPONENT,
    * @instance
    * @private
    */
-  _removeContextMenuBehavior: function(contextMenuOption)
+  _ReleaseContextMenu: function()
   {
-    this.widget()
-        .removeAttr( "contextmenu" )
-        .off( this.contextMenuEventNamespace )
-        .removeClass("oj-menu-context-menu-launcher")
-        [0].removeEventListener("click", this._clickListener, true);
-
-    // the other 2 contextMenu timeouts don't need to be cleared here
-    clearTimeout(this._contextMenuPressHoldTimer);
+    this._contextMenuGestureInit = undefined;
 
     // access menu elem directly, rather than using the widget() of the Menu component, so listener is cleared even if component no longer exists.
-    $(contextMenuOption).off( this.contextMenuEventNamespace );
-    this._contextMenuListenerSet = false;
+    // $(contextMenuOption).off( this.contextMenuEventNamespace );
+    oj.GestureUtils.stopDetectContextMenuGesture(this.widget()[0]);
+  },
 
+  /**
+   * Helper method to retrieve the context menu element
+   * @memberof oj.baseComponent
+   * @instance
+   * @protected
+   */
+  _GetContextMenu: function()
+  {
+    if (this._IsCustomElement())
+    {
+      var slotMap = oj.CustomElementBridge.getSlotMap(this._getRootElement());        
+      var slot = slotMap['contextMenu'];
+      if (slot && slot.length > 0)
+        return slot[0];
+    }
+    else
+    {
+      if (this.options.contextMenu)
+        return $(this.options.contextMenu).first()[0];
+    }
+
+    return null;
   },
 
   /**
@@ -2496,45 +2404,82 @@ $.widget('oj.' + _BASE_COMPONENT,
    */
   _OpenContextMenu: function(event, eventType, openOptions, submenuOpenOptions, shallow)
   {
-    // Note: our touch positioning is similar to that of the iOS touch callout (bubble with "Open in New Tab", etc.), which is offset from the pressHold location as follows:
-    // - to the right, vertically centered.  (by default)
-    // - to the left, vertically centered.  (if fits better)
-    // - above or below, horizontally centered.  (if fits better)
-    // An offset like 40 prevents it from opening right under your finger, and is similar to iOS's offset.  It also prevents the issue (on iOS7 at least)
-    // where touchend after the pressHold can dismiss the CM b/c the menu gets the touchend.
-
-    var position = {
-      "mouse": {
-        "my": "start top",
-        "at": "start bottom",
-        "of": event,
-        "collision": "flipfit"
-      },
-      "touch": {
-        "my": "start>40 center",
-        "at": "start bottom",
-        "of": event,
-        "collision": "flipfit"
-      },
-      "keyboard": {
-        "my": "start top",
-        "at": "start bottom",
-        "of": "launcher",
-        "collision": "flipfit"
+    var contextMenuNode = this._GetContextMenu();
+    if (!contextMenuNode)
+    {
+      // the context menu node could have been currently opened with another launcher
+      if (this._contextMenuGestureInit && $(this._contextMenuGestureInit).is(":visible"))
+      {
+        contextMenuNode = this._contextMenuGestureInit;
       }
-    };
+      else
+      {
+        contextMenuNode = this._GetDefaultContextMenu();
+      }
+    }
 
-    var defaults = {"launcher": this.element, "position": position[eventType]}; // used for fields caller omitted
-    var forcedOptions = {"initialFocus": "menu"};
+    if (contextMenuNode)
+    {
+      // Note: our touch positioning is similar to that of the iOS touch callout (bubble with "Open in New Tab", etc.), which is offset from the pressHold location as follows:
+      // - to the right, vertically centered.  (by default)
+      // - to the left, vertically centered.  (if fits better)
+      // - above or below, horizontally centered.  (if fits better)
+      // An offset like 40 prevents it from opening right under your finger, and is similar to iOS's offset.  It also prevents the issue (on iOS7 at least)
+      // where touchend after the pressHold can dismiss the CM b/c the menu gets the touchend.
 
-    openOptions = (shallow)
-      ? $.extend(defaults, openOptions, forcedOptions)
-      : $.extend(true, defaults, openOptions, forcedOptions);
+      var position = {
+        "mouse": {
+          "my": "start top",
+          "at": "start bottom",
+          "of": event,
+          "collision": "flipfit"
+        },
+        "touch": {
+          "my": "start>40 center",
+          "at": "start bottom",
+          "of": event,
+          "collision": "flipfit"
+        },
+        "keyboard": {
+          "my": "start top",
+          "at": "start bottom",
+          "of": "launcher",
+          "collision": "flipfit"
+        }
+      };
 
-    var menu = this._getContextMenu();
-    menu.__openingContextMenu = true; // Hack.  See todo on this ivar in Menu.open().
-    menu.open(event, openOptions, submenuOpenOptions);
-    menu.__openingContextMenu = false;
+      var defaults = {"launcher": this.element, "position": position[eventType]}; // used for fields caller omitted
+      var forcedOptions = {"initialFocus": "menu"};
+
+      openOptions = (shallow)
+        ? $.extend(defaults, openOptions, forcedOptions)
+        : $.extend(true, defaults, openOptions, forcedOptions);
+
+      contextMenuNode.__openingContextMenu = true; // Hack.  See todo on this ivar in Menu.open().
+      if (contextMenuNode.tagName === "OJ-MENU")
+      {
+        contextMenuNode.open(event, openOptions, submenuOpenOptions);
+      }
+      else
+      {
+        var constructor = oj.Components.__GetWidgetConstructor(contextMenuNode, "ojMenu");
+        var menu = constructor && constructor("instance");
+        menu.open(event, openOptions, submenuOpenOptions);
+      }
+      contextMenuNode.__openingContextMenu = false;
+    }
+  },
+
+  /**
+   * Retrieve the default context menu.
+   * @return {Element|null} the root element for the default context menu, or null if there is no default context menu.  The default is null.
+   * @memberof oj.baseComponent
+   * @instance
+   * @protected
+   */
+  _GetDefaultContextMenu: function()
+  {
+    return null;
   },
 
   /**
@@ -3072,6 +3017,19 @@ $.widget('oj.' + _BASE_COMPONENT,
   },
 
   /**
+   * <p>Notifies the component that its subtree is initially visible after the component has
+   * been created.
+   *
+   * @memberof oj.baseComponent
+   * @instance
+   * @protected
+   */
+  _NotifyInitShown: function()
+  {
+
+  },
+  
+    /**
    * <p>Notifies the component that its subtree has been made visible programmatically after the component has
    * been created.
    *
@@ -3328,7 +3286,7 @@ $.widget('oj.' + _BASE_COMPONENT,
    */
   _IsCustomElement: function()
   {
-    return oj.BaseCustomElementBridge.isRegistered(this._getRootElement().tagName);
+    return oj.BaseCustomElementBridge.getRegistered(this._getRootElement().tagName) != null;
   },
 
   /**
@@ -3353,6 +3311,28 @@ $.widget('oj.' + _BASE_COMPONENT,
     return context;
   },
 
+    /**
+   * Returns a wrapper function for custom elements that converts an object
+   * returned by a custom renderer into an old format supported by widgets 
+   * @param {Function} origRenderer Renderer function called to create custom content
+   * @return {Function} A wrapper function that will used to convert result into toolkit format
+   * @protected
+   * @memberof oj.baseComponent
+   */
+  _WrapCustomElementRenderer: function (origRenderer)
+  {
+    if (this._IsCustomElement() && typeof origRenderer === 'function')
+    {
+      var customRenderer = function (context)
+      {
+        var obj = origRenderer(context);
+        return obj && obj['insert'] ? obj['insert'] : null;
+      }
+      return customRenderer;
+    }
+    return origRenderer;
+  },
+
   /**
    * Given an event, returns the appropriate event for the component syntax.
    * For custom elements, if the event is a JQuery event, this method will return the
@@ -3370,8 +3350,87 @@ $.widget('oj.' + _BASE_COMPONENT,
       return event instanceof $.Event ? event.originalEvent : event;
     }
     return event;
-  }
+  },
 
+  /**
+   * Stores a map of writeback options that we reference during option comparison.
+   * Package private method called from the CustomElementBridge.
+   * @param  {Object} options The writeback options map
+   * @memberof oj.baseComponent
+   * @instance
+   * @private
+   */
+  __saveWritebackOptions: function(options)
+  {
+    this._writebackOptions = options;
+  },
+
+  /**
+   * Returns true if an option should be written back.
+   * @param  {string} option The option to lookup
+   * @memberof oj.baseComponent
+   * @instance
+   * @private
+   */
+  _getWritebackOption: function(option)
+  {
+    if (this._writebackOptions && this._writebackOptions[option])
+    {
+      return true;
+    }
+    return false;
+  },
+
+  /**
+   * Called by oj.Components.subtreeAttached and will only call _NotifyAttached
+   * for non custom elements. Custom elements are notified when they are 
+   * attached from the DOM so oj.Components.subtreeAttached is unnecessary.
+   * @memberof oj.baseComponent
+   * @instance
+   * @private
+   */
+  __handleSubtreeAttached: function() {
+    if (!this._IsCustomElement())
+      this._NotifyAttached();
+  },
+
+  /**
+   * Called by oj.Components.subtreeAttached and will only call _NotifyDetached
+   * for non custom elements. Custom elements are notified when they are 
+   * detached from the DOM so oj.Components.subtreeDetached is unnecessary.
+   * @memberof oj.baseComponent
+   * @instance
+   * @private
+   */
+  __handleSubtreeDetached: function() {
+    if (!this._IsCustomElement())
+      this._NotifyDetached();
+  },
+
+  /**
+   * Called by the CustomElementBridge when the custom element is attached
+   * to the DOM.
+   * @memberof oj.baseComponent
+   * @instance
+   * @private
+   */
+  __handleConnected: function() {
+    this._NotifyAttached();
+    this._SetupResources();
+  },
+
+  /**
+   * Called by the CustomElementBridge when the custom element is detached
+   * from the DOM.
+   * @memberof oj.baseComponent
+   * @instance
+   * @private
+   */
+  __handleDisconnected: function() {
+    this._ReleaseResources();
+    this._NotifyDetached();
+  }
+  
   /**
    * <p>The following CSS classes can be applied by the page author as needed.
    * 
@@ -3812,13 +3871,78 @@ function _mergeObjectsWithExclusions(target, input, ignoreSubkeys, basePath)
  */
 
 /**
- * // Foo is ojInputNumber, ojInputDate, etc.
- * // Returns {'subId': oj-foo-subid, 'property1': componentSpecificProperty, ...}
- * var context = $( ".selector" ).ojFoo( "getContextByNode", nodeInsideComponent );
+ * // Returns {'subId': 'oj-some-sub-id', 'componentSpecificProperty': someValue, ...}
+ * var context = myComponent.getContextByNode(nodeInsideElement);
  *
  * @ojfragment nodeContextExample
  * @memberof oj.baseComponent
  */
+
+/**
+ * <p>The contextMenu slot is set on the <code class="prettyprint">oj-menu</code> within this element.  
+ * This is used to designate the JET Menu that this component should launch as a context menu on right-click, Shift-F10, Press & Hold, or component-specific gesture. 
+ * If specified, the browser's native context menu will be replaced by the JET Menu specified in this slot.
+ * <p>
+ * The application can register a listener for the Menu's ojBeforeOpen event. The listener can cancel the launch via event.preventDefault(), 
+ * or it can customize the menu contents by editing the menu DOM directly, and then calling refresh() on the Menu.
+ * <p>
+ * To help determine whether it's appropriate to cancel the launch or customize the menu, the ojBeforeOpen listener can use component API's to determine which 
+ * table cell, chart item, etc., is the target of the context menu. See the JSDoc and demos of the individual components for details. 
+ * <p>
+ * Keep in mind that any such logic must work whether the context menu was launched via right-click, Shift-F10, Press & Hold, or component-specific touch gesture.
+ *
+ * @ojslot contextMenu
+ * @memberof oj.baseComponent
+ *
+ * @example <caption>Initialize the component with a context menu:</caption>
+ * &lt;oj-some-element>
+ *     &lt;-- use the contextMenu slot to designate this as the context menu for this component -->
+ *     &lt;oj-menu slot="contextMenu" style="display:none" aria-label="Some element's context menu">
+ * ...
+ *     &lt;/oj-menu>
+ * &lt;/oj-some-element>
+ */
+
+/**
+ * Sets a property or a single subproperty for complex properties and notifies the component
+ * of the change, triggering a [property]Changed event.
+ * 
+ * @function setProperty
+ * @param {string} property - The property name to set. Supports dot notation for subproperty access.
+ * @param {*} value - The new value to set the property to.
+ * 
+ * @expose
+ * @memberof oj.baseComponent
+ * @instance
+ * 
+ * @example <caption>Set a single subproperty of a complex property:</caption>
+ * myComponent.setProperty('complexProperty.subProperty1.subProperty2', "someValue");
+ */ 
+/**
+ * Retrieves a value for a property or a single subproperty for complex properties.
+ * @function getProperty
+ * @param {string} property - The property name to get. Supports dot notation for subproperty access.
+ * @return {*}
+ * 
+ * @expose
+ * @memberof oj.baseComponent
+ * @instance
+ * 
+ * @example <caption>Get a single subproperty of a complex property:</caption>
+ * var subpropValue = myComponent.getProperty('complexProperty.subProperty1.subProperty2');
+ */
+/**
+ * Performs a batch set of properties.
+ * @function setProperties
+ * @param {Object} properties - An object containing the property and value pairs to set.
+ * 
+ * @expose
+ * @memberof oj.baseComponent
+ * @instance
+ * 
+ * @example <caption>Set a batch of properties:</caption>
+ * myComponent.setProperties({"prop1": "value1", "prop2.subprop": "value2", "prop3": "value3"});
+ */ 
 
 /*jslint browser: true*/
 /**
@@ -3846,7 +3970,7 @@ function _ojHighContrast()
   // confused by seeing any error.
 
   var div = $("<div style='border: 1px solid;border-color:red green;position: absolute;top: -999px;background-image: url(data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACwAAAAAAQABAAACAkQBADs=);'></div>"), bki;
-  div.appendTo("body");
+  div.appendTo("body");     // @HTMLUpdateOK safe manipulation
 
   bki = div.css("backgroundImage");
   //console.log("background-image:" + bki);
@@ -3898,7 +4022,7 @@ oj.DomUtils.isHTMLContent = function(content)
 oj.DomUtils.cleanHtml = function (value)
 {
   var offSpan = $(document.createElement("span")).get(0);
-  offSpan.innerHTML = value;
+  offSpan.innerHTML = value;  // @HTMLUpdateOK safe manipulation
   if (value && value.indexOf("\x3c") >= 0)
   {
     oj.DomUtils._cleanElementHtml(offSpan);
@@ -4225,8 +4349,12 @@ oj.DomUtils._ResizeTracker = function(div)
     {
       _detectExpansion.removeEventListener("scroll", _scrollListener);
       _detectContraction.removeEventListener("scroll", _scrollListener);
-      div.removeChild(_detectExpansion);
-      div.removeChild(_detectContraction);
+      // Check before removing to prevent CustomElement polyfill from throwing
+      // a NotFoundError when removeChild is called with an element not in the DOM
+      if (_detectExpansion.parentNode)
+        div.removeChild(_detectExpansion);
+      if (_detectContraction.parentNode)
+        div.removeChild(_detectContraction);
     }
     else
     {
@@ -6174,6 +6302,239 @@ oj.ComponentValidity.prototype._getImmediateMessages = function ()
 
 /*jslint browser: true*/
 /*
+** Copyright (c) 2017, Oracle and/or its affiliates. All rights reserved.
+*/
+/**
+ * Gesture utilities provided internally for JET components, currently only context menu gesture are available.
+ * Moved from ojcomponentcore and made into static methods.
+ * @ignore
+ */
+oj.GestureUtils = {};
+
+/**
+ * Event namespace used by context menu internal event registration.
+ * Previously we got the namespace from the widget.
+ */
+oj.GestureUtils._EVENT_NAMESPACE = ".contextMenu";
+
+/**
+ * Utility method to tear down any artifacts created by GestureUtils.startDetectContextMenuGesture
+ * @param {Element} rootNode the root element of the component
+ */
+oj.GestureUtils.stopDetectContextMenuGesture = function(rootNode)
+{
+    $(rootNode).off( oj.GestureUtils._EVENT_NAMESPACE )
+               .removeClass("oj-menu-context-menu-launcher")
+        [0].removeEventListener("click", rootNode._clickListener, true);
+
+    // the other 2 contextMenu timeouts don't need to be cleared here
+    clearTimeout(rootNode._contextMenuPressHoldTimer);
+};
+
+/**
+ * Utility method to setup context menu gesture detection on a component
+ * @param {Element} rootNode the root node of the component
+ * @param {function(Event, string)} callback callback to invoke on the component when context menu gesture is detected
+ */
+oj.GestureUtils.startDetectContextMenuGesture = function(rootNode, callback)
+{
+    // Note: Whether or not we use Hammer to detect press-hold, this code would need to do the following things seen below:
+    //
+    // (1) Prevent the compatibility mousedown event from triggering Menu's clickAway logic.
+    // (2) Prevent press-hold from also generating a click (unless Hammer does this automatically; I'm guessing it doesn't).
+    // (3) Ensure we don't respond to *both* press-hold and contextmenu events on Android.
+    //
+    // So the only thing that Hammer would replace is:
+    //
+    // (4) Detecting the press-hold.
+    //
+    // Not currently using Hammer for (4), since:
+    //
+    // - This code predates Hammer, and was already stable after extensive iteration / fine-tuning.
+    // - We use the same listeners for parts of 1-4. If moved 4 off to Hammer (separate listener), just need to ensure that
+    //   we don't introduce any race conditions, etc.  (May be easy or hard, just need to look.)
+    // - Hammer only wants to have one instance per DOM node, else they fight to control some things like touch-action. So
+    //   a prereq for having this baseComponent logic put Hammer on components is to work out a protocol for super- and sub-
+    //   classes to share the same instance and not step on each other.  Not insurmountable; just need to have the conversation.
+    //   Tracked by ER 21357133, which links to detailed wiki.
+
+    var pressHoldThreshold = oj.DomUtils.PRESS_HOLD_THRESHOLD; // launch CM at 750ms per UX spec
+    var isPressHold = false; // to prevent pressHold from generating a click
+    var contextMenuPressHoldTimer;
+
+    var touchInProgress = false;
+
+    // 5px is Hammer default.  (Didn't check whether they apply that separately to x and y like us, or to the hypotenuse,
+    // but it's within a couple px either way -- think 3-4-5 triangle.)
+    var maxAllowedMovement = 5;
+    var touchPageX;
+    var touchPageY;
+
+    var doubleOpenTimer; // to prevent double open.  see usage below.
+    var doubleOpenThreshold = 300; // made up this number.  TBD: Tweak as needed to make all platforms happy.
+    var doubleOpenType = null; // "touchstart" or "contextmenu"
+
+    var namespace = oj.GestureUtils._EVENT_NAMESPACE;
+
+    var contextMenuPressHoldJustEnded = false;
+    var launch = function(event, eventType, pressHold) 
+    {
+        // ensure that pressHold doesn't result in a click.  Set this before the bailouts below.
+        isPressHold = pressHold;
+
+        // In Mobile Safari only, mousedown fires *after* the touchend, which causes at least 2 problems:
+        // 1) CM launches after 750ms (good), then disappears when lift finger (bad), because touchend -->
+        // mousedown, which calls Menu's "clikAway" mousedown listener, which dismisses Menu.
+        // 2) The isPressHold logic needs to reset the isPressHold ivar on any event that can start a click,
+        // including mousedown.  This problem causes the mousedown listener to incorrectly clear the ivar
+        // after a pressHold, which broke the whole mechanism.
+        // SOLUTION FOR 1-2:  On each launch (at 750ms), set a one-time touchend listener that will set a
+        // var and clear it 50ms later.  While the var is set, both mousedown listeners can disregard the
+        // mousedown.  Make the var a static var in Menu, since Menu's listener is static, and since this
+        // launcher component can get/set it via an (effectively static) menu method.
+        // NON-SOLUTIONS:  Cancelling touchstart or touchend, via pD() and sP(), doesn't cancel iPad's mousedown.
+        // Cancelling mousedown from here doesn't work even if capture phase, since ojMenu's listener is capture phase.
+        // TIMING: The following block should be before the doubleOpen bailout.
+        if (isPressHold)
+        {
+            $(rootNode).one( "touchend" + namespace, function( event ) {
+                var touchendMousedownThreshold = 50; // 50ms.  Make as small as possible to prevent unwanted side effects.
+                contextMenuPressHoldJustEnded = true;
+                setTimeout(function() {
+                    contextMenuPressHoldJustEnded = false;
+                }, touchendMousedownThreshold);
+            });
+        }
+
+        // On platforms like Android Chrome where long presses already fire the contextmenu event, the pressHold
+        // logic causes the menu to open twice, once for the pressHold, once for the contextmenu.  There's no
+        // guarantee which will happen first, but as long as they happen within doubleOpenThreshold ms
+        // of each other, this logic should prevent the double open.
+        // Note: Another option is a platform-specific solution where we only use pressHold for platforms that need
+        // it (that don't already fire a contextmenu event for pressHold), but architectural preference is to avoid
+        // platform-specific solutions if possible.
+        if ((doubleOpenType === "touchstart" && event.type === "contextmenu")
+                || (doubleOpenType === "contextmenu" && event.type === "touchstart"))
+        {
+            doubleOpenType = null;
+            clearTimeout(doubleOpenTimer);
+            return;
+        }
+
+        // If a nested element or component already showed a JET context menu for this event, don't replace it with ours.
+        // Hack: must check defaultPrevented on the nested event too, because for touchstart events on iOS7 at least, when
+        // the outer component reaches this point, event is a different JQ wrapper event than the one on which the inner
+        // component previously called preventDefault, although they both wrap the same native originalEvent.  The new wrapper
+        // never had its isDefaultPrevented field set to the returnTrue method, so must check the nested originalEvent.
+        // This never seems to happen with right-click and Shift-F10 events.  Has nothing to do with the setTimeout: the events
+        // received by the rootNode.on("touchstart"...) code are different (firstWrapper==secondWrapper returns false).
+        // TODO: link to JQ bug once filed.
+        if (event.isDefaultPrevented() || (event.originalEvent && event.originalEvent.defaultPrevented))
+            return;
+
+        callback(event, eventType);
+
+        // if _NotifyContextMenuGesture() (or subclass override of it) actually opened the CM, and if that launch wasn't
+        // cancelled by a beforeOpen listener...
+        if (event.isDefaultPrevented())
+        {
+            // see double-open comments above
+            if (event.type === "touchstart" || event.type === "contextmenu")
+            {
+                doubleOpenType = event.type;
+                doubleOpenTimer = setTimeout(function(){
+                    doubleOpenType = null;
+                }, doubleOpenThreshold);
+            }
+        }
+    };
+
+    // At least some of the time, the pressHold gesture also fires a click event same as a short tap.  Prevent that here.
+    var _clickListener = function( event ) {
+        if (isPressHold) {
+            // For Mobile Safari capture phase at least, returning false doesn't work; must use pD() and sP() explicitly.
+            event.preventDefault();
+            event.stopPropagation();
+            isPressHold = false;
+        }
+    };
+
+    rootNode._clickListener = _clickListener;
+
+    // Use capture phase to make sure we cancel it before any regular bubble listeners hear it.
+    rootNode.addEventListener("click", _clickListener, true);
+
+    $(rootNode)
+        .on( "touchstart" + namespace + " " +
+             "mousedown" + namespace + " " +
+             "keydown" + namespace + " ", function( event ) {
+            // for mousedown-after-touchend Mobile Safari issue explained above where __contextMenuPressHoldJustEnded is set.
+            if (event.type === "mousedown" && contextMenuPressHoldJustEnded)
+                return;
+
+            // reset isPressHold flag for all events that can start a click.
+            isPressHold = false;
+
+            // start a pressHold timer on touchstart.  If not cancelled before 750ms by touchend/etc., will launch the CM.
+            // isolate the context menu long tap to a single touch point.
+            if (event.type === "touchstart" && event.originalEvent["touches"].length === 1) {
+                // note starting position so touchmove handler can tell if touch moved too much
+                var firstTouch = event.originalEvent["touches"][0];
+                touchPageX = firstTouch["pageX"];
+                touchPageY = firstTouch["pageY"];
+
+                touchInProgress = true;
+                contextMenuPressHoldTimer = setTimeout(launch.bind(undefined, event, "touch", true), pressHoldThreshold);
+                rootNode._contextMenuPressHoldTimer = contextMenuPressHoldTimer;
+            }
+
+            return true;
+        })
+
+        // if the touch moves too much, it's not a pressHold
+        .on( "touchmove" + namespace, function( event ) {
+            var firstTouch = event.originalEvent["touches"][0];
+            if (Math.abs(touchPageX - firstTouch["pageX"]) > maxAllowedMovement
+                || Math.abs(touchPageY - firstTouch["pageY"]) > maxAllowedMovement)
+            {
+                touchInProgress = false;
+                clearTimeout(contextMenuPressHoldTimer);
+            }
+            return true;
+        })
+
+        // if the touch ends before the 750ms is up, it's not a long enough pressHold to show the CM
+        .on( "touchend" + namespace + " " +
+             "touchcancel" + namespace, function( event ) {
+            touchInProgress = false;
+            clearTimeout(contextMenuPressHoldTimer);
+            return true;
+        })
+        .on( "keydown" + namespace + " " +
+             "contextmenu" + namespace, function( event ) {
+            if (event.type === "contextmenu" // right-click.  pressHold for Android but not iOS
+                    || (event.which == 121 && event.shiftKey)) // Shift-F10
+            {
+                var eventType = touchInProgress ? "touch" : event.type === "keydown" ? "keyboard" : "mouse";
+                launch(event, eventType, false);
+            }
+
+            return true;
+        });
+
+    // Does 2 things:
+    // 1) Prevents native context menu / callout from appearing in Mobile Safari.  E.g. for links, native CM has "Open in New Tab".
+    // 2) In Mobile Safari and Android Chrome, prevents pressHold from selecting the text and showing the selection handles and (in Safari) the Copy/Define callout.
+    // In UX discussion, we decided to prevent both of these things for all JET components for now.  If problems, can always, say, add protected method allowing
+    // subclass to opt out (e.g. if they need 1 and/or 2 to work).
+    // Per discussion with architects, do #2 only for touch devices, so that text selection isn't prevented on desktop.  Since #1
+    // is a no-op for non-touch, we can accomplish this by omitting the entire style class, which does 1 and 2, for non-touch.
+    // Per comments in scss file, the suppression of 1 and 2 has issues in old versions of Mobile Safari.
+    if (oj.DomUtils.isTouchSupported())
+        $(rootNode).addClass("oj-menu-context-menu-launcher");
+};
+/*jslint browser: true*/
+/*
 ** Copyright (c) 2015, Oracle and/or its affiliates. All rights reserved.
 */
 /**
@@ -6268,7 +6629,17 @@ oj.FocusUtils.isFocusable = function (element)
   return false;
 };
 /**
- * JET component custom element bridge
+ * JET component custom element bridge.
+ * 
+ * This bridge ensures that JET components with child JET custom elements 
+ * can access child properties before the child busy state resolves. 
+ * This bridge does not guarantee that all properties for the child 
+ * will be available to the application before its busy states resolves, 
+ * e.g data bound attribute values. 
+ * 
+ * Applications should still wait on the element or page level 
+ * busy context before accessing properties or methods.
+ * 
  * @class
  * @ignore
  */
@@ -6284,19 +6655,94 @@ oj.CollectionUtils.copyInto(oj.CustomElementBridge.proto,
   AddComponentMethods: function(proto) 
   {
     // Add subproperty getter/setter
-    proto['setProperty'] = function(prop, value) { 
-      var event = oj.__AttributeUtils.eventListenerPropertyToEventType(prop);
-      if (event) {
-        this[prop] = value;
-      }
-      else {
-        oj.CustomElementBridge._getPropertyAccessor(this, prop)(value); 
+    proto['setProperty'] = function(prop, value) 
+    {
+      var bridge = oj.BaseCustomElementBridge.getInstance(this); 
+      // Prevent overriding of properties set after intial DOM values since
+      // expression evaluation occurs asynchronously after.
+      // The _initializingExpressions flag is set in the CustomElementBinding
+      // when we do our initial pass through the DOM attributes for expressions.
+      if (!bridge._initializingExpressions ||
+          (bridge._initializingExpressions && !bridge._PROPS.hasOwnProperty(prop)))
+      {
+        if (!bridge._setEventProperty(this, prop, value) && 
+            !bridge._validateAndSetCopyProperty(this, prop, value, null)) 
+        {
+          // If not an event or copy property, check to see if it's a component specific property
+          var meta = oj.BaseCustomElementBridge.__GetPropertyMetadata(prop, oj.BaseCustomElementBridge.getProperties(bridge));
+          // This check is currently used for translation subproperties which don't all have metadata. We will eventually
+          // remove this check once our metadata is generated from our jsDoc, but need this for now in 4.0 so component owners
+          // don't need to all update their translations metadata.
+          var canSkipTypeCheck = bridge.CanSkipTypeCheck(prop.split('.'));
+          
+          // For non component specific properties, just set directly on the element instead.
+          if (!meta && !canSkipTypeCheck)
+            this[prop] = value;
+          else
+            oj.CustomElementBridge._getPropertyAccessor(this, prop)(value); 
+        }
       }
     };
-    proto['getProperty'] = function(prop) { 
+    proto['getProperty'] = function(prop) 
+    { 
+      var bridge = oj.BaseCustomElementBridge.getInstance(this);
+      var meta = oj.BaseCustomElementBridge.__GetPropertyMetadata(prop, oj.BaseCustomElementBridge.getProperties(bridge));
+      var canSkipTypeCheck = bridge.CanSkipTypeCheck(prop.split('.'));
       var event = oj.__AttributeUtils.eventListenerPropertyToEventType(prop);
-      return event ? this[prop] : oj.CustomElementBridge._getPropertyAccessor(this, prop)(); 
+
+      // For event listeners and non component specific properties, return the property from the element.
+      // Otherwise, return the widget property and let the widget handle dot notation for subproperties.
+      if (event || (!meta && !canSkipTypeCheck))
+        return this[prop];
+      else
+        return bridge._getProperty(this, prop);
     };
+  },
+
+  CreateComponent: function(element)
+  {
+    var innerDomFun = this._INNER_DOM_FUNCTION;
+    this._WIDGET_ELEM = oj.CustomElementBridge._getWidgetElement(element, innerDomFun ? innerDomFun(element) : this._EXTENSION._INNER_ELEM);
+
+    // Transfer global attributes and copy tagged properties to child element if one exists
+    if (this._WIDGET_ELEM !== element) 
+    {
+      var transferAttrs = this._EXTENSION._GLOBAL_TRANSFER_ATTRS || [];
+      for (var i = 0; i < transferAttrs.length; i++)
+      {
+        var attr = transferAttrs[i];
+        if (element.hasAttribute(attr))
+        {
+          this._WIDGET_ELEM.setAttribute(attr, element.getAttribute(attr));
+          // Remove attribute from custom element after transfering value to inner element
+          // Set a flag so we know that we're removing the attribute, not app so
+          // that on attribute changed we don't remove it again
+          this._removingTransfer = true;
+          element.removeAttribute(attr);
+        }
+      }
+
+      this._copyProperties();
+    }
+
+    // Initialize jQuery object with options and pass element as wrapper if needed
+    var locator = $(this._WIDGET_ELEM);
+    var widgetConstructor = $(this._WIDGET_ELEM)[this._WIDGET_NAME].bind(locator);
+    widgetConstructor(this._PROPS);
+    this._WIDGET = widgetConstructor;
+    this._WIDGET_INSTANCE = widgetConstructor('instance');
+
+    if (this._WRITEBACK_PROPS)
+      this._WIDGET_INSTANCE.__saveWritebackOptions(this._WRITEBACK_PROPS);
+
+
+    // After parsing the DOM attribute values and initializing properties, remove the disabled
+    // property if it exists due to 
+    if (element.hasAttribute('disabled') && !this._disabledProcessed)
+      oj.CustomElementBridge._removeDisabledAttribute(element);
+
+    // Resolve the component busy state 
+    this.resolveDelayedReadyPromise();
   },
 
   DefineMethodCallback: function (proto, method, methodMeta) 
@@ -6304,40 +6750,77 @@ oj.CollectionUtils.copyInto(oj.CustomElementBridge.proto,
     proto[method] = function()
     {
       var bridge = oj.BaseCustomElementBridge.getInstance(this);
-      return bridge._WIDGET.apply(this, [method].concat([].slice.call(arguments)));
+      // Pass in null as thisArg to apply since the widget constructor is prebound to the jQuery element
+      return bridge._WIDGET.apply(null, [method].concat([].slice.call(arguments)));
     };
   },
   
   DefinePropertyCallback: function (proto, property, propertyMeta) 
   {
     var listener;
+    var ext = propertyMeta["extension"];
     Object.defineProperty(proto, property, 
     {
       'enumerable': true,
       'get': function() 
       { 
-        return propertyMeta._eventListener ? listener : oj.CustomElementBridge._getPropertyAccessor(this, property)();
+        if (propertyMeta._eventListener)
+        {
+          return listener;
+        }
+        else if (ext && ext._COPY_TO_INNER_ELEM)
+        {
+          var bridge = oj.BaseCustomElementBridge.getInstance(this);
+          return bridge._getCopyProperty(this, property, propertyMeta);
+        }
+        else
+        {
+          return oj.CustomElementBridge._getPropertyAccessor(this, property)();
+        }
       },
       'set': function(value) 
       {       
-        if (propertyMeta._eventListener) {
+        if (propertyMeta._eventListener) 
+        {
           var event = oj.__AttributeUtils.eventListenerPropertyToEventType(property);
           // Remove old event listener
           if (listener) {
             this.removeEventListener(event, listener);
           }
           listener = undefined;
-          if (value && value instanceof Function) {
-            // Add new event listener
-            this.addEventListener(event, value);
-            listener = value;
+          if (value)
+          {
+            if (value instanceof Function) 
+            {
+              // Add new event listener
+              this.addEventListener(event, value);
+              listener = value;
+            }
+            else
+            {
+              oj.BaseCustomElementBridge.__ThrowTypeError(this, property, value, 'function');
+            }
           }
         }
-        else {
+        else if (ext && ext._COPY_TO_INNER_ELEM)
+        {
+          var bridge = oj.BaseCustomElementBridge.getInstance(this);
+          bridge._validateAndSetCopyProperty(this, property, value, propertyMeta);
+        }
+        else 
+        {
           oj.CustomElementBridge._getPropertyAccessor(this, property)(value);
         }
       }
     });
+  },
+
+  GetAttributes: function(metadata)
+  {
+    var attrs = oj.BaseCustomElementBridge.getAttributes(metadata['properties']);
+    if (metadata['extension']._GLOBAL_TRANSFER_ATTRS)
+      return attrs.concat(metadata['extension']._GLOBAL_TRANSFER_ATTRS);
+    return attrs;
   },
 
   GetMetadata: function(descriptor)
@@ -6354,77 +6837,19 @@ oj.CollectionUtils.copyInto(oj.CustomElementBridge.proto,
     return property;
   },
 
-  HandleAttached: function(element)
-  {
-    if (!oj.Components.getWidgetConstructor(element))
-    {      
-      var props = this.METADATA['properties'] || {};
-      var parseFun = this.PARSE_FUNCTION;
-      oj.BaseCustomElementBridge.__InitProperties(element, this._PROPS, props, parseFun);
-      this.GetDelayedPropertiesPromise().resolvePromise();
-    }
-    else
-    {
-      oj.Components.subtreeAttached(element);
-    }
-  },
+  InitializeElement: function(element)
+  {  
+    // Invoke callback on the superclass
+    oj.BaseCustomElementBridge.proto.InitializeElement.call(this, element);
 
-  HandleAttributeChanged: function(element, attr, oldValue, newValue) 
-  {
-    var transferAttrs = this._EXTENSION._TRANSFER_ATTRS;
-    var transfer = transferAttrs && transferAttrs.indexOf(attr) !== -1;
-    if (transfer && this._TRANSFER_ELEM)
-    {
-      this._TRANSFER_ELEM.setAttribute(attr, newValue);
-    }
-  },
-
-  HandleBindingsApplied: function(element, bindingContext)
-  {
-    var innerDomFun = this._INNER_DOM_FUNCTION;
-    var widgetElem = oj.CustomElementBridge._getWidgetElement(element, innerDomFun ? innerDomFun(element) : this._EXTENSION._INNER_ELEM);
-
-    // Transfer attributes to child element if one exists
-    if (widgetElem !== element) 
-    {
-      // Stash a reference for future attribute change events
-      this._TRANSFER_ELEM = widgetElem;
-
-      // Transfer attributes that are supported on the inner element that are considered top level properties, 
-      // but don't need any special handling by the component itself, e.g. rows/cols for ojTextArea.  
-      // These attributes will be copied when set on the <oj-text-area> element to the inner <textarea> element.
-      var transferAttrs = this._EXTENSION._TRANSFER_ATTRS;
-      if (transferAttrs) 
-      {
-        for (var i = 0; i < transferAttrs.length; i++)
-        {
-          var attr = transferAttrs[i];
-          if (element.hasAttribute(attr))
-            this._TRANSFER_ELEM.setAttribute(attr, element.getAttribute(attr));
-        }
-      }
-    }
-
-    // Initialize jQuery object with options and pass element as wrapper if needed
-    var locator = $(widgetElem);
-    var widgetConstructor = $(widgetElem)[this._WIDGET_NAME].bind(locator);
-    widgetConstructor(this._PROPS);
-    this._WIDGET = widgetConstructor;
-
-    // Resolve the component busy state 
-    this.GetDelayedReadyPromise().resolvePromise();
-  },
-
-  HandleCreated: function(element) 
-  {
     var descriptor = oj.BaseCustomElementBridge.__GetDescriptor(element.tagName);
-
-    this.METADATA = this.GetMetadata(descriptor);
-    this._EXTENSION = this.METADATA['extension'] || {};
     this._INNER_DOM_FUNCTION = descriptor['innerDomFunction'];
     this.PARSE_FUNCTION = descriptor['parseFunction'];
+
+    this._EXTENSION = this.METADATA['extension'] || {};
     this._WIDGET_NAME = this._EXTENSION._WIDGET_NAME;
     this._PROPS = (this._EXTENSION._INNER_ELEM || this._INNER_DOM_FUNCTION) ? {'_wrapper': element} : {};
+
     // Create component to element property alias mapping for easy optionChange lookup
     var aliasMap = this._EXTENSION._ALIASED_PROPS;
     if (aliasMap)
@@ -6437,12 +6862,245 @@ oj.CollectionUtils.copyInto(oj.CustomElementBridge.proto,
       });
     }
     oj.CustomElementBridge._setupPropertyAccumulator(element, this._PROPS);
+
+    this._processProperties();
+    var parseFun = this.PARSE_FUNCTION; 
+    oj.BaseCustomElementBridge.__InitProperties(element, this._PROPS, parseFun);  
+    this.GetDelayedPropertiesPromise().resolvePromise();
+  },
+
+  HandleAttributeChanged: function(element, attr, oldValue, newValue) 
+  {
+    var transferAttrs = this._EXTENSION._GLOBAL_TRANSFER_ATTRS;
+    var transfer = transferAttrs && transferAttrs.indexOf(attr) !== -1;
+    if (!this._removingTransfer && transfer && this._WIDGET_ELEM)
+    {
+      if (newValue == null || newValue === false)
+        this._WIDGET_ELEM.removeAttribute(attr);
+      else
+        this._WIDGET_ELEM.setAttribute(attr, newValue);
+      // Remove attribute from custom element after transfering value to inner element
+      // Set a flag so we know that we're removing the attribute, not app so
+      // that on attribute changed we don't remove it again
+      this._removingTransfer = true;
+      element.removeAttribute(attr);
+    }
+    else if (this._removingTransfer && transfer)
+    {
+      this._removingTransfer = false;
+    }
   },
 
   HandleDetached: function(element) 
   {
-    oj.Components.subtreeDetached(element);
-  }
+    // Invoke callback on the superclass
+    oj.BaseCustomElementBridge.proto.HandleDetached.call(this, element);
+
+    // Only call __handleDisconnected if the component hasn't previously
+    // been destroyed which we can check by seeing if the widget constructor is null
+    if (oj.Components.__GetWidgetConstructor(this._WIDGET_ELEM) && this._WIDGET_INSTANCE)
+      this._WIDGET_INSTANCE.__handleDisconnected();
+  },
+
+  HandleReattached: function(element) {
+    // Invoke callback on the superclass
+    oj.BaseCustomElementBridge.proto.HandleReattached.call(this, element);
+
+    if (this._WIDGET_INSTANCE)
+      this._WIDGET_INSTANCE.__handleConnected();
+  },
+  
+  BatchedPropertySet: function(elem, props)
+  {
+    var keys = Object.keys(props);
+    var processedMap  = {};
+    
+    for (var i=0; i<keys.length; i++)
+    {
+      var property = keys[i];
+      var value = props[property];
+      
+      // exclude event proprties and transfer attributes from batch updates
+      if (!this._setEventProperty(elem, property, value) && 
+          !this._validateAndSetCopyProperty(elem, property, value, null))
+      {
+        value = this.ValidatePropertySet(elem, property, value);
+        
+        property = this.GetAliasForProperty(property);
+        processedMap[property] = value;
+      }
+    }
+    // Skip batched property sets if widget constructor isn't available meaning
+    // the widget wasn't instantiated due to an error on creation or destroyed.
+    var widgetConstructor = oj.Components.__GetWidgetConstructor(this._WIDGET_ELEM);
+    if (widgetConstructor)
+      widgetConstructor('option', processedMap);
+    else
+      oj.Logger.warn("Skipping batched property set. " + elem.tagName + " with id " + elem.id + " has not been initialized.");
+  },
+
+  CanSkipTypeCheck: function(propAr)
+  {
+    // TODO: Remove method post 4.0.0 after metadata is generated from jsDoc.
+    // Temporary fix for JET component translation subproperties that are not specified in metadata.
+    return propAr.length > 1 && propAr[0] === 'translations';
+  },
+
+  _attributeChangedCallback: function(attr, oldValue, newValue) 
+  {
+    var bridge = oj.BaseCustomElementBridge.getInstance(this);
+
+    // Due to  where IE11 disables child inputs for a parent with the disabled attribute,
+    // we will remove the disabled attribute after we save the value and will ignore all disabled 
+    // attribute sets after component initialization when the application can just as easily use the property
+    // setter instead. Expressions will be handled in the CustomElementBinding.
+    if (attr === "disabled" && bridge._disabledProcessed)
+    {
+      // Always remove the disabled attribute even after component initialization and log warning.
+      // A null value indicates that the value was removed already.
+      if (newValue != null)
+      {
+        oj.Logger.warn("Ignoring 'disabled' attribute change after component initialization. Use element property setter instead.");
+        oj.CustomElementBridge._removeDisabledAttribute(this);
+      }
+      return;
+    }
+
+    // Invoke callback on the superclass
+    oj.BaseCustomElementBridge.proto._attributeChangedCallback.call(this, attr, oldValue, newValue);
+  },
+
+  _copyProperties: function()
+  {
+    // Copies properties from the bridge _PROPS before the widget is instantiated
+    // removing copied props from the object
+    if (this._COPY_ATTRS)
+    {
+      for (var i = 0; i < this._COPY_ATTRS.length; i++) {
+        var attr = this._COPY_ATTRS[i];
+        var propName = oj.__AttributeUtils.attributeToPropertyName(attr);
+        if (this._PROPS.hasOwnProperty(propName))
+        {
+          this._WIDGET_ELEM.setAttribute(attr, this._PROPS[propName]);
+          // Delete the attribute we just copied from the options that we 
+          // instantiate the widget with
+          delete this._PROPS[propName];
+        }
+      }
+    }
+  },
+
+  _getCopyProperty: function(elem, prop, propMeta)
+  {
+    var attrName = oj.__AttributeUtils.propertyNameToAttribute(prop);
+    var ext = propMeta["extension"];
+    if (ext._ATTRIBUTE_ONLY)
+    {
+      if (this._WIDGET_ELEM.hasAttribute(attrName))
+      {
+        var value = this._WIDGET_ELEM.getAttribute(attrName);
+        var coercedValue = oj.__AttributeUtils.coerceValue(elem, attrName, value, propMeta["type"]);
+        return coercedValue;
+      }
+      return null;
+    } else {
+      return this._WIDGET_ELEM[prop];
+    }
+  },
+
+  _getProperty: function(elem, prop)
+  {
+    var propMeta = oj.BaseCustomElementBridge.__GetPropertyMetadata(prop, oj.BaseCustomElementBridge.getProperties(this));
+    var ext;
+    if (propMeta)
+      ext = propMeta["extension"];
+
+    if (ext && ext._COPY_TO_INNER_ELEM)
+      return this._getCopyProperty(elem, prop, propMeta);
+    else
+      return oj.CustomElementBridge._getPropertyAccessor(elem, prop)();
+  },
+
+  _processProperties: function()
+  {
+    var props = oj.BaseCustomElementBridge.getProperties(this);
+    if (props)
+    {
+      var propKeys = Object.keys(props);
+      for (var i = 0; i < propKeys.length; i++)
+      {
+        var propName = propKeys[i];
+        var propMeta = props[propName];
+        // Store writeback properties on the bridge and set on widget when we instantiate it later
+        if (propMeta['writeback'])
+        {
+          if (!this._WRITEBACK_PROPS)
+            this._WRITEBACK_PROPS = {};
+          this._WRITEBACK_PROPS[propName] = true;
+        }
+        // Store properties to copy to inner element for easy lookup
+        var ext = propMeta['extension'];
+        if (ext && ext._COPY_TO_INNER_ELEM)
+        {
+          if (!this._COPY_ATTRS)
+            this._COPY_ATTRS = [];
+          this._COPY_ATTRS.push(propName);
+        }
+      }
+    }
+  },
+
+  _validateAndSetCopyProperty: function(elem, prop, value, propMeta)
+  {
+    var isTransfer = false;
+    // propMeta is could be null so we should retrieve it if not passed in
+    var meta = propMeta;
+    
+    if (!meta)
+      meta = oj.BaseCustomElementBridge.__GetPropertyMetadata(prop, oj.BaseCustomElementBridge.getProperties(this));
+    
+    if (!meta)
+      return isTransfer;
+
+    // We need to validate the value so that we don't copy an invalid value. 
+    value = this.ValidatePropertySet(elem, prop, value);
+    // If widget hasn't been instantiated skip setting until ComponentCreate
+    var ext = meta["extension"];
+    if (ext && ext._COPY_TO_INNER_ELEM) 
+    {
+      isTransfer = true;
+      var attrName = oj.__AttributeUtils.propertyNameToAttribute(prop);
+      if (this._WIDGET_ELEM)
+      {
+        if (value == null || value === false)
+          this._WIDGET_ELEM.removeAttribute(attrName);
+        else if (value === true)
+          this._WIDGET_ELEM.setAttribute(attrName, '');
+        else
+          this._WIDGET_ELEM.setAttribute(attrName, value);
+      }
+      else
+      {
+        // Save the value until inner widget is created and we can copy them over
+        this._PROPS[attrName] = value;
+      }
+    }
+    return isTransfer;
+  },
+
+  _setEventProperty: function(elem, prop, value)
+  {
+    var isEvent = false;
+    var event = oj.__AttributeUtils.eventListenerPropertyToEventType(prop);
+    if (event) 
+    {
+      elem[prop] = value;
+      isEvent = true;
+    }
+    return isEvent;
+  },
+
+
 
 });
 
@@ -6477,6 +7135,21 @@ oj.CustomElementBridge.isKnownEvent = function(element, type)
 };
 
 /**
+ * Checks whether the specified property was declared in the metadata for this custom element
+ * @param {Element} element the custom element
+ * @param {string} prop the property name (e.g. "selection")
+ * @return {boolean} true if the property was declared in the metadata, false otherwise
+ * @ignore
+ */
+oj.CustomElementBridge.isKnownProperty = function(element, prop) 
+{
+  var bridge = oj.BaseCustomElementBridge.getInstance(element);
+  if (bridge)
+    return (bridge.METADATA['properties'] && bridge.METADATA['properties'][prop]) != null;
+  return false;
+};
+
+/**
  * Returns the custom element property for a given aliased component property which can be used
  * for converting an internal optionChange event, e.g. returning readonly for oj-switch's readOnly
  * property so we can fire a readonly-changed event instead of readOnly-changed.
@@ -6494,6 +7167,45 @@ oj.CustomElementBridge.getPropertyForAlias = function(element, property)
   if (alias && alias[property])
     return alias[property];
   return property;
+};
+
+/**
+ * Returns the slot map of slot name to slotted child elements for a given custom element.
+ * If the given element has no children, this method returns an empty object.
+ * Note that the default slot name is mapped to the empty string.
+ * @param  {Element} element The custom element
+ * @return {Object} A map of the child elements for a given custom element.
+ * @ignore
+ */
+oj.CustomElementBridge.getSlotMap = function(element) 
+{
+  var slotMap = {};
+  var childNodeList = element.childNodes;
+  for (var i = 0; i < childNodeList.length; i++)
+  {
+    var child = childNodeList[i];
+    // Only assign Text and Element nodes to a slot
+    if (oj.BaseCustomElementBridge.isSlotAssignable(child))
+    {
+      // Ignore text nodes that only contain whitespace
+      if (child.nodeType === 3 && !child.nodeValue.trim())
+      {
+        continue;
+      }
+
+      // Text nodes and elements with no slot attribute map to the default slot
+      var slot = child.getAttribute && child.getAttribute('slot');
+      if (!slot)
+        slot = '';
+
+      if (!slotMap[slot])
+      {
+        slotMap[slot] = [];
+      }
+      slotMap[slot].push(child);
+    }
+  }
+  return slotMap;
 };
 
 /**
@@ -6521,9 +7233,12 @@ oj.CustomElementBridge.getPropertyForAlias = function(element, property)
  */
 oj.CustomElementBridge.register = function(tagName, descriptor)
 {
-  if (oj.BaseCustomElementBridge.__Register(tagName, descriptor, oj.CustomElementBridge.proto))
+  // Use the simple definitional element prototype if no real widget is associated with this custom element
+  var ext = descriptor['metadata']['extension'];
+  var proto = ext && ext._WIDGET_NAME ? oj.CustomElementBridge.proto : oj.DefinitionalElementBridge.proto;
+  if (oj.BaseCustomElementBridge.__Register(tagName, descriptor, proto))
   {
-    document.registerElement(tagName.toLowerCase(), {'prototype': oj.CustomElementBridge.proto.getPrototype(descriptor)});
+    customElements.define(tagName.toLowerCase(), proto.getClass(descriptor));
   }
 };
 
@@ -6561,22 +7276,19 @@ oj.CustomElementBridge._getPropertyAccessor = function(element, property)
   var optionAccessor = function(value)
   {
     var bridge = oj.BaseCustomElementBridge.getInstance(element);
-    var meta = oj.BaseCustomElementBridge.__GetPropertyMetadata(property, oj.BaseCustomElementBridge.getProperties(bridge));
 
-    if (value != undefined)
+    if (arguments.length === 1)
     {
-      // Log an error when trying to set property for an undefined top level property
-      if (!meta && property.indexOf('.') === -1) 
-      {
-        oj.Logger.error("Ignoring property set for undefined property " + property + " on " + element.tagName);
-        return undefined;
-      }
-      oj.BaseCustomElementBridge.__CheckEnumValues(element, property, value, meta);
+      value = bridge.ValidatePropertySet(element, property, value);
+      property = bridge.GetAliasForProperty(property);
+      bridge._WIDGET('option', property, value);
     }
-
-    property = bridge.GetAliasForProperty(property);
-    return bridge._WIDGET.apply(this, ['option', property].concat([].slice.call(arguments)));
-  }
+    else
+    {
+      property = bridge.GetAliasForProperty(property);
+      return bridge._WIDGET('option', property);
+    }
+  };
   return optionAccessor.bind(element);
 };
 
@@ -6609,13 +7321,33 @@ oj.CustomElementBridge._getWidgetElement = function(element, innerTagName)
       // If we create the inner child element, check to see if there are any children
       // to move like for <oj-button> which can have a child elements that should be moved to
       // the newly created inner <button> element.
-      for (var i = 0; i < children.length; i++)
+      while (children.length)
       { 
-        widgetElem.appendChild(children[0]);
+        var child = children.shift();
+        // do not move slot children to inner child element
+        // component should decide whether they should be moved to its inner child element
+        // for example, it does not make sense for <oj-list-view> to move contextMenu slot to its inner <ul> element.
+        if (!child.hasAttribute || !child.hasAttribute("slot"))
+          widgetElem.appendChild(child);
       }
     }
+    // add data-oj-internal attribute for automation tests
+    widgetElem.setAttribute('data-oj-internal', '');
   }
   return widgetElem;
+};
+
+/**
+ * Removes the disabled attribute from an element and marks the bridge as having
+ * processed the value to prevent evaluation of additional attribute sets.
+ * @param  {Element} element The custom element
+ * @private
+ */
+oj.CustomElementBridge._removeDisabledAttribute = function(element)
+{
+  var bridge = oj.BaseCustomElementBridge.getInstance(element);
+  bridge._disabledProcessed = true;
+  element.removeAttribute('disabled');
 };
 
 /**
@@ -6643,7 +7375,10 @@ oj.CustomElementBridge._setupPropertyAccumulator = function(element, widgetOptio
       }
     }
     else
+    {
+      bridge.resolveDelayedReadyPromise();
       throw "Cannot access methods before " + element.tagName + " is attached to the DOM.";
+    }
   }
 };
 
@@ -6743,16 +7478,212 @@ oj.Test.compareStackingContexts = function (el1, el2)
 {
   return oj.ZOrderUtils.compareStackingContexts(el1, el2);
 };
+/**
+ * A bridge for a definitional element that is not backed by a jQuery widget that maintains
+ * element property values including data binding, set/getProperty for complex properties
+ * set using dot notation, and property changed event firing.
+ * 
+ * This bridge ensures that JET components with child JET custom elements 
+ * can access child properties before the child busy state resolves. 
+ * This bridge does not guarantee that all properties for the child 
+ * will be available to the application before its busy states resolves, 
+ * e.g data bound attribute values. 
+ * 
+ * Applications should still wait on the element or page level 
+ * busy context before accessing properties or methods.
+ * 
+ * @class
+ * @ignore
+ */
+oj.DefinitionalElementBridge = {};
+
+/**
+ * Prototype for the JET component definitional bridge instance
+ */
+oj.DefinitionalElementBridge.proto = Object.create(oj.BaseCustomElementBridge.proto);
+
+oj.CollectionUtils.copyInto(oj.DefinitionalElementBridge.proto,
+{
+  AddComponentMethods: function(proto) 
+  {
+    // Add refresh and subproperty getter/setter methods for all definitional elements
+    proto['refresh'] = function() 
+    {
+      var bridge = oj.BaseCustomElementBridge.getInstance(this);
+      if (bridge._EXTENSION._RENDER_FUNC)
+        bridge._EXTENSION._RENDER_FUNC(this);
+    };
+    proto['setProperty'] = function(prop, value) 
+    { 
+      // Prevent overriding of properties set after intial DOM values since
+      // expression evaluation occurs asynchronously after
+      var bridge = oj.BaseCustomElementBridge.getInstance(this);
+      if (!bridge._initializingExpressions ||
+          (bridge._initializingExpressions && !this.hasOwnProperty(prop)))
+      {
+        var event = oj.__AttributeUtils.eventListenerPropertyToEventType(prop);
+        var meta = oj.BaseCustomElementBridge.__GetPropertyMetadata(prop, oj.BaseCustomElementBridge.getProperties(bridge));
+
+        // If event listener or non component specific property, set directly on the element
+        if (event || !meta)
+        {
+          this[prop] = value;
+        }
+        else
+        {
+          var previousValue = this['getProperty'](prop);
+          // Property change events for top level properties will be triggered by ValidateAndSetProperty so avoid firing twice
+          bridge.ValidateAndSetProperty(bridge.GetAliasForProperty.bind(bridge), this, prop, value, this);
+
+          if (bridge._READY_TO_FIRE)
+          {
+            // Call the renderer function so the definitional element can refresh its UI
+            if (bridge._EXTENSION._RENDER_FUNC)
+              bridge._EXTENSION._RENDER_FUNC(this);
+
+            if (prop.indexOf('.') !== -1)
+              oj.DefinitionalElementBridge._firePropertyChangeEvent(this, prop, value, previousValue);
+          }
+        }
+      }
+    };
+    proto['getProperty'] = function(prop) 
+    { 
+      var event = oj.__AttributeUtils.eventListenerPropertyToEventType(prop);
+      var bridge = oj.BaseCustomElementBridge.getInstance(this);
+      var meta = oj.BaseCustomElementBridge.__GetPropertyMetadata(prop, oj.BaseCustomElementBridge.getProperties(bridge));
+
+      // For event listener and non component properties, retrieve the value directly stored on the element.
+      // For top level properties, this will delegate to our 'set' methods so we can handle default values.
+      if (event || !meta || prop.indexOf('.') === -1)
+        return this[prop];
+      else
+        return oj.BaseCustomElementBridge.__GetProperty(this, prop);
+    };
+  },
+
+  CreateComponent: function(element)
+  {
+    // Call the renderer function so the definitional element can initialize its UI
+    if (this._EXTENSION._RENDER_FUNC)
+      this._EXTENSION._RENDER_FUNC(element);
+
+    var bridge = oj.BaseCustomElementBridge.getInstance(element);
+    // Set flag when we can fire property change events
+    bridge._READY_TO_FIRE = true;
+
+    // Resolve the component busy state 
+    bridge.resolveDelayedReadyPromise();
+
+  },
+  
+  DefinePropertyCallback: function (proto, property, propertyMeta) 
+  {
+    Object.defineProperty(proto, property, 
+    {
+      'enumerable': true,
+      'get': function() 
+      { 
+        var bridge = oj.BaseCustomElementBridge.getInstance(this);
+        return bridge._PROPS[property];
+      },
+      'set': function(value) 
+      {
+        var bridge = oj.BaseCustomElementBridge.getInstance(this);
+        var oldValue = bridge._PROPS[property];
+        if (oldValue !== value) 
+        {
+          value = bridge.ValidatePropertySet(this, property, value)
+          bridge._PROPS[property] = value;
+          if (propertyMeta._eventListener)
+          {
+            var event = oj.__AttributeUtils.eventListenerPropertyToEventType(property);
+            // Remove old event listener
+            
+            if (oldValue)
+              this.removeEventListener(event, oldValue);
+            // Add new event listener
+            if (value)
+            {
+              if (value instanceof Function)
+                this.addEventListener(event, value);
+              else
+                oj.BaseCustomElementBridge.__ThrowTypeError(this, property, value, 'function');
+            }
+          } 
+          else 
+          {
+            // Call the renderer function so the definitional element can refresh its UI
+            if (bridge._EXTENSION._RENDER_FUNC)
+              bridge._EXTENSION._RENDER_FUNC(this);
+          }
+
+          if (!propertyMeta._derived && bridge._READY_TO_FIRE)
+          {
+            oj.DefinitionalElementBridge._firePropertyChangeEvent(this, property, value, oldValue);
+          }
+        }
+      }
+    });
+  },
+
+  GetMetadata: function(descriptor)
+  {
+    return descriptor['metadata'];
+  },
+
+  InitializeElement: function(element)
+  {
+    // Invoke callback on the superclass
+    oj.BaseCustomElementBridge.proto.InitializeElement.call(this, element);
+    
+    this._EXTENSION = this.METADATA['extension'] || {};
+    this._PROPS = {};
+
+    oj.BaseCustomElementBridge.__InitProperties(element, this._PROPS, null);  
+    this.GetDelayedPropertiesPromise().resolvePromise();
+  }
+
+});
+
+/*****************************/
+/* NON PUBLIC STATIC METHODS */
+/*****************************/
+
+/**
+ * @private
+ */
+oj.DefinitionalElementBridge._firePropertyChangeEvent = function(element, name, value, previousValue)
+{
+  var detail = {}
+  var subpropPath = name.split('.');
+  var eventName = name;
+  var eventValue = value;
+  var eventPrevValue = previousValue;
+  if (subpropPath.length > 1)
+  {
+    var subproperty = {};
+    subproperty['path'] = name;
+    subproperty['value'] = value;
+    subproperty['previousValue'] = previousValue;
+    detail['subproperty'] = subproperty;
+    eventName = subpropPath[0];
+    // We don't make a copy of the top level property so the old and new values will be the same;
+    eventValue = element[eventName];
+    eventPrevValue = eventValue;
+  }
+  detail['value'] = eventValue;
+  detail['previousValue'] = eventPrevValue;
+  element.dispatchEvent(new CustomEvent(eventName + "Changed", {'detail': detail}));
+};
+
+
+
 (function() {
 var baseComponentMeta = {
   "properties": {
     "translations": {
       "type": "Object"
-    }
-  },
-  "events": {
-    "extension": {
-      _DEPRECATED_EVENTS: ['create', 'destroy']
     }
   },
   "methods": {

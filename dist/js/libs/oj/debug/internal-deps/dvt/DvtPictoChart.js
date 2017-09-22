@@ -481,7 +481,7 @@ DvtPictoChartAutomation.prototype.getItem = function(index) {
   if (item) {
     var data = {};
     data['color'] = item.getDatatipColor();
-    data['tooltip'] = item.getShortDesc();
+    data['tooltip'] = item.getDatatip();
     data['id'] = item.getId();
     data['name'] = item.getName();
     data['count'] = item.getCount();

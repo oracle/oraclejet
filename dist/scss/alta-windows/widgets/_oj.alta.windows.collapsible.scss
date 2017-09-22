@@ -47,11 +47,11 @@
     }
 
     .oj-collapsible-close-icon {
-      @extend .oj-fwk-icon-caret03-s;
+      @extend .oj-fwk-icon-caret03-end;
     }
 
     .oj-collapsible-open-icon {
-      @extend .oj-fwk-icon-caret03-n;
+      @extend .oj-fwk-icon-caret03-s;
     }
   }
 }

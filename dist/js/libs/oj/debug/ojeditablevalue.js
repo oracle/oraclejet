@@ -3,7 +3,8 @@
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
-define(['ojs/ojcore', 'jquery', 'hammerjs', 'ojs/ojjquery-hammer', 'ojs/ojcomponentcore', 'ojs/ojvalidation-base', 'ojs/ojpopup'], 
+define(['ojs/ojcore', 'jquery', 'hammerjs', 'ojs/ojjquery-hammer', 'promise', 'ojs/ojcomponentcore', 
+'ojs/ojvalidation-base', 'ojs/ojpopup', 'ojs/ojlabel', 'ojs/ojanimation'], 
   /*        
     * @param {Object} oj         
     * @param {jQuery} $        
@@ -100,6 +101,25 @@ oj.EditableValueUtils.validatorsOptionOptions = {doNotClearMessages: true,
 * @type {string}
 */
 var _REQUIRED_ICON_ID = "_requiredIcon";
+
+/**
+* String used in the label element's id for custom &lt;oj-label>
+* @const
+* @ignore
+* @type {string}
+*/
+oj.EditableValueUtils.CUSTOM_LABEL_ELEMENT_ID = "|label";
+
+/**
+* Enum for validate() return values
+* @const
+* @ignore
+*/
+oj.EditableValueUtils.VALIDATE_VALUES = {
+  VALID : "valid",
+  INVALID : "invalid"
+};
+
 /**
  * This method is called during _InitOptions() to initialize a component option value from DOM. This 
  * uusally is the case when the option value is undefined, 
@@ -196,6 +216,7 @@ oj.EditableValueUtils.getAttributeValue = function (element, attribute)
 };
 
 /**
+ * NOTE: This is unnecessary to call for custom elements.
  * Called from component._InitOptions() with an array of options
  * that the component might need to initialize from DOM (e.g.,
  * disabled, required, title, etc). This function loops through each of these and if the 
@@ -435,6 +456,86 @@ oj.EditableValueUtils.setPickerAttributes = function (picker, pickerAttributes)
 };
 
 /**
+ * Use this to get the oj-label's label element's id when there is a for/id relationship
+ * between the oj-label and the form component. Some components need this information to
+ * use as their aria-labelledby on their dom element(s) that takes focus.
+ * @param {jQuery} widget The custom form component jQuery object. 
+ * We use this to find the oj-label element
+ * by looking at oj-label's for attribute matching the id.
+ * @param {string} defaultLabelId. the value we want to add to oj-label's label-id attribute if 
+ * we can't find an existing id to use as aria-labelledby on the form component. 
+ * @return {string|null} return the string to use as the aria-labelledby on the form component's
+ * focusable element. If oj-label doesn't exist, this will return null.
+ * @ignore
+ */
+oj.EditableValueUtils.getOjLabelId = function (widget, defaultLabelId)
+{
+
+  var formCompId;
+  var $labelElement;
+  var ojLabelCustom;
+  var id;
+  var labelElement;
+  var labelElementId;
+  var labelId;
+
+  formCompId = widget[0].id;
+  // oj-label and the form component as siblings is the most common case, so check for that first.
+  $labelElement = widget.siblings("[for='" + formCompId + "']");
+  
+  if ($labelElement.length === 0)
+  {
+    ojLabelCustom =  document.querySelector("oj-label[for='" + formCompId + "']");
+  }
+  else
+    ojLabelCustom = $labelElement[0];
+  
+  if (ojLabelCustom)
+  {
+    labelId = ojLabelCustom.getAttribute("label-id");
+    if (labelId)
+    {
+      // if label-id is set, oj-label writes it directly on the label element's id
+      return labelId;      
+    }
+    else
+    {
+      id = ojLabelCustom.id;
+      if (id)
+      {
+        // the contract is for the label element's id, it's the oj-label id + this suffix 
+        // (if oj-label doesn't have the label-id attribute set)
+        return id + oj.EditableValueUtils.CUSTOM_LABEL_ELEMENT_ID;
+      }
+      else 
+      {
+        // oj-label has no label-id or id, so get oj-label's label element, get its id and use that.
+        labelElement = ojLabelCustom.querySelector("label");
+        if (labelElement)
+          labelElementId = labelElement.id;
+        if (labelElementId)
+          return labelElementId;
+        else
+        {
+          // if we get here, we did find oj-label, but it did not have label-id nor id,
+          // and we also didn't find its label element's id. 
+          // What we need to do now is write label-id onto oj-label, given the defaultLabelId parameter.
+          if (defaultLabelId)
+          {
+            ojLabelCustom.setAttribute("label-id", defaultLabelId);
+            return defaultLabelId;
+          }
+ 
+        }  
+      }
+    }
+  }
+  return null;
+  
+
+};
+
+/**
  * Validates the component's display value using the converter and all validators registered on 
  * the component and updates the <code class="prettyprint">value</code> option by performing the 
  * following steps. 
@@ -444,30 +545,120 @@ oj.EditableValueUtils.setPickerAttributes = function (picker, pickerAttributes)
  * <li>All messages are cleared, including custom messages added by the app. </li>
  * <li>If no converter is present then processing continues to next step. If a converter is 
  * present, the UI value is first converted (i.e., parsed). If there is a parse error then 
- * the <code class="prettyprint">messagesShown</code> option is updated and method returns false.</li>
+ * messages are shown.</li>
  * <li>If there are no validators setup for the component the <code class="prettyprint">value</code> 
- * option is updated using the display value and the method returns true. Otherwise all 
+ * option is updated using the display value. Otherwise all 
  * validators are run in sequence using the parsed value from the previous step. The implicit 
  * required validator is run first if the component is marked required. When a validation error is 
  * encountered it is remembered and the next validator in the sequence is run. </li>
- * <li>At the end of validation if there are errors, the <code class="prettyprint">messagesShown</code> 
- * option is updated and method returns false. If there were no errors, then the 
- * <code class="prettyprint">value</code> option is updated and method returns true.</li>
+ * <li>At the end of validation if there are errors, the messages are shown. 
+ * If there were no errors, then the 
+ * <code class="prettyprint">value</code> option is updated.</li>
  * </ol>
  * 
- * @returns {boolean} true if component passed validation, false if there were validation errors.
- * 
  * @example <caption>Validate component using its current value.</caption>
- * // validate display value. 
- * $(.selector).ojInputText('validate');
+ * myComp.validate();
+ * 
+ * @example <caption>Validate component and use the Promise's resolved state.</caption>
+ * myComp.validate().then(
+ *  function(result) {
+ *    if(result === "valid")
+ *    {
+ *      submitForm();
+ *    }
+ *  });
+ *  
+ *  
+ * @return {Promise} Promise resolves to "valid" if there were no converter parse errors and
+ * the component passed all validations. 
+ * The Promise resolves to "invalid" if there were converter parse errors or 
+ * if there were validation errors.
  * 
  * @ignore
  * @private
  */
 oj.EditableValueUtils.validate =  function ()
 {
+  var self = this;
+  if (this._IsCustomElement())
+  {
+    // clear all messages; run full validation on display value
+    var validateFunction = function() {
+      return self._ValidateReturnBoolean() ? 
+        oj.EditableValueUtils.VALIDATE_VALUES.VALID : 
+        oj.EditableValueUtils.VALIDATE_VALUES.INVALID;;
+    };
+
+    return Promise.resolve(validateFunction());
+
+  }
+  else
+  {
+    // clear all messages; run full validation on display value
+    return this._ValidateReturnBoolean();
+  }
+};
+
+/**
+ * 
+ * @returns boolean true if component passed validation, 
+ * false if there were validation errors.
+ * 
+ * @example <caption>Validate component using its current value.</caption>
+ * // validate display value. 
+ * var rslt = myComp.validate();
+ * 
+ * @ignore
+ * @protected
+ */
+oj.EditableValueUtils._ValidateReturnBoolean =  function ()
+{
   // clear all messages; run full validation on display value
-  return this._SetValue(this._GetDisplayValue(), null, this._VALIDATE_METHOD_OPTIONS);
+  var result = this._SetValue(this._GetDisplayValue(), null, this._VALIDATE_METHOD_OPTIONS);
+  return result;
+
+};
+
+/**
+ * Called from _AfterCreate for IsCustomElement form components so that they will
+ * be assocatied with their oj-label element correctly.
+ * Set the sub-id on the element so if they have a oj-label
+ * pointing to it with the 'for' attrbiute, JAWS will read the label.
+ * @param {Element} element
+ * @param {string} widgetId
+ * @ignore
+ * @private
+ */
+oj.EditableValueUtils.setSubIdForCustomLabelFor = function(element, widgetId)
+{
+  element.setAttribute("id", widgetId + "|input");
+};
+/**For custom element only.
+ * When labelledBy changes, we need to update the aria-labelledby attribute.
+ * Note: If labelledBy changes from a value to null, we should still remove the oldValue from
+ * aria-labelledby.
+ * @param {string|null} originalValue the old value of the labelledBy option
+ * @param {string|null} value the new value of the labelledBy option. 
+ * @param {jQuery} $elems jquery Object containing the node(s) to add/remove aria-labelledby to.
+ * @private
+ * @ignore
+ */
+oj.EditableValueUtils._updateLabelledBy = function(originalValue, value, $elems)
+{
+  var suffix = oj.EditableValueUtils.CUSTOM_LABEL_ELEMENT_ID;
+  
+  if (!this._IsCustomElement())
+    return;
+
+  if (originalValue)
+    originalValue += suffix;
+  if (value)
+    value += suffix;
+  
+  if (originalValue)
+    oj.EditableValueUtils._removeAriaLabelledBy($elems, originalValue);
+  if (value)
+    oj.EditableValueUtils._addAriaLabelledBy($elems, value);    
 };
 
 /**
@@ -503,28 +694,36 @@ oj.EditableValueUtils._refreshRequired = function(value)
     contentNode.removeAttr("aria-required");
   }
 
-
-  if (!this.$label)
-    this._createOjLabel();
-  // need to keep the label's required in sync with the input's required
-  if (this.$label)
-  { 
-    this.$label._ojLabel("option", "showRequired", value);
-   
-    if (ariaRequiredUnsupported)
+  if (!this._IsCustomElement())
+  {
+    if (!this.$label)
+      this._createOjLabel();
+    
+    // need to keep the label's required in sync with the input's required
+    if (this.$label)
     {
-      // if aria-labelledby is set, 
-      // add/remove aria-describedby to the inputs pointing to
-      // the label+"_requiredIcon". 
-      id = this._getAriaLabelledById(this.element);
-      if (id)
-      {   
-        if (value)
-          this._addAriaDescribedBy(id + _REQUIRED_ICON_ID);
-        else
-          this._removeAriaDescribedBy(id + _REQUIRED_ICON_ID);
-      }
-    } 
+      this.$label.ojLabel("option", "showRequired", value);
+      // in most cases aria-required is supported and that is what we do to get JAWS to say
+      // "Required" on focus of the input. But in the case of a 'set' of items where one is required,
+      // say radioset/checkboxset, what do we do? aria-required doesn't make sense (nor is it valid
+      // as it fails validation in some accessibility validators) on each input, when really it is
+      // one in the set that is required, not each one. This is what we are doing from v1 on: we
+      // put aria-describedby to point to the required icon text.
+      if (ariaRequiredUnsupported)
+      {
+        // if aria-labelledby is set, 
+        // add/remove aria-describedby to the inputs pointing to
+        // the label+"_requiredIcon". 
+        id = this._getAriaLabelledById(this.element);
+        if (id)
+        {   
+          if (value)
+            this._addAriaDescribedBy(id + _REQUIRED_ICON_ID);
+          else
+            this._removeAriaDescribedBy(id + _REQUIRED_ICON_ID);
+        }
+      } 
+    }
   }
 };
  
@@ -749,6 +948,66 @@ oj.EditableValueUtils._AfterSetOptionRequired = function (option)
     
     return this._converter || null;
   };
+   
+  /**.
+   * Add the id to the widget's aria-labelledby attribute.
+   * @param {jQuery} $elems the jquery element(s) that represents the node on which aria-labelledby is
+   * @param {string} id id to add to aria-labelledby
+   * @private
+   * @ignore
+   */
+  oj.EditableValueUtils._addAriaLabelledBy = function ($elems, id)
+  {
+    var index;
+    
+    
+    $elems.each(function() {
+      var labelledBy = $(this).attr("aria-labelledby");
+      var tokens;
+
+      tokens = labelledBy ? labelledBy.split(/\s+/) : [];
+      // Get index that id is in the tokens, if at all.
+      index = $.inArray(id, tokens);
+      // add id if it isn't already there
+      if (index === -1)
+        tokens.push(id);
+      labelledBy = $.trim(tokens.join(" "));
+      $(this).attr("aria-labelledBy", labelledBy);
+    });   
+  };
+  /**.
+   * Remove the id from the widget's aria-labelledby attribute.
+   * @param {jQuery} $elems the jquery element(s) that represents the node on which aria-labelledby is
+   * @param {string} id id to remove from aria-labelledby
+   * @private
+   * @ignore
+   */
+  oj.EditableValueUtils._removeAriaLabelledBy = function ($elems, id)
+  {
+    var labelledBy;
+    
+    $elems.each(function() {
+
+      var index;
+      var tokens;
+      
+      // get aria-labelledby that is on the element(s)
+      labelledBy = $(this).attr("aria-labelledby");
+      // split into tokens
+      tokens = labelledBy ? labelledBy.split(/\s+/) : [];
+      // Get index that id is in the tokens, if at all.
+      index = $.inArray(id, tokens);
+      // remove that from the tokens array
+      if (index !== -1)
+        tokens.splice(index, 1);
+      // join the tokens back together and trim whitespace
+      labelledBy = $.trim(tokens.join(" "));
+      if (labelledBy)
+        $(this).attr("aria-labelledby", labelledBy);
+      else
+        $(this).removeAttr("aria-labelledby");
+     });
+  };
 /**
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
@@ -834,12 +1093,12 @@ oj.PopupMessagingStrategy._DEFAULTS_BY_COMPONENT =
   "ojSwitch":
   {
     position: 'launcher',
-    events: {open: "focusin mouseover", close: "mouseout"}
+    events: {open: "focusin mouseenter", close: "mouseleave"}
   },
   "ojSlider":
   {
     position: 'launcher',
-    events: {open: "focusin mouseover", close: "mouseout"}
+    events: {open: "focusin mouseenter", close: "mouseleave"}
   },
   "ojColorSpectrum":
   {
@@ -970,10 +1229,31 @@ oj.PopupMessagingStrategy.prototype.close = function ()
  */
 oj.PopupMessagingStrategy.prototype._closePopup = function ()
 {
-  if (this._isPopupInitialized())
+  function doClose(resolve)
   {
-    this.$messagingContentRoot.ojPopup("close");
+    if (this._isPopupInitialized())
+    {
+      if (resolve)
+      {
+        // Add an event listener to resolve the promise
+        this._setActionResolver(this.$messagingContentRoot, "close", resolve);
+      }
+          
+      this.$messagingContentRoot.ojPopup("close");
+
+      // Just return if we call ojPopup close.  The promise will be resolved
+      // by the ojclose event listener.
+      return;
+    }
+    
+    if (resolve)
+    {
+      // Resolve the promise immediately if we didn't call ojPopup close
+      resolve(true);
+    }
   }
+  
+  this._queueAction(doClose.bind(this));
 };
 
 /**
@@ -988,6 +1268,162 @@ oj.PopupMessagingStrategy.prototype._initMessagingPopup = function ()
 };
 
 /**
+ * Add listeners for animation events.
+ * We use this to delegate animation events to the editableValue component since
+ * the original events are triggered on the popup, which is created internally 
+ * and the application cannot bind listeners to it.  By delegating the events, 
+ * application can bind the listeners to the component.
+ * 
+ * @param {jQuery} messagingContentRoot - The jQuery object for the messaging root node
+ * @private
+ * @memberof oj.PopupMessagingStrategy
+ * @instance
+ */
+oj.PopupMessagingStrategy.prototype._addAnimateEventListeners = function(messagingContentRoot)
+{
+  var delegateEvent = function(newEventType, event, ui) {
+    var component = this.GetComponent();
+    if (component && component._trigger)
+    {
+      // always stop propagation if we have a component to delegate to
+      event.stopPropagation();
+
+      // prevent default only if the component handler says so, as indicated by
+      // a return value of false.
+      if (!component._trigger(newEventType, null, ui))
+      {
+        event.preventDefault();
+      }
+    }
+  };
+
+  // Add animation event listeners to delegate the events to the component
+  messagingContentRoot.on('ojanimatestart.notewindow', delegateEvent.bind(this, 'animateStart'));
+  messagingContentRoot.on('ojanimateend.notewindow', delegateEvent.bind(this, 'animateEnd'));
+};
+
+/**
+ * Remove listeners for animation events.
+ * 
+ * @private
+ * @memberof oj.PopupMessagingStrategy
+ * @instance
+ */
+oj.PopupMessagingStrategy.prototype._removeAnimateEventListeners = function(messagingContentRoot)
+{
+  messagingContentRoot.off('ojanimatestart.notewindow');
+  messagingContentRoot.off('ojanimateend.notewindow');
+};
+
+/**
+ * Set busy state on the component that invokes the notewindow.
+ * 
+ * @private
+ * @memberof oj.PopupMessagingStrategy
+ * @instance
+ */
+oj.PopupMessagingStrategy.prototype._setBusyState = function(eventType)
+{
+  var component = this.GetComponent();
+  var jElem = component ? component.element : null;
+  var domElem = jElem ? jElem[0] : null;
+  var busyContext = oj.Context.getContext(domElem).getBusyContext();
+  var description = 'The page is waiting for note window ';
+  
+  if (domElem && domElem.id)
+  {
+    description += 'for "' + domElem.id + '" ';
+  }
+  description += 'to ' + eventType;
+
+  return busyContext.addBusyState({'description': description});
+};
+
+/**
+ * Set an event listener to resolve promise when popup open/close action ends.
+ * 
+ * @private
+ * @memberof oj.PopupMessagingStrategy
+ * @instance
+ */
+oj.PopupMessagingStrategy.prototype._setActionResolver = function(messagingContentRoot, eventType, resolvePromise)
+{
+  var animationOption;
+
+  // Disable animation if there are other queued actions.  Otherwise we will end
+  // up with too many animation since the messaging framework keeps clearing and
+  // updating the message display during validation, etc.
+  if (this._actionCount > 1)
+  {
+    // Remember the original animation so that we can restore it later
+    animationOption = messagingContentRoot.ojPopup("option", "animation");
+    messagingContentRoot.ojPopup("option", "animation", null);
+  }
+
+  // Add a busy state for the component.  Even though ojpopup add busy state,
+  // it is in the scope of the popup element.
+  var resolveBusyState = this._setBusyState(eventType);
+
+  // Add an one-time listener to resolve the promise
+  messagingContentRoot.one('oj' + eventType, function() {
+    // Restore any saved animation option
+    if (animationOption)
+    {
+      messagingContentRoot.ojPopup("option", "animation", animationOption);
+    }
+    
+    resolveBusyState();
+    resolvePromise(true);
+  });
+};
+
+/**
+ * Queue up popup open and close actions so that they are executed in the
+ * correct order.
+ *
+ * @private
+ * @memberof oj.PopupMessagingStrategy
+ * @instance
+ */
+oj.PopupMessagingStrategy.prototype._queueAction = function(task)
+{
+  if (this.GetComponent()._IsCustomElement())
+  {
+    // Queue up the action for custom elements to avoid animation overlapping each other
+    var self = this;
+
+    var createActionPromise = function(task)
+    {
+      var promise = new Promise(task);
+      promise.then(function() {
+        --self._actionCount;
+      });
+      return promise;
+    };
+    
+    if (!this._actionCount)
+    {
+      // If there is no action in progress, create a new promise directly instead
+      // of chaining to any resolved promise to avoid an extra wait state.
+      this._actionCount = 1;
+      this._actionPromise = createActionPromise(task);
+    }
+    else
+    {
+      ++this._actionCount;
+      this._actionPromise = this._actionPromise.then(function() {
+        return createActionPromise(task);
+      });
+    }
+  }
+  else
+  {
+    // Invoke the action immediately for legacy components since there is no animation
+    task(null);
+  }
+};
+
+/**
  * Opens a popup. This handler is called in the context of the launcher usually the this.element or
  * some relevant node the messaging popup is associated to.
  *
@@ -997,44 +1433,65 @@ oj.PopupMessagingStrategy.prototype._initMessagingPopup = function ()
  */
 oj.PopupMessagingStrategy.prototype._openPopup = function (event)
 {
-  var domNode;
-  var latestContent;
-  var $launcher;
-
-  
-  if (this._canOpenPopup())
+  function doOpen(resolve)
   {
+    var domNode;
+    var latestContent;
+    var $launcher;
 
-    latestContent = this._buildPopupHtml();
-    if (oj.StringUtils.isEmptyOrUndefined(latestContent))
-      return;
-
-    var messagingContentRoot = this._getPopupElement();
-    var isPopupOpen = messagingContentRoot.ojPopup("isOpen");
-
-    // replace popup messaging content with new content
-    domNode = oj.PopupMessagingStrategyPoolUtils.getPopupContentNode(messagingContentRoot);
-
-    // latestContent is includes content that may come from app. It is scrubbed for illegal tags
-    // before setting to innerHTML
-    domNode.innerHTML = ""; // @HTMLUpdateOK
-    domNode.innerHTML = latestContent; // @HTMLUpdateOK
-
-    if (!isPopupOpen)
+    
+    if (this._canOpenPopup())
     {
-      $launcher = this.GetLauncher();
-      if (event.type === "press")
+
+      latestContent = this._buildPopupHtml();
+      if (!oj.StringUtils.isEmptyOrUndefined(latestContent))
       {
-        this._openPopupOnPressEvent($launcher);
-      }
+        var messagingContentRoot = this._getPopupElement();
+        var isPopupOpen = messagingContentRoot.ojPopup("isOpen");
 
-      messagingContentRoot.ojPopup("open", $launcher);
+        // replace popup messaging content with new content
+        domNode = oj.PopupMessagingStrategyPoolUtils.getPopupContentNode(messagingContentRoot);
+
+        // latestContent is includes content that may come from app. It is scrubbed for illegal tags
+        // before setting to innerHTML
+        domNode.innerHTML = ""; // @HTMLUpdateOK
+        domNode.innerHTML = latestContent; // @HTMLUpdateOK
+
+        if (!isPopupOpen)
+        {
+          $launcher = this.GetLauncher();
+          if (event.type === "press")
+          {
+            this._openPopupOnPressEvent($launcher);
+          }
+
+          if (resolve)
+          {
+            // Add an event listener to resolve the promise
+            this._setActionResolver(messagingContentRoot, "open", resolve);
+          }
+          
+          messagingContentRoot.ojPopup("open", $launcher);
+          
+          // Just return if we call ojPopup open.  The promise will be resolved
+          // by the ojopen event listener.
+          return;
+        }
+        else if (isPopupOpen)
+        {
+          messagingContentRoot.ojPopup("refresh");
+        }
+      }
     }
-    else if (isPopupOpen)
+    
+    if (resolve)
     {
-      messagingContentRoot.ojPopup("refresh");
+      // Resolve the promise immediately if we didn't call ojPopup open
+      resolve(true);
     }
   }
+  
+  this._queueAction(doOpen.bind(this));
 };
 
 /**
@@ -1374,8 +1831,24 @@ oj.PopupMessagingStrategy.prototype._getPopupElement = function ()
   popup = oj.PopupMessagingStrategyPoolUtils.getNextFreePopup();
   position = this._getPopupPosition();
   popup.ojPopup("option", "position", position);
+  popup.ojPopup("option", "beforeClose", this._popupBeforeCloseCallback.bind(this));
   popup.ojPopup("option", "close", this._popupCloseCallback.bind(this));
   popup.ojPopup("option", "open", this._popupOpenCallback.bind(this));
+  
+  // Use default animation only for custom elements
+  if (this.GetComponent()._IsCustomElement())
+  {
+    // Get the default animation
+    var defaultAnimations = (oj.ThemeUtils.parseJSONFromFontFamily('oj-messaging-popup-option-defaults') || {})["animation"];
+    defaultAnimations["actionPrefix"] = "notewindow";
+    popup.ojPopup("option", "animation", defaultAnimations);
+  
+    this._addAnimateEventListeners(popup);
+  }
+  else
+  {
+    popup.ojPopup("option", "animation", null);
+  }
 
   this.$messagingContentRoot = popup;
   return this.$messagingContentRoot;
@@ -1405,6 +1878,17 @@ oj.PopupMessagingStrategy.prototype._popupOpenCallback = function (event)
 };
 
 /**
+ * Popup beforeClose event listener that will add busy state to the component
+ * @param {jQuery.event=} event
+ * @memberof! oj.PopupMessagingStrategy
+ * @private
+ */
+oj.PopupMessagingStrategy.prototype._popupBeforeCloseCallback = function (event)
+{
+  this._resolveBusyState = this._setBusyState('close');
+};
+
+/**
  * Popup closed event listener that will reset the popups state and free it into the
  * pool of available messaging popups.
  * @param {jQuery.event=} event
@@ -1417,21 +1901,35 @@ oj.PopupMessagingStrategy.prototype._popupCloseCallback = function (event)
   jqLauncher = this.GetLauncher();
 
   target = $(event.target);
+  
+  this._removeAnimateEventListeners(target);
+
   if (oj.Components.isComponentInitialized(target, "ojPopup"))
   {
     target.ojPopup("option", "autoDismiss", "none");
     target.ojPopup("option", "open", null);
     target.ojPopup("option", "close", null);
+    target.ojPopup("option", "beforeClose", null);
   }
-  
-  jqLauncher[0].removeEventListener("click", this._eatChangeAndClickOnPress, true);
-  jqLauncher[0].removeEventListener("change", this._eatChangeAndClickOnPress, true);
+
+  // Check that the launcher is still there when removing listeners  
+  if (jqLauncher && jqLauncher[0])
+  {
+    jqLauncher[0].removeEventListener("click", this._eatChangeAndClickOnPress, true);
+    jqLauncher[0].removeEventListener("change", this._eatChangeAndClickOnPress, true);
+  }
     
   this.$messagingContentRoot = null;
   this._inPressEvent = null;
 
   popupContent = $(oj.PopupMessagingStrategyPoolUtils.getPopupContentNode(target));
   popupContent.empty();
+  
+  if (this._resolveBusyState)
+  {
+    this._resolveBusyState();
+    this._resolveBusyState = null;
+  }
 };
 
 /**
@@ -1603,7 +2101,7 @@ oj.PopupMessagingStrategyUtils.buildHintHtml = function (document, selector, hin
     jTitleDom.append(oj.PopupMessagingStrategyUtils._getTextDom(document, hintText, htmlAllowed)); // @HTMLUpdateOK
   }
 
-  return jTitleDom ? jTitleDom.get(0).outerHTML : "";
+  return jTitleDom ? jTitleDom.get(0).outerHTML : "";// @HTMLUpdateOK
 };
 
 /**
@@ -1647,7 +2145,7 @@ oj.PopupMessagingStrategyUtils.getSeparatorHtml = function (document)
   var jSeparatorDom;
   jSeparatorDom = $(document.createElement("hr"));
 
-  return jSeparatorDom ? jSeparatorDom.get(0).outerHTML : "";
+  return jSeparatorDom ? jSeparatorDom.get(0).outerHTML : "";// @HTMLUpdateOK
 };
 
 /**
@@ -1708,7 +2206,6 @@ function (document, messages, maxSeverity, renderSeveritySelectors)
     for (j = 0; j < messagesByType.length; j++)
     {
       message = messagesByType[j];
-      oj.Assert.assertPrototype(message, oj.Message);
 
       severityLevel = oj.Message.getSeverityLevel(message['severity']);
       severityStr = oj.PopupMessagingStrategyUtils.getSeverityTranslatedString(severityLevel);
@@ -1778,12 +2275,12 @@ function (document, summary, detail, severityLevel, addSeverityClass)
     $msgDetail = $(document.createElement("div"));
 
     $msgDetail.addClass(oj.PopupMessagingStrategyUtils._SELECTOR_MESSAGE_DETAIL).append(detailDom); // @HTMLUpdateOK
-    $msgContent.append($msgDetail);
+    $msgContent.append($msgDetail);// @HTMLUpdateOK
   }
 
   $msgDom.append($msgContent); // @HTMLUpdateOK
 
-  return $msgDom ? $msgDom.get(0).outerHTML : "";
+  return $msgDom ? $msgDom.get(0).outerHTML : "";// @HTMLUpdateOK
 };
 
 /**
@@ -1995,7 +2492,7 @@ oj.PopupMessagingStrategyPoolUtils.getNextFreePopup = function ()
   {
     popup = $(oj.PopupMessagingStrategyPoolUtils._getPopupContentHtml()).hide();
     // popup is an empty div
-    popup.appendTo(pool); // @HTMLUpdateOk
+    popup.appendTo(pool); // @HTMLUpdateOk    
     var popupOptions =
     {
       'initialFocus': 'none',
@@ -2109,1122 +2606,6 @@ oj.PopupMessagingStrategyPoolUtils._MESSAGING_POPUP_POOL_ID = "__oj_messaging_po
  * All rights reserved.
  */
 
-(function ()
-{
-  /**
-  * String used in the id on the span that surrounds the help icon.
-  * @const
-  * @private
-  * @type {string}
-  */
-  var _HELP_ICON_ID = "_helpIcon";
-  /**
-  * String used in the id on the span that surrounds the required icon.
-  * @const
-  * @private
-  * @type {string}
-  */
-  var _REQUIRED_ICON_ID = "_requiredIcon";
-
-  /*!
-   * JET Label This component is private. @VERSION
-   */
-  /**
-   * The _ojLabel component is a private component. It is not meant to be used
-   * on a label element directly. Instead EditableValue components
-   * use the _ojLabel component in the internal implementation.
-   * <p>
-   * The _ojLabel component decorates the input component's label with
-   * extra dom for the required icon and help information (help
-   * icon, help description, and help external url). If oj-label* styles are on
-   * the label element, then the _ojLabel element will move them onto its root
-   * dom element.
-   * <p>
-   * Screen readers need to know that the input is associated with the help (and required
-   * for radioset/checkboxset components) icons.
-   * We do this by rendering on the input an aria-describedby id if this ojLabel has a 'for'
-   * attribute. This is done in EditableValue.
-   * </p>
-   * <h3 id="keyboard-section">
-   *   Keyboard End User Information
-   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#keyboard-section"></a>
-   * </h3>
-   * <p>You can hover over the help and the required icons for additional information. You can
-   * set focus with the keyboard on the help icon for additional information. You can click on
-   * the help icon and if there is an url associated with it, it will navigate to the url.
-   * </p>
-   * @ojcomponent oj._ojLabel
-   * @private
-   * @augments oj.baseComponent
-   */
-  oj.__registerWidget("oj._ojLabel", $['oj']['baseComponent'],
-  {
-    version: "1.0.0",
-    defaultElement: "<label>",
-    widgetEventPrefix: "oj",
-    options:
-    {
-      /**
-       * The help information that goes on the label.  The help options are:
-       * <ul>
-       * <li>definition -this is the help definition text. It is what shows up
-       * when the user hovers over the help icon, or tabs into the help icon, or press
-       * and holds the help icon on a mobile device. No formatted text is available for
-       * help definition attribute.</li>
-       * <li>source - this is the help source url.
-       * If present, a help icon will
-       * render next to the label For security reasons
-       *  we only support urls with protocol http: or https:.
-       * If the url doesn't comply we ignore it and throw an error.
-       * Pass in an encoded URL since we do not encode the URL.
-       * </ul>
-       *
-       * @expose
-       * @memberof oj._ojLabel
-       * @instance
-       * @type {Object.<string, string>}
-       * @default <code class="prettyprint">{help : {definition' :null, source: null}}</code>
-       *
-       * @example <caption>Initialize the label with the help definition and external url information:</caption>
-       * $( ".selector" )._ojLabel({ help: {definition:"some help definition", source:"some external url" } });
-       *
-       * @example <caption>Set the <code class="prettyprint">help</code> option, after initialization:</caption>
-       *
-       * // setter
-       * $( ".selector" )._ojLabel( "option", "help", {definition:"fill out the name", source:"http://www.oracle.com" } );
-       */
-      help:
-      {
-        /**
-         * <p>help definition text.  See the top-level <code class="prettyprint">help</code> option for details.
-         *
-         * @expose
-         * @alias help.definition
-         * @memberof! oj._ojLabel
-         * @instance
-         * @type {?string}
-         * @default <code class="prettyprint">{help : {definition :null, source: null}}</code>
-         *
-         * @example <caption>Get or set the <code class="prettyprint">help.definition</code> sub-option, after initialization:</caption>
-         * // getter
-         * var definitionText = $( ".selector" )._ojLabel( "option", "help.definition" );
-         *
-         * // setter:
-         * $( ".selector" )._ojLabel( "option", "help.definition", "Enter your name" );
-         */
-        definition: null,
-        /**
-         * <p>help source url.  See the top-level <code class="prettyprint">help</code> option for details.
-         *
-         * @expose
-         * @alias help.source
-         * @memberof! oj._ojLabel
-         * @instance
-         * @type {?string}
-         * @default <code class="prettyprint">null</code>
-         *
-         * @example <caption>Get or set the <code class="prettyprint">help.source</code> sub-option, after initialization:</caption>
-         * // getter
-         * var helpSource = $( ".selector" )._ojLabel( "option", "help.source" );
-         *
-         * // setter:
-         * $( ".selector" )._ojLabel( "option", "help.source", "www.abc.com" );
-         */
-        source: null
-
-      },
-      /**
-       * Whether this label should have a required icon.  Allowed values for
-       * showRequired are 'true' and 'false', 'false' being the default.
-       * @expose
-       * @type {?boolean}
-       * @default <code class="prettyprint">false</code>
-       * @public
-       * @instance
-       * @memberof oj._ojLabel
-       */
-      showRequired: false,
-      /**
-       * Allows you to set certain attributes on the root dom element.
-       * For _ojLabel, we use 'class' only. The input components (via
-       * EditableValue) set a styleclass on the _ojLabel's root in case
-       * component-specific label styling is needed. For example, ojradioset
-       * would pass class: 'oj-radioset-label'. ojinputtext would pass class:
-       * 'oj-inputtext-label'.
-       *
-       * @example <caption>Initialize root dom element with the set of
-       * <code class="prettyprint">rootAttributes</code>:</caption>
-       * $(".selector")._ojLabel("option", "rootAttributes", {
-       *   'class': 'oj-inputtext-label'
-       * });
-       *
-       * @expose
-       * @access public
-       * @memberof oj._ojLabel
-       * @instance
-       * @type {Object}
-       * @default <code class="prettyprint">{ id: null, class: null, style:null }</code>
-       */
-      rootAttributes: null
-    },
-    /**
-     * @private
-     * @const
-     */
-    _BUNDLE_KEY:
-    {
-      _TOOLTIP_HELP: 'tooltipHelp',
-      _TOOLTIP_REQUIRED: 'tooltipRequired'
-    },
-    /**** start Public APIs ****/
-
-    /**
-     * Returns a jQuery object containing the root dom element of the label
-     *
-     * <p>This method does not accept any arguments.
-     *
-     * @expose
-     * @memberof oj._ojLabel
-     * @instance
-     * @return {jQuery} the label
-     */
-    widget: function ()
-    {
-      return this.uiLabel;
-    },
-    /**
-     * Refreshes the required and help dom.
-     * @example <caption>Clear messages and refresh component.</caption>
-     * $(selector).ojInputText("option", "messages", []); <br/>
-     * $(selector).ojInputText("refresh");
-     * component
-     * @access public
-     * @instance
-     * @expose
-     * @memberof oj._ojLabel
-     */
-    refresh: function ()
-    {
-      this._super();
-      this._refreshRequired();
-      this._refreshHelp();
-    },
-    /**** end Public APIs ****/
-
-    /**** start internal widget functions ****/
-    /**
-     * Overridden to make sure describedById option is set
-     *
-     * @memberof oj._ojLabel
-     * @instance
-     * @protected
-     */
-    _InitOptions: function (originalDefaults, constructorOptions)
-    {
-      this._super(originalDefaults, constructorOptions);
-      this._checkRequiredOption();
-    },
-    /**
-     * After _ComponentCreate and _AfterCreate,
-     * the widget should be 100% set up. this._super should be called first.
-     * @override
-     * @protected
-     * @instance
-     * @memberof oj._ojLabel
-     */
-    _ComponentCreate: function ()
-    {
-      this._super();
-
-      this._touchEatClickNamespace = this.eventNamespace + "TouchEatClick";
-      this._touchEatContextMenuNamespace = this.eventNamespace + "TouchEatContextMenu";
-      this._helpDefPopupNamespace = this.eventNamespace + "HelpDefPopup";
-      this._bTouchSupported = oj.DomUtils.isTouchSupported();
-
-      this._drawOnCreate();
-    },
-    /**
-     * <p>Save only the 'class' attribute since that is what
-     * we manipulate. We don't have to save all the attributes.
-     * </p>
-     *
-     * @param {Object} element - jQuery selection to save attributes for
-     * @protected
-     * @memberof oj._ojLabel
-     * @instance
-     * @override
-     */
-    _SaveAttributes: function (element)
-    {
-      this._savedClasses = element.attr("class");
-    },
-    /**
-     * <p>Restore what was saved in _SaveAttributes
-     * </p>
-     *
-     * @protected
-     * @memberof oj._ojLabel
-     * @instance
-     * @override
-     */
-    _RestoreAttributes: function ()
-    {
-      // restore the saved "class" attribute. Setting class attr to undefined is a no/op, so
-      // if this._savedClasses is undefined we explicitly remove the 'class' attribute.
-      if (this._savedClasses)
-        this.element.attr("class", this._savedClasses);
-      else
-        this.element.removeAttr("class");
-    },
-    /**
-     * Notifies the component that its subtree has been removed from the document programmatically
-     * after the component has been created
-     * @memberof! oj._ojLabel
-     * @instance
-     * @protected
-     */
-    _NotifyDetached: function ()
-    {
-      this._superApply(arguments);
-      this._handleCloseHelpDefPopup();
-    },
-    /**
-     * Notifies the component that its subtree has been made hidden programmatically
-     * after the component has been created
-     * @memberof! oj._ojLabel
-     * @instance
-     * @protected
-     */
-    _NotifyHidden: function ()
-    {
-      this._superApply(arguments);
-      this._handleCloseHelpDefPopup();
-    },
-    /**
-     * set up styles on create
-     * @private
-     */
-    _drawOnCreate: function ()
-    {
-      var helpSpan = null;
-      var labelElementId;
-      var requiredSpan = null;
-
-      // wrap the label with a root dom element (oj-label) and its child
-      // (oj-label-group). Then point this.uiLabel to the root dom element.
-      this.uiLabel = this.element.wrap(this._createRootDomElement()) // @HTMLUpdateOK
-      .closest(".oj-component");
-      
-      this._addIdsToDom();
-
-      labelElementId = this.element.attr("id");
-      this.helpSpanId = labelElementId + _HELP_ICON_ID;
-      this.requiredSpanId = labelElementId + _REQUIRED_ICON_ID;
-
-      // move an oj-label styles off of this.element, and put on the
-      // root dom element. They are restored in _destroy
-      this._moveLabelStyleClassesToRootDom();
-      
-      // we put a span with an id on it around the help icon and 
-      // a span with an id on it around the required icon so that
-      // the input's aria-describedby can point to it, if needed. Then the screen reader will
-      // read the aria-label on the images when focus is on the input, so the user knows
-      // that there is help and/or required icons. NOTE: For all form controls except radioset
-      // and checkboxset, aria-required on the form control reads required. So no need to
-      // put aria-describedby on those. For radioset/checkboxsets, they put their own
-      // aria-describedby since they have a link to the ojLabel via their labelledby attribute.
-      // 
-
-      if (this.options.showRequired)
-      {
-        // render required
-        requiredSpan = this. _createIconSpan(this.requiredSpanId);      
-        requiredSpan.appendChild(this._createRequiredIconDomElement()); // @HTMLUpdateOK
-      }
-      
-      if (this._needsHelpIcon())
-      {
-        helpSpan = this. _createIconSpan(this.helpSpanId);
-        this._createHelp(helpSpan);
-      }
-    },
-    /**
-     * Create help if needed
-     * @private
-     */
-    _createHelp: function (helpSpan)
-    {
-      var helpDef;
-      var helpSource;
-      var helpIconAnchor;
-      
-      if (this._needsHelpIcon())
-      {
-        helpDef = this.options.help['definition'];
-        helpSource = this.options.help['source'];
-        helpIconAnchor = this._createHelpIconAnchorDomElement(helpDef, helpSource);
-        // .prepend: Insert content, specified by the parameter, to the beginning of each element
-        $(helpSpan).prepend(// @HTMLUpdateOK
-          helpIconAnchor);
-        this._attachHelpDefToIconAnchor();
-        this._focusable({'element': helpIconAnchor, 'applyHighlight': true});
-      }
-    },  
-    /**
-     * @throws error if showRequired is not a boolean
-     * @private
-     */
-    _checkRequiredOption: function ()
-    {
-      var showRequired = this.options.showRequired;
-
-      if (showRequired !== null && typeof showRequired !== "boolean")
-        throw new Error("Option 'showRequired' has invalid value set: " + showRequired);
-    },
-    /**
-     * add an id to the label element if there isn't one already there. We create ids from the
-     * label element id, and it's useful to have one for automated testing instead of having to rely
-     * on the generated id.
-     * @private
-     */
-    _addIdsToDom: function ()
-    {
-      var labelElementId;
-      
-      // if no id on the label element, generate one.
-      // this will be used to wrap the helpIcon and the requiredIcon and 
-      // then for the aria-describedby on the input.
-      labelElementId = this.element.attr("id");
-      if (labelElementId == null)
-      {
-        this.element.uniqueId(); 
-      }
-    },
-    /**
-     * move oj-label* classes from label element onto the root dom element
-     * @private
-     */
-    _moveLabelStyleClassesToRootDom: function ()
-    {
-      var arrayOfClasses;
-      var classes = this.element.attr("class");
-      var className;
-      var numClasses;
-
-      if (classes)
-      {
-        arrayOfClasses = classes.split(/\s+/);
-        if (arrayOfClasses != null)
-          numClasses = arrayOfClasses.length;
-        else
-          return;
-
-        for (var i = 0; i < numClasses; i++)
-        {
-          className = arrayOfClasses[i];
-          // if class name has -label- in it, then move it
-          // (e.g., oj-label, oj-label-inline, oj-md-label-nowrap,
-          // oj-md-labels-inline)
-          if (className.indexOf("-label") > 0)
-          {
-            this.uiLabel.addClass(className);
-            this.element.removeClass(className);
-          }
-        }
-      }
-    },
-    /**
-     * create and return the span with an id that we'll use to put around the help
-     * icon. The created span is prepended to the oj-label-group dom.
-     * @private
-     */
-    _createIconSpan: function (id)
-    {
-      var ojLabelGroupDom = this.uiLabel.find(".oj-label-group");
-      var span = document.createElement("span");
-      span.setAttribute("id", id);
-
-      ojLabelGroupDom.prepend(span); // @HTMLUpdateOK
-      return span;
-    },
-    /**
-     * return the dom node for the root dom element
-     * @private
-     */
-    _createRootDomElement: function ()
-    {
-      var inputLabelClass;
-      var labelGroupNode;
-      var rootAttributes = this.options.rootAttributes;
-      var rootDomNode;
-      var rootDomNodeClasses = "oj-label oj-component";
-
-      if (rootAttributes)
-      {
-        inputLabelClass = rootAttributes['class'];
-      }
-      if (inputLabelClass !== null)
-      {
-        rootDomNodeClasses = rootDomNodeClasses + " " + inputLabelClass;
-      }
-
-      //rootDomNode =
-      //  $("<div class='oj-label oj-component'><div class='oj-label-group'></div></div>",
-      //     this.document[0]);
-      rootDomNode = document.createElement("div");
-
-      rootDomNode.className = rootDomNodeClasses;
-      labelGroupNode = document.createElement("div");
-      labelGroupNode.className = "oj-label-group";
-      rootDomNode.appendChild(labelGroupNode); // @HTMLUpdateOk
-
-      return rootDomNode;
-    },
-    /**
-     * return the dom node for the span with oj-label-required-icon
-     * @private
-     */
-    _createRequiredIconDomElement: function ()
-    {
-      var requiredTooltip = this.getTranslatedString(this._BUNDLE_KEY._TOOLTIP_REQUIRED);
-      var requiredDom = document.createElement("span");
-
-      requiredDom.className = "oj-label-required-icon oj-component-icon";
-      requiredDom.setAttribute("role", "img");
-      requiredDom.setAttribute("title", requiredTooltip);
-      // title isn't being read by the screen reader. this is only needed for radioset/checkboxset.
-      requiredDom.setAttribute("aria-label", requiredTooltip);
-      return requiredDom;
-    },
-    /**
-     * return the dom node for the help icon anchor.
-     * if (_needsHelpIcon) , show help icon
-     * if (helpSource), add href
-     * if (helpDef), add 'aria-label'=helpDef on help icon.
-     * @private
-     */
-    _createHelpIconAnchorDomElement: function (helpDef, source)
-    {
-      var helpIconAnchor;
-      // construct the help html
-      // if source (external url) or helpDef, then render a clickable help icon
-      if (this._needsHelpIcon())
-      {
-        // From our Accessibility expert - You must not put role of img on a link.
-        // This will make it so it is not a link any more to AT.
-        // It is ok to leave it off the the <a> tag and do the following.
-        //helpIconAnchor =
-        //  $( "<a tabindex='0' target='_blank' class='oj-label-help-icon-anchor oj-label-help-icon oj-component-icon oj-clickable-icon-nocontext'></a>",
-        //  this.document[0] );
-
-        // The above is not reading anything when it has focus if it doesn't have an href. So if
-        // it doesn't have an href, it needs some kind of role on it.
-
-        helpIconAnchor = document.createElement("a");
-        helpIconAnchor.setAttribute("tabindex", "0");
-        helpIconAnchor.setAttribute("target", "_blank");
-        helpIconAnchor.className =
-        "oj-label-help-icon-anchor oj-label-help-icon oj-component-icon oj-clickable-icon-nocontext";
-        if (source)
-        {
-          try
-          {
-            oj.DomUtils.validateURL(source);
-            helpIconAnchor.setAttribute("href", source);
-          }
-          catch (e)
-          {
-            throw new Error(e + ". The source option (" + source + ") is invalid.");
-          }
-
-        }
-        else
-        {
-          // if there is no href, then we need a role that the screen reader/voiceover will read.
-          helpIconAnchor.setAttribute("role", "img");
-        }
-
-        if (helpDef)
-          helpIconAnchor.setAttribute("aria-label", helpDef);
-        else
-          helpIconAnchor.setAttribute("aria-label", this.getTranslatedString(this._BUNDLE_KEY._TOOLTIP_HELP));
-
-
-      }
-      return helpIconAnchor;
-    },
-    /**
-     * To accomodate keyboard and touch users,
-     * show a popup on hover, on tabbing in or touch press that shows the
-     * help definition text on the help icon.
-     *
-     * press is recognized when the
-     * pointer is down for x ms without any movement. In other words, you press with your finger and
-     * don't let up and then after x ms the Help Def window shows up. You can then let go of your finger
-     * the help def window stays up.
-     * On Android, when you press and hold you see touchstart. When you finally let up, you see touchend
-     * On ios, when you press and hold you see touchstart. When you finally let up, sometimes you
-     * see touchend only. Other times, you see touchend mousedown mouseup click all
-     * consecutively.
-     * On ios, a quick tap shows touchstart touchend mousedown mouseup click (I only register those events)
-     * all right after another.
-     * @private
-     */
-    _attachHelpDefToIconAnchor: function ()
-    {
-      var $helpDefPopupDiv;
-      var $helpIcon;
-      var position;
-      var self = this;
-
-      $helpIcon = this.widget().find(".oj-label-help-icon-anchor");
-
-      // before we do any of this work, make sure there is a help icon
-      if ($helpIcon.length == 0)
-        return;
-
-      // Create the popup div where we will display the help def text, add a unique id onto it and save
-      // that id so we can use it to popup.
-
-      // 1. Build display:none div with help definition text. This will be our popup.
-      // 2. Register click/touch event on label which will call a callback to open the popup on
-      // PRESS
-
-      // create popup's div
-      $helpDefPopupDiv = this._createHelpDefPopupDiv();
-
-      if (this._bTouchSupported)
-      {
-        // this is code to be extra careful: Check if the _eatClickOnHelpIconListener exists.
-        // If it does exist, call 'off'. We don't want this click listener
-        // that eats clicks lying around.
-        if (this._eatClickOnHelpIconListener)
-        {
-          this.widget().off(this._touchEatClickNamespace);
-        }
-        // The pressHold gesture also fires a click event on iphone on touchend.  Prevent that here.
-        // This event is added to the widget on click in the function _handleOpenPopupForHelpDef
-        this._eatClickOnHelpIconListener = function (event)
-        {
-          // changing colors is a good way to debug if the handler is being called. this changes
-          // the label color.
-//        if (this.style.color === "aqua")
-//          this.style.color = "yellow";
-//        else
-//         this.style.color = "aqua";
-          return false;
-        };
-
-        // The pressHold gesture also fires a contextmenu event on android.  Prevent that here.
-        this._eatContextMenuOnHelpIconListener = function (event)
-        {
-          return false;
-        };
-
-        $helpIcon.on("contextmenu" + this._touchEatContextMenuNamespace,
-        this._eatContextMenuOnHelpIconListener);
-      }
-
-      // For touch device, press with finger on helpIcon to show the help def in a popup.
-      // If there is no help source, you can also tap with finger on the helpIcon to show the help
-      // def in a popup.
-      // For keyboard users, tab in to helpIcon to show the help def in a popup.
-      // For mouse users, hovering on helpIcon shows the help def in a popup.
-      // ------------------------------------------------------------------------------------
-
-
-      // ENTERING CALLBACK TO OPEN THE POPUP IF NEEDED
-      // (focusin from tab, not mouse, OR press from touch)
-
-      if (!this._openPopupForHelpDefCallbackListener)
-      {
-        this._openPopupForHelpDefCallbackListener = function (event)
-        {
-          self._handleOpenHelpDefPopup(event, $helpDefPopupDiv, $helpIcon);
-        };
-      }
-      // END CALLBACK TO OPEN POPUP
-      //
-
-
-      // CALLBACK TO CLOSE POPUP
-      if (!this._closePopupForHelpDefCallbackListener)
-      {
-        this._closePopupForHelpDefCallbackListener = function (event)
-        {
-          self._handleCloseHelpDefPopup();
-        };
-      }
-      // END CALLBACK TO CLOSE POPUP
-
-
-      // Add event handlers to open the help definition popup
-      this._addShowHelpDefinitionEventHandlers($helpIcon);
-
-      position =
-      {
-        'my': 'start bottom',
-        'at': 'end top',
-        'collision': 'flipcenter',
-        'of': $helpIcon
-      };
-      $helpDefPopupDiv.ojPopup(
-      {"position": position,
-        "modality": "modeless",
-        "animation": {"open": null, "close": null}});
-    },
-    /**
-     * @private
-     */
-    _createHelpDefPopupDiv: function ()
-    {
-      var bodyDom;
-      var contentDiv;
-      var $contentDiv;
-      var helpDef = this.options.help['definition'];
-      var helpDefPopupDiv;
-      var $helpDefPopupDiv;
-      var helpDefText;
-
-
-      if (helpDef)
-        helpDefText = helpDef;
-      else
-        helpDefText = this.getTranslatedString(this._BUNDLE_KEY._TOOLTIP_HELP);
-      
-      if (!this._helpDefPopupDivId)
-      {
-        // create a root node to bind to the popup
-        helpDefPopupDiv = document.createElement("div");
-        helpDefPopupDiv.className = "oj-help-popup";
-        helpDefPopupDiv.style.display = "none";
-        $helpDefPopupDiv = $(helpDefPopupDiv);
-        $helpDefPopupDiv.uniqueId();
-        this._helpDefPopupDivId = $helpDefPopupDiv.prop("id");
-
-        // create a content node
-        contentDiv = document.createElement("div");
-        contentDiv.className = "oj-help-popup-container";
-        helpDefPopupDiv.appendChild(contentDiv);
-        $contentDiv = $(contentDiv);
-
-        $contentDiv.text(helpDefText);
-        bodyDom = document.getElementsByTagName("body")[0];
-        bodyDom.appendChild(helpDefPopupDiv); // @HTMLUpdateOK
-      }
-      else
-      {
-        // Find the div with the id, and then update the text of it.
-        $helpDefPopupDiv = $(document.getElementById(this._helpDefPopupDivId));
-        if ($helpDefPopupDiv)
-        {
-          $contentDiv = $helpDefPopupDiv.find(".oj-help-popup-container").first();
-          $contentDiv.text(helpDefText);
-        }
-      } 
-      return $helpDefPopupDiv;
-
-    },
-    /**
-     * Add the event listeners to show the helpDefinition text in a popup
-     * @param {jQuery} $helpIcon
-     * @returns {undefined}
-     * @instance
-     * @private
-     */
-    _addShowHelpDefinitionEventHandlers: function ($helpIcon)
-    {
-      var hammerOptions;
-   
-      // Open the popup on focusin and mousenter.
-      // *I have logic in the listener to ignore these when these trigger as a result of 
-      // the user touching the screen.
-      $helpIcon.on("focusin" + this._helpDefPopupNamespace +
-                   " mouseenter" + this._helpDefPopupNamespace, 
-                   this._openPopupForHelpDefCallbackListener);
-      $helpIcon.on("mouseleave" + this._helpDefPopupNamespace,
-                   this._closePopupForHelpDefCallbackListener);
-      if (this._bTouchSupported)
-      {
-        // And if touch is supported, the user can also open the popup on press or,
-        //  if no help source, on tap.
-        if (this.options.help['source'])
-        {
-          hammerOptions = {
-            "recognizers": [
-              [Hammer.Press, {time: oj.DomUtils.PRESS_HOLD_THRESHOLD}]
-            ]};
-          $helpIcon.ojHammer(hammerOptions);
-          // JET components are encouraged to use JQUI's _on() method, giving all the conveniences
-          // of the _on method, like automatic cleanup.
-          this._on($helpIcon,
-            {"press": this._openPopupForHelpDefCallbackListener});
-        }
-        else
-        {
-          hammerOptions = {
-            "recognizers": [
-              [Hammer.Tap],
-              [Hammer.Press, {time: oj.DomUtils.PRESS_HOLD_THRESHOLD}]
-
-            ]};
-          $helpIcon.ojHammer(hammerOptions);
-          this._on($helpIcon,
-            {"press": this._openPopupForHelpDefCallbackListener,
-             "tap": this._openPopupForHelpDefCallbackListener});
-
-        }
-        
-      }
-    },
-    /**
-     * Handle open popup for help definition.
-     * @instance
-     * @private
-     */
-    _handleOpenHelpDefPopup: function (event, helpDefPopupDiv, helpIcon)
-    {
-      var isOpen = helpDefPopupDiv.ojPopup("isOpen");   
-
-      if (isOpen)
-        return;
-
-      // touch supported does not mean only touch. It could be a touch-enabled laptop like Windows10
-      if (this._bTouchSupported)
-      {
-        // For a press, we want to show the popup with the help def, 
-        // but we do not want to navigate to the source url. So we eat the click.
-        if (event.type === "press")
-        {
-          var widget = this.widget();
-          widget.on("click" + this._touchEatClickNamespace, this._eatClickOnHelpIconListener);
-          var self = this;
-          helpDefPopupDiv.on("ojclose",
-          function (event, ui)
-          {
-            widget.off(self._touchEatClickNamespace);
-          });
-        }
-        else
-        {
-          helpDefPopupDiv.off("ojclose");
-        }
-
-        // Open the popup if I get a 'press' event, a 'tap' event, a 'focusin' event if
-        // it wasn't a touch, and a 'mouseenter' event if it wasn't a touch.
-        // I look for a recent touchstart event and use this to filter out 
-        // the focusin and mouseevent events. I use touchstart and not touchend because while
-        // pressing I get the touchstart, but I don't get the touchend until the finger lets up.
-        if (event.type === "press" ||  
-            event.type === "tap" || 
-            (!oj.DomUtils.recentTouchStart() &&
-            (event.type ==="focusin" || event.type ==="mouseenter")))
-        {
-          helpDefPopupDiv.ojPopup("open", helpIcon);
-        }
-      } // end touch code
-      else
-      {
-        // non-touch devices. focusin/mouseenter are the only ways to open the popup.
-        helpDefPopupDiv.ojPopup("open", helpIcon);
-      }
-
-    },
-    /**
-     * Close helpDef popup. This is called from _NotifyDetached and _NotifyHidden and
-     * as a callback for this._closePopupForHelpDefCallbackListener.
-     * @private
-     */
-    _handleCloseHelpDefPopup: function ()
-    {
-      var $helpDefPopupDiv;
-      
-      if (this._helpDefPopupDivId != null)
-      {
-        $helpDefPopupDiv = $(document.getElementById(this._helpDefPopupDivId));
-        $helpDefPopupDiv.ojPopup("close");
-      }
-    },
-    /**
-     * Remove the event listeners for opening a popup on the help def icon and for eating
-     * the clicks on the 'press' event. Called from destroy and when we remove the help icon.
-     * @private
-     */
-    _removeHelpDefIconEventListeners: function (helpIcon)
-    {
-      if (this._bTouchSupported)
-      {
-        this.widget().off(this._touchEatClickNamespace);
-        helpIcon.off(this._touchEatContextMenuNamespace);
-        this._eatClickOnHelpIconListener = null;
-        this._eatContextMenuOnHelpIconListener = null;
-        // helpIcon is same element on which we originally called ojHammer()
-        // the listeners are automatically removed since we used jqueryui's _on
-        helpIcon.ojHammer("destroy");
-      }
-      helpIcon.off(this._helpDefPopupNamespace);
-      this._openPopupForHelpDefCallbackListener = null;
-      this._closePopupForHelpDefCallbackListener = null;
-    },
-    /**
-     * removes the help def popup dom and variables
-     * @returns {undefined}
-     * @private
-     */
-    _removeHelpDefPopup: function ()
-    {
-      var $helpDefPopupDiv;
-
-      if (this._helpDefPopupDivId != null)
-      {
-        $helpDefPopupDiv = $(document.getElementById(this._helpDefPopupDivId));
-        if ($helpDefPopupDiv)
-        {
-          $helpDefPopupDiv.ojPopup("destroy");
-          $helpDefPopupDiv.remove();
-        }
-        this._helpDefPopupDivId = null;
-      }
-    },
-    /**
-     * @private
-     * @returns {boolean}
-     */
-    _needsHelpIcon: function ()
-    {
-      var options = this.options;
-      return (options.help['source'] != null) || (options.help['definition'] != null);
-    },
-    /**
-     * refresh the help dom --
-     * find the help root dom node and remove it if it is there
-     * and add back the help html. Helpful if a help option changed.
-     * @private
-     */
-    _refreshHelp: function ()
-    {
-      var helpSpanId = this.helpSpanId;
-      var helpSpan;
-      var $helpIcon;
-      var needsHelpIcon;
-
-      // remove the help info if it is there.
-      $helpIcon = this.uiLabel.find(".oj-label-help-icon");
-
-      if ($helpIcon.length === 1)
-      {     
-        // remove things we added in _attachHelpDefToIconAnchor
-        this._removeHelpDefIconEventListeners($helpIcon);
-        this._removeHelpDefPopup();
-        $helpIcon.remove();
-      }
-      helpSpan = document.getElementById(helpSpanId);
-      needsHelpIcon = this._needsHelpIcon();
-
-      if (needsHelpIcon && helpSpan == null)
-      {
-        // no helpSpan, so we need to create one
-        helpSpan = this._createIconSpan(helpSpanId);  
-      }
-      else if (!needsHelpIcon && helpSpan !== null)
-      {
-        helpSpan.parentNode.removeChild(helpSpan);
-      }
-
-      // ok, we removed the helpIcon at the start of this method, 
-      // so we need to add it back if we needHelpIcon
-      if(needsHelpIcon && helpSpan != null)
-      {
-        this._createHelp(helpSpan);
-      }
-
-    },
-    /**
-     * refresh the required dom --
-     * if required is true, then add the required dom if it isn't already there
-     * if required is false, remove the required dom if it is there.
-     * Helpful if the required option changed.
-     * @private
-     */
-    _refreshRequired: function ()
-    {
-      var $requiredDom;
-      var requiredSpanId = this.requiredSpanId;
-      var requiredSpan;
-      var requiredTooltip;
-
-
-      requiredSpan = document.getElementById(requiredSpanId);
-
-      if (this.options.showRequired)
-      {
-        // add required if it wasn't already there
-        if (!requiredSpan)
-        {
-          // render required
-          requiredSpan = this. _createIconSpan(requiredSpanId);      
-          requiredSpan.appendChild(this._createRequiredIconDomElement()); // @HTMLUpdateOK
-          // put it in the oj-label-group dom, before the label.
-          this.element.before(requiredSpan); // @HTMLUpdateOK
-
-        }
-        else
-        {
-          // required is there, so we need to refresh the translated value in case it changed.
-          requiredTooltip = this.getTranslatedString(this._BUNDLE_KEY._TOOLTIP_REQUIRED);
-          $requiredDom = this.uiLabel.find(".oj-label-required-icon");
-          $requiredDom.attr("title", requiredTooltip);
-        }
-      }
-      else
-      {
-        // not required, so remove it
-        requiredSpan = document.getElementById(requiredSpanId);
-        if (requiredSpan !== null)
-        {
-          requiredSpan.parentNode.removeChild(requiredSpan);
-        }
-      }
-    },
-    /**
-     * Note that _setOption does not get called during create. it only gets called
-     * when the component has already been created.
-     * @override
-     * @protected
-     * @memberof oj._ojLabel
-     * @instance
-     */
-    _setOption: function (key, value)
-    {
-      this._superApply(arguments);
-
-      if (key === "showRequired")
-      {
-        this._refreshRequired();
-      }
-
-      // if user changed the help definition or source, then update the UI.
-      // Find the help dom first. If it exists, replace it with new dom.
-      // if it doesn't exist, add it.
-      if (key === "help")
-      {
-        this._refreshHelp();
-      }
-    },
-    getNodeBySubId: function (locator)
-    {
-      var node;
-      var subId;
-
-      node = this._super(locator);
-      if (!node)
-      {
-        subId = locator['subId'];
-        if (subId === "oj-label-help-icon")
-        {
-          node = this.widget().find(".oj-label-help-icon")[0];
-        }
-        if (subId === "oj-label-required-icon")
-        {
-          node = this.widget().find(".oj-label-required-icon")[0];
-        }
-      }
-      // Non-null locators have to be handled by the component subclasses
-      return node || null;
-    },
-    getSubIdByNode: function (node)
-    {
-      var subId = null;
-
-      if (node != null)
-      {
-        if (node === this.widget().find(".oj-label-help-icon")[0])
-        {
-          subId = {'subId': "oj-label-help-icon"};
-        }
-      }
-
-      return subId || this._superApply(arguments);
-    },
-    /**
-     *
-     * @override
-     * @protected
-     * @memberof oj._ojLabel
-     * @instance
-     */
-    _destroy: function ()
-    {
-      // remove things we added in _attachHelpDefToIconAnchor
-      var helpIcon = this.uiLabel.find(".oj-label-help-icon");
-      this._removeHelpDefIconEventListeners(helpIcon);
-      this._removeHelpDefPopup();
-      this.helpSpanId = null;
-      this.requiredSpanId = null;
-      // DomUtils.unwrap() will avoid unwrapping if the node is being destroyed by Knockout
-      oj.DomUtils.unwrap(this.element, this.uiLabel);
-
-      return this._super();
-    }
-
-    /**** end internal widget functions ****/
-
-    /**
-     * Removes the label functionality completely.
-     * This will return the element back to its pre-init state.
-     *
-     * <p>This method does not accept any arguments.
-     *
-     * @method
-     * @name oj._ojLabel#destroy
-     * @memberof oj._ojLabel
-     * @instance
-     *
-     * @example <caption>Invoke the <code class="prettyprint">destroy</code> method:</caption>
-     * $( ".selector" )._ojLabel( "destroy" );
-     */
-    
-    /**
-     * {@ojinclude "name":"ojStylingDocIntro"}
-     * 
-     * <table class="generic-table styling-table">
-     *   <thead>
-     *     <tr>
-     *       <th>{@ojinclude "name":"ojStylingDocClassHeader"}</th>
-     *       <th>{@ojinclude "name":"ojStylingDocDescriptionHeader"}</th>
-     *     </tr>
-     *   </thead>
-     *   <tbody>
-     *     <tr>
-     *       <td>oj-focus-highlight</td>
-     *       <td>{@ojinclude "name":"ojFocusHighlightDoc"}</td>
-     *     </tr>
-     *   </tbody>
-     * </table>
-     *
-     * @ojfragment stylingDoc - Used in Styling section of classdesc, and standalone Styling doc
-     * @memberof oj._ojLabel
-     */
-  });
-
-//////////////////     SUB-IDS     //////////////////
-
-  /**
-   * <p>Sub-ID for the label's help icon.</p>
-   *
-   * @ojsubid oj-label-help-icon
-   * @memberof oj._ojLabel
-   *
-   * @example <caption>Get the node for the help icon:</caption>
-   * var node = $( ".selector" )._ojLabel( "getNodeBySubId", {'subId': 'oj-label-help-icon'} );
-   */
-
-}());
-/**
- * Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
- */
-
 /**
  * The various validation modes
  * @ignore
@@ -3245,6 +2626,15 @@ var _sValidationMode = {
 var _HELP_ICON_ID = "_helpIcon";
 
 
+/**
+* String used in the label element's id for custom &lt;oj-label>
+* @const
+* @private
+* @type {string}
+*/
+var _CUSTOM_LABEL_ELEMENT_ID = "|label";
+
+
 // E D I T A B L E V A L U E    A B S T R A C T   W I D G E T  
 /**
  * @ojcomponent oj.editableValue
@@ -3256,163 +2646,45 @@ var _HELP_ICON_ID = "_helpIcon";
  * Abstract base class for all editable components that are value holders and that require 
  * validation and messaging capabilities. <br/>
  * 
- * <p>
- * <h3 id="validation-section">
- * Validation and Messaging
- * <a class="bookmarkable-link" title="Bookmarkable Link" href="#validation-section"></a>
- * </h3>
- * An editable component runs validation (normal or deferred) based on the action performed on it 
- * (either by end-user or page author), and the state it was in when the action occurred. Examples 
- * of actions are - creating a component, user changing the value of the component by interacting 
- * with it, the app setting a value programmatically, the app calling the validate() method etc. At 
- * the time the action occurs, the component could already be showing errors, or can have a deferred 
- * error or have no errors. 
- * <p>
- * These factors also determine whether validation errors/messages get shown to the user immediately 
- * or get deferred. The following sections highlight the kinds of validation that are run and how 
- * messages get handled.
- * </p>
- * <p>
+ * {@ojinclude "name":"validationAndMessagingDoc"}
+ *  * <p>
  * Note: The <code class="prettyprint">required</code>, <code class="prettyprint">validators</code>,
- * <code class="prettyprint">converter</code> options and the <code class="prettyprint">validate</code> 
+ * <code class="prettyprint">converter</code> properties and the <code class="prettyprint">validate</code> 
  * method are not on all EditableValue components so they are not on the EditableValue class. 
- * See the EditableValue subclasses for which ones have which of these options. For example,
- * ojSwitch, ojSlider, ojColorPalette, and ojColorSpectrum do not have the 
+ * See the EditableValue subclasses for which ones have which of these properties. For example,
+ * oj-switch, oj-slider, oj-color-palette, and oj-color-spectrum do not have the 
  * <code class="prettyprint">validate</code> method nor do they have the 
  * <code class="prettyprint">required</code>, <code class="prettyprint">validators</code>,
- * <code class="prettyprint">converter</code> options since the components 
- * wouldn't do anything with these options anyway. A user can't type into these components and there
+ * <code class="prettyprint">converter</code> properties since the components 
+ * wouldn't do anything with these properties anyway. A user can't type into these components and there
  * is no visual representation for 'nothing is set' on these components. Whereas InputBase, inputNumber,
- * inputSearch and combobox do have these options since a user can type into the field (so you may
+ * inputSearch and combobox do have these properties since a user can type into the field (so you may
  * need to convert it and validate it) and also blank it out (so you may need to mark it required and
  * run the required validator).
  * </p>
- * <h4 id="normal-validation-section">Normal Validation 
- * <a class="bookmarkable-link" title="Bookmarkable Link" href="#normal-validation-section"></a></h4>
- * Normal validation is run in the following cases on the display value, using the converter and 
- * validators set on the component, and validation errors are reported to user immediately.
- * <ul>
- * <li>When value changes as a result of user interaction all messages are cleared, including custom 
- * messages added by the app, and full validation is run on the UI value. The steps performed are 
- * outlined below.
- * <ol> 
- * <li>All messages options are cleared - 
- * <code class="prettyprint">messagesShown</code>, <code class="prettyprint">messagesHidden</code> 
- * and <code class="prettyprint">messagesCustom</code> options. </li>
- * <li>If no converter is present then processing continues to next step. If a converter is 
- * present, the UI value is first converted (i.e., parsed). If there is a parse error then 
- * the <code class="prettyprint">messagesShown</code> option is updated and processing returns.</li>
- * <li>If there are no validators setup for the component then the value is set on the component. 
- * Otherwise all validators are run in sequence using the parsed value from the previous step. The 
- * implicit required is run first if the component is marked required. When a validation error is 
- * encountered it is remembered and the next validator in the sequence is run. 
- * <ul><li>NOTE: The value is trimmed before required validation is run</li></ul>
- * </li>
- * <li>At the end of the validation run if there are errors, the <code class="prettyprint">messagesShown</code> 
- * option is updated and processing returns. If there are no errors, then the 
- * <code class="prettyprint">value</code> option is updated and the formatted value displayed on the 
- * UI.</li>
- * </ol>
- * </li>
- * <li>When the <code class="prettyprint">validate</code> method is called by app, all messages are 
- * cleared and full validation run using the display value. See <code class="prettyprint">validate</code>
- * method on the sub-classes for details. Note: JET validation is designed to catch user input errors, and not invalid
- * data passed from the server; this should be caught on the server.</li>
- * <li>When certain options change through programmatic intervention by app, the component 
- * determines whether it needs to run normal validation based on the state the component is in. 
- * Refer to the <a href="#mixed-validation-section">Mixed Validation</a> section below for details. </li>
- * </ul>
- * 
- * <h4 id="deferred-validation-section">Deferred Validation
- * <a class="bookmarkable-link" title="Bookmarkable Link" href="#deferred-validation-section"></a>
- * </h4>
- * Deferred validation is run in the following cases on the component value using the implicit 
- * required validator if required is true, and validation errors are deferred, i.e., not shown to user immediately. 
- * Refer to the <a href="#deferred-messages-section">Showing Deferred Messages</a> section to 
- * understand how deferred messages can be shown.
- * <ul>
- *  <li>When a component is created and it is required deferred validation is run and no messages options are cleared 
- *  prior to running validation.  
- *  Refer to the <a href="#deferred-validators-section">Validators 
- *  Participating in Deferred Validation</a> section for details.</li> 
- *  <li>When the <code class="prettyprint">value</code> option changes due to programmatic 
- *  intervention deferred validation is run, after all messages options - 
- *  <code class="prettyprint">messagesShown</code>, <code class="prettyprint">messagesHidden</code> 
- *  and <code class="prettyprint">messagesCustom</code> - are cleared.</li>  
- *  <li>When the <code class="prettyprint">reset</code> method is called, deferred validation is run 
- *   after all messages options - <code class="prettyprint">messagesShown</code>, 
- *   <code class="prettyprint">messagesHidden</code> and <code class="prettyprint">messagesCustom</code> 
- *   - are cleared.</li>  
- *  <li>When certain options change through programmatic intervention by app, the component 
- *  determines whether it needs to run deferred validation based on the state the component is in. 
- *  Refer to the <a href="#mixed-validation-section">Mixed Validation</a> section below for details.</li>
- * </ul>
- * 
- * <h4 id="mixed-validation-section">Mixed Validation
- * <a class="bookmarkable-link" title="Bookmarkable Link" href="#mixed-validation-section"></a>
- * </h4>
- * Either deferred or normal validation is run in the following cases based on the state the 
- * component is in and any validation errors encountered are either hidden or shown to user.
- * <ul>
- *  <li>when disabled option changes. See <a href="#disabled">disabled</a> option for details.</li>
- *  <li>when refresh method is called. See <a href="#refresh">refresh</a> method for details.</li> 
- *  <li>when converter option changes. Not all EditableValue components have the converter option. See
- *  the sub-classes that have the converter option for details, e.g., {@link oj.inputBase#converter}.</li>
- *  <li>when required option changes. Not all EditableValue components have the required option. See
- *  the sub-classes that have the required option for details, e.g., {@link oj.inputBase#required}.</li>
- *  <li>when validators option changes. Not all EditableValue components have the validators option. See
- *  the sub-classes that have the validators option for details, e.g., {@link oj.inputBase#validators}.</li>
- *   
- * </ul>
- * </p>
- * 
- * <p>
- * <h3 id="deferred-messages-section">
- * Showing Deferred Messages
- * <a class="bookmarkable-link" title="Bookmarkable Link" href="#deferred-messages-section"></a>
- * </h3>
- * Deferred validation messages are displayed only when page author requests for it explicitly in 
- * one of the following ways: 
- * <ul>
- * <li>calls the <a href="#showMessages"><code class="prettyprint">showMessages</code></a> method on the component or</li>
- * <li>calls the helper methods <code class="prettyprint">showMessages</code> using the 
- * {@link oj.InvalidComponentTracker}</li>
- * </ul>
- * </p>
- * 
- * <p>
- * <h3 id="deferred-validators-section">
- * Validators Participating in Deferred Validation
- * <a class="bookmarkable-link" title="Bookmarkable Link" href="#deferred-validators-section"></a>
- * </h3>
- * The required validator is the only validator type that participates in deferred validation.
- * The required option needs to be set to true for the required validator to run. Note: Not all
- * EditableValue components have the required option, e.g., ojSwitch, ojSlider, ojColorPalette do not since
- * there is no visual representation for 'nothing set'. 
- * </p> 
- * 
+
  * <p>
  * <h3 id="declarative-binding-section">
  * Declarative Binding 
  * <a class="bookmarkable-link" title="Bookmarkable Link" href="#declarative-binding-section"></a>
  * </h3>
- * When the component's <code class="prettyprint">value</code> option is bound to a Knockout 
- * observable and when the value changes, whether the observable is updated or not, iow whether a 
+ * When the component's <code class="prettyprint">value</code> property is bound to a Knockout 
+ * observable and when the value changes, whether the observable is updated or not, and whether a 
  * 'writeback' to the observable happens or not, depends on the action that caused the value to 
  * change.
  * <ul>
  * <li>when the value changes as a result of user interaction </li>
- * <li>when the value changes because normal validation was run as a result of these options 
+ * <li>when the value changes because normal validation was run as a result of these properties 
  * being changed by the app - <code class="prettyprint">converter</code>, <code class="prettyprint">disabled</code>, 
  * <code class="prettyprint">required</code>, <code class="prettyprint">validators</code>, then the 
- * value is written to the observable. See the specific option docs for details.</li>
+ * value is written to the observable. See the specific property docs for details.</li>
  * <li>when the value changes because normal validation was run as a result of these methods being 
  * called by the app - 
  * <code class="prettyprint">refresh</code>, <code class="prettyprint">validate</code>, 
  * then the value is written to the observable. See the specific method docs for details.</li>
  * <li>when the value changes due to programmatic intervention by app then the value is not written 
  * back to observable. This is based on the assumption that the app has mutated the observable 
- * already. In this case updating the component's <code class="prettyprint">value</code> option 
+ * already. In this case updating the component's <code class="prettyprint">value</code> property 
  * alone will not propagate the change automatically to the observable. Updating the observable is 
  * recommended as this will propagate the change automatically to the component.
  * </li>
@@ -3441,48 +2713,60 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
   options: 
   {
     /** 
-     * Whether the component is disabled. The element's disabled property is used as 
-     * its initial value if it exists, when the option is not explicitly set. When neither is set, 
-     * disabled defaults to false.
-     *  
-     * <p>The 2-way <code class="prettyprint">disabled</code> binding offered by 
-     * the <code class="prettyprint">ojComponent</code> binding 
-     * should be used instead of Knockout's built-in <code class="prettyprint">disable</code> 
-     * and <code class="prettyprint">enable</code> bindings, 
-     * as the former sets the API, while the latter sets the underlying DOM attribute.
-     * </p>
+     * It is used to establish a relationship between this component and another element.
+     * Typically this is not used by the application developer, but by the oj-label custom element's
+     * code. One use case is where the oj-label custom element code writes described-by
+     * on its form component for accessibility reasons.
+     * To facilitate correct screen reader behavior, the described-by attribute is
+     * copied to the aria-describedby attribute on the component's dom element.
+     * @example <caption>Initialize component with the <code class="prettyprint">described-by</code> attribute specified:</caption>
+     * &lt;oj-some-element described-by="someId">&lt;/oj-some-element>
+     *
+     * @example <caption>Get or set the <code class="prettyprint">describedBy</code> property after initialization:</caption>
+     * // getter
+     * var descById = myComp.describedBy;
+     *
+     * // setter
+     * myComp.describedBy = "someId";
+     *
+     * @expose 
+     * @type {?string}
+     * @public
+     * @instance
+     * @memberof oj.editableValue
+     */
+    describedBy : null,
+    /** 
+     * Whether the component is disabled. The default is false.
      * 
      * <p>
-     * When the <code class="prettyprint">disabled</code> option changes due to programmatic 
+     * When the <code class="prettyprint">disabled</code> property changes due to programmatic 
      * intervention, the component may clear messages and run validation in some cases. </br>
      * <ul>
      * <li>when a required component is initialized as disabled 
-     * <code class="prettyprint">{value: null, required:true, disabled: true}</code>, 
+     * <code class="prettyprint">value="{{currentValue}}" required disabled</code>, 
      * deferred validation is skipped.</li>
      * <li>when a disabled component is enabled, 
      *  <ul>
      *  <li>if component is invalid and showing messages then all component messages are cleared, 
      *  and full validation run using the display value.
      *   <ul>
-     *    <li>if there are validation errors, they are pushed to <code class="prettyprint">messagesShown</code>
-     *    option. </li>
+     *    <li>if there are validation errors, they are shown.</li>
      *    <li>if no errors result from the validation, the <code class="prettyprint">value</code> 
-     *    option is updated. Page authors can listen to the <code class="prettyprint">optionChange</code> 
-     *    event on the <code class="prettyprint">value</code> option to clear custom errors.</li>
+     *    property is updated. Page authors can listen to the <code class="prettyprint">onValueChanged</code> 
+     *    event to clear custom errors.</li>
      *   </ul>
      *  </li>
      *  
      *  <li>if component is valid and has no errors then deferred validation is run.
      *    <ul>
-     *    <li>if there is a deferred validation error, then 
-     *    <code class="prettyprint">messagesHidden</code> option is updated. </li>
+     *    <li>if there is a deferred validation error, then the valid property is updated. </li>
      *    </ul>
      *  </li>
      *  <li>if component is invalid and deferred errors then component messages are cleared and 
      *  deferred validation re-run.
      *    <ul>
-     *    <li>if there is a deferred validation error, then 
-     *    <code class="prettyprint">messagesHidden</code> option is updated. </li>
+     *    <li>if there is a deferred validation error, then the valid property is updated.</li>
      *    </ul>
      *  </li>
      *  </ul>
@@ -3492,9 +2776,16 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
      * </ul>
      * </p>
      * 
-     * @example <caption>Initialize component with <code class="prettyprint">disabled</code> option:</caption>
-     * $(".selector").ojFoo({"disabled": true}); // Foo is InputText, InputNumber, Select, etc.
-     * 
+     * @example <caption>Initialize component with <code class="prettyprint">disabled</code> attribute:</caption>
+     * &lt;oj-some-element disabled>&lt;/oj-some-element>
+     *
+     * @example <caption>Get or set the <code class="prettyprint">disabled</code> property after initialization:</caption>
+     * // getter
+     * var disabled = myComp.disabled;
+     *
+     * // setter
+     * myComp.disabled = false;
+     *
      * @expose 
      * @type {boolean}
      * @default <code class="prettyprint">false</code>
@@ -3511,7 +2802,7 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
      * <p>
      * The types of messaging content for which display options can be configured include 
      * <code class="prettyprint">messages</code>, <code class="prettyprint">converterHint</code>, 
-     * <code class="prettyprint">validatorHint</code> and <code class="prettyprint">title</code>.<br/>
+     * <code class="prettyprint">validatorHint</code> and <code class="prettyprint">helpInstruction</code>.<br/>
      * The display options for each type is specified either as an array of strings or a string. When 
      * an array is specified the first display option takes precedence over the second and so on. 
      * </p>
@@ -3525,15 +2816,15 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
      * the displayOptions option on every component instance.<br/>
      * </p>
      * <p>
-     * When displayOptions changes due to programmatic intervention, the component updates its 
-     * display to reflect the updated choices. For example, if 'title' property goes from 
+     * When display-options changes due to programmatic intervention, the component updates its 
+     * display to reflect the updated choices. For example, if 'help.instruction' property goes from 
      * 'notewindow' to 'none' then it no longer shows in the notewindow.
      * </p>
      * <p>
-     * A side note: title and message detail text can include formatted HTML text, whereas hints and 
+     * A side note: help.instruction and message detail text can include formatted HTML text, whereas hints and 
      * message summary text cannot. If you use formatted text, it should be accessible 
      * and make sense to the user if formatting wasn't there.
-     * To format the title, you could do this:
+     * To format the help.instruction, you could do this:
      * <pre class="prettyprint"><code>&lt;html>Enter &lt;b>at least&lt;/b> 6 characters&lt;/html></code></pre>
      * </p>
      *  
@@ -3553,10 +2844,10 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
      * <code class="prettyprint">'none'</code>. The default is 'inline'. 
      * To change the default value you can do this - <br/>
      * E.g. <code class="prettyprint">{'displayOptions: {'messages': 'none'}}</code>
-     * @property {Array|string=} title - supported values are <code class="prettyprint">'notewindow'</code>, 
+     * @property {Array|string=} helpInstruction - supported values are <code class="prettyprint">'notewindow'</code>, 
      * <code class="prettyprint">'none'</code>.
      * To change the default value you can do this - <br/>
-     * E.g. <code class="prettyprint">{'displayOptions: {'title': 'none'}}</code>
+     * E.g. <code class="prettyprint">displayOptions='{"helpInstruction": "none"}'</code>
      * 
      * @example <caption>Override default values for <code class="prettyprint">displayOptions</code> 
      *  for messages for the entire application:</caption>
@@ -3571,22 +2862,33 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
      *    }
      * });
      * 
-     * @example <caption>Override default values for <code class="prettyprint">displayOptions</code> 
-     * for one component instance:</caption>
-     * // In this example, the instance of ojFoo changes its displayOptions from the defaults.
-     * // The 'converterHint' is none, the 'validatorHint' is none and the 'title' is none,
+     * @example <caption>Override default values for <code class="prettyprint">display-options</code> 
+     * for one component:</caption>
+     * // In this example, the display-options are changed from the defaults.
+     * // The 'converterHint' is none, the 'validatorHint' is none and the 'helpInstruction' is none,
      * // so only the 'messages' will display in its default state.
      * // For most apps, you will want to change the displayOptions app-wide
      * // for all EditableValue components, so you should use the
      * // oj.Components#setDefaultOptions function instead (see previous example).
      * //
-     * // Foo is InputText, InputNumber, Select, etc.
-     * $(".selector").ojFoo("option", "displayOptions", {
-     *   'converterHint': 'none',
-     *   'validatorHint': 'none',
-     *   'title' : 'none'
-     * });
+     * &lt;oj-some-element display-options='{"converterHint": "none",
+     *                                     "validatorHint": "none",
+     *                                     "helpInstruction": "none"}'>&lt;/oj-some-element>
      * 
+     * @example <caption>Get or set the <code class="prettyprint">displayOptions</code> property after initialization:</caption>
+     * // Get one subproperty
+     * var hint = myComp.displayOptions.converterHint;
+     * 
+     * // Set one, leaving the others intact. Use the setProperty API for 
+     * // subproperties so that a property change event is fired.
+     * myComp.setProperty("displayOptions.converterHint", "none");
+     * 
+     * // get all
+     * var options = myComp.displayOptions;
+     *
+     * // set all.  Must list every resource key, as those not listed are lost.
+     * myComp.displayOptions = {converterHint: "none", validatorHint: "none", helpInstruction: "none"};
+     *
      * @expose 
      * @access public
      * @instance
@@ -3595,7 +2897,7 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
      * &nbsp;&nbsp;'messages': ['inline'], <br/>
      * &nbsp;&nbsp;'converterHint': ['placeholder', 'notewindow'], <br/>
      * &nbsp;&nbsp;'validatorHint': ['notewindow'], <br/>
-     * &nbsp;&nbsp;'title': ['notewindow']<br/>
+     * &nbsp;&nbsp;'helpInstruction': ['notewindow']<br/>
      * }</code>
      * @memberof oj.editableValue
      * @type {Object|undefined}
@@ -3604,40 +2906,18 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
     displayOptions : undefined,    
     
     /**
-     * Help information that goes on the label. When help is set on the input component, then 
-     * help information is added to the input's label.
+     * Form component help information.
      * <p>
      * The properties supported on the <code class="prettyprint">help</code> option are:
      * 
-     * @property {string=} definition this is the help definition text. It is what shows up
-     * when the user hovers over the help icon, or tabs into the help icon, or press
-     * and holds the help icon on a mobile device. No formatted text is available for the
-     * help definition attribute.
+     * @property {string=} instruction this represents advisory information for the component
      * The default value is <code class="prettyprint">null</code>.
-     * @property {string=} source this is the help source url. 
-     * If present, the help icon's 
-     * anchor's target is this source. For security reasons we only support 
-     * urls with protocol http: or https:.
-     * If the url doesn't comply we ignore it and throw an error. The default value is null. 
-     * Pass in an encoded URL since we do not encode the URL.
      * 
      * @expose 
      * @memberof oj.editableValue
      * @instance
      * @type {Object.<string, string>}
-     * @default <code class="prettyprint">{help : {definition :null, source: null}}</code>
-     * 
-     * @example <caption>Initialize the input with the help definition and external url information:</caption>
-     * // Foo is InputText, InputNumber, Select, etc.
-     * $( ".selector" ).ojFoo({ "help": {"definition":"some help definition, "source":"some external url" } });
-     * 
-     * 
-     * @example <caption>Set the <code class="prettyprint">help</code> option, after initialization:</caption>
-     *
-     * // setter
-     * // Foo is InputText, InputNumber, Select, etc.
-     * $( ".selector" ).ojFoo( "option", "help", {"definition":"fill out the name", "source":"http:\\www.oracle.com" } );
-     * 
+     * @default <code class="prettyprint">{help : {instruction: null}}</code>
      */
     help: 
     {
@@ -3649,6 +2929,7 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
      * @memberof! oj.editableValue
      * @instance
      * @type {?string}
+     * @ignore
      * @default <code class="prettyprint">null</code>
      * 
      * @example <caption>Get or set the <code class="prettyprint">help.definition</code> sub-option, after initialization:</caption>
@@ -3666,6 +2947,7 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
      * @alias help.source
      * @memberof! oj.editableValue
      * @instance
+     * @ignore
      * @type {?string}
      * @default <code class="prettyprint">null</code>
      * 
@@ -3681,30 +2963,21 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
     
     /**
      * List of messages an app would add to the component when it has business/custom validation 
-     * errors that it wants the component to show. When this option is set the 
-     * <code class="prettyprint">messagesShown</code> option is also updated and the message
-     * shows to the user right away. To clear the custom message, set code class="prettyprint">messagesCustom</code>
+     * errors that it wants the component to show. When this option is set the message shows to the 
+     * user right away. To clear the custom message, set <code class="prettyprint">messagesCustom</code>
      * back to an empty array.<br/>
-     * Each message in the array is either an instance of oj.Message or an object that duck types it. 
+     * Each message in the array is an object that duck types oj.Message. 
      * See {@link oj.Message} for details.
      * 
-     * <p>
-     * An optionChange event is triggered every time this option value changes.
-     * </p>
+     * @example <caption>Initialize component with the <code class="prettyprint">messages-custom</code> attribute specified:</caption>
+     * &lt;oj-some-element messages-custom='[{"summary":"hello","detail":"detail"}]'>&lt;/oj-some-element>
+     *
+     * @example <caption>Get or set the <code class="prettyprint">messagesCustom</code> property after initialization:</caption>
+     * // getter
+     * var customMsgs = myComp.messagesCustom;
      * 
-     * @example <caption>Get the current list of app messages using <code class="prettyprint">messagesCustom</code> option:</caption>
-     * // Foo is InputText, InputNumber, Select, etc.
-     * var customMsgs = $(".selector").ojFoo("option", "messagesCustom"); 
-     * 
-     * @example <caption>Clear all app messages set on the component:</caption>
-     * // Foo is InputText, InputNumber, Select, etc.
-     * $(".selector").ojFoo("option", "messagesCustom", []); 
-     * 
-     * @example <caption>Set app messages using the <code class="prettyprint">messagesCustom</code> option:</caption>
-     * var msgs = [];
-     * msgs.push({'summary': 'Error Summary', 'detail': 'Error Detail'}); 
-     * // Foo is InputText, InputNumber, Select, etc.
-     * $(".selector").ojFoo("option", "messagesCustom", msgs);
+     * // setter
+     * myComp.messagesCustom = [{summary:"hello", detail:"detail", severity:oj.Message.SEVERITY_LEVEL.INFO}];
      * 
      * @expose 
      * @access public
@@ -3713,22 +2986,18 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
      * @default empty array when no option is set.
      * @type {Array|undefined}
      * @since 0.7
-     * @see #messagesShown
+     * @ojwriteback
      */    
     messagesCustom : undefined,
     
     /**
      * List of messages currently hidden on component, these are added by component when it runs 
-     * deferred validation. Each message in the array is 
-     * either an instance of oj.Message or an object that duck types it. See {@link oj.Message} for 
+     * deferred validation. Each message in the array is an object that duck types oj.Message. 
+     * See {@link oj.Message} for 
      * details. <br/>
      * 
      * <p>
      * This is a read-only option so page authors cannot set or change it directly.
-     * </p>
-     * 
-     * <p>
-     * An optionChange event is triggered every time this option value changes.
      * </p>
      * 
      * <p>
@@ -3749,21 +3018,19 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
      * @since 0.7
      * @see #showMessages
      * @readonly
+     * @ignore
+     * @ojwriteback
      */    
     messagesHidden : undefined,     
     
     /**
      * List of messages currently shown on component, these include messages generated both by the 
      * component and ones provided by app using <code class="prettyprint">messagesCustom</code>. 
-     * Each message in the array is either an instance of oj.Message or an object that duck types 
-     * it. See {@link oj.Message} for details. <br/>
+     * Each message in the array is an object that duck types oj.Message.
+     * See {@link oj.Message} for details. <br/>
      * 
      * <p>
      * This is a read-only option so page authors cannot set or change it directly.
-     * </p>
-     * 
-     * <p>
-     * An optionChange event is triggered every time its value changes.
      * </p>
      * 
      * <p>
@@ -3784,6 +3051,8 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
      * @type {Array|undefined}
      * @since 0.7
      * @readonly
+     * @ignore
+     * @ojwriteback
      */    
     messagesShown : undefined,    
 
@@ -3792,16 +3061,16 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
      * Represents advisory information for the component, such as would be appropriate for a tooltip. 
      * 
      * <p>
-     * When a title is present it is by default displayed in the notewindow, or as determined by the 
-     * 'title' property set on the <code class="prettyprint">displayOptions</code> option. 
-     * When the <code class="prettyprint">title</code> option changes the component refreshes to 
-     * display the new title. 
+     * When help.instruction is present it is by default displayed in the notewindow, or as determined by the 
+     * 'helpInstruction' property set on the <code class="prettyprint">displayOptions</code> attribute. 
+     * When the <code class="prettyprint">help.instruction</code> property changes the component refreshes to 
+     * display the updated information. 
      * </p>
      * 
      * <p>
-     * JET takes the title attribute off the input and creates a notewindow with the title text.
-     * The HTML title attribute only shows up on mouse blur, not on keyboard and not in a mobile
-     * device. So title would only be for text that is not important enough to show all users, or
+     * JET takes the help instruction text and creates a notewindow with the text.
+     * The help instruction only shows up as a tooltip on mouse over, not on keyboard and not in a mobile
+     * device. So help instruction would only be for text that is not important enough to show all users, or
      * for text that you show the users in another way as well, like in the label.
      * Also you cannot theme the native browser's title window like you can the JET
      * notewindow, so low vision users may have a hard time seeing it. 
@@ -3810,34 +3079,38 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
      * </p>
      * 
      * <p>
-     * To include formatted text in the title, format the string using html tags. 
+     * To include formatted text in the help.instruction, format the string using html tags. 
      * For example the 
-     * title might look like: 
-     * <pre class="prettyprint"><code>&lt;html>Enter &lt;b>at least&lt;/b> 6 characters&lt;/html></code></pre>
+     * help.instruction might look like: 
+     * <pre class="prettyprint"><code>&lt;oj-some-element help.intruction="&lt;html>Enter &lt;b>at least&lt;/b> 6 characters&lt;/html>">&lt;/oj-some-element></code></pre>
      * If you use formatted text, it should be accessible 
      * and make sense to the user if formatting wasn't there.
      * 
-     * @example <caption>Initialize the component with the <code class="prettyprint">title</code> option:</caption>
-     * &lt;!-- Foo is InputText, InputNumber, Select, etc. -->
-     * &lt;input id="username" type="text" data-bind="
-     *    ojComponent: {component: 'ojFoo', title : 'enter at least 3 alphanumeric characters', 
-     *                  pattern: '[a-zA-Z0-9]{3,}', value: ''}"/><br/>
+     * @example <caption>Initialize the component with the <code class="prettyprint">help.instruction</code> sub-attribute:</caption>
+     * &lt;oj-some-element help.instruction="some tooltip">&lt;/oj-some-element>
+     *  
+     * @example <caption>Get or set the <code class="prettyprint">help.instruction</code> property after initialization:</caption>
+     * // Get one subproperty
+     * var instr = myComp.help.instruction;
+     *
+     * // Set one subproperty, leaving the others intact. Use the setProperty API for 
+     * // subproperties so that a property change event is fired.
+     * myComponent.setProperty('help.instruction', 'some new value');
      * 
-     * @example <caption>Initialize <code class="prettyprint">title</code> option from html attribute 'title':</caption>
-     * &lt;!-- Foo is InputText, InputNumber, Select, etc. -->
-     * &lt;input id="username" type="text" value= "foobar" title="enter at least 3 alphanumeric characters" 
-     *           pattern="[a-zA-Z0-9]{3,}"/><br/>
-     * $("#username").ojFoo({}); // Foo is InputText, InputNumber, Select, etc. 
+     * // Get all
+     * var values = myComponent.help;
      * 
-     * // reading the title option will return "enter at least 3 alphanumeric characters"
-     * $("#username").ojFoo("option", "title"); // Foo is InputText, InputNumber, Select, etc. <br/>
+     * // Set all.  Must list every resource key, as those not listed are lost.
+     * myComponent.help = {
+     *   instruction: 'some new value'
+     * };
      * 
      * @expose 
      * @access public
      * @instance
-     * @default when the option is not set, the element's title attribute is used as its initial 
-     * value if it exists. 
-     * @memberof oj.editableValue
+     * @alias help.instruction
+     * @default <code class="prettyprint">null</code> 
+     * @memberof! oj.editableValue
      * @type {string|undefined}
      */    
     title: "",
@@ -3848,37 +3121,130 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
      * The value of the component. 
      * 
      * <p>
-     * When <code class="prettyprint">value</code> option changes due to programmatic 
-     * intervention, the component always clears all messages - 
-     * <code class="prettyprint">messagesHidden</code>, <code class="prettyprint">messagesShown</code>
-     *  and <code class="prettyprint">messagesCustom</code>, runs deferred validation, and 
+     * When <code class="prettyprint">value</code> property changes due to programmatic 
+     * intervention, the component always clears all messages
+     * including <code class="prettyprint">messagesCustom</code>, runs deferred validation, and 
      * always refreshes UI display value.</br>
      * 
      * <h4>Running Validation</h4>
      * <ul>
      * <li>component always runs deferred validation; if there is a validation error the 
-     * <code class="prettyprint">messagesHidden</code> option is updated.</li>
+     * <code class="prettyprint">valid</code> property is updated.</li>
      * </ul>
      * </p>
      * 
-     * @example <caption>Initialize the component with the <code class="prettyprint">value</code> option specified:</caption>
-     * $(".selector").ojFoo({'value': '10'}); // Foo is InputText, InputNumber, Select, etc.<br/>
-     * @example <caption>Get or set <code class="prettyprint">value</code> option, after initialization:</caption>
+     * @example <caption>Initialize the component with the <code class="prettyprint">value</code> attribute specified:</caption>
+     * &lt;oj-some-element value='10'>&lt;/oj-some-element>
+     * @example <caption>Get or set <code class="prettyprint">value</code> attribute, after initialization:</caption>
      * // Getter: returns '10'
-     * $(".selector").ojFoo("option", "value");// Foo is InputText, InputNumber, Select, etc.
+     * var val = myComp.value;
      * // Setter: sets '20'
-     * $(".selector").ojFoo("option", "value", '20'); // Foo is InputText, InputNumber, Select, etc.
+     * myComp.value = '20';
      * 
      * @expose 
      * @access public
      * @instance
-     * @default When the option is not set, the element's dom value is used as its initial value 
-     * if it exists. The type of value is as defined by the component that extends this class. Refer 
-     * to specific components for defaults.
+     * @default <code class="prettyprint">null</code>
+     * @ojwriteback
      * @memberof oj.editableValue
      * @type {Object|undefined}
      */
-    value: undefined
+    value: undefined,
+
+    // Events
+    /**
+     * Triggered when a default animation is about to start on an element owned by the component.
+     *
+     * <p>The default animation can be cancelled by calling <code class="prettyprint">event.preventDefault</code>, followed by
+     * a call to <code class="prettyprint">ui.endCallback</code>.  <code class="prettyprint">ui.endCallback</code> should be
+     * called immediately after <code class="prettyprint">event.preventDefault</code> if the application merely wants to cancel animation, 
+     * or it should be called when the custom animation ends if the application is invoking another animation function.  Failure to
+     * call <code class="prettyprint">ui.endCallback</code> may prevent the component from working properly.</p>
+     * <p>For more information on customizing animations, see the documentation of 
+     * <a href="oj.AnimationUtils.html">oj.AnimationUtils</a>.</p>
+     *
+     * <caption>The default animations are controlled via the theme (SCSS) :</caption>
+     * <pre class="prettyprint"><code>
+     * // default animations for "notewindow" display option
+     * $noteWindowOpenAnimation: (effect: "zoomIn", transformOrigin: "#myPosition") !default;
+     * $noteWindowCloseAnimation: (effect: "none") !default;
+     *
+     * // default animations for "inline" display option
+     * $messageInlineOpenAnimation: (effect: "expand", startMaxHeight: "#oldHeight") !default;
+     * $messageInlineCloseAnimation: (effect: "collapse", endMaxHeight: "#newHeight") !default;
+     * </code></pre>
+     *
+     * @expose
+     * @event
+     * @memberof oj.editableValue
+     * @instance
+     * @property {string} action The action that triggers the animation. Supported values are:
+     *                    <ul>
+     *                      <li>"inline-open" - when an inline message container opens or increases in size</li>
+     *                      <li>"inline-close" - when an inline message container closes or decreases in size</li>
+     *                      <li>"notewindow-open" - when a note window opens</li>
+     *                      <li>"notewindow-close" - when a note window closes</li>
+     *                    </ul>
+     * @property {Element} element The element being animated.
+     * @property {function} endCallback If the event listener calls event.preventDefault to
+     *            cancel the default animation, it must call the endCallback function when it
+     *            finishes its own animation handling and any custom animation has ended.
+     *
+     * @example <caption>Define an event listener for the
+     *          <code class="prettyprint">ojAnimateStart</code> event to override the default
+     *          "inline-open" animation:</caption>
+     * var listener = function( event )
+     *   {
+     *     // Change the "inline-open" animation for inline message
+     *     if (event.detail.action == "inline-open") {
+     *       // Cancel default animation
+     *       event.preventDefault();
+     *       // Invoke new animation and call endCallback when the animation ends
+     *       oj.AnimationUtils.fadeIn(event.detail.element).then(event.detail.endCallback);
+     *     }
+     *   };
+     *
+     * @example <caption>Define an event listener for the
+     *          <code class="prettyprint">ojAnimateStart</code> event to cancel the default
+     *          "notewindow-close" animation:</caption>
+     * var listener = function( event )
+     *   {
+     *     // Change the "notewindow-close" animation for note window
+     *     if (ui.action == "notewindow-close") {
+     *       // Cancel default animation
+     *       event.preventDefault();
+     *       // Call endCallback immediately to indicate no more animation
+     *       event.detail.endCallback();
+     *   };
+     */
+    animateStart : null,
+    /**
+     * Triggered when a default animation has ended.
+     *
+     * @expose
+     * @event
+     * @memberof oj.editableValue
+     * @instance
+     * @property {string} action The action that triggers the animation. Supported values are:
+     *                    <ul>
+     *                      <li>"inline-open" - when an inline message container opens or increases in size</li>
+     *                      <li>"inline-close" - when an inline message container closes or decreases in size</li>
+     *                      <li>"notewindow-open" - when a note window opens</li>
+     *                      <li>"notewindow-close" - when a note window closes</li>
+     *                    </ul>
+     * @property {Element} element The element being animated.
+     * @example <caption>Define an event listener for the
+     *          <code class="prettyprint">ojAnimateEnd</code> event to add any processing after the end of
+     *          "inline-open" animation:</caption>
+     * var listener = function( event )
+     * {
+     *   // Check if this is the end of "inline-open" animation for inline message
+     *   if (event.detail.action == "inline-open") {
+     *     // Add any processing here
+     *   }
+     * };
+     */
+    animateEnd : null
   },
   
   // P U B L I C    M E T H O D S
@@ -3886,18 +3252,77 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
   // @inheritdoc
   getNodeBySubId: function(locator)
   {
-    return this._super(locator);
+    var node;
+    var subId;
+
+    node = this._super(locator);
+    
+    // this subId is only for non-custom element components so skip if custom element
+    if (!node && !this._IsCustomElement())
+    {
+      subId = locator['subId'];
+
+      if (subId === "oj-label-help-icon")
+      {
+        var label = this._GetLabelElement();
+
+        if (label)
+          node = label.parent().find(".oj-label-help-icon");
+      }
+    }
+    // Non-null locators have to be handled by the component subclasses
+    return node || null;
   },
-           
+  //** @inheritdoc */
+  getSubIdByNode : function(elem)
+  {
+    var $node,
+        anchor,
+        div,
+        label,
+        subId = null;
+    
+    if (elem != null)
+    {
+      $node = $(elem);
+      anchor = $node.closest("a.oj-label-help-icon");
+       
+      if (anchor != null)
+      {
+        // Go up to the top level element of the label
+        div = anchor.closest(".oj-label");
+        
+        if (div != null)
+        {
+          // Now find the actual label
+          label = div.find("label")[0];
+          
+          if (label)
+          {
+            // Make sure the label is the one associated with this component
+            if (label == this._GetLabelElement()[0])
+            {
+               subId = {"subId":"oj-label-help-icon"};
+            }
+          }
+        }
+      }
+    }
+     
+    return subId;
+  },
   /**
    * whether the component is currently valid.  It is valid if it doesn't have any errors.
+   * This method is final; do not override.
    * @example <caption>Check whether the component is valid:</caption>
-   * var value = $(".selector").ojInputText("isValid");
+   * var valid = myInputElement.isValid();
    * @returns {boolean}
    * @access public
    * @instance
    * @expose
    * @memberof oj.editableValue
+   * @final
+   * @ignore
    */
   isValid : function ()
   {
@@ -3910,11 +3335,11 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
   },
   
   /**
-   * Called when the DOM underneath the component chages requiring a re-render of the component. An 
-   * example is when the label for the input changes. <br/>
+   * Called when the DOM underneath the component changes requiring a re-render of the component. An 
+   * example is when the <code class="prettyprint">id</code> for the input changes. <br/>
    * <p>
    * Another time when refresh might be called is when the locale for the page changes. When it 
-   * changes, options used by its converter and validator that are locale specific, its hints, 
+   * changes, attributes used by its converter and validator that are locale specific, its hints, 
    * messages and translations will be updated. 
    * </p>
    * 
@@ -3933,18 +3358,16 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
    * <ul>
    * <li>if component is valid when refresh() is called, the display value is refreshed if component 
    * has a converter set.</li>
-   * <li>if component is invalid and is showing messages -
-   * <code class="prettyprint">messagesShown</code> option is non-empty, when 
+   * <li>if component is invalid and is showing messages when 
    * <code class="prettyprint">refresh()</code> is called, then all component messages are cleared 
    * and full validation run using the display value on the component. 
    * <ul>
    *   <li>if there are validation errors, then <code class="prettyprint">value</code> 
-   *   option is not updated and the error pushed to <code class="prettyprint">messagesShown</code>
-   *   option. 
+   *   attribute is not updated and the error is shown. 
    *   </li>
    *   <li>if no errors result from the validation, the <code class="prettyprint">value</code> 
-   *   option is updated; page author can listen to the <code class="prettyprint">optionChange</code> 
-   *   event on the <code class="prettyprint">value</code> option to clear custom errors.</li>
+   *   attribute is updated; page author can listen to the <code class="prettyprint">onValueChanged</code> 
+   *   event to clear custom errors.</li>
    * </ul>
    * </li>
    * <li>if component is invalid and has deferred messages when <code class="prettyprint">refresh()</code> 
@@ -3954,16 +3377,13 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
    * 
    * <h4>Clearing Messages</h4>
    * <ul>
-   * <li>If clearing messages only those created by the component are cleared. These include ones in 
-   * <code class="prettyprint">messagesHidden</code> and <code class="prettyprint">messagesShown</code>
-   *  options.</li>
-   * <li><code class="prettyprint">messagesCustom</code> option is not cleared.</li>
+   * <li>If clearing messages only those created by the component are cleared.
+   * <li><code class="prettyprint">messagesCustom</code> attribute is not cleared.</li>
    * </ul>
    * </p>
    * 
-   * @example <caption>Refresh component after changing the label DOM.</caption>
-   * // Foo is ojInputNumber, ojInputText, etc.
-   * $(selector).ojFoo("refresh");<br/>
+   * @example <caption>Redraw the component element.</caption>
+   * myComp.refresh();
    * 
    * @access public
    * @instance
@@ -3978,13 +3398,13 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
   },
   
   /**
-   * Resets the component by clearing all messages options - <code class="prettyprint">messagesCustom</code>,  
-   * <code class="prettyprint">messagesHidden</code> and <code class="prettyprint">messagesShown</code>,
-   * and updates the component's display value using the option value. User entered values will be 
+   * Resets the component by clearing all messages and messages attributes - 
+   * <code class="prettyprint">messagesCustom</code> -
+   * and updates the component's display value using the attribute value. User entered values will be 
    * erased when this method is called.
    * 
    * @example <caption>Reset component</caption>
-   * $(selector).ojInputText("reset"); <br/>
+   * myComp.reset(); <br/>
    * 
    * @access public
    * @instance
@@ -4002,22 +3422,16 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
   },
   
   /**
-   * Takes all hidden messages that are in the <code class="prettyprint">messagesHidden</code> 
-   * option and moves them to <code class="prettyprint">messagesShown</code> option. If there were 
-   * no messages in <code class="prettyprint">messagesHidden</code> then this method simply returns. 
+   * Takes all deferred messages and shows them. 
+   * If there were no deferred messages this method simply returns. 
    * 
    * <p>
    * To view messages user has to set focus on the component. 
    * </p>
    * 
-   * <p>
-   * An <code class="prettyprint">optionChange</code> event is triggered on both 
-   * <code class="prettyprint">messagesHidden</code> and <code class="prettyprint">messagesShown</code> 
-   * options.
-   * </p>
    * 
    * @example <caption>Display all messages including deferred ones.</caption>
-   * $(selector).ojInputText("showMessages");
+   * myComp.showMessages();
    * @access public
    * @instance
    * @expose
@@ -4031,6 +3445,7 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
     var msg;
     var msgs = this.options['messagesHidden'];
     var mutated = false;
+    var clonedMsg;
     
     for (i = 0; i < msgs.length; i++)
     {
@@ -4041,7 +3456,8 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
         msg._forceDisplayToShown();
       }
       
-      clonedMsgs.push(msg.clone()); // TODO: revisit clone msg??
+      clonedMsg = new oj.Message(msg['summary'], msg['detail'], msg['severity']);
+      clonedMsgs.push(clonedMsg);
     }
     
     if (mutated)
@@ -4127,6 +3543,40 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
   _InitOptions : function(originalDefaults, constructorOptions)
   {
     this._super(originalDefaults, constructorOptions); 
+    
+    // We need to do this for custom element components since
+    // help.instruction is used instead of title.
+    if (this._IsCustomElement())
+    {
+      // update the title option if help.instruction option exists
+      var help = this.options["help"];
+
+      if (help != null)
+      {
+        var helpInstruction = help["instruction"];
+
+        if (helpInstruction != null)
+        {
+          this.options["title"] = helpInstruction;
+        }
+      }
+      
+      // update displayOptions.title from displayOptions.helpInstruction
+      var dispOpts = this.options["displayOptions"];
+      
+      if (dispOpts != null)
+      {
+        var helpInstruction = dispOpts["helpInstruction"];
+
+        if (helpInstruction != null)
+        {
+          dispOpts["title"] = helpInstruction;
+          this.options["displayOptions"] = dispOpts;
+        }
+      }
+    }
+    
+    
   },
 
   /**
@@ -4165,16 +3615,20 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
     // remove html5 validation attributes; it's safe to remove these here because components should 
     // have already initialized options based on DOM in _InitOptions().
     // Only need to do for <input> elements
-    var tagName = node[0].tagName.toLowerCase();
-    if (tagName === 'input' || tagName === 'textarea')
+    // custom elements create their input/textarea dom, so no need to do that for them.
+    if (savedAttributes && !this._IsCustomElement())
     {
-      $.each(attrsToRemove, function (index, value)
+      var tagName = node[0].tagName.toLowerCase();
+      if (tagName === 'input' || tagName === 'textarea')
       {
-        if (value in savedAttributes)
+        $.each(attrsToRemove, function (index, value)
         {
-          node.removeAttr(value);
-        }
-      });
+          if (value in savedAttributes)
+          {
+            node.removeAttr(value);
+          }
+        });
+      }
     }
   },
   
@@ -4189,13 +3643,38 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
    */
   _AfterCreate : function ()
   {
+    var describedBy;
+    
     this._super();
     
     // refresh value, theming and aria attributes
     this._doRefresh(false);
-    
-    // decorate the label
-    this._createOjLabel();
+
+    // create an ojLabel only if this isn't a custom element. For example, ojInputText will
+    // create an ojLabel, but <oj-input-text> will not. Instead the app dev uses <oj-label>.
+    if (!this._IsCustomElement())
+      this._createOjLabel();
+    else
+    {
+      // If this is a custom element, we need to write the default style class + "-label" 
+      // onto the oj-label. The reason is so
+      // we can theme the oj-label based on what form control it is labeling. We use this in
+      // our themes to line up the label to the form control, 
+      // e.g., oj-label-inline.oj-radioset-label {margin-top:.5em;}.
+      if (this.customOjLabelElement === undefined)
+        this.customOjLabelElement = this._getCustomOjLabelElement();
+      if (this.customOjLabelElement)
+        $(this.customOjLabelElement).addClass(this._GetDefaultStyleClass()+"-label");
+    }
+
+
+    // set describedby on the element as aria-describedby
+    describedBy = this.options['describedBy'];
+
+    if (describedBy)
+    {
+      this._addAriaDescribedBy(describedBy);
+    }
 
     // initialize component messaging
     this._initComponentMessaging();
@@ -4203,8 +3682,10 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
     // run deferred validation 
     this._runDeferredValidation(this._VALIDATION_CONTEXT.COMPONENT_CREATE);
     
-    // trigger optionChange for messagesShown if it's non-empty. messagesShown would have been 
-    // updated in _ComponentCreate if messagesCustom was non-empty
+    // trigger messagesShownChanged for messagesShown if it's non-empty. 
+    // this.options['messagesShown'] would have been 
+    // updated in _ComponentCreate if messagesCustom was non-empty. Because we are setting
+    // the 'changed' flag to true, the messagesShownChanged event will be fired, and that's what we want.
     if (this.options['messagesShown'].length > 0)
     {
       this._setMessagesOption('messagesShown', this.options['messagesShown'], null, true);
@@ -4224,7 +3705,8 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
    */
   _SaveAttributes : function (element)
   {
-    this._SaveAllAttributes(element);
+    if (!this._IsCustomElement())
+      this._SaveAllAttributes(element);
   },
   /**
    * @protected
@@ -4234,10 +3716,11 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
    */
   _RestoreAttributes : function (element)
   {
-    this._RestoreAllAttributes(element);
+    if (!this._IsCustomElement())
+      this._RestoreAllAttributes(element);
   },
   /**
-   * Performs post processing after _SetOption() is called. Different options when changed perform
+   * Performs post processing after _SetOption() calls _superApply(). Different options, when changed, perform
    * different tasks. 
    * 
    * @param {string} option
@@ -4255,15 +3738,44 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
         break;
 
       case "displayOptions" :
+        // For custom element, we use displayOptions.helpInstruction instead of displayOptions.title
+        // so internally we need to update title with the value of helpInstruction
+        if (this._IsCustomElement())
+        {
+          var dispOpts = this.options["displayOptions"];
+          
+          if (dispOpts != null)
+          {
+            var helpInstruction = dispOpts["helpInstruction"];
+
+            if (helpInstruction != null)
+            {
+              dispOpts["title"] = helpInstruction;
+              this.options["displayOptions"] = dispOpts;
+            }
+          }
+        }
+        
         // clear the cached merged options; the getter setup for this.options['displayOptions']
         // will merge the new value with the defaults
         this._initComponentMessaging();
         break;
 
       case "help":
-        this._Refresh(option, this.options[option]);
+        if (!this._IsCustomElement())
+          this._Refresh(option, this.options[option]);
+        
+        // For custom element components, we use help.instruction instead of title
+        // so we need to update the internal title option with the value of
+        // help.instruction
+        if (this._IsCustomElement())
+        {
+          this.options["title"] = this.options.help["instruction"];
+          this._titleOptionChanged();
+        }
+        
         break;
-      
+
       case "messagesCustom":
         this._messagesCustomOptionChanged(flags);
         break; 
@@ -4328,7 +3840,7 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
   /**
    * Performs post processing after value option changes by taking the following steps.
    * 
-   * - triggers an optionChange and does writeback if required.<br/>
+   * - triggers a valueChanged event and does writeback if required.<br/>
    * - if setOption was from programmatic intervention, <br/>
    * &nbsp;&nbsp;- clear custom messages and component messages; <br/>
    * &nbsp;&nbsp;- run deferred validation. if there is an error, updates messagesHidden. <br/>
@@ -4418,9 +3930,9 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
       for (labelIndex = 0; labelIndex < labelLength; labelIndex++) 
      {
        if (this.$label[labelIndex] && 
-           oj.Components.getWidgetConstructor(this.$label[labelIndex]) != null)
+           oj.Components.__GetWidgetConstructor(this.$label[labelIndex]) != null)
        {
-         $(this.$label[labelIndex])._ojLabel( "destroy" );
+         $(this.$label[labelIndex]).ojLabel( "destroy" );
        } 
      }     
     }
@@ -4468,6 +3980,8 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
   {
     var retVal;
     var skipSetOption = false;
+    var oldValue;
+    var newValue;
     
     // Step 1: Remember previous values
     if (typeof name === "string" && value !== undefined)
@@ -4488,7 +4002,23 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
           // rawValue is readOnly, so throw an error here.
           skipSetOption = true;
           break;
-      }
+                
+        case "describedBy":
+          // This sets the aria-describedby on the correct dom node
+          oldValue = this.options['describedBy'];
+          newValue = value;
+
+          if (oldValue)
+          {
+            this._removeAriaDescribedBy(oldValue);
+          }
+          if (newValue)
+          {
+            this._addAriaDescribedBy(newValue);
+          }
+    
+          break;
+        }
     }
     
     
@@ -4542,6 +4072,10 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
   {
     var ariaElement;
     var labelQuery;
+    
+    if (this.$label)
+      return this.$label;
+    
     // If input has aria-labelledby set, then look for label it is referring to.
     var queryResult = this._getAriaLabelledByElement(this.element);
     if (queryResult !== null && queryResult.length !== 0)
@@ -4810,7 +4344,7 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
     var flags = {};
     flags['_context'] = {originalEvent: event, writeback: true, internalSet: true, readOnly: true};
 
-    if (this.options['rawValue'] !== val)
+    if (!this._CompareOptionValues('rawValue', this.options['rawValue'], val))
       this.option("rawValue", val, flags);
   },
 
@@ -4844,15 +4378,18 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
         break;
         
       case "help":
-        // refresh the help - need to keep the label in sync with the input.
-        if (this.$label)
+        if (!this._IsCustomElement())
         {
-          helpDef = this.options.help["definition"];
-          helpSource = this.options.help["source"];
-          this.$label._ojLabel("option", "help", 
-                               {"definition" : helpDef, "source" : helpSource});
-          this._refreshDescribedByForLabel();
-                    
+          // refresh the help - need to keep the label in sync with the input.
+          if (this.$label)
+          {
+            helpDef = this.options.help["definition"];
+            helpSource = this.options.help["source"];
+            this.$label.ojLabel("option", "help", 
+                                 {"definition" : helpDef, "source" : helpSource});
+            this._refreshDescribedByForLabel();
+
+          }
         }
         break;
      
@@ -4903,7 +4440,7 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
     // the DOM for the label and its text could have changed. 
     if (this.$label)
     {
-      this.$label._ojLabel("refresh");
+      this.$label.ojLabel("refresh");
     }
 
     // reset all validators when label changes
@@ -5150,9 +4687,10 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
     return result;
   },  
   
+  //** @inheritdoc */
   _CompareOptionValues : function (option, value1, value2)
   {
-    if (option === 'value')
+    if (option === 'value' || option === 'rawValue')
     {
       return oj.Object.compareValues(value1, value2);
     }
@@ -5270,6 +4808,8 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
     // remove component messages in messagesShown. Custom messges are kept intact.
     for (var i = beforeLen -1; i >= 0; i--)
     {
+      // NOTE: shownMsgs is this.options['messagesShown'] 
+      // so we are modifying this.options['messagesShown'] here.
       msg = shownMsgs[i];
       if (msg instanceof oj.ComponentMessage)
       {
@@ -5279,6 +4819,8 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
     
     if (shownMsgs.length !== beforeLen)
     {
+      // Setting 'changed' flag to true means that although we have already 
+      // updated this.options['messagesShown'], we still want to fire a messagesShownChanged event.
       this._setMessagesOption('messagesShown', shownMsgs, null, true);
     }    
   },
@@ -5286,7 +4828,10 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
     
   /**
    * Sets the messages option with the new value. Updates the new 'valid' state and notifies 
-   * messaging.
+   * messaging. 
+   * Setting 'changed' flag to true means we want to fire a property changed event
+   * without checking that the option value to what you are setting it to. Useful
+   * if the option is an array or we have already updated the option directly.
    * 
    * This method updates the option directly without invoking setOption() method. This is done by 
    * setting the following property in flags parameter of the option() method - 
@@ -5295,8 +4840,9 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
    * @param {string} key
    * @param {Array} value
    * @param {Event=} event
-   * @param {Boolean=} changed
-   *
+   * @param {Boolean=} changed when this is true, then we set the 'changed' flag to true, and having
+   * the changed flag be true will guarantee that the property changed event is fired even if the
+   * the property value is equal to what you are setting it to.
    * @private
    */
   _setMessagesOption : function (key, value, event, changed)
@@ -5312,18 +4858,19 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
       flags['_context'] = {originalEvent: event, writeback: true, internalSet: true};
       if (key !== "messagesCustom")
         flags['_context']['readOnly'] = true;
+
       flags['changed'] = changed || !bothEmpty;
       
       this._resetValid();
       
-      this.option(key, value, flags);
+      this.option(key, value, flags); 
       
       this._updateMessagingContent();
     }
   },  
   
   /**
-   * Clears the messages options - <code class="prettyprint">messagesHidden</code>,
+   * Clears the messages and message options - <code class="prettyprint">messagesHidden</code>,
    * <code class="prettyprint">messagesShown</code>, <code class="prettyprint">messagesCustom</code>.
    * 
    * @param {String} option messages option that is being cleared.
@@ -5361,16 +4908,9 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
       for (i = 0; i < value.length; i++)
       {
         val = value[i];
-        if (val instanceof oj.Message)
-        {
-          msgsClone.push(val.clone());
-        }
-        else
-        {
-          msg = new oj.Message(val['summary'], val['detail'], val['severity']);
-          msg =  Object.freeze ? Object.freeze(msg) : msg;
-          msgsClone.push(msg);
-        }
+        msg = new oj.Message(val['summary'], val['detail'], val['severity']);
+        msg =  Object.freeze ? Object.freeze(msg) : msg;
+        msgsClone.push(msg);
       }
     }
     
@@ -5379,8 +4919,10 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
   
  
   /** 
-   * Create the _ojLabel component with help (required is done in the components that support
-   * required) see oj.EditableValueUtils._refreshRequired
+   * Create the ojLabel component with help (required is done in the components that support
+   * required) see oj.EditableValueUtils._refreshRequired.
+   * This is not supported for custom elements. For pages with custom elements, the app dev
+   * uses the public &lt;oj-label> component.
    * @private
    * @memberof oj.editableValue
    * @instance
@@ -5391,6 +4933,9 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
     var helpDef;
     var helpSource;
     
+    if (this._IsCustomElement())
+      return;
+    
     this.$label = this._GetLabelElement();
     if (this.$label)
     {
@@ -5398,14 +4943,14 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
       helpSource = this.options['help']['source'];
 
       // create the ojLabel component 
-      this.$label._ojLabel(
+      this.$label.ojLabel(
         {rootAttributes:{'class': this._GetDefaultStyleClass()+"-label"},
         help:{'definition': helpDef, 
               'source': helpSource}});
       this._createDescribedByForLabel();
     }    
   },
-  /**
+ /**
    * Refreshes the aria-describedby for label element's helpIcon
    * @protected
    * @memberof oj.editableValue
@@ -5527,7 +5072,7 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
    * Get the element whose id matches the elem's aria-labelledby value, if any.
    * @param {Object} elem the dom element from which you want to get the 
    * aria-labelledby property value
-   * @return {jQuery} if element does not have aria-labelledby defined, then
+   * @return {jQuery|null} if element does not have aria-labelledby defined, then
    *    returns null. If it  does, then return a new jQuery object with the 
    *    label with an id equal to the aria-labelledby value. If no match, then
    *    the jQuery object will be empty.
@@ -5569,7 +5114,7 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
     var ariaLabelledByElem = this._getAriaLabelledByElement(elem);
     if (ariaLabelledByElem !== null && ariaLabelledByElem.length !== 0)
     {
-      id = ariaLabelledByElem.attr("id")
+      id = ariaLabelledByElem.attr("id");
     }
     return id;
   },
@@ -5652,14 +5197,78 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
   _getMessages : function()
   {
     return this.options['messagesShown'].concat(this.options['messagesHidden']); // todo: revisit
+  }, 
+  /**
+   * Finds the oj-label element associated with this form component and returns it.
+   * @returns {Element|null}
+   * @private
+   * @memberof oj.editableValue
+   * @instance
+   */  
+  _getCustomOjLabelElement: function ()
+  {
+    var labelElement = null;
+    var $labelElement;
+    var labelledBy = this.options['labelledBy'];
+    var widget;
+    var widgetId;
+    
+    if (labelledBy)
+    {
+      // First, if 'labelledBy', look for the oj-label by its 'id' since that will be fastest.
+      labelElement = document.getElementById(labelledBy);
+    }
+      
+    // if there is no label element found, then look at the 'id'/'for' combination.
+    if (labelElement === null)
+    {
+      // If 'id', look for the label by its 'for' attribute. (First look for sibling 
+      // since that is the most common way and attribute selector searches perform better than
+      // looking at the entire document.)  
+      // widget will be the JET form element, like oj-input-text, in jquery format.
+      widget = this.widget();
+      widgetId = widget[0].id;
+      if (widgetId)
+      {
+        // $labelElement will be the <oj-label>.
+        $labelElement = widget.siblings("[for='" + widgetId + "']");
+        if ($labelElement.length === 0)
+        {
+          // a sibling label is not found, so look for it from the document level.
+          $labelElement = $("[for='" + this.element.id + "']");
+
+        }
+        if ($labelElement.length > 0)
+        {
+          // if it is still 0, we couldn't find the label. If it has a length, we return
+          // the first one.
+          labelElement = $labelElement[0];
+        }
+      }        
+    }
+    return labelElement;
   },
-  
-  // helper method to retrieve the label text.          
+  /**
+   * Helper method to retrieve the label text. Needed for required translation. 
+   * Returns the form component's label or oj-label's textContent, if the label was found.
+   * 
+   * @return {string|null}
+   * @private
+   * @memberof oj.editableValue
+   * @instance
+   */
   _getLabelText : function ()
   {
+
     if (this.$label)
     {
       return this.$label.text();
+    }
+    else
+    {
+      if (this.customOjLabelElement === undefined)
+        this.customOjLabelElement = this._getCustomOjLabelElement();
+      return this.customOjLabelElement ? this.customOjLabelElement.textContent : null;
     }
   },
 
@@ -5866,6 +5475,7 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
     
     if (typeof newMsgs === "object" && Array.isArray(newMsgs)) 
     {
+      // update this.options[option] directly by pushing any new messages into it.
       msgs = this.options[option];
 
       len = newMsgs.length;
@@ -5874,7 +5484,8 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
         msgs.push(newMsgs[i]);
       }
     }
-    
+    // Setting 'changed' flag to true means that although we have already 
+    // updated this.options[option], we still want to fire a property changed event.
     this._setMessagesOption(option, msgs, event, true);
   },
   
@@ -5941,7 +5552,14 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
         break;
     }
 
+    context.internalSet = true;
     this.option({'value': newValue}, {'_context': context});
+    // When internalSet is true _setOption->_AfterSetOptionValue->_Refresh isn't called. 
+    // We still need the converter to run and the displayValue to be refreshed, so we
+    // call this._AfterSetOptionValue ourselves
+    this._AfterSetOptionValue('value', {'_context': context});
+    
+
   },
   
   /**
@@ -6210,6 +5828,7 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
     var match = -1;
     var pmo;
     var passed = true;
+    // $.extend merges the contents of two or more objects together into the first object
     var previousMsgs = $.extend([], pm);
     var msgs = $.extend([], m);
     
@@ -6219,6 +5838,9 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
       return false;
     }
     
+    // one way it gets here is if there is one messages-custom message on initialization and
+    // after the busyContext is complete meaning the page is rendered, we set a different
+    // messages-custom message.
     $.each(previousMsgs, function (i, pMsg) 
     {
       if (!(pMsg instanceof oj.Message))
@@ -6235,7 +5857,10 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
       match = -1;
       $.each(msgs, function(j, msg) {
         {
-          if (pmo.equals(msg))
+          if((oj.Message.getSeverityLevel(pmo['severity']) === 
+             oj.Message.getSeverityLevel(msg['severity'])) && 
+             pmo['summary'] === msg['summary'] && 
+             pmo['detail'] === msg['detail'])
           {
             match = j;
             return; // found a match, so break out of loop
@@ -6310,11 +5935,16 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
     if (e instanceof oj.ConverterError || e instanceof oj.ValidatorError)
     {
       ojmessage = e.getMessage();
-      oj.Assert.assertPrototype(ojmessage, oj.Message);
 
-      severity = ojmessage['severity'];
-      summary = ojmessage['summary'];
-      detail = ojmessage['detail'];
+      severity = ojmessage['severity'] || oj.Message.SEVERITY_LEVEL['ERROR'];
+      summary = ojmessage['summary'] || oj.Translations.getTranslatedString("oj-message.error");;
+      detail = ojmessage['detail'] || oj.Translations.getTranslatedString("oj-converter.detail");
+    }
+    else if (e['summary'] || e['detail'])
+    {
+      severity = oj.Message.SEVERITY_LEVEL['ERROR'];
+      summary = e['summary'] || oj.Translations.getTranslatedString("oj-message.error");;
+      detail = e['detail'] || oj.Translations.getTranslatedString("oj-converter.detail");
     }
     else
     {
@@ -6386,16 +6016,9 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
    */        
   _refreshComponentDisplayValue : function (value, fullRefresh)
   {
-    var lastModelValue;
-    var modelValue = value || this.options['value'];
-    var shouldUpdateElementValue;
-    
-    lastModelValue = this._getLastModelValue();
-    shouldUpdateElementValue = fullRefresh || (modelValue !== lastModelValue) || false;
-
-    if (shouldUpdateElementValue)
+    if (fullRefresh || (value !== this._getLastModelValue()))
     {
-      this._updateElementDisplayValue(modelValue);
+      this._updateElementDisplayValue(value);
     }
   },
 
@@ -6515,7 +6138,7 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
    * &nbsp;&nbsp;- if there are validation errors, then value not pushed to model; messagesShown is 
    * updated<br/>
    * &nbsp;&nbsp;- if no errors result from the validation, push value to model; author needs to 
-   * listen to optionChange(value) to clear custom errors.<br/>
+   * listen to valueChanged to clear custom errors.<br/>
    * 
    * - if component is invalid and has messagesHidden -> required: false -> clear component 
    * errors; no deferred validation is run.<br/>
@@ -6702,39 +6325,7 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
       ve._messages = valMsgs;
       throw ve;
     }
-  }
-  
-  // Fragments:
-    
-  /**
-   *     <tr>
-   *       <td rowspan="2">Label's help icon</td>
-   *       <td><kbd>Tap</kbd></td>
-   *       <td>If there is a help source URL on the anchor icon, navigate to the Help Source URL.
-   *       Otherwise, show the help definition text in a popup.</td>
-   *     </tr>
-   *     <tr>
-   *       <td><kbd>Press & Hold</kbd></td>
-   *       <td>Show help definition text in a popup.</td>
-   *     </tr> 
-   * @ojfragment labelTouchDoc - Used in touch gesture section of classdesc, and standalone gesture doc
-   * @memberof oj.editableValue
-   */
-  
-  /**
-   *     <tr>
-   *       <td rowspan="2">Label's help icon</td>
-   *       <td><kbd>Enter</kbd></td>
-   *       <td>Go the Help Source URL.</td>
-   *     </tr>
-   *     <tr>
-   *       <td><kbd>Tab In</kbd></td>
-   *       <td>Show help definition text.</td>
-   *     </tr> 
-   * @ojfragment labelKeyboardDoc - Used in touch gesture section of classdesc, and standalone gesture doc
-   * @memberof oj.editableValue
-   */
- 
+  } 
 }, true);
 
 oj.Components.setDefaultOptions(
@@ -6748,6 +6339,7 @@ oj.Components.setDefaultOptions(
                       context['containers'].indexOf('ojTable') >= 0 ? ['notewindow'] : ['inline'],
           'converterHint': ['placeholder', 'notewindow'], 
           'validatorHint': ['notewindow'], 
+          'helpInstruction': ['notewindow'], 
           'title': ['notewindow']
         };
       })
@@ -6756,7 +6348,131 @@ oj.Components.setDefaultOptions(
  
 
 );
+//////////////////     SUB-IDS     //////////////////
+/**
+ * <p>Sub-ID for the help icon element used by EditableValue components.</p>
+ * 
+ * @ojsubid oj-label-help-icon
+ * @memberof oj.editableValue
+ *
+ * @example <caption>Get the help icon element associated with an editable value component:</caption>
+ * var node = myComp.getNodeBySubId("oj-label-help-icon");
+ */
 
+//////////////// fragments /////////////////
+/**
+ * <p>
+ * <h3 id="validation-section">
+ * Validation and Messaging
+ * <a class="bookmarkable-link" title="Bookmarkable Link" href="#validation-section"></a>
+ * </h3>
+ * An editable component runs validation (normal or deferred) based on the action performed on it 
+ * (either by end-user or page author), and the state it was in when the action occurred. Examples 
+ * of actions are - creating a component, user changing the value of the component by interacting 
+ * with it, the app setting a value programmatically, the app calling the validate() method etc. At 
+ * the time the action occurs, the component could already be showing errors, or can have a deferred 
+ * error or have no errors. 
+ * <p>
+ * These factors also determine whether validation errors/messages get shown to the user immediately 
+ * or get deferred. The following sections highlight the kinds of validation that are run and how 
+ * messages get handled.
+ * </p>
+ * <h4 id="normal-validation-section">Normal Validation 
+ * <a class="bookmarkable-link" title="Bookmarkable Link" href="#normal-validation-section"></a></h4>
+ * Normal validation is run in the following cases on the display value, using the converter and 
+ * validators set on the component, and validation errors are reported to user immediately.
+ * <ul>
+ * <li>When value changes as a result of user interaction all messages are cleared, including custom 
+ * messages added by the app, and full validation is run on the UI value. The steps performed are 
+ * outlined below.
+ * <ol> 
+ * <li>All messages are cleared and <code class="prettyprint">messagesCustom</code> property is cleared</li>
+ * <li>If no converter is present then processing continues to next step. If a converter is 
+ * present, the UI value is first converted (i.e., parsed). If there is a parse error then 
+ * the messages are shown and processing returns.</li>
+ * <li>If there are no validators setup for the component then the value is set on the component. 
+ * Otherwise all validators are run in sequence using the parsed value from the previous step. The 
+ * implicit required is run first if the component is marked required. When a validation error is 
+ * encountered it is remembered and the next validator in the sequence is run. 
+ * <ul><li>NOTE: The value is trimmed before required validation is run</li></ul>
+ * </li>
+ * <li>At the end of the validation run if there are errors, the messages are shown
+ * and processing returns. If there are no errors, then the 
+ * <code class="prettyprint">value</code> property is updated and the formatted value displayed on the 
+ * UI.</li>
+ * </ol>
+ * </li>
+ * <li>When the <code class="prettyprint">validate</code> method is called by app, all messages are 
+ * cleared and full validation run using the display value. See <code class="prettyprint">validate</code>
+ * method on the sub-classes for details. Note: JET validation is designed to catch user input errors, and not invalid
+ * data passed from the server; this should be caught on the server.</li>
+ * <li>When certain properties change through programmatic intervention by app, the component 
+ * determines whether it needs to run normal validation based on the state the component is in. 
+ * Refer to the <a href="#mixed-validation-section">Mixed Validation</a> section below for details. </li>
+ * </ul>
+ * 
+ * <h4 id="deferred-validation-section">Deferred Validation
+ * <a class="bookmarkable-link" title="Bookmarkable Link" href="#deferred-validation-section"></a>
+ * </h4>
+ * Deferred validation is run in the following cases on the component value using the implicit 
+ * required validator if required is true, and validation errors are deferred, i.e., not shown to user immediately. 
+ * Refer to the <a href="#deferred-messages-section">Showing Deferred Messages</a> section to 
+ * understand how deferred messages can be shown.
+ * <ul>
+ *  <li>When a component is created and it is required deferred validation is run and no messages are cleared 
+ *  prior to running validation.  
+ *  Refer to the <a href="#deferred-validators-section">Validators 
+ *  Participating in Deferred Validation</a> section for details.</li> 
+ *  <li>When the <code class="prettyprint">value</code> property changes due to programmatic 
+ *  intervention deferred validation is run, after all messages and messagesCustom property are cleared.</li>  
+ *  <li>When the <code class="prettyprint">reset</code> method is called, deferred validation is run 
+ *   after all messages and messagesCustom property are cleared.</li>  
+ *  <li>When certain properties change through programmatic intervention by app, the component 
+ *  determines whether it needs to run deferred validation based on the state the component is in. 
+ *  Refer to the <a href="#mixed-validation-section">Mixed Validation</a> section below for details.</li>
+ * </ul>
+ * 
+ * <h4 id="mixed-validation-section">Mixed Validation
+ * <a class="bookmarkable-link" title="Bookmarkable Link" href="#mixed-validation-section"></a>
+ * </h4>
+ * Either deferred or normal validation is run in the following cases based on the state the 
+ * component is in and any validation errors encountered are either hidden or shown to user.
+ * <ul>
+ *  <li>when disabled property changes. See <a href="#disabled">disabled</a> property for details.</li>
+ *  <li>when refresh method is called. See <a href="#refresh">refresh</a> method for details.</li> 
+ *  <li>when converter property changes. Not all EditableValue components have the converter property. See
+ *  the sub-classes that have the converter property for details, e.g., {@link oj.inputBase#converter}.</li>
+ *  <li>when required property changes. Not all EditableValue components have the required property. See
+ *  the sub-classes that have the required property for details, e.g., {@link oj.inputBase#required}.</li>
+ *  <li>when validators property changes. Not all EditableValue components have the validators property. See
+ *  the sub-classes that have the validators property for details, e.g., {@link oj.inputBase#validators}.</li>
+ *   
+ * </ul>
+ * </p>
+ * 
+ * <p>
+ * <h3 id="deferred-messages-section">
+ * Showing Deferred Messages
+ * <a class="bookmarkable-link" title="Bookmarkable Link" href="#deferred-messages-section"></a>
+ * </h3>
+ * Deferred validation messages are displayed only when page author requests for it explicitly in 
+ * one of the following ways: 
+ * <ul>
+ * <li>calls the <a href="#showMessages"><code class="prettyprint">showMessages</code></a> method on the component</li>
+ * </ul>
+ * </p>
+ * 
+ * <p>
+ * <h3 id="deferred-validators-section">
+ * Validators Participating in Deferred Validation
+ * <a class="bookmarkable-link" title="Bookmarkable Link" href="#deferred-validators-section"></a>
+ * </h3>
+ * The required validator is the only validator type that participates in deferred validation.
+ * The required property needs to be set to true for the required validator to run.
+ * </p> 
+ * @ojfragment validationAndMessagingDoc - Used in the general section of classdesc
+ * @memberof oj.editableValue
+ */
 /**
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
@@ -6856,6 +6572,211 @@ oj.InlineMessagingStrategy.prototype.deactivate = function ()
 };
 
 /**
+ * Get the default animation.
+ *
+ * @private
+ * @memberof oj.InlineMessagingStrategy
+ * @instance
+ */
+oj.InlineMessagingStrategy.prototype._getDefaultAnimation = function()
+{
+  // Load the default animation once per page scope
+  if (!oj.InlineMessagingStrategy._defaultAnimation)
+  {
+    var animation = (oj.ThemeUtils.parseJSONFromFontFamily('oj-messaging-inline-option-defaults') || {})["animation"];
+    animation = animation || {};
+    oj.InlineMessagingStrategy._defaultAnimation = animation; 
+  }
+  
+  return oj.InlineMessagingStrategy._defaultAnimation;
+};
+
+/**
+ * Replace animation options with runtime values, such as oldHeight and 
+ * newHeight, which are specified as placeholders in the default animations
+ * but their values are not known until runtime.
+ *
+ * @param {string|Object|Array} effects - The animation options.
+ * @param {Object} map - An object containing the runtime property key-value map.
+ * @return {string|Object|Array} The resolved animation effects
+ * @private
+ * @memberof oj.InlineMessagingStrategy
+ * @instance
+ */
+oj.InlineMessagingStrategy.prototype._replaceAnimationOptions = function (effects, map)
+{
+  var effectsAsString;
+  var isEffectsTypeofString;
+
+  if (!oj.StringUtils.isString(effects))
+  {
+    isEffectsTypeofString = false;
+    effectsAsString = JSON.stringify(effects);
+  }
+  else
+  {
+    isEffectsTypeofString = true;
+    effectsAsString = effects + ""; // append "" to get around a closure compiler warning
+  }
+
+  for (var key in map)
+  {
+    effectsAsString = effectsAsString.replace(new RegExp(key, 'g'), map[key]);
+  }
+
+  effects = isEffectsTypeofString ? effectsAsString :
+    /** @type {Object} */ (JSON.parse(effectsAsString));
+
+  return effects;
+};
+
+/**
+ * Determine the animation for displaying new messaging content.
+ *
+ * @param {jQuery} rootElem - The root element for inline message.
+ * @param {string} newContent - The new content to display.
+ * @private
+ * @memberof oj.InlineMessagingStrategy
+ * @instance
+ */
+oj.InlineMessagingStrategy.prototype._determineAnimation = function(rootElem, newContent)
+{
+  var action;
+  var effect;
+  var parsedEffect;
+  var defaults = this._getDefaultAnimation();
+  if (defaults)
+  {
+    var oldContent = rootElem[0].innerHTML;// @HTMLUpdateOK
+    var oldHeight = rootElem.outerHeight();
+    var newHeight;
+    
+    rootElem[0].innerHTML = newContent;// @HTMLUpdateOK
+    newHeight = rootElem.outerHeight();
+    rootElem[0].innerHTML = oldContent;// @HTMLUpdateOK
+
+    action = newHeight > oldHeight ? 'open' : 'close';
+    effect = defaults[action];
+
+    if (effect)
+    {
+      parsedEffect = this._replaceAnimationOptions(effect, {'#oldHeight': oldHeight + 'px',
+                                                            '#newHeight': newHeight + 'px'});
+    }
+  }
+  
+  return {action: action,
+          effect: parsedEffect};
+};
+
+/**
+ * Set busy state before opening or closing inline message.
+ *
+ * @private
+ * @memberof oj.InlineMessagingStrategy
+ * @instance
+ */
+oj.InlineMessagingStrategy.prototype._setBusyState = function()
+{
+  // Set a page-level busy state if not already set  
+  if (!this._resolveBusyState)
+  {
+    var component = this.GetComponent();
+    var jElem = component ? component.element : null;
+    var domElem = jElem ? jElem[0] : null;
+    var busyContext = oj.Context.getContext(domElem).getBusyContext();
+    var description = 'The page is waiting for inline message ';
+    
+    if (domElem && domElem.id)
+    {
+      description += 'for "' + domElem.id + '" ';
+    }
+    description += 'to open/close';
+
+    this._resolveBusyState = busyContext.addBusyState({'description': description});
+  }  
+};
+
+/**
+ * Clear busy state after opening or closing inline message.
+ *
+ * @private
+ * @memberof oj.InlineMessagingStrategy
+ * @instance
+ */
+oj.InlineMessagingStrategy.prototype._clearBusyState = function()
+{
+  if (this._resolveBusyState)
+  {
+    this._resolveBusyState();
+    this._resolveBusyState = null;
+  }
+};
+
+/**
+ * Queue up inline messaging open/close actions so that it only animate once
+ * for multiple updates within the same tick.
+ *
+ * @param {string} contentToShow - The messaging content to show.
+ * @private
+ * @memberof oj.InlineMessagingStrategy
+ * @instance
+ */
+oj.InlineMessagingStrategy.prototype._queueAction = function(contentToShow)
+{
+  var self = this;
+  var rootElem = this.$messagingContentRoot;
+
+  this._setBusyState();
+  
+  // If there is a pending timeout, clear it and set a new one so that only the
+  // last animation queued within the same tick will be run.  Otherwise we will
+  // end up with too many animation since the messaging framework keeps clearing
+  // and updating the message display during validation, etc.
+  if (this._timeoutId)
+  {
+    clearTimeout(this._timeoutId);
+  }
+
+  this._timeoutId = setTimeout(function() {
+    self._timeoutId = null;
+    
+    // Make sure $messagingContentRoot is still there.  It could have been
+    // removed by the time the timeout function is run.
+    if (rootElem && rootElem[0])
+    {
+      // Parse and substitute runtime values in animation options
+      var actionEffect = self._determineAnimation(rootElem, contentToShow);
+      var action = actionEffect.action;
+      var effect = actionEffect.effect;
+      
+      // Set the new content first if we're opening
+      if (action == 'open')
+      {
+        rootElem[0].innerHTML = contentToShow;// @HTMLUpdateOK
+      }
+
+      // Invoke animation
+      oj.AnimationUtils.startAnimation(rootElem[0], 'inline-' + action, effect, self.GetComponent()).then(function() {
+        // Set the new content last if we're closing
+        if (action == 'close')
+        {
+          rootElem[0].innerHTML = contentToShow;// @HTMLUpdateOK
+        }
+
+        // Clear busy state when animation end
+        self._clearBusyState();        
+      });
+    }
+    else
+    {
+      // Just clear the busy state if $messagingContentRoot no longer exists
+      self._clearBusyState();
+    }
+  }, 0);
+};
+
+/**
  * If the inline message is already open its contents need to updated when update() or
  * reactivate() is called.
  *
@@ -6877,27 +6798,44 @@ oj.InlineMessagingStrategy.prototype._updateInlineMessage = function()
     this._createInlineMessage();
   }
 
-  if (contentToShow)
+  if (this.$messagingContentRoot && this.$messagingContentRoot[0])
   {
-    // push new content into inline message dom
-    domNode = this.$messagingContentRoot[0];
+    // Only enable default animation for custom elements so that automated tests
+    // for legacy components are not affected    
+    if (this.GetComponent()._IsCustomElement())
+    {
+      // This may be called multiple times within the same event cycle because the
+      // old message is cleared before validation and the message is
+      // reconstructed.  Since we now have animation for inline message, we don't 
+      // want to update the DOM every single time.  Instead we queue up the 
+      // updates and will only show the last one within the same event cyle.    
+      this._queueAction(contentToShow);
+    }
+    else
+    {
+      // Legacy components don't have animation so just update the DOM
+      if (contentToShow)
+      {
+        // push new content into inline message dom
+        domNode = this.$messagingContentRoot[0];
 
-    // contentToShow includes content that may come from app. It is scrubbed for illegal tags
-    // before setting to innerHTML
-    domNode.innerHTML = contentToShow;  // @HTMLUpdateOK
+        // contentToShow includes content that may come from app. It is scrubbed for illegal tags
+        // before setting to innerHTML
+        domNode.innerHTML = contentToShow;  // @HTMLUpdateOK
 
+      }
+      else
+      {
+        // if there is no content to show and inline message dom is currently there, remove the dom.
+          // NOTE: If you see that a button seems to be losing its click event
+          // after inline messaging validation or after a reset
+          // it may be because the button is moving as a result of the inline messaging appearing
+          // and/or disappearing. The workaround for the user is to use 'mousedown' event instead
+          // of the 'click' event.
+        this._removeMessagingContentRootDom();
+      }
+    }
   }
-  else
-  {
-    // if there is no content to show and inline message dom is currently there, remove the dom.
-      // NOTE: If you see that a button seems to be losing its click event
-      // after inline messaging validation or after a reset
-      // it may be because the button is moving as a result of the inline messaging appearing
-      // and/or disappearing. The workaround for the user is to use 'mousedown' event instead
-      // of the 'click' event.
-    this._removeMessagingContentRootDom();
-  }
-
 };
 
 oj.InlineMessagingStrategy.prototype._createInlineMessage = function ()
@@ -7076,21 +7014,35 @@ var editableValueMeta = {
       "type": "boolean"
     },
     "displayOptions": {
-      "type": "Object"
+      "type": "Object",
+      "properties": {
+        "converterHint": {
+          "type": "string"
+        },
+        "helpInstruction": {
+          "type": "string"
+        },
+        "messages": {
+          "type": "string"
+        },
+        "validatorHint": {
+          "type": "string"
+        }
+      }
     },
     "help": {
-      "type": "Object<string, string>"
+      "type": "Object<string, string>",
+      "properties": {
+        "instruction": {
+          "type": "string"
+        }
+      }
     },
     "messagesCustom": {
-      "type": "Array"
+      "type": "Array",
+      "writeback": true
     },
-    "messagesHidden": {
-      "type": "Array"
-    },
-    "messagesShown": {
-      "type": "Array"
-    },
-    "title": {
+    "describedBy": {
       "type": "string"
     },
     "value": {
@@ -7099,11 +7051,12 @@ var editableValueMeta = {
     }
   },
   "methods": {
-    "getNodeBySubId": {},
-    "isValid": {},
-    "refresh": {},
     "reset": {},
     "showMessages": {}
+  },
+  "events": {
+    "animateStart": {},
+    "animateEnd": {}
   },
   "extension": {
     _WIDGET_NAME: "editableValue"

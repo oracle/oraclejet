@@ -14,12 +14,6 @@ define(['ojs/ojcore', 'jquery', 'hammerjs', 'ojs/ojeditablevalue',
  */
 
 /**
- * @preserve Copyright 2013 jQuery Foundation and other contributors
- * Released under the MIT license.
- * http://jquery.org/license
- */
-
-/**
  * @private
  */
 var _config = oj.ThemeUtils.parseJSONFromFontFamily('oj-datepicker-config') || {};
@@ -222,29 +216,21 @@ var yearDisplay = oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_T
   "year" : "numeric"
 });
 
-/*!
- * JET Input Date @VERSION
- * http://jqueryui.com
- *
- * Copyright 2013 jQuery Foundertion and other contributors
- * Released under the MIT license.
- * http://jquery.org/license
- *
- * Depends:
- *  jquery.ui.widget.js
- */
+
 /**
- * @ojcomponent oj.ojInputDate
- * @augments oj.inputBase
+ * @ojcomponent oj.ojDatePicker
+ * @augments oj.ojInputDate
  * @since 0.6
  *
  * @classdesc
  * <h3 id="inputDateOverview-section">
- *   JET ojInputDate Component
+ *   JET DatePicker (Inline mode)
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#inputDateOverview-section"></a>
  * </h3>
+ * <p>Description:</p>
+ * <p>A JET DatePicker (Inline mode) provides basic support for datepicker selection. This will render the date picker as an inline element. Other behaviors of this element is similar to JET InputDate</p>
  *
- * <p>Description: ojInputDate provides basic support for datepicker selection.
+ * <pre class="prettyprint"><code>&lt;oj-date-picker>&lt;/oj-date-picker></code></pre>
  *
  * <h3 id="touch-section">
  *   Touch End User Information
@@ -260,24 +246,69 @@ var yearDisplay = oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_T
  *
  * {@ojinclude "name":"keyboardDoc"}
  *
- * <h3 id="pseudos-section">
- *   Pseudo-selectors
- *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#pseudos-section"></a>
+ * <h3 id="a11y-section">
+ *   Accessibility
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#a11y-section"></a>
+ * </h3>
+ * <p>
+ * It is up to the application developer to associate the label to the input element.
+ * For DatePicker, you should put an <code>id</code> on the element, and then set
+ * the <code>for</code> attribute on the label to be the element's id.
+ * </p>
+ * <h3 id="label-section">
+ *   Label and DatePicker
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#label-section"></a>
+ * </h3>
+ * <p>
+ * For accessibility, you should associate a label element with the input
+ * by putting an <code>id</code> on the input, and then setting the
+ * <code>for</code> attribute on the label to be the input's id.
+ * </p>
+ * <p>
+ * The DatePicker will decorate its associated label with required and help
+ * information, if the <code>required</code> and <code>help</code> attributes are set.
+ * </p>
+ */
+
+/**
+ * @ojcomponent oj.ojInputDate
+ * @augments oj.inputBase
+ * @since 0.6
+ *
+ * @classdesc
+ * <h3 id="inputDateOverview-section">
+ *   JET InputDate
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#inputDateOverview-section"></a>
+ * </h3>
+ * <p>Description:</p>
+ * <p>A JET InputDate provides basic support for datepicker selection.</p>
+ *
+ * <pre class="prettyprint"><code>&lt;oj-input-date>&lt;/oj-input-date></code></pre>
+ *
+ * {@ojinclude "name":"validationAndMessagingDoc"}
+ * 
+ * <h3 id="touch-section">
+ *   Touch End User Information
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#touch-section"></a>
  * </h3>
  *
- * <pre class="prettyprint">
- * <code>$( ":oj-inputDate" )            // selects all JET input on the page
- * </code>
- * </pre>
+ * {@ojinclude "name":"touchDoc"}
+ *
+ * <h3 id="keyboard-section">
+ *   Keyboard End User Information
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#keyboard-section"></a>
+ * </h3>
+ *
+ * {@ojinclude "name":"keyboardDoc"}
  *
  * <h3 id="a11y-section">
  *   Accessibility
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#a11y-section"></a>
  * </h3>
  * <p>
- * It is up to the application developer to associate the label to the input component.
- * For inputDate, you should put an <code>id</code> on the input, and then set
- * the <code>for</code> attribute on the label to be the input's id.
+ * It is up to the application developer to associate the label to the input element.
+ * For InputDate, you should put an <code>id</code> on the element, and then set
+ * the <code>for</code> attribute on the label to be the element's id.
  * </p>
  * <h3 id="label-section">
  *   Label and InputDate
@@ -289,32 +320,9 @@ var yearDisplay = oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_T
  * <code>for</code> attribute on the label to be the input's id.
  * </p>
  * <p>
- * The component will decorate its associated label with required and help
- * information, if the <code>required</code> and <code>help</code> options are set.
+ * The InputDate will decorate its associated label with required and help
+ * information, if the <code>required</code> and <code>help</code> attributes are set.
  * </p>
- * <h3 id="binding-section">
- *   Declarative Binding
- *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#binding-section"></a>
- * </h3>
- *
- * <pre class="prettyprint">
- * <code>
- *    &lt;input id="dateId" data-bind="ojComponent: {component: 'ojInputDate'}" /&gt;
- * </code>
- * </pre>
- *
- * @desc Creates or re-initializes a JET ojInputDate
- *
- * @param {Object=} options a map of option-value pairs to set on the component
- *
- * @example <caption>Initialize the input element with no options specified:</caption>
- * $( ".selector" ).ojInputDate();
- *
- * @example <caption>Initialize the input element with some options:</caption>
- * $( ".selector" ).ojInputDate( { "disabled": true } );
- *
- * @example <caption>Initialize the input element via the JET <code class="prettyprint">ojComponent</code> binding:</caption>
- * &lt;input id="dateId" data-bind="ojComponent: {component: 'ojInputDate'}" /&gt;
  */
 oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
 {
@@ -367,101 +375,56 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
   {
     /**
      * <p>
-     * Note that Jet framework prohibits setting subset of options which are object types.<br/><br/>
-     * For example $(".selector").ojInputDate("option", "datePicker", {footerLayout: "today"}); is prohibited as it will
-     * wipe out all other sub-options for "datePicker" object.<br/><br/> If one wishes to do this [by above syntax or knockout] one
-     * will have to get the "datePicker" object, modify the necessary sub-option and pass it to above syntax.<br/><br/>
-     * Default values for the datePicker sub-options can also be overridden with the theming variable
+     * Note that Jet framework prohibits setting subset of properties which are object types.<br/><br/>
+     * For example myInputDate.datePicker = {footerLayout: "today"}; is prohibited as it will
+     * wipe out all other sub-properties for "datePicker" object.<br/><br/> If one wishes to do this [by above syntax or knockout] one
+     * will have to get the "datePicker" object, modify the necessary sub-property and pass it to above syntax.<br/><br/>
+     * Default values for the datePicker sub-properties can also be overridden with the theming variable
      * <code class="prettyprint">$inputDateTimeDatePickerOptionDefault</code>, which is merged with other defaults.<br/><br/>
-     * Note that all of the datePicker sub-options except showOn are not available when renderMode is 'native'.<br/><br/>
+     * Note that all of the datePicker sub-properties except showOn are not available when renderMode is 'native'.<br/><br/>
      *
-     * The properties supported on the datePicker option are:
+     * @memberof oj.ojInputDate
+     * @ojfragment datePickerCommonDatePicker
+     */
+    /**
+     * {@ojinclude "name":"datePickerCommonDatePicker"}
      *
-     * @property {string=} footerLayout Will dictate what content is shown within the footer of the calendar. <br/><br/>
-     * The default value is <code class="prettyprint">{datePicker: {footerLayout: "today"}}</code> with possible values being
-     * <ul>
-     *   <li>"" - Do not show anything</li>
-     *   <li>"today" - the today button</li>
-     * </ul>
-     * <br/>
-     * Example <code class="prettyprint">$(".selector").ojInputDate("option", "datePicker.footerLayout", "today");</code>
+     * @expose
+     * @instance
+     * @memberof! oj.ojDatePicker
+     * @name datePicker
+     * @type {Object}
      *
-     * @property {string=} changeMonth Whether the month should be rendered as a button to allow selection instead of text.<br/><br/>
-     * The default value is <code class="prettyprint">{datePicker: {changeMonth: "select"}}</code> with possible values being
-     * <ul>
-     *  <li>"select" - As a button</li>
-     *  <li>"none" - As a text</li>
-     * </ul>
-     * <br/>
-     * Example <code class="prettyprint">$(".selector").ojInputDate("option", "datePicker.changeMonth", "none");</code>
+     * @example <caption>Override defaults in the theme (SCSS) :</caption>
+     * $inputDateTimeDatePickerOptionDefault: (footerLayout: 'today', weekDisplay: 'number') !default;
      *
-     * @property {string=} changeYear Whether the year should be rendered as a button to allow selection instead of text. <br/><br/>
-     * The default value is <code class="prettyprint">{datePicker: {changeYear: "select"}}</code> with possible values being
-     * <ul>
-     *  <li>"select" - As a button</li>
-     *  <li>"none" - As a text</li>
-     * </ul>
-     * <br/>
-     * Example <code class="prettyprint">$(".selector").ojInputDate("option", "datePicker.changeYear", "none");</code>
+     * @example <caption>Initialize the component, overriding some date-picker attributes and leaving the others intact:</caption>
+     * &lt;!-- Using dot notation -->
+     * &lt;oj-date-picker date-picker.some-key='some value' date-picker.some-other-key='some other value'>&lt;/oj-date-picker>
+     * 
+     * &lt;!-- Using JSON notation -->
+     * &lt;oj-date-picker date-picker='{"someKey":"some value", "someOtherKey":"some other value"}'>&lt;/oj-date-picker>
      *
-     * @property {number=} currentMonthPos The position in multipe months at which to show the current month (starting at 0). <br/><br/>
-     * The default value is <code class="prettyprint">{datePicker: {currentMonthPos: 0}}</code> <br/><br/>
-     * Example <code class="prettyprint">$(".selector").ojInputDate("option", "datePicker.currentMonthPos", 1);</code>
+     * @example <caption>Get or set the <code class="prettyprint">datePicker</code> property after initialization:</caption>
+     * // Get one
+     * var value = myComponent.datePicker.someKey;
      *
-     * @property {string=} daysOutsideMonth Dictates the behavior of days outside the current viewing month. <br/><br/>
-     * The default value is <code class="prettyprint">{datePicker: {daysOutsideMonth: "hidden"}}</code> with possible values being
-     * <ul>
-     *  <li>"hidden" - Days outside the current viewing month will be hidden</li>
-     *  <li>"visible" - Days outside the current viewing month will be visible</li>
-     *  <li>"selectable" - Days outside the current viewing month will be visible + selectable</li>
-     * </ul>
-     * <br/>
-     * Example <code class="prettyprint">$(".selector").ojInputDate("option", "datePicker.daysOutsideMonth", "visible");</code>
+     * // Set one, leaving the others intact. Use the setProperty API for 
+     * // subproperties so that a property change event is fired.
+     * myComponent.setProperty('datePicker.someKey', 'some value');
      *
-     * @property {number=} numberOfMonths The number of months to show at once. Note that if one is using a numberOfMonths > 4 then one should define a CSS rule
-     * for the width of each of the months. For example if numberOfMonths is set to 6 then one should define a CSS rule .oj-datepicker-multi-6 .oj-datepicker-group
-     * providing the width each month should take in percentage.  <br/><br/>
-     * The default value is <code class="prettyprint">{datePicker: {numberOfMonths: 1}}</code> <br/><br/>
-     * Example <code class="prettyprint">$(".selector").ojInputDate("option", "datePicker.numberOfMonths", 2);</code>
+     * // Get all
+     * var values = myComponent.datePicker;
      *
-     * @property {string=} showOn When the datepicker should be shown. <br/><br/>
-     * Possible values are
-     * <ul>
-     *  <li>"focus" - when the element receives focus or when the trigger calendar image is clicked. When the picker is closed, the field regains focus and is editable.</li>
-     *  <li>"image" - when the trigger calendar image is clicked</li>
-     * </ul>
-     * <br/>
-     * Example to initialize the inputDate with showOn option specified
-     * <code class="prettyprint">$(".selector").ojInputDate("option", "datePicker.showOn", "focus");</code>
-     * <br/>
+     * // Set all.  Must list every datePicker key, as those not listed are lost.
+     * myComponent.datePicker = {
+     *     someKey: 'some value',
+     *     someOtherKey: 'some other value'
+     * };
      *
-     * @property {string|number=} stepMonths How the prev + next will step back/forward the months. <br/><br/>
-     * The default value is <code class="prettyprint">{datePicker: {stepMonths: "numberOfMonths"}}</code>
-     * <ul>
-     *  <li>"numberOfMonths" - Will use numberOfMonths option value as value</li>
-     *  <li>number - Number of months to step back/forward</li>
-     * </ul>
-     * <br/>
-     * Example <code class="prettyprint">$(".selector").ojInputDate("option", "datePicker.stepMonths", 2);</code>
-     *
-     * @property {number=} stepBigMonths Number of months to step back/forward for the (Alt + Page up) + (Alt + Page down) key strokes.  <br/><br/>
-     * The default value is <code class="prettyprint">{datePicker: {stepBigMonths: 12}}</code><br/><br/>
-     * Example <code class="prettyprint">$(".selector").ojInputDate("option", "datePicker.stepBigMonths", 3);</code>
-     *
-     * @property {string=} weekDisplay Whether week of the year will be shown.<br/><br/>
-     * The default value is <code class="prettyprint">{datePicker: {weekDisplay: "none"}}</code>
-     * <ul>
-     *  <li>"number" - Will show the week of the year as a number</li>
-     *  <li>"none" - Nothing will be shown</li>
-     * </ul>
-     * <br/>
-     * Example <code class="prettyprint">$(".selector").ojInputDate("option", "datePicker.weekDisplay", "number");</code>
-     *
-     * @property {string=} yearRange The range of years displayed in the year drop-down: either relative to today's year ("-nn:+nn"),
-     * relative to the currently selected year ("c-nn:c+nn"), absolute ("nnnn:nnnn"), or combinations of these formats ("nnnn:-nn"). <br/><br/>
-     * The default value is <code class="prettyprint">{datePicker: {yearRange: "c-10:c+10"}}</code><br/><br/>
-     * Example <code class="prettyprint">$(".selector").ojInputDate("option", "datePicker.yearRange", "c-5:c+10");</code>
-     * </p>
+     */
+    /**
+     * {@ojinclude "name":"datePickerCommonDatePicker"}
      *
      * @expose
      * @instance
@@ -470,61 +433,208 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
      *
      * @example <caption>Override defaults in the theme (SCSS) :</caption>
      * $inputDateTimeDatePickerOptionDefault: (footerLayout: 'today', weekDisplay: 'number') !default;
+     *
+     * @example <caption>Initialize the component, overriding some date-picker attributes and leaving the others intact:</caption>
+     * &lt;!-- Using dot notation -->
+     * &lt;oj-input-date date-picker.some-key='some value' date-picker.some-other-key='some other value'>&lt;/oj-input-date>
+     * 
+     * &lt;!-- Using JSON notation -->
+     * &lt;oj-input-date date-picker='{"someKey":"some value", "someOtherKey":"some other value"}'>&lt;/oj-input-date>
+     *
+     * @example <caption>Get or set the <code class="prettyprint">datePicker</code> property after initialization:</caption>
+     * // Get one
+     * var value = myComponent.datePicker.someKey;
+     *
+     * // Set one, leaving the others intact. Use the setProperty API for 
+     * // subproperties so that a property change event is fired.
+     * myComponent.setProperty('datePicker.someKey', 'some value');
+     *
+     * // Get all
+     * var values = myComponent.datePicker;
+     *
+     * // Set all.  Must list every datePicker key, as those not listed are lost.
+     * myComponent.datePicker = {
+     *     someKey: 'some value',
+     *     someOtherKey: 'some other value'
+     * };
+     *
      */
     datePicker:
     {
       /**
+       * Will dictate what content is shown within the footer of the calendar.
+       *
+       * <p>See the <a href="#datePicker">date-picker</a> attribute for usage examples.
+       *
        * @expose
+       * @name datePicker.footerLayout
+       * @memberof! oj.ojInputDate
+       * @instance
+       * @type {string}
+       * @ojvalue {string} '' Do not show anything
+       * @ojvalue {string} 'today' Show the today button
+       * @default <code class="prettyprint">'today'</code>
        */
       footerLayout : "",  
 
       /**
+       * Whether the month should be rendered as a button to allow selection instead of text.
+       *
+       * <p>See the <a href="#datePicker">date-picker</a> attribute for usage examples.
+       *
        * @expose
+       * @name datePicker.changeMonth
+       * @memberof! oj.ojInputDate
+       * @instance
+       * @type {string}
+       * @ojvalue {string} 'select' As a button
+       * @ojvalue {string} 'none' As text
+       * @default <code class="prettyprint">'select'</code>
        */
       changeMonth : "select",
 
       /**
+       * Whether the year should be rendered as a button to allow selection instead of text.
+       *
+       * <p>See the <a href="#datePicker">date-picker</a> attribute for usage examples.
+       *
        * @expose
+       * @name datePicker.changeYear
+       * @memberof! oj.ojInputDate
+       * @instance
+       * @type {string}
+       * @ojvalue {string} 'select' As a button
+       * @ojvalue {string} 'none' As text
+       * @default <code class="prettyprint">'select'</code>
        */
       changeYear : "select",
 
       /**
+       * The position in multipe months at which to show the current month (starting at 0).
+       *
+       * <p>See the <a href="#datePicker">date-picker</a> attribute for usage examples.
+       *
        * @expose
+       * @name datePicker.currentMonthPos
+       * @memberof! oj.ojInputDate
+       * @instance
+       * @type {number}
+       * @default <code class="prettyprint">0</code>
        */
       currentMonthPos : 0,
 
       /**
+       * Dictates the behavior of days outside the current viewing month.
+       *
+       * <p>See the <a href="#datePicker">date-picker</a> attribute for usage examples.
+       *
        * @expose
+       * @name datePicker.daysOutsideMonth
+       * @memberof! oj.ojInputDate
+       * @instance
+       * @type {string}
+       * @ojvalue {string} 'hidden' Days outside the current viewing month will be hidden
+       * @ojvalue {string} 'visible' Days outside the current viewing month will be visible
+       * @ojvalue {string} 'selectable' Days outside the current viewing month will be visible + selectable
+       * @default <code class="prettyprint">'hidden'</code>
        */
       daysOutsideMonth : "hidden",
 
       /**
+       * The number of months to show at once. Note that if one is using a 
+       * numberOfMonths > 4 then one should define a CSS rule for the width of 
+       * each of the months. For example if numberOfMonths is set to 6 then one 
+       * should define a CSS rule .oj-datepicker-multi-6 .oj-datepicker-group
+       * providing the width each month should take in percentage.
+       *
+       * <p>See the <a href="#datePicker">date-picker</a> attribute for usage examples.
+       *
        * @expose
+       * @name datePicker.numberOfMonths
+       * @memberof! oj.ojInputDate
+       * @instance
+       * @type {number}
+       * @default <code class="prettyprint">1</code>
        */
       numberOfMonths : 1,
 
       /**
+       * When the datepicker should be shown.
+       *
+       * <p>See the <a href="#datePicker">date-picker</a> attribute for usage examples.
+       *
        * @expose
+       * @name datePicker.showOn
+       * @memberof! oj.ojInputDate
+       * @instance
+       * @type {string}
+       * @ojvalue {string} 'focus' when the element receives focus or when the trigger calendar image is
+       *   clicked. When the picker is closed, the field regains focus and is editable.
+       * @ojvalue {string} 'image' when the trigger calendar image is clicked
+       * @default <code class="prettyprint">'focus'</code>
        */
       showOn : "focus",
 
       /**
+       * How the prev + next will step back/forward the months.
+       *
+       * <p>See the <a href="#datePicker">date-picker</a> attribute for usage examples.
+       *
        * @expose
+       * @name datePicker.stepMonths
+       * @memberof! oj.ojInputDate
+       * @instance
+       * @type {string|number}
+       * @ojvalue {string} 'numberOfMonths' Will use numberOfMonths property value as value
+       * @ojvalue {number} &lt;number&gt; Number of months to step back/forward
+       * @default <code class="prettyprint">'numberOfMonths'</code>
        */
       stepMonths : "numberOfMonths",
 
       /**
+       * Number of months to step back/forward for the (Alt + Page up) + (Alt + Page down) key strokes.
+       *
+       * <p>See the <a href="#datePicker">date-picker</a> attribute for usage examples.
+       *
        * @expose
+       * @name datePicker.stepBigMonths
+       * @memberof! oj.ojInputDate
+       * @instance
+       * @type {number}
+       * @default <code class="prettyprint">12</code>
        */
       stepBigMonths : 12,
 
       /**
+       * Whether week of the year will be shown.
+       *
+       * <p>See the <a href="#datePicker">date-picker</a> attribute for usage examples.
+       *
        * @expose
+       * @name datePicker.weekDisplay
+       * @memberof! oj.ojInputDate
+       * @instance
+       * @type {string}
+       * @ojvalue {string} 'number' Will show the week of the year as a number
+       * @ojvalue {string} 'none' Nothing will be shown
+       * @default <code class="prettyprint">'none'</code>
        */
       weekDisplay : "none", // "number" to show week of the year, "none" to not show it
 
       /**
+       * The range of years displayed in the year drop-down: either relative to 
+       * today's year ("-nn:+nn"), relative to the currently selected year 
+       * ("c-nn:c+nn"), absolute ("nnnn:nnnn"), or combinations of these formats 
+       * ("nnnn:-nn").
+       *
+       * <p>See the <a href="#datePicker">date-picker</a> attribute for usage examples.
+       *
        * @expose
+       * @name datePicker.yearRange
+       * @memberof! oj.ojInputDate
+       * @instance
+       * @type {string}
+       * @default <code class="prettyprint">'c-10:c+10'</code>
        */
       yearRange : "c-10:c+10" // Range of years to display in drop-down,
       // either relative to today's year (-nn:+nn), relative to currently displayed year
@@ -536,51 +646,11 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
      * A datetime converter instance that duck types {@link oj.DateTimeConverter}. Or an object literal
      * containing the properties listed below.
      *
-     * The converter used for ojInputDate. Page authors can set a custom converter by creating one using the datetime converter factory
+     * The converter used for InputDate. Page authors can set a custom converter by creating one using the datetime converter factory
      * and providing custom options -
      * oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter(customOptions).
      *
-     * <p>
-     * When <code class="prettyprint">converter</code> option changes due to programmatic
-     * intervention, the component performs various tasks based on the current state it is in. </br>
-     *
-     * <h4>Steps Performed Always</h4>
-     * <ul>
-     * <li>Any cached converter instance is cleared and new converter created. The converter hint is
-     * pushed to messaging. E.g., notewindow displays the new hint(s).
-     * </li>
-     * </ul>
-     *
-     * <h4>Running Validation</h4>
-     * <ul>
-     * <li>if component is valid when <code class="prettyprint">converter</code> option changes, the
-     * display value is refreshed.</li>
-     * <li>if component is invalid and is showing messages -
-     * <code class="prettyprint">messagesShown</code> option is non-empty, when
-     * <code class="prettyprint">converter</code> option changes then all component messages are
-     * cleared and full validation run using the current display value on the component.
-     * <ul>
-     *   <li>if there are validation errors, then <code class="prettyprint">value</code>
-     *   option is not updated, and the error pushed to <code class="prettyprint">messagesShown</code>
-     *   option. The display value is not refreshed in this case. </li>
-     *   <li>if no errors result from the validation, the <code class="prettyprint">value</code>
-     *   option is updated; page author can listen to the <code class="prettyprint">optionChange</code>
-     *   event on the <code class="prettyprint">value</code> option to clear custom errors. The
-     *   display value is refreshed with the formatted value provided by converter.</li>
-     * </ul>
-     * </li>
-     * <li>if component is invalid and has deferred messages when converter option changes, the
-     *   display value is again refreshed with the formatted value provided by converter.</li>
-     * </ul>
-     *
-     * <h4>Clearing Messages</h4>
-     * <ul>
-     * <li>Only messages created by the component are cleared. This includes both
-     * <code class="prettyprint">messagesHidden</code> and <code class="prettyprint">messagesShown</code>
-     *  options.</li>
-     * <li><code class="prettyprint">messagesCustom</code> option is not cleared.</li>
-     * </ul>
-     * </p>
+     * {@ojinclude "name":"inputBaseConverterOptionDoc"}
      *
      * @property {string} type - the converter type registered with the oj.ConverterFactory.
      * Usually 'datetime'. See {@link oj.DateTimeConverterFactory} for details. <br/>
@@ -593,6 +663,7 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
      * @expose
      * @instance
      * @memberof! oj.ojInputDate
+     * @type {Object}
      * @default <code class="prettyprint">oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter()</code>
      */
     converter : oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter(
@@ -602,12 +673,32 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
 
     /**
      * Determines if keyboard entry of the text is allowed.
-     * When disabled the picker must be used to select a date.
+     * When the datepicker is inline, the only supported value is "disabled".
      *
-     * @example <caption>Initialize the component with the <code class="prettyprint">keyboardEdit</code> option:</caption>
-     * &lt;input id="date" data-bind="ojComponent: {component: 'ojInputDate', keyboardEdit: 'disabled'}" /&gt;
-     * // Example to set the default in the theme (SCSS)
+     * @expose
+     * @instance
+     * @memberof! oj.ojDatePicker
+     * @name keyboardEdit
+     * @type {string}
+     * @ojvalue {string} "disabled" Changing the date can only be done with the picker.
+     * @default "disabled"
+     *
+     * @example <caption>Initialize the InputDate with the <code class="prettyprint">keyboard-edit</code> attribute specified:</caption>
+     * &lt;oj-date-picker keyboard-edit='disabled'>&lt;/oj-date-picker>
+     *
+     * @example <caption>Get or set the <code class="prettyprint">keyboardEdit</code> property after initialization:</caption>
+     * // getter
+     * var keyboardEdit = myInputDate.keyboardEdit;
+     *
+     * // setter
+     * myInputDate.keyboardEdit = 'disabled';
+     *
+     * @example <caption>Set the default in the theme (SCSS)</caption>
      * $inputDateTimeKeyboardEditOptionDefault: disabled !default;
+     */
+    /**
+     * Determines if keyboard entry of the text is allowed.
+     * When disabled the picker must be used to select a date.
      *
      * @expose
      * @instance
@@ -618,42 +709,109 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
      * @default Default value depends on the theme. In alta-android, alta-ios and alta-windows themes, the
      * default is <code class="prettyprint">"disabled"</code>
      * and it's <code class="prettyprint">"enabled"</code> for alta web theme.
+     *
+     * @example <caption>Initialize the InputDate with the <code class="prettyprint">keyboard-edit</code> attribute specified:</caption>
+     * &lt;oj-input-date keyboard-edit='disabled'>&lt;/oj-input-date>
+     *
+     * @example <caption>Get or set the <code class="prettyprint">keyboardEdit</code> property after initialization:</caption>
+     * // getter
+     * var keyboardEdit = myInputDate.keyboardEdit;
+     *
+     * // setter
+     * myInputDate.keyboardEdit = 'disabled';
+     *
+     * @example <caption>Set the default in the theme (SCSS)</caption>
+     * $inputDateTimeKeyboardEditOptionDefault: disabled !default;
      */
     keyboardEdit : "enabled",
 
     /**
      * The maximum selectable date. When set to null, there is no maximum.
      *
-     * <ul>
-     *  <li> type string - ISOString
-     *  <li> null - no limit
-     * </ul>
+     * @expose
+     * @instance
+     * @memberof! oj.ojDatePicker
+     * @name max
+     * @type {string|null}
+     * @ojvalue {string} &lt;string&gt; ISO string of the maximum selectable date
+     * @ojvalue {null} null No limit
+     * @default <code class="prettyprint">null</code>
      *
-     * @example <caption>Initialize the component with the <code class="prettyprint">max</code> option:</caption>
-     * &lt;input id="date" data-bind="ojComponent: {component: 'ojInputDate', max: '2014-09-25'}" /&gt;
+     * @example <caption>Initialize the InputDate with the <code class="prettyprint">max</code> attribute specified:</caption>
+     * &lt;oj-date-picker max='2018-09-25'>&lt;/oj-date-picker>
+     *
+     * @example <caption>Get or set the <code class="prettyprint">max</code> property after initialization:</caption>
+     * // getter
+     * var maxValue = myInputDate.max;
+     *
+     * // setter
+     * myInputDate.max = '2018-09-25';
+     */
+    /**
+     * The maximum selectable date. When set to null, there is no maximum.
      *
      * @expose
      * @instance
      * @memberof! oj.ojInputDate
+     * @type {string|null}
+     * @ojvalue {string} &lt;string&gt; ISO string of the maximum selectable date
+     * @ojvalue {null} null No limit
      * @default <code class="prettyprint">null</code>
+     *
+     * @example <caption>Initialize the InputDate with the <code class="prettyprint">max</code> attribute specified:</caption>
+     * &lt;oj-input-date max='2018-09-25'>&lt;/oj-input-date>
+     *
+     * @example <caption>Get or set the <code class="prettyprint">max</code> property after initialization:</caption>
+     * // getter
+     * var maxValue = myInputDate.max;
+     *
+     * // setter
+     * myInputDate.max = '2018-09-25';
      */
     max : undefined,
 
     /**
      * The minimum selectable date. When set to null, there is no minimum.
      *
-     * <ul>
-     *  <li> type string - ISOString
-     *  <li> null - no limit
-     * </ul>
+     * @expose
+     * @instance
+     * @memberof! oj.ojDatePicker
+     * @name min
+     * @type {string|null}
+     * @ojvalue {string} &lt;string&gt; ISO string of the minimum selectable date
+     * @ojvalue {null} null No limit
+     * @default <code class="prettyprint">null</code>
      *
-     * @example <caption>Initialize the component with the <code class="prettyprint">min</code> option:</caption>
-     * &lt;input id="date" data-bind="ojComponent: {component: 'ojInputDate', min: '2014-08-25'}" /&gt;
+     * @example <caption>Initialize the InputDate with the <code class="prettyprint">min</code> attribute specified:</caption>
+     * &lt;oj-date-picker min='2014-08-25'>&lt;/oj-date-picker>
+     *
+     * @example <caption>Get or set the <code class="prettyprint">min</code> property after initialization:</caption>
+     * // getter
+     * var minValue = myInputDate.min;
+     *
+     * // setter
+     * myInputDate.min = '2014-08-25';
+     */
+    /**
+     * The minimum selectable date. When set to null, there is no minimum.
      *
      * @expose
      * @instance
      * @memberof! oj.ojInputDate
+     * @type {string|null}
+     * @ojvalue {string} &lt;string&gt; ISO string of the minimum selectable date
+     * @ojvalue {null} null No limit
      * @default <code class="prettyprint">null</code>
+     *
+     * @example <caption>Initialize the InputDate with the <code class="prettyprint">min</code> attribute specified:</caption>
+     * &lt;oj-input-date min='2014-08-25'>&lt;/oj-input-date>
+     *
+     * @example <caption>Get or set the <code class="prettyprint">min</code> property after initialization:</caption>
+     * // getter
+     * var minValue = myInputDate.min;
+     *
+     * // setter
+     * myInputDate.min = '2014-08-25';
      */
     min : undefined,
 
@@ -661,17 +819,17 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
      * <p>Attributes specified here will be set on the picker DOM element when it's launched.
      * <p>The supported attributes are <code class="prettyprint">class</code> and <code class="prettyprint">style</code>, which are appended to the picker's class and style, if any.
      * Note: 1) pickerAttributes is not applied in the native theme.
-     * 2) setting this option after component creation has no effect.
+     * 2) setting this property after element creation has no effect.
      *
      * @example <caption>Initialize the inputDate specifying a set of attributes to be set on the picker DOM element:</caption>
-     * $( ".selector" ).ojInputDate({ "pickerAttributes": {
+     * myInputDate.pickerAttributes = {
      *   "style": "color:blue;",
      *   "class": "my-class"
-     * }});
+     * };
      *
-     * @example <caption>Get the <code class="prettyprint">pickerAttributes</code> option, after initialization:</caption>
+     * @example <caption>Get the <code class="prettyprint">pickerAttributes</code> property, after initialization:</caption>
      * // getter
-     * var inputDate = $( ".selector" ).ojInputDate( "option", "pickerAttributes" );
+     * var inputDate = myInputDate.pickerAttributes;
      *
      * @expose
      * @memberof! oj.ojInputDate
@@ -682,17 +840,43 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
     pickerAttributes: null,
 
     /**
-     * The renderMode option allows applications to specify whether to render date picker in JET or
+     * Allows applications to specify whether to render date picker in JET or
+     * as a native picker control. In inline mode, the only value supported is "jet"</br>
+     *
+     * @expose
+     * @memberof! oj.ojDatePicker
+     * @instance
+     * @name renderMode
+     * @type {string}
+     * @ojvalue {string} 'jet' Applications get full JET functionality.
+     * @default jet.
+     *
+     * @example <caption>Initialize the InputDate with the <code class="prettyprint">render-mode</code> attribute specified:</caption>
+     * &lt;oj-date-picker render-mode='jet'>&lt;/oj-date-picker>
+     *
+     * @example <caption>Get or set the <code class="prettyprint">renderMode</code> property after initialization:</caption>
+     * // getter
+     * var renderMode = myInputDate.renderMode;
+     *
+     * // setter
+     * myInputDate.renderMode = 'jet';
+     *
+     * @example <caption>Set the default in the theme (SCSS)</caption>
+     * $inputDateTimeRenderModeOptionDefault: native !default;
+     */
+    /**
+     * Allows applications to specify whether to render date picker in JET or
      * as a native picker control.</br>
      *
-     * Valid values: jet, native
-     *
-     * <ul>
-     *  <li> jet - Applications get full JET functionality.</li>
-     *  <li> native - Applications get the functionality of the native picker. Native picker is
-     *  not available when the picker is inline, defaults to jet instead.</li></br>
+     * @expose
+     * @memberof! oj.ojInputDate
+     * @instance
+     * @type {string}
+     * @ojvalue {string} 'jet' Applications get full JET functionality.
+     * @ojvalue {string} 'native' Applications get the functionality of the native picker. Native picker is
+     *  not available when the picker is inline, defaults to jet instead.</br></br>
      *  Note that the native picker support is limited to Cordova plugin published
-     *  at 'https://github.com/VitaliiBlagodir/cordova-plugin-datepicker'.</br>
+     *  at 'https://github.com/VitaliiBlagodir/cordova-plugin-datepicker'.</br></br>
      *  With native renderMode, the functionality that is sacrificed compared to jet renderMode are:
      *    <ul>
      *      <li>Date picker cannot be themed</li>
@@ -700,25 +884,23 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
      *      <li>pickerAttributes is not applied</li>
      *      <li>Sub-IDs are not available</li>
      *      <li>hide() function is no-op</li>
-     *      <li>translations sub options pertaining to the picker is not available</li>
-     *      <li>All of the 'datepicker' sub-options except 'showOn' are not available</li>
+     *      <li>translations sub properties pertaining to the picker is not available</li>
+     *      <li>All of the 'datepicker' sub-properties except 'showOn' are not available</li>
      *    </ul>
-     * </ul>
-     *
-     * @expose
-     * @memberof! oj.ojInputDate
-     * @instance
-     * @type {string}
      * @default value depends on the theme. In alta-android, alta-ios and alta-windows themes, the
      * default is "native" and it's "jet" for alta web theme.
      *
-     * @example <caption>Get or set the <code class="prettyprint">renderMode</code> option for
-     * an ojInputDate after initialization:</caption>
+     * @example <caption>Initialize the InputDate with the <code class="prettyprint">render-mode</code> attribute specified:</caption>
+     * &lt;oj-input-date render-mode='native'>&lt;/oj-input-date>
+     *
+     * @example <caption>Get or set the <code class="prettyprint">renderMode</code> property after initialization:</caption>
      * // getter
-     * var renderMode = $( ".selector" ).ojInputDate( "option", "renderMode" );
+     * var renderMode = myInputDate.renderMode;
+     *
      * // setter
-     * $( ".selector" ).ojInputDate( "option", "renderMode", "native" );
-     * // Example to set the default in the theme (SCSS)
+     * myInputDate.renderMode = 'native';
+     *
+     * @example <caption>Set the default in the theme (SCSS)</caption>
      * $inputDateTimeRenderModeOptionDefault: native !default;
      */
     renderMode : "jet",
@@ -748,59 +930,35 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
      *
      * There also exists a special '*' character which represents ALL within that field [i.e. * within year, represents for ALL year].
      *
-     * Note that this option will override the value of the dayFormatter option. Setting both dayFormatter and dayMetaData options is not supported.
+     * Note that this property will override the value of the dayFormatter property. Setting both dayFormatter and dayMetaData properties is not supported.
      *
      * @expose
      * @name dayMetaData
      * @instance
      * @memberof! oj.ojInputDate
+     * @type {object}
      * @default <code class="prettyprint">null</code>
-     * @example <code class="prettyprint">{2013: {11: {25: {disabled: true, className: 'holiday', tooltip: 'Stuff to display'}, 5: {disabled: true}}}}}</code>
+     * @example
+     * {2013: {11: {25: {disabled: true, className: 'holiday', tooltip: 'Stuff to display'}, 5: {disabled: true}}}}}
      */
 
     // DOCLETS
     /**
-     * The placeholder text to set on the element. Though it is possible to set placeholder
-     * attribute on the element itself, the component will only read the value when the component
-     * is created. Subsequent changes to the element's placeholder attribute will not be picked up
-     * and page authors should update the option directly.
-     *
-     * @example <caption>Initialize the component with the <code class="prettyprint">placeholder</code> option:</caption>
-     * &lt;!-- Foo is InputDate, InputDateTime /&gt;
-     * &lt;input id="date" data-bind="ojComponent: {component: 'ojFoo', placeholder: 'Birth Date'}" /&gt;
-     *
-     * @example <caption>Initialize <code class="prettyprint">placeholder</code> option from html attribute:</caption>
-     * &lt;!-- Foo is InputDate, InputDateTime /&gt;
-     * &lt;input id="date" data-bind="ojComponent: {component: 'ojFoo'}" placeholder="User Name" /&gt;
-     *
-     * @default when the option is not set, the element's placeholder attribute is used if it exists.
-     * If the attribute is not set then the default can be the converter hint provided by the
-     * datetime converter. See displayOptions for details.
-     *
-     * @access public
-     * @instance
-     * @expose
-     * @name placeholder
-     * @instance
-     * @memberof! oj.ojInputDate
-     */
-
-    /**
-     * List of validators used by component when performing validation. Each item is either an
+     * List of validators used by element when performing validation. Each item is either an
      * instance that duck types {@link oj.Validator}, or is an Object literal containing the
-     * properties listed below. Implicit validators created by a component when certain options
-     * are present (e.g. <code class="prettyprint">required</code> option), are separate from
-     * validators specified through this option. At runtime when the component runs validation, it
-     * combines the implicit validators with the list specified through this option.
+     * properties listed below. Implicit validators created by an element when certain attributes
+     * are present (e.g. <code class="prettyprint">required</code> property), are separate from
+     * validators specified through this property. At runtime when the element runs validation, it
+     * combines the implicit validators with the list specified through this property.
      * <p>
      * Hints exposed by validators are shown in the notewindow by default, or as determined by the
      * 'validatorHint' property set on the <code class="prettyprint">displayOptions</code>
-     * option.
+     * property.
      * </p>
      *
      * <p>
-     * When <code class="prettyprint">validators</code> option changes due to programmatic
-     * intervention, the component may decide to clear messages and run validation, based on the
+     * When <code class="prettyprint">validators</code> property changes due to programmatic
+     * intervention, the element may decide to clear messages and run validation, based on the
      * current state it is in. </br>
      *
      * <h4>Steps Performed Always</h4>
@@ -812,33 +970,29 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
      *
      * <h4>Running Validation</h4>
      * <ul>
-     * <li>if component is valid when validators changes, component does nothing other than the
+     * <li>if element is valid when validators changes, element does nothing other than the
      * steps it always performs.</li>
-     * <li>if component is invalid and is showing messages -
-     * <code class="prettyprint">messagesShown</code> option is non-empty, when
-     * <code class="prettyprint">validators</code> changes then all component messages are cleared
-     * and full validation run using the display value on the component.
+     * <li>if element is invalid and is showing messages when
+     * <code class="prettyprint">validators</code> changes then all element messages are cleared
+     * and full validation run using the display value on the element.
      * <ul>
      *   <li>if there are validation errors, then <code class="prettyprint">value</code>
-     *   option is not updated and the error pushed to <code class="prettyprint">messagesShown</code>
-     *   option.
+     *   property is not updated and the error is shown.
      *   </li>
      *   <li>if no errors result from the validation, the <code class="prettyprint">value</code>
-     *   option is updated; page author can listen to the <code class="prettyprint">optionChange</code>
-     *   event on the <code class="prettyprint">value</code> option to clear custom errors.</li>
+     *   property is updated; page author can listen to the <code class="prettyprint">valueChanged</code>
+     *   event to clear custom errors.</li>
      * </ul>
      * </li>
-     * <li>if component is invalid and has deferred messages when validators changes, it does
+     * <li>if element is invalid and has deferred messages when validators changes, it does
      * nothing other than the steps it performs always.</li>
      * </ul>
      * </p>
      *
      * <h4>Clearing Messages</h4>
      * <ul>
-     * <li>Only messages created by the component are cleared.  These include ones in
-     * <code class="prettyprint">messagesHidden</code> and <code class="prettyprint">messagesShown</code>
-     *  options.</li>
-     * <li><code class="prettyprint">messagesCustom</code> option is not cleared.</li>
+     * <li>Only messages created by the element are cleared.</li>
+     * <li><code class="prettyprint">messagesCustom</code> property is not cleared.</li>
      * </ul>
      * </p>
      *
@@ -847,28 +1001,24 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
      * to {@link oj.ValidatorFactory}. <br/>
      * @property {Object=} options - optional Object literal of options that the validator expects.
      *
-     * @example <caption>Initialize the component with validator object literal:</caption>
-     * $(".selector").ojInputDate({
-     *   validators: [{
+     * @example <caption>Initialize the element with validator object literal:</caption>
+     * myInputDate.validators = [{
      *     type: 'dateTimeRange',
      *     options : {
      *       max: '2014-09-10',
      *       min: '2014-09-01'
      *     }
-     *   }],
-     * });
+     *   }];
      *
      * NOTE: oj.Validation.validatorFactory('dateTimeRange') returns the validator factory that is used
      * to instantiate a range validator for dateTime.
      *
-     * @example <caption>Initialize the component with multiple validator instances:</caption>
+     * @example <caption>Initialize the element with multiple validator instances:</caption>
      * var validator1 = new MyCustomValidator({'foo': 'A'});
      * var validator2 = new MyCustomValidator({'foo': 'B'});
-     * // Foo is InputText, InputNumber, Select, etc.
-     * $(".selector").ojFoo({
-     *   value: 10,
-     *   validators: [validator1, validator2]
-     * });
+     * // myInputElement is InputText, InputNumber, Select, etc.
+     * myInputElement.value = 10;
+     * myInputElement.validators = [validator1, validator2];
      *
      * @expose
      * @name validators
@@ -878,48 +1028,53 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
      */
 
     /**
-     * The value of the ojInputDate component which should be an ISOString.
+     * The value of the DatePicker element which should be an ISOString.
      *
-     * @example <caption>Initialize the component with the <code class="prettyprint">value</code> option:</caption>
-     * &lt;input id="date" data-bind="ojComponent: {component: 'ojInputDate', value: '2014-09-10'}" /&gt;
-     * @example <caption>Initialize the component with the <code class="prettyprint">value</code> option specified programmatically
+     * @example <caption>Initialize the element with the <code class="prettyprint">value</code> attribute:</caption>
+     * &lt;oj-date-picker value='2014-09-10' /&gt;
+     * @example <caption>Initialize the element with the <code class="prettyprint">value</code> property specified programmatically
      * using oj.IntlConverterUtils.dateToLocalIso :</caption>
-     * $(".selector").ojInputDate({'value': oj.IntlConverterUtils.dateToLocalIso(new Date())});<br/>
-     * @example <caption>Get or set the <code class="prettyprint">value</code> option, after initialization:</caption>
+     * myInputDate.value = oj.IntlConverterUtils.dateToLocalIso(new Date());<br/>
+     * @example <caption>Get or set the <code class="prettyprint">value</code> property, after initialization:</caption>
      * // Getter: returns Today's date in ISOString
-     * $(".selector").ojInputDate("option", "value");
+     * myInputDate.value;
      * // Setter: sets it to a different date
-     * $(".selector").ojInputDate("option", "value", "2013-12-01");
+     * myInputDate.value = "2013-12-01";
+     *
+     * @expose
+     * @name value
+     * @instance
+     * @memberof! oj.ojDatePicker
+     * @type {string}
+     * @default When the attribute is not set, the element's value attribute is used as its initial value
+     * if it exists. This value must be an ISOString.
+     * @ojwriteback
+     */
+    /**
+     * The value of the InputDate element which should be an ISOString.
+     *
+     * @example <caption>Initialize the element with the <code class="prettyprint">value</code> attribute:</caption>
+     * &lt;oj-input-date value='2014-09-10' /&gt;
+     * @example <caption>Initialize the element with the <code class="prettyprint">value</code> property specified programmatically
+     * using oj.IntlConverterUtils.dateToLocalIso :</caption>
+     * myInputDate.value = oj.IntlConverterUtils.dateToLocalIso(new Date());<br/>
+     * @example <caption>Get or set the <code class="prettyprint">value</code> property, after initialization:</caption>
+     * // Getter: returns Today's date in ISOString
+     * myInputDate.value;
+     * // Setter: sets it to a different date
+     * myInputDate.value = "2013-12-01";
      *
      * @expose
      * @name value
      * @instance
      * @memberof! oj.ojInputDate
-     * @default When the option is not set, the element's value property is used as its initial value
+     * @type {string}
+     * @default When the attribute is not set, the element's value attribute is used as its initial value
      * if it exists. This value must be an ISOString.
+     * @ojwriteback
      */
 
     // Events
-
-    /**
-     * Triggered when the ojInputDate is created.
-     *
-     * @event
-     * @name create
-     * @memberof oj.ojInputDate
-     * @instance
-     * @property {Event} event <code class="prettyprint">jQuery</code> event object
-     * @property {Object} ui Currently empty
-     *
-     * @example <caption>Initialize the ojInputDate with the <code class="prettyprint">create</code> callback specified:</caption>
-     * $( ".selector" ).ojInputDate({
-     *     "create": function( event, ui ) {}
-     * });
-     *
-     * @example <caption>Bind an event listener to the <code class="prettyprint">ojcreate</code> event:</caption>
-     * $( ".selector" ).on( "ojcreate", function( event, ui ) {} );
-     */
-    // create event declared in superclass, but we still want the above API doc
 
   },
 
@@ -974,10 +1129,9 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
       this._ELEMENT_TRIGGER_WRAPPER_CLASS_NAMES += this._INPUT_CONTAINER_CLASS;
      
       var self = this;
-      var animation = _isLargeScreen ? {"open": null, "close": null} : {"close": null};
-
       //DISABLE FOR NOW, as animation is coming quite clunky (not sure if the css of popup or of animation)
-      animation = {"open": null, "close": null};
+      //var animation = _isLargeScreen ? {"open": null, "close": null} : {"close": null};
+      var animation = {"open": null, "close": null};
       this._popUpDpDiv = this._dpDiv.ojPopup({"initialFocus": "none",
                                               "role": "dialog",
                                               "modality": _isLargeScreen ? "modeless" : "modal",
@@ -999,14 +1153,6 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
                                               "animation": animation
                                             }).attr('data-oj-internal', ''); // mark internal component, used in oj.Components.getComponentElementByNode;
       this.element.attr('data-oj-popup-' + this._popUpDpDiv.attr('id') + '-parent', ''); // mark parent of pop up
-      this._resizePopupBind = function() {
-        if(oj.Components.isComponentInitialized(this._popUpDpDiv, "ojPopup")) 
-        {
-          this._popUpDpDiv.ojPopup("option", "modality", (_isLargeScreen ? "modeless" : "modal"));
-        }
-      }.bind(this);
-
-      window.addEventListener('resize', this._resizePopupBind, false);
 
       var pickerAttrs = this.options.pickerAttributes;
       if (pickerAttrs)
@@ -1055,11 +1201,11 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
     // the inline messages to be another child of the root dom node. This way the inline
     // messages can be stacked after the main component, and will grow or shrink in size the same
     // as the main component.
-    // doing this in InputBase now. $(this.element).wrap( $("<div>").addClass(this._ELEMENT_TRIGGER_WRAPPER_CLASS_NAMES));
+    // doing this in InputBase now.
 
     if (this._isInLine)
     {
-      this.element.append(this._dpDiv); //@HTMLUpdateOK
+      this.element.append(this._dpDiv); //@HTMLUpdateOK dpDiv is generated internally
       this.element.addClass(this._INLINE_CLASS); //by applying the inline class it places margin bottom, to separate in case ojInputTime exists
 
       // Set display:block in place of inst._dpDiv.show() which won't work on disconnected elements
@@ -1091,18 +1237,33 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
 
     this._disableEnable(this.options["disabled"]);
 
-    var label = this.$label;
-    if(this._inputContainer && label && label.length === 1) {
-      var icId = this._inputContainer.attr("id");
-      var LId = label.attr("id");
+    if (!this._IsCustomElement())
+    {
+      var label = this.$label;
+      if(this._inputContainer && label && label.length === 1) {
+        var LId = label.attr("id");
 
-      if(!LId) {
-        LId = this["uuid"] + "_Label";
-        label.attr("id", LId);
-      }
+        if(!LId) {
+          LId = this["uuid"] + "_Label";
+          label.attr("id", LId);
+        }
 
-      this._inputContainer.attr("aria-labelledby", LId);
+        this._inputContainer.attr("aria-labelledby", LId);
+      }     
     }
+    else
+    {
+      if(this._inputContainer)
+      {
+        var defaultLabelId = this["uuid"] + "_Label";
+        var LId = oj.EditableValueUtils.getOjLabelId(this.widget(), defaultLabelId);
+        if (LId)
+          this._inputContainer.attr("aria-labelledby", LId);
+
+      }
+      
+    }
+
 
     return ret;
   },
@@ -1112,7 +1273,7 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
    * @protected
    * @override
    */
-  _setOption : function __setOption(key, value, flags)
+  _setOption : function (key, value, flags)
   {
 
     var retVal = null;
@@ -1144,10 +1305,10 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
 
     if (key === "dayMetaData")
     {
-      //need to invoke w/ dayFormatter and return for the case where user invoke $("selector").ojInputDate("option", "dayMetaData", {});
+      //need to invoke w/ dayFormatter and return for the case where user invoke myInputDate.dayMetaData = {};
       //since that doesn't trigger ComponentBinding
 
-      this._setOption("dayFormatter", function(dateInfo) {
+      this.option("dayFormatter", function(dateInfo) {
           return _getMetaData(value, 0, [dateInfo["fullYear"], dateInfo["month"], dateInfo["date"]]);
       }, flags);
       return; //avoid setting in this.options and etc
@@ -1245,10 +1406,57 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
    * @protected
    * @override
    */
-  _destroy : function __destroy()
+  _destroy : function ()
+  {
+    this._cleanUpDateResources();
+    var retVal = this._super();
+    return retVal;
+  },
+
+  _datepickerShowing: function()
+  {
+    return this._isInLine || (oj.Components.isComponentInitialized(this._popUpDpDiv, "ojPopup") && this._popUpDpDiv.ojPopup("isOpen")) || this._nativePickerShowing;
+  },
+  /**
+   * @ignore
+   * @protected
+   * @override
+   */
+  _SetupResources : function ()
+  {
+    if (!this._isInLine)
+    {
+      this._resizePopupBind = function ()
+      {
+        if (oj.Components.isComponentInitialized(this._popUpDpDiv, "ojPopup"))
+        {
+          this._popUpDpDiv.ojPopup("option", "modality", (_isLargeScreen ? "modeless" : "modal"));
+        }
+      }.bind(this);
+      window.addEventListener('resize', this._resizePopupBind, false);
+    }
+    return this._super();
+  },
+  /**
+   * @ignore
+   * @protected
+   * @override
+   */
+  _ReleaseResources : function ()
+  {
+    //for non custom element, this is done as first step in destroy
+    if (this._IsCustomElement())
+      this._cleanUpListeners();
+    return this._super();
+  },
+  /**
+   * @ignore
+   * @private
+   */
+  _cleanUpDateResources : function ()
   {
     var triggerRootContainer;
-    if (this._isInLine) 
+    if (this._isInLine)
     {
       triggerRootContainer = $(this.element[0]).parent();
     }
@@ -1261,42 +1469,42 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
     this.element.off("focus touchstart");
     this._wrapper.off("touchstart");
 
-    var retVal = this._super();
-
     if (this._triggerNode)
     {
       this._triggerNode.remove();
     }
 
-    if(this._isInLine)
+    if (this._isInLine)
     {
       //need to remove disabled + readOnly b/c they are set by super classes and datepicker is special in that this.element
       //can be a div element for inline mode
       this.element.removeProp("disabled");
       this.element.removeProp("readonly");
     }
-    
-    if(this._resizePopupBind)
-    {
-      window.removeEventListener('resize', this._resizePopupBind);
-    }
-    window.removeEventListener('resize', resizeLargeScreenChange);
 
-    if(this._animationResolve)
+    this._cleanUpListeners();
+
+    if (this._animationResolve)
     {
       this._animationResolve();
       this._animationResolve = null;
     }
-
+    if (this._popUpDpDiv && oj.Components.isComponentInitialized(this._popUpDpDiv, "ojPopup"))
+     this._popUpDpDiv.ojPopup("destroy");
     this._dpDiv.remove();
-    return retVal;
   },
-
-  _datepickerShowing: function()
+  /**
+   * @ignore
+   * @private
+   */
+  _cleanUpListeners : function ()
   {
-    return this._isInLine || (oj.Components.isComponentInitialized(this._popUpDpDiv, "ojPopup") && this._popUpDpDiv.ojPopup("isOpen")) || this._nativePickerShowing;
+    if (this._resizePopupBind)
+    {
+      window.removeEventListener('resize', this._resizePopupBind);
+    }
+    window.removeEventListener('resize', resizeLargeScreenChange);
   },
-
   /**
    * @protected
    * @override
@@ -1602,6 +1810,7 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
   },
 
   //This handler is when an user keys down with the Month View having focus
+  //TODO, during month/year work apparently CalendarKeyDown was copied + pasted for month/year. try to clean up code
   _doMonthViewKeyDown : function(event)
   {
     var sel, handled = false,
@@ -1889,23 +2098,6 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
 
   _setupNewView : function(focusOnCalendar, view, dayOverId)
   {
-    var buttons = $("button", this._dpDiv);
-
-    if(buttons.length > 0)
-    {
-      if(buttons.length === 1)
-      {
-        //need to center it as requested by UX
-        $(buttons[0]).addClass("oj-datepicker-single-button");
-      }
-
-      $.each(buttons, function (index, ele)
-      {
-        $(ele).ojButton();
-      });
-
-    }
-
     this._attachHandlers();
 
     if (dayOverId)
@@ -2055,7 +2247,7 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
 
     //Take care of accessibility. Note that this is using an INTERNAL converter to display only the year portion [no timezone]
     //so is okay
-    $("#" + this._GetSubId(this._CALENDAR_DESCRIPTION_ID)).html(this._EscapeXSS(this.options["monthWide"][this._drawMonth]) + " " +
+    $("#" + this._GetSubId(this._CALENDAR_DESCRIPTION_ID)).html(this._EscapeXSS(this.options["monthWide"][this._drawMonth]) + " " + //@HTMLUpdateOK
       yearDisplay.format(oj.IntlConverterUtils.dateToLocalIso(new Date(this._drawYear, this._drawMonth, 1)))); //@HTMLUpdateOK
 
     this._adjustDate(0, 0, true, period === "M" ? 'day' : this._toYearFromView);
@@ -2225,8 +2417,10 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
       {
         allowDefaultEvent = true;
       }
+
       return allowDefaultEvent;
     }
+
     this._dpDiv.find("[data-handler]").map(function ()
     {
       var handler =
@@ -2263,7 +2457,7 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
         {
           if (self._isButtonActivated(evt))
           {
-          self._selectDay( + this.getAttribute("data-month"),  + this.getAttribute("data-year"), this, evt);
+            self._selectDay( + this.getAttribute("data-month"),  + this.getAttribute("data-year"), this, evt);
           }
           return keyDownPrevent(evt);
         },
@@ -2272,7 +2466,7 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
         {
           if (self._isButtonActivated(evt))
           {
-          self._selectMonthYear(this, "M");
+            self._selectMonthYear(this, "M");
           }
           return keyDownPrevent(evt);
         },
@@ -2281,7 +2475,7 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
         {
           if (self._isButtonActivated(evt))
           {
-          self._selectMonthYear(this, "Y");
+            self._selectMonthYear(this, "Y");
           }
           return keyDownPrevent(evt);
         },
@@ -2408,11 +2602,11 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
 
     prevText = this._EscapeXSS(this.getTranslatedString("prevText"));
 
-    prev = (enablePrev ? "<a role='button' href='#' class='oj-datepicker-prev-icon oj-enabled oj-default oj-component-icon oj-clickable-icon-nocontext' data-handler='prev' data-event='click keydown'" + " title='" + prevText + "'></a>" : "<a class='oj-datepicker-prev-icon oj-disabled oj-component-icon oj-clickable-icon-nocontext' title='" + prevText + "'></a>");
+    prev = (enablePrev ? "<a role='button' href='#' onclick='return false;' class='oj-datepicker-prev-icon oj-enabled oj-default oj-component-icon oj-clickable-icon-nocontext' data-handler='prev' data-event='click keydown'" + " title='" + prevText + "'></a>" : "<a class='oj-datepicker-prev-icon oj-disabled oj-component-icon oj-clickable-icon-nocontext' title='" + prevText + "'></a>");
 
     nextText = this._EscapeXSS(this.getTranslatedString("nextText"));
 
-    next = (enableNext ? "<a role='button' href='#' class='oj-datepicker-next-icon oj-enabled oj-default oj-component-icon oj-clickable-icon-nocontext' data-handler='next' data-event='click keydown'" + " title='" + nextText + "'></a>" : "<a class='oj-datepicker-next-icon oj-disabled oj-component-icon oj-clickable-icon-nocontext' title='" + nextText + "'></a>");
+    next = (enableNext ? "<a role='button' href='#' onclick='return false;' class='oj-datepicker-next-icon oj-enabled oj-default oj-component-icon oj-clickable-icon-nocontext' data-handler='next' data-event='click keydown'" + " title='" + nextText + "'></a>" : "<a class='oj-datepicker-next-icon oj-disabled oj-component-icon oj-clickable-icon-nocontext' title='" + nextText + "'></a>");
 
     header = "<div class='oj-datepicker-header" + (this.options["disabled"] ? " oj-disabled " : " oj-enabled oj-default ") + "'>";
 
@@ -2436,7 +2630,7 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
     var footerLayout = "";
     var currentText = this._EscapeXSS(this.getTranslatedString("currentText"));
     var enabledClass = this.options["disabled"] ? "oj-disabled disabled" : "oj-enabled";
-    var todayControl = "<a role='button' href='#' class='oj-datepicker-current oj-priority-secondary " + (this.options["disabled"] ? "oj-disabled' disabled" : "oj-enabled'") + " data-handler='today' data-event='click keydown'" + ">" + currentText + "</a>";
+    var todayControl = "<a role='button' href='#' onclick='return false;' class='oj-datepicker-current oj-priority-secondary " + (this.options["disabled"] ? "oj-disabled' disabled" : "oj-enabled'") + " data-handler='today' data-event='click keydown'" + ">" + currentText + "</a>";
 
     if(footerLayoutDisplay.length > 1) //keep the code for future multiple buttons
     {
@@ -2721,7 +2915,7 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
 (otherMonth && daysOutsideMonth === "hidden" ? "&#xa0;" : // display for other months
 (unselectable || wDisabled ? "<span class='oj-disabled'>" + printDate.getDate() + "</span>" : "<a role='button' class='oj-enabled" + (selectedDate ? " oj-selected" : "") + // highlight selected day
 (otherMonth ? " oj-priority-secondary" : "") + // distinguish dates from other months
-"' " + (dayOverClass ? "" : "tabindex='-1' ") + " href='#'>" + printDate.getDate() + "</a>")) + "</td>";// display selectable date
+"' " + (dayOverClass ? "" : "tabindex='-1' ") + " onclick='return false;' href='#'>" + printDate.getDate() + "</a>")) + "</td>";// display selectable date
             printDate.setDate(printDate.getDate() + 1);
           }
           calender += tbody + "</tr>";
@@ -2763,7 +2957,7 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
       }
       else
       {
-        monthHtml += "<a role='button' href='#' data-handler='selectMonthHeader' data-event='click keydown' class='oj-datepicker-month " + (wDisabled ? "oj-disabled' disabled" : "oj-enabled'") + ">";
+        monthHtml += "<a role='button' onclick='return false;' href='#' data-handler='selectMonthHeader' data-event='click keydown' class='oj-datepicker-month " + (wDisabled ? "oj-disabled' disabled" : "oj-enabled'") + ">";
         monthHtml += monthNames[drawMonth] + "</a>";
       }
 
@@ -2783,7 +2977,7 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
       }
       else
       {
-        html += "<a role='button' href='#' data-handler='selectYearHeader' data-event='click keydown' class='oj-datepicker-year " + (wDisabled ? "oj-disabled' disabled" : "oj-enabled'") + ">";
+        html += "<a role='button' onclick='return false;' href='#' data-handler='selectYearHeader' data-event='click keydown' class='oj-datepicker-year " + (wDisabled ? "oj-disabled' disabled" : "oj-enabled'") + ">";
         html += yearDisplay.format(converterUtils.dateToLocalIso(new Date(drawYear, drawMonth, 1))) + "</a>";
         this.yearshtml = null;
       }
@@ -2887,7 +3081,7 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
 (selected ? " " + this._CURRENT_CLASS : "") + "'" + // highlight selected day
 (unselectable ? "" : " data-handler='selectMonth' data-event='click' data-month='" + printDate.getMonth() + "' data-year='" + printDate.getFullYear() + "'") + ">" + // actions
 ((unselectable || wDisabled ? "<span class='oj-disabled'>" + monthNamesShort[month] + "</span>" : "<a role='button' class='oj-enabled" + (selectedDate ? " oj-selected" : "") + // highlight selected day
-"' " + (dayOverClass ? "" : "tabindex='-1' ") + " href='#'>" + monthNamesShort[month] + "</a>")) + "</td>";// display selectable date
+"' " + (dayOverClass ? "" : "tabindex='-1' ") + " onclick='return false;' href='#'>" + monthNamesShort[month] + "</a>")) + "</td>";// display selectable date
         printDate.setMonth(printDate.getMonth() + 1);
       }
       calender += tbody + "</tr>";
@@ -2972,7 +3166,7 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
 (selected ? " " + this._CURRENT_CLASS : "") + "'" + // highlight selected day
 (unselectable ? "" : " data-handler='selectYear' data-event='click' data-month='" + printDate.getMonth() + "' data-year='" + printDate.getFullYear() + "'") + ">" + // actions
 ((unselectable || wDisabled ? "<span class='oj-disabled'>" + yearText + "</span>" : "<a role='button' class='oj-enabled" + (selectedDate ? " oj-selected" : "") + // highlight selected day
-"' " + (dayOverClass ? "" : "tabindex='-1' ") + " href='#'>" + yearText + "</a>")) + "</td>";// display selectable date
+"' " + (dayOverClass ? "" : "tabindex='-1' ") + " onclick='return false;' href='#'>" + yearText + "</a>")) + "</td>";// display selectable date
         printDate.setFullYear(printDate.getFullYear() + 1);
       }
       calender += tbody + "</tr>";
@@ -3499,7 +3693,7 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
     return value;
   },
 
-  //** @inheritdoc */
+  // @inheritdoc
   getNodeBySubId: function(locator)
   {
     var node = null,
@@ -3527,7 +3721,7 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
     return node || this._superApply(arguments);
   },
 
-  //** @inheritdoc */
+  // @inheritdoc
   getSubIdByNode: function(node)
   {
     var dpDiv = this._dpDiv,
@@ -3567,7 +3761,7 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
    * Hides the datepicker. Note that this function is a no-op when renderMode is 'native'.
    *
    * @expose
-   * @memberof! oj.ojInputDate
+   * @memberof oj.ojInputDate
    * @instance
    */
   hide : function ()
@@ -3636,7 +3830,7 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
    * Shows the datepicker
    *
    * @expose
-   * @memberof! oj.ojInputDate
+   * @memberof oj.ojInputDate
    * @instance
    */
   show : function ()
@@ -3885,7 +4079,6 @@ oj.Components.setDefaultOptions(
  *       <td>Set focus to the input. If hints, title or messages exist in a notewindow,
  *        pop up the notewindow.</td>
  *     </tr>
- *     {@ojinclude "name":"labelTouchDoc"}
  *     <tr>
  *       <td>Picker</td>
  *       <td><kbd>Swipe Left</kbd></td>
@@ -3901,6 +4094,33 @@ oj.Components.setDefaultOptions(
  *
  * @ojfragment touchDoc - Used in touch gesture section of classdesc, and standalone gesture doc
  * @memberof oj.ojInputDate
+ */
+
+ /**
+ * <table class="keyboard-table">
+ *   <thead>
+ *     <tr>
+ *       <th>Target</th>
+ *       <th>Gesture</th>
+ *       <th>Action</th>
+ *     </tr>
+ *   </thead>
+ *   <tbody>
+ *     <tr>
+ *       <td>Picker</td>
+ *       <td><kbd>Swipe Left</kbd></td>
+ *       <td>Switch to next month (or previous month on RTL page).</td>
+ *     </tr>
+ *     <tr>
+ *       <td>Picker</td>
+ *       <td><kbd>Swipe Right</kbd></td>
+ *       <td>Switch to previous month (or next month on RTL page).</td>
+ *     </tr>
+ *   </tbody>
+ * </table>
+ *
+ * @ojfragment touchDoc - Used in touch gesture section of classdesc, and standalone gesture doc
+ * @memberof oj.ojDatePicker
  */
 
 /**
@@ -4004,7 +4224,6 @@ oj.Components.setDefaultOptions(
  *       <td><kbd>Ctrl + Alt + T</kbd></td>
  *       <td>Places focus on Today button if it exists.</tr>
  *     </tr>
- *     {@ojinclude "name":"labelKeyboardDoc"}
  *   </tbody>
  * </table>
  *
@@ -4012,19 +4231,111 @@ oj.Components.setDefaultOptions(
  * @memberof oj.ojInputDate
  */
 
+ /**
+ * <table class="keyboard-table">
+ *   <thead>
+ *     <tr>
+ *       <th>Target</th>
+ *       <th>Key</th>
+ *       <th>Action</th>
+ *     </tr>
+ *   </thead>
+ *   <tbody>
+ *     <tr>
+ *       <td>Picker</td>
+ *       <td><kbd>Enter</kbd></td>
+ *       <td>Select the currently focused day</td>
+ *     </tr>
+ *     <tr>
+ *       <td>Picker</td>
+ *       <td><kbd>UpArrow</kbd></td>
+ *       <td>Move up in the grid.</tr>
+ *     </tr>
+ *     <tr>
+ *       <td>Picker</td>
+ *       <td><kbd>DownArrow</kbd></td>
+ *       <td>Move down in the grid.</tr>
+ *     </tr>
+ *     <tr>
+ *       <td>Picker</td>
+ *       <td><kbd>RightArrow</kbd></td>
+ *       <td>Move right in the grid.</tr>
+ *     </tr>
+ *     <tr>
+ *       <td>Picker</td>
+ *       <td><kbd>LeftArrow</kbd></td>
+ *       <td>Move left in the grid.</tr>
+ *     </tr>
+ *     <tr>
+ *       <td>Picker</td>
+ *       <td><kbd>Esc</kbd></td>
+ *       <td>Close the grid.</tr>
+ *     </tr>
+ *     <tr>
+ *       <td>Picker</td>
+ *       <td><kbd>Home</kbd></td>
+ *       <td>Move focus to first day of the month.</tr>
+ *     </tr>
+ *     <tr>
+ *       <td>Picker</td>
+ *       <td><kbd>End</kbd></td>
+ *       <td>Move focus to last day of the month.</tr>
+ *     </tr>
+ *     <tr>
+ *       <td>Picker</td>
+ *       <td><kbd>PageUp</kbd></td>
+ *       <td>Switch to previous month.</tr>
+ *     </tr>
+ *     <tr>
+ *       <td>Picker</td>
+ *       <td><kbd>PageDown</kbd></td>
+ *       <td>Switch to next month.</tr>
+ *     </tr>
+ *     <tr>
+ *       <td>Picker</td>
+ *       <td><kbd>Alt + PageUp</kbd></td>
+ *       <td>Switch to previous year.</tr>
+ *     </tr>
+ *     <tr>
+ *       <td>Picker</td>
+ *       <td><kbd>Alt + PageDown</kbd></td>
+ *       <td>Switch to next year.</tr>
+ *     </tr>
+ *     <tr>
+ *       <td>Picker</td>
+ *       <td><kbd>Ctrl + Alt + PageUp</kbd></td>
+ *       <td>Switch to previous by stepBigMonths.</tr>
+ *     </tr>
+ *     <tr>
+ *       <td>Picker</td>
+ *       <td><kbd>Ctrl + Alt + PageDown</kbd></td>
+ *       <td>Switch to next by stepBigMonths.</tr>
+ *     </tr>
+ *     <tr>
+ *       <td>Picker</td>
+ *       <td><kbd>Ctrl + Alt + T</kbd></td>
+ *       <td>Places focus on Today button if it exists.</tr>
+ *     </tr>
+ *   </tbody>
+ * </table>
+ *
+ * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
+ * @memberof oj.ojDatePicker
+ */
+
 
 //////////////////     SUB-IDS     //////////////////
 
 /**
- * <p>Sub-ID for the ojInputDate and ojInputDateTime component's input element. Note that if component is inline for
- * ojInputDate it would return null whereas ojInputDateTime would return the input element of the internally created
- * ojInputTime component.
+ * <p>Sub-ID for the InputDate and InputDateTime input element. Note that if element is inline for
+ * InputDate it would return null whereas InputDateTime would return the input element of the internally created
+ * InputTime element.
  *
  * @ojsubid oj-inputdatetime-date-input
  * @memberof oj.ojInputDate
  *
  * @example <caption>Get the node for the input element:</caption>
- * var node = $( ".selector" ).ojInputDate( "getNodeBySubId", {'subId': 'oj-inputdatetime-date-input'} );
+ * var node = myInputDate.getNodeBySubId( {'subId': 'oj-inputdatetime-date-input'} );
  */
 
 /**
@@ -4034,8 +4345,8 @@ oj.Components.setDefaultOptions(
  * @memberof oj.ojInputDate
  *
  * @example <caption>Get the calendar drop down node:</caption>
- * // Foo is ojInputDate or ojInputDateTime.
- * var node = $( ".selector" ).ojFoo( "getNodeBySubId", {'subId': 'oj-datepicker-content'} );
+ * // myInputElement is InputDate or InputDateTime.
+ * var node = myInputElement.getNodeBySubId( {'subId': 'oj-datepicker-content'} );
  */
 
 /**
@@ -4045,8 +4356,8 @@ oj.Components.setDefaultOptions(
  * @memberof oj.ojInputDate
  *
  * @example <caption>Get the calendar icon that triggers the calendar drop down:</caption>
- * // Foo is ojInputDate or ojInputDateTime.
- * var node = $( ".selector" ).ojFoo( "getNodeBySubId", {'subId': 'oj-inputdatetime-calendar-icon'} );
+ * // myInputElement is InputDate or InputDateTime.
+ * var node = myInputElement.getNodeBySubId( {'subId': 'oj-inputdatetime-calendar-icon'} );
  */
 
 /**
@@ -4056,8 +4367,8 @@ oj.Components.setDefaultOptions(
  * @memberof oj.ojInputDate
  *
  * @example <caption>Get the previous month icon:</caption>
- * // Foo is ojInputDate or ojInputDateTime.
- * var node = $( ".selector" ).ojFoo( "getNodeBySubId", {'subId': 'oj-datepicker-prev-icon'} );
+ * // myInputElement is InputDate or InputDateTime.
+ * var node = myInputElement.getNodeBySubId( {'subId': 'oj-datepicker-prev-icon'} );
  */
 
 /**
@@ -4067,8 +4378,8 @@ oj.Components.setDefaultOptions(
  * @memberof oj.ojInputDate
  *
  * @example <caption>Get the next month icon:</caption>
- * // Foo is ojInputDate or ojInputDateTime.
- * var node = $( ".selector" ).ojFoo( "getNodeBySubId", {'subId': 'oj-datepicker-next-icon'} );
+ * // myInputElement is InputDate or InputDateTime.
+ * var node = myInputElement.getNodeBySubId( {'subId': 'oj-datepicker-next-icon'} );
  */
 
 /**
@@ -4078,8 +4389,8 @@ oj.Components.setDefaultOptions(
  * @memberof oj.ojInputDate
  *
  * @example <caption>Get the month span or select element:</caption>
- * // Foo is ojInputDate or ojInputDateTime.
- * var node = $( ".selector" ).ojFoo( "getNodeBySubId", {'subId': 'oj-datepicker-month'} );
+ * // myInputElement is InputDate or InputDateTime.
+ * var node = myInputElement.getNodeBySubId( {'subId': 'oj-datepicker-month'} );
  */
 
 /**
@@ -4089,8 +4400,8 @@ oj.Components.setDefaultOptions(
  * @memberof oj.ojInputDate
  *
  * @example <caption>Get the year span or select element:</caption>
- * // Foo is ojInputDate or ojInputDateTime.
- * var node = $( ".selector" ).ojFoo( "getNodeBySubId", {'subId': 'oj-datepicker-year'} );
+ * // myInputElement is InputDate or InputDateTime.
+ * var node = myInputElement.getNodeBySubId( {'subId': 'oj-datepicker-year'} );
  */
 
 /**
@@ -4100,8 +4411,8 @@ oj.Components.setDefaultOptions(
  * @memberof oj.ojInputDate
  *
  * @example <caption>Get the current/today button for button bar:</caption>
- * // Foo is ojInputDate or ojInputDateTime.
- * var node = $( ".selector" ).ojFoo( "getNodeBySubId", {'subId': 'oj-datepicker-current'} );
+ * // myInputElement is InputDate or InputDateTime.
+ * var node = myInputElement.getNodeBySubId( {'subId': 'oj-datepicker-current'} );
  */
 
 /**
@@ -4170,7 +4481,12 @@ function _getTimePickerConverter(converter, addOpts) {
     }
   }
 
-  if ($.isEmptyObject(options))
+  var testEmpty = {};
+  $.extend(testEmpty, options);
+  delete testEmpty["isoStrFormat"]; //since below two are provided even with only date portion
+  delete testEmpty["dst"];
+  
+  if ($.isEmptyObject(testEmpty))
   {
     throw new Error("Empty object for creating a time picker converter");
   }
@@ -4186,12 +4502,16 @@ function _getTimePickerConverter(converter, addOpts) {
  *
  * @classdesc
  * <h3 id="inputTimeOverview-section">
- *   JET ojInputTime Component
+ *   JET InputTime
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#inputTimeOverview-section"></a>
  * </h3>
+ * <p>Description:</p>
+ * <p>A JET InputTime provides a simple time selection drop down.</p>
  *
- * <p>Description: ojInputTime provides a simple time selection drop down.
+ * <pre class="prettyprint"><code>&lt;oj-input-time>&lt;/oj-input-time></code></pre>
  *
+ * {@ojinclude "name":"validationAndMessagingDoc"}
+ * 
  * <h3 id="touch-section">
  *   Touch End User Information
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#touch-section"></a>
@@ -4205,40 +4525,6 @@ function _getTimePickerConverter(converter, addOpts) {
  * </h3>
  *
  * {@ojinclude "name":"keyboardDoc"}
- *
- * <h3 id="pseudos-section">
- *   Pseudo-selectors
- *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#pseudos-section"></a>
- * </h3>
- *
- * <pre class="prettyprint">
- * <code>$( ":oj-inputTime" )            // selects all JET input on the page
- * </code>
- * </pre>
- *
- * <h3 id="binding-section">
- *   Declarative Binding
- *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#binding-section"></a>
- * </h3>
- *
- * <pre class="prettyprint">
- * <code>
- *    &lt;input id="timeId" data-bind="ojComponent: {component: 'ojInputTime'}" /&gt;
- * </code>
- * </pre>
- *
- * @desc Creates or re-initializes a JET ojInputTime
- *
- * @param {Object=} options a map of option-value pairs to set on the component
- *
- * @example <caption>Initialize the input element with no options specified:</caption>
- * $( ".selector" ).ojInputTime();
- *
- * * @example <caption>Initialize the input element with some options:</caption>
- * $( ".selector" ).ojInputTime( { "disabled": true } );
- *
- * @example <caption>Initialize the input element via the JET <code class="prettyprint">ojComponent</code> binding:</caption>
- * &lt;input id="timeId" data-bind="ojComponent: {component: 'ojInputTime'}" /&gt;
  */
 oj.__registerWidget("oj.ojInputTime", $['oj']['inputBase'],
 {
@@ -4279,14 +4565,15 @@ oj.__registerWidget("oj.ojInputTime", $['oj']['inputBase'],
   options :
   {
     /**
-     * Default converter for ojInputTime
+     * Default converter for InputTime
      *
-     * If one wishes to provide a custom converter for the ojInputTime override the factory returned for
+     * If one wishes to provide a custom converter for the InputTime override the factory returned for
      * oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME)
-     *
+     * {@ojinclude "name":"inputBaseConverterOptionDoc"}
      * @expose
      * @memberof! oj.ojInputTime
      * @instance
+     * @type {Object}
      * @default <code class="prettyprint">oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({"hour": "2-digit", "minute": "2-digit"})</code>
      */
     converter : oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter(
@@ -4298,11 +4585,6 @@ oj.__registerWidget("oj.ojInputTime", $['oj']['inputBase'],
      * Determines if keyboard entry of the text is allowed.
      * When disabled the picker must be used to select a time.
      *
-     * @example <caption>Initialize the component with the <code class="prettyprint">keyboardEdit</code> option:</caption>
-     * &lt;input id="date" data-bind="ojComponent: {component: 'ojInputTime', keyboardEdit: 'disabled'}" /&gt;
-     * // Example to set the default in the theme (SCSS)
-     * $inputDateTimeKeyboardEditOptionDefault: disabled !default;
-     *
      * @expose
      * @instance
      * @memberof! oj.ojInputTime
@@ -4312,42 +4594,71 @@ oj.__registerWidget("oj.ojInputTime", $['oj']['inputBase'],
      * @default Default value depends on the theme. In alta-android, alta-ios and alta-windows themes, the
      * default is <code class="prettyprint">"disabled"</code> and
      * it's <code class="prettyprint">"enabled"</code> for alta web theme.
+     *
+     * @example <caption>Initialize the InputTime with the <code class="prettyprint">keyboard-edit</code> attribute specified:</caption>
+     * &lt;oj-input-time keyboard-edit='disabled'>&lt;/oj-input-time>
+     *
+     * @example <caption>Get or set the <code class="prettyprint">keyboardEdit</code> property after initialization:</caption>
+     * // getter
+     * var keyboardEdit = myInputTime.keyboardEdit;
+     *
+     * // setter
+     * myInputTime.keyboardEdit = 'disabled';
+     *
+     * @example <caption>Set the default in the theme (SCSS)</caption>
+     * $inputDateTimeKeyboardEditOptionDefault: disabled !default;
      */
     keyboardEdit : "enabled",
 
     /**
-     * The maximum selectable date. When set to null, there is no maximum.
+     * The maximum selectable time. When set to null, there is no maximum.
      *
      * <ul>
      *  <li> type string - ISOString
      *  <li> null - no limit
      * </ul>
      *
-     * @example <caption>Initialize the component with the <code class="prettyprint">max</code> option:</caption>
-     * &lt;input id="date" data-bind="ojComponent: {component: 'ojInputTime', max: 'T13:30:00.000-08:00'}" /&gt;
-     *
      * @expose
      * @instance
      * @memberof! oj.ojInputTime
+     * @type {string|null}
      * @default <code class="prettyprint">null</code>
+     *
+     * @example <caption>Initialize the InputTime with the <code class="prettyprint">max</code> attribute specified:</caption>
+     * &lt;oj-input-time max='T13:30:00.000-08:00'>&lt;/oj-input-time>
+     *
+     * @example <caption>Get or set the <code class="prettyprint">max</code> property after initialization:</caption>
+     * // getter
+     * var maxValue = myInputTime.max;
+     *
+     * // setter
+     * myInputTime.max = 'T13:30:00.000-08:00';
      */
     max : undefined,
 
     /**
-     * The minimum selectable date. When set to null, there is no minimum.
+     * The minimum selectable time. When set to null, there is no minimum.
      *
      * <ul>
      *  <li> type string - ISOString
      *  <li> null - no limit
      * </ul>
      *
-     * @example <caption>Initialize the component with the <code class="prettyprint">min</code> option:</caption>
-     * &lt;input id="date" data-bind="ojComponent: {component: 'ojInputTime', min: 'T08:00:00.000-08:00'}" /&gt;
-     *
      * @expose
      * @instance
      * @memberof! oj.ojInputTime
+     * @type {string|null}
      * @default <code class="prettyprint">null</code>
+     *
+     * @example <caption>Initialize the InputTime with the <code class="prettyprint">min</code> attribute specified:</caption>
+     * &lt;oj-input-time min='T08:00:00.000-08:00'>&lt;/oj-input-time>
+     *
+     * @example <caption>Get or set the <code class="prettyprint">min</code> property after initialization:</caption>
+     * // getter
+     * var minValue = myInputTime.min;
+     *
+     * // setter
+     * myInputTime.min = 'T08:00:00.000-08:00';
      */
     min : undefined,
 
@@ -4370,17 +4681,17 @@ oj.__registerWidget("oj.ojInputTime", $['oj']['inputBase'],
      * <p>Attributes specified here will be set on the picker DOM element when it's launched.
      * <p>The supported attributes are <code class="prettyprint">class</code> and <code class="prettyprint">style</code>, which are appended to the picker's class and style, if any.
      * Note: 1) pickerAttributes is not applied in the native theme.
-     * 2) setting this option after component creation has no effect.
+     * 2) setting this property after element creation has no effect.
      *
      * @example <caption>Initialize the inputTime specifying a set of attributes to be set on the picker DOM element:</caption>
-     * $( ".selector" ).ojInputTime({ "pickerAttributes": {
+     * myInputTime.pickerAttributes = {
      *   "style": "color:blue;",
      *   "class": "my-class"
-     * }});
+     * };
      *
-     * @example <caption>Get the <code class="prettyprint">pickerAttributes</code> option, after initialization:</caption>
+     * @example <caption>Get the <code class="prettyprint">pickerAttributes</code> property, after initialization:</caption>
      * // getter
-     * var inputTime = $( ".selector" ).ojInputTime( "option", "pickerAttributes" );
+     * var pickerAttrs = myInputTime.pickerAttributes;
      *
      * @expose
      * @memberof! oj.ojInputTime
@@ -4391,16 +4702,17 @@ oj.__registerWidget("oj.ojInputTime", $['oj']['inputBase'],
     pickerAttributes: null,
 
     /**
-     * The renderMode option allows applications to specify whether to render time picker in JET or
+     * Allows applications to specify whether to render time picker in JET or
      * as a native picker control.</br>
      *
-     * Valid values: jet, native
-     *
-     * <ul>
-     *  <li> jet - Applications get full JET functionality.</li>
-     *  <li> native - Applications get the functionality of the native picker.</li></br>
+     * @expose
+     * @memberof! oj.ojInputTime
+     * @instance
+     * @type {string}
+     * @ojvalue {string} 'jet' Applications get full JET functionality.
+     * @ojvalue {string} 'native' Applications get the functionality of the native picker.</br></br>
      *  Note that the native picker support is limited to Cordova plugin published
-     *  at 'https://github.com/VitaliiBlagodir/cordova-plugin-datepicker'.</br>
+     *  at 'https://github.com/VitaliiBlagodir/cordova-plugin-datepicker'.</br></br>
      *  With native renderMode, the functionality that is sacrificed compared to jet renderMode are:
      *    <ul>
      *      <li>Time picker cannot be themed</li>
@@ -4408,84 +4720,109 @@ oj.__registerWidget("oj.ojInputTime", $['oj']['inputBase'],
      *      <li>pickerAttributes is not applied</li>
      *      <li>Sub-IDs are not available</li>
      *      <li>hide() function is no-op</li>
-     *      <li>translations sub options pertaining to the picker is not available</li>
-     *      <li>'timePicker.timeIncrement' option is limited to iOS and will only take a precision of minutes</li>
+     *      <li>translations sub properties pertaining to the picker is not available</li>
+     *      <li>'timePicker.timeIncrement' property is limited to iOS and will only take a precision of minutes</li>
      *    </ul>
-     * </ul>
-     *
-     * @expose
-     * @memberof! oj.ojInputTime
-     * @instance
-     * @type {string}
      * @default value depends on the theme. In alta-android, alta-ios and alta-windows themes, the
      * default is "native" and it's "jet" for alta web theme.
      *
-     * @example <caption>Get or set the <code class="prettyprint">renderMode</code> option for
-     * an ojInputTime after initialization:</caption>
+     * @example <caption>Initialize the InputTime with the <code class="prettyprint">render-mode</code> attribute specified:</caption>
+     * &lt;oj-input-time render-mode='native'>&lt;/oj-input-time>
+     *
+     * @example <caption>Get or set the <code class="prettyprint">renderMode</code> property after initialization:</caption>
      * // getter
-     * var renderMode = $( ".selector" ).ojInputTime( "option", "renderMode" );
+     * var renderMode = myInputTime.renderMode;
+     *
      * // setter
-     * $( ".selector" ).ojInputTime( "option", "renderMode", "native" );
-     * // Example to set the default in the theme (SCSS)
+     * myInputTime.renderMode = 'native';
+     *
+     * @example <caption>Set the default in the theme (SCSS)</caption>
      * $inputDateTimeRenderModeOptionDefault: native !default;
      */
     renderMode : "jet",
 
     /**
-     * <p>
-     * Note that Jet framework prohibits setting subset of options which are object types.<br/><br/>
-     * For example $(".selector").ojInputTime("option", "timePicker", {timeIncrement: "00:30:00:00"}); is prohibited as it will
-     * wipe out all other sub-options for "timePicker" object.<br/><br/> If one wishes to do this [by above syntax or knockout] one
-     * will have to get the "timePicker" object, modify the necessary sub-option and pass it to above syntax.<br/><br/>
-     * Note that when renderMode is 'native', the only timePicker sub-options available are showOn and, to a limited extent, timeIncrement.<br/><br/>
-     *
-     * The properties supported on the timePicker option are:
-     *
-     * @property {string=} footerLayout Will dictate what content is shown within the footer of the wheel timepicker. <br/><br/>
-     * The default value is <code class="prettyprint">{timePicker: {footerLayout: "now"}}</code> with possible values being
-     * <ul>
-     *   <li>"" - Do not show anything</li>
-     *   <li>"now" - the now button</li>
-     * </ul>
-     * <br/>
-     * Example <code class="prettyprint">$(".selector").ojInputTime("option", "timePicker.footerLayout", "now");</code>
-     *
-     * @property {string=} timeIncrement Time increment to be used for ojInputTime, the format is hh:mm:ss:SS. <br/><br/>
-     * Note that when renderMode is 'native', timeIncrement option is limited to iOS and will only take a precision of minutes.<br/><br/>
-     *
-     * The default value is <code class="prettyprint">{timePicker: {timeIncrement': "00:05:00:00"}}</code>. <br/><br/>
-     * Example <code class="prettyprint">$(".selector").ojInputTime("option", "timePicker.timeIncrement", "00:10:00:00");</code>
-     *
-     * @property {string=} showOn When the timepicker should be shown. <br/><br/>
-     * Possible values are
-     * <ul>
-     *  <li>"focus" - when the element receives focus or when the trigger clock image is clicked. When the picker is closed, the field regains focus and is editable.</li>
-     *  <li>"image" - when the trigger clock image is clicked</li>
-     * </ul>
-     * <br/>
-     * Example to initialize the inputTime with showOn option specified
-     * <code class="prettyprint">$(".selector").ojInputTime("option", "timePicker.showOn", "focus");</code>
-     * </p>
+     * Note that Jet framework prohibits setting subset of properties which are object types.<br/><br/>
+     * For example myInputTime.timePicker = {timeIncrement: "00:30:00:00"}; is prohibited as it will
+     * wipe out all other sub-properties for "timePicker" object.<br/><br/> If one wishes to do this [by above syntax or knockout] one
+     * will have to get the "timePicker" object, modify the necessary sub-property and pass it to above syntax.<br/><br/>
+     * Note that when renderMode is 'native', the only timePicker sub-properties available are showOn and, to a limited extent, timeIncrement.<br/><br/>
      *
      * @expose
      * @instance
      * @memberof! oj.ojInputTime
      * @type {Object}
+     *
+     * @example <caption>Initialize the component, overriding some time-picker attributes and leaving the others intact:</caption>
+     * &lt;!-- Using dot notation -->
+     * &lt;oj-input-time time-picker.time-increment='00:10:00:00'>&lt;/oj-input-time>
+     * 
+     * &lt;!-- Using JSON notation -->
+     * &lt;oj-input-time time-picker='{"timeIncrement":"00:10:00:00"}'>&lt;/oj-input-time>
+     *
+     * @example <caption>Get or set the <code class="prettyprint">timePicker</code> property after initialization:</caption>
+     * // Get one
+     * var value = myComponent.timePicker.showOn;
+     *
+     * // Set one, leaving the others intact. Use the setProperty API for 
+     * // subproperties so that a property change event is fired.
+     * myComponent.setProperty('timePicker.showOn', 'image');
+     *
+     * // Get all
+     * var values = myComponent.timePicker;
+     *
+     * // Set all.  Must list every timePicker key, as those not listed are lost.
+     * myComponent.timePicker = {
+     *     timeIncrement: '00:10:00:00',
+     *     showOn: 'image'
+     * };
      */
     timePicker:
     {
       /**
+       * Will dictate what content is shown within the footer of the wheel timepicker.
+       *
+       * <p>See the <a href="#timePicker">time-picker</a> attribute for usage examples.
+       *
        * @expose
+       * @name timePicker.footerLayout
+       * @memberof! oj.ojInputTime
+       * @instance
+       * @type {string}
+       * @ojvalue {string} '' Do not show anything
+       * @ojvalue {string} 'now' Show the now button
+       * @default <code class="prettyprint">'now'</code>
        */
       footerLayout : "",
 
       /**
+       * Time increment to be used for InputTime, the format is hh:mm:ss:SS. <br/><br/>
+       * Note that when renderMode is 'native', timeIncrement property is limited to iOS and will only take a precision of minutes.<br/><br/> 
+       *
+       * <p>See the <a href="#timePicker">time-picker</a> attribute for usage examples.
+       *
        * @expose
+       * @name timePicker.timeIncrement
+       * @memberof! oj.ojInputTime
+       * @instance
+       * @type {string}
+       * @default <code class="prettyprint">'00:05:00:00'</code>
        */
       timeIncrement : "00:05:00:00",
 
       /**
+       * When the timepicker should be shown.
+       *
+       * <p>See the <a href="#timePicker">time-picker</a> attribute for usage examples.
+       *
        * @expose
+       * @name timePicker.showOn
+       * @memberof! oj.ojInputTime
+       * @instance
+       * @type {string}
+       * @ojvalue {string} 'focus' when the element receives focus or when the trigger clock image is clicked. When the picker is closed, the field regains focus and is editable.
+       * @ojvalue {string} 'image' when the trigger clock image is clicked
+       * @default <code class="prettyprint">'focus'</code>
        */
       showOn : "focus"
     }
@@ -4493,45 +4830,21 @@ oj.__registerWidget("oj.ojInputTime", $['oj']['inputBase'],
     // DOCLETS
 
     /**
-     * The placeholder text to set on the element. Though it is possible to set placeholder
-     * attribute on the element itself, the component will only read the value when the component
-     * is created. Subsequent changes to the element's placeholder attribute will not be picked up
-     * and page authors should update the option directly.
-     *
-     * @example <caption>Initialize the component with the <code class="prettyprint">placeholder</code> option:</caption>
-     * &lt;input id="date" data-bind="ojComponent: {component: 'ojInputTime', placeholder: 'Birth Date'}" /&gt;
-     *
-     * @example <caption>Initialize <code class="prettyprint">placeholder</code> option from html attribute:</caption>
-     * &lt;input id="date" data-bind="ojComponent: {component: 'ojInputTime'}" placeholder="User Name" /&gt;
-     *
-     * @default when the option is not set, the element's placeholder attribute is used if it exists.
-     * If the attribute is not set then the default can be the converter hint provided by the
-     * datetime converter. See displayOptions for details.
-     *
-     * @access public
-     * @instance
-     * @expose
-     * @name placeholder
-     * @instance
-     * @memberof! oj.ojInputTime
-     */
-
-    /**
-     * List of validators used by component when performing validation. Each item is either an
+     * List of validators used by element when performing validation. Each item is either an
      * instance that duck types {@link oj.Validator}, or is an Object literal containing the
-     * properties listed below. Implicit validators created by a component when certain options
-     * are present (e.g. <code class="prettyprint">required</code> option), are separate from
-     * validators specified through this option. At runtime when the component runs validation, it
-     * combines the implicit validators with the list specified through this option.
+     * properties listed below. Implicit validators created by an element when certain attributes
+     * are present (e.g. <code class="prettyprint">required</code> attribute), are separate from
+     * validators specified through this attribute. At runtime when the element runs validation, it
+     * combines the implicit validators with the list specified through this attribute.
      * <p>
      * Hints exposed by validators are shown in the notewindow by default, or as determined by the
      * 'validatorHint' property set on the <code class="prettyprint">displayOptions</code>
-     * option.
+     * property.
      * </p>
      *
      * <p>
-     * When <code class="prettyprint">validators</code> option changes due to programmatic
-     * intervention, the component may decide to clear messages and run validation, based on the
+     * When <code class="prettyprint">validators</code> property changes due to programmatic
+     * intervention, the element may decide to clear messages and run validation, based on the
      * current state it is in. </br>
      *
      * <h4>Steps Performed Always</h4>
@@ -4543,33 +4856,29 @@ oj.__registerWidget("oj.ojInputTime", $['oj']['inputBase'],
      *
      * <h4>Running Validation</h4>
      * <ul>
-     * <li>if component is valid when validators changes, component does nothing other than the
+     * <li>if element is valid when validators changes, element does nothing other than the
      * steps it always performs.</li>
-     * <li>if component is invalid and is showing messages -
-     * <code class="prettyprint">messagesShown</code> option is non-empty, when
-     * <code class="prettyprint">validators</code> changes then all component messages are cleared
-     * and full validation run using the display value on the component.
+     * <li>if element is invalid and is showing messages when
+     * <code class="prettyprint">validators</code> changes then all element messages are cleared
+     * and full validation run using the display value on the element.
      * <ul>
      *   <li>if there are validation errors, then <code class="prettyprint">value</code>
-     *   option is not updated and the error pushed to <code class="prettyprint">messagesShown</code>
-     *   option.
+     *   property is not updated and the error is shown.
      *   </li>
      *   <li>if no errors result from the validation, the <code class="prettyprint">value</code>
-     *   option is updated; page author can listen to the <code class="prettyprint">optionChange</code>
-     *   event on the <code class="prettyprint">value</code> option to clear custom errors.</li>
+     *   property is updated; page author can listen to the <code class="prettyprint">valueChanged</code>
+     *   event to clear custom errors.</li>
      * </ul>
      * </li>
-     * <li>if component is invalid and has deferred messages when validators changes, it does
+     * <li>if element is invalid and has deferred messages when validators changes, it does
      * nothing other than the steps it performs always.</li>
      * </ul>
      * </p>
      *
      * <h4>Clearing Messages</h4>
      * <ul>
-     * <li>Only messages created by the component are cleared.  These include ones in
-     * <code class="prettyprint">messagesHidden</code> and <code class="prettyprint">messagesShown</code>
-     *  options.</li>
-     * <li><code class="prettyprint">messagesCustom</code> option is not cleared.</li>
+     * <li>Only messages created by the element are cleared.</li>
+     * <li><code class="prettyprint">messagesCustom</code> property is not cleared.</li>
      * </ul>
      * </p>
      *
@@ -4578,28 +4887,23 @@ oj.__registerWidget("oj.ojInputTime", $['oj']['inputBase'],
      * to {@link oj.ValidatorFactory}. <br/>
      * @property {Object=} options - optional Object literal of options that the validator expects.
      *
-     * @example <caption>Initialize the component with validator object literal:</caption>
-     * $(".selector").ojInputTime({
-     *   validators: [{
+     * @example <caption>Initialize the element with validator object literal:</caption>
+     * myInputTime.validators = [{
      *     type: 'dateTimeRange',
      *     options : {
      *       max: 'T14:30:00',
      *       min: 'T02:30:00'
      *     }
-     *   }],
-     * });
+     *   }];
      *
      * NOTE: oj.Validation.validatorFactory('dateTimeRange') returns the validator factory that is used
      * to instantiate a range validator for dateTime.
      *
-     * @example <caption>Initialize the component with multiple validator instances:</caption>
+     * @example <caption>Initialize the element with multiple validator instances:</caption>
      * var validator1 = new MyCustomValidator({'foo': 'A'});
      * var validator2 = new MyCustomValidator({'foo': 'B'});
-     * // Foo is InputText, InputNumber, Select, etc.
-     * $(".selector").ojFoo({
-     *   value: 10,
-     *   validators: [validator1, validator2]
-     * });
+     * myInputTime.value = 10;
+     * myInputTime.validators = [validator1, validator2];
      *
      * @expose
      * @name validators
@@ -4609,48 +4913,29 @@ oj.__registerWidget("oj.ojInputTime", $['oj']['inputBase'],
      */
 
     /**
-     * The value of the ojInputTime component which should be an ISOString.
+     * The value of the InputTime which should be an ISOString.
      *
-     * @example <caption>Initialize the component with the <code class="prettyprint">value</code> option:</caption>
-     * &lt;input id="date" data-bind="ojComponent: {component: 'ojInputTime', value: 'T10:30:00.000'}" /&gt;
-     * @example <caption>Initialize the component with the <code class="prettyprint">value</code> option specified programmatically
+     * @example <caption>Initialize the element with the <code class="prettyprint">value</code> attribute:</caption>
+     * &lt;oj-input-time value='T10:30:00.000'&gt;&lt;/oj-input-time&gt;
+     * @example <caption>Initialize the element with the <code class="prettyprint">value</code> property specified programmatically
      * using oj.IntlConverterUtils.dateToLocalIso :</caption>
-     * $(".selector").ojInputTime({'value': oj.IntlConverterUtils.dateToLocalIso(new Date())});<br/>
-     * @example <caption>Get or set the <code class="prettyprint">value</code> option, after initialization:</caption>
+     * myInputTime.value = oj.IntlConverterUtils.dateToLocalIso(new Date());<br/>
+     * @example <caption>Get or set the <code class="prettyprint">value</code> property, after initialization:</caption>
      * // Getter: returns Today's date in ISOString
-     * $(".selector").ojInputTime("option", "value");
+     * myInputTime.value;
      * // Setter: sets it to a different date
-     * $(".selector").ojInputTime("option", "value", "T20:00:00-08:00");
+     * myInputTime.value = "T20:00:00-08:00";
      *
      * @expose
      * @name value
+     * @type {string}
      * @instance
+     * @ojwriteback
      * @memberof! oj.ojInputTime
-     * @default When the option is not set, the element's value property is used as its initial value
-     * if it exists. This value must be an ISOString.
      */
 
     // Events
 
-    /**
-     * Triggered when the ojInputTime is created.
-     *
-     * @event
-     * @name create
-     * @memberof oj.ojInputTime
-     * @instance
-     * @property {Event} event <code class="prettyprint">jQuery</code> event object
-     * @property {Object} ui Currently empty
-     *
-     * @example <caption>Initialize the ojInputTime with the <code class="prettyprint">create</code> callback specified:</caption>
-     * $( ".selector" ).ojInputTime({
-     *     "create": function( event, ui ) {}
-     * });
-     *
-     * @example <caption>Bind an event listener to the <code class="prettyprint">ojcreate</code> event:</caption>
-     * $( ".selector" ).on( "ojcreate", function( event, ui ) {} );
-     */
-    // create event declared in superclass, but we still want the above API doc
   },
 
   /**
@@ -4701,21 +4986,11 @@ oj.__registerWidget("oj.ojInputTime", $['oj']['inputBase'],
                           '" class="oj-timepicker-content"></div></div>');
     this._getPrependNode().prepend(this._wheelPicker); //@HTMLUpdateOK
 
-    this._resizePopupBind = function() {
-      $('.oj-timepicker-content', this._wheelPicker)[_isLargeScreen ? 'removeClass' : 'addClass']('oj-timepicker-fixedheight');
-      if(this._isIndependentInput() && oj.Components.isComponentInitialized(this._popUpWheelPicker, "ojPopup")) 
-      {
-        this._popUpWheelPicker.ojPopup("option", "modality", (_isLargeScreen ? "modeless" : "modal"));
-      }
-    }.bind(this);
-
-    window.addEventListener('resize', this._resizePopupBind, false);
-
     if(this._isIndependentInput()) 
     {
-      var animation = _isLargeScreen ? {"open": null, "close": null} : {"close": null};
       //DISABLE FOR NOW, as animation is coming quite clunky (not sure if the css of popup or of animation)
-      animation = {"open": null, "close": null};
+      //var animation = _isLargeScreen ? {"open": null, "close": null} : {"close": null};
+      var animation = {"open": null, "close": null};
 
       this._popUpWheelPicker = this._wheelPicker.ojPopup(
       {
@@ -4754,7 +5029,7 @@ oj.__registerWidget("oj.ojInputTime", $['oj']['inputBase'],
   {
     if(this._isIndependentInput())
     {
-      var picker = this._popUpWheelPicker
+      var picker = this._popUpWheelPicker;
       return oj.Components.isComponentInitialized(picker, "ojPopup") && picker.ojPopup("isOpen") || this._nativePickerShowing;
     }
     else
@@ -4820,17 +5095,28 @@ oj.__registerWidget("oj.ojInputTime", $['oj']['inputBase'],
     if(this._isIndependentInput()) {
       disableEnableSpan(this._triggerNode.children(), this.options["disabled"]);
 
-      var label = this.$label;
-      if(this._inputContainer && label && label.length === 1) {
-        var icId = this._inputContainer.attr("id");
-        var LId = label.attr("id");
+      if (!this._IsCustomElement()) {
+        var label = this.$label;
+        if (this._inputContainer && label && label.length === 1) {
+          var icId = this._inputContainer.attr("id");
+          var LId = label.attr("id");
 
-        if(!LId) {
-          LId = this["uuid"] + "_Label";
-          label.attr("id", LId);
+          if (!LId) {
+            LId = this["uuid"] + "_Label";
+            label.attr("id", LId);
+          }
+
+          this._inputContainer.attr("aria-labelledby", LId);
+        }
+      }
+      else {
+        if (this._inputContainer) {
+          var defaultLabelId = this["uuid"] + "_Label";
+          var LId = oj.EditableValueUtils.getOjLabelId(this.widget(), defaultLabelId);
+          if (LId)
+            this._inputContainer.attr("aria-labelledby", LId);
         }
 
-        this._inputContainer.attr("aria-labelledby", LId);
       }
     }
 
@@ -4858,7 +5144,7 @@ oj.__registerWidget("oj.ojInputTime", $['oj']['inputBase'],
 
       retVal = this._super(key, value, flags);
 
-      this._createWheelPickerDom();
+      this._createWheelPickerDom(true);
       
       return retVal;
     }
@@ -4924,33 +5210,10 @@ oj.__registerWidget("oj.ojInputTime", $['oj']['inputBase'],
    */
   _destroy : function ()
   {
+    this._cleanUpTimeResources();
     var retVal = this._super();
-
-    if (this._isIndependentInput())
-    {
-      this.element.off("focus touchstart");
-      this._wrapper.off("touchstart");
-    }
-
-    if (this._triggerNode)
-    {
-      this._triggerNode.remove();
-    }
-    if(this._resizePopupBind)
-    {
-      window.removeEventListener('resize', this._resizePopupBind);
-    }
-    window.removeEventListener('resize', resizeLargeScreenChange);
-    this._destroyHammer();
-    if (this._wheelPicker)
-    {	    
-      this._wheelPicker.remove();
-      this._clearWheelModels();
-    }
-
     return retVal;
   },
-
   /**
    * @ignore
    * @private
@@ -4959,21 +5222,21 @@ oj.__registerWidget("oj.ojInputTime", $['oj']['inputBase'],
   _clearWheelModels : function ()
   {
     var timePickerModel = this._timePickerModel;
-	  if (!timePickerModel) return;
-	  var model = timePickerModel.getWheelModel("hour");
-	  if (model) model.wheel = undefined;
-	  model = timePickerModel.getWheelModel("minute");
-	  if (model) model.wheel = undefined;
-	  model = timePickerModel.getWheelModel("ampm");
-	  if (model) model.wheel = undefined;
+	if (!timePickerModel) return;
+	var model = timePickerModel.getWheelModel("hour");
+	if (model) model.wheel = undefined;
+	model = timePickerModel.getWheelModel("minute");
+	if (model) model.wheel = undefined;
+	model = timePickerModel.getWheelModel("ampm");
+	if (model) model.wheel = undefined;
   },
-
   /**
    * @ignore
    * @protected
    * @override
    */
   _destroyHammer : function ()
+ 
   {
     if (this._wheelGroup && this._wheelGroup.length) {
       var group = this._wheelGroup[0];
@@ -4986,7 +5249,79 @@ oj.__registerWidget("oj.ojInputTime", $['oj']['inputBase'],
       }
     }
   },
+  /**
+   * @ignore
+   * @protected
+   * @override
+   */
+  _SetupResources : function ()
+  {
+    this._resizePopupBind = function ()
+    {
+      $('.oj-timepicker-content', this._wheelPicker)[_isLargeScreen ? 'removeClass' : 'addClass']('oj-timepicker-fixedheight');
+      if (this._isIndependentInput() && oj.Components.isComponentInitialized(this._popUpWheelPicker, "ojPopup"))
+      {
+        this._popUpWheelPicker.ojPopup("option", "modality", (_isLargeScreen ? "modeless" : "modal"));
+      }
+    }
+.bind(this);
+    window.addEventListener('resize', this._resizePopupBind, false);
+    return this._super();
+  },
+  /**
+   * @ignore
+   * @protected
+   * @override
+   */
+  _ReleaseResources : function ()
+  {
+    //for non custom element, this is done as first step in destroy
+    if (this._IsCustomElement())
+      this._cleanUpListeners();
+    return this._super();
+  },
+  /**
+   * @ignore
+   * @private
+   */
+  _cleanUpTimeResources : function ()
+  {
+    if (this._isIndependentInput())
+    {
+      this.element.off("focus touchstart");
+      this._wrapper.off("touchstart");
+    }
 
+    if (this._triggerNode)
+    {
+      this._triggerNode.remove();
+    }
+
+    this._cleanUpListeners();
+    this._destroyHammer();
+    if (this._wheelPicker)
+    {
+      this._wheelPicker.remove();
+      this._clearWheelModels();
+    }
+
+    if (this._isIndependentInput() && oj.Components.isComponentInitialized(this._popUpWheelPicker, "ojPopup"))
+    {
+      this._popUpWheelPicker.ojPopup("destroy");
+    }
+  },
+  /**
+   * @ignore
+   * @private
+   */
+  _cleanUpListeners : function ()
+  {
+    if (this._resizePopupBind)
+    {
+      window.removeEventListener('resize', this._resizePopupBind);
+    }
+    window.removeEventListener('resize', resizeLargeScreenChange);
+  },
   /**
    * @ignore
    */
@@ -5055,8 +5390,7 @@ oj.__registerWidget("oj.ojInputTime", $['oj']['inputBase'],
             break;
           case kc.UP: ;
           case kc.DOWN:
-            this._getWheelPickerContent(this._wheelPicker).focus();
-            
+            this._wheelGroup.children().first().focus();
             handled = true;
             break;
           default:;
@@ -5185,19 +5519,15 @@ oj.__registerWidget("oj.ojInputTime", $['oj']['inputBase'],
   _attachTrigger : function ()
   {
     var showOn = this.options["timePicker"]["showOn"];
-    var isIndependentInput = this._isIndependentInput();
-    var triggerContainer = isIndependentInput ? $("<span>").addClass(this._TRIGGER_CLASS) : $("+ span", this.element);
+    var triggerContainer = $("<span>").addClass(this._TRIGGER_CLASS);
     var triggerTime = $("<span title='" + this._getTimeTitle() + "'/>").addClass(this._TRIGGER_TIME_CLASS + " oj-clickable-icon-nocontext oj-component-icon");
 
     var self = this;
 
-    if (isIndependentInput)
-    {
-      this.element.on("focus", $.proxy(this._onElementFocus, this));
-      this.element.on("touchstart", $.proxy(this._OnElementTouchStart, this));
-    }
-
-    var wrapper = this._isIndependentInput() ? this._wrapper : this._datePickerComp["widget"]._wrapper;
+    this.element.on("focus", $.proxy(this._onElementFocus, this));
+    this.element.on("touchstart", $.proxy(this._OnElementTouchStart, this));
+    
+    var wrapper = this._wrapper;
     wrapper.on("touchstart", function(e)
     {
       self._isMobile = true;
@@ -5227,7 +5557,7 @@ oj.__registerWidget("oj.ojInputTime", $['oj']['inputBase'],
     // do not attach time picker icon if not independent input mode and native picker is in use
     //  - this is because the native pickers let pick both date and time, showing one icon is
     //  sufficient and less clutter hence
-    if (isIndependentInput || !isPickerNative(this))
+    if (!isPickerNative(this))
     {
       triggerContainer.append(triggerTime); //@HTMLUpdateOK
 
@@ -5251,12 +5581,7 @@ oj.__registerWidget("oj.ojInputTime", $['oj']['inputBase'],
 
     this._triggerNode = triggerContainer;
 
-    // we need to add container only if we are in independent mode, else inputDate already would
-    //  have attached it
-    if (isIndependentInput)
-    {
-      this.element.after(triggerContainer); //@HTMLUpdateOK
-    }
+    this.element.after(triggerContainer); //@HTMLUpdateOK
   },
 
   /**
@@ -5276,23 +5601,6 @@ oj.__registerWidget("oj.ojInputTime", $['oj']['inputBase'],
   {
     //need to use ojInputDateTime's value when created internally [i.e. for min + max and etc].
     return this._isContainedInDateTimePicker() ? this._datePickerComp["widget"].getValueForInputTime() : this.options["value"];
-  },
-
-  /**
-   * So the request is to always show from 12AM - 11:xxPM in the time drop down.
-   * Due to difference in timezone of the converter's timeZone + isoStrFormat, there can be conversion and
-   * for that need to clean up the isoString for format.
-   *
-   * @private
-   * @return {Object} converter
-   */
-  _getTimeSourceConverter: function()
-  {
-    if(this._timeSourceConverter === null) {
-        this._timeSourceConverter = _getTimePickerConverter(this._GetConverter(), {"isoStrFormat": "offset"});
-    }
-
-    return this._timeSourceConverter;
   },
 
   /**
@@ -5354,8 +5662,8 @@ oj.__registerWidget("oj.ojInputTime", $['oj']['inputBase'],
     // picker expects the fields like 'date' and 'mode' to retain its names. Use bracket notation
     //  to avoid closure compiler from renaming them
     var pickerOptions = {};
-    var converter = this._getTimeSourceConverter();
-    var date = _getNativePickerDate(converter, this._getValue());
+    var converter = _getTimePickerConverter(this._GetConverter(), {"isoStrFormat": "offset"});
+    var date = _getNativePickerDate(converter, this._getIsoDateValue(converter));
 
     pickerOptions['date'] = date;
     pickerOptions['mode'] = 'time';
@@ -5375,14 +5683,14 @@ oj.__registerWidget("oj.ojInputTime", $['oj']['inputBase'],
     if (minDate)
     {
       // get a correctly formatted ISO date string
-      var minDateProcessed = _getNativePickerDate(converter, oj.IntlConverterUtils._minMaxIsoString(minDate, this._getValue()));
+      var minDateProcessed = _getNativePickerDate(converter, oj.IntlConverterUtils._minMaxIsoString(minDate, this._getIsoDateValue(converter)));
       pickerOptions['minDate'] = minDateProcessed.valueOf();
     }
 
     if (maxDate)
     {
     // get a correctly formatted ISO date string
-      var maxDateProcessed = _getNativePickerDate(converter, oj.IntlConverterUtils._minMaxIsoString(maxDate, this._getValue()));
+      var maxDateProcessed = _getNativePickerDate(converter, oj.IntlConverterUtils._minMaxIsoString(maxDate, this._getIsoDateValue(converter)));
       pickerOptions['maxDate'] = maxDateProcessed.valueOf();
     }
 
@@ -5396,13 +5704,14 @@ oj.__registerWidget("oj.ojInputTime", $['oj']['inputBase'],
       //  for case when the picker is cancelled, this callback gets called without the parameter
       if (date)
       {
+        var converter = _getTimePickerConverter(self._GetConverter(), {"isoStrFormat": "offset"});
         // The time picker displays the time portion as is supplied, regardless of device timezone.
         //  Explicitly setting timezone is supported only in iOS, and we do not have a need to do
         //  so at this time, so not exposing this feature for now.
         //  The value returned after pick will have the supplied timezone preserved, however, the
         //  date portion will be reset to current date when in 'time' mode. This will not impact us
         //  because we extract only the time portion to be set on the component.
-        var isoString = oj.IntlConverterUtils._dateTime(self._getValue(), {"hours": date.getHours(), "minutes": date.getMinutes(), "seconds": date.getSeconds()});
+        var isoString = oj.IntlConverterUtils._dateTime(self._getIsoDateValue(converter), {"hours": date.getHours(), "minutes": date.getMinutes(), "seconds": date.getSeconds()});
         var formattedTime = self._GetConverter().format(isoString);
 
         // _SetValue will inturn call _SetDisplayValue
@@ -5536,7 +5845,7 @@ oj.__registerWidget("oj.ojInputTime", $['oj']['inputBase'],
     //when developer invokes ("option", "value", "..")
     if(this._timepickerShowing())
     {
-      this._createWheelPickerDom();
+      this._createWheelPickerDom(true);
     }
   },
 
@@ -5779,10 +6088,10 @@ oj.__registerWidget("oj.ojInputTime", $['oj']['inputBase'],
     var isRTL = this._IsRTL();
 
     var cancelText = this._EscapeXSS(this.getTranslatedString("cancelText"));
-    var cancelButton = "<a role='button' href='#' class='oj-enabled oj-default oj-timepicker-cancel-button'" + " title='" + cancelText + "'>" + cancelText + "</a>";
+    var cancelButton = "<a role='button' onclick='return false;' href='#' class='oj-enabled oj-default oj-timepicker-cancel-button'" + " title='" + cancelText + "'>" + cancelText + "</a>";
 
     var okText = this._EscapeXSS(this.getTranslatedString("okText"));
-    var okButton = "<a role='button' href='#' class='oj-enabled oj-default oj-timepicker-ok-button'" + " title='" + okText + "'>" + okText + "</a>";
+    var okButton = "<a role='button' onclick='return false;' href='#' class='oj-enabled oj-default oj-timepicker-ok-button'" + " title='" + okText + "'>" + okText + "</a>";
 
     var header = "<div class='oj-timepicker-header" + (this.options["disabled"] ? " oj-disabled " : " oj-enabled oj-default ") + "'>";
 
@@ -5798,11 +6107,11 @@ oj.__registerWidget("oj.ojInputTime", $['oj']['inputBase'],
    *
    * @private
    */
-  _generateFooter : function __generateFooter(footerLayoutDisplay, gotoTime)
+  _generateFooter : function (footerLayoutDisplay, gotoTime)
   {
     var footerLayout = "";
     var currentText = this._EscapeXSS(this.getTranslatedString("currentTimeText"));
-    var nowControl = "<a role='button' href='#' class='oj-timepicker-now oj-priority-secondary oj-enabled'" + ">" + currentText + "</a>";
+    var nowControl = "<a role='button' onclick='return false;' href='#' class='oj-timepicker-now oj-priority-secondary oj-enabled'" + ">" + currentText + "</a>";
 
     if(footerLayoutDisplay && footerLayoutDisplay.length > 1) //keep the code for future multiple buttons
     {
@@ -5910,12 +6219,24 @@ oj.__registerWidget("oj.ojInputTime", $['oj']['inputBase'],
    *
    * @private
    */
-  _createWheelPickerDom : function __createWheelPickerDom()
+  _createWheelPickerDom : function (keepHeaderFooter)
   {
+    if(!keepHeaderFooter) 
+    {
+      this._detachWheelHandler();
+    }
+    
     var wheelPicker = this._wheelPicker;
     var wheelPickerContent = this._getWheelPickerContent(wheelPicker);
     this._destroyHammer();
-    wheelPickerContent.empty();
+    if(keepHeaderFooter) 
+    {
+      $(".oj-timepicker-wheel-group", wheelPickerContent).remove();
+    }
+    else
+    {
+      wheelPickerContent.empty();
+    }
 
     var converter = this._GetConverter();
     var options = $.extend({}, converter.resolvedOptions());
@@ -5979,36 +6300,73 @@ oj.__registerWidget("oj.ojInputTime", $['oj']['inputBase'],
       timePickerModel["isoMax"] = maxDateIso;
 
     //add header, wheel group and footer
-    if(this._isIndependentInput())
+    if(this._isIndependentInput() && (!keepHeaderFooter || $(".oj-timepicker-header", wheelPickerContent).length === 0))
     {
-      wheelPickerContent.append($(this._generateHeader(wheelPicker)));
+      wheelPickerContent.append($(this._generateHeader(wheelPicker))); //@HTMLUpdateOK; header is generated internally so ok
     }
     this._wheelGroup = $(createWheelGroup(timePickerModel));
-    wheelPickerContent.append(this._wheelGroup);
-    wheelPickerContent.append($(this._generateFooter(footerLayoutDisplay, date)));
+
+    if(this._isIndependentInput())
+    {
+      this._wheelGroup.insertAfter($(".oj-timepicker-header", wheelPickerContent)); //@HTMLUpdateOK; wheelGroup is created internally using numbers so ok
+    }
+    else
+    {
+      wheelPickerContent.append(this._wheelGroup); //@HTMLUpdateOK; wheelGroup is created internally using numbers so ok
+    }
+    
+    if(!keepHeaderFooter || $(".oj-timepicker-footer", wheelPickerContent).length === 0) 
+    {
+      wheelPickerContent.append($(this._generateFooter(footerLayoutDisplay, date))); //@HTMLUpdateOK; footer is generated internally so ok
+    }
 
     //add aria labels to wheels for accessibility
     wheelPickerContent.find(".oj-timepicker-hour").attr("aria-label", this.getTranslatedString("hourWheelLabel"));
     wheelPickerContent.find(".oj-timepicker-minute").attr("aria-label", this.getTranslatedString("minuteWheelLabel"));
     wheelPickerContent.find(".oj-timepicker-meridian").attr("aria-label", this.getTranslatedString("ampmWheelLabel"));
 
-    //add content
-    //this._wheelPicker.append(wheelPicker);  ?? they are the same instance
+    if(!keepHeaderFooter)
+    {
+      this._attachWheelHandler();
+    }
   },
 
   /**
-   * Shows the wheel timepicker
+   * Detach wheel handlers
    *
    * @private
    */
-  _showWheelPicker : function __showWheelPicker()
+  _detachWheelHandler: function() 
   {
-    var self = this,
-        popUpWheelPicker = this._popUpWheelPicker;
+    this._wheelPicker.find(".oj-timepicker-now").off('click');
 
-    this._createWheelPickerDom();
+    if(this._isIndependentInput())
+    {
+      this._wheelPicker.find(".oj-timepicker-cancel-button").off('click');
+      this._wheelPicker.find(".oj-timepicker-ok-button").off('click');
+    }
+    else
+    {
+      this._wheelPicker.find(".oj-timepicker-wheel").off('blur');
+      return;
+    }
 
+    this._wheelPicker.off('keydown');
+  },
+
+  /**
+   * Attaches wheel handlers
+   *
+   * NOTE: Timepicker wheel was written to redraw the whole content on basically every action, b/c of this it causes random 
+   * behavior. In order to stabilize it, will minimize the creation of header + footer in the _createWheelPickerDom
+   * function and to off before on the handler for the handlers (before would fire multiple times).
+   * @private
+   */
+  _attachWheelHandler: function() 
+  {
+    var self = this;
     //now control
+    
     this._wheelPicker.find(".oj-timepicker-now").on('click',
       function(event)
       {
@@ -6037,9 +6395,9 @@ oj.__registerWidget("oj.ojInputTime", $['oj']['inputBase'],
       this._wheelPicker.find(".oj-timepicker-ok-button").on('click',
         function(event)
         {
+          self._hide(self._ON_CLOSE_REASON_SELECTION);
           self._SetValue(self._timePickerModel["isoValue"], event);
           event.preventDefault();
-          self._hide(self._ON_CLOSE_REASON_SELECTION);
         });
     }
     else
@@ -6066,6 +6424,21 @@ oj.__registerWidget("oj.ojInputTime", $['oj']['inputBase'],
           self._hide(self._ON_CLOSE_REASON_CANCELLED);
         }
       });
+  },
+
+  /**
+   * Shows the wheel timepicker
+   *
+   * @private
+   */
+  _showWheelPicker : function ()
+  {
+    
+    this._createWheelPickerDom();
+
+    var self = this;
+    var popUpWheelPicker = this._popUpWheelPicker;
+    if(!popUpWheelPicker) return;
 
     // ojPopup open must be passed the input container (this.element.parent)
     // as the launcher so that any event within the container won't auto-dismiss
@@ -6087,7 +6460,7 @@ oj.__registerWidget("oj.ojInputTime", $['oj']['inputBase'],
     
   },
 
-  //** @inheritdoc */
+  // @inheritdoc
   getNodeBySubId: function(locator)
   {
     var node = null,
@@ -6116,7 +6489,7 @@ oj.__registerWidget("oj.ojInputTime", $['oj']['inputBase'],
     return node || this._superApply(arguments);
   },
 
-  //** @inheritdoc */
+  // @inheritdoc
   getSubIdByNode: function(node)
   {
     var timeIcon = $(".oj-inputdatetime-time-icon", this._triggerNode),
@@ -6167,6 +6540,7 @@ oj.__registerWidget("oj.ojInputTime", $['oj']['inputBase'],
    * @expose
    * @instance
    * @memberof! oj.ojInputTime
+   * @ignore
    */
   widget : function ()
   {
@@ -6223,7 +6597,6 @@ oj.Components.setDefaultOptions(
  *       <td>Set focus to the input. If hints, title or messages exist in a notewindow,
  *        pop up the notewindow.</td>
  *     </tr>
- *     {@ojinclude "name":"labelTouchDoc"}
  *   </tbody>
  * </table>
  *
@@ -6252,7 +6625,6 @@ oj.Components.setDefaultOptions(
  *       <td>Set focus to the input. If hints, title or messages exist in a notewindow,
  *        pop up the notewindow.</td>
  *     </tr>
- *     {@ojinclude "name":"labelKeyboardDoc"}
  *   </tbody>
  * </table>
  *
@@ -6263,14 +6635,14 @@ oj.Components.setDefaultOptions(
 //////////////////     SUB-IDS     //////////////////
 
 /**
- * <p>Sub-ID for the ojInputTime component's input element.</p>
+ * <p>Sub-ID for the InputTime component's input element.</p>
  *
  * @ojsubid oj-inputdatetime-time-input
  * @memberof oj.ojInputTime
  * @instance
  *
  * @example <caption>Get the node for the input element:</caption>
- * var node = $( ".selector" ).ojInputTime( "getNodeBySubId", {'subId': 'oj-inputdatetime-time-input'} );
+ * var node = myInputTime.getNodeBySubId( {'subId': 'oj-inputdatetime-time-input'} );
  */
 
 /**
@@ -6281,8 +6653,7 @@ oj.Components.setDefaultOptions(
  * @instance
  *
  * @example <caption>Get the time icon that triggers the time drop down display:</caption>
- * // Foo is ojInputTime or ojInputDateTime.
- * var node = $( ".selector" ).ojFoo( "getNodeBySubId", {'subId': 'oj-inputdatetime-time-icon'} );
+ * var node = myInputTime.getNodeBySubId( {'subId': 'oj-inputdatetime-time-icon'} );
  */
 
 /**
@@ -6293,8 +6664,7 @@ oj.Components.setDefaultOptions(
  * @instance
  *
  * @example <caption>Get the time wheel picker drop down node:</caption>
- * // Foo is ojInputTime or ojInputDateTime.
- * var node = $( ".selector" ).ojFoo( "getNodeBySubId", {'subId': 'oj-timepicker-content'} );
+ * var node = myInputTime.getNodeBySubId( {'subId': 'oj-timepicker-content'} );
  */
 
 /**
@@ -6305,8 +6675,7 @@ oj.Components.setDefaultOptions(
  * @instance
  *
  * @example <caption>Get the cancel button:</caption>
- * // Foo is ojInputTime or ojInputDateTime.
- * var node = $( ".selector" ).ojFoo( "getNodeBySubId", {'subId': 'oj-timepicker-cancel-button'} );
+ * var node = myInputTime.getNodeBySubId( {'subId': 'oj-timepicker-cancel-button'} );
  */
 
 /**
@@ -6317,8 +6686,7 @@ oj.Components.setDefaultOptions(
  * @instance
  *
  * @example <caption>Get the OK button:</caption>
- * // Foo is ojInputTime or ojInputDateTime.
- * var node = $( ".selector" ).ojFoo( "getNodeBySubId", {'subId': 'oj-timepicker-ok-button'} );
+ * var node = myInputTime.getNodeBySubId( {'subId': 'oj-timepicker-ok-button'} );
  */
 
 /**
@@ -6329,8 +6697,7 @@ oj.Components.setDefaultOptions(
  * @instance
  *
  * @example <caption>Get the hour picker:</caption>
- * // Foo is ojInputTime or ojInputDateTime.
- * var node = $( ".selector" ).ojFoo( "getNodeBySubId", {'subId': 'oj-timepicker-hour'} );
+ * var node = myInputTime.getNodeBySubId( {'subId': 'oj-timepicker-hour'} );
  */
 
 /**
@@ -6341,8 +6708,7 @@ oj.Components.setDefaultOptions(
  * @instance
  *
  * @example <caption>Get the minute picker:</caption>
- * // Foo is ojInputTime or ojInputDateTime.
- * var node = $( ".selector" ).ojFoo( "getNodeBySubId", {'subId': 'oj-timepicker-minute'} );
+ * var node = myInputTime.getNodeBySubId( {'subId': 'oj-timepicker-minute'} );
  */
 
 /**
@@ -6353,8 +6719,7 @@ oj.Components.setDefaultOptions(
  * @instance
  *
  * @example <caption>Get the meridian picker:</caption>
- * // Foo is ojInputTime or ojInputDateTime.
- * var node = $( ".selector" ).ojFoo( "getNodeBySubId", {'subId': 'oj-timepicker-meridian'} );
+ * var node = myInputTime.getNodeBySubId( {'subId': 'oj-timepicker-meridian'} );
  */
 
 /**
@@ -6365,11 +6730,10 @@ oj.Components.setDefaultOptions(
  * @instance
  *
  * @example <caption>Get the now/now button for button bar:</caption>
- * // Foo is ojInputTime or ojInputDateTime.
- * var node = $( ".selector" ).ojFoo( "getNodeBySubId", {'subId': 'oj-timepicker-now'} );
+ * var node = myInputTime.getNodeBySubId( {'subId': 'oj-timepicker-now'} );
  */
 
-function createWheelItem(model, position)
+function createWheelItem(model, position, isMeridian)
 {
   var _item;
   var _position;
@@ -6406,7 +6770,14 @@ function createWheelItem(model, position)
     var content = document.createElement("div");
     content.textContent = text;
     content.classList.add("oj-timepicker-wheel-item-content");
-    _item.appendChild(content);
+
+    if(isMeridian) 
+    {
+      //need to add title attr for hover for long am/pm translations
+      content.setAttribute("title", text);
+    }
+
+    _item.appendChild(content); //@HTMLUpdateOK content is generated internally with content being nunmber so ok
  
     Object.defineProperty(_item, "ojDisabled", {
       'enumerable': true,
@@ -6453,6 +6824,7 @@ function createWheel(model, isNumber, classList)
   var _panLastSpinY;
   var _panLastZone;
   var _momentum;
+  var _isMeridian = !isNumber && classList === "oj-timepicker-meridian";
 
   createDom(classList);
   var $wheel = $(_wheel);
@@ -6534,10 +6906,10 @@ function createWheel(model, isNumber, classList)
       {
         _wheel.removeChild(oldItem);
       }
-      var newItem = createWheelItem(model, CURRENT_POSITION);
+      var newItem = createWheelItem(model, CURRENT_POSITION, _isMeridian);
       if (newItem)
       {
-        _wheel.appendChild(newItem);
+        _wheel.appendChild(newItem); //@HTMLUpdateOK newItem is generated internally using number so ok
       }
       _items.push(newItem);
     }
@@ -6554,10 +6926,10 @@ function createWheel(model, isNumber, classList)
       {
         _wheel.removeChild(oldItem);
       }
-      var newItem = createWheelItem(model, -CURRENT_POSITION);
+      var newItem = createWheelItem(model, -CURRENT_POSITION, _isMeridian);
       if (newItem)
       {
-        _wheel.insertBefore(newItem, _items[0]);
+        _wheel.insertBefore(newItem, _items[0]); //@HTMLUpdateOK newItem is generated internally using number so ok
       }
       _items.unshift(newItem);
     }
@@ -6590,10 +6962,10 @@ function createWheel(model, isNumber, classList)
 
     for (var offset = -CURRENT_POSITION; offset <= CURRENT_POSITION; offset++)
     {
-      var item = createWheelItem(model, offset);
+      var item = createWheelItem(model, offset, _isMeridian);
       if (item)
       {
-        _wheel.appendChild(item);
+        _wheel.appendChild(item); //@HTMLUpdateOK item is generated internally using number so ok
       }
 
       _items.push(item);
@@ -6736,6 +7108,8 @@ function createWheel(model, isNumber, classList)
 
 createWheel.counter = 0;
 /**
+ * @ignore
+ * @protected
  * @constructor
  */
 function TimePickerModel(properties)
@@ -7088,7 +7462,7 @@ function TimePickerModel(properties)
             {
               grouped = "all";
             }
-            else
+            else  
             {
               grouped = "all";
             }
@@ -7114,39 +7488,39 @@ function TimePickerModel(properties)
           _ampmModel["linked"] = true;
           break;
 
-        case "none":
-          _minuteModel["displayMultiplier"] = 1;
-          _minuteModel["valueMultiplier"] = 1;
-          _minuteModel["valueRange"] = 60;
-          _minuteModel["linked"] = false;
+        //case "none":
+        //  _minuteModel["displayMultiplier"] = 1;
+        //  _minuteModel["valueMultiplier"] = 1;
+        //  _minuteModel["valueRange"] = 60;
+        //  _minuteModel["linked"] = false;
 
-          _hourModel["displayMultiplier"] = 1;
-          _hourModel["valueMultiplier"] = 60;
-          _hourModel["valueRange"] = 12;
-          _hourModel["linked"] = false;
+        //  _hourModel["displayMultiplier"] = 1;
+        //  _hourModel["valueMultiplier"] = 60;
+        //  _hourModel["valueRange"] = 12;
+        //  _hourModel["linked"] = false;
 
-          _ampmModel["displayMultiplier"] = 1;
-          _ampmModel["valueMultiplier"] = 60 * 12;
-          _ampmModel["valueRange"] = 2;
-          _ampmModel["linked"] = false;
-          break;
+        //  _ampmModel["displayMultiplier"] = 1;
+        //  _ampmModel["valueMultiplier"] = 60 * 12;
+        //  _ampmModel["valueRange"] = 2;
+        //  _ampmModel["linked"] = false;
+        //  break;
 
-        case "hoursMinutes":
-          _minuteModel["displayMultiplier"] = 1;
-          _minuteModel["valueMultiplier"] = 1;
-          _minuteModel["valueRange"] = HOURS12;
-          _minuteModel["linked"] = true;
+        //case "hoursMinutes":
+        //  _minuteModel["displayMultiplier"] = 1;
+        //  _minuteModel["valueMultiplier"] = 1;
+        //  _minuteModel["valueRange"] = HOURS12;
+        //  _minuteModel["linked"] = true;
 
-          _hourModel["displayMultiplier"] = 60;
-          _hourModel["valueMultiplier"] = 1;
-          _hourModel["valueRange"] = HOURS12;
-          _hourModel["linked"] = true;
+        //  _hourModel["displayMultiplier"] = 60;
+        //  _hourModel["valueMultiplier"] = 1;
+        //  _hourModel["valueRange"] = HOURS12;
+        //  _hourModel["linked"] = true;
 
-          _ampmModel["displayMultiplier"] = 1;
-          _ampmModel["valueMultiplier"] = 60 * 12;
-          _ampmModel["valueRange"] = 2;
-          _ampmModel["linked"] = false;
-          break;
+        //  _ampmModel["displayMultiplier"] = 1;
+        //  _ampmModel["valueMultiplier"] = 60 * 12;
+        //  _ampmModel["valueRange"] = 2;
+        //  _ampmModel["linked"] = false;
+        //  break;
 
         case "hoursMeridiem":
           _minuteModel["displayMultiplier"] = 1;
@@ -7373,8 +7747,6 @@ function TimePickerModel(properties)
 
       case "ampm":        
         return (_12Hour ? _ampmModel : null);
-      default:
-        console.log("Unknown wheel type: " + type);
     };
   };
 
@@ -7394,6 +7766,9 @@ function TimePickerModel(properties)
 }
 
 
+/**
+ * @protected
+ */
 function createWheelGroup(timePickerModel)
 {
   var KEYCODE_LEFT = 37;
@@ -7410,22 +7785,34 @@ function createWheelGroup(timePickerModel)
 
   return _group;
 
+/**
+ * @protected
+ */
   function createDom()
   {
     _group = document.createElement("div");
     _group.classList.add("oj-timepicker-wheel-group");
   }
   
+/**
+ * @protected
+ */
   function defineMethods()
   {
     _group.ojRefresh = refresh;
   }
 
+/**
+ * @protected
+ */
   function defineEvents()
   {
     _group.addEventListener("keydown", keydownHandler, false);
   }
 
+/**
+ * @protected
+ */
   function keydownHandler(event)
   {
     var wheel = event.target;
@@ -7444,6 +7831,9 @@ function createWheelGroup(timePickerModel)
     }
   }
 
+/**
+ * @protected
+ */
   function focusHandler(event)
   {
     var wheel = event.target;
@@ -7463,6 +7853,9 @@ function createWheelGroup(timePickerModel)
     }
   }
 
+/**
+ * @protected
+ */
   function blurHandler()
   {
     for (var i = 0; i < _wheels.length; i++)
@@ -7471,6 +7864,9 @@ function createWheelGroup(timePickerModel)
     }
   }
 
+/**
+ * @protected
+ */
   function refresh()
   {
     var wheel;
@@ -7484,6 +7880,9 @@ function createWheelGroup(timePickerModel)
     createWheels();
   }
 
+/**
+ * @protected
+ */
   function createWheels()
   {
     var wheelOrder = timePickerModel["wheelOrder"];
@@ -7525,7 +7924,7 @@ function createWheelGroup(timePickerModel)
       var wheel = _wheels[i];
       wheel.addEventListener("focus", focusHandler, false);
       wheel.addEventListener("blur", blurHandler, false);
-      _group.appendChild(wheel);
+      _group.appendChild(wheel); //@HTMLUpdateOK wheel is generated internally using number so ok
     }
   }
 }
@@ -7546,17 +7945,20 @@ var dateSwitcherConverter = $["oj"]["ojInputDate"]["prototype"]["options"]["conv
 var timeSwitcherConverter =  $["oj"]["ojInputTime"]["prototype"]["options"]["converter"];
 
 /**
- * @ojcomponent oj.ojInputDateTime
- * @augments oj.ojInputDate
+ * @ojcomponent oj.ojDateTimePicker
+ * @augments oj.ojInputDateTime
  * @since 0.6
  * 
  * @classdesc
  * <h3 id="inputDateTimeOverview-section">
- *   JET ojInputDateTime Component
+ *   JET DateTimePicker (Inline mode)
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#inputDateTimeOverview-section"></a>
  * </h3>
- * 
- * <p>Description: ojInputDateTime extends from ojInputDate providing additionally time selection drop down.</p>
+ * <p>Description:</p>
+ * <p>A JET DateTimePicker extends from DatePicker providing additionally time selection drop down. This behaves similar to JET InputDateTime element
+ *    except for the fact that the date picker is rendered inline here.</p>
+ *
+ * <pre class="prettyprint"><code>&lt;oj-date-time-picker>&lt;/oj-date-time-picker></code></pre>
  * 
  * <h3 id="touch-section">
  *   Touch End User Information
@@ -7572,24 +7974,68 @@ var timeSwitcherConverter =  $["oj"]["ojInputTime"]["prototype"]["options"]["con
  *
  * {@ojinclude "name":"keyboardDoc"}
  * 
- * <h3 id="pseudos-section">
- *   Pseudo-selectors
- *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#pseudos-section"></a>
- * </h3>
- * 
- * <pre class="prettyprint">
- * <code>$( ":oj-inputDateTime" )            // selects all JET input on the page
- * </code>
- * </pre>
- * 
-  * <h3 id="a11y-section">
+ * <h3 id="a11y-section">
  *   Accessibility
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#a11y-section"></a>
  * </h3>
  * <p>
- * It is up to the application developer to associate the label to the input component.
- * For inputDateTime, you should put an <code>id</code> on the input, and then set 
- * the <code>for</code> attribute on the label to be the input's id.
+ * It is up to the application developer to associate the label to the element.
+ * For DateTimePicker, you should put an <code>id</code> on the element, and then set 
+ * the <code>for</code> attribute on the label to be the element's id.
+ * </p>
+ * <h3 id="label-section">
+ *   Label and DateTimePicker
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#label-section"></a>
+ * </h3>
+ * <p>
+ * For accessibility, you should associate a label element with the input
+ * by putting an <code>id</code> on the input, and then setting the 
+ * <code>for</code> attribute on the label to be the input's id.
+ * </p>
+ * <p>
+ * The element will decorate its associated label with required and help 
+ * information, if the <code>required</code> and <code>help</code> attributes are set. 
+ * </p> 
+ */
+/**
+ * @ojcomponent oj.ojInputDateTime
+ * @augments oj.ojInputDate
+ * @since 0.6
+ * 
+ * @classdesc
+ * <h3 id="inputDateTimeOverview-section">
+ *   JET InputDateTime
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#inputDateTimeOverview-section"></a>
+ * </h3>
+ * <p>Description:</p>
+ * <p>A JET InputDateTime extends from InputDate providing additionally time selection drop down.</p>
+ *
+ * <pre class="prettyprint"><code>&lt;oj-input-date-time>&lt;/oj-input-date-time></code></pre>
+ * 
+ * {@ojinclude "name":"validationAndMessagingDoc"}
+ * 
+ * <h3 id="touch-section">
+ *   Touch End User Information
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#touch-section"></a>
+ * </h3>
+ *
+ * {@ojinclude "name":"touchDoc"}
+ *
+ * <h3 id="keyboard-section">
+ *   Keyboard End User Information
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#keyboard-section"></a>
+ * </h3>
+ *
+ * {@ojinclude "name":"keyboardDoc"}
+ * 
+ * <h3 id="a11y-section">
+ *   Accessibility
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#a11y-section"></a>
+ * </h3>
+ * <p>
+ * It is up to the application developer to associate the label to the element.
+ * For InputDateTime, you should put an <code>id</code> on the element, and then set 
+ * the <code>for</code> attribute on the label to be the element's id.
  * </p>
  * <h3 id="label-section">
  *   Label and InputDateTime
@@ -7601,32 +8047,9 @@ var timeSwitcherConverter =  $["oj"]["ojInputTime"]["prototype"]["options"]["con
  * <code>for</code> attribute on the label to be the input's id.
  * </p>
  * <p>
- * The component will decorate its associated label with required and help 
- * information, if the <code>required</code> and <code>help</code> options are set. 
+ * The element will decorate its associated label with required and help 
+ * information, if the <code>required</code> and <code>help</code> attributes are set. 
  * </p> 
- * <h3 id="binding-section">
- *   Declarative Binding
- *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#binding-section"></a>
- * </h3>
- * 
- * <pre class="prettyprint">
- * <code>
- *    &lt;input id="dateTimeId" data-bind="ojComponent: {component: 'ojInputDateTime'}" /&gt;
- * </code>
- * </pre>
- * 
- * @desc Creates or re-initializes a JET ojInputDateTime
- * 
- * @param {Object=} options a map of option-value pairs to set on the component
- * 
- * @example <caption>Initialize the input element with no options specified:</caption>
- * $( ".selector" ).ojInputDateTime();
- * 
- * * @example <caption>Initialize the input element with some options:</caption>
- * $( ".selector" ).ojInputDateTime( { "disabled": true } );
- * 
- * @example <caption>Initialize the input element via the JET <code class="prettyprint">ojComponent</code> binding:</caption>
- * &lt;input id="dateTimeId" data-bind="ojComponent: {component: 'ojInputDateTime'}" /&gt;
  */
 oj.__registerWidget("oj.ojInputDateTime", $['oj']['ojInputDate'], 
 {
@@ -7641,14 +8064,15 @@ oj.__registerWidget("oj.ojInputDateTime", $['oj']['ojInputDate'],
   options : 
   {
     /**
-     * Default converter for ojInputDateTime
+     * Default converter for InputDateTime
      *
-     * If one wishes to provide a custom converter for the ojInputDateTime override the factory returned for
+     * If one wishes to provide a custom converter for the InputDateTime override the factory returned for
      * oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME)
-     *
+     * {@ojinclude "name":"inputBaseConverterOptionDoc"}
      * @expose
      * @instance
      * @memberof! oj.ojInputDateTime
+     * @type {Object}
      * @default <code class="prettyprint">oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({"day": "2-digit", "month": "2-digit", "year": "2-digit", "hour": "2-digit", "minute": "2-digit"})</code>
      */
     converter : oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter(
@@ -7657,7 +8081,32 @@ oj.__registerWidget("oj.ojInputDateTime", $['oj']['ojInputDate'],
     }),
 
     /**
-     * The renderMode option allows applications to specify whether to render date and time pickers 
+     * Allows applications to specify whether to render date picker in JET or
+     * as a native picker control. In inline mode, the only value supported is "jet"</br>
+     *
+     * @expose
+     * @memberof! oj.ojDateTimePicker
+     * @instance
+     * @name renderMode
+     * @type {string}
+     * @ojvalue {string} 'jet' Applications get full JET functionality.
+     * @default jet.
+     *
+     * @example <caption>Initialize the InputDate with the <code class="prettyprint">render-mode</code> attribute specified:</caption>
+     * &lt;oj-date-time-picker render-mode='jet'>&lt;/oj-date-time-picker>
+     *
+     * @example <caption>Get or set the <code class="prettyprint">renderMode</code> property after initialization:</caption>
+     * // getter
+     * var renderMode = myInputDate.renderMode;
+     *
+     * // setter
+     * myInputDate.renderMode = 'jet';
+     *
+     * @example <caption>Set the default in the theme (SCSS)</caption>
+     * $inputDateTimeRenderModeOptionDefault: native !default;
+     */
+    /**
+     * Allows applications to specify whether to render date and time pickers 
      * in JET or as a native picker control.</br>
      * 
      * Valid values: jet, native
@@ -7674,9 +8123,9 @@ oj.__registerWidget("oj.ojInputDateTime", $['oj']['ojInputDate'],
      *      <li>pickerAttributes is not applied</li>
      *      <li>Sub-IDs are not available</li>
      *      <li>hide() and hideTimePicker() functions are no-op</li>
-     *      <li>translations sub options pertaining to the picker is not available</li>
-     *      <li>All of the 'datepicker' sub-options except 'showOn' are not available</li>
-     *      <li>'timePicker.timeIncrement' option is limited to iOS and will only take a precision of minutes</li>
+     *      <li>translations sub properties pertaining to the picker is not available</li>
+     *      <li>All of the 'datepicker' sub-properties except 'showOn' are not available</li>
+     *      <li>'timePicker.timeIncrement' property is limited to iOS and will only take a precision of minutes</li>
      *    </ul>
      * </ul>
      *
@@ -7687,12 +8136,12 @@ oj.__registerWidget("oj.ojInputDateTime", $['oj']['ojInputDate'],
      * @default value depends on the theme. In alta-android, alta-ios and alta-windows themes, the 
      * default is "native" and it's "jet" for alta web theme.
      *
-     * @example <caption>Get or set the <code class="prettyprint">renderMode</code> option for
-     * an ojInputDateTime after initialization:</caption>
+     * @example <caption>Get or set the <code class="prettyprint">renderMode</code> property for
+     * an InputDateTime after initialization:</caption>
      * // getter
-     * var renderMode = $( ".selector" ).ojInputDateTime( "option", "renderMode" );
+     * var renderMode = myInputDateTime.renderMode;
      * // setter
-     * $( ".selector" ).ojInputDateTime( "option", "renderMode", "native" );
+     * myInputDateTime.renderMode = "native";
      * // Example to set the default in the theme (SCSS)
      * $inputDateTimeRenderModeOptionDefault: native !default;
      */
@@ -7700,44 +8149,115 @@ oj.__registerWidget("oj.ojInputDateTime", $['oj']['ojInputDate'],
     
     /**
      * <p>
-     * Note that Jet framework prohibits setting subset of options which are object types.<br/><br/>
-     * For example $(".selector").ojInputDateTime("option", "timePicker", {timeIncrement': "00:30:00:00"}); is prohibited as it will
-     * wipe out all other sub-options for "timePicker" object.<br/><br/> If one wishes to do this [by above syntax or knockout] one
-     * will have to get the "timePicker" object, modify the necessary sub-option and pass it to above syntax.<br/><br/>
+     * Note that Jet framework prohibits setting subset of properties which are object types.<br/><br/>
+     * For example myInputDateTime.timePicker = {timeIncrement: "00:30:00:00"}; is prohibited as it will
+     * wipe out all other sub-properties for "timePicker" object.<br/><br/> If one wishes to do this [by above syntax or knockout] one
+     * will have to get the "timePicker" object, modify the necessary sub-property and pass it to above syntax.<br/><br/>
+     * </p>
      *
-     * The properties supported on the timePicker option are:
+     * @memberof oj.ojInputDateTime
+     * @ojfragment dateTimeCommonTimePicker
+     */
+    /**
+     * {@ojinclude "name":"datePickerCommonDatePicker"}
      *
-     * @property {string=} timeIncrement Time increment to be used for ojInputDateTime, the format is hh:mm:ss:SS. <br/><br/>
-     * Note that when renderMode is 'native', timeIncrement option is limited to iOS and will only take a precision of minutes.<br/><br/> 
+     * @expose
+     * @instance
+     * @memberof! oj.ojDateTimePicker
+     * @name timePicker
+     * @type {Object}
      *
-     * The default value is <code class="prettyprint">{timePicker: {timeIncrement': "00:05:00:00"}}</code>. <br/><br/>
-     * Example <code class="prettyprint">$(".selector").ojInputDateTime("option", "timePicker.timeIncrement", "00:10:00:00");</code>
+     * @example <caption>Initialize the component, overriding some time-picker attributes and leaving the others intact:</caption>
+     * &lt;!-- Using dot notation -->
+     * &lt;oj-date-time-picker time-picker.time-increment='00:10:00:00'>&lt;/oj-date-time-picker>
+     * 
+     * &lt;!-- Using JSON notation -->
+     * &lt;oj-date-time-picker time-picker='{"timeIncrement":"00:10:00:00"}'>&lt;/oj-date-time-picker>
      *
-     * @property {string=} showOn When the timepicker should be shown. <br/><br/>
-     * Possible values are
-     * <ul>
-     *  <li>"focus" - when the element receives focus or when the trigger clock image is clicked. When the picker is closed, the field regains focus and is editable.</li>
-     *  <li>"image" - when the trigger clock image is clicked</li>
-     * </ul>
-     * <br/>
-     * Example to initialize the inputTime with showOn option specified 
-     * <code class="prettyprint">$(".selector").ojInputDateTime("option", "timePicker.showOn", "focus");</code>
+     * @example <caption>Get or set the <code class="prettyprint">timePicker</code> property after initialization:</caption>
+     * // Get one
+     * var value = myComponent.timePicker.showOn;
+     *
+     * // Set one, leaving the others intact. Use the setProperty API for 
+     * // subproperties so that a property change event is fired.
+     * myComponent.setProperty('timePicker.showOn', 'image');
+     *
+     * // Get all
+     * var values = myComponent.timePicker;
+     *
+     * // Set all.  Must list every timePicker key, as those not listed are lost.
+     * myComponent.timePicker = {
+     *     timeIncrement: '00:10:00:00',
+     *     showOn: 'image'
+     * };
+     */
+    /**
+     * <p>
+     * Note that Jet framework prohibits setting subset of properties which are object types.<br/><br/>
+     * For example myInputDateTime.timePicker = {timeIncrement: "00:30:00:00"}; is prohibited as it will
+     * wipe out all other sub-properties for "timePicker" object.<br/><br/> If one wishes to do this [by above syntax or knockout] one
+     * will have to get the "timePicker" object, modify the necessary sub-property and pass it to above syntax.<br/><br/>
      * </p>
      *
      * @expose
      * @instance
      * @memberof! oj.ojInputDateTime
      * @type {Object}
+     *
+     * @example <caption>Initialize the component, overriding some time-picker attributes and leaving the others intact:</caption>
+     * &lt;!-- Using dot notation -->
+     * &lt;oj-input-date-time time-picker.time-increment='00:10:00:00'>&lt;/oj-input-date-time>
+     * 
+     * &lt;!-- Using JSON notation -->
+     * &lt;oj-input-date-time time-picker='{"timeIncrement":"00:10:00:00"}'>&lt;/oj-input-date-time>
+     *
+     * @example <caption>Get or set the <code class="prettyprint">timePicker</code> property after initialization:</caption>
+     * // Get one
+     * var value = myComponent.timePicker.showOn;
+     *
+     * // Set one, leaving the others intact. Use the setProperty API for 
+     * // subproperties so that a property change event is fired.
+     * myComponent.setProperty('timePicker.showOn', 'image');
+     *
+     * // Get all
+     * var values = myComponent.timePicker;
+     *
+     * // Set all.  Must list every timePicker key, as those not listed are lost.
+     * myComponent.timePicker = {
+     *     timeIncrement: '00:10:00:00',
+     *     showOn: 'image'
+     * };
      */
     timePicker:
     {
       /**
+       * Time increment to be used for InputDateTime, the format is hh:mm:ss:SS. <br/><br/>
+       * Note that when renderMode is 'native', timeIncrement property is limited to iOS and will only take a precision of minutes.<br/><br/> 
+       *
+       * <p>See the <a href="#timePicker">time-picker</a> attribute for usage examples.
+       *
        * @expose
+       * @name timePicker.timeIncrement
+       * @memberof! oj.ojInputDateTime
+       * @instance
+       * @type {string}
+       * @default <code class="prettyprint">'00:05:00:00'</code>
        */
       timeIncrement : "00:05:00:00",
 
       /**
+       * When the timepicker should be shown.
+       *
+       * <p>See the <a href="#timePicker">time-picker</a> attribute for usage examples.
+       *
        * @expose
+       * @name timePicker.showOn
+       * @memberof! oj.ojInputDateTime
+       * @instance
+       * @type {string}
+       * @ojvalue {string} 'focus' when the element receives focus or when the trigger clock image is clicked. When the picker is closed, the field regains focus and is editable.
+       * @ojvalue {string} 'image' when the trigger clock image is clicked
+       * @default <code class="prettyprint">'focus'</code>
        */
       showOn : "focus"
     }
@@ -7750,13 +8270,32 @@ oj.__registerWidget("oj.ojInputDateTime", $['oj']['ojInputDate'],
      *  <li> null - no limit
      * </ul>
      * 
-     * @example <caption>Initialize the component with the <code class="prettyprint">max</code> option:</caption>
-     * &lt;input id="date" data-bind="ojComponent: {component: 'ojInputDateTime', max: '2014-09-25T13:30:00.000-08:00'}" /&gt;
+     * @example <caption>Initialize the element with the <code class="prettyprint">max</code> attribute:</caption>
+     * &lt;oj-date-time-picker max='2014-09-25T13:30:00.000-08:00'&gt;&lt;/oj-date-time-picker&gt;
+     * 
+     * @expose
+     * @name max
+     * @instance
+     * @memberof! oj.ojDateTimePicker
+     * @type {string|null}
+     * @default <code class="prettyprint">null</code>
+     */
+    /**
+     * The maximum selectable datetime. When set to null, there is no maximum.
+     *
+     * <ul>
+     *  <li> type string - ISOString
+     *  <li> null - no limit
+     * </ul>
+     * 
+     * @example <caption>Initialize the element with the <code class="prettyprint">max</code> attribute:</caption>
+     * &lt;oj-input-date-time max='2014-09-25T13:30:00.000-08:00'&gt;&lt;/oj-input-date-time&gt;
      * 
      * @expose
      * @name max
      * @instance
      * @memberof! oj.ojInputDateTime
+     * @type {string|null}
      * @default <code class="prettyprint">null</code>
      */
     
@@ -7768,32 +8307,51 @@ oj.__registerWidget("oj.ojInputDateTime", $['oj']['ojInputDate'],
      *  <li> null - no limit
      * </ul>
      * 
-     * @example <caption>Initialize the component with the <code class="prettyprint">min</code> option:</caption>
-     * &lt;input id="date" data-bind="ojComponent: {component: 'ojInputDateTime', min: '2014-08-25T08:00:00.000-08:00'}" /&gt;
+     * @example <caption>Initialize the element with the <code class="prettyprint">min</code> attribute:</caption>
+     * &lt;oj-date-time-picker min='2014-08-25T08:00:00.000-08:00'&gt;&lt;/oj-date-time-picker&gt;
+     * 
+     * @expose
+     * @name min
+     * @instance
+     * @memberof! oj.ojDateTimePicker
+     * @type {string|null}
+     * @default <code class="prettyprint">null</code>
+     */
+    /**
+     * The minimum selectable date. When set to null, there is no minimum.
+     *
+     * <ul>
+     *  <li> type string - ISOString
+     *  <li> null - no limit
+     * </ul>
+     * 
+     * @example <caption>Initialize the element with the <code class="prettyprint">min</code> attribute:</caption>
+     * &lt;oj-input-date-time min='2014-08-25T08:00:00.000-08:00'&gt;&lt;/oj-input-date-time&gt;
      * 
      * @expose
      * @name min
      * @instance
      * @memberof! oj.ojInputDateTime
+     * @type {string|null}
      * @default <code class="prettyprint">null</code>
      */
     
     /** 
-     * List of validators used by component when performing validation. Each item is either an 
+     * List of validators used by element when performing validation. Each item is either an 
      * instance that duck types {@link oj.Validator}, or is an Object literal containing the 
-     * properties listed below. Implicit validators created by a component when certain options 
-     * are present (e.g. <code class="prettyprint">required</code> option), are separate from 
-     * validators specified through this option. At runtime when the component runs validation, it 
-     * combines the implicit validators with the list specified through this option. 
+     * properties listed below. Implicit validators created by an element when certain properties 
+     * are present (e.g. <code class="prettyprint">required</code> property), are separate from 
+     * validators specified through this property. At runtime when the element runs validation, it 
+     * combines the implicit validators with the list specified through this property. 
      * <p>
      * Hints exposed by validators are shown in the notewindow by default, or as determined by the 
      * 'validatorHint' property set on the <code class="prettyprint">displayOptions</code> 
-     * option. 
+     * property. 
      * </p>
      * 
      * <p>
-     * When <code class="prettyprint">validators</code> option changes due to programmatic 
-     * intervention, the component may decide to clear messages and run validation, based on the 
+     * When <code class="prettyprint">validators</code> property changes due to programmatic 
+     * intervention, the element may decide to clear messages and run validation, based on the 
      * current state it is in. </br>
      * 
      * <h4>Steps Performed Always</h4>
@@ -7805,33 +8363,29 @@ oj.__registerWidget("oj.ojInputDateTime", $['oj']['ojInputDate'],
      *  
      * <h4>Running Validation</h4>
      * <ul>
-     * <li>if component is valid when validators changes, component does nothing other than the 
+     * <li>if element is valid when validators changes, element does nothing other than the 
      * steps it always performs.</li>
-     * <li>if component is invalid and is showing messages -
-     * <code class="prettyprint">messagesShown</code> option is non-empty, when 
-     * <code class="prettyprint">validators</code> changes then all component messages are cleared 
-     * and full validation run using the display value on the component. 
+     * <li>if element is invalid and is showing messages when 
+     * <code class="prettyprint">validators</code> changes then all element messages are cleared 
+     * and full validation run using the display value on the element. 
      * <ul>
      *   <li>if there are validation errors, then <code class="prettyprint">value</code> 
-     *   option is not updated and the error pushed to <code class="prettyprint">messagesShown</code>
-     *   option. 
+     *   property is not updated and the error is shown. 
      *   </li>
      *   <li>if no errors result from the validation, the <code class="prettyprint">value</code> 
-     *   option is updated; page author can listen to the <code class="prettyprint">optionChange</code> 
-     *   event on the <code class="prettyprint">value</code> option to clear custom errors.</li>
+     *   property is updated; page author can listen to the <code class="prettyprint">valueChanged</code> 
+     *   event to clear custom errors.</li>
      * </ul>
      * </li>
-     * <li>if component is invalid and has deferred messages when validators changes, it does 
+     * <li>if element is invalid and has deferred messages when validators changes, it does 
      * nothing other than the steps it performs always.</li>
      * </ul>
      * </p>
      * 
      * <h4>Clearing Messages</h4>
      * <ul>
-     * <li>Only messages created by the component are cleared.  These include ones in 
-     * <code class="prettyprint">messagesHidden</code> and <code class="prettyprint">messagesShown</code>
-     *  options.</li>
-     * <li><code class="prettyprint">messagesCustom</code> option is not cleared.</li>
+     * <li>Only messages created by the element are cleared.</li>
+     * <li><code class="prettyprint">messagesCustom</code> property is not cleared.</li>
      * </ul>
      * </p>
      * 
@@ -7840,28 +8394,23 @@ oj.__registerWidget("oj.ojInputDateTime", $['oj']['ojInputDate'],
      * to {@link oj.ValidatorFactory}. <br/>
      * @property {Object=} options - optional Object literal of options that the validator expects. 
      * 
-     * @example <caption>Initialize the component with validator object literal:</caption>
-     * $(".selector").ojInputDateTime({
-     *   validators: [{
+     * @example <caption>Initialize the element with validator object literal:</caption>
+     * myInputDateTime.validators = [{
      *     type: 'dateTimeRange', 
      *     options : {
      *       max: '2014-09-10T13:30:00.000',
      *       min: '2014-09-01T00:00:00.000'
      *     }
-     *   }],
-     * });
+     *   }];
      * 
      * NOTE: oj.Validation.validatorFactory('dateTimeRange') returns the validator factory that is used 
      * to instantiate a range validator for dateTime.
      * 
-     * @example <caption>Initialize the component with multiple validator instances:</caption>
+     * @example <caption>Initialize the element with multiple validator instances:</caption>
      * var validator1 = new MyCustomValidator({'foo': 'A'}); 
      * var validator2 = new MyCustomValidator({'foo': 'B'});
-     * // Foo is InputText, InputNumber, Select, etc.
-     * $(".selector").ojFoo({
-     *   value: 10, 
-     *   validators: [validator1, validator2]
-     * });
+     * myInputDateTime.value = 10;
+     * myInputDateTime.validators = [validator1, validator2];
      * 
      * @expose 
      * @name validators
@@ -7870,49 +8419,74 @@ oj.__registerWidget("oj.ojInputDateTime", $['oj']['ojInputDate'],
      * @type {Array|undefined}
      */
     
+    /**
+     * Determines if keyboard entry of the text is allowed.
+     * When the datepicker is inline, the only supported value is "disabled".
+     *
+     * @expose
+     * @instance
+     * @memberof! oj.ojDateTimePicker
+     * @name keyboardEdit
+     * @type {string}
+     * @ojvalue {string} "disabled" Changing the date can only be done with the picker.
+     * @default "disabled"
+     *
+     * @example <caption>Initialize the InputDate with the <code class="prettyprint">keyboard-edit</code> attribute specified:</caption>
+     * &lt;oj-date-time-picker keyboard-edit='disabled'>&lt;/oj-date-time-picker>
+     *
+     * @example <caption>Get or set the <code class="prettyprint">keyboardEdit</code> property after initialization:</caption>
+     * // getter
+     * var keyboardEdit = myInputDate.keyboardEdit;
+     *
+     * // setter
+     * myInputDate.keyboardEdit = 'disabled';
+     *
+     * @example <caption>Set the default in the theme (SCSS)</caption>
+     * $inputDateTimeKeyboardEditOptionDefault: disabled !default;
+     */
     /** 
-     * The value of the ojInputDateTime component which should be an ISOString
+     * The value of the DateTimePicker element which should be an ISOString
      * 
-     * @example <caption>Initialize the component with the <code class="prettyprint">value</code> option:</caption>
-     * &lt;input id="date" data-bind="ojComponent: {component: 'ojInputDateTime', value: '2014-09-10T13:30:00.000'}" /&gt;
-     * @example <caption>Initialize the component with the <code class="prettyprint">value</code> option specified programmatically 
+     * @example <caption>Initialize the element with the <code class="prettyprint">value</code> attribute:</caption>
+     * &lt;oj-date-time-picker value='2014-09-10T13:30:00.000'&gt;&lt;/oj-date-time-picker&gt;
+     * @example <caption>Initialize the element with the <code class="prettyprint">value</code> property specified programmatically 
      * using oj.IntlConverterUtils.dateToLocalIso :</caption>
-     * $(".selector").ojInputDateTime({'value': oj.IntlConverterUtils.dateToLocalIso(new Date())});<br/>
-     * @example <caption>Get or set the <code class="prettyprint">value</code> option, after initialization:</caption>
+     * myInputDateTime.value = oj.IntlConverterUtils.dateToLocalIso(new Date());<br/>
+     * @example <caption>Get or set the <code class="prettyprint">value</code> property, after initialization:</caption>
      * // Getter: returns Today's date in ISOString
-     * $(".selector").ojInputDateTime("option", "value");
+     * myInputDateTime.value;
      * // Setter: sets it to a different date time
-     * $(".selector").ojInputDateTime("option", "value", "2013-12-01T20:00:00-08:00");
+     * myInputDateTime.value = "2013-12-01T20:00:00-08:00";
+     * 
+     * @expose 
+     * @name value
+     * @instance
+     * @memberof! oj.ojDateTimePicker
+     * @type {string}
+     */
+    /** 
+     * The value of the InputDateTime element which should be an ISOString
+     * 
+     * @example <caption>Initialize the element with the <code class="prettyprint">value</code> attribute:</caption>
+     * &lt;oj-input-date-time value='2014-09-10T13:30:00.000'&gt;&lt;/oj-input-date-time&gt;
+     * @example <caption>Initialize the element with the <code class="prettyprint">value</code> property specified programmatically 
+     * using oj.IntlConverterUtils.dateToLocalIso :</caption>
+     * myInputDateTime.value = oj.IntlConverterUtils.dateToLocalIso(new Date());<br/>
+     * @example <caption>Get or set the <code class="prettyprint">value</code> property, after initialization:</caption>
+     * // Getter: returns Today's date in ISOString
+     * myInputDateTime.value;
+     * // Setter: sets it to a different date time
+     * myInputDateTime.value = "2013-12-01T20:00:00-08:00";
      * 
      * @expose 
      * @name value
      * @instance
      * @memberof! oj.ojInputDateTime
-     * @default When the option is not set, the element's value property is used as its initial value 
-     * if it exists. This value must be an ISOString.
+     * @type {string}
      */
 
     // Events
 
-    /**
-     * Triggered when the ojInputDateTime is created.
-     *
-     * @event
-     * @name create
-     * @memberof oj.ojInputDateTime
-     * @instance
-     * @property {Event} event <code class="prettyprint">jQuery</code> event object
-     * @property {Object} ui Currently empty
-     *
-     * @example <caption>Initialize the ojInputDateTime with the <code class="prettyprint">create</code> callback specified:</caption>
-     * $( ".selector" ).ojInputDateTime({
-     *     "create": function( event, ui ) {}
-     * });
-     *
-     * @example <caption>Bind an event listener to the <code class="prettyprint">ojcreate</code> event:</caption>
-     * $( ".selector" ).on( "ojcreate", function( event, ui ) {} );
-     */
-    // create event declared in superclass, but we still want the above API doc
   },
   
   /**
@@ -7949,9 +8523,26 @@ oj.__registerWidget("oj.ojInputDateTime", $['oj']['ojInputDate'],
     if(!this._isInLine) 
     {
       this._switcherDiv = $(this._generateSwitcher());
-      $(".oj-popup-content", this._popUpDpDiv.ojPopup("widget")).append(this._switcherDiv);
+
+      $(".oj-popup-content", this._popUpDpDiv.ojPopup("widget")).append(this._switcherDiv); //@HTMLUpdateOK
 
       var self = this;
+      var cancelHandler = function() {
+        //only time when value is _Set in switcher is by clicking Done where both of the fields would be set to null
+        if(self._switcherDateValue !== null || self._switcherTimeValue !== null) 
+        {
+          self._currentDay = self._switcherPrevDay;
+          self._drawMonth = self._currentMonth = self._switcherPrevMonth;
+          self._drawYear = self._currentYear = self._switcherPrevYear;
+          self._SetValue(self._switcherPrevValue);
+
+          self._switcherTimeValue = self._switcherDateValue = self._switcherPrevDay = self._switcherPrevMonth = 
+          self._switcherPrevYear = self._switcherPrevValue = null;
+        }
+      };
+      this._popUpDpDiv.on("ojclose", function( event, ui ) {
+        cancelHandler();
+      });
       this._switcherDiv.find("[data-handler]").map(function ()
         {
           var handler =
@@ -7981,8 +8572,6 @@ oj.__registerWidget("oj.ojInputDateTime", $['oj']['ojInputDate'],
               var keyCode = evt.keyCode;
               if((evt.type === "keydown" && ($.ui.keyCode.ENTER === keyCode || $.ui.keyCode.SPACE === keyCode)) || evt.type === "click") 
               {
-                self._hide(self._ON_CLOSE_REASON_SELECTION);
-
                 var newVal = self._getDateIso();
                 if(self._switcherDateValue) 
                 {
@@ -8000,6 +8589,7 @@ oj.__registerWidget("oj.ojInputDateTime", $['oj']['ojInputDate'],
 
                 self._switcherTimeValue = self._switcherDateValue = self._switcherPrevDay = self._switcherPrevMonth = 
                   self._switcherPrevYear = self._switcherPrevValue = null;
+                self._hide(self._ON_CLOSE_REASON_SELECTION);
                 return false;
               }
               
@@ -8011,13 +8601,6 @@ oj.__registerWidget("oj.ojInputDateTime", $['oj']['ojInputDate'],
               if((evt.type === "keydown" && ($.ui.keyCode.ENTER === keyCode || $.ui.keyCode.SPACE === keyCode)) || evt.type === "click") 
               {
                 self._hide(self._ON_CLOSE_REASON_CANCELLED);
-                self._currentDay = self._switcherPrevDay;
-                self._drawMonth = self._currentMonth = self._switcherPrevMonth;
-                self._drawYear = self._currentYear = self._switcherPrevYear;
-                self._SetValue(self._switcherPrevValue);
-
-                self._switcherTimeValue = self._switcherDateValue = self._switcherPrevDay = self._switcherPrevMonth = 
-                    self._switcherPrevYear = self._switcherPrevValue = null;
                 return false;
               }
             }
@@ -8155,29 +8738,33 @@ oj.__registerWidget("oj.ojInputDateTime", $['oj']['ojInputDate'],
    */
   _destroy : function ()
   {
+    this._cleanUpDateTimeResources();
+    return this._super();
+  },
+  /**
+   * @ignore
+   * @private
+   */
+  _cleanUpDateTimeResources : function ()
+  {
     this._timePicker.ojInputTime("destroy");
-    var ret = this._super();
-
     if (this._isInLine)
     {
       //note that this.element below would be of the TimePicker's input element
       this._timePickerElement.remove();
     }
-    else
+    else 
     {
       var switcherButtons = this._switcherDiv.find("a");
       this._RemoveActiveable(switcherButtons);
       this._RemoveHoverable(switcherButtons);
 
-      if(this._switcherDiv) 
+      if (this._switcherDiv)
       {
         this._switcherDiv.remove();
       }
     }
-    
-    return ret;
   },
-
   /**
    * @protected
    * @override
@@ -8200,11 +8787,11 @@ oj.__registerWidget("oj.ojInputDateTime", $['oj']['ojInputDate'],
     var ret = "<div class='oj-datetimepicker-switcher'>" +
                 "<div data-handler='switchMe' data-event='click keydown'>" +
                   "<div class='oj-inputdatetime-time-icon oj-clickable-icon-nocontext oj-component-icon oj-enabled oj-default'></div>" +
-                  "<a href='#' class='oj-enabled oj-datetimepicker-switcher-text' role='button'></a>" +
+                  "<a onclick='return false;' href='#' class='oj-enabled oj-datetimepicker-switcher-text' role='button'></a>" +
                 "</div>" +
                 "<div class='oj-datetimepicker-switcher-buttons'>" +
-                  "<a href='#' class='oj-enabled' data-handler='switchDone' data-event='click keydown' role='button'>" + this._EscapeXSS(this.getTranslatedString("done")) + "</a>" +
-                  "<a href='#' class='oj-enabled' data-handler='switchCancel' data-event='click keydown' role='button'>" + this._EscapeXSS(this.getTranslatedString("cancel")) + "</a>" +
+                  "<a onclick='return false;' href='#' class='oj-enabled' data-handler='switchDone' data-event='click keydown' role='button'>" + this._EscapeXSS(this.getTranslatedString("done")) + "</a>" +
+                  "<a onclick='return false;' href='#' class='oj-enabled' data-handler='switchCancel' data-event='click keydown' role='button'>" + this._EscapeXSS(this.getTranslatedString("cancel")) + "</a>" +
                 "</div>" +
             "</div>";
 
@@ -8454,7 +9041,7 @@ oj.__registerWidget("oj.ojInputDateTime", $['oj']['ojInputDate'],
   
   /**
    * @instance
-   * @memberof! oj.ojInputDateTime
+   * @memberof oj.ojInputDateTime
    */
   show : function ()
   {
@@ -8535,10 +9122,10 @@ oj.__registerWidget("oj.ojInputDateTime", $['oj']['ojInputDate'],
   },
   
   /**
-   * Method to show the internally created ojInputTime
+   * Method to show the internally created InputTime
    * 
    * @expose
-   * @memberof! oj.ojInputDateTime
+   * @memberof oj.ojInputDateTime
    * @instance
    */
   showTimePicker : function ()
@@ -8556,7 +9143,7 @@ oj.__registerWidget("oj.ojInputDateTime", $['oj']['ojInputDate'],
   
   /**
    * @expose
-   * @memberof! oj.ojInputDateTime
+   * @memberof oj.ojInputDateTime
    * @instance
    */
   hideTimePicker : function ()
@@ -8585,7 +9172,7 @@ oj.__registerWidget("oj.ojInputDateTime", $['oj']['ojInputDate'],
     return retVal;
   },
   
-  //** @inheritdoc */
+  // @inheritdoc
   getNodeBySubId: function(locator)
   {
     var subId = locator && locator['subId'];
@@ -8610,7 +9197,7 @@ oj.__registerWidget("oj.ojInputDateTime", $['oj']['ojInputDate'],
     return node || this._superApply(arguments);
   },
   
-  //** @inheritdoc */
+  // @inheritdoc
   getSubIdByNode: function(node)
   {
     var dateTimeSpecific = null;
@@ -8761,7 +9348,6 @@ oj.__registerWidget("oj.ojInputDateTime", $['oj']['ojInputDate'],
  *       <td>Set focus to the input. If hints, title or messages exist in a notewindow, 
  *        pop up the notewindow.</td>
  *     </tr>
- *     {@ojinclude "name":"labelTouchDoc"}
  *     <tr>
  *       <td>Picker</td>
  *       <td><kbd>Swipe Left</kbd></td>
@@ -8778,7 +9364,37 @@ oj.__registerWidget("oj.ojInputDateTime", $['oj']['ojInputDate'],
  * @ojfragment touchDoc - Used in touch gesture section of classdesc, and standalone gesture doc
  * @memberof oj.ojInputDateTime
  */
-
+/**
+ * <table class="keyboard-table">
+ *   <thead>
+ *     <tr>
+ *       <th>Target</th>
+ *       <th>Gesture</th>
+ *       <th>Action</th>
+ *     </tr>
+ *   </thead>
+ *   <tbody>
+ *     <tr>
+ *       <td>Time trigger icon</td>
+ *       <td><kbd>Tap</kbd></td>
+ *       <td>Shows the time picker and moves the focus into the expanded time picker</td>
+ *     </tr>
+ *     <tr>
+ *       <td>Picker</td>
+ *       <td><kbd>Swipe Left</kbd></td>
+ *       <td>Switch to next month (or previous month on RTL page).</td>
+ *     </tr>
+ *     <tr>
+ *       <td>Picker</td>
+ *       <td><kbd>Swipe Right</kbd></td>
+ *       <td>Switch to previous month (or next month on RTL page).</td>
+ *     </tr>
+ *   </tbody>
+ * </table>
+ *
+ * @ojfragment touchDoc - Used in touch gesture section of classdesc, and standalone gesture doc
+ * @memberof oj.ojDateTimePicker
+ */
 /**
  * <table class="keyboard-table">
  *   <thead>
@@ -8887,25 +9503,115 @@ oj.__registerWidget("oj.ojInputDateTime", $['oj']['ojInputDate'],
  *       <td><kbd>Ctrl + Alt + T</kbd></td>
  *       <td>Places focus on Today button if it exists.</tr>
  *     </tr>   
- *      {@ojinclude "name":"labelKeyboardDoc"} 
  *   </tbody>
  * </table>
  * 
  * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
  * @memberof oj.ojInputDateTime
  */
+/**
+ * <table class="keyboard-table">
+ *   <thead>
+ *     <tr>
+ *       <th>Target</th>
+ *       <th>Key</th>
+ *       <th>Action</th>
+ *     </tr>
+ *   </thead>
+ *   <tbody>
+ *     <tr>
+ *       <td>Picker</td>
+ *       <td><kbd>Enter</kbd></td>
+ *       <td>Select the currently focused day</td>
+ *     </tr>
+ *     <tr>
+ *       <td>Picker</td>
+ *       <td><kbd>UpArrow</kbd></td>
+ *       <td>Move up in the grid.</tr>
+ *     </tr>
+ *     <tr>
+ *       <td>Picker</td>
+ *       <td><kbd>DownArrow</kbd></td>
+ *       <td>Move down in the grid.</tr>
+ *     </tr>
+ *     <tr>
+ *       <td>Picker</td>
+ *       <td><kbd>RightArrow</kbd></td>
+ *       <td>Move right in the grid.</tr>
+ *     </tr>
+ *     <tr>
+ *       <td>Picker</td>
+ *       <td><kbd>LeftArrow</kbd></td>
+ *       <td>Move left in the grid.</tr>
+ *     </tr>
+ *     <tr>
+ *       <td>Picker</td>
+ *       <td><kbd>Esc</kbd></td>
+ *       <td>Close the grid.</tr>
+ *     </tr>
+ *     <tr>
+ *       <td>Picker</td>
+ *       <td><kbd>Home</kbd></td>
+ *       <td>Move focus to first day of the month.</tr>
+ *     </tr>
+ *     <tr>
+ *       <td>Picker</td>
+ *       <td><kbd>End</kbd></td>
+ *       <td>Move focus to last day of the month.</tr>
+ *     </tr>
+ *     <tr>
+ *       <td>Picker</td>
+ *       <td><kbd>PageUp</kbd></td>
+ *       <td>Switch to previous month.</tr>
+ *     </tr>
+ *     <tr>
+ *       <td>Picker</td>
+ *       <td><kbd>PageDown</kbd></td>
+ *       <td>Switch to next month.</tr>
+ *     </tr>
+ *     <tr>
+ *       <td>Picker</td>
+ *       <td><kbd>Alt + PageUp</kbd></td>
+ *       <td>Switch to previous year.</tr>
+ *     </tr>
+ *     <tr>
+ *       <td>Picker</td>
+ *       <td><kbd>Alt + PageDown</kbd></td>
+ *       <td>Switch to next year.</tr>
+ *     </tr>
+ *     <tr>
+ *       <td>Picker</td>
+ *       <td><kbd>Ctrl + Alt + PageUp</kbd></td>
+ *       <td>Switch to previous by stepBigMonths.</tr>
+ *     </tr>
+ *     <tr>
+ *       <td>Picker</td>
+ *       <td><kbd>Ctrl + Alt + PageDown</kbd></td>
+ *       <td>Switch to next by stepBigMonths.</tr>
+ *     </tr>
+ *     <tr>
+ *       <td>Picker</td>
+ *       <td><kbd>Ctrl + Alt + T</kbd></td>
+ *       <td>Places focus on Today button if it exists.</tr>
+ *     </tr>   
+ *   </tbody>
+ * </table>
+ * 
+ * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
+ * @memberof oj.ojDateTimePicker
+ */
 
 //////////////////     SUB-IDS     //////////////////
 
 /**
- * <p>Sub-ID for the ojInputDateTime component's input element when not inline.</p>
+ * <p>Sub-ID for the InputDateTime element's input element when not inline.</p>
  *
  * @ojsubid oj-inputdatetime-time-input
  * @memberof oj.ojInputDateTime
  * @instance
  *
  * @example <caption>Get the node for the input element:</caption>
- * var node = $( ".selector" ).ojFoo( "getNodeBySubId", {'subId': 'oj-inputdatetime-time-input'} );
+ * var node = myInputDateTime.getNodeBySubId( {'subId': 'oj-inputdatetime-time-input'} );
  */
 
 /**
@@ -8916,8 +9622,7 @@ oj.__registerWidget("oj.ojInputDateTime", $['oj']['ojInputDate'],
  * @instance
  *
  * @example <caption>Get the icon that triggers the calendar display:</caption>
- * // Foo is ojInputDateTime 
- * var node = $( ".selector" ).ojFoo( "getNodeBySubId", {'subId': 'oj-inputdatetime-calendar-clock-icon'} );
+ * var node = myInputDateTime.getNodeBySubId( {'subId': 'oj-inputdatetime-calendar-clock-icon'} );
  */
 
 /**
@@ -8928,8 +9633,7 @@ oj.__registerWidget("oj.ojInputDateTime", $['oj']['ojInputDate'],
  * @instance
  *
  * @example <caption>Get the time wheel picker drop down node:</caption>
- * // Foo is ojInputTime or ojInputDateTime.
- * var node = $( ".selector" ).ojFoo( "getNodeBySubId", {'subId': 'oj-timepicker-content'} );
+ * var node = myInputDateTime.getNodeBySubId( {'subId': 'oj-timepicker-content'} );
  */
 
 /**
@@ -8940,8 +9644,7 @@ oj.__registerWidget("oj.ojInputDateTime", $['oj']['ojInputDate'],
  * @instance
  *
  * @example <caption>Get the cancel button:</caption>
- * // Foo is ojInputTime or ojInputDateTime.
- * var node = $( ".selector" ).ojFoo( "getNodeBySubId", {'subId': 'oj-timepicker-cancel-button'} );
+ * var node = myInputDateTime.getNodeBySubId( {'subId': 'oj-timepicker-cancel-button'} );
  */
 
 /**
@@ -8952,8 +9655,7 @@ oj.__registerWidget("oj.ojInputDateTime", $['oj']['ojInputDate'],
  * @instance
  *
  * @example <caption>Get the OK button:</caption>
- * // Foo is ojInputTime or ojInputDateTime.
- * var node = $( ".selector" ).ojFoo( "getNodeBySubId", {'subId': 'oj-timepicker-ok-button'} );
+ * var node = myInputDateTime.getNodeBySubId( {'subId': 'oj-timepicker-ok-button'} );
  */
 
 /**
@@ -8964,8 +9666,7 @@ oj.__registerWidget("oj.ojInputDateTime", $['oj']['ojInputDate'],
  * @instance
  *
  * @example <caption>Get the hour picker:</caption>
- * // Foo is ojInputTime or ojInputDateTime.
- * var node = $( ".selector" ).ojFoo( "getNodeBySubId", {'subId': 'oj-timepicker-hour'} );
+ * var node = myInputDateTime.getNodeBySubId( {'subId': 'oj-timepicker-hour'} );
  */
 
 /**
@@ -8976,8 +9677,7 @@ oj.__registerWidget("oj.ojInputDateTime", $['oj']['ojInputDate'],
  * @instance
  *
  * @example <caption>Get the minute picker:</caption>
- * // Foo is ojInputTime or ojInputDateTime.
- * var node = $( ".selector" ).ojFoo( "getNodeBySubId", {'subId': 'oj-timepicker-minute'} );
+ * var node = myInputDateTime.getNodeBySubId( {'subId': 'oj-timepicker-minute'} );
  */
 
 /**
@@ -8988,8 +9688,7 @@ oj.__registerWidget("oj.ojInputDateTime", $['oj']['ojInputDate'],
  * @instance
  *
  * @example <caption>Get the meridian picker:</caption>
- * // Foo is ojInputTime or ojInputDateTime.
- * var node = $( ".selector" ).ojFoo( "getNodeBySubId", {'subId': 'oj-timepicker-meridian'} );
+ * var node = myInputDateTime.getNodeBySubId( {'subId': 'oj-timepicker-meridian'} );
  */
 
 /**
@@ -9000,12 +9699,13 @@ oj.__registerWidget("oj.ojInputDateTime", $['oj']['ojInputDate'],
  * @instance
  *
  * @example <caption>Get the now/now button for button bar:</caption>
- * // Foo is ojInputTime or ojInputDateTime.
- * var node = $( ".selector" ).ojFoo( "getNodeBySubId", {'subId': 'oj-timepicker-now'} );
+ * var node = myInputDateTime.getNodeBySubId( {'subId': 'oj-timepicker-now'} );
  */
 
 /**
+ * @ignore
  * @constructor
+ * @protected
  * @param {TimePickerModel} parentModel parent picker model
  * @param {Object} properties initial property values
  */
@@ -9391,9 +10091,9 @@ function WheelModel(parentModel, properties)
   {
     if(!self.wheel)
     { //wheel destroyed already
-      return;
-    }
-    SPIN_TIMES.forEach(function(time)
+	  return;
+	}	
+	SPIN_TIMES.forEach(function(time)
     {
       self.wheel.classList.remove("oj-timepicker-wheel-spin-" + time);
     });
@@ -9507,6 +10207,9 @@ function WheelModel(parentModel, properties)
 (function() {
 var ojInputTimeMeta = {
   "properties": {
+    "converter": {
+      "type": "Object"
+    },
     "keyboardEdit": {
       "type": "string"
     },
@@ -9536,30 +10239,20 @@ var ojInputTimeMeta = {
         }
       }
     },
-    "validators": {
-      "type": "Array"
-    },
     "value": {
       "type": "string",
       "writeback": true
     }
   },
   "methods": {
-    "getNodeBySubId": {},
-    "getSubIdByNode": {},
     "hide": {},
-    "refresh": {},
-    "show": {},
-    "widget": {},
-    "validate": {}
+    "show": {}
   },
   "extension": {
-    _INNER_ELEM: 'input',
-    _ALIASED_PROPS: {"readonly": "readOnly"},
-    _WIDGET_NAME: "ojInputTime",
-    _TRANSFER_ATTRS: ["aria-label", "autocomplete", "autofocus", "disabled", "inputmode", "name", "required", "tabindex"]
+    _WIDGET_NAME: "ojInputTime"
   }
 };
+
 oj.CustomElementBridge.registerMetadata('oj-input-time', 'inputBase', ojInputTimeMeta);
 oj.CustomElementBridge.register('oj-input-time', {'metadata': oj.CustomElementBridge.getMetadata('oj-input-time')});
 })();
@@ -9567,6 +10260,9 @@ oj.CustomElementBridge.register('oj-input-time', {'metadata': oj.CustomElementBr
 (function() {
 var ojInputDateMeta = {
   "properties": {
+    "converter": {
+      "type": "Object"
+    },
     "datePicker": {
       "type": "Object",
       "properties": {
@@ -9626,27 +10322,18 @@ var ojInputDateMeta = {
     "renderMode": {
       "type": "string"
     },
-    "validators": {
-      "type": "Array"
-    },
     "value": {
       "type": "string",
       "writeback": true
     }
   },
   "methods": {
-    "getNodeBySubId": {},
-    "getSubIdByNode": {},
     "hide": {},
-    "refresh": {},
-    "show": {},
-    "validate": {}
+    "show": {}
   },
   "extension": {
-    _INNER_ELEM: 'input',
-    _ALIASED_PROPS: {"readonly": "readOnly"},
-    _WIDGET_NAME: "ojInputDate",
-    _TRANSFER_ATTRS: ["aria-label", "autocomplete", "autofocus", "disabled", "inputmode", "name", "required", "tabindex"]
+
+    _WIDGET_NAME: "ojInputDate"
   }
 };
 
@@ -9654,7 +10341,7 @@ oj.CustomElementBridge.registerMetadata('oj-input-date', 'inputBase', ojInputDat
 oj.CustomElementBridge.register('oj-input-date', {'metadata': oj.CustomElementBridge.getMetadata('oj-input-date')});
 
 var ojDatePickerMeta = oj.CollectionUtils.copyInto({}, oj.CustomElementBridge.getMetadata('oj-input-date'), undefined, true);
-ojDatePickerMeta['extension']['_INNER_ELEM'] = 'div';
+ojDatePickerMeta['extension']._INNER_ELEM = 'div';
 oj.CustomElementBridge.register('oj-date-picker', {'metadata': ojDatePickerMeta});
 })();
 
@@ -9677,23 +10364,20 @@ var ojInputDateTimeMeta = {
     }
   },
   "methods": {
-    "getNodeBySubId": {},
-    "getSubIdByNode": {},
     "hideTimePicker": {},
-    "showTimePicker": {},
-    "validate": {}
+    "showTimePicker": {}
   },
   "extension": {
-    _INNER_ELEM: 'input',
-    _ALIASED_PROPS: {"readonly": "readOnly"},
+
     _WIDGET_NAME: "ojInputDateTime"
   }
 };
-oj.CustomElementBridge.registerMetadata('oj-input-date-time', 'ojInputDate', ojInputDateTimeMeta);
+
+oj.CustomElementBridge.registerMetadata('oj-input-date-time', 'oj-input-date', ojInputDateTimeMeta);
 oj.CustomElementBridge.register('oj-input-date-time', {'metadata': oj.CustomElementBridge.getMetadata('oj-input-date-time')});
 
 var ojDateTimePickerMeta = oj.CollectionUtils.copyInto({}, oj.CustomElementBridge.getMetadata('oj-input-date-time'), undefined, true);
-ojDateTimePickerMeta['extension']['_INNER_ELEM'] = 'div';
+ojDateTimePickerMeta['extension']._INNER_ELEM = 'div';
 oj.CustomElementBridge.register('oj-date-time-picker', {'metadata': ojDateTimePickerMeta});
 })();
 });

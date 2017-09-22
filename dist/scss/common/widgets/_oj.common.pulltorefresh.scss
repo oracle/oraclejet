@@ -1,7 +1,7 @@
 // Copyright (c) 2014, 2017, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
 // !!!
-// WARNING: do not directly import this file, instead import the 
-//          version in your theme's directory, 
+// WARNING: do not directly import this file, instead import the
+//          version in your theme's directory,
 //          for example alta/widgets/_oj.alta.pulltorefresh.scss
 // !!!
 
@@ -11,10 +11,10 @@
   @include module-include-once("common.pulltorefresh") {
 
     /*
-     * applied to the refresh panel 
+     * applied to the refresh panel
      */
     .oj-pulltorefresh-panel {
-      overflow: hidden;      
+      overflow: hidden;
     }
 
     /*
@@ -69,104 +69,168 @@
         height: 40px;
     }
 
-    /*
-     * refresh icon at initial state
-     */
-    .oj-pulltorefresh-icon-initial {
-        @include oj-icon-content(
-             $icon: url($pullToRefreshImageDir + "pull_to_refresh_00.svg")
-        ); 
-    }
+    // TODO Bug 25897533: Clean up after sprite tooling is implemented
+    @if ($pullToRefreshImageDir)
+    {
+      /*
+       * refresh icon at initial state
+       */
+      .oj-pulltorefresh-icon-initial {
+          @include oj-icon-content(
+               $icon: url($pullToRefreshImageDir + "spinner_00.svg")
+          ); 
+      }
 
-    /*
-     * refresh icon at 10% state
-     */
-    .oj-pulltorefresh-icon-10-percent {
-        @include oj-icon-content(
-             $icon: url($pullToRefreshImageDir + "pull_to_refresh_10.svg")
-        ); 
-    }
+      /*
+       * refresh icon at 10% state
+       */
+      .oj-pulltorefresh-icon-10-percent {
+          @include oj-icon-content(
+               $icon: url($pullToRefreshImageDir + "spinner_10.svg")
+          ); 
+      }
 
-    /*
-     * refresh icon at 20% state
-     */
-    .oj-pulltorefresh-icon-20-percent {
-        @include oj-icon-content(
-             $icon: url($pullToRefreshImageDir + "pull_to_refresh_20.svg")
-        ); 
-    }
+      /*
+       * refresh icon at 20% state
+       */
+      .oj-pulltorefresh-icon-20-percent {
+          @include oj-icon-content(
+               $icon: url($pullToRefreshImageDir + "spinner_20.svg")
+          ); 
+      }
 
-    /*
-     * refresh icon at 30% state
-     */
-    .oj-pulltorefresh-icon-30-percent {
-        @include oj-icon-content(
-             $icon: url($pullToRefreshImageDir + "pull_to_refresh_30.svg")
-        ); 
-    }
+      /*
+       * refresh icon at 30% state
+       */
+      .oj-pulltorefresh-icon-30-percent {
+          @include oj-icon-content(
+               $icon: url($pullToRefreshImageDir + "spinner_30.svg")
+          ); 
+      }
 
-    /*
-     * refresh icon at 40% state
-     */
-    .oj-pulltorefresh-icon-40-percent {
-        @include oj-icon-content(
-             $icon: url($pullToRefreshImageDir + "pull_to_refresh_40.svg")
-        ); 
-    }
+      /*
+       * refresh icon at 40% state
+       */
+      .oj-pulltorefresh-icon-40-percent {
+          @include oj-icon-content(
+               $icon: url($pullToRefreshImageDir + "spinner_40.svg")
+          ); 
+      }
 
-    /*
-     * refresh icon at 50% state
-     */
-    .oj-pulltorefresh-icon-50-percent {
-        @include oj-icon-content(
-             $icon: url($pullToRefreshImageDir + "pull_to_refresh_50.svg")
-        ); 
-    }
+      /*
+       * refresh icon at 50% state
+       */
+      .oj-pulltorefresh-icon-50-percent {
+          @include oj-icon-content(
+               $icon: url($pullToRefreshImageDir + "spinner_50.svg")
+          ); 
+      }
 
-    /*
-     * refresh icon at 60% state
-     */
-    .oj-pulltorefresh-icon-60-percent {
-        @include oj-icon-content(
-             $icon: url($pullToRefreshImageDir + "pull_to_refresh_60.svg")
-        ); 
-    }
+      /*
+       * refresh icon at 60% state
+       */
+      .oj-pulltorefresh-icon-60-percent {
+          @include oj-icon-content(
+               $icon: url($pullToRefreshImageDir + "spinner_60.svg")
+          ); 
+      }
 
-    /*
-     * refresh icon at 70% state
-     */
-    .oj-pulltorefresh-icon-70-percent {
-        @include oj-icon-content(
-             $icon: url($pullToRefreshImageDir + "pull_to_refresh_70.svg")
-        ); 
-    }
+      /*
+       * refresh icon at 70% state
+       */
+      .oj-pulltorefresh-icon-70-percent {
+          @include oj-icon-content(
+               $icon: url($pullToRefreshImageDir + "spinner_70.svg")
+          ); 
+      }
 
-    /*
-     * refresh icon at 80% state
-     */
-    .oj-pulltorefresh-icon-80-percent {
-        @include oj-icon-content(
-             $icon: url($pullToRefreshImageDir + "pull_to_refresh_80.svg")
-        ); 
-    }
+      /*
+       * refresh icon at 80% state
+       */
+      .oj-pulltorefresh-icon-80-percent {
+          @include oj-icon-content(
+               $icon: url($pullToRefreshImageDir + "spinner_80.svg")
+          ); 
+      }
 
-    /*
-     * refresh icon at 90% state
-     */
-    .oj-pulltorefresh-icon-90-percent {
-        @include oj-icon-content(
-             $icon: url($pullToRefreshImageDir + "pull_to_refresh_90.svg")
-        ); 
-    }
+      /*
+       * refresh icon at 90% state
+       */
+      .oj-pulltorefresh-icon-90-percent {
+          @include oj-icon-content(
+               $icon: url($pullToRefreshImageDir + "spinner_90.svg")
+          ); 
+      }
 
-    /*
-     * refresh icon at 100% state
-     */
-    .oj-pulltorefresh-icon-full {
-        @include oj-icon-content(
-             $icon: url($pullToRefreshImageDir + "pull_to_refresh_full.gif"),
-             $lowResProportion: 0.25
-        ); 
+      /*
+       * refresh icon at 100% state
+       */
+      .oj-pulltorefresh-icon-full {
+          @include oj-icon-content(
+               $icon: url($pullToRefreshImageDir + "spinner_full.gif"),
+               $lowResProportion: 0.25
+          ); 
+      }
+    }
+    @else
+    {
+      // refresh icon at initial state
+      .oj-pulltorefresh-icon-initial {
+          @extend .oj-fwk-icon-spinner-00;
+      }
+  
+      // refresh icon at 10% state
+      .oj-pulltorefresh-icon-10-percent {
+          @extend .oj-fwk-icon-spinner-10;
+      }
+  
+      // refresh icon at 20% state
+      .oj-pulltorefresh-icon-20-percent {
+          @extend .oj-fwk-icon-spinner-20;
+      }
+  
+      // refresh icon at 30% state
+      .oj-pulltorefresh-icon-30-percent {
+          @extend .oj-fwk-icon-spinner-30;
+      }
+  
+      // refresh icon at 40% state
+      .oj-pulltorefresh-icon-40-percent {
+          @extend .oj-fwk-icon-spinner-40;
+      }
+  
+      // refresh icon at 50% state
+      .oj-pulltorefresh-icon-50-percent {
+          @extend .oj-fwk-icon-spinner-50;
+      }
+  
+      // refresh icon at 60% state
+      .oj-pulltorefresh-icon-60-percent {
+          @extend .oj-fwk-icon-spinner-60;
+      }
+  
+      // refresh icon at 70% state
+      .oj-pulltorefresh-icon-70-percent {
+          @extend .oj-fwk-icon-spinner-70;
+      }
+  
+      // refresh icon at 80% state
+      .oj-pulltorefresh-icon-80-percent {
+          @extend .oj-fwk-icon-spinner-80;
+      }
+  
+      // refresh icon at 90% state
+      .oj-pulltorefresh-icon-90-percent {
+          @extend .oj-fwk-icon-spinner-90;
+      }
+  
+      // refresh icon at 100% state
+      .oj-pulltorefresh-icon-full {
+          @include oj-icon-content(
+              $icon: oj-image-url("spinner_full.gif"),
+              $lowResProportion: 0.25
+          );
+      }
     }
   }
 }

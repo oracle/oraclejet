@@ -108,6 +108,7 @@
 
       height: $formControlInputHeight;
       padding: 0 $formControlPaddingHorizontal;
+      padding-top: 2px;
       box-sizing: border-box;
       @include oj-form-control-content-no-focus-padding;
     }
@@ -120,6 +121,7 @@
 
       height: auto;
       padding: .5rem $formControlPaddingHorizontal;
+      padding-top: 6px;
       resize: none; //turning off as resizing can cause layout problems.
 
       line-height: $textAreaLineHeight;

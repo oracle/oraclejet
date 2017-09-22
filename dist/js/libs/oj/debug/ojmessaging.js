@@ -11,8 +11,12 @@ define(['ojs/ojcore', 'jquery'], function(oj, $)
  */
 
 /**
- * Constructs a message object 
- * .
+ * Constructs a message object.
+ * <p><strong>NOTE:</strong>  Instead of using the constructor, please use an Object
+ * that duck-types oj.Message - has summary, detail, and severity properties. 
+ * Creating an oj.Message Object provides no additional value than
+ * the duck-typed Object.
+ * </p>
  * @param {string} summary - Localized summary message text
  * @param {string} detail - Localized detail message text 
  * @param {number|string=} severity - An optional severity for this message. Use constants 
@@ -21,6 +25,19 @@ define(['ojs/ojcore', 'jquery'], function(oj, $)
  * @constructor
  * @export
  * @since 0.6
+ * @example <caption>Set application messages using the 
+ * <code class="prettyprint">messages-custom</code> attribute. This example creates messages
+ * the recommended way, by creating an Object that duck-types oj.Message.</caption>
+ * --- HTML ---
+ * &lt;oj-input-text messages-custom="{{appMessages}}");>&lt;/oj-input-text>
+ * 
+ * --- Javascript ---
+ * // for messagesCustom property
+ * self.appMessages = ko.observable();
+ * var msgs = [];
+ * msgs.push({summary: "Error Summary", detail: "Error Detail", 
+ *  severity: oj.Message.SEVERITY_TYPE['CONFIRMATION']}); 
+ * self.appMessages(msgs);
  */
 oj.Message = function(summary, detail, severity)
 {
@@ -148,12 +165,15 @@ oj.Message.prototype.canDisplay = function ()
 };
 
 /**
- * Indicates whether some other oj.Message instance - msg,  is "equal to" this one.
- * Method is equivalent to java ".equals()" method.
+ * Indicates whether some other oj.Message instance or Object that duck-types it
+ * is "equal to" this one. It compares 'severity', 'summary' and 'detail'.
  * 
  * @param {Object} msg 
  * @memberof oj.Message
  * @export
+ * @deprecated Since we recommend using duck-typing oj.Message instead of using the constructor,
+ *   we also recommend not using this instance-based equals method.
+ * @ignore
  */
 oj.Message.prototype.equals = function (msg)
 {
@@ -178,6 +198,9 @@ oj.Message.prototype.equals = function (msg)
  * @export
  * @memberof oj.Message
  * @since 0.7
+ * @deprecated Since we recommend using duck-typing oj.Message instead of using the constructor,
+ *   we also recommend not using this instance-based clone method.
+ * @ignore
  */
 oj.Message.prototype.clone = function ()
 {
@@ -209,7 +232,7 @@ oj.Message.getSeverityLevel = function (severity)
         severity = index;
       }
     }
-    else if (typeof severity === "number" && (severity < oj.Message.SEVERITY_LEVEL['CONFIRMATION'] && 
+    else if (typeof severity === "number" && (severity < oj.Message.SEVERITY_LEVEL['CONFIRMATION'] || 
           severity > oj.Message.SEVERITY_LEVEL['FATAL']))
     {
       severity = oj.Message.SEVERITY_LEVEL['ERROR'];
@@ -243,7 +266,7 @@ oj.Message.getSeverityType = function (level)
     }
     else if (typeof level === "number")
     {
-      if (level < oj.Message.SEVERITY_LEVEL['CONFIRMATION'] && 
+      if (level < oj.Message.SEVERITY_LEVEL['CONFIRMATION'] ||
           level > oj.Message.SEVERITY_LEVEL['FATAL'])
       {
         level = oj.Message.SEVERITY_TYPE['ERROR'];
@@ -344,7 +367,7 @@ oj.ComponentMessage = function (summary, detail, severity, options)
   this.Init(summary, detail, severity, options);
 };
 
-// Subclass from oj.Object 
+// Subclass from oj.Message 
 oj.Object.createSubclass(oj.ComponentMessage, oj.Message, "oj.ComponentMessage");
 
 /**

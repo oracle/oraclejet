@@ -25,30 +25,27 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojcollapsible'],
  * 
  * @classdesc
  * <h3 id="accordionOverview-section">
- *   JET Accordion Component
+ *   JET Accordion
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#accordionOverview-section"></a>
  * </h3>
  * 
- * <p>Description: Themeable, WAI-ARIA-compliant accordion with mouse and keyboard interactions for navigation.
- * 
- * <p>A JET Accordion can be created from any valid markup as long as the root element has one or more child elements and 
- * each child element must have two children: the first element for the header and the second element for the content.
+ * <p>Description: A JET Accordion contains one or more {@link oj.ojCollapsible} child elements.
  * 
  * <pre class="prettyprint">
  * <code>
- * &lt;div id="accordion">
- *   &lt;div id="c1">
+ * &lt;oj-accordion>
+ *   &lt;oj-collapsible>
  *     &lt;h3>
  *       &lt;img src="images/default.png"/>
  *       &lt;span>Header 1&lt;/span>
  *     &lt;/h3>
  *     &lt;p>Content 1.&lt;/p>
- *   &lt;/div>
- *   &lt;div id="c3" data-bind="ojComponent: {component: 'ojAccordion', expanded:true}">
+ *   &lt;/oj-collapsible>
+ *   &lt;oj-collapsible expanded="true">
  *     &lt;h3>Header 3&lt;/h3>
  *     &lt;p>Content 3&lt;/p>
- *   &lt;/div>
- * &lt;/div>
+ *   &lt;/oj-collapsible>
+ * &lt;/oj-accordion>
  * </code></pre>
  * 
  * <h3 id="touch-section">
@@ -72,60 +69,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojcollapsible'],
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#rtl-section"></a>
  * </h3>
  * 
- * <p>As with any JET component, in the unusual case that the directionality (LTR or RTL) changes post-init, the accordion must be <code class="prettyprint">refresh()</code>ed.
- * 
- * 
- * <h3 id="pseudos-section">
- *   Pseudo-selectors
- *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#pseudos-section"></a>
- * </h3>
- * 
- * <p>The <code class="prettyprint">:oj-accordion</code> pseudo-selector can be used in jQuery expressions to select JET Accordion.  For example:
- * 
- * <pre class="prettyprint">
- * <code>$( ":oj-accordion" ) // selects all JET Accordion on the page
- * $myEventTarget.closest( ":oj-accordion" ) // selects the closest ancestor that is a JET Accordion
- * </code></pre>
- * 
- * 
- * <h3 id="jqui2jet-section">
- *   JET for jQuery UI developers
- *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#jqui2jet-section"></a>
- * </h3>
- * 
- * <p>Also, event names for all JET components are prefixed with "oj", instead of component-specific prefixes like "collapsible".  
- * 
- * <h3 id="theming-section">Theming</h3>
- * <p>Details about the include and import mechanisms described below can be found in the 
- * Theming chapter of the JET documentation.</p>
- * <ul>
- * <li>Include Mechanism Variable: <code>$includeAccordionClasses</code>
- * <pre class="prettyprint">
- * <code>$includeAllClasses: false;
- * $includeAccordionClasses: true;
- * &#64;import "scss/oj/v1.0.1/alta/oj-alta";
- * </code></pre>
- * </li>
- * <li>Import Mechanism File: 
- * <code>scss/oj/[VERSION]/[THEME NAME]/widgets/_oj.[THEME NAME].accordion.scss</code> 
- * <pre class="prettyprint">
- * <code>&#64;import "scss/oj/v1.0.1/alta/oj.alta.variables";
- * &#64;import "scss/oj/v1.0.1/alta/widgets/oj.alta.accordion";
- * </code></pre></li>
- * </ul>
- * 
- * <!-- - - - - Above this point, the tags are for the class.
- *              Below this point, the tags are for the constructor (initializer). - - - - - - -->
- * 
- * @desc Creates a JET Accordion. 
- * @example <caption>Initialize the accordion with no options specified:</caption>
- * $( ".selector" ).ojAccordion();
- * 
- * @example <caption>Initialize the accordion with some options specified:</caption>
- * $( ".selector" ).ojAccordion( { "multiple": true } );
- * 
- * @example <caption>Initialize the accordion via the JET <code class="prettyprint">ojComponent</code> binding:</caption>
- * &lt;div id="accordion" data-bind="ojComponent: { component: 'ojAccordion', multiple: true}">
+ * <p>In the unusual case that the directionality (LTR or RTL) changes post-init, the accordion must be <code class="prettyprint">refresh()</code>ed.
  * 
  */
 (function ()
@@ -145,15 +89,15 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojcollapsible'],
        * @type {boolean}
        * @default <code class="prettyprint">false</code>
        *
-       * @example <caption>Initialize the accordion with the <code class="prettyprint">multiple</code> option specified:</caption>
-       * $( ".selector" ).ojAccordion( { "multiple": true } );
+       * @example <caption>Initialize the accordion with the <code class="prettyprint">multiple</code> attribute specified:</caption>
+       * &lt;oj-accordion multiple='true'>&lt;/oj-accordion>
        * 
-       * @example <caption>Get or set the <code class="prettyprint">multiple</code> option, after initialization:</caption>
+       * @example <caption>Get or set the <code class="prettyprint">multiple</code> property after initialization:</caption>
        * // getter
-       * var multiple = $( ".selector" ).ojAccordion( "option", "multiple" );
+       * var multipleValue = myAccordion.multiple;
        * 
        * // setter
-       * $( ".selector" ).ojAccordion( "option", "multiple", true );
+       * myAccordion.multiple=true;
        */
       multiple : false,
 
@@ -166,51 +110,40 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojcollapsible'],
        * @memberof! oj.ojAccordion
        * @instance
        * @type {Array}
+       * @ojwriteback
        * @default <code class="prettyprint">null</code>
+       *
        *
        * Note: expanded is default to null<p>
        * which means that accordion doesn't modify the state on the collapsible children.<p>
        * If specified, it overrides the children expanded setting.
        *
        * @example <caption>Initialize the accordion with the 
-       * <code class="prettyprint">expanded</code> option specified:</caption>
-       * $( ".selector" ).ojAccordion( { "expanded": ["collapsible1Div"] } );
+       * <code class="prettyprint">expanded</code> attribute specified:</caption>
+       * &lt;oj-accordion expanded="['collapsible2']">&lt;/oj-accordion>
        * 
-       * @example <caption>Get or set the <code class="prettyprint">expanded</code> 
-       * option after initialization:</caption>
+       * @example <caption>Get or set the <code class="prettyprint">expanded</code> property 
+       * after initialization:</caption>
        * // getter
-       * var expanded = $( ".selector" ).ojAccordion( "option", "expanded" );
+       * var expanded = myAccordion.expanded;
        * 
        * // setter
-       * $( ".selector" ).ojAccordion( "option", "expanded", ["collapsible1Div"] );
+       * myAccordion.expanded="['collapsible1']"
        */
       expanded : null, 
 
       // callbacks
       /**
        * Triggered immediately before any collapsible in the accordion is expanded.
-       * beforeExpand can be canceled to prevent the content from expanding by returning a false in the event listener.
+       * Call <code class="prettyprint">event.preventDefault()</code> in the event listener to veto the event, which prevents the content from expanding.
        * If multiple is true, the beforeExpand event will not be fired by the accordion.
        *
        * @expose 
        * @event 
-       * @memberof! oj.ojAccordion
+       * @memberof oj.ojAccordion
        * @instance
-       * @property {Event} event <code class="prettyprint">jQuery</code> event object
-       * @property {Object} ui Parameters
-       * @property {jQuery} ui.toCollapsible The collapsible being expanded.
-       * @property {jQuery} ui.fromCollapsible The collapsible being collapsed. 
-       * 
-       * @example <caption>Initialize any collapsible in the accordion with the <code class="prettyprint">beforeExpand</code> callback specified:</caption>
-       * $( ".selector" ).ojAccordion({
-       *     "beforeExpand": function( event, ui ) {}
-       * });
-       *
-       * @example <caption>Bind an event listener to the <code class="prettyprint">ojbeforeexpand</code> event:</caption>
-       * $( ".selector" ).on( "ojbeforeexpand", function( event, ui ) {
-       *      // verify that the component firing the event is a component of interest 
-       *      if ($(event.target).is(".mySelector")) {} 
-       * } );
+       * @property {Element} toCollapsible The collapsible being expanded.
+       * @property {Element} fromCollapsible The collapsible being collapsed. 
        */
       beforeExpand : null,
 
@@ -221,50 +154,24 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojcollapsible'],
        *
        * @expose 
        * @event 
-       * @memberof! oj.ojAccordion
+       * @memberof oj.ojAccordion
        * @instance
-       * @property {Event} event <code class="prettyprint">jQuery</code> event object
-       * @property {Object} ui Parameters
-       * @property {jQuery} ui.toCollapsible The collapsible being expanded.
-       * @property {jQuery} ui.fromCollapsible The collapsible being collapsed. 
-       * 
-       * @example <caption>Initialize the accordion with the <code class="prettyprint">expand</code> callback specified:</caption>
-       * $( ".selector" ).ojAccordion({
-       *     "expand": function( event, ui ) {}
-       * });
-       *
-       * @example <caption>Bind an event listener to the <code class="prettyprint">ojexpand</code> event:</caption>
-       * $( ".selector" ).on( "ojexpand", function( event, ui ) {
-       *      // verify that the component firing the event is a component of interest 
-       *      if ($(event.target).is(".mySelector")) {} 
-       * } );
+       * @property {Element} toCollapsible The collapsible being expanded.
+       * @property {Element} fromCollapsible The collapsible being collapsed. 
        */
       expand : null, 
 
       /**
        * Triggered immediately before any collapsible in the accordion is collapsed.
-       * beforeCollapse can be canceled to prevent the content from collapseing by returning a false in the event listener.
+       * Call <code class="prettyprint">event.preventDefault()</code> in the event listener to veto the event, which prevents the content from collapsing.
        * If multiple is true, the beforeCollapse event will not be fired by the accordion.
        *
        * @expose 
        * @event 
-       * @memberof! oj.ojAccordion
+       * @memberof oj.ojAccordion
        * @instance
-       * @property {Event} event <code class="prettyprint">jQuery</code> event object
-       * @property {Object} ui Parameters
-       * @property {jQuery} ui.toCollapsible The collapsible being expanded.
-       * @property {jQuery} ui.fromCollapsible The collapsible being collapsed. 
-       * 
-       * @example <caption>Initialize any collapsible in the accordion with the <code class="prettyprint">beforeCollapse</code> callback specified:</caption>
-       * $( ".selector" ).ojAccordion({
-       *     "beforeCollapse": function( event, ui ) {}
-       * });
-       *
-       * @example <caption>Bind an event listener to the <code class="prettyprint">ojbeforecollapse</code> event:</caption>
-       * $( ".selector" ).on( "ojbeforecollapse", function( event, ui ) {
-       *      // verify that the component firing the event is a component of interest 
-       *      if ($(event.target).is(".mySelector")) {} 
-       * } );
+       * @property {Element} toCollapsible The collapsible being expanded.
+       * @property {Element} fromCollapsible The collapsible being collapsed. 
        */
       beforeCollapse : null,
 
@@ -275,23 +182,10 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojcollapsible'],
        *
        * @expose 
        * @event 
-       * @memberof! oj.ojAccordion
+       * @memberof oj.ojAccordion
        * @instance
-       * @property {Event} event <code class="prettyprint">jQuery</code> event object
-       * @property {Object} ui Parameters
-       * @property {jQuery} ui.toCollapsible The collapsible being expanded.
-       * @property {jQuery} ui.fromCollapsible The collapsible being collapsed. 
-       * 
-       * @example <caption>Initialize any collapsible in the accordion with the <code class="prettyprint">collapse</code> callback specified:</caption>
-       * $( ".selector" ).ojAccordion({
-       *     "collapse": function( event, ui ) {}
-       * });
-       *
-       * @example <caption>Bind an event listener to the <code class="prettyprint">ojcollapse</code> event:</caption>
-       * $( ".selector" ).on( "ojcollapse", function( event, ui ) {
-       *      // verify that the component firing the event is a component of interest 
-       *      if ($(event.target).is(".mySelector")) {} 
-       * } );
+       * @property {Element} toCollapsible The collapsible being expanded.
+       * @property {Element} fromCollapsible The collapsible being collapsed. 
        */
       collapse : null
 
@@ -361,37 +255,19 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojcollapsible'],
 
       this._super(key, value, flags);
 
-//TODO: ignore disabled until disabled propagation is supported
-/*
-      if (key === "disabled")
-      {
-        value = !!value;
-
-        if (value) {
-          this.collapsibles.each(function ()
-          {
-            //TODO: Don't override if collapsible has disabled set
-            if ($(this).ojCollapsible("option", key) == null)
-              $(this).ojCollapsible("option", key, value);
-          });
-        }
-        this.element.toggleClass("oj-disabled", value);
-      }
-*/
     },
 
     /**
-     * Refreshes the visual state of the accordion. JET components require a <code class="prettyprint">refresh()</code> or re-init after the DOM is 
-     * programmatically changed underneath the component.
+     * Refreshes the visual state of the accordion. 
      * 
      * <p>This method does not accept any arguments.
      * 
      * @expose 
-     * @memberof! oj.ojAccordion
+     * @memberof oj.ojAccordion
      * @instance
      * 
      * @example <caption>Invoke the <code class="prettyprint">refresh</code> method:</caption>
-     * $( ".selector" ).ojAccordion( "refresh" );
+     * myAccordion.refresh();
      */
     refresh : function ()
     {
@@ -402,12 +278,13 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojcollapsible'],
     _refresh : function ()
     {
       this._makeCollapsible();
-
+      
+      //TODO: ignore disabled until disabled propagation is supported
       //need to propagate the option to the collapsible children
-      this._setOption("disabled", this.options.disabled);
+      // this.option("disabled", this.options.disabled);
 
       this._internalSetExpanded = true;
-      this._setOption("expanded", this.options.expanded);
+      this._setExpandedOption(this.options.expanded);
       this._internalSetExpanded = false;
 
       this._setupEvents();
@@ -418,7 +295,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojcollapsible'],
       this.collapsibles = this.element.children();
 
       // Since oj-collapsible elements may not be upgraded until after oj-accordion elements,
-      // just set the expand-area attribute for custom elements
+      // just set the expand-area property for custom elements
       if (this._IsCustomElement())
       {
         this.element.children("oj-collapsible")
@@ -950,60 +827,36 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojcollapsible'],
         return {'subId':subId, 'index': collapsibleIndex};
       }
       return null;
+    },
+
+    //** @inheritdoc */
+     _CompareOptionValues: function(option, value1, value2)
+     {
+      if (option == 'expanded')
+        return oj.Object.compareValues(value1, value2);
+      else
+        return this._super(option, value1, value2);
     }
 
     // Fragments:
 
     /**
-     * <p>Sub-ID for the specified Collapsible within an Accordion.</p>
+     * <p>The <code class="prettyprint">&lt;oj-accordion></code> element accepts one or more <code class="prettyprint">&lt;oj-collapsible></code> elements as children.
      *
-     * @property {number} index The zero-based index of the Collapsible.
-     *
-     * @ojsubid oj-accordion-collapsible
+     * @ojchild Default
      * @memberof oj.ojAccordion
-     * @deprecated This sub-ID is not needed.
      *
-     * @example <caption>Get the second Collapsible:</caption>
-     * var node = $( ".selector" ).ojAccordion( "getNodeBySubId", {'subId': 'oj-accordion-collapsible', 'index': 1} );
-     */
-
-    /**
-     * <p>Sub-ID for the specified header within an Accordion.</p>
-     *
-     * @property {number} index The zero-based index of the header.
-     *
-     * @ojsubid oj-accordion-header
-     * @memberof oj.ojAccordion
-     * @deprecated This sub-ID is not needed.  Since the application supplies this element, it can supply a unique ID by which the element can be accessed.
-     *
-     * @example <caption>Get the second header:</caption>
-     * var node = $( ".selector" ).ojAccordion( "getNodeBySubId", {'subId': 'oj-accordion-header', 'index': 1} );
-     */
-
-    /**
-     * <p>Sub-ID for the specified content section within an Accordion.</p>
-     *
-     * @property {number} index The zero-based index of the content section.
-     *
-     * @ojsubid oj-accordion-content
-     * @memberof oj.ojAccordion
-     * @deprecated This sub-ID is not needed.  Since the application supplies this element, it can supply a unique ID by which the element can be accessed.
-     *
-     * @example <caption>Get the second content section:</caption>
-     * var node = $( ".selector" ).ojAccordion( "getNodeBySubId", {'subId': 'oj-accordion-content', 'index': 1} );
-     */
-
-    /**
-     * <p>Sub-ID for the specified disclosure icon within an Accordion.</p>
-     *
-     * @property {number} index The zero-based index of the disclosure icon.
-     *
-     * @ojsubid oj-accordion-header-icon
-     * @memberof oj.ojAccordion
-     * @deprecated this sub-ID is deprecated, please use oj-accordion-disclosure instead.
-     *
-     * @example <caption>Get the second disclosure icon:</caption>
-     * var node = $( ".selector" ).ojAccordion( "getNodeBySubId", {'subId': 'oj-accordion-header-icon', 'index': 1} );
+     * @example <caption>Initialize the Accordion with two Collapsible children specified:</caption>
+     * &lt;oj-accordion>
+     *   &lt;oj-collapsible>
+     *     &lt;h3>Header 1&lt;/h3>
+     *     &lt;p>Content 1&lt;/p>
+     *   &lt;/oj-collapsible>
+     *   &lt;oj-collapsible expanded="true">
+     *     &lt;h3>Header 2&lt;/h3>
+     *     &lt;p>Content 2&lt;/p>
+     *   &lt;/oj-collapsible>
+     * &lt;/oj-accordion>
      */
 
     /**
@@ -1015,7 +868,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojcollapsible'],
      * @memberof oj.ojAccordion
      *
      * @example <caption>Get the second disclosure icon:</caption>
-     * var node = $( ".selector" ).ojAccordion( "getNodeBySubId", {'subId': 'oj-accordion-disclosure', 'index': 1} );
+     * var node = myAccordion.getNodeBySubId({"subId": "oj-accordion-disclosure", 'index': 1});
      */
 
     /**
@@ -1058,12 +911,12 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojcollapsible'],
      *     <tr>
      *       <td>Collapsible header</td>
      *       <td><kbd>Tab</kbd></td>
-     *       <td>Navigate to next collapsible header and if none then the next component on page.</td>
+     *       <td>Navigate to next collapsible header and if none then the next element on page.</td>
      *     </tr>
      *     <tr>
      *       <td>Collapsible header</td>
      *       <td><kbd>Shift+Tab</kbd></td>
-     *       <td>Navigate to previous collapsible header and if none then the previous component on page.</td>
+     *       <td>Navigate to previous collapsible header and if none then the previous element on page.</td>
      *     </tr>
      *     <tr>
      *       <td>Collapsible header</td>

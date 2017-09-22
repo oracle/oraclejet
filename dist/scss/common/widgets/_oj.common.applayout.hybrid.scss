@@ -112,11 +112,12 @@
       @include oj-box-shadow(none);
       border-style: none;
     }
-    .oj-hybrid-applayout-header .oj-button {
+    .oj-hybrid-applayout-header .oj-button,
+    .oj-hybrid-applayout-header .oj-button-button {
       // for vertical alignment of header elements
       margin-bottom: 0;
     }
-    .oj-hybrid-applayout-header .oj-flex-bar-start .oj-button:first-child {
+    .oj-hybrid-applayout-header .oj-flex-bar-start > .oj-button:first-child {
       // negative margins so we can align button image with content padding
       @include oj-ltr() {
         margin-left: -$buttonIconOnlyPadding;
@@ -125,7 +126,7 @@
         margin-right: -$buttonIconOnlyPadding;
       }
     }
-    .oj-hybrid-applayout-header .oj-flex-bar-end .oj-button:last-child {
+    .oj-hybrid-applayout-header .oj-flex-bar-end > .oj-button:last-child {
       // negative margins so we can align button image with content padding
       @include oj-ltr() {
         margin-right: -$buttonIconOnlyPadding;
@@ -162,7 +163,14 @@
     .oj-hybrid-applayout-toolbar-stretch {
       @extend %oj-flex-bar-base;
     }
-    .oj-hybrid-applayout-toolbar-stretch .oj-button {
+    .oj-hybrid-applayout-toolbar-stretch oj-button
+    {
+      // Need to use display: flex on the <oj-button> so that the <button> inside stretches
+      @include oj-display-flex-property();
+    }
+    .oj-hybrid-applayout-toolbar-stretch .oj-button,
+    .oj-hybrid-applayout-toolbar-stretch .oj-button-button
+    {
       @include oj-flex-property(1 1 auto);
       // height: 100% isn't working, but explicitly setting to a px value works
       min-height: $appLayoutHybridFooterMinHeight;

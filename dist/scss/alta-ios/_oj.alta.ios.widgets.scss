@@ -10,7 +10,6 @@
 @import "widgets/oj.alta.ios.tags.lists";
 @import "widgets/oj.alta.ios.utilities";
 
-
 // shared
 @import "widgets/oj.alta.ios.icons";
 @import "widgets/oj.alta.ios.resizable";
@@ -25,13 +24,15 @@
 @import "widgets/oj.alta.ios.tabs";
 @import "widgets/oj.alta.ios.train";
 @import "widgets/oj.alta.ios.navigationlist";
+@import "widgets/oj.alta.ios.tabbar";
 @import "widgets/oj.alta.ios.offcanvas";
 
 // behavior
 @import "widgets/oj.alta.ios.animation";
-@import "widgets/oj.alta.ios.progressbar";
+@import "widgets/oj.alta.ios.progress";
 @import "widgets/oj.alta.ios.pulltorefresh";
 @import "widgets/oj.alta.ios.swipetoreveal";
+@import "widgets/oj.alta.ios.switcher";
 
 // secondary windows
 @import "widgets/oj.alta.ios.dialog";
@@ -48,6 +49,7 @@
 @import "widgets/oj.alta.ios.pagingcontrol";
 @import "widgets/oj.alta.ios.table";
 @import "widgets/oj.alta.ios.tree";
+@import "widgets/oj.alta.ios.treeview";
 @import "widgets/oj.alta.ios.datagrid";
 @import "widgets/oj.alta.ios.rowexpander";
 @import "widgets/oj.alta.ios.listview";
@@ -87,6 +89,8 @@
 @import "widgets/oj.alta.ios.formcontrol.slider";
 @import "widgets/oj.alta.ios.formcontrol.colorpalette";
 @import "widgets/oj.alta.ios.formcontrol.colorspectrum";
+// mostly used by form controls
+@import "widgets/oj.alta.ios.option";
 
 // responsive
 @import "widgets/oj.alta.ios.flex";
@@ -103,3 +107,7 @@
 // file upload
 @import "widgets/oj.alta.ios.filepicker";
 @import "widgets/oj.alta.ios.progresslist";
+
+//icon
+@import "widgets/oj.alta.ios.avatar";
+@import "widgets/oj.alta.ios.iconcircle";

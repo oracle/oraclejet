@@ -17,11 +17,11 @@ $themeName:           alta !default;
 $themeTargetPlatform: windows !default; // targets the windows 10 look and feel
 
 //----------------------------------------------------------------
-// PALETTE VARIABLES: 
+// PALETTE VARIABLES:
 //       these can be thought of as the color palette for the
 //       application. Thes variables are not used directly
 //       in the widget files, rather they are referred to by
-//       other variables. 
+//       other variables.
 //----------------------------------------------------------------
 
 // background colors
@@ -69,7 +69,7 @@ $interaction7Color: #fafaeb !default;
 $rootFontSize:    .9375em !default;  // 15px
 
 $fontSize:         1rem   !default;
-$smallestFontSize: oj-px-to-rem(12px, $baseFontSize: 15px) !default; 
+$smallestFontSize: oj-px-to-rem(12px, $baseFontSize: 15px) !default;
 $smallFontSize:    oj-px-to-rem(14px, $baseFontSize: 15px) !default;
 $mediumFontSize:   oj-px-to-rem(20px, $baseFontSize: 15px) !default;
 $largeFontSize:    oj-px-to-rem(24px, $baseFontSize: 15px) !default;
@@ -180,7 +180,7 @@ $menuIconSize:                       24px !default; // per theming discussion, f
 $menuIconToEdgePadding:              oj-px-to-rem(16px, $baseFontSize: 15px) !default;
 
 // padding on both left and right of submenu icon:
-// Spec only provides the "after" spacing of 16px, which we use for the "before" spacing value as well.  
+// Spec only provides the "after" spacing of 16px, which we use for the "before" spacing value as well.
 $menuSubmenuIconPadding:             oj-px-to-rem(18px, $baseFontSize: 15px) !default;
 
 
@@ -202,9 +202,9 @@ $menuItemTextColor:                  $headerTextColor !default;
 $menuItemLineHeight:                 44/15 !default; // 44px @15px font.
 
 // disabled menu items and their anchors
-$menuItemTextColorDisabled:          transparentize($menuItemTextColor, 0.80) !default; 
+$menuItemTextColorDisabled:          transparentize($menuItemTextColor, 0.80) !default;
 
-// focused menu items (.oj-focus) and their ancestor menu items (.oj-focus-ancestor) 
+// focused menu items (.oj-focus) and their ancestor menu items (.oj-focus-ancestor)
 $menuItemBgColorFocus:               $interaction3Color !default;
 
 // menu icons (.oj-menu-item-icon), not submenu icons
@@ -265,7 +265,7 @@ $buttonXlargeTextToEdgePadding: $buttonLargeTextToEdgePadding !default; // no sp
 $buttonIconToTextPadding:       oj-px-to-rem(8px, $baseFontSize: 15px) !default;
 $buttonSmallIconToTextPadding:  oj-px-to-rem(6px, $baseFontSize: 15px) !default;
 $buttonLargeIconToTextPadding:  oj-px-to-rem(16px, $baseFontSize: 15px) !default;
-$buttonXlargeIconToTextPadding: oj-px-to-rem(20px, $baseFontSize: 15px) !default; 
+$buttonXlargeIconToTextPadding: oj-px-to-rem(20px, $baseFontSize: 15px) !default;
 
 // Horiz space between icon and edge of button when text also showing.
 $buttonIconToEdgePadding:       oj-px-to-rem(24px, $baseFontSize: 15px) !default;
@@ -346,7 +346,7 @@ $buttonHalfChromeTextColorActive:         $buttonTextColor !default;
 $buttonHalfChromeTextColorSelected:       $buttonHalfChromeTextColorActive !default;
 
 // half chrome selected and hovered
-$buttonHalfChromeTextColorSelectedHover:  $buttonTextColor !default; 
+$buttonHalfChromeTextColorSelectedHover:  $buttonTextColor !default;
 $buttonHalfChromeBgColorSelectedHover:    $buttonBgColorHover !default;
 $buttonHalfChromeBorderColorSelectedHover:  $buttonHalfChromeBgColorSelectedHover !default;
 
@@ -406,7 +406,7 @@ $formControlMediumMaxWidth: 100% !default;
 
 // form control common
 //----------------------------------
-$formControlTriggerHeight:   oj-px-to-rem(32px, $baseFontSize: 15px) !default; 
+$formControlTriggerHeight:   oj-px-to-rem(32px, $baseFontSize: 15px) !default;
 $formControlBorderRadius:    0 !default;
 $formControlBorderWidth:     2px !default;
 
@@ -419,7 +419,7 @@ $formControlPaddingHorizontal: 5px !default;
 $formControlBgColor:         $background1Color !default;
 $formControlBorderColor:     #bababa          !default;
 
-// active 
+// active
 $formControlTriggerBgColorActive: $interaction3Color !default;
 
 // focus
@@ -446,7 +446,7 @@ $formControlLabelRequiredChar: '' !default;
 //----------------------------------
 
 // gutter (padding) between the inline label and the control
-$formControlLabelInlineGutter:     oj-px-to-rem(20px, $baseFontSize: 15px) !default; 
+$formControlLabelInlineGutter:     oj-px-to-rem(20px, $baseFontSize: 15px) !default;
 
 
 // form layout
@@ -547,7 +547,7 @@ $sliderBarValueBgColorDisabled:  $sliderThumbBgColorDisabled !default;
 //----------------------------------------------------------------
 
 // CONTAINER HEIGHT/WIDTH
-$switchContainerHeight: $formControlTriggerHeight !default; 
+$switchContainerHeight: $formControlTriggerHeight !default;
 $switchContainerWidth: $formControlTriggerHeight * 1.4736 !default;
 
 // TRACK HEIGHT/WIDTH
@@ -660,57 +660,70 @@ $switchThumbBorderColorSelectedDisabled: $switchThumbBgColorSelectedDisabled !de
 
 // NAVIGATION LIST
 //----------------------------------------
-//Default
-$navigationListPageLevelItemLabelColorDefault: $formControlLabelColor !default;
-$navigationListPageLevelItemIconColorDefault: $formControlLabelColor !default;
-$navigationListPageLevelItemBorderColor: transparent !default;
-
-//Selected
-$navigationListPageLevelItemLabelColorSelected: $interaction1Color !default;
-$navigationListPageLevelItemBorderColorSelected: transparent !default;
-$navigationListPageLevelItemBgColorSelected: transparent !default;
 
 //Sizing
-$navigationListItemStartEndPadding:  0.625rem !default; //10px when root font 16px
+$navigationListItemStartEndPadding:                           oj-px-to-rem(10px, $baseFontSize: 16px) !default;
 
-$navigationListPageLevelItemBorderWidth: 0 !default;
-$navigationListPageLevelIconOnlyItemBorderWidth: 0 !default;
-$navigationListPageLevelItemMinHeight: oj-px-to-rem(50px, $baseFontSize: 15px) !default; 
-$navigationListPageLevelItemFontSize: oj-px-to-rem(16px, $baseFontSize: 15px) !default; 
+$navigationListHorizontalItemContrastBgColorSelected:         #ffffff !default;
+$navigationListHorizontalItemContrastLabelColorSelected:      #313334 !default;
 
-$navigationBarItemContrastBgColorSelected:         #ffffff !default;
-$navigationBarItemContrastLabelColorSelected:      #313334 !default;
+$navigationListHorizontalFontSize:                            oj-px-to-rem(12px, $baseFontSize: 15px) !default;
+$navigationListHorizontalMinHeight:                           oj-px-to-rem(48px, $baseFontSize: 15px) !default;
+$navigationListHorizontalItemPadding:                         4px $navigationListItemStartEndPadding 2px !default;
+$navigationListHorizontalItemBorderWidth:                     0 !default;
+$navigationListHorizontalIconMargin:                          4px !default;
 
-$navigationBarPageLevelItemContrastBgColorSelected:         $navigationBarItemContrastBgColorSelected !default;
-$navigationBarPageLevelItemContrastLabelColorSelected:      $navigationBarItemContrastLabelColorSelected !default;
+$navigationListHorizontalStackedIconMinHeight:                oj-px-to-rem(60px, $baseFontSize: 15px) !default;
+$navigationListHorizontalStackedItemPadding:                  3px $navigationListItemStartEndPadding 2px !default;
 
-$navigationListPageLevelItemContrastBgColorSelected:         $navigationBarItemContrastBgColorSelected !default;
-$navigationListPageLevelItemContrastLabelColorSelected:      $navigationBarItemContrastLabelColorSelected !default;
+// NAVIGATION TABS
+//----------------------------------------
+//Default
+$tabBarItemLabelColorDefault:                         $formControlLabelColor !default;
+$tabBarItemIconColorDefault:                          $formControlLabelColor !default;
+$tabBarItemBorderColor:                               transparent !default;
 
-$navigationBarPageLevelItemBorderWidth: 0 !default;
-$navigationBarPageLevelIconOnlyItemBorderWidth: 0 !default;
+//Selected
+$tabBarItemLabelColorSelected:                        $interaction1Color !default;
+$tabBarItemBorderColorSelected:                       transparent !default;
+$tabBarItemBgColorSelected:                           transparent !default;
 
-$navigationBarFontSize: oj-px-to-rem(12px, $baseFontSize: 15px) !default;
-$navigationBarMinHeight: oj-px-to-rem(48px, $baseFontSize: 15px) !default;
-$navigationBarItemPadding: 4px $navigationListItemStartEndPadding 2px !default;
-$navigationBarItemBorderWidth: 0 !default;
-$navigationBarIconMargin: 4px !default;
+//Sizing
+$tabBarItemStartEndPadding:                           oj-px-to-rem(10px, $baseFontSize: 16px) !default;
 
-$navigationBarStackedIconMinHeight: oj-px-to-rem(60px, $baseFontSize: 15px) !default; 
-$navigationBarStackedItemPadding: 3px $navigationListItemStartEndPadding 2px !default;
+$tabBarItemBorderWidth:                               0 !default;
+$tabBarIconOnlyItemBorderWidth:                       0 !default;
+$tabBarItemMinHeight:                                 oj-px-to-rem(50px, $baseFontSize: 15px) !default;
+$tabBarItemFontSize:                                  oj-px-to-rem(16px, $baseFontSize: 15px) !default;
 
-$navigationBarPageLevelItemFontSize: oj-px-to-rem(16px, $baseFontSize: 15px) !default; 
+$tabBarItemContrastBgColorSelected:                   #ffffff !default;
+$tabBarItemContrastLabelColorSelected:                #313334 !default;
 
-// END of NavigationList variables
+$tabBarHorizontalItemContrastBgColorSelected:         $tabBarItemContrastBgColorSelected !default;
+$tabBarHorizontalItemContrastLabelColorSelected:      $tabBarItemContrastLabelColorSelected !default;
 
+$tabBarHorizontalItemBorderWidth:                     0 !default;
+$tabBarHorizontalIconOnlyItemBorderWidth:             0 !default;
 
-// PROGRESSBAR
+$tabBarHorizontalItemMinHeight:                       oj-px-to-rem(48px, $baseFontSize: 15px) !default;
+$tabBarHorizontalItemPadding:                         4px $tabBarItemStartEndPadding 2px !default;
+$tabBarHorizontalIconMargin:                          4px !default;
+
+$tabBarHorizontalStackedItemPadding:                  3px $tabBarItemStartEndPadding 2px !default;
+
+$tabBarHorizontalItemFontSize:                        oj-px-to-rem(16px, $baseFontSize: 15px) !default;
+
+// PROGRESS
 //----------------------------------------------------------------
-$progressbarBgColor:                     $border3Color !default; //#c8c8c8
-$progressbarValueBgColor:                $interaction1Color !default; // #0572ce
-$progressbarBorderRadius:                0 !default;
-$progressbarBorderStyle:                 none !default;
-$progressbarIndeterminateOverlayOpacity: 1 !default;
+$progressValueBgColor:                  $interaction1Color !default; // #0572ce
+
+$progressBarBgColor:                     $border3Color !default; //#c8c8c8
+$progressBarBorderRadius:                0 !default;
+$progressBarBorderStyle:                 none !default;
+$progressBarIndeterminateOverlayOpacity: 1 !default;
+$progressBarIndeterminateOverlayImage:   $imageDir + "animated-overlay.svg" !default;
+
+$progressCircleIndeterminateOverlayImage: $imageDir + "spinner_full.gif" !default;
 
 // TRAIN
 //-----------------------------------------------------------------------------

@@ -305,6 +305,7 @@ oj.ListViewIndexerModel.prototype._findGroupHeader = function(section)
  * @ojcomponent oj.ojIndexer
  * @augments oj.baseComponent
  * @since 1.2.0
+ * @ojstatus preview
  * 
  * @classdesc
  * <h3 id="indexerOverview-section">
@@ -315,6 +316,16 @@ oj.ListViewIndexerModel.prototype._findGroupHeader = function(section)
  *                 corresponds to group headers in ListView.  When a section is selected the corresponding group header will be 
  *                 scroll to the top of the ListView.
  * </p>
+ *
+ * <pre class="prettyprint">
+ * <code>
+ * &lt;oj-indexer
+ *   aria-controls='listview1'
+ *   data='{{data}}'>
+ * &lt;/oj-indexer>
+ * </code>
+ * </pre>
+ *
  * <h3 id="touch-section">
  *   Touch End User Information
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#touch-section"></a>
@@ -334,22 +345,12 @@ oj.ListViewIndexerModel.prototype._findGroupHeader = function(section)
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#accessibility-section"></a>
  * </h3>
  * <p>
- * The indexer component is accessible - it sets and maintains the appropriate aria- attributes, 
+ * The JET Indexer is accessible - it sets and maintains the appropriate aria- attributes, 
  * including <code class="prettyprint">aria-valuenow</code>, <code class="prettyprint">aria-valuemax</code>,
  * <code class="prettyprint">aria-valuemin</code> and <code class="prettyprint">aria-orientation</code>.
  * <p>
  * Application developer should associate a ListView with the Indexer by specifying the id of the ListView in the aria-controls attribute in the Indexer.
  * </p>
- * 
- * <!-- - - - - Above this point, the tags are for the class.
- *              Below this point, the tags are for the constructor (initializer). - - - - - - -->
- * @desc Creates an ojIndexer component
- * 
- * @param {Object=} options a map of option-value pairs to set on the component
- * 
- * @example <caption>Initialize component using widget API</caption>
- * &lt;ul id="indexer1" aria-controls="listview1"/&gt;<br/>
- * $("#indexer").ojIndexer({'option', 'data', listview.getIndexerModel()});
  */
 oj.__registerWidget('oj.ojIndexer', $['oj']['baseComponent'],
 {
@@ -371,7 +372,14 @@ oj.__registerWidget('oj.ojIndexer', $['oj']['baseComponent'],
         * @default <code class="prettyprint">null</code>
         *
         * @example <caption>Initialize the Indexer with an IndexModel:</caption>
-        * $( ".selector" ).ojIndexer({ "data": listview.getIndexerModel()});
+        * &lt;oj-indexer data='{{myIndexerModel}}'>&lt;/oj-indexer>
+        *
+        * @example <caption>Get or set the <code class="prettyprint">data</code> property after initialization:</caption>
+        * // getter
+        * var dataValue = myIndexer.data;
+        *
+        * // setter
+        * myIndexer.data = myIndexerModel;
         */
         data: null
     },
@@ -396,17 +404,10 @@ oj.__registerWidget('oj.ojIndexer', $['oj']['baseComponent'],
      */
     _AfterCreate : function ()
     {
-        var container;
-
         this._super();
         this._createIndexerContent();
         this._setAriaProperties();
         this._createInstructionText();
-
-        // register a resize listener and swipe handler        
-        container = this._getIndexerContainer()[0];
-        this._registerResizeListener(container);
-        this._registerTouchHandler(container);
     },
 
     /**
@@ -417,24 +418,11 @@ oj.__registerWidget('oj.ojIndexer', $['oj']['baseComponent'],
      */
     _destroy: function()
     {
-        var container;
-
         this._super();
         this._unsetAriaProperties();
         this.element.removeClass("oj-component-initnode");
 
-        container = this._getIndexerContainer()[0];
-        this._unregisterResizeListener(container);
-        this._unregisterTouchHandler(container);
-
-        // if there's outstanding busy state, release it now
-        if (this.busyStateResolve)
-        {
-            this.busyStateResolve(null);
-            this.busyStateResolve = null;
-        }
-
-        oj.DomUtils.unwrap(this.element, $(container));
+        oj.DomUtils.unwrap(this.element, this._getIndexerContainer());
     },
 
     /**
@@ -449,6 +437,46 @@ oj.__registerWidget('oj.ojIndexer', $['oj']['baseComponent'],
         if (key == "data")
         {
             this.refresh();
+        }
+    },
+
+    /**
+     * Sets up resources needed by indexer
+     * @memberof! oj.ojIndexer
+     * @instance
+     * @override
+     * @protected
+     */
+    _SetupResources: function()
+    {
+        this._super();
+
+        // register a resize listener and swipe handler        
+        var container = this._getIndexerContainer()[0];
+        this._registerResizeListener(container);
+        this._registerTouchHandler(container);
+    },
+
+    /**
+     * Release resources held by indexer
+     * @memberof! oj.ojIndexer
+     * @instance
+     * @override
+     * @protected
+     */
+    _ReleaseResources: function()
+    {
+        this._super();
+
+        var container = this._getIndexerContainer()[0];
+        this._unregisterResizeListener(container);
+        this._unregisterTouchHandler(container);
+
+        // if there's outstanding busy state, release it now
+        if (this.busyStateResolve)
+        {
+            this.busyStateResolve(null);
+            this.busyStateResolve = null;
         }
     },
 
@@ -486,30 +514,7 @@ oj.__registerWidget('oj.ojIndexer', $['oj']['baseComponent'],
         this.m_current = null;
     },
 
-    /**
-     * Return the subcomponent node represented by the documented locator attribute values.
-     * <p>
-     * To lookup the node that represents the specific section in the indexer the locator object should have the following:
-     * <ul>
-     * <li><b>subId</b>: 'oj-indexer-section'</li>
-     * <li><b>section</b>: the id of the section in the indexer</li>
-     * </ul>
-     *
-     * @expose
-     * @memberof! oj.ojIndexer
-     * @instance
-     * @override
-     * @param {Object} locator An Object containing at minimum a subId property
-     *        whose value is a string, documented by the component, that allows
-     *         the component to look up the subcomponent associated with that
-     *        string.  It contains:<p>
-     *        component: optional - in the future there may be more than one
-     *        component contained within a page element<p>
-     *        subId: the string, documented by the component, that the component
-     *        expects in getNodeBySubId to locate a particular subcomponent
-     * @returns {Array.<(Element|null)>|Element|null} the subcomponent located by the subId string passed
-     *          in locator, if found.<p>
-     */
+    //** @inheritdoc */
     getNodeBySubId: function(locator)
     {
         var subId, section, sections, i, j, node, data, includes;
@@ -553,17 +558,7 @@ oj.__registerWidget('oj.ojIndexer', $['oj']['baseComponent'],
         return null;
     },
 
-    /**
-     * <p>Returns the subId string for the given child DOM node.  For more details, see
-     * <a href="#getNodeBySubId">getNodeBySubId</a>.
-     *
-     * @expose
-     * @memberof! oj.ojIndexer
-     * @instance
-     * @override
-     * @param {!Element} node - child DOM node
-     * @return {Object|null} The subId for the DOM node, or <code class="prettyprint">null</code> when none is found.
-     */
+    //** @inheritdoc */
     getSubIdByNode: function(node)
     {
         var section;
@@ -1087,7 +1082,12 @@ oj.__registerWidget('oj.ojIndexer', $['oj']['baseComponent'],
      */
     _unregisterTouchHandler: function(element)
     {
-        $(element).off("panstart panmove panend");
+        if (this.hammer)
+        {
+            this.hammer.off("panstart panmove panend");
+            $(element).ojHammer("destroy");
+        }
+        this.hammer = null;
     },
 
     /**
@@ -1105,7 +1105,7 @@ oj.__registerWidget('oj.ojIndexer', $['oj']['baseComponent'],
           ]
         ]};
 
-        $(element)
+        this.hammer = $(element)
         .ojHammer(options)
         .on("panstart", function(event)
         {
@@ -1281,14 +1281,14 @@ oj.__registerWidget('oj.ojIndexer', $['oj']['baseComponent'],
 //////////////////     SUB-IDS     //////////////////
 
 /**
- * <p>Sub-ID for the ojIndexer component.  See the <a href="#getNodeBySubId">getNodeBySubId</a>
+ * <p>Sub-ID for the sections within the Indexer.  See the <a href="#getNodeBySubId">getNodeBySubId</a>
  * method for details.</p>
  *
  * @ojsubid oj-indexer-section
  * @memberof oj.ojIndexer
  *
  * @example <caption>Get the node that represents the specified prefix 'A' in the indexer:</caption>
- * var node = $( ".selector" ).ojIndexer( "getNodeBySubId", {'subId': 'oj-indexer-section', 'section': 'A'} );
+ * var node = myIndexer.getNodeBySubId({'subId': 'oj-indexer-section', 'section': 'A'});
  */
 
     });
@@ -1298,11 +1298,6 @@ oj.__registerWidget('oj.ojIndexer', $['oj']['baseComponent'],
 var ojIndexerMeta = {
   "properties": {
     "data": {}
-  },
-  "methods": {
-    "getNodeBySubId": {},
-    "getSubIdByNode": {},
-    "refresh": {}
   },
   "extension": {
     _INNER_ELEM: 'ul',

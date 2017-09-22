@@ -83,11 +83,11 @@
        height: 16px;
        vertical-align: middle;
        @include oj-ltr() {
-         margin-left: 0.250em;
+         margin-left: 4px;
          margin-right: 0;
        }
        @include oj-rtl() {
-         margin-right: 0.250em;
+         margin-right: 4px;
        }
     }
 

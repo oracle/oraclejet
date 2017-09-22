@@ -1,0 +1,159 @@
+/**
+ * Copyright (c) 2014, 2017, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ */
+"use strict";
+define(['ojs/ojcore', 'jquery', 'knockout', 'ojs/ojkoshared', 'customElements'], function(oj, $, ko)
+{
+ko['bindingHandlers']['_ojDefer_'] =
+  {
+    'init': function (element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) 
+    {
+      // _shown is set if subtreeShown was called before bound. Therefore, if _shown was set
+      // we can directly call ko.applyBindingsToDescendants() without waiting for subtreeShown
+      // because it was already called.
+      if (!element['_shown'])
+      {
+        // stash away the children
+        if (!element['_savedChildNodes'])
+        {
+          var fragment = document.createDocumentFragment();
+          var childNodes = element.childNodes;
+          while (childNodes.length > 0)
+          {
+            fragment.appendChild(childNodes[0]);
+          }
+          element['_savedChildNodes'] = fragment;
+        }
+        // this _activateDescedantBindings function will be called from the element's
+        // _activate API.
+        Object.defineProperty(element, '_activateDescedantBindings', {
+          'value': function () 
+          {
+            ko.applyBindingsToDescendants(bindingContext, element);
+            delete element['_activateDescedantBindings'];
+          },
+          'configurable': true
+        });
+      }
+      else
+      {
+        ko.applyBindingsToDescendants(bindingContext, element);
+      }
+      return {'controlsDescendantBindings': true};
+    }
+  };
+
+/**
+ * Copyright (c) 2014, Oracle and/or its affiliates.
+ * All rights reserved.
+ */
+
+/**
+ * @preserve Copyright 2013 jQuery Foundation and other contributors
+ * Released under the MIT license.
+ * http://jquery.org/license
+ */
+
+/**
+ * @ojstatus preview
+ * @ojcomponent oj.ojDefer
+ * @classdesc
+ * The oj-defer custom element delays applying bindings to its children until it is activated.
+ * It works by disconnecting child elements from the DOM tree until the parent component activates its subtree. In addition, the tag will
+ * defer binding execution and disconnect children within hidden subtrees of the components which support it.
+ * There are several components which support oj-defer:<br>
+ * <ul>
+ * <li>Collapsible</li>
+ * <li>Dialog</li>
+ * <li>Film Strip</li>
+ * <li>Menu</li>
+ * <li>Off Canvas</li>
+ * <li>Popup</li>
+ * <li>MasonryLayout</li>
+ * <li>Composite Component Slots</li>
+ * </ul>
+ * Note: For composite component slots, the oj-defer element could have a slot attribute specified directly on it,
+ * i.e. &lt;oj-defer slot="something">, or &lt;oj-defer> could appear within a child subtree of the element with a slot attribute. Also,  
+ * the current implementation may allow bindings to be applied
+ * to the content within &lt;oj-defer> prematurely if the tag is used in one of the
+ * 'hiding' components that is nested within another 'hiding' component. That
+ * limitation will be removed in the future.
+ */
+
+(function () 
+{
+  oj.DeferElement = {};
+
+  oj.DeferElement.register = function () {
+    var deferElementProto = Object.create(HTMLElement.prototype);
+    // define a non-public _activate API which will only be called
+    // by subtreeAttach
+    Object.defineProperty(deferElementProto, '_activate',
+      {
+        'value': function () 
+        {
+          if (!this['_activateDescedantBindings'])
+          {
+            // if the _activateDescedantBindings function is not there then
+            // that means we have not been bound yet. Set a flag to activate when bound
+            Object.defineProperty(this, '_shown', {
+              'configurable': false,
+              'value': true
+            });
+          }
+          else
+          {
+            // if we have stashed away children, put them back
+            if (this['_savedChildNodes'])
+            {
+              this.appendChild(this['_savedChildNodes']);
+              delete this['_savedChildNodes'];
+            }
+            // if the _activateDescedantBindings function is there then just call it
+            this['_activateDescedantBindings']();
+          }
+        },
+        'writable': false
+      });
+      var constructorFunc = function()
+      { 
+        var reflect = window['Reflect'];
+        var ret;
+        if (typeof reflect !== 'undefined')
+        {
+          ret = reflect['construct'](HTMLElement, [], this['constructor']);
+        }
+        else
+        {
+          ret = HTMLElement.call(this);
+        }
+        return ret;
+      };
+      Object.defineProperty(deferElementProto,  'constructor', { 'value': constructorFunc, 'writable': true, 'configurable': true });
+      constructorFunc.prototype = deferElementProto;
+      Object.setPrototypeOf(constructorFunc, HTMLElement);
+      customElements.define('oj-defer', constructorFunc);
+  };
+  oj.DeferElement.register();
+})();
+
+(function () {
+  oj.__KO_CUSTOM_BINDING_PROVIDER_INSTANCE.addPostprocessor
+    (
+      {
+        'nodeHasBindings': function (node, wrappedReturn) {
+          return wrappedReturn || (node.nodeType === 1 && 'oj-defer' === node.nodeName.toLowerCase());
+        },
+        'getBindingAccessors': function (node, bindingContext, wrappedReturn) {
+          if (node.nodeType === 1 && 'oj-defer' === node.nodeName.toLowerCase()) {
+            wrappedReturn = wrappedReturn || {};
+            wrappedReturn['_ojDefer_'] = function () {}
+          }
+          return wrappedReturn;
+        }
+      }
+    );
+})();
+
+});

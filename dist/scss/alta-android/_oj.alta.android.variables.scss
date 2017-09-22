@@ -13,11 +13,11 @@ $themeName:           alta !default;
 $themeTargetPlatform: android !default; // targets the android 5 look and feel
 
 //----------------------------------------------------------------
-// PALETTE VARIABLES: 
+// PALETTE VARIABLES:
 //       these can be thought of as the color palette for the
 //       application. Thes variables are not used directly
 //       in the widget files, rather they are referred to by
-//       other variables. 
+//       other variables.
 //----------------------------------------------------------------
 
 
@@ -65,11 +65,11 @@ $interaction7Color: #fafaeb !default;
 $rootFontSize:    1em !default;  // 16px
 
 $fontSize:         1rem !default;
-$smallestFontSize: oj-px-to-rem(12px, $baseFontSize: 16px) !default;    
-$smallFontSize:    oj-px-to-rem(14px, $baseFontSize: 16px) !default;  
-$mediumFontSize:   oj-px-to-rem(20px, $baseFontSize: 16px) !default;   
-$largeFontSize:    oj-px-to-rem(24px, $baseFontSize: 16px) !default;    
-$largestFontSize:  oj-px-to-rem(34px, $baseFontSize: 16px) !default;  
+$smallestFontSize: oj-px-to-rem(12px, $baseFontSize: 16px) !default;
+$smallFontSize:    oj-px-to-rem(14px, $baseFontSize: 16px) !default;
+$mediumFontSize:   oj-px-to-rem(20px, $baseFontSize: 16px) !default;
+$largeFontSize:    oj-px-to-rem(24px, $baseFontSize: 16px) !default;
+$largestFontSize:  oj-px-to-rem(34px, $baseFontSize: 16px) !default;
 
 
 // text colors
@@ -161,7 +161,7 @@ $dvtChartSubtitleTextColor: $secondaryTextColor !default;
 //----------------------------------------------------------------
 
 // Controls whether "swipe down to dismiss" is supported for sheet menus.
-// Note that this only applies to swipes starting on the menu, since any touch 
+// Note that this only applies to swipes starting on the menu, since any touch
 // outside the menu will dismiss, regardless of whether it turns into a swipe.
 // Valid values are "dismiss" and "none".
 $menuSheetSwipeDownBehavior: "dismiss" !default;
@@ -259,7 +259,7 @@ $buttonXlargeTextToEdgePadding: $buttonLargeTextToEdgePadding !default; // no sp
 $buttonIconToTextPadding:       oj-px-to-rem(8px, $baseFontSize: 16px) !default;
 $buttonSmallIconToTextPadding:  oj-px-to-rem(6px, $baseFontSize: 16px) !default;
 $buttonLargeIconToTextPadding:  oj-px-to-rem(12px, $baseFontSize: 16px) !default;
-$buttonXlargeIconToTextPadding: oj-px-to-rem(10px, $baseFontSize: 16px) !default; 
+$buttonXlargeIconToTextPadding: oj-px-to-rem(10px, $baseFontSize: 16px) !default;
 
 // Horiz space between icon and edge of button when text also showing.
 $buttonIconToEdgePadding:       oj-px-to-rem(10px, $baseFontSize: 16px) !default;
@@ -341,7 +341,7 @@ $buttonHalfChromeIconColor:               $buttonHalfChromeTextColor !default;
 // Unlike full chrome, there is a spec for half-chrome hover, per email: from filmstrip/conveyor
 // fwd/back button specs, use SVG fill colors for text/icon color, and use background colors from spec wiki
 $buttonHalfChromeTextColorHover:          darken($interaction4Color, 14%) !default;
-$buttonHalfChromeBgColorHover:            transparent !default; 
+$buttonHalfChromeBgColorHover:            transparent !default;
 
 // half chrome active
 $buttonHalfChromeTextColorActive:         $buttonTextColor !default;
@@ -400,9 +400,9 @@ $buttonsetEqualWidthChromingList: full outlined !default; // default should be e
 
 $dialogHeaderPadding:       oj-px-to-rem(24px, $baseFontSize: 16px) oj-px-to-rem(24px, $baseFontSize: 16px) oj-px-to-rem(5px, $baseFontSize: 16px) !default;
 $dialogBodyPadding:         oj-px-to-rem(5px, $baseFontSize: 16px) oj-px-to-rem(24px, $baseFontSize: 16px) oj-px-to-rem(20px, $baseFontSize: 16px) !default;
-$dialogFooterPadding:       oj-px-to-rem(8px, $baseFontSize: 16px) oj-px-to-rem(8px, $baseFontSize: 16px) oj-px-to-rem(4px, $baseFontSize: 16px) !default; 
+$dialogFooterPadding:       oj-px-to-rem(8px, $baseFontSize: 16px) oj-px-to-rem(8px, $baseFontSize: 16px) oj-px-to-rem(4px, $baseFontSize: 16px) !default;
 
-$dialogHeaderFontSize:      oj-px-to-rem(19px, $baseFontSize: 16px) !default;   
+$dialogHeaderFontSize:      oj-px-to-rem(19px, $baseFontSize: 16px) !default;
 $dialogHeaderTextColor:     $textColor !default;
 $dialogHeaderBgColor:       transparent !default;
 
@@ -413,8 +413,8 @@ $dialogHeaderBgColor:       transparent !default;
 // FORM CONTROLS
 //----------------------------------------------------------------
 // controls the height of an input
-$formControlTriggerHeight: oj-px-to-rem(32px, $baseFontSize: 16px) !default; 
-$formControlInputHeight:   oj-px-to-rem(28px, $baseFontSize: 16px) !default; 
+$formControlTriggerHeight: oj-px-to-rem(32px, $baseFontSize: 16px) !default;
+$formControlInputHeight:   oj-px-to-rem(28px, $baseFontSize: 16px) !default;
 
 $formControlLargeMaxWidth:  100% !default;
 $formControlMediumMaxWidth: 100% !default;
@@ -504,14 +504,16 @@ $inputNumberInputToButtonMargin: 16px !default;
 
 $radioCheckboxLabelPosition: start !default;
 $radioCheckboxRowHeight: 3rem !default;
+
+// TODO Bug 25897533: Clean up after sprite tooling is implemented
 $radioCheckboxImageHeightWidth: $radioCheckboxRowHeight !default;
 
 // spacing between edge and the label text
 $radioCheckboxLabelToEdgePadding: 16px !default;
-// spacing between input image and edge. 
+// spacing between input image and edge.
 // this is zero because 16px margin is built into the image itself.
 $radioCheckboxInputToEdgePadding: 0 !default;
-// spacing between input image and label text. 
+// spacing between input image and label text.
 // this is zero because 16px margin is built into the image itself.
 $radioCheckboxInputToLabelPadding: 0 !default;
 
@@ -682,51 +684,64 @@ $switchThumbBorderColorSelectedDisabled: $switchThumbBgColorSelectedDisabled !de
 
 // NAVIGATION LIST
 //----------------------------------------
-//Default
-$navigationListPageLevelItemIconColorDefault: $formControlLabelColor !default;
-$navigationListPageLevelItemLabelColorDefault: $formControlLabelColor !default;
-//Selected
-$navigationListPageLevelItemBgColorSelected: transparent !default;
-$navigationListPageLevelItemLabelColorSelected: $interaction1Color !default;
-//Active
-$navigationListPageLevelItemBgColorActive: $background2Color !default;
-$navigationListPageLevelItemBorderColorActive: $iconColorHover !default;
 
 //sizing
-$navigationListItemAccentBorderWidth:       3px !default;
-$navigationListItemStartEndPadding:         oj-px-to-rem(10px, $baseFontSize: 16px) !default; 
+$navigationListItemAccentBorderWidth:                         3px !default;
+$navigationListItemStartEndPadding:                           oj-px-to-rem(10px, $baseFontSize: 16px) !default;
 
-$navigationListPageLevelItemBorderWidth:    0 0 1px 2px !default;
-$navigationListPageLevelItemMinHeight: oj-px-to-rem(47px, $baseFontSize: 16px)  !default; 
-$navigationListPageLevelItemFontSize: oj-px-to-rem(14px, $baseFontSize: 16px)  !default; 
+$navigationListHorizontalItemPadding:                         2px $navigationListItemStartEndPadding 6px !default;
+$navigationListHorizontalFontSize:                            oj-px-to-rem(12px, $baseFontSize: 16px)  !default;
+$navigationListHorizontalMinHeight:                           oj-px-to-rem(56px, $baseFontSize: 16px) !default;
+$navigationListHorizontalItemBorderWidth:                     0 !default;
 
-$navigationBarItemPadding: 2px $navigationListItemStartEndPadding 6px !default;
-$navigationBarFontSize: oj-px-to-rem(12px, $baseFontSize: 16px)  !default;
-$navigationBarMinHeight: oj-px-to-rem(56px, $baseFontSize: 16px) !default;
-$navigationBarItemBorderWidth: 0 !default;
+$navigationListHorizontalStackedIconMinHeight:                oj-px-to-rem(56px, $baseFontSize: 16px)  !default;
+$navigationListHorizontalStackedItemPadding:                  1px $navigationListItemStartEndPadding 0 !default;
 
-$navigationBarStackedIconMinHeight: oj-px-to-rem(56px, $baseFontSize: 16px)  !default; 
-$navigationBarStackedItemPadding: 1px $navigationListItemStartEndPadding 0 !default;
+$navigationListHorizontalItemContrastBgColorSelected:         #ffffff !default;
+$navigationListHorizontalItemContrastLabelColorSelected:      #313334 !default;
 
-$navigationBarPageLevelItemBorderWidth: 0 0 2px 0 !default;
-$navigationBarPageLevelItemFontSize: oj-px-to-rem(14px, $baseFontSize: 16px)  !default; 
-$navigationBarPageLevelItemStackedIconMinHeight: oj-px-to-rem(48px, $baseFontSize: 16px)  !default;
-$navigationBarPageLevelItemMinHeight: oj-px-to-rem(48px, $baseFontSize: 16px)  !default; 
-$navigationBarPageLevelIconOnlyItemBorderWidth: $navigationBarPageLevelItemBorderWidth !default;
-
-$navigationBarItemContrastBgColorSelected:         #ffffff !default;
-$navigationBarItemContrastLabelColorSelected:      #313334 !default;
-
-$navigationListPointerUpAnimation:   (effect: "ripple") !default;
+$navigationListPointerUpAnimation:                            (effect: "ripple") !default;
 // END of NavigationList variables
 
-// PROGRESSBAR
+// NAVIGATIONTABS
+//----------------------------------------
+//Default
+$tabBarItemIconColorDefault:                          $formControlLabelColor !default;
+$tabBarItemLabelColorDefault:                         $formControlLabelColor !default;
+//Selected
+$tabBarItemBgColorSelected:                           transparent !default;
+$tabBarItemLabelColorSelected:                        $interaction1Color !default;
+//Active
+$tabBarItemBgColorActive:                             $background2Color !default;
+$tabBarItemBorderColorActive:                         $iconColorHover !default;
+
+//sizing
+$tabBarItemAccentBorderWidth:                         3px !default;
+$tabBarItemStartEndPadding:                           oj-px-to-rem(10px, $baseFontSize: 16px) !default;
+
+$tabBarItemBorderWidth:                               0 0 1px 2px !default;
+$tabBarItemMinHeight:                                 oj-px-to-rem(47px, $baseFontSize: 16px)  !default;
+$tabBarItemFontSize:                                  oj-px-to-rem(14px, $baseFontSize: 16px)  !default;
+
+$tabBarHorizontalItemPadding:                         2px $navigationListItemStartEndPadding 6px !default;
+$tabBarHorizontalStackedItemPadding:                  1px $tabBarItemStartEndPadding 0 !default;
+
+$tabBarHorizontalItemBorderWidth:                     0 0 2px 0 !default;
+$tabBarHorizontalItemFontSize:                        oj-px-to-rem(14px, $baseFontSize: 16px)  !default;
+$tabBarHorizontalItemStackedIconMinHeight:            oj-px-to-rem(48px, $baseFontSize: 16px)  !default;
+$tabBarHorizontalItemMinHeight:                       oj-px-to-rem(48px, $baseFontSize: 16px)  !default;
+$tabBarHorizontalIconOnlyItemBorderWidth:             $tabBarHorizontalItemBorderWidth !default;
+
+$tabBarPointerUpAnimation:                            (effect: "ripple") !default;
+
+// PROGRESS
 //----------------------------------------------------------------
-$progressbarBgColor:                     $interaction4Color !default; // #c2ddf7
-$progressbarValueBgColor:                $interaction1Color !default; // #0572ce
-$progressbarBorderStyle:                 none !default;
-$progressbarBorderRadius:                0 !default;
-$progressbarIndeterminateOverlayOpacity: 1 !default;
+$progressValueBgColor:                  $interaction1Color !default; // #0572ce
+
+$progressBarBgColor:                     $interaction4Color !default; // #c2ddf7
+$progressBarBorderStyle:                 none !default;
+$progressBarBorderRadius:                0 !default;
+$progressBarIndeterminateOverlayOpacity: 1 !default;
 
 // LISTVIEW
 //----------------------------------------------------------------
@@ -778,7 +793,7 @@ $appLayoutHybridPadding: 1rem !default;
 // Header
 $appLayoutHybridHeaderMinHeight: 56px !default;
 $appLayoutHybridHeaderBoxShadow: 0 1px 3px rgba(0,0,0,.3) !default;
-$appLayoutHybridHeaderTitleFontSize: oj-px-to-rem(20px, $baseFontSize: 16px) !default; 
+$appLayoutHybridHeaderTitleFontSize: oj-px-to-rem(20px, $baseFontSize: 16px) !default;
 $appLayoutHybridHeaderBorderColor: $border2Color !default;
 // Footer
 $appLayoutHybridFooterBorderColor: $appLayoutHybridHeaderBorderColor !default;

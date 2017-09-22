@@ -26,10 +26,30 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojdatasource-common'], function(oj, $)
  * @export
  * @class oj.ArrayTableDataSource
  * @extends oj.TableDataSource
- * @classdesc Object representing data used by table component
+ * @classdesc Object representing data available from an array.  This data source can be used by [ListView]{@link oj.ojListView}, [NavigationList]{@link oj.ojNavigationList},
+ *            [TabBar]{@link oj.ojTabBar}, and [Table]{@link oj.ojTable}.<br><br>
+ *            See the <a href="../jetCookbook.html?component=table&demo=basicTable">Table - Base Table</a> demo for an example.<br><br>
+ *            Refer to {@link oj.TableDataSource} for other data sources that represent tabular data.
  * @param {Array|Object|function():Array} data data supported by the components
- * @param {Object|null} options Array of options for the TableDataSource
+ *                                      <p>This can be either an Array, or a Knockout observableArray.</p>
+ *                                      <p>Each array element should be an object representing one row of data, with the property names and values corresponding to column names and values.
+ *                                         Array of primitive values such as ["Apple", "Orange"] is not currently supported.</p>
+ * @param {Object|null} options Options for the TableDataSource
+ * @param {string} options.idAttribute The column that contains the row key.
+ *                 If this is not specified, all the values in a row are used as the key.
+ * @param {string} options.startFetch Control whether to start initial fetch when the TableDataSource is bound to a component.  Valid values are:<br><br>
+ *                                    <b>"enabled"</b> (default) - Start initial fetch automatically when the TableDataSource is bound to a component.<br>
+ *                                    <b>"disabled"</b> - Do not start initial fetch automatically.  Application will call the <a href="#fetch">fetch()</a> method to
+ *                                                        start the first fetch.
  * @constructor
+ * @example
+ * // First initialize an array
+ * var deptArray = [{DepartmentId: 10, DepartmentName: 'Administration', LocationId: 200},
+ *                  {DepartmentId: 20, DepartmentName: 'Marketing', LocationId: 200},
+ *                  {DepartmentId: 30, DepartmentName: 'Purchasing', LocationId: 200}];
+ *
+ * // Then create an ArrayTableDataSource object with the array
+ * var dataSource = new oj.ArrayTableDataSource(deptArray, {idAttribute: 'DepartmentId'});
  */
 oj.ArrayTableDataSource = function(data, options)
 {
@@ -66,49 +86,7 @@ oj.ArrayTableDataSource = function(data, options)
     }
     this._data = (data instanceof Array) ? data : (/** @type {Function} */(data))();
     this._totalSize = this._data.length;
-        
-    if (!(data instanceof Array))
-    {
-      var self = this;
-      // subscribe to observableArray arrayChange event to get individual updates
-      (/** @type {{subscribe: Function}} */(data))['subscribe']
-        (
-          function(changes) 
-          {
-            if (!self._isDataLoaded())
-            {
-              // don't bother with data change notifications
-              // if the data hasn't even been loaded yet (e.g. initial 
-              // fetch hasn't happened
-              return;
-            }
-            var i, j;
-            
-            // do two passes, first for deletes and the second for adds
-            var rowArray = [];
-            var indexArray = [];
-            for (i = 0; i < changes.length; i++)
-            {
-              if (changes[i]['status'] === 'deleted')
-              {
-                rowArray.push(changes[i].value);
-              }
-            }
-            self.remove(rowArray, null);
-            
-            rowArray = []; 
-            indexArray = [];
-            for (i = 0; i < changes.length; i++)
-            {
-              if (changes[i]['status'] === 'added')
-              {
-                rowArray.push(changes[i].value);
-                indexArray.push(changes[i].index);
-              }
-            }
-            self.add(rowArray, {'at': indexArray});
-          }, null, 'arrayChange');
-    }
+    this._subscribeObservableArray(data);
   }
 
   if ((options != null && (options['startFetch'] == 'enabled' || options['startFetch'] == null))
@@ -141,10 +119,10 @@ oj.ArrayTableDataSource.prototype.sortCriteria = null;
 
 /**
  * Initializes the instance.
- * @export
- * @expose
- * @memberof! oj.ArrayTableDataSource
+ * @memberof oj.ArrayTableDataSource
  * @instance
+ * @override
+ * @protected
  */
 oj.ArrayTableDataSource.prototype.Init = function()
 {
@@ -168,7 +146,7 @@ oj.ArrayTableDataSource.prototype.Init = function()
  * </table> 
  * @export
  * @expose
- * @memberof! oj.ArrayTableDataSource
+ * @memberof oj.ArrayTableDataSource
  * @instance
  */
 oj.ArrayTableDataSource.prototype.add = function(m, options)
@@ -185,7 +163,6 @@ oj.ArrayTableDataSource.prototype.add = function(m, options)
  * 
  * @param {number} index Index for which to return the row data. 
  * @param {Object=} options Options to control the at.
- * @param {number} options.fetchSize fetch size to use if the call needs to fetch more records from the server, if virtualized.  Overrides the overall fetchSize setting <p>
  * @return {Promise} Promise resolves to a compound object which has the structure below. If the index is out of range, Promise resolves to null.<p>
  * <table>
  * <tbody>
@@ -196,7 +173,7 @@ oj.ArrayTableDataSource.prototype.add = function(m, options)
  * </table>
  * @export
  * @expose
- * @memberof! oj.ArrayTableDataSource
+ * @memberof oj.ArrayTableDataSource
  * @instance
  */
 oj.ArrayTableDataSource.prototype.at = function(index, options)
@@ -233,7 +210,7 @@ oj.ArrayTableDataSource.prototype.at = function(index, options)
  * </table> 
  * @export
  * @expose
- * @memberof! oj.ArrayTableDataSource
+ * @memberof oj.ArrayTableDataSource
  * @instance
  */
 oj.ArrayTableDataSource.prototype.change = function(m, options)
@@ -258,7 +235,7 @@ oj.ArrayTableDataSource.prototype.change = function(m, options)
     if (row != null)
     {
       key = this._getId(row);
-      changedRow = this._getInternal(key, null);
+      changedRow = this._getInternal(key, false);
       rowArray['data'].push(this._wrapWritableValue(row));
       rowArray['keys'].push(key);
       rowArray['indexes'].push(changedRow['index']);
@@ -290,7 +267,7 @@ oj.ArrayTableDataSource.prototype.change = function(m, options)
  * </table>  
  * @export
  * @expose
- * @memberof! oj.ArrayTableDataSource
+ * @memberof oj.ArrayTableDataSource
  * @instance
  */
 oj.ArrayTableDataSource.prototype.fetch = function(options)
@@ -320,14 +297,14 @@ oj.ArrayTableDataSource.prototype.fetch = function(options)
  * </table>
  * @export
  * @expose
- * @memberof! oj.ArrayTableDataSource
+ * @memberof oj.ArrayTableDataSource
  * @instance
  */
 oj.ArrayTableDataSource.prototype.get = function(id, options)
 {
   options = options || {};
   this._checkDataLoaded();
-  return Promise.resolve(this._getInternal(id, options));
+  return Promise.resolve(this._getInternal(id, true));
 };
 
 /**
@@ -337,7 +314,7 @@ oj.ArrayTableDataSource.prototype.get = function(id, options)
  *         Returns null if the feature is not recognized.
  * @export
  * @expose
- * @memberof! oj.ArrayTableDataSource
+ * @memberof oj.ArrayTableDataSource
  * @instance
  */
 oj.ArrayTableDataSource.prototype.getCapability = function(feature)
@@ -360,7 +337,7 @@ oj.ArrayTableDataSource.prototype.getCapability = function(feature)
  * </table> 
  * @export
  * @expose
- * @memberof! oj.ArrayTableDataSource
+ * @memberof oj.ArrayTableDataSource
  * @instance
  */
 oj.ArrayTableDataSource.prototype.remove = function(m, options)
@@ -378,7 +355,7 @@ oj.ArrayTableDataSource.prototype.remove = function(m, options)
  * @return {Promise} promise object triggering done when complete.
  * @export
  * @expose
- * @memberof! oj.ArrayTableDataSource
+ * @memberof oj.ArrayTableDataSource
  * @instance
  */
 oj.ArrayTableDataSource.prototype.reset = function(data, options)
@@ -391,6 +368,8 @@ oj.ArrayTableDataSource.prototype.reset = function(data, options)
   if (data != null)
   {
     this._data = data;
+    this._subscribeObservableArray(data);
+    this.data = data;
   }
   this._rows = {};
   this._totalSize = 0;
@@ -410,7 +389,7 @@ oj.ArrayTableDataSource.prototype.reset = function(data, options)
  * @return {Promise} promise object triggering done when complete.
  * @export
  * @expose
- * @memberof! oj.ArrayTableDataSource
+ * @memberof oj.ArrayTableDataSource
  * @instance
  */
 oj.ArrayTableDataSource.prototype.sort = function(criteria)
@@ -446,7 +425,7 @@ oj.ArrayTableDataSource.prototype.sort = function(criteria)
  * @returns {number} total size of data
  * @export
  * @expose
- * @memberof! oj.ArrayTableDataSource
+ * @memberof oj.ArrayTableDataSource
  * @instance
  */
 oj.ArrayTableDataSource.prototype.totalSize = function()
@@ -603,9 +582,8 @@ oj.ArrayTableDataSource.prototype._fetchInternal = function(options)
   return Promise.resolve(result);
 }
 
-oj.ArrayTableDataSource.prototype._getInternal = function(id, options)
+oj.ArrayTableDataSource.prototype._getInternal = function(id, wrap)
 {
-  options = options || {};
   var i, j, row, wrappedRow, key;
   var result = null;
   for (i = 0; i < this._rows['data'].length; i++)
@@ -629,15 +607,31 @@ oj.ArrayTableDataSource.prototype._getInternal = function(id, options)
           }
           if (equal)
           {
-            wrappedRow = this._wrapWritableValue(row);
-            result = {'data': wrappedRow, 'key': key, 'index': this._rows['indexes'][i]};
+            if (wrap)
+            {
+              wrappedRow = this._wrapWritableValue(row);
+              result = {'data': wrappedRow, 'key': key, 'index': this._rows['indexes'][i]};
+            }
+            else
+            {
+              result = {'data': row, 'key': key, 'index': this._rows['indexes'][i]};
+            }
+            break;
           }
         }
       }
       else if (key == id)
       {
-        wrappedRow = this._wrapWritableValue(row);
-        result = {'data': wrappedRow, 'key': key, 'index': this._rows['indexes'][i]};
+        if (wrap)
+        {
+          wrappedRow = this._wrapWritableValue(row);
+          result = {'data': wrappedRow, 'key': key, 'index': this._rows['indexes'][i]};
+        }
+        else
+        {
+          result = {'data': row, 'key': key, 'index': this._rows['indexes'][i]};
+        }
+        break;
       }
     }
   }
@@ -723,7 +717,7 @@ oj.ArrayTableDataSource.prototype._removeInternal = function(m, options)
     if (row != null)
     {
       key = this._getId(row);
-      deletedRow = this._getInternal(key, null);
+      deletedRow = this._getInternal(key, false);
       
       if (deletedRow != null)
       {
@@ -748,8 +742,8 @@ oj.ArrayTableDataSource.prototype._removeInternal = function(m, options)
     this._rows['data'].splice(rowArray['indexes'][i], 1);
     this._rows['indexes'].splice(rowArray['indexes'][i], 1);
     this._totalSize--;
-    this._realignRowIndices();
   }
+  this._realignRowIndices();
   
   if (!silent && rowArray['data'].length > 0)
   {
@@ -847,7 +841,7 @@ oj.ArrayTableDataSource._getEndIndex = function(rows, startIndex, pageSize)
 };
 
 oj.ArrayTableDataSource._getKey = function(val, attr) {
-  if ($.isFunction(val[attr])) {
+  if (typeof (val[attr]) == 'function') {
     return val[attr]();
   }
   return val[attr];
@@ -1004,6 +998,52 @@ oj.ArrayTableDataSource._sortFunc = function(a, b, comparator, self)
     }
   }
   return 0;
+};
+
+oj.ArrayTableDataSource.prototype._subscribeObservableArray = function(data)
+{
+  if (!(data instanceof Array))
+  {
+    var self = this;
+    // subscribe to observableArray arrayChange event to get individual updates
+    (/** @type {{subscribe: Function}} */(data))['subscribe']
+      (
+        function(changes) 
+        {
+          if (!self._isDataLoaded())
+          {
+            // don't bother with data change notifications
+            // if the data hasn't even been loaded yet (e.g. initial 
+            // fetch hasn't happened
+            return;
+          }
+          var i, j;
+
+          // do two passes, first for deletes and the second for adds
+          var rowArray = [];
+          var indexArray = [];
+          for (i = 0; i < changes.length; i++)
+          {
+            if (changes[i]['status'] === 'deleted')
+            {
+              rowArray.push(changes[i].value);
+            }
+          }
+          self.remove(rowArray, null);
+
+          rowArray = []; 
+          indexArray = [];
+          for (i = 0; i < changes.length; i++)
+          {
+            if (changes[i]['status'] === 'added')
+            {
+              rowArray.push(changes[i].value);
+              indexArray.push(changes[i].index);
+            }
+          }
+          self.add(rowArray, {'at': indexArray});
+        }, null, 'arrayChange');
+  }
 };
 
 oj.ArrayTableDataSource.prototype._wrapWritableValue = function(m)

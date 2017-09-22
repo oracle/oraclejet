@@ -47,6 +47,7 @@ define(['ojs/ojcore', 'knockout', 'jquery', 'promise', 'ojs/ojanimation'], funct
  * </ul>
  *
  * @namespace
+ * @export
  */
 oj.ModuleAnimations = {};
 
@@ -286,10 +287,10 @@ oj.ModuleAnimations._getNavigateMethod = function(context, navigationType)
 oj.ModuleAnimations._navigateCanAnimate = function(context, navigationType)
 {
   var animateName = oj.ModuleAnimations._getNavigateMethod(context, navigationType);
-  if (oj['ModuleAnimations'][animateName])
+  if (oj.ModuleAnimations[animateName])
   {
-    return oj['ModuleAnimations'][animateName]['canAnimate'] == null ||
-           oj['ModuleAnimations'][animateName]['canAnimate'](context);
+    return oj.ModuleAnimations[animateName]['canAnimate'] == null ||
+           oj.ModuleAnimations[animateName]['canAnimate'](context);
   }
   
   return false;
@@ -298,9 +299,9 @@ oj.ModuleAnimations._navigateCanAnimate = function(context, navigationType)
 oj.ModuleAnimations._navigatePrepareAnimation = function(context, navigationType)
 {
   var animateName = oj.ModuleAnimations._getNavigateMethod(context, navigationType);
-  if (oj['ModuleAnimations'][animateName] && oj['ModuleAnimations'][animateName]['prepareAnimation'])
+  if (oj.ModuleAnimations[animateName] && oj.ModuleAnimations[animateName]['prepareAnimation'])
   {
-    return oj['ModuleAnimations'][animateName]['prepareAnimation'](context);
+    return oj.ModuleAnimations[animateName]['prepareAnimation'](context);
   }
   
   return null;
@@ -309,9 +310,9 @@ oj.ModuleAnimations._navigatePrepareAnimation = function(context, navigationType
 oj.ModuleAnimations._navigateAnimate = function(context, navigationType)
 {
   var animateName = oj.ModuleAnimations._getNavigateMethod(context, navigationType);
-  if (oj['ModuleAnimations'][animateName] && oj['ModuleAnimations'][animateName]['animate'])
+  if (oj.ModuleAnimations[animateName] && oj.ModuleAnimations[animateName]['animate'])
   {
-    return oj['ModuleAnimations'][animateName]['animate'](context);
+    return oj.ModuleAnimations[animateName]['animate'](context);
   }
   
   return Promise.resolve();
@@ -612,7 +613,7 @@ oj.ModuleAnimations.switcher = function(callback)
     {
       // Get the 'delegate' animation
       var type = callback(context);
-      _delegate = (type == null ? null : oj['ModuleAnimations'][type]);
+      _delegate = (type == null ? null : oj.ModuleAnimations[type]);
       if (!_delegate)
       {
         return false;

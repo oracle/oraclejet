@@ -3,7 +3,7 @@
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
-define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojdnd'],
+define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojdnd', 'ojs/ojanimation'],
        function(oj, $)
 {
 
@@ -19,16 +19,13 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojdnd'],
  * 
  * @classdesc
  * <h3 id="masonryLayoutOverview-section">
- *   JET MasonryLayout Component
+ *   JET MasonryLayout
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#masonryLayoutOverview-section"></a>
  * </h3>
  * 
  * <p>Description: A grid of tiles.
  * 
- * <p>A JET MasonryLayout can be created from any 
- * <code class="prettyprint">&lt;div></code> element that contains multiple 
- * direct child <code class="prettyprint">&lt;div></code> elements that can be 
- * sized and positioned.  
+ * <p>A JET MasonryLayout can contain multiple direct child elements that can be sized and positioned.
  * <p>Each direct child element must be styled using one of the predefined 
  * <code class="prettyprint">oj-masonrylayout-tile-CxR</code> style classes to specify
  * the size of that tile.  A tile can span multiple columns and/or rows.  The
@@ -76,9 +73,9 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojdnd'],
  *   </tbody>
  * </table>
  * <p>The number of columns in the layout is determined by the width of the 
- * component and the width of a 1x1 tile.  The number of rows is determined by
+ * element and the width of a 1x1 tile.  The number of rows is determined by
  * the number of columns and the number and sizes of tiles to be laid out.  When
- * the component is resized, relayout will occur and the number of columns and
+ * the element is resized, relayout will occur and the number of columns and
  * rows may change.  
  * <p>When performing layout, tiles are processed in the order in which they
  * originally appeared in the DOM.  Cells in the grid are processed in 
@@ -87,16 +84,15 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojdnd'],
  * the first empty cell in which it fits.  This can result in empty cells in the
  * layout.  Subsequent tiles may fill those earlier gaps if they fit.  
  * 
- * <pre class="prettyprint">
- * <code>
- * &lt;div id="masonryLayout" data-bind="ojComponent: {component: 'ojMasonryLayout'}">
- *   &lt;div id="tile1" class="oj-masonrylayout-tile-1x1">Alpha&lt;/div>
- *   &lt;div id="tile2" class="oj-masonrylayout-tile-1x1">Beta&lt;/div>
- *   &lt;div id="tile3" class="oj-masonrylayout-tile-1x1">Gamma&lt;/div>
- *   &lt;div id="tile4" class="oj-masonrylayout-tile-1x1">Delta&lt;/div>
- *   &lt;div id="tile5" class="oj-masonrylayout-tile-1x1">Epsilon&lt;/div>
- *   &lt;div id="tile6" class="oj-masonrylayout-tile-1x1">Zeta&lt;/div>
- * &lt;/div>
+ * <pre class="prettyprint"><code>
+ * &lt;oj-masonry-layout>
+ *   &lt;div class='oj-masonrylayout-tile-2x1'>Alpha&lt;/div>
+ *   &lt;div class='oj-masonrylayout-tile-1x2'>Beta&lt;/div>
+ *   &lt;div class='oj-masonrylayout-tile-1x1'>Gamma&lt;/div>
+ *   &lt;div class='oj-masonrylayout-tile-1x1'>Delta&lt;/div>
+ *   &lt;div class='oj-masonrylayout-tile-1x1'>Epsilon&lt;/div>
+ *   &lt;div class='oj-masonrylayout-tile-1x1'>Zeta&lt;/div>
+ * &lt;/oj-masonry-layout>
  * </code></pre>
  *
  *
@@ -148,46 +144,73 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojdnd'],
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#rtl-section"></a>
  * </h3>
  * 
- * <p>As with any JET component, in the unusual case that the directionality 
+ * <p>As with any JET element, in the unusual case that the directionality 
  * (LTR or RTL) changes post-init, the MasonryLayout must be 
  * <code class="prettyprint">refresh()</code>ed.
  * 
  * 
- * <h3 id="pseudos-section">
- *   Pseudo-selectors
- *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#pseudos-section"></a>
+ * <h3 id="contextmenu-section">
+ *   Context Menu
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#contextmenu-section"></a>
  * </h3>
- * 
- * <p>The <code class="prettyprint">:oj-masonrylayout</code> pseudo-selector can 
- * be used in jQuery expressions to select JET MasonryLayout.  For example:
- * 
- * <pre class="prettyprint">
- * <code>$( ":oj-masonrylayout" ) // selects all JET MasonryLayouts on the page
- * $myEventTarget.closest( ":oj-masonrylayout" ) // selects the closest ancestor that is a JET MasonryLayout
- * </code></pre>
- * 
- * 
- * <h3 id="jqui2jet-section">
- *   JET for jQuery UI developers
- *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#jqui2jet-section"></a>
- * </h3>
- * 
- * <p>Event names for all JET components are prefixed with "oj", instead of 
- * component-specific prefixes like "masonryLayout".  
- * 
- * <!-- - - - - Above this point, the tags are for the class.
- *              Below this point, the tags are for the constructor (initializer). - - - - - - -->
- * 
- * @desc Creates a JET MasonryLayout. 
- * @example <caption>Initialize the MasonryLayout with no options specified:</caption>
- * $( ".selector" ).ojMasonryLayout();
- * 
- * @example <caption>Initialize the MasonryLayout with some options specified:</caption>
- * $( ".selector" ).ojMasonryLayout( { "reorderHandle": ".appReorderHandle" } );
- * 
- * @example <caption>Initialize the MasonryLayout via the JET 
- * <code class="prettyprint">ojComponent</code> binding:</caption>
- * &lt;div id="masonryLayout" data-bind="ojComponent: { component: 'ojMasonryLayout', reorderHandle: '.appReorderHandle'}">
+ * <p>Masonry Layout supports context menu for performing cut and paste operations on tiles as 
+ * an accessible alternative to drag and drop reordering.
+ * When defining a context menu, masonry layout will provide built-in 
+ * behavior for "cut" and "paste" if the following format for menu &lt;oj-option&gt; items is used:
+ * <ul><li> &lt;oj-option data-oj-command="oj-masonrylayout-['commandname']" >&lt;/oj-option&gt;</li></ul>
+ * The available translated text will be applied to menu items defined this way.
+ *
+ * <p>The supported commands:</p>
+ * <table class="keyboard-table">
+ *   <thead>
+ *      <tr>
+ *       <th>Default Function</th>
+ *       <th>data-oj-command value</th>
+ *      </tr>
+ *   </thead>
+ *   <tbody>
+ *     <tr>
+ *       <td><kbd>Cut</kbd></td>
+ *       <td>oj-masonrylayout-cut</td>
+ *     </tr>
+ *     <tr>
+ *       <td><kbd>Paste Before</kbd></td>
+ *       <td>oj-masonrylayout-paste-before</td>
+ *     </tr>
+ *     <tr>
+ *       <td><kbd>Paste After</kbd></td>
+ *       <td>oj-masonrylayout-paste-after</td>
+ *     </tr>
+ * </tbody></table>
+ *
+ * @example <caption>Define a context menu in the masonry layout for performing cut and paste operation:</caption>
+ * &lt;oj-masonry-layout&gt;
+ *   &lt;oj-menu slot="contextMenu">
+ *     &lt;oj-option data-oj-command="oj-masonrylayout-cut" >&lt;/oj-option>
+ *     &lt;oj-option data-oj-command="oj-masonrylayout-paste-before" >&lt;/oj-option>
+ *     &lt;oj-option data-oj-command="oj-masonrylayout-paste-after" >&lt;/oj-option>
+ *   &lt;/oj-menu&gt;
+ * &lt;/oj-masonry-layout>
+ */
+/**
+ * <p> &lt;oj-masonry-layout> accepts arbitrary direct child elements that can be
+ * sized and positioned, which it will lay out as a grid of tiles.  Each direct
+ * child element must be styled using one of the predefined <code
+ * class="prettyprint">oj-masonrylayout-tile-CxR</code> style classes to specify
+ * the size of that tile.  A tile can span multiple columns and/or rows.</p>
+ *
+ * @ojchild Default
+ * @memberof oj.ojMasonryLayout
+ *
+ * @example <caption>Initialize the masonry layout with child content specified:</caption>
+ * &lt;oj-masonry-layout>
+ *   &lt;div class='oj-masonrylayout-tile-2x1'>Alpha&lt;/div>
+ *   &lt;div class='oj-masonrylayout-tile-1x2'>Beta&lt;/div>
+ *   &lt;div class='oj-masonrylayout-tile-1x1'>Gamma&lt;/div>
+ *   &lt;div class='oj-masonrylayout-tile-1x1'>Delta&lt;/div>
+ *   &lt;div class='oj-masonrylayout-tile-1x1'>Epsilon&lt;/div>
+ *   &lt;div class='oj-masonrylayout-tile-1x1'>Zeta&lt;/div>
+ * &lt;/oj-masonry-layout>
  */
 (function()
 {
@@ -199,72 +222,59 @@ oj.__registerWidget("oj.ojMasonryLayout", $['oj']['baseComponent'],
   options:
   {
     /** 
-     * Specify the string jQuery selector of the descendant DOM element in a 
-     * <code class="prettyprint">masonryLayout</code> child that can be used to 
-     * reorder the child by drag-and-drop.  
+     * Specify the selector of the descendant DOM element in a <code class="prettyprint">oj-masonry-layout</code> 
+     * child that can be used to reorder the child by drag-and-drop.  
      * 
-     * <p>This option is <code class="prettyprint">null</code> by default, 
-     * meaning that <code class="prettyprint">masonryLayout</code> children 
+     * <p>This attribute value is <code class="prettyprint">null</code> by default, 
+     * meaning that <code class="prettyprint">oj-masonry-layout</code> children 
      * cannot be reordered.  If each child that can be reordered has an element 
      * with style class <code class="prettyprint">'my-reorder-handle'</code>, 
-     * then <code class="prettyprint">reorderHandle</code> would be specified as 
+     * then the <code class="prettyprint">reorder-handle</code> attribute would be specified as 
      * <code class="prettyprint">'.my-reorder-handle'</code>.
      * 
-     * <p>When specifying a <code class="prettyprint">reorderHandle</code>, 
+     * <p>When specifying a <code class="prettyprint">reorder-handle</code>, 
      * the application should also specify a context menu with actions to cut
      * and paste tiles as an accessible alternative to drag-and-drop reordering.
+     * <p>To specify a context menu, see the documentation of <a href="oj.ojMenu.html">oj-menu</a>.</p>
      *
      * @expose 
      * @memberof oj.ojMasonryLayout
      * @instance
      * @type {?string}
      * @default <code class="prettyprint">null</code>
-     * @see #contextMenu
      *
      * @example <caption>Initialize the masonryLayout with the 
-     * <code class="prettyprint">reorderHandle</code> option specified:</caption>
-     * // HTML
-     * &lt;div>                              // masonryLayout DOM element
-     *   &lt;div id="child1">                  // child DOM element
-     *     &lt;div class="my-reorder-handle"/>   // reorder handle
+     * <code class="prettyprint">reorder-handle</code> attribute specified:</caption>
+     * &lt;oj-masonry-layout reorder-handle='.my-reorder-handle'>
+     *   &lt;div id='child1'>
+     *     &lt;div class='my-reorder-handle'/>
      *   &lt;/div>
-     *   &lt;div id="child2">                  // child DOM element
-     *     &lt;div class="my-reorder-handle"/>   // reorder handle
+     *   &lt;div id='child2'>
+     *     &lt;div class='my-reorder-handle'/>
      *   &lt;/div>
-     *   &lt;div id="child3">                  // child DOM element
-     *     &lt;div class="my-reorder-handle"/>   // reorder handle
-     *   &lt;/div>
-     *   &lt;div id="child4">                  // child DOM element
-     *     &lt;div class="my-reorder-handle"/>   // reorder handle
-     *   &lt;/div>
-     *   &lt;div id="child5">                  // child DOM element
-     *     &lt;div class="my-reorder-handle"/>   // reorder handle
-     *   &lt;/div>
-     * &lt;/div>
-     * 
-     * // JS
-     * $( ".selector" ).ojMasonryLayout( { "reorderHandle": ".my-reorder-handle" } );
+     *   &lt;!-- additional child elements... -->
+     * &lt;/oj-masonry-layout>
      * 
      * @example <caption>Get or set the <code class="prettyprint">reorderHandle</code> 
-     * option after initialization:</caption>
+     * property after initialization:</caption>
      * // getter
-     * var contentParent = $( ".selector" ).ojMasonryLayout( "option", "reorderHandle" );
+     * var contentParent = myMasonryLayout.reorderHandle;
      * 
      * // setter
-     * $( ".selector" ).ojMasonryLayout( "option", "reorderHandle", ".my-reorder-handle" );
+     * myMasonryLayout.reorderHandle = '.my-reorder-handle';
      */
     reorderHandle: null,
     
     /**
      * MasonryLayout inherits the <code class="prettyprint">disabled</code> 
-     * option from its superclass, but does not support it in order to avoid 
+     * attribute from its superclass, but does not support it in order to avoid 
      * tight coupling between a MasonryLayout and its contents.  Setting this
-     * option on MasonryLayout has no effect.
+     * attribute on MasonryLayout has no effect.
      * 
      * <p><b>WARNING:</b> Applications should not depend on this behavior 
      * because we reserve the right to change it in the future in order to 
      * support <code class="prettyprint">disabled</code> and propagate it to 
-     * child components of MasonryLayout.  
+     * child elements of MasonryLayout.  
      * 
      * @member
      * @name disabled
@@ -272,80 +282,117 @@ oj.__registerWidget("oj.ojMasonryLayout", $['oj']['baseComponent'],
      * @instance
      * @type {boolean}
      * @default <code class="prettyprint">false</code>
+     * @ignore
      */
-    // disabled option declared in superclass, but we still want the above API doc
+    // disabled attribute declared in superclass, but we still want the above API doc
+
+    //event callbacks
+    /**
+     * Triggered when a default animation is about to start on the element.
+     *
+     * <p>The default animation can be cancelled by calling <code class="prettyprint">event.preventDefault()</code>, 
+     * followed by a call to <code class="prettyprint">event.detail.endCallback()</code>. <code class="prettyprint">event.detail.endCallback()</code> 
+     * should be called immediately after <code class="prettyprint">event.preventDefault()</code> if the application merely 
+     * wants to cancel animation, or it should be called when the custom animation ends if the application is invoking another animation function. 
+     * Failure to call <code class="prettyprint">event.detail.endCallback()</code> may prevent the element from working properly.</p>
+     *
+     * <p>For more information on customizing animations, see the documentation of 
+     * <a href="oj.AnimationUtils.html">oj.AnimationUtils</a>.</p>
+     *
+     * <caption>The default animations are controlled via the theme (SCSS) :</caption>
+     * <pre class="prettyprint"><code>
+     * $masonryLayoutInsertAnimation: ((effect: "zoomIn", duration: $masonryLayoutAnimationDuration, timingFunction: "ease-in-out"), "fadeIn") !default;
+     * $masonryLayoutRemoveAnimation: ((effect: "zoomOut", duration: $masonryLayoutAnimationDuration, timingFunction: "ease-in-out"), "fadeOut") !default;
+     * $masonryLayoutMoveAnimation: (effect: "addTransition", duration: $masonryLayoutAnimationDuration, timingFunction: "ease-in-out", transitionProperties: ('top', 'left', 'right')) !default;
+     * $masonryLayoutResizeAnimation: (effect: "addTransition", duration: $masonryLayoutAnimationDuration, timingFunction: "ease-in-out", transitionProperties: ('width', 'height', 'top', 'left', 'right')) !default;
+     * $masonryLayoutReorderAnimation: (effect: "addTransition", duration: $masonryLayoutAnimationDurationFast, timingFunction: "ease-in-out", transitionProperties: ('width', 'height', 'top', 'left', 'right')) !default;
+     * </code></pre>
+     *
+     * @expose
+     * @event
+     * @memberof oj.ojMasonryLayout
+     * @instance
+     * @property {string} action The action that triggers the animation.
+     *            Supported values are:
+     *                    <ul>
+     *                      <li>"insert" - when a tile is inserted</li>
+     *                      <li>"move" - when a tile is moved</li>
+     *                      <li>"remove" - when a tile is removed</li>
+     *                      <li>"resize" - when a tile is resized</li>
+     *                      <li>"reorder" - when a tile is reordered</li>
+     *                    </ul>
+     *                    <br>Note that some animation effects may not look appropriate for a 
+     *                    given action.
+     * @property {Element} element The element being animated.
+     * @property {function} endCallback If the event listener calls
+     *            event.preventDefault to cancel the default animation, it must call the
+     *            endCallback function after it finishes its own animation handling and any
+     *            custom animation has ended.
+     *
+     * @example <caption>Specify an <code class="prettyprint">onOjAnimateStart</code> listener 
+     *          to override the default "insert" animation with a custom animation:</caption>
+     *   myMasonryLayout.onOjAnimateStart = function( event )
+     *   {
+     *     if (!$(event.target).is("oj-masonry-layout"))
+     *       return;
+     *     var ui = event.detail;
+     *     // Change the insert animation
+     *     if (ui.action == "insert") {
+     *       event.preventDefault();
+     *       // Invoke new animation and call event.detail.endCallback when it ends
+     *       oj.AnimationUtils.fadeIn(ui.element).then(ui.endCallback);
+     *     }
+     *   }
+     *
+     * @example <caption>Specify an <code class="prettyprint">onOjAnimateStart</code> listener 
+     *          to prevent the default "remove" animation:</caption>
+     *   myMasonryLayout.onOjAnimateStart = function( event )
+     *   {
+     *     if (!$(event.target).is("oj-masonry-layout"))
+     *       return;
+     *     var ui = event.detail;
+     *     // Prevent the remove animation
+     *     if (ui.action == "remove") {
+     *       event.preventDefault();
+     *       ui.endCallback();
+     *     }
+     *   }
+     */
+    animateStart : null,
 
     /**
-     * <p>The JET Menu should be initialized before the MasonryLayout using it as a 
-     * context menu. 
+     * Triggered when a default animation has ended.
      *
-     * @ojfragment contextMenuInitOrderDoc - Decomped to fragment so Tabs, Tree, and MasonryLayout can convey their init order restrictions.
+     * @expose
+     * @event
      * @memberof oj.ojMasonryLayout
-     */
-    /**
-     * {@ojinclude "name":"contextMenuDoc"}
-     *
-     * <p>When defining a contextMenu, ojMasonryLayout will provide built-in 
-     * behavior for "cut" and "paste" if the following format for menu &lt;li&gt; 
-     * items is used (no &lt;a&gt; elements are required):
-     * <ul><li> &lt;li data-oj-command="oj-masonrylayout-cut" /&gt;</li>
-     *     <li> &lt;li data-oj-command="oj-masonrylayout-paste-before" /&gt;</li>
-     *     <li> &lt;li data-oj-command="oj-masonrylayout-paste-after" /&gt;</li>
-     * </ul>
-     * The available translated text will be applied to menu items defined this way.
-     *
-     * 
-     * @member
-     * @name contextMenu
-     * @memberof! oj.ojMasonryLayout
      * @instance
-     * @type {Element|Array.<Element>|string|jQuery|NodeList}
-     * @default <code class="prettyprint">null</code>
-     * 
-     * @example <caption>Initialize a JET MasonryLayout with a context menu:</caption>
-     * // via recommended HTML5 syntax:
-     * &lt;div id="myMasonryLayout" contextmenu="myContextMenu" data-bind="ojComponent: { ... }>
-     * 
-     * // via JET initializer (less preferred) :
-     * $( ".selector" ).ojMasonryLayout({ "contextMenu": "#myContextMenu"  ... } });
-     * 
-     * @example <caption>Get or set the <code class="prettyprint">contextMenu</code> 
-     * option for an ojMasonryLayout after initialization:</caption>
-     * // getter
-     * var menu = $( ".selector" ).ojMasonryLayout( "option", "contextMenu" );
-     * 
-     * // setter
-     * $( ".selector" ).ojMasonryLayout( "option", "contextMenu", "#myContextMenu" );
+     * @property {string} action The action that triggers the animation.
+     *            Supported values are:
+     *                    <ul>
+     *                      <li>"insert" - when a tile is inserted</li>
+     *                      <li>"move" - when a tile is moved</li>
+     *                      <li>"remove" - when a tile is removed</li>
+     *                      <li>"resize" - when a tile is resized</li>
+     *                      <li>"reorder" - when a tile is reordered</li>
+     *                    </ul>
+     * @property {Element} element The element being animated.
      */
-    // contextMenu option declared in superclass, but we still want the above API doc
-    
-    //event callbacks
-    
+    animateEnd : null,
+
     /**
      * Triggered immediately before a tile is inserted.
-     * The beforeInsert can be cancelled by calling 
+     * This event can be cancelled by calling 
      * <code class="prettyprint">event.preventDefault()</code>.
      *
      * @expose 
      * @event 
      * @memberof oj.ojMasonryLayout
      * @instance
-     * @property {Event} event <code class="prettyprint">jQuery</code> event object
-     * @property {Object} ui Parameters
-     * @property {jQuery} ui.tile The tile that is about to be inserted.
-     * @property {number} ui.index The 0-based index into the set of rendered
-     *           <code class="prettyprint">masonryLayout</code> children where 
-     *           the tile will be inserted.
-     * 
-     * @example <caption>Initialize the masonryLayout with the 
-     * <code class="prettyprint">beforeInsert</code> callback specified:</caption>
-     * $( ".selector" ).ojMasonryLayout({
-     *     "beforeInsert": function( event, ui ) {}
-     * });
-     *
-     * @example <caption>Bind an event listener to the 
-     * <code class="prettyprint">ojbeforeinsert</code> event:</caption>
-     * $( ".selector" ).on( "ojbeforeinsert", function( event, ui ) {} );
+     * @property {Element} tile The tile that is about to be inserted.
+     * @property {number} index The 0-based index into the set of rendered
+     *                                       <code class="prettyprint">oj-masonry-layout</code> children where 
+     *                                       the tile will be inserted.
      */
     beforeInsert: null,
     
@@ -356,47 +403,23 @@ oj.__registerWidget("oj.ojMasonryLayout", $['oj']['baseComponent'],
      * @event 
      * @memberof oj.ojMasonryLayout
      * @instance
-     * @property {Event} event <code class="prettyprint">jQuery</code> event object
-     * @property {Object} ui Parameters
-     * @property {jQuery} ui.tile The tile that was inserted.
-     * @property {number} ui.index The 0-based index into the set of rendered
-     *           <code class="prettyprint">masonryLayout</code> children where 
-     *           the tile was inserted.
-     * 
-     * @example <caption>Initialize the masonryLayout with the 
-     * <code class="prettyprint">insert</code> callback specified:</caption>
-     * $( ".selector" ).ojMasonryLayout({
-     *     "insert": function( event, ui ) {}
-     * });
-     *
-     * @example <caption>Bind an event listener to the 
-     * <code class="prettyprint">ojinsert</code> event:</caption>
-     * $( ".selector" ).on( "ojinsert", function( event, ui ) {} );
+     * @property {Element} tile  The tile that was inserted.
+     * @property {number} index The 0-based index into the set of rendered
+     *                                       <code class="prettyprint">oj-masonry-layout</code> children where 
+     *                                       the tile was inserted.
      */
     insert: null,
     
     /**
      * Triggered immediately before a tile is removed.
-     * The beforeRemove can be cancelled by calling 
+     * This event can be cancelled by calling 
      * <code class="prettyprint">event.preventDefault()</code>.
      *
      * @expose 
      * @event 
      * @memberof oj.ojMasonryLayout
      * @instance
-     * @property {Event} event <code class="prettyprint">jQuery</code> event object
-     * @property {Object} ui Parameters
-     * @property {jQuery} ui.tile The tile that will be removed.
-     * 
-     * @example <caption>Initialize the masonryLayout with the 
-     * <code class="prettyprint">beforeRemove</code> callback specified:</caption>
-     * $( ".selector" ).ojMasonryLayout({
-     *     "beforeRemove": function( event, ui ) {}
-     * });
-     *
-     * @example <caption>Bind an event listener to the 
-     * <code class="prettyprint">ojbeforeremove</code> event:</caption>
-     * $( ".selector" ).on( "ojbeforeremove", function( event, ui ) {} );
+     * @property {Element} tile  The tile that will be removed.
      */
     beforeRemove: null,
     
@@ -407,48 +430,24 @@ oj.__registerWidget("oj.ojMasonryLayout", $['oj']['baseComponent'],
      * @event 
      * @memberof oj.ojMasonryLayout
      * @instance
-     * @property {Event} event <code class="prettyprint">jQuery</code> event object
-     * @property {Object} ui Parameters
-     * @property {jQuery} ui.tile The tile that was removed.
-     * 
-     * @example <caption>Initialize the masonryLayout with the 
-     * <code class="prettyprint">remove</code> callback specified:</caption>
-     * $( ".selector" ).ojMasonryLayout({
-     *     "remove": function( event, ui ) {}
-     * });
-     *
-     * @example <caption>Bind an event listener to the 
-     * <code class="prettyprint">ojremove</code> event:</caption>
-     * $( ".selector" ).on( "ojremove", function( event, ui ) {} );
+     * @property {Element} tile  The tile that was removed.
      */
     remove: null,
     
     /**
      * Triggered immediately before a tile is resized.
-     * The beforeResize can be cancelled by calling 
+     * This event can be cancelled by calling 
      * <code class="prettyprint">event.preventDefault()</code>.
      *
      * @expose 
      * @event 
      * @memberof oj.ojMasonryLayout
      * @instance
-     * @property {Event} event <code class="prettyprint">jQuery</code> event object
-     * @property {Object} ui Parameters
-     * @property {jQuery} ui.tile The tile that will be resized.
-     * @property {string} ui.previousSizeStyleClass The previous size style
-     *           class applied to the tile.
-     * @property {string} ui.sizeStyleClass The new size style class that will
-     *           be applied to the tile.
-     * 
-     * @example <caption>Initialize the masonryLayout with the 
-     * <code class="prettyprint">beforeResize</code> callback specified:</caption>
-     * $( ".selector" ).ojMasonryLayout({
-     *     "beforeResize": function( event, ui ) {}
-     * });
-     *
-     * @example <caption>Bind an event listener to the 
-     * <code class="prettyprint">ojbeforeresize</code> event:</caption>
-     * $( ".selector" ).on( "ojbeforeresize", function( event, ui ) {} );
+     * @property {Element} tile  The tile that will be resized.
+     * @property {string} previousSizeStyleClass The previous size style
+     *                                           class applied to the tile.
+     * @property {string} sizeStyleClass The new size style class that will
+     *                                   be applied to the tile.
      */
     beforeResize: null,
     
@@ -459,51 +458,27 @@ oj.__registerWidget("oj.ojMasonryLayout", $['oj']['baseComponent'],
      * @event 
      * @memberof oj.ojMasonryLayout
      * @instance
-     * @property {Event} event <code class="prettyprint">jQuery</code> event object
-     * @property {Object} ui Parameters
-     * @property {jQuery} ui.tile The tile that was resized.
-     * @property {string} ui.previousSizeStyleClass The previous size style
-     *           class applied to the tile.
-     * @property {string} ui.sizeStyleClass The new size style class applied to 
-     *           the tile.
-     * 
-     * @example <caption>Initialize the masonryLayout with the 
-     * <code class="prettyprint">resize</code> callback specified:</caption>
-     * $( ".selector" ).ojMasonryLayout({
-     *     "resize": function( event, ui ) {}
-     * });
-     *
-     * @example <caption>Bind an event listener to the 
-     * <code class="prettyprint">ojresize</code> event:</caption>
-     * $( ".selector" ).on( "ojresize", function( event, ui ) {} );
+     * @property {Element} tile  The tile that was resized.
+     * @property {string} previousSizeStyleClass The previous size style
+     *                                           class applied to the tile.
+     * @property {string} sizeStyleClass The new size style class applied to 
+     *                                   to the tile.
      */
     resize: null,
     
     /**
      * Triggered immediately before a tile is reordered.
-     * The beforeReorder can be cancelled by calling 
+     * This event can be cancelled by calling 
      * <code class="prettyprint">event.preventDefault()</code>.
      *
      * @expose 
      * @event 
      * @memberof oj.ojMasonryLayout
      * @instance
-     * @property {Event} event <code class="prettyprint">jQuery</code> event object
-     * @property {Object} ui Parameters
-     * @property {jQuery} ui.tile The tile that will be reordered.
-     * @property {number} ui.fromIndex The 0-based index into the set of rendered
-     *           <code class="prettyprint">masonryLayout</code> children from 
-     *           which the tile will be reordered.  
-     * 
-     * @example <caption>Initialize the masonryLayout with the 
-     * <code class="prettyprint">beforeReorder</code> callback specified:</caption>
-     * $( ".selector" ).ojMasonryLayout({
-     *     "beforeReorder": function( event, ui ) {}
-     * });
-     *
-     * @example <caption>Bind an event listener to the 
-     * <code class="prettyprint">ojbeforereorder</code> event:</caption>
-     * $( ".selector" ).on( "ojbeforereorder", function( event, ui ) {} );
+     * @property {Element} tile  The tile that will be reordered.
+     * @property {number} fromIndex The 0-based index into the set of rendered
+     *                                           <code class="prettyprint">oj-masonry-layout</code> children from 
+     *                                           which the tile will be reordered. 
      */
     beforeReorder: null,
     
@@ -514,25 +489,13 @@ oj.__registerWidget("oj.ojMasonryLayout", $['oj']['baseComponent'],
      * @event 
      * @memberof oj.ojMasonryLayout
      * @instance
-     * @property {Event} event <code class="prettyprint">jQuery</code> event object
-     * @property {Object} ui Parameters
-     * @property {jQuery} ui.tile The tile that was reordered.
-     * @property {number} ui.fromIndex The 0-based index into the set of rendered
-     *           <code class="prettyprint">masonryLayout</code> children from 
-     *           which the tile was reordered.  
-     * @property {number} ui.toIndex The 0-based index into the set of rendered
-     *           <code class="prettyprint">masonryLayout</code> children to 
-     *           which the tile was reordered.  
-     * 
-     * @example <caption>Initialize the masonryLayout with the 
-     * <code class="prettyprint">reorder</code> callback specified:</caption>
-     * $( ".selector" ).ojMasonryLayout({
-     *     "reorder": function( event, ui ) {}
-     * });
-     *
-     * @example <caption>Bind an event listener to the 
-     * <code class="prettyprint">ojreorder</code> event:</caption>
-     * $( ".selector" ).on( "ojreorder", function( event, ui ) {} );
+     * @property {Element} tile  The tile that was reordered.
+     * @property {number} fromIndex The 0-based index into the set of rendered
+     *                                           <code class="prettyprint">oj-masonry-layout</code> children from 
+     *                                           which the tile was reordered.
+     * @property {number} toIndex   The 0-based index into the set of rendered
+     *                                           <code class="prettyprint">oj-masonry-layout</code> children to 
+     *                                            which the tile was reordered.  
      */
     reorder: null
 
@@ -543,16 +506,7 @@ oj.__registerWidget("oj.ojMasonryLayout", $['oj']['baseComponent'],
      * @name create
      * @memberof oj.ojMasonryLayout
      * @instance
-     * @property {Event} event <code class="prettyprint">jQuery</code> event object
-     * @property {Object} ui Currently empty
-     *
-     * @example <caption>Initialize the masonryLayout with the <code class="prettyprint">create</code> callback specified:</caption>
-     * $( ".selector" ).ojMasonryLayout({
-     *     "create": function( event, ui ) {}
-     * });
-     *
-     * @example <caption>Bind an event listener to the <code class="prettyprint">ojcreate</code> event:</caption>
-     * $( ".selector" ).on( "ojcreate", function( event, ui ) {} );
+     * @ignore
      */
     // create event declared in superclass, but we still want the above API doc
   },
@@ -573,7 +527,7 @@ oj.__registerWidget("oj.ojMasonryLayout", $['oj']['baseComponent'],
     var elem = this.element;  
     elem.addClass("oj-masonrylayout oj-component");
     
-    //log warning message when "disabled" option set
+    //log warning message when "disabled" property set
     var options = this.options;
     if (options.disabled)
     {
@@ -597,9 +551,9 @@ oj.__registerWidget("oj.ojMasonryLayout", $['oj']['baseComponent'],
 
   // This method currently runs at create, init, and refresh time (since refresh() is called by _init()).
   /**
-   * Refreshes the visual state of the masonryLayout. JET components require a 
-   * <code class="prettyprint">refresh()</code> or re-init after the DOM is 
-   * programmatically changed underneath the component.
+   * Refreshes the visual state of the masonryLayout. JET elements require a 
+   * <code class="prettyprint">refresh()</code> after the DOM is 
+   * programmatically changed underneath the element.
    * 
    * <p>This method does not accept any arguments.
    * 
@@ -608,7 +562,7 @@ oj.__registerWidget("oj.ojMasonryLayout", $['oj']['baseComponent'],
    * @instance
    * 
    * @example <caption>Invoke the <code class="prettyprint">refresh</code> method:</caption>
-   * $( ".selector" ).ojMasonryLayout( "refresh" );
+   * myMasonryLayout.refresh();
    */
   refresh: function() // Override of public base class method.  
   {
@@ -722,6 +676,7 @@ oj.__registerWidget("oj.ojMasonryLayout", $['oj']['baseComponent'],
       var self = this;
       this._showTileOnEndFunc = function(elem) {self._showTileOnEnd(elem);};
       this._hideTileOnEndFunc = function(elem) {self._hideTileOnEnd(elem);};
+      this._startAnimationFunc = function(elem, action) {return self._startAnimation(elem, action);};
       this._layoutOnEndFunc = function() {self._layoutOnEnd();};
       this._layoutCycleOnStartFunc = function() {self._layoutCycleOnStart();};
       this._layoutCycleOnEndFunc = 
@@ -731,15 +686,7 @@ oj.__registerWidget("oj.ojMasonryLayout", $['oj']['baseComponent'],
         var selectors = {};
         selectors.tiles = _TILE_SELECTOR;
         var styles = {};
-        styles.transitionComponentResizeToStyleClass = "oj-masonrylayout-transition-resize-to";
-        styles.transitionComponentResizeToFastStyleClass = "oj-masonrylayout-transition-resize-to-fast";
-        styles.transitionMoveToStyleClass = "oj-masonrylayout-tile-transition-move-to";
-        styles.transitionMoveToFastStyleClass = "oj-masonrylayout-tile-transition-move-to-fast";
-        styles.transitionHideFromStyleClass = "oj-masonrylayout-tile-transition-hide-from";
-        styles.transitionHideToStyleClass = "oj-masonrylayout-tile-transition-hide-to";
         styles.transitionShowFromStyleClass = _OJ_MASONRYLAYOUT_TILE_TRANSITION_SHOW_FROM_CLASS;
-        styles.transitionShowToStyleClass = "oj-masonrylayout-tile-transition-show-to";
-        styles.transitionResizeToStyleClass = "oj-masonrylayout-tile-transition-resize-to";
         var callbackInfo = {};
         callbackInfo.addStyleClassName = _addStyleClassName;
         callbackInfo.removeStyleClassName = _removeStyleClassName;
@@ -747,6 +694,7 @@ oj.__registerWidget("oj.ojMasonryLayout", $['oj']['baseComponent'],
         callbackInfo.getTileSpan = _getTileSpan;
         callbackInfo.showTileOnEndFunc = this._showTileOnEndFunc;
         callbackInfo.hideTileOnEndFunc = this._hideTileOnEndFunc;
+        callbackInfo.startAnimationFunc = this._startAnimationFunc;
         callbackInfo.layoutOnEndFunc = this._layoutOnEndFunc;
         callbackInfo.layoutCycleOnStartFunc = this._layoutCycleOnStartFunc;
         callbackInfo.layoutCycleOnEndFunc = this._layoutCycleOnEndFunc;
@@ -755,6 +703,9 @@ oj.__registerWidget("oj.ojMasonryLayout", $['oj']['baseComponent'],
         callbackInfo.subtreeDetached = oj.Components.subtreeDetached;
         callbackInfo.addBusyState = 
           function(description) { return self._addBusyState(description); };
+  
+        //apply the oj-masonrylayout-tile style class to child tiles
+        this._applyTileStyleClass();
         
         //save the original order of the tiles, because the DOM order may 
         //change due to layout and we want to always use the original order
@@ -781,6 +732,9 @@ oj.__registerWidget("oj.ojMasonryLayout", $['oj']['baseComponent'],
     }
     else
     {
+      //apply the oj-masonrylayout-tile style class to child tiles that are missing it
+      this._applyTileStyleClass();
+      
       //FIX : tear down and setup the reorder handles for the
       //tiles again in case something changed, for example if there are 
       //new tiles
@@ -837,6 +791,11 @@ oj.__registerWidget("oj.ojMasonryLayout", $['oj']['baseComponent'],
     {
       this._tearDownReorderHandles();
     }
+    
+    //remove the oj-masonrylayout-tile style class from child tiles
+    var tiles = elem.children("." + _OJ_MASONRYLAYOUT_TILE);
+    tiles.removeClass(_OJ_MASONRYLAYOUT_TILE);
+    
     this._handleDragStartFunc = null;
     this._handleDragEnterFunc = null;
     this._handleDragOverFunc = null;
@@ -846,6 +805,7 @@ oj.__registerWidget("oj.ojMasonryLayout", $['oj']['baseComponent'],
     
     this._showTileOnEndFunc = null;
     this._hideTileOnEndFunc = null;
+    this._startAnimationFunc = null;
     this._layoutOnEndFunc = null;
     this._layoutCycleOnStartFunc = null;
     this._layoutCycleOnEndFunc = null;
@@ -875,7 +835,7 @@ oj.__registerWidget("oj.ojMasonryLayout", $['oj']['baseComponent'],
         bReorderHandle = true;
         break;
       case "disabled":
-        //log warning message when "disabled" option set
+        //log warning message when "disabled" property set
         oj.Logger.warn(_WARNING_DISABLED_OPTION);
         break;
       case "contextMenu":
@@ -904,7 +864,7 @@ oj.__registerWidget("oj.ojMasonryLayout", $['oj']['baseComponent'],
    * @instance
    * 
    * @example <caption>Invoke the <code class="prettyprint">resizeTile</code> method:</caption>
-   * $( ".selector" ).ojMasonryLayout( "resizeTile", "#tileSelector", "oj-masonrylayout-tile-2x1" );
+   * myMasonryLayout.resizeTile('#tileSelector', 'oj-masonrylayout-tile-2x1');
    */
   resizeTile: function(selector, sizeStyleClass)
   {
@@ -955,11 +915,11 @@ oj.__registerWidget("oj.ojMasonryLayout", $['oj']['baseComponent'],
    * Insert a tile into the masonryLayout.
    * @param {string} selector Selector identifying the tile to insert.  The tile
    *        does not need to be a child of the 
-   *        <code class="prettyprint">masonryLayout</code> when this method is
+   *        <code class="prettyprint">oj-masonry-layout</code> when this method is
    *        called.  This method will reparent the tile to the 
-   *        <code class="prettyprint">masonryLayout</code>.
+   *        <code class="prettyprint">oj-masonry-layout</code>.
    * @param {number} index The 0-based index into the set of rendered
-   *           <code class="prettyprint">masonryLayout</code> children where 
+   *           <code class="prettyprint">oj-masonry-layout</code> children where 
    *           the tile will be inserted.
    * 
    * @expose 
@@ -967,7 +927,7 @@ oj.__registerWidget("oj.ojMasonryLayout", $['oj']['baseComponent'],
    * @instance
    * 
    * @example <caption>Invoke the <code class="prettyprint">insertTile</code> method:</caption>
-   * $( ".selector" ).ojMasonryLayout( "insertTile", "#tileSelector", 2 );
+   * myMasonryLayout.insertTile('#tileSelector', 2);
    */
   insertTile: function(selector, index)
   {
@@ -982,6 +942,9 @@ oj.__registerWidget("oj.ojMasonryLayout", $['oj']['baseComponent'],
     
     var jqElem = $(selector);
     var elem = jqElem[0];
+    
+    //add the oj-masonrylayout-tile style class to the inserted tile
+    jqElem.addClass(_OJ_MASONRYLAYOUT_TILE);
     
     //fire beforeInsert event
     var eventData = {
@@ -1033,7 +996,7 @@ oj.__registerWidget("oj.ojMasonryLayout", $['oj']['baseComponent'],
    * @instance
    * 
    * @example <caption>Invoke the <code class="prettyprint">removeTile</code> method:</caption>
-   * $( ".selector" ).ojMasonryLayout( "removeTile", "#tileSelector" );
+   * myMasonryLayout.removeTile('#tileSelector');
    */
   removeTile: function(selector)
   {
@@ -1126,6 +1089,9 @@ oj.__registerWidget("oj.ojMasonryLayout", $['oj']['baseComponent'],
     if (options.reorderHandle)
       this._tearDownReorderHandlesForElem(jqElem);
     
+    //remove the oj-masonrylayout-tile style class from the hidden tile
+    jqElem.removeClass(_OJ_MASONRYLAYOUT_TILE);
+    
     //notify the element that it's been detached from the DOM BEFORE actually
     //detaching it so that components can save state
     oj.Components.subtreeDetached(elem);
@@ -1142,7 +1108,24 @@ oj.__registerWidget("oj.ojMasonryLayout", $['oj']['baseComponent'],
     };
     this._eventsToFire.push("remove", eventData);
   },
-  
+
+  /** 
+   * Callback to run to animate a tile.
+   * @param {!Element} elem Tile to be animated.
+   * @param {!string} action Action that starts animation.
+   * @return {Promise} A promise that resolves when the animation ends.
+   * @memberof oj.ojMasonryLayout
+   * @instance
+   * @private
+   */
+  _startAnimation: function(elem, action)
+  {
+    var defaults = (oj.ThemeUtils.parseJSONFromFontFamily('oj-masonrylayout-option-defaults') || {})["animation"]; 
+    var animation = defaults ? defaults[action] : null;
+    
+    return oj.AnimationUtils.startAnimation(elem, action, animation, this);
+  },
+
   /** 
    * Callback to run after layout is done.
    * @memberof oj.ojMasonryLayout
@@ -1505,6 +1488,25 @@ oj.__registerWidget("oj.ojMasonryLayout", $['oj']['baseComponent'],
       delete removedTile._jetDataMasonryOriginalOrder;
     }
   },
+
+  /**
+   * Apply the "oj-masonrylayout-tile" style class to any child tile that is missing it.
+   * @memberof oj.ojMasonryLayout
+   * @instance
+   * @private
+   */
+  _applyTileStyleClass: function()
+  {
+    var elem = this.element;
+    var children = elem.children();
+    children = children.not("." + _OJ_MASONRYLAYOUT_TILE);
+    children = children.filter(function(index, childElem) 
+    {
+      var childClasses = childElem.className;
+      return childClasses.match(_OJ_MASONRYLAYOUT_TILE_SIZE_CLASS_PATTERN);
+    })
+    children.addClass(_OJ_MASONRYLAYOUT_TILE);
+  },
   
   // start functions for context menu reordering ///////////////////////////////
   
@@ -1518,21 +1520,21 @@ oj.__registerWidget("oj.ojMasonryLayout", $['oj']['baseComponent'],
    */
   _initMenu: function(newVal)
   {
-    var menu = null;
     var t = null;
+    var menu = this._GetContextMenu();
 
     // check for contextmenu attribute on the root element
-    if ((!newVal) && (!this.options["contextMenu"]))
+    if ((!newVal) && (!menu) && !this._IsCustomElement())
     {
       menu = this.element.attr("contextmenu");
       if (menu)
         this.options["contextMenu"] = "#" + menu;
     }
 
-    if ((!newVal) && (!this.options["contextMenu"]))
+    if ((!newVal) && (!menu))
       return;
 
-    menu = newVal || this.options["contextMenu"];
+    menu = newVal || menu;
     t = $.type(menu);
     if (t == "function") {
       try
@@ -1594,8 +1596,18 @@ oj.__registerWidget("oj.ojMasonryLayout", $['oj']['baseComponent'],
     // Add our listeners so that we can handle build-in cut/paste, etc
     var $menuContainer = this._menu.$container;
     var self = this;
-
-    $menuContainer.on("ojselect",     $.proxy(this._handleContextMenuSelect,     this));
+    
+    // Check if the menu container tag name is 'OJ-MENU' for custom element context menu
+    if ($menuContainer[0].tagName === "OJ-MENU")
+    {
+      // For custom element context menu, attach action listener to handle selection
+      $menuContainer[0].addEventListener("ojAction", this._handleContextMenuSelect.bind(this));
+    }
+    else
+    {
+      // For data-bind widget context menu, attach selection listener to handle selection
+      $menuContainer.on("ojselect", this._handleContextMenuSelect.bind(this));
+    }
 
     // If there are any ojMasonryLayout built in menu item ids, construct the menu items
     var listItems = $menuContainer.find("[data-oj-command]");
@@ -1606,16 +1618,38 @@ oj.__registerWidget("oj.ojMasonryLayout", $['oj']['baseComponent'],
         if ($(this).children('a').length === 0)
         {
           var command = $(this).attr('data-oj-command').slice("oj-masonrylayout-".length);
-          $(this).replaceWith(self._buildContextMenuItem(command)); // @HTMLUpdateOK
-          $(this).addClass("oj-menu-item")
-
+          var tagName = ($menuContainer[0].tagName === "OJ-MENU") ? this.tagName : "li";
+          var newMenuItem = self._buildContextMenuItem(command, tagName);
+          
+          $(this).attr('id', newMenuItem.attr('id'));
+          if (this.tagName === "OJ-OPTION")
+          {
+            // Just update the content of OJ-OPTION and don't replace that with menu item,
+            // because replacing OJ-OPTION would trigger a detach/attach of custom element
+            this.innerHTML = newMenuItem.get(0).innerHTML;
+            $(this).attr('data-oj-command', newMenuItem.attr('data-oj-command'));
+          }
+          else
+          {
+            // replace the list item with the new menu item
+            newMenuItem.get(0).className = $(this).get(0).className;
+            $(this).replaceWith(newMenuItem); //@HTMLUpdateOK                        
+          }
           bChanged = true;
         }
       });
 
-    if (bChanged)
-      $menuContainer.ojMenu('refresh');
-
+    if (bChanged) {
+      if ($menuContainer[0].tagName === "OJ-MENU")
+      {
+        $menuContainer[0].refresh();
+      }
+      else
+      {
+        $menuContainer.ojMenu('refresh');
+      }
+    }
+    
     this._menu.$elemCut = $menuContainer.find("#" + _OJMASONRYLAYOUTCUT);
     this._menu.$elemPasteBefore = $menuContainer.find("#" + _OJMASONRYLAYOUTPASTEBEFORE);
     this._menu.$elemPasteAfter = $menuContainer.find("#" + _OJMASONRYLAYOUTPASTEAFTER);
@@ -1633,7 +1667,14 @@ oj.__registerWidget("oj.ojMasonryLayout", $['oj']['baseComponent'],
     if (menu && menu.usermenu)
     {
       menu.usermenu = false;
-      menu.$container.off("ojselect");
+      if (menu.$container[0].tagName === "OJ-MENU")
+      {
+        menu.$container[0].removeEventListener("ojAction");
+      }
+      else
+      {
+        menu.$container.off("ojselect");
+      }
       menu.$container = null;
     }
   },
@@ -1784,27 +1825,56 @@ oj.__registerWidget("oj.ojMasonryLayout", $['oj']['baseComponent'],
         }
       }
 
-      if (bRefreshMenu)
-        this._menu.$container.ojMenu("refresh");
+      if (bRefreshMenu) 
+      {
+        var $menuContainer = this._menu.$container;
+        
+        if ($menuContainer[0].tagName === "OJ-MENU")
+        {
+          $menuContainer[0].refresh();
+        }
+        else
+        {
+          $menuContainer.ojMenu('refresh');
+        }
+      }
     }
   },
 
   /**
    * Build a context menu item for a cut/paste command.
-   * @param {string} cmd Command to execute for item.
+   * @param {string} command Command to execute for item.
+   * @param {string} tagName to use to create the menu item
    * @returns {jQuery} jQuery list item object.
    * @memberof oj.ojMasonryLayout
    * @instance
    * @private
    */
-  _buildContextMenuItem: function(cmd)
+  _buildContextMenuItem: function(command, tagName)
   {
-    var id = _MENU_CMD_MAP[cmd];
-    var transKey = _MENU_TRANSLATION_MAP[cmd];
+    var id = _MENU_CMD_MAP[command];
+    var item = $(document.createElement(tagName));
+    item.attr('id', id);
+    item.attr('data-oj-command', command);
+    item.append(this._buildContextMenuLabel(command)); //@HTMLUpdateOK
+    return item;
+  },
+  
+  /**
+   * Builds a context menu label by looking up command translation
+   * @param {string} command the string to look up translation for
+   * @return {jQuery|string} a jQuery object with HTML containing a label
+   * @memberof oj.ojMasonryLayout
+   * @instance
+   * @private
+   */
+  _buildContextMenuLabel: function(command)
+  {
+    // convert to the translation key convention
+    var transKey = _MENU_TRANSLATION_MAP[command];
     var label = $('<a href="#"></a>');
     label.text(this.getTranslatedString(transKey)); // @HTMLUpdateOK
-    label.wrap('<li id=' + id + '></li>'); // @HTMLUpdateOK
-    return label.parent();
+    return label;
   },
 
   /**
@@ -1902,15 +1972,18 @@ oj.__registerWidget("oj.ojMasonryLayout", $['oj']['baseComponent'],
 
   /**
    * Handle a context menu select event.
-   * @param {Event} ev jQuery event object.
-   * @param {Object} ui Parameters.
+   * @param {Event|CustomEvent} event event for context menu item selection
+   * @param {Object=} ui an object containing the menu item that was selected
    * @memberof oj.ojMasonryLayout
    * @instance
    * @private
    */
-  _handleContextMenuSelect: function(ev, ui)
+  _handleContextMenuSelect: function(event, ui)
   {
-    var id = ui ? ui.item.attr("id") : undefined;
+    // get the selected menu item from the ui object in the old data-bind syntax widget case,
+    // or from the event target in the custom element case.
+    var item = ui ? ui.item : $(event.target);
+    var id = item.attr("id");
 
     if (id === _OJMASONRYLAYOUTCUT)
       this._menuCut(this._menu.tile);
@@ -2326,7 +2399,7 @@ oj.__registerWidget("oj.ojMasonryLayout", $['oj']['baseComponent'],
     this._dropSite = document.createElement("div");
     var dropSite = this._dropSite;
     dropSite._jetDataMasonryOriginalOrder = tile._jetDataMasonryOriginalOrder;
-    dropSite.className = sizeClass + " oj-drop";
+    dropSite.className = sizeClass + " oj-drop " + _OJ_MASONRYLAYOUT_TILE;
     var style = dropSite.style;
     var tileStyle = tile.style;
     style.top = tileStyle.top;
@@ -2397,8 +2470,17 @@ oj.__registerWidget("oj.ojMasonryLayout", $['oj']['baseComponent'],
         var reorderHandle = options.reorderHandle;
         if (reorderHandle)
         {
-          var handleInTile = $tileUnderPoint.find(reorderHandle);
-          tileHasReorderHandle = handleInTile && handleInTile.length > 0;
+          //FIX : the tile has a reorder handle if: 1) the tile 
+          //itself is the reorder handle, or 2) the reorder handle is a
+          //descendant of the tile
+          if ($tileUnderPoint.is(reorderHandle))
+          {
+            tileHasReorderHandle = true;
+          }
+          else {
+            var handleInTile = $tileUnderPoint.find(reorderHandle);
+            tileHasReorderHandle = handleInTile && handleInTile.length > 0;
+          }
         }
       }
       
@@ -2573,22 +2655,22 @@ oj.__registerWidget("oj.ojMasonryLayout", $['oj']['baseComponent'],
     return busyContext.addBusyState(busyStateOptions);
   },
   
-  //** @inheritdoc */
+  // @inheritdoc
   getNodeBySubId: function(locator)
   {
     return this._super(locator);
   },
   
-  //** @inheritdoc */
+  // @inheritdoc
   getSubIdByNode: function(node)
   {
     return this._super(node);
   }
   
-  // start jsdoc fragments /////////////////////////////////////////////////////
+  // start API doc fragments /////////////////////////////////////////////////////
   
   /**
-   * <p>This component does not expose any subIds.</p>
+   * <p>This element does not expose any subIds.</p>
    *
    * @ojsubid None
    * @memberof oj.ojMasonryLayout
@@ -2610,7 +2692,7 @@ oj.__registerWidget("oj.ojMasonryLayout", $['oj']['baseComponent'],
    * @memberof oj.ojMasonryLayout
    */
   
-  // end jsdoc fragments ///////////////////////////////////////////////////////
+  // end API doc fragments ///////////////////////////////////////////////////////
   
 }); // end of oj.__registerWidget
 
@@ -2629,28 +2711,15 @@ var _PX        = "px",
     _OJ_DISABLED  = "oj-disabled",
     _OJ_DRAGGABLE = "oj-draggable",
 
-    _OJ_MASONRYLAYOUT_TILE_1X1 = "oj-masonrylayout-tile-1x1",
-    _OJ_MASONRYLAYOUT_TILE_1X2 = "oj-masonrylayout-tile-1x2",
-    _OJ_MASONRYLAYOUT_TILE_1X3 = "oj-masonrylayout-tile-1x3",
-    _OJ_MASONRYLAYOUT_TILE_2X1 = "oj-masonrylayout-tile-2x1",
-    _OJ_MASONRYLAYOUT_TILE_2X2 = "oj-masonrylayout-tile-2x2",
-    _OJ_MASONRYLAYOUT_TILE_2X3 = "oj-masonrylayout-tile-2x3",
-    _OJ_MASONRYLAYOUT_TILE_3X1 = "oj-masonrylayout-tile-3x1",
-    _OJ_MASONRYLAYOUT_TILE_3X2 = "oj-masonrylayout-tile-3x2",
+    _OJ_MASONRYLAYOUT_TILE = "oj-masonrylayout-tile",
+    _OJ_MASONRYLAYOUT_TILE_SIZE_CLASS_PATTERN = /oj-masonrylayout-tile-[0-9]+x[0-9]+/,
 
-    _TILE_SELECTOR =   "." + _OJ_MASONRYLAYOUT_TILE_1X1 + 
-                     ", ." + _OJ_MASONRYLAYOUT_TILE_1X2 + 
-                     ", ." + _OJ_MASONRYLAYOUT_TILE_1X3 + 
-                     ", ." + _OJ_MASONRYLAYOUT_TILE_2X1 + 
-                     ", ." + _OJ_MASONRYLAYOUT_TILE_2X2 + 
-                     ", ." + _OJ_MASONRYLAYOUT_TILE_2X3 + 
-                     ", ." + _OJ_MASONRYLAYOUT_TILE_3X1 + 
-                     ", ." + _OJ_MASONRYLAYOUT_TILE_3X2,
+    _TILE_SELECTOR =   "." + _OJ_MASONRYLAYOUT_TILE,
     
     _OJ_MASONRYLAYOUT_TILE_TRANSITION_SHOW_FROM_CLASS = "oj-masonrylayout-tile-transition-show-from",
     
-    //log warning message when "disabled" option set
-    _WARNING_DISABLED_OPTION = "JET MasonryLayout: 'disabled' option not supported",
+    //log warning message when "disabled" property set
+    _WARNING_DISABLED_OPTION = "JET MasonryLayout: 'disabled' property not supported",
 
     //Context Menu: menu item ids
     _OJMASONRYLAYOUTCUT = "ojmasonrylayoutcut",
@@ -2711,23 +2780,11 @@ var _PX        = "px",
     {
       var str = null;
       var tile = $(elem);
+      var tileClass = tile.attr('class');
+      var matches = tileClass.match(_OJ_MASONRYLAYOUT_TILE_SIZE_CLASS_PATTERN);
 
-      if (tile.hasClass(_OJ_MASONRYLAYOUT_TILE_1X1))
-        str = _OJ_MASONRYLAYOUT_TILE_1X1;
-      else if (tile.hasClass(_OJ_MASONRYLAYOUT_TILE_2X1))
-        str = _OJ_MASONRYLAYOUT_TILE_2X1;
-      else if (tile.hasClass(_OJ_MASONRYLAYOUT_TILE_3X1))
-        str = _OJ_MASONRYLAYOUT_TILE_3X1;
-      else if (tile.hasClass(_OJ_MASONRYLAYOUT_TILE_1X2))
-        str = _OJ_MASONRYLAYOUT_TILE_1X2;
-      else if (tile.hasClass(_OJ_MASONRYLAYOUT_TILE_1X3))
-        str = _OJ_MASONRYLAYOUT_TILE_1X3;
-      else if (tile.hasClass(_OJ_MASONRYLAYOUT_TILE_2X2))
-        str = _OJ_MASONRYLAYOUT_TILE_2X2;
-      else if (tile.hasClass(_OJ_MASONRYLAYOUT_TILE_2X3))
-        str = _OJ_MASONRYLAYOUT_TILE_2X3;
-      else if (tile.hasClass(_OJ_MASONRYLAYOUT_TILE_3X2))
-        str = _OJ_MASONRYLAYOUT_TILE_3X2;
+      if (matches)
+        str = matches[0];
 
       return str;
     },
@@ -2742,23 +2799,18 @@ var _PX        = "px",
     {
       var span = null;
       var tile = $(elem);
-
-      if (tile.hasClass(_OJ_MASONRYLAYOUT_TILE_1X1))
-        span = {colSpan: 1, rowSpan: 1};
-      else if (tile.hasClass(_OJ_MASONRYLAYOUT_TILE_2X1))
-        span = {colSpan: 2, rowSpan: 1};
-      else if (tile.hasClass(_OJ_MASONRYLAYOUT_TILE_3X1))
-        span = {colSpan: 3, rowSpan: 1};
-      else if (tile.hasClass(_OJ_MASONRYLAYOUT_TILE_1X2))
-        span = {colSpan: 1, rowSpan: 2};
-      else if (tile.hasClass(_OJ_MASONRYLAYOUT_TILE_1X3))
-        span = {colSpan: 1, rowSpan: 3};
-      else if (tile.hasClass(_OJ_MASONRYLAYOUT_TILE_2X2))
-        span = {colSpan: 2, rowSpan: 2};
-      else if (tile.hasClass(_OJ_MASONRYLAYOUT_TILE_2X3))
-        span = {colSpan: 2, rowSpan: 3};
-      else if (tile.hasClass(_OJ_MASONRYLAYOUT_TILE_3X2))
-        span = {colSpan: 3, rowSpan: 2};
+      var tileClass = tile.attr('class');
+      var matches = tileClass.match(_OJ_MASONRYLAYOUT_TILE_SIZE_CLASS_PATTERN);
+      
+      if (matches) {
+        var styleClass = matches[0];
+        var colRowSpanStr = styleClass.substring(_OJ_MASONRYLAYOUT_TILE.length + 1);
+        var xIndex = colRowSpanStr.indexOf('x');
+        var columnIndex = colRowSpanStr.substring(0, xIndex);
+        var rowIndex = colRowSpanStr.substring(xIndex + 1);
+        span = {colSpan: MasonryLayoutCommon._getCSSLengthAsInt(columnIndex),
+                rowSpan: MasonryLayoutCommon._getCSSLengthAsInt(rowIndex)};
+      }
 
       return span;
     },
@@ -2871,15 +2923,7 @@ var _PX        = "px",
  * @param {Object} selectors Map of properties for the following selector information:
  *  - tiles: Selector for child tiles.
  * @param {Object} styles Map of properties for the following style classes:
- *  - transitionComponentResizeToStyleClass: Transition for resizing the masonryLayout,
- *  - transitionComponentResizeToFastStyleClass: Transition for resizing the masonryLayout faster,
- *  - transitionMoveToStyleClass: Transition for moving a child tile,
- *  - transitionMoveToFastStyleClass: Transition for moving a child tile faster,
- *  - transitionHideFromStyleClass: Initial state for transition to hide a child tile,
- *  - transitionHideToStyleClass: Transition for hiding a child tile,
  *  - transitionShowFromStyleClass: Initial state for transition to show a child tile,
- *  - transitionShowToStyleClass: Transition for showing a child tile,
- *  - transitionResizeToStyleClass: Transition for resizing a child tile.
  * @param {Object} callbackInfo Map of properties for the following callback functions:
  *  - addStyleClassName: Add a style class to a DOM element,
  *  - removeStyleClassName: Remove a style class from a DOM element,
@@ -2887,6 +2931,7 @@ var _PX        = "px",
  *  - getTileSpan: Get the tile span,
  *  - showTileOnEndFunc: Called after a tile is shown,
  *  - hideTileOnEndFunc: Called after a tile is hideden,
+ *  - startAnimationFunc: Called to animate a tile,
  *  - layoutOnEndFunc: Called after tiles are positioned,
  *  - layoutCycleOnStartFunc: Called before entire layout cycle begins,
  *  - layoutCycleOnEndFunc: Called after entire layout cycle is done,
@@ -2894,6 +2939,7 @@ var _PX        = "px",
  *  - subtreeAttached: Called after a tile is attached to the DOM,
  *  - subtreeDetached: Called after a tile is detached from the DOM,
  *  - addBusyState: Add a busy state to the busy context.
+ * @protected
  * @constructor
  * @ignore
  */
@@ -2923,24 +2969,8 @@ function MasonryLayoutCommon(
   }
   if (styles)
   {
-    if (styles.transitionComponentResizeToStyleClass)
-      this._transitionComponentResizeToStyleClass = styles.transitionComponentResizeToStyleClass;
-    if (styles.transitionComponentResizeToFastStyleClass)
-      this._transitionComponentResizeToFastStyleClass = styles.transitionComponentResizeToFastStyleClass;
-    if (styles.transitionMoveToStyleClass)
-      this._transitionMoveToStyleClass = styles.transitionMoveToStyleClass;
-    if (styles.transitionMoveToFastStyleClass)
-      this._transitionMoveToFastStyleClass = styles.transitionMoveToFastStyleClass;
-    if (styles.transitionHideFromStyleClass)
-      this._transitionHideFromStyleClass = styles.transitionHideFromStyleClass;
-    if (styles.transitionHideToStyleClass)
-      this._transitionHideToStyleClass = styles.transitionHideToStyleClass;
     if (styles.transitionShowFromStyleClass)
       this._transitionShowFromStyleClass = styles.transitionShowFromStyleClass;
-    if (styles.transitionShowToStyleClass)
-      this._transitionShowToStyleClass = styles.transitionShowToStyleClass;
-    if (styles.transitionResizeToStyleClass)
-      this._transitionResizeToStyleClass = styles.transitionResizeToStyleClass;
   }
   if (callbackInfo)
   {
@@ -2959,6 +2989,8 @@ function MasonryLayoutCommon(
       this._showTileOnEndFunc = callbackInfo.showTileOnEndFunc;
     if (callbackInfo.hideTileOnEndFunc)
       this._hideTileOnEndFunc = callbackInfo.hideTileOnEndFunc;
+    if (callbackInfo.startAnimationFunc)
+      this._startAnimationFunc = callbackInfo.startAnimationFunc;
     if (callbackInfo.layoutOnEndFunc)
       this._layoutOnEndFunc = callbackInfo.layoutOnEndFunc;
     //FIX : need to know when layout cycle is starting in order
@@ -2996,10 +3028,7 @@ function MasonryLayoutCommon(
   this._sizeDiv = sizeDiv;
 
   var self = this;
-  this._handleTransitionEndFunc = function(event) {self._handleTransitionEnd(event);};
   this._hideTilesFunc = function() {self._hideTiles();};
-  this._handleHideTransitionEndFunc = function(event) {self._handleHideTransitionEnd(event);};
-  this._handleShowTransitionEndFunc = function(event) {self._handleShowTransitionEnd(event);};
   this._resolveBusyStateFunc = function() {self._resolveBusyState();};
 };
 
@@ -3064,10 +3093,7 @@ MasonryLayoutCommon.prototype.destroy = function()
   this._sizeDivWrapper = null;
   this._sizeDiv = null;
   
-  this._handleTransitionEndFunc = null;
   this._hideTilesFunc = null;
-  this._handleHideTransitionEndFunc = null;
-  this._handleShowTransitionEndFunc = null;
   this._resolveBusyStateFunc = null;
   
   this._arMovedInfolets = null;
@@ -3083,6 +3109,7 @@ MasonryLayoutCommon.prototype.destroy = function()
   this._getTileSpanFunc = null;
   this._showTileOnEndFunc = null;
   this._hideTileOnEndFunc = null;
+  this._startAnimationFunc = null;
   this._layoutOnEndFunc = null;
   this._layoutCycleOnStartFunc = null;
   this._layoutCycleOnEndFunc = null;
@@ -3282,32 +3309,17 @@ MasonryLayoutCommon.prototype.finishLayoutCycle = function()
   this._temporarilyDisableAnimation = true;
   
   //remove transition classes for animation
-  this._removeStyleClassFromTiles(this._transitionMoveToStyleClass);
-  this._removeStyleClassFromTiles(this._transitionMoveToFastStyleClass);
-  this._removeStyleClassFromTiles(this._transitionHideFromStyleClass);
-  this._removeStyleClassFromTiles(this._transitionHideToStyleClass);
   this._removeStyleClassFromTiles(this._transitionShowFromStyleClass);
-  this._removeStyleClassFromTiles(this._transitionShowToStyleClass);
-  this._removeStyleClassFromTiles(this._transitionResizeToStyleClass);
-  this._removeStyleClassNameFunc(this._sizeDiv, this._transitionComponentResizeToStyleClass);
-  this._removeStyleClassNameFunc(this._sizeDiv, this._transitionComponentResizeToFastStyleClass);
   
   //remove transition listeners
   var mlcClass = MasonryLayoutCommon;
-  mlcClass._removeBubbleEventListener(this._elem, "transitionend", this._handleTransitionEndFunc);
-  mlcClass._removeBubbleEventListener(this._elem, "webkitTransitionEnd", this._handleTransitionEndFunc);
   
   var tileChildren = this._getTileChildren();
   for (var i = 0; i < tileChildren.length; i++)
   {
     var child = tileChildren[i];
-    if (child._afrOldSizeStyleClass)
-      delete child._afrOldSizeStyleClass;
-    
-    mlcClass._removeBubbleEventListener(child, "transitionend", this._handleHideTransitionEndFunc);
-    mlcClass._removeBubbleEventListener(child, "webkitTransitionEnd", this._handleHideTransitionEndFunc);
-    mlcClass._removeBubbleEventListener(child, "transitionend", this._handleShowTransitionEndFunc);
-    mlcClass._removeBubbleEventListener(child, "webkitTransitionEnd", this._handleShowTransitionEndFunc);
+    if (child._afrCellSize)
+      delete child._afrCellSize;    
   }
   
   //now that we've stopped and blocked animation, continue processing the layout cycle
@@ -3317,6 +3329,11 @@ MasonryLayoutCommon.prototype.finishLayoutCycle = function()
     clearTimeout(this._hideTilesInternalTimeout);
     this._hideTilesInternalTimeout = null;
     
+    this._handleHideTransitionEnd(null);
+  }
+  else if (this._hideTilesAnimationStarted)
+  {
+    this._hideTilesAnimationStarted = false;
     this._handleHideTransitionEnd(null);
   }
   else if (this._showTilesTimeout)
@@ -3421,42 +3438,6 @@ MasonryLayoutCommon._getCSSLengthAsInt = function(cssLength)
     return intLength;
   }
   return 0;
-};
-
-/**
- * Add a bubble event listener to the given DOM node.
- * @param {Object} node DOM node
- * @param {string} type Event type
- * @param {Function} listener Listener function
- */
-MasonryLayoutCommon._addBubbleEventListener = function(node, type, listener)
-{
-  if (node.addEventListener)
-  {
-    node.addEventListener(type, listener, false);
-  }
-  else if (node.attachEvent)
-  {
-    node.attachEvent("on" + type, listener);
-  }
-};
-
-/**
- * Remove a bubble event listener from the given DOM node.
- * @param {Object} node DOM node
- * @param {string} type Event type
- * @param {Function} listener Listener function
- */
-MasonryLayoutCommon._removeBubbleEventListener = function(node, type, listener)
-{
-  if (node.removeEventListener)
-  {
-    node.removeEventListener(type, listener, false);
-  }
-  else if (node.detachEvent)
-  {
-    node.detachEvent("on" + type, listener);
-  }
 };
 
 /**
@@ -3690,7 +3671,9 @@ MasonryLayoutCommon.prototype._transitionLayout = function()
     {
       var resizedInfolet = arInfoletsToResize[i];
       if (mlcClass._arrayIndexOf(newMovedInfolets, resizedInfolet) < 0)
+      {
         newMovedInfolets.push(resizedInfolet);
+      }
     }
   }
   
@@ -3754,28 +3737,19 @@ MasonryLayoutCommon.prototype._layout = function()
   {
     var child = children[i];
 
-    var childSpan = this._getTileSpanFunc(child);
-
-    //get the old size style class if we've saved it on an infolet
-    //being resized, and then delete it from the infolet
-    var oldSizeStyleClass = child._afrOldSizeStyleClass;
-    if (oldSizeStyleClass)
-      delete child._afrOldSizeStyleClass;
+    //if we've saved cell size on the infolet, we need to use it because
+    //that refers to pre-transition cell size based on old size style class.
+    //get the cell size if we've saved it on the infolet being resized, 
+    //and then delete it from the infolet
+    if (child._afrCellSize) {
+      this._cellSize = child._afrCellSize;
+      delete child._afrCellSize;
+    }
     
+    var childSpan = this._getTileSpanFunc(child);
     if (!this._cellSize)
     {
-      var spanForCellSize = childSpan;
-      //if we've saved an old size style class on the infolet, we need to
-      //use it to calculate cell size because the infolet is being resized and 
-      //we've already applied the new size style class to it, but the element
-      //size still corresponds to the old size style class
-      if (oldSizeStyleClass)
-      {
-        var tmpDiv = document.createElement("div");
-        tmpDiv.className = oldSizeStyleClass;
-        spanForCellSize = this._getTileSpanFunc(tmpDiv);
-      }
-      this._cellSize = this._calcCellSize(child, spanForCellSize);
+      this._cellSize = this._calcCellSize(child, childSpan);
     }
     cellSize = this._cellSize;
 
@@ -3847,9 +3821,29 @@ MasonryLayoutCommon.prototype._layout = function()
   {
     var sizeDiv = this._sizeDiv;
     var style = sizeDiv.style;
-    //FIX : define width based on the maxColSpan
-    style.width = (maxColSpan * cellSize.w) + "px";
-    style.height = (this._rows * cellSize.h) + "px";
+    
+    if (style)
+    {
+      //FIX : define width based on the maxColSpan
+      var width = (maxColSpan * cellSize.w);
+      var height = (this._rows * cellSize.h);
+
+      //get the current sizeDiv width and height
+      var currWidth = style.width ? MasonryLayoutCommon._getCSSLengthAsInt(style.width.toString()) : 0;
+      var currHeight = style.height ? MasonryLayoutCommon._getCSSLengthAsInt(style.height.toString()) : 0;
+      if (currWidth > width || currHeight > height) {
+        //temporarily store the new width/height of the sizeDiv
+        //this dimensions will be applied only after the layout transition is complete,
+        //because the new dimensions are smaller than current sizeDiv dimensions
+        this._afrSizeDivDims = {};
+        this._afrSizeDivDims.width = width + "px";
+        this._afrSizeDivDims.height = height + "px";
+      }
+      //temporarily set the max dimensions on sizeDiv until the layout transition is complete
+      //this will avoid any appearance of scrollbar during the layout transition.
+      style.width = (currWidth > width ? currWidth : width) + "px";
+      style.height = (currHeight > height ? currHeight : height) + "px";
+    }
   }
   
   //figure out which infolets actually moved (need to do this AFTER adjusting for RTL above)
@@ -3873,13 +3867,39 @@ MasonryLayoutCommon.prototype._layout = function()
         (parseInt(childStyle.top, 10) !== parseInt(oldPosition.top, 10)))
     {
       arMovedInfolets.push(child);
+      if (this._layoutTransition)
+      {
+        if (mlcClass._arrayIndexOf(this._arInfoletsToResize, child) < 0)
+        {
+          // Add transition only if child is not also being resized.  Otherwise
+          // the resize code would have added the transition
+          this._animateLayout(child, this._reorderTransitionStarted ? "reorder" : "move");
+        }
+      }
     }
   }
 
   if (arMovedInfolets.length < 1)
+  {
     arMovedInfolets = null;
+  }
   return arMovedInfolets;
 };
+
+/*
+ * Update sizeDiv dimensions after the layout transition is complete
+ */
+MasonryLayoutCommon.prototype._updateSizeDivOnEnd = function()
+{
+  //if new sizeDiv dimension is available, set that on sizeDiv
+  if (this._afrSizeDivDims)
+  {
+    var style = this._sizeDiv.style;
+    style.width = this._afrSizeDivDims.width;
+    style.height = this._afrSizeDivDims.height;
+    delete this._afrSizeDivDims;
+  }
+}
 
 /**
  * Reorder tiles in the DOM to match the visual layout order so that tab order
@@ -4018,17 +4038,6 @@ MasonryLayoutCommon.prototype._position = function(child, col, row, childSpan, c
 };
 
 /**
- * Add a style class to all of the rendered tile children.
- * @param {String} styleClassName Style class to add
- */
-MasonryLayoutCommon.prototype._addStyleClassToTiles = function(styleClassName)
-{
-  var children = this._getTileChildren();
-  for (var i = 0; i < children.length; i++)
-    this._addStyleClassNameFunc(children[i], styleClassName);
-};
-
-/**
  * Remove a style class from all of the rendered tile children.
  * @param {String} styleClassName Style class to remove
  */
@@ -4037,6 +4046,23 @@ MasonryLayoutCommon.prototype._removeStyleClassFromTiles = function(styleClassNa
   var children = this._getTileChildren();
   for (var i = 0; i < children.length; i++)
     this._removeStyleClassNameFunc(children[i], styleClassName);
+};
+
+MasonryLayoutCommon.prototype._animateLayout = function(element, action)
+{
+  if (this.isAnimationEnabled())
+  {
+    var self = this;
+    self._startAnimationFunc(element, action).then(function() {
+      if (self._layoutTransition)
+      {
+        // Only need to do this once per layout cycle.
+        // _handleTransitionEnd will set _layoutTransition to false when 
+        // at least one tile is moved or no tile needs moving.
+        self._handleTransitionEnd(element);
+      }
+    });
+  }
 };
 
 /**
@@ -4048,33 +4074,22 @@ MasonryLayoutCommon.prototype._transitionStart = function(reorder)
   if (!this._layoutTransition)
   {
     this._reorderTransitionStarted = reorder;
-    if (this.isAnimationEnabled())
-    {
-      var styleClass = reorder ? this._transitionMoveToFastStyleClass : this._transitionMoveToStyleClass;
-      this._addStyleClassToTiles(styleClass);
-      var compStyleClass = reorder ? this._transitionComponentResizeToFastStyleClass : this._transitionComponentResizeToStyleClass;
-      this._addStyleClassNameFunc(this._sizeDiv, compStyleClass);
-      var mlcClass = MasonryLayoutCommon;
-      mlcClass._addBubbleEventListener(this._elem, "transitionend", this._handleTransitionEndFunc);
-      mlcClass._addBubbleEventListener(this._elem, "webkitTransitionEnd", this._handleTransitionEndFunc);
-    }
     this._layoutTransition = true;
   }
 };
 
 /**
  * Handle a layout transition end.
- * @param {Object} event Event object
+ * @param {Object} target Target element
  */
-MasonryLayoutCommon.prototype._handleTransitionEnd = function(event)
+MasonryLayoutCommon.prototype._handleTransitionEnd = function(target)
 {
   var doneTransitioning = true;
   if (this._arMovedInfolets)
   {
     var arMovedInfolets = this._arMovedInfolets;
-    if (event)
+    if (target)
     {
-      var target = event.target;
       for (var i = 0; i < arMovedInfolets.length; i++)
       {
         if (target === arMovedInfolets[i])
@@ -4109,34 +4124,15 @@ MasonryLayoutCommon.prototype._handleTransitionEnd = function(event)
         for (var i = 0; i < arInfoletsToResize.length; i += 2)
         {
           var infolet = arInfoletsToResize[i];
-          this._removeStyleClassNameFunc(infolet, this._transitionResizeToStyleClass);
         }
       }
     }
 
     if (this._reorderTransitionStarted)
     {
-      if (this.isAnimationEnabled())
-      {
-        this._removeStyleClassFromTiles(this._transitionMoveToFastStyleClass);
-        this._removeStyleClassNameFunc(this._sizeDiv, this._transitionComponentResizeToFastStyleClass);
-      }
       this._reorderTransitionStarted = false;
     }
-    else
-    {
-      if (this.isAnimationEnabled())
-      {
-        this._removeStyleClassFromTiles(this._transitionMoveToStyleClass);
-        this._removeStyleClassNameFunc(this._sizeDiv, this._transitionComponentResizeToStyleClass);
-      }
-    }
     var mlcClass = MasonryLayoutCommon;
-    if (this.isAnimationEnabled())
-    {
-      mlcClass._removeBubbleEventListener(this._elem, "transitionend", this._handleTransitionEndFunc);
-      mlcClass._removeBubbleEventListener(this._elem, "webkitTransitionEnd", this._handleTransitionEndFunc);
-    }
     this._layoutTransition = false;
     this._resizingInfolet = false;
     this._hidingInfolets = false;
@@ -4147,7 +4143,10 @@ MasonryLayoutCommon.prototype._handleTransitionEnd = function(event)
 
     if (this._layoutOnEndFunc)
       this._layoutOnEndFunc();
-
+    
+    //update sizeDiv after the layout transition is complete
+    this._updateSizeDivOnEnd();
+    
     if (this._layoutPhase === mlcClass._PHASE_LAYOUT)
     {
       if (this.isAnimationEnabled())
@@ -4213,25 +4212,15 @@ MasonryLayoutCommon.prototype._hideTiles = function()
   if (this._arInfoletsToHide && this.isAnimationEnabled())
   {
     var arInfoletsToHide = this._arInfoletsToHide;
+    var self = this;
+    this._hideTilesAnimationStarted = true;
     for (var i = 0; i < arInfoletsToHide.length; i++)
     {
       var infolet = arInfoletsToHide[i];
-      mlcClass._addBubbleEventListener(infolet, "transitionend", this._handleHideTransitionEndFunc);
-      mlcClass._addBubbleEventListener(infolet, "webkitTransitionEnd", this._handleHideTransitionEndFunc);
-      this._addStyleClassNameFunc(infolet, this._transitionHideFromStyleClass);
+      this._startAnimationFunc(infolet, "remove").then(function() {
+        self._handleHideTransitionEnd(infolet);
+      });
     }
-    
-    //need to do the below in a timeout because it must happen AFTER the 
-    //_transitionHideFromStyleClass is applied
-    var self = this;
-    this._hideTilesInternalTimeout = setTimeout(function() {
-      for (var i = 0; i < arInfoletsToHide.length; i++)
-      {
-        var infolet = arInfoletsToHide[i];
-        self._removeStyleClassNameFunc(infolet, self._transitionHideFromStyleClass);
-        self._addStyleClassNameFunc(infolet, self._transitionHideToStyleClass);
-      }
-    }, 0);
   }
   else
   {
@@ -4241,9 +4230,9 @@ MasonryLayoutCommon.prototype._hideTiles = function()
 
 /**
  * Handle the end of the hide transition.
- * @param {Object} event Event object
+ * @param {Element} target The target element
  */
-MasonryLayoutCommon.prototype._handleHideTransitionEnd = function(event)
+MasonryLayoutCommon.prototype._handleHideTransitionEnd = function(target)
 {
   //FIX : clear this timeout at the end of the hide transition 
   //instead of when the _hideTilesInternalTimeout closure is called so that 
@@ -4253,16 +4242,15 @@ MasonryLayoutCommon.prototype._handleHideTransitionEnd = function(event)
     clearTimeout(this._hideTilesInternalTimeout);
     this._hideTilesInternalTimeout = null;
   }
+  else if (this._hideTilesAnimationStarted)
+  {
+    this._hideTilesAnimationStarted = false;
+  }
   
   var mlcClass = MasonryLayoutCommon;
-  if (event)
+  if (target)
   {
-    event.preventDefault();
-    event.stopPropagation();
-    var infolet = event.target;
-    this._removeStyleClassNameFunc(infolet, this._transitionHideToStyleClass);
-    mlcClass._removeBubbleEventListener(infolet, "transitionend", this._handleHideTransitionEndFunc);
-    mlcClass._removeBubbleEventListener(infolet, "webkitTransitionEnd", this._handleHideTransitionEndFunc);
+    var infolet = target;
     var arInfoletsToHide = this._arInfoletsToHide;
     if (arInfoletsToHide)
     {
@@ -4309,8 +4297,6 @@ MasonryLayoutCommon.prototype._handleHideTransitionEnd = function(event)
       for (var i = 0; i < arFireHideOnEnd.length; i++)
       {
         var infolet = arFireHideOnEnd[i];
-        if (this.isAnimationEnabled())
-          this._removeStyleClassNameFunc(infolet, this._transitionHideToStyleClass);
         
         //remove layout position from the child
         var style = infolet.style;
@@ -4343,18 +4329,19 @@ MasonryLayoutCommon.prototype._handleHideTransitionEnd = function(event)
         //to add it here immediately and then do the below in a timeout because
         //it would need to happen AFTER the _transitionResizeFromStyleClass is 
         //applied
-        this._removeStyleClassNameFunc(infolet, oldSizeStyleClass);
-        this._addStyleClassNameFunc(infolet, newSizeStyleClass);
         if (this.isAnimationEnabled())
         {
-          this._addStyleClassNameFunc(infolet, this._transitionResizeToStyleClass);
-          
-          //temporarily store the old size style class on the infolet in case
-          //_layout() uses this infolet to calculate cell size, because the 
-          //element size still corresponds to the old size style class before
+          //temporarily store current cell size on the infolet before the transition begins, 
+          //because the element size still corresponds to the old size style class before
           //the transition runs
-          infolet._afrOldSizeStyleClass = oldSizeStyleClass;
+          infolet._afrCellSize = this._cellSize;
+          
+          // This must be called before the style class change in order to work
+          // consistently.
+          this._animateLayout(infolet, "resize");
         }
+        this._removeStyleClassNameFunc(infolet, oldSizeStyleClass);
+        this._addStyleClassNameFunc(infolet, newSizeStyleClass);
       }
     }
     
@@ -4379,14 +4366,15 @@ MasonryLayoutCommon.prototype._showTiles = function()
   
   if (this._arInfoletsToShow && this.isAnimationEnabled())
   {
+    var self = this;
     var arInfoletsToShow = this._arInfoletsToShow;
     for (var i = 0; i < arInfoletsToShow.length; i++)
     {
       var infolet = arInfoletsToShow[i];
-      mlcClass._addBubbleEventListener(infolet, "transitionend", this._handleShowTransitionEndFunc);
-      mlcClass._addBubbleEventListener(infolet, "webkitTransitionEnd", this._handleShowTransitionEndFunc);
-      this._addStyleClassNameFunc(infolet, this._transitionShowToStyleClass);
       this._removeStyleClassNameFunc(infolet, this._transitionShowFromStyleClass);
+      this._startAnimationFunc(infolet, "insert").then(function() {
+        self._handleShowTransitionEnd(infolet);
+      });
     }
   }
   else
@@ -4408,19 +4396,13 @@ MasonryLayoutCommon.prototype._showTiles = function()
 
 /**
  * Handle the end of the show transition.
- * @param {Object} event Event object
+ * @param {Element} target The target element
  */
-MasonryLayoutCommon.prototype._handleShowTransitionEnd = function(event)
+MasonryLayoutCommon.prototype._handleShowTransitionEnd = function(target)
 {
-  if (event)
+  if (target)
   {
-    event.preventDefault();
-    event.stopPropagation();
-    var infolet = event.target;
-    this._removeStyleClassNameFunc(infolet, this._transitionShowToStyleClass);
-    var mlcClass = MasonryLayoutCommon;
-    mlcClass._removeBubbleEventListener(infolet, "transitionend", this._handleShowTransitionEndFunc);
-    mlcClass._removeBubbleEventListener(infolet, "webkitTransitionEnd", this._handleShowTransitionEndFunc);
+    var infolet = target;
     var arInfoletsToShow = this._arInfoletsToShow;
     if (arInfoletsToShow)
     {
@@ -4511,6 +4493,8 @@ var ojMasonryLayoutMeta = {
     "resizeTile": {}
   },
   "events": {
+    "animateEnd": {},
+    "animateStart": {},
     "beforeInsert": {},
     "beforeRemove": {},
     "beforeReorder": {},

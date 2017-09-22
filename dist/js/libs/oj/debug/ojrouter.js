@@ -55,7 +55,7 @@ var _DEFAULT_ROOT_NAME = 'root';
  * @const
  * @type {string}
  */
-var _ROUTER_PARAM = 'oj_Router=';
+var _ROUTER_PARAM = 'oj_Router';
 /**
  * The separator used to build the title from router labels.
  * @private
@@ -158,11 +158,8 @@ function parseQueryParam(queryString) {
          var value;
 
          if (key.length) {
-            if (!params[key]) {
-               params[key] = [];
-            }
             value = parts[1] && decodeURIComponent(parts[1]);
-            params[key].push(value);
+            params[key] = value;
          }
       });
    }
@@ -343,7 +340,7 @@ function encodeStateParam(extraState) {
        encodedState = encodeURIComponent(jsonState),
        compressedState = oj.LZString.compressToEncodedURIComponent(jsonState),
        useCompressed = false,
-       param = _ROUTER_PARAM;
+       param = _ROUTER_PARAM + '=';
 
    if (compressedState.length <= encodedState.length) {
       useCompressed = true;
@@ -2333,7 +2330,7 @@ oj.Router.urlPathAdapter = function () {
       changes = _appendOtherChanges(changes);
 
       // Retrieve the extra state from request param oj_Router
-      stateStr = _location.search.split(_ROUTER_PARAM)[1];
+      stateStr = _location.search.split(_ROUTER_PARAM + '=')[1];
       if (stateStr) {
          stateStr = stateStr.split('&')[0];
          if (stateStr) {
@@ -2424,12 +2421,7 @@ oj.Router.urlParamAdapter = function () {
       oj.Logger.info('Parsing: %s', search);
 
       while (router) {
-         value = params[router._name];
-         if (value) {
-            value = value[0];
-         }
-
-         value = value || router._defaultStateId;
+         value = params[router._name] || router._defaultStateId;
          if (value) {
             changes.push({ value: value, router: router });
          }
@@ -2439,9 +2431,9 @@ oj.Router.urlParamAdapter = function () {
       changes = _appendOtherChanges(changes);
 
       // Retrieve the extra state from oj_Router param
-      stateStr = params['oj_Router'];
+      stateStr = params[_ROUTER_PARAM];
       if (stateStr) {
-         changes.forEach(_updateBookmarkableData, decodeStateParam(stateStr[0]));
+         changes.forEach(_updateBookmarkableData, decodeStateParam(stateStr));
       }
 
       return changes;

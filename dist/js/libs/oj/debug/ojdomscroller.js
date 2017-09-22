@@ -26,6 +26,7 @@ define(['ojs/ojcore', 'jquery'], function(oj, $)
  *                  <b>error</b>: a user callback function called if the fetch fails. The callback is called with the failed fetch content.<br>
  *                  <b>fetchSize</b>: the fetch size. Default is 25.<br>
  *                  <b>maxCount</b>: max row count. DomScroller will not exceed this max count. Default is 500.<br>
+ *                  <b>initialRowCount</b>: initial row count. DomScroller will be initialized with this row count. Default is 0.<br>
  *                  <b>fetchTrigger</b>: how close should the scroll position be relative to the maximum scroll position before a fetch is triggered. Default is 1 pixel.<br>
  * @constructor
  */
@@ -38,7 +39,7 @@ oj.DomScroller = function(element, datasource, options)
   this._fetchSize = this._fetchSize > 0 ? this._fetchSize : 25;
   this._maxCount = options['maxCount'];
   this._maxCount = this._maxCount > 0 ? this._maxCount : 500;
-  this._rowCount = 0;
+  this._rowCount = options['initialRowCount'] > 0 ? options['initialRowCount'] : 0;
   this._successCallback = options['success'];
   this._errorCallback = options['error'];
   this._registerDataSourceEventListeners();
@@ -56,6 +57,15 @@ oj.DomScroller = function(element, datasource, options)
       this._handleScrollerScrollTop(scrollTop, maxScrollTop);
     }
   }.bind(this));
+};
+
+/**
+ * Update value for fetch trigger
+ */
+oj.DomScroller.prototype.setFetchTrigger = function(fetchTrigger)
+{
+  if (fetchTrigger != null && !isNaN(fetchTrigger) && fetchTrigger >= 0)
+    this._fetchTrigger = fetchTrigger;
 };
 
 /**
@@ -247,7 +257,7 @@ oj.DomScroller.prototype._fetchNext = function(options)
   
   if (!this._currentStartIndex)
   {
-    this._currentStartIndex = pageSize;
+    this._currentStartIndex = this._rowCount;
   }
   else
   {

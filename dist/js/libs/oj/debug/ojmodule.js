@@ -840,7 +840,11 @@ oj.ModuleBinding._EMPTY_MODULE = "oj:blank";
     {
       for (var i = 0; i<nodeArray.length; i++)
       {
-        method(nodeArray[i]);
+        var node = nodeArray[i];
+        if (node.nodeType === 1/*element*/)
+        {
+          method(node);
+        }
       }
     }
   }

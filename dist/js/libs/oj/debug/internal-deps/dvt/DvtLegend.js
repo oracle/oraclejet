@@ -1090,8 +1090,10 @@ DvtLegendEventManager.prototype.GetDragDataContexts = function() {
  */
 DvtLegendEventManager.prototype.GetDropTargetType = function(event) {
   var relPos = this._legend.stageToLocal(this.getCtx().pageToStageCoords(event.pageX, event.pageY));
+  var dropOptions = this._legend.getOptions()['dnd']['drop'];
   var bounds = this._legend.__getBounds();
-  if (bounds.containsPoint(relPos.x, relPos.y))
+
+  if (Object.keys(dropOptions['legend']).length > 0 && bounds.containsPoint(relPos.x, relPos.y))
     return 'legend';
   return null;
 };
@@ -1111,8 +1113,10 @@ DvtLegendEventManager.prototype.ShowDropEffect = function(event) {
   if (dropTargetType == 'legend') {
     var dropColor = this._legend.getOptions()['_dropColor'];
     var background = this._legend.getCache().getFromCache('background');
-    if (background)
+    if (background) {
       background.setSolidFill(dropColor);
+      background.setClassName('oj-active-drop');
+    }
   }
 };
 
@@ -1127,6 +1131,21 @@ DvtLegendEventManager.prototype.ClearDropEffect = function() {
       background.setSolidFill(backgroundColor);
     else
       background.setInvisibleFill();
+    dvt.ToolkitUtils.removeClassName(background.getElem(), 'oj-invalid-drop');
+    dvt.ToolkitUtils.removeClassName(background.getElem(), 'oj-active-drop');
+  }
+};
+
+/**
+ * @override
+ */
+DvtLegendEventManager.prototype.ShowRejectedDropEffect = function(event) {
+  var dropTargetType = this.GetDropTargetType(event);
+
+  if (dropTargetType == 'legend') {
+    var background = this._legend.getCache().getFromCache('background');
+    if (background)
+      background.setClassName('oj-invalid-drop');
   }
 };
 /**
@@ -1618,7 +1637,7 @@ DvtLegendRenderer.render = function(legend, availSpace) {
   // Align the titles now after we know the total width
   var titles = legend.__getTitles();
   for (var i = 0; i < titles.length; i++)
-    dvt.LayoutUtils.align(totalDim, titles[i].halign, titles[i].text, titles[i].text.measureDimensions().w);
+    dvt.LayoutUtils.align(totalDim, titles[i].halign, titles[i].text, titles[i].text.getDimensions().w);
 
   return contentDims;
 };
@@ -1637,7 +1656,7 @@ DvtLegendRenderer._renderContents = function(legend, container, availSpace) {
 
   var title = DvtLegendRenderer._renderTitle(legend, container, options['title'], availSpace, null, true);
   if (title) {
-    var titleDim = title.measureDimensions();
+    var titleDim = title.getDimensions();
     var titleGap = DvtLegendDefaults.getGapSize(legend, options['layout']['titleGapHeight']);
     availSpace.y += titleDim.h + titleGap;
     availSpace.h -= Math.floor(titleDim.h + titleGap); // : IE9 attributes slightly too much height for the legend title
@@ -1660,8 +1679,9 @@ DvtLegendRenderer._renderBackground = function(legend, availSpace) {
   var backgroundColor = options['backgroundColor'];
   var borderColor = options['borderColor'];
   var legendDrop = options['dnd'] ? options['dnd']['drop']['legend'] : {}; // for drop effect
+  var legendDrag = options['dnd'] ? options['dnd']['drag']['series'] : {}; // for draggable effect
 
-  if (backgroundColor || borderColor || Object.keys(legendDrop).length > 0) {
+  if (backgroundColor || borderColor || Object.keys(legendDrop).length > 0 || Object.keys(legendDrag).length > 0) {
     var rect = new dvt.Rect(legend.getCtx(), availSpace.x, availSpace.y, availSpace.w, availSpace.h);
 
     if (backgroundColor)
@@ -1714,7 +1734,7 @@ DvtLegendRenderer._renderTitle = function(legend, container, titleStr, availSpac
 
   if (dvt.TextUtils.fitText(title, availSpace.w, Infinity, container)) {
     if (isRTL) // align right first to get the dims for preferred size
-      title.setX(availSpace.x + availSpace.w - title.measureDimensions().w);
+      title.setX(availSpace.x + availSpace.w - title.getDimensions().w);
 
     if (!options['isLayout']) {
       // Associate with logical object to support tooltips
@@ -1749,6 +1769,9 @@ DvtLegendRenderer._renderTitle = function(legend, container, titleStr, availSpac
  * @private
  */
 DvtLegendRenderer._renderSections = function(legend, container, sections, availSpace, id) {
+  if (!sections)
+    return new dvt.Rectangle(0, 0, 0, 0);
+
   var options = legend.getOptions();
 
   // Apply default symbol dimensions. If only one dimension is defined, the other will copy its value.
@@ -1922,7 +1945,7 @@ DvtLegendRenderer._renderVerticalSection = function(legend, container, section, 
 
   // Render legend section title. Only support titleHalign if the section is not collapsible and not nested.
   var title = DvtLegendRenderer._renderTitle(legend, container, section['title'], sectionSpace, section, !isCollapsible && id.length <= 1, id, button);
-  var titleDim = title ? title.measureDimensions() : new dvt.Rectangle(isRTL ? sectionSpace.x + sectionSpace.w : sectionSpace.x, sectionSpace.y, 0, 0);
+  var titleDim = title ? title.getDimensions() : new dvt.Rectangle(isRTL ? sectionSpace.x + sectionSpace.w : sectionSpace.x, sectionSpace.y, 0, 0);
   var sectionDim = buttonDim ? titleDim.getUnion(buttonDim) : titleDim;
 
   // See if this is a section group which contains more legend sections
@@ -2023,7 +2046,7 @@ DvtLegendRenderer._renderHorizontalSection = function(legend, container, section
 
   // Determine legend section title
   var title = DvtLegendRenderer._renderTitle(legend, container, section['title'], availSpace, section, false);
-  var titleDim = title ? title.measureDimensions() : new dvt.Rectangle(isRTL ? availSpace.x + availSpace.w : availSpace.x, availSpace.y, 0, 0);
+  var titleDim = title ? title.getDimensions() : new dvt.Rectangle(isRTL ? availSpace.x + availSpace.w : availSpace.x, availSpace.y, 0, 0);
   if (!section['items'])
     return titleDim;
   else if (titleDim.w > 0) {
@@ -2079,26 +2102,13 @@ DvtLegendRenderer._renderHorizontalSection = function(legend, container, section
  */
 DvtLegendRenderer._calcColumns = function(legend, availSpace, rowHeight, items, minimizeNumRows) {
   var options = legend.getOptions();
-  var hasLargeItemsCount = dvt.Legend.getItemCount(legend) > 100;
 
   // Use widest text since using # of chars can be wrong for unicode
-  var textWidth = 0;
+  var itemTexts = [];
   for (var i = 0; i < items.length; i++) {
-    var item = items[i];
-    var tempWidth;
-    if (hasLargeItemsCount) {
-      var outputText = new dvt.OutputText(legend.getCtx(), item['text']);
-      outputText.setCSSStyle(options['textStyle']);
-      tempWidth = dvt.TextUtils.guessTextDimensions(outputText).w;
-    }
-    else {
-      tempWidth = dvt.TextUtils.getTextStringWidth(legend.getCtx(), item['text'], options['textStyle']);
-    }
-
-    if (tempWidth > textWidth) {
-      textWidth = tempWidth;
-    }
+    itemTexts.push(items[i]['text']);
   }
+  var textWidth = dvt.TextUtils.getMaxTextStringWidth(legend.getCtx(), itemTexts, options['textStyle']);
 
   // Row variables
   var symbolWidth = options['symbolWidth'];
@@ -2152,10 +2162,7 @@ DvtLegendRenderer._getRowHeight = function(legend) {
   var options = legend.getOptions();
 
   // Figure out the legend item height
-  var text = new dvt.OutputText(legend.getCtx(), 'Test');
-  text.setCSSStyle(options['textStyle']);
-  text.alignMiddle();
-  var textHeight = dvt.TextUtils.guessTextDimensions(text).h;
+  var textHeight = dvt.TextUtils.getTextStringHeight(legend.getCtx(), options['textStyle']);
   var symbolHeight = options['symbolHeight'] + DvtLegendDefaults.getGapSize(legend, options['layout']['symbolGapHeight']);
   return Math.ceil(Math.max(textHeight, symbolHeight));
 };
@@ -2188,7 +2195,7 @@ DvtLegendRenderer._createLegendItem = function(legend, container, item, availSpa
   // Create legend text
   var label = item['text'];
   var text;
-  if (label) {
+  if (label != null) {
     var style = options['textStyle'];
     text = DvtLegendRenderer._createLegendText(container, textSpace, label, style);
     if (text) {

@@ -42,9 +42,9 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'ojs/ojvalidation-number'
  *   JET InputNumber Component
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#inputNumberOverview-section"></a>
  * </h3>
- * <p>Description: The ojInputNumber component enhances a browser input element
+ * <p>Description: The oj-input-number component enhances a browser input element
  * into one that holds numbers and it has a spinbox to quickly increment or
- * decrement the number. The <code class="prettyprint">value</code> option must be a number and must
+ * decrement the number. The <code class="prettyprint">value</code> attribute must be a number and must
  * be within the <code class="prettyprint">min</code> and <code class="prettyprint">max</code> range.
  * </p>
  * <p>A step mismatch is when
@@ -56,13 +56,14 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'ojs/ojvalidation-number'
  * if it isn't already.
  * </p>
  *
+ * {@ojinclude "name":"validationAndMessagingDoc"}
+ * 
  * <h3 id="touch-section">
  *   Touch End User Information
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#touch-section"></a>
  * </h3>
  *
  * {@ojinclude "name":"touchDoc"}
- *
  *
  * <h3 id="keyboard-section">
  *   Keyboard End User Information
@@ -71,7 +72,6 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'ojs/ojvalidation-number'
  *
  * {@ojinclude "name":"keyboardDoc"}
  *
- *
  * <h3 id="a11y-section">
  *   Accessibility
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#a11y-section"></a>
@@ -79,11 +79,6 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'ojs/ojvalidation-number'
  * <p>
  * The component is accessible; it sets and maintains the appropriate aria- attributes,
  * like aria-valuenow, aria-valuemax, aria-valuemin and aria-valuetext.
- * </p>
- * <p>
- * It is up to the application developer to associate the label to the input component.
- * For inputNumber, you should put an <code class="prettyprint">id</code> on the input, and then set
- * the <code class="prettyprint">for</code> attribute on the label to be the input's id.
  * </p>
  * <p>Disabled content: JET supports an accessible luminosity contrast ratio,
  * as specified in <a href="http://www.w3.org/TR/WCAG20/#visual-audio-contrast-contrast">WCAG 2.0 - Section 1.4.3 "Contrast"</a>,
@@ -96,39 +91,20 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'ojs/ojvalidation-number'
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#label-section"></a>
  * </h3>
  * <p>
- * For accessibility, you should associate a label element with the input
- * by putting an <code class="prettyprint">id</code> on the input, and then setting the
- * <code class="prettyprint">for</code> attribute on the label to be the input's id.
- * </p>
- * <p>
- * The component will decorate its associated label with required and help
- * information, if the <code class="prettyprint">required</code> and <code class="prettyprint">help</code> options are set.
- * </p>
- * <h3 id="state-section">
- *   Setting the Value Option
- *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#state-section"></a>
- * </h3>
- * <p>If the value option is undefined,
- * then the DOM value property is used, if any; else it is null.</p>
- * <p>The value option (if it is not null or undefined)
- * is coerced (+ val). e.g., "123a" is coerced to NaN</p>
- * <p>To clear out the value option, you can set it to null.
- * <code class="prettyprint">$(".selector").ojInputNumber("option", "value", null);</code>
+ * It is up to the application developer to associate the oj-label to the oj-input-number component.
+ * For accessibility, you should associate a oj-label element with the oj-input-number component
+ * by putting an <code class="prettyprint">id</code> on the oj-input-number element, and then setting the
+ * <code class="prettyprint">for</code> attribute on the oj-label to be the component's id.
  * </p>
  *
- * <!-- - - - - Above this point, the tags are for the class.
- *              Below this point, the tags are for the constructor (initializer). - - - - - - -->
- * @desc Creates an ojInputNumber component
+ * @example <caption>Declare the oj-input-number component with no attributes specified:</caption>
+ * &lt;oj-input-number>&lt;/oj-input-number>
  *
- * @param {Object=} options a map of option-value pairs to set on the component
+ * @example <caption>Initialize the component with some attributes:</caption>
+ * &lt;oj-input-number id="numberId" max="100" min="0" step="2">&lt;/oj-input-number>
  *
- * @example <caption>Initialize component using widget API</caption>
- * &lt;input id="spin" type="text"/&gt;<br/>
- * $("#spin").ojInputNumber({'value': 10, 'max':100, 'min':0, 'step':2});
- * $("#spin").ojInputNumber({'option', 'value', 10});
- * @example <caption>Using knockout, value, min, max bind to observables - salary, salaryMax, salaryMin</caption>
- * &lt;input id="foo" data-bind="ojComponent:
- *   {component: 'ojInputNumber', value: salary, min:salaryMin, max:salaryMax, step:5}"/&gt;
+ * @example <caption>Initialize a component attribute via component binding:</caption>
+ * &lt;oj-input-number id="numberId" value="{{currentValue}}">&lt;/oj-input-number>
  */
 oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
 {
@@ -145,7 +121,7 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
      * A number converter instance that duck types {@link oj.NumberConverter}. Or an object literal
      * containing the properties listed below.
      * <p>
-     * When <code class="prettyprint">converter</code> option changes due to programmatic
+     * When <code class="prettyprint">converter</code> property changes due to programmatic
      * intervention, the component performs various tasks based on the current state it is in. </br>
      *
      * <h4>Steps Performed Always</h4>
@@ -157,36 +133,32 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
      *
      * <h4>Running Validation</h4>
      * <ul>
-     * <li>if component is valid when <code class="prettyprint">converter</code> option changes, the
+     * <li>if component is valid when <code class="prettyprint">converter</code> property changes, the
      * display value is refreshed.</li>
-     * <li>if component is invalid and is showing messages -
-     * <code class="prettyprint">messagesShown</code> option is non-empty, when
-     * <code class="prettyprint">converter</code> option changes, then all messages generated by the
+     * <li>if component is invalid and is showing messages when
+     * <code class="prettyprint">converter</code> property changes, then all messages generated by the
      * component are cleared and full validation run using its current display value.
      * <ul>
      *   <li>if there are validation errors, then <code class="prettyprint">value</code>
-     *   option is not updated, and the errors pushed to <code class="prettyprint">messagesShown</code>
-     *   option. The display value is not refreshed in this case. </li>
+     *   property is not updated, and the errors are shown. The display value is not refreshed in this case. </li>
      *   <li>if no errors result from the validation, <code class="prettyprint">value</code>
-     *   option is updated; page author can listen to the <code class="prettyprint">optionChange</code>
-     *   event on the <code class="prettyprint">value</code> option to clear custom errors. The
-     *   display value is refreshed with the formatted value provided by converter.</li>
+     *   property is updated; page author can listen to the <code class="prettyprint">valueChanged</code>
+     *   event to clear custom errors. The display value is refreshed with the formatted
+     *   value provided by converter.</li>
      * </ul>
      * </li>
-     * <li>if component is invalid and has deferred messages -
-     * <code class="prettyprint">messagesHidden</code> option is non-empty, when
-     * <code class="prettyprint">converter</code> option changes, then the display value is
+     * <li>if component is invalid and has deferred messages when
+     * <code class="prettyprint">converter</code> property changes, then the display value is
      * refreshed with the formatted value provided by converter.</li>
      * </ul>
      * </p>
      *
      * <h4>Clearing Messages</h4>
      * <ul>
-     * <li>When component messages are cleared in the cases described above, messages created by
-     * the component that are present in both <code class="prettyprint">messagesHidden</code> and
-     * <code class="prettyprint">messagesShown</code> options are cleared.</li>
-     * <li><code class="prettyprint">messagesCustom</code> option is not cleared. Page authors can
-     * choose to clear it explicitly when setting the converter option.</li>
+     * <li>messages created by
+     * the component  are cleared.</li>
+     * <li><code class="prettyprint">messagesCustom</code> property is not cleared. Page authors can
+     * choose to clear it explicitly when setting the converter property.</li>
      * </ul>
      * </p>
      *
@@ -198,39 +170,33 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
      * E.g., <code class="prettyprint">{converter: {type: 'number', options: {style: 'decimal'}}</code>
      *
      * @example <caption>Initialize component to use default converter</caption>
-     * $(".selector").ojInputNumber({value: 25000});
+     * &lt;oj-input-number value="25000">&lt;/oj-input-number>
      *
      * @example <caption>Initialize the component with a number converter instance:</caption>
      * // Initialize converter instance using currency options
      * var options = {style: 'currency', 'currency': 'USD', maximumFractionDigits: 0};
      * var numberConverterFactory = oj.Validation.converterFactory("number");
      * var salaryConverter = numberConverterFactory.createConverter(options);<br/>
-     * // set converter instance using converter option
-     * $(".selector").ojInputNumber({
-     *   value: 25000,
-     *   converter: salaryConverter
-     * });
+     * // set converter instance using converter attribute
+     * &lt;oj-input-number value="25000" converter="[[salaryConverter]]">&lt;/oj-input-number>
      *
      * @example <caption>Initialize the component with converter object literal:</caption>
-     * $(".selector").ojInputNumber({
-     *   value: 25000,
-     *   converter: {
-     *     type: 'number',
-     *     options : {
-     *       style: 'currency',
-     *       currency: 'USD',
-     *       maximumFractionDigits: 0
+     * &lt;oj-input-number value="25000" converter='
+     *   {
+     *     "type": "number",
+     *     "options" : {
+     *       "style": "currency",
+     *       "currency": "USD",
+     *       "maximumFractionDigits": "0"
      *     }
-     *   }
-     * });
+     *   }'>&lt;/oj-input-number>
      *
-     * @example <caption>Change the converter option:</caption>
-     * // new converter instance
-     * var options = {style: 'currency', currency: 'USD', 'currencyDisplay': 'name', maximumFractionDigits: 2};
-     * var numberConverterFactory = oj.Validation.converterFactory("number");
-     * var salaryConverter = numberConverterFactory.createConverter(options);<br/>
-     * // set converter instance using converter option
-     * $(".selector").ojInputNumber("option", "converter", salaryConverter);
+     * @example <caption>Get or set the <code class="prettyprint">converter</code> property after initialization:</caption>
+     * // Getter
+     * var convtr = myComponent.converter;
+     * 
+     * // Setter
+     * myComponent.converter = salaryConverter;
      *
      *
      * @default <code class="prettyprint">oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_NUMBER).createConverter()</code>.
@@ -250,16 +216,10 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
      * <code class="prettyprint">value</code> is greater than the <code class="prettyprint">max</code>,
      * then the range validator flags an error to the user. The up arrow
      *  is disabled when the maximum value is reached.
-     *  <p>
-     * The element's <code class="prettyprint">max</code> attribute is used if it
-     * exists and the option is not explicitly set.
      * <p>
      *  <code class="prettyprint">Max</code> must be a
      *  <code class="prettyprint">number</code> or <code class="prettyprint">null</code>;
-     *  <code class="prettyprint">null</code> indicates no maximum. If not null,
-     *  the <code class="prettyprint">max</code> option value will be coerced (+).
-     *  If the coerced value is <code class="prettyprint">NaN</code>,
-     *  an <code class="prettyprint">Error</code> is thrown.
+     *  <code class="prettyprint">null</code> indicates no maximum.
      * <p>
      * The <code class="prettyprint">max</code> must not be less than the
      * <code class="prettyprint">min</code>, else an Error is thrown during initialization.
@@ -269,21 +229,21 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
      * @type {?number}
      * @default <code class="prettyprint">null</code>
      * @example <caption>Initialize the inputNumber with the
-     * <code class="prettyprint">max</code> option specified:</caption>
-     * $( ".selector" ).ojInputNumber( { "max": 100 } );
-     * @example <caption>Change the
-     * <code class="prettyprint">max</code> option to a float:</caption>
-     * $( ".selector" ).ojInputNumber("option", "max", 100.5);
+     * <code class="prettyprint">max</code> attribute specified:</caption>
+     * &lt;oj-input-number max="100">&lt;/oj-input-number>
+     * 
+     * @example <caption>Change the <code class="prettyprint">max</code> property to a float:</caption>
+     * myComponent.max = 100.5;
+     * 
      * @example <caption>To remove the maximum range restriction from inputNumber:</caption>
-     * $( ".selector" ).ojInputNumber( { "max": null } );
-     * @example <caption>Set the <code class="prettyprint">max</code> to a non-number
-     * which will throw an Error:</caption>
-     * $( ".selector" ).ojInputNumber( { "max": "123abc" } );
-     * $( ".selector" ).ojInputNumber( { "max": "abc123" } );
-     * @example <caption>Set the <code class="prettyprint">max</code> to a number inside
-     * of quotes; this is valid and will be coerced to a number,
-     * -100 in this example:</caption>
-     * $( ".selector" ).ojInputNumber( { "max": "-100" } );
+     * myComponent.max =  null;
+     * 
+     * @example <caption>Get or set the <code class="prettyprint">max</code> property after initialization:</caption>
+     * // Getter
+     * var max = myComponent.max;
+     * 
+     * // Setter
+     * myComponent.max = 100;
      */
     max: null,
 
@@ -293,15 +253,8 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
      * then the range validator flags an error to the user. The down arrow
      *  is disabled when the minimum value is reached.
      *  <p>
-     * The element's <code class="prettyprint">min</code> attribute is used if it
-     * exists and the option is not explicitly set.
-     * <p>
-     *  <code class="prettyprint">Min</code> must be a
-     *  <code class="prettyprint">number</code> or <code class="prettyprint">null</code>;
-     *  <code class="prettyprint">null</code> indicates no minimum. If not null,
-     *  the <code class="prettyprint">min</code> option value will be coerced (+).
-     *  If the coerced value is <code class="prettyprint">NaN</code>,
-     *  an <code class="prettyprint">Error</code> is thrown.
+     *  <code class="prettyprint">Min</code> must be a <code class="prettyprint">number</code> or <code class="prettyprint">null</code>;
+     *  <code class="prettyprint">null</code> indicates no minimum.
      * <p>
      * The <code class="prettyprint">max</code> must not be less than the
      * <code class="prettyprint">min</code>, else an Error is thrown during initialization.
@@ -311,40 +264,39 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
      * @type {?number}
      * @default <code class="prettyprint">null</code>
      * @example <caption>Initialize the inputNumber with the
-     * <code class="prettyprint">min</code> option specified:</caption>
-     * $( ".selector" ).ojInputNumber( { "min": -100 } );
-     * @example <caption>Change the
-     * <code class="prettyprint">min</code> option to a float:</caption>
-     * $( ".selector" ).ojInputNumber("option", "min", 1.5);
+     * <code class="prettyprint">min</code> attribute specified:</caption>
+     * &lt;oj-input-number min="0">&lt;/oj-input-number>
+     * 
+     * @example <caption>Get or set the <code class="prettyprint">min</code> property after initialization:</caption>
+     * // Getter
+     * var min = myComponent.min;
+     * 
+     * // Setter
+     * myComponent.min = 0;
+     * 
+     * @example <caption>Change the <code class="prettyprint">min</code> property to a float:</caption>
+     * myComponent.min = 10.5;
+     * 
      * @example <caption>To remove the minimum range restriction from inputNumber:</caption>
-     * $( ".selector" ).ojInputNumber( { "min": null } );
-     * @example <caption>Set the <code class="prettyprint">min</code> to a non-number
-     * which will throw an Error:</caption>
-     * $( ".selector" ).ojInputNumber( { "min": "123abc" } );
-     * $( ".selector" ).ojInputNumber( { "min": "abc123" } );
-     * @example <caption>Set the <code class="prettyprint">min</code> to a number inside
-     * of quotes; this is valid and will be coerced to a number,
-     * -100 in this example:</caption>
-     * $( ".selector" ).ojInputNumber( { "min": "-100" } );
+     * myComponent.min =  null;
+     * 
      */
     min: null,
 
     /**
-     * The placeholder text to set on the element. Though it is possible to set placeholder
-     * attribute on the element itself, the component will only read the value when the component
-     * is created. Subsequent changes to the element's placeholder attribute will not be picked up
-     * and page authors should update the option directly.
+     * The placeholder text to set on the element.
      *
-     * @example <caption>Initialize the component with the <code class="prettyprint">placeholder</code> option:</caption>
-     * &lt;input id="number" data-bind="ojComponent: {
-     *   component: 'ojInputNumber', placeholder: 'Please enter a number'}" /&gt;
+     * @example <caption>Initialize the component with the <code class="prettyprint">placeholder</code> attribute:</caption>
+     * &lt;oj-input-number placeholder="Enter a number">&lt;/oj-input-number>
+     * 
+     * @example <caption>Get or set the <code class="prettyprint">placeholder</code> property after initialization:</caption>
+     * // Getter
+     * var placeholder = myComponent.placeholder;
+     * 
+     * // Setter
+     * myComponent.placeholder = "Address";
      *
-     * @example <caption>Initialize <code class="prettyprint">placeholder</code> option from html attribute:</caption>
-     * &lt;input id="number" data-bind="ojComponent: {component: 'ojInputNumber'}"
-     *   placeholder="Please enter a number" /&gt;
-     *
-     * @default when the option is not set, the element's placeholder attribute is used if it exists.
-     * If the attribute is not set then the default can be a converter hint. See displayOptions for
+     * @default If the attribute is not set then the default can be a converter hint. See display-options for
      * details.
      *
      * @expose
@@ -354,16 +306,16 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
      */
     placeholder: undefined,
     /**
-     * <p>The  <code class="prettyprint">rawValue</code> is the read-only option for retrieving
+     * <p>The  <code class="prettyprint">rawValue</code> is the read-only property for retrieving
      * the current value from the input field in text form.</p>
      * <p>
      * The <code class="prettyprint">rawValue</code> updates on the 'input' javascript event,
      * so the <code class="prettyprint">rawValue</code> changes as the value of the input is changed.
      * If the user types in '1,200' into the field, the rawValue will be '1', then '1,', then '1,2',
      * ..., and finally '1,200'. Then when the user blurs or presses Enter
-     * the <code class="prettyprint">value</code> option gets updated.
+     * the <code class="prettyprint">value</code> property gets updated.
      * </p>
-     * <p>This is a read-only option so page authors cannot set or change it directly.</p>
+     * <p>This is a read-only property so page authors cannot set or change it directly.</p>
      * @expose
      * @access public
      * @instance
@@ -372,20 +324,26 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
      * @type {string|undefined}
      * @since 1.2
      * @readonly
+     * @ojwriteback
      */
     rawValue: undefined,
     /**
-     * Whether the component is readOnly. The element's <code class="prettyprint">readOnly</code>
-     *  property is used as its initial
-     * value if it exists, when the option is not explicitly set. When neither is set,
-     * <code class="prettyprint">readOnly </code>
-     * defaults to false.
+     * Whether the component is readonly.
      *
-     * @example <caption>Initialize component with <code class="prettyprint">readOnly</code> option:</caption>
-     * $(".selector").ojInputNumber({"readOnly": true});
+     * @example <caption>Initialize component with <code class="prettyprint">readonly</code> attribute:</caption>
+     * &lt;oj-input-number readonly>&lt;/oj-input-number>
+     * 
+     * @example <caption>Get or set the <code class="prettyprint">readonly</code> property after initialization:</caption>
+     * // Getter
+     * var readonly = myComponent.readonly;
+     * 
+     * // Setter
+     * myComponent.readonly = false;
      *
+     * @default false
      * @expose
      * @type {?boolean}
+     * @alias readonly
      * @default <code class="prettyprint">false</code>
      * @instance
      * @memberof oj.ojInputNumber
@@ -396,22 +354,18 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
      * required validator is created using the validator factory - 
      * <code class="prettyprint">oj.Validation.validatorFactory(oj.ValidatorFactory.VALIDATOR_TYPE_REQUIRED).createValidator()</code>.
      * 
-     * Translations specified using the <code class="prettyprint">translations.required</code> option 
+     * Translations specified using the <code class="prettyprint">translations.required</code> attribute 
      * and the label associated with the component, are passed through to the options parameter of the 
      * createValidator method. 
      * 
      * <p>
-     * When <code class="prettyprint">required</code> option changes due to programmatic intervention, 
-     * the component may clears message and run validation, based on the current state it's in. </br>
+     * When <code class="prettyprint">required</code> property changes due to programmatic intervention, 
+     * the component may clear messages and run validation, based on the current state it's in. </br>
      *  
      * <h4>Running Validation</h4>
      * <ul>
      * <li>if component is valid when required is set to true, then it runs deferred validation on 
-     * the option value. This is to ensure errors are not flagged unnecessarily.
-     * <ul>
-     *   <li>if there is a deferred validation error, then 
-     *   <code class="prettyprint">messagesHidden</code> option is updated. </li>
-     * </ul>
+     * the value property. This is to ensure errors are not flagged unnecessarily.
      * </li>
      * <li>if component is invalid and has deferred messages when required is set to false, then 
      * component messages are cleared but no deferred validation is run.
@@ -420,22 +374,19 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
      * component messages are cleared and normal validation is run using the current display value. 
      * <ul>
      *   <li>if there are validation errors, then <code class="prettyprint">value</code> 
-     *   option is not updated and the error pushed to <code class="prettyprint">messagesShown</code>
-     *   option. 
+     *   property is not updated and the error is shown. 
      *   </li>
      *   <li>if no errors result from the validation, the <code class="prettyprint">value</code> 
-     *   option is updated; page author can listen to the <code class="prettyprint">optionChange</code> 
-     *   event on the <code class="prettyprint">value</code> option to clear custom errors.</li>
+     *   property is updated; page author can listen to the <code class="prettyprint">valueChanged</code> 
+     *   event on the component to clear custom errors.</li>
      * </ul>
      * </li>
      * </ul>
      * 
      * <h4>Clearing Messages</h4>
      * <ul>
-     * <li>Only messages created by the component are cleared. These include ones in 
-     * <code class="prettyprint">messagesHidden</code> and <code class="prettyprint">messagesShown</code>
-     *  options.</li>
-     * <li><code class="prettyprint">messagesCustom</code> option is not cleared.</li>
+     * <li>Only messages created by the component are cleared.</li>
+     * <li><code class="prettyprint">messagesCustom</code> property is not cleared.</li>
      * </ul>
      * 
      * </p>
@@ -445,30 +396,29 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
      * @ojvalue {boolean} true - implies a value is required to be provided by user and the 
      * input's label will render a required icon. Additionally a required validator - 
      * {@link oj.RequiredValidator} - is implicitly used if no explicit required validator is set. 
-     * An explicit required validator can be set by page authors using the validators option. 
+     * An explicit required validator can be set by page authors using the validators attribute. 
      * 
-     * @example <caption>Initialize the component with the <code class="prettyprint">required</code> option:</caption>
-     * $(".selector").ojInputNumber({required: true});<br/>
-     * @example <caption>Initialize <code class="prettyprint">required</code> option from html attribute 'required':</caption>
-     * &lt;input required/><br/>
-     * // retreiving the required option returns true
-     * $(".selector").ojInputNumber("option", "required");<br/>
+     * @example <caption>Initialize the component with the <code class="prettyprint">required</code> attribute:</caption>
+     * &lt;oj-input-number required>&lt;/oj-input-number><br/>
      * 
      * @example <caption>Customize messages and hints used by implicit required validator when 
-     * <code class="prettyprint">required</code> option is set:</caption> 
-     * &lt;input  data-bind="ojComponent: {
-     *   component: 'ojInputNumber', 
-     *   required: true,
-     *   value: currentValue, 
-     *   translations: {'required': {
-     *                 hint: 'custom: please enter a number',
-     *                 messageSummary: 'custom: \'{label}\' is Required', 
-     *                 messageDetail: 'custom: you must enter a number into \'{label}\''}}}"/>
+     * <code class="prettyprint">required</code> attribute is set:</caption> 
+     * &lt;oj-input-number required translations='{"required": {
+     *                 "hint": "custom: enter at least 3 alphabets",
+     *                 "messageSummary": "custom: \'{label}\' is Required", 
+     *                 "messageDetail": "custom: please enter a valid value for \'{label}\'"}}'>
+     * &lt;/oj-input-number>
+     * 
+     * @example <caption>Get or set the <code class="prettyprint">required</code> property after initialization:</caption>
+     * // getter
+     * var rq = myComp.required;
+     *
+     * // setter
+     * myComp.required = false;
+     * 
      * @expose 
      * @access public
      * @instance
-     * @default when the option is not set, the element's required property is used as its initial 
-     * value if it exists.
      * @memberof oj.ojInputNumber
      * @type {boolean}
      * @default false
@@ -479,15 +429,8 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
     /**
      * The size of the step to take when spinning via buttons or via the
      * <code class="prettyprint">stepUp()</code>/<code class="prettyprint">stepDown()</code> methods.
-     * The element's <code class="prettyprint">step</code> attribute is used if it
-     * exists and the option is not explicitly set. Step must be a
-     * <code class="prettyprint">number</code>
-     * greater than 0, otherwise an exception is thrown. It defaults to
-     * <code class="prettyprint">1</code> if nothing, or <code class="prettyprint">null</code>, is specified.
-     *  If not null, the <code class="prettyprint">step</code> option value will be
-     *  coerced (+).
-     *  If the coerced value is <code class="prettyprint">NaN</code>,
-     *  an <code class="prettyprint">Error</code> is thrown.
+     * Step must be a <code class="prettyprint">number</code>
+     * greater than 0, otherwise an exception is thrown. It defaults to <code class="prettyprint">1</code>.
      * <p>
      * The step up and step down feature will change the value to be a step match if it isn't already.
      * A step match is when the value is a multiple of step, starting at the
@@ -508,36 +451,102 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
      * @default <code class="prettyprint">1</code>
      * @memberof oj.ojInputNumber
      * @example <caption>Initialize the inputNumber with the
-     * <code class="prettyprint">step</code> option specified:</caption>
-     * $( ".selector" ).ojInputNumber( { "step": 10 } );
-     * @example <caption>Change the
-     * <code class="prettyprint">step</code> option to a float:</caption>
-     * $( ".selector" ).ojInputNumber("option", "step", 0.5);
-     * @example <caption>Set the <code class="prettyprint">step</code> to a non-number
-     * which will throw an Error:</caption>
-     * $( ".selector" ).ojInputNumber( { "step": "123abc" } );
-     * $( ".selector" ).ojInputNumber( { "step": "abc123" } );
-     * @example <caption>Set the <code class="prettyprint">step</code> to a number inside
-     * of quotes; this is valid and will be coerced to a number,
-     * 10 in this example:</caption>
-     * $( ".selector" ).ojInputNumber( { "step": "10" } );
+     * <code class="prettyprint">step</code> attribute specified:</caption>
+     * &lt;oj-input-number step="2">&lt;/oj-input-number>
+     * 
+     * @example <caption>Get or set the <code class="prettyprint">step</code> property after initialization:</caption>
+     * // Getter
+     * var step = myComponent.step;
+     * 
+     * // Setter
+     * myComponent.step = 5;
      * */
     step: 1,
+     /** 
+     * Dictates component's autocomplete state. 
+     * This attribute indicates whether the value of the control can be automatically 
+     * completed by the browser.
+     * 
+     * @example <caption>Initialize component with <code class="prettyprint">autocomplete</code> attribute:</caption>
+     * &lt;oj-input-number autocomplete = "on">&lt;/oj-input-number>
+     * 
+     * @example <caption>Get or set the <code class="prettyprint">autocomplete</code> property after initialization:</caption>
+     * // getter
+     * var ro = myComp.autocomplete;
+     *
+     * // setter
+     * myComp.autocomplete = "on";
+     * 
+     * @expose 
+     * @type {string|undefined}
+     * @ojvalue {string} "on" enable autofill
+     * @ojvalue {string} "off" disable autofill
+     * @alias autocomplete
+     * @default <code class="prettyprint">"off"</code>
+     * @instance
+     * @memberof oj.ojInputNumber
+     */
+    autocomplete: undefined,
+     /** 
+     * Autofocus is a Boolean that reflects the autofocus attribute, If it is set to true 
+     * then the associated component  will get input focus when the page is loaded.
+     * Setting this property doesn't set the focus to the component: 
+     * it tells the browser to focus to it when the element is inserted in the document. 
+     * 
+     * @example <caption>Initialize component with <code class="prettyprint">autofocus</code> attribute:</caption>
+     * &lt;oj-input-number autofocus>&lt;/oj-input-number>
+     * 
+     * @example <caption>Get or set the <code class="prettyprint">autofocus</code> property after initialization:</caption>
+     * // getter
+     * var ro = myComp.autofocus;
+     *
+     * // setter
+     * myComp.autofocus = false;
+     * 
+     * @expose 
+     * @type {boolean|undefined}
+     * @alias autofocus
+     * @default <code class="prettyprint">false</code>
+     * @instance
+     * @memberof oj.ojInputNumber
+     */
+    autofocus: false,
+     /** 
+     * It indicates the name of the component. 
+     * 
+     * @example <caption>Initialize component with <code class="prettyprint">name</code> attribute:</caption>
+     * &lt;oj-input-number name="myName">&lt;/oj-input-number>
+     * 
+     * @example <caption>Get or set the <code class="prettyprint">name</code> property after initialization:</caption>
+     * // getter
+     * var ro = myComp.name;
+     *
+     * // setter
+     * myComp.name = "myName";
+     * 
+     * @expose 
+     * @type {string|undefined}
+     * @alias name
+     * @default
+     * @instance
+     * @memberof oj.ojInputNumber
+     */
+    name: undefined,
     /** 
      * List of validators used by component when performing validation. Each item is either an 
      * instance that duck types {@link oj.Validator}, or is an Object literal containing the 
-     * properties listed below. Implicit validators created by a component when certain options 
-     * are present (e.g. <code class="prettyprint">required</code> option), are separate from 
-     * validators specified through this option. At runtime when the component runs validation, it 
-     * combines the implicit validators with the list specified through this option. 
+     * properties listed below. Implicit validators created by a component when certain attributes 
+     * are present (e.g. <code class="prettyprint">required</code> attribute), are separate from 
+     * validators specified through this attribute. At runtime when the component runs validation, it 
+     * combines the implicit validators with the list specified through this attribute. 
      * <p>
      * Hints exposed by validators are shown in the notewindow by default, or as determined by the 
-     * 'validatorHint' property set on the <code class="prettyprint">displayOptions</code> 
-     * option. 
+     * 'validatorHint' property set on the <code class="prettyprint">display-options</code> 
+     * attribute. 
      * </p>
      * 
      * <p>
-     * When <code class="prettyprint">validators</code> option changes due to programmatic 
+     * When <code class="prettyprint">validators</code> property changes due to programmatic 
      * intervention, the component may decide to clear messages and run validation, based on the 
      * current state it is in. </br>
      * 
@@ -552,18 +561,16 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
      * <ul>
      * <li>if component is valid when validators changes, component does nothing other than the 
      * steps it always performs.</li>
-     * <li>if component is invalid and is showing messages -
-     * <code class="prettyprint">messagesShown</code> option is non-empty, when 
+     * <li>if component is invalid and is showing messages when 
      * <code class="prettyprint">validators</code> changes then all component messages are cleared 
      * and full validation run using the display value on the component. 
      * <ul>
      *   <li>if there are validation errors, then <code class="prettyprint">value</code> 
-     *   option is not updated and the error pushed to <code class="prettyprint">messagesShown</code>
-     *   option. 
+     *   property is not updated and the error is shown. 
      *   </li>
      *   <li>if no errors result from the validation, the <code class="prettyprint">value</code> 
-     *   option is updated; page author can listen to the <code class="prettyprint">optionChange</code> 
-     *   event on the <code class="prettyprint">value</code> option to clear custom errors.</li>
+     *   property is updated; page author can listen to the <code class="prettyprint">valueChanged</code> 
+     *   event to clear custom errors.</li>
      * </ul>
      * </li>
      * <li>if component is invalid and has deferred messages when validators changes, it does 
@@ -573,10 +580,8 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
      * 
      * <h4>Clearing Messages</h4>
      * <ul>
-     * <li>Only messages created by the component are cleared.  These include ones in 
-     * <code class="prettyprint">messagesHidden</code> and <code class="prettyprint">messagesShown</code>
-     *  options.</li>
-     * <li><code class="prettyprint">messagesCustom</code> option is not cleared.</li>
+     * <li>Only messages created by the component are cleared.</li>
+     * <li><code class="prettyprint">messagesCustom</code> property is not cleared.</li>
      * </ul>
      * </p>
      * 
@@ -590,14 +595,10 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
 
      * 
      * @example <caption>Initialize the component with validator object literal:</caption>
-     * $(".selector").ojInputNumber({
-     *   validators: [{
-     *     type: 'regExp', 
-     *     options : {
-     *       pattern: '[0-9]{3,}'
-     *     }
-     *   }],
-     * });
+     * &lt;oj-input-number validators='[{"type": "regExp", "options": {
+     *                     "pattern": "[a-zA-Z0-9]{3,}", 
+     *                     "messageDetail": "You must enter at least 3 letters or numbers"}}]'>
+     * &lt;/oj-input-number>      
      * 
      * NOTE: oj.Validation.validatorFactory('numberRange') returns the validator factory that is used 
      * to instantiate a range validator for numbers.
@@ -605,68 +606,57 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
      * @example <caption>Initialize the component with multiple validator instances:</caption>
      * var validator1 = new MyCustomValidator({'foo': 'A'}); 
      * var validator2 = new MyCustomValidator({'foo': 'B'});
-     * $(".selector").ojInputNumber({
-     *   value: 10, 
-     *   validators: [validator1, validator2]
-     * });
+     * var validators = [validator1,validator2];<br/>
+     * ...
+     * &lt;oj-input-number validators='[[validators]]'>
+     * &lt;/oj-input-number>      
+     * 
+     * @example <caption>Get or set the <code class="prettyprint">validators</code> property after initialization:</caption>
+     * // getter
+     * var validators = myComp.validators;
+     *
+     * // setter
+     * myComp.validators = myValidators;
      * 
      * @expose 
      * @access public
      * @instance
      * @memberof oj.ojInputNumber
      * @type {Array|undefined}
-     */    
+     */
+    
     validators: undefined,    
     /**
-     * The value of the component. Value should be a number.
-     *
+     * The value of the component. Value must be a number or null.
+     * 
      * <p>
-     * When <code class="prettyprint">value</code> option changes due to programmatic
-     * intervention, the component always clears all messages and runs deferred validation, and
-     * always refreshes UI display value. If the value cannot be coerced to a number, an
-     * Error is thrown.</br>
-     *
-     * <h4>Clearing Messages</h4>
-     * <ul>
-     * <li>All messages are cleared. This includes
-     * <code class="prettyprint">messagesHidden</code>, <code class="prettyprint">messagesShown</code>
-     *  and <code class="prettyprint">messagesCustom</code> options.</li>
-     * </ul>
-     *
-     *
+     * When <code class="prettyprint">value</code> property changes due to programmatic 
+     * intervention, the component always clears all messages
+     * including <code class="prettyprint">messagesCustom</code>, runs deferred validation, and 
+     * always refreshes UI display value.</br>
+     * 
      * <h4>Running Validation</h4>
      * <ul>
-     * <li>component always runs deferred validation; if there is a validation error the
-     * <code class="prettyprint">messagesHidden</code> option is updated.</li>
+     * <li>component always runs deferred validation; if there is a validation error the 
+     * <code class="prettyprint">valid</code> property is updated.</li>
      * </ul>
      * </p>
-     *
-     * @example <caption>Initialize the component with the <code class="prettyprint">value</code> option specified:</caption>
-     * $(".selector").ojInputNumber({'value': 55});<br/>
-     * @example <caption>Get or set <code class="prettyprint">value</code> option, after initialization:</caption>
-     * // Getter: returns 55
-     * $(".selector").ojInputNumber("option", "value");
+     * 
+     * @example <caption>Initialize the component with the <code class="prettyprint">value</code> attribute specified:</caption>
+     * &lt;oj-input-number value='10'>&lt;/oj-input-number>
+     * @example <caption>Get or set <code class="prettyprint">value</code> attribute, after initialization:</caption>
+     * // Getter: returns 10
+     * var val = myComp.value;
      * // Setter: sets 20
-     * $(".selector").ojInputNumber("option", "value", 20);
-     * @example <caption>Set the <code class="prettyprint">value</code> to a non-number
-     * which will throw an Error:</caption>
-     * $( ".selector" ).ojInputNumber( { "value": "123abc" } );
-     * $( ".selector" ).ojInputNumber( { "value": "abc123" } );
-     * @example <caption>Set the <code class="prettyprint">value</code> to a number inside
-     * of quotes; this is valid and will be coerced to a number,
-     * 10 in this example:</caption>
-     * $( ".selector" ).ojInputNumber( { "value": "10" } );
-     * @example <caption>Set the <code class="prettyprint">value</code> to an empty string;
-     * this is valid and value is coerced (+), to 0 in this example:</caption>
-     * $( ".selector" ).ojInputNumber( { "value": "" } );
-     * @expose
+     * myComp.value = 20;
+     * 
+     * @expose 
      * @access public
      * @instance
      * @default <code class="prettyprint">null</code>
-     * When the option is not set, the element's dom value is used as its initial value
-     * if it exists.
+     * @ojwriteback
      * @memberof oj.ojInputNumber
-     * @type {Object|null}
+     * @type {?number}
      */
     value: null
 
@@ -679,8 +669,9 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
      * @name create
      * @memberof oj.ojInputNumber
      * @instance
-     * @property {Event} event <code class="prettyprint">jQuery</code> event object
+     * @property {Event} event event object
      * @property {Object} ui Currently empty
+     * @ignore
      *
      * @example <caption>Initialize the ojInputNumber with the <code class="prettyprint">create</code> callback specified:</caption>
      * $( ".selector" ).ojInputNumber({
@@ -746,7 +737,7 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
    * @memberof oj.ojInputNumber
    * @instance
    * @example <caption>Invoke the <code class="prettyprint">refresh</code> method:</caption>
-   * $( ".selector" ).ojInputNumber( "refresh" );
+   * myComp.refresh();
    */
   refresh: function()
   {
@@ -762,6 +753,8 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
    * @expose
    * @instance
    * @memberof oj.ojInputNumber
+   * @example <caption>Invoke the <code class="prettyprint">stepDown</code> method:</caption>
+   * myComp.stepDown();
    */
   stepDown: function(steps)
   {
@@ -776,7 +769,9 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
    * @expose
    * @instance
    * @memberof oj.ojInputNumber
-   */
+    * @example <caption>Invoke the <code class="prettyprint">stepUp</code> method:</caption>
+   * myComp.stepUp();
+  */
   stepUp: function(steps)
   {
     this._step(steps, true);
@@ -791,6 +786,7 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
    * @memberof oj.ojInputNumber
    * @instance
    * @return {jQuery} the inputnumber
+   * @ignore
    */
   widget: function()
   {
@@ -808,7 +804,7 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
   * should be aware that the component has not been rendered yet. The element DOM is available and
   * can be relied on to retrieve any default values. <p>
   * @param {!Object} originalDefaults - original default options defined on the widget and its ancestors.
-  * For example, if we have the step option defaulted to 12 in this class, it will be 12. (unless there
+  * For example, if we have the step attribute defaulted to 12 in this class, it will be 12. (unless there
   * is some global default on the component ?)
   * @param {?Object} constructorOptions - options passed into the widget constructor
   *
@@ -825,45 +821,65 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
     // the this.options.
     this._superApply(arguments);
 
-    // 'props' is the list of properties that I need to get from the dom if they aren't already defined in the options.
-    // There is no need to list defaults here like we used to do
-    // since the defaults are in originalDefaults and they are merged in with the options in the this._superApply call.
+    if (!this._IsCustomElement())
+    {
+      // 'props' is the list of properties that I need to get from the dom if they aren't already defined in the options.
+      // There is no need to list defaults here like we used to do
+      // since the defaults are in originalDefaults and they are merged in with the options in the this._superApply call.
 
-    // attribute below is the html-5 dom attribute name. If 'option' is different, like in the case of
-    // readonly (readonly html vs readOnly (camelcase) component option), specify both.
-    var props =
-      [{attribute: "disabled", validateOption: true},
-      {attribute: "placeholder"},
-      {attribute: "value"}, // don't coerce here. I do it myself
-      {attribute: "readonly", option: "readOnly", validateOption: true},
-      {attribute: "required", coerceDomValue: true, validateOption: true},
-      {attribute: "title"},
-      {attribute: "min"},
-      {attribute: "max"},
-      {attribute: "step"}];
+      // attribute below is the html-5 dom attribute name. If 'option' is different, like in the case of
+      // readonly (readonly html vs readOnly (camelcase) component option), specify both.
+      var props =
+        [{attribute: "disabled", validateOption: true},
+        {attribute: "placeholder"},
+        {attribute: "value"}, // don't coerce here. I do it myself
+        {attribute: "readonly", option: "readOnly", validateOption: true},
+        {attribute: "required", coerceDomValue: true, validateOption: true},
+        {attribute: "title"},
+        {attribute: "min"},
+        {attribute: "max"},
+        {attribute: "step"}];
 
 
-    oj.EditableValueUtils.initializeOptionsFromDom(props, constructorOptions, this,
-      // post-process callback
-      function (initializedOptions)
-      {
-        // coerce regardless of where the option value came from - dom/constructor
-        var toParse = ['value', 'step', 'min', 'max'];
-
-        for (var i=0; i<toParse.length; i++)
+      oj.EditableValueUtils.initializeOptionsFromDom(props, constructorOptions, this,
+        // post-process callback
+        function (initializedOptions)
         {
-          var opt = toParse[i];
-          var value = (opt in initializedOptions) ? initializedOptions[opt] : opts[opt];
-          if (value != null)
+        // coerce regardless of where the option value came from - dom/constructor
+          var toParse = ['value', 'step', 'min', 'max'];
+
+          for (var i=0; i<toParse.length; i++)
           {
-            if (opt === 'step')
-              initializedOptions[opt] =  self._parseStep(value);
-            else
-              initializedOptions[opt] =  self._parse(opt, value);
+            var opt = toParse[i];
+            var value = (opt in initializedOptions) ? initializedOptions[opt] : opts[opt];
+            if (value != null)
+            {
+              if (opt === 'step')
+                initializedOptions[opt] =  self._parseStep(value);
+              else
+                initializedOptions[opt] =  self._parse(opt, value);
+            }
           }
         }
+      );
+    }
+
+    // The custom element bridge framework coerces the options according to the type in the
+    // metadata file (componentRegister.js), so there is no need to do the coercion in _InitOptions
+    // for custom elements like we do above for non-custom-elements.
+    // Check the 'step' to make sure it's in the correct range.
+    if (this._IsCustomElement())
+    {
+      var optValue = opts['step'];
+      if (optValue != null)
+      {
+        // this will coerce with a + and throw an error if it is < 0.
+        // since the bridge frameworkd code already coerced step to a number before _InitOptions
+        // was called, all we care about is throwing an error if step < 0.
+        self._parseStep(optValue);
       }
-    );
+    }
+
 
     if (opts['value'] === undefined)
     {
@@ -1150,8 +1166,10 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
   {
     var coercedValue;
 
-    if (key === "value" || key === "max" || key === "min")
+    if (!this._IsCustomElement() && (key === "value" || key === "max" || key === "min"))
     {
+      // we only have to coerce for non-custom-elements since the frameworkd coerces for us for
+      // custom elements.
       coercedValue = this._parse(key, value);
     }
     else if (key === "step")
@@ -1227,29 +1245,41 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
    * <li>All messages are cleared, including custom messages added by the app. </li>
    * <li>If no converter is present then processing continues to next step. If a converter is 
    * present, the UI value is first converted (i.e., parsed). If there is a parse error then 
-   * the <code class="prettyprint">messagesShown</code> option is updated and method returns false.</li>
+   * the messages are shown.</li>
    * <li>If there are no validators setup for the component the <code class="prettyprint">value</code> 
-   * option is updated using the display value and the method returns true. Otherwise all 
+   * option is updated using the display value. Otherwise all 
    * validators are run in sequence using the parsed value from the previous step. The implicit 
    * required validator is run first if the component is marked required. When a validation error is 
    * encountered it is remembered and the next validator in the sequence is run. </li>
-   * <li>At the end of validation if there are errors, the <code class="prettyprint">messagesShown</code> 
-   * option is updated and method returns false. If there were no errors, then the 
-   * <code class="prettyprint">value</code> option is updated and method returns true.</li>
+   * <li>At the end of validation if there are errors, the messages are shown. 
+   * If there were no errors, then the 
+   * <code class="prettyprint">value</code> option is updated.</li>
    * </ol>
    * 
-   * @returns {boolean} true if component passed validation, false if there were validation errors.
-   * 
    * @example <caption>Validate component using its current value.</caption>
-   * // validate display value. 
-   * $(.selector).ojInputNumber('validate');
+   * // validate display value and shows messages if there are any to be shown.
+   * myComp.validate();
+   * @example <caption>Validate component and use the Promise's resolved state.</caption>
+   * myComp.validate().then(
+   *  function(result) {
+   *    if(result === "valid")
+   *    {
+   *      submitForm();
+   *    }
+   *  }); 
+   * @return {Promise} Promise resolves to "valid" if there were no converter parse errors and
+   * the component passed all validations. 
+   * The Promise resolves to "invalid" if there were converter parse errors or 
+   * if there were validation errors.
+   * 
    * 
    * @method
    * @access public
    * @expose
    * @instance
    * @memberof oj.ojInputNumber
-   * @since 0.7
+   * @since 4.0.0
+   * @ojstatus preview
    */
   validate : oj.EditableValueUtils.validate,
   /**
@@ -1495,20 +1525,30 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
   _draw: function()
   {
     var element = this.element;
+    var widgetId;
+    
     this.uiInputNumber = element.addClass("oj-inputnumber-input")         
             .wrap(this._uiInputNumberHtml()).parent() // @HTMLUpdateOK
             // add buttons          
             .append(this._buttonHtml()); // @HTMLUpdateOK
-     if (this.OuterWrapper) 
-     {
-        this.uiInputNumber = $(this.OuterWrapper).append(this.uiInputNumber); // @HTMLUpdateOK
-        this.uiInputNumber.addClass("oj-inputnumber oj-component");
-     }
-     else 
-     {
-        this.uiInputNumber = this.uiInputNumber.wrap("<div class='oj-inputnumber oj-component'></div>").parent(); // @HTMLUpdateOK
-     }
-
+    if (this.OuterWrapper) 
+    {
+      this.uiInputNumber = $(this.OuterWrapper).append(this.uiInputNumber); // @HTMLUpdateOK
+      this.uiInputNumber.addClass("oj-inputnumber oj-component");
+    }
+    else 
+    {
+      this.uiInputNumber = this.uiInputNumber.wrap("<div class='oj-inputnumber oj-component'></div>").parent(); // @HTMLUpdateOK
+    }
+    
+    if (this._IsCustomElement())
+    {
+      // if it is a custom element, then set the sub-id on the input so if they have a oj-label
+      // pointing to it with the 'for' attrbiute, JAWS will read the label.
+      widgetId = this.widget().attr("id");
+      if (widgetId)
+        oj.EditableValueUtils.setSubIdForCustomLabelFor(this._GetContentElement()[0], widgetId);
+    }
     //
     // TODO: need to save off attributes and reset on destroy generically.
     this.saveType = element.prop("type");
@@ -2170,7 +2210,15 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
     else
       this._spin((steps || 1) * -this.options.step);
     this._stop();
-  }
+  },
+  /**
+   * the validate method from v3.x that returns a boolean
+   * @memberof oj.ojInputNumber
+   * @instance
+   * @protected
+   * @ignore
+   */
+  _ValidateReturnBoolean: oj.EditableValueUtils._ValidateReturnBoolean,
 
   // API doc for inherited methods with no JS in this file:
 
@@ -2184,9 +2232,10 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
    * @name oj.ojInputNumber#destroy
    * @memberof oj.ojInputNumber
    * @instance
+   * @ignore
    *
    * @example <caption>Invoke the <code class="prettyprint">destroy</code> method:</caption>
-   * $( ".selector" ).ojInputNumber( "destroy" );
+   * myComp.destroy();
    */
 
       // Fragments:
@@ -2214,7 +2263,7 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
      *     <tr>
      *       <td>Input</td>
      *       <td><kbd>Tap</kbd></td>
-     *       <td>Set focus to the input. If hints, title or messages exists in a notewindow,
+     *       <td>Set focus to the input. If hints, help.instruction or messages exists in a notewindow,
      *       pop up the notewindow.</td>
      *     </tr>
      *     <tr>
@@ -2222,7 +2271,6 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
      *       <td><kbd>Touch</kbd></td>
      *       <td>Submit the value you typed in the input field.</td>
      *     </tr>
-     *     {@ojinclude "name":"labelTouchDoc"}
      *   </tbody>
      * </table>
      *
@@ -2248,7 +2296,7 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
      *     </tr>
      *     <tr>
      *       <td><kbd>Tab In</kbd></td>
-     *       <td>Set focus to input. If hints, title or messages exist in a notewindow,
+     *       <td>Set focus to input. If hints, help.instruction or messages exist in a notewindow,
      *       pop up the notewindow.</td>
      *     </tr>
      *     <tr>
@@ -2259,7 +2307,6 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
      *       <td><kbd>DownArrow</kbd></td>
      *       <td>Decrement the number.</td>
      *     </tr>
-     *     {@ojinclude "name":"labelKeyboardDoc"}
      *   </tbody>
      * </table>
      *
@@ -2283,7 +2330,7 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
  * @memberof oj.ojInputNumber
  *
  * @example <caption>Get the node for the Up arrow:</caption>
- * var node = $( ".selector" ).ojInputNumber( "getNodeBySubId", {'subId': 'oj-inputnumber-up'} );
+ * var node = myComp.getNodeBySubId('oj-inputnumber-up');
  */
 
 /**
@@ -2293,22 +2340,34 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
  * @memberof oj.ojInputNumber
  *
  * @example <caption>Get the node for the Down arrow:</caption>
- * var node = $( ".selector" ).ojInputNumber( "getNodeBySubId", {'subId': 'oj-inputnumber-down'} );
+ * var node = myComp.getNodeBySubId('oj-inputnumber-down);
  */
 
 /**
  * <p>Sub-ID for the inputNumber's input element.</p>
- * @deprecated This sub-ID is not needed.  Since the application supplies the input element, it can supply a unique ID by which the element can be accessed.
  * @ojsubid oj-inputnumber-input
  * @memberof oj.ojInputNumber
  *
  * @example <caption>Get the node for the input element:</caption>
- * var node = $( ".selector" ).ojInputNumber( "getNodeBySubId", {'subId': 'oj-inputnumber-input'} );
+ * var node = myComp.getNodeBySubId('oj-inputnumber-input');
  */
 }() ); // end of inputNumber wrapper function
 (function() {
 var ojInputNumberMeta = {
   "properties": {
+    "autocomplete": {
+      "type": "string",
+      "enumValues": ["off", "on"],
+      "extension": {
+        _COPY_TO_INNER_ELEM: true
+      }
+    },
+    "autofocus": {
+      "type": "boolean",
+      "extension": {
+        _COPY_TO_INNER_ELEM: true
+      }
+    },
     "converter": {
       "type": "Object"
     },
@@ -2318,6 +2377,12 @@ var ojInputNumberMeta = {
     "min": {
       "type": "number"
     },
+    "name": {
+      "type": "string",
+      "extension": {
+        _COPY_TO_INNER_ELEM: true
+      }
+    },
     "placeholder": {
       "type": "string"
     },
@@ -2326,7 +2391,7 @@ var ojInputNumberMeta = {
       "writeback": true,
       "readOnly": true
     },
-    "readOnly": {
+    "readonly": {
       "type": "boolean"
     },
     "required": {
@@ -2344,16 +2409,15 @@ var ojInputNumberMeta = {
     }
   },
   "methods": {
-    "destroy": {},
-    "refresh": {},
     "stepDown": {},
     "stepUp": {},
-    "widget": {},
     "validate": {}
   },
   "extension": {
+    _ALIASED_PROPS: {"readonly": "readOnly"},
     _INNER_ELEM: 'input',
-    _WIDGET_NAME: "ojInputNumber"
+    _WIDGET_NAME: "ojInputNumber",
+    _GLOBAL_TRANSFER_ATTRS: ["accesskey", "aria-label", "tabindex"]
   }
 };
 oj.CustomElementBridge.registerMetadata('oj-input-number', 'editableValue', ojInputNumberMeta);

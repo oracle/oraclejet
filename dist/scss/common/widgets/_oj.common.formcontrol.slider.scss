@@ -116,7 +116,7 @@
   background-color: $sliderThumbBgColor;
   @include oj-border-radius($sliderThumbBorderRadius);
   border: $sliderThumbBorderWidth solid $sliderThumbBorderColor;
-  @include oj-box-shadow($sliderThumbBoxShadow);
+ @include oj-box-shadow($sliderThumbBoxShadow);
 }
 
 // Thumb properties for disabled sliders.
@@ -499,9 +499,13 @@
 .oj-warning .oj-slider-color-picker .oj-slider-thumb,
 .oj-invalid .oj-slider-color-picker .oj-slider-thumb {
   background-color: transparent;
-  border-width: $sliderColorPickerThumbBorderWidth;
   @include oj-border-radius($sliderColorPickerThumbBorderRadius);
-  border-color: $sliderThumbBorderColor;
+  border: $sliderColorPickerThumbBorderWidth $sliderColorPickerThumbBorderStyle $sliderColorPickerThumbBorderColor;
+  @include oj-box-shadow($sliderColorPickerThumbBoxShadow);
+}
+
+.oj-disabled .oj-slider-color-picker .oj-slider-thumb {
+  border: $sliderColorPickerThumbBorderWidth $sliderColorPickerThumbBorderStyle $sliderThumbBorderColorDisabled;
 }
 
 .oj-slider-color-picker .oj-slider-bar {

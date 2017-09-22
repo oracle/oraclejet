@@ -1,0 +1,27 @@
+// Copyright (c) 2014, 2017, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+//*****************************************************************************
+// mixin to override icon colors
+//
+// Example usage:
+//
+// $demoIconCircleColorA: #800080;
+//
+// .demo-icon-circle-a {
+//   @include oj-icon-circle-overrides (
+//     $iconCircleInnerBgColor:      $demoIconCircleColorA,
+//     $iconCircleBorderColor: $demoIconCircleColorA);
+// }
+//
+//*****************************************************************************
+@mixin oj-icon-circle-overrides (
+    $iconCircleInnerBgColor:                       null,
+    $iconCircleBorderColor:                   null
+ )
+ {
+   .oj-icon-circle-inner {
+     background-color: $iconCircleInnerBgColor;
+   }
+   &.oj-icon-circle-border {
+     border-color: $iconCircleBorderColor;
+   }
+ }

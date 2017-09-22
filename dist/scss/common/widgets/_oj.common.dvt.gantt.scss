@@ -62,30 +62,62 @@
       font-size: $fontSize;
     }
 
-    /* Styling for all task bars */
+    /* Styling for all tasks */
     .oj-gantt-task {
       fill: $dvtGanttTaskBgColor;
+      filter: url('#ojGanttTaskTintFilter');
     }
     
-    /* Styling for all task bars when hover */
+    /* Styling for all tasks when hover */
     .oj-gantt-task.oj-hover {
       stroke-width: 2;
     }
 
-    /* Styling for all task bars when focus */
+    /* Styling for all tasks when focus */
     .oj-gantt-task.oj-focus {
       stroke-width: 2;
     }
     
-    /* Styling for all task bars when selected */
+    /* Styling for all tasks when selected */
     .oj-gantt-task.oj-selected {
       stroke: $dvtGanttTaskBorderColorSelected;
+    }
+
+    /* Styling for all task bars */
+    .oj-gantt-task-bar {
+      fill: $dvtGanttTaskBgColor;
+    }
+
+    /* Styling for all milestone tasks */
+    .oj-gantt-task-milestone {
+      fill: $dvtGanttMilestoneBgColor;
     }
 
     /* Styling for all task labels */
     .oj-gantt-task-label {
       color: $primaryTextColor;
       font-size: $smallFontSize;
+    }
+
+    /* Styling for all task progress indicators */
+    .oj-gantt-task-progress {
+      fill: $dvtGanttTaskBgColor;
+    }
+
+    /* Styling for all baseline */
+    .oj-gantt-baseline {
+      fill: $dvtGanttTaskBgColor;
+      filter: url('#ojGanttTaskShadeFilter');
+    }
+
+    /* Styling for all baseline bars */
+    .oj-gantt-baseline-bar {
+      fill: $dvtGanttTaskBgColor;
+    }
+
+    /* Styling for all milestone baseline */
+    .oj-gantt-baseline-milestone {
+      fill: $dvtGanttMilestoneBgColor;
     }
         
     /* Styling for the major time axis */

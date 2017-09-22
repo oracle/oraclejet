@@ -1,4 +1,4 @@
-# Oracle JET version 3.2.0
+# Oracle JET version 4.0.0
 
 ## About Oracle JET
 Oracle JET is targeted at intermediate to advanced JavaScript developers working on client-side applications. It's a collection of open source JavaScript libraries along with a set of Oracle contributed JavaScript libraries that make it as simple and efficient as possible to build applications that consume and interact with Oracle products and services, especially Oracle Cloud services.
@@ -27,18 +27,20 @@ Here is a list of places to see Oracle JET in action:
 
 
 ## Installation
-Oracle JET provides a Yeoman generator to help scaffold up your applications.  To install and build a blank app, type:
+Oracle JET provides a command-line interface to help scaffold up your applications.  To install and build a blank app, type:
 
 ```
-npm install -g yo grunt-cli
-npm install -g generator-oraclejet
+npm install -g @oracle/ojet-cli
 
-yo oraclejet <app name>
+ojet create <app name>
 ```
-See the [Oracle JET Developer Guide](http://docs.oracle.com/middleware/jet320/jet/) for complete installation details, including prerequisites.
+See the [Oracle JET Developer Guide](http://docs.oracle.com/middleware/jet400/jet/) for complete installation details, including prerequisites.
 
-## [Documentation](http://docs.oracle.com/middleware/jet320/jet/)
-Oracle JET comes with a full [Developers Guide](http://docs.oracle.com/middleware/jet320/jet/) to help with Getting Started and many common issues.
+## Related GitHub Projects
+All related projects on GitHub are associated under the [oracle-jet topic](https://github.com/search?q=topic%3Aoracle-jet+org%3Aoracle&type=Repositories).
+
+## [Documentation](http://docs.oracle.com/middleware/jet400/jet/)
+Oracle JET comes with a full [Developers Guide](http://docs.oracle.com/middleware/jet400/jet/) to help with Getting Started and many common issues.
 
 ## [Contributing](https://github.com/oracle/oraclejet/tree/master/CONTRIBUTING.md)
 Oracle JET is an open source project. Pull Requests are currently not being accepted. See 

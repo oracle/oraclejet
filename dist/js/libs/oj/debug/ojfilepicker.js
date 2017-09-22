@@ -14,7 +14,46 @@ define(['ojs/ojcore', 'jquery', 'knockout', 'ojs/ojcomponentcore', 'ojs/ojcompos
  */
 
 /**
- * @ignore
+ * @ojcomponent oj.ojFilePicker
+ * @since 4.0.0
+ * @ojstatus preview
+ *
+ * @classdesc 
+ * <h3 id="filePickerOverview-section">
+ *   JET FilePicker
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#filePickerOverview-section"></a>
+ * </h3>
+ * <p>Description:</p>
+ * <p>By default the file picker shows a clickable dropzone for selecting files for upload. However, it can be replaced with any clickable element like a button. After the files are selected, the FilePicker fires a "select" event with the selected files. Application has to specify the listener in order to do the actual upload</p>
+ *
+ * <pre class="prettyprint">
+ * <code>
+ * &lt;oj-file-picker on-select='{{listener}}'>
+ * &lt;/oj-file-picker>
+ * </code>
+ * </pre>
+ *
+ * <h3 id="touch-section">
+ *   Touch End User Information
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#touch-section"></a>
+ * </h3>
+ *
+ * {@ojinclude "name":"touchDoc"}
+ *
+ * <h3 id="keyboard-section">
+ *   Keyboard End User Information
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#keyboard-section"></a>
+ * </h3>
+ *
+ * {@ojinclude "name":"keyboardDoc"}
+ *
+ * <h3 id="styling-section">
+ *   Styling
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#styling-section"></a>
+ * </h3>
+ * <p> The following CSS classes can be applied by the page author as needed.</p>
+ *
+ * {@ojinclude "name":"stylingDoc"}
  */
 
 /**
@@ -26,6 +65,16 @@ define(['ojs/ojcore', 'jquery', 'knockout', 'ojs/ojcomponentcore', 'ojs/ojcompos
  * @default <code class="prettyprint">undefined</code>
  * @desc An array of strings of allowed MIME types or file extensions that can be uploaded. If not specified, accept all file types
 <p>Note: If accept is specified, files with empty string type will be rejected if no match found in the "accept" value.
+ *
+ * @example <caption>Initialize the file picker with the <code class="prettyprint">accept</code> attribute specified:</caption>
+ * &lt;oj-file-picker accept='image/*'>&lt;/oj-file-picker>
+ * 
+ * @example <caption>Get or set the <code class="prettyprint">accept</code> property after initialization:</caption>
+ * // getter
+ * var acceptValue = myFilePicker.accept;
+ * 
+ * // setter
+ * myFilePicker.accept = 'image/*';
  */
 
 /**
@@ -38,6 +87,16 @@ define(['ojs/ojcore', 'jquery', 'knockout', 'ojs/ojcomponentcore', 'ojs/ojcompos
  * @ojvalue {string} "single" single file selection
  * @default <code class="prettyprint">"multiple"</code>
  * @desc Whether to allow single or multiple file selection.
+ *
+ * @example <caption>Initialize the file picker with the <code class="prettyprint">selection-mode</code> attribute specified:</caption>
+ * &lt;oj-file-picker selection-mode='single'>&lt;/oj-file-picker>
+ * 
+ * @example <caption>Get or set the <code class="prettyprint">selectionMode</code> property after initialization:</caption>
+ * // getter
+ * var selectionModeValue = myFilePicker.selectionMode;
+ * 
+ * // setter
+ * myFilePicker.selectionMode = 'single';
  */
 
 /**
@@ -52,6 +111,16 @@ define(['ojs/ojcore', 'jquery', 'knockout', 'ojs/ojcomponentcore', 'ojs/ojcompos
  * @ojvalue {string} "clickAndDrop" either click or drag and drop to select the files
  * @default <code class="prettyprint">auto</code>
  * @desc The type of event to select the files.
+ *
+ * @example <caption>Initialize the file picker with the <code class="prettyprint">select-on</code> attribute specified:</caption>
+ * &lt;oj-file-picker select-on='click'>&lt;/oj-file-picker>
+ * 
+ * @example <caption>Get or set the <code class="prettyprint">selectOn</code> property after initialization:</caption>
+ * // getter
+ * var selectOnValue = myFilePicker.selectOn;
+ * 
+ * // setter
+ * myFilePicker.selectOn = 'click';
  */
 
 
@@ -62,9 +131,94 @@ define(['ojs/ojcore', 'jquery', 'knockout', 'ojs/ojcomponentcore', 'ojs/ojcompos
  * @instance
  * @event
  * @desc Triggered after the files are selected
- * @property {CustomEvent} event <code class="prettyprint">CustomEvent</code> object
- * @property {Object} detail detail of custom event
- * @property {FileList} detail.files The files that were just selected.
+ * @property {FileList} files The files that were just selected.
+ */
+
+/**
+ * <p>The <code class="prettyprint">trigger</code> slot is set on the custom content of the file picker.</p>
+ *
+ * @ojslot trigger
+ * @memberof oj.ojFilePicker
+ *
+ * @example <caption>Display an upload button instead of the default dropzone</caption>
+ * &lt;oj-file-picker class='oj-filepicker-custom'>
+ *   &lt;oj-button slot='trigger'>
+ *      &lt;span slot='startIcon' class='oj-fwk-icon oj-fwk-icon-arrowbox-n'>&lt;/span>
+ *      Upload
+ *   &lt;/oj-button>
+ * &lt;/oj-file-picker>
+ */
+
+/**
+ * <table class="keyboard-table">
+ *   <thead>
+ *     <tr>
+ *       <th>Target</th>
+ *       <th>Gesture</th>
+ *       <th>Action</th>
+ *     </tr>
+ *   </thead>
+ *   <tbody>
+ *     <tr>
+ *       <td>Clickable element</td>
+ *       <td><kbd>Tap</kbd></td>
+ *       <td>Launch the browser's file picker.</td>
+ *     </tr>
+ *   </tbody>
+ * </table>
+ *
+ * @ojfragment touchDoc - Used in touch gesture section of classdesc, and standalone gesture doc
+ * @memberof oj.ojFilePicker
+ */
+
+/**
+ * <table class="keyboard-table">
+ *   <thead>
+ *     <tr>
+ *       <th>Target</th>
+ *       <th>Key</th>
+ *       <th>Action</th>
+ *     </tr>
+ *   </thead>
+ *   <tbody>
+ *     <tr>
+ *       <td>Clickable element</td>
+ *       <td><kbd>Enter</kbd></td>
+ *       <td>Launch the browser's file picker.</td>
+ *     </tr>
+ *   </tbody>
+ * </table>
+ *
+ * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
+ * @memberof oj.ojFilePicker
+ */
+
+/**
+ * <table class="generic-table styling-table">
+ *   <thead>
+ *     <tr>
+ *       <th>Class</th>
+ *       <th>Description</th>
+ *     </tr>
+ *   </thead>
+ *   <tbody>
+ *     <tr>
+ *       <td>oj-filepicker-custom</td>
+ *       <td>Apply to a custom file picker if the entire dropzone is replaced with another clickable element like button or menu item. Note that the oj-filepicker-custom class doesn't have to be specified in order to change the dropzone text.</td>
+ *     </tr>
+ *     <tr>
+ *       <td>oj-filepicker-dropzone</td>
+ *       <td>Apply to the dropzone of the file picker.</td>
+ *     </tr>
+ *     <tr>
+ *       <td>oj-filepicker-text</td>
+ *       <td>Apply to the dropzone text of the file picker.</td>
+ *     </tr>
+ *   </tbody>
+ * </table>
+ *
+ * @ojfragment stylingDoc - Used in Styling section of classdesc, and standalone Styling doc
+ * @memberof oj.ojFilePicker
  */
 
 var pickerMetadata =
@@ -98,7 +252,7 @@ var pickerView =
   "  <oj-slot name='trigger'>" +
   "    <div tabindex='0'" +
   "         class='oj-filepicker-dropzone'>" +
-  "      <p class='oj-filepicker-text' data-bind='text: dropzoneText'></p>" +
+  "      <p class='oj-filepicker-text' data-bind='text: defDropzoneText'></p>" +
   "    </div>" +
   "  </oj-slot>" +
   "</div>";
@@ -153,8 +307,7 @@ function pickerViewModel (context) {
     }
   };
 
-  // Composite lifecycle listener 
-  self['dropzoneText'] = oj.Translations.getTranslatedString("oj-ojFilePicker.dropzoneText");
+  self['defDropzoneText'] = oj.Translations.getTranslatedString("oj-ojFilePicker.dropzoneText");
 
   self['bindingsApplied'] = function(context) {
     var $elem = $(element);
@@ -310,10 +463,6 @@ function pickerViewModel (context) {
     return validCnt? getAccepted(files) : validCnt;
   };
 
-  function getDragEvent(event) {
-    return (event instanceof DragEvent) ? event : event.originalEvent;
-  };
-
   //don't add "oj-valid-drop" class here because
   //hover effect is lost when dragging over the upload text
   function handleDragEnter(event) {
@@ -328,19 +477,23 @@ function pickerViewModel (context) {
 
     //NOTE: dragged files not available
     // event.dataTransfer.files = null (firefox)
-    // event.dataTransfer.files.length = 0 (chrome and IE)
-    // use dataTransfer.items.type intead
-    var dragEvent = getDragEvent(event);
-    var droppable = checkDroppable(dragEvent.dataTransfer.items);
+    // event.dataTransfer.files.length = 0 (chrome, IE, Edge and Safari)
+    // use dataTransfer.items.type instead (works in chrome, firefox and Edge)
+    // event.dataTransfer.items = undefined (not work in IE and safari, just don't display ghost buster)
+
+    // - drag and drop to ojfilepicker fails on safari
+    var dataTransfer = event.dataTransfer;
+    var droppable = (! dataTransfer.items) || checkDroppable(dataTransfer.items);
 
     if (droppable) {
       // Explicitly show this is a copy.
-      dragEvent.dataTransfer.dropEffect = "copy"; 
+      dataTransfer.dropEffect = "copy"; 
       $dropzone.addClass("oj-valid-drop");
     }
     else {
-      // This is an invalid drop, show don't drop here cursor
-      dragEvent.dataTransfer.dropEffect = "none"; 
+      // This is an invalid drop, show don't drop here cursor, 
+      // NOTE: dropEffect doesn't work in Edge
+      dataTransfer.dropEffect = "none"; 
     }
     return droppable;
   };
@@ -363,11 +516,11 @@ function pickerViewModel (context) {
   };
 
   function handleFileDrop(event) {
-    var files = getDragEvent(event).dataTransfer.files;
+    var files = event.dataTransfer.files;
     var droppable = checkDroppable(files);
     if (droppable) {
       //add files to upload queue
-      handleFilesAdded(getDragEvent(event).dataTransfer.files, event);
+      handleFilesAdded(files, event);
     }
     else {
       oj.Logger.warn("oj-file-picker: Files " + getFileNames(files) + 
@@ -392,15 +545,69 @@ oj.Composite.register('oj-file-picker',
   "metadata": {"inline": pickerMetadata}
 });
 
-
+/**
+ * Sets a property or a single subproperty for complex properties and notifies the component
+ * of the change, triggering a [property]Changed event.
+ * 
+ * @function setProperty
+ * @param {string} property - The property name to set. Supports dot notation for subproperty access.
+ * @param {*} value - The new value to set the property to.
+ * 
+ * @expose
+ * @memberof oj.ojFilePicker
+ * @instance
+ * 
+ * @example <caption>Set a single subproperty of a complex property:</caption>
+ * myComponent.setProperty('complexProperty.subProperty1.subProperty2', "someValue");
+ */ 
+/**
+ * Retrieves a value for a property or a single subproperty for complex properties.
+ * @function getProperty
+ * @param {string} property - The property name to get. Supports dot notation for subproperty access.
+ * @return {*}
+ * 
+ * @expose
+ * @memberof oj.ojFilePicker
+ * @instance
+ * 
+ * @example <caption>Get a single subproperty of a complex property:</caption>
+ * var subpropValue = myComponent.getProperty('complexProperty.subProperty1.subProperty2');
+ */ 
+/**
+ * Performs a batch set of properties.
+ * @function setProperties
+ * @param {Object} properties - An object containing the property and value pairs to set.
+ * 
+ * @expose
+ * @memberof oj.ojFilePicker
+ * @instance
+ * 
+ * @example <caption>Set a batch of properties:</caption>
+ * myComponent.setProperties({"prop1": "value1", "prop2.subprop": "value2", "prop3": "value3"});
+ */ 
 // Copyright (c) 2017, Oracle and/or its affiliates. All rights reserved.
 /**
- * @ignore
+ * File Upload Transport Interface
+ *
+ * This interface defines the API to communicate/send data to the server asynchronously. It is 
+ * designed to reflect the needs of the Jet File Upload UI as opposed to being some general 
+ * File Upload API. Application must implement the FileUploadTransport interface to use the JET 
+ * File Upload Component. The implementation of this interface should handle the details of features
+ * supported by the server such as multipart upload, chunking, concurrent upload, queuing files, 
+ * abort pause/resume etc.
+ *
+ * <p>
+ * See {@link oj.ProgressItem}
+ * </p>
+ * @ojstatus preview
+ * @export
+ * @interface FileUploadTransport
+ * @memberof oj
  */
 
 /**
- * This method queues up files for upload. It returns an array of ProgressItem objects. 
- * Each file corresponds to a ProgressItem object.
+ * This method queues up files for upload. It returns an array of <code class="prettyprint">ProgressItem</code> objects. 
+ * Each file corresponds to a <code class="prettyprint">ProgressItem</code> object.
  * These items can be uploaded by calling the flush method.
  *
  * @method
@@ -408,7 +615,7 @@ oj.Composite.register('oj-file-picker',
  * @memberof oj.FileUploadTransport
  * @instance
  * @param {FileList} fileList A list contains the File objects to be queued.
- * @returns {Array} an array of ProgressItem objects. 
+ * @returns {Array} an array of <code class="prettyprint">ProgressItem</code> objects. 
  *
  * @example <caption>Upload files</caption>
  * var uploadTransport = new oj.FileUploadTransport();
@@ -428,7 +635,7 @@ oj.Composite.register('oj-file-picker',
  *
  * var uploadTransport = new oj.FileUploadTransport();
  * uploadTransport.queue(fileList); 
- * transport.flush();
+ * uploadTransport.flush();
  *
  */
 

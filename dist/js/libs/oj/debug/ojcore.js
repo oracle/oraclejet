@@ -46,9 +46,9 @@ var _oldVal = _scope['oj'];
  */
 var oj = _scope['oj'] =
 {
-  'version': "3.2.0",
-  'build' : "4",
-  'revision': "35665",
+  'version': "4.0.0",
+  'build' : "3",
+  'revision': "37938",
           
   // This function is only meant to be used outside the library, so quoting the name
   // to avoid renaming is appropriate
@@ -149,7 +149,7 @@ oj.Logger._options = oj.Logger._defaultOptions;
 /*public members*/
 /**
  * Writes an error message.
- * @param {...} args The method supports a variable number of arguments, string substitutions and accepts a function as a parameter.
+ * @param {...(Object|string|number)} args The method supports a variable number of arguments, string substitutions and accepts a function as a parameter.
  *                                See examples in the overview section above.
  * @export
  */
@@ -160,7 +160,7 @@ oj.Logger.error = function(args)
 
 /**
  * Writes an informational  message.
- * @param {...} args The method supports a variable number of arguments, string substitutions and accepts a function as a parameter.
+ * @param {...(Object|string|number)} args The method supports a variable number of arguments, string substitutions and accepts a function as a parameter.
  *                                See examples in the overview section above.
  * @export
  */
@@ -171,7 +171,7 @@ oj.Logger.info = function(args)
 
 /**
  * Writes a warning message.
- * @param {...} args The method supports a variable number of arguments, string substitutions and accepts a function as a parameter.
+ * @param {...(Object|string|number)} args The method supports a variable number of arguments, string substitutions and accepts a function as a parameter.
  *                                See examples in the overview section above.
  * @export
  */
@@ -182,7 +182,7 @@ oj.Logger.warn = function(args)
 
 /**
  * Writes a general message.
- * @param {...} args The method supports a variable number of arguments, string substitutions and accepts a function as a parameter.
+ * @param {...(Object|string|number)} args The method supports a variable number of arguments, string substitutions and accepts a function as a parameter.
  *                                See examples in the overview section above.
  * @export
  */
@@ -410,7 +410,7 @@ oj.CHECKPOINT_MANAGER.dump = function (regexp)
 
 
 /**
- * @constructor
+ * @constructor oj.Object
  * @export
  */
 oj.Object = function()
@@ -442,6 +442,8 @@ oj.Object.prototype.constructor = oj.Object;
  *
  * The method delegates to goog.exportProperty() for exporting a symbol with Closure compiler,
  * while recording a map of the renamed names to an original names and a map of original names to the renamed names
+ * @method exportPrototypeSymbol
+ * @memberof oj.Object
  * @param {string} name - name of the property ('CCCC.prototype.FFFF' is expected)
  * @param {Object} valueMapping - a name-value pair, where tke key is the renamed name (renamed FFFF), and the value is the refernce to the member function
  * whose name was exported
@@ -485,6 +487,8 @@ oj.Object.exportPrototypeSymbol = function(name, valueMapping)
 
 /**
  * Creates a subclass of a baseClass
+ * @method createSubclass
+ * @memberof oj.Object
  * @param {Object} extendingClass The class to extend from the base class
  * @param {Object} baseClass class to make the superclass of extendingClass
  * @param {string=} typeName to use for new class.  If not specified, the typeName will be extracted from the
@@ -533,6 +537,8 @@ oj.Object.createSubclass = function(
  * from the source object's prototype chain will not be included.
  * To copy properties from another class with methods defined on the prototype, pass
  * otherClass.prototype as the source.
+ * @method copyPropertiesForClass
+ * @memberof oj.Object
  * @param {Object} targetClass - the function whose prototype will be used a
  * copy target
  * @param {Object} source - object whose properties will be copied
@@ -563,6 +569,9 @@ oj.Object._tempSubclassConstructor = function(){};
 
 /**
  * Returns the class object for the instance
+ * @method getClass
+ * @memberof oj.Object
+ * @instance
  * @param {Object=} otherInstance - if specified, the instance whose type
  * should be returned. Otherwise the type if this instance will be returned
  * @return {Object} the class object for the instance
@@ -586,6 +595,9 @@ oj.Object.prototype.getClass = function(
 /**
  * Returns a clone of this object.  The default implementation is a shallow
  * copy.  Subclassers can override this method to implement a deep copy.
+ * @method clone
+ * @memberof oj.Object
+ * @instance
  * @return {Object} a clone of this object
  * @export
  */
@@ -600,6 +612,10 @@ oj.Object.prototype.clone = function()
 
 /**
  * @export
+ * @method toString
+ * @memberof oj.Object
+ * @instance
+ * @return {string}
  */
 oj.Object.prototype.toString = function()
 {
@@ -608,6 +624,10 @@ oj.Object.prototype.toString = function()
 
 /**
  * @export
+ * @method toDebugString
+ * @memberof oj.Object
+ * @instance
+ * @return {string}
  */
 oj.Object.prototype.toDebugString = function()
 {
@@ -617,8 +637,11 @@ oj.Object.prototype.toDebugString = function()
 
 /**
  * Returns the type name for a class derived from oj.Object
+ * @method getTypeName
+ * @memberof oj.Object
+ * @instance
  * @param {Object|null} clazz Class to get the name of
- * @return {String} name of the Class
+ * @return {string} name of the Class
  * @export
  */
 oj.Object.getTypeName = function(clazz)
@@ -650,7 +673,9 @@ oj.Object.getTypeName = function(clazz)
 
 /**
  * Returns the type name for this instance
- * @return {String} name of the Class
+ * @method getTypeName
+ * @memberof oj.Object
+ * @return {string} name of the Class
  * @final
  * @export
  */
@@ -663,6 +688,9 @@ oj.Object.prototype.getTypeName = function()
  * Initializes the instance.  Subclasses of oj.Object must call
  * their superclass' Init
  * @export
+ * @method Init
+ * @memberof oj.Object
+ * @instance
  */
 oj.Object.prototype.Init = function()
 {
@@ -686,6 +714,8 @@ oj.Object.prototype.Init = function()
  * still need to ensure that their class has been initialized when the factory
  * method is called.
  *
+ * @method ensureClassInitialization
+ * @memberof oj.Object
  * @param {Object} clazz The class to ensure initialization of
  * @export
  */
@@ -702,6 +732,9 @@ oj.Object.ensureClassInitialization = function(clazz)
 /**
  * Indicates whether some other oj.Object is "equal to" this one.
  * Method is equivalent to java ".equals()" method.
+ * @method equals
+ * @memberof oj.Object
+ * @instance
  * @param {Object} object - comparison target
  * @return {boolean} true if if the comparison target is equal to this object, false otherwise
  * @export
@@ -714,6 +747,8 @@ oj.Object.prototype.equals = function(
 
 /**
  * Binds the supplied callback function to an object
+ * @method createCallback
+ * @memberof oj.Object
  * @param {Object!} obj - object that will be available to the supplied callback
  * function as 'this'
  * @param {Object!} func - the original callback
@@ -782,6 +817,8 @@ oj.Object._initClasses = function(currClass)
  *
  * @public
  * @export
+ * @method compareValues
+ * @memberof oj.Object
  */
 oj.Object.compareValues = function (obj1, obj2)
 {
@@ -986,6 +1023,11 @@ oj.Object.__innerEquals = function (obj1, obj2) {
   return true;
 };
 
+/**
+ * @method isEmpty
+ * @return {boolean}
+ * @memberof oj.Object
+ */
 oj.Object.isEmpty = function(object) {
     var prop;
     // Test if an object is empty
@@ -1724,7 +1766,8 @@ oj.EventSource.prototype.Init = function()
 };
 
 /**
- * Attach an event handler
+ * Attach an event handler.
+ * <p>Application can call this if it wants to be notified of an event.  It can call the <code class="prettyprint">off</code> method to detach the handler when it no longer wants to be notified.</p>
  * @param {string} eventType eventType
  * @param {function(Object)} eventHandler event handler function
  * @export
@@ -1747,7 +1790,8 @@ oj.EventSource.prototype.on = function(eventType, eventHandler)
 };
 
 /**
- * Detach an event handler
+ * Detach an event handler.
+ * <p>Application can call this if it no longer wants to be notified of an event that it has attached an handler to using the <code class="prettyprint">on</code> method.</p>
  * @param {string} eventType eventType
  * @param {function(Object)} eventHandler event handler function
  * @export
@@ -1802,13 +1846,16 @@ oj.EventSource.prototype.handleEvent = function(eventType, event)
 /*global require:false,ojt:true */
 
 /**
- * @class Services for setting and retrieving configuration options
+ * @class oj.Config
+ * @classdesc Services for setting and retrieving configuration options
  * @export
  */
 oj.Config = {};
 
 /**
  * Retrieves the current locale
+ * @memberof oj.Config
+ * @method getLocale
  * @return {string} current locale
  * @export 
  */
@@ -1817,7 +1864,7 @@ oj.Config.getLocale = function()
   var rl, loc;
   if (oj.__isAmdLoaderPresent())
   {
-    oj.Assert.assert(ojt !== undefined, "ojtranslations module must be defined");
+    oj.Assert.assert(typeof ojt !== 'undefined', "ojtranslations module must be defined");
     rl = ojt['_ojLocale_'];
     
     // If Require.js internationalziation plugin resolved the locale to "root" (presumably because "lang" attribute was not
@@ -1841,11 +1888,13 @@ oj.Config.getLocale = function()
 
 /**
  * Changes the current locale
+ * @method setLocale
  * @param {string} locale (language code and subtags separated by dash)
  * @param {Function} callback - for applications running with an AMD Loader (such as Require.js), this optional callback 
  * will be invoked when the framework is done loading its translated resources and Locale Elements for the newly specified locale. 
  * For applications running without an AMD loader, this optional callback will be invoked immediately
  * @export
+ * @memberof oj.Config
  */
 oj.Config.setLocale = function(locale, callback)
 {
@@ -1915,11 +1964,12 @@ oj.Config.setLocale = function(locale, callback)
  * 2. Otherwise, if the application running with an AMD Loader (such as Require.js), the parent folder of a 
  * module with ojs/ mapping will be used as a base URL.
  * 3. Otherwise, the original relative path will be returned.
- * 
+ * @method getResourceUrl
  * @param {string} relativePath resource path
  * @return {string} resource URL
  * @see oj.Config.setResourceBaseUrl
  * @export
+ * @memberof oj.Config
  */
 oj.Config.getResourceUrl = function(relativePath)
 {
@@ -1950,9 +2000,11 @@ oj.Config.getResourceUrl = function(relativePath)
 
 /**
  * Sets the base URL for retrieving component-specific resources
+ * @method setResourceBaseUrl
  * @param {string} baseUrl base URL
  * @see oj.Config.getResourceUrl
  * @export
+ * @memberof oj.Config
  */
 oj.Config.setResourceBaseUrl = function(baseUrl)
 {
@@ -1961,9 +2013,11 @@ oj.Config.setResourceBaseUrl = function(baseUrl)
 
 /**
  * Sets the automation mode.
+ * @method setAutomationMode
  * @param {string} mode "enabled" for running in automation mode
  * @see oj.Config.getAutomationMode
  * @export
+ * @memberof oj.Config
  */
 oj.Config.setAutomationMode = function(mode)
 {
@@ -1972,9 +2026,11 @@ oj.Config.setAutomationMode = function(mode)
 
 /**
  * Gets the automation mode.
+ * @method getAutomationMode
  * @return {string} automation mode
  * @see oj.Config.setAutomationMode
  * @export
+ * @memberof oj.Config
  */
 oj.Config.getAutomationMode = function()
 {
@@ -1984,9 +2040,10 @@ oj.Config.getAutomationMode = function()
 /**
  * Return a string containing important version information about JET and the libraries
  * it has loaded
- * 
+ * @method getVersionInfo 
  * @return {string}
  * @export
+ * @memberof oj.Config
  */
 oj.Config.getVersionInfo = function()
 {
@@ -2026,12 +2083,163 @@ oj.Config.getVersionInfo = function()
 /**
  * Dump information to the browser's console containing important version information about JET and
  * the libraries it has loaded
+ * @method logVersionInfo 
+ * @memberof oj.Config
  * @export
  */
 oj.Config.logVersionInfo = function()
 {
     console.log(oj.Config.getVersionInfo());
 };
+/* The custom element (webcomponents) support requires the native CustomEvent
+ * object.  This polyfill provides CustomEvent implementation for browsers that
+ * don't support it yet.
+ */
+(function () {
+
+  if (typeof window === 'undefined') {
+    return;
+  }
+
+  // defaultPrevented is broken in IE.
+  // https://connect.microsoft.com/IE/feedback/details/790389/event-defaultprevented-returns-false-after-preventdefault-was-called
+  var workingDefaultPrevented = (function() {
+    var e = document.createEvent('Event');
+    e.initEvent('foo', true, true);
+    e.preventDefault();
+    return e.defaultPrevented;
+  })();
+
+  if (!workingDefaultPrevented) {
+    var origPreventDefault = Event.prototype.preventDefault;
+    Event.prototype.preventDefault = function() {
+      if (!this.cancelable) {
+        return;
+      }
+
+      origPreventDefault.call(this);
+
+      Object.defineProperty(this, 'defaultPrevented', {
+        get: function() {
+          return true;
+        },
+        configurable: true
+      });
+    };
+  }
+
+  if (typeof window['CustomEvent'] === "function") {
+    return;
+  }
+
+  function CustomEvent (event, params) {
+    params = params || {bubbles: false, cancelable: false, detail: undefined};
+
+    var evt = document.createEvent('CustomEvent');
+
+    evt.initCustomEvent(event, params.bubbles, params.cancelable, params.detail );
+    return evt;
+   }
+
+  CustomEvent.prototype = window.Event.prototype;
+
+  window['CustomEvent'] = CustomEvent;
+})();
+
+/* This polyfill implements a proposed Microsoft standard [1] for effective yielding.
+ * With the setImmediate global function, developers can yield control flow to the
+ * user agent before running script.  The yield is similar to the setTimeout function
+ * in that it is evaluated in the macrotask queue.  However, the setTimeout often has
+ * a minimum delay and is also subject to long delays when the browser is placed in the
+ * background.  The setImmediate function implemented by this polyfill invokes the
+ * callback in the "next-tick" after the current macrotask queue has been exhausted.
+ *
+ * [1] https://dvcs.w3.org/hg/webperf/raw-file/tip/specs/setImmediate/Overview.html
+ *
+ * The strategy for the polyfill implementation uses the window.postMessage API for
+ * creating a context for calling the target function evaulated as a macrotask. This
+ * plugin will not work in a webworker where the window object doesn't exist.
+ */
+(function ()
+{
+
+  if (typeof window === 'undefined' || window["setImmediate"] || !window["postMessage"])
+  {
+    return;
+  }
+
+  var _setImmediateMap;
+
+  var _setImmediateCounter;
+  function _nextId()
+  {
+    if (isNaN(_setImmediateCounter))
+      _setImmediateCounter = 0;
+
+    return ++_setImmediateCounter;
+  }
+
+  // postMessage "message" event listener for the setImmediate impl
+  function _nextTickHandler (event)
+  {
+    var data = event.data;
+    if (!data || "oj-setImmeidate" !== data.message)
+      return;
+
+    var id = data.id;
+    var entry = _setImmediateMap.get(id);
+    clearImmediateImpl(id);
+
+    if (entry)
+    {
+      var callback = entry.callback;
+      var args = entry.args;
+      callback.apply(window, args);
+    }
+  };
+
+  function setImmediateImpl ()
+  {
+    var callback = arguments[0];
+    var slice = Array.prototype.slice;
+    var args = slice.call(arguments, 1);
+
+    if (typeof callback !== "function")
+      callback = new Function(callback.toString());
+
+    var id = _nextId();
+
+    if (!_setImmediateMap)
+      _setImmediateMap = new Map();
+
+    _setImmediateMap.set(id, {callback: callback, args: args});
+
+    if (_setImmediateMap.size === 1)
+      window.addEventListener("message", _nextTickHandler);
+
+    window.postMessage({id: id, message: "oj-setImmeidate"}, "*");
+    return id;
+  }
+
+  function clearImmediateImpl(id)
+  {
+    if (!_setImmediateMap)
+      return;
+
+    _setImmediateMap.delete(id);
+
+    if (_setImmediateMap.size < 1)
+    {
+      window.removeEventListener("message", _nextTickHandler);
+      _setImmediateMap = null;
+    }
+  }
+
+  window["setImmediate"] = setImmediateImpl;
+  window["clearImmediate"] = clearImmediateImpl;
+})();
+
+
 /**
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
@@ -2239,8 +2447,8 @@ oj.AgentUtils._parseFloatVersion = function (userAgent, versionNumberPattern)
 /*jslint browser: true*/
 
 /**
- * 
- * @class Services for getting information from the theme
+ * @class oj.ThemeUtils
+ * @classdesc Services for getting information from the theme
  * @since 1.2.0
  * @export
  */
@@ -2248,6 +2456,8 @@ oj.ThemeUtils = function(){};
 
 /**
  * get the name of the current theme
+ * @method getThemeName
+ * @memberof oj.ThemeUtils
  * @export
  * @static
  *
@@ -2267,7 +2477,8 @@ oj.ThemeUtils.getThemeName = function()
  * get the target platform of the current theme
  * @export
  * @static
- *
+ * @method getThemeTargetPlatform
+ * @memberof oj.ThemeUtils
  * @return {String|null} the target platform can be any string the theme 
  * wants to send down, but the usual values are 'web', 'ios', 'android', 'windows'
  */
@@ -2286,7 +2497,8 @@ oj.ThemeUtils.getThemeTargetPlatform = function()
  * clear values cached in  [oj.ThemeUtils.parseJSONFromFontFamily]{@link oj.ThemeUtils.parseJSONFromFontFamily}
  * @export
  * @static
- *
+ * @method clearCache
+ * @memberof oj.ThemeUtils
  */
 oj.ThemeUtils.clearCache = function()
 {
@@ -2336,7 +2548,8 @@ oj.ThemeUtils.clearCache = function()
  * <p>
  * If new css is loaded call oj.ThemeUtils.clearCache to clear the cache</p>
  *
- *
+ * @method parseJSONFromFontFamily
+ * @memberof oj.ThemeUtils
  * @param {string} selector a class selector name, for example 'demo-map-json';
  * @return {*} the result of parsing the font family with JSON.parse. 
  *      The returned value is cached, so if you modify the returned 
@@ -2423,7 +2636,6 @@ oj.ThemeUtils.parseJSONFromFontFamily = function(selector)
     {
       // remove inconsistent quotes
       var fontstring = rawfontstring.replace(/^['"]+|\s+|\\|(;\s?})+|['"]$/g, '');
-
       //console.log("json fontstring for selector " + selector + ': ' + fontstring);
 
       if (fontstring)
@@ -2435,12 +2647,38 @@ oj.ThemeUtils.parseJSONFromFontFamily = function(selector)
         }
         catch(e)
         {
-          oj.Logger.error("Error parsing json for selector " + selector + 
-                          ".\nString being parsed is " + fontstring + ". Error is:\n", e);
-          
-          // remove the meta tag
-          document.head.removeChild(elem); // @HTMLUpdateOK 
-          throw e;
+
+          // In Firefox you can turn off the page font
+          // Options -> Content -> Fonts and Colors -> Advanced
+          // Uncheck the "Allow pages to choose their own fonts, instead of my selections above" 
+          // In that case they stick something like 'serif,"'at the front of the font family,
+          // so search for the first comma, add 2, and try parsing again.
+          var commaindex = fontstring.indexOf(',');
+          var reparseSuccess = false;
+
+          if (commaindex > -1)
+          {
+            fontstring = fontstring.substring(commaindex + 2);
+
+            try {
+
+              jsonval = JSON.parse(fontstring);
+              reparseSuccess = true;
+            }
+            catch(e2)
+            {
+            }
+          }
+
+          if (reparseSuccess == false)
+          {
+            oj.Logger.error("Error parsing json for selector " + selector + 
+                            ".\nString being parsed is " + fontstring + ". Error is:\n", e);
+            
+            // remove the meta tag
+            document.head.removeChild(elem); // @HTMLUpdateOK 
+            throw e;
+          }
 
         }
       }
@@ -2475,7 +2713,12 @@ oj.ThemeUtils.parseJSONFromFontFamily = function(selector)
 
 
 /**
- * @class Utilities for responsive pages.
+ * @class oj.ResponsiveUtils
+ * @classdesc Utilities for working with the framework's responsive screen widths 
+ * and ranges. Often used in conjunction with {@link oj.ResponsiveKnockoutUtils} 
+ * to create knockout observables that can be used to drive responsive page behavior. 
+ * See the method doc below for specific examples.
+ * 
  * @since 1.1.0
  * @export
  */
@@ -2494,6 +2737,7 @@ oj.ResponsiveUtils = function() {};
  *
  * <p>These constants are used to identify these ranges.</p>
  * @enum {string}
+ * @memberof oj.ResponsiveUtils
  * @constant
  * @export
  */
@@ -2537,6 +2781,7 @@ oj.ResponsiveUtils.SCREEN_RANGE ={
  *
  * <p>These constants are used to identify these queries.</p>
  * @enum {string}
+ * @memberof oj.ResponsiveUtils
  * @constant
  * @export
  */
@@ -2684,8 +2929,25 @@ oj.ResponsiveUtils._getMediaQueryFromClass = function(selector)
 }
 
 /**
- * Get a framweork (built in) media query
+ * Get a framework (built in) media query string, 
+ * see {@link oj.ResponsiveUtils.FRAMEWORK_QUERY_KEY} for details on framework queries. 
+ * The media query string returned can be passed to 
+ * {@link oj.ResponsiveKnockoutUtils.createMediaQueryObservable} to create a knockout
+ * observable, which in turn can be used to drive responsive page behavior.
+ * 
+ * <p>Example:</p>
+ * <pre class="prettyprint">
+ * <code>
  *
+ *     var lgQuery = oj.ResponsiveUtils.getFrameworkQuery(
+ *                             oj.ResponsiveUtils.FRAMEWORK_QUERY_KEY.LG_UP);
+ *        
+ *     self.large = oj.ResponsiveKnockoutUtils.createMediaQueryObservable(lgQuery);
+ * </code></pre>
+ * 
+ *
+ * @method getFrameworkQuery
+ * @memberof oj.ResponsiveUtils
  * @param {oj.ResponsiveUtils.FRAMEWORK_QUERY_KEY} frameworkQueryKey one of the FRAMEWORK_QUERY_KEY constants,
  *                       for example oj.ResponsiveUtils.FRAMEWORK_QUERY_KEY.MD_UP
  * @return {string | null} the media query to use for the framework query key passed in
@@ -2705,6 +2967,33 @@ oj.ResponsiveUtils.getFrameworkQuery = function(frameworkQueryKey)
 
 
 /**
+ * <p> Compare can be used in conjunction with 
+ * {@link oj.ResponsiveKnockoutUtils.createScreenRangeObservable}</p>
+ *
+ * 
+ * <p>Example:</p>
+ * <pre class="prettyprint">
+ * <code>
+ *        // create an observable which returns the current screen range
+ *        self.screenRange = oj.ResponsiveKnockoutUtils.createScreenRangeObservable();
+ *
+ *        self.label2 = ko.computed(function() {
+ *          var range = self.screenRange();
+ * 
+ *          if ( oj.ResponsiveUtils.compare( 
+ *                       range, oj.ResponsiveUtils.SCREEN_RANGE.MD) <= 0)
+ *          {
+ *            // code for when screen is in small or medium range
+ *          }
+ *          else if (range == oj.ResponsiveUtils.SCREEN_RANGE.XL)
+ *          {
+ *            // code for when screen is in XL range
+ *          }
+ *        });
+ * </code></pre>
+ * 
+ * @method compare
+ * @memberof oj.ResponsiveUtils
  * @param {oj.ResponsiveUtils.SCREEN_RANGE} size1 one of the screen size constants,
  * for example oj.ResponsiveUtils.SCREEN_RANGE.MD
  * @param {oj.ResponsiveUtils.SCREEN_RANGE} size2 one of the screen size constants,
@@ -2828,6 +3117,33 @@ oj.StringUtils.hashCode = function(str)
   }
   return hash;
 };
+
+
+//Polyfills for IE11
+(function () {  
+  // String.startsWith requires for IE11
+  if (!String.prototype.startsWith) {
+    String.prototype.startsWith = function(searchString, position){
+      position = position || 0;
+      return this.substr(position, searchString.length) === searchString;
+    };
+  }
+
+  // String.endsWith requires for IE11
+  if (!String.prototype.endsWith) {
+    String.prototype.endsWith = function(searchString, position) {
+      var subjectString = this.toString();
+      if (typeof position !== 'number' || !isFinite(position) || 
+          Math.floor(position) !== position || position > subjectString.length) {
+        position = subjectString.length;
+      }
+      position -= searchString.length;
+      var lastIndex = subjectString.lastIndexOf(searchString, position);
+      return lastIndex !== -1 && lastIndex === position;
+    };
+  }
+})();
+
 /*
 ** Copyright (c) 2004, 2012, Oracle and/or its affiliates. All rights reserved.
 */
@@ -2967,7 +3283,8 @@ oj.CollectionUtils._copyIntoImpl = function(
 /*global ojt:false*/
 
 /**
- * @class Services for Retrieving Translated Resources
+ * @class oj.Translations
+ * @classdesc Services for Retrieving Translated Resources
  * @export
  */
 oj.Translations = {};
@@ -2978,6 +3295,8 @@ oj.Translations = {};
  * translated strings for JET.
  * This method may also be used by an application that wants to completely replace the resource bundle that is automatically
  * fetched by an AMD loader.
+ * @method setBundle
+ * @memberof oj.Translations
  * @param {Object} bundle resource bundle that should be used by the framework
  * @export
  */
@@ -2988,6 +3307,8 @@ oj.Translations.setBundle = function(bundle)
 
 /**
  * Retrives a translated resource for a given key
+ * @method getResource
+ * @memberof oj.Translations
  * @param {string} key resource key The dot character (.) within the key string
  * is interpreted as a separator for the name of a sub-section within the bundle.
  * For example, 'components.chart', would be read as the 'chart' section within
@@ -3002,6 +3323,8 @@ oj.Translations.getResource = function(key)
 
 /**
  * Applies parameters to a format pattern
+ * @method applyParameters
+ * @memberof oj.Translations
  * @param {string} pattern pattern that may contain tokens like {0}, {1}, {name}. These tokens
  * will be used to define string keys for retrieving values from the parameters
  * object. Token strings should not contain comma (,) 
@@ -3014,7 +3337,7 @@ oj.Translations.getResource = function(key)
  * @param {Object|Array} parameters parameters to be inserted into the string. Both arrays and
  * Javascript objects with string keys are accepted.
  * 
- * @return formatted message or null if the pattern argument was null
+ * @return {string|null} formatted message or null if the pattern argument was null
  * @export
  */
 oj.Translations.applyParameters = function(pattern, parameters)
@@ -3032,6 +3355,8 @@ oj.Translations.applyParameters = function(pattern, parameters)
  * $ { } [ ]  
  * These characters will not appear in the formatted output unless they are escaped
  * with a dollar character ('$').
+ * @method getTranslatedString
+ * @memberof oj.Translations
  * @param {string} key  translations resource key. The dot character (.) within the key string
  * is interpreted as a separator for the name of a sub-section within the bundle.
  * For example, 'components.chart', would be read as the 'chart' section within
@@ -3083,8 +3408,10 @@ oj.Translations.getTranslatedString = function(key, var_args)
 
 /**
  * Provides a key-to-value map of the translated resources for a given component name
+ * @method getComponentTranslations
+ * @memberof oj.Translations
  * @param {string} componentName name of the component
- * @return a map of translated resources
+ * @return {Object} a map of translated resources
  * @export
  */
 oj.Translations.getComponentTranslations = function(componentName)
@@ -3277,6 +3604,7 @@ oj.Translations._getBundle = function()
  * while it is performing a task such as animation or fetching data.
  *
  * @ignore
+ * @protected
  * @constructor
  * @param {Function|Object|undefined} description of the component and cause
  *        of the busy state
@@ -3392,15 +3720,18 @@ oj.BusyState._getTs = function ()
  * <p>The purpose of the BusyContext API is to accommodate sequential dependencies of asynchronous
  * operations. A common use cases defining the API is for automation testing (qunit and webdriver).
  * Automation test developers can use this API to wait until components finish animation effects
- * or data fetch before trying to interact with components.</p>
+ * or data fetch before trying to interact with components. The BusyContext is not limited to
+ * test automation developers usages. It is also needed by page developers for waiting on run-time
+ * operation readiness.</p>
  *
- * The Busy Context API will block until all the busy states have resolved or a timeout period
- * has elapsed. There are four primary wait scenarios:
+ * The Busy Context API will wait until busy states have resolved or a timeout period has elapsed.
+ * There are several primary wait scenarios:
  * <ol>
- *   <li>Components that implement new animation effects.</li>
+ *   <li>Component creation and page bindings applied.</li>
+ *   <li>Components that implement animation effects.</li>
  *   <li>Components that must fetch data from a REST endpoint.</li>
  *   <li>General wait conditions that are not specific to the Jet framework. The customer might
- *       choose to register some blocking condition associated with application domain logic such
+ *       choose to register some busy condition associated with application domain logic such
  *       as REST endpoints.</li>
  *   <li>Wait until the bootstrap of the page has completed - jet libraries loaded via requireJS.</li>
  * </ol>
@@ -3425,10 +3756,11 @@ oj.BusyState._getTs = function ()
  *   </li>
  *   <li>Scoped for the nearest DOM Element - Application developers sometime need a mechanism to
  *     wait until a specific component operation has complete. For example, it might be desirable
- *     to block until a popup has finished open or close animation before initiating the next task
- *     in their application flow. For this problem space developers would need to obtain a busy
- *     context scoped for a DOM node.  The "data-oj-context" marker attribute is used to define
- *     a busy context for a dom subtree.
+ *     to wait until a component has been created and bindings applied before setting a property or
+ *     calling a method on the component. Another scenario, waiting for a popup to finish
+ *     open or close animation before initiating the next action in their application flow.
+ *     For this problem space developers would need to obtain a busy context scoped for a DOM node.
+ *     The "data-oj-context" marker attribute is used to define a busy context for a dom subtree.
  *
  *     <pre class="prettyprint">
  *     <code>
@@ -3439,8 +3771,15 @@ oj.BusyState._getTs = function ()
  *        ...
  *     &lt;/div&gt;
  *
- *     var node = $("#mycontext");
- *     var busyContext = oj.Context.getContext(node[0]).getBusyContext();
+ *     var node = document.querySelector("#mycontext");
+ *     var busyContext = oj.Context.getContext(node).getBusyContext();
+ *     busyContext.whenReady().then(function ()
+ *     {
+ *       var component = document.querySelector("#myInput");
+ *       component.value = "foo";
+ *       if (!component.isValid())
+ *         component.value = "foobar";
+ *     });
  *     </code></pre>
  *
  *   </li>
@@ -3455,9 +3794,9 @@ oj.BusyState._getTs = function ()
  * <b>This constructor should never be invoked by the application code directly.</b>
  * @param {Element=} hostNode DOM element associated with this busy context
  * @export
- * @constructor
+ * @constructor oj.BusyContext
  * @since 2.1.0
- * @class Framework service for querying the busy state of components on the page.
+ * @classdesc Framework service for querying the busy state of components on the page.
  */
 oj.BusyContext = function (hostNode)
 {
@@ -3482,6 +3821,8 @@ oj.BusyContext._defaultTimeout = Number.NaN;
  * @export
  * @see oj.BusyContext#whenReady
  * @since 3.1.0
+ * @memberof oj.BusyContext
+ * @method setDefaultTimeout
  * @param {number} timeout in milliseconds
  */
 oj.BusyContext.setDefaultTimeout = function(timeout)
@@ -3703,6 +4044,9 @@ oj.BusyContext._values = function (statesMap)
  *
  * @since 2.1.0
  * @export
+ * @memberof oj.BusyContext
+ * @instance
+ * @method addBusyState
  * @param {{description: ?}} options object that describes the busy state being registered.<br/>
  *         description: Option additional information of what is registering a busy state. Added to
  *                      logging and handling rejected status. Can be supplied as a Object or a
@@ -3742,6 +4086,9 @@ oj.BusyContext.prototype.addBusyState = function (options)
  *
  * @export
  * @since 3.1.0
+ * @memberof oj.BusyContext
+ * @instance
+ * @method dump
  * @param {string=} message optional text used to further denote a debugging point
  */
 oj.BusyContext.prototype.dump = function (message)
@@ -3765,6 +4112,9 @@ oj.BusyContext.prototype.dump = function (message)
  *
  * @export
  * @since 3.1.0
+ * @method getBusyStates
+ * @memberof oj.BusyContext
+ * @instance
  * @return {Array.<{id:String, description:String}>} active busy states managed by the context
  *         instance
  */
@@ -3782,6 +4132,9 @@ oj.BusyContext.prototype.getBusyStates = function ()
  * Use with discretion - last course of action.
  *
  * @since 3.1.0
+ * @method clear
+ * @memberof oj.BusyContext
+ * @instance
  * @export
  */
 oj.BusyContext.prototype.clear = function ()
@@ -3815,12 +4168,15 @@ oj.BusyContext.prototype.clear = function ()
  * within the timeout period. The busyness of the whenReady promsie is evaluated in the next-tick
  * of resolving a busy state.</p>
  *
- * "next-tick" is not waiting for the microtask queue to be exhausted. However, this may change in
- * future releases.
+ * "next-tick" is at the macrotask level. "whenReady" is waiting for the microtask queue to be exhausted,
+ * yielding control flow to the user agent, before resolving busyness.
  *
  * @see oj.BusyContext#applicationBootstrapComplete
  * @since 2.1.0
  * @export
+ * @memberof oj.BusyContext
+ * @instance
+ * @method whenReady
  * @param {number=} timeout "optional" maximum period in milliseconds the resultant promise
  *        will wait. Also see {@link oj.BusyContext.setDefaultTimeout}.
  * @returns {Promise}
@@ -3844,7 +4200,7 @@ oj.BusyContext.prototype.whenReady = function (timeout)
       // Doing so will allow us to take into account any busy states added in response to the pending updates
       oj.BusyContext._deliverThrottledUpdates();
 
-      if (statesMap.size === 0)
+      if (statesMap.size === 0 && !this._waitingOnNextTickBusynessEval)
       {
         // no busy states, promise resolves immediately
         oj.Logger.log("BusyContext.whenReady: resolved no busy states scope=%s", debugScope);
@@ -3855,8 +4211,7 @@ oj.BusyContext.prototype.whenReady = function (timeout)
         oj.Logger.log("BusyContext.whenReady: busy states returning master scope=%s", debugScope);
         return mediator.getMasterWhenReadyPromise();
       }
-    }
-
+    }.bind(this)
   );
 
   // if a timeout argument is not provided, check the default timeout
@@ -3907,12 +4262,12 @@ oj.BusyContext.prototype.whenReady = function (timeout)
  * state being resolved, meaning the number of busy states doesn't necessarily equate to readiness.
  * The readiness is in sync with the {@link oj.BusyContext#whenReady} resultant promise resolution.</p>
  *
- * "next-tick" is not waiting for the microtask queue to be exhausted. However, this may change in
- * future releases.
- *
  * @see oj.BusyContext#getBusyStates
  * @since 2.1.0
  * @export
+ * @memberof oj.BusyContext
+ * @instance
+ * @method isReady
  * @returns {boolean} <code>true</code> if the context is not busy
  */
 oj.BusyContext.prototype.isReady = function ()
@@ -3963,9 +4318,8 @@ oj.BusyContext.prototype._removeBusyState = function (busyState)
   // no more busy states; evaluate busyness in the next tick
   if (statesMap.size === 0 && !this._waitingOnNextTickBusynessEval)
   {
-    // TODO: replace with setImmediate in v4.0 versus using a promise for "next-tick"
-    Promise.resolve(true).then(this._evalBusyness.bind(this));
     this._waitingOnNextTickBusynessEval = true;
+    window.setImmediate(this._evalBusyness.bind(this));
   }
   else
   {
@@ -4046,6 +4400,8 @@ oj.BusyContext.prototype._evalBusyness = function()
  *
  * @since 3.2.0
  * @export
+ * @memberof oj.BusyContext
+ * @method applicationBootstrapComplete
  * @returns {void}
  */
 oj.BusyContext.prototype.applicationBootstrapComplete = function ()
@@ -4178,6 +4534,9 @@ oj.BusyContext.prototype._getDebugScope = function()
 /**
  * @since 3.1.0
  * @override
+ * @memberof oj.BusyContext
+ * @instance
+ * @method toString
  * @returns {string} returns the value of the object as a string
  */
 oj.BusyContext.prototype.toString = function ()
@@ -4261,10 +4620,19 @@ oj.BusyContext._BOOTSTRAP_MEDIATOR = new /** @constructor */(function()
 
   this.notifyComplete = function()
   {
-    _tracking = false;
+
     if (_resolveCallback)
     {
-      _resolveCallback(true);
+      // resovle the promise in the next tick.
+      window.setImmediate(function ()
+      {
+        _tracking = false;
+        _resolveCallback(true);
+      });
+    }
+    else
+    {
+      _tracking = false;
     }
   }
 
@@ -4287,9 +4655,9 @@ oj.BusyContext._BOOTSTRAP_MEDIATOR = new /** @constructor */(function()
  * retrieve an instance of the context.
  * @param {Element=} node DOM node where the context should be created
  * @export
- * @constructor
+ * @constructor oj.Context
  * @since 2.1.0
- * @class This is a general purpose context. Initially it only exposes the BusyContext
+ * @classdesc This is a general purpose context. Initially it only exposes the BusyContext
  * that keeps track of components that are currently animating or fetching data.
  * In the future this context might be expanded for other purposes.
  */
@@ -4301,7 +4669,10 @@ oj.Context = function (node)
 oj.Object.createSubclass(oj.Context, oj.Object, "oj.Context");
 
 /**
+ * @method Init
  * @param {Element=} node DOM node where the context should be created
+ * @instance
+ * @memberof oj.Context
  * @instance
  * @protected
  */
@@ -4330,6 +4701,8 @@ oj.Context.prototype.Init = function (node)
  * its subtree
  *
  * @see oj.BusyContext for code examples
+ * @method getContext
+ * @memberof oj.Context
  * @param {Element} node DOM element whose enclosing context will be provided
  * @return {oj.Context} context object scoped per the target node
  * @since 2.2.0
@@ -4363,7 +4736,9 @@ oj.Context.getContext = function(node)
  * @see oj.BusyContext for code examples
  * @export
  * @since 2.1.0
+ * @method getPageContext
  * @return {oj.Context} context scoped for the page
+ * @memberof oj.Context
  */
 oj.Context.getPageContext = function ()
 {
@@ -4377,6 +4752,9 @@ oj.Context.getPageContext = function ()
  * @see oj.BusyContext for code examples
  * @since 2.1.0
  * @export
+ * @method getBusyContext
+ * @memberof oj.Context
+ * @instance
  * @returns {oj.BusyContext} busy state context
  */
 oj.Context.prototype.getBusyContext = function ()
@@ -4469,12 +4847,13 @@ oj.Context.getParentElement = function (element)
     var info = {};
     if (attrValue)
     {
-      var exp = _ATTR_EXP.exec(attrValue);
+      var trimmedVal = attrValue.trim();
+      var exp = _ATTR_EXP.exec(trimmedVal);
       exp = exp ? exp[1] : null;
       if (!exp)
       {
        info.downstreamOnly = true;
-       exp = _ATTR_EXP_RO.exec(attrValue);
+       exp = _ATTR_EXP_RO.exec(trimmedVal);
        exp = exp ? exp[1] : null;
       }
       info.expr = exp;
@@ -4525,7 +4904,7 @@ oj.Context.getParentElement = function (element)
 
   /**
    * @ignore
-   * @param {string} property event listener property name (onOjBeforeExpand)
+   * @param {string} property event listener property name (e.g. onOjBeforeExpand)
    * @return {string|null} event type (e.g. ojBeforeExpand)
    */
   oj.__AttributeUtils.eventListenerPropertyToEventType = function(property)
@@ -4583,66 +4962,97 @@ oj.Context.getParentElement = function (element)
   }
   
   /**
+   * Parses attribute values to the specified metadata type. Throws
+   * an error if the value cannot be parsed to the metadata type
+   * or if no type was provided.
    * @ignore
-   * @param {string} propName property name
-   * @param {string} val attribute value
+   * @param {Element} elem The element whose value we are parsing
+   * @param {string} attr attribute
+   * @param {string} value attribute value
    * @param {string} type property type
    * @return {*} coerced value
    */
-  oj.__AttributeUtils.coerceValue = function(propName, val, type)
+  oj.__AttributeUtils.coerceValue = function(elem, attr, value, type)
   {
-    // We only support primitive types and JSON objects for coerced properties
+    if (!type)
+    {
+      var bridge = oj.BaseCustomElementBridge.getInstance(elem);
+      bridge.resolveDelayedReadyPromise();
+      throw "Unable to parse " + attr + "='" + value + "' for " + elem.tagName + " with id " + elem.id + 
+      " . This attribute only supports data bound values. Check the API doc for supported types";
+    }
+    
+    // We only support primitive types and JSON objects for coerced properties.
+    // Generally, we support parsing of a single type except for Object|string or Array|string cases
+    // defined in metadata.
     var typeLwr = type.toLowerCase();
-    var coercedType;
-    switch (typeLwr) {
-      case "boolean":
-        // Boolean attributes are considered true if the attribute is:
-        // 1) Set to the empty string
-        // 2) Present in the DOM without a value assignment
-        // 3) Set to the 'true' string
-        // 4) Set to the case-insensitive attribute name
-        // Boolean values are considered false if set to the false string.
-        // An error is thrown for all other values and the attribute value will not be set.
-        if (val == null || val === "true" || val === "" || val.toLowerCase() === oj.__AttributeUtils.propertyNameToAttribute(propName))
-        {
-          coercedType = true;
-        }
-        else if (val === "false")
-        {
-          coercedType = false;
-        }
-        break;
-      case "number":
-        if (!isNaN(val))
-        {
-          coercedType = Number(val);
-        }
-        break;
-      case "string":
-        coercedType = val;
-        break;
-      default:
-        try
-        {
-          coercedType = JSON.parse(val);
-        } 
-        catch (ex) 
-        {
-          // Error will be logged at the end
-        }
+    // The below checks ignore the couble {{}} [[]] cases since expression checking occurs
+    // before attribute value coercion
+    // Tests to see if the value starts and ends with matched [...] ignoring whitespace
+    var isValueArray = _ARRAY_VALUE_EXP.test(value);
+    // Tests to see if the value starts and ends with matched {...} ignoring whitespace
+    var isValueObj = _OBJ_VALUE_EXP.test(value);
+
+    if ((_ARRAY_TYPE_EXP.test(typeLwr) && isValueArray) ||
+        (_OBJ_TYPE_EXP.test(typeLwr) && isValueObj) ||
+        (typeLwr === 'any' && (isValueArray || isValueObj)))
+    {
+      try
+      {
+        return JSON.parse(value);
+      }
+      catch (ex) 
+      {
+        var bridge = oj.BaseCustomElementBridge.getInstance(elem);
+        bridge.resolveDelayedReadyPromise();
+        throw "Unable to parse " + attr + "='" + value + "' for " + elem.tagName + " with id " + elem.id +
+        " to a JSON Object. Check the value for correct JSON syntax, e.g. double quoted strings. " + ex;
+      }
+    }
+    else if (typeLwr === "boolean")
+    {
+      // Boolean attributes are considered true if the attribute is:
+      // 1) Set to the empty string
+      // 2) Present in the DOM without a value assignment
+      // 3) Set to the 'true' string
+      // 4) Set to the case-insensitive attribute name
+      // Boolean values are considered false if set to the false string.
+      // An error is thrown for all other values and the attribute value will not be set.
+      if (value == null || value === "true" || value === "" || value.toLowerCase() === attr)
+        return true;
+      else if (value === "false")
+        return false;
+    }
+    else if (typeLwr === "number")
+    {
+      if (!isNaN(value))
+        return Number(value);
+    }
+    else
+    {
+      var typeAr = type.split('|');
+      // The any type will return a string if not matched as an object or array in first check
+      if (typeAr.indexOf('string') !== -1 || typeLwr === 'any')
+        return value;
     }
 
-    if (coercedType == null) 
-    {
-      oj.Logger.error("Unable to parse value %s for property %s with type %s.", val, propName, type);
-    }
-    return coercedType;
+    var bridge = oj.BaseCustomElementBridge.getInstance(elem);
+    bridge.resolveDelayedReadyPromise();
+    throw "Unable to parse " + attr + "='" + value + "' for " + elem.tagName + " with id " + elem.id + " to a " + type + ".";
   }
   
+  // Checks that a string either starts with 'array' or contains '|array'
+  var _ARRAY_TYPE_EXP = /(^array)|(\|array)/;
+  // Checks that a string either starts with 'object' or contains '|object'
+  var _OBJ_TYPE_EXP = /(^object)|(\|object)/;
   
-  
-  var _ATTR_EXP = /(?:\{\{)(.+)(?:\}\})/;
-  var _ATTR_EXP_RO = /(?:\[\[)(.+)(?:\]\])/;
+  var _ARRAY_VALUE_EXP = /\s*\[[\s\S]*\]\s*/;
+  var _OBJ_VALUE_EXP = /\s*\{[\s\S]*\}\s*/;
+
+  // Check for {{..}} and [[..]] at the beginning of strings to avoid matching
+  // any usages mid string
+  var _ATTR_EXP = /^(?:\{\{)(.+)(?:\}\})$/;
+  var _ATTR_EXP_RO = /^(?:\[\[)(.+)(?:\]\])$/;
   
 })();
 

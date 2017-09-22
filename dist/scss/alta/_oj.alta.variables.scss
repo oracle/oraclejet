@@ -48,7 +48,7 @@ $interaction4Color: #cfe8fc !default;
 $interaction5Color: #d6d7d8 !default;
 $interaction6Color: #dae9f5 !default;
 
-// $interaction7Color is often used to indicate state 
+// $interaction7Color is often used to indicate state
 // in a "collection", for example inactive selected
 $interaction7Color: #fafaeb !default;
 
@@ -102,12 +102,12 @@ $iconColorHover:    #85bbe7 !default;
 // Therefore set $rootFontValue to .875em to get 14px;
 $rootFontSize:    .875em !default;    // 14px
 
-$fontSize:         1rem !default;      
-$smallestFontSize: oj-px-to-rem(11px, $baseFontSize: 14px)  !default; 
-$smallFontSize:    oj-px-to-rem(12px, $baseFontSize: 14px)  !default;  
-$mediumFontSize:   oj-px-to-rem(16px, $baseFontSize: 14px)  !default;  
-$largeFontSize:    oj-px-to-rem(18px, $baseFontSize: 14px)  !default;  
-$largestFontSize:  oj-px-to-rem(20px, $baseFontSize: 14px)  !default;  
+$fontSize:         1rem !default;
+$smallestFontSize: oj-px-to-rem(11px, $baseFontSize: 14px)  !default;
+$smallFontSize:    oj-px-to-rem(12px, $baseFontSize: 14px)  !default;
+$mediumFontSize:   oj-px-to-rem(16px, $baseFontSize: 14px)  !default;
+$largeFontSize:    oj-px-to-rem(18px, $baseFontSize: 14px)  !default;
+$largestFontSize:  oj-px-to-rem(20px, $baseFontSize: 14px)  !default;
 
 
 $fontWeightNormalization: $allowTagSelectors !default;
@@ -157,14 +157,6 @@ $opacityDisabled: null !default;
 // CATEGORY AND WIDGET VARIABLES
 //----------------------------------------------------------------
 
-
-// BODY
-//----------------------------------------------------------------
-// to remove background image use $bodyBgImage: none;
-$bodyBgImage:   oj-image-url('texture.png') !default;
-
-
-
 // WINDOW
 //----------------------------------------------------------------
 $windowBorderColor: $border3Color !default;
@@ -173,14 +165,14 @@ $windowBgColor:     $background2Color !default;
 
 // HEADERS
 //----------------------------------------------------------------
-$header1FontSize: oj-px-to-rem(34px, $baseFontSize: 14px) !default; 
-$header2FontSize: oj-px-to-rem(24px, $baseFontSize: 14px) !default; 
-$header3FontSize: $largestFontSize !default; 
-$header4FontSize: $largeFontSize   !default; 
-$header5FontSize: $mediumFontSize  !default; 
+$header1FontSize: oj-px-to-rem(34px, $baseFontSize: 14px) !default;
+$header2FontSize: oj-px-to-rem(24px, $baseFontSize: 14px) !default;
+$header3FontSize: $largestFontSize !default;
+$header4FontSize: $largeFontSize   !default;
+$header5FontSize: $mediumFontSize  !default;
 
-// $header[1|2|3|4|5]FontWeight vars can be used 
-// to override the default font weight, they are  
+// $header[1|2|3|4|5]FontWeight vars can be used
+// to override the default font weight, they are
 // applied to h[1|2|3|4|5] tags
 $header1FontWeight: 200   !default;
 $header2FontWeight: 300   !default;
@@ -192,7 +184,7 @@ $header5FontWeight: 400   !default;
 // PANEL
 //----------------------------------------------------------------
 
-$panelPadding: oj-px-to-rem(12px, $baseFontSize: 14px) !default; 
+$panelPadding: oj-px-to-rem(12px, $baseFontSize: 14px) !default;
 
 
 // using these adjustments panels can choose to
@@ -223,7 +215,7 @@ $formControlBgColor:             $background3Color !default;
 $formControlBgColorDisabled:     #efeff1 !default;
 $formControlValueColorDisabled:  $textColorDisabled !default;
 $formControlBorderColorDisabled: $formControlBgColorDisabled !default;
-// ios requires an opacity to honor the background color, 
+// ios requires an opacity to honor the background color,
 // otherwise it lightens the background color you set when the input is disabled
 $formControlOpacityDisabled: 1 !default;
 
@@ -234,7 +226,9 @@ $formControlPlaceholderFontStyle: italic !default;
 $formLayoutLabelInlineAlign: end !default;
 
 // RADIOSET AND CHECKBOXSET
+// TODO Bug 25897533: Clean up after sprite tooling is implemented
 $radioCheckboxImageHeightWidth: 16px !default;
+
 $radioCheckboxRowHeight: 1.9rem !default;
 $radioCheckboxItemBgColorActive: transparent !default;
 $radioCheckboxInputToEdgePadding: 0 !default;
@@ -252,7 +246,7 @@ $inputDateTimeKeyboardEditOptionDefault: enabled !default;
 // DIALOG
 //----------------------------------------------------------------
 
-// Resize and cancel behavior defaults 
+// Resize and cancel behavior defaults
 $dialogResizeBehaviorOptionDefault: resizable !default;
 $dialogCancelBehaviorOptionDefault: icon !default;
 $dialogDragAffordanceOptionDefault: title-bar !default;
@@ -312,7 +306,7 @@ $menuDividerMargin:       1px !default; // This spacing is on all 4 sides, inclu
 // sheet menus
 //----------------------------------
 
-// On desktop, the browser's "status bar tooltip" can appear over the menu, so bump it a little 
+// On desktop, the browser's "status bar tooltip" can appear over the menu, so bump it a little
 // off the bottom, like iOS:
 $menuSheetMarginBottom:   14px !default; // value must be 0, px, or %, e.g. 0, 10px, 5%
 
@@ -427,9 +421,17 @@ $buttonConfirmColor:      #008230 !default;
 //----------------------------------------------------------------
 $listViewHeaderBorderWidth: 1px !default;
 
+
+// TREEVIEW
+//----------------------------------------------------------------
+$treeViewItemBgColorSelected:         $interaction4Color !default; // interaction3Color is too light
+$treeViewItemBgColorSelectedInactive: $interaction4Color !default; // interaction3Color is too light
+
+
 // DATAGRID
 //----------------------------------------------------------------
 $dataGridCellPadding:                 0.5em !default;
+
 
 // BUTTONSET
 //----------------------------------------------------------------
@@ -443,46 +445,83 @@ $dataGridCellPadding:                 0.5em !default;
 //-----------------------------------
 
 //Default
-$navigationListItemLabelColorDefault:       $linkTextColor !default;
-$navigationListCollapsibleIconColorDefault: $iconColorDefault !default;
-$navigationListItemIconColorDefault:            $iconColorDefault !default;
+$navigationListItemLabelColorDefault:                         $linkTextColor !default;
+$navigationListCollapsibleIconColorDefault:                   $iconColorDefault !default;
+$navigationListItemIconColorDefault:                          $iconColorDefault !default;
 //Hover
-$navigationListItemIconOnlyBgColorHover:    $interaction2Color !default;
+$navigationListItemIconOnlyBgColorHover:                      $interaction2Color !default;
 //Selected
-$navigationListItemIconOnlyBgColorSelected: $interaction1Color !default;
-$navigationListIconOnlyIconColorSelected:   $contrastTextColor !default;
-$navigationListItemLabelColorSelected:      $navigationListItemLabelColorDefault !default;
-$navigationListItemBgColorSelected:         $interaction3Color !default; // only applies to vertical navlist
+$navigationListItemIconOnlyBgColorSelected:                   $interaction1Color !default;
+$navigationListIconOnlyIconColorSelected:                     $contrastTextColor !default;
+$navigationListItemLabelColorSelected:                        $navigationListItemLabelColorDefault !default;
+$navigationListItemBgColorSelected:                           $interaction3Color !default; // only applies to vertical navlist
 //Disabled
-$navigationListItemLabelColorDisabled:      $linkTextColorDisabled !default;
-$navigationListIconColorDisabled:           $iconColorDisabled !default;
+$navigationListItemLabelColorDisabled:                        $linkTextColorDisabled !default;
+$navigationListIconColorDisabled:                             $iconColorDisabled !default;
 
 //Sizing
-$navigationListItemStartEndPadding:         oj-px-to-rem(15px, $baseFontSize: 14px) !default; 
-$navigationListIconToTextPadding:           oj-px-to-rem(10px, $baseFontSize: 14px) !default; 
-$navigationListItemMinHeight:  oj-px-to-rem(44px, $baseFontSize: 14px) !default;   //applies to vertical only
-$navigationListIconOnlyStyle:  circle !default;
-$navigationListIconOnlyItemPadding: 4px !default;
+$navigationListItemStartEndPadding:                           oj-px-to-rem(15px, $baseFontSize: 14px) !default;
+$navigationListIconToTextPadding:                             oj-px-to-rem(10px, $baseFontSize: 14px) !default;
+$navigationListItemMinHeight:                                 oj-px-to-rem(44px, $baseFontSize: 14px) !default;   //applies to vertical only
+$navigationListIconOnlyStyle:                                 circle !default;
+$navigationListIconOnlyItemPadding:                           4px !default;
 
-$navigationListHierarchyMenuDisplayThresholdLevelOptionDefault: 3 !default;
+$navigationListHierarchyMenuThresholdOptionDefault:           3 !default;
 
-//---Start of Navigation bar---
+//---Start of Horizontal Navigation List---
 //Default
-$navigationBarItemLabelColorDefault: #4d4d4d !default;
-$navigationBarItemIconColorDefault: #333 !default;
+$navigationListHorizontalItemLabelColorDefault:               #4d4d4d !default;
+$navigationListHorizontalItemIconColorDefault:                #333 !default;
 //Sizing
-$navigationBarFontSize: 1rem !default;
-$navigationBarMinHeight:  oj-px-to-rem(38px, $baseFontSize: 14px) !default;
-$navigationBarStackedIconMinHeight:  oj-px-to-rem(60px, $baseFontSize: 14px) !default; //60 px height when root font 14px
-$navigationBarItemPadding: 0.5rem $navigationListItemStartEndPadding 4px !default;
-$navigationBarIconMargin: 0 !default;
-$navigationBarIconToTextPadding: $navigationListIconToTextPadding !default;
-$navigationBarIconOnlyStyle:  circle !default;
-//---End of Navigation bar---
+$navigationListHorizontalFontSize:                            1rem !default;
+$navigationListHorizontalMinHeight:                           oj-px-to-rem(38px, $baseFontSize: 14px) !default;
+$navigationListHorizontalStackedIconMinHeight:                oj-px-to-rem(60px, $baseFontSize: 14px) !default;
+$navigationListHorizontalItemPadding:                         0.5rem $navigationListItemStartEndPadding 4px !default;
+$navigationListHorizontalIconMargin:                          0 !default;
+$navigationListHorizontalIconToTextPadding:                   $navigationListIconToTextPadding !default;
+$navigationListHorizontalIconOnlyStyle:                       circle !default;
+//---End of Horizontal Navigation List---
 
-$navigationListItemContrastLabelColorDisabled:  #616365 !default;
+$navigationListItemContrastLabelColorDisabled:                #616365 !default;
 
-// PROGRESSBAR
+//NAVIGATIONTABS
+//-----------------------------------
+
+//Default
+$tabBarItemLabelColorDefault:                         $linkTextColor !default;
+$tabBarItemIconColorDefault:                          $iconColorDefault !default;
+//Hover
+$tabBarItemIconOnlyBgColorHover:                      $interaction2Color !default;
+//Selected
+$tabBarItemIconOnlyBgColorSelected:                   $interaction1Color !default;
+$tabBarIconOnlyIconColorSelected:                     $contrastTextColor !default;
+$tabBarItemLabelColorSelected:                        $tabBarItemLabelColorDefault !default;
+//Disabled
+$tabBarItemLabelColorDisabled:                        $linkTextColorDisabled !default;
+$tabBarIconColorDisabled:                             $iconColorDisabled !default;
+
+//Sizing
+$tabBarItemStartEndPadding:                           oj-px-to-rem(15px, $baseFontSize: 14px) !default;
+$tabBarIconToTextPadding:                             oj-px-to-rem(10px, $baseFontSize: 14px) !default;
+$tabBarItemMinHeight:                                 oj-px-to-rem(44px, $baseFontSize: 14px) !default;   //applies to vertical only
+$tabBarIconOnlyStyle:                                 circle !default;
+$tabBarIconOnlyItemPadding:                           4px !default;
+
+//---Start of Horizontal Navigation tabs---
+//Selected
+$tabBarHorizontalItemBgColorSelected:                 transparent !default;
+
+//Sizing
+$tabBarHorizontalItemMinHeight:                       oj-px-to-rem(38px, $baseFontSize: 14px) !default;
+$tabBarHorizontalItemPadding:                         0.5rem $tabBarItemStartEndPadding 4px !default;
+$tabBarHorizontalIconMargin:                          0 !default;
+$tabBarHorizontalIconToTextPadding:                   $tabBarIconToTextPadding !default;
+$tabBarHorizontalIconOnlyStyle:                       circle !default;
+//---End of Horizontal Navigation tabs---
+
+$tabBarItemContrastLabelColorDisabled:                #616365 !default;
+
+// PROGRESS
 //-----------------------------------------------------------------------------
 $progressCircleBgColor:                  $interaction2Color !default;
 
@@ -494,7 +533,7 @@ $trainBgColor:                           $buttonBgColor !default;
 $trainBorderColor:                       $buttonBorderColor !default;
 $trainLabelColor:                        $linkTextColor !default;
 
-// visited state 
+// visited state
 $trainBgColorVisited:                    $background1Color !default;
 $trainBorderColorVisited:                $interaction1Color !default;
 $trainLabelColorVisited:                 #72007C !default;
@@ -504,17 +543,17 @@ $trainBgColorSelected:                   $interaction1Color !default;
 $trainBorderColorSelected:               $trainBgColorSelected !default;
 $trainLabelFontWeightSelected:           normal !default;
 
-// disabled state 
+// disabled state
 $trainBgColorDisabled:                   $buttonBgColorDisabled !default;
 $trainBorderColorDisabled:               $buttonBorderColorDisabled !default;
 $trainLabelColorDisabled:                $linkTextColorDisabled !default;
 $trainOpacityDisabled:                   $opacityDisabled !default;
 
-// hover state 
+// hover state
 $trainBgColorHover:                      $iconColorHover !default;
 $trainBorderColorHover:                  $trainBgColorHover !default;
 
-// active state 
+// active state
 $trainBgColorActive :                    $trainBgColorHover !default;
 $trainBorderColorActive:                 $trainBgColorHover !default;
 $trainLabelTextDecorationActive:         underline !default;
@@ -543,7 +582,7 @@ $trainConnectorBgColor:                  $background4Color !default;
 $trainContinuousConnectorBgColorSelected:$interaction5Color !default;
 $trainConnectorHeight:                   8px !default;
 
-// the diameter of the connector circle around the button in the continuous 
+// the diameter of the connector circle around the button in the continuous
 // connector design
 $trainButtonContinuousConnectorDiameter: $trainButtonDiameter + 8px !default;
 
@@ -562,7 +601,7 @@ $filmStripArrowBorderRadius: 50% !default;
 // Padding
 $appLayoutHybridPadding:  oj-px-to-rem(10px, $baseFontSize: 16px) !default;
 //Header
-$appLayoutHybridHeaderTitleFontSize:  oj-px-to-rem(18px, $baseFontSize: 16px) !default; 
+$appLayoutHybridHeaderTitleFontSize:  oj-px-to-rem(18px, $baseFontSize: 16px) !default;
 $appLayoutHybridHeaderBorderColor: $border2Color !default;
 // Footer
 $appLayoutHybridFooterBorderColor: $appLayoutHybridHeaderBorderColor !default;

@@ -41,11 +41,11 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/in
  *   <tbody>
  *     <tr>
  *       <td><kbd>Tab</kbd></td>
- *       <td>Move focus to next component.</td>
+ *       <td>Move focus to next element.</td>
  *     </tr>
  *     <tr>
  *       <td><kbd>Shift + Tab</kbd></td>
- *       <td>Move focus to previous component.</td>
+ *       <td>Move focus to previous element.</td>
  *     </tr>
  *     <tr>
  *       <td><kbd>UpArrow</kbd></td>
@@ -71,6 +71,500 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/in
  * </table>
  * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
  * @memberof oj.ojLegend
+ */
+
+/**
+ * The title of the legend.
+ * @ignore
+ * @name title
+ * @memberof oj.ojLegend
+ * @instance
+ * @type {string}
+ * @default <code class="prettyprint">null</code>
+ * @deprecated 
+ */
+/**
+ * An array of objects with the following properties defining the legend sections.
+ * @expose
+ * @name sections
+ * @memberof oj.ojLegend
+ * @instance
+ * @type {Array.<object>}
+ * @default <code class="prettyprint">null</code>
+ */
+/**
+ * The title of the legend section.
+ * @expose
+ * @name sections[].title
+ * @memberof! oj.ojLegend
+ * @instance
+ * @type {string}
+ * @default <code class="prettyprint">null</code>
+ */
+/**
+ * The horizontal alignment of the section title. If the section is collapsible or nested, only start alignment is supported.
+ * @expose
+ * @name sections[].titleHalign
+ * @memberof! oj.ojLegend
+ * @instance
+ * @type {string}
+ * @ojvalue {string} "center"
+ * @ojvalue {string} "end"
+ * @ojvalue {string} "start"
+ * @default <code class="prettyprint">"start"</code>
+ */
+/**
+ * The CSS style object defining the style of the section title.
+ * @expose
+ * @name sections[].titleStyle
+ * @memberof! oj.ojLegend
+ * @instance
+ * @type {object}
+ * @default <code class="prettyprint">null</code>
+ */
+/**
+ * Whether the section is collapsible. Only applies if the legend orientation is vertical.
+ * @expose
+ * @name sections[].collapsible
+ * @memberof! oj.ojLegend
+ * @instance
+ * @type {string}
+ * @ojvalue {string} "on"
+ * @ojvalue {string} "off"
+ * @default <code class="prettyprint">"off"</code>
+ */
+/**
+ * Whether the section is initially expanded. Only applies if the section is collapsible.
+ * @expose
+ * @name sections[].expanded
+ * @memberof! oj.ojLegend
+ * @instance
+ * @type {string}
+ * @ojvalue {string} "off"
+ * @ojvalue {string} "on"
+ * @default <code class="prettyprint">"on"</code>
+ */
+/**
+ * An array of nested legend sections.
+ * @expose
+ * @name sections[].sections
+ * @memberof! oj.ojLegend
+ * @instance
+ * @type {Array.<object>}
+ * @default <code class="prettyprint">null</code>
+ */
+/**
+ * An array of objects with the following properties defining the legend items. Also accepts a Promise for deferred data rendering. No data will be rendered if the Promise is rejected.
+ * @expose
+ * @name sections[].items
+ * @memberof! oj.ojLegend
+ * @instance
+ * @type {Array.<object>|Promise}
+ * @default <code class="prettyprint">null</code>
+ */
+/**
+ * The id of the legend item, which is provided as part of the context for events fired by the legend. If not specified, the id defaults to the text of the legend item.
+ * @expose
+ * @name sections[].items[].id
+ * @memberof! oj.ojLegend
+ * @instance
+ * @type {string}
+ * @default <code class="prettyprint">null</code>
+ */
+/**
+ * The legend item text.
+ * @expose
+ * @name sections[].items[].text
+ * @memberof! oj.ojLegend
+ * @instance
+ * @type {string}
+ * @default <code class="prettyprint">null</code>
+ */
+/**
+ * An array of categories for the legend item. Legend items currently only support a single category. If no category is specified, this defaults to the id or text of the legend item.
+ * @expose
+ * @name sections[].items[].categories
+ * @memberof! oj.ojLegend
+ * @instance
+ * @type {Array.<string>}
+ * @default <code class="prettyprint">null</code>
+ */
+/**
+ * The type of legend symbol to display.
+ * @expose
+ * @name sections[].items[].symbolType
+ * @memberof! oj.ojLegend
+ * @instance
+ * @type {string}
+ * @ojvalue {string} "line"
+ * @ojvalue {string} "lineWithMarker"
+ * @ojvalue {string} "image"
+ * @ojvalue {string} "marker"
+ * @default <code class="prettyprint">"marker"</code>
+ */
+/**
+ * The URI of the image of the legend symbol.
+ * @expose
+ * @name sections[].items[].source
+ * @memberof! oj.ojLegend
+ * @instance
+ * @type {string}
+ * @default <code class="prettyprint">null</code>
+ */
+/**
+ * The color of the legend symbol (line or marker). When symbolType is "lineWithMarker", this attribute defines the line color and the markerColor attribute defines the marker color.
+ * @expose
+ * @name sections[].items[].color
+ * @memberof! oj.ojLegend
+ * @instance
+ * @type {string}
+ * @default <code class="prettyprint">null</code>
+ */
+/**
+ * The border color of the marker. Only applies if symbolType is "marker" or "lineWithMarker".
+ * @expose
+ * @name sections[].items[].borderColor
+ * @memberof! oj.ojLegend
+ * @instance
+ * @type {string}
+ * @default <code class="prettyprint">null</code>
+ */
+/**
+ * The pattern used to fill the marker. Only applies if symbolType is "marker" or "lineWithMarker".
+ * @expose
+ * @name sections[].items[].pattern
+ * @memberof! oj.ojLegend
+ * @instance
+ * @type {string}
+ * @ojvalue {string} "smallChecker"
+ * @ojvalue {string} "smallCrosshatch"
+ * @ojvalue {string} "smallDiagonalLeft"
+ * @ojvalue {string} "smallDiagonalRight"
+ * @ojvalue {string} "smallDiamond"
+ * @ojvalue {string} "smallTriangle"
+ * @ojvalue {string} "largeChecker"
+ * @ojvalue {string} "largeCrosshatch"
+ * @ojvalue {string} "largeDiagonalLeft"
+ * @ojvalue {string} "largeDiagonalRight"
+ * @ojvalue {string} "largeDiamond"
+ * @ojvalue {string} "largeTriangle"
+ * @ojvalue {string} "none"
+ * @default <code class="prettyprint">"none"</code>
+ */
+/**
+ * The line style. Only applies when the symbolType is "line" or "lineWithMarker".
+ * @expose
+ * @name sections[].items[].lineStyle
+ * @memberof! oj.ojLegend
+ * @instance
+ * @type {string}
+ * @ojvalue {string} "dotted"
+ * @ojvalue {string} "dashed"
+ * @ojvalue {string} "solid"
+ * @default <code class="prettyprint">"solid"</code>
+ */
+/**
+ * The line width in pixels. Only applies when the symbolType is "line" or "lineWithMarker".
+ * @expose
+ * @name sections[].items[].lineWidth
+ * @memberof! oj.ojLegend
+ * @instance
+ * @type {number}
+ * @default <code class="prettyprint">null</code>
+ */
+/**
+ * The CSS style class to apply to the legend item. The style class and inline style will override any other styling specified through the options. For tooltips and hover interactivity, it's recommended to also pass a representative color to the color attribute.
+ * @ignore
+ * @name sections[].items[].className
+ * @memberof! oj.ojLegend
+ * @instance
+ * @type {string}
+ * @default <code class="prettyprint">null</code>
+ * @deprecated This attribute is deprecated, use the svgClassName attribute instead.
+ */
+/**
+ * The inline style to apply to the legend item. The style class and inline style will override any other styling specified through the options. For tooltips and hover interactivity, it's recommended to also pass a representative color to the color attribute.
+ * @ignore
+ * @name sections[].items[].style
+ * @memberof! oj.ojLegend
+ * @instance
+ * @type {object}
+ * @default <code class="prettyprint">null</code>
+ * @deprecated This attribute is deprecated, use the svgStyle attribute instead.
+ */
+/**
+ * The CSS style class to apply to the legend item. The style class and inline style will override any other styling specified through the options. For tooltips and hover interactivity, it's recommended to also pass a representative color to the color attribute.
+ * @expose
+ * @name sections[].items[].svgClassName
+ * @memberof! oj.ojLegend
+ * @instance
+ * @type {string}
+ * @default <code class="prettyprint">null</code>
+ */
+/**
+ * The inline style to apply to the legend item. The style class and inline style will override any other styling specified through the options. For tooltips and hover interactivity, it's recommended to also pass a representative color to the color attribute.
+ * @expose
+ * @name sections[].items[].svgStyle
+ * @memberof! oj.ojLegend
+ * @instance
+ * @type {object}
+ * @default <code class="prettyprint">null</code>
+ */
+/**
+ * The CSS style class to apply to the marker. The style class and inline style will override any other styling specified through the options. For tooltips and hover interactivity, it's recommended to also pass a representative color to the markerColor attribute.
+ * @ignore
+ * @name sections[].items[].markerClassName
+ * @memberof! oj.ojLegend
+ * @instance
+ * @type {string}
+ * @default <code class="prettyprint">null</code>
+ * @deprecated This attribute is deprecated, use the markerSvgClassName attribute instead.
+ */
+/**
+ * The inline style to apply to the marker. The style class and inline style will override any other styling specified through the options. For tooltips and hover interactivity, it's recommended to also pass a representative color to the markerColor attribute.
+ * @ignore
+ * @name sections[].items[].markerStyle
+ * @memberof! oj.ojLegend
+ * @instance
+ * @type {object}
+ * @default <code class="prettyprint">null</code>
+ * @deprecated This attribute is deprecated, use the markerSvgStyle attribute instead.
+ */
+/**
+ * The CSS style class to apply to the marker. The style class and inline style will override any other styling specified through the options. For tooltips and hover interactivity, it's recommended to also pass a representative color to the markerColor attribute.
+ * @expose
+ * @name sections[].items[].markerSvgClassName
+ * @memberof! oj.ojLegend
+ * @instance
+ * @type {string}
+ * @default <code class="prettyprint">null</code>
+ */
+/**
+ * The inline style to apply to the marker. The style class and inline style will override any other styling specified through the options. For tooltips and hover interactivity, it's recommended to also pass a representative color to the markerColor attribute.
+ * @expose
+ * @name sections[].items[].markerSvgStyle
+ * @memberof! oj.ojLegend
+ * @instance
+ * @type {object}
+ * @default <code class="prettyprint">null</code>
+ */
+/**
+ * The shape of the marker. Only applies if symbolType is "marker" or "lineWithMarker". Can take the name of a built-in shape or the svg path commands for a custom shape. Does not apply if a custom image is specified.
+ * @expose
+ * @name sections[].items[].markerShape
+ * @memberof! oj.ojLegend
+ * @instance
+ * @type {string}
+ * @ojvalue {string} "circle"
+ * @ojvalue {string} "ellipse"
+ * @ojvalue {string} "diamond"
+ * @ojvalue {string} "triangleUp"
+ * @ojvalue {string} "triangleDown"
+ * @ojvalue {string} "plus"
+ * @ojvalue {string} "human"
+ * @ojvalue {string} "rectangle"
+ * @ojvalue {string} "star"
+ * @ojvalue {string} "square"
+ * @default <code class="prettyprint">"square"</code>
+ */
+/**
+ * The color of the marker, if different than the line color. Only applies if the symbolType is "lineWithMarker".
+ * @expose
+ * @name sections[].items[].markerColor
+ * @memberof! oj.ojLegend
+ * @instance
+ * @type {string}
+ * @default <code class="prettyprint">null</code>
+ */
+/**
+ * Defines whether the legend item corresponds to visible data items. A hollow symbol is shown if the value is "hidden".
+ * @expose
+ * @name sections[].items[].categoryVisibility
+ * @memberof! oj.ojLegend
+ * @instance
+ * @type {string}
+ * @ojvalue {string} "hidden"
+ * @ojvalue {string} "visible"
+ * @default <code class="prettyprint">"visible"</code>
+ */
+/**
+ *  Whether drilling is enabled on the legend item. Drillable objects will show a pointer cursor on hover and fire <code class="prettyprint">ojDrill</code> event on click. To enable drilling for all legend items at once, use the drilling attribute in the top level. 
+ * @expose
+ * @name sections[].items[].drilling
+ * @memberof! oj.ojLegend
+ * @instance
+ * @type {string}
+ * @ojvalue {string} "on"
+ * @ojvalue {string} "off"
+ * @ojvalue {string} "inherit"
+ * @default <code class="prettyprint">"inherit"</code>
+ */
+/**
+ * The description of this legend item. This is used for accessibility and for customizing the tooltip text.
+ * @expose
+ * @name sections[].items[].shortDesc
+ * @memberof! oj.ojLegend
+ * @instance
+ * @type {string}
+ * @default <code class="prettyprint">null</code>
+ */
+/**
+ * Defines the orientation of the legend, which determines the direction in which the legend items are laid out.
+ * @expose
+ * @name orientation
+ * @memberof oj.ojLegend
+ * @instance
+ * @type {string}
+ * @ojvalue {string} "horizontal"
+ * @ojvalue {string} "vertical"
+ * @default <code class="prettyprint">"vertical"</code>
+ */
+/**
+ * Defines the horizontal alignment of the legend contents.
+ * @expose
+ * @name halign
+ * @memberof oj.ojLegend
+ * @instance
+ * @type {string}
+ * @ojvalue {string} "center"
+ * @ojvalue {string} "end"
+ * @ojvalue {string} "start"
+ * @default <code class="prettyprint">"start"</code>
+ */
+/**
+ * Defines the vertical alignment of the legend contents.
+ * @expose
+ * @name valign
+ * @memberof oj.ojLegend
+ * @instance
+ * @type {string}
+ * @ojvalue {string} "middle"
+ * @ojvalue {string} "bottom"
+ * @ojvalue {string} "top"
+ * @default <code class="prettyprint">"top"</code>
+ */
+/**
+ * The horizontal alignment of the legend title.
+ * @ignore
+ * @name titleHalign
+ * @memberof oj.ojLegend
+ * @instance
+ * @type {string}
+ * @ojvalue {string} "center"
+ * @ojvalue {string} "end"
+ * @ojvalue {string} "start"
+ * @default <code class="prettyprint">"start"</code>
+ * @deprecated 
+ */
+/**
+ * The CSS style string defining the style of the legend title.
+ * @ignore
+ * @name titleStyle
+ * @memberof oj.ojLegend
+ * @instance
+ * @type {string}
+ * @default <code class="prettyprint">null</code>
+ * @deprecated 
+ */
+/**
+ * The CSS style object defining the style of the legend item text.
+ * @expose
+ * @name textStyle
+ * @memberof oj.ojLegend
+ * @instance
+ * @type {object}
+ * @default <code class="prettyprint">null</code>
+ */
+/**
+ * The width of the legend symbol (line or marker) in pixels.
+ * @expose
+ * @name symbolWidth
+ * @memberof oj.ojLegend
+ * @instance
+ * @type {number}
+ * @default <code class="prettyprint">null</code>
+ */
+/**
+ * The height of the legend symbol (line or marker) in pixels.
+ * @expose
+ * @name symbolHeight
+ * @memberof oj.ojLegend
+ * @instance
+ * @type {number}
+ * @default <code class="prettyprint">null</code>
+ */
+/**
+ * Defines whether the legend can be used to initiate hide and show behavior on referenced data items.
+ * @expose
+ * @name hideAndShowBehavior
+ * @memberof oj.ojLegend
+ * @instance
+ * @type {string}
+ * @ojvalue {string} "on"
+ * @ojvalue {string} "off"
+ * @default <code class="prettyprint">"off"</code>
+ */
+/**
+ * Defines the behavior applied when hovering over a legend item.
+ * @expose
+ * @name hoverBehavior
+ * @memberof oj.ojLegend
+ * @instance
+ * @type {string}
+ * @ojvalue {string} "dim"
+ * @ojvalue {string} "none"
+ * @default <code class="prettyprint">"none"</code>
+ */
+/**
+ * Specifies initial hover delay in ms for highlighting items in legend.
+ * @expose
+ * @name hoverBehaviorDelay
+ * @memberof oj.ojLegend
+ * @instance
+ * @type {number}
+ * @default <code class="prettyprint">null</code>
+ */
+/**
+ * An array of categories that will be highlighted.
+ * @expose
+ * @name highlightedCategories
+ * @memberof oj.ojLegend
+ * @instance
+ * @type {Array.<string>}
+ * @default <code class="prettyprint">null</code>
+ * @ojwriteback
+ */
+/**
+ * An array of categories that will be hidden.
+ * @expose
+ * @name hiddenCategories
+ * @memberof oj.ojLegend
+ * @instance
+ * @type {Array.<string>}
+ * @default <code class="prettyprint">null</code>
+ * @ojwriteback
+ */
+/**
+ * Defines whether scrolling is enabled for the legend.
+ * @expose
+ * @name scrolling
+ * @memberof oj.ojLegend
+ * @instance
+ * @type {string}
+ * @ojvalue {string} "off"
+ * @ojvalue {string} "asNeeded"
+ * @default <code class="prettyprint">"asNeeded"</code>
+ */
+/**
+ *  Whether drilling is enabled on all legend items. Drillable objects will show a pointer cursor on hover and fire <code class="prettyprint">ojDrill</code> event on click. To enable or disable drilling on individual legend item, use the drilling attribute in each legend item. 
+ * @expose
+ * @name drilling
+ * @memberof oj.ojLegend
+ * @instance
+ * @type {string}
+ * @ojvalue {string} "on"
+ * @ojvalue {string} "off"
+ * @default <code class="prettyprint">"off"</code>
  */
 
 // SubId Locators **************************************************************
@@ -128,23 +622,23 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/in
  *
  * @classdesc
  * <h3 id="legendOverview-section">
- *   JET Legend Component
+ *   JET Legend
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#legendOverview-section"></a>
  * </h3>
  *
- * <p>Legend component for JET.</p>
- *
- * {@ojinclude "name":"warning"}
+ * <p>A themable, WAI-ARIA compliant legend for JET.</p>
  *
  * <pre class="prettyprint">
  * <code>
- * &lt;div data-bind="ojComponent: {
- *   component: 'ojLegend',
- *   orientation: 'vertical',
- *   sections: [{text : "Database"},
- *              {text : "Middleware"},
- *              {text : "Applications"}]
- * }"/>
+ * &lt;oj-legend
+    orientation='vertical'
+    sections='[{"items": [
+                {"text": "Database"},
+                {"text": "Middleware"},
+                {"text": "Application"}
+              ]}]'
+   >
+ * &lt;/oj-legend>
  * </code>
  * </pre>
  *
@@ -163,16 +657,6 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/in
  * {@ojinclude "name":"keyboardDoc"}
  *
  * {@ojinclude "name":"rtl"}
- *
- * @desc Creates a JET Legend.
- * @example <caption>Initialize the Legend with no options specified:</caption>
- * $(".selector").ojLegend();
- *
- * @example <caption>Initialize the Legend with some options:</caption>
- * $(".selector").ojLegend({orientation: 'vertical', sections: [{text : "Database"}, {text : "Middleware"}, {text : "Applications"}});
- *
- * @example <caption>Initialize the Legend via the JET <code class="prettyprint">ojComponent</code> binding:</caption>
- * &lt;div data-bind="ojComponent: {component: 'ojLegend'}">
  */
 oj.__registerWidget('oj.ojLegend', $['oj']['dvtBaseComponent'],
 {
@@ -180,17 +664,7 @@ oj.__registerWidget('oj.ojLegend', $['oj']['dvtBaseComponent'],
   options: {
     /**
      * Triggered during a drill gesture (single click on the legend item).
-     *
-     * @property {Object} ui event payload
-     * @property {string} ui.id the id of the drilled object
-     *
-     * @example <caption>Initialize the component with the <code class="prettyprint">drill</code> callback specified:</caption>
-     * $(".selector").ojLegend({
-     *   "drill": function(event, ui){}
-     * });
-     *
-     * @example <caption>Bind an event listener to the <code class="prettyprint">ojdrill</code> event:</caption>
-     * $(".selector").on("ojdrill", function(event, ui){});
+     * @property {string} id the id of the drilled object
      *
      * @expose
      * @event
@@ -314,6 +788,7 @@ oj.__registerWidget('oj.ojLegend', $['oj']['dvtBaseComponent'],
    * @expose
    * @instance
    * @memberof oj.ojLegend
+   * @ignore
    */
   getTitle : function() {
     var auto = this._component.getAutomation();

@@ -17,10 +17,9 @@
 
     /* Styling for the indexer widget container */
     .oj-indexer {
-      display: flex;
-      align-items: center;
+      @include oj-display-flex-property();
+      @include oj-align-items-property(center);
       width: $indexerItemWidth;
-      height: 100%;
     }    
 
     /* Styling to remove focus ring border on indexer */

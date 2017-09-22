@@ -130,6 +130,7 @@
         font-size: 0;
         line-height: 0;
         border-style: solid;
+        display: list-item;
     }
 
     // Group divider in a dropdown menu
@@ -414,6 +415,47 @@
 
     .oj-hicontrast .oj-menu-item.oj-focus.oj-disabled > a {
         outline: dotted 1px #000;
+    }
+
+
+    // menu animation defaults
+    //-------------------------------------
+    $menuDropDownAnimationDefaults: ();
+ 
+    @if ($menuDropDownOpenAnimation) {
+      $menuDropDownAnimationDefaults: map-merge($menuDropDownAnimationDefaults, (open: $menuDropDownOpenAnimation));
+    }
+ 
+    @if ($menuDropDownCloseAnimation) {
+      $menuDropDownAnimationDefaults: map-merge($menuDropDownAnimationDefaults, (close: $menuDropDownCloseAnimation));
+    }
+
+    $menuSheetAnimationDefaults: ();
+ 
+    @if ($menuSheetOpenAnimation) {
+      $menuSheetAnimationDefaults: map-merge($menuSheetAnimationDefaults, (open: $menuSheetOpenAnimation));
+    }
+ 
+    @if ($menuSheetCloseAnimation) {
+      $menuSheetAnimationDefaults: map-merge($menuSheetAnimationDefaults, (close: $menuSheetCloseAnimation));
+    }
+
+    $menuSubmenuAnimationDefaults: ();
+ 
+    @if ($menuSubmenuOpenAnimation) {
+      $menuSubmenuAnimationDefaults: map-merge($menuSubmenuAnimationDefaults, (open: $menuSubmenuOpenAnimation));
+    }
+ 
+    @if ($menuSubmenuCloseAnimation) {
+      $menuSubmenuAnimationDefaults: map-merge($menuSubmenuAnimationDefaults, (close: $menuSubmenuCloseAnimation));
+    }
+
+    $menuDefaultOptions: (animation: (dropdown: $menuDropDownAnimationDefaults,
+                                      sheet: $menuSheetAnimationDefaults,
+                                      submenu: $menuSubmenuAnimationDefaults));
+ 
+    .oj-menu-option-defaults {
+      font-family: oj-json-from-map($menuDefaultOptions);
     }
 
 

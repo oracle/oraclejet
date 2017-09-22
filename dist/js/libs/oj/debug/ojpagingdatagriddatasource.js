@@ -894,4 +894,33 @@ oj.PagingCellSet.prototype.getStartIndex = function()
 {
     return this.m_startIndex;
 };
+
+/**
+ * Gets the extent of a particular row/column index within the context of the cellSet.
+ * Extent is defined as the number of indexes along the appropriate axis spanned by the cell.
+ * If the extent extends beyond the start and end of the requested cell range the extent should be trimmed to the edge of the requested cell range and the object for {'more': {'before', 'after'}} should have the value appropriate boolean set.
+ * @param {Object} indexes the index of each axis in which we want to retrieve the data from. 
+ * @param {number} indexes.row the index of the row axis.
+ * @param {number} indexes.column the index of the column axis.
+ * @return {Object} an object containing two properties row and column. Each of those properties has two sub properties:
+ *              extent: the number of absolute indexes spanned by the cell at this index
+ *                      bounded by the edges of the result set for the specified axis.
+ *              more: object with keys 'before'/'after' and boolean values true/false representing whether
+ *                       there are more indexes before/after what is available in the cellSet
+ * @example <caption>In this example the cell spans 5 row indexes and 2 column indexes and there are more column indexes spanned by the cell that
+ *              aren't included in this cellSet:</caption>
+ * {
+ *  'row': {'extent':5, 'more': {'before':false, 'after':false}},
+ *  'column': {'extent':2, 'more': {'before':false, 'after':true}}
+ * }
+ * @export
+ * @expose
+ * @instance
+ * @memberof! oj.PagingCellSet
+ */
+oj.PagingCellSet.prototype.getExtent = function(indexes)
+{
+    var pagedIndexes = {'column': indexes['column'], 'row': indexes['row'] + this.m_startIndex};
+    return this.m_cellSet.getExtent(pagedIndexes);
+};
 });

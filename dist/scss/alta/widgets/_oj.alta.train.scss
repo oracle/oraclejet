@@ -38,34 +38,28 @@
           left: ($trainButtonContinuousConnectorDiameter - $trainButtonDiameter)/2;
         }
       }
+      border-style: none;
     }
     .oj-train-icon:before {
-      width: 9px; /* Needed for old versions of IE11 */
+      content: none;
     }
     
     .oj-train-icon.oj-confirmation {
-      @include oj-icon-content(
-        $icon: oj-common-image-url("alertModifier_complete.svg")
-      );
+      @extend .oj-fwk-icon-status-confirmation2;
     }
 
     .oj-train-icon.oj-info{
-      @include oj-icon-content(
-        $icon: oj-common-image-url("alertModifier_info.svg")
-      );
+      @extend .oj-fwk-icon-status-info2;
     }
 
     .oj-train-icon.oj-warning {
-      @include oj-icon-content(
-        $icon: oj-common-image-url("alertModifier_warning.svg")
-      );
+      @extend .oj-fwk-icon-status-warning2;
     }
 
     .oj-train-icon.oj-error {
-      @include oj-icon-content(
-        $icon: oj-common-image-url("alertModifier_error.svg")
-      );
+      @extend .oj-fwk-icon-status-error2;
     }
+
    .oj-train-icon,
    .oj-train-icon.oj-confirmation,
    .oj-train-icon.oj-error,

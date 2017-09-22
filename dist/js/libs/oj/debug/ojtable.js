@@ -7,7 +7,7 @@
  * Copyright (c) 2015, Oracle and/or its affiliates.
  * All rights reserved.
  */
-define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/ojdomscroller', 'ojs/ojeditablevalue', 'ojs/ojmenu', 'ojs/ojdatasource-common', 'ojs/ojpagingtabledatasource', 'ojs/ojflattenedtreetabledatasource'], 
+define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/ojdomscroller', 'ojs/ojeditablevalue', 'ojs/ojinputnumber', 'ojs/ojmenu', 'ojs/ojpopup', 'ojs/ojbutton', 'ojs/ojdatasource-common', 'ojs/ojpagingtabledatasource', 'ojs/ojflattenedtreetabledatasource'], 
       
        function(oj, $, compCore)
 {
@@ -18,18 +18,31 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
  */
 
 /**
- * @preserve Copyright 2013 jQuery Foundation and other contributors
- * Released under the MIT license.
- * http://jquery.org/license
- */
-
-/**
  * @ojcomponent oj.ojTable
  * @augments oj.baseComponent
  *
  * @classdesc
- * The ojTable component enhances a HTML table element into one that supports all
- * the features in JET Table. </p>
+ * <h3 id="tableOverview-section">
+ *   JET Table
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#tableOverview-section"></a>
+ * </h3>
+ * <p>Description:</p>
+ * <p>A JET Table enhances a HTML table element into one that supports all
+ * the features in JET Table.</p>
+ *
+ * <pre class="prettyprint">
+ * <code>
+ * &lt;oj-table
+ *   summary="Department List"
+ *   aria-label="Departments Table" 
+ *   data='{{datasource}}'
+ *   columns='[{"headerText": "Department Id", "field": "DepartmentId"},
+ *             {"headerText": "Department Name", "field": "DepartmentName"},
+ *             {"headerText": "Location Id", "field": "LocationId"},
+ *             {"headerText": "Manager Id", "field": "ManagerId"}]' &gt;
+ * &lt;/oj-table>
+ * </code>
+ * </pre>
  *
  * <h3 id="touch-section">
  *   Touch End User Information
@@ -76,61 +89,24 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
  * performance, you should avoid putting a large number of heavy-weight components inside a cell because as you add more complexity
  * to the structure, the effect will be multiplied because there can be many items in the Table.</p>
  *
- * <!-- - - - - Above this point, the tags are for the class.
- *              Below this point, the tags are for the constructor (initializer). - - - - - - -->
+ * <h3 id="animation-section">
+ *   Animation
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#animation-section"></a>
+ * </h3>
+ * 
+ * {@ojinclude "name":"animationDoc"}
  *
+ */
+ /**
+ * <p>Named slot for the Table's bottom panel where applications can add content such as a paging control.</p>
  *
- * @desc Creates a JET Table.
+ * @ojslot bottom
+ * @memberof oj.ojTable
  *
- * @param {Object=} options a map of option-value pairs to set on the component
- *
- * @example  <caption>Initialize the table via the JET <code class="prettyprint">ojComponent</code> binding:</caption>
- * &lt;table id="table" summary="Department List" aria-label="Departments Table" 
- *      data-bind="ojComponent: {component: 'ojTable', data: datasource, columns:
- *      [{headerText: 'Department Id', field: 'DepartmentId'},
- *      {headerText: 'Department Name', field: 'DepartmentName'},
- *      {headerText: 'Location Id', field: 'LocationId'},
- *      {headerText: 'Manager Id', field: 'ManagerId'}]}"&gt;
- *
- * @example  <caption>Initialize the table with column templates via the JET <code class="prettyprint">ojComponent</code> binding:</caption>
- * &lt;table id="table" summary="Department List" aria-label="Departments Table"  
- *      data-bind="ojComponent: {component: 'ojTable', data: datasource, columns:
- *      [{headerText: 'Department Id', field: 'DepartmentId'},
- *      {headerText: 'Department Name', field: 'DepartmentName'},
- *      {headerText: 'Location Id', field: 'LocationId'},
- *      {headerText: 'Manager Id', field: 'ManagerId'}]},
- *      {headerTemplate: 'oracle_link_hdr', template: 'oracle_link'}]}"&gt;
- * &lt;script type="text/html" id="oracle_link_hdr"&gt;
- *    &lt;th style="padding-left: 5px; padding-right: 5px;"&gt;
- *       Oracle Link
- *    &lt;/th&gt;
- * &lt;/script&gt;
- * &lt;script type="text/html" id="oracle_link"&gt;
- *     &lt;td&gt;
- *         &lt;a href="http://www.oracle.com"&gt;Oracle&lt;/a&gt;
- *     &lt;/td&gt;
- * &lt;/script&gt;
- *
- * @example  <caption>Initialize the table with rowTemplate via the JET <code class="prettyprint">ojComponent</code> binding:</caption>
- * &lt;table id="table" summary="Department List" aria-label="Departments Table" 
- *      data-bind="ojComponent: {component: 'ojTable', data: datasource, columns:
- *      [{headerText: 'Department Id', field: 'DepartmentId'},
- *      {headerText: 'Department Name', field: 'DepartmentName'},
- *      {headerText: 'Location Id', field: 'LocationId'},
- *      {headerText: 'Manager Id', field: 'ManagerId'}],
- *      rowTemplate: 'row_tmpl'}"&gt;
- * &lt;script type="text/html" id="row_tmpl"&gt;
- *   &lt;tr&gt;
- *       &lt;td data-bind="text: DepartmentId"&gt;
- *       &lt;/td&gt;
- *       &lt;td data-bind="text: DepartmentName"&gt;
- *       &lt;/td&gt;
- *       &lt;td data-bind="text: LocationId"&gt;
- *       &lt;/td&gt;
- *       &lt;td data-bind="text: ManagerId"&gt;
- *       &lt;/td&gt;
- *   &lt;/tr&gt;
- * &lt;/script&gt;
+ * @example <caption>Initialize the Table with the <code class="prettyprint">bottom</code> slot specified:</caption>
+ * &lt;oj-table>
+ *   &lt;div slot='bottom'>&lt;oj-paging-control>&lt;/oj-paging-control>&lt;/div>
+ * &lt;/oj-table>
  */
 (function() {
   oj.__registerWidget("oj.ojTable", $['oj']['baseComponent'],
@@ -141,28 +117,84 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
       options:
         {
           /**
-           * Accessibility options.
-           * <p>
-           * The following options are supported:
-           * <ul>
-           *   <li>rowHeader: columnId</li>
-           * </ul>
-           * The td cells in the column specified by the rowHeader
-           * attribute will be assigned an id and then referenced by the
-           * headers attribute in the rest of the cells in the row.
-           * This is required by screenReaders. By default the first column
-           * will be taken as the rowHeader.
+           * Accessibility attributes.
+           *
            * @expose
+           * @name accessibility
            * @public
            * @instance
            * @memberof! oj.ojTable
            * @type {Object.<string, string>|null}
-           * @property {string} rowHeader the column id to be used as the row header by screen readers
            * @default <code class="prettyprint">null</code>
+           *
+           * @example <caption>Initialize the Table, overriding accessibility value:</caption>
+           * &lt;!-- Using dot notation -->
+           * &lt;oj-table accessibility.row-header='headerColumnId'>&lt;/oj-table>
+           * 
+           * &lt;!-- Using JSON notation -->
+           * &lt;oj-table accessibility='{"rowHeader":"headerColumnId"}'>&lt;/oj-table>
+           *
+           * @example <caption>Get or set the <code class="prettyprint">accessibility</code> property after initialization:</caption>
+           * // Get one
+           * var value = myTable.accessibility.rowHeader;
+           *
+           * // Set one. Always use the setProperty API for 
+           * // subproperties rather than setting a subproperty directly.
+           * myTable.setProperty('accessibility.rowHeader', 'headerColumnId');
+           *
+           * // Get all
+           * var values = myTable.accessibility;
+           *
+           * // Set all.  Must list every accessibility key, as those not listed are lost.
+           * myTable.accessibility = {
+           *     rowHeader: 'headerColumnId'
+           * };
            */
           accessibility: null,
           /**
-           * The current row the user has navigated to. Can be an index and/or key value.
+           * The column id to be used as the row header by screen readers.
+           *
+           * <p>The td cells in the column specified by this
+           * attribute will be assigned an id and then referenced by the
+           * headers attribute in the rest of the cells in the row.
+           * This is required by screen readers. By default the first column
+           * will be taken as the row header.</p>
+           * <p>See the <a href="#accessibility">accessibility</a> attribute for usage examples.</p>
+           *
+           * @expose
+           * @name accessibility.rowHeader
+           * @memberof! oj.ojTable
+           * @instance
+           * @type {string}
+           */
+          /**
+           * Triggered when the default animation of a particular action is about to start.  The default animation can be cancelled by calling event.preventDefault.
+           * If the event listener calls event.preventDefault to cancel the default animation, it must call the ui.endCallback function when it finishes its own animation handling.
+           * Row animations will only be triggered for rows in the current viewport and an event will be triggered for each cell in the animated row.
+           * 
+           * @expose
+           * @event
+           * @memberof oj.ojTable
+           * @instance
+           * @property {Object} action the action that starts the animation.  See <a href="#animation-section">animation</a> section for a list of actions.
+           * @property {Object} element the target of animation. For row animations this will be the cell contents wrapped in a div.
+           * @property {function} endCallback if the event listener calls event.preventDefault to cancel the default animation, it must call the endCallback function when it finishes its own animation handling and when any custom animation ends.
+           */
+          animateStart: null,
+          /**
+           * Triggered when the default animation of a particular action has ended.  Note this event will not be triggered if application cancelled the default animation on animateStart.
+           * Row animations will only be triggered for rows in the current viewport and an event will be triggered for each cell in the animated row.
+           * 
+           * @expose
+           * @event
+           * @memberof oj.ojTable
+           * @instance
+           * @property {Object} action the action that started the animation.  See <a href="#animation-section">animation</a> section for a list of actions.
+           * @property {Object} element the target of animation. For row animations this will be the cell contents wrapped in a div.
+           */
+          animateEnd: null,
+          /**
+           * The row that currently have keyboard focus.  Can be an index and/or key value.
            * When both are specified, the index is used as a hint.
            * Returns the current row or null if there is none.
            * @expose
@@ -171,25 +203,21 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
            * @memberof! oj.ojTable
            * @type {Object}
            * @default <code class="prettyprint">null</code>
+           * @ojwriteback
            *
-           * @example <caption>Get the current row:</caption>
-           * $( ".selector" ).ojTable("option", "currentRow");
+           * @example <caption>Initialize the Table with the <code class="prettyprint">current-row</code> attribute specified:</caption>
+           * &lt;oj-table current-row='{"rowIndex": 1}'>&lt;/oj-table>
            *
-           * @example <caption>Set the current row on the table during initialization:</caption>
-           * $(".selector").ojTable({"currentRow", {rowKey: '123'}});
+           * @example <caption>Get or set the <code class="prettyprint">currentRow</code> property after initialization:</caption>
+           * // getter
+           * var value = myTable.currentRow;
            *
-           * @example <caption>Set the current row on the table during initialization:</caption>
-           * $(".selector").ojTable({"currentRow", {rowIndex: 1}});
-           *
-           * @example <caption>Set the current row on the table after initialization:</caption>
-           * $(".selector").ojTable("option", "currentRow", {rowKey: '123'});
-           *
-           * @example <caption>Set the current row on the table after initialization:</caption>
-           * $(".selector").ojTable("option", "currentRow", {rowIndex: 1});
+           * // setter
+           * myTable.currentRow = {rowKey: '123'};
            */
           currentRow: null,
           /**
-           * The data to bind to the component.
+           * The data to bind to the element.
            * <p>
            * Must be of type oj.TableDataSource {@link oj.TableDataSource}
            * @expose
@@ -198,12 +226,22 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
            * @memberof! oj.ojTable
            * @type {oj.TableDataSource|null}
            * @default <code class="prettyprint">null</code>
+           *
+           * @example <caption>Initialize the Table with the <code class="prettyprint">data</code> attribute specified:</caption>
+           * &lt;oj-table data='{{tableDataSource}}'>&lt;/oj-table>
+           *
+           * @example <caption>Get or set the <code class="prettyprint">data</code> property after initialization:</caption>
+           * // getter
+           * var tableDataSource = myTable.data;
+           *
+           * // setter
+           * myTable.data = tableDataSource;
            */
           data: null,
           /**
            * Whether to display table in list or grid mode. Setting a value of grid
            * will cause the table to display in grid mode. The default value of this
-           * option is set through the theme.
+           * attribute is set through the theme.
            * @expose
            * @public
            * @instance
@@ -211,6 +249,17 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
            * @type {string}
            * @ojvalue {string} "list" Display table in list mode.
            * @ojvalue {string} "grid" Display table in grid mode. This is a more compact look than list mode.
+           * @default <code class="prettyprint">"list"</code>
+           *
+           * @example <caption>Initialize the Table with the <code class="prettyprint">display</code> attribute specified:</caption>
+           * &lt;oj-table display='grid'>&lt;/oj-table>
+           *
+           * @example <caption>Get or set the <code class="prettyprint">display</code> property after initialization:</caption>
+           * // getter
+           * var displayValue = myTable.display;
+           *
+           * // setter
+           * myTable.display = 'grid';
            */
            display: 'list',
           /**
@@ -219,136 +268,235 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
            * on HTML5 Drag and Drop to learn how to use it.
            * 
            * @type {Object}
-           *
-           * @property {Object} drag  An object that describes drag functionlity.
-           * @property {Object} drag.rows  If this object is specified, the table will initiate drag operation when the user drags on selected rows.
-           * @property {string | Array.string} drag.rows.dataTypes  (optional) The MIME types to use for the dragged data in the dataTransfer object.  This can be a string if there is only one
-           * type, or an array of strings if multiple types are needed.<br><br>
-           * For example, if selected rows of employee data are being dragged, dataTypes could be "application/employees+json". Drop targets can examine the data types and decide
-           * whether to accept the data. A text input may only accept "text" data type, while a chart for displaying employee data may be configured to accept the "application/employees+json" type.<br><br>
-           * For each type in the array, dataTransfer.setData will be called with the specified type and the JSON version of the selected rows data as the value. The selected rows data 
-           * is an array of objects, with each object representing one selected row in the format returned by TableDataSource.get().<br><br>
-           * This property is required unless the application calls setData itself in a dragStart callback function.
-           * @property {function} drag.rows.dragStart  (optional) A callback function that receives the "dragstart" event and context information as arguments:<br><br>
-           * <code class="prettyprint">function(event, ui)</code><br><br>
-           * Parameters:<br><br>
-           * <code class="prettyprint">event</code>: The jQuery event object<br><br>
-           * <code class="prettyprint">ui</code>: Context object with the following properties:<br>
-           * <ul>
-           *   <li><code class="prettyprint">rows</code>: An array of objects, with each object representing the data of one selected row in the structure below:
-           *     <table>
-           *     <tbody>
-           *     <tr><td><b>data</b></td><td>The raw row data</td></tr>
-           *     <tr><td><b>index</b></td><td>The index for the row</td></tr>
-           *     <tr><td><b>key</b></td><td>The key value for the row</td></tr>
-           *     </tbody>
-           *     </table>
-           *   </li>
-           * </ul><br><br>
-           * This function can set its own data and drag image as needed. If dataTypes is specified, event.dataTransfer is already populated with the default data when this function is invoked.
-           * If dataTypes is not specified, this function must call event.dataTransfer.setData to set the data or else the drag operation will be cancelled.  In either case, the drag image is  
-           * set to an image of the selected rows visible on the table.
-           * @property {function} drag.rows.drag  (optional) A callback function that receives the "drag" event as argument:<br><br>
-           * <code class="prettyprint">function(event)</code><br><br>
-           * Parameters:<br><br>
-           * <code class="prettyprint">event</code>: The jQuery event object
-           * @property {function} drag.rows.dragEnd  (optional) A callback function that receives the "dragend" event as argument:<br><br>
-           * <code class="prettyprint">function(event)</code><br><br>
-           * Parameters:<br><br>
-           * <code class="prettyprint">event</code>: The jQuery event object<br>
-           *
-           * @property {Object} drop  An object that describes drop functionality.
-           * @property {Object} drop.columns  An object that specifies callback functions to handle dropping columns<br><br>
-           * For all callback functions, the following arguments will be passed:<br><br>
-           * <code class="prettyprint">event</code>: The jQuery event object<br><br>
-           * <code class="prettyprint">ui</code>: Context object with the following properties:
-           * <ul>
-           *   <li><code class="prettyprint">columnIndex</code>: The index of the column being dropped on</li>
-           * </ul>
-           * @property {string | Array.string} drop.columns.dataTypes  A data type or an array of data types this component can accept.<br><br>
-           * This property is required unless dragEnter, dragOver, and drop callback functions are specified to handle the corresponding events.
-           * @property {function} drop.columns.dragEnter  (optional) A callback function that receives the "dragenter" event and context information as arguments:<br><br>
-           * <code class="prettyprint">function(event, ui)</code><br><br>
-           * This function should return false to indicate the dragged data can be accepted or true otherwise.  Any explict return value will be passed back to jQuery.  Returning false
-           * will cause jQuery to call stopPropagation and preventDefault on the event, and calling preventDefault is required by HTML5 Drag and Drop to indicate acceptance of data.<br><br>
-           * If this function doesn't return a value, dataTypes will be matched against the drag data types to determine if the data is acceptable.  If there is a match, event.preventDefault
-           * will be called to indicate that the data can be accepted.
-           * @property {function} drop.columns.dragOver  (optional) A callback function that receives the "dragover" event and context information as arguments:<br><br>
-           * <code class="prettyprint">function(event, ui)</code><br><br>
-           * Similar to dragEnter, this function should return false to indicate the dragged data can be accepted or true otherwise.  If this function doesn't return a value,
-           * dataTypes will be matched against the drag data types to determine if the data is acceptable.       
-           * @property {function} drop.columns.dragLeave  (optional) A callback function that receives the "dragleave" event and context information as arguments:<br><br>
-           * <code class="prettyprint">function(event, ui)</code>
-           * @property {function} drop.columns.drop  (required) A callback function that receives the "drop" event and context information as arguments:<br><br>
-           * <code class="prettyprint">function(event, ui)</code><br><br>
-           * This function should return false to indicate the dragged data is accepted or true otherwise.           
-           * @property {Object} drop.rows  An object that specifies callback functions to handle dropping rows<br><br>
-           * For all callback functions, the following arguments will be passed:<br><br>
-           * <code class="prettyprint">event</code>: The jQuery event object<br><br>
-           * <code class="prettyprint">ui</code>: Context object with the following properties:
-           * <ul>
-           *   <li><code class="prettyprint">rowIndex</code>: The index of the row being dropped on</li>
-           * </ul>
-           * @property {string | Array.string} drop.rows.dataTypes  A data type or an array of data types this component can accept.<br><br>
-           * This property is required unless dragEnter, dragOver, and drop callback functions are specified to handle the corresponding events.
-           * @property {function} drop.rows.dragEnter  (optional) A callback function that receives the "dragenter" event and context information as arguments:<br><br>
-           * <code class="prettyprint">function(event, ui)</code><br><br>
-           * This function should return false to indicate the dragged data can be accepted or true otherwise.  Any explict return value will be passed back to jQuery.  Returning false
-           * will cause jQuery to call stopPropagation and preventDefault on the event, and calling preventDefault is required by HTML5 Drag and Drop to indicate acceptance of data.<br><br>
-           * If this function doesn't return a value, dataTypes will be matched against the drag data types to determine if the data is acceptable.  If there is a match, event.preventDefault
-           * will be called to indicate that the data can be accepted.
-           * @property {function} drop.rows.dragOver  (optional) A callback function that receives the "dragover" event and context information as arguments:<br><br>
-           * <code class="prettyprint">function(event, ui)</code><br><br>
-           * Similar to dragEnter, this function should return false to indicate the dragged data can be accepted or true otherwise.  If this function doesn't return a value,
-           * dataTypes will be matched against the drag data types to determine if the data is acceptable.       
-           * @property {function} drop.rows.dragLeave  (optional) A callback function that receives the "dragleave" event and context information as arguments:<br><br>
-           * <code class="prettyprint">function(event, ui)</code>
-           * @property {function} drop.rows.drop  (required) A callback function that receives the "drop" event and context information as arguments:<br><br>
-           * <code class="prettyprint">function(event, ui)</code><br><br>
-           * This function should return false to indicate the dragged data is accepted or true otherwise.<br><br>
-           * If the application needs to look at the data for the row being dropped on, it can use the getDataForVisibleRow method.
-           *
-           * @property {Object} reorder  An object with property columns<br><br>
-           * Enable or disable reordering the columns within the same table using drag and drop.<br><br>
-           * Specify an object with the property "reorder" set to <code class="prettyprint">{'columns':'enabled'}</code> to enable
-           * reordering.  Setting the <code class="prettyprint">"reorder"</code> property to <code class="prettyprint">{'columns':'disabled'}</code>,
-           * or setting the <code class="prettyprint">"dnd"</code> property to <code class="prettyprint">null</code> (or omitting
-           * it), disables reordering support. Re-ordering is supported one column at a time. In addition, re-ordering will not re-order
-           * any cells which have the colspan attribute with value > 1. Such cells will need to be re-ordered manually by listening to
-           * the option change event on the columns option.
-           * @property {string} reorder.columns column reordering within the table: "enabled", "disabled"
-           * 
-           * @default <code class="prettyprint">{reorder: {columns :'disabled'}, drag: null, drop: null}</code>
+           * @default <code class="prettyprint">{drag: null, drop: null, reorder: {columns :'disabled'}}</code>
            * @expose
            * @instance
            * @memberof! oj.ojTable
            * 
-           * @example <caption>Initialize the table to enable column reorder:</caption>
-           * $( ".selector" ).ojTable({ "data":data, "dnd" : {"reorder":{"columns":"enabled"}}});
+           * @example <caption>Initialize the table with some dnd functionality:</caption>
+           * &lt;!-- Using dot notation -->
+           * &lt;oj-table dnd.reorder.columns='enabled' dnd.drag.rows.dataTypes='application/ojtablerows+json'>&lt;/oj-table>
+           * 
+           * &lt;!-- Using JSON notation -->
+           * &lt;oj-table dnd='{"reorder":{"columns":"enabled"}, "drag":{"rows":{"dataTypes":"application/ojtablerows+json"}}}'>&lt;/oj-table>
            *
-           * @example <caption>Initialize the table to enable dragging of selected rows using default behavior:</caption>
-           * $( ".selector" ).ojTable({ "data":data, "dnd" : {"drag":{"rows":{"dataTypes":"application/ojtablerows+json"}}}});
+           * @example <caption>Get or set the <code class="prettyprint">dnd</code> property after initialization:</caption>
+           * // Get one
+           * var value = myTable.dnd.reorder;
+           *
+           * // Set one, leaving the others intact. Use the setProperty API for 
+           * // subproperties so that a property change event is fired.
+           * myTable.setProperty('dnd.reorder', {"columns":"enabled"});
+           *
+           * // Get all
+           * var values = myTable.dnd;
+           *
+           * // Set all.  Must list every dnd functionality, as those not listed are lost.
+           * myTable.dnd = {
+           *     reorder: {"columns":"enabled"},
+           *     drag: {"rows":{"dataTypes":"application/ojtablerows+json"}}
+           * };
            */
-          dnd : {'drag': null,
-                 'drop': null,
-                 'reorder': {'columns' :'disabled'}},
+          dnd : {
+            /**
+             * An object that describes drag functionlity.
+             *
+             * <p>See the <a href="#dnd">dnd</a> attribute for usage examples.
+             *
+             * @expose
+             * @name dnd.drag
+             * @memberof! oj.ojTable
+             * @instance
+             * @type {Object}
+             * @default <code class="prettyprint">null</code>
+             */
+            'drag': null,
+            /**
+             * If this object is specified, the table will initiate drag operation when the user drags on selected rows.
+             *
+             * <p>See the <a href="#dnd">dnd</a> attribute for usage examples.
+             *
+             * @property {string | Array.string} dataTypes  (optional) The MIME types to use for the dragged data in the dataTransfer object.  This can be a string if there is only one
+             * type, or an array of strings if multiple types are needed.<br><br>
+             * For example, if selected rows of employee data are being dragged, dataTypes could be "application/employees+json". Drop targets can examine the data types and decide
+             * whether to accept the data. A text input may only accept "text" data type, while a chart for displaying employee data may be configured to accept the "application/employees+json" type.<br><br>
+             * For each type in the array, dataTransfer.setData will be called with the specified type and the JSON version of the selected rows data as the value. The selected rows data 
+             * is an array of objects, with each object representing one selected row in the format returned by TableDataSource.get().<br><br>
+             * This property is required unless the application calls setData itself in a dragStart callback function.
+             * @property {function} dragStart  (optional) A callback function that receives the "dragstart" event and context information as arguments:<br><br>
+             * <code class="prettyprint">function(event, context)</code><br><br>
+             * Parameters:<br><br>
+             * <code class="prettyprint">event</code>: The DOM event object<br><br>
+             * <code class="prettyprint">context</code>: Context object with the following properties:<br>
+             * <ul>
+             *   <li><code class="prettyprint">rows</code>: An array of objects, with each object representing the data of one selected row in the structure below:
+             *     <table>
+             *     <tbody>
+             *     <tr><td><b>data</b></td><td>The raw row data</td></tr>
+             *     <tr><td><b>index</b></td><td>The index for the row</td></tr>
+             *     <tr><td><b>key</b></td><td>The key value for the row</td></tr>
+             *     </tbody>
+             *     </table>
+             *   </li>
+             * </ul><br><br>
+             * This function can set its own data and drag image as needed. If dataTypes is specified, event.dataTransfer is already populated with the default data when this function is invoked.
+             * If dataTypes is not specified, this function must call event.dataTransfer.setData to set the data or else the drag operation will be cancelled.  In either case, the drag image is  
+             * set to an image of the selected rows visible on the table.
+             * @property {function} drag  (optional) A callback function that receives the "drag" event as argument:<br><br>
+             * <code class="prettyprint">function(event)</code><br><br>
+             * Parameters:<br><br>
+             * <code class="prettyprint">event</code>: The DOM event object
+             * @property {function} dragEnd  (optional) A callback function that receives the "dragend" event as argument:<br><br>
+             * <code class="prettyprint">function(event)</code><br><br>
+             * Parameters:<br><br>
+             * <code class="prettyprint">event</code>: The DOM event object<br>
+             *
+             * @expose
+             * @name dnd.drag.rows
+             * @memberof! oj.ojTable
+             * @instance
+             * @type {Object}
+             */
+            /**
+             * An object that describes drop functionlity.
+             *
+             * <p>See the <a href="#dnd">dnd</a> attribute for usage examples.
+             *
+             * @expose
+             * @name dnd.drop
+             * @memberof! oj.ojTable
+             * @instance
+             * @type {Object}
+             * @default <code class="prettyprint">null</code>
+             */
+            'drop': null,
+            /**
+             * An object that specifies callback functions to handle dropping columns<br><br>
+             * For all callback functions, the following arguments will be passed:<br><br>
+             * <code class="prettyprint">event</code>: The DOM event object<br><br>
+             * <code class="prettyprint">context</code>: Context object with the following properties:
+             * <ul>
+             *   <li><code class="prettyprint">columnIndex</code>: The index of the column being dropped on</li>
+             * </ul>
+             *
+             * <p>See the <a href="#dnd">dnd</a> attribute for usage examples.
+             *
+             * @property {string | Array.string} dataTypes  A data type or an array of data types this element can accept.<br><br>
+             * This property is required unless dragEnter, dragOver, and drop callback functions are specified to handle the corresponding events.
+             * @property {function} dragEnter  (optional) A callback function that receives the "dragenter" event and context information as arguments:<br><br>
+             * <code class="prettyprint">function(event, context)</code><br><br>
+             * This function should call <code class="prettyprint">event.preventDefault()</code> to indicate the dragged data can be accepted.
+             * Calling <code class="prettyprint">event.preventDefault()</code> is required by HTML5 Drag and Drop to indicate acceptance of data.<br><br>
+             * If dataTypes is specified, it will be matched against the drag data types to determine if the data is acceptable.  If there is a match, JET will call 
+             * <code class="prettyprint">event.preventDefault()</code> to indicate that the data can be accepted.
+             * @property {function} dragOver  (optional) A callback function that receives the "dragover" event and context information as arguments:<br><br>
+             * <code class="prettyprint">function(event, context)</code><br><br>
+             * Similar to dragEnter, this function should call <code class="prettyprint">event.preventDefault()</code> to indicate the dragged data can be accepted.  If dataTypes is specified,
+             * it will be matched against the drag data types to determine if the data is acceptable.       
+             * @property {function} dragLeave  (optional) A callback function that receives the "dragleave" event and context information as arguments:<br><br>
+             * <code class="prettyprint">function(event, context)</code>
+             * @property {function} drop  (required) A callback function that receives the "drop" event and context information as arguments:<br><br>
+             * <code class="prettyprint">function(event, context)</code><br><br>
+             * This function should call <code class="prettyprint">event.preventDefault()</code> to indicate the dragged data is accepted.           
+             *
+             * @expose
+             * @name dnd.drop.columns
+             * @memberof! oj.ojTable
+             * @instance
+             * @type {Object}
+             */
+            /**
+             * An object that specifies callback functions to handle dropping rows<br><br>
+             * For all callback functions, the following arguments will be passed:<br><br>
+             * <code class="prettyprint">event</code>: The DOM event object<br><br>
+             * <code class="prettyprint">context</code>: Context object with the following properties:
+             * <ul>
+             *   <li><code class="prettyprint">rowIndex</code>: The index of the row being dropped on</li>
+             * </ul>
+             *
+             * <p>See the <a href="#dnd">dnd</a> attribute for usage examples.
+             *
+             * @property {string | Array.string} dataTypes  A data type or an array of data types this element can accept.<br><br>
+             * This property is required unless dragEnter, dragOver, and drop callback functions are specified to handle the corresponding events.
+             * @property {function} dragEnter  (optional) A callback function that receives the "dragenter" event and context information as arguments:<br><br>
+             * <code class="prettyprint">function(event, context)</code><br><br>
+             * This function should call <code class="prettyprint">event.preventDefault()</code> to indicate the dragged data can be accepted.
+             * Calling <code class="prettyprint">event.preventDefault()</code> is required by HTML5 Drag and Drop to indicate acceptance of data.<br><br>
+             * If dataTypes is specified, it will be matched against the drag data types to determine if the data is acceptable.  If there is a match, JET will call
+             * <code class="prettyprint">event.preventDefault()</code> to indicate that the data can be accepted.
+             * @property {function} dragOver  (optional) A callback function that receives the "dragover" event and context information as arguments:<br><br>
+             * <code class="prettyprint">function(event, context)</code><br><br>
+             * Similar to dragEnter, this function should call <code class="prettyprint">event.preventDefault()</code> to indicate the dragged data can be accepted.  If dataTypes is specified,
+             * it will be matched against the drag data types to determine if the data is acceptable.       
+             * @property {function} dragLeave  (optional) A callback function that receives the "dragleave" event and context information as arguments:<br><br>
+             * <code class="prettyprint">function(event, context)</code>
+             * @property {function} drop  (required) A callback function that receives the "drop" event and context information as arguments:<br><br>
+             * <code class="prettyprint">function(event, context)</code><br><br>
+             * This function should call <code class="prettyprint">event.preventDefault()</code> to indicate the dragged data is accepted.<br><br>
+             * If the application needs to look at the data for the row being dropped on, it can use the getDataForVisibleRow method.
+             *
+             * @expose
+             * @name dnd.drop.rows
+             * @memberof! oj.ojTable
+             * @instance
+             * @type {Object}
+             */
+            /**
+             * An object that describes reorder functionlity.
+             *
+             * <p>See the <a href="#dnd">dnd</a> attribute for usage examples.
+             *
+             * @expose
+             * @name dnd.reorder
+             * @memberof! oj.ojTable
+             * @instance
+             * @type {Object}
+             * @default <code class="prettyprint">{'columns' :'disabled'}</code>
+             */
+            'reorder': {
+              /**
+               * Enable or disable reordering the columns within the same table using drag and drop.<br><br>
+               * Re-ordering is supported one column at a time. In addition, re-ordering will not re-order
+               * any cells which have the colspan attribute with value > 1. Such cells will need to be re-ordered manually by listening to
+               * the property change event on the columns property.
+               * 
+               * <p>See the <a href="#dnd">dnd</a> attribute for usage examples.
+               *
+               * @expose
+               * @name dnd.reorder.columns
+               * @memberof! oj.ojTable
+               * @instance
+               * @type {string}
+               * @ojvalue {string} 'enabled' Enable column reordering
+               * @ojvalue {string} 'disabled' Disable column reordering
+               * @default <code class="prettyprint">'disabled'</code>
+               * @ojwriteback
+               */
+              'columns' :'disabled'
+            }
+          },
           /**
-            * Determine if the table is read only or editable. Use 'none' if the table is strictly read only and will be a single Tab stop on the page.
-            * Use 'rowEdit' if you want single row at a time editability. The table will initially render with all rows in read only mode. Pressing Enter/F2 or double click will make the current row editable and pressing Tab navigates to the next cell. Pressing ESC/F2 while in this mode will switch the table back to all rows in read only mode and will be a single Tab stop the page.
-            *
-            * @expose
-            * @memberof! oj.ojTable
-            * @instance
-            * @type {string|null}
-            * @ojvalue {string} "none" The table is read only and is a single Tab stop.
-            * @ojvalue {string} "rowEdit" The table has single row at a time editability and the cells within the editable row are tabbable.
-            * @default <code class="prettyprint">"none"</code>
-            * @example <caption>Initialize the table with the <code class="prettyprint">editMode</code> option specified:</caption>
-            * &lt;table id="table" summary="Department List" aria-label="Departments Table"
-            * data-bind="ojComponent: {component: 'ojTable', data: datasource, editMode: 'rowEdit', columns:
-            * [{headerText: 'Department Id', field: 'DepartmentId'},
-            * {headerText: 'Department Name', field: 'DepartmentName']}"&gt;
-            */
+           * Determine if the table is read only or editable. Use 'none' if the table is strictly read only and will be a single Tab stop on the page.
+           * Use 'rowEdit' if you want single row at a time editability. The table will initially render with all rows in read only mode. Pressing Enter/F2 or double click will make the current row editable and pressing Tab navigates to the next cell. Pressing ESC/F2 while in this mode will switch the table back to all rows in read only mode and will be a single Tab stop the page.
+           *
+           * @expose
+           * @memberof! oj.ojTable
+           * @instance
+           * @type {string|null}
+           * @ojvalue {string} "none" The table is read only and is a single Tab stop.
+           * @ojvalue {string} "rowEdit" The table has single row at a time editability and the cells within the editable row are tabbable.
+           * @default <code class="prettyprint">"none"</code>
+           *
+           * @example <caption>Initialize the Table with the <code class="prettyprint">edit-mode</code> attribute specified:</caption>
+           * &lt;oj-table edit-mode='rowEdit'>&lt;/oj-table>
+           *
+           * @example <caption>Get or set the <code class="prettyprint">editMode</code> property after initialization:</caption>
+           * // getter
+           * var value = myTable.editMode;
+           *
+           * // setter
+           * myTable.editMode = 'rowEdit';
+           */
           editMode: 'none',
           /**
            * The text to display when there are no data in the Table. If it is not defined,
@@ -359,25 +507,41 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
            * @instance
            * @type {string|null}
            * @default <code class="prettyprint">"No data to display."</code>
-           * @example <caption>Initialize the table with the <code class="prettyprint">emptyText</code> option specified:</caption>
-           * &lt;table id="table" summary="Department List" aria-label="Departments Table" 
-           * data-bind="ojComponent: {component: 'ojTable', data: datasource, emptyText: 'No data', columns:
-           * [{headerText: 'Department Id', field: 'DepartmentId'},
-           * {headerText: 'Department Name', field: 'DepartmentName']}"&gt;
+           * @example <caption>Initialize the table with the <code class="prettyprint">empty-text</code> attribute specified:</caption>
+           * &lt;oj-table 
+           *   summary="Department List" 
+           *   aria-label="Departments Table" 
+           *   data='{{datasource}}' 
+           *   empty-text='No data'
+           *   columns='[{"headerText": "Department Id", "field": "DepartmentId"},
+           *             {"headerText": "Department Name", "field": "DepartmentName"}]'&gt;
+           * &lt;/oj-table>
+           *
+           * @ignore
            */
           emptyText: null,
           /**
            * Whether the horizontal gridlines are to be drawn. Can be enabled or disabled.
-           * The default value of auto means it's determined by the display option.
+           * The default value of auto means it's determined by the display attribute.
            * @expose
            * @public
            * @instance
            * @memberof! oj.ojTable
            * @type {string}
-           * @ojvalue {string} "auto" Determined by display option.
+           * @ojvalue {string} "auto" Determined by display attribute.
            * @ojvalue {string} "enabled" Enabled.
            * @ojvalue {string} "disabled" Disabled.
            * @default <code class="prettyprint">"auto"</code>
+           *
+           * @example <caption>Initialize the Table with the <code class="prettyprint">horizontal-grid-visible</code> attribute specified:</caption>
+           * &lt;oj-table horizontal-grid-visible='disabled'>&lt;/oj-table>
+           *
+           * @example <caption>Get or set the <code class="prettyprint">horizontalGridVisible</code> property after initialization:</caption>
+           * // getter
+           * var value = myTable.horizontalGridVisible;
+           *
+           * // setter
+           * myTable.horizontalGridVisible = 'disabled';
            */
           horizontalGridVisible: 'auto',
           /**
@@ -400,6 +564,16 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
            * @memberof! oj.ojTable
            * @type {Function|null}
            * @default <code class="prettyprint">null</code>
+           *
+           * @example <caption>Initialize the Table with the <code class="prettyprint">row-renderer</code> attribute specified:</caption>
+           * &lt;oj-table row-renderer='{{myRowRenderer}}'>&lt;/oj-table>
+           *
+           * @example <caption>Get or set the <code class="prettyprint">rowRenderer</code> property after initialization:</caption>
+           * // getter
+           * var value = myTable.rowRenderer;
+           *
+           * // setter
+           * myTable.rowRenderer = myRowRenderer;
            */
           rowRenderer: null,
           /**
@@ -410,38 +584,84 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
            * @memberof! oj.ojTable
            * @instance
            * @type {string|null}
-           * @ojvalue {string} "auto" Determined by component. The default is to display all data.
+           * @ojvalue {string} "auto" Determined by element. The default is to display all data.
            * @ojvalue {string} "loadMoreOnScroll" Additional data are fetched when the user scrolls to the bottom of the table.
            * @default <code class="prettyprint">"auto"</code>
            *
-           * @example <caption>Initialize the table with the <code class="prettyprint">scrollPolicy</code> option specified:</caption>
-           * &lt;table id="table"  ummary="Department List" aria-label="Departments Table"  
-           * data-bind="ojComponent: {component: 'ojTable', data: datasource, scrollPolicy: 'loadMoreOnScroll', columns:
-           * [{headerText: 'Department Id', field: 'DepartmentId'},
-           * {headerText: 'Department Name', field: 'DepartmentName']}"&gt;
+           * @example <caption>Initialize the Table with the <code class="prettyprint">scroll-policy</code> attribute specified:</caption>
+           * &lt;oj-table scroll-policy='loadMoreOnScroll'>&lt;/oj-table>
+           *
+           * @example <caption>Get or set the <code class="prettyprint">scrollPolicy</code> property after initialization:</caption>
+           * // getter
+           * var value = myTable.scrollPolicy;
+           *
+           * // setter
+           * myTable.scrollPolicy = 'loadMoreOnScroll';
            */
           scrollPolicy: "auto",
           /**
            * scrollPolicy options.
            * <p>
-           * The following options are supported:
-           * <ul>
-           *   <li>fetchSize: Fetch size for scroll.</li>
-           *   <li>maxCount: Maximum rows which will be displayed before fetching more rows will be stopped.</li>
-           * </ul>
            * When scrollPolicy is loadMoreOnScroll, the next block of rows is fetched
-           * when the user scrolls to the end of the table. The fetchSize option
+           * when the user scrolls to the end of the table. The fetchSize property
            * determines how many rows are fetched in each block.
            * @expose
            * @public
            * @instance
            * @memberof! oj.ojTable
            * @type {Object.<string, string>|null}
-           * @property {string} fetchSize the number of rows to fetch in each block of rows
-           * @property {string} maxCount the number of rows which will be displayed before fetching more rows will be stopped
            * @default <code class="prettyprint">{'fetchSize': 25, 'maxCount': 500}</code>
+           *
+           * @example <caption>Initialize the component, overriding some scroll-policy-options values and leaving the others intact:</caption>
+           * &lt;!-- Using dot notation -->
+           * &lt;oj-table scroll-policy-options.some-key='some value' scroll-policy-options.some-other-key='some other value'>&lt;/oj-table>
+           * 
+           * &lt;!-- Using JSON notation -->
+           * &lt;oj-table scroll-policy-options='{"someKey":"some value", "someOtherKey":"some other value"}'>&lt;/oj-table>
+           *
+           * @example <caption>Get or set the <code class="prettyprint">scrollPolicyOptions</code> property after initialization:</caption>
+           * // Get one
+           * var value = myTable.scrollPolicyOptions.someKey;
+           *
+           * // Set one, leaving the others intact. Always use the setProperty API for 
+           * // subproperties rather than setting a subproperty directly.
+           * myTable.setProperty('scrollPolicyOptions.someKey', 'some value');
+           *
+           * // Get all
+           * var values = myTable.scrollPolicyOptions;
+           *
+           * // Set all.  Must list every scrollPolicyOptions key, as those not listed are lost.
+           * myTable.scrollPolicyOptions = {
+           *     someKey: 'some value',
+           *     someOtherKey: 'some other value'
+           * };
            */
-          scrollPolicyOptions: {'fetchSize': 25, 'maxCount': 500},
+          scrollPolicyOptions: {
+            /**
+             * The number of rows to fetch in each block of rows.
+             * <p>See the <a href="#scrollPolicyOptions">scroll-policy-options</a> attribute for usage examples.</p>
+             *
+             * @expose
+             * @name scrollPolicyOptions.fetchSize
+             * @memberof! oj.ojTable
+             * @instance
+             * @type {number}
+             * @default <code class="prettyprint">25</code>
+             */
+            'fetchSize': 25, 
+            /**
+             * The maximum number of rows which will be displayed before fetching more rows will be stopped.
+             * <p>See the <a href="#scrollPolicyOptions">scroll-policy-options</a> attribute for usage examples.</p>
+             *
+             * @expose
+             * @name scrollPolicyOptions.maxCount
+             * @memberof! oj.ojTable
+             * @instance
+             * @type {number}
+             * @default <code class="prettyprint">500</code>
+             */
+            'maxCount': 500
+          },
           /**
            * Specifies the current selections in the table. Can be either an index or key value.
            * When both are specified, the index is used as a hint.
@@ -453,27 +673,33 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
            * @memberof! oj.ojTable
            * @type {Array.<Object>}
            * @default <code class="prettyprint">[]</code>
+           * @ojwriteback
            *
-           * @example <caption>Get the current selection:</caption>
-           * $( ".selector" ).ojTable("option", "selection");
+           * @example <caption>Initialize the table with the <code class="prettyprint">selection</code> attribute specified:</caption>
+           * &lt;oj-table selection='[{"startIndex": {"row":1}, "endIndex":{"row":3}}]'>&lt;/oj-table>
            *
-           * @example <caption>Set a row selection on the table during initialization:</caption>
-           * $(".selector").ojTable({"selection", [{startIndex: {"row":1}, endIndex:{"row":3}}]});
+           * @example <caption>Get or set the <code class="prettyprint">selection</code> property after initialization:</caption>
+           * // Get one
+           * var value = myTable.selection[0];
            *
-           * @example <caption>Set a column selection on the table during initialization:</caption>
-           * $(".selector").ojTable({"selection", [{startIndex: {"column":2}, endIndex: {"column":4}}]});
+           * // Get all
+           * var values = myTable.selection;
            *
-           * @example <caption>Set a row selection on the table after initialization:</caption>
-           * $(".selector").ojTable("option", "selection", [{startIndex: {"row":1}, endIndex:{"row":3}}]);
+           * // Set all (There is no permissible "set one" syntax.)
+           * myTable.selection = [{startIndex: {"row":1}, endIndex:{"row":3}},
+           *                      {startIndex: {"row":7}, endIndex:{"row":9}}];
            *
-           * @example <caption>Set a column selection on the table after initialization:</caption>
-           * $(".selector").ojTable("option", "selection", [{startIndex: {"column":1}, endIndex: {"column":3}}]);
+           * @example <caption>Set a row selection using index:</caption>
+           * myTable.selection = [{startIndex: {"row":1}, endIndex:{"row":3}}];
            *
-           * @example <caption>Set a row selection on the table after initialization:</caption>
-           * $(".selector").ojTable("option", "selection", [{startKey: {"row":10}, endKey:{"row":30}}]);
+           * @example <caption>Set a column selection using index:</caption>
+           * myTable.selection = [{startIndex: {"column":2}, endIndex: {"column":4}}];
            *
-           * @example <caption>Set a column selection on the table after initialization:</caption>
-           * $(".selector").ojTable("option", "selection", [{startKey: {"column": column1}, endKey: {"column": column2}}]);
+           * @example <caption>Set a row selection using key value:</caption>
+           * myTable.selection = [{startKey: {"row":"10"}, endKey:{"row":"30"}}];
+           *
+           * @example <caption>Set a column selection using key value:</caption>
+           * myTable.selection = [{startKey: {"column": "column1"}, endKey: {"column": "column2"}}];
            */
           selection: [],
           /**
@@ -483,25 +709,70 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
            * @instance
            * @memberof! oj.ojTable
            * @type {Object.<string, string>|null}
-           * @property {string} row single or multiple selection for rows
-           * @property {string} column single or multiple selection for columns
            * @default <code class="prettyprint">null</code>
-           * @example <caption>Initialize the table with the <code class="prettyprint">selectionMode</code> option specified:</caption>
-           * &lt;table id="table" summary="Department List" aria-label="Departments Table" 
-           * data-bind="ojComponent: {component: 'ojTable', data: datasource, selectionMode: {row: 'multiple', column: 'multiple'}, columns:
-           * [{headerText: 'Department Id', field: 'DepartmentId'},
-           * {headerText: 'Department Name', field: 'DepartmentName']}"&gt;
+           *
+           * @example <caption>Initialize the Table, setting selection modes:</caption>
+           * &lt;!-- Using dot notation -->
+           * &lt;oj-table selection-mode.row='single' selection-mode.column='multiple'>&lt;/oj-table>
+           * 
+           * &lt;!-- Using JSON notation -->
+           * &lt;oj-table selection-mode='{"row":"single", "column":"multiple"}'>&lt;/oj-table>
+           *
+           * @example <caption>Get or set the <code class="prettyprint">selectionMode</code> property after initialization:</caption>
+           * // Get one
+           * var value = myTable.selectionMode.row;
+           *
+           * // Set one. Use the setProperty API for 
+           * // subproperties so that a property change event is fired.
+           * myTable.setProperty('selectionMode.row', 'single');
+           *
+           * // Get all
+           * var values = myTable.selectionMode;
+           *
+           * // Set all
+           * myTable.selectionMode = {
+           *     row: 'single',
+           *     column: 'multiple'
+           * };
            */
           selectionMode: null,
           /**
+           * The selection mode for rows.
+           *
+           * <p>See the <a href="#selectionMode">selection-mode</a> attribute for usage examples.
+           *
+           * @expose
+           * @name selectionMode.row
+           * @memberof! oj.ojTable
+           * @instance
+           * @type {string}
+           * @ojvalue {string} 'single' Allow single selection
+           * @ojvalue {string} 'multiple' Allow multiple selections
+           * @default <code class="prettyprint">No selection is allowed</code>
+           */
+          /**
+           * The selection mode for columns.
+           *
+           * <p>See the <a href="#selectionMode">selection-mode</a> attribute for usage examples.
+           *
+           * @expose
+           * @name selectionMode.column
+           * @memberof! oj.ojTable
+           * @instance
+           * @type {string}
+           * @ojvalue {string} 'single' Allow single selection
+           * @ojvalue {string} 'multiple' Allow multiple selections
+           * @default <code class="prettyprint">No selection is allowed</code>
+           */
+          /**
            * Whether the vertical gridlines are to be drawn. Can be enabled or disabled.
-           * The default value of auto means it's determined by the display option.
+           * The default value of auto means it's determined by the display attribute.
            * @expose
            * @public
            * @instance
            * @memberof! oj.ojTable
            * @type {string}
-           * @ojvalue {string} "auto" Determined by display option.
+           * @ojvalue {string} "auto" Determined by display attribute.
            * @ojvalue {string} "enabled" Enabled.
            * @ojvalue {string} "disabled" Disabled.
            * @default <code class="prettyprint">"auto"</code>
@@ -509,17 +780,31 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
           verticalGridVisible: 'auto',
           /**
            * An array of column definitions.
+           * <p>If the application change the column definitions after the Table is loaded, it must call the
+           * <a href="#refresh"><code class="prettyprint">refresh()</code></a> method to update the Table display.
+           * 
            * @expose
            * @public
            * @instance
            * @memberof! oj.ojTable
            * @type {Array.<Object>|null}
            * @default <code class="prettyprint">null</code>
-           * @example <caption>Initialize the table with the <code class="prettyprint">columns</code> option specified:</caption>
-           * &lt;table id="table" summary="Department List" aria-label="Departments Table" 
-           * data-bind="ojComponent: {component: 'ojTable', data: datasource, columns:
-           * [{headerText: 'Department Id', field: 'DepartmentId'},
-           * {headerText: 'Department Name', field: 'DepartmentName']}"&gt;
+           * @example <caption>Initialize the table with the <code class="prettyprint">columns</code> attribute specified:</caption>
+           * &lt;oj-table 
+           *   columns='[{"headerText": "Department Id", "field": "DepartmentId"},
+           *             {"headerText": "Department Name", "field": "DepartmentName"}]'&gt;
+           * &lt;/oj-table>
+           *
+           * @example <caption>Get or set the <code class="prettyprint">columns</code> property after initialization:</caption>
+           * // Get one
+           * var value = myTable.columns[0];
+           *
+           * // Get all
+           * var values = myTable.columns;
+           *
+           * // Set all (There is no permissible "set one" syntax.)
+           * myTable.columns = [{"headerText": "Department Id", "field": "DepartmentId"},
+           *                    {"headerText": "Department Name", "field": "DepartmentName"}];
            */
           columns: [{
               /**
@@ -535,10 +820,17 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
                *   <li>status: Contains the rowIndex, rowKey, and currentRow</li>
                *   <li>parentElement: Empty rendered <td> element</li>
                * </ul>
-               * The function returns  either a String or
-               * a DOM element of the content inside the header. If the developer chooses
-               * to manipulate the cell element directly, the function should return
-               * nothing. If no renderer is specified, the Table will treat the cell data as a String.
+               * The function should return one of the following: 
+               * <ul>
+               *   <li>An Object with the following property:
+               *     <ul><li>insert: HTMLElement | string - A string or a DOM element of the content inside the header.</li></ul>
+               *   </li>
+               *   <li>undefined: If the developer chooses to manipulate the cell element directly, the function should return undefined.</li>
+               * </ul>
+               * If no renderer is specified, the Table will treat the cell data as a String.
+               *
+               * <p>See the <a href="#columns">columns</a> attribute for usage examples.
+               *
                * @expose
                * @public
                * @instance
@@ -550,6 +842,9 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
               renderer: null,
               /**
                * The CSS class to apply to the column cells
+               *
+               * <p>See the <a href="#columns">columns</a> attribute for usage examples.
+               *
                * @expose
                * @public
                * @instance
@@ -561,6 +856,9 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
               className: null,
               /**
                * The data field this column refers to.
+               *
+               * <p>See the <a href="#columns">columns</a> attribute for usage examples.
+               *
                * @expose
                * @public
                * @instance
@@ -572,6 +870,9 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
               field: null,
               /**
                * The CSS class to apply to the footer cell.
+               *
+               * <p>See the <a href="#columns">columns</a> attribute for usage examples.
+               *
                * @expose
                * @public
                * @instance
@@ -592,10 +893,17 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
                *   <li>status: Contains the rowIndex, rowKey, and currentRow</li>
                *   <li>parentElement: Empty rendered <td> element</li>
                * </ul>
-               * The function returns  either a String or
-               * a DOM element of the content inside the footer. If the developer chooses
-               * to manipulate the footer element directly, the function should return
-               * nothing. If no renderer is specified, the Table will treat the footer data as a String.
+               * The function should return one of the following: 
+               * <ul>
+               *   <li>An Object with the following property:
+               *     <ul><li>insert: HTMLElement | string - A string or a DOM element of the content inside the footer.</li></ul>
+               *   </li>
+               *   <li>undefined: If the developer chooses to manipulate the footer element directly, the function should return undefined.</li>
+               * </ul>
+               * If no renderer is specified, the Table will treat the footer data as a String.
+               *
+               * <p>See the <a href="#columns">columns</a> attribute for usage examples.
+               *
                * @expose
                * @public
                * @instance
@@ -607,6 +915,9 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
               footerRenderer: null,
               /**
                * The CSS styling to apply to the footer cell.
+               *
+               * <p>See the <a href="#columns">columns</a> attribute for usage examples.
+               *
                * @expose
                * @public
                * @instance
@@ -618,6 +929,9 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
               footerStyle: null,
               /**
                * The CSS class to apply to the column header text.
+               *
+               * <p>See the <a href="#columns">columns</a> attribute for usage examples.
+               *
                * @expose
                * @public
                * @instance
@@ -648,10 +962,17 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
                *   columnHeaderSortableIconRenderer function enables rendering custom header content
                *   while also preserving the sort icons.</li>
                * </ul>
-               * The function returns either a String or
-               * a DOM element of the content inside the header. If the developer chooses
-               * to manipulate the cell element directly, the function should return
-               * nothing. If no renderer is specified, the Table will treat the header data as a String.
+               * The function should return one of the following: 
+               * <ul>
+               *   <li>An Object with the following property:
+               *     <ul><li>insert: HTMLElement | string - A string or a DOM element of the content inside the header.</li></ul>
+               *   </li>
+               *   <li>undefined: If the developer chooses to manipulate the header element directly, the function should return undefined.</li>
+               * </ul>
+               * If no renderer is specified, the Table will treat the header data as a String.
+               *
+               * <p>See the <a href="#columns">columns</a> attribute for usage examples.
+               *
                * @expose
                * @public
                * @instance
@@ -663,6 +984,9 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
               headerRenderer: null,
               /**
                * The CSS styling to apply to the column header text.
+               *
+               * <p>See the <a href="#columns">columns</a> attribute for usage examples.
+               *
                * @expose
                * @public
                * @instance
@@ -674,6 +998,9 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
               headerStyle: null,
               /**
                * Text to display in the header of the column.
+               *
+               * <p>See the <a href="#columns">columns</a> attribute for usage examples.
+               *
                * @expose
                * @public
                * @instance
@@ -685,6 +1012,9 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
               headerText: null,
               /**
                * The identifier for the column
+               *
+               * <p>See the <a href="#columns">columns</a> attribute for usage examples.
+               *
                * @expose
                * @public
                * @instance
@@ -694,6 +1024,19 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
                * @default <code class="prettyprint">null</code>
                */
               id: null,
+              /**
+               * Enable or disable width resize along the column end headers.
+               *
+               * @expose
+               * @public
+               * @instance
+               * @memberof! oj.ojTable
+               * @alias columns[].resizable
+               * @type {string|null}
+               * @default <code class="prettyprint">"disabled"</code>
+               * @property {string} width column end header width resizable valid values are: "enabled", "disabled"
+               */
+              resizable: 'disabled',
               /**
                * Whether or not the column is sortable.
                * <p>
@@ -705,6 +1048,9 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
                * is set to "auto" then the column will be sortable if the
                * underlying model supports sorting. A value of "disabled" will
                * disable sorting on the column.
+               *
+               * <p>See the <a href="#columns">columns</a> attribute for usage examples.
+               *
                * @expose
                * @public
                * @instance
@@ -721,6 +1067,9 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
                * Indicates the row attribute used for sorting when sort is invoked on this
                * column. Useful for concatenated columns, where the sort is done by only a subset
                * of the concatenated items.
+               *
+               * <p>See the <a href="#columns">columns</a> attribute for usage examples.
+               *
                * @expose
                * @public
                * @instance
@@ -732,6 +1081,9 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
               sortProperty: null,
               /**
                * The CSS styling to apply to the column cells
+               *
+               * <p>See the <a href="#columns">columns</a> attribute for usage examples.
+               *
                * @expose
                * @public
                * @instance
@@ -740,7 +1092,18 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
                * @type {string|null}
                * @default <code class="prettyprint">null</code>
                */
-              style: null
+              style: null,
+              /**
+               * The width in px of the column
+               * @expose
+               * @public
+               * @instance
+               * @memberof! oj.ojTable
+               * @alias columns[].width
+               * @type {number|null}
+               * @default <code class="prettyprint">null</code>
+               */
+              width: null
               /**
                * The knockout template used to render the content of the column header.
                *
@@ -763,13 +1126,16 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
                *
                * @example <caption>Specify the column header <code class="prettyprint">template</code> when initializing Table:</caption>
                * // set the template
-               * &lt;table id="table" summary="Department List" aria-label="Departments Table" 
-               *      data-bind="ojComponent: {component: 'ojTable', data: dataSource, columns:
-               *      [{headerText: 'Department Id', field: 'DepartmentId'},
-               *      {headerText: 'Department Name', field: 'DepartmentName'},
-               *      {headerText: 'Location Id', field: 'LocationId'},
-               *      {headerText: 'Manager Id', field: 'ManagerId'},
-               *      {headerTemplate: 'oracle_link_hdr'}]}"&gt;&lt;/table&gt;
+               * &lt;oj-table summary="Department List" aria-label="Departments Table" 
+               *      data='{{dataSource}}' 
+               *      columns='[{"headerText": "Department Id", "field": "DepartmentId"},
+               *                {"headerText": "Department Name", "field": "DepartmentName"},
+               *                {"headerText": "Location Id", "field": "LocationId"},
+               *                {"headerText": "Manager Id", "field": "ManagerId"},
+               *                {"headerTemplate": "oracle_link_hdr"}]'&gt;
+               * &lt;/oj-table&gt;
+               *
+               * @ignore
                */
               /**
                * The knockout template used to render the content of the column footer.
@@ -792,13 +1158,16 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
                *
                * @example <caption>Specify the column footer <code class="prettyprint">template</code> when initializing Table:</caption>
                * // set the template
-               * &lt;table id="table" summary="Department List" aria-label="Departments Table" 
-               *      data-bind="ojComponent: {component: 'ojTable', data: dataSource, columnsDefault:
-               *      [{headerText: 'Department Id', field: 'DepartmentId'},
-               *      {headerText: 'Department Name', field: 'DepartmentName'},
-               *      {headerText: 'Location Id', field: 'LocationId'},
-               *      {headerText: 'Manager Id', field: 'ManagerId'},
-               *      {footerTemplate: 'oracle_link_ftr'}]}"&gt;&lt;/table&gt;
+               * &lt;oj-table summary="Department List" aria-label="Departments Table" 
+               *      data='{{dataSource}}' 
+               *      columns-default='[{"headerText": "Department Id", "field": "DepartmentId"},
+               *                       {"headerText": "Department Name", "field": "DepartmentName"},
+               *                       {"headerText": "Location Id", "field": "LocationId"},
+               *                       {"headerText": "Manager Id", "field": "ManagerId"},
+               *                       {"footerTemplate": "oracle_link_ftr"}]'&gt;
+               * &lt;/oj-table&gt;
+               *
+               * @ignore
                */
             }],
           /**
@@ -809,11 +1178,30 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
            * @memberof! oj.ojTable
            * @type {Object.<string, string|null>}
            * @default <code class="prettyprint">null</code>
-           * @example <caption>Initialize the table with the <code class="prettyprint">columnsDefault</code> option specified:</caption>
-           * &lt;table id="table" summary="Department List" aria-label="Departments Table" 
-           * data-bind="ojComponent: {component: 'ojTable', data: datasource, columnsDefault: {headerStyle: 'text-align: left; white-space:nowrap;'}, columns:
-           * [{headerText: 'Department Id', field: 'DepartmentId'},
-           * {headerText: 'Department Name', field: 'DepartmentName']}"&gt;
+           *
+           * @example <caption>Initialize the component, overriding some columns defaults and leaving the others intact:</caption>
+           * &lt;!-- Using dot notation -->
+           * &lt;oj-table columns-default.sortable='disabled' columns-default.header-style='text-align: left; white-space:nowrap;'>&lt;/oj-table>
+           * 
+           * &lt;!-- Using JSON notation -->
+           * &lt;oj-table columns-default='{"sortable":"disabled", "headerStyle":"text-align: left; white-space:nowrap;"}'>&lt;/oj-table>
+           *
+           * @example <caption>Get or set the <code class="prettyprint">columnsDefault</code> property after initialization:</caption>
+           * // Get one
+           * var value = myTable.columnsDefault.headerStyle;
+           *
+           * // Set one, leaving the others intact. Use the setProperty API for 
+           * // subproperties so that a property change event is fired.
+           * myTable.setProperty('columnsDefault.headerStyle', 'text-align: left; white-space:nowrap;');
+           *
+           * // Get all
+           * var values = myTable.columnsDefault;
+           *
+           * // Set all.  Must list every default, as those not listed are lost.
+           * myTable.columnsDefault = {
+           *     sortable: 'disabled',
+           *     headerStyle: 'text-align: left; white-space:nowrap;'
+           * };
            */
           columnsDefault: {
               /**
@@ -829,10 +1217,17 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
                *   <li>status: Contains the rowIndex, rowKey, and currentRow</li>
                *   <li>parentElement: Empty rendered <td> element</li>
                * </ul>
-               * The function returns  either a String or
-               * a DOM element of the content inside the header. If the developer chooses
-               * to manipulate the cell element directly, the function should return
-               * nothing. If no renderer is specified, the Table will treat the cell data as a String.
+               * The function should return one of the following: 
+               * <ul>
+               *   <li>An Object with the following property:
+               *     <ul><li>insert: HTMLElement | string - A string or a DOM element of the content inside the header.</li></ul>
+               *   </li>
+               *   <li>undefined: If the developer chooses to manipulate the cell element directly, the function should return undefined.</li>
+               * </ul>
+               * If no renderer is specified, the Table will treat the cell data as a String.
+               *
+               * <p>See the <a href="#columnsDefault">columns-default</a> attribute for usage examples.
+               *
                * @expose
                * @public
                * @instance
@@ -844,6 +1239,9 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
               renderer: null,
               /**
                * The default CSS class for column cells
+               *
+               * <p>See the <a href="#columnsDefault">columns-default</a> attribute for usage examples.
+               *
                * @expose
                * @public
                * @instance
@@ -855,6 +1253,9 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
               className: null,
               /**
                * The default data field for column.
+               *
+               * <p>See the <a href="#columnsDefault">columns-default</a> attribute for usage examples.
+               *
                * @expose
                * @public
                * @instance
@@ -866,6 +1267,9 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
               field: null,
               /**
                * The CSS class to apply to the footer cell.
+               *
+               * <p>See the <a href="#columnsDefault">columns-default</a> attribute for usage examples.
+               *
                * @expose
                * @public
                * @instance
@@ -886,10 +1290,17 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
                *   <li>status: Contains the rowIndex, rowKey, and currentRow</li>
                *   <li>parentElement: Empty rendered <td> element</li>
                * </ul>
-               * The function returns  either a String or
-               * a DOM element of the content inside the footer. If the developer chooses
-               * to manipulate the footer element directly, the function should return
-               * nothing. If no renderer is specified, the Table will treat the footer data as a String.
+               * The function should return one of the following: 
+               * <ul>
+               *   <li>An Object with the following property:
+               *     <ul><li>insert: HTMLElement | string - A string or a DOM element of the content inside the footer.</li></ul>
+               *   </li>
+               *   <li>undefined: If the developer chooses to manipulate the footer element directly, the function should return undefined.</li>
+               * </ul>
+               * If no renderer is specified, the Table will treat the footer data as a String.
+               *
+               * <p>See the <a href="#columnsDefault">columns-default</a> attribute for usage examples.
+               *
                * @expose
                * @public
                * @instance
@@ -901,6 +1312,9 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
               footerRenderer: null,
               /**
                * The CSS styling to apply to the footer cell.
+               *
+               * <p>See the <a href="#columnsDefault">columns-default</a> attribute for usage examples.
+               *
                * @expose
                * @public
                * @instance
@@ -912,6 +1326,9 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
               footerStyle: null,
               /**
                * The default CSS class to apply to the column header.
+               *
+               * <p>See the <a href="#columnsDefault">columns-default</a> attribute for usage examples.
+               *
                * @expose
                * @public
                * @instance
@@ -942,10 +1359,17 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
                *   columnHeaderSortableIconRenderer function enables rendering custom header content
                *   while also preserving the sort icons.</li>
                * </ul>
-               * The function returns either a String or
-               * a DOM element of the content inside the header. If the developer chooses
-               * to manipulate the cell element directly, the function should return
-               * nothing. If no renderer is specified, the Table will treat the header data as a String.
+               * The function should return one of the following: 
+               * <ul>
+               *   <li>An Object with the following property:
+               *     <ul><li>insert: HTMLElement | string - A string or a DOM element of the content inside the header.</li></ul>
+               *   </li>
+               *   <li>undefined: If the developer chooses to manipulate the header element directly, the function should return undefined.</li>
+               * </ul>
+               * If no renderer is specified, the Table will treat the header data as a String.
+               *
+               * <p>See the <a href="#columnsDefault">columns-default</a> attribute for usage examples.
+               *
                * @expose
                * @public
                * @instance
@@ -957,6 +1381,9 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
               headerRenderer: null,
               /**
                * The default CSS styling to apply to the column header.
+               *
+               * <p>See the <a href="#columnsDefault">columns-default</a> attribute for usage examples.
+               *
                * @expose
                * @public
                * @instance
@@ -968,6 +1395,9 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
               headerStyle: null,
               /**
                * Default text to display in the header of the column.
+               *
+               * <p>See the <a href="#columnsDefault">columns-default</a> attribute for usage examples.
+               *
                * @expose
                * @public
                * @instance
@@ -977,6 +1407,19 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
                * @default <code class="prettyprint">null</code>
                */
               headerText: null,
+              /**
+               * Enable or disable width resize along the column end headers.
+               *
+               * @expose
+               * @public
+               * @instance
+               * @memberof! oj.ojTable
+               * @alias columnsDefault.resizable
+               * @type {string|null}
+               * @default <code class="prettyprint">"disabled"</code>
+               * @property {string} width column end header width resizable valid values are: "enabled", "disabled"
+               */
+              resizable: 'disabled',
               /**
                * Whether or not the column is sortable.
                * <p>
@@ -988,6 +1431,9 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
                * is set to "auto" then the column will be sortable if the
                * underlying model supports sorting. A value of "disabled" will
                * disable sorting on the column.
+               *
+               * <p>See the <a href="#columnsDefault">columns-default</a> attribute for usage examples.
+               *
                * @expose
                * @public
                * @instance
@@ -1004,6 +1450,9 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
                * Indicates the row attribute used for sorting when sort is invoked on this
                * column. Useful for concatenated columns, where the sort is done by only a subset
                * of the concatenated items.
+               *
+               * <p>See the <a href="#columnsDefault">columns-default</a> attribute for usage examples.
+               *
                * @expose
                * @public
                * @instance
@@ -1015,6 +1464,9 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
               sortProperty: null,
               /**
                * Default CSS styling to apply to the column cells
+               *
+               * <p>See the <a href="#columnsDefault">columns-default</a> attribute for usage examples.
+               *
                * @expose
                * @public
                * @instance
@@ -1023,7 +1475,18 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
                * @type {string|null}
                * @default <code class="prettyprint">null</code>
                */
-              style: null
+              style: null,
+              /**
+               * Default CSS width to apply to the column
+               * @expose
+               * @public
+               * @instance
+               * @memberof! oj.ojTable
+               * @alias columnsDefault.width
+               * @type {number|null}
+               * @default <code class="prettyprint">null</code>
+               */
+              width: null
                /**
                 * The default knockout template used to render the content of the column header.
                 *
@@ -1046,13 +1509,16 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
                 *
                 * @example <caption>Specify the column header <code class="prettyprint">template</code> when initializing Table:</caption>
                 * // set the template
-                * &lt;table id="table" summary="Department List" aria-label="Departments Table" 
-                *      data-bind="ojComponent: {component: 'ojTable', data: dataSource, columnsDefault:
-                *      [{headerText: 'Department Id', field: 'DepartmentId'},
-                *      {headerText: 'Department Name', field: 'DepartmentName'},
-                *      {headerText: 'Location Id', field: 'LocationId'},
-                *      {headerText: 'Manager Id', field: 'ManagerId'},
-                *      {headerTemplate: 'oracle_link_hdr'}]}"&gt;&lt;/table&gt;
+                * &lt;oj-table summary="Department List" aria-label="Departments Table" 
+                *      data='{{dataSource}}'
+                *      columns-default='[{"headerText": "Department Id", "field": "DepartmentId"},
+                *                        {"headerText": "Department Name", "field": "DepartmentName"},
+                *                        {"headerText": "Location Id", "field": "LocationId"},
+                *                        {"headerText": "Manager Id", "field": "ManagerId"},
+                *                        {"headerTemplate": "oracle_link_hdr"}]'&gt;
+                * &lt;/oj-table&gt;
+                *
+                * @ignore
                 */
                /**
                 * The default knockout template used to render the content of the column footer.
@@ -1075,43 +1541,31 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
                 *
                 * @example <caption>Specify the column footer <code class="prettyprint">template</code> when initializing Table:</caption>
                 * // set the template
-                * &lt;table id="table" summary="Department List" aria-label="Departments Table" 
-                *      data-bind="ojComponent: {component: 'ojTable', data: dataSource, columnsDefault:
-                *      [{headerText: 'Department Id', field: 'DepartmentId'},
-                *      {headerText: 'Department Name', field: 'DepartmentName'},
-                *      {headerText: 'Location Id', field: 'LocationId'},
-                *      {headerText: 'Manager Id', field: 'ManagerId'},
-                *      {footerTemplate: 'oracle_link_ftr'}]}"&gt;&lt;/table&gt;
+                * &lt;oj-table summary="Department List" aria-label="Departments Table" 
+                *      data='{{dataSource}}' 
+                *      columns-default='[{"headerText": "Department Id", "field": "DepartmentId"},
+                *                        {"headerText": "Department Name", "field": "DepartmentName"},
+                *                        {"headerText": "Location Id", "field": "LocationId"},
+                *                        {"headerText": "Manager Id", "field": "ManagerId"},
+                *                        {"footerTemplate": "oracle_link_ftr"}]'&gt;
+                * &lt;/oj-table&gt;
+                *
+                * @ignore
                 */
             },
             /**
-              * Triggered before the current row is changed via the <code class="prettyprint">currentRow</code> option or via the UI.
+              * Triggered before the current row is changed via the <code class="prettyprint">currentRow</code> property or via the UI.
               *
               * @expose
               * @event
-              * @memberof! oj.ojTable
+              * @memberof oj.ojTable
               * @instance
-              * @property {Event} event <code class="prettyprint">jQuery</code> event object
-              * @property {Object} ui Parameters
-              * @property {Object} ui.currentRow the new current row
-              * @property {number} ui.currentRow.rowIndex current row index
-              * @property {string} ui.currentRow.rowKey current row key
-              * @property {number} ui.previousCurrentRow the previous current row
-              * @property {number} ui.previousCurrentRow.rowIndex previous current row index
-              * @property {string} ui.previousCurrentRow.rowKey previous current row key
-              *
-              * @example <caption>Initialize the table with the <code class="prettyprint">beforeCurrentRow</code> callback specified:</caption>
-              * $( ".selector" ).ojTable({
-              *     "beforeCurrentRow": function( event, ui ) {}
-              * });
-              *
-              * @example <caption>Bind an event listener to the <code class="prettyprint">ojbeforecurrentrow</code> event:</caption>
-              * $( ".selector" ).on( "ojbeforecurrentrow", function( event, ui )              
-              *   {
-              *     // verify that the component firing the event is a component of interest
-              *     if ($(event.target).is(".mySelector")) {} 
-              *   } 
-              * );
+              * @property {Object} currentRow the new current row
+              * @property {number} currentRow.rowIndex current row index
+              * @property {string} currentRow.rowKey current row key
+              * @property {number} previousCurrentRow the previous current row
+              * @property {number} previousCurrentRow.rowIndex previous current row index
+              * @property {string} previousCurrentRow.rowKey previous current row key
               */
             beforeCurrentRow: null,
             /**
@@ -1119,52 +1573,22 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
               *
               * @expose
               * @event
-              * @memberof! oj.ojTable
+              * @memberof oj.ojTable
               * @instance
-              * @property {Event} event <code class="prettyprint">jQuery</code> event object
-              * @property {Object} ui Parameters
-              * @property {Object} ui.rowContext the rowContext of the row that editing is going to be performed on.
-              *
-              * @example <caption>Initialize the table with the <code class="prettyprint">beforeEdit</code> callback specified:</caption>
-              * $( ".selector" ).ojTable({
-              *     "beforeRowEdit": function( event, ui ) {}
-              * });
-              *
-              * @example <caption>Bind an event listener to the <code class="prettyprint">ojbeforerowedit</code> event:</caption>
-              * $( ".selector" ).on( "ojbeforerowedit", function( event, ui )              
-              *   {
-              *     // verify that the component firing the event is a component of interest
-              *     if ($(event.target).is(".mySelector")) {} 
-              *   } 
-              * );
+              * @property {Object} rowContext the rowContext of the row that editing is going to be performed on.
               */
             beforeRowEdit: null,
              /**
               * Triggered before the table is going to exit edit mode. To prevent exit editing return false. 
               * There is a provided beforeRowEditEnd function, oj.DataCollectionEditUtils.basicHandleRowEditEnd, which can be specified. 
-              * This function will handle canceling edits as well as invoking validation on input components.
+              * This function will handle canceling edits as well as invoking validation on input elements.
               *
               * @expose
               * @event
-              * @memberof! oj.ojTable
+              * @memberof oj.ojTable
               * @instance
-              * @property {Event} event <code class="prettyprint">jQuery</code> event object
-              * @property {Object} ui Parameters
-              * @property {Object} ui.rowContext the rowContext of the row that editing is going to be performed on.
-              * @property {Object} ui.cancelEdit true if the edit should be negated based on actions (i.e. escape key).
-              *
-              * @example <caption>Initialize the table with the <code class="prettyprint">beforeRowEditEnd</code> callback specified:</caption>
-              * $( ".selector" ).ojTable({
-              *     "beforeRowEditEnd": function( event, ui ) {}
-              * });
-              *
-              * @example <caption>Bind an event listener to the <code class="prettyprint">ojbeforeroweditend</code> event:</caption>
-              * $( ".selector" ).on( "ojbeforeroweditend", function( event, ui )              
-              *   {
-              *     // verify that the component firing the event is a component of interest
-              *     if ($(event.target).is(".mySelector")) {} 
-              *   } 
-              * );
+              * @property {Object} rowContext the rowContext of the row that editing is going to be performed on.
+              * @property {Object} cancelEdit true if the edit should be negated based on actions (i.e. escape key).
               */
             beforeRowEditEnd: null,
           /**
@@ -1175,18 +1599,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
             * @memberof! oj.ojTable
             * @instance
             *
-            * @example <caption>Initialize the table with the <code class="prettyprint">ready</code> callback specified:</caption>
-            * $( ".selector" ).ojTable({
-            *     "ready": function() {}
-            * });
-            *
-            * @example <caption>Bind an event listener to the <code class="prettyprint">ojready</code> event:</caption>
-            * $( ".selector" ).on( "ojready", function()              
-              *   {
-              *     // verify that the component firing the event is a component of interest
-              *     if ($(event.target).is(".mySelector")) {} 
-              *   } 
-              * );
+            * @ignore
             */
           ready: null,
             /**
@@ -1194,25 +1607,10 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
               *
               * @expose
               * @event
-              * @memberof! oj.ojTable
+              * @memberof oj.ojTable
               * @instance
-              * @property {Event} event <code class="prettyprint">jQuery</code> event object
-              * @property {Object} ui Parameters
-              * @property {Element} ui.header the key of the header which was sorted on
-              * @property {string} ui.direction the direction of the sort ascending/descending
-              *
-              * @example <caption>Initialize the table with the <code class="prettyprint">sort</code> callback specified:</caption>
-              * $( ".selector" ).ojTable({
-              *     "sort": function( event, ui ) {}
-              * });
-              *
-              * @example <caption>Bind an event listener to the <code class="prettyprint">ojsort</code> event:</caption>
-              * $( ".selector" ).on( "ojsort", function( event, ui )              
-              *   {
-              *     // verify that the component firing the event is a component of interest
-              *     if ($(event.target).is(".mySelector")) {} 
-              *   } 
-              * );
+              * @property {Element} header the key of the header which was sorted on
+              * @property {string} direction the direction of the sort ascending/descending
               */
             sort: null
              /**
@@ -1235,8 +1633,10 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
               *
               * @example <caption>Specify the row <code class="prettyprint">template</code> when initializing Table:</caption>
               * // set the template
-              * &lt;table id="table" summary="Department List" aria-label="Departments Table" 
-              * data-bind="ojComponent: {component: 'ojTable', data: dataSource, rowTemplate: 'row_tmpl'}"&gt;&lt;/table&gt;
+              * &lt;oj-table summary="Department List" aria-label="Departments Table" 
+              *   data='{{dataSource}}' row-template='row_tmpl'&gt;&lt;/oj-table&gt;
+              *
+              * @ignore
               */
         },
       /**
@@ -1270,9 +1670,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
           _ERR_DATA_INVALID_TYPE_SUMMARY:                 'Invalid data type.',
           _ERR_DATA_INVALID_TYPE_DETAIL:                  'Please specify the appropriate data type.',
           _ERR_ELEMENT_INVALID_TYPE_SUMMARY:               'Invalid element type.',
-          _ERR_ELEMENT_INVALID_TYPE_DETAIL:                'Only a <table> element can be specified for ojTable.',
-          _ERR_DOM_SCROLLER_MAX_COUNT_SUMMARY:             'Exceeded maximum rows for table scrolling.',
-          _ERR_DOM_SCROLLER_MAX_COUNT_DETAIL:              'Please reload with smaller data set.'
+          _ERR_ELEMENT_INVALID_TYPE_DETAIL:                'Only a <table> element can be specified for ojTable.'
         },
       /**
        * @private
@@ -1496,10 +1894,10 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
        * </table>
        * @export
        * @expose
-       * @memberof! oj.ojTable
+       * @memberof oj.ojTable
        * @instance
        * @example <caption>Invoke the <code class="prettyprint">getDataForVisibleRow</code> method:</caption>
-       * $( ".selector" ).ojTable( "getDataForVisibleRow", 2 );
+       * myTable.getDataForVisibleRow(2);
        */
       'getDataForVisibleRow': function(rowIndex)
       {
@@ -1507,14 +1905,14 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
         
         if (tableBodyRow != null)
         {
-          return {'key': tableBodyRow.data('rowKey'),
-                  'data': tableBodyRow.data('rowData'),
+          return {'key': $(tableBodyRow).data('rowKey'),
+                  'data': $(tableBodyRow).data('rowData'),
                   'index': rowIndex};
         }
         
         return null;
       },
-      //** @inheritdoc */
+      // @inheritdoc
       'getNodeBySubId': function(locator)
       {
         if (locator == null)
@@ -1535,16 +1933,16 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
                  subId === 'oj-table-sort-descending')
         {
           var columnIdx = locator['index'];
-          var tableHeaderColumn = $(this._getTableDomUtils().getTableHeaderLogicalColumns()[columnIdx]);
+          var tableHeaderColumn = this._getTableDomUtils().getTableHeaderLogicalColumns()[columnIdx];
           if (tableHeaderColumn != null)
           {
             if (subId === 'oj-table-header')
             {
-              return tableHeaderColumn[0];
+              return tableHeaderColumn;
             }
             else if (subId === 'oj-table-sort-ascending')
             {
-              var tableHeaderColumnSortAsc = tableHeaderColumn.find('.' + oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_ASC_LINK_CLASS);
+              var tableHeaderColumnSortAsc = tableHeaderColumn.querySelectorAll('.' + oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_ASC_LINK_CLASS);
               if (tableHeaderColumnSortAsc.length > 0)
               {
                 return tableHeaderColumnSortAsc[0];
@@ -1552,7 +1950,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
             }
             else
             {
-              var tableHeaderColumnSortDsc = tableHeaderColumn.find('.' + oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_DSC_LINK_CLASS);
+              var tableHeaderColumnSortDsc = tableHeaderColumn.querySelectorAll('.' + oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_DSC_LINK_CLASS);
               if (tableHeaderColumnSortDsc.length > 0)
               {
                 return tableHeaderColumnSortDsc[0];
@@ -1574,48 +1972,48 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
         // Non-null locators have to be handled by the component subclasses
         return null;
       },
-      //** @inheritdoc */
+      // @inheritdoc
       'getSubIdByNode': function(node, ignoreSortIcons)
       {
-        var cell = $(node).closest('.' + oj.TableDomUtils.CSS_CLASSES._TABLE_DATA_CELL_CLASS);
+        var jqCell = $(node).closest('.' + oj.TableDomUtils.CSS_CLASSES._TABLE_DATA_CELL_CLASS);
         
-        if (cell.length > 0)
+        if (jqCell.length > 0)
         {
           return {'subId': 'oj-table-cell',
-                  'rowIndex': this._getTableDomUtils().getElementRowIdx(cell),
-                  'columnIndex': this._getTableDomUtils().getElementColumnIdx(cell)};
+                  'rowIndex': this._getTableDomUtils().getElementRowIdx(jqCell[0]),
+                  'columnIndex': this._getTableDomUtils().getElementColumnIdx(jqCell[0])};
         }
         
-        var headerSortAsc = $(node).closest('.' + oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_ASC_LINK_CLASS);
+        var jqHeaderSortAsc = $(node).closest('.' + oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_ASC_LINK_CLASS);
         
-        if (headerSortAsc.length > 0)
+        if (jqHeaderSortAsc.length > 0)
         {
           return {'subId': ignoreSortIcons ? 'oj-table-header' : 'oj-table-sort-ascending',
-                  'index': this._getTableDomUtils().getElementColumnIdx(headerSortAsc)};
+                  'index': this._getTableDomUtils().getElementColumnIdx(jqHeaderSortAsc[0])};
         }
         
-        var headerSortDsc = $(node).closest('.' + oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_DSC_LINK_CLASS);
+        var jqHeaderSortDsc = $(node).closest('.' + oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_DSC_LINK_CLASS);
         
-        if (headerSortDsc.length > 0)
+        if (jqHeaderSortDsc.length > 0)
         {
           return {'subId': ignoreSortIcons ? 'oj-table-header' : 'oj-table-sort-descending',
-                  'index': this._getTableDomUtils().getElementColumnIdx(headerSortDsc)};
+                  'index': this._getTableDomUtils().getElementColumnIdx(jqHeaderSortDsc[0])};
         }
         
-        var header = $(node).closest('.' + oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_CELL_CLASS);
+        var jqHeader = $(node).closest('.' + oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_CELL_CLASS);
         
-        if (header.length > 0)
+        if (jqHeader.length > 0)
         {
           return {'subId': 'oj-table-header',
-                  'index': this._getTableDomUtils().getElementColumnIdx(header)};
+                  'index': this._getTableDomUtils().getElementColumnIdx(jqHeader[0])};
         }
         
-        var footer = $(node).closest('.' + oj.TableDomUtils.CSS_CLASSES._TABLE_FOOTER_CELL_CLASS);
+        var jqFooter = $(node).closest('.' + oj.TableDomUtils.CSS_CLASSES._TABLE_FOOTER_CELL_CLASS);
         
-        if (footer.length > 0)
+        if (jqFooter.length > 0)
         {
           return {'subId': 'oj-table-footer',
-                  'index': this._getTableDomUtils().getElementColumnIdx(footer)};
+                  'index': this._getTableDomUtils().getElementColumnIdx(jqFooter[0])};
         }
         
         return null;
@@ -1624,10 +2022,10 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
        * Refresh the table.
        * @export
        * @expose
-       * @memberof! oj.ojTable
+       * @memberof oj.ojTable
        * @instance
        * @example <caption>Invoke the <code class="prettyprint">refresh</code> method:</caption>
-       * $( ".selector" ).ojTable( "refresh" );
+       * myTable.refresh();
        */
       'refresh': function()
       {
@@ -1641,10 +2039,10 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
        * @throws {Error}
        * @export
        * @expose
-       * @memberof! oj.ojTable
+       * @memberof oj.ojTable
        * @instance
        * @example <caption>Invoke the <code class="prettyprint">refreshRow</code> method:</caption>
-       * $( ".selector" ).ojTable( "refreshRow", 1 );
+       * myTable.refreshRow(1);
        */
       'refreshRow': function(rowIdx)
       {
@@ -1657,7 +2055,11 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
 
         var tableBodyRows = this._getTableDomUtils().getTableBodyRows();
 
-        if (isNaN(rowIdx) || rowIdx < 0 || (tableBodyRows != null && rowIdx >= tableBodyRows.length))
+        if (isNaN(rowIdx) || 
+          rowIdx < 0 || 
+          (tableBodyRows != null && rowIdx >= tableBodyRows.length) || 
+          tableBodyRows == null || 
+          tableBodyRows.length == 0)
         {
           // validate rowIdx value
           var errSummary = this._LOGGER_MSG._ERR_REFRESHROW_INVALID_INDEX_SUMMARY;
@@ -1708,7 +2110,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
 
         if (tableContainer != null)
         {
-          return tableContainer;
+          return $(tableContainer);
         }
         return this.element;
       },
@@ -1731,10 +2133,9 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
         if (this._isTouchDevice())
         {
           var tableContainer = this._getTableDomUtils().getTableContainer();
-          this._on(tableContainer, this._eventsContainer);
+          this._on($(tableContainer), this._eventsContainer);
         }
         this._registerDomEventListeners();
-
         // cache the options
         this._cachedOptions = $.extend(true, {}, this.options);
         this._setEditableRowIdx(null);
@@ -1768,7 +2169,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
         this._registerDataSourceEventListeners();
         if (this._isInitFetch)
         {
-          this._initFetch();
+        this._initFetch();
           this._isInitFetch = false;
         }
         else
@@ -1817,6 +2218,11 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
         this._super();
         this._getTableDomUtils().refreshTableDimensions();
       },
+      //** @inheritdoc */
+      _GetDefaultContextMenu: function()
+      {
+        return this._defaultContextMenu;
+      },
       /**
        * @param {Object} contextMenu The JET Menu to open as a context menu
        * @param {Event} event What triggered the menu launch
@@ -1829,15 +2235,15 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
         this._contextMenuEvent = event['originalEvent'];
 
         // first check if we are invoking on an editable or clickable element, or draggable element on touch event. If so bail
-        if (this._isNodeEditable($(this._contextMenuEvent['target'])) || this._isNodeClickable($(this._contextMenuEvent['target'])) ||
-            (eventType == 'touch' && this._isNodeDraggable($(this._contextMenuEvent['target']))))
+        if (this._isNodeEditable(this._contextMenuEvent['target']) || this._isNodeClickable(this._contextMenuEvent['target']) ||
+            (eventType == 'touch' && this._isNodeDraggable(this._contextMenuEvent['target'])))
         {
           return;
         }
 
-        var headerColumn = this._getTableDomUtils().getFirstAncestor($(this._contextMenuEvent['target']), 'oj-table-column-header-cell');
+        var headerColumn = this._getTableDomUtils().getFirstAncestor(this._contextMenuEvent['target'], 'oj-table-column-header-cell');
         headerColumn = headerColumn == null ? this._getTableDomUtils().getTableHeaderColumn(this._activeColumnIndex) : headerColumn;
-        var tableBodyCell = this._getTableDomUtils().getFirstAncestor($(this._contextMenuEvent['target']), 'oj-table-data-cell');
+        var tableBodyCell = this._getTableDomUtils().getFirstAncestor(this._contextMenuEvent['target'], 'oj-table-data-cell');
 
         if (tableBodyCell != null)
         {
@@ -1849,11 +2255,11 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
         {
           var table = this._tableDomUtils.getTable();
 
-          if (this._contextMenuEvent['target'] == table[0])
+          if (this._contextMenuEvent['target'] == table)
           {
-            if (headerColumn != null && headerColumn[0] != null)
+            if (headerColumn != null)
             {
-              openOptions['position'] = {"my": "start top", "at": "start bottom", "of": headerColumn[0]};
+              openOptions['position'] = {"my": "start top", "at": "start bottom", "of": headerColumn};
             }
             else
             {
@@ -1861,7 +2267,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
               if (focusedRowIdx >= 0)
               {
                 var tableBodyRow = this._getTableDomUtils().getTableBodyRow(focusedRowIdx);
-                openOptions['position'] = {"my": "start top", "at": "start bottom", "of": tableBodyRow[0]};
+                openOptions['position'] = {"my": "start top", "at": "start bottom", "of": tableBodyRow};
               }
               else
               {
@@ -1875,15 +2281,56 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
           }
         }
 
-        if (headerColumn.attr('data-oj-sortable') == this._OPTION_ENABLED)
+        // for jQuery it's the menu instance, for custom element it's the element node
+        var contextMenuNode = contextMenu['element'] ? contextMenu['element'][0] : contextMenu;
+
+        if (headerColumn.getAttribute('data-oj-sortable') == this._OPTION_ENABLED)
         {
-          $(contextMenu['element']).find('[data-oj-command=oj-table-sortAsc]').removeClass('oj-disabled');
-          $(contextMenu['element']).find('[data-oj-command=oj-table-sortDsc]').removeClass('oj-disabled');
+          var contextMenuItemAsc = contextMenuNode.querySelectorAll('[data-oj-command=oj-table-sortAsc]');
+          if (contextMenuItemAsc.length > 0)
+          {
+            contextMenuItemAsc = contextMenuItemAsc[0];
+            contextMenuItemAsc.classList.remove('oj-disabled');
+        }
+          var contextMenuItemDsc = contextMenuNode.querySelectorAll('[data-oj-command=oj-table-sortDsc]');
+          if (contextMenuItemDsc.length > 0)
+          {
+            contextMenuItemDsc = contextMenuItemDsc[0];
+            contextMenuItemDsc.classList.remove('oj-disabled');
+          }
         }
         else
         {
-          $(contextMenu['element']).find('[data-oj-command=oj-table-sortAsc]').addClass('oj-disabled');
-          $(contextMenu['element']).find('[data-oj-command=oj-table-sortDsc]').addClass('oj-disabled');
+          var contextMenuItemAsc = contextMenuNode.querySelectorAll('[data-oj-command=oj-table-sortAsc]');
+          if (contextMenuItemAsc.length > 0)
+          {
+            contextMenuItemAsc = contextMenuItemAsc[0];
+            contextMenuItemAsc.classList.add('oj-disabled');
+        }
+          var contextMenuItemDsc = contextMenuNode.querySelectorAll('[data-oj-command=oj-table-sortDsc]');
+          if (contextMenuItemDsc.length > 0)
+          {
+            contextMenuItemDsc = contextMenuItemDsc[0];
+            contextMenuItemDsc.classList.remove('oj-disabled');
+          }
+        }
+        if (headerColumn.getAttribute('data-oj-resizable') == this._OPTION_ENABLED)
+        {
+          var contextMenuItemResize = contextMenuNode.querySelectorAll('[data-oj-command=oj-table-resize]');
+          if (contextMenuItemResize.length > 0)
+          {
+            contextMenuItemResize = contextMenuItemResize[0];
+            contextMenuItemResize.classList.remove('oj-disabled');
+          }
+        }
+        else
+        {
+          var contextMenuItemResize = contextMenuNode.querySelectorAll('[data-oj-command=oj-table-resize]');
+          if (contextMenuItemResize.length > 0)
+          {
+            contextMenuItemResize = contextMenuItemResize[0];
+            contextMenuItemResize.classList.add('oj-disabled');
+          }
         }
         this._OpenContextMenu(event, eventType, openOptions);
       },
@@ -1893,7 +2340,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
        */
       _destroy: function()
       {
-        this._getTableDomUtils().getTableBody().removeAttr(oj.Components._OJ_CONTAINER_ATTR);
+        $(this._getTableDomUtils().getTableBody()).removeAttr(oj.Components._OJ_CONTAINER_ATTR);
 
         this.element.children().remove('.' + oj.TableDomUtils.CSS_CLASSES._TABLE_HEADER_CLASS);
         this.element.children().remove('.' + oj.TableDomUtils.CSS_CLASSES._TABLE_BODY_CLASS);
@@ -1902,9 +2349,9 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
         this.element.children().remove('.' + oj.TableDomUtils.CSS_CLASSES._TABLE_BODY_MESSAGE_ROW_CLASS);
 
         //  - DomUtils.unwrap() will avoid unwrapping if the node is being destroyed by Knockout
-        oj.DomUtils.unwrap(this.element, this._getTableDomUtils().getTableContainer());
+        oj.DomUtils.unwrap(this.element, $(this._getTableDomUtils().getTableContainer()));
 
-        this.element.removeClass(oj.TableDomUtils.CSS_CLASSES._TABLE_CLASS);
+        this.element[0].classList.remove(oj.TableDomUtils.CSS_CLASSES._TABLE_CLASS);
         
         // Remove any pending busy states
         if (this._readyResolveFunc) 
@@ -1941,7 +2388,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
 
             if (editableTableBodyRow != null)
             {
-              editableTableBodyRow.addClass(oj.TableDomUtils.CSS_CLASSES._TABLE_DATA_ROW_EDIT_CLASS);
+              editableTableBodyRow.classList.add(oj.TableDomUtils.CSS_CLASSES._TABLE_DATA_ROW_EDIT_CLASS);
             }
           }
           // if loadMoreOnScroll then check if we have underflow and do a
@@ -1960,7 +2407,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
         }
 
         // add css class to element
-        this.element.addClass(oj.TableDomUtils.CSS_CLASSES._TABLE_ELEMENT_CLASS);
+        this.element[0].classList.add(oj.TableDomUtils.CSS_CLASSES._TABLE_ELEMENT_CLASS);
 
         // create the initial table structure
         this._getTableDomUtils().createInitialTable(this._isTableHeaderless(),
@@ -1976,14 +2423,10 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
 
         this._refreshTableBody();
 
+        this._processSlottedChildren();
+
         // resize the table dimensions to accomodate the completed tableheader
         this._getTableDomUtils().refreshTableDimensions();
-
-        // initialize a DomScroller if loadMoreOnScroll
-        if (this._isLoadMoreOnScroll())
-        {
-          this._registerDomScroller();
-        }
 
         if (this.options.disabled)
         {
@@ -2026,15 +2469,36 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
             }
             
             if (focusElement != null &&
-                (focusElement == table[0] || 
-                 table.has(focusElement).length > 0))
+                (focusElement == table || 
+                 $(table).has(focusElement).length > 0))
             {
               return;
             }
 
+            // Components that open popups (such as ojSelect, ojCombobox, 
+            // ojInputDate, etc.) will trigger focusout, but we don't want to
+            // change mode in those cases since the user is still editing.
+            var popups = oj.ZOrderUtils.findOpenPopups();
+            for (var i = 0; i < popups.length; i++)
+            {
+              // Get the launcher of the popup.
+              // popups[i] is just a wrapper with the real popup as its child.
+              var launcher = oj.DomUtils.getLogicalParent($(popups[i]).children());
+              
+              // Check if the table contains the launcher
+              if ($(table).has(launcher.get(0)).length > 0)
+              {
+                return;
+              }
+            }
+
+            this._focusOutHandler($(table));
+            this._focusOutHandler($(this._getTableDomUtils().getTableContainer()));
             this._clearKeyboardKeys();
             this._clearFocusedHeaderColumn();
             this._clearFocusedRow(false);
+            this._getTableResizeUtils().clearTableHeaderColumnsResize();
+            this._setTableEditable(false, false, 0, true, event);
             this._setTableActionableMode(false);
           },
           /**
@@ -2042,9 +2506,10 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
            */
           'blur .oj-table-data-cell': function(event)
           {
-            if ($(event.currentTarget).hasClass(oj.TableDomUtils.CSS_CLASSES._TABLE_DATA_CELL_EDIT_CLASS))
+            var eventTarget = this._getEventTargetElement(event);
+            if (eventTarget.classList.contains(oj.TableDomUtils.CSS_CLASSES._TABLE_DATA_CELL_EDIT_CLASS))
             {
-              $(event.currentTarget).removeClass(oj.TableDomUtils.CSS_CLASSES._TABLE_DATA_CELL_EDIT_CLASS);
+              eventTarget.classList.remove(oj.TableDomUtils.CSS_CLASSES._TABLE_DATA_CELL_EDIT_CLASS);
             }
           },
           /**
@@ -2059,13 +2524,15 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
            */
           'focusin': function(event)
           {
+            this._focusInHandler($(this._getTableDomUtils().getTable()));
+            this._focusInHandler($(this._getTableDomUtils().getTableContainer()));
             var tableBody = this._getTableDomUtils().getTableBody();
-            if (tableBody.has(event.target).length > 0)
+            if ($(tableBody).has(event.target).length > 0)
             {
               var focusedRowIdx = this._getFocusedRowIdx();
               var focusedHeaderColumnIdx = this._getFocusedHeaderColumnIdx();
  
-              if (!this._isNodeEditable($(event.target)) &&
+              if (!this._isNodeEditable(event.target) &&
                   !this._isTableActionableMode() &&
                   !this._hasEditableRow() &&
                   !this._temporaryTableChildElementFocus &&
@@ -2101,11 +2568,12 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
            */
           'focus .oj-table-data-cell': function(event)
           {
-            var rowIdx = this._getTableDomUtils().getElementRowIdx($(event.currentTarget));
+            var eventTarget = this._getEventTargetElement(event);
+            var rowIdx = this._getTableDomUtils().getElementRowIdx(eventTarget);
             
             if (rowIdx == this._getEditableRowIdx())
             {
-              $(event.currentTarget).addClass(oj.TableDomUtils.CSS_CLASSES._TABLE_DATA_CELL_EDIT_CLASS);
+              eventTarget.classList.add(oj.TableDomUtils.CSS_CLASSES._TABLE_DATA_CELL_EDIT_CLASS);
             }
           },
           /**
@@ -2113,14 +2581,15 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
            */
           'click .oj-table-checkbox-acc-select-column': function(event)
           {
-            var columnIdx = this._getTableDomUtils().getElementColumnIdx($(event.currentTarget));
-            var selected = $(event.currentTarget).is(':checked');
+            var eventTarget = this._getEventTargetElement(event);
+            var columnIdx = this._getTableDomUtils().getElementColumnIdx(eventTarget);
+            var selected = $(eventTarget).is(':checked');
             // if selected then focus on the column
             if (selected)
             {
               this._setHeaderColumnFocus(columnIdx, true, true, null);
             }
-            this._setHeaderColumnSelection(columnIdx, selected, event.currentTarget, event, true);
+            this._setHeaderColumnSelection(columnIdx, selected, eventTarget, event, true);
             event.stopPropagation();
           },
           /**
@@ -2128,8 +2597,9 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
            */
           'click .oj-table-checkbox-acc-select-row': function(event)
           {
-            var rowIdx = this._getTableDomUtils().getElementRowIdx($(event.currentTarget));
-            var selected = $(event.currentTarget).is(':checked');
+            var eventTarget = this._getEventTargetElement(event);
+            var rowIdx = this._getTableDomUtils().getElementRowIdx(eventTarget);
+            var selected = $(eventTarget).is(':checked');
 
             var focused = false;
 
@@ -2145,7 +2615,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
 
             if (focused)
             {
-              this._setRowSelection(rowIdx, selected, event.currentTarget, event, true);
+              this._setRowSelection(rowIdx, selected, eventTarget, event, true);
               this._setTableEditable(true, false, 0, true, event);
             }
             event.stopPropagation();
@@ -2160,10 +2630,13 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
             // ignore key event on the footer or target is editable
             var keyboardCode1 = this._getKeyboardKeys()[0];
             
-            if (keyboardCode1 != this._KEYBOARD_CODES._KEYBOARD_CODE_TAB &&
-                (this._isNodeEditable($(event.target)) ||
+            if (keyboardCode1 != this._KEYBOARD_CODES._KEYBOARD_CODE_ESC && 
+                keyboardCode1 != this._KEYBOARD_CODES._KEYBOARD_CODE_ENTER &&
+                keyboardCode1 != this._KEYBOARD_CODES._KEYBOARD_CODE_F2 &&
+                keyboardCode1 != this._KEYBOARD_CODES._KEYBOARD_CODE_TAB &&
+                (this._isNodeEditable(event.target) ||
                 this._getTableDomUtils().getTableFooter() != null &&
-                this._getTableDomUtils().getTableFooter().has(event.target).length > 0))
+                $(this._getTableDomUtils().getTableFooter()).has(event.target).length > 0))
             {
               return;
             }
@@ -2198,6 +2671,30 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
               {
                 this._handleKeydownTab(event);
               }
+              else if (keyboardCode1 == this._KEYBOARD_CODES._KEYBOARD_CODE_F2)
+              {
+                this._handleKeydownF2(event);
+              } 
+              else if (keyboardCode1 == this._KEYBOARD_CODES._KEYBOARD_CODE_SPACEBAR)
+              {
+                this._handleKeydownSpacebar(event);
+              }
+              else if (keyboardCode1 == this._KEYBOARD_CODES._KEYBOARD_CODE_ENTER)
+              {
+                this._handleKeydownEnter(event);
+              }
+              else if (keyboardCode1 == this._KEYBOARD_CODES._KEYBOARD_CODE_HOME)
+              {
+                this._handleKeydownHome(event);
+              }
+              else if (keyboardCode1 == this._KEYBOARD_CODES._KEYBOARD_CODE_END)
+              {
+                this._handleKeydownEnd(event);
+              }
+              else if (keyboardCode1 == this._KEYBOARD_CODES._KEYBOARD_CODE_ESC)
+              {
+                this._handleKeydownEsc(event);
+              }
             }
           },
           /**
@@ -2211,41 +2708,12 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
               var keyboardCode1 = this._getKeyboardKeys()[0];
               
               // ignore key event on the footer or target is editable
-              if (keyboardCode1 != this._KEYBOARD_CODES._KEYBOARD_CODE_ESC && 
-                  keyboardCode1 != this._KEYBOARD_CODES._KEYBOARD_CODE_ENTER &&
-                  keyboardCode1 != this._KEYBOARD_CODES._KEYBOARD_CODE_F2 &&
-                  keyboardCode1 != this._KEYBOARD_CODES._KEYBOARD_CODE_TAB &&
-                  (this._isNodeEditable($(event.target)) ||
+              if (this._isNodeEditable(event.target) ||
                   this._getTableDomUtils().getTableFooter() != null &&
-                  this._getTableDomUtils().getTableFooter().has(event.target).length > 0))
+                  $(this._getTableDomUtils().getTableFooter()).has(event.target).length > 0)
               {
                 this._removeKeyboardKey(keyboardCode1);
                 return;
-              }
-
-              if (keyboardCode1 == this._KEYBOARD_CODES._KEYBOARD_CODE_SPACEBAR)
-              {
-                this._handleKeyupSpacebar(event);
-              }
-              else if (keyboardCode1 == this._KEYBOARD_CODES._KEYBOARD_CODE_ENTER)
-              {
-                this._handleKeyupEnter(event);
-              }
-              else if (keyboardCode1 == this._KEYBOARD_CODES._KEYBOARD_CODE_HOME)
-              {
-                this._handleKeyupHome(event);
-              }
-              else if (keyboardCode1 == this._KEYBOARD_CODES._KEYBOARD_CODE_END)
-              {
-                this._handleKeyupEnd(event);
-              }
-              else if (keyboardCode1 == this._KEYBOARD_CODES._KEYBOARD_CODE_ESC)
-              {
-                this._handleKeyupEsc(event);
-              }
-              else if (keyboardCode1 == this._KEYBOARD_CODES._KEYBOARD_CODE_F2)
-              {
-                this._handleKeyupF2(event);
               }
               this._removeKeyboardKey(keyboardCode1);
             }
@@ -2258,7 +2726,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
           'mousedown .oj-table-body': function(event)
           {
             // get the row index if the mousedown was on a row
-            this._mouseDownRowIdx = this._getTableDomUtils().getElementRowIdx($(event.target));
+            this._mouseDownRowIdx = this._getTableDomUtils().getElementRowIdx(event.target);
             
             if (this._mouseDownRowIdx == null)
             {
@@ -2267,7 +2735,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
             
             var tableBodyRow = this._getTableDomUtils().getTableBodyRow(this._mouseDownRowIdx);
             
-            if (tableBodyRow != null && tableBodyRow.prop('draggable'))
+            if (tableBodyRow != null && tableBodyRow['draggable'])
             {
               // do not do row selection if we are dragging
               this._mouseDownRowIdx = null;
@@ -2276,9 +2744,11 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
             
             // Only clear if Shift or Ctrl are not pressed since this
             // could be multiple selection
+            // Also only clear for left click
             if (this._mouseDownRowIdx != null &&
                 !event[this._KEYBOARD_CODES._KEYBOARD_MODIFIER_SHIFT] && 
-                !oj.DomUtils.isMetaKeyPressed(event))
+                !oj.DomUtils.isMetaKeyPressed(event) &&
+                event.which === 1)
             {
               var rowSelected = this._getRowSelection(this._mouseDownRowIdx);
               
@@ -2309,7 +2779,10 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
            */
           'mouseenter .oj-table-body-row': function(event)
           {
-            $(event.currentTarget).addClass(oj.TableDomUtils.MARKER_STYLE_CLASSES._HOVER);
+            var eventTarget = this._getEventTargetElement(event);
+            eventTarget.classList.add(oj.TableDomUtils.MARKER_STYLE_CLASSES._HOVER);
+            var rowIdx = this._getTableDomUtils().getElementRowIdx(eventTarget);
+            this._updateRowStateCellsClass(rowIdx, {hover: true});
             this._handleMouseEnterSelection(event.target); 
           },
           /**
@@ -2317,18 +2790,27 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
            */
           'mouseleave .oj-table-body-row': function(event)
           {
-            $(event.currentTarget).removeClass(oj.TableDomUtils.MARKER_STYLE_CLASSES._HOVER);
+            var eventTarget = this._getEventTargetElement(event);
+            eventTarget.classList.remove(oj.TableDomUtils.MARKER_STYLE_CLASSES._HOVER);
+            var rowIdx = this._getTableDomUtils().getElementRowIdx(eventTarget);
+            this._updateRowStateCellsClass(rowIdx, {hover: false});
           },
           /**
            * set the column header focus.
            */
           'mousedown .oj-table-column-header-cell': function(event)
           {
-            // get the column index
-            var columnIdx = this._getTableDomUtils().getElementColumnIdx($(event.currentTarget));
-            // set the column focus
-            this._setHeaderColumnFocus(columnIdx, true, true, event);
-            $(event.target).data(this._FOCUS_CALLED, true);
+            if (event.which === 1)
+            {
+              if (!this._getTableResizeUtils().handleHeaderColumnResizeStart(event))
+              {
+                // get the column index
+                var columnIdx = this._getTableDomUtils().getElementColumnIdx(this._getEventTargetElement(event));
+                // set the column focus
+                this._setHeaderColumnFocus(columnIdx, true, true, event);
+                $(event.target).data(this._FOCUS_CALLED, true);
+              }
+            }
           },
           /**
            * show the ascending/descending links when the mouse
@@ -2336,11 +2818,36 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
            */
           'mouseenter .oj-table-column-header-cell': function(event)
           {
-            $(event.currentTarget).addClass(oj.TableDomUtils.MARKER_STYLE_CLASSES._HOVER);
+            if (this._getTableResizeUtils().setResizeCursor(event))
+            {
+              return;
+            }
+            var eventTarget = this._getEventTargetElement(event);
+            eventTarget.classList.add(oj.TableDomUtils.MARKER_STYLE_CLASSES._HOVER);
             // get the column index of the header element
-            var columnIdx = this._getTableDomUtils().getElementColumnIdx($(event.currentTarget));
+            var columnIdx = this._getTableDomUtils().getElementColumnIdx(eventTarget);
             // show the asc/dsc links for the header
             this._showTableHeaderColumnSortLink(columnIdx);
+          },
+          /**
+           * show the resize cursor
+           */
+          'mousemove .oj-table-header': function(event)
+          {
+            this._getTableResizeUtils().setResizeCursor(event);
+          },
+          /**
+           * remove the hover for resize
+           */
+          'mousemove .oj-table-column-header-cell': function(event)
+          {
+            var eventTarget = this._getEventTargetElement(event);
+            if (this._getTableResizeUtils().setResizeCursor(event))
+            {
+              eventTarget.classList.remove(oj.TableDomUtils.MARKER_STYLE_CLASSES._HOVER);
+              return;
+            }
+            eventTarget.classList.add(oj.TableDomUtils.MARKER_STYLE_CLASSES._HOVER);
           },
           /**
            * hide the ascending/descending links when the mouse
@@ -2348,12 +2855,20 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
            */
           'mouseleave .oj-table-column-header-cell': function(event)
           {
-            $(event.currentTarget).removeClass(oj.TableDomUtils.MARKER_STYLE_CLASSES._HOVER);
+            var eventTarget = this._getEventTargetElement(event);
+            eventTarget.classList.remove(oj.TableDomUtils.MARKER_STYLE_CLASSES._HOVER);
             // get the column index of the header element
-            var columnIdx = this._getTableDomUtils().getElementColumnIdx($(event.currentTarget));
+            var columnIdx = this._getTableDomUtils().getElementColumnIdx(eventTarget);
             // hide the asc/dsc links for the header
             this._hideTableHeaderColumnSortLink(columnIdx, true);
             this._hideTableHeaderColumnSortLink(columnIdx, false);
+          },
+          /**
+           * handle column resizing.
+           */
+          'mouseup .oj-table-column-header-cell': function(event)
+          {
+            this._getTableResizeUtils().handleHeaderColumnResizeEnd(event);
           },
           /**
            * set the row focus when the mouse clicks on a cell.
@@ -2361,36 +2876,24 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
           'mousedown .oj-table-data-cell': function(event)
           {
             // get the row index of the cell element
-            var rowIdx = this._getTableDomUtils().getElementRowIdx($(event.currentTarget));
-            var focused = false;
-            // set the row focus
-            focused = this._setRowFocus(rowIdx, true, true, event.currentTarget, event);
+            var eventTarget = this._getEventTargetElement(event);
+            var rowIdx = this._getTableDomUtils().getElementRowIdx(eventTarget);
+            this._setRowFocus(rowIdx, true, true, eventTarget, event);
             $(event.target).data(this._FOCUS_CALLED, true);
-            if (!focused)
-            {
-              return;
-            }
           },
           /**
-           * show the cell hover when the mouse enters a table cell
+           * handle column resizing.
            */
-          'mouseenter .oj-table-data-cell': function(event)
+          'mouseup .oj-table-data-cell': function(event)
           {
-            $(event.currentTarget).addClass(oj.TableDomUtils.MARKER_STYLE_CLASSES._HOVER);
-          },
-          /**
-           * hide the cell hover when the mouse leaves a table cell
-           */
-          'mouseleave .oj-table-data-cell': function(event)
-          {
-            $(event.currentTarget).removeClass(oj.TableDomUtils.MARKER_STYLE_CLASSES._HOVER);
+            this._getTableResizeUtils().handleHeaderColumnResizeEnd(event);
           },
           /**
            * invoke a sort on the column data when the mouse clicks the ascending link
            */
           'click .oj-table-column-header-asc-link': function(event)
           {
-            var columnIdx = this._getTableDomUtils().getElementColumnIdx($(event.target));
+            var columnIdx = this._getTableDomUtils().getElementColumnIdx(event.target);
             var tableHeaderColumn = this._getTableDomUtils().getTableHeaderColumn(columnIdx);
 
             if (!tableHeaderColumn)
@@ -2399,7 +2902,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
             }
 
             // check if the column is currently sorted
-            var sorted = tableHeaderColumn.data('sorted');
+            var sorted = $(tableHeaderColumn).data('sorted');
             if (sorted == this._COLUMN_SORT_ORDER._ASCENDING)
             {
               this._handleSortTableHeaderColumn(columnIdx, false, event);
@@ -2424,14 +2927,14 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
                 return;
               }
             }
-            var columnIdx = this._getTableDomUtils().getElementColumnIdx($(event.target));
+            var columnIdx = this._getTableDomUtils().getElementColumnIdx(event.target);
             var tableHeaderColumn = this._getTableDomUtils().getTableHeaderColumn(columnIdx);
 
             if (!tableHeaderColumn)
             {
               return;
             }
-            var sorted = tableHeaderColumn.data('sorted');
+            var sorted = $(tableHeaderColumn).data('sorted');
             if (sorted == this._COLUMN_SORT_ORDER._DESCENDING)
             {
               this._handleSortTableHeaderColumn(columnIdx, true, event);
@@ -2448,7 +2951,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
            */
           'click .oj-table-column-header-dsc-link': function(event)
           {
-            var columnIdx = this._getTableDomUtils().getElementColumnIdx($(event.target));
+            var columnIdx = this._getTableDomUtils().getElementColumnIdx(event.target);
             var tableHeaderColumn = this._getTableDomUtils().getTableHeaderColumn(columnIdx);
 
             if (!tableHeaderColumn)
@@ -2457,7 +2960,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
             }
 
             // check if the column is currently sorted
-            var sorted = tableHeaderColumn.data('sorted');
+            var sorted = $(tableHeaderColumn).data('sorted');
             if (sorted == this._COLUMN_SORT_ORDER._DESCENDING)
             {
               this._handleSortTableHeaderColumn(columnIdx, true, event);
@@ -2482,14 +2985,14 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
                 return;
               }
             }
-            var columnIdx = this._getTableDomUtils().getElementColumnIdx($(event.target));
+            var columnIdx = this._getTableDomUtils().getElementColumnIdx(event.target);
             var tableHeaderColumn = this._getTableDomUtils().getTableHeaderColumn(columnIdx);
 
             if (!tableHeaderColumn)
             {
               return;
             }
-            var sorted = tableHeaderColumn.data('sorted');
+            var sorted = $(tableHeaderColumn).data('sorted');
             if (sorted == this._COLUMN_SORT_ORDER._DESCENDING)
             {
               this._handleSortTableHeaderColumn(columnIdx, true, event);
@@ -2509,12 +3012,13 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
           'click .oj-table-data-cell': function(event)
           {
             // get the row index of the cell element
-            var rowIdx = this._getTableDomUtils().getElementRowIdx($(event.currentTarget));
+            var eventTarget = this._getEventTargetElement(event);
+            var rowIdx = this._getTableDomUtils().getElementRowIdx(eventTarget);
             var focusCalled = $(event.target).data(this._FOCUS_CALLED);
  
             if (!focusCalled)
             {
-              var focused = this._setRowFocus(rowIdx, true, true, event.currentTarget, event);
+              var focused = this._setRowFocus(rowIdx, true, true, eventTarget, event);
               $(event.target).data(this._FOCUS_CALLED, false);
               
               if (!focused)
@@ -2538,25 +3042,25 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
                   var i;
                   for (i = rowIdx; i <= lastSelectedRowIdx; i++)
                   {
-                    this._setRowSelection(i, true, event.currentTarget, event, true);
+                    this._setRowSelection(i, true, eventTarget, event, true);
                   }
                 }
                 else
                 {
                   var i;
                   for (i = lastSelectedRowIdx; i <= rowIdx; i++)
-                    this._setRowSelection(i, true, event.currentTarget, event, true);
+                    this._setRowSelection(i, true, eventTarget, event, true);
                 }
               }
             }
             else if (oj.DomUtils.isMetaKeyPressed(event))
             {
-              this._setRowSelection(rowIdx, !this._getRowSelection(rowIdx), event.currentTarget, event, true);
+              this._setRowSelection(rowIdx, !this._getRowSelection(rowIdx), eventTarget, event, true);
             }
             else if (this._getKeyboardKeys().length == 0)
             {
               var rowSelected = this._getRowSelection(rowIdx);
-              this._setRowSelection(rowIdx, !rowSelected, event.currentTarget, event, true);
+              this._setRowSelection(rowIdx, !rowSelected, eventTarget, event, true);
               
               if (this._isTouchDevice() && 
                   this._getRowSelectionMode() == this._OPTION_SELECTION_MODES._MULTIPLE &&
@@ -2571,7 +3075,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
            */
           'dblclick .oj-table-data-cell': function(event)
           {
-            var columnIdx = this._getTableDomUtils().getElementColumnIdx($(event.target));
+            var columnIdx = this._getTableDomUtils().getElementColumnIdx(event.target);
             this._setTableEditable(true, false, columnIdx, true, event);
           },
           /**
@@ -2580,7 +3084,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
           'contextmenu .oj-table-data-cell': function(event)
           {
             // get the row index of the cell element
-            var rowIdx = this._getTableDomUtils().getElementRowIdx($(event.currentTarget));
+            var rowIdx = this._getTableDomUtils().getElementRowIdx(this._getEventTargetElement(event));
             var rowKey = this._getRowKeyForRowIdx(rowIdx);
             this._setCurrentRow({'rowKey': rowKey}, event, false);
           },
@@ -2591,7 +3095,8 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
           'click .oj-table-column-header-cell': function(event)
           {
             // get the column index
-            var columnIdx = this._getTableDomUtils().getElementColumnIdx($(event.currentTarget));
+            var eventTarget = this._getEventTargetElement(event);
+            var columnIdx = this._getTableDomUtils().getElementColumnIdx(eventTarget);
             // check if we need to focus
             var focusCalled = $(event.target).data(this._FOCUS_CALLED);
  
@@ -2614,25 +3119,25 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
                   var i;
                   for (i = columnIdx; i <= lastSelectedColumnIdx; i++)
                   {
-                    this._setHeaderColumnSelection(i, true, event.currentTarget, event, true);
+                    this._setHeaderColumnSelection(i, true, eventTarget, event, true);
                   }
                 }
                 else
                 {
                   var i;
                   for (i = lastSelectedColumnIdx; i <= columnIdx; i++)
-                    this._setHeaderColumnSelection(i, true, event.currentTarget, event, true);
+                    this._setHeaderColumnSelection(i, true, eventTarget, event, true);
                 }
               }
             }
             else if (oj.DomUtils.isMetaKeyPressed(event))
             {
-              this._setHeaderColumnSelection(columnIdx, !this._getHeaderColumnSelection(columnIdx), event.currentTarget, event, true);
+              this._setHeaderColumnSelection(columnIdx, !this._getHeaderColumnSelection(columnIdx), eventTarget, event, true);
             }
             else if (this._getKeyboardKeys().length == 0)
             {
               this._clearSelectedHeaderColumns();
-              this._setHeaderColumnSelection(columnIdx, !this._getHeaderColumnSelection(columnIdx), event.currentTarget, event, true);
+              this._setHeaderColumnSelection(columnIdx, !this._getHeaderColumnSelection(columnIdx), eventTarget, event, true);
               this._getTableDndContext().setTableHeaderColumnDraggable(columnIdx, true);
             }
           },
@@ -2737,35 +3242,61 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
           /**
            * Keep track of touchstart on selection affordance
            */
-          'touchstart': function(event)
+          'touchstart .oj-table-body-row-touch-selection-affordance-touch-area': function(event)
           {
             var fingerCount = event.originalEvent.touches.length;
     
             if (fingerCount == 1 && this._getRowSelectionMode() == this._OPTION_SELECTION_MODES._MULTIPLE)
             {
-              if ($(event.target).hasClass(oj.TableDomUtils.CSS_CLASSES._TABLE_DATA_ROW_TOUCH_SELECTIOM_AFFORDANCE_TOP_CLASS) ||
-                  $(event.target).hasClass(oj.TableDomUtils.CSS_CLASSES._TABLE_DATA_ROW_TOUCH_SELECTIOM_AFFORDANCE_TOP_ICON_CLASS))
+              if (event.target.classList.contains(oj.TableDomUtils.CSS_CLASSES._TABLE_DATA_ROW_TOUCH_SELECTIOM_AFFORDANCE_TOP_CLASS) ||
+                  event.target.classList.contains(oj.TableDomUtils.CSS_CLASSES._TABLE_DATA_ROW_TOUCH_SELECTIOM_AFFORDANCE_TOP_ICON_CLASS))
               {
                 event.preventDefault();
-                this._mouseDownRowIdx = this._getTableDomUtils().getTableBodyRowTouchSelectionAffordanceBottom().data('rowIdx');
+                this._mouseDownRowIdx = $(this._getTableDomUtils().getTableBodyRowTouchSelectionAffordanceBottom()).data('rowIdx');
               }
-              else if ($(event.target).hasClass(oj.TableDomUtils.CSS_CLASSES._TABLE_DATA_ROW_TOUCH_SELECTIOM_AFFORDANCE_BOTTOM_CLASS) ||
-                       $(event.target).hasClass(oj.TableDomUtils.CSS_CLASSES._TABLE_DATA_ROW_TOUCH_SELECTIOM_AFFORDANCE_BOTTOM_ICON_CLASS))
+              else if (event.target.classList.contains(oj.TableDomUtils.CSS_CLASSES._TABLE_DATA_ROW_TOUCH_SELECTIOM_AFFORDANCE_BOTTOM_CLASS) ||
+                       event.target.classList.contains(oj.TableDomUtils.CSS_CLASSES._TABLE_DATA_ROW_TOUCH_SELECTIOM_AFFORDANCE_BOTTOM_ICON_CLASS))
               {
                 event.preventDefault();
-                this._mouseDownRowIdx = this._getTableDomUtils().getTableBodyRowTouchSelectionAffordanceTop().data('rowIdx');
+                this._mouseDownRowIdx = $(this._getTableDomUtils().getTableBodyRowTouchSelectionAffordanceTop()).data('rowIdx');
               }
+            }
+          },
+          /**
+           * column resizing
+           */
+          'touchstart .oj-table-column-header-cell': function(event)
+          {
+            var fingerCount = event.originalEvent.touches.length;
+            
+            if (fingerCount == 1)
+            {
+              if (this._isTableColumnsResizable() &&
+                this._getTableResizeUtils().handleHeaderColumnResizeStart(event))
+              {
+                event.preventDefault();
+              }
+            }
+          },
+          /**
+           * Keep track of touchmove for column resize
+           */
+          'touchmove .oj-table-header': function(event)
+          {
+            if (this._isTableColumnsResizable())
+            {
+              this._getTableResizeUtils().setResizeCursor(event);
             }
           },
           /**
            * Keep track of touchmove for multiple selection
            */
-          'touchmove': function(event)
+          'touchmove .oj-table-body-row-touch-selection-affordance-touch-area': function(event)
           {
             if (this._mouseDownRowIdx != null)
             {
               event.preventDefault();
-              var eventTarget = this._getTouchEventTargetElement(event);
+              var eventTarget = this._getEventTargetElement(event);
               this._handleMouseEnterSelection(eventTarget); 
             }
           },
@@ -2776,33 +3307,30 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
           {
             if (this._mouseDownRowIdx != null)
             {
-              var eventTarget = this._getTouchEventTargetElement(event);
+              var eventTarget = this._getEventTargetElement(event);
               this._handleMouseEnterSelection(eventTarget); 
             }
             this._mouseDownRowIdx = null;
+            if (this._getTableResizeUtils().handleHeaderColumnResizeEnd(event))
+            {
+              event.preventDefault();
+            }
           },
           /**
            * Keep track of touchend for edit
            */
           'touchend .oj-table-body': function(event)
           {
-            var eventTarget = $(event.target);
-            
-            if (this._lastTapTime != null &&
-                ((new Date()).getTime() - this._lastTapTime) < 250 && 
-                this._lastTapTarget[0] == eventTarget[0])
-            {
-              this._lastTapTime = null;
-              this._lastTapTarget = null;
-              var columnIdx = this._getTableDomUtils().getElementColumnIdx($(eventTarget));
-              this._setTableEditable(true, false, columnIdx, true, event);
-              event.preventDefault();
-            }       
-            else
-            {
-              this._lastTapTarget = eventTarget;    
-              this._lastTapTime = (new Date()).getTime();    
-            }
+            var self = this;
+            this._touchEventDoubleTapFunction(event, function(event) {
+              return function()
+              {
+                var eventTarget = self._getEventTargetElement(event);
+                var columnIdx = self._getTableDomUtils().getElementColumnIdx(eventTarget);
+                self._setTableEditable(true, false, columnIdx, true, event);
+                event.preventDefault();
+              };
+            }(event));
           },
           /**
            * Keep track of touchcancel for multiple selection
@@ -2810,6 +3338,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
           'touchcancel': function(event)
           {
             this._mouseDownRowIdx = null;
+            this._getTableResizeUtils().clearTableHeaderColumnsResize();
           }
       },
       /**
@@ -2839,7 +3368,8 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
             this._registerDomScroller();
           }
         }
-        if (this._contextMenuId != this._getTableDomUtils().getContextMenuId())
+        var contextMenu = this._GetContextMenu();
+        if (contextMenu != null && contextMenu != this._getTableDomUtils().getContextMenu())
         {
           this._getTableDomUtils().createContextMenu(this._handleContextMenuSelect.bind(this));
         }
@@ -2854,7 +3384,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
         else
         {
           var self = this;
-          this._queueTask(function()
+          return this._queueTask(function()
           {
             var result = self._invokeDataFetchRows(startIndex);
             startIndex = null;
@@ -2870,10 +3400,26 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
        */
       _setOption: function(key, value)
       {
+        if (key == 'selection')
+        {
+          this._clearSelectedRows();
+          this._clearSelectedHeaderColumns();
+          this._setSelection(value);
         this._superApply(arguments);
+        }
+        else if (key == 'currentRow')
+        {
+          var updated = this._setCurrentRow(value, null, true);
+
+          if (updated)
+          {
+            this._superApply(arguments);
+          }
+        }
+        else
+        {
+          this._superApply(arguments);
         var shouldRefresh = this._isTableRefreshNeeded(key, value);
-
-
 
         if (shouldRefresh)
         {
@@ -2890,19 +3436,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
           }
           this._refresh();
         }
-        else
-        {
-          if (key == 'selection')
-          {
-            this._clearSelectedRows();
-            this._clearSelectedHeaderColumns();
-            this._setSelection(value);
           }
-          else if (key == 'currentRow')
-          {
-            this._setCurrentRow(value, null, true);
-          }
-        }
       },
       /**** end internal widget functions ****/
 
@@ -2968,6 +3502,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
        * @param {Object} row row
        * @param {Object} docFrag  document fragment
        * @param {number} docFragStartIdx  document fragment row start index
+       * @return {Element} Returns the added tr
        *
        * @private
        */
@@ -2977,7 +3512,55 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
         this._getTableDomUtils().styleTableBodyRow(tableBodyRow, true);
         // insert the <tr> element in to the table body DOM
         this._getTableDomUtils().insertTableBodyRow(rowIdx, tableBodyRow, row, docFrag);
-        this._refreshTableBodyRow(rowIdx, row, tableBodyRow, docFrag, docFragStartIdx, true);
+        tableBodyRow = this._refreshTableBodyRow(rowIdx, row, tableBodyRow, docFrag, docFragStartIdx, true);
+        return tableBodyRow;
+      },
+      /**
+       * Animate only the visibles in the provided row array
+       * @param tableBodyRows Array of tr DOM elements
+       * @param rowIdxArray Array of row indexes for the tr elements
+       * @param action Animation action
+       * @return Promise Return a Promise which resolves when the animation is complete
+       * @private
+       */
+      _animateVisibleRows: function(tableBodyRows, rowIdxArray, action)
+      {
+        action = this._animationActionOverride == null ? action : this._animationActionOverride;
+            
+        if (!this._hasPendingTasks())
+        {
+          this._animationActionOverride = null;
+          var visibleRowIdxArray = this._getVisibleRowIdxs();
+          var nonVisibleRowIdxArray = [];
+          var i;
+          for (i = 0; i < rowIdxArray.length; i++)
+          {
+            if (visibleRowIdxArray.indexOf(rowIdxArray[i]) == -1)
+            {
+              nonVisibleRowIdxArray.push(rowIdxArray[i]);
+            }
+          }
+          nonVisibleRowIdxArray.sort(function (a, b)
+            {  
+              return a - b;  
+            });
+          for (i = nonVisibleRowIdxArray.length - 1; i >= 0; i--)
+          {
+            tableBodyRows.splice(nonVisibleRowIdxArray[i], 1);
+          }
+          // remove resize listeners to prevent triggering resize notifications
+          this._unregisterResizeListener();
+          var self = this;
+          return this._getTableAnimationUtils().animateTableBodyRows(tableBodyRows, action).then(function()
+          {
+            self._registerResizeListener();
+          });
+        }
+        else
+        {
+          this._animationActionOverride = 'update';
+          return Promise.resolve();
+        }
       },
       /**
        * Check and set the row or header column focus
@@ -3132,8 +3715,8 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
         if (sortedTableHeaderColumnIdx != null)
         {
           var sortedTableHeaderColumn = this._getTableDomUtils().getTableHeaderColumn(sortedTableHeaderColumnIdx);
-          var sorted = sortedTableHeaderColumn.data('sorted');
-          sortedTableHeaderColumn.data('sorted', null);
+          var sorted = $(sortedTableHeaderColumn).data('sorted');
+          $(sortedTableHeaderColumn).data('sorted', null);
 
           if (sortedTableHeaderColumnIdx != columnIdx)
           {
@@ -3148,10 +3731,18 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
           }
           else
           {
-            var sortedTableHeaderColumnAscLink = sortedTableHeaderColumn.find('.' + oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_ASC_LINK_CLASS);
-            sortedTableHeaderColumnAscLink.removeClass(oj.TableDomUtils.MARKER_STYLE_CLASSES._SELECTED);
-            var sortedTableHeaderColumnDscLink = sortedTableHeaderColumn.find('.' + oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_DSC_LINK_CLASS);
-            sortedTableHeaderColumnDscLink.removeClass(oj.TableDomUtils.MARKER_STYLE_CLASSES._SELECTED);
+            var sortedTableHeaderColumnAscLink = sortedTableHeaderColumn.querySelectorAll('.' + oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_ASC_LINK_CLASS);
+            if (sortedTableHeaderColumnAscLink.length > 0)
+            {
+              sortedTableHeaderColumnAscLink = sortedTableHeaderColumnAscLink[0];
+              sortedTableHeaderColumnAscLink.classList.remove(oj.TableDomUtils.MARKER_STYLE_CLASSES._SELECTED);
+          }
+            var sortedTableHeaderColumnDscLink = sortedTableHeaderColumn.querySelectorAll('.' + oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_DSC_LINK_CLASS);
+            if (sortedTableHeaderColumnDscLink.length > 0)
+            {
+              sortedTableHeaderColumnDscLink = sortedTableHeaderColumnDscLink[0];
+              sortedTableHeaderColumnDscLink.classList.remove(oj.TableDomUtils.MARKER_STYLE_CLASSES._SELECTED);
+        }
           }
         }
       },
@@ -3168,6 +3759,8 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
           // see if we should batch add
           // only batch if we are adding a block of contiguous rows
           var batchAdd = false;
+          var addedTableBodyRows = [];
+          var rowIdxArray = [];
           if (rows.length > 1)
           {
             var i, rowsCount = rows.length;
@@ -3179,38 +3772,38 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
                 if (rows[i - 1].rowIdx != rows[i].rowIdx - 1)
                 {
                   isContiguous = false;
-                  break;
                 }
               }
+              rowIdxArray.push(rows[i].rowIdx);
             }
 
             if (isContiguous)
             {
               var tableBody = self._getTableDomUtils().getTableBody();
-              var tableBodyDocFrag = $(document.createDocumentFragment());
+              var tableBodyDocFrag = document.createDocumentFragment();
               rowsCount = rows.length;
               for (i = 0; i < rowsCount; i++)
               {
-                self._addSingleTableBodyRow(rows[i].rowIdx, rows[i].row, tableBodyDocFrag, rows[0].rowIdx);
+                addedTableBodyRows.push(self._addSingleTableBodyRow(rows[i].rowIdx, rows[i].row, tableBodyDocFrag, rows[0].rowIdx));
               }
               if (rows[0].rowIdx == 0)
               {
-                tableBody.prepend(tableBodyDocFrag); //@HTMLUpdateOK
+                tableBody.insertBefore(tableBodyDocFrag, tableBody.firstChild); //@HTMLUpdateOK
               }
               else
               {
                 var tableBodyRowBefore = self._getTableDomUtils().getTableBodyRow(rows[0].rowIdx);
                 if (tableBodyRowBefore != null)
                 {
-                  tableBody[0].insertBefore(tableBodyDocFrag[0], tableBodyRowBefore[0]);//@HTMLUpdateOK
+                  tableBody.insertBefore(tableBodyDocFrag, tableBodyRowBefore);//@HTMLUpdateOK
                 }
                 else
                 {
-                  tableBody[0].insertBefore(tableBodyDocFrag[0], null);//@HTMLUpdateOK
+                  tableBody.appendChild(tableBodyDocFrag, null);//@HTMLUpdateOK
                 }
               }
               self._getTableDomUtils().clearCachedDomRowData();
-              oj.Components.subtreeAttached(tableBody[0]);
+              oj.Components.subtreeAttached(tableBody);
               batchAdd = true;
             }
           }
@@ -3220,13 +3813,20 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
             rowsCount = rows.length;
             for (i = 0; i < rowsCount; i++)
             {
-              self._addSingleTableBodyRow(rows[i].rowIdx, rows[i].row);
+              addedTableBodyRows.push(self._addSingleTableBodyRow(rows[i].rowIdx, rows[i].row));
             }
           }
           self._getTableDomUtils().clearCachedDomRowData();
           // row values may have changed so refresh the footer
           self._refreshTableFooter();
-          self = null;
+          if (self._IsCustomElement())
+          {
+            return self._animateVisibleRows(addedTableBodyRows, rowIdxArray, 'add');
+          }
+          else
+          {
+            return Promise.resolve();
+          }
         });
       },
       /**
@@ -3238,16 +3838,28 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
       _executeTableBodyRowsChange: function(rows, startIndex)
       {
         var self = this;
+        var i, tableBodyRow, rowsCount = rows.length;
+        var updatedTableBodyRows = [];
+        var rowIdxArray = [];
+
         this._queueTask(function()
         {
-          var i, rowsCount = rows.length;
           for (i = 0; i < rowsCount; i++)
           {
-            self._refreshTableBodyRow(rows[i].rowIdx, rows[i].row);
+            tableBodyRow = self._refreshTableBodyRow(rows[i].rowIdx, rows[i].row);
+            updatedTableBodyRows.push(tableBodyRow);
+            rowIdxArray.push(rows[i].rowIdx);
           }
           // row values may have changed so refresh the footer
           self._refreshTableFooter();
-          self = null;
+          if (self._IsCustomElement())
+          {
+            return self._animateVisibleRows(updatedTableBodyRows, rowIdxArray, 'update');
+          }
+          else
+          {
+            return Promise.resolve();
+          }
         });
       },
       /**
@@ -3263,37 +3875,45 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
         this._queueTask(function()
         {
           // first check if we are removing all rows. If so, we can do a removeAll
+          var remainingRowIdxArray = [];
           var rowIdxArray = [];
-          var i, j, rowKey, rowsCount = rows.length;
+          var removedTableBodyRows = [];
+          var i, j, rowKey, rowIdx, rowsCount = rows.length;
           var removeAll = false;
+          var tableBodyRow;
           var tableBodyRows = self._getTableDomUtils().getTableBodyRows();
           
           if (tableBodyRows != null && tableBodyRows.length > 0)
           {
             for (i = 0; i < tableBodyRows.length; i++)
             {
-              rowIdxArray.push(i);
+              remainingRowIdxArray.push(i);
             }
             for (i = 0; i < rowsCount; i++)
             {
-              for (j = 0; j < rowIdxArray.length; j++)
+              rowIdx = rows[i].rowIdx;
+              rowIdxArray.push(rowIdx);
+              for (j = 0; j < remainingRowIdxArray.length; j++)
               {
-                if (rowIdxArray[j] == rows[i].rowIdx)
+                if (remainingRowIdxArray[j] == rowIdx)
                 {
-                  rowIdxArray.splice(j, 1);
+                  tableBodyRow = this._getTableDomUtils().getTableBodyRow(rowIdx);
+                  removedTableBodyRows.push(tableBodyRow);
+                  remainingRowIdxArray.splice(j, 1);
                   break;
                 }
               }
             }
             
-            if (rowIdxArray.length == 0)
+            if (remainingRowIdxArray.length == 0)
             {
               removeAll = true;
             }
           }
+                              
           var tableBody = this._getTableDomUtils().getTableBody();
-          var checkFocus = $.contains(tableBody[0], document.activeElement);
-          var tableBodyRow, resetFocus = false;
+          var checkFocus = $.contains(tableBody, document.activeElement);
+          var resetFocus = false;
           
           if (removeAll)
           {
@@ -3301,7 +3921,6 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
             {
               resetFocus = true;
             }
-            self._getTableDomUtils().removeAllTableBodyRows();
             
             // Clear out all the existing selection state
             self._setSelection(null);
@@ -3311,22 +3930,21 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
           {
             for (i = 0; i < rowsCount; i++)
             {
+              rowIdx = rows[i].rowIdx;
+              tableBodyRow = this._getTableDomUtils().getTableBodyRow(rowIdx);
               if (checkFocus)
               {
-                tableBodyRow = this._getTableDomUtils().getTableBodyRow(rows[i].rowIdx);
-
                 if (tableBodyRow != null &&
-                    $.contains(tableBodyRow[0], document.activeElement))
+                    $.contains(tableBodyRow, document.activeElement))
                 {
                   resetFocus = true;
                   checkFocus = false;
+                  break;
                 }
               }
-              
-              self._getTableDomUtils().removeTableBodyRow(rows[i].rowIdx);
             }
           }
-                    
+          
           // reset the currentRow if needed
           if (currentRowKey != null)
           {
@@ -3341,22 +3959,80 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
               }
             }
           }
-          
-          // row values may have changed so refresh the footer
-          self._refreshTableFooter();
-          tableBodyRows = self._getTableDomUtils().getTableBodyRows();
-          if (tableBodyRows == null || tableBodyRows.length == 0)
+          var _removeRows = function()
           {
-            self._showNoDataMessage();
+            for (i = 0; i < rowsCount; i++)
+            {
+              rowIdx = rows[i].rowIdx;
+              self._getTableDomUtils().removeTableBodyRow(rowIdx);
+            }
           }
-          
-          if (resetFocus)
+          var _afterRemoveRows = function()
           {
-            this._getTableDomUtils().getTable().focus();
+            // row values may have changed so refresh the footer
+            self._refreshTableFooter();
+            tableBodyRows = self._getTableDomUtils().getTableBodyRows();
+            if (tableBodyRows == null || tableBodyRows.length == 0)
+            {
+              self._showNoDataMessage();
+            }
+
+            if (resetFocus)
+            {
+              self._getTableDomUtils().getTable().focus();
+            }
           }
-          
-          self = null;
+          if (removeAll)
+          {
+            self._getTableDomUtils().removeAllTableBodyRows();
+            _afterRemoveRows();
+          }
+          else
+          {
+            return new Promise(function(resolve, reject)
+            {
+              if (self._IsCustomElement())
+              {
+                self._animateVisibleRows(removedTableBodyRows, rowIdxArray, 'remove').then(function()
+                {      
+                  _removeRows();
+                  _afterRemoveRows();
+                  resolve(true);
+                });
+              }
+              else
+              {
+                _removeRows();
+                _afterRemoveRows();
+                resolve(true);
+              }
+            });
+          }
         });
+      },
+      /**
+       * Return all the busy contexts for the element
+       * @param {Element} element DOM element
+       * @return {Array|null} Array of Busy Contexts
+       * @private
+       */
+      _getAllBusyContextsForElement: function(element)
+      {
+        if (!element)
+        {
+          return null;
+        }
+        var contextNodeList = element.querySelectorAll('[data-oj-context]');
+        if (contextNodeList.length > 0)
+        {
+          var i, busyContextArray = [];
+          for (i = 0; i < contextNodeList.length; i++) 
+          {
+            busyContextArray.push(oj.Context.getContext(contextNodeList[i]).getBusyContext());
+          }
+          return busyContextArray;
+        }
+        return null;
       },
       /**
        * Return the column definitions
@@ -3466,14 +4142,14 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
        */
       _getColumnIdxsForElementsWithStyleClass: function(styleClass)
       {
-        var elements = this._getTableDomUtils().getTable().find(styleClass);
+        var elements = this._getTableDomUtils().getTable().querySelectorAll(styleClass);
         var columnIdxs = [];
         if (elements && elements.length > 0)
         {
           var i, j, alreadyAdded, columnIdx, columnIdxsCount, elementsCount = elements.length;
           for (i = 0; i < elementsCount; i++)
           {
-            columnIdx = this._getTableDomUtils().getElementColumnIdx($(elements.get(i)));
+            columnIdx = this._getTableDomUtils().getElementColumnIdx(elements[i]);
 
             alreadyAdded = false;
             columnIdxsCount = columnIdxs.length;
@@ -3520,21 +4196,20 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
       {
         var columns = this._getColumnDefs();
         var column = columns[columnIdx];
-
+        var renderer = null;
         if (type == 'cell')
         {
-          return column['renderer'];
+          renderer = column['renderer'];
         }
         else if (type == 'footer')
         {
-          return column['footerRenderer'];
+          renderer = column['footerRenderer'];
         }
         else if (type == 'header')
         {
-          return column['headerRenderer'];
+          renderer = column['headerRenderer'];
         }
-
-        return null;
+        return this._WrapCustomElementRenderer(renderer);
       },
       /**
        * Get the current row.
@@ -3597,7 +4272,8 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
       _getFocusedHeaderColumnIdx: function()
       {
         // focused column headers have the focused style class. There should only be one focused header
-        return this._getColumnIdxsForElementsWithStyleClass('.' + oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_CELL_CLASS + '.' + oj.TableDomUtils.MARKER_STYLE_CLASSES._FOCUS)[0];
+        return this._getColumnIdxsForElementsWithStyleClass('.' + oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_CELL_CLASS + '.' + oj.TableDomUtils.MARKER_STYLE_CLASSES._FOCUS_HIGHLIGHT + ',' +
+                                                            '.' + oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_CELL_CLASS + '.' + oj.TableDomUtils.MARKER_STYLE_CLASSES._FOCUS)[0];
       },
       /**
        * Get the focused row index
@@ -3607,17 +4283,8 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
       _getFocusedRowIdx: function()
       {
         // focused rows have cells with focused style class. There should only be one focused row
-        return this._getRowIdxsForElementsWithStyleClass('.' + oj.TableDomUtils.CSS_CLASSES._TABLE_DATA_ROW_CLASS + '.' + oj.TableDomUtils.MARKER_STYLE_CLASSES._FOCUS)[0];
-      },
-      /**
-       * Return whether the column header at the index is focused
-       * @param {number} columnIdx  column index
-       * @return {boolean} whether it's focused
-       * @private
-       */
-      _getHeaderColumnFocus: function(columnIdx)
-      {
-        return this._getHeaderColumnState(columnIdx).focused;
+        return this._getRowIdxsForElementsWithStyleClass('.' + oj.TableDomUtils.CSS_CLASSES._TABLE_DATA_ROW_CLASS + '.' + oj.TableDomUtils.MARKER_STYLE_CLASSES._FOCUS_HIGHLIGHT + ',' +
+                                                         '.' + oj.TableDomUtils.CSS_CLASSES._TABLE_DATA_ROW_CLASS + '.' + oj.TableDomUtils.MARKER_STYLE_CLASSES._FOCUS)[0];
       },
       /**
        * Return whether the column header at the index is selected
@@ -3627,7 +4294,8 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
        */
       _getHeaderColumnSelection: function(columnIdx)
       {
-        return this._getHeaderColumnState(columnIdx).selected;
+        var headerColumn = this._getTableDomUtils().getTableHeaderColumn(columnIdx);
+        return headerColumn.classList.contains(oj.TableDomUtils.MARKER_STYLE_CLASSES._SELECTED);
       },
       /**
        * Return the column selection mode
@@ -3638,19 +4306,6 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
       {
         var columnSelectionMode = this.options.selectionMode == null ? null : this.options.selectionMode[this._CONST_COLUMN];
         return columnSelectionMode;
-      },
-      /**
-       * Return the state of the column header at a partiocular index
-       * @param {number} columnIdx  column index
-       * @return {Object} Object which contains booleans focused and selected
-       * @private
-       */
-      _getHeaderColumnState: function(columnIdx)
-      {
-        var headerColumn = this._getTableDomUtils().getTableHeaderColumn(columnIdx);
-
-        return {focused: headerColumn.hasClass(oj.TableDomUtils.MARKER_STYLE_CLASSES._FOCUS),
-          selected: headerColumn.hasClass(oj.TableDomUtils.MARKER_STYLE_CLASSES._SELECTED)};
       },
       /**
        * Return the currently pressed keyboard keys
@@ -3800,6 +4455,17 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
         return this._editableRowKey;
       },
       /**
+       * 
+       * Get the target element
+       * @param {Object} event DOM touch event
+       * @return {Element} element  DOM element
+       * @private
+       */
+      _getEventTargetElement: function(event)
+      {
+        return event.type.indexOf('touch') == 0 ? this._getTouchEventTargetElement(event) : event.currentTarget;
+      },
+      /**
        * Return all the row indexes for elements with a particular style class
        * @param {string} styleClass  style class
        * @return {Array} Array of row indexes
@@ -3807,14 +4473,14 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
        */
       _getRowIdxsForElementsWithStyleClass: function(styleClass)
       {
-        var elements = this._getTableDomUtils().getTable().find(styleClass);
+        var elements = this._getTableDomUtils().getTable().querySelectorAll(styleClass);
         var rowIdxs = [];
         if (elements && elements.length > 0)
         {
           var i, j, rowIdx, rowIdxsCount, alreadyAdded, elementsCount = elements.length;
           for (i = 0; i < elementsCount; i++)
           {
-            rowIdx = this._getTableDomUtils().getElementRowIdx($(elements.get(i)));
+            rowIdx = this._getTableDomUtils().getElementRowIdx(elements[i]);
 
             alreadyAdded = false;
             rowIdxsCount = rowIdxs.length;
@@ -3867,7 +4533,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
       /**
        * Return the row key for row index.
        * @param {number} rowIdx row index
-       * @return {Object|null} row key
+       * @return {*|null} row key
        * @private
        */
       _getRowKeyForRowIdx: function(rowIdx)
@@ -3876,7 +4542,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
 
         if (tableBodyRow != null)
         {
-          return tableBodyRow.data('rowKey');
+          return $(tableBodyRow).data('rowKey');
         }
 
         return null;
@@ -3888,7 +4554,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
        */
       _getRowRenderer: function()
       {
-        return this.options['rowRenderer'];
+        return this._WrapCustomElementRenderer(this.options['rowRenderer']);
       },
       /**
        * Return whether the row is selected
@@ -3898,7 +4564,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
        */
       _getRowSelection: function(rowIdx)
       {
-        return this._getTableDomUtils().getTableBodyRow(rowIdx).hasClass(oj.TableDomUtils.MARKER_STYLE_CLASSES._SELECTED);
+        return this._getTableDomUtils().getTableBodyRow(rowIdx).classList.contains(oj.TableDomUtils.MARKER_STYLE_CLASSES._SELECTED);
       },
       /**
        * Return the row selection mode
@@ -4075,19 +4741,32 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
       },
       /**
        * Get tabbable elements within the element
-       * @param {jQuery} element  DOM element
-       * @return {jQuery|null} jQuery array of DOM elements
+       * @param {Element} element  DOM element
+       * @return {Array|null} Array of DOM elements
        * @private
        */
       _getTabbableElements: function(element)
       {
-        var tabbableElements = element.find(':tabbable').not('.oj-helper-hidden-accessible');
+        var tabbableElements = $(element).find(':tabbable').not('.oj-helper-hidden-accessible');
 
         if (tabbableElements != null && tabbableElements.length > 0)
         {
-          return tabbableElements;
+          return tabbableElements.toArray();
         }
         return null;
+      },
+      /**
+       * Return table animation utils instance
+       * @return {Object} instance of table DOM utils
+       * @private
+       */
+      _getTableAnimationUtils: function()
+      {
+        if (!this._tableAnimationUtils)
+        {
+          this._tableAnimationUtils = new oj.TableAnimationUtils(this);
+        }
+        return this._tableAnimationUtils;
       },
       /**
        * Return table DnD utils instance
@@ -4116,26 +4795,116 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
         return this._tableDomUtils;
       },
       /**
+       * Return table Resize utils instance
+       * @return {Object} instance of table Resize utils
+       * @private
+       */
+      _getTableResizeUtils: function()
+      {
+        if (!this._tableResizeUtils)
+        {
+          this._tableResizeUtils = new oj.TableResizeUtils(this);
+        }
+        return this._tableResizeUtils;
+      },
+      /**
+       * 
        * Get the target element at the touch event
        * @param {Object} event DOM touch event
-       * @return {jQuery} element  DOM element
+       * @return {Element} element  DOM element
        * @private
        */
       _getTouchEventTargetElement: function(event)
       {
         var eventLocation = event.originalEvent.changedTouches[0];
-        return $(document.elementFromPoint(eventLocation.clientX, eventLocation.clientY));
+        return document.elementFromPoint(eventLocation.clientX, eventLocation.clientY);
+      },
+      /**
+       * Return the visible row indexes
+       * @return {Array} array of row indexes
+       * @private
+       */
+      _getVisibleRowIdxs: function()
+      {
+        // return the row indexes of all rows in the viewport
+        var visibleRowIdxArray = [];
+        var tableBodyRows = this._getTableDomUtils().getTableBodyRows();
+          
+        if (tableBodyRows != null && tableBodyRows.length > 0)
+        {
+          var windowHeight = $(window).height();
+          var tableRect = this.element[0].getBoundingClientRect();
+          var i;
+          
+          // If the whole table is visible then all the rows are visible
+          if (tableRect.top >= 0 &&
+            tableRect.bottom <= windowHeight)
+          {
+            for (i = 0; i < tableBodyRows.length; i++)
+            {
+              visibleRowIdxArray.push(i);
+            }
+          }
+          // check if not visible at all
+          else if (tableRect.top > windowHeight)
+          {
+            return visibleRowIdxArray; 
+          }
+          // get the endpoint rows for the viewport
+          else
+          {
+            var tableElemX = tableRect.left >= 0 ? tableRect.left + 1 : tableRect.right - 1;
+            var startRowIdx, lastRowIdx;
+            
+            // check if the first visible row is at the top of the viewport
+            var tableElem = document.elementFromPoint(tableElemX, 0);
+            var rowIdx = null;
+            if (tableElem != null)
+            {
+              rowIdx = this._getTableDomUtils().getElementRowIdx(tableElem);
+            }
+            startRowIdx = rowIdx != null ? rowIdx : 0;
+            
+            if (tableRect.bottom > windowHeight)
+            {
+              // the last visible row is at the bottom of the viewport
+              tableElem = document.elementFromPoint(tableElemX, windowHeight - 1);
+              rowIdx = null;
+              if (tableElem != null)
+              {
+                rowIdx = this._getTableDomUtils().getElementRowIdx(tableElem);
+              }
+              lastRowIdx = rowIdx != null ? rowIdx : tableBodyRows.length - 1;
+            }
+            else
+            {
+              // the last visible row is the last row
+              lastRowIdx = tableBodyRows.length - 1;
+            }
+            
+            for (i = startRowIdx; i <= lastRowIdx; i++)
+            {
+              visibleRowIdxArray.push(i);
+            }     
+          }
+        }
+        return visibleRowIdxArray;
       },
       /**
        * Handle an ojselect event on a menu item, if sort call the handler on the core.
-       * If resize prompt the user with a dialog box
+       * If resize prompt the user with a popup
        * @private
        */
       _handleContextMenuSelect: function(event, ui)
       {
-        var menuItemCommand = ui.item.attr('data-oj-command');
-        var headerColumn = this._getTableDomUtils().getFirstAncestor($(this._contextMenuEvent['target']), 'oj-table-column-header-cell');
-        var tableBodyCell = this._getTableDomUtils().getFirstAncestor($(this._contextMenuEvent['target']), 'oj-table-data-cell');
+        var item;
+        if (ui)
+          item = ui.item;
+        else
+          item = $(event.target);
+        var menuItemCommand = item.attr('data-oj-command');
+        var headerColumn = this._getTableDomUtils().getFirstAncestor(this._contextMenuEvent['target'], 'oj-table-column-header-cell');
+        var tableBodyCell = this._getTableDomUtils().getFirstAncestor(this._contextMenuEvent['target'], 'oj-table-data-cell');
         var columnIdx = null;
 
         if (headerColumn != null)
@@ -4162,16 +4931,53 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
         {
           this._nonContiguousSelection = true;
           // update to disable command
-          ui.item.attr('data-oj-command', 'oj-table-disableNonContiguousSelection');
-          ui.item.children().first().text(this.getTranslatedString('labelDisableNonContiguousSelection')); //@HTMLUpdateOK
+          item.attr('data-oj-command', 'oj-table-disableNonContiguousSelection');
+          item.children().first().text(this.getTranslatedString('labelDisableNonContiguousSelection')); //@HTMLUpdateOK
         }
         else if (menuItemCommand == 'oj-table-disableNonContiguousSelection')
         {
           this._nonContiguousSelection = false;
           // update to enable command
-          ui.item.attr('data-oj-command', 'oj-table-enableNonContiguousSelection');
-          ui.item.children().first().text(this.getTranslatedString('labelEnableNonContiguousSelection')); //@HTMLUpdateOK
+          item.attr('data-oj-command', 'oj-table-enableNonContiguousSelection');
+          item.children().first().text(this.getTranslatedString('labelEnableNonContiguousSelection')); //@HTMLUpdateOK
         }
+        else if (menuItemCommand == 'oj-table-resize')
+        {
+          var popup = this._getTableDomUtils().getContextMenuResizePopup();
+          popup.setAttribute('data-oj-columnIdx', columnIdx);
+          var columnRect = headerColumn != null ? headerColumn.getBoundingClientRect() : tableBodyCell.getBoundingClientRect();
+          var spinner = document.getElementById(this._getTableDomUtils().getTableId() + '_resize_popup_spinner');
+          $(spinner).ojInputNumber('option', 'value', Math.round(columnRect.width));
+          var launcher = headerColumn != null ? headerColumn : tableBodyCell != null ? tableBodyCell : this.getTable();
+          $(popup).ojPopup('open', launcher);
+        }
+      },
+      /**
+       * Callback from the resize popup box
+       * @param {Event} event the event that triggered the popup button press
+       * @private
+       */
+      _handleContextMenuResizePopup: function(event)
+      {
+        var spinner = document.getElementById(this._getTableDomUtils().getTableId() + '_resize_popup_spinner');
+        var widthValue = $(spinner).ojInputNumber("option", "value");
+        var popup = this._getTableDomUtils().getContextMenuResizePopup();
+        var columnIdx = parseInt(popup.getAttribute('data-oj-columnIdx'), 10);
+        $(popup).ojPopup('close');
+        var clonedColumnsOption = [];
+        var i, columnsCount = this.options['columns'].length;
+        for (i = 0; i < columnsCount; i++)
+        {
+          clonedColumnsOption[i] = $.extend({}, {}, this.options['columns'][i]);
+        }
+        clonedColumnsOption[columnIdx]['width'] = widthValue;
+        this.option('columns', clonedColumnsOption, {'_context': {writeback: true, internalSet: true}});
+        this._clearCachedMetadata();
+        var self = this;
+        this._refresh().then(function()
+        {
+          self._getTableDomUtils().getTable().focus();
+        });
       },
       /**
        * Callback handler for data error.
@@ -4562,6 +5368,178 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
         }
       },
       /**
+       * Handler for End keydown.
+       * @param {Object} event
+       * @private
+       */
+      _handleKeydownEnd: function(event)
+      {
+        if (this._isTableActionableMode())
+        {
+          // ignore in actionable mode
+          return;
+        }
+        // pressing End focuses on last column
+        var focusedColumnIdx = this._getFocusedHeaderColumnIdx();
+
+        if (focusedColumnIdx != null &&
+          focusedColumnIdx != this._getColumnDefs().length - 1)
+        {
+          this._setHeaderColumnFocus(this._getColumnDefs().length - 1, true, false, null);
+        }
+        else if (!this._hasEditableRow())
+        {
+          var focusedRowIdx = this._getFocusedRowIdx();
+          var tableBodyRows = this._getTableDomUtils().getTableBodyRows();
+          var rowCount = tableBodyRows != null ? tableBodyRows.length : 0;
+
+          if (focusedRowIdx != null && focusedRowIdx != rowCount - 1 && rowCount > 0)
+          {
+            this._setRowFocus(rowCount - 1, true, true, null, event);
+          }
+        }
+      },
+      /**
+       * Handler for Enter keydown.
+       * @param {Object} event
+       * @private
+       */
+      _handleKeydownEnter: function(event)
+      {
+        if (this._isTableActionableMode())
+        {
+          // ignore in actionable mode
+          return;
+        }
+        // pressing enter does sort on the focused column header
+        var focusedColumnIdx = this._getFocusedHeaderColumnIdx();
+
+        if (focusedColumnIdx != null && this._getColumnDefs()[focusedColumnIdx]['sortable'] == this._OPTION_ENABLED)
+        {
+          var tableHeaderColumn = this._getTableDomUtils().getTableHeaderColumn(focusedColumnIdx);
+          var sorted = $(tableHeaderColumn).data('sorted');
+          // if not already sorted then sort ascending. If already sorted
+          // ascending then do descending sort and vice versa.
+          if (sorted == null || sorted == this._COLUMN_SORT_ORDER._DESCENDING)
+          {
+            this._handleSortTableHeaderColumn(focusedColumnIdx, true, event);
+          }
+          else
+          {
+            this._handleSortTableHeaderColumn(focusedColumnIdx, false, event);
+          }
+        }
+        else
+        {
+          var currentRow = this._getCurrentRow();
+          currentRow = currentRow || {};
+          var currentRowIdx = currentRow['rowIndex'];
+          
+          if (currentRowIdx >= 0)
+          {
+            if (this._isTableEditMode())
+            {
+            if (!this._hasEditableRow())
+            {
+              this._setTableEditable(true, false, 0, true, event);
+              return;
+            }
+              var columnIdx = this._getTableDomUtils().getElementColumnIdx(event.target);
+            
+            if (!event[this._KEYBOARD_CODES._KEYBOARD_MODIFIER_SHIFT])
+            {
+              this._setNextRowEditable(columnIdx, event);
+            }
+            else
+            {
+              this._setPreviousRowEditable(columnIdx, event);
+            }
+          }
+            else
+            {
+              this._setTableActionableMode(true);
+        }
+          }
+        }
+      },
+      /**
+       * Handler for Esc keydown.
+       * @param {Object} event
+       * @private
+       */
+      _handleKeydownEsc: function(event)
+      {
+        // pressing Esc always returns focus back to the table.
+        event.preventDefault();
+        event.stopPropagation();
+        this._setTableEditable(false, true, 0, true, event);
+        this._getTableDomUtils().getTable().focus();
+        this._setTableActionableMode(false);
+        this._getTableResizeUtils().clearTableHeaderColumnsResize();
+      },
+      /**
+       * Handler for F2 keydown.
+       * @param {Object} event
+       * @private
+       */
+      _handleKeydownF2: function(event)
+      {
+        event.preventDefault();
+        event.stopPropagation();
+        if (this._isTableEditMode())
+        {
+          // pressing F2 toggles between editable modes.
+          if (!this._hasEditableRow())
+          {
+            this._setTableEditable(true, false, 0, true, event);
+          }
+          else
+          {
+            this._setTableEditable(false, false, 0, true, event);
+          }
+        }
+        else
+        {
+          if (this._isTableActionableMode())
+          {
+            this._setTableActionableMode(false);
+          }
+          else
+          {
+            this._setTableActionableMode(true);
+          }
+        }
+      },
+      /**
+       * Handler for Home keydown.
+       * @param {Object} event
+       * @private
+       */
+      _handleKeydownHome: function(event)
+      {
+        if (this._isTableActionableMode())
+        {
+          // ignore in actionable mode
+          return;
+        }
+        // pressing Home focuses on first column
+        var focusedColumnIdx = this._getFocusedHeaderColumnIdx();
+
+        if (focusedColumnIdx != null && focusedColumnIdx != 0)
+        {
+          this._setHeaderColumnFocus(0, true, false, null);
+        }
+        else if (!this._hasEditableRow())
+        {
+          var focusedRowIdx = this._getFocusedRowIdx();
+
+          if (focusedRowIdx != null && focusedRowIdx != 0)
+          {
+            this._setRowFocus(0, true, true, null, event);
+          }
+        }
+      },
+      /**
        * Handler for Left/Right keydown.
        * @param {Object} event
        * @private
@@ -4613,6 +5591,35 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
         }
       },
       /**
+       * Handler for Spacebar keydown.
+       * @param {Object} event
+       * @private
+       */
+      _handleKeydownSpacebar: function(event)
+      {
+        if (this._isTableActionableMode())
+        {
+          // ignore in actionable mode
+          return;
+        }
+        // pressing spacebar selects the focused row/column
+        var focusedRowIdx = this._getFocusedRowIdx();
+
+        if (focusedRowIdx != null)
+        {
+          this._setRowSelection(focusedRowIdx, !this._getRowSelection(focusedRowIdx), null, event, true);
+        }
+        else if (!this._hasEditableRow())
+        {
+          var focusedHeaderColumnIdx = this._getFocusedHeaderColumnIdx();
+          if (focusedHeaderColumnIdx != null)
+          {
+            this._clearSelectedRows();
+            this._setHeaderColumnSelection(focusedHeaderColumnIdx, !this._getHeaderColumnSelection(focusedHeaderColumnIdx), null, event, true);
+          }
+        }
+      },
+      /**
        * Handler for Tab keydown.
        * @param {Object} event
        * @private
@@ -4641,7 +5648,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
             var tableBodyRow = this._getTableDomUtils().getTableBodyRow(focusedRowIdx);
             var tabbableElementsInRow = this._getTabbableElements(tableBodyRow);
             var tabbableElementsInRowCount = tabbableElementsInRow != null ? tabbableElementsInRow.length : 0;
-            var rowElementTabIndex = tabbableElementsInRow.index(currentFocusElement);
+            var rowElementTabIndex = $(tabbableElementsInRow).index(currentFocusElement);
             
             if (rowElementTabIndex == tabbableElementsInRowCount - 1
                 && !event[this._KEYBOARD_CODES._KEYBOARD_MODIFIER_SHIFT])
@@ -4662,16 +5669,16 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
               return;
             }
           }
-          else if ($.contains(tableBody[0], currentFocusElement) ||
-            $.contains(tableHeader[0], currentFocusElement))
+          else if ($.contains(tableBody, currentFocusElement) ||
+            $.contains(tableHeader, currentFocusElement))
           {
             var focusedElement = null;
             
-            if ($.contains(tableBody[0], currentFocusElement)) 
+            if ($.contains(tableBody, currentFocusElement)) 
             {
               focusedElement = this._getTableDomUtils().getTableBodyRow(focusedRowIdx);
             }
-            else if ($.contains(tableHeader[0], currentFocusElement)) 
+            else if ($.contains(tableHeader, currentFocusElement)) 
             {
               focusedElement = this._getTableDomUtils().getTableHeader();
             }
@@ -4803,56 +5810,37 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
           this._setTableActionableMode(false);
             
           var table = this._getTableDomUtils().getTable();
-          var tabbableElementsInDocument = this._getTabbableElements($(document));
-          var tabbableElementsInDocumentCount = tabbableElementsInDocument.length;
           var tabbableElementsInTable = this._getTabbableElements(table);
           var tabbableElementsInTableCount = tabbableElementsInTable != null ? tabbableElementsInTable.length : 0;
-          var tableTabIndex = tabbableElementsInDocument.index(this._getTableDomUtils().getTable());
+          
+          // Table should not set focus to elements outside of itself because
+          // ancestor such as modal dialog may want to confine the focus.  It
+          // should just set focus to itself in backward tabbing or to its last
+          // tabbable descendant in forward tabbing.  Then allow the ancestors
+          // to handle the event and determine the next tabstop.
+          var temporaryFocus = table;
+          
           if (!event[this._KEYBOARD_CODES._KEYBOARD_MODIFIER_SHIFT])
           {
-            if (tableTabIndex != tabbableElementsInDocumentCount - 1 && 
-                tableTabIndex + tabbableElementsInTableCount + 1 <= tabbableElementsInDocumentCount - 1)
+            // If we are tabbing forward and the table contains tabbable 
+            // elements, focus on the last tabbable element.
+            if (tabbableElementsInTableCount > 0)
             {
-              $(tabbableElementsInDocument[tableTabIndex + tabbableElementsInTableCount + 1]).focus();
-            }
-            else
-            {
-              // Table is the last element or we've exceeded the tabbable
-              // elements in the document. Focus on the last tabbable element
-              // in the table and let the browser handle the tab.
-              if (tabbableElementsInTableCount > 0)
-              {
-                // Need to set this variable because the focus() call will
-                // trigger a focusin which we do not want to handle.
-                this._temporaryTableChildElementFocus = true;
-                tabbableElementsInTable[tabbableElementsInTableCount - 1].focus();
-                var self = this;
-                setTimeout(function()
-                {
-                  self._temporaryTableChildElementFocus = false;
-                }, 0);
-              }
-              return;
-            }
+              temporaryFocus = tabbableElementsInTable[tabbableElementsInTableCount - 1];
+            }            
           }
-          else if (tableTabIndex >= 0)
+
+          // Need to set this variable because the focus() call will
+          // trigger a focusin which we do not want to handle.
+          this._temporaryTableChildElementFocus = true;
+          temporaryFocus.focus();
+          var self = this;
+          setTimeout(function()
           {
-            if (tableTabIndex == 0)
-            {
-              // Table is the first element. Let the browser handle the tab.
-              return;
-            }
-            else
-            {
-              $(tabbableElementsInDocument[tableTabIndex - 1]).focus();
-            }
-          }
-          else
-          {
-            return;
-          }
-          event.preventDefault();
-          event.stopPropagation();
+            self._temporaryTableChildElementFocus = false;
+          }, 0);
+
+          return;
         }
         // we need to remove Tab on keydown because we may not
         // get a keyup for it if focus moves
@@ -4939,214 +5927,12 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
         }
       },
       /**
-       * Handler for End keyup.
-       * @param {Object} event
-       * @private
-       */
-      _handleKeyupEnd: function(event)
-      {
-        if (this._isTableActionableMode())
-        {
-          // ignore in actionable mode
-          return;
-        }
-        // pressing End focuses on last column
-        var focusedColumnIdx = this._getFocusedHeaderColumnIdx();
-
-        if (focusedColumnIdx != null &&
-          focusedColumnIdx != this._getColumnDefs().length - 1)
-        {
-          this._setHeaderColumnFocus(this._getColumnDefs().length - 1, true, false, null);
-        }
-        else if (!this._hasEditableRow())
-        {
-          var focusedRowIdx = this._getFocusedRowIdx();
-          var tableBodyRows = this._getTableDomUtils().getTableBodyRows();
-          var rowCount = tableBodyRows != null ? tableBodyRows.length : 0;
-
-          if (focusedRowIdx != null && focusedRowIdx != rowCount - 1 && rowCount > 0)
-          {
-            this._setRowFocus(rowCount - 1, true, true, null, event);
-          }
-        }
-      },
-      /**
-       * Handler for Enter keyup.
-       * @param {Object} event
-       * @private
-       */
-      _handleKeyupEnter: function(event)
-      {
-        if (this._isTableActionableMode())
-        {
-          // ignore in actionable mode
-          return;
-        }
-        // pressing enter does sort on the focused column header
-        var focusedColumnIdx = this._getFocusedHeaderColumnIdx();
-
-        if (focusedColumnIdx != null && this._getColumnDefs()[focusedColumnIdx]['sortable'] == this._OPTION_ENABLED)
-        {
-          var tableHeaderColumn = this._getTableDomUtils().getTableHeaderColumn(focusedColumnIdx);
-          var sorted = tableHeaderColumn.data('sorted');
-          // if not already sorted then sort ascending. If already sorted
-          // ascending then do descending sort and vice versa.
-          if (sorted == null || sorted == this._COLUMN_SORT_ORDER._DESCENDING)
-          {
-            this._handleSortTableHeaderColumn(focusedColumnIdx, true, event);
-          }
-          else
-          {
-            this._handleSortTableHeaderColumn(focusedColumnIdx, false, event);
-          }
-        }
-        else
-        {
-          var currentRow = this._getCurrentRow();
-          currentRow = currentRow || {};
-          var currentRowIdx = currentRow['rowIndex'];
-          
-          if (currentRowIdx >= 0)
-          {
-            var tableBodyRows = this._getTableDomUtils().getTableBodyRows();
-            var rowCount = tableBodyRows != null ? tableBodyRows.length : 0;
-            if (this._isTableEditMode())
-            {
-              if (!this._hasEditableRow())
-              {
-                this._setTableEditable(true, false, 0, true, event);
-                return;
-              }
-              var columnIdx = this._getTableDomUtils().getElementColumnIdx($(event.target));
-
-              if (!event[this._KEYBOARD_CODES._KEYBOARD_MODIFIER_SHIFT])
-              {
-                this._setNextRowEditable(columnIdx, event);
-              }
-              else
-              {
-                this._setPreviousRowEditable(columnIdx, event);
-              }
-            }
-            else
-            {
-              this._setTableActionableMode(true);
-            }
-          }
-        }
-      },
-      /**
-       * Handler for Esc keyup.
-       * @param {Object} event
-       * @private
-       */
-      _handleKeyupEsc: function(event)
-      {
-        // pressing Esc always returns focus back to the table.
-        event.preventDefault();
-        event.stopPropagation();
-        this._setTableEditable(false, true, 0, true, event);
-        this._getTableDomUtils().getTable().focus();
-        this._setTableActionableMode(false);
-      },
-      /**
-       * Handler for F2 keyup.
-       * @param {Object} event
-       * @private
-       */
-      _handleKeyupF2: function(event)
-      {
-        event.preventDefault();
-        event.stopPropagation();
-        if (this._isTableEditMode())
-        {
-          // pressing F2 toggles between editable modes.
-          if (!this._hasEditableRow())
-          {
-            this._setTableEditable(true, false, 0, true, event);
-          }
-          else
-          {
-            this._setTableEditable(false, false, 0, true, event);
-          }
-        }
-        else
-        {
-          if (this._isTableActionableMode())
-          {
-            this._setTableActionableMode(false);
-          }
-          else
-          {
-            this._setTableActionableMode(true);
-          }
-        }
-      },
-      /**
-       * Handler for Home keyup.
-       * @param {Object} event
-       * @private
-       */
-      _handleKeyupHome: function(event)
-      {
-        if (this._isTableActionableMode())
-        {
-          // ignore in actionable mode
-          return;
-        }
-        // pressing Home focuses on first column
-        var focusedColumnIdx = this._getFocusedHeaderColumnIdx();
-
-        if (focusedColumnIdx != null && focusedColumnIdx != 0)
-        {
-          this._setHeaderColumnFocus(0, true, false, null);
-        }
-        else if (!this._hasEditableRow())
-        {
-          var focusedRowIdx = this._getFocusedRowIdx();
-
-          if (focusedRowIdx != null && focusedRowIdx != 0)
-          {
-            this._setRowFocus(0, true, true, null, event);
-          }
-        }
-      },
-      /**
-       * Handler for Spacebar keyup.
-       * @param {Object} event
-       * @private
-       */
-      _handleKeyupSpacebar: function(event)
-      {
-        if (this._isTableActionableMode())
-        {
-          // ignore in actionable mode
-          return;
-        }
-        // pressing spacebar selects the focused row/column
-        var focusedRowIdx = this._getFocusedRowIdx();
-
-        if (focusedRowIdx != null)
-        {
-          this._setRowSelection(focusedRowIdx, !this._getRowSelection(focusedRowIdx), null, event, true);
-        }
-        else if (!this._hasEditableRow())
-        {
-          var focusedHeaderColumnIdx = this._getFocusedHeaderColumnIdx();
-          if (focusedHeaderColumnIdx != null)
-          {
-            this._clearSelectedRows();
-            this._setHeaderColumnSelection(focusedHeaderColumnIdx, !this._getHeaderColumnSelection(focusedHeaderColumnIdx), null, event, true);
-          }
-        }
-      },
-      /**
        * Callback handler mouse move for selection.
        * @private
        */
       _handleMouseEnterSelection: function(element)
       {
-        var rowIdx = this._getTableDomUtils().getElementRowIdx($(element));
+        var rowIdx = this._getTableDomUtils().getElementRowIdx(element);
         
         if (rowIdx != null && 
             this._mouseDownRowIdx != null && 
@@ -5197,9 +5983,8 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
        */
       _handleScrollerMaxRowCount: function()
       {
-        // TODO: use inline messaging framwork when ready
-        var errSummary = this._LOGGER_MSG._ERR_DOM_SCROLLER_MAX_COUNT_SUMMARY;
-        var errDetail = this._LOGGER_MSG._ERR_DOM_SCROLLER_MAX_COUNT_DETAIL;
+        var errSummary = this.getTranslatedString('msgScrollPolicyMaxCountSummary');
+        var errDetail = this.getTranslatedString('msgScrollPolicyMaxCountDetail');
         this._showInlineMessage(errSummary, errDetail, oj.Message.SEVERITY_LEVEL['WARNING']);
       },
      /**
@@ -5208,21 +5993,16 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
        */
       _handleScrollerScrollLeft: function(scrollLeft)
       {
-        var tableHeader = this._getTableDomUtils().getTableHeader();
-        var tableFooter = this._getTableDomUtils().getTableFooter();
-
-        if (!this._getTableDomUtils().isDivScroller())
-        {
           var tableHeaderRow = this._getTableDomUtils().getTableHeaderRow();
           if (tableHeaderRow)
           {
             if (this._GetReadingDirection() === "rtl")
             {
-              tableHeaderRow.css(oj.TableDomUtils.CSS_PROP._RIGHT, '-' + scrollLeft + oj.TableDomUtils.CSS_VAL._PX);
+            tableHeaderRow.style[oj.TableDomUtils.CSS_PROP._RIGHT] = '-' + scrollLeft + oj.TableDomUtils.CSS_VAL._PX;
             }
             else
             {
-              tableHeaderRow.css(oj.TableDomUtils.CSS_PROP._LEFT, '-' + scrollLeft + oj.TableDomUtils.CSS_VAL._PX);
+            tableHeaderRow.style[oj.TableDomUtils.CSS_PROP._LEFT] = '-' + scrollLeft + oj.TableDomUtils.CSS_VAL._PX;
             }
           }
 
@@ -5231,39 +6011,13 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
           {
             if (this._GetReadingDirection() === "rtl")
             {
-              tableFooterRow.css(oj.TableDomUtils.CSS_PROP._RIGHT, '-' + scrollLeft + oj.TableDomUtils.CSS_VAL._PX);
+            tableFooterRow.style[oj.TableDomUtils.CSS_PROP._RIGHT] = '-' + scrollLeft + oj.TableDomUtils.CSS_VAL._PX;
             }
             else
             {
-              tableFooterRow.css(oj.TableDomUtils.CSS_PROP._LEFT, '-' + scrollLeft + oj.TableDomUtils.CSS_VAL._PX);
+            tableFooterRow.style[oj.TableDomUtils.CSS_PROP._LEFT] = '-' + scrollLeft + oj.TableDomUtils.CSS_VAL._PX;
             }
           }
-        }
-        else
-        {
-          if (tableHeader)
-          {
-            if (this._GetReadingDirection() === "rtl")
-            {
-              tableHeader.css(oj.TableDomUtils.CSS_PROP._RIGHT, '-' + scrollLeft + oj.TableDomUtils.CSS_VAL._PX);
-            }
-            else
-            {
-              tableHeader.css(oj.TableDomUtils.CSS_PROP._LEFT, '-' + scrollLeft + oj.TableDomUtils.CSS_VAL._PX);
-            }
-          }
-          if (tableFooter)
-          {
-            if (this._GetReadingDirection() === "rtl")
-            {
-              tableFooter.css(oj.TableDomUtils.CSS_PROP._RIGHT, '-' + scrollLeft + oj.TableDomUtils.CSS_VAL._PX);
-            }
-            else
-            {
-              tableFooter.css(oj.TableDomUtils.CSS_PROP._LEFT, '-' + scrollLeft + oj.TableDomUtils.CSS_VAL._PX);
-            }
-          }
-        }
       },
       /**
        * Handler for column sort
@@ -5350,19 +6104,15 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
        */
       _hideInlineMessage: function()
       {
-        var inlineMessage = this._getTableDomUtils().getTableInlineMessage();
-        if (inlineMessage.css(oj.TableDomUtils.CSS_PROP._DISPLAY) != oj.TableDomUtils.CSS_VAL._NONE)
+        if (this._inlineMessageShown)
         {
-          var inlineMessageHeight = inlineMessage.outerHeight();
+        var inlineMessage = this._getTableDomUtils().getTableInlineMessage();
           var tableContainer = this._getTableDomUtils().getTableContainer();
-          var tableContainerBorderBottom = parseInt(tableContainer.css(oj.TableDomUtils.CSS_PROP._BORDER_BOTTOM_WIDTH), 10);
-          var tableContainerMarginBottom = parseInt(tableContainer.css(oj.TableDomUtils.CSS_PROP._MARGIN_BOTTOM), 10);
-          tableContainerMarginBottom = tableContainerMarginBottom - tableContainerBorderBottom - inlineMessageHeight;
-          tableContainer.css(oj.TableDomUtils.CSS_PROP._MARGIN_BOTTOM, tableContainerMarginBottom + oj.TableDomUtils.CSS_VAL._PX);
-          tableContainer.removeClass(oj.TableDomUtils.MARKER_STYLE_CLASSES._WARNING);
-          inlineMessage.removeClass(oj.TableDomUtils.MARKER_STYLE_CLASSES._WARNING);
-          inlineMessage.css(oj.TableDomUtils.CSS_PROP._BOTTOM, '');
-          inlineMessage.css(oj.TableDomUtils.CSS_PROP._DISPLAY, oj.TableDomUtils.CSS_VAL._NONE);
+          tableContainer.classList.remove(oj.TableDomUtils.MARKER_STYLE_CLASSES._WARNING);
+          inlineMessage.classList.remove(oj.TableDomUtils.MARKER_STYLE_CLASSES._WARNING);
+          inlineMessage.style[oj.TableDomUtils.CSS_PROP._BOTTOM] = '';
+          inlineMessage.style[oj.TableDomUtils.CSS_PROP._DISPLAY] = oj.TableDomUtils.CSS_VAL._NONE;
+          this._inlineMessageShown = false;
         }
       },
       /**
@@ -5371,9 +6121,13 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
        */
       _hideNoDataMessage: function()
       {
+        if (this._noDataMessageShown)
+        {
         var tableBodyMessageRow = this._getTableDomUtils().getTableBodyMessageRow();
         if (tableBodyMessageRow != null) {
-          tableBodyMessageRow.remove();
+            $(tableBodyMessageRow).remove();
+        }
+          this._noDataMessageShown = false;
         }
       },
       /**
@@ -5382,8 +6136,17 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
        */
       _hideStatusMessage: function()
       {
+        if (this._showStatusTimeout)
+        {
+          clearTimeout(this._showStatusTimeout);
+          this._showStatusTimeout = null;
+        }
+        if (this._statusMessageShown)
+        {
         var statusMessage = this._getTableDomUtils().getTableStatusMessage();
-        statusMessage.css(oj.TableDomUtils.CSS_PROP._DISPLAY, oj.TableDomUtils.CSS_VAL._NONE);
+          statusMessage.style[oj.TableDomUtils.CSS_PROP._DISPLAY] = oj.TableDomUtils.CSS_VAL._NONE;
+          this._statusMessageShown = false;
+        }
       },
       /**
        * Hide the column header sort link
@@ -5398,26 +6161,34 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
         {
           var tableHeaderColumn = this._getTableDomUtils().getTableHeaderColumn(columnIdx);
           // check if the column is currently sorted
-          var sorted = tableHeaderColumn.data('sorted');
+          var sorted = $(tableHeaderColumn).data('sorted');
 
           // we should only hide the ascending sort link if the column is not sorted or
           // is sorted by descending order
           if (ascending && (sorted == null || sorted == this._COLUMN_SORT_ORDER._DESCENDING))
           {
-            var headerColumnAscLink = tableHeaderColumn.find('.' + oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_ASC_LINK_CLASS);
-            headerColumnAscLink.addClass(oj.TableDomUtils.MARKER_STYLE_CLASSES._DISABLED);
-            headerColumnAscLink.removeClass(oj.TableDomUtils.MARKER_STYLE_CLASSES._ENABLED);
-            headerColumnAscLink.removeClass(oj.TableDomUtils.MARKER_STYLE_CLASSES._SELECTED);
+            var headerColumnAscLink = tableHeaderColumn.querySelectorAll('.' + oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_ASC_LINK_CLASS);
+            if (headerColumnAscLink.length > 0)
+            {
+              headerColumnAscLink = headerColumnAscLink[0];
+              headerColumnAscLink.classList.add(oj.TableDomUtils.MARKER_STYLE_CLASSES._DISABLED);
+              headerColumnAscLink.classList.remove(oj.TableDomUtils.MARKER_STYLE_CLASSES._ENABLED);
+              headerColumnAscLink.classList.remove(oj.TableDomUtils.MARKER_STYLE_CLASSES._SELECTED);
+          }
           }
           // we should only hide the descending sort link if the column is not sorted or
           // is sorted by ascending order
           else if (!ascending && (sorted == null || sorted == this._COLUMN_SORT_ORDER._ASCENDING))
           {
-            var headerColumnDscLink = tableHeaderColumn.find('.' + oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_DSC_LINK_CLASS);
-            headerColumnDscLink.addClass(oj.TableDomUtils.MARKER_STYLE_CLASSES._DISABLED);
-            headerColumnDscLink.removeClass(oj.TableDomUtils.MARKER_STYLE_CLASSES._ENABLED);
-            headerColumnDscLink.removeClass(oj.TableDomUtils.MARKER_STYLE_CLASSES._SELECTED);
+            var headerColumnDscLink = tableHeaderColumn.querySelectorAll('.' + oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_DSC_LINK_CLASS);
+            if (headerColumnDscLink.length > 0)
+            {
+              headerColumnDscLink = headerColumnDscLink[0];
+              headerColumnDscLink.classList.add(oj.TableDomUtils.MARKER_STYLE_CLASSES._DISABLED);
+              headerColumnDscLink.classList.remove(oj.TableDomUtils.MARKER_STYLE_CLASSES._ENABLED);
+              headerColumnDscLink.classList.remove(oj.TableDomUtils.MARKER_STYLE_CLASSES._SELECTED);
           }
+        }
         }
       },
       /**
@@ -5435,14 +6206,20 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
             ((data instanceof oj.PagingTableDataSource) && this._isLoadMoreOnScroll())))
         {
           // reset the scrollTop when we do an initial fetch
-          this._getTableDomUtils().getScroller()[0].scrollTop = 0;
+          this._getTableDomUtils().getScroller().scrollTop = 0;
 
           this._queueTask(function()
           {
             var result = self._invokeDataFetchRows(0, {'fetchType': 'init'});
-            self = null;
             
-            return result;
+            return result.then(function(){
+              // initialize a DomScroller if loadMoreOnScroll
+              if (self._isLoadMoreOnScroll())
+              {
+                self._registerDomScroller();
+              }
+              return Promise.resolve();
+            })
           });
         }
         else if (data == null)
@@ -5660,7 +6437,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
       },
       /**
        * Return whether the node is editable
-       * @param {jQuery} node  Node
+       * @param {Node} node  DOM Node
        * @return {boolean} true or false
        * @private
        */
@@ -5670,7 +6447,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
       },
       /**
        * Return whether the node is clickable
-       * @param {jQuery} node  Node
+       * @param {Node} node  DOM Node
        * @return {boolean} true or false
        * @private
        */
@@ -5680,17 +6457,17 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
       },
       /**
        * Return whether the node or any of its ancestors is draggable
-       * @param {jQuery} node  Node
+       * @param {Node} node  DOM Node
        * @return {boolean} true or false
        * @private
        */
       _isNodeDraggable: function(node)
       {
-        return (node.closest("[draggable='true']").length > 0);
+        return ($(node).closest("[draggable='true']").length > 0);
       },
       /**
        * Return whether the node is editable or clickable
-       * @param {jQuery} node  Node
+       * @param {Node} node  DOM Node
        * @param {Object} type regex
        * @return {boolean} true or false
        * @private
@@ -5700,18 +6477,18 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
         var nodeName;
         var table = this._getTableDomUtils().getTable();
 
-        while (null != node && node[0] != table[0] &&
-          (nodeName = node.prop("nodeName")) != "TD" && nodeName != "TH")
+        while (null != node && node != table &&
+          (nodeName = node['nodeName']) != oj.TableDomUtils.DOM_ELEMENT._TD && nodeName != oj.TableDomUtils.DOM_ELEMENT._TH)
         {
           // If the node is a text node, move up the hierarchy to only operate on elements
           // (on at least the mobile platforms, the node may be a text node)
-          if (node[0].nodeType == 3) // 3 is Node.TEXT_NODE
+          if (node.nodeType == 3) // 3 is Node.TEXT_NODE
           {
-            node = node[0].parentNode;
+            node = node.parentNode;
             continue;
           }
 
-          var tabIndex = node.attr(oj.TableDomUtils.DOM_ATTR._TABINDEX);
+          var tabIndex = node.getAttribute(oj.TableDomUtils.DOM_ATTR._TABINDEX);
 
           if (nodeName.match(type))
           {
@@ -5724,6 +6501,15 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
           node = node.parentNode;
         }
         return false;
+      },
+      /**
+       * Return whether the status message is shown
+       * @return {boolean} true or false
+       * @private
+       */
+      _isStatusMessageShown: function()
+      {
+        return this._statusMessageShown;
       },
       /**
        * Return whether the component is in table actionable mode
@@ -5845,8 +6631,47 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
         var i, columnsCount = columns.length;
         for (i = 0; i < columnsCount; i++)
         {
-          if (columns[i]['sortable'] != null &&
-              columns[i]['sortable'] != this._DISABLED)
+          if (columns[i]['sortable'] == this._OPTION_ENABLED)
+          {
+            return true;
+          }
+        }
+
+        return false;
+      },
+      /**
+       * Returns whether any of the table columns are resizable
+       * @return {boolean} true or false
+       * @private
+       */
+      _isTableColumnsResizable: function()
+      {
+        var columns = this._getColumnDefs();
+
+        var i, columnsCount = columns.length;
+        for (i = 0; i < columnsCount; i++)
+        {
+          if (columns[i]['resizable'] == this._OPTION_ENABLED)
+          {
+            return true;
+          }
+        }
+
+        return false;
+      },
+      /**
+       * Returns whether any of the table columns have width specified
+       * @return {boolean} true or false
+       * @private
+       */
+      _isTableColumnsWidthSet: function()
+      {
+        var columns = this._getColumnDefs();
+
+        var i, columnsCount = columns.length;
+        for (i = 0; i < columnsCount; i++)
+        {
+          if (columns[i]['width'] !== null)
           {
             return true;
           }
@@ -5869,6 +6694,48 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
           }
         }
         return this._isTouch;
+      },
+      /**
+       * Process any slotted children and move them into the correct location
+       * @private
+       */
+      _processSlottedChildren: function()
+      {
+        var tableBottomSlot = this._getTableDomUtils().getTableBottomSlot();
+        
+        if (tableBottomSlot != null)
+        {
+          // clear the existing bottom slot
+          $(tableBottomSlot).remove();
+        }
+        var slotMap = oj.CustomElementBridge.getSlotMap(this._getRootElement());
+        
+        for (var slot in slotMap) 
+        {
+          if (slotMap.hasOwnProperty(slot) && slot.length > 0) 
+          {
+            if (slot != "bottom" && slot != "contextMenu")
+            {
+              // silently remove as per custom component slot behavior
+              $(slotMap[slot]).remove();
+            }
+
+            if (slot === "bottom")
+            {
+              var slotElements = slotMap[slot];
+
+              if (slotElements != null)
+              {
+                tableBottomSlot = this._getTableDomUtils().createTableBottomSlot();
+                var i;
+                for (i = 0; i < slotElements.length; i++)
+                {
+                  tableBottomSlot.appendChild(slotElements[i]);
+                }
+              }
+            }
+          }
+        }
       },
       /**
        * @param {Object} resultObject Object containing data array, key array, and index array
@@ -5951,32 +6818,56 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
           return;
         }
 
-        var sorted = tableHeaderColumn.data('sorted');
+        var sorted = $(tableHeaderColumn).data('sorted');
 
         if (ascending && sorted != this._COLUMN_SORT_ORDER._ASCENDING)
         {
           // store sort order on the DOM element
-          tableHeaderColumn.data('sorted', this._COLUMN_SORT_ORDER._ASCENDING);
-          var headerColumnAscLink = tableHeaderColumn.find('.' + oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_ASC_LINK_CLASS);
-          headerColumnAscLink.addClass(oj.TableDomUtils.MARKER_STYLE_CLASSES._ENABLED);
-          headerColumnAscLink.removeClass(oj.TableDomUtils.MARKER_STYLE_CLASSES._DISABLED);
-          var headerColumnAsc = tableHeaderColumn.find('.' + oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_ASC_CLASS);
-          headerColumnAsc.removeClass(oj.TableDomUtils.MARKER_STYLE_CLASSES._DISABLED);
-          var headerColumnDsc = tableHeaderColumn.find('.' + oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_DSC_CLASS);
-          headerColumnDsc.addClass(oj.TableDomUtils.MARKER_STYLE_CLASSES._DISABLED);
+          $(tableHeaderColumn).data('sorted', this._COLUMN_SORT_ORDER._ASCENDING);
+          var headerColumnAscLink = tableHeaderColumn.querySelectorAll('.' + oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_ASC_LINK_CLASS);
+          if (headerColumnAscLink.length > 0)
+          {
+            headerColumnAscLink = headerColumnAscLink[0];
+            headerColumnAscLink.classList.add(oj.TableDomUtils.MARKER_STYLE_CLASSES._ENABLED);
+            headerColumnAscLink.classList.remove(oj.TableDomUtils.MARKER_STYLE_CLASSES._DISABLED);
+          }
+          var headerColumnAsc = tableHeaderColumn.querySelectorAll('.' + oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_ASC_CLASS);
+          if (headerColumnAsc.length > 0)
+          {
+            headerColumnAsc = headerColumnAsc[0];
+            headerColumnAsc.classList.remove(oj.TableDomUtils.MARKER_STYLE_CLASSES._DISABLED);
+          }
+          var headerColumnDsc = tableHeaderColumn.querySelectorAll('.' + oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_DSC_CLASS);
+          if (headerColumnDsc.length > 0)
+          {
+            headerColumnDsc = headerColumnDsc[0];
+            headerColumnDsc.classList.add(oj.TableDomUtils.MARKER_STYLE_CLASSES._DISABLED);
+          }
           this._hideTableHeaderColumnSortLink(columnIdx, !ascending);
         }
         else if (!ascending && sorted != this._COLUMN_SORT_ORDER._DESCENDING)
         {
           // store sort order on the DOM element
-          tableHeaderColumn.data('sorted', this._COLUMN_SORT_ORDER._DESCENDING);
-          var headerColumnDscLink = tableHeaderColumn.find('.' + oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_DSC_LINK_CLASS);
-          headerColumnDscLink.addClass(oj.TableDomUtils.MARKER_STYLE_CLASSES._ENABLED);
-          headerColumnDscLink.removeClass(oj.TableDomUtils.MARKER_STYLE_CLASSES._DISABLED);
-          var headerColumnDsc = tableHeaderColumn.find('.' + oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_DSC_CLASS);
-          headerColumnDsc.removeClass(oj.TableDomUtils.MARKER_STYLE_CLASSES._DISABLED);
-          var headerColumnAsc = tableHeaderColumn.find('.' + oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_ASC_CLASS);
-          headerColumnAsc.addClass(oj.TableDomUtils.MARKER_STYLE_CLASSES._DISABLED);
+          $(tableHeaderColumn).data('sorted', this._COLUMN_SORT_ORDER._DESCENDING);
+          var headerColumnDscLink = tableHeaderColumn.querySelectorAll('.' + oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_DSC_LINK_CLASS);
+          if (headerColumnDscLink.length > 0)
+          {
+            headerColumnDscLink = headerColumnDscLink[0];
+            headerColumnDscLink.classList.add(oj.TableDomUtils.MARKER_STYLE_CLASSES._ENABLED);
+            headerColumnDscLink.classList.remove(oj.TableDomUtils.MARKER_STYLE_CLASSES._DISABLED);
+        }
+          var headerColumnDsc = tableHeaderColumn.querySelectorAll('.' + oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_DSC_CLASS);
+          if (headerColumnDsc.length > 0)
+          {
+            headerColumnDsc = headerColumnDsc[0];
+            headerColumnDsc.classList.remove(oj.TableDomUtils.MARKER_STYLE_CLASSES._DISABLED);
+          }
+          var headerColumnAsc = tableHeaderColumn.querySelectorAll('.' + oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_ASC_CLASS);
+          if (headerColumnAsc.length > 0)
+          {
+            headerColumnAsc = headerColumnAsc[0];
+            headerColumnAsc.classList.add(oj.TableDomUtils.MARKER_STYLE_CLASSES._DISABLED);
+          }
         }
       },
       /**
@@ -5997,7 +6888,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
         }
 
         var rows = this._getRowIdxRowArray(resultObject, startIndex);
-        var checkFocus = $.contains(tableBody[0], document.activeElement);
+        var checkFocus = $.contains(tableBody, document.activeElement);
         var tableBodyRows, tableBodyRow, resetFocus = false;
 
         if (startIndex == 0)
@@ -6010,7 +6901,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
         }
         else
         {
-          tableBodyRows = tableBody.children();
+          tableBodyRows = this._getTableDomUtils().getTableBodyRows();
           if (tableBodyRows != null && tableBodyRows.length > 0)
           {
             var i, tableBodyRowsCount = tableBodyRows.length;
@@ -6021,7 +6912,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
                 tableBodyRow = this._getTableDomUtils().getTableBodyRow(i);
 
                 if (tableBodyRow != null &&
-                    $.contains(tableBodyRow[0], document.activeElement))
+                    $.contains(tableBodyRow, document.activeElement))
                 {
                   resetFocus = true;
                   checkFocus = false;
@@ -6038,7 +6929,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
         }
         this._getTableDomUtils().clearCachedDomRowData();
         this._hideNoDataMessage();
-        tableBodyRows = tableBody.children();
+        tableBodyRows = tableBody.children;
 
         // if no data then bail
         if (rows.length == 0 && (tableBodyRows == null || tableBodyRows.length == 0))
@@ -6047,7 +6938,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
         }
         else
         {
-          var tableBodyDocFrag = $(document.createDocumentFragment());
+          var tableBodyDocFrag = document.createDocumentFragment();
           var i, row, rowIdx, rowsCount = rows.length;
           for (i = 0; i < rowsCount; i++)
           {
@@ -6061,7 +6952,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
               this._refreshTableBodyRow(rowIdx, row, tableBodyRow, tableBodyDocFrag, startIndex, true);
             }
           }
-          tableBody.append(tableBodyDocFrag); //@HTMLUpdateOK
+          tableBody.appendChild(tableBodyDocFrag); //@HTMLUpdateOK
           this._getTableDomUtils().clearCachedDomRowData();
           // only bother calling subtree attached if there are potentially
           // components in our rows
@@ -6070,7 +6961,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
             // Re-size the table before calling subtree attached. subtreeAttached is a
             // potentially expensive call so we want table to be laid out before it.
             this._getTableDomUtils().refreshTableDimensions(null, null, resetScrollTop, resetScrollLeft);
-            oj.Components.subtreeAttached(tableBody[0]);
+            oj.Components.subtreeAttached(tableBody);
           }
         }
       },
@@ -6082,6 +6973,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
        * @param {Object} docFrag  document fragment
        * @param {number} docFragStartIdx  document fragment row start index
        * @param {boolean} isNew is new row
+       * @return {Element|null} tableBodyRow  DOM element
        * @private
        */
       _refreshTableBodyRow: function(rowIdx, row, tableBodyRow, docFrag, docFragStartIdx, isNew)
@@ -6106,11 +6998,11 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
           if (!tableBodyRow)
           {
             // if not return
-            return;
+            return null;
           }
           else
           {
-            tableBodyRow.empty();
+            $(tableBodyRow).empty();
             isNew = true;
             this._getTableDomUtils().createTableBodyCellAccSelect(rowIdx, row[this._CONST_KEY], rowHashCode, tableBodyRow, isNew);
           }
@@ -6120,7 +7012,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
         
         var currentRow = this._getCurrentRow();
         currentRow = currentRow || {};
-        var rowContext = oj.TableRendererUtils.getRendererContextObject(this, tableBodyRow[0], 
+        var rowContext = oj.TableRendererUtils.getRendererContextObject(this, tableBodyRow, 
                                                                         {'row': row, 'isCurrentRow': currentRow['rowIndex'] == rowIdx});
         // Copy additional properties to top-level context to work with custom element
         var context = {'rowContext': rowContext,
@@ -6138,7 +7030,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
           {
             // if the renderer returned a value then we set it as the content
             // for the row
-            tableBodyRow.append(rowContent); //@HTMLUpdateOK
+            tableBodyRow.appendChild(rowContent); //@HTMLUpdateOK
           }
           else
           {
@@ -6148,12 +7040,14 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
             // got removed
             if (docFrag == null)
             {
-              tableBodyRow = $(tableBody.children()[rowIdx]);
+              tableBodyRow = tableBody.children[rowIdx];
             }
             else
             {
               docFragStartIdx = docFragStartIdx == null ? 0 : docFragStartIdx;
-              tableBodyRow = $(docFrag.children()[rowIdx - docFragStartIdx]);
+              // use jquery children() because documentFragments do not have
+              // good browser support for .children
+              tableBodyRow = $(docFrag).children()[rowIdx - docFragStartIdx];
             }
             this._getTableDomUtils().clearCachedDomRowData();
             this._getTableDomUtils().setTableBodyRowAttributes(row, tableBodyRow);
@@ -6163,11 +7057,11 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
 
           // set the cell attributes and styling. Skip the 1st one
           // because it's the acc row select td
-          var tableBodyCells = tableBodyRow.children(oj.TableDomUtils.DOM_ELEMENT._TD);
+          var tableBodyCells = tableBodyRow.getElementsByTagName(oj.TableDomUtils.DOM_ELEMENT._TD);
           var i, tableBodyCellsCount = tableBodyCells.length;
           for (i = 1; i < tableBodyCellsCount; i++)
           {
-            var tableBodyCell = $(tableBodyCells[i]);
+            var tableBodyCell = tableBodyCells[i];
             this._getTableDomUtils().setTableBodyCellAttributes(rowIdx, row[this._CONST_KEY], rowHashCode, i - 1, tableBodyCell);
             this._getTableDomUtils().styleTableBodyCell(i - 1, tableBodyCell, false);
           }
@@ -6180,10 +7074,10 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
             {
               if (this._columnsDestMap[i] > i)
               {
-                moveTableBodyCell = $(tableBodyCells[this._columnsDestMap[i] + 1]);
-                swapTableBodyCell = $(tableBodyCells[i + 1]);
-                moveTableBodyCell[0].parentNode.insertBefore(moveTableBodyCell[0], swapTableBodyCell[0]); //@HTMLUpdateOK
-                tableBodyCells = tableBodyRow.children(oj.TableDomUtils.DOM_ELEMENT._TD);
+                moveTableBodyCell = tableBodyCells[this._columnsDestMap[i] + 1];
+                swapTableBodyCell = tableBodyCells[i + 1];
+                moveTableBodyCell.parentNode.insertBefore(moveTableBodyCell, swapTableBodyCell); //@HTMLUpdateOK
+                tableBodyCells = tableBodyRow.getElementsByTagName(oj.TableDomUtils.DOM_ELEMENT._TD);
               }
             }
           }
@@ -6192,6 +7086,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
         {
           oj.TableRendererUtils.tableBodyRowDefaultRenderer(this, rowIdx, row, context);
         }
+        return tableBodyRow;
       },
       /**
        * Refresh the table footer
@@ -6218,7 +7113,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
 
         var tableFooterRow = this._getTableDomUtils().getTableFooterRow();
         // remove all the existing footer cells
-        tableFooterRow.empty();
+        $(tableFooterRow).empty();
 
         if (columns && columns.length > 0)
         {
@@ -6236,7 +7131,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
             if (footerRenderer)
             {
               // if footerRenderer is defined then call that
-              var footerContext = oj.TableRendererUtils.getRendererContextObject(this, footerCell[0], {});
+              var footerContext = oj.TableRendererUtils.getRendererContextObject(this, footerCell, {});
               // Copy additional properties to top-level context to work with custom element
               var context = {'footerContext': footerContext,
                              'columnIndex': i,
@@ -6249,7 +7144,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
                 // if the renderer returned a value then we set it as the content
                 // for the footer cell
                 footerCell.empty();
-                footerCell.append(footerCellContent); //@HTMLUpdateOK
+                footerCell.appendChild(footerCellContent); //@HTMLUpdateOK
               }
               else
               {
@@ -6257,7 +7152,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
                 // footer cell was manipulated. So get it and set the required
                 // attributes just in case it was replaced or the attributes
                 // got removed
-                footerCell = $(tableFooterRow.children(':not(.' + oj.TableDomUtils.CSS_CLASSES._HIDDEN_CONTENT_ACC_CLASS + ')')[i]);
+                footerCell = $(tableFooterRow).children(':not(.' + oj.TableDomUtils.CSS_CLASSES._HIDDEN_CONTENT_ACC_CLASS + ')')[i];
                 this._getTableDomUtils().styleTableFooterCell(i, footerCell, this._getColumnSelectionMode());
               }
             }
@@ -6291,12 +7186,12 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
         var tableHeaderRow = this._getTableDomUtils().getTableHeaderRow();
         this._unregisterChildStateListeners(tableHeaderRow);
         // remove all the existing column headers
-        tableHeaderRow.empty();
+        $(tableHeaderRow).empty();
 
         if (columns && columns.length > 0)
         {
           var tableHeaderAccSelectRowColumn = this._getTableDomUtils().createTableHeaderAccSelectRowColumn();
-          tableHeaderRow.append(tableHeaderAccSelectRowColumn); //@HTMLUpdateOK
+          tableHeaderRow.appendChild(tableHeaderAccSelectRowColumn); //@HTMLUpdateOK
 
           var i, j, column, headerRenderer, headerColumn, headerColumnContent, headerContext, context, columnsCount = columns.length;
           for (i = 0; i < columnsCount; i++)
@@ -6308,7 +7203,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
             if (headerRenderer)
             {
               // if headerRenderer is defined then call that
-              headerContext = oj.TableRendererUtils.getRendererContextObject(this, headerColumn[0], {});
+              headerContext = oj.TableRendererUtils.getRendererContextObject(this, headerColumn, {});
               // Copy additional properties to top-level context to work with custom element
               context = {'headerContext': headerContext,
                          'columnIndex': i,
@@ -6337,8 +7232,12 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
               {
                 // if the renderer returned a value then we set it as the content
                 // for the headerColumn
-                headerColumn.empty();
-                headerColumn.append(headerColumnContent); //@HTMLUpdateOK
+                $(headerColumn).empty();
+                // Use jquery append() for this as a convenience because 
+                // headerColumnContent could be a Node element or arbitrary content and 
+                // we don't want to write code to convert everything to Node type and call 
+                // appendChild.
+                $(headerColumn).append(headerColumnContent); //@HTMLUpdateOK
               }
               else
               {
@@ -6346,7 +7245,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
                 // headerColumn was manipulated. So get it and set the required
                 // attributes just in case it was replaced or the attributes
                 // got removed
-                headerColumn = $(tableHeaderRow.children(':not(' + '.' + oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_ACC_SELECT_ROW_CLASS + ')')[i]);
+                headerColumn = $(tableHeaderRow).children(':not(' + '.' + oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_ACC_SELECT_ROW_CLASS + ')')[i];
                 this._getTableDomUtils().setTableHeaderColumnAttributes(i, headerColumn);
                 this._getTableDomUtils().styleTableHeaderColumn(i, headerColumn, this._getColumnSelectionMode(), false);
               }
@@ -6368,7 +7267,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
 
         if (tableStatusMessage != null)
         {
-          tableStatusMessage.remove();
+          $(tableStatusMessage).remove();
         }
         this._getTableDomUtils().createTableStatusMessage();
       },
@@ -6450,7 +7349,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
         if (this._getTableDomUtils().getScroller() != null)
         {
           // if width or height is defined then we can have scrollbars so register scroll event listeners
-          this._getTableDomUtils().getScroller().scroll((function(event) {
+          $(this._getTableDomUtils().getScroller()).scroll((function(event) {
             this._handleScrollerScrollLeft(this._getTableDomUtils().getScrollLeft(event.target));
           }).bind(this));
         }
@@ -6477,8 +7376,15 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
               self._handleScrollerMaxRowCount();
             }
           }
-        };
-        this._domScroller = new oj.DomScroller(this._getTableDomUtils().getScroller(), this._getData(), {'fetchSize' : this.options['scrollPolicyOptions']['fetchSize'], 'maxCount' : this.options['scrollPolicyOptions']['maxCount'], 'success': this._domScrollerMaxCountFunc});
+        };        
+        var tableBodyRows = this._getTableDomUtils().getTableBodyRows();
+        var rowCount = tableBodyRows != null ? tableBodyRows.length : 0;
+        this._domScroller = new oj.DomScroller(this._getTableDomUtils().getScroller(),
+          this._getData(),
+          {'fetchSize': this.options['scrollPolicyOptions']['fetchSize'],
+            'maxCount': this.options['scrollPolicyOptions']['maxCount'],
+            'initialRowCount': rowCount,
+            'success': this._domScrollerMaxCountFunc});
       },
       /**
        * Register event listeners for resize the container DOM element.
@@ -6492,14 +7398,17 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
           var self = this;
           this._resizeListener = function(width, height)
                                  {
-                                   var tableContainerHeight = self._getTableDomUtils().getTableContainer().outerHeight();
-                                   var tableContainerWidth = self._getTableDomUtils().getTableContainer().outerWidth();
+                                   if (oj.Context.getContext(self.element[0]).getBusyContext().isReady())
+                                   {
+                                     var tableContainerHeight = $(self._getTableDomUtils().getTableContainer()).outerHeight();
+                                     var tableContainerWidth = $(self._getTableDomUtils().getTableContainer()).outerWidth();
                                    self._getTableDomUtils().refreshTableDimensions(tableContainerWidth, tableContainerHeight);
+                                   }
                                  };
         }
         if (!this._isResizeListenerAdded)
         {
-          oj.DomUtils.addResizeListener(element[0], this._resizeListener, 50);
+          oj.DomUtils.addResizeListener(element, this._resizeListener, 50);
           this._isResizeListenerAdded = true;
         }
       },
@@ -6536,8 +7445,8 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
         }
 
         var scrollbarWidth = this._getTableDomUtils().getScrollbarWidth();
-        var headerColumnRect = tableHeaderColumn.get(0).getBoundingClientRect();
-        var tableBodyRect = tableBody.get(0).getBoundingClientRect();
+        var headerColumnRect = tableHeaderColumn.getBoundingClientRect();
+        var tableBodyRect = tableBody.getBoundingClientRect();
 
         var scrolledLeft = false;
 
@@ -6550,7 +7459,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
             {
               scrollLeftDiff = -1 * scrollLeftDiff;
             }
-            tableBody.scrollLeft(tableBody.scrollLeft() + scrollLeftDiff);
+            $(tableBody).scrollLeft($(tableBody).scrollLeft() + scrollLeftDiff);
             scrolledLeft = true;
           }
 
@@ -6561,7 +7470,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
             {
               scrollLeftDiff = -1 * scrollLeftDiff;
             }
-            tableBody.scrollLeft(tableBody.scrollLeft() - scrollLeftDiff);
+            $(tableBody).scrollLeft($(tableBody).scrollLeft() - scrollLeftDiff);
           }
         }
         else
@@ -6569,14 +7478,14 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
           if (headerColumnRect.left < tableBodyRect.left)
           {
             var scrollLeftDiff = tableBodyRect.left - headerColumnRect.left;
-            tableBody.scrollLeft(tableBody.scrollLeft() - scrollLeftDiff);
+            $(tableBody).scrollLeft($(tableBody).scrollLeft() - scrollLeftDiff);
             scrolledLeft = true;
           }
 
           if (headerColumnRect.right > tableBodyRect.right - scrollbarWidth && !scrolledLeft)
           {
             var scrollLeftDiff = headerColumnRect.right - tableBodyRect.right + scrollbarWidth;
-            tableBody.scrollLeft(tableBody.scrollLeft() + scrollLeftDiff);
+            $(tableBody).scrollLeft($(tableBody).scrollLeft() + scrollLeftDiff);
           }
         }
       },
@@ -6590,22 +7499,22 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
 
         var tableBodyRow = this._getTableDomUtils().getTableBodyRow(rowIdx);
         var scrollbarHeight = this._getTableDomUtils().getScrollbarHeight();
-        var rowRect = tableBodyRow.get(0).getBoundingClientRect();
+        var rowRect = tableBodyRow.getBoundingClientRect();
         var scrollingElement = this._getTableDomUtils().getScroller();
-        var scrollingElementRect = scrollingElement.get(0).getBoundingClientRect();
+        var scrollingElementRect = scrollingElement.getBoundingClientRect();
 
         var scrolledDown = false;
         if (rowRect.bottom > scrollingElementRect.bottom - scrollbarHeight)
         {
           var scrollTopDiff = rowRect.bottom - scrollingElementRect.bottom + scrollbarHeight;
-          scrollingElement.scrollTop(scrollingElement.scrollTop() + scrollTopDiff);
+          $(scrollingElement).scrollTop($(scrollingElement).scrollTop() + scrollTopDiff);
           scrolledDown = true;
         }
 
         if (rowRect.top < scrollingElementRect.top && !scrolledDown)
         {
           var scrollTopDiff = scrollingElementRect.top - rowRect.top;
-          scrollingElement.scrollTop(scrollingElement.scrollTop() - scrollTopDiff);
+          $(scrollingElement).scrollTop($(scrollingElement).scrollTop() - scrollTopDiff);
         }
 
       },
@@ -6667,7 +7576,15 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
               {
                 var focusRowIdx = existingCurrentRowIdx;
                 var focusColumnIdx = columnIdx;
+                if (focusRowIdx != null &&
+                  focusColumnIdx != null)
+                {
                 setTimeout(function(){self._setCellFocus(focusRowIdx, focusColumnIdx)}, 0);
+                }
+                else if (focusRowIdx != null)
+                {
+                  setTimeout(function(){self._setRowFocus(focusRowIdx, true, false, null, null)}, 0);
+                }
               });
               
               // do not update the currentRow to the new value if updateEditable returned false
@@ -6685,7 +7602,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
 
             if (tableBodyRow != null)
             {
-              tableBodyRow.removeClass(oj.TableDomUtils.CSS_CLASSES._TABLE_DATA_CURRENT_ROW_CLASS);
+              tableBodyRow.classList.remove(oj.TableDomUtils.CSS_CLASSES._TABLE_DATA_CURRENT_ROW_CLASS);
             }
           }
 
@@ -6775,7 +7692,15 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
             {
               var focusRowIdx = existingCurrentRowIdx;
               var focusColumnIdx = columnIdx;
-              setTimeout(function(){self._setCellFocus(focusRowIdx, focusColumnIdx)}, 0);
+              if (focusRowIdx != null &&
+                  focusColumnIdx != null)
+              {
+                setTimeout(function(){self._setCellFocus(focusRowIdx, focusColumnIdx)}, 0);
+              }
+              else if (focusRowIdx != null)
+              {
+                setTimeout(function(){self._setRowFocus(focusRowIdx, true, false, null, null)}, 0);
+              }
             });
 
             // do not update the currentRow to the new value if updateEditable returned false
@@ -6787,7 +7712,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
 
           if (tableBodyRow != null)
           {
-            tableBodyRow.addClass(oj.TableDomUtils.CSS_CLASSES._TABLE_DATA_CURRENT_ROW_CLASS);
+            tableBodyRow.classList.add(oj.TableDomUtils.CSS_CLASSES._TABLE_DATA_CURRENT_ROW_CLASS);
           }
           if (existingCurrentRow != null)
           {
@@ -6795,7 +7720,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
 
             if (tableBodyRow != null)
             {
-              tableBodyRow.removeClass(oj.TableDomUtils.CSS_CLASSES._TABLE_DATA_CURRENT_ROW_CLASS);
+              tableBodyRow.classList.remove(oj.TableDomUtils.CSS_CLASSES._TABLE_DATA_CURRENT_ROW_CLASS);
             }
           }
         }
@@ -6833,19 +7758,26 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
       _setCellFocus: function(rowIdx, columnIdx)
       {
         var tableBodyCell = this._getTableDomUtils().getTableBodyCell(rowIdx, columnIdx);
+        
+        if (!tableBodyCell)
+        {
+          return false;
+        }
         var self = this;
         var focused = false;
-        tableBodyCell.find('*').each(function()
+        var elements = tableBodyCell.querySelectorAll('*');
+        var i;
+        for (i = 0; i < elements.length; i++)
         {
           if (!focused)
           {
-            if ($(this).is(':focusable'))
+            if ($(elements[i]).is(':focusable'))
             {
-              this.focus();
-              focused = $(this).is(':focus');
+              $(elements[i]).focus();
+              focused = $(elements[i]).is(':focus') || elements[i] == document.activeElement;
             }
           }
-        });
+        }
         return focused;
       },
       /**
@@ -6925,6 +7857,24 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
         this._editableRowIdx = rowIdx;
       },
       /**
+       * Set the focus in handler
+       * @param {Function} focusHandler focus in handler
+       * @private
+       */
+      _setFocusInHandler: function(focusHandler)
+      {
+        this._focusInHandler = focusHandler;
+      },
+      /**
+       * Set the focus out handler
+       * @param {Function} focusHandler focus out handler
+       * @private
+       */
+      _setFocusOutHandler: function(focusHandler)
+      {
+        this._focusOutHandler = focusHandler;
+      },
+      /**
        * Set focus on column header
        * @param {number} columnIdx  column index
        * @param {boolean} focused  whether it's focused
@@ -6938,7 +7888,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
 
         if (event != null)
         {
-          element = event.currentTarget;
+          element = this._getEventTargetElement(event);
         }
 
         if (focused)
@@ -6966,7 +7916,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
        * Set selection on column header
        * @param {number} columnIdx  column index
        * @param {boolean} selected  whether it's focused
-       * @param {jQuery} element  DOM element which triggered the column header selection
+       * @param {Element} element  DOM element which triggered the column header selection
        * @param {Object} event
        * @param {boolean} updateSelection  whether to update the selection
        * @private
@@ -6993,22 +7943,21 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
 
           // update the acc checkbox
           var accSelectionColumn = this._getTableDomUtils().getTableHeaderColumnAccSelect(columnIdx);
-          var accSelectCheckbox = $(accSelectionColumn.children('.' + oj.TableDomUtils.CSS_CLASSES._CHECKBOX_ACC_SELECT_COLUMN_CLASS)[0]);
-          accSelectCheckbox.prop('checked', selected);
-
-          if (updateSelection)
-          {
-            var selection = this._getSelection();
-            var existingSelection = this['options']['selection'];
-            this.option('selection', selection, {'_context': {writeback: true, internalSet: true}});
-          }
+          var accSelectCheckbox = accSelectionColumn.getElementsByClassName(oj.TableDomUtils.CSS_CLASSES._CHECKBOX_ACC_SELECT_COLUMN_CLASS)[0];
+          accSelectCheckbox['checked'] = selected;
+        }
+        if (updateSelection)
+        {
+          var selection = this._getSelection();
+          var existingSelection = this['options']['selection'];
+          this.option('selection', selection, {'_context': {writeback: true, internalSet: true}});
         }
       },
       /**
        * Set the state of the column header. e.g., focused, selected, etc.
        * @param {number} columnIdx  column index
        * @param {Object} state  Object which contains whether it's focused or selected
-       * @param {jQuery} element  DOM element which triggered the column header state
+       * @param {Element} element  DOM element which triggered the column header state
        * @param {Object} event
        * @private
        */
@@ -7026,17 +7975,17 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
 
         if (selected != null)
         {
-          var headerColumnSelected = headerColumn.hasClass(oj.TableDomUtils.MARKER_STYLE_CLASSES._SELECTED);
+          var headerColumnSelected = headerColumn.classList.contains(oj.TableDomUtils.MARKER_STYLE_CLASSES._SELECTED);
 
           if (headerColumnSelected != selected)
           {
             if (!selected)
             {
-              headerColumn.removeClass(oj.TableDomUtils.MARKER_STYLE_CLASSES._SELECTED);
+              headerColumn.classList.remove(oj.TableDomUtils.MARKER_STYLE_CLASSES._SELECTED);
             }
             else
             {
-              headerColumn.addClass(oj.TableDomUtils.MARKER_STYLE_CLASSES._SELECTED);
+              headerColumn.classList.add(oj.TableDomUtils.MARKER_STYLE_CLASSES._SELECTED);
             }
           }
         }
@@ -7044,13 +7993,13 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
         {
           if (!focused)
           {
-            headerColumn.removeClass(oj.TableDomUtils.MARKER_STYLE_CLASSES._FOCUS);
+            this._focusOutHandler($(headerColumn));
             this._hideTableHeaderColumnSortLink(columnIdx, true);
             this._hideTableHeaderColumnSortLink(columnIdx, false);
           }
           else
           {
-            headerColumn.addClass(oj.TableDomUtils.MARKER_STYLE_CLASSES._FOCUS);
+            this._focusInHandler($(headerColumn));
             this._showTableHeaderColumnSortLink(columnIdx);
           }
         }
@@ -7165,7 +8114,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
        * @param {number} rowIdx  row index
        * @param {boolean} focused  whether it's focused
        * @param {boolean} updateCurrentRow  whether to update the currentRow
-       * @param {jQuery} element  DOM element which triggered the row focus
+       * @param {Element} element  DOM element which triggered the row focus
        * @param {Object} event
        * @return {boolean} whether setting the row focus was successful
        * @private
@@ -7215,8 +8164,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
               return false;
             }
           }
-
-          tableBodyRow.addClass(oj.TableDomUtils.MARKER_STYLE_CLASSES._FOCUS);
+          this._focusInHandler($(tableBodyRow));
           this._scrollRowIntoViewport(rowIdx);
           // clear any hover on the row
           this._updateRowStateCellsClass(rowIdx, {focused: true, hover: false});
@@ -7229,10 +8177,10 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
         }
         else
         {
-          tableBodyRow.removeClass(oj.TableDomUtils.MARKER_STYLE_CLASSES._FOCUS);
+          this._focusOutHandler($(tableBodyRow));
+          // update focus style for the cells
+          this._updateRowStateCellsClass(rowIdx, {focused: false});
         }
-        // update focus style for the cells
-        this._updateRowStateCellsClass(rowIdx, {focused: focused});
         
         return true;
       },
@@ -7240,7 +8188,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
        * Set selection on row
        * @param {number} rowIdx  column index
        * @param {boolean} selected  whether it's selected
-       * @param {jQuery} element  DOM element which triggered the row selection
+       * @param {Element} element  DOM element which triggered the row selection
        * @param {Object} event
        * @param {boolean} updateSelection  whether to update the selection
        * @private
@@ -7266,17 +8214,17 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
           if (tableBodyRow != null)
           {
             var selectionChanged = false;
-            var rowSelected = tableBodyRow.hasClass(oj.TableDomUtils.MARKER_STYLE_CLASSES._SELECTED);
+            var rowSelected = tableBodyRow.classList.contains(oj.TableDomUtils.MARKER_STYLE_CLASSES._SELECTED);
 
             if (rowSelected != selected)
             {
               if (!selected)
               {
-                tableBodyRow.removeClass(oj.TableDomUtils.MARKER_STYLE_CLASSES._SELECTED);
+                tableBodyRow.classList.remove(oj.TableDomUtils.MARKER_STYLE_CLASSES._SELECTED);
               }
               else
               {
-                tableBodyRow.addClass(oj.TableDomUtils.MARKER_STYLE_CLASSES._SELECTED);
+                tableBodyRow.classList.add(oj.TableDomUtils.MARKER_STYLE_CLASSES._SELECTED);
               }
               selectionChanged = true;
               
@@ -7284,7 +8232,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
               var dragOption = this.options['dnd']['drag'];
               if (dragOption && (dragOption === 'rows' || dragOption.rows))
               {
-                tableBodyRow.prop("draggable", selected);
+                tableBodyRow["draggable"] = selected;
               }
             }
 
@@ -7306,8 +8254,8 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
 
             // update the acc checkbox
             var accSelectionCell = this._getTableDomUtils().getTableBodyCellAccSelect(tableBodyRow);
-            var accSelectCheckbox = $(accSelectionCell.children('.' + oj.TableDomUtils.CSS_CLASSES._CHECKBOX_ACC_SELECT_ROW_CLASS)[0]);
-            accSelectCheckbox.prop('checked', selected);
+            var accSelectCheckbox = accSelectionCell.getElementsByClassName(oj.TableDomUtils.CSS_CLASSES._CHECKBOX_ACC_SELECT_ROW_CLASS)[0];
+            accSelectCheckbox['checked'] = selected;
 
             if (updateSelection)
             {
@@ -7470,7 +8418,13 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
        */
       _setTableActionableMode: function(value)
       {
-        // only set actionable mode is there are any tabbable elements in the row
+        if (this._isTableEditMode())
+        {
+          this._tableActionableMode = false;
+          return;
+        }
+        
+        // only set actionable mode is there are any tabbable elements in the row 
         if (value)
         {
           var focusedRowIdx = this._getFocusedRowIdx();
@@ -7506,6 +8460,12 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
         else
         {
           this._tableActionableMode = value;
+          var tableBody = this._getTableDomUtils().getTableBody();
+          var resetFocus = $.contains(tableBody, document.activeElement);
+          if (resetFocus)
+          {
+            this._getTableDomUtils().getTable().focus();
+          }
         }
       },
       /**
@@ -7540,7 +8500,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
               // fire the beforeEdit event if there are no existing editable rows
               // and we are starting edit on a row
               var tableBodyRow = this._getTableDomUtils().getTableBodyRow(rowIdx);
-              var rowContext = oj.TableRendererUtils.getRendererContextObject(this, tableBodyRow[0], {'row': {key: rowKey, index: currentRow['rowIndex']}, 'isCurrentRow': true});
+              var rowContext = oj.TableRendererUtils.getRendererContextObject(this, tableBodyRow, {'row': {key: rowKey, index: currentRow['rowIndex']}, 'isCurrentRow': true});
               updateEditMode = this._trigger('beforeRowEdit', event, {'rowContext': rowContext});
             }
             else if (!editable && this._hasEditableRow())
@@ -7549,7 +8509,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
               // fire on the edited row
               var tableBodyRow = this._getTableDomUtils().getTableBodyRow(this._getEditableRowIdx());
               rowKey = this._getRowKeyForRowIdx(this._getEditableRowIdx());
-              var rowContext = oj.TableRendererUtils.getRendererContextObject(this, tableBodyRow[0], {'row': {key: rowKey, index: this._getDataSourceRowIndexForRowKey(rowKey)}, 'isCurrentRow': true});
+              var rowContext = oj.TableRendererUtils.getRendererContextObject(this, tableBodyRow, {'row': {key: rowKey, index: this._getDataSourceRowIndexForRowKey(rowKey)}, 'isCurrentRow': true});
               updateEditMode = this._trigger('beforeRowEditEnd', event, {'rowContext': rowContext, 'cancelEdit': cancelled});
             }
             else
@@ -7577,14 +8537,37 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
             // set the editable row index
             this._setEditableRowIdx(rowIdx);
             // re-render the newly editable row
-            this['refreshRow'](rowIdx).then(function(){
+            this['refreshRow'](rowIdx).then(function()
+            {
               self._queueTask(function()
               {
                 var focusRowIdx = rowIdx;
                 var focusColumnIdx = columnIdx;
                 var focusForwardSearch = forwardSearch;
-                // set focus on the column in the row
-                self._setCellInRowFocus(focusRowIdx, focusColumnIdx, focusForwardSearch);
+                var focusTableBodyRow = this._getTableDomUtils().getTableBodyRow(focusRowIdx);
+                
+                var busyContextArray = this._getAllBusyContextsForElement(focusTableBodyRow);
+                
+                if (busyContextArray != null)
+                {
+                  var i, busyContextPromiseArray = [];
+                  for (i = 0; i < busyContextArray.length; i++)
+                  {
+                    busyContextPromiseArray.push(busyContextArray[i].whenReady());
+                  }
+                  
+                  // If there are components busy then wait first
+                  return Promise.all(busyContextPromiseArray).then(function () 
+                  {
+                    // set focus on the column in the row
+                    self._setCellInRowFocus(focusRowIdx, focusColumnIdx, focusForwardSearch);
+                  });
+                }
+                else
+                {
+                  // set focus on the column in the row
+                  self._setCellInRowFocus(focusRowIdx, focusColumnIdx, focusForwardSearch);
+                }
               });
             });
           }
@@ -7597,6 +8580,10 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
           // clear out the old editable row
           if (prevEditableRowIdx != null)
           {
+            // make sure the row still exists before we refresh it
+            var prevEditableTableBodyRow = this._getTableDomUtils().getTableBodyRow(prevEditableRowIdx);
+            if (prevEditableTableBodyRow != null)
+            {
             // re-render the previously editable row, which will be read-only now
             this['refreshRow'](prevEditableRowIdx).then(function(){
               self._queueTask(function()
@@ -7606,11 +8593,12 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
 
                 if (prevEditableRow != null)
                 {
-                   prevEditableRow.removeClass(oj.TableDomUtils.CSS_CLASSES._TABLE_DATA_ROW_EDIT_CLASS);
+                    prevEditableRow.classList.remove(oj.TableDomUtils.CSS_CLASSES._TABLE_DATA_ROW_EDIT_CLASS);
                 }
               });
             });
           }
+        }
         }
       },
       /**
@@ -7622,31 +8610,20 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
        */
       _showInlineMessage: function(summary, detail, severityLevel)
       {
+        if (!this._inlineMessageShown)
+        {
         this._getTableDomUtils().setTableInlineMessage(summary, detail, severityLevel);
         var inlineMessage = this._getTableDomUtils().getTableInlineMessage();
-
-        if (inlineMessage.css(oj.TableDomUtils.CSS_PROP._DISPLAY) == oj.TableDomUtils.CSS_VAL._NONE)
-        {
-          inlineMessage.css(oj.TableDomUtils.CSS_PROP._DISPLAY, oj.TableDomUtils.CSS_VAL._BLOCK);
-          // set the table container margin to add space to display the message
-          var inlineMessagePaddingLeft = parseInt(inlineMessage.css(oj.TableDomUtils.CSS_PROP._PADDING_LEFT), 10);
-          var inlineMessagePaddingRight = parseInt(inlineMessage.css(oj.TableDomUtils.CSS_PROP._PADDING_RIGHT), 10);
           var tableContainer = this._getTableDomUtils().getTableContainer();
           if (severityLevel == oj.Message.SEVERITY_LEVEL['WARNING'])
           {
-            tableContainer.addClass(oj.TableDomUtils.MARKER_STYLE_CLASSES._WARNING);
-            inlineMessage.addClass(oj.TableDomUtils.MARKER_STYLE_CLASSES._WARNING);
+            tableContainer.classList.add(oj.TableDomUtils.MARKER_STYLE_CLASSES._WARNING);
+            inlineMessage.classList.add(oj.TableDomUtils.MARKER_STYLE_CLASSES._WARNING);
           }
-          var tableContainerWidth = tableContainer.width();
-          inlineMessage.css(oj.TableDomUtils.CSS_PROP._WIDTH, tableContainerWidth - inlineMessagePaddingLeft - inlineMessagePaddingRight + oj.TableDomUtils.CSS_VAL._PX);
-          var inlineMessageHeight = inlineMessage.outerHeight();
-          var tableContainerBorderBottom = parseInt(tableContainer.css(oj.TableDomUtils.CSS_PROP._BORDER_BOTTOM_WIDTH), 10);
-          var tableContainerBorderLeft = parseInt(tableContainer.css(oj.TableDomUtils.CSS_PROP._BORDER_LEFT_WIDTH), 10);
-          var tableContainerMarginBottom = parseInt(tableContainer.css(oj.TableDomUtils.CSS_PROP._MARGIN_BOTTOM), 10);
-          tableContainerMarginBottom = tableContainerMarginBottom + tableContainerBorderBottom + inlineMessageHeight;
-          tableContainer.css(oj.TableDomUtils.CSS_PROP._MARGIN_BOTTOM, tableContainerMarginBottom + oj.TableDomUtils.CSS_VAL._PX);
-          inlineMessage.css(oj.TableDomUtils.CSS_PROP._BOTTOM, -1 * (tableContainerMarginBottom + tableContainerBorderBottom) + oj.TableDomUtils.CSS_VAL._PX);
-          inlineMessage.css(oj.TableDomUtils.CSS_PROP._LEFT, -1 * tableContainerBorderLeft + oj.TableDomUtils.CSS_VAL._PX);
+          inlineMessage.style[oj.TableDomUtils.CSS_PROP._DISPLAY] = oj.TableDomUtils.CSS_VAL._BLOCK;
+          inlineMessage.style[oj.TableDomUtils.CSS_PROP._WIDTH] = '100%';
+          inlineMessage.style[oj.TableDomUtils.CSS_PROP._BOX_SIZING] = oj.TableDomUtils.CSS_VAL._BORDER_BOX;
+          this._inlineMessageShown = true;
         }
       },
       /**
@@ -7655,10 +8632,21 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
        */
       _showNoDataMessage: function()
       {
+        if (!this._noDataMessageShown)
+        {
         var messageRow = this._getTableDomUtils().getTableBodyMessageRow();
         var data = this._getData();
+          var emptyTextMsg = null;
+          if (this.options['emptyText'] != null)
+          {
+            emptyTextMsg = this.options['emptyText'];
+          }
+          else
+          {
+            emptyTextMsg = this.getTranslatedString(this._BUNDLE_KEY._MSG_NO_DATA);
+          }
         // if data is null then we are initializing
-        var messageText = data != null ? this.getTranslatedString(this._BUNDLE_KEY._MSG_NO_DATA) : this.getTranslatedString(this._BUNDLE_KEY._MSG_INITIALIZING);
+          var messageText = data != null ? emptyTextMsg : this.getTranslatedString(this._BUNDLE_KEY._MSG_INITIALIZING);
         if (messageRow == null) 
         {
           this._getTableDomUtils().createTableBodyMessageRow(this._getColumnDefs().length, messageText);
@@ -7667,6 +8655,8 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
         {
           this._getTableDomUtils().setTableBodyMessage(messageText);
         }
+          this._noDataMessageShown = true;
+        }
       },
       /**
        * Show the Fetching Data... status message.
@@ -7674,12 +8664,39 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
        */
       _showStatusMessage: function()
       {
-        var statusMessage = this._getTableDomUtils().getTableStatusMessage();
-        if (statusMessage.css(oj.TableDomUtils.CSS_PROP._DISPLAY) == oj.TableDomUtils.CSS_VAL._NONE)
+        if (this._showStatusTimeout)
         {
-          statusMessage.css(oj.TableDomUtils.CSS_PROP._DISPLAY, oj.TableDomUtils.CSS_VAL._INLINE);
-          this._getTableDomUtils().refreshTableStatusPosition();
+          return;
         }
+
+        if (!this._statusMessageShown)
+        {
+          var statusMessage = this._getTableDomUtils().getTableStatusMessage();
+          var self = this;
+          this._showStatusTimeout = setTimeout(function()
+          {
+            statusMessage.style[oj.TableDomUtils.CSS_PROP._DISPLAY] = oj.TableDomUtils.CSS_VAL._INLINE;
+            self._statusMessageShown = true;
+            self._getTableDomUtils().refreshTableStatusPosition();
+          }, this._getShowStatusDelay());
+        }
+      },
+      /**
+       * Retrieve the delay before showing status
+       * @return {number} the delay in ms
+       * @private
+       */
+      _getShowStatusDelay: function()
+      {
+        var delay;
+
+        if (this._defaultOptions == null)
+        {
+            this._defaultOptions = oj.ThemeUtils.parseJSONFromFontFamily('oj-table-option-defaults');
+        }
+        delay = parseInt(this._defaultOptions['showIndicatorDelay'], 10);
+
+        return isNaN(delay) ? 0 : delay;
       },
       /**
        * Show the column header sort link
@@ -7698,33 +8715,71 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
           }
 
           // check if the column is currently sorted
-          var sorted = tableHeaderColumn.data('sorted');
+          var sorted = $(tableHeaderColumn).data('sorted');
 
           // we should only show the ascending sort link if the column is not sorted
           if (sorted == null)
           {
-            var headerColumnAscLink = tableHeaderColumn.find('.' + oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_ASC_LINK_CLASS);
-            headerColumnAscLink.addClass(oj.TableDomUtils.MARKER_STYLE_CLASSES._ENABLED);
-            headerColumnAscLink.removeClass(oj.TableDomUtils.MARKER_STYLE_CLASSES._DISABLED);
-            var headerColumnAsc = tableHeaderColumn.find('.' + oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_ASC_CLASS);
-            headerColumnAsc.removeClass(oj.TableDomUtils.MARKER_STYLE_CLASSES._DISABLED);
-            var headerColumnDsc = tableHeaderColumn.find('.' + oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_DSC_CLASS);
-            headerColumnDsc.addClass(oj.TableDomUtils.MARKER_STYLE_CLASSES._DISABLED);
+            var headerColumnAscLink = tableHeaderColumn.querySelectorAll('.' + oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_ASC_LINK_CLASS);
+            if (headerColumnAscLink.length > 0)
+            {
+              headerColumnAscLink = headerColumnAscLink[0];
+              headerColumnAscLink.classList.add(oj.TableDomUtils.MARKER_STYLE_CLASSES._ENABLED);
+              headerColumnAscLink.classList.remove(oj.TableDomUtils.MARKER_STYLE_CLASSES._DISABLED);
+          }
+            var headerColumnAsc = tableHeaderColumn.querySelectorAll('.' + oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_ASC_CLASS);
+            if (headerColumnAsc.length > 0)
+            {
+              headerColumnAsc = headerColumnAsc[0];
+              headerColumnAsc.classList.remove(oj.TableDomUtils.MARKER_STYLE_CLASSES._DISABLED);
+        }
+            var headerColumnDsc = tableHeaderColumn.querySelectorAll('.' + oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_DSC_CLASS);
+            if (headerColumnDsc.length > 0)
+            {
+              headerColumnDsc = headerColumnDsc[0];
+              headerColumnDsc.classList.add(oj.TableDomUtils.MARKER_STYLE_CLASSES._DISABLED);
+            }
           }
         }
       },
       /**
+       * Only process the event handler if it's a double tap
+       * @param {Event} event
+       * @param {Function} eventHandler
+       * @private
+       */
+      _touchEventDoubleTapFunction: function(event, eventHandler)
+      {
+        var eventTarget = $(event.target);
+            
+        if (this._lastTapTime != null &&
+          ((new Date()).getTime() - this._lastTapTime) < 250 &&
+          this._lastTapTarget[0] == eventTarget[0]) 
+        {
+          this._lastTapTime = null;
+          this._lastTapTarget = null;
+          eventHandler();
+        } 
+        else 
+        {
+          this._lastTapTarget = eventTarget;
+          this._lastTapTime = (new Date()).getTime();
+        }
+      },
+      /**
        * Unregister _focusable(), etc, which were added to the child elements
-       * @param {jQuery} parent jQuery div DOM element
+       * @param {Element} parent div DOM element
        * @private
        */
       _unregisterChildStateListeners: function(parent)
       {
         var self = this;
-        parent.find('*').each(function()
+        var elements = parent.querySelectorAll('*');
+        var i;
+        for (i = 0; i < elements.length; i++)
         {
-          self._UnregisterChildNode(this);
-        });
+          self._UnregisterChildNode(elements[i]);
+        }
         self = null;
       },
       /**
@@ -7749,7 +8804,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
       _unregisterResizeListener: function()
       {
         var element = this._getTableDomUtils().getTableContainer();
-        oj.DomUtils.removeResizeListener(element[0], this._resizeListener);
+        oj.DomUtils.removeResizeListener(element, this._resizeListener);
         this._isResizeListenerAdded = false;
       },
       /**
@@ -7760,8 +8815,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
        */
       _updateHeaderColumnStateCellsClass: function(columnIdx, blur)
       {
-        var state = this._getHeaderColumnState(columnIdx);
-        var selected = state.selected;
+        var selected = this._getHeaderColumnSelection(columnIdx);
         var selectedRowIdxs = this._getSelectedRowIdxs();
         var tableBodyRows = this._getTableDomUtils().getTableBodyRows();
         if (tableBodyRows != null && tableBodyRows.length > 0)
@@ -7784,12 +8838,12 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
               }
               if (!rowSelected)
               {
-                $(tableBodyCell).removeClass(oj.TableDomUtils.MARKER_STYLE_CLASSES._SELECTED);
+                tableBodyCell.classList.remove(oj.TableDomUtils.MARKER_STYLE_CLASSES._SELECTED);
               }
             }
             else
             {
-              $(tableBodyCell).addClass(oj.TableDomUtils.MARKER_STYLE_CLASSES._SELECTED);
+              tableBodyCell.classList.add(oj.TableDomUtils.MARKER_STYLE_CLASSES._SELECTED);
             }
           }
         }
@@ -7820,11 +8874,11 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
           {
             if (!hover)
             {
-              $(tableBodyCells[i]).removeClass(oj.TableDomUtils.MARKER_STYLE_CLASSES._HOVER);
+              tableBodyCells[i].classList.remove(oj.TableDomUtils.MARKER_STYLE_CLASSES._HOVER);
             }
             else
             {
-              $(tableBodyCells[i]).addClass(oj.TableDomUtils.MARKER_STYLE_CLASSES._HOVER);
+              tableBodyCells[i].classList.add(oj.TableDomUtils.MARKER_STYLE_CLASSES._HOVER);
             }
           }
         }
@@ -7835,11 +8889,11 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
           {
             if (!focused)
             {
-              $(tableBodyCells[i]).removeClass(oj.TableDomUtils.MARKER_STYLE_CLASSES._FOCUS);
+              this._focusOutHandler($(tableBodyCells[i]));
             }
             else
             {
-              $(tableBodyCells[i]).addClass(oj.TableDomUtils.MARKER_STYLE_CLASSES._FOCUS);
+              this._focusInHandler($(tableBodyCells[i]));
             }
           }
         }
@@ -7850,11 +8904,11 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
           {
             if (!selected)
             {
-              $(tableBodyCells[i]).removeClass(oj.TableDomUtils.MARKER_STYLE_CLASSES._SELECTED);
+              tableBodyCells[i].classList.remove(oj.TableDomUtils.MARKER_STYLE_CLASSES._SELECTED);
             }
             else
             {
-              $(tableBodyCells[i]).addClass(oj.TableDomUtils.MARKER_STYLE_CLASSES._SELECTED);
+              tableBodyCells[i].classList.add(oj.TableDomUtils.MARKER_STYLE_CLASSES._SELECTED);
             }
           }
         }
@@ -7863,7 +8917,10 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
       {
         this._finalTask = (task ? task.bind(this) : undefined);
       },
-
+      _hasPendingTasks: function()
+      {
+        return this._taskCount > 1 ? true : false;
+      },
       _queueTask: function(task)
       {
         var self = this;
@@ -7926,6 +8983,20 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
         });
 
         return this._pendingTasks;
+      },
+
+      // @inheritdoc
+      _CompareOptionValues: function(option, value1, value2)
+      {
+        switch(option)
+        {
+           case 'columns':
+           case 'currentRow':
+           case 'selection':
+              return oj.Object.compareValues(value1, value2);
+           default:
+              return this._super(option, value1, value2);
+      }
       }
 
       /* Later when needed
@@ -7954,6 +9025,7 @@ oj.Components.setDefaultOptions(
       }
   }
 );
+
 /**
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
@@ -7978,7 +9050,7 @@ oj.TableDomUtils = function(component)
 {
   this.component = component;
   this.options = component['options'];
-  this.element = component['element'];
+  this.element = component['element'][0];
   this.OuterWrapper = component.OuterWrapper;
   this.Init();
 };
@@ -8018,17 +9090,17 @@ oj.TableDomUtils.prototype.clearCachedDomRowData = function()
  * Create a span element for acc purposes
  * @param {string} text span text
  * @param {string|null} className css class
- * @return {jQuery} jQuery span DOM element
+ * @return {Element} span DOM element
  */
 oj.TableDomUtils.prototype.createAccLabelSpan = function(text, className)
 {
-  var accLabel = $(document.createElement('span'));
+  var accLabel = document.createElement('span');
   if (className != null)
   {
-    accLabel.addClass(className);
+    accLabel.classList.add(className);
   }
-  accLabel.addClass(oj.TableDomUtils.CSS_CLASSES._HIDDEN_CONTENT_ACC_CLASS);
-  accLabel.text(text);
+  accLabel.classList.add(oj.TableDomUtils.CSS_CLASSES._HIDDEN_CONTENT_ACC_CLASS);
+  accLabel.appendChild(document.createTextNode(text)); //@HTMLUpdateOK
 
   return accLabel;
 };
@@ -8038,63 +9110,85 @@ oj.TableDomUtils.prototype.createAccLabelSpan = function(text, className)
  * a context menu set on the table options we use that one. Add listeners
  * for context menu before show and select.
  * @param {function(Object)} handleContextMenuSelect function called for menu select
- * @return {jQuery} jQuery ul DOM element
+ * @return {Element} ul DOM element
  */
 oj.TableDomUtils.prototype.createContextMenu = function(handleContextMenuSelect)
 {
-  var menuContainer = null;
+  var menuContainer = this.component._GetContextMenu();
   var self = this;
   var enableNonContigousSelectionMenu = this.component._isTouchDevice() ? this.component._getRowSelectionMode() == this.component._OPTION_SELECTION_MODES._MULTIPLE : false;
 
-  if (this.options["contextMenu"] != null || this.getTable().attr("contextmenu") != null)
+  if (menuContainer)
   {
-    var menuContainerId = this.getContextMenuId();
-    menuContainer = $(menuContainerId);
-    if (menuContainer != null && menuContainer.length > 0)
+    var listItems = menuContainer.querySelectorAll('[data-oj-command]');
+    if (listItems != null && listItems.length > 0)
     {
-      var listItems = menuContainer.find('[data-oj-command]');
-      
-      if (listItems != null && listItems.length > 0)
+      var command;
+      var i;
+      var newItem;
+      for (i = 0; i < listItems.length; i++)
       {
-        var command;
-        listItems.each(function() {
-          if ($(this).children(oj.TableDomUtils.DOM_ELEMENT._A).length === 0)
-          {
-            command = $(this).attr('data-oj-command').split("-");
-            $(this).replaceWith(self.createContextMenuItem(command[command.length - 1])); //@HTMLUpdateOK
-          }
-        });
-        this._menuContainer = menuContainer;
-        this.component._contextMenuId = menuContainerId;
-        if (menuContainer.data('oj-ojMenu'))
+        if (listItems[i].tagName === "OJ-OPTION" || listItems[i].getElementsByTagName(oj.TableDomUtils.DOM_ELEMENT._A).length === 0)
         {
-            menuContainer.ojMenu('refresh');
+          command = listItems[i].getAttribute('data-oj-command').split("-");
+          newItem = self.createContextMenuItem(command[command.length - 1], this.component._IsCustomElement());
+          if (listItems[i].tagName === "OJ-OPTION")
+          {
+            listItems[i].innerHTML = newItem.innerHTML; //@HTMLUpdateOK
+          }
+          else
+          {
+            $(listItems[i]).replaceWith(newItem); //@HTMLUpdateOK
+          }
         }
-        menuContainer.on("ojselect", handleContextMenuSelect);
       }
+      this._menuContainer = menuContainer;
+      if ($(menuContainer).data('oj-ojMenu'))
+      {
+          if (this.component._IsCustomElement())
+              menuContainer.refresh();
+          else
+              $(menuContainer).ojMenu('refresh');
+      }
+
+      if (this.component._IsCustomElement())
+          menuContainer.addEventListener("ojAction", handleContextMenuSelect);
+      else
+          $(menuContainer).on("ojselect", handleContextMenuSelect);
     }
   }
-  else if (this.component._isTableSortable() || enableNonContigousSelectionMenu)
+  else if (this.component._isTableSortable() ||
+    enableNonContigousSelectionMenu ||
+    this.component._isTableColumnsResizable())
   {
-    menuContainer = $(document.createElement(oj.TableDomUtils.DOM_ELEMENT._UL));
-    menuContainer.css(oj.TableDomUtils.CSS_PROP._DISPLAY, oj.TableDomUtils.CSS_VAL._NONE);
-    menuContainer.attr(oj.TableDomUtils.DOM_ATTR._ID, this.getTableId() + '_contextmenu');
-    this.getTableContainer().append(menuContainer); //@HTMLUpdateOK
+    menuContainer = document.createElement(oj.TableDomUtils.DOM_ELEMENT._UL);
+    menuContainer.style[oj.TableDomUtils.CSS_PROP._DISPLAY] = oj.TableDomUtils.CSS_VAL._NONE;
+    menuContainer.setAttribute(oj.TableDomUtils.DOM_ATTR._ID, this.getTableId() + '_contextmenu');
+    this.getTableContainer().appendChild(menuContainer); //@HTMLUpdateOK
     if (this.component._isTableSortable())
     {
       var sortMenu = this.createContextMenuItem('sort');
-      menuContainer.append(sortMenu); //@HTMLUpdateOK
+      menuContainer.appendChild(sortMenu); //@HTMLUpdateOK
     }
     if (enableNonContigousSelectionMenu)
     {
       var nonContigousSelectionMenu = this.createContextMenuItem('enableNonContiguousSelection');
-      menuContainer.append(nonContigousSelectionMenu); //@HTMLUpdateOK
+      menuContainer.appendChild(nonContigousSelectionMenu); //@HTMLUpdateOK
     }
-    menuContainer.ojMenu();
+    if (this.component._isTableColumnsResizable())
+    {
+      var resizeMenu = this.createContextMenuItem('resize');
+      menuContainer.appendChild(resizeMenu); //@HTMLUpdateOK
+    }
+    $(menuContainer).ojMenu();
     this._menuContainer = menuContainer;
-    this.component._contextMenuId = '#' + menuContainer.attr(oj.TableDomUtils.DOM_ATTR._ID);
-    menuContainer.on("ojselect", handleContextMenuSelect);
-    this.component._setOption("contextMenu", '#' + menuContainer.attr(oj.TableDomUtils.DOM_ATTR._ID));
+    $(menuContainer).on("ojselect", handleContextMenuSelect);
+
+    var oldMenuOption = this.options["contextMenu"];
+    this.component.option("contextMenu", '#' + menuContainer.getAttribute(oj.TableDomUtils.DOM_ATTR._ID), {'_context': {internalSet: true}});
+
+    // fulfill _GetDefaultContextMenu contract
+    this.component._defaultContextMenu = menuContainer;
   }
   
   return menuContainer;
@@ -8102,34 +9196,42 @@ oj.TableDomUtils.prototype.createContextMenu = function(handleContextMenuSelect)
 
 /**
  * Builds a menu for a command, takes care of submenus where appropriate
- * @return {jQuery} jQuery li DOM element
+ * @param {string} command the string to look up command value for as well as translation
+ * @param {boolean=} useOjOption whether oj-option tag should be used, which is the case for custom element (except for default menu)
+ * @return {Element} li DOM element
  */
-oj.TableDomUtils.prototype.createContextMenuItem = function(command)
+oj.TableDomUtils.prototype.createContextMenuItem = function(command, useOjOption)
 {
   if (command === 'sort')
   {
-    var sortMenuListItem = $(this.createContextMenuListItem(command));
-    var listElement = $(document.createElement(oj.TableDomUtils.DOM_ELEMENT._UL));
-    sortMenuListItem.append(listElement); //@HTMLUpdateOK
-    listElement.append($(this.createContextMenuListItem('sortAsc'))); //@HTMLUpdateOK
-    listElement.append($(this.createContextMenuListItem('sortDsc'))); //@HTMLUpdateOK 
+    var sortMenuListItem = this.createContextMenuListItem(command, useOjOption);
+    var listElement = document.createElement(oj.TableDomUtils.DOM_ELEMENT._UL);
+    sortMenuListItem.appendChild(listElement); //@HTMLUpdateOK
+    listElement.appendChild(this.createContextMenuListItem('sortAsc', useOjOption)); //@HTMLUpdateOK
+    listElement.appendChild(this.createContextMenuListItem('sortDsc', useOjOption)); //@HTMLUpdateOK 
     return sortMenuListItem;
   }
   else if (command === 'sortAsc')
   {
-    return $(this.createContextMenuListItem(command));
+    return this.createContextMenuListItem(command, useOjOption);
   }
   else if (command === 'sortDsc')
   {
-    return $(this.createContextMenuListItem(command));
+    return this.createContextMenuListItem(command, useOjOption);
   }
   else if (command == 'enableNonContiguousSelection')
   {
-    return $(this.createContextMenuListItem(command));
+    return this.createContextMenuListItem(command, useOjOption);
   }
   else if (command == 'disableNonContiguousSelection')
   {
-    return $(this.createContextMenuListItem(command));
+    return this.createContextMenuListItem(command, useOjOption);
+  }
+  else if (command === 'resize')
+  {
+    // create the resize popup too
+    this.createContextMenuResizePopup(0);
+    return this.createContextMenuListItem(command);
   }
   return null;
 };
@@ -8137,13 +9239,14 @@ oj.TableDomUtils.prototype.createContextMenuItem = function(command)
 /**
  * Builds a context menu list item from a command
  * @param {string} command the string to look up command value for as well as translation
- * @return {jQuery} jQuery li DOM element 
+ * @param {boolean=} useOjOption whether oj-option tag should be used, which is the case for custom element (except for default menu)
+ * @return {Element} DOM element for menu item
  */
-oj.TableDomUtils.prototype.createContextMenuListItem = function(command)
+oj.TableDomUtils.prototype.createContextMenuListItem = function(command, useOjOption)
 {
-  var contextMenuListItem = $(document.createElement('li'));
-  contextMenuListItem.attr('data-oj-command', 'oj-table-' + command);
-  contextMenuListItem.append(this.createContextMenuLabel(command)); //@HTMLUpdateOK
+  var contextMenuListItem = document.createElement(useOjOption ? 'oj-option' : 'li');
+  contextMenuListItem.setAttribute('data-oj-command', 'oj-table-' + command);
+  contextMenuListItem.appendChild(this.createContextMenuLabel(command)); //@HTMLUpdateOK
 
   return contextMenuListItem;
 };
@@ -8151,12 +9254,12 @@ oj.TableDomUtils.prototype.createContextMenuListItem = function(command)
 /**
  * Builds a context menu label by looking up command translation
  * @param {string} command the string to look up translation for
- * @return {jQuery} jQuery a DOM element
+ * @return {Element} a DOM element
  */
 oj.TableDomUtils.prototype.createContextMenuLabel = function(command)
 {
-  var contextMenuLabel = $(document.createElement(oj.TableDomUtils.DOM_ELEMENT._A));
-  contextMenuLabel.attr(oj.TableDomUtils.DOM_ATTR._HREF, '#');
+  var contextMenuLabel = document.createElement(oj.TableDomUtils.DOM_ELEMENT._A);
+  contextMenuLabel.setAttribute(oj.TableDomUtils.DOM_ATTR._HREF, '#');
   var commandString = null;
   if (command == 'sort')
   {
@@ -8178,26 +9281,80 @@ oj.TableDomUtils.prototype.createContextMenuLabel = function(command)
   {
     commandString = this.component.getTranslatedString('labelDisableNonContiguousSelection');
   }
-  contextMenuLabel.text(commandString);
+  else if (command == 'resize')
+  {
+    commandString = this.component.getTranslatedString('labelResize');
+  }
+  contextMenuLabel.appendChild(document.createTextNode(commandString)); //@HTMLUpdateOK
 
   return contextMenuLabel;
+};
+
+/**
+ * Build the html for the resize popup and add it to the root node
+ * @param {number} initialSize the initial size to put in the spinner
+ * @private
+ */
+oj.TableDomUtils.prototype.createContextMenuResizePopup = function(initialSize)
+{
+  initialSize = Math.round(initialSize);
+  var popup = this.getContextMenuResizePopup();
+
+  if (popup == null)
+  {
+   //create the base popup
+   var tableContainer = this.getTableContainer();
+   popup = document.createElement(oj.TableDomUtils.DOM_ELEMENT._DIV);
+   popup.setAttribute('id', this.getTableId() + '_resize_popup');
+   tableContainer.appendChild(popup); //@HTMLUpdateOK
+   var popupBody = document.createElement(oj.TableDomUtils.DOM_ELEMENT._DIV);
+   var popupFooter = document.createElement(oj.TableDomUtils.DOM_ELEMENT._DIV);
+   popup.appendChild(popupBody); //@HTMLUpdateOK
+   popup.appendChild(popupFooter); //@HTMLUpdateOK
+
+   //create the popup content
+   var spinner = document.createElement(oj.TableDomUtils.DOM_ELEMENT._INPUT);
+   spinner.setAttribute('id', this.getTableId() + '_resize_popup_spinner');
+   var spinnerLabel = document.createElement(oj.TableDomUtils.DOM_ELEMENT._LABEL);
+   spinnerLabel.setAttribute('for', this.getTableId() + '_resize_popup_spinner');
+   spinnerLabel.textContent = this.component.getTranslatedString('labelResizePopupSpinner');
+   var popupOKButton = document.createElement(oj.TableDomUtils.DOM_ELEMENT._BUTTON);
+   popupOKButton.setAttribute('id', this.getTableId() + '_resize_popup_popupsubmit');
+
+   popupBody.appendChild(spinnerLabel); //@HTMLUpdateOK
+   popupBody.appendChild(spinner); //@HTMLUpdateOK
+   popupFooter.appendChild(popupOKButton); //@HTMLUpdateOK
+
+   $(popupOKButton).ojButton({component: 'ojButton', label: this.component.getTranslatedString('labelResizePopupSubmit')});
+   $(popupOKButton).on('click', this.component._handleContextMenuResizePopup.bind(this.component));
+    $(spinner).ojInputNumber({component: 'ojInputNumber', max: 10000, min: 10, step: 1, value: initialSize, validators: [{
+          type: 'regExp',
+          options: {
+            pattern: '^[1-9][0-9]*$',
+            messageDetail: this.component.getTranslatedString('msgColumnResizeWidthValidation')
+          }
+        }]});
+   $(popup).ojPopup({modality: 'modal', position: {my: 'start top', at: 'start bottom', collision: 'flipfit'}});
+   this._cachedDomContextMenuResizePopup = popup;
+ } 
+ else 
+ {
+   var spinner = document.getElementById(this.getTableId() + '_resize_popup_spinner');
+   $(spinner).ojInputNumber('option', 'value', initialSize);
+ }
+  return popup;
 };
 
 /**
  * Create the initial empty table
  * @param {boolean} isTableHeaderless is table headerless
  * @param {boolean} isTableFooterless is table footerless
- * @return {jQuery} jQuery table DOM element
+ * @return {Element} table DOM element
  */
 oj.TableDomUtils.prototype.createInitialTable = function(isTableHeaderless, isTableFooterless)
 {
   var table = this.getTable();
   this.createTableContainer();
-  // we only need a scroller div if we are using fallback scrolling
-  if (this.isDivScroller())
-  {
-    this.createTableDivScroller();
-  }
 
   if (!isTableHeaderless)
   {
@@ -8217,13 +9374,13 @@ oj.TableDomUtils.prototype.createInitialTable = function(isTableHeaderless, isTa
 
 /**
  * Create an empty tbody element with appropriate styling
- * @return {jQuery} jQuery tbody DOM element
+ * @return {Element} tbody DOM element
  */
 oj.TableDomUtils.prototype.createTableBody = function()
 {
   var table = this.getTable();
-  var tableBody = $(document.createElement(oj.TableDomUtils.DOM_ELEMENT._TBODY));
-  table.append(tableBody); //@HTMLUpdateOK
+  var tableBody = document.createElement(oj.TableDomUtils.DOM_ELEMENT._TBODY);
+  table.appendChild(tableBody); //@HTMLUpdateOK
   this._cachedDomTableBody = tableBody;
 
   return tableBody;
@@ -8233,11 +9390,11 @@ oj.TableDomUtils.prototype.createTableBody = function()
  * Create an empty td element with appropriate styling
  * @param {number} rowIdx  row index
  * @param {number} columnIdx  column index
- * @return {jQuery} jQuery td DOM element
+ * @return {Element} td DOM element
  */
 oj.TableDomUtils.prototype.createTableBodyCell = function(rowIdx, columnIdx)
 {
-  var tableBodyCell = $(document.createElement(oj.TableDomUtils.DOM_ELEMENT._TD));
+  var tableBodyCell = document.createElement(oj.TableDomUtils.DOM_ELEMENT._TD);
 
   return tableBodyCell;
 };
@@ -8247,9 +9404,9 @@ oj.TableDomUtils.prototype.createTableBodyCell = function(rowIdx, columnIdx)
  * @param {number} rowIdx  row index
  * @param {Object} rowKey  row key
  * @param {Object} rowHashCode  row hash code
- * @param {jQuery} tableBodyRow  tr DOM element
+ * @param {Element} tableBodyRow  tr DOM element
  * @param {boolean} isNew is new row
- * @return {jQuery} jQuery td DOM element
+ * @return {Element} td DOM element
  */
 oj.TableDomUtils.prototype.createTableBodyCellAccSelect = function(rowIdx, rowKey, rowHashCode, tableBodyRow, isNew)
 {
@@ -8268,10 +9425,10 @@ oj.TableDomUtils.prototype.createTableBodyCellAccSelect = function(rowIdx, rowKe
   var rowKeyStr = rowKey != null ? rowKey.toString() : rowIdx.toString();
   var rowKeyStrHashCode = rowHashCode == null ? this.hashCode(rowKeyStr) : rowHashCode;
 
-  accSelectionCell = $(document.createElement(oj.TableDomUtils.DOM_ELEMENT._TD));
-  accSelectionCell.addClass(oj.TableDomUtils.CSS_CLASSES._TABLE_DATA_CELL_ACC_SELECT_CLASS);
-  accSelectionCell.css('padding', '0');
-  accSelectionCell.css('border', '0');
+  accSelectionCell = document.createElement(oj.TableDomUtils.DOM_ELEMENT._TD);
+  accSelectionCell.classList.add(oj.TableDomUtils.CSS_CLASSES._TABLE_DATA_CELL_ACC_SELECT_CLASS);
+  accSelectionCell.style['padding'] = '0';
+  accSelectionCell.style['border'] = '0';
   
   var isTableHeaderless = this.getTableHeader() == null ? true : false;
   
@@ -8289,12 +9446,12 @@ oj.TableDomUtils.prototype.createTableBodyCellAccSelect = function(rowIdx, rowKe
       rowHeaderColumnId = this.component._getColumnDefs()[0].id;
     }
     var cellRowHeaderId = this.getTableId() + ':' + rowHeaderColumnId + '_' + rowKeyStrHashCode;
-    accSelectionCell.attr(oj.TableDomUtils.DOM_ATTR._HEADERS, this.getTableId() + ':' + oj.TableDomUtils._COLUMN_HEADER_ROW_SELECT_ID + ' ' + cellRowHeaderId);
+    accSelectionCell.setAttribute(oj.TableDomUtils.DOM_ATTR._HEADERS, this.getTableId() + ':' + oj.TableDomUtils._COLUMN_HEADER_ROW_SELECT_ID + ' ' + cellRowHeaderId);
   }
-  var accSelectCheckbox = $(document.createElement(oj.TableDomUtils.DOM_ELEMENT._INPUT));
-  accSelectCheckbox.attr(oj.TableDomUtils.DOM_ATTR._ID, this.getTableId() + ':acc_sel_row_' + rowKeyStrHashCode);
-  accSelectCheckbox.attr(oj.TableDomUtils.DOM_ATTR._TYPE, 'checkbox');
-  accSelectCheckbox.attr(oj.TableDomUtils.DOM_ATTR._TABINDEX, '-1');
+  var accSelectCheckbox = document.createElement(oj.TableDomUtils.DOM_ELEMENT._INPUT);
+  accSelectCheckbox.setAttribute(oj.TableDomUtils.DOM_ATTR._ID, this.getTableId() + ':acc_sel_row_' + rowKeyStrHashCode);
+  accSelectCheckbox.setAttribute(oj.TableDomUtils.DOM_ATTR._TYPE, 'checkbox');
+  accSelectCheckbox.setAttribute(oj.TableDomUtils.DOM_ATTR._TABINDEX, '-1');
   var selectRowTitle = null;
   
   var editMode = this['options']['editMode'];
@@ -8315,39 +9472,39 @@ oj.TableDomUtils.prototype.createTableBodyCellAccSelect = function(rowIdx, rowKe
   {
     selectRowTitle = this.component.getTranslatedString(this.component._BUNDLE_KEY._LABEL_SELECT_ROW);
   }
-  accSelectCheckbox.attr(oj.TableDomUtils.DOM_ATTR._TITLE, selectRowTitle);
-  accSelectCheckbox.addClass(oj.TableDomUtils.CSS_CLASSES._CHECKBOX_ACC_SELECT_ROW_CLASS);
-  accSelectCheckbox.addClass(oj.TableDomUtils.CSS_CLASSES._HIDDEN_CONTENT_ACC_CLASS);
+  accSelectCheckbox.setAttribute(oj.TableDomUtils.DOM_ATTR._TITLE, selectRowTitle);
+  accSelectCheckbox.classList.add(oj.TableDomUtils.CSS_CLASSES._CHECKBOX_ACC_SELECT_ROW_CLASS);
+  accSelectCheckbox.classList.add(oj.TableDomUtils.CSS_CLASSES._HIDDEN_CONTENT_ACC_CLASS);
   
   if (this.component._getEditableRowIdx() == rowIdx)
   {
-    accSelectCheckbox.prop('checked', true);
+    accSelectCheckbox['checked'] = true;
   }
   else
   {
-    accSelectCheckbox.prop('checked', false);
+    accSelectCheckbox['checked'] = false;
   }
-  accSelectionCell.append(accSelectCheckbox); //@HTMLUpdateOK
-  tableBodyRow.prepend(accSelectionCell); //@HTMLUpdateOK
+  accSelectionCell.appendChild(accSelectCheckbox); //@HTMLUpdateOK
+  tableBodyRow.insertBefore(accSelectionCell, tableBodyRow.firstChild); //@HTMLUpdateOK
 
   return accSelectionCell;
 };
 
 /**
  * Create the message td element with appropriate styling and message
- * @param {jQuery} tableBodyMessageRow tr DOM element
+ * @param {Element} tableBodyMessageRow tr DOM element
  * @param {number} columnCount  number of visible columns
  * @param {string} message message
- * @return {jQuery} jQuery td DOM element
+ * @return {Element} td DOM element
  */
 oj.TableDomUtils.prototype.createTableBodyMessageCell = function(tableBodyMessageRow, columnCount, message)
 {
-  var messageCell = $(document.createElement(oj.TableDomUtils.DOM_ELEMENT._TD));
-  messageCell.attr(oj.TableDomUtils.DOM_ATTR._COLSPAN, columnCount + 1);
-  messageCell.addClass(oj.TableDomUtils.CSS_CLASSES._TABLE_BODY_MESSAGE_CLASS);
-  messageCell.text(message);
+  var messageCell = document.createElement(oj.TableDomUtils.DOM_ELEMENT._TD);
+  messageCell.setAttribute(oj.TableDomUtils.DOM_ATTR._COLSPAN, columnCount + 1);
+  messageCell.classList.add(oj.TableDomUtils.CSS_CLASSES._TABLE_BODY_MESSAGE_CLASS);
+  messageCell.appendChild(document.createTextNode(message)); //@HTMLUpdateOK
 
-  tableBodyMessageRow.append(messageCell); //@HTMLUpdateOK
+  tableBodyMessageRow.appendChild(messageCell); //@HTMLUpdateOK
   return messageCell;
 };
 
@@ -8355,16 +9512,16 @@ oj.TableDomUtils.prototype.createTableBodyMessageCell = function(tableBodyMessag
  * Create the message row with appropriate styling
  * @param {number} columnCount  number of visible columns
  * @param {string} message message
- * @return {jQuery} jQuery row DOM element
+ * @return {Element} row DOM element
  */
 oj.TableDomUtils.prototype.createTableBodyMessageRow = function(columnCount, message)
 {
   var tableBody = this.getTableBody();
-  var tableBodyMessageRow = $(document.createElement(oj.TableDomUtils.DOM_ELEMENT._TR));
-  tableBodyMessageRow.addClass(oj.TableDomUtils.CSS_CLASSES._TABLE_BODY_MESSAGE_ROW_CLASS);
+  var tableBodyMessageRow = document.createElement(oj.TableDomUtils.DOM_ELEMENT._TR);
+  tableBodyMessageRow.classList.add(oj.TableDomUtils.CSS_CLASSES._TABLE_BODY_MESSAGE_ROW_CLASS);
   this.createTableBodyMessageCell(tableBodyMessageRow, columnCount, message);
 
-  tableBody.append(tableBodyMessageRow); //@HTMLUpdateOK
+  tableBody.appendChild(tableBodyMessageRow); //@HTMLUpdateOK
   return tableBodyMessageRow;
 };
 
@@ -8372,11 +9529,11 @@ oj.TableDomUtils.prototype.createTableBodyMessageRow = function(columnCount, mes
  * Create an empty tr element with appropriate styling
  * @param {number} rowIdx  row index
  * @param {Object} rowKey  row key
- * @return {jQuery} jQuery tr DOM element
+ * @return {Element} tr DOM element
  */
 oj.TableDomUtils.prototype.createTableBodyRow = function(rowIdx, rowKey)
 {
-  var tableBodyRow = $(document.createElement(oj.TableDomUtils.DOM_ELEMENT._TR));
+  var tableBodyRow = document.createElement(oj.TableDomUtils.DOM_ELEMENT._TR);
   this.createTableBodyCellAccSelect(rowIdx, rowKey, null, tableBodyRow, true);
   
   return tableBodyRow;
@@ -8388,39 +9545,53 @@ oj.TableDomUtils.prototype.createTableBodyRow = function(rowIdx, rowKey)
  */
 oj.TableDomUtils.prototype.createTableBodyRowTouchSelectionAffordance = function(rowIdx)
 {
-    var topAffordance = $(document.createElement(oj.TableDomUtils.DOM_ELEMENT._DIV));
-    topAffordance.addClass(oj.TableDomUtils.CSS_CLASSES._TABLE_DATA_ROW_TOUCH_SELECTIOM_AFFORDANCE_TOP_CLASS);
-    topAffordance.addClass(oj.TableDomUtils.CSS_CLASSES._TABLE_DATA_ROW_TOUCH_SELECTIOM_AFFORDANCE_TOUCH_AREA_CLASS);
-    topAffordance.data('rowIdx', rowIdx);
-    var topIcon = $(document.createElement(oj.TableDomUtils.DOM_ELEMENT._DIV));
-    topIcon.addClass(oj.TableDomUtils.CSS_CLASSES._TABLE_DATA_ROW_TOUCH_SELECTIOM_AFFORDANCE_TOP_ICON_CLASS);
-    topIcon.attr(oj.TableDomUtils.DOM_ATTR._ROLE, 'button');
-    topIcon.attr(oj.TableDomUtils.DOM_ATTR._ARIA_LABEL, this.component.getTranslatedString('labelAccSelectionAffordanceTop'));
-    topIcon.data('rowIdx', rowIdx);
-    topAffordance.append(topIcon); //@HTMLUpdateOK
+    var topAffordance = document.createElement(oj.TableDomUtils.DOM_ELEMENT._DIV);
+    topAffordance.classList.add(oj.TableDomUtils.CSS_CLASSES._TABLE_DATA_ROW_TOUCH_SELECTIOM_AFFORDANCE_TOP_CLASS);
+    topAffordance.classList.add(oj.TableDomUtils.CSS_CLASSES._TABLE_DATA_ROW_TOUCH_SELECTIOM_AFFORDANCE_TOUCH_AREA_CLASS);
+    $(topAffordance).data('rowIdx', rowIdx);
+    var topIcon = document.createElement(oj.TableDomUtils.DOM_ELEMENT._DIV);
+    topIcon.classList.add(oj.TableDomUtils.CSS_CLASSES._TABLE_DATA_ROW_TOUCH_SELECTIOM_AFFORDANCE_TOP_ICON_CLASS);
+    topIcon.setAttribute(oj.TableDomUtils.DOM_ATTR._ROLE, 'button');
+    topIcon.setAttribute(oj.TableDomUtils.DOM_ATTR._ARIA_LABEL, this.component.getTranslatedString('labelAccSelectionAffordanceTop'));
+    $(topIcon).data('rowIdx', rowIdx);
+    topAffordance.appendChild(topIcon); //@HTMLUpdateOK
 
-    var bottomAffordance = $(document.createElement(oj.TableDomUtils.DOM_ELEMENT._DIV));
-    bottomAffordance.addClass(oj.TableDomUtils.CSS_CLASSES._TABLE_DATA_ROW_TOUCH_SELECTIOM_AFFORDANCE_BOTTOM_CLASS);
-    bottomAffordance.addClass(oj.TableDomUtils.CSS_CLASSES._TABLE_DATA_ROW_TOUCH_SELECTIOM_AFFORDANCE_TOUCH_AREA_CLASS);
-    bottomAffordance.data('rowIdx', rowIdx);
-    var bottomIcon = $(document.createElement(oj.TableDomUtils.DOM_ELEMENT._DIV));
-    bottomIcon.addClass(oj.TableDomUtils.CSS_CLASSES._TABLE_DATA_ROW_TOUCH_SELECTIOM_AFFORDANCE_BOTTOM_ICON_CLASS);
-    bottomIcon.attr(oj.TableDomUtils.DOM_ATTR._ROLE, 'button');
-    bottomIcon.attr(oj.TableDomUtils.DOM_ATTR._ARIA_LABEL, this.component.getTranslatedString('labelAccSelectionAffordanceBottom'));
-    bottomIcon.data('rowIdx', rowIdx);
-    bottomAffordance.append(bottomIcon); //@HTMLUpdateOK
+    var bottomAffordance = document.createElement(oj.TableDomUtils.DOM_ELEMENT._DIV);
+    bottomAffordance.classList.add(oj.TableDomUtils.CSS_CLASSES._TABLE_DATA_ROW_TOUCH_SELECTIOM_AFFORDANCE_BOTTOM_CLASS);
+    bottomAffordance.classList.add(oj.TableDomUtils.CSS_CLASSES._TABLE_DATA_ROW_TOUCH_SELECTIOM_AFFORDANCE_TOUCH_AREA_CLASS);
+    $(bottomAffordance).data('rowIdx', rowIdx);
+    var bottomIcon = document.createElement(oj.TableDomUtils.DOM_ELEMENT._DIV);
+    bottomIcon.classList.add(oj.TableDomUtils.CSS_CLASSES._TABLE_DATA_ROW_TOUCH_SELECTIOM_AFFORDANCE_BOTTOM_ICON_CLASS);
+    bottomIcon.setAttribute(oj.TableDomUtils.DOM_ATTR._ROLE, 'button');
+    bottomIcon.setAttribute(oj.TableDomUtils.DOM_ATTR._ARIA_LABEL, this.component.getTranslatedString('labelAccSelectionAffordanceBottom'));
+    $(bottomIcon).data('rowIdx', rowIdx);
+    bottomAffordance.appendChild(bottomIcon); //@HTMLUpdateOK
     
     var tableContainer = this.getTableContainer();
-    tableContainer.append(topAffordance); //@HTMLUpdateOK
-    tableContainer.append(bottomAffordance); //@HTMLUpdateOK
+    tableContainer.appendChild(topAffordance); //@HTMLUpdateOK
+    tableContainer.appendChild(bottomAffordance); //@HTMLUpdateOK
     
     this.moveTableBodyRowTouchSelectionAffordanceTop(rowIdx);
     this.moveTableBodyRowTouchSelectionAffordanceBottom(rowIdx);
 };
 
 /**
+ * Create the bottom slot element with appropriate styling
+ */
+oj.TableDomUtils.prototype.createTableBottomSlot = function()
+{
+  var tableContainer = this.getTableContainer();
+  var tableBottomSlot = document.createElement(oj.TableDomUtils.DOM_ELEMENT._DIV);
+  tableBottomSlot.classList.add(oj.TableDomUtils.CSS_CLASSES._TABLE_BOTTOM_SLOT_CLASS);
+  tableContainer.appendChild(tableBottomSlot); //@HTMLUpdateOK 
+  this._cachedDomTableBottomSlot = tableBottomSlot;
+
+  return tableBottomSlot;
+};
+
+/**
  * Create an empty div element with appropriate styling
- * @return {jQuery} jQuery div DOM element
+ * @return {Element} div DOM element
  */
 oj.TableDomUtils.prototype.createTableContainer = function()
 {
@@ -8429,13 +9600,13 @@ oj.TableDomUtils.prototype.createTableContainer = function()
   var tableContainer;
   if (this.OuterWrapper)
   {
-    tableContainer = $(this.OuterWrapper);
+    tableContainer = this.OuterWrapper;
   } 
   else 
   {
-    tableContainer = $(document.createElement(oj.TableDomUtils.DOM_ELEMENT._DIV));
-    this.element.parent()[0].replaceChild(tableContainer[0], this.element[0]);
-    tableContainer.prepend(this.element); //@HTMLUpdateOK
+    tableContainer = document.createElement(oj.TableDomUtils.DOM_ELEMENT._DIV);
+    this.element.parentNode.replaceChild(tableContainer, this.element);
+    tableContainer.insertBefore(this.element, tableContainer.firstChild); //@HTMLUpdateOK
   }
   this._cachedDomTableContainer = tableContainer;
 
@@ -8444,22 +9615,22 @@ oj.TableDomUtils.prototype.createTableContainer = function()
 
 /**
  * Create an empty tfoot with appropriate styling
- * @return {jQuery} jQuery tfoot DOM element
+ * @return {Element} tfoot DOM element
  */
 oj.TableDomUtils.prototype.createTableFooter = function()
 {
   var table = this.getTable();
-  var tableFooter = $(document.createElement(oj.TableDomUtils.DOM_ELEMENT._TFOOT));
-  var tableFooterRow = $(document.createElement(oj.TableDomUtils.DOM_ELEMENT._TR));
+  var tableFooter = document.createElement(oj.TableDomUtils.DOM_ELEMENT._TFOOT);
+  var tableFooterRow = document.createElement(oj.TableDomUtils.DOM_ELEMENT._TR);
   this.createTableFooterAccSelect(tableFooterRow);
 
-  tableFooter.append(tableFooterRow); //@HTMLUpdateOK
+  tableFooter.appendChild(tableFooterRow); //@HTMLUpdateOK
   
   // check if thead is already there. If so add relative to thead.
   var tableHeader = this.getTableHeader();
   if (tableHeader != null)
   {
-    tableHeader.after(tableFooter); //@HTMLUpdateOK
+    tableHeader.parentNode.insertBefore(tableFooter, tableHeader.nextSibling); //@HTMLUpdateOK
   }
   else
   {
@@ -8467,11 +9638,11 @@ oj.TableDomUtils.prototype.createTableFooter = function()
     var tableBody = this.getTableBody();
     if (tableBody != null)
     {
-      tableBody.before(tableFooter); //@HTMLUpdateOK
+      tableBody.parentNode.insertBefore(tableFooter, tableBody); //@HTMLUpdateOK
     }
     else
     {
-      table.append(tableFooter); //@HTMLUpdateOK
+      table.appendChild(tableFooter); //@HTMLUpdateOK
     }
   }
 
@@ -8480,21 +9651,21 @@ oj.TableDomUtils.prototype.createTableFooter = function()
 
 /**
  * Create a checkbox for accessibility row selection
- * @param {jQuery} tableFooterRow  tr DOM element
- * @return {jQuery} jQuery td DOM element
+ * @param {Element} tableFooterRow  tr DOM element
+ * @return {Element} td DOM element
  */
 oj.TableDomUtils.prototype.createTableFooterAccSelect = function(tableFooterRow)
 {
-  var accFooterCell = tableFooterRow.children('.' + oj.TableDomUtils.CSS_CLASSES._HIDDEN_CONTENT_ACC_CLASS);
+  var accFooterCell = tableFooterRow.getElementsByClassName(oj.TableDomUtils.CSS_CLASSES._HIDDEN_CONTENT_ACC_CLASS);
 
   if (accFooterCell != null && accFooterCell.length > 0)
   {
-    return $(accFooterCell[0]);
+    return accFooterCell[0];
   }
-  accFooterCell = $(document.createElement(oj.TableDomUtils.DOM_ELEMENT._TD));
-  accFooterCell.addClass(oj.TableDomUtils.CSS_CLASSES._HIDDEN_CONTENT_ACC_CLASS);
-  accFooterCell.attr(oj.TableDomUtils.DOM_ATTR._TABINDEX, '-1');
-  tableFooterRow.prepend(accFooterCell); //@HTMLUpdateOK
+  accFooterCell = document.createElement(oj.TableDomUtils.DOM_ELEMENT._TD);
+  accFooterCell.classList.add(oj.TableDomUtils.CSS_CLASSES._HIDDEN_CONTENT_ACC_CLASS);
+  accFooterCell.setAttribute(oj.TableDomUtils.DOM_ATTR._TABINDEX, '-1');
+  tableFooterRow.insertBefore(accFooterCell, tableFooterRow.firstChild); //@HTMLUpdateOK
 
   return accFooterCell;
 };
@@ -8502,32 +9673,32 @@ oj.TableDomUtils.prototype.createTableFooterAccSelect = function(tableFooterRow)
 /**
  * Create an empty td element with appropriate styling
  * @param {number} columnIdx  column index
- * @return {jQuery} jQuery td DOM element
+ * @return {Element} td DOM element
  */
 oj.TableDomUtils.prototype.createTableFooterCell = function(columnIdx)
 {
-  var tableFooterCell = $(document.createElement(oj.TableDomUtils.DOM_ELEMENT._TD));
+  var tableFooterCell = document.createElement(oj.TableDomUtils.DOM_ELEMENT._TD);
 
   return tableFooterCell;
 };
 
 /**
  * Create an empty thead & tr element with appropriate styling
- * @return {jQuery} jQuery thead DOM element
+ * @return {Element} thead DOM element
  */
 oj.TableDomUtils.prototype.createTableHeader = function()
 {
   var table = this.getTable();
-  var tableHeader = $(document.createElement(oj.TableDomUtils.DOM_ELEMENT._THEAD));
-  var tableHeaderRow = $(document.createElement(oj.TableDomUtils.DOM_ELEMENT._TR));
+  var tableHeader = document.createElement(oj.TableDomUtils.DOM_ELEMENT._THEAD);
+  var tableHeaderRow = document.createElement(oj.TableDomUtils.DOM_ELEMENT._TR);
   this._cachedDomTableHeaderRow = tableHeaderRow;
-  tableHeader.append(tableHeaderRow); //@HTMLUpdateOK
+  tableHeader.appendChild(tableHeaderRow); //@HTMLUpdateOK
   
   // check if tfoot is already there. If so add relative to tfoot.
   var tableFooter = this.getTableFooter();
   if (tableFooter != null)
   {
-    tableFooter.before(tableHeader); //@HTMLUpdateOK
+    tableFooter.parentNode.insertBefore(tableHeader, tableFooter); //@HTMLUpdateOK
   }
   else
   {
@@ -8535,11 +9706,11 @@ oj.TableDomUtils.prototype.createTableHeader = function()
     var tableBody = this.getTableBody();
     if (tableBody != null)
     {
-      tableBody.before(tableHeader); //@HTMLUpdateOK
+      tableBody.parentNode.insertBefore(tableHeader, tableBody); //@HTMLUpdateOK
     }
     else
     {
-      table.append(tableHeader); //@HTMLUpdateOK
+      table.appendChild(tableHeader); //@HTMLUpdateOK
     }
   }
   this._cachedDomTableHeader = tableHeader;
@@ -8549,13 +9720,13 @@ oj.TableDomUtils.prototype.createTableHeader = function()
 
 /**
  * Create a th element for accessibility row selection
- * @return {jQuery} jQuery th DOM element
+ * @return {Element} th DOM element
  */
 oj.TableDomUtils.prototype.createTableHeaderAccSelectRowColumn = function()
 {
-  var headerColumn = $(document.createElement(oj.TableDomUtils.DOM_ELEMENT._TH));
-  headerColumn.addClass(oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_ACC_SELECT_ROW_CLASS);
-  headerColumn.attr(oj.TableDomUtils.DOM_ATTR._ID, this.getTableId() + ':' + oj.TableDomUtils._COLUMN_HEADER_ROW_SELECT_ID);
+  var headerColumn = document.createElement(oj.TableDomUtils.DOM_ELEMENT._TH);
+  headerColumn.classList.add(oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_ACC_SELECT_ROW_CLASS);
+  headerColumn.setAttribute(oj.TableDomUtils.DOM_ATTR._ID, this.getTableId() + ':' + oj.TableDomUtils._COLUMN_HEADER_ROW_SELECT_ID);
   var selectRowTitle;
   var editMode = this['options']['editMode'];
   var isRowSelectionEnabled = this.component._getRowSelectionMode() != null ? true : false;
@@ -8575,13 +9746,13 @@ oj.TableDomUtils.prototype.createTableHeaderAccSelectRowColumn = function()
   {
     selectRowTitle = this.component.getTranslatedString(this.component._BUNDLE_KEY._LABEL_SELECT_ROW);
   }
-  headerColumn.attr(oj.TableDomUtils.DOM_ATTR._TITLE, selectRowTitle);
-  headerColumn.css('padding', '0');
-  headerColumn.css('border', '0');
-  var headerColumnText = $(document.createElement(oj.TableDomUtils.DOM_ELEMENT._SPAN));
-  headerColumnText.text(selectRowTitle);
-  headerColumnText.addClass(oj.TableDomUtils.CSS_CLASSES._HIDDEN_CONTENT_ACC_CLASS);
-  headerColumn.append(headerColumnText); //@HTMLUpdateOK
+  headerColumn.setAttribute(oj.TableDomUtils.DOM_ATTR._TITLE, selectRowTitle);
+  headerColumn.style['padding'] = '0';
+  headerColumn.style['border'] = '0';
+  var headerColumnText = document.createElement(oj.TableDomUtils.DOM_ELEMENT._SPAN);
+  headerColumnText.appendChild(document.createTextNode(selectRowTitle)); //@HTMLUpdateOK
+  headerColumnText.classList.add(oj.TableDomUtils.CSS_CLASSES._HIDDEN_CONTENT_ACC_CLASS);
+  headerColumn.appendChild(headerColumnText); //@HTMLUpdateOK
 
   return headerColumn;
 };
@@ -8590,23 +9761,26 @@ oj.TableDomUtils.prototype.createTableHeaderAccSelectRowColumn = function()
  * Create a th element with appropriate styling and column content
  * @param {number} columnIdx  column index
  * @param {string} columnSelectionMode  column selection mode
- * @return {jQuery} jQuery th DOM element
+ * @return {Element} th DOM element
  */
 oj.TableDomUtils.prototype.createTableHeaderColumn = function(columnIdx, columnSelectionMode)
 {
   var column = this.component._getColumnDefs()[columnIdx];
-  var headerColumnCell = $(document.createElement(oj.TableDomUtils.DOM_ELEMENT._TH));
+  var headerColumnCell = document.createElement(oj.TableDomUtils.DOM_ELEMENT._TH);
   this.styleTableHeaderColumn(columnIdx, headerColumnCell, columnSelectionMode, true);
   // add abbr for acc
-  headerColumnCell.attr('abbr', column.headerText);
+  headerColumnCell.setAttribute('abbr', column.headerText);
   // add title for tooltip
-  headerColumnCell.attr(oj.TableDomUtils.DOM_ATTR._TITLE, column.headerText);
+  headerColumnCell.setAttribute(oj.TableDomUtils.DOM_ATTR._TITLE, column.headerText);
   this.insertTableHeaderColumn(columnIdx, headerColumnCell);
   var headerContext = {'columnIndex' : columnIdx, 'headerContext': {'component': this.component, 'parentElement': headerColumnCell}};
-
+  if (column.resizable == oj.TableDomUtils._OPTION_ENABLED)
+  {
+    headerColumnCell.setAttribute('data-oj-resizable', oj.TableDomUtils._OPTION_ENABLED);
+  }
   if (column.sortable == oj.TableDomUtils._OPTION_ENABLED)
   {
-    headerColumnCell.attr('data-oj-sortable', oj.TableDomUtils._OPTION_ENABLED);
+    headerColumnCell.setAttribute('data-oj-sortable', oj.TableDomUtils._OPTION_ENABLED);
     oj.TableRendererUtils.columnHeaderSortableIconRenderer(this.component, headerContext, null, null);
   }
   else
@@ -8620,22 +9794,23 @@ oj.TableDomUtils.prototype.createTableHeaderColumn = function(columnIdx, columnS
 /**
  * Create the drag image for the column
  * @param {number} columnIdx  column index
- * @return {jQuery} jQuery DOM element
+ * @return {Element} DOM element
  */
 oj.TableDomUtils.prototype.createTableHeaderColumnDragImage = function(columnIdx)
 {
   var headerColumn = this.getTableHeaderColumn(columnIdx);
-  var headerColumnDragImage = headerColumn.clone();
-  headerColumnDragImage.removeClass(oj.TableDomUtils.MARKER_STYLE_CLASSES._DRAG);
-  headerColumnDragImage.removeClass(oj.TableDomUtils.MARKER_STYLE_CLASSES._FOCUS);
-  headerColumnDragImage.removeClass(oj.TableDomUtils.MARKER_STYLE_CLASSES._HOVER);
-  headerColumnDragImage.addClass(oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_DRAG_IMAGE);
-  headerColumnDragImage.css(oj.TableDomUtils.CSS_PROP._POSITION, oj.TableDomUtils.CSS_VAL._ABSOLUTE);
-  headerColumnDragImage.css(oj.TableDomUtils.CSS_PROP._TOP, '0');
-  headerColumnDragImage.css(oj.TableDomUtils.CSS_PROP._LEFT, '-999em');
-  headerColumnDragImage.css(oj.TableDomUtils.CSS_PROP._ZINDEX, '-999');
+  var headerColumnDragImage = headerColumn.cloneNode(true);
+  headerColumnDragImage.classList.remove(oj.TableDomUtils.MARKER_STYLE_CLASSES._DRAG);
+  headerColumnDragImage.classList.remove(oj.TableDomUtils.MARKER_STYLE_CLASSES._FOCUS);
+  headerColumnDragImage.classList.remove(oj.TableDomUtils.MARKER_STYLE_CLASSES._FOCUS_HIGHLIGHT);
+  headerColumnDragImage.classList.remove(oj.TableDomUtils.MARKER_STYLE_CLASSES._HOVER);
+  headerColumnDragImage.classList.add(oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_DRAG_IMAGE);
+  headerColumnDragImage.style[oj.TableDomUtils.CSS_PROP._POSITION] = oj.TableDomUtils.CSS_VAL._ABSOLUTE;
+  headerColumnDragImage.style[oj.TableDomUtils.CSS_PROP._TOP] = '0';
+  headerColumnDragImage.style[oj.TableDomUtils.CSS_PROP._LEFT] = '-999em';
+  headerColumnDragImage.style[oj.TableDomUtils.CSS_PROP._ZINDEX] = '-999';
   var tableContainer = this.getTableContainer();
-  tableContainer.append(headerColumnDragImage); //@HTMLUpdateOK
+  tableContainer.appendChild(headerColumnDragImage); //@HTMLUpdateOK
   
   return headerColumnDragImage;
 };
@@ -8644,7 +9819,7 @@ oj.TableDomUtils.prototype.createTableHeaderColumnDragImage = function(columnIdx
  * Create a checkbox for accessibility column selection
  * @param {number} columnIdx  column index
  * @param {string} columnSelectionMode  column selection mode
- * @return {jQuery} jQuery div DOM element
+ * @return {Element} div DOM element
  */
 oj.TableDomUtils.prototype.createTableHeaderColumnAccSelect = function(columnIdx, columnSelectionMode)
 {
@@ -8661,50 +9836,48 @@ oj.TableDomUtils.prototype.createTableHeaderColumnAccSelect = function(columnIdx
     return accSelectionHeaderColumn;
   }
 
-  accSelectionHeaderColumn = $(document.createElement(oj.TableDomUtils.DOM_ELEMENT._DIV));
-  accSelectionHeaderColumn.addClass(oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_ACC_SELECT_COLUMN_CLASS);
-  accSelectionHeaderColumn.addClass(oj.TableDomUtils.CSS_CLASSES._HIDDEN_CONTENT_ACC_CLASS);
-  var accSelectCheckbox = $(document.createElement(oj.TableDomUtils.DOM_ELEMENT._INPUT));
-  accSelectCheckbox.attr(oj.TableDomUtils.DOM_ATTR._ID, this.getTableId() + ':acc_sel_col' + columnIdx);
-  accSelectCheckbox.attr(oj.TableDomUtils.DOM_ATTR._TYPE, 'checkbox');
-  accSelectCheckbox.attr(oj.TableDomUtils.DOM_ATTR._TABINDEX, '-1');
+  accSelectionHeaderColumn = document.createElement(oj.TableDomUtils.DOM_ELEMENT._DIV);
+  accSelectionHeaderColumn.classList.add(oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_ACC_SELECT_COLUMN_CLASS);
+  accSelectionHeaderColumn.classList.add(oj.TableDomUtils.CSS_CLASSES._HIDDEN_CONTENT_ACC_CLASS);
+  var accSelectCheckbox = document.createElement(oj.TableDomUtils.DOM_ELEMENT._INPUT);
+  accSelectCheckbox.setAttribute(oj.TableDomUtils.DOM_ATTR._ID, this.getTableId() + ':acc_sel_col' + columnIdx);
+  accSelectCheckbox.setAttribute(oj.TableDomUtils.DOM_ATTR._TYPE, 'checkbox');
+  accSelectCheckbox.setAttribute(oj.TableDomUtils.DOM_ATTR._TABINDEX, '-1');
   var selectColumnTitle = this.component.getTranslatedString(this.component._BUNDLE_KEY._LABEL_SELECT_COLUMN);
-  accSelectCheckbox.attr(oj.TableDomUtils.DOM_ATTR._TITLE, selectColumnTitle);
-  accSelectCheckbox.addClass(oj.TableDomUtils.CSS_CLASSES._CHECKBOX_ACC_SELECT_COLUMN_CLASS);
-  accSelectionHeaderColumn.append(accSelectCheckbox); //@HTMLUpdateOK
-  headerColumn.prepend(accSelectionHeaderColumn); //@HTMLUpdateOK
+  accSelectCheckbox.setAttribute(oj.TableDomUtils.DOM_ATTR._TITLE, selectColumnTitle);
+  accSelectCheckbox.classList.add(oj.TableDomUtils.CSS_CLASSES._CHECKBOX_ACC_SELECT_COLUMN_CLASS);
+  accSelectionHeaderColumn.appendChild(accSelectCheckbox); //@HTMLUpdateOK
+  headerColumn.insertBefore(accSelectionHeaderColumn, headerColumn.firstChild); //@HTMLUpdateOK
 
   return accSelectionHeaderColumn;
 };
 
 /**
- * Create a div element for table scrolling. Used in scrolling fallback mode.
- * @return {jQuery} jQuery div DOM element
+ * Create a div element for resize indicator
+ * @return {Element} div DOM element
  */
-oj.TableDomUtils.prototype.createTableDivScroller = function()
+oj.TableDomUtils.prototype.createTableHeaderColumnResizeIndicator = function()
 {
-  var table = this.getTable();
   var tableContainer = this.getTableContainer();
-  var tableDivScroller = $(document.createElement(oj.TableDomUtils.DOM_ELEMENT._DIV));
-  tableDivScroller.addClass(oj.TableDomUtils.CSS_CLASSES._TABLE_SCROLLER_CLASS);
-  tableContainer[0].replaceChild(tableDivScroller[0], table[0]);
-  tableDivScroller.append(table); //@HTMLUpdateOK
-  this._cachedDomTableDivScroller = tableDivScroller;
-
-  return tableDivScroller;
+  var tableHeaderColumnResizeIndicator = document.createElement(oj.TableDomUtils.DOM_ELEMENT._DIV);
+  tableContainer.appendChild(tableHeaderColumnResizeIndicator);
+  tableHeaderColumnResizeIndicator.classList.add(oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_RESIZE_INDICATOR_CLASS);
+  this._cachedDomTableHeaderColumnResizeIndicator = tableHeaderColumnResizeIndicator;
+  
+  return tableHeaderColumnResizeIndicator;
 };
 
 /**
  * Create a div element for inline messages
- * @return {jQuery} jQuery div DOM element
+ * @return {Element} div DOM element
  */
 oj.TableDomUtils.prototype.createTableInlineMessage = function()
 {
   var tableContainer = this.getTableContainer();
-  var inlineMessage = $(document.createElement(oj.TableDomUtils.DOM_ELEMENT._DIV));
-  inlineMessage.addClass(oj.TableDomUtils.CSS_CLASSES._TABLE_INLINE_MESSAGE_CLASS);
-  inlineMessage.css(oj.TableDomUtils.CSS_PROP._DISPLAY, oj.TableDomUtils.CSS_VAL._NONE);
-  tableContainer.append(inlineMessage); //@HTMLUpdateOK
+  var inlineMessage = document.createElement(oj.TableDomUtils.DOM_ELEMENT._DIV);
+  inlineMessage.classList.add(oj.TableDomUtils.CSS_CLASSES._TABLE_INLINE_MESSAGE_CLASS);
+  inlineMessage.style[oj.TableDomUtils.CSS_PROP._DISPLAY] = oj.TableDomUtils.CSS_VAL._NONE;
+  tableContainer.appendChild(inlineMessage); //@HTMLUpdateOK
   this._cachedDomTableInlineMessage = inlineMessage;
   
   return inlineMessage;
@@ -8712,16 +9885,16 @@ oj.TableDomUtils.prototype.createTableInlineMessage = function()
 
 /**
  * Create a div element for the accessibility notifications
- * @return {jQuery} jQuery div DOM element
+ * @return {Element} div DOM element
  */
 oj.TableDomUtils.prototype.createTableStatusAccNotification = function()
 {
   var tableContainer = this.getTableContainer();
-  var statusNotification = $(document.createElement(oj.TableDomUtils.DOM_ELEMENT._DIV));
-  statusNotification.attr(oj.TableDomUtils.DOM_ATTR._ROLE, 'status');
-  statusNotification.addClass(oj.TableDomUtils.CSS_CLASSES._TABLE_STATUS_ACC_NOTIFICATION_CLASS);
-  statusNotification.addClass(oj.TableDomUtils.CSS_CLASSES._HIDDEN_CONTENT_ACC_CLASS);
-  tableContainer.append(statusNotification); //@HTMLUpdateOK
+  var statusNotification = document.createElement(oj.TableDomUtils.DOM_ELEMENT._DIV);
+  statusNotification.setAttribute(oj.TableDomUtils.DOM_ATTR._ROLE, 'status');
+  statusNotification.classList.add(oj.TableDomUtils.CSS_CLASSES._TABLE_STATUS_ACC_NOTIFICATION_CLASS);
+  statusNotification.classList.add(oj.TableDomUtils.CSS_CLASSES._HIDDEN_CONTENT_ACC_CLASS);
+  tableContainer.appendChild(statusNotification); //@HTMLUpdateOK
   this._cachedDomTableStatusAccNotification = statusNotification;
 
   return statusNotification;
@@ -8729,19 +9902,21 @@ oj.TableDomUtils.prototype.createTableStatusAccNotification = function()
 
 /**
  * Create a div element for the Fetching Data... status message
- * @return {jQuery} jQuery div DOM element
+ * @return {Element} div DOM element
  */
 oj.TableDomUtils.prototype.createTableStatusMessage = function()
 {
   var tableContainer = this.getTableContainer();
-  var statusMessage = $(document.createElement(oj.TableDomUtils.DOM_ELEMENT._DIV));
-  statusMessage.addClass(oj.TableDomUtils.CSS_CLASSES._TABLE_STATUS_MESSAGE_CLASS);
-  statusMessage.css(oj.TableDomUtils.CSS_PROP._DISPLAY, oj.TableDomUtils.CSS_VAL._NONE);
-  var statusMessageText = $(document.createElement(oj.TableDomUtils.DOM_ELEMENT._DIV));
-  statusMessageText.addClass(oj.TableDomUtils.CSS_CLASSES._TABLE_STATUS_MESSAGE_TEXT_CLASS);
-  statusMessageText.text(this.component.getTranslatedString(this.component._BUNDLE_KEY._MSG_FETCHING_DATA));
-  statusMessage.append(statusMessageText); //@HTMLUpdateOK
-  tableContainer.append(statusMessage); //@HTMLUpdateOK
+  var statusMessage = document.createElement(oj.TableDomUtils.DOM_ELEMENT._DIV);
+  statusMessage.classList.add(oj.TableDomUtils.CSS_CLASSES._TABLE_STATUS_MESSAGE_CLASS);
+  statusMessage.style[oj.TableDomUtils.CSS_PROP._DISPLAY] = oj.TableDomUtils.CSS_VAL._NONE;
+
+  var statusMessageLoadingIndicator = document.createElement(oj.TableDomUtils.DOM_ELEMENT._DIV);
+  statusMessageLoadingIndicator.classList.add(oj.TableDomUtils.CSS_CLASSES._ICON_CLASS);
+  statusMessageLoadingIndicator.classList.add(oj.TableDomUtils.CSS_CLASSES._TABLE_LOADING_ICON_CLASS);
+  statusMessageLoadingIndicator.setAttribute("aria-label", this.component.getTranslatedString(this.component._BUNDLE_KEY._MSG_FETCHING_DATA));
+  statusMessage.appendChild(statusMessageLoadingIndicator); //@HTMLUpdateOK
+  tableContainer.appendChild(statusMessage); //@HTMLUpdateOK
   this._cachedDomTableStatusMessage = statusMessage;
 
   return statusMessage;
@@ -8762,11 +9937,11 @@ oj.TableDomUtils.prototype.displayDragOverIndicatorColumn = function(columnIdx, 
   {
     if (before)
     {
-      tableHeaderColumn.addClass(oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_DRAG_INDICATOR_BEFORE_CLASS);
+      tableHeaderColumn.classList.add(oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_DRAG_INDICATOR_BEFORE_CLASS);
     }
     else
     {
-      tableHeaderColumn.addClass(oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_DRAG_INDICATOR_AFTER_CLASS);
+      tableHeaderColumn.classList.add(oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_DRAG_INDICATOR_AFTER_CLASS);
     }
   }
   else
@@ -8777,11 +9952,11 @@ oj.TableDomUtils.prototype.displayDragOverIndicatorColumn = function(columnIdx, 
     {
       if (before)
       {
-        tableHeaderRow.addClass(oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_DRAG_INDICATOR_BEFORE_CLASS);
+        tableHeaderRow.classList.add(oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_DRAG_INDICATOR_BEFORE_CLASS);
       }
       else
       {
-        tableHeaderRow.addClass(oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_DRAG_INDICATOR_AFTER_CLASS); 
+        tableHeaderRow.classList.add(oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_DRAG_INDICATOR_AFTER_CLASS); 
       }
     }
   } 
@@ -8791,37 +9966,40 @@ oj.TableDomUtils.prototype.displayDragOverIndicatorColumn = function(columnIdx, 
  * Display the visual indicator for row drag over
  * @param {number} rowIdx  row index
  * @param {boolean} before before the row
+ * @param {Element} modelRow tr DOM element
  */
 oj.TableDomUtils.prototype.displayDragOverIndicatorRow = function(rowIdx, before, modelRow)
 {
   this.removeDragOverIndicatorRow();
-  var tableBodyRowDragIndicator = $(document.createElement(oj.TableDomUtils.DOM_ELEMENT._TR));
+  var tableBodyRowDragIndicator = document.createElement(oj.TableDomUtils.DOM_ELEMENT._TR);
   if (before)
   {
-    tableBodyRowDragIndicator.addClass(oj.TableDomUtils.CSS_CLASSES._TABLE_DATA_ROW_DRAG_INDICATOR_BEFORE_CLASS);
+    tableBodyRowDragIndicator.classList.add(oj.TableDomUtils.CSS_CLASSES._TABLE_DATA_ROW_DRAG_INDICATOR_BEFORE_CLASS);
   }
   else
   {
-    tableBodyRowDragIndicator.addClass(oj.TableDomUtils.CSS_CLASSES._TABLE_DATA_ROW_DRAG_INDICATOR_AFTER_CLASS);
+    tableBodyRowDragIndicator.classList.add(oj.TableDomUtils.CSS_CLASSES._TABLE_DATA_ROW_DRAG_INDICATOR_AFTER_CLASS);
   }
   if (modelRow)
-    tableBodyRowDragIndicator.height(modelRow.height());
+  {
+    $(tableBodyRowDragIndicator).height(parseInt($(modelRow).height(), 10));
+  }
     
-  var tableBodyDragIndicatorCell = $(document.createElement(oj.TableDomUtils.DOM_ELEMENT._TD));
+  var tableBodyDragIndicatorCell = document.createElement(oj.TableDomUtils.DOM_ELEMENT._TD);
   var columns = this.component._getColumnDefs();
-  tableBodyDragIndicatorCell.attr(oj.TableDomUtils.DOM_ATTR._COLSPAN, columns.length + 1);
-  tableBodyRowDragIndicator.append(tableBodyDragIndicatorCell); //@HTMLUpdateOK
+  tableBodyDragIndicatorCell.setAttribute(oj.TableDomUtils.DOM_ATTR._COLSPAN, columns.length + 1);
+  tableBodyRowDragIndicator.appendChild(tableBodyDragIndicatorCell); //@HTMLUpdateOK
   var tableBodyRow = this.getTableBodyRow(rowIdx);
 
   if (tableBodyRow != null)
   {
     if (before)
     {
-      tableBodyRow.before(tableBodyRowDragIndicator); //@HTMLUpdateOK
+      tableBodyRow.parentNode.insertBefore(tableBodyRowDragIndicator, tableBodyRow); //@HTMLUpdateOK
     }
     else
     {
-      tableBodyRow.after(tableBodyRowDragIndicator); //@HTMLUpdateOK
+      tableBodyRow.parentNode.insertBefore(tableBodyRowDragIndicator, tableBodyRow.nextSibling); //@HTMLUpdateOK
     }
   }
   else
@@ -8832,32 +10010,28 @@ oj.TableDomUtils.prototype.displayDragOverIndicatorRow = function(rowIdx, before
     {
       this.component._hideNoDataMessage();
     }
-    this.getTableBody().append(tableBodyRowDragIndicator); //@HTMLUpdateOK
+    this.getTableBody().appendChild(tableBodyRowDragIndicator); //@HTMLUpdateOK
   }
 }
 
 /**
  * Get the context menu
- * @return  {jQuery} jQuery table DOM element
+ * @return  {Element} menu DOM element
  */
 oj.TableDomUtils.prototype.getContextMenu = function()
 {
   return this._menuContainer;
 };
 
-/**
- * Get the context menu id
- * @return  {string} context menu id
- */
-oj.TableDomUtils.prototype.getContextMenuId = function()
+oj.TableDomUtils.prototype.getContextMenuResizePopup = function()
 {
-  return this.options["contextMenu"] == null ? '#' + this.getTable().attr("contextmenu") : this.options["contextMenu"];
+  return this._cachedDomContextMenuResizePopup;
 };
 
 /**
  * Get the column index of the DOM element. e.g. pass in the table cell to
  * see which column it's in.
- * @param {jQuery} element  DOM element
+ * @param {Element} element  DOM element
  * @return {number|null} the column index
  * @private
  */
@@ -8866,19 +10040,19 @@ oj.TableDomUtils.prototype.getElementColumnIdx = function(element)
   var tableBodyCell = this.getFirstAncestor(element, oj.TableDomUtils.CSS_CLASSES._TABLE_DATA_CELL_CLASS);
   if (tableBodyCell != null)
   {
-    return tableBodyCell.parent().children('.' + oj.TableDomUtils.CSS_CLASSES._TABLE_DATA_CELL_CLASS).index(tableBodyCell);
+    return $(tableBodyCell.parentNode).children('.' + oj.TableDomUtils.CSS_CLASSES._TABLE_DATA_CELL_CLASS).index(tableBodyCell);
   }
   
   var tableHeaderColumn = this.getFirstAncestor(element, oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_CELL_CLASS);
   if (tableHeaderColumn != null)
   {
-    return tableHeaderColumn.parent().children('.' + oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_CELL_CLASS).index(tableHeaderColumn);
+    return $(tableHeaderColumn.parentNode).children('.' + oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_CELL_CLASS).index(tableHeaderColumn);
   }
   
   var tableFooterCell = this.getFirstAncestor(element, oj.TableDomUtils.CSS_CLASSES._TABLE_FOOTER_CELL_CLASS);
   if (tableFooterCell != null)
   {
-    return tableFooterCell.parent().children('.' + oj.TableDomUtils.CSS_CLASSES._TABLE_FOOTER_CELL_CLASS).index(tableFooterCell);
+    return $(tableFooterCell.parentNode).children('.' + oj.TableDomUtils.CSS_CLASSES._TABLE_FOOTER_CELL_CLASS).index(tableFooterCell);
   }
   return null;
 };
@@ -8886,7 +10060,7 @@ oj.TableDomUtils.prototype.getElementColumnIdx = function(element)
 /**
  * Get the row index of the DOM element. e.g. pass in the table cell to
  * see which row it's in.
- * @param {jQuery} element  DOM element
+ * @param {Element} element  DOM element
  * @return {number|null} the row index
  * @private
  */
@@ -8896,16 +10070,16 @@ oj.TableDomUtils.prototype.getElementRowIdx = function(element)
   
   if (tableBodyRow != null)
   {
-    return tableBodyRow.index();
+    return $(tableBodyRow).index();
   }
   return null;
 };
 
 /**
   * Find the first ancestor of an element with a specific class name
-  * @param {jQuery} element the element to find the nearest class name to
+  * @param {Element} element the element to find the nearest class name to
   * @param {string} className the class name to look for
-  * @return {jQuery|null} the element with the className, if there is none returns null 
+  * @return {Element|null} the element with the className, if there is none returns null 
   */
 oj.TableDomUtils.prototype.getFirstAncestor = function(element, className) 
 {
@@ -8915,16 +10089,15 @@ oj.TableDomUtils.prototype.getFirstAncestor = function(element, className)
   {
     return null;
   }
-  element = $(element);
 
-  if (element.hasClass(className))
+  if (element.classList.contains(className))
   {
     return element;
   }
-  parents = element.parents('.' + className);
+  parents = $(element).parents('.' + className);
   if (parents.length != 0)
   {
-    return parents.eq(0);
+    return parents[0];
   }
   return null;
 };
@@ -8937,9 +10110,9 @@ oj.TableDomUtils.prototype.getFirstAncestor = function(element, className)
 oj.TableDomUtils.prototype.getScrollbarHeight = function()
 {
   var scroller = this.getScroller();
-  if (scroller.get(0).clientHeight > 0)
+  if (scroller.clientHeight > 0)
   {
-    var scrollbarHeight = scroller.get(0).offsetHeight - scroller.get(0).clientHeight;
+    var scrollbarHeight = scroller.offsetHeight - scroller.clientHeight;
 
     return scrollbarHeight;
   }
@@ -8954,9 +10127,9 @@ oj.TableDomUtils.prototype.getScrollbarHeight = function()
 oj.TableDomUtils.prototype.getScrollbarWidth = function()
 {
   var scroller = this.getScroller();
-  if (scroller.get(0).clientWidth > 0)
+  if (scroller.clientWidth > 0)
   {
-    var scrollbarWidth = scroller.get(0).offsetWidth - scroller.get(0).clientWidth;
+    var scrollbarWidth = scroller.offsetWidth - scroller.clientWidth;
 
     return scrollbarWidth;
   }
@@ -8965,28 +10138,20 @@ oj.TableDomUtils.prototype.getScrollbarWidth = function()
 
 /**
  * Return the table scroller
- * @return {jQuery} scrolbar
+ * @return {Element} scrolbar
  */
 oj.TableDomUtils.prototype.getScroller = function()
 {
-  if (!this.isDivScroller())
-  {
     return this.getTableBody();
-  }
-  else
-  {
-    return this.getTableDivScroller();
-  }
 };
 
 /**
  * Get the element scrollLeft
- * @param {jQuery} element DOM element
+ * @param {Element} element DOM element
  */
 oj.TableDomUtils.prototype.getScrollLeft = function(element)
 {
-  element = $(element);
-  var scrollLeft = element[0].scrollLeft;
+  var scrollLeft = element.scrollLeft;
   
   if (this.component._GetReadingDirection() === "rtl")
   {
@@ -8994,7 +10159,7 @@ oj.TableDomUtils.prototype.getScrollLeft = function(element)
     
     if (this._isWebkit())
     {
-      var maxScrollLeft = element[0].scrollWidth - element[0].clientWidth;
+      var maxScrollLeft = element.scrollWidth - element.clientWidth;
       scrollLeft = maxScrollLeft - scrollLeft;
     }
   }
@@ -9003,16 +10168,16 @@ oj.TableDomUtils.prototype.getScrollLeft = function(element)
         
 /**
  * Return the table element
- * @return {jQuery} jQuery table DOM element
+ * @return {Element} table DOM element
  */
 oj.TableDomUtils.prototype.getTable = function()
 {
-  return $(this.element);
+  return this.element;
 };
 
 /**
  * Return the table body element
- * @return {jQuery|null} jQuery tbody DOM element
+ * @return {Element|null} tbody DOM element
  */
 oj.TableDomUtils.prototype.getTableBody = function()
 {
@@ -9022,10 +10187,10 @@ oj.TableDomUtils.prototype.getTableBody = function()
     var tableBody = null;
     if (table)
     {
-      tableBody = table.children('.' + oj.TableDomUtils.CSS_CLASSES._TABLE_BODY_CLASS);
+      tableBody = table.getElementsByClassName(oj.TableDomUtils.CSS_CLASSES._TABLE_BODY_CLASS);
       if (tableBody && tableBody.length > 0)
       {
-        this._cachedDomTableBody = $(tableBody.get(0));
+        this._cachedDomTableBody = tableBody[0];
       }
     }
   }
@@ -9037,8 +10202,8 @@ oj.TableDomUtils.prototype.getTableBody = function()
  * Return the cell element
  * @param {number} rowIdx  row index
  * @param {number} columnIdx  column index
- * @param {jQuery|null} tableBodyRow  tr DOM element
- * @return {jQuery|null} jQuery td DOM element
+ * @param {Element|null} tableBodyRow  tr DOM element
+ * @return {Element|null} td DOM element
  */
 oj.TableDomUtils.prototype.getTableBodyCell = function(rowIdx, columnIdx, tableBodyRow)
 {
@@ -9050,7 +10215,7 @@ oj.TableDomUtils.prototype.getTableBodyCell = function(rowIdx, columnIdx, tableB
 
   if (tableBodyCells.length > columnIdx)
   {
-    return $(tableBodyCells[columnIdx]);
+    return tableBodyCells[columnIdx];
   }
 
   return null;
@@ -9058,18 +10223,18 @@ oj.TableDomUtils.prototype.getTableBodyCell = function(rowIdx, columnIdx, tableB
 
 /**
  * Get checkbox cell for accessibility row selection
- * @param {jQuery} tableBodyRow  tr DOM element
- * @return {jQuery|null} jQuery td DOM element
+ * @param {Element} tableBodyRow  tr DOM element
+ * @return {Element|null} td DOM element
  */
 oj.TableDomUtils.prototype.getTableBodyCellAccSelect = function(tableBodyRow)
 {
   if (tableBodyRow != null)
   {
-    var accSelectionCell = tableBodyRow.children('.' + oj.TableDomUtils.CSS_CLASSES._TABLE_DATA_CELL_ACC_SELECT_CLASS);
+    var accSelectionCell = tableBodyRow.getElementsByClassName(oj.TableDomUtils.CSS_CLASSES._TABLE_DATA_CELL_ACC_SELECT_CLASS);
 
     if (accSelectionCell != null && accSelectionCell.length > 0)
     {
-      return $(accSelectionCell[0]);
+      return accSelectionCell[0];
     }
   }
   return null;
@@ -9078,8 +10243,8 @@ oj.TableDomUtils.prototype.getTableBodyCellAccSelect = function(tableBodyRow)
 /**
  * Return all the logical cell elements in a row
  * @param {number} rowIdx  row index
- * @param {jQuery|null} tableBodyRow  tr DOM element
- * @return {jQuery|null} jQuery array of td DOM elements
+ * @param {Element|null} tableBodyRow  tr DOM element
+ * @return {Array|null} array of td DOM elements
  */
 oj.TableDomUtils.prototype.getTableBodyLogicalCells = function(rowIdx, tableBodyRow)
 {
@@ -9094,9 +10259,9 @@ oj.TableDomUtils.prototype.getTableBodyLogicalCells = function(rowIdx, tableBody
 
 /**
  * Return all the cell elements in a row
- * @param {number} rowIdx  row index
- * @param {jQuery|null} tableBodyRow  tr DOM element
- * @return {jQuery|null} jQuery array of td DOM elements
+ * @param {number|null} rowIdx  row index
+ * @param {Element|null} tableBodyRow  tr DOM element
+ * @return {Array|null} array of td DOM elements
  */
 oj.TableDomUtils.prototype.getTableBodyCells = function(rowIdx, tableBodyRow)
 {
@@ -9110,7 +10275,7 @@ oj.TableDomUtils.prototype.getTableBodyCells = function(rowIdx, tableBodyRow)
     return null;
   }
 
-  var tableBodyCellElements = tableBodyRow.children('.' + oj.TableDomUtils.CSS_CLASSES._TABLE_DATA_CELL_CLASS);
+  var tableBodyCellElements = tableBodyRow.getElementsByClassName(oj.TableDomUtils.CSS_CLASSES._TABLE_DATA_CELL_CLASS);
 
   if (tableBodyCellElements != null && tableBodyCellElements.length > 0)
   {
@@ -9122,17 +10287,17 @@ oj.TableDomUtils.prototype.getTableBodyCells = function(rowIdx, tableBodyRow)
 
 /**
  * Return the table body message cell element
- * @return {jQuery|null} jQuery tr DOM element
+ * @return {Element|null} tr DOM element
  */
 oj.TableDomUtils.prototype.getTableBodyMessageCell = function()
 {
   var tableBody = this.getTableBody();
   if (tableBody)
   {
-    var messageCell = tableBody.find('.' + oj.TableDomUtils.CSS_CLASSES._TABLE_BODY_MESSAGE_CLASS);
+    var messageCell = tableBody.querySelectorAll('.' + oj.TableDomUtils.CSS_CLASSES._TABLE_BODY_MESSAGE_CLASS);
     if (messageCell && messageCell.length > 0)
     {
-      return $(messageCell.get(0));
+      return messageCell[0];
     }
   }
   return null;
@@ -9140,17 +10305,17 @@ oj.TableDomUtils.prototype.getTableBodyMessageCell = function()
 
 /**
  * Return the table body message row element
- * @return {jQuery|null} jQuery tr DOM element
+ * @return {Element|null} tr DOM element
  */
 oj.TableDomUtils.prototype.getTableBodyMessageRow = function()
 {
   var tableBody = this.getTableBody();
   if (tableBody)
   {
-    var messageRow = tableBody.children('.' + oj.TableDomUtils.CSS_CLASSES._TABLE_BODY_MESSAGE_ROW_CLASS);
+    var messageRow = tableBody.getElementsByClassName(oj.TableDomUtils.CSS_CLASSES._TABLE_BODY_MESSAGE_ROW_CLASS);
     if (messageRow && messageRow.length > 0)
     {
-      return $(messageRow.get(0));
+      return messageRow[0];
     }
   }
   return null;
@@ -9159,7 +10324,7 @@ oj.TableDomUtils.prototype.getTableBodyMessageRow = function()
 /**
  * Return table row
  * @param {number|null} rowIdx  row index
- * @return {jQuery|null} jQuery tr DOM element
+ * @return {Element|null} tr DOM element
  */
 oj.TableDomUtils.prototype.getTableBodyRow = function(rowIdx)
 {
@@ -9177,7 +10342,7 @@ oj.TableDomUtils.prototype.getTableBodyRow = function(rowIdx)
 
   if (tableBodyRows.length > rowIdx)
   {
-    return $(tableBodyRows[rowIdx]);
+    return tableBodyRows[rowIdx];
   }
   
   return null;
@@ -9185,7 +10350,7 @@ oj.TableDomUtils.prototype.getTableBodyRow = function(rowIdx)
 
 /**
  * Return all the table rows
- * @return {jQuery|null} jQuery array of tr DOM elements
+ * @return {Array|null} array of tr DOM elements
  */
 oj.TableDomUtils.prototype.getTableBodyRows = function()
 {
@@ -9195,7 +10360,7 @@ oj.TableDomUtils.prototype.getTableBodyRows = function()
     
     if (tableBody != null)
     {
-      var tableBodyRowElements = tableBody.children('.' + oj.TableDomUtils.CSS_CLASSES._TABLE_DATA_ROW_CLASS);
+      var tableBodyRowElements = tableBody.getElementsByClassName(oj.TableDomUtils.CSS_CLASSES._TABLE_DATA_ROW_CLASS);
 
       if (tableBodyRowElements != null && tableBodyRowElements.length > 0)
       {
@@ -9209,16 +10374,16 @@ oj.TableDomUtils.prototype.getTableBodyRows = function()
 
 /**
  * Get top touch affordance to the table row.
- * @return {jQuery|null} jQuery div DOM element
+ * @return {Element|null} div DOM element
  */
 oj.TableDomUtils.prototype.getTableBodyRowTouchSelectionAffordanceTop = function()
 {
   var tableContainer = this.getTableContainer();
-  var topAffordance = tableContainer.children('.' + oj.TableDomUtils.CSS_CLASSES._TABLE_DATA_ROW_TOUCH_SELECTIOM_AFFORDANCE_TOP_CLASS);
+  var topAffordance = tableContainer.getElementsByClassName(oj.TableDomUtils.CSS_CLASSES._TABLE_DATA_ROW_TOUCH_SELECTIOM_AFFORDANCE_TOP_CLASS);
   
   if (topAffordance != null && topAffordance.length > 0)
   {
-    topAffordance = $(topAffordance[0]);
+    topAffordance = topAffordance[0];
     
     return topAffordance;
   }
@@ -9227,16 +10392,16 @@ oj.TableDomUtils.prototype.getTableBodyRowTouchSelectionAffordanceTop = function
 
 /**
  * Get bottom touch affordance to the table row.
- * @return {jQuery|null} jQuery div DOM element
+ * @return {Element|null} div DOM element
  */
 oj.TableDomUtils.prototype.getTableBodyRowTouchSelectionAffordanceBottom = function()
 {
   var tableContainer = this.getTableContainer();
-  var bottomAffordance = tableContainer.children('.' + oj.TableDomUtils.CSS_CLASSES._TABLE_DATA_ROW_TOUCH_SELECTIOM_AFFORDANCE_BOTTOM_CLASS);
+  var bottomAffordance = tableContainer.getElementsByClassName(oj.TableDomUtils.CSS_CLASSES._TABLE_DATA_ROW_TOUCH_SELECTIOM_AFFORDANCE_BOTTOM_CLASS);
   
   if (bottomAffordance != null && bottomAffordance.length > 0)
   {
-    bottomAffordance = $(bottomAffordance[0]);
+    bottomAffordance = bottomAffordance[0];
     
     return bottomAffordance;
   }
@@ -9244,29 +10409,31 @@ oj.TableDomUtils.prototype.getTableBodyRowTouchSelectionAffordanceBottom = funct
 };
 
 /**
+ * Return the bottom slot element
+ * @return {Element|null} div DOM element
+ */
+oj.TableDomUtils.prototype.getTableBottomSlot = function()
+{
+  return this._cachedDomTableBottomSlot;
+};
+
+/**
  * Return the table container
- * @return {jQuery|null} jQuery div DOM element
+ * @return {Element|null} div DOM element
  */
 oj.TableDomUtils.prototype.getTableContainer = function()
 {
   if (!this._cachedDomTableContainer)
   {
-    if (!this.isDivScroller())
-    {
-      this._cachedDomTableContainer = $(this.element.get(0).parentNode);
+    this._cachedDomTableContainer = this.element.parentNode;
     }
-    else
-    {
-      this._cachedDomTableContainer = $(this.element.get(0).parentNode.parentNode);
-    }
-  }
 
   return this._cachedDomTableContainer;
 };
 
 /**
  * Return the table footer
- * @return {jQuery|null} jQuery tfoot DOM element
+ * @return {Element|null} tfoot DOM element
  */
 oj.TableDomUtils.prototype.getTableFooter = function()
 {
@@ -9274,10 +10441,10 @@ oj.TableDomUtils.prototype.getTableFooter = function()
   var tableFooter = null;
   if (table)
   {
-    tableFooter = table.children('.' + oj.TableDomUtils.CSS_CLASSES._TABLE_FOOTER_CLASS);
+    tableFooter = table.getElementsByClassName(oj.TableDomUtils.CSS_CLASSES._TABLE_FOOTER_CLASS);
     if (tableFooter && tableFooter.length > 0)
     {
-      return $(tableFooter.get(0));
+      return tableFooter[0];
     }
   }
 
@@ -9287,6 +10454,7 @@ oj.TableDomUtils.prototype.getTableFooter = function()
 /**
  * Return the footer cell element
  * @param {number} columnIdx  column index
+ * @return {Element|null} td DOM element
  */
 oj.TableDomUtils.prototype.getTableFooterCell = function(columnIdx)
 {
@@ -9294,7 +10462,7 @@ oj.TableDomUtils.prototype.getTableFooterCell = function(columnIdx)
 
   if (tableFooterCells != null && tableFooterCells.length > columnIdx)
   {
-    return $(tableFooterCells[columnIdx]); 
+    return tableFooterCells[columnIdx]; 
   }
 
   return null;
@@ -9302,12 +10470,12 @@ oj.TableDomUtils.prototype.getTableFooterCell = function(columnIdx)
 
 /**
  * Return all footer cells
- * @return {jQuery|null} jQuery array of jQuery td DOM elements
+ * @return {Array|null} array of td DOM elements
  */
 oj.TableDomUtils.prototype.getTableFooterCells = function()
 {
   var tableFooterRow = this.getTableFooterRow();
-  var tableFooterCells = $(tableFooterRow).children('.' + oj.TableDomUtils.CSS_CLASSES._TABLE_FOOTER_CELL_CLASS);
+  var tableFooterCells = tableFooterRow != null ? tableFooterRow.getElementsByClassName(oj.TableDomUtils.CSS_CLASSES._TABLE_FOOTER_CELL_CLASS) : null;
 
   if (tableFooterCells != null && tableFooterCells.length > 0)
   {
@@ -9319,7 +10487,7 @@ oj.TableDomUtils.prototype.getTableFooterCells = function()
 
 /**
  * Return all logical footer cells
- * @return {jQuery|null} jQuery array of jQuery td DOM elements
+ * @return {Array|null} array of td DOM elements
  */
 oj.TableDomUtils.prototype.getTableFooterLogicalCells = function()
 {
@@ -9334,7 +10502,7 @@ oj.TableDomUtils.prototype.getTableFooterLogicalCells = function()
 
 /**
  * Return table footer row
- * @return {jQuery|null} jQuery tr DOM element
+ * @return {Element|null} tr DOM element
  */
 oj.TableDomUtils.prototype.getTableFooterRow = function()
 {
@@ -9347,7 +10515,7 @@ oj.TableDomUtils.prototype.getTableFooterRow = function()
       return null;
     }
 
-    this._cachedDomTableFooterRow = $(tableFooter.children('.' + oj.TableDomUtils.CSS_CLASSES._TABLE_FOOTER_ROW_CLASS).get(0));
+    this._cachedDomTableFooterRow = tableFooter.getElementsByClassName(oj.TableDomUtils.CSS_CLASSES._TABLE_FOOTER_ROW_CLASS)[0];
   }
 
   return this._cachedDomTableFooterRow;
@@ -9355,7 +10523,7 @@ oj.TableDomUtils.prototype.getTableFooterRow = function()
 
 /**
  * Return the table header
- * @return {jQuery|null} jQuery thead DOM element
+ * @return {Element|null} thead DOM element
  */
 oj.TableDomUtils.prototype.getTableHeader = function()
 {
@@ -9365,10 +10533,10 @@ oj.TableDomUtils.prototype.getTableHeader = function()
     var tableHeader = null;
     if (table)
     {
-      tableHeader = table.children('.' + oj.TableDomUtils.CSS_CLASSES._TABLE_HEADER_CLASS);
+      tableHeader = table.getElementsByClassName(oj.TableDomUtils.CSS_CLASSES._TABLE_HEADER_CLASS);
       if (tableHeader && tableHeader.length > 0)
       {
-        this._cachedDomTableHeader = $(tableHeader.get(0));
+        this._cachedDomTableHeader = tableHeader[0];
       }
     }
   }
@@ -9379,7 +10547,7 @@ oj.TableDomUtils.prototype.getTableHeader = function()
 /**
  * Return table column header
  * @param {number} columnIdx  column index
- * @return {jQuery|null} jQuery th DOM element
+ * @return {Element|null} th DOM element
  */
 oj.TableDomUtils.prototype.getTableHeaderColumn = function(columnIdx)
 {
@@ -9390,9 +10558,9 @@ oj.TableDomUtils.prototype.getTableHeaderColumn = function(columnIdx)
     return null;
   }
 
-  if (headerColumns.length > columnIdx)
+  if (headerColumns.length > columnIdx && columnIdx >= 0)
   {
-    return $(headerColumns[columnIdx]);
+    return headerColumns[columnIdx];
   }
 
   return null;
@@ -9401,7 +10569,7 @@ oj.TableDomUtils.prototype.getTableHeaderColumn = function(columnIdx)
 /**
  * Get checkbox cell for accessibility column selection
  * @param {number} columnIdx  column index
- * @return {jQuery|null} jQuery td DOM element
+ * @return {Element|null} td DOM element
  */
 oj.TableDomUtils.prototype.getTableHeaderColumnAccSelect = function(columnIdx)
 {
@@ -9409,19 +10577,28 @@ oj.TableDomUtils.prototype.getTableHeaderColumnAccSelect = function(columnIdx)
 
   if (headerColumn != null)
   {
-    var accSelectionCell = headerColumn.children('.' + oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_ACC_SELECT_COLUMN_CLASS);
+    var accSelectionCell = headerColumn.getElementsByClassName(oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_ACC_SELECT_COLUMN_CLASS);
 
     if (accSelectionCell != null && accSelectionCell.length > 0)
     {
-      return $(accSelectionCell[0]);
+      return accSelectionCell[0];
     }
   }
   return null;
 };
 
 /**
+ * Return resize indicator
+ * @return {Element} div DOM element
+ */
+oj.TableDomUtils.prototype.getTableHeaderColumnResizeIndicator = function()
+{
+  return this._cachedDomTableHeaderColumnResizeIndicator;
+};
+
+/**
  * Return all table column headers
- * @return {jQuery|null} jQuery array of th DOM elements
+ * @return {Array|null} array of th DOM elements
  */
 oj.TableDomUtils.prototype.getTableHeaderColumns = function()
 {
@@ -9429,7 +10606,7 @@ oj.TableDomUtils.prototype.getTableHeaderColumns = function()
 
   if (tableHeaderRow != null)
   {
-    var headerColumnElements = tableHeaderRow.children('.' + oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_CELL_CLASS);
+    var headerColumnElements = tableHeaderRow.getElementsByClassName(oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_CELL_CLASS);
 
     if (headerColumnElements != null && headerColumnElements.length > 0)
     {
@@ -9442,7 +10619,7 @@ oj.TableDomUtils.prototype.getTableHeaderColumns = function()
 
 /**
  * Return all logical table column headers
- * @return {jQuery|null} jQuery array of th DOM elements
+ * @return {Array|null} array of th DOM elements
  */
 oj.TableDomUtils.prototype.getTableHeaderLogicalColumns = function()
 {
@@ -9457,7 +10634,7 @@ oj.TableDomUtils.prototype.getTableHeaderLogicalColumns = function()
 
 /**
  * Return table header row
- * @return {jQuery|null} jQuery th DOM element
+ * @return {Element|null} th DOM element
  */
 oj.TableDomUtils.prototype.getTableHeaderRow = function()
 {
@@ -9470,31 +10647,10 @@ oj.TableDomUtils.prototype.getTableHeaderRow = function()
       return null;
     }
 
-    this._cachedDomTableHeaderRow = $(tableHeader.children('.' + oj.TableDomUtils.CSS_CLASSES._TABLE_HEADER_ROW_CLASS).get(0));
+    this._cachedDomTableHeaderRow = tableHeader.getElementsByClassName(oj.TableDomUtils.CSS_CLASSES._TABLE_HEADER_ROW_CLASS)[0];
   }
 
   return this._cachedDomTableHeaderRow;
-};
-
-/**
- * Return the table div scroller
- * @return {jQuery|null} jQuery div DOM element
- */
-oj.TableDomUtils.prototype.getTableDivScroller = function()
-{
-  if (!this._cachedDomTableDivScroller)
-  {
-    var tableContainer = this.getTableContainer();
-    if (tableContainer)
-    {
-      var tableDivScroller = tableContainer.children('.' + oj.TableDomUtils.CSS_CLASSES._TABLE_SCROLLER_CLASS);
-      if (tableDivScroller && tableDivScroller.length > 0)
-      {
-        this._cachedDomTableDivScroller = $(tableDivScroller.get(0));
-      }
-    }
-  }
-  return this._cachedDomTableDivScroller;
 };
 
 /**
@@ -9507,14 +10663,14 @@ oj.TableDomUtils.prototype.getTableId = function()
   {
     // Id for custom element is on the container
     var idElem = this.component._IsCustomElement() ? this.getTableContainer() : this.getTable();
-    this._tableId = idElem.attr(oj.TableDomUtils.DOM_ATTR._ID);
+    this._tableId = idElem.getAttribute(oj.TableDomUtils.DOM_ATTR._ID);
   }
   return this._tableId;
 };
 
 /**
  * Return the table inline message element
- * @return {jQuery|null} jQuery div DOM element
+ * @return {Element|null} div DOM element
  */
 oj.TableDomUtils.prototype.getTableInlineMessage = function()
 {
@@ -9523,10 +10679,10 @@ oj.TableDomUtils.prototype.getTableInlineMessage = function()
     var tableContainer = this.getTableContainer();
     if (tableContainer)
     {
-      var inlineMessage = tableContainer.children('.' + oj.TableDomUtils.CSS_CLASSES._TABLE_INLINE_MESSAGE_CLASS);
+      var inlineMessage = tableContainer.getElementsByClassName(oj.TableDomUtils.CSS_CLASSES._TABLE_INLINE_MESSAGE_CLASS);
       if (inlineMessage && inlineMessage.length > 0)
       {
-        this._cachedDomTableInlineMessage = $(inlineMessage.get(0));
+        this._cachedDomTableInlineMessage = inlineMessage[0];
       }
     }
   }
@@ -9536,7 +10692,7 @@ oj.TableDomUtils.prototype.getTableInlineMessage = function()
 
 /**
  * Return the table status accessibility notification
- * @return {jQuery|null} jQuery div DOM element
+ * @return {Element|null} div DOM element
  */
 oj.TableDomUtils.prototype.getTableStatusAccNotification = function()
 {
@@ -9545,10 +10701,10 @@ oj.TableDomUtils.prototype.getTableStatusAccNotification = function()
     var tableContainer = this.getTableContainer();
     if (tableContainer)
     {
-      var statusNotification = tableContainer.children('.' + oj.TableDomUtils.CSS_CLASSES._TABLE_STATUS_ACC_NOTIFICATION_CLASS);
+      var statusNotification = tableContainer.getElementsByClassName(oj.TableDomUtils.CSS_CLASSES._TABLE_STATUS_ACC_NOTIFICATION_CLASS);
       if (statusNotification && statusNotification.length > 0)
       {
-        this._cachedDomTableStatusAccNotification = $(statusNotification.get(0));
+        this._cachedDomTableStatusAccNotification = statusNotification[0];
       }
     }
   }
@@ -9558,7 +10714,7 @@ oj.TableDomUtils.prototype.getTableStatusAccNotification = function()
 
 /**
  * Return the table status message element
- * @return {jQuery|null} jQuery div DOM element
+ * @return {Element|null} div DOM element
  */
 oj.TableDomUtils.prototype.getTableStatusMessage = function()
 {
@@ -9567,10 +10723,10 @@ oj.TableDomUtils.prototype.getTableStatusMessage = function()
     var tableContainer = this.getTableContainer();
     if (tableContainer)
     {
-      var statusMessage = tableContainer.children('.' + oj.TableDomUtils.CSS_CLASSES._TABLE_STATUS_MESSAGE_CLASS);
+      var statusMessage = tableContainer.getElementsByClassName(oj.TableDomUtils.CSS_CLASSES._TABLE_STATUS_MESSAGE_CLASS);
       if (statusMessage && statusMessage.length > 0)
       {
-        this._cachedDomTableStatusMessage = $(statusMessage.get(0));
+        this._cachedDomTableStatusMessage = statusMessage[0];
       }
     }
   }
@@ -9634,9 +10790,10 @@ oj.TableDomUtils.prototype.hashCode = function(str)
  * @param {Object} rowKey  row key
  * @param {Object} rowHashCode  row hash code
  * @param {number} columnIdx  column index
- * @param {jQuery} tableBodyCell  DOM element
- * @param {jQuery} tableBodyRow  tr DOM element
+ * @param {Element} tableBodyCell  DOM element
+ * @param {Element} tableBodyRow  tr DOM element
  * @param {boolean} isNew is new row
+ * @return {Element|null} td DOM element
  */
 oj.TableDomUtils.prototype.insertTableBodyCell = function(rowIdx, rowKey, rowHashCode, columnIdx, tableBodyCell, tableBodyRow, isNew)
 {
@@ -9646,37 +10803,38 @@ oj.TableDomUtils.prototype.insertTableBodyCell = function(rowIdx, rowKey, rowHas
   {
     // if it's a new row then the cells are appended in order
     // so don't bother trying to find the position to insert to
-    $(tableBodyRow).append(tableBodyCell); //@HTMLUpdateOK
+    tableBodyRow.appendChild(tableBodyCell); //@HTMLUpdateOK
     return tableBodyCell;
   }
 
   if (columnIdx == 0)
   {
     // insert right after the acc cell
-    var accSelectionCell = tableBodyRow.children('.' + oj.TableDomUtils.CSS_CLASSES._TABLE_DATA_CELL_ACC_SELECT_CLASS);
+    var accSelectionCell = tableBodyRow.getElementsByClassName(oj.TableDomUtils.CSS_CLASSES._TABLE_DATA_CELL_ACC_SELECT_CLASS);
 
     if (accSelectionCell != null && accSelectionCell.length > 0)
     {
-      $(accSelectionCell[0]).after(tableBodyCell); //@HTMLUpdateOK
+      accSelectionCell = accSelectionCell[0];
+      accSelectionCell.parentNode.insertBefore(tableBodyCell, accSelectionCell.nextSibling); //@HTMLUpdateOK
     }
     else
     {
       // just prepend it
-      tableBodyRow.prepend(tableBodyCell); //@HTMLUpdateOK
+      tableBodyRow.insertBefore(tableBodyCell, tableBodyRow.firstChild); //@HTMLUpdateOK
     }
   }
   else
   {
-    var tableBodyCells = $(tableBodyRow).children('.' + oj.TableDomUtils.CSS_CLASSES._TABLE_DATA_CELL_CLASS);
+    var tableBodyCells = tableBodyRow.getElementsByClassName(oj.TableDomUtils.CSS_CLASSES._TABLE_DATA_CELL_CLASS);
 
     if (tableBodyCells.length >= columnIdx)
     {
-      var previousCell = $(tableBodyCells.get(columnIdx - 1));
-      previousCell.after(tableBodyCell); //@HTMLUpdateOK
+      var previousCell = tableBodyCells[columnIdx - 1];
+      previousCell.parentNode.insertBefore(tableBodyCell, previousCell.nextSibling); //@HTMLUpdateOK
     }
     else
     {
-      $(tableBodyRow).append(tableBodyCell); //@HTMLUpdateOK
+      tableBodyRow.appendChild(tableBodyCell); //@HTMLUpdateOK
     }
   }
     
@@ -9687,9 +10845,9 @@ oj.TableDomUtils.prototype.insertTableBodyCell = function(rowIdx, rowKey, rowHas
 /**
  * Insert a tr element in the appropriate place in the DOM
  * @param {number} rowIdx  row index
- * @param {jQuery} tableBodyRow  DOM element
+ * @param {Element} tableBodyRow  DOM element
  * @param {Object} row  row and key object
- * @param {Object} docFrag  document fragment
+ * @param {Element} docFrag  document fragment
  */
 oj.TableDomUtils.prototype.insertTableBodyRow = function(rowIdx, tableBodyRow, row, docFrag)
 {
@@ -9698,26 +10856,25 @@ oj.TableDomUtils.prototype.insertTableBodyRow = function(rowIdx, tableBodyRow, r
   if (docFrag == null)
   {
     var tableBody = this.getTableBody();
-    var tableBodyRows = tableBody.children('.' + oj.TableDomUtils.CSS_CLASSES._TABLE_DATA_ROW_CLASS);
+    var tableBodyRows = tableBody.getElementsByClassName(oj.TableDomUtils.CSS_CLASSES._TABLE_DATA_ROW_CLASS);
     
     if (rowIdx == 0)
     {
-      // just prepend it
-      tableBody.prepend(tableBodyRow); //@HTMLUpdateOK
+      tableBody.insertBefore(tableBodyRow, tableBody.firstChild); //@HTMLUpdateOK
     }
     else if (tableBodyRows.length >= rowIdx)
     {
-      var previousRow = $(tableBodyRows.get(rowIdx - 1));
-      previousRow.after(tableBodyRow); //@HTMLUpdateOK
+      var previousRow = tableBodyRows[rowIdx - 1];
+      previousRow.parentNode.insertBefore(tableBodyRow, previousRow.nextSibling); //@HTMLUpdateOK
     }
     else
     {
-      tableBody.append(tableBodyRow); //@HTMLUpdateOK
+      tableBody.appendChild(tableBodyRow); //@HTMLUpdateOK
     }
   }
   else
   {
-    docFrag.append(tableBodyRow); //@HTMLUpdateOK
+    docFrag.appendChild(tableBodyRow); //@HTMLUpdateOK
   }
   this.clearCachedDomRowData();
 };
@@ -9725,36 +10882,37 @@ oj.TableDomUtils.prototype.insertTableBodyRow = function(rowIdx, tableBodyRow, r
 /**
  * Insert a td element in the appropriate place in the DOM
  * @param {number} columnIdx  column index
- * @param {jQuery} tableFooterCell  DOM element
+ * @param {Element} tableFooterCell  DOM element
  */
 oj.TableDomUtils.prototype.insertTableFooterCell = function(columnIdx, tableFooterCell)
 {
   var tableFooterRow = this.getTableFooterRow();
-  var tableFooterCells = $(tableFooterRow).children('.' + oj.TableDomUtils.CSS_CLASSES._TABLE_FOOTER_CELL_CLASS);
+  var tableFooterCells = tableFooterRow.getElementsByClassName(oj.TableDomUtils.CSS_CLASSES._TABLE_FOOTER_CELL_CLASS);
 
   if (columnIdx == 0)
   {
     // insert right after the acc cell
-    var accFooterCell = tableFooterRow.children('.' + oj.TableDomUtils.CSS_CLASSES._HIDDEN_CONTENT_ACC_CLASS);
+    var accFooterCell = tableFooterRow.getElementsByClassName(oj.TableDomUtils.CSS_CLASSES._HIDDEN_CONTENT_ACC_CLASS);
 
     if (accFooterCell != null && accFooterCell.length > 0)
     {
-      $(accFooterCell[0]).after(tableFooterCell); //@HTMLUpdateOK
+      accFooterCell = accFooterCell[0];
+      accFooterCell.parentNode.insertBefore(tableFooterCell, accFooterCell.nextSibling); //@HTMLUpdateOK
     }
     else
     {
       // just prepend it
-      tableFooterRow.prepend(tableFooterCell); //@HTMLUpdateOK
+      tableFooterRow.insertBefore(tableFooterCell, tableFooterRow.firstChild); //@HTMLUpdateOK
     }
   }
   else if (tableFooterRow.length >= columnIdx)
   {
-    var previousCell = $(tableFooterCells.get(columnIdx - 1));
-    previousCell.after(tableFooterCell); //@HTMLUpdateOK
+    var previousCell = tableFooterCells[columnIdx - 1];
+    previousCell.parentNode.insertBefore(tableFooterCell, previousCell.nextSibling); //@HTMLUpdateOK
   }
   else
   {
-    tableFooterRow.append(tableFooterCell); //@HTMLUpdateOK
+    tableFooterRow.appendChild(tableFooterCell); //@HTMLUpdateOK
   }
 
   return tableFooterCell;
@@ -9763,7 +10921,7 @@ oj.TableDomUtils.prototype.insertTableFooterCell = function(columnIdx, tableFoot
 /**
  * Insert a th element in the appropriate place in the DOM
  * @param {number} columnIdx  column index
- * @param {jQuery} tableHeaderColumn  DOM element
+ * @param {Element} tableHeaderColumn  DOM element
  */
 oj.TableDomUtils.prototype.insertTableHeaderColumn = function(columnIdx, tableHeaderColumn)
 {
@@ -9775,44 +10933,36 @@ oj.TableDomUtils.prototype.insertTableHeaderColumn = function(columnIdx, tableHe
   // if there is an existing th at the index then replace it
   var oldTableHeaderColumn = this.getTableHeaderColumn(columnIdx);
   if (oldTableHeaderColumn)
-    oldTableHeaderColumn.replaceWith(tableHeaderColumn); //@HTMLUpdateOK
+    $(oldTableHeaderColumn).replaceWith($(tableHeaderColumn)); //@HTMLUpdateOK
   else
   {
     if (columnIdx == 0)
     {
       // insert right after the acc column
-      var accSelectionColumn = tableHeaderRow.children('.' + oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_ACC_SELECT_ROW_CLASS);
+      var accSelectionColumn = tableHeaderRow.getElementsByClassName(oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_ACC_SELECT_ROW_CLASS);
 
       if (accSelectionColumn != null && accSelectionColumn.length > 0)
       {
-        $(accSelectionColumn[0]).after(tableHeaderColumn); //@HTMLUpdateOK
+        accSelectionColumn = accSelectionColumn[0];
+        accSelectionColumn.parentNode.insertBefore(tableHeaderColumn, accSelectionColumn.nextSibling); //@HTMLUpdateOK
       }
       else
       {
         // just prepend it
-        tableHeaderRow.prepend(tableHeaderColumn); //@HTMLUpdateOK
+        tableHeaderRow.insertBefore(tableHeaderColumn, tableHeaderRow.firstChild); //@HTMLUpdateOK
       }
     }
     else if (tableHeaderColumns.length >= columnIdx)
     {
-      var previousColumn = $(tableHeaderColumns.get(columnIdx - 1));
-      previousColumn.after(tableHeaderColumn); //@HTMLUpdateOK
+      var previousColumn = tableHeaderColumns[columnIdx - 1];
+      previousColumn.parentNode.insertBefore(tableHeaderColumn, previousColumn.nextSibling); //@HTMLUpdateOK
     }
     else
     {
-      tableHeaderRow.append(tableHeaderColumn); //@HTMLUpdateOK
+      tableHeaderRow.appendChild(tableHeaderColumn); //@HTMLUpdateOK
     }
   }
 };
-
-/**
-  * Returns true if a div scroller is used. False if tbody scrolling is used.
-  * @return {boolean} Whether div scroller is used
-  */
-oj.TableDomUtils.prototype.isDivScroller = function()
-{
-  return this._isIE() && this._isIE() < 10 ? true : false;
-}
 
 /**
   * Returns true if scrollHeight > clientHeight for height and width.
@@ -9822,20 +10972,22 @@ oj.TableDomUtils.prototype.isTableContainerScrollable = function()
 {
   var tableContainer = this.getTableContainer();
   var table = this.getTable();
-  var tableStatusMessage = this.getTableStatusMessage();
-  var tableStatusMessageDisplay = tableStatusMessage.css(oj.TableDomUtils.CSS_PROP._DISPLAY).toString();
-  tableStatusMessage.css(oj.TableDomUtils.CSS_PROP._DISPLAY, oj.TableDomUtils.CSS_VAL._NONE);
+  var isTableStatusMessageShown = this.component._isStatusMessageShown();
+  if (isTableStatusMessageShown)
+  {
+    this.component._hideStatusMessage();
+  }
   
   var result = [];
-  if (tableContainer[0].clientHeight > 0)
+  if (tableContainer.clientHeight > 0)
   {
     // don't use tableContainer[0].scrollHeight as it may not be accurate
-    if (table[0].clientHeight > tableContainer[0].clientHeight)
+    if (table.clientHeight > tableContainer.clientHeight)
     {
       // overflow
       result[0] = 1;
     }
-    else if (tableContainer[0].clientHeight - table[0].clientHeight > 1)
+    else if (tableContainer.clientHeight - table.clientHeight > 1)
     {
       // underflow
       result[0] = -1;
@@ -9850,14 +11002,14 @@ oj.TableDomUtils.prototype.isTableContainerScrollable = function()
     result[0] = 0;
   }
   
-  if (tableContainer[0].clientWidth > 0)
+  if (tableContainer.clientWidth > 0)
   {
-      if (table[0].clientWidth > tableContainer[0].clientWidth)
+      if (table.clientWidth > tableContainer.clientWidth)
       {
         // overflow
         result[1] = 1;
       }
-      else if (tableContainer[0].clientWidth - table[0].clientWidth > 1)
+      else if (tableContainer.clientWidth - table.clientWidth > 1)
       {
         // underflow
         result[1] = -1;
@@ -9872,7 +11024,10 @@ oj.TableDomUtils.prototype.isTableContainerScrollable = function()
     result[1] = 0;
   }
   
-  tableStatusMessage.css(oj.TableDomUtils.CSS_PROP._DISPLAY, tableStatusMessageDisplay);
+  if (isTableStatusMessageShown)
+  {
+    this.component._showStatusMessage();
+  }
   return result;
 }
 
@@ -9886,15 +11041,15 @@ oj.TableDomUtils.prototype.moveTableBodyRowTouchSelectionAffordanceTop = functio
   
   if (topAffordance != null)
   {
-    topAffordance.data('rowIdx', rowIdx);
-    $(topAffordance.children()[0]).data('rowIdx', rowIdx);
+    $(topAffordance).data('rowIdx', rowIdx);
+    $(topAffordance.children[0]).data('rowIdx', rowIdx);
     var tableBody = this.getTableBody();
     var tableBodyRow = this.getTableBodyRow(rowIdx);
-    var tableBodyRowRect = tableBodyRow[0].getBoundingClientRect();
+    var tableBodyRowRect = tableBodyRow.getBoundingClientRect();
     var tableContainer = this.getTableContainer();
-    var tableContainerRect = tableContainer[0].getBoundingClientRect();
-    topAffordance.css(oj.TableDomUtils.CSS_PROP._TOP, tableBodyRowRect.top - tableContainerRect.top - topAffordance.height() / 2);
-    topAffordance.css(oj.TableDomUtils.CSS_PROP._LEFT, tableBody.width() / 2 + oj.TableDomUtils.CSS_VAL._PX);
+    var tableContainerRect = tableContainer.getBoundingClientRect();
+    topAffordance.style[oj.TableDomUtils.CSS_PROP._TOP] = tableBodyRowRect.top - tableContainerRect.top - $(topAffordance).height() / 2 + oj.TableDomUtils.CSS_VAL._PX;
+    topAffordance.style[oj.TableDomUtils.CSS_PROP._LEFT] = $(tableBody).width() / 2 + oj.TableDomUtils.CSS_VAL._PX;
   }
 };
 
@@ -9908,15 +11063,15 @@ oj.TableDomUtils.prototype.moveTableBodyRowTouchSelectionAffordanceBottom = func
   
   if (bottomAffordance != null)
   {
-    bottomAffordance.data('rowIdx', rowIdx);
-    $(bottomAffordance.children()[0]).data('rowIdx', rowIdx);
+    $(bottomAffordance).data('rowIdx', rowIdx);
+    $(bottomAffordance.children[0]).data('rowIdx', rowIdx);
     var tableBody = this.getTableBody();
     var tableBodyRow = this.getTableBodyRow(rowIdx);
-    var tableBodyRowRect = tableBodyRow[0].getBoundingClientRect();
+    var tableBodyRowRect = tableBodyRow.getBoundingClientRect();
     var tableContainer = this.getTableContainer();
-    var tableContainerRect = tableContainer[0].getBoundingClientRect();
-    bottomAffordance.css(oj.TableDomUtils.CSS_PROP._TOP, tableBodyRowRect.top - tableContainerRect.top + tableBodyRowRect.height - bottomAffordance.height() / 2);
-    bottomAffordance.css(oj.TableDomUtils.CSS_PROP._LEFT, tableBody.width() / 2 + oj.TableDomUtils.CSS_VAL._PX);
+    var tableContainerRect = tableContainer.getBoundingClientRect();
+    bottomAffordance.style[oj.TableDomUtils.CSS_PROP._TOP] = tableBodyRowRect.top - tableContainerRect.top + tableBodyRowRect.height - $(bottomAffordance).height() / 2 + oj.TableDomUtils.CSS_VAL._PX;
+    bottomAffordance.style[oj.TableDomUtils.CSS_PROP._LEFT] = $(tableBody).width() / 2 + oj.TableDomUtils.CSS_VAL._PX;
   }
 };
 
@@ -9950,7 +11105,7 @@ oj.TableDomUtils.prototype.moveTableHeaderColumn = function(columnIdx, destIdx, 
 
   if (tableHeaderColumn != null)
   {
-    colSpan = tableHeaderColumn.attr(oj.TableDomUtils.DOM_ATTR._COLSPAN);
+    colSpan = tableHeaderColumn.getAttribute(oj.TableDomUtils.DOM_ATTR._COLSPAN);
     destTableHeaderColumn = this.getTableHeaderColumn(destIdx);
     
     if (destTableHeaderColumn != null && 
@@ -9958,18 +11113,18 @@ oj.TableDomUtils.prototype.moveTableHeaderColumn = function(columnIdx, destIdx, 
     {
       if (afterColumn)
       {
-        destTableHeaderColumn.after(tableHeaderColumn); //@HTMLUpdateOK
+        destTableHeaderColumn.parentNode.insertBefore(tableHeaderColumn, destTableHeaderColumn.nextSibling); //@HTMLUpdateOK
       }
       else
       {
-        destTableHeaderColumn.before(tableHeaderColumn); //@HTMLUpdateOK
+        destTableHeaderColumn.parentNode.insertBefore(tableHeaderColumn, destTableHeaderColumn); //@HTMLUpdateOK
       }
     }
   }
   
   if (tableFooterCell != null)
   {
-    colSpan = tableFooterCell.attr(oj.TableDomUtils.DOM_ATTR._COLSPAN);
+    colSpan = tableFooterCell.getAttribute(oj.TableDomUtils.DOM_ATTR._COLSPAN);
     destTableFooterCell = this.getTableFooterCell(destIdx);
     
     if (destTableFooterCell != null && 
@@ -9977,11 +11132,11 @@ oj.TableDomUtils.prototype.moveTableHeaderColumn = function(columnIdx, destIdx, 
     {
       if (afterColumn)
       {
-        destTableFooterCell.after(tableFooterCell); //@HTMLUpdateOK
+        destTableFooterCell.parentNode.insertBefore(tableFooterCell, destTableFooterCell.nextSibling); //@HTMLUpdateOK
       }
       else
       {
-        destTableFooterCell.before(tableFooterCell); //@HTMLUpdateOK
+        destTableFooterCell.parentNode.insertBefore(tableFooterCell, destTableFooterCell); //@HTMLUpdateOK
       }
     }
   }
@@ -9998,18 +11153,18 @@ oj.TableDomUtils.prototype.moveTableHeaderColumn = function(columnIdx, destIdx, 
       if (tableBodyCell != null)
       {
         destTableBodyCell = this.getTableBodyCell(i, destIdx, null);
-        colSpan = tableBodyCell.attr(oj.TableDomUtils.DOM_ATTR._COLSPAN);
+        colSpan = tableBodyCell.getAttribute(oj.TableDomUtils.DOM_ATTR._COLSPAN);
 
         if (destTableBodyCell != null && 
             (colSpan == null || colSpan == 1))
         {
           if (afterColumn)
           {
-             destTableBodyCell.after(tableBodyCell); //@HTMLUpdateOK
+            destTableBodyCell.parentNode.insertBefore(tableBodyCell, destTableBodyCell.nextSibling); //@HTMLUpdateOK
           }
           else
           {
-             destTableBodyCell.before(tableBodyCell); //@HTMLUpdateOK
+            destTableBodyCell.parentNode.insertBefore(tableBodyCell, destTableBodyCell); //@HTMLUpdateOK
           }
         }
       }
@@ -10053,15 +11208,16 @@ oj.TableDomUtils.prototype.refreshContextMenu = function()
   var self = this;
   var menuContainer = this._menuContainer;
 
-  if (menuContainer && menuContainer.length > 0)
+  if (menuContainer)
   {
-    var listItems = menuContainer.find('[data-oj-command]');
-    listItems.each(function()
+    var listItems = menuContainer.querySelectorAll('[data-oj-command]');
+    var i;
+    for (i = 0; i < listItems.length; i++)
     {
-      var contextMenuLabel = $(this).children(oj.TableDomUtils.DOM_ELEMENT._A);
+      var contextMenuLabel = $(listItems[i]).children(oj.TableDomUtils.DOM_ELEMENT._A);
       if (contextMenuLabel.length > 0)
       {
-        var command = $(this).attr('data-oj-command').split("-");
+        var command = listItems[i].getAttribute('data-oj-command').split("-");
         command = command[command.length - 1];
 
         var commandString;
@@ -10077,9 +11233,13 @@ oj.TableDomUtils.prototype.refreshContextMenu = function()
         {
           commandString = self.component.getTranslatedString('labelSortDsc');
         }
+        else if (command == 'resize')
+        {
+          commandString = self.component.getTranslatedString('labelResize');
+        }
         contextMenuLabel.contents().filter(function() {return this.nodeType === 3;})[0].nodeValue = commandString;
       }
-    });
+  }
   }
 };
 
@@ -10106,7 +11266,7 @@ oj.TableDomUtils.prototype.refreshContextMenu = function()
 oj.TableDomUtils.prototype.removeDragOverIndicatorColumn = function()
 {
   var table = this.getTable();
-  var indicatorElements = table.find('.' + oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_DRAG_INDICATOR_BEFORE_CLASS + ',' +
+  var indicatorElements = table.querySelectorAll('.' + oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_DRAG_INDICATOR_BEFORE_CLASS + ',' +
                                      '.' + oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_DRAG_INDICATOR_AFTER_CLASS);
 
   var i = 0;
@@ -10116,8 +11276,8 @@ oj.TableDomUtils.prototype.removeDragOverIndicatorColumn = function()
     
     for (i = 0; i < indicatorElementsCount; i++)
     {
-      $(indicatorElements[i]).removeClass(oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_DRAG_INDICATOR_BEFORE_CLASS);
-      $(indicatorElements[i]).removeClass(oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_DRAG_INDICATOR_AFTER_CLASS);
+      indicatorElements[i].classList.remove(oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_DRAG_INDICATOR_BEFORE_CLASS);
+      indicatorElements[i].classList.remove(oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_DRAG_INDICATOR_AFTER_CLASS);
     }
   }
 }
@@ -10128,8 +11288,8 @@ oj.TableDomUtils.prototype.removeDragOverIndicatorColumn = function()
 oj.TableDomUtils.prototype.removeDragOverIndicatorRow = function()
 {
   var tableBody = this.getTableBody();
-  var indicatorRowBeforeElements = tableBody.children('.' + oj.TableDomUtils.CSS_CLASSES._TABLE_DATA_ROW_DRAG_INDICATOR_BEFORE_CLASS);
-  var indicatorRowAfterElements = tableBody.children('.' + oj.TableDomUtils.CSS_CLASSES._TABLE_DATA_ROW_DRAG_INDICATOR_AFTER_CLASS);
+  var indicatorRowBeforeElements = tableBody.getElementsByClassName(oj.TableDomUtils.CSS_CLASSES._TABLE_DATA_ROW_DRAG_INDICATOR_BEFORE_CLASS);
+  var indicatorRowAfterElements = tableBody.getElementsByClassName(oj.TableDomUtils.CSS_CLASSES._TABLE_DATA_ROW_DRAG_INDICATOR_AFTER_CLASS);
   
   var i = 0;
   if (indicatorRowBeforeElements && indicatorRowBeforeElements.length > 0)
@@ -10168,8 +11328,8 @@ oj.TableDomUtils.prototype.removeTableBodyRow = function(rowIdx)
   var tableBodyRow = this.getTableBodyRow(rowIdx);
   if (tableBodyRow != null)
   {
-    oj.Components.subtreeDetached(tableBodyRow[0]);
-    tableBodyRow.remove();
+    oj.Components.subtreeDetached(tableBodyRow);
+    $(tableBodyRow).remove();
     this.clearCachedDomRowData();
   }
 };
@@ -10184,8 +11344,11 @@ oj.TableDomUtils.prototype.removeAllTableBodyRows = function()
   if (tableBodyRows != null && tableBodyRows.length > 0)
   {
     var tableBody = this.getTableBody();
-    oj.Components.subtreeDetached(tableBody[0]);
-    tableBody.empty();
+    if (tableBody != null)
+    {
+      oj.Components.subtreeDetached(tableBody);
+      $(tableBody).empty();
+    }
     this.clearCachedDomRowData();
   }
 };
@@ -10197,14 +11360,14 @@ oj.TableDomUtils.prototype.removeAllTableBodyRows = function()
 oj.TableDomUtils.prototype.removeTableBodyRowTouchSelectionAffordance = function()
 {
   var tableContainer = this.getTableContainer();
-  var touchAffordance = tableContainer.children('.' + oj.TableDomUtils.CSS_CLASSES._TABLE_DATA_ROW_TOUCH_SELECTIOM_AFFORDANCE_TOUCH_AREA_CLASS);
+  var touchAffordance = tableContainer.getElementsByClassName(oj.TableDomUtils.CSS_CLASSES._TABLE_DATA_ROW_TOUCH_SELECTIOM_AFFORDANCE_TOUCH_AREA_CLASS);
   
   if (touchAffordance != null && touchAffordance.length > 0)
   {
     var i;
     for (i = 0; i < touchAffordance.length; i++)
     {
-      touchAffordance[i].remove();
+      $(touchAffordance[i]).remove();
     }
   }
 };
@@ -10215,7 +11378,7 @@ oj.TableDomUtils.prototype.removeTableBodyRowTouchSelectionAffordance = function
 oj.TableDomUtils.prototype.removeTableHeaderColumnDragImage = function()
 {
   var tableContainer = this.getTableContainer();
-  var headerDragImage = tableContainer.find('.' + oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_DRAG_IMAGE);
+  var headerDragImage = tableContainer.querySelectorAll('.' + oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_DRAG_IMAGE);
   
   if (headerDragImage && headerDragImage.length > 0)
   {
@@ -10230,20 +11393,30 @@ oj.TableDomUtils.prototype.removeTableHeaderColumnDragImage = function()
 };
 
 /**
+ * Remove resize indicator
+ */
+oj.TableDomUtils.prototype.removeTableHeaderColumnResizeIndicator = function()
+{
+  if (this._cachedDomTableHeaderColumnResizeIndicator)
+  {
+    $(this._cachedDomTableHeaderColumnResizeIndicator).remove();
+    this._cachedDomTableHeaderColumnResizeIndicator = null;
+  }
+};
+
+/**
  * Set the element scrollLeft
- * @param {jQuery} element DOM element
+ * @param {Element} element DOM element
  * @param {number} scrollLeft scrollLeft
  */
 oj.TableDomUtils.prototype.setScrollLeft = function(element, scrollLeft)
 {
-  element = $(element);
-  
   if (this.component._GetReadingDirection() === "rtl")
   {
     scrollLeft = Math.abs(scrollLeft);
     if (this._isWebkit())
     {
-      var maxScrollLeft = element[0].scrollWidth - element[0].clientWidth;
+      var maxScrollLeft = element.scrollWidth - element.clientWidth;
       scrollLeft = maxScrollLeft - scrollLeft;
     }
     else if (this._isFF())
@@ -10252,9 +11425,9 @@ oj.TableDomUtils.prototype.setScrollLeft = function(element, scrollLeft)
     }
   }
   
-  if (element[0].scrollLeft != scrollLeft)
+  if (element.scrollLeft != scrollLeft)
   {
-    element[0].scrollLeft = scrollLeft;
+    element.scrollLeft = scrollLeft;
   }
 }
 
@@ -10264,7 +11437,7 @@ oj.TableDomUtils.prototype.setScrollLeft = function(element, scrollLeft)
  * @param {Object} rowKey  row key
  * @param {Object} rowHashCode  row hash code
  * @param {number} columnIdx  column index
- * @param {jQuery} tableBodyCell  td DOM element
+ * @param {Element} tableBodyCell  td DOM element
  */
 oj.TableDomUtils.prototype.setTableBodyCellAttributes = function(rowIdx, rowKey, rowHashCode, columnIdx, tableBodyCell)
 {
@@ -10297,7 +11470,7 @@ oj.TableDomUtils.prototype.setTableBodyCellAttributes = function(rowIdx, rowKey,
   var headers = this.getTableId() + ':' + column.id;
   if (rowHeaderColumnId == column.id)
   {
-    tableBodyCell.attr(oj.TableDomUtils.DOM_ATTR._ID, cellRowHeaderId);
+    tableBodyCell.setAttribute(oj.TableDomUtils.DOM_ATTR._ID, cellRowHeaderId);
 
     if (isTableHeaderless)
     {
@@ -10316,35 +11489,35 @@ oj.TableDomUtils.prototype.setTableBodyCellAttributes = function(rowIdx, rowKey,
     }
   }
 
-  if (!tableBodyCell.attr(oj.TableDomUtils.DOM_ATTR._HEADERS))
+  if (!tableBodyCell.getAttribute(oj.TableDomUtils.DOM_ATTR._HEADERS))
   {
-    tableBodyCell.attr(oj.TableDomUtils.DOM_ATTR._HEADERS, headers);
+    tableBodyCell.setAttribute(oj.TableDomUtils.DOM_ATTR._HEADERS, headers);
   }
 };
 
 /**
  * Set the attributes on the row like rowIdx, etc
  * @param {Object} row row
- * @param {jQuery} tableBodyRow  tr DOM element
+ * @param {Element} tableBodyRow  tr DOM element
  */
 oj.TableDomUtils.prototype.setTableBodyRowAttributes = function(row, tableBodyRow)
 {
-  tableBodyRow.data('rowKey', row['key']);
-  tableBodyRow.data('rowData', row['data']);
+  $(tableBodyRow).data('rowKey', row['key']);
+  $(tableBodyRow).data('rowData', row['data']);
 };
 
 /**
  * Set the attributes on the header like columndx, etc
  * @param {number} columnIdx  column index
- * @param {jQuery} tableHeaderColumn  th DOM element
+ * @param {Element} tableHeaderColumn  th DOM element
  */
 oj.TableDomUtils.prototype.setTableHeaderColumnAttributes = function(columnIdx, tableHeaderColumn)
 {
   var column = this.component._getColumnDefs()[columnIdx];
 
-  if (!tableHeaderColumn.attr(oj.TableDomUtils.DOM_ATTR._ID))
+  if (!tableHeaderColumn.getAttribute(oj.TableDomUtils.DOM_ATTR._ID))
   {
-    tableHeaderColumn.attr(oj.TableDomUtils.DOM_ATTR._ID, this.getTableId() + ':' + column.id);
+    tableHeaderColumn.setAttribute(oj.TableDomUtils.DOM_ATTR._ID, this.getTableId() + ':' + column.id);
   }
 };
 
@@ -10365,11 +11538,11 @@ oj.TableDomUtils.prototype.setTableColumnCellsClass = function(columnIdx, add, s
 
       if (!add)
       {
-        tableBodyCells = this.getTableBody().find('.' + styleClass);
+        tableBodyCells = this.getTableBody().querySelectorAll('.' + styleClass);
       }
       else
       {
-        tableBodyCells = this.getTableBody().find('[td]');
+        tableBodyCells = this.getTableBody().querySelectorAll('[td]');
       }
 
       if (tableBodyCells != null && tableBodyCells.length > 0)
@@ -10379,11 +11552,11 @@ oj.TableDomUtils.prototype.setTableColumnCellsClass = function(columnIdx, add, s
         {
           if (!add)
           {
-            $(tableBodyCells[i]).removeClass(styleClass);
+            tableBodyCells[i].classList.remove(styleClass);
           }
           else
           {
-            $(tableBodyCells[i]).addClass(styleClass);
+            tableBodyCells[i].classList.add(styleClass);
           }
         }
       }
@@ -10397,11 +11570,11 @@ oj.TableDomUtils.prototype.setTableColumnCellsClass = function(columnIdx, add, s
 
         if (!add)
         {
-          $(tableBodyCell).removeClass(styleClass);
+          tableBodyCell.classList.remove(styleClass);
         }
         else
         {
-          $(tableBodyCell).addClass(styleClass);
+          tableBodyCell.classList.add(styleClass);
         }
       }
     }
@@ -10415,8 +11588,8 @@ oj.TableDomUtils.prototype.setTableColumnCellsClass = function(columnIdx, add, s
 oj.TableDomUtils.prototype.setTableBodyMessage = function(message)
 {
   var tableBodyMessageCell = this.getTableBodyMessageCell();
-  tableBodyMessageCell.empty();
-  tableBodyMessageCell.append(message); //@HTMLUpdateOK
+  $(tableBodyMessageCell).empty();
+  tableBodyMessageCell.appendChild(document.createTextNode(message)); //@HTMLUpdateOK
 };
 
 /**
@@ -10428,8 +11601,8 @@ oj.TableDomUtils.prototype.setTableBodyMessage = function(message)
 oj.TableDomUtils.prototype.setTableInlineMessage = function(summary, detail, severityLevel)
 {
   var inlineMessage = this.getTableInlineMessage();
-  inlineMessage.empty();
-  inlineMessage.append(oj.PopupMessagingStrategyUtils.buildMessageHtml(document, summary, detail, severityLevel, null)); //@HTMLUpdateOK
+  $(inlineMessage).empty();
+  $(inlineMessage).append(oj.PopupMessagingStrategyUtils.buildMessageHtml(document, summary, detail, severityLevel, null)); //@HTMLUpdateOK
 };
 
 /**
@@ -10439,8 +11612,8 @@ oj.TableDomUtils.prototype.setTableInlineMessage = function(summary, detail, sev
 oj.TableDomUtils.prototype.setTableStatusAccNotification = function(status)
 {
   var statusNotification = this.getTableStatusAccNotification();
-  statusNotification.empty();
-  statusNotification.append(status); //@HTMLUpdateOK
+  $(statusNotification).empty();
+  statusNotification.appendChild(document.createTextNode(status)); //@HTMLUpdateOK
 }
 
 /**
@@ -10450,19 +11623,16 @@ oj.TableDomUtils.prototype.styleInitialTable = function()
 {
   var table = this.getTable();
   var tableContainer = this.getTableContainer();
-  var tableHeader = table.children(oj.TableDomUtils.DOM_ELEMENT._THEAD);
-  tableHeader = tableHeader.length > 0 ? $(tableHeader[0]) : null;
-  var tableFooter = table.children(oj.TableDomUtils.DOM_ELEMENT._TFOOT);
-  tableFooter = tableFooter.length > 0 ? $(tableFooter[0]) : null;
-  var tableBody = table.children(oj.TableDomUtils.DOM_ELEMENT._TBODY);
-  tableBody = tableBody.length > 0 ? $(tableBody[0]) : null;
+  var tableHeader = table.getElementsByTagName(oj.TableDomUtils.DOM_ELEMENT._THEAD);
+  tableHeader = tableHeader.length > 0 ? tableHeader[0] : null;
+  var tableFooter = table.getElementsByTagName(oj.TableDomUtils.DOM_ELEMENT._TFOOT);
+  tableFooter = tableFooter.length > 0 ? tableFooter[0] : null;
+  var tableBody = table.getElementsByTagName(oj.TableDomUtils.DOM_ELEMENT._TBODY);
+  tableBody = tableBody.length > 0 ? tableBody[0] : null;
   // set the tabindex
-  table.attr(oj.TableDomUtils.DOM_ATTR._TABINDEX, '0');
+  table.setAttribute(oj.TableDomUtils.DOM_ATTR._TABINDEX, '0');
   // set focusable
-  this.component._focusable(table);
-  // set focusable
-  this.component._focusable(tableContainer);
-
+  this.component._focusable({'element': table, 'applyHighlight': true, 'setupHandlers': this._focusSetupHandlers.bind(this)});  
   this.styleTableHeader(tableHeader);
   this.styleTableFooter(tableFooter);
   this.styleTableBody(tableBody);
@@ -10470,19 +11640,19 @@ oj.TableDomUtils.prototype.styleInitialTable = function()
 
 /**
  * Style the tbody element
- * @param {jQuery} tableBody thead DOM element
+ * @param {Element} tableBody tbody DOM element
  */
 oj.TableDomUtils.prototype.styleTableBody = function(tableBody)
 {
-  tableBody.addClass(oj.TableDomUtils.CSS_CLASSES._TABLE_BODY_CLASS);
+  tableBody.classList.add(oj.TableDomUtils.CSS_CLASSES._TABLE_BODY_CLASS);
   // Add a special marker attribute to tell child components that they are container within table
-  tableBody.attr(oj.Components._OJ_CONTAINER_ATTR, this.component['widgetName']);
+  tableBody.setAttribute(oj.Components._OJ_CONTAINER_ATTR, this.component['widgetName']);
 };
 
 /**
  * Style the td element
  * @param {number} columnIdx  column index
- * @param {jQuery} tableBodyCell  td DOM element
+ * @param {Element} tableBodyCell  td DOM element
  * @param {boolean} isNew is new cell
  */
 oj.TableDomUtils.prototype.styleTableBodyCell = function(columnIdx, tableBodyCell, isNew)
@@ -10490,87 +11660,88 @@ oj.TableDomUtils.prototype.styleTableBodyCell = function(columnIdx, tableBodyCel
   var options = this.options;
   var column = this.component._getColumnDefs()[columnIdx];
  
-  if (isNew || !tableBodyCell.hasClass(oj.TableDomUtils.CSS_CLASSES._TABLE_DATA_CELL_CLASS))
+  if (isNew || !tableBodyCell.classList.contains(oj.TableDomUtils.CSS_CLASSES._TABLE_DATA_CELL_CLASS))
   {
-    tableBodyCell.addClass(oj.TableDomUtils.CSS_CLASSES._TABLE_DATA_CELL_CLASS);
-    tableBodyCell.addClass(oj.TableDomUtils.CSS_CLASSES._TABLE_DATE_CELL_FORM_CONTROL_CLASS);
+    tableBodyCell.classList.add(oj.TableDomUtils.CSS_CLASSES._TABLE_DATA_CELL_CLASS);
+    tableBodyCell.classList.add(oj.TableDomUtils.CSS_CLASSES._TABLE_DATE_CELL_FORM_CONTROL_CLASS);
     
     // add the column option stuff in here since we only want to do this once when adding
     // the table data cell class. Column option styling or class can be overridden
     // later in a custom renderer
-    if (column != null && column.style != null && (isNew || tableBodyCell.attr(oj.TableDomUtils.DOM_ATTR._STYLE) != column.style))
+    if (column != null && column.style != null && (isNew || tableBodyCell.getAttribute(oj.TableDomUtils.DOM_ATTR._STYLE) != column.style))
     {
-      tableBodyCell.attr(oj.TableDomUtils.DOM_ATTR._STYLE, column.style);
+      tableBodyCell.setAttribute(oj.TableDomUtils.DOM_ATTR._STYLE, column.style);
     }
-    if (column != null && column.className != null && (isNew || !tableBodyCell.hasClass(column.className)))
+    // Use jquery hasClass and addClass because column.className can contain multiple classes
+    if (column != null && column.className != null && (isNew || !$(tableBodyCell).hasClass(column.className)))
     {
-      tableBodyCell.addClass(column.className);
+      $(tableBodyCell).addClass(column.className);
     }
   }
   
   if (this._isVerticalGridEnabled())
   {
-    if (isNew || !tableBodyCell.hasClass(oj.TableDomUtils.CSS_CLASSES._TABLE_VGRID_LINES_CLASS))
+    if (isNew || !tableBodyCell.classList.contains(oj.TableDomUtils.CSS_CLASSES._TABLE_VGRID_LINES_CLASS))
     {
-      tableBodyCell.addClass(oj.TableDomUtils.CSS_CLASSES._TABLE_VGRID_LINES_CLASS);
+      tableBodyCell.classList.add(oj.TableDomUtils.CSS_CLASSES._TABLE_VGRID_LINES_CLASS);
     }
   }
 };
 
 /**
  * Style the tr element
- * @param {jQuery} tableBodyRow  tr DOM element
+ * @param {Element} tableBodyRow  tr DOM element
  * @param {boolean} isNew is new row
  */
 oj.TableDomUtils.prototype.styleTableBodyRow = function(tableBodyRow, isNew)
 {
-  if (isNew || !tableBodyRow.hasClass(oj.TableDomUtils.CSS_CLASSES._TABLE_DATA_ROW_CLASS))
+  if (isNew || !tableBodyRow.classList.contains(oj.TableDomUtils.CSS_CLASSES._TABLE_DATA_ROW_CLASS))
   {
-    tableBodyRow.addClass(oj.TableDomUtils.CSS_CLASSES._TABLE_DATA_ROW_CLASS);
+    tableBodyRow.classList.add(oj.TableDomUtils.CSS_CLASSES._TABLE_DATA_ROW_CLASS);
   }
   if (this._isHorizontalGridEnabled())
   {
-    if (isNew || !tableBodyRow.hasClass(oj.TableDomUtils.CSS_CLASSES._TABLE_HGRID_LINES_CLASS))
+    if (isNew || !tableBodyRow.classList.contains(oj.TableDomUtils.CSS_CLASSES._TABLE_HGRID_LINES_CLASS))
     {
-      tableBodyRow.addClass(oj.TableDomUtils.CSS_CLASSES._TABLE_HGRID_LINES_CLASS);
+      tableBodyRow.classList.add(oj.TableDomUtils.CSS_CLASSES._TABLE_HGRID_LINES_CLASS);
     }
   }
 };
 
 /**
  * Style the table container
- * @param {jQuery} tableContainer  div DOM element
+ * @param {Element} tableContainer  div DOM element
  */
 oj.TableDomUtils.prototype.styleTableContainer = function(tableContainer)
 {
   // add main css class to container
-  tableContainer.addClass(oj.TableDomUtils.CSS_CLASSES._TABLE_CLASS);
-  tableContainer.addClass(oj.TableDomUtils.CSS_CLASSES._TABLE_CONTAINER_CLASS);
-  tableContainer.addClass(oj.TableDomUtils.MARKER_STYLE_CLASSES._WIDGET);
+  tableContainer.classList.add(oj.TableDomUtils.CSS_CLASSES._TABLE_CLASS);
+  tableContainer.classList.add(oj.TableDomUtils.CSS_CLASSES._TABLE_CONTAINER_CLASS);
+  tableContainer.classList.add(oj.TableDomUtils.MARKER_STYLE_CLASSES._WIDGET);
   
   if (this.options.display == oj.TableDomUtils._OPTION_DISPLAY._GRID)
   {
-    tableContainer.addClass(oj.TableDomUtils.CSS_CLASSES._TABLE_COMPACT_CLASS);
+    tableContainer.classList.add(oj.TableDomUtils.CSS_CLASSES._TABLE_COMPACT_CLASS);
   }
   else
   {
-    tableContainer.removeClass(oj.TableDomUtils.CSS_CLASSES._TABLE_COMPACT_CLASS);
+    tableContainer.classList.remove(oj.TableDomUtils.CSS_CLASSES._TABLE_COMPACT_CLASS);
   }
   var editMode = this.options['editMode'];
         
   if (editMode != null && editMode != this.component._OPTION_EDIT_MODE._NONE)
   {
-    tableContainer.addClass(oj.TableDomUtils.CSS_CLASSES._TABLE_EDIT_CLASS);
+    tableContainer.classList.add(oj.TableDomUtils.CSS_CLASSES._TABLE_EDIT_CLASS);
   }
   else
   {
-    tableContainer.removeClass(oj.TableDomUtils.CSS_CLASSES._TABLE_EDIT_CLASS);
+    tableContainer.classList.remove(oj.TableDomUtils.CSS_CLASSES._TABLE_EDIT_CLASS);
   }
 };
 
 /**
  * Style the tfoot element
- * @param {jQuery} tableFooter tfoot DOM element
+ * @param {Element} tableFooter tfoot DOM element
  */
 oj.TableDomUtils.prototype.styleTableFooter = function(tableFooter)
 {
@@ -10578,15 +11749,15 @@ oj.TableDomUtils.prototype.styleTableFooter = function(tableFooter)
   {
     return;
   }
-  tableFooter.addClass(oj.TableDomUtils.CSS_CLASSES._TABLE_FOOTER_CLASS);
-  var tableFooterRow = $(tableFooter.children(oj.TableDomUtils.DOM_ELEMENT._TR)[0]);
-  tableFooterRow.addClass(oj.TableDomUtils.CSS_CLASSES._TABLE_FOOTER_ROW_CLASS);
+  tableFooter.classList.add(oj.TableDomUtils.CSS_CLASSES._TABLE_FOOTER_CLASS);
+  var tableFooterRow = tableFooter.getElementsByTagName(oj.TableDomUtils.DOM_ELEMENT._TR)[0];
+  tableFooterRow.classList.add(oj.TableDomUtils.CSS_CLASSES._TABLE_FOOTER_ROW_CLASS);
 };
 
 /**
  * Style the td element
  * @param {number} columnIdx  column index
- * @param {jQuery} tableFooterCell  td DOM element
+ * @param {Element} tableFooterCell  td DOM element
  */
 oj.TableDomUtils.prototype.styleTableFooterCell = function(columnIdx, tableFooterCell)
 {
@@ -10594,24 +11765,25 @@ oj.TableDomUtils.prototype.styleTableFooterCell = function(columnIdx, tableFoote
   var lastColumn = columnIdx == this.component._getColumnDefs().length - 1 ? true : false;
   var column = this.component._getColumnDefs()[columnIdx];
 
-  tableFooterCell.attr(oj.TableDomUtils.DOM_ATTR._STYLE, column.footerStyle);
-  if (!tableFooterCell.hasClass(oj.TableDomUtils.CSS_CLASSES._TABLE_FOOTER_CELL_CLASS))
+  tableFooterCell.setAttribute(oj.TableDomUtils.DOM_ATTR._STYLE, column.footerStyle);
+  if (!tableFooterCell.classList.contains(oj.TableDomUtils.CSS_CLASSES._TABLE_FOOTER_CELL_CLASS))
   {
-    tableFooterCell.addClass(oj.TableDomUtils.CSS_CLASSES._TABLE_FOOTER_CELL_CLASS);
+    tableFooterCell.classList.add(oj.TableDomUtils.CSS_CLASSES._TABLE_FOOTER_CELL_CLASS);
   }
-  if (this._isVerticalGridEnabled() && !tableFooterCell.hasClass(oj.TableDomUtils.CSS_CLASSES._TABLE_VGRID_LINES_CLASS))
+  if (this._isVerticalGridEnabled() && !tableFooterCell.classList.contains(oj.TableDomUtils.CSS_CLASSES._TABLE_VGRID_LINES_CLASS))
   {
-    tableFooterCell.addClass(oj.TableDomUtils.CSS_CLASSES._TABLE_VGRID_LINES_CLASS);
+    tableFooterCell.classList.add(oj.TableDomUtils.CSS_CLASSES._TABLE_VGRID_LINES_CLASS);
   }
   if (column.footerClassName)
   {
-    tableFooterCell.addClass(column.footerClassName);
+    // Use jquery addClass because column.footerClassName can contain multiple classes
+    $(tableFooterCell).addClass(column.footerClassName);
   }
 };
 
 /**
  * Style the thead element
- * @param {jQuery} tableHeader thead DOM element
+ * @param {Element} tableHeader thead DOM element
  */
 oj.TableDomUtils.prototype.styleTableHeader = function(tableHeader)
 {
@@ -10619,17 +11791,17 @@ oj.TableDomUtils.prototype.styleTableHeader = function(tableHeader)
   {
     return;
   }
-  tableHeader.addClass(oj.TableDomUtils.CSS_CLASSES._TABLE_HEADER_CLASS);
-  tableHeader.css(oj.TableDomUtils.CSS_PROP._DISPLAY, 'table-header-group');
-  var tableHeaderRow = $(tableHeader.children(oj.TableDomUtils.DOM_ELEMENT._TR)[0]);
-  tableHeaderRow.addClass(oj.TableDomUtils.CSS_CLASSES._TABLE_HEADER_ROW_CLASS);
-  tableHeaderRow.css(oj.TableDomUtils.CSS_PROP._POSITION, oj.TableDomUtils.CSS_VAL._RELATIVE);
+  tableHeader.classList.add(oj.TableDomUtils.CSS_CLASSES._TABLE_HEADER_CLASS);
+  tableHeader.style[oj.TableDomUtils.CSS_PROP._DISPLAY] = 'table-header-group';
+  var tableHeaderRow = tableHeader.getElementsByTagName(oj.TableDomUtils.DOM_ELEMENT._TR)[0];
+  tableHeaderRow.classList.add(oj.TableDomUtils.CSS_CLASSES._TABLE_HEADER_ROW_CLASS);
+  tableHeaderRow.style[oj.TableDomUtils.CSS_PROP._POSITION] = oj.TableDomUtils.CSS_VAL._RELATIVE;
 };
 
 /**
  * Style the th element
  * @param {number} columnIdx  column index
- * @param {jQuery} tableHeaderColumn  th DOM element
+ * @param {Element} tableHeaderColumn  th DOM element
  * @param {string} columnSelectionMode  column selection mode
  * @param {boolean} isNew is new column
  */
@@ -10637,31 +11809,32 @@ oj.TableDomUtils.prototype.styleTableHeaderColumn = function(columnIdx, tableHea
 {
   var column = this.component._getColumnDefs()[columnIdx];
   
-  if (isNew || !tableHeaderColumn.hasClass(oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_CELL_CLASS))
+  if (isNew || !tableHeaderColumn.classList.contains(oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_CELL_CLASS))
   {
-    tableHeaderColumn.addClass(oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_CELL_CLASS);
+    tableHeaderColumn.classList.add(oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_CELL_CLASS);
     if (this._isVerticalGridEnabled())
     {
-      if (isNew || !tableHeaderColumn.hasClass(oj.TableDomUtils.CSS_CLASSES._TABLE_VGRID_LINES_CLASS))
+      if (isNew || !tableHeaderColumn.classList.contains(oj.TableDomUtils.CSS_CLASSES._TABLE_VGRID_LINES_CLASS))
       {
-        tableHeaderColumn.addClass(oj.TableDomUtils.CSS_CLASSES._TABLE_VGRID_LINES_CLASS);
+        tableHeaderColumn.classList.add(oj.TableDomUtils.CSS_CLASSES._TABLE_VGRID_LINES_CLASS);
       }
     }
-    if (column.headerStyle != null && (isNew || tableHeaderColumn.attr(oj.TableDomUtils.DOM_ATTR._STYLE) != column.headerStyle))
+    if (column.headerStyle != null && (isNew || tableHeaderColumn.getAttribute(oj.TableDomUtils.DOM_ATTR._STYLE) != column.headerStyle))
     {
-      tableHeaderColumn.attr(oj.TableDomUtils.DOM_ATTR._STYLE, column.headerStyle);
+      tableHeaderColumn.setAttribute(oj.TableDomUtils.DOM_ATTR._STYLE, column.headerStyle);
     }
-    if (column.headerClassName != null && (isNew || !tableHeaderColumn.hasClass(column.headerClassName)))
+    // Use jquery hasClass and addClass because column.headerClassName can contain multiple classes
+    if (column.headerClassName != null && (isNew || !$(tableHeaderColumn).hasClass(column.headerClassName)))
     {
-      tableHeaderColumn.addClass(column.headerClassName);
+      $(tableHeaderColumn).addClass(column.headerClassName);
     }
   }
 };
 
 /**
  * Return all the colspanned logical elements
- * @param {jQuery} elementArray jQuery array of jQuery DOM elements
- * @return {jQuery|null} jQuery array of DOM elements
+ * @param {Array} elementArray array of DOM elements
+ * @return {Array|null} array of DOM elements
  */
 oj.TableDomUtils.prototype._getColspanLogicalElements = function(elementArray)
 {
@@ -10669,7 +11842,7 @@ oj.TableDomUtils.prototype._getColspanLogicalElements = function(elementArray)
   var elementArrayCount = elementArray.length;
   for (i = 0; i < elementArrayCount; i++)
   {
-    var colSpan = $(elementArray[i]).attr(oj.TableDomUtils.DOM_ATTR._COLSPAN);
+    var colSpan = elementArray[i].getAttribute(oj.TableDomUtils.DOM_ATTR._COLSPAN);
     if (colSpan != null)
     {
       colSpan = parseInt(colSpan, 10);
@@ -10686,7 +11859,7 @@ oj.TableDomUtils.prototype._getColspanLogicalElements = function(elementArray)
     }
   }
   
-  return $(indexedElementArray);
+  return indexedElementArray;
 }
 
 /**
@@ -10796,6 +11969,7 @@ oj.TableDomUtils.prototype._isWebkit = function()
   var tableHeaderRow = this.getTableHeaderRow();
   var tableContainer = this.getTableContainer();
   var tableBody = this.getTableBody();
+  var tableBottomSlot = this.getTableBottomSlot();
     
   // preserve the scrollTop & scrollLeft
   var scrollTop = null;
@@ -10803,16 +11977,16 @@ oj.TableDomUtils.prototype._isWebkit = function()
   
   if (this.getScroller() != null)
   {
-    var maxScrollTop = this.getScroller()[0].scrollHeight - this.getScroller()[0].clientHeight;
-    var maxScrollLeft = this.getScroller()[0].scrollWidth - this.getScroller()[0].clientWidth;
+    var maxScrollTop = this.getScroller().scrollHeight - this.getScroller().clientHeight;
+    var maxScrollLeft = this.getScroller().scrollWidth - this.getScroller().clientWidth;
     // only preserve the scroll positions if we can actually scroll
     if (maxScrollTop > 0)
     {
-      scrollTop = this.getScroller()[0].scrollTop;
+      scrollTop = this.getScroller().scrollTop;
     }
     if (maxScrollLeft > 0)
     {
-      scrollLeft = this.getScrollLeft(this.getScroller()[0]);
+      scrollLeft = this.getScrollLeft(this.getScroller());
     }
   }
   
@@ -10849,7 +12023,7 @@ oj.TableDomUtils.prototype._isWebkit = function()
   {
     // Add the oj-table-scroll class because some styling only applies
     // to scrollable table.
-    tableContainer.addClass(oj.TableDomUtils.CSS_CLASSES._TABLE_SCROLL_CLASS);
+    tableContainer.classList.add(oj.TableDomUtils.CSS_CLASSES._TABLE_SCROLL_CLASS);
     
     if (!this._tableDimensions)
     {
@@ -10872,7 +12046,7 @@ oj.TableDomUtils.prototype._isWebkit = function()
     {
       if (this._tableHeightConstrained)
       {
-        this._tableDimensions[oj.TableDomUtils.CSS_PROP._HEIGHT] = tableContainer[0].offsetHeight;
+        this._tableDimensions[oj.TableDomUtils.CSS_PROP._HEIGHT] = tableContainer.offsetHeight;
       }
       else
       {
@@ -10880,7 +12054,7 @@ oj.TableDomUtils.prototype._isWebkit = function()
       }
       if (this._tableWidthConstrained)
       {
-        this._tableDimensions[oj.TableDomUtils.CSS_PROP._WIDTH] = tableContainer[0].offsetWidth;
+        this._tableDimensions[oj.TableDomUtils.CSS_PROP._WIDTH] = tableContainer.offsetWidth;
       }
       else
       {
@@ -10890,11 +12064,11 @@ oj.TableDomUtils.prototype._isWebkit = function()
 
     if (!this._tableBorderWidth)
     {
-      this._tableBorderWidth = tableContainer.outerWidth() - tableContainer.innerWidth();
+      this._tableBorderWidth = $(tableContainer).outerWidth() - $(tableContainer).innerWidth();
     }
     if (!this._tableBorderHeight)
     {
-      this._tableBorderHeight = tableContainer.outerHeight() - tableContainer.innerHeight();
+      this._tableBorderHeight = $(tableContainer).outerHeight() - $(tableContainer).innerHeight();
     }
     
     // if there is a vertical scrollbar but no horizontal scrollbar then we need
@@ -10902,17 +12076,17 @@ oj.TableDomUtils.prototype._isWebkit = function()
     var tableContainerScrollbarWidth = 0;
     if (this._tableHeightConstrained && !this._tableWidthConstrained)
     {
-      tableContainer.css(oj.TableDomUtils.CSS_PROP._OVERFLOW, oj.TableDomUtils.CSS_VAL._AUTO);
-      tableContainerScrollbarWidth = tableContainer.get(0).offsetWidth - tableContainer.get(0).clientWidth;
+      tableContainer.style[oj.TableDomUtils.CSS_PROP._OVERFLOW] = oj.TableDomUtils.CSS_VAL._AUTO;
+      tableContainerScrollbarWidth = tableContainer.offsetWidth - tableContainer.clientWidth;
       
       // if tableContainer has set width then we need to shrink, otherwise we can expand
       if (this._tableDimensions[oj.TableDomUtils.CSS_PROP._WIDTH] > 0)
       {
-        table.css(oj.TableDomUtils.CSS_PROP._WIDTH, tableContainer.get(0).clientWidth + oj.TableDomUtils.CSS_VAL._PX);
+        table.style[oj.TableDomUtils.CSS_PROP._WIDTH] = tableContainer.clientWidth + oj.TableDomUtils.CSS_VAL._PX;
       }
       else
       {
-        table.css(oj.TableDomUtils.CSS_PROP._WIDTH, tableContainer.get(0).scrollWidth + tableContainerScrollbarWidth + oj.TableDomUtils.CSS_VAL._PX);
+        table.style[oj.TableDomUtils.CSS_PROP._WIDTH] = tableContainer.scrollWidth + tableContainerScrollbarWidth + oj.TableDomUtils.CSS_VAL._PX;
         
         // check if we caused overflow
         tableContainerScrollableState = this.isTableContainerScrollable();
@@ -10921,34 +12095,45 @@ oj.TableDomUtils.prototype._isWebkit = function()
         {
           // if we caused overflow we need to shrink so that we can set the column widths to the width without
           // the scrollbar
-          table.css(oj.TableDomUtils.CSS_PROP._WIDTH, tableContainer.get(0).clientWidth + oj.TableDomUtils.CSS_VAL._PX);
+          table.style[oj.TableDomUtils.CSS_PROP._WIDTH] = tableContainer.clientWidth + oj.TableDomUtils.CSS_VAL._PX;
         }
       }
-      tableContainer.css(oj.TableDomUtils.CSS_PROP._OVERFLOW, '');
+      tableContainer.style[oj.TableDomUtils.CSS_PROP._OVERFLOW] = '';
     }
     
-    var tableWidth = table.width();
-
     // let the browser layout the column widths
     this._setColumnWidths();
+    
+    // add in scrolling class for specific vertical or horizontal scrolling
+    if (this._tableHeightConstrained)
+    {
+      tableContainer.classList.add(oj.TableDomUtils.CSS_CLASSES._TABLE_SCROLL_VERTICAL_CLASS);
+    }
+    if (this._tableWidthConstrained)
+    {
+      tableContainer.classList.add(oj.TableDomUtils.CSS_CLASSES._TABLE_SCROLL_HORIZONTAL_CLASS);
+    }
+    var tableWidth = $(table).width();
     
     if (tableContainerScrollbarWidth > 0)
     {
       // if the container scrollbar width > 0 that means that we have overflow even though we're not width constrained
       // so we've set table width to table container clientWidth to set the column widths to accommodate the vertical scrollbar
       // so we can set the table back to container offset width
-      table.css(oj.TableDomUtils.CSS_PROP._WIDTH, tableContainer.get(0).offsetWidth + oj.TableDomUtils.CSS_VAL._PX);
+      table.style[oj.TableDomUtils.CSS_PROP._WIDTH] = tableContainer.offsetWidth + oj.TableDomUtils.CSS_VAL._PX;
     }
 
     var captionHeight = 0;
-    var caption = table.children('caption');
+    var caption = table.getElementsByTagName('caption');
     if (caption != null && caption.length > 0)
     {
-      captionHeight = $(caption[0]).outerHeight();
-      caption.css(oj.TableDomUtils.CSS_PROP._DISPLAY, oj.TableDomUtils.CSS_VAL._INLINE);
+      caption = caption[0];
+      captionHeight = $(caption).outerHeight();
+      caption.style[oj.TableDomUtils.CSS_PROP._DISPLAY] = oj.TableDomUtils.CSS_VAL._INLINE;
       if (tableHeader != null)
       {
-        tableHeader.css(oj.TableDomUtils.CSS_PROP._BORDER_TOP, tableContainer.css(oj.TableDomUtils.CSS_PROP._BORDER_TOP).toString());
+        var tableContainerStyle = window.getComputedStyle(tableContainer);
+        tableHeader.style[oj.TableDomUtils.CSS_PROP._BORDER_TOP] = tableContainerStyle[oj.TableDomUtils.CSS_PROP._BORDER_TOP];
       }
     }
 
@@ -10956,85 +12141,55 @@ oj.TableDomUtils.prototype._isWebkit = function()
     var tableHeaderHeight = 0;
     if (tableHeader != null)
     {
-      tableHeader.css(oj.TableDomUtils.CSS_PROP._DISPLAY, oj.TableDomUtils.CSS_VAL._BLOCK);
-      if (!this.isDivScroller())
-      {
-        tableHeader.css(oj.TableDomUtils.CSS_PROP._POSITION, oj.TableDomUtils.CSS_VAL._RELATIVE);
+      tableHeaderHeight = $(tableHeader).outerHeight();
       }
-      else
-      {
-        tableHeader.css(oj.TableDomUtils.CSS_PROP._POSITION, oj.TableDomUtils.CSS_VAL._ABSOLUTE);
-        tableHeader.css(oj.TableDomUtils.CSS_PROP._TOP, '0px');
-      }
-      tableHeaderRow.css(oj.TableDomUtils.CSS_PROP._DISPLAY, oj.TableDomUtils.CSS_VAL._BLOCK);
-      tableHeaderRow.css(oj.TableDomUtils.CSS_PROP._POSITION, oj.TableDomUtils.CSS_VAL._RELATIVE);
-      tableHeaderHeight = tableHeader.outerHeight();
-    }
-
-    if (this.isDivScroller())
-    {
-      // if we use fallback scrolling then the padding top of the container is used to 
-      // position the table scroller to below the table header.
-      tableContainer.css(oj.TableDomUtils.CSS_PROP._PADDING_TOP, tableHeaderHeight + captionHeight + oj.TableDomUtils.CSS_VAL._PX);
-    }
 
     var tableFooterHeight = 0;
-    if (tableFooter != null)
-    {
-      if (!this.isDivScroller())
-      {
-        tableFooter.css(oj.TableDomUtils.CSS_PROP._POSITION, oj.TableDomUtils.CSS_VAL._RELATIVE);
-      }
-      else
-      {
-        tableFooter.css(oj.TableDomUtils.CSS_PROP._POSITION, oj.TableDomUtils.CSS_VAL._ABSOLUTE);
-        tableHeader.css(oj.TableDomUtils.CSS_PROP._BOTTOM, '0px');
-      }
-      tableFooter.css(oj.TableDomUtils.CSS_PROP._DISPLAY, oj.TableDomUtils.CSS_VAL._BLOCK);
-      tableFooterRow.css(oj.TableDomUtils.CSS_PROP._DISPLAY, oj.TableDomUtils.CSS_VAL._BLOCK);
-      tableFooterRow.css(oj.TableDomUtils.CSS_PROP._POSITION, oj.TableDomUtils.CSS_VAL._RELATIVE);
-    }
-
-    tableBody.css(oj.TableDomUtils.CSS_PROP._DISPLAY, oj.TableDomUtils.CSS_VAL._BLOCK);
     var scrollbarWidth;
     var tableBodyHeight = 0;
-    var tableBodyWidth = 0;
-
-    if (!this.isDivScroller())
-    {
-      tableBody.css(oj.TableDomUtils.CSS_PROP._OVERFLOW_Y, oj.TableDomUtils.CSS_VAL._AUTO);
-      tableBody.css(oj.TableDomUtils.CSS_PROP._POSITION, oj.TableDomUtils.CSS_VAL._RELATIVE);
 
       if (this._tableWidthConstrained)
       {
-        tableBody.css(oj.TableDomUtils.CSS_PROP._WIDTH, this._tableDimensions[oj.TableDomUtils.CSS_PROP._WIDTH] - this._tableBorderWidth);
+      tableBody.style[oj.TableDomUtils.CSS_PROP._WIDTH] = this._tableDimensions[oj.TableDomUtils.CSS_PROP._WIDTH] - this._tableBorderWidth + oj.TableDomUtils.CSS_VAL._PX;
       }
       else if (tableContainerScrollbarWidth > 0)
       {
-        tableBody.css(oj.TableDomUtils.CSS_PROP._WIDTH, tableWidth - this._tableBorderWidth + tableContainerScrollbarWidth);
+      tableBody.style[oj.TableDomUtils.CSS_PROP._WIDTH] = tableWidth - this._tableBorderWidth + tableContainerScrollbarWidth + oj.TableDomUtils.CSS_VAL._PX;
       }
-      tableBodyWidth = tableBody.width();
       
       if (tableFooter != null)
       {
-        tableFooterHeight = tableFooter.outerHeight();
-        tableBody.css(oj.TableDomUtils.CSS_PROP._TOP, -1 * tableFooterHeight + oj.TableDomUtils.CSS_VAL._PX);
+      tableFooterHeight = $(tableFooter).outerHeight();
+      tableBody.style[oj.TableDomUtils.CSS_PROP._TOP] = -1 * tableFooterHeight + oj.TableDomUtils.CSS_VAL._PX;
       }
 
-      // if we don't use fallback scrolling then size the table body
-      // to fit in the height
+    var tableInlineMessageHeight = 0;
+    var inlineMessage = this.getTableInlineMessage();
+    if (inlineMessage != null && inlineMessage.style[oj.TableDomUtils.CSS_PROP._DISPLAY] != oj.TableDomUtils.CSS_VAL._NONE && inlineMessage.clientHeight > 0)
+    {
+      tableInlineMessageHeight = $(inlineMessage).outerHeight();
+    }
+    
+    var tableBottomSlotHeight = 0;
+    
+    if (tableBottomSlot != null && tableBottomSlot.style[oj.TableDomUtils.CSS_PROP._DISPLAY] != oj.TableDomUtils.CSS_VAL._NONE && tableBottomSlot.clientHeight > 0)
+    {
+      tableBottomSlotHeight = $(tableBottomSlot).outerHeight();
+    }
+
+    // Size the table body to fit in the height
       if (this._tableHeightConstrained)
       {
-        tableBodyHeight = this._tableDimensions[oj.TableDomUtils.CSS_PROP._HEIGHT] - tableHeaderHeight - tableFooterHeight - captionHeight - this._tableBorderHeight;
+      tableBodyHeight = this._tableDimensions[oj.TableDomUtils.CSS_PROP._HEIGHT] - tableHeaderHeight - tableFooterHeight - captionHeight - tableInlineMessageHeight - tableBottomSlotHeight - this._tableBorderHeight;
         if (tableBodyHeight > 0)
         {
-          tableBody.css(oj.TableDomUtils.CSS_PROP._HEIGHT, tableBodyHeight + oj.TableDomUtils.CSS_VAL._PX);
-          tableBody.css(oj.TableDomUtils.CSS_PROP._MIN_HEIGHT, tableBodyHeight + oj.TableDomUtils.CSS_VAL._PX);
+        tableBody.style[oj.TableDomUtils.CSS_PROP._HEIGHT] = tableBodyHeight + oj.TableDomUtils.CSS_VAL._PX;
+        tableBody.style[oj.TableDomUtils.CSS_PROP._MIN_HEIGHT] = tableBodyHeight + oj.TableDomUtils.CSS_VAL._PX;
         }
       }
       else
       {
-        tableBodyHeight = tableBody.outerHeight();
+      tableBodyHeight = $(tableBody).outerHeight();
       }
 
       scrollbarWidth = this.getScrollbarWidth();
@@ -11045,9 +12200,9 @@ oj.TableDomUtils.prototype._isWebkit = function()
 
         if (tableBodyRows != null && tableBodyRows.length > 0)
         {
-          tableBody.css(oj.TableDomUtils.CSS_PROP._OVERFLOW_X, oj.TableDomUtils.CSS_VAL._AUTO);
-          tableContainer.css(oj.TableDomUtils.CSS_PROP._OVERFLOW_X, oj.TableDomUtils.CSS_VAL._HIDDEN);
-          tableContainer.css(oj.TableDomUtils.CSS_PROP._OVERFLOW_Y, oj.TableDomUtils.CSS_VAL._HIDDEN);
+        tableBody.style[oj.TableDomUtils.CSS_PROP._OVERFLOW_X] = oj.TableDomUtils.CSS_VAL._AUTO;
+        tableContainer.style[oj.TableDomUtils.CSS_PROP._OVERFLOW_X] = oj.TableDomUtils.CSS_VAL._HIDDEN;
+        tableContainer.style[oj.TableDomUtils.CSS_PROP._OVERFLOW_Y] = oj.TableDomUtils.CSS_VAL._HIDDEN;
 
           if (tableHeader != null)
           {
@@ -11059,11 +12214,11 @@ oj.TableDomUtils.prototype._isWebkit = function()
               {
                 // if we have scrollbars then size the tableheader 
                 // to align with the scrollbars
-                tableHeader.css(oj.TableDomUtils.CSS_PROP._WIDTH, tableHeaderWidth - scrollbarWidth + oj.TableDomUtils.CSS_VAL._PX);
+              tableHeader.style[oj.TableDomUtils.CSS_PROP._WIDTH] = tableHeaderWidth - scrollbarWidth + oj.TableDomUtils.CSS_VAL._PX;
               }
               else
               {
-                tableHeader.css(oj.TableDomUtils.CSS_PROP._WIDTH, tableHeaderWidth + oj.TableDomUtils.CSS_VAL._PX);
+              tableHeader.style[oj.TableDomUtils.CSS_PROP._WIDTH] = tableHeaderWidth + oj.TableDomUtils.CSS_VAL._PX;
               }
             }
           }
@@ -11071,73 +12226,56 @@ oj.TableDomUtils.prototype._isWebkit = function()
         else
         {
           // if we have no data then use the tableContainer's horizontal scroller
-          tableBody.css(oj.TableDomUtils.CSS_PROP._OVERFLOW_X, oj.TableDomUtils.CSS_VAL._HIDDEN);
-          tableContainer.css(oj.TableDomUtils.CSS_PROP._OVERFLOW_X, oj.TableDomUtils.CSS_VAL._AUTO);
-          tableContainer.css(oj.TableDomUtils.CSS_PROP._OVERFLOW_Y, oj.TableDomUtils.CSS_VAL._HIDDEN);
+        tableBody.style[oj.TableDomUtils.CSS_PROP._OVERFLOW_X] = oj.TableDomUtils.CSS_VAL._HIDDEN;
+        tableContainer.style[oj.TableDomUtils.CSS_PROP._OVERFLOW_X] = oj.TableDomUtils.CSS_VAL._AUTO;
+        tableContainer.style[oj.TableDomUtils.CSS_PROP._OVERFLOW_Y] = oj.TableDomUtils.CSS_VAL._HIDDEN;
         }
       }
-      else
-      {
-        tableBody.css(oj.TableDomUtils.CSS_PROP._OVERFLOW_X, oj.TableDomUtils.CSS_VAL._HIDDEN);
-      }
-    }
-
-    if (this.isDivScroller())
-    {
-      var tableDivScroller = this.getTableDivScroller();
-      tableDivScroller.css(oj.TableDomUtils.CSS_PROP._OVERFLOW, oj.TableDomUtils.CSS_VAL._AUTO);
-      if (this._tableWidthConstrained)
-      {
-        tableDivScroller.css(oj.TableDomUtils.CSS_PROP._WIDTH, this._tableDimensions[oj.TableDomUtils.CSS_PROP._WIDTH]);
-      }
-      if (this._tableHeightConstrained)
-      {
-        tableDivScroller.css(oj.TableDomUtils.CSS_PROP._HEIGHT, this._tableDimensions[oj.TableDomUtils.CSS_PROP._HEIGHT] - tableHeaderHeight - tableFooterHeight);
-      }
-      tableBody.css(oj.TableDomUtils.CSS_PROP._FLOAT, oj.TableDomUtils.CSS_VAL._LEFT);
-      tableContainer.css(oj.TableDomUtils.CSS_PROP._OVERFLOW, oj.TableDomUtils.CSS_VAL._HIDDEN);
-    }
 
     if (tableFooter != null)
     {
-      if (!this.isDivScroller())
-      {
-        tableFooter.css(oj.TableDomUtils.CSS_PROP._TOP, tableBodyHeight + oj.TableDomUtils.CSS_VAL._PX);
-      }
+      tableFooter.style[oj.TableDomUtils.CSS_PROP._TOP] = tableBodyHeight + oj.TableDomUtils.CSS_VAL._PX;
+    }
+    this._setHeaderColumnLastWidth();
+  }
+  else
+  {
+    if (this.component._isTableColumnsWidthSet())
+    {
+      this._setColumnWidths();
     }
   }
-  this._setHeaderColumnLastWidth();
   this._setHeaderColumnOverflowWidths();
   this._removeTableBodyRowBottomBorder(tableContainerScrollableState[0] < 0);
   this.refreshTableStatusPosition();
   
   if (scrollTop != null && !resetScrollTop)
   {
-    var maxScrollTop = this.getScroller()[0].scrollHeight - this.getScroller()[0].clientHeight;
+    var maxScrollTop = this.getScroller().scrollHeight - this.getScroller().clientHeight;
     scrollTop = scrollTop > maxScrollTop ? maxScrollTop : scrollTop;
     if (this.component._isLoadMoreOnScroll() && maxScrollTop == scrollTop)
     {
       // Do not set to maxScrollTop or we will cause another fetch
       scrollTop--;
     }
-    this.getScroller()[0].scrollTop = scrollTop;
-    this.getScroller().scroll();
+    this.getScroller().scrollTop = scrollTop;
+    $(this.getScroller()).scroll();
   }
   else if (resetScrollTop)
   {
-    this.getScroller()[0].scrollTop = 0;
-    this.getScroller().scroll();
+    this.getScroller().scrollTop = 0;
+    $(this.getScroller()).scroll();
   }
   
   if (scrollLeft != null && !resetScrollLeft)
   {
-    this.setScrollLeft(this.getScroller()[0], scrollLeft);
-    this.getScroller().scroll();
+    this.setScrollLeft(this.getScroller(), scrollLeft);
+    $(this.getScroller()).scroll();
   }
   else if (resetScrollLeft)
   {
-    this.setScrollLeft(this.getScroller()[0], 0);
-    this.getScroller().scroll();
+    this.setScrollLeft(this.getScroller(), 0);
+    $(this.getScroller()).scroll();
   }
 };
 
@@ -11147,34 +12285,44 @@ oj.TableDomUtils.prototype._isWebkit = function()
   */
 oj.TableDomUtils.prototype.refreshTableStatusPosition = function()
 {
+  // if status message is hidden then return
+  if (!this.component._isStatusMessageShown())
+    return;
+
   var tableContainer = this.getTableContainer();
   var tableBody = this.getTableBody();
   var tableStatusMessage = this.getTableStatusMessage();
   
   var overTableElement = tableContainer;
   
-  if (tableBody.height() > 0)
+  if ($(tableBody).height() > 0)
   {
     overTableElement = tableBody;
   }
 
-  // if status message is hidden then return
-  if (!tableStatusMessage || !tableStatusMessage[0].offsetParent)
-    return;
-
   // size the messaging background
-  tableStatusMessage.css(oj.TableDomUtils.CSS_PROP._HEIGHT, tableBody.height() + oj.TableDomUtils.CSS_VAL._PX);
-  tableStatusMessage.css(oj.TableDomUtils.CSS_PROP._WIDTH, tableBody.width() + oj.TableDomUtils.CSS_VAL._PX);
-  var tableStatusMessageText = $(tableStatusMessage[0].children[0]);
+  tableStatusMessage.style[oj.TableDomUtils.CSS_PROP._HEIGHT] = $(tableBody).height() + oj.TableDomUtils.CSS_VAL._PX;
+  tableStatusMessage.style[oj.TableDomUtils.CSS_PROP._WIDTH] = $(tableBody).width() + oj.TableDomUtils.CSS_VAL._PX;
+  var tableStatusMessageText = tableStatusMessage.children[0];
   // refresh the status message position
   var isRTL = (this.component._GetReadingDirection() === "rtl");
   // position status in the center
   var options = {'my': 'center', 'at': 'center', 'collision': 'none', 'of': overTableElement};
   options = oj.PositionUtils.normalizeHorizontalAlignment(options, isRTL);
-  (/** @type {Object} */ (tableStatusMessage)).position(options);
+  (/** @type {Object} */ ($(tableStatusMessage))).position(options);
   var msgTextOptions = {'my': 'center', 'at': 'center', 'collision': 'none', 'of': tableStatusMessage};
   msgTextOptions = oj.PositionUtils.normalizeHorizontalAlignment(msgTextOptions, isRTL);
-  (/** @type {Object} */ (tableStatusMessageText)).position(msgTextOptions);
+  (/** @type {Object} */ ($(tableStatusMessageText))).position(msgTextOptions);
+};
+
+/**
+  * Focus setup handlers
+  * @private
+  */
+oj.TableDomUtils.prototype._focusSetupHandlers = function (focusInHandler, focusOutHandler) 
+{
+  this.component._setFocusInHandler(focusInHandler);
+  this.component._setFocusOutHandler(focusOutHandler);
 };
 
 /**
@@ -11185,28 +12333,48 @@ oj.TableDomUtils.prototype._removeHeaderColumnAndCellColumnWidths = function()
 {
   var columns = this.component._getColumnDefs();
 
-  var i, headerColumn, columnCount = columns.length;
+  var i, headerColumn, footerCell, columnCount = columns.length;
   for (i = 0; i < columnCount; i++)
   {
     headerColumn = this.getTableHeaderColumn(i);
     if (headerColumn != null)
     {
-      headerColumn.css(oj.TableDomUtils.CSS_PROP._MIN_WIDTH, '');
+      headerColumn.style[oj.TableDomUtils.CSS_PROP._MIN_WIDTH] = '';
     }
   }
 
   var tableBodyRows = this.getTableBodyRows();
   if (tableBodyRows != null && tableBodyRows.length > 0)
   {
-    var tableBodyCell;
+    var tableBodyCell, j;
     for (i = 0; i < columnCount; i++)
     {
 
       tableBodyCell = this.getTableBodyCell(0, i, null);
       if (tableBodyCell != null)
       {
-        tableBodyCell.css(oj.TableDomUtils.CSS_PROP._MIN_WIDTH, '');
+        tableBodyCell.style[oj.TableDomUtils.CSS_PROP._MIN_WIDTH] = '';
+     
+        if (this._forcedWidthColumns != null && this._forcedWidthColumns[i])
+        {
+          for (j = 0; j < tableBodyRows.length; j++) 
+          {
+            tableBodyCell = this.getTableBodyCell(j, i, null);
+            tableBodyCell.style[oj.TableDomUtils.CSS_PROP._MIN_WIDTH] = '';
+            tableBodyCell.style[oj.TableDomUtils.CSS_PROP._WIDTH] = '';
+            tableBodyCell.style[oj.TableDomUtils.CSS_PROP._MAX_WIDTH] = '';
+          }
+        }
       }
+    }
+  }
+  
+  for (i = 0; i < columnCount; i++)
+  {
+    footerCell = this.getTableFooterCell(i);
+    if (footerCell != null)
+    {
+      footerCell.style[oj.TableDomUtils.CSS_PROP._MIN_WIDTH] = '';
     }
   }
 };
@@ -11231,16 +12399,16 @@ oj.TableDomUtils.prototype._removeTableBodyRowBottomBorder = function(underflow)
     var i, tableBodyRowsCount = tableBodyRows.length;
     for (i = 0; i < tableBodyRowsCount; i++)
     {
-      if (!$(tableBodyRows[i]).hasClass(oj.TableDomUtils.CSS_CLASSES._TABLE_HGRID_LINES_CLASS))
+      if (!tableBodyRows[i].classList.contains(oj.TableDomUtils.CSS_CLASSES._TABLE_HGRID_LINES_CLASS))
       {
-        $(tableBodyRows[i]).addClass(oj.TableDomUtils.CSS_CLASSES._TABLE_HGRID_LINES_CLASS);
+        tableBodyRows[i].classList.add(oj.TableDomUtils.CSS_CLASSES._TABLE_HGRID_LINES_CLASS);
       }
     }
-    var lastTableBodyRow = $(tableBodyRows[tableBodyRows.length - 1]);
+    var lastTableBodyRow = tableBodyRows[tableBodyRows.length - 1];
 
     if (!underflow)
     {
-      lastTableBodyRow.removeClass(oj.TableDomUtils.CSS_CLASSES._TABLE_HGRID_LINES_CLASS);
+      lastTableBodyRow.classList.remove(oj.TableDomUtils.CSS_CLASSES._TABLE_HGRID_LINES_CLASS);
     }
   }
 };
@@ -11252,40 +12420,45 @@ oj.TableDomUtils.prototype._removeTableBodyRowBottomBorder = function(underflow)
 oj.TableDomUtils.prototype._removeTableDimensionsStyling = function()
 {
   var table = this.getTable();
+  var tableContainer = this.getTableContainer();
   var tableHeader = this.getTableHeader();        
   var tableHeaderRow = this.getTableHeaderRow();
   var tableFooter = this.getTableFooter();
   var tableFooterRow = this.getTableFooterRow();
   var tableBody = this.getTableBody();
 
+  tableContainer.classList.remove(oj.TableDomUtils.CSS_CLASSES._TABLE_SCROLL_CLASS);
+  tableContainer.classList.remove(oj.TableDomUtils.CSS_CLASSES._TABLE_SCROLL_VERTICAL_CLASS);
+  tableContainer.classList.remove(oj.TableDomUtils.CSS_CLASSES._TABLE_SCROLL_HORIZONTAL_CLASS);
+  tableContainer.style[oj.TableDomUtils.CSS_PROP._OVERFLOW] = oj.TableDomUtils.CSS_VAL._AUTO;
   // first remove any styling so that the browser sizes the table
   if (tableHeader != null)
   {
-    tableHeader.attr(oj.TableDomUtils.DOM_ATTR._STYLE, '');
-    tableHeaderRow.attr(oj.TableDomUtils.DOM_ATTR._STYLE, '');
+    tableHeader.setAttribute(oj.TableDomUtils.DOM_ATTR._STYLE, '');
+    tableHeaderRow.setAttribute(oj.TableDomUtils.DOM_ATTR._STYLE, '');
     
-    var headerColumnTextDivs = tableHeaderRow.find('.' + oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_TEXT_CLASS);
+    var headerColumnTextDivs = tableHeaderRow.querySelectorAll('.' + oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_TEXT_CLASS);
     var i;
     if (headerColumnTextDivs && headerColumnTextDivs.length > 0)
     {
       var headerColumnTextDivsCount = headerColumnTextDivs.length;
       for (i = 0; i < headerColumnTextDivsCount; i++)
       {
-        $(headerColumnTextDivs[i]).css(oj.TableDomUtils.CSS_PROP._WIDTH, '');
+        headerColumnTextDivs[i].style[oj.TableDomUtils.CSS_PROP._WIDTH] = '';
       }
     }
   }
   if (tableFooter != null)
   {
-    tableFooter.attr(oj.TableDomUtils.DOM_ATTR._STYLE, '');
-    tableFooterRow.attr(oj.TableDomUtils.DOM_ATTR._STYLE, '');
+    tableFooter.setAttribute(oj.TableDomUtils.DOM_ATTR._STYLE, '');
+    tableFooterRow.setAttribute(oj.TableDomUtils.DOM_ATTR._STYLE, '');
   }
-  table.css(oj.TableDomUtils.CSS_PROP._DISPLAY, '');
-  table.css(oj.TableDomUtils.CSS_PROP._WIDTH, '');
+  table.style[oj.TableDomUtils.CSS_PROP._DISPLAY] = '';
+  table.style[oj.TableDomUtils.CSS_PROP._WIDTH] = '';
   
   if (tableBody != null)
   {
-    tableBody.attr(oj.TableDomUtils.DOM_ATTR._STYLE, '');
+    tableBody.setAttribute(oj.TableDomUtils.DOM_ATTR._STYLE, '');
   }
 
   this._removeHeaderColumnAndCellColumnWidths();
@@ -11302,9 +12475,12 @@ oj.TableDomUtils.prototype._setColumnWidths = function()
   var columns = this.component._getColumnDefs();
   var columnWidths = [];
   var columnPaddingWidths = [];
-  var footerPaddingWidth = null;
+  var headerColumnDivMinHeights = [];
+  var tableBodyCellPaddingWidths = [];
+  var footerPaddingWidths = [];
   var defaultColumnPaddingWidth, defaultTableBodyCellPaddingWidth, headerRenderer, cellRenderer = null;
-  var i, headerColumnCell, headerColumnCellStyle, headerColumnDiv, headerColumnTextDivHeight, headerColumnTextDiv, footerCell, columnsCount = columns.length;
+  this._forcedWidthColumns = []
+  var i, j, headerColumnCell, headerColumnCellStyle, headerColumnDiv, headerColumnTextDiv, footerCell, footerCellStyle, columnWidth, forceWidth, columnsCount = columns.length;
   for (i = 0; i < columnsCount; i++)
   {
     headerColumnCell = this.getTableHeaderColumn(i);
@@ -11312,34 +12488,38 @@ oj.TableDomUtils.prototype._setColumnWidths = function()
     {
       // read in the widths first. Set the widths in a separate loop so setting
       // the widths of early columns does not affect the widths of the rest
-      headerColumnCellStyle = window.getComputedStyle(headerColumnCell[0]);
-      columnWidths[i] = parseInt(headerColumnCellStyle[oj.TableDomUtils.CSS_PROP._WIDTH], 10);
+      headerColumnCellStyle = window.getComputedStyle(headerColumnCell);
+      if (columns[i].width > 0)
+      {
+        this._forcedWidthColumns[i] = true;
+        columnWidth = columns[i].width;
+      }
+      else
+      {
+        this._forcedWidthColumns[i] = false;
+        columnWidth = parseInt(headerColumnCellStyle[oj.TableDomUtils.CSS_PROP._WIDTH], 10) || 0;
+      }
+      columnWidths[i] = columnWidth;
       headerRenderer = this.component._getColumnRenderer(i, 'header');
       
       if (!defaultColumnPaddingWidth && headerRenderer == null)
       {
-        defaultColumnPaddingWidth = parseInt(headerColumnCellStyle[oj.TableDomUtils.CSS_PROP._PADDING_RIGHT], 10) + parseInt(headerColumnCellStyle[oj.TableDomUtils.CSS_PROP._PADDING_LEFT], 10);
+        defaultColumnPaddingWidth = (parseInt(headerColumnCellStyle[oj.TableDomUtils.CSS_PROP._PADDING_RIGHT], 10) || 0) + (parseInt(headerColumnCellStyle[oj.TableDomUtils.CSS_PROP._PADDING_LEFT], 10) || 0);
         columnPaddingWidths[i] = defaultColumnPaddingWidth;
       }
       else if (headerRenderer != null)
       {
-        columnPaddingWidths[i] = parseInt(headerColumnCellStyle[oj.TableDomUtils.CSS_PROP._PADDING_RIGHT], 10) + parseInt(headerColumnCellStyle[oj.TableDomUtils.CSS_PROP._PADDING_LEFT], 10);
+        columnPaddingWidths[i] = (parseInt(headerColumnCellStyle[oj.TableDomUtils.CSS_PROP._PADDING_RIGHT], 10) || 0) + (parseInt(headerColumnCellStyle[oj.TableDomUtils.CSS_PROP._PADDING_LEFT], 10) || 0);
       }
       else
       {
         columnPaddingWidths[i] = defaultColumnPaddingWidth;
       }
-      // also set the header heights
-      headerColumnTextDivHeight = null;
-      headerColumnTextDiv = headerColumnCell.find('.' + oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_TEXT_CLASS);
+      // also determine the header heights
+      headerColumnTextDiv = headerColumnCell.querySelectorAll('.' + oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_TEXT_CLASS);
       if (headerColumnTextDiv && headerColumnTextDiv.length > 0)
       {
-        headerColumnTextDivHeight = headerColumnTextDiv.get(0).clientHeight;
-      }
-      if (headerColumnTextDivHeight != null)
-      {
-        headerColumnDiv = headerColumnCell.find('.' + oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_CLASS);
-        headerColumnDiv.css(oj.TableDomUtils.CSS_PROP._MIN_HEIGHT, headerColumnTextDivHeight + oj.TableDomUtils.CSS_VAL._PX);
+        headerColumnDivMinHeights[i] = headerColumnTextDiv[0].clientHeight + oj.TableDomUtils.CSS_VAL._PX;
       }
     }
   }
@@ -11359,18 +12539,19 @@ oj.TableDomUtils.prototype._setColumnWidths = function()
       
         if (this.component._hasRowOrCellRenderer(i))
         {
-          tableBodyCellStyle = window.getComputedStyle(tableBodyCell[0]);
-          tableBodyCellPaddingWidth = parseInt(tableBodyCellStyle[oj.TableDomUtils.CSS_PROP._PADDING_RIGHT], 10) + parseInt(tableBodyCellStyle[oj.TableDomUtils.CSS_PROP._PADDING_LEFT], 10);
+          tableBodyCellStyle = window.getComputedStyle(tableBodyCell);
+          tableBodyCellPaddingWidth = (parseInt(tableBodyCellStyle[oj.TableDomUtils.CSS_PROP._PADDING_RIGHT], 10) || 0) + (parseInt(tableBodyCellStyle[oj.TableDomUtils.CSS_PROP._PADDING_LEFT], 10) || 0);
         }
         else
         {
           if (!defaultTableBodyCellPaddingWidth)
           {
-            tableBodyCellStyle = window.getComputedStyle(tableBodyCell[0]);
-            defaultTableBodyCellPaddingWidth = parseInt(tableBodyCellStyle[oj.TableDomUtils.CSS_PROP._PADDING_RIGHT], 10) + parseInt(tableBodyCellStyle[oj.TableDomUtils.CSS_PROP._PADDING_LEFT], 10);
+            tableBodyCellStyle = window.getComputedStyle(tableBodyCell);
+            defaultTableBodyCellPaddingWidth = (parseInt(tableBodyCellStyle[oj.TableDomUtils.CSS_PROP._PADDING_RIGHT], 10) || 0) + (parseInt(tableBodyCellStyle[oj.TableDomUtils.CSS_PROP._PADDING_LEFT], 10) || 0);
           }
           tableBodyCellPaddingWidth = defaultTableBodyCellPaddingWidth;
         }
+        tableBodyCellPaddingWidths[i] = tableBodyCellPaddingWidth;
         adjustedColumnWidth = null;
         if (tableBodyCellPaddingWidth > columnPaddingWidths[i])
         {
@@ -11387,34 +12568,83 @@ oj.TableDomUtils.prototype._setColumnWidths = function()
   
   for (i = 0; i < columnsCount; i++)
   {
+    footerCell = this.getTableFooterCell(i);
+    if (footerCell != null)
+    {
+      footerCellStyle = window.getComputedStyle(footerCell);
+      footerPaddingWidths[i] = (parseInt(footerCellStyle[oj.TableDomUtils.CSS_PROP._PADDING_RIGHT], 10) || 0) + (parseInt(footerCellStyle[oj.TableDomUtils.CSS_PROP._PADDING_LEFT], 10) || 0);
+    }
+  }
+
+  for (i = 0; i < columnsCount; i++)
+  {
     headerColumnCell = this.getTableHeaderColumn(i);
     if (headerColumnCell != null)
     {
-      headerColumnCell.css(oj.TableDomUtils.CSS_PROP._MIN_WIDTH, columnWidths[i] + oj.TableDomUtils.CSS_VAL._PX);
+      // also set the header heights
+      if (headerColumnDivMinHeights[i])
+      {
+        headerColumnDiv = headerColumnCell.querySelectorAll('.' + oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_CLASS)[0];
+        headerColumnDiv.style[oj.TableDomUtils.CSS_PROP._MIN_HEIGHT] = headerColumnDivMinHeights[i];
+      }
+
+      if (!this._forcedWidthColumns[i])
+      {
+        headerColumnCell.style[oj.TableDomUtils.CSS_PROP._MIN_WIDTH] = columnWidths[i] + oj.TableDomUtils.CSS_VAL._PX;
+      }
+      else
+      {
+        forceWidth = columnWidths[i] - columnPaddingWidths[i] + oj.TableDomUtils.CSS_VAL._PX;
+        headerColumnCell.style[oj.TableDomUtils.CSS_PROP._MIN_WIDTH] = forceWidth;
+        headerColumnCell.style[oj.TableDomUtils.CSS_PROP._WIDTH] = forceWidth;
+        headerColumnCell.style[oj.TableDomUtils.CSS_PROP._MAX_WIDTH] = forceWidth;
+      }
     }
    
     tableBodyCell = this.getTableBodyCell(0, i, null);
     if (tableBodyCell != null)
     {
-      tableBodyCell.css(oj.TableDomUtils.CSS_PROP._MIN_WIDTH, adjustedColumnWidths[i] + oj.TableDomUtils.CSS_VAL._PX);
+      if (!this._forcedWidthColumns[i])
+      {
+        tableBodyCell.style[oj.TableDomUtils.CSS_PROP._MIN_WIDTH] = adjustedColumnWidths[i] + oj.TableDomUtils.CSS_VAL._PX;
+      }
+      else
+      {
+        forceWidth = columnWidths[i] - tableBodyCellPaddingWidths[i] + oj.TableDomUtils.CSS_VAL._PX;
+        for (j = 0; j < tableBodyRows.length; j++)
+        {
+          tableBodyCell = this.getTableBodyCell(j, i, null);
+          tableBodyCell.style[oj.TableDomUtils.CSS_PROP._MIN_WIDTH] = forceWidth;
+          tableBodyCell.style[oj.TableDomUtils.CSS_PROP._WIDTH] = forceWidth;
+          tableBodyCell.style[oj.TableDomUtils.CSS_PROP._MAX_WIDTH] = forceWidth;
+        }
+      }
     }
     
     footerCell = this.getTableFooterCell(i);
     if (footerCell != null)
-    {
-      footerPaddingWidth = parseInt(footerCell.css(oj.TableDomUtils.CSS_PROP._PADDING_RIGHT), 10) + parseInt(footerCell.css(oj.TableDomUtils.CSS_PROP._PADDING_LEFT), 10);
-
-      // adjust the padding widths if the footer has more padding
-      if (footerPaddingWidth > columnPaddingWidths[i])
+    {      
+      if (!this._forcedWidthColumns[i])
       {
-        adjustedColumnWidth = columnWidths[i] - footerPaddingWidth + columnPaddingWidths[i];
+        // adjust the padding widths if the footer has more padding
+        if ( footerPaddingWidths[i] > columnPaddingWidths[i])
+        {
+          adjustedColumnWidth = columnWidths[i] -  footerPaddingWidths[i] + columnPaddingWidths[i];
+        }
+        else
+        {
+          adjustedColumnWidth = columnWidths[i] + columnPaddingWidths[i] -  footerPaddingWidths[i];
+        }
+
+        footerCell.style[oj.TableDomUtils.CSS_PROP._MIN_WIDTH] = adjustedColumnWidth + oj.TableDomUtils.CSS_VAL._PX;
       }
       else
       {
-        adjustedColumnWidth = columnWidths[i] + columnPaddingWidths[i] - footerPaddingWidth;
+        forceWidth = columnWidths[i] - footerPaddingWidths[i] + oj.TableDomUtils.CSS_VAL._PX;
+        footerCell.style[oj.TableDomUtils.CSS_PROP._MIN_WIDTH] = forceWidth;
+        footerCell.style[oj.TableDomUtils.CSS_PROP._WIDTH] = forceWidth;
+        footerCell.style[oj.TableDomUtils.CSS_PROP._MAX_WIDTH] = forceWidth;
       }
-      
-      footerCell.css(oj.TableDomUtils.CSS_PROP._MIN_WIDTH, adjustedColumnWidth + oj.TableDomUtils.CSS_VAL._PX);
     }
   }
 };
@@ -11428,7 +12658,7 @@ oj.TableDomUtils.prototype._setHeaderColumnLastWidth = function()
 {
  var scrollbarWidth = this.getScrollbarWidth();
  
- if (scrollbarWidth > 0 && !this.isDivScroller())
+ if (scrollbarWidth > 0)
  {
    var scrollbarHeight = this.getScrollbarHeight();
    
@@ -11453,19 +12683,19 @@ oj.TableDomUtils.prototype._setHeaderColumnLastWidth = function()
        {
          column = columns[i];  
          headerColumnCell = this.getTableHeaderColumn(i);
-         headerColumnCellStyle = window.getComputedStyle(headerColumnCell[0]);
-         headerColumnCellWidth = parseInt(headerColumnCellStyle[oj.TableDomUtils.CSS_PROP._WIDTH], 10);
+         headerColumnCellStyle = window.getComputedStyle(headerColumnCell);
+         headerColumnCellWidth = parseInt(headerColumnCellStyle[oj.TableDomUtils.CSS_PROP._WIDTH], 10) || 0;
          totalHeaderColumnCellWidth = totalHeaderColumnCellWidth + headerColumnCellWidth;
        }
        var tableHeader = this.getTableHeader();
-       var tableHeaderStyle = window.getComputedStyle(tableHeader[0]);
-       var tableHeaderWidth = parseInt(tableHeaderStyle[oj.TableDomUtils.CSS_PROP._WIDTH], 10);
+       var tableHeaderStyle = window.getComputedStyle(tableHeader);
+       var tableHeaderWidth = parseInt(tableHeaderStyle[oj.TableDomUtils.CSS_PROP._WIDTH], 10) || 0;
        
        if (tableHeaderWidth > totalHeaderColumnCellWidth)
        {
-         var lastHeaderColumnCellStyle = window.getComputedStyle(lastHeaderColumnCell[0]);
-         var lastHeaderColumnCellWidth = parseInt(lastHeaderColumnCellStyle[oj.TableDomUtils.CSS_PROP._WIDTH], 10);
-         lastHeaderColumnCell.css(oj.TableDomUtils.CSS_PROP._MIN_WIDTH, lastHeaderColumnCellWidth + scrollbarWidth + oj.TableDomUtils.CSS_VAL._PX);
+         var lastHeaderColumnCellStyle = window.getComputedStyle(lastHeaderColumnCell);
+         var lastHeaderColumnCellWidth = parseInt(lastHeaderColumnCellStyle[oj.TableDomUtils.CSS_PROP._WIDTH], 10) || 0;
+         lastHeaderColumnCell.style[oj.TableDomUtils.CSS_PROP._MIN_WIDTH] = lastHeaderColumnCellWidth + scrollbarWidth + oj.TableDomUtils.CSS_VAL._PX;
        }
      }
    }
@@ -11488,29 +12718,29 @@ oj.TableDomUtils.prototype._setHeaderColumnOverflowWidths = function()
    if (headerColumnCell != null)
    {
      // if we have overflow
-     headerColumnDiv = headerColumnCell.children('.' + oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_CLASS);
+     headerColumnDiv = headerColumnCell.getElementsByClassName(oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_CLASS);
      if (headerColumnDiv.length > 0)
      {
-       headerColumnDiv = $(headerColumnDiv[0]);
-       headerColumnTextDiv = headerColumnCell.find('.' + oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_TEXT_CLASS);
+       headerColumnDiv = headerColumnDiv[0];
+       headerColumnTextDiv = headerColumnCell.querySelectorAll('.' + oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_TEXT_CLASS);
        if (headerColumnTextDiv && headerColumnTextDiv.length > 0)
        {
          sortPlaceHolderDivWidth = 0;
          if (column.sortable == oj.TableDomUtils._OPTION_ENABLED)
          {
-           sortPlaceHolderDivWidth = $(headerColumnCell.find('.' + oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_SORT_PACEHOLDER_CLASS).get(0)).width();
+           sortPlaceHolderDivWidth = $(headerColumnCell.querySelectorAll('.' + oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_SORT_PACEHOLDER_CLASS)[0]).width();
          }
          
-         if (headerColumnDiv[0].clientWidth > 0 && headerColumnTextDiv.width() + sortPlaceHolderDivWidth > headerColumnDiv[0].clientWidth)
+         if (headerColumnDiv.clientWidth > 0 && $(headerColumnTextDiv).width() + sortPlaceHolderDivWidth > headerColumnDiv.clientWidth)
          {
-           headerColumnTextDiv.css(oj.TableDomUtils.CSS_PROP._WIDTH, '');
-           headerColumnTextDivWidth = headerColumnTextDiv.width();
-           newHeaderColumnTextDivWidth = headerColumnCell.width() - sortPlaceHolderDivWidth;
+           headerColumnTextDiv[0].style[oj.TableDomUtils.CSS_PROP._WIDTH] = '';
+           headerColumnTextDivWidth = $(headerColumnTextDiv).width();
+           newHeaderColumnTextDivWidth = $(headerColumnCell).width() - sortPlaceHolderDivWidth;
            
            // we only want to constrain the width.
            if (headerColumnTextDivWidth > newHeaderColumnTextDivWidth + 1)
            {
-             headerColumnTextDiv.css(oj.TableDomUtils.CSS_PROP._WIDTH, newHeaderColumnTextDivWidth + oj.TableDomUtils.CSS_VAL._PX);
+             headerColumnTextDiv[0].style[oj.TableDomUtils.CSS_PROP._WIDTH] = newHeaderColumnTextDivWidth + oj.TableDomUtils.CSS_VAL._PX;
            }
          }
        }
@@ -11532,11 +12762,14 @@ oj.TableDomUtils.CSS_CLASSES =
     _TABLE_COMPACT_CLASS: 'oj-table-grid-display',
     _TABLE_EDIT_CLASS: 'oj-table-editable',
     _TABLE_SCROLL_CLASS: 'oj-table-scroll',
+    _TABLE_SCROLL_VERTICAL_CLASS: 'oj-table-scroll-vertical',
+    _TABLE_SCROLL_HORIZONTAL_CLASS: 'oj-table-scroll-horizontal',
     _TABLE_ELEMENT_CLASS: 'oj-table-element',
     _TABLE_FOOTER_CLASS: 'oj-table-footer',
     _TABLE_FOOTER_ROW_CLASS: 'oj-table-footer-row',
     _TABLE_HEADER_CLASS: 'oj-table-header',
     _TABLE_HEADER_ROW_CLASS: 'oj-table-header-row',
+    _TABLE_BOTTOM_SLOT_CLASS: 'oj-table-slot-bottom',
     _COLUMN_HEADER_CELL_CLASS: 'oj-table-column-header-cell',
     _COLUMN_HEADER_DROP_EMPTY_CELL_CLASS: 'oj-table-column-header-drop-empty-cell',
     _COLUMN_HEADER_ACC_SELECT_COLUMN_CLASS: 'oj-table-column-header-acc-select-column',
@@ -11556,6 +12789,7 @@ oj.TableDomUtils.CSS_CLASSES =
     _COLUMN_HEADER_DRAG_INDICATOR_BEFORE_CLASS: 'oj-table-column-header-drag-indicator-before',
     _COLUMN_HEADER_DRAG_INDICATOR_AFTER_CLASS: 'oj-table-column-header-drag-indicator-after',
     _COLUMN_HEADER_DRAG_IMAGE: 'oj-table-column-header-cell-drag-image',
+    _COLUMN_HEADER_RESIZE_INDICATOR_CLASS: 'oj-table-column-header-resize-indicator',
     _TABLE_BODY_CLASS: 'oj-table-body',
     _TABLE_DATA_ROW_CLASS: 'oj-table-body-row',
     _TABLE_DATA_ROW_DRAG_INDICATOR_BEFORE_CLASS: 'oj-table-body-row-drag-indicator-before',
@@ -11579,8 +12813,10 @@ oj.TableDomUtils.CSS_CLASSES =
     _TABLE_STATUS_ACC_NOTIFICATION_CLASS: 'oj-table-status-acc-notification',
     _TABLE_STATUS_MESSAGE_CLASS: 'oj-table-status-message',
     _TABLE_STATUS_MESSAGE_TEXT_CLASS: 'oj-table-status-message-text',
+    _TABLE_LOADING_ICON_CLASS: 'oj-table-loading-icon',
     _TABLE_BODY_MESSAGE_CLASS: 'oj-table-body-message',
     _TABLE_BODY_MESSAGE_ROW_CLASS: 'oj-table-body-message-row',
+    _ICON_CLASS: 'oj-icon',
     _WIDGET_ICON_CLASS: 'oj-component-icon',
     _HIDDEN_CONTENT_ACC_CLASS: 'oj-helper-hidden-accessible'
   };
@@ -11606,6 +12842,7 @@ oj.TableDomUtils.CSS_PROP =
     _OVERFLOW_X: 'overflow-x',
     _OVERFLOW_Y: 'overflow-y',
     _MIN_WIDTH: 'min-width',
+    _MAX_WIDTH: 'max-width',
     _MIN_HEIGHT: 'min-height',
     _FLOAT: 'float',
     _BORDER_TOP: 'border-top',
@@ -11615,7 +12852,8 @@ oj.TableDomUtils.CSS_PROP =
     _VERTICAL_ALIGN: 'vertical-align',
     _CURSOR: 'cursor',
     _ZINDEX: 'z-index',
-    _BACKGROUND_COLOR: 'background-color'
+    _BACKGROUND_COLOR: 'background-color',
+    _BOX_SIZING: 'box-sizing'
   };
   
 /**
@@ -11636,7 +12874,8 @@ oj.TableDomUtils.CSS_VAL =
     _MIDDLE: 'middle',
     _MOVE: 'move',
     _FIXED: 'fixed',
-    _TRANSPARENT: 'transparent'
+    _TRANSPARENT: 'transparent',
+    _BORDER_BOX: 'border-box'
   };
   
 /**
@@ -11673,7 +12912,9 @@ oj.TableDomUtils.DOM_ELEMENT =
     _TFOOT: 'tfoot',
     _INPUT: 'input',
     _UL: 'ul',
-    _SPAN: 'span'
+    _SPAN: 'span',
+    _BUTTON: 'button',
+    _LABEL: 'label'
   };
   
 
@@ -11688,6 +12929,7 @@ oj.TableDomUtils.MARKER_STYLE_CLASSES =
     _DISABLED: 'oj-disabled',
     _ENABLED: 'oj-enabled',
     _FOCUS: 'oj-focus',
+    _FOCUS_HIGHLIGHT: 'oj-focus-highlight',
     _HOVER: 'oj-hover',
     _SELECTED: 'oj-selected',
     _WARNING: 'oj-warning',
@@ -11982,19 +13224,6 @@ oj.TableDomUtils._OPTION_DISPLAY =
  *   </thead>
  *   <tbody>
  *     <tr>
- *       <td>oj-table-panel-bottom</td>
- *       <td><p>Used to style a panel that can attach to the bottom of the table
- *      and match the table colors. An app developer can put a paging control
- *      in a div with this class, for example.
- *
- *           <p>The class is applied as follows:
- *
- *           <ul>
- *             <li>The class must be applied to the element which is placed immediately below the ojTable element.</li>
- *           </ul>
- *       </td>
- *     </tr>
- *     <tr>
  *       <td>oj-table-data-cell-no-padding</td>
  *       <td><p>Used to style a table cell so that it has no padding. An app developer would likely use
  *       this in the case of editable tables when an editable cell content does not need the default cell padding.
@@ -12025,10 +13254,56 @@ oj.TableDomUtils._OPTION_DISPLAY =
  * @memberof oj.ojTable
  */
 
+/**
+* <p>Applications can customize animations triggered by actions in Table by either listening for <code class="prettyprint">animateStart/animateEnd</code>
+ *    events or overriding action specific style classes on the animated item. To disable animations for specific table, please call event.preventDefault() from your listener.
+ *    To disable animations for all tables, the sass variable values can be modified to specify empty effects. See the documentation of <a href="oj.AnimationUtils.html">oj.AnimationUtils</a> 
+ *    class for details.</p>
+ *    
+ * <p>The following are actions and their corresponding sass variables in which applications can use to customize animation effects.  
+ * <table class="keyboard-table">
+ *   <thead>
+ *     <tr>
+ *       <th>Action</th>
+ *       <th>Sass Variable</th>
+ *       <th>Description</th>
+ *     </tr>
+ *   </thead>
+ *   <tbody>
+ *     <tr>
+ *       <td><kbd>add</kbd></td>
+ *       <td>$tableAddAnimation</td>
+ *       <td>When a new row is added to the oj.TableDataSource associated with Table.</td>
+ *     </tr>
+ *     <tr>
+ *       <td><kbd>remove</kbd></td>
+ *       <td>$tableRemoveAnimation</td>
+ *       <td>When an existing row is removed from the oj.TableDataSource associated with Table.</td>
+ *     </tr>
+ *     <tr>
+ *       <td><kbd>update</kbd></td>
+ *       <td>$tableUpdateAnimation</td>
+ *       <td>When an existing row is updated in the oj.TableDataSource associated with Table.</td>
+ *     </tr>
+ *   </tbody>
+ * </table>
+ *
+ * @ojfragment animationDoc - Used in animation section of classdesc
+ * @memberof oj.ojTable
+ */
+
+/**
+ * <p>Table supports a bottom custom element slot where applications can add content such as a paging control.</p>
+ *    
+ *
+ * @ojfragment slotDoc - Used in slot section of classdesc
+ * @memberof oj.ojTable
+ */
+
 // SubId Locators **************************************************************
 
 /**
- * <p>Sub-ID for the ojTable component's cells.</p>
+ * <p>Sub-ID for the Table element's cells.</p>
  * To lookup a cell the locator object should have the following:
  * <ul>
  * <li><b>subId</b>: 'oj-table-cell'</li>
@@ -12040,11 +13315,11 @@ oj.TableDomUtils._OPTION_DISPLAY =
  * @memberof oj.ojTable
  *
  * @example <caption>Get the cell at row index 1 and column index 2:</caption>
- * var node = $( ".selector" ).ojTable( "getNodeBySubId", {'subId': 'oj-table-cell', 'rowIndex': 1, 'columnIndex': 2} );
+ * var node = myTable.getNodeBySubId( {'subId': 'oj-table-cell', 'rowIndex': 1, 'columnIndex': 2} );
  */
 
 /**
- * <p>Sub-ID for the ojTable component's headers.</p>
+ * <p>Sub-ID for the Table element's headers.</p>
  *
  *  To lookup a header the locator object should have the following:
  * <ul>
@@ -12056,11 +13331,11 @@ oj.TableDomUtils._OPTION_DISPLAY =
  * @memberof oj.ojTable
  *
  * @example <caption>Get the header at the specified location:</caption>
- * var node = $( ".selector" ).ojTable( "getNodeBySubId", {'subId': 'oj-table-header', 'index':0} );
+ * var node = myTable.getNodeBySubId( {'subId': 'oj-table-header', 'index':0} );
  */
 
 /**
- * <p>Sub-ID for the ojTable component's sort ascending icon in column headers.</p>
+ * <p>Sub-ID for the Table element's sort ascending icon in column headers.</p>
  *
  * To lookup a sort icon the locator object should have the following:
  * <ul>
@@ -12072,11 +13347,11 @@ oj.TableDomUtils._OPTION_DISPLAY =
  * @memberof oj.ojTable
  *
  * @example <caption>Get the sort ascending icon from the header at the specified location:</caption>
- * var node = $( ".selector" ).ojTable( "getNodeBySubId", {'subId': 'oj-table-sort-ascending', 'index':0} );
+ * var node = myTable.getNodeBySubId( {'subId': 'oj-table-sort-ascending', 'index':0} );
  */
 
 /**
- * <p>Sub-ID for the ojTable component's sort descending icon in column headers.</p>
+ * <p>Sub-ID for the Table element's sort descending icon in column headers.</p>
  *
  * To lookup a sort icon the locator object should have the following:
  * <ul>
@@ -12088,11 +13363,11 @@ oj.TableDomUtils._OPTION_DISPLAY =
  * @memberof oj.ojTable
  *
  * @example <caption>Get the sort descending icon from the header at the specified location:</caption>
- * var node = $( ".selector" ).ojTable( "getNodeBySubId", {'subId': 'oj-table-sort-descending', 'index':0} );
+ * var node = myTable.getNodeBySubId( {'subId': 'oj-table-sort-descending', 'index':0} );
  */
 
 /**
- * <p>Sub-ID for the ojTable component's footers.</p>
+ * <p>Sub-ID for the Table element's footers.</p>
  *
  *  To lookup a footer the locator object should have the following:
  * <ul>
@@ -12104,13 +13379,13 @@ oj.TableDomUtils._OPTION_DISPLAY =
  * @memberof oj.ojTable
  *
  * @example <caption>Get the header at the specified location:</caption>
- * var node = $( ".selector" ).ojTable( "getNodeBySubId", {'subId': 'oj-table-footer', 'index':0} );
+ * var node = myTable.getNodeBySubId( {'subId': 'oj-table-footer', 'index':0} );
  */
 
 // Node Context Objects ********************************************************
 
 /**
- * <p>Context for the ojTable component's cells.</p>
+ * <p>Context for the Table element's cells.</p>
  *
  * @property {number} rowIndex the zero based absolute row index
  * @property {number} columnIndex the zero based absolute column index
@@ -12121,7 +13396,7 @@ oj.TableDomUtils._OPTION_DISPLAY =
  */
 
 /**
- * <p>Context for the ojTable component's headers.</p>
+ * <p>Context for the Table element's headers.</p>
  *
  * @property {number} index the zero based absolute column index
  *
@@ -12130,7 +13405,7 @@ oj.TableDomUtils._OPTION_DISPLAY =
  */
 
 /**
- * <p>Context for the ojTable component's footers.</p>
+ * <p>Context for the Table element's footers.</p>
  *
  * @property {number} index the zero based absolute column index
  *
@@ -12184,7 +13459,7 @@ oj.TableDndContext.prototype.Init = function()
 oj.TableDndContext.prototype._addDragMarkerClass = function(columnIdx)
 {
   var column = this._getTableDomUtils().getTableHeaderColumn(columnIdx);
-  column.addClass(oj.TableDomUtils.MARKER_STYLE_CLASSES._DRAG);
+  column.classList.add(oj.TableDomUtils.MARKER_STYLE_CLASSES._DRAG);
   this._getTableDomUtils().setTableColumnCellsClass(columnIdx, true, oj.TableDomUtils.MARKER_STYLE_CLASSES._DRAG);
 };
 
@@ -12193,14 +13468,14 @@ oj.TableDndContext.prototype._addDragMarkerClass = function(columnIdx)
  */
 oj.TableDndContext.prototype._removeDragMarkerClass = function()
 {
-  var dragColumns = this._getTableDomUtils().getTableHeader().find('.' + oj.TableDomUtils.MARKER_STYLE_CLASSES._DRAG);
+  var dragColumns = this._getTableDomUtils().getTableHeader().querySelectorAll('.' + oj.TableDomUtils.MARKER_STYLE_CLASSES._DRAG);
   if (dragColumns != null && dragColumns.length > 0)
   {
     var i;
     var dragColumnsCount = dragColumns.length;
     for (i = 0; i < dragColumnsCount; i++)
     {
-      $(dragColumns[i]).removeClass(oj.TableDomUtils.MARKER_STYLE_CLASSES._DRAG);
+      dragColumns[i].classList.remove(oj.TableDomUtils.MARKER_STYLE_CLASSES._DRAG);
     }
   }
   this._getTableDomUtils().setTableColumnCellsClass(null, false, oj.TableDomUtils.MARKER_STYLE_CLASSES._DRAG);
@@ -12208,36 +13483,36 @@ oj.TableDndContext.prototype._removeDragMarkerClass = function()
 
 /**
  * Clone the table container
- * @param {jQuery} tableContainer  the div jQuery object
- * @return {jQuery} jQuery object for the cloned tbody
+ * @param {Element} tableContainer  the div DOM object
+ * @return {Element} DOM object for the cloned table container
  */
 oj.TableDndContext.prototype._cloneTableContainer = function(tableContainer)
 {
   var tableContainerClone;
-  var tableBody = $(tableContainer.find(oj.TableDomUtils.DOM_ELEMENT._TBODY)[0]);
+  var tableBody = tableContainer.querySelectorAll(oj.TableDomUtils.DOM_ELEMENT._TBODY)[0];
   
-  var scrollLeft = tableBody.scrollLeft();
-  var scrollTop = tableBody.scrollTop();
+  var scrollLeft = $(tableBody).scrollLeft();
+  var scrollTop = $(tableBody).scrollTop();
   
-  tableContainerClone = tableContainer.clone();
-  var tableBodyClone = $(tableContainerClone.find(oj.TableDomUtils.DOM_ELEMENT._TBODY)[0]);
+  tableContainerClone = tableContainer.cloneNode(true);
+  var tableBodyClone = tableContainerClone.querySelectorAll(oj.TableDomUtils.DOM_ELEMENT._TBODY)[0];
   
   // Use fixed positioning with a large top to put it off the screen without
   // affecting the scrollbar.
   // Set both overflow and overflow-x/y because on IE, setting overflow does not
   // affect overflow-x/y that have been explicitly set.
-  tableBodyClone.css(oj.TableDomUtils.CSS_PROP._OVERFLOW, oj.TableDomUtils.CSS_VAL._HIDDEN);
-  tableBodyClone.css(oj.TableDomUtils.CSS_PROP._OVERFLOW_X, oj.TableDomUtils.CSS_VAL._HIDDEN);
-  tableBodyClone.css(oj.TableDomUtils.CSS_PROP._OVERFLOW_Y, oj.TableDomUtils.CSS_VAL._HIDDEN);
-  tableBodyClone.css(oj.TableDomUtils.CSS_PROP._BACKGROUND_COLOR, oj.TableDomUtils.CSS_VAL._TRANSPARENT);
-  tableBodyClone.css(oj.TableDomUtils.CSS_PROP._WIDTH, tableBody.width() + oj.TableDomUtils.CSS_VAL._PX);
-  tableBodyClone.css(oj.TableDomUtils.CSS_PROP._HEIGHT, tableBody.height() + oj.TableDomUtils.CSS_VAL._PX);
-  tableContainerClone.css(oj.TableDomUtils.CSS_PROP._POSITION, oj.TableDomUtils.CSS_VAL._FIXED);
-  tableContainerClone.css(oj.TableDomUtils.CSS_PROP._TOP, 10000);
-  tableBodyClone.scrollLeft(scrollLeft * 1.0);        
-  tableBodyClone.scrollTop(scrollTop * 1.0);
+  tableBodyClone.style[oj.TableDomUtils.CSS_PROP._OVERFLOW] = oj.TableDomUtils.CSS_VAL._HIDDEN;
+  tableBodyClone.style[oj.TableDomUtils.CSS_PROP._OVERFLOW_X] = oj.TableDomUtils.CSS_VAL._HIDDEN;
+  tableBodyClone.style[oj.TableDomUtils.CSS_PROP._OVERFLOW_Y] = oj.TableDomUtils.CSS_VAL._HIDDEN;
+  tableBodyClone.style[oj.TableDomUtils.CSS_PROP._BACKGROUND_COLOR] = oj.TableDomUtils.CSS_VAL._TRANSPARENT;
+  tableBodyClone.style[oj.TableDomUtils.CSS_PROP._WIDTH] = $(tableBody).width() + oj.TableDomUtils.CSS_VAL._PX;
+  tableBodyClone.style[oj.TableDomUtils.CSS_PROP._HEIGHT] = $(tableBody).height() + oj.TableDomUtils.CSS_VAL._PX;
+  tableContainerClone.style[oj.TableDomUtils.CSS_PROP._POSITION] = oj.TableDomUtils.CSS_VAL._FIXED;
+  tableContainerClone.style[oj.TableDomUtils.CSS_PROP._TOP] = 10000 + oj.TableDomUtils.CSS_VAL._PX;
+  $(tableBodyClone).scrollLeft(scrollLeft * 1.0);        
+  $(tableBodyClone).scrollTop(scrollTop * 1.0);
   
-  $("body").append(tableContainerClone); //@HTMLUpdateOK
+  document.body.appendChild(tableContainerClone); //@HTMLUpdateOK
   
   return tableContainerClone;
 };
@@ -12250,7 +13525,7 @@ oj.TableDndContext.prototype._destroyDragImage = function()
 {
   if (this._dragImage)
   {
-    this._dragImage.remove();
+    $(this._dragImage).remove();
     this._dragImage = null;
   }
 };
@@ -12262,7 +13537,7 @@ oj.TableDndContext.prototype._destroyDragImage = function()
  */
 oj.TableDndContext.prototype._getEventColumnIndex = function(event)
 {
-  return this._getTableDomUtils().getElementColumnIdx($(event.currentTarget));
+  return this._getTableDomUtils().getElementColumnIdx(event.currentTarget);
 };
 
 /**
@@ -12273,13 +13548,13 @@ oj.TableDndContext.prototype._getEventColumnIndex = function(event)
 oj.TableDndContext.prototype._getOverRowIndex = function(event)
 {
   var newRowIndex;
-  var overRow = $(event.target).closest(oj.TableDomUtils.DOM_ELEMENT._TR);
+  var jqOverRow = $(event.target).closest(oj.TableDomUtils.DOM_ELEMENT._TR);
   var context = this.component.getContextByNode(event.target);
   if (context && context['subId'] == 'oj-table-cell')
   {
     newRowIndex = context['rowIndex'];
   }
-  else if (overRow && overRow.hasClass(oj.TableDomUtils.CSS_CLASSES._TABLE_DATA_ROW_DRAG_INDICATOR_BEFORE_CLASS))
+  else if (jqOverRow && jqOverRow.hasClass(oj.TableDomUtils.CSS_CLASSES._TABLE_DATA_ROW_DRAG_INDICATOR_BEFORE_CLASS))
   {
     newRowIndex = this._dropRowIndex;
   }
@@ -12631,7 +13906,7 @@ oj.TableDndContext.prototype.handleRowDrop = function(event)
 
 /**
  * Hide unselected rows in a tbody element
- * @param {jQuery} tableContainerClone  the cloned div jQuery object
+ * @param {Element} tableContainerClone  the cloned div DOM object
  * @param {Array.<number>} selArray  array of selected row index
  * @return {number|null} row index of the first selected row
  */
@@ -12640,12 +13915,12 @@ oj.TableDndContext.prototype._hideUnselectedRows = function(tableContainerClone,
   var tableBodyRows;
   var firstRow = null;
     
-  tableBodyRows = tableContainerClone.find('.' + oj.TableDomUtils.CSS_CLASSES._TABLE_DATA_ROW_CLASS);
+  tableBodyRows = tableContainerClone.querySelectorAll('.' + oj.TableDomUtils.CSS_CLASSES._TABLE_DATA_ROW_CLASS);
   for (var i = tableBodyRows.length - 1; i >= 0; i--)
   {
     if (selArray.indexOf(i) == -1)
     {
-      $(tableBodyRows[i]).css(oj.TableDomUtils.CSS_PROP._VISIBILITY, oj.TableDomUtils.CSS_VAL._HIDDEN);
+      tableBodyRows[i].style[oj.TableDomUtils.CSS_PROP._VISIBILITY] = oj.TableDomUtils.CSS_VAL._HIDDEN;
     }
     else
     {
@@ -12654,18 +13929,18 @@ oj.TableDndContext.prototype._hideUnselectedRows = function(tableContainerClone,
   }
   
   // hide thead and tfoot
-  var tableHeader = $(tableContainerClone.find(oj.TableDomUtils.DOM_ELEMENT._THEAD));
+  var tableHeader = tableContainerClone.querySelectorAll(oj.TableDomUtils.DOM_ELEMENT._THEAD);
   
   if (tableHeader != null && tableHeader.length > 0)
   {
-    tableHeader.css(oj.TableDomUtils.CSS_PROP._VISIBILITY, oj.TableDomUtils.CSS_VAL._HIDDEN);
+    tableHeader[0].style[oj.TableDomUtils.CSS_PROP._VISIBILITY] = oj.TableDomUtils.CSS_VAL._HIDDEN;
   }
   
-  var tableFooter = $(tableContainerClone.find(oj.TableDomUtils.DOM_ELEMENT._TFOOT));
+  var tableFooter = tableContainerClone.querySelectorAll(oj.TableDomUtils.DOM_ELEMENT._TFOOT);
   
   if (tableFooter != null && tableFooter.length > 0)
   {
-    tableFooter.css(oj.TableDomUtils.CSS_PROP._VISIBILITY, oj.TableDomUtils.CSS_VAL._HIDDEN);
+    tableFooter[0].style[oj.TableDomUtils.CSS_PROP._VISIBILITY] = oj.TableDomUtils.CSS_VAL._HIDDEN;
   }
   
   return firstRow;
@@ -12693,11 +13968,19 @@ oj.TableDndContext.prototype._invokeDndCallback = function(dndType, itemType, ca
     {
       try
       {
-        // Hoist dataTransfer object from DOM event to jQuery event
-        event.dataTransfer = event.originalEvent.dataTransfer;
-        
-        // Invoke callback function
-        returnValue = callback(event, ui);
+        if (this.component._IsCustomElement())
+        {
+          // For custom element, pass original DOM event and ignore return value.
+          callback(event.originalEvent, ui);
+        }
+        else
+        {
+          // Hoist dataTransfer object from DOM event to jQuery event
+          event.dataTransfer = event.originalEvent.dataTransfer;
+          
+          // Invoke callback function
+          returnValue = callback(event, ui);
+        }
       }
       catch (e)
       {
@@ -12838,8 +14121,8 @@ oj.TableDndContext.prototype._setHeaderColumnDraggable = function(headerColumn, 
   
   if (draggable)
   {
-    $(headerColumn).css(oj.TableDomUtils.CSS_PROP._CURSOR, oj.TableDomUtils.CSS_VAL._MOVE);
-    $(headerColumn).addClass(oj.TableDomUtils.MARKER_STYLE_CLASSES._DRAGGABLE);
+    headerColumn.style[oj.TableDomUtils.CSS_PROP._CURSOR] = oj.TableDomUtils.CSS_VAL._MOVE;
+    headerColumn.classList.add(oj.TableDomUtils.MARKER_STYLE_CLASSES._DRAGGABLE);
   }
 };
  
@@ -12850,8 +14133,8 @@ oj.TableDndContext.prototype._setHeaderColumnDraggable = function(headerColumn, 
 oj.TableDndContext.prototype._clearHeaderColumnDraggable = function(headerColumn)
 {
   headerColumn.draggable = '';
-  $(headerColumn).css(oj.TableDomUtils.CSS_PROP._CURSOR, oj.TableDomUtils.CSS_VAL._AUTO);
-  $(headerColumn).removeClass(oj.TableDomUtils.MARKER_STYLE_CLASSES._DRAGGABLE);
+  headerColumn.style[oj.TableDomUtils.CSS_PROP._CURSOR] = oj.TableDomUtils.CSS_VAL._AUTO;
+  headerColumn.classList.remove(oj.TableDomUtils.MARKER_STYLE_CLASSES._DRAGGABLE);
 };
 
 /**
@@ -12862,18 +14145,21 @@ oj.TableDndContext.prototype._clearHeaderColumnDraggable = function(headerColumn
  */
 oj.TableDndContext.prototype._setDragRowsData = function(nativeEvent, dataTypes, rowDataArray)
 {
-  var dataTransfer = nativeEvent.dataTransfer;
-  var jsonStr = JSON.stringify(rowDataArray);
-  
-  if (typeof dataTypes == 'string')
+  if (dataTypes)
   {
-    dataTransfer.setData(dataTypes, jsonStr);
-  }
-  else if (dataTypes)
-  {
-    for (var i = 0; i < dataTypes.length; i++)
+    var dataTransfer = nativeEvent.dataTransfer;
+    var jsonStr = JSON.stringify(rowDataArray);
+
+    if (typeof dataTypes == 'string')
     {
-      dataTransfer.setData(dataTypes[i], jsonStr);
+      dataTransfer.setData(dataTypes, jsonStr);
+    }
+    else
+    {
+      for (var i = 0; i < dataTypes.length; i++)
+      {
+        dataTransfer.setData(dataTypes[i], jsonStr);
+      }
     }
   }
 };
@@ -12904,7 +14190,7 @@ oj.TableDndContext.prototype._setDragRowsDataTransfer = function(event, dataType
     this._setDragRowsData(event.originalEvent, dataTypes, rowDataArray);
     
     this._dragImage = this._setDragRowsImage(event.originalEvent, 
-                                             $(event.currentTarget).closest(oj.TableDomUtils.DOM_ELEMENT._TABLE).parent(),
+                                             $(event.currentTarget).closest(oj.TableDomUtils.DOM_ELEMENT._TABLE).parent()[0],
                                              selArray);
     
     return {'rows': rowDataArray};
@@ -12916,20 +14202,21 @@ oj.TableDndContext.prototype._setDragRowsDataTransfer = function(event, dataType
 /**
  * Set a drag image of the selected rows into the dataTransfer object
  * @param {Event} nativeEvent  DOM event object 
- * @param {jQuery} tableContainer  the div jQuery object
+ * @param {Element} tableContainer  the div DOM object
  * @param {Array.<number>} selArray  array of selected row index
+ * @return {Element} DOM object for the cloned table container
  */
 oj.TableDndContext.prototype._setDragRowsImage = function(nativeEvent, tableContainer, selArray)
 {
   var tableContainerClone = this._cloneTableContainer(tableContainer);
   this._hideUnselectedRows(tableContainerClone, selArray);
-  var rect = tableContainer[0].getBoundingClientRect();
-  var tableBody = $(tableContainer.find(oj.TableDomUtils.DOM_ELEMENT._TBODY)[0]);
-  var scrollLeft = tableBody.scrollLeft();
-  var scrollTop = tableBody.scrollTop();
+  var rect = tableContainer.getBoundingClientRect();
+  var tableBody = tableContainer.querySelectorAll(oj.TableDomUtils.DOM_ELEMENT._TBODY)[0];
+  var scrollLeft = $(tableBody).scrollLeft();
+  var scrollTop = $(tableBody).scrollTop();
   var offsetX = nativeEvent.clientX - rect.left + scrollLeft;
   var offsetY = nativeEvent.clientY - rect.top + scrollTop;
-  nativeEvent.dataTransfer.setDragImage(tableContainerClone[0], offsetX, offsetY);
+  nativeEvent.dataTransfer.setDragImage(tableContainerClone, offsetX, offsetY);
   
   return tableContainerClone;
 };
@@ -12947,7 +14234,7 @@ oj.TableDndContext.prototype._setReorderColumnsDataTransfer = function(event, co
   var dragImage = this._getTableDomUtils().createTableHeaderColumnDragImage(columnIdx);
   try
   {
-    dataTransfer.setDragImage(dragImage[0], 0, 0);
+    dataTransfer.setDragImage(dragImage, 0, 0);
   }
   catch(e)
   {
@@ -12999,7 +14286,7 @@ oj.TableDndContext.prototype._updateDragRowsState = function(event, newRowIndex)
 {
   if (this._dropRowIndex != newRowIndex)
   {
-    var overRow = $(event.target).closest(oj.TableDomUtils.DOM_ELEMENT._TR);
+    var overRow = $(event.target).closest(oj.TableDomUtils.DOM_ELEMENT._TR)[0];
     this._dropRowIndex = newRowIndex;
     this._getTableDomUtils().displayDragOverIndicatorRow(this._dropRowIndex, true, overRow);
   }
@@ -13031,20 +14318,20 @@ oj.TableRendererUtils = {};
  */
 oj.TableRendererUtils.columnHeaderDefaultRenderer = function(component, context, options, delegateRenderer)
 {
-  var parentElement = $(context['headerContext']['parentElement']);
-  var headerColumnDiv = $(document.createElement(oj.TableDomUtils.DOM_ELEMENT._DIV));
-  headerColumnDiv.addClass(oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_CLASS);
-  parentElement.empty();
-  parentElement.append(headerColumnDiv); //@HTMLUpdateOK
+  var parentElement = context['headerContext']['parentElement'];
+  var headerColumnDiv = document.createElement(oj.TableDomUtils.DOM_ELEMENT._DIV);
+  headerColumnDiv.classList.add(oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_CLASS);
+  $(parentElement).empty();
+  parentElement.appendChild(headerColumnDiv); //@HTMLUpdateOK
   
   // call the delegateRenderer
-  var headerContentDiv = $(document.createElement(oj.TableDomUtils.DOM_ELEMENT._DIV));
-  headerContentDiv.addClass(oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_TEXT_CLASS);
-  headerColumnDiv.prepend(headerContentDiv); //@HTMLUpdateOK
+  var headerContentDiv = document.createElement(oj.TableDomUtils.DOM_ELEMENT._DIV);
+  headerContentDiv.classList.add(oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_TEXT_CLASS);
+  headerColumnDiv.insertBefore(headerContentDiv, headerColumnDiv.firstChild); //@HTMLUpdateOK
   
   if (delegateRenderer != null)
   {
-    delegateRenderer(headerContentDiv);
+    delegateRenderer($(headerContentDiv));
   }
   else
   {
@@ -13063,87 +14350,105 @@ oj.TableRendererUtils.columnHeaderSortableIconRenderer = function(component, con
 {
   var columnIdx = context['columnIndex'];
   var column = component._getColumnDefs()[columnIdx];
-  var parentElement = $(context['headerContext']['parentElement']);
-  var headerColumnDiv = $(document.createElement(oj.TableDomUtils.DOM_ELEMENT._DIV));
-  headerColumnDiv.addClass(oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_CLASS);
-  parentElement.empty();
-  parentElement.append(headerColumnDiv); //@HTMLUpdateOK
+  var parentElement = context['headerContext']['parentElement'];
+  var headerColumnDiv = document.createElement(oj.TableDomUtils.DOM_ELEMENT._DIV);
+  headerColumnDiv.classList.add(oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_CLASS);
+  $(parentElement).empty();
+  parentElement.appendChild(headerColumnDiv); //@HTMLUpdateOK
   
   if (component._GetReadingDirection() === "rtl")
   {
-    headerColumnDiv.css(oj.TableDomUtils.CSS_PROP._PADDING_LEFT, '0px');
+    headerColumnDiv.style[oj.TableDomUtils.CSS_PROP._PADDING_LEFT] = '0px';
   }
   else
   {
-    headerColumnDiv.css(oj.TableDomUtils.CSS_PROP._PADDING_RIGHT, '0px');
+    headerColumnDiv.style[oj.TableDomUtils.CSS_PROP._PADDING_RIGHT] = '0px';
   }
   
-  var headerColumnAscDiv = $(document.createElement(oj.TableDomUtils.DOM_ELEMENT._DIV));
-  headerColumnAscDiv.addClass(oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_ASC_CLASS);
-  headerColumnDiv.append(headerColumnAscDiv); //@HTMLUpdateOK
-  var headerColumnAscLink = $(document.createElement(oj.TableDomUtils.DOM_ELEMENT._A));
-  headerColumnAscLink.attr(oj.TableDomUtils.DOM_ATTR._ARIA_HIDDEN, 'true');
-  headerColumnAscLink.addClass(oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_ASC_LINK_CLASS);
-  headerColumnAscLink.addClass(oj.TableDomUtils.CSS_CLASSES._WIDGET_ICON_CLASS);
-  headerColumnAscLink.addClass(oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_ASC_ICON_CLASS);
-  headerColumnAscLink.addClass(oj.TableDomUtils.MARKER_STYLE_CLASSES._DISABLED);
-  headerColumnAscLink.addClass(oj.TableDomUtils.MARKER_STYLE_CLASSES._CLICKABLE_ICON);
-  component._AddHoverable(headerColumnAscLink);
-  headerColumnAscDiv.append(headerColumnAscLink); //@HTMLUpdateOK
-  var headerColumnAscWidth = headerColumnAscDiv.width();
-  var headerColumnAscHeight = headerColumnAscDiv.height();
+  var headerColumnAscDiv = document.createElement(oj.TableDomUtils.DOM_ELEMENT._DIV);
+  headerColumnAscDiv.classList.add(oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_ASC_CLASS);
+  headerColumnDiv.appendChild(headerColumnAscDiv); //@HTMLUpdateOK
+  var headerColumnAscLink = document.createElement(oj.TableDomUtils.DOM_ELEMENT._A);
+  headerColumnAscLink.setAttribute(oj.TableDomUtils.DOM_ATTR._ARIA_HIDDEN, 'true');
+  headerColumnAscLink.classList.add(oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_ASC_LINK_CLASS);
+  headerColumnAscLink.classList.add(oj.TableDomUtils.CSS_CLASSES._WIDGET_ICON_CLASS);
+  headerColumnAscLink.classList.add(oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_ASC_ICON_CLASS);
+  headerColumnAscLink.classList.add(oj.TableDomUtils.MARKER_STYLE_CLASSES._DISABLED);
+  headerColumnAscLink.classList.add(oj.TableDomUtils.MARKER_STYLE_CLASSES._CLICKABLE_ICON);
+  component._AddHoverable($(headerColumnAscLink));
+  headerColumnAscDiv.appendChild(headerColumnAscLink); //@HTMLUpdateOK
+  var headerColumnAscWidth;
+  var headerColumnAscHeight;
+  if (oj.TableRendererUtils._headerColumnAscWidth !== undefined)
+  {
+    headerColumnAscWidth = oj.TableRendererUtils._headerColumnAscWidth;
+    headerColumnAscHeight = oj.TableRendererUtils._headerColumnAscHeight;
+  }
+  else
+  {
+    // We only need to get this once per page since all asc div should be the same size
+    headerColumnAscWidth = $(headerColumnAscDiv).width();
+    headerColumnAscHeight = $(headerColumnAscDiv).height();
+    
+    // Only save the dimensions if they are > 0 in case the table is hidden
+    if (headerColumnAscWidth > 0 && headerColumnAscHeight > 0)
+    {
+      oj.TableRendererUtils._headerColumnAscWidth = headerColumnAscWidth;
+      oj.TableRendererUtils._headerColumnAscHeight = headerColumnAscHeight;
+    }
+  }
     
   // separate link for acc
-  var headerColumnAccAscLink = $(document.createElement(oj.TableDomUtils.DOM_ELEMENT._A));
-  headerColumnAccAscLink.attr(oj.TableDomUtils.DOM_ATTR._TABINDEX, '0');
-  headerColumnAccAscLink.attr(oj.TableDomUtils.DOM_ATTR._HREF, '#');
-  headerColumnAccAscLink.addClass(oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_ACC_ASC_LINK_CLASS);
-  headerColumnAccAscLink.addClass(oj.TableDomUtils.CSS_CLASSES._HIDDEN_CONTENT_ACC_CLASS);
-  headerColumnAccAscLink.attr(oj.TableDomUtils.DOM_ATTR._ARIA_LABEL, component.getTranslatedString('labelSortAsc') + ' ' + column.headerText);
-  headerColumnAscDiv.append(headerColumnAccAscLink); //@HTMLUpdateOK
+  var headerColumnAccAscLink = document.createElement(oj.TableDomUtils.DOM_ELEMENT._A);
+  headerColumnAccAscLink.setAttribute(oj.TableDomUtils.DOM_ATTR._TABINDEX, '0');
+  headerColumnAccAscLink.setAttribute(oj.TableDomUtils.DOM_ATTR._HREF, '#');
+  headerColumnAccAscLink.classList.add(oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_ACC_ASC_LINK_CLASS);
+  headerColumnAccAscLink.classList.add(oj.TableDomUtils.CSS_CLASSES._HIDDEN_CONTENT_ACC_CLASS);
+  headerColumnAccAscLink.setAttribute(oj.TableDomUtils.DOM_ATTR._ARIA_LABEL, component.getTranslatedString('labelSortAsc') + ' ' + column.headerText);
+  headerColumnAscDiv.appendChild(headerColumnAccAscLink); //@HTMLUpdateOK
   
-  var headerColumnSortPlaceholderDiv = $(document.createElement(oj.TableDomUtils.DOM_ELEMENT._DIV));
-  headerColumnSortPlaceholderDiv.addClass(oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_SORT_PACEHOLDER_CLASS);
-  headerColumnSortPlaceholderDiv.css(oj.TableDomUtils.CSS_PROP._DISPLAY, oj.TableDomUtils.CSS_VAL._INLINE_BLOCK);
-  headerColumnSortPlaceholderDiv.css(oj.TableDomUtils.CSS_PROP._VERTICAL_ALIGN, oj.TableDomUtils.CSS_VAL._MIDDLE);
-  headerColumnSortPlaceholderDiv.css(oj.TableDomUtils.CSS_PROP._WIDTH, headerColumnAscWidth + oj.TableDomUtils.CSS_VAL._PX);
-  headerColumnSortPlaceholderDiv.css(oj.TableDomUtils.CSS_PROP._HEIGHT, headerColumnAscHeight + oj.TableDomUtils.CSS_VAL._PX);
-  headerColumnDiv.append(headerColumnSortPlaceholderDiv); //@HTMLUpdateOK
+  var headerColumnSortPlaceholderDiv = document.createElement(oj.TableDomUtils.DOM_ELEMENT._DIV);
+  headerColumnSortPlaceholderDiv.classList.add(oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_SORT_PACEHOLDER_CLASS);
+  headerColumnSortPlaceholderDiv.style[oj.TableDomUtils.CSS_PROP._DISPLAY] = oj.TableDomUtils.CSS_VAL._INLINE_BLOCK;
+  headerColumnSortPlaceholderDiv.style[oj.TableDomUtils.CSS_PROP._VERTICAL_ALIGN] = oj.TableDomUtils.CSS_VAL._MIDDLE;
+  headerColumnSortPlaceholderDiv.style[oj.TableDomUtils.CSS_PROP._WIDTH] = headerColumnAscWidth + oj.TableDomUtils.CSS_VAL._PX;
+  headerColumnSortPlaceholderDiv.style[oj.TableDomUtils.CSS_PROP._HEIGHT] = headerColumnAscHeight + oj.TableDomUtils.CSS_VAL._PX;
+  headerColumnDiv.appendChild(headerColumnSortPlaceholderDiv); //@HTMLUpdateOK
 
   //sort descending link
-  var headerColumnDscDiv = $(document.createElement(oj.TableDomUtils.DOM_ELEMENT._DIV));
-  headerColumnDscDiv.addClass(oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_DSC_CLASS);
+  var headerColumnDscDiv = document.createElement(oj.TableDomUtils.DOM_ELEMENT._DIV);
+  headerColumnDscDiv.classList.add(oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_DSC_CLASS);
   // descending sort is initially not visible
-  headerColumnDscDiv.addClass(oj.TableDomUtils.MARKER_STYLE_CLASSES._DISABLED);
-  headerColumnDiv.append(headerColumnDscDiv); //@HTMLUpdateOK
+  headerColumnDscDiv.classList.add(oj.TableDomUtils.MARKER_STYLE_CLASSES._DISABLED);
+  headerColumnDiv.appendChild(headerColumnDscDiv); //@HTMLUpdateOK
 
-  var headerColumnDscLink = $(document.createElement(oj.TableDomUtils.DOM_ELEMENT._A));
-  headerColumnDscLink.attr(oj.TableDomUtils.DOM_ATTR._ARIA_HIDDEN, 'true');
-  headerColumnDscLink.addClass(oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_DSC_LINK_CLASS);
-  headerColumnDscLink.addClass(oj.TableDomUtils.CSS_CLASSES._WIDGET_ICON_CLASS);
-  headerColumnDscLink.addClass(oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_DSC_ICON_CLASS);
-  headerColumnDscLink.addClass(oj.TableDomUtils.MARKER_STYLE_CLASSES._DISABLED);
-  headerColumnDscLink.addClass(oj.TableDomUtils.MARKER_STYLE_CLASSES._CLICKABLE_ICON);
-  component._AddHoverable(headerColumnDscLink);
-  headerColumnDscDiv.append(headerColumnDscLink); //@HTMLUpdateOK
+  var headerColumnDscLink = document.createElement(oj.TableDomUtils.DOM_ELEMENT._A);
+  headerColumnDscLink.setAttribute(oj.TableDomUtils.DOM_ATTR._ARIA_HIDDEN, 'true');
+  headerColumnDscLink.classList.add(oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_DSC_LINK_CLASS);
+  headerColumnDscLink.classList.add(oj.TableDomUtils.CSS_CLASSES._WIDGET_ICON_CLASS);
+  headerColumnDscLink.classList.add(oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_DSC_ICON_CLASS);
+  headerColumnDscLink.classList.add(oj.TableDomUtils.MARKER_STYLE_CLASSES._DISABLED);
+  headerColumnDscLink.classList.add(oj.TableDomUtils.MARKER_STYLE_CLASSES._CLICKABLE_ICON);
+  component._AddHoverable($(headerColumnDscLink));
+  headerColumnDscDiv.appendChild(headerColumnDscLink); //@HTMLUpdateOK
     
   // separate link for acc
-  var headerColumnAccDscLink = $(document.createElement(oj.TableDomUtils.DOM_ELEMENT._A));
-  headerColumnAccDscLink.attr(oj.TableDomUtils.DOM_ATTR._TABINDEX, '0');
-  headerColumnAccDscLink.attr(oj.TableDomUtils.DOM_ATTR._HREF, '#');
-  headerColumnAccDscLink.addClass(oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_ACC_DSC_LINK_CLASS);
-  headerColumnAccDscLink.addClass(oj.TableDomUtils.CSS_CLASSES._HIDDEN_CONTENT_ACC_CLASS);
-  headerColumnAccDscLink.attr(oj.TableDomUtils.DOM_ATTR._ARIA_LABEL, component.getTranslatedString('labelSortDsc') + ' ' + column.headerText);
-  headerColumnDscDiv.append(headerColumnAccDscLink); //@HTMLUpdateOK
+  var headerColumnAccDscLink = document.createElement(oj.TableDomUtils.DOM_ELEMENT._A);
+  headerColumnAccDscLink.setAttribute(oj.TableDomUtils.DOM_ATTR._TABINDEX, '0');
+  headerColumnAccDscLink.setAttribute(oj.TableDomUtils.DOM_ATTR._HREF, '#');
+  headerColumnAccDscLink.classList.add(oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_ACC_DSC_LINK_CLASS);
+  headerColumnAccDscLink.classList.add(oj.TableDomUtils.CSS_CLASSES._HIDDEN_CONTENT_ACC_CLASS);
+  headerColumnAccDscLink.setAttribute(oj.TableDomUtils.DOM_ATTR._ARIA_LABEL, component.getTranslatedString('labelSortDsc') + ' ' + column.headerText);
+  headerColumnDscDiv.appendChild(headerColumnAccDscLink); //@HTMLUpdateOK
   
   // call the delegateRenderer
-  var headerContentDiv = $(document.createElement(oj.TableDomUtils.DOM_ELEMENT._DIV));
-  headerContentDiv.addClass(oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_TEXT_CLASS);
-  headerColumnDiv.prepend(headerContentDiv); //@HTMLUpdateOK
+  var headerContentDiv = document.createElement(oj.TableDomUtils.DOM_ELEMENT._DIV);
+  headerContentDiv.classList.add(oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_TEXT_CLASS);
+  headerColumnDiv.insertBefore(headerContentDiv, headerColumnDiv.firstChild); //@HTMLUpdateOK
   
   if (delegateRenderer != null)
   {
-    delegateRenderer(headerContentDiv);
+    delegateRenderer($(headerContentDiv));
   }
   else
   {
@@ -13154,14 +14459,15 @@ oj.TableRendererUtils.columnHeaderSortableIconRenderer = function(component, con
 /**
  * Default column header context text renderer
  * @param {Object} component component instance
- * @param {Object} headerContentDiv header content div
+ * @param {Element} headerContentDiv header content div
  * @param {Object} context context object
  */
 oj.TableRendererUtils.columnHeaderDefaultTextRenderer = function(component, headerContentDiv, context)
 {
   var columnIdx = context['columnIndex'];
   var column = component._getColumnDefs()[columnIdx];
-  headerContentDiv.text(column.headerText);
+  var textValue = column.headerText == null ? '' : column.headerText;
+  headerContentDiv.appendChild(document.createTextNode(textValue)); //@HTMLUpdateOK
 };
 
 /**
@@ -13173,7 +14479,7 @@ oj.TableRendererUtils.columnHeaderDefaultTextRenderer = function(component, head
  */
 oj.TableRendererUtils.tableBodyRowDefaultRenderer = function(component, rowIdx, row, context)
 {
-  var tableBodyRow = $(context['rowContext']['parentElement']);
+  var tableBodyRow = context['rowContext']['parentElement'];
   var rowHashCode = component._getTableDomUtils().hashCode(row['key']);
   var columns = component._getColumnDefs();
   component._getTableDomUtils().setTableBodyRowAttributes(row, tableBodyRow);
@@ -13196,7 +14502,7 @@ oj.TableRendererUtils.tableBodyRowDefaultRenderer = function(component, rowIdx, 
  */
 oj.TableRendererUtils.tableBodyCellDefaultRenderer = function(component, rowIdx, columnIdx, row, rowHashCode, context)
 {
-  var tableBodyRow = $(context['rowContext']['parentElement']);
+  var tableBodyRow = context['rowContext']['parentElement'];
   var columns = component._getColumnDefs();
   var column = columns[columnIdx];
   
@@ -13215,7 +14521,7 @@ oj.TableRendererUtils.tableBodyCellDefaultRenderer = function(component, rowIdx,
 
   if (cellRenderer)
   {
-    var cellContext = this.getRendererContextObject(component, tableBodyCell[0], {'row': row});
+    var cellContext = this.getRendererContextObject(component, tableBodyCell, {'row': row});
     // Copy additional properties to top-level context to work with custom element
     var rendererContext = {'cellContext': cellContext,
                            'columnIndex': columnIdx,
@@ -13228,8 +14534,11 @@ oj.TableRendererUtils.tableBodyCellDefaultRenderer = function(component, rowIdx,
     if (cellColumnContent != null)
     {
       // if the renderer returned a value then we set it as the content
-      // for the cell
-      tableBodyCell.append(cellColumnContent); //@HTMLUpdateOK
+      // for the cell. Use jquery append() for this as a convenience because 
+      // cellColumnContent could be a Node element or arbitrary content and 
+      // we don't want to write code to convert everything to Node type and call 
+      // appendChild.
+      $(tableBodyCell).append(cellColumnContent); //@HTMLUpdateOK
     }
     else
     {
@@ -13237,14 +14546,15 @@ oj.TableRendererUtils.tableBodyCellDefaultRenderer = function(component, rowIdx,
       // cell was manipulated. So get it and set the required
       // attributes just in case it was replaced or the attributes
       // got removed
-      tableBodyCell = $(tableBodyRow.children(':not(' + '.' + oj.TableDomUtils.CSS_CLASSES._TABLE_DATA_CELL_ACC_SELECT_CLASS + ')')[columnIdx]);
+      tableBodyCell = $(tableBodyRow).children(':not(' + '.' + oj.TableDomUtils.CSS_CLASSES._TABLE_DATA_CELL_ACC_SELECT_CLASS + ')')[columnIdx];
       component._getTableDomUtils().setTableBodyCellAttributes(rowIdx, row['key'], rowHashCode, columnIdx, tableBodyCell);
       component._getTableDomUtils().styleTableBodyCell(columnIdx, tableBodyCell, false);
     }
   }
   else
   {
-    tableBodyCell.text(data);
+    var textValue = data == null ? '' : data;
+    tableBodyCell.appendChild(document.createTextNode(textValue)); //@HTMLUpdateOK
   }
 };
 
@@ -13257,7 +14567,7 @@ oj.TableRendererUtils.tableBodyCellDefaultRenderer = function(component, rowIdx,
 oj.TableRendererUtils.getRendererContextObject = function(component, parentElement, options)
 {
   var context = {};
-  context['component'] = oj.Components.getWidgetConstructor(component.element, 'ojTable');
+  context['component'] = oj.Components.__GetWidgetConstructor(component.element, 'ojTable');
   var dataSource = component._getData();
   // unwrap the datasource if we have a PagingTableDataSource
   if (dataSource instanceof oj.PagingTableDataSource)
@@ -13329,6 +14639,495 @@ oj.TableRendererUtils.getRendererStatusObject = function(component, row)
     'rowKey': row['key'],
     'currentRow': $.extend({}, component._getCurrentRow())};
 };
+/**
+ * Copyright (c) 2015, Oracle and/or its affiliates.
+ * All rights reserved.
+ */
+
+/**
+ * @preserve Copyright 2013 jQuery Foundation and other contributors
+ * Released under the MIT license.
+ * http://jquery.org/license
+ */
+
+/*jslint browser: true,devel:true*/
+/**
+ * @ignore
+ * @export
+ * @class oj.TableResizeUtils
+ * @classdesc Resize Utils for ojTable
+ * @param {Object} component ojTable instance
+ * @constructor
+ */
+oj.TableResizeUtils = function(component)
+{
+  this.component = component;
+  this.options = component['options'];
+  this.Init();
+};
+
+// Subclass from oj.Object 
+oj.Object.createSubclass(oj.TableResizeUtils, oj.Object, "oj.TableResizeUtils");
+
+/**
+ * Initializes the instance.
+ * @export
+ */
+oj.TableResizeUtils.prototype.Init = function()
+{
+  oj.TableResizeUtils.superclass.Init.call(this);
+};
+
+/**
+  * Set resize cursor
+  * @param {Event} event Event
+  */
+oj.TableResizeUtils.prototype.setResizeCursor = function(event)
+{
+  var eventTarget = this.component._getEventTargetElement(event);
+  var columnIdx = this.component._getTableDomUtils().getElementColumnIdx(eventTarget);
+  
+  if (columnIdx == null)
+  {
+    return false;
+  }
+  
+  var column = this.component._getColumnDefs()[columnIdx];
+  
+  if (column['resizable'] == this.component._OPTION_DISABLED && 
+    this._resizeStartColumnIdx !== columnIdx - 1 &&
+    this._resizeStartColumnIdx !== columnIdx + 1)
+  {
+    return false;
+  }
+  
+  if (this._resizeStartColumnIdx == null)
+  {
+    if (this._isHeaderColumnResizeStart(event) !== null)
+    {
+      eventTarget.style.cursor = 'col-resize';
+      return true;
+    }
+    eventTarget.style.cursor = '';
+    return false;
+  }
+  else
+  {
+    var headerColumnCount = this.component._getTableDomUtils().getTableHeaderColumns().length;
+    
+    if (columnIdx == this._resizeStartColumnIdx ||
+	      this._resizeColumnStart && columnIdx == this._resizeStartColumnIdx - 1 ||
+	      !this._resizeColumnStart && columnIdx == this._resizeStartColumnIdx + 1)
+  	{
+      // cannot resize the leftmost border of the first column or the rightmost border of the last column
+      if (this._resizeStartColumnIdx == 0 && this._resizeColumnStart)
+      {
+        return false;
+      }
+      else if (this._resizeStartColumnIdx == headerColumnCount - 1 && !this._resizeColumnStart)
+      {
+        return false;
+      }
+      // move the indicator
+      var tableHeaderColumnResizeIndicator = this.component._getTableDomUtils().getTableHeaderColumnResizeIndicator();
+
+      if (tableHeaderColumnResizeIndicator != null)
+      {
+        if (this.component._GetReadingDirection() === "rtl")
+        {
+          var columnRect = event.target.getBoundingClientRect();
+          if (this._resizeColumnStart)
+          {
+            tableHeaderColumnResizeIndicator.style.left = this._getPageX(event) - columnRect.left + columnRect.width + 'px';
+          }
+          else
+          {
+            tableHeaderColumnResizeIndicator.style.left = this._getPageX(event) - columnRect.left + 'px';
+          }
+        }
+        else
+        {
+          tableHeaderColumnResizeIndicator.style.left = this._getPageX(event) + 'px';
+        }
+        return true;
+      }
+    }
+  }
+  return false;
+};
+
+/**
+  * Handle header column resize start
+  * @param {Event} event Event
+  * @return {boolean} Return whether column resize started
+  */
+oj.TableResizeUtils.prototype.handleHeaderColumnResizeStart = function(event)
+{
+  var eventTarget = this.component._getEventTargetElement(event);
+  var columnIdx = this.component._getTableDomUtils().getElementColumnIdx(eventTarget);
+  
+  if (columnIdx != null)
+  {
+    var column = this.component._getColumnDefs()[columnIdx];
+    this._resizeColumnStart = this._isHeaderColumnResizeStart(event);
+    
+    if (column['resizable'] == this.component._OPTION_ENABLED &&
+      this._resizeColumnStart !== null)
+    {
+      this._resizeStartColumnIdx = columnIdx;
+      this._resizeStartPageX = this._getPageX(event);
+      this._setTableHeaderColumnsResizeStyling();
+      this._setTableHeaderColumnResizeIndicator(columnIdx);
+      return true;
+    }
+  }
+  this._resizeStartColumnIdx = null;
+  this._resizeStartPageX = null;
+  return false;
+};
+
+/**
+  * Handle header column resize end
+  * @param {Event} event Event
+  * @return {boolean} Return whether column resize ended
+  */
+oj.TableResizeUtils.prototype.handleHeaderColumnResizeEnd = function(event)
+{
+  var eventTarget = this.component._getEventTargetElement(event);
+  var columnIdx = this.component._getTableDomUtils().getElementColumnIdx(eventTarget);
+
+  // only resize if we end the resize on the same column or adjacent columns
+  if ((columnIdx !== null && columnIdx === this._resizeStartColumnIdx) ||
+      (this._resizeColumnStart && columnIdx === this._resizeStartColumnIdx - 1) ||
+      (!this._resizeColumnStart && columnIdx === this._resizeStartColumnIdx + 1))
+  {
+    var headerColumn = this.component._getTableDomUtils().getTableHeaderColumn(this._resizeStartColumnIdx);
+    if (headerColumn != null)
+    {
+      var headerColumnRect = headerColumn.getBoundingClientRect();
+      var headerColumnWidth = headerColumnRect['width'];
+      var updatedWidth, widthChange;
+
+      if (this._resizeColumnStart)
+      {
+        widthChange = this._resizeStartPageX - this._getPageX(event);
+      }
+      else
+      {
+        widthChange = this._getPageX(event) - this._resizeStartPageX;
+      }
+      if (Math.abs(widthChange) > 2)
+      {
+        updatedWidth = headerColumnWidth + widthChange;
+        var clonedColumnsOption = [];
+        var i, columnsCount = this.options['columns'].length;
+        for (i = 0; i < columnsCount; i++) {
+          clonedColumnsOption[i] = $.extend({}, {}, this.options['columns'][i]);
+        }
+        clonedColumnsOption[this._resizeStartColumnIdx]['width'] = updatedWidth;
+        var headerColumnAdjacent, headerColumnAdjacentIdx;
+        if (this._resizeColumnStart)
+        {
+          // resizing from the left should make the column in the left bigger or smaller
+          headerColumnAdjacentIdx = this._resizeStartColumnIdx - 1;
+          headerColumnAdjacent = this.component._getTableDomUtils().getTableHeaderColumn(headerColumnAdjacentIdx);
+          if (headerColumnAdjacent)
+          {
+            var headerColumnAdjacentRect = headerColumnAdjacent.getBoundingClientRect();
+            var headerColumnAdjacentWidth = headerColumnAdjacentRect['width'];
+            clonedColumnsOption[headerColumnAdjacentIdx]['width'] = headerColumnAdjacentWidth - widthChange;
+          }
+        }
+        this.component.option('columns', clonedColumnsOption, {'_context': {writeback: true, internalSet: true}});
+        this.component._clearCachedMetadata();
+        this.component._refresh();
+        this.clearTableHeaderColumnsResize();
+        return true;
+      }
+    }
+  }
+  this.clearTableHeaderColumnsResize();
+  return false;
+};
+
+/**
+  * Clear any column resize
+  */
+oj.TableResizeUtils.prototype.clearTableHeaderColumnsResize = function()
+{
+  this._resizeStartColumnIdx = null;
+  this._resizeColumnStart = null;
+  this._resizeStartPageX = null;
+  this._clearTableHeaderColumnsResizeStyling();
+  this.component._getTableDomUtils().removeTableHeaderColumnResizeIndicator();
+};
+
+oj.TableResizeUtils.prototype._getPageX = function(event)
+{
+  if (event.pageX !== undefined)
+  {
+    // MouseEvent has pageX on event itself
+    return event.pageX;
+  }
+  else if (event.changedTouches !== undefined)
+  {
+    // TouchEvent has pageX on changedTouches, targetTouches, and touches.
+    // For one-finger drag, they contain the same value on all touch events
+    // except for touchend, in which only changedTouches has the point at
+    // which the finger leaves the touch surface.
+    return event.changedTouches[0].pageX;
+  }
+  
+  // We shouldn't get here unless event is neither MouseEvent nor TouchEvent
+  return 0;
+};
+
+oj.TableResizeUtils.prototype._isHeaderColumnResizeStart = function(event)
+{
+  var resizeColumnStart = null;
+  var columnRect = event.target.getBoundingClientRect();
+  var distFromLeft = Math.abs(this._getPageX(event) - columnRect.left);
+  var distFromRight = Math.abs(this._getPageX(event) - columnRect.right);
+  if (distFromLeft <= oj.TableResizeUtils.RESIZE_OFFSET) 
+  {
+    if (this.component._GetReadingDirection() === "rtl") 
+    {
+      resizeColumnStart = false;
+    } 
+    else 
+    {
+      resizeColumnStart = true;
+    }
+  } 
+  else if (distFromRight <= oj.TableResizeUtils.RESIZE_OFFSET) 
+  {
+    if (this.component._GetReadingDirection() === "rtl") 
+    {
+      resizeColumnStart = true;
+    } 
+    else 
+    {
+      resizeColumnStart = false;
+    }
+  }
+  return resizeColumnStart;
+};
+
+oj.TableResizeUtils.prototype._setTableHeaderColumnResizeIndicator = function(columnIdx)
+{
+  var tableHeaderColumnResizeIndicator = this.component._getTableDomUtils().getTableHeaderColumnResizeIndicator();
+  
+  if (tableHeaderColumnResizeIndicator == null)
+  {
+    tableHeaderColumnResizeIndicator = this.component._getTableDomUtils().createTableHeaderColumnResizeIndicator();
+  }
+  var table = this.component._getTableDomUtils().getTable();
+  var tableRect = table.getBoundingClientRect();
+  var headerColumn = this.component._getTableDomUtils().getTableHeaderColumn(columnIdx);
+  var headerColumnRect = headerColumn.getBoundingClientRect();
+  var tableHeaderColumnResizeIndicatorRect = tableHeaderColumnResizeIndicator.getBoundingClientRect();
+  tableHeaderColumnResizeIndicator.style.height = tableRect.height + 'px';
+  
+  if (this._resizeColumnStart)
+  {
+    if (this.component._GetReadingDirection() === "rtl")
+	  {
+      tableHeaderColumnResizeIndicator.style.left = headerColumnRect.left - tableHeaderColumnResizeIndicatorRect.left + headerColumnRect.width + 'px';
+    }
+    else
+    {
+      tableHeaderColumnResizeIndicator.style.left = -1 * tableHeaderColumnResizeIndicatorRect.left + headerColumnRect.left + 'px';
+    }
+    tableHeaderColumnResizeIndicator.style.borderLeftWidth = '2px';
+    tableHeaderColumnResizeIndicator.style.borderRightWidth = '0';
+  }
+  else
+  {
+    if (this.component._GetReadingDirection() === "rtl")
+	  {
+      tableHeaderColumnResizeIndicator.style.left = headerColumnRect.left - tableHeaderColumnResizeIndicatorRect.left + 'px';
+    }
+    else
+    {
+      tableHeaderColumnResizeIndicator.style.left = -1 * tableHeaderColumnResizeIndicatorRect.left + headerColumnRect.left + headerColumnRect.width + 'px';
+    }
+    tableHeaderColumnResizeIndicator.style.borderRightWidth = '2px';
+    tableHeaderColumnResizeIndicator.style.borderLeftWidth = '0';
+  }
+};
+
+oj.TableResizeUtils.prototype._setTableHeaderColumnsResizeStyling = function()
+{
+  var table = this.component._getTableDomUtils().getTable();
+  table.classList.add(oj.TableResizeUtils.CSS_CLASSES._COLUMN_HEADER_RESIZING_CLASS);
+};
+
+oj.TableResizeUtils.prototype._clearTableHeaderColumnsResizeStyling = function()
+{
+  var headerColumns = this.component._getTableDomUtils().getTableHeaderColumns();
+
+  var i;
+  for (i = 0; i < headerColumns.length; i++)
+  {
+    headerColumns[i].style.cursor = '';
+  }
+  
+  var table = this.component._getTableDomUtils().getTable();
+  table.classList.remove(oj.TableResizeUtils.CSS_CLASSES._COLUMN_HEADER_RESIZING_CLASS);
+};
+
+oj.TableResizeUtils.RESIZE_OFFSET = 10;
+
+/**
+ * @const
+ */
+oj.TableResizeUtils.CSS_CLASSES =
+  {
+    _COLUMN_HEADER_RESIZING_CLASS: 'oj-table-column-header-resizing'
+  };
+/**
+ * Copyright (c) 2015, Oracle and/or its affiliates.
+ * All rights reserved.
+ */
+
+/**
+ * @preserve Copyright 2013 jQuery Foundation and other contributors
+ * Released under the MIT license.
+ * http://jquery.org/license
+ */
+
+/*jslint browser: true,devel:true*/
+/**
+ * @ignore
+ * @export
+ * @class oj.TableAnimationUtils
+ * @classdesc Animation Utils for ojTable
+ * @param {jQuery=} component ojTable instance
+ * @constructor
+ */
+oj.TableAnimationUtils = function(component)
+{
+  this.component = component;
+  this.options = component['options'];
+  this.Init();
+};
+
+// Subclass from oj.Object 
+oj.Object.createSubclass(oj.TableAnimationUtils, oj.Object, "oj.TableAnimationUtils");
+
+/**
+ * Initializes the instance.
+ * @export
+ */
+oj.TableAnimationUtils.prototype.Init = function()
+{
+  oj.TableAnimationUtils.superclass.Init.call(this);
+};
+
+/**
+ * Animate a tableBodyRow
+ * @param {Element} tableBodyRow  DOM element
+ * @param {string} action the animation action
+ * @return {Promise} Returns a Promise which resolves to true when animation is complete. Will
+ * resolve to false if no animations were run.
+ */
+oj.TableAnimationUtils.prototype.animateTableBodyRow = function(tableBodyRow, action)
+{
+  if (this._isAnimationDisabled(action))
+  {
+    return Promise.resolve(false);
+  }
+  var self = this;
+  return new Promise(function(resolve, reject)
+    { 
+      self._startAnimation(tableBodyRow, action).then(function()
+      {
+        resolve(true);
+      });
+    });
+};
+
+/**
+ * Animate an array of tableBodyRows
+ * @param {Array} tableBodyRowArray Array of tr DOM elements
+ * @param {string} action the animation action
+ * @return {Promise} Returns a Promise which resolves when animation is complete..
+ */
+oj.TableAnimationUtils.prototype.animateTableBodyRows = function(tableBodyRowArray, action)
+{
+  if (this._isAnimationDisabled(action))
+  {
+    return Promise.resolve(false);
+  }
+  var self = this;
+  var i, tableBodyRow, animationPromiseArray = [];
+  for (i = 0; i < tableBodyRowArray.length; i++)
+  {
+    tableBodyRow = tableBodyRowArray[i];
+    animationPromiseArray.push((function(tableBodyRow)
+    {
+      return self.animateTableBodyRow(tableBodyRow, action);
+    })(tableBodyRow));
+  }
+  
+  if (animationPromiseArray.length > 0)
+  {
+    return Promise.all(animationPromiseArray);
+  }
+  return Promise.resolve(false);
+};
+
+/**
+ * Gets the animation effect for the specific action
+ * @param {string} action the action to retrieve the effect
+ * @return {Object} the animation effect for the action
+ */
+oj.TableAnimationUtils.prototype._getAnimationEffect = function(action)
+{
+  var defaultOptions;
+
+  if (this.defaultAnimations == null)
+  {
+    defaultOptions = oj.ThemeUtils.parseJSONFromFontFamily('oj-table-option-defaults');
+    this.defaultAnimations = defaultOptions['animation'] || {};
+  }
+
+  return this.defaultAnimations[action];
+};
+
+/**
+ * Returns whether animation is disabled
+ * @param {string} action the animation action
+ * @return {boolean} Returns true or false
+ */
+oj.TableAnimationUtils.prototype._isAnimationDisabled = function(action)
+{
+  // check if animation effect is null
+  var effect = this._getAnimationEffect(action);
+  if (effect == null || 
+    effect.length == 0)
+  {
+    return true;
+  }
+  return false;
+};
+
+/**
+ * Utility method to start animation
+ * @param {Element} elem element to animate
+ * @param {string} action the animation action
+ * @param {Object=} effect optional animation effect, if not specified then it will be derived based on action
+ * @return {Promise} the promise which will be resolve when animation ends
+ * @private
+ */
+oj.TableAnimationUtils.prototype._startAnimation = function(elem, action, effect)
+{
+  if (effect == null)
+  {
+    effect = this._getAnimationEffect(action);
+  }
+  return oj.AnimationUtils.startAnimation(elem, action, effect, this.component);
+};
 (function() {
 var ojTableMeta = {
   "properties": {
@@ -13341,7 +15140,8 @@ var ojTableMeta = {
       }
     },
     "columns": {
-      "type": "Array<Object>"
+      "type": "Array<Object>",
+      "writeback": true
     },
     "columnsDefault": {
       "type": "Object",
@@ -13370,6 +15170,9 @@ var ojTableMeta = {
           "type": "string"
         },
         "renderer": {},
+        "resizable": {
+          "type": "string"
+        },
         "sortable": {
           "type": "string",
           "enumValues": ["auto", "enabled", "disabled", "none"]
@@ -13379,11 +15182,15 @@ var ojTableMeta = {
         },
         "style": {
           "type": "string"
+        },
+        "width": {
+          "type": "number"
         }
       }
     },
     "currentRow": {
-      "type": "Object"
+      "type": "Object",
+      "writeback": true
     },
     "data": {},
     "display": {
@@ -13447,9 +15254,6 @@ var ojTableMeta = {
       "type": "string",
       "enumValues": ["none", "rowEdit"]
     },
-    "emptyText": {
-      "type": "string"
-    },
     "horizontalGridVisible": {
       "type": "string",
       "enumValues": ["auto", "enabled", "disabled"]
@@ -13471,7 +15275,8 @@ var ojTableMeta = {
       }
     },
     "selection": {
-      "type": "Array<Object>"
+      "type": "Array<Object>",
+      "writeback": true
     },
     "selectionMode": {
       "type": "Object",
@@ -13497,6 +15302,8 @@ var ojTableMeta = {
     "refreshRow": {},
   },
   "events": {
+    "animateEnd": {},
+    "animateStart": {},
     "beforeCurrentRow": {},
     "beforeRowEdit": {},
     "beforeRowEditEnd": {},
@@ -13510,4 +15317,5 @@ var ojTableMeta = {
 oj.CustomElementBridge.registerMetadata('oj-table', 'baseComponent', ojTableMeta);
 oj.CustomElementBridge.register('oj-table', {'metadata': oj.CustomElementBridge.getMetadata('oj-table')});
 })();
+
 });

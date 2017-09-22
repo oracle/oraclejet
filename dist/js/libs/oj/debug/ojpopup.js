@@ -71,9 +71,8 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
    *
    * <p>Description: Themeable, WAI-ARIA-compliant popup that can display arbitrary content.</p>
    *
-   * <p>A JET popup can be created from a block ( <code class="prettyprint">&lt;div&gt;</code> ),
-   * inline element ( <code class="prettyprint">&lt;span&gt;</code> ) or custom element
-   * ( <code class="prettyprint">&lt;oj-popup&gt;</code> ).  This element will become the
+   * <p>A JET popup can be created from custom element
+   * <code class="prettyprint">&lt;oj-popup&gt;</code> syntax. This element will become the
    * root - outer chrome of the popup.  The content of the popup will be relocated under an
    * element marked with the <code class="prettyprint">.oj-popup-content</code> selector.
    * Dynamic content can be inserted under the element identified by the
@@ -89,19 +88,13 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
    * &lt;/oj-popup&gt;
    * </code></pre>
    *
-   * <p>The following is an example of dynamically changing the content of the popup defined above.</p>
+   * <p>The following is an example of dynamically changing the content of the popup defined above.
+   * </p>
    *
    * <pre class="prettyprint">
-   * <code>var content = $( "#popup" ).find( ".mycontent" ).first();
-   * content.text("Hello Universe!");
+   * <code>var content = popup.querySelector( ".mycontent" );
+   * content.textContent = "Hello Universe!";
    * </code></pre>
-   *
-   * <p>For WAI-ARIA compliance, JET automatically adds
-   * <code class="prettyprint">role="tooltip"</code> to the root popup dom element by default.  The
-   * <code class="prettyprint">role</code> option controls the WAI-ARIA role. The popup also adds
-   * the <code class="prettyprint">aria-describedby="popup-id"</code> to the launcher while the
-   * popup is open.
-   * </p>
    *
    * <h3 id="touch-section">
    *   Touch End User Information
@@ -109,7 +102,6 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
    * </h3>
    *
    * {@ojinclude "name":"touchDoc"}
-   *
    *
    * <h3 id="keyboard-section">
    *   Keyboard End User Information
@@ -125,6 +117,23 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
    *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#accessibility-section"></a>
    * </h3>
    *
+   * <p>For WAI-ARIA compliance, JET automatically adds
+   * <code class="prettyprint">role="tooltip"</code> to the root popup dom element if not
+   * already specificed. This is not a component property but rather the standard html
+   * <a href="https://www.w3.org/TR/wai-aria/roles">role</a> attribute. Depending on how the
+   * popup is used in the page, the page developer should choose from the following:
+   * <ul>
+   *   <li>"tooltip" defines contextual popup that displays a description for an element.</li>
+   *   <li>"dialog" defines an application window that is designed to interrupt the current
+   *       processing of an application in order to prompt the user to enter information or
+   *       require a response.</li>
+   *   <li>"alertdialog" defines type of dialog that contains an alert message, where initial focus
+   *       goes to an element within the dialog.</li>
+   * </ul>
+   * The popup also adds the <code class="prettyprint">aria-describedby="popup-id"</code> attribute
+   * to the assocaited launcher while the popup is open.
+   * </p>
+   *
    * <p>One point often overlooked is making the gestures that launch a popup accessible.
    *   There are no constraints to what events a page developer might choose to trigger opening a
    *   popup.  The choice should be accessible for screen reader users.  Page
@@ -135,18 +144,6 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
    * </p>
    *
    * <p>See also the <a href="#styling-section">oj-focus-highlight</a> discussion.
-   *
-   * <h3 id="pseudos-section">
-   *   Pseudo-selectors
-   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#pseudos-section"></a>
-   * </h3>
-   *
-   * <p>The <code class="prettyprint">:oj-popup</code> pseudo-selector can be used in jQuery
-   * expressions to select JET Popups.  For example:</p>
-   *
-   * <pre class="prettyprint">
-   * <code>var popups = $( ":oj-popup" )
-   * </code></pre>
    *
    * <h3 id="reparenting-section">
    *   Reparenting
@@ -176,8 +173,7 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
    *        Instead, listeners for popup events should be applied to either the popup's root
    *        element, or the document.</li>
    *    <li>Likewise, developers should not use CSS descendant selectors, or similar logic, that
-   *        assumes that the popup will remain a child
-   *        of its original parent.</li>
+   *        assumes that the popup will remain a child of its original parent.</li>
    *    <li>Popups containing iframes are problematic.  The iframe elements "may" fire a HTTP GET
    *        request for its src attribute each time the iframe is reparented in the document.</li>
    *    <li>In some browsers, reparenting a popup that contains elements having overflow, will cause
@@ -196,34 +192,17 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
    *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#eventHandling-section"></a>
    * </h3>
    * <ul>
-   *  <li>beforeClose(event, ui) - Triggered before a popup closes. Event can prevent closing the
+   *  <li>ojBeforeClose(event) - Triggered before a popup closes. Event can prevent closing the
    *      popup; However, there are cases the framework must veto, such as when the popup is
    *      destroyed.</li>
-   *  <li>beforeOpen(event, ui) - Triggered before a popup closes. Event can prevent opening the
+   *  <li>ojBeforeOpen(event) - Triggered before a popup opens. Event can prevent opening the
    *      popup.</li>
-   *  <li>close(event, ui) - Triggered after the popup has closed.</li>
-   *  <li>create(event, ui) - Triggered after the component has been bound to an associated dom
-   *      element.</li>
-   *  <li>focus(event, ui) - Triggered when initial focus is established on opening, depending on
-   *      the value of the initalFocus option, or <kbd>F6</kbd> focus toggle from the associated
+   *  <li>ojClose(event) - Triggered after the popup has closed.</li>
+   *  <li>ojFocus(event) - Triggered when initial focus is established on opening, depending on
+   *      the value of the initalFocus property, or <kbd>F6</kbd> focus toggle from the associated
    *      launcher.</li>
-   *  <li>open(event, ui) - Triggered after the popup has been made visible.</li>
+   *  <li>ojOpen(event) - Triggered after the popup has been made visible.</li>
    * </ul>
-   *
-   * @desc Creates a JET Popup.
-   *
-   * @param {Object=} options a map of option-value pairs to set on the component
-   *
-   * @example <caption>Initialize the popup with no options specified:</caption>
-   * $( ".selector" ).ojPopup();
-   *
-   * @example <caption>Initialize the popup with behaviors of a notewindow:</caption>
-   * $( ".selector" ).ojPopup({initialFocus: 'none', autoDismiss: 'focusLoss', tail: 'simple'});
-   *
-   * @example <caption>Initialize a popup via the JET <code class="prettyprint">ojComponent</code>
-   *          binding:</caption>
-   * &lt;div id="popup1" data-bind="ojComponent: {component: 'ojPopup'}">This is a popup!&lt;/div>
-   *
    */
   oj.__registerWidget("oj.ojPopup", $['oj']['baseComponent'],
     {
@@ -233,7 +212,7 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
           /**
            *
            * @private
-           * @memberof! oj.ojPopup
+           * @memberof oj.ojPopup
            * @instance
            */
           'animation' : null,
@@ -244,25 +223,26 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
            * is aligned to is not fully visible within an overflow area.
            *
            * @expose
-           * @memberof! oj.ojPopup
+           * @memberof oj.ojPopup
            * @instance
            * @type {string}
            * @default <code class="prettyprint">"focusLoss"</code>
            * @ojvalue {string} "none" disables auto dismissal behaviors.
            * @ojvalue {string} "focusLoss" defines auto dismissal behavior when focus leaves the
            *   content of the popup or associated launcher.  In addition, if what the popup is
-           *   positioned to is clipped within an overflow area, the popup will auto close dismiss.
+           *   positioned to is not visible within an overflow area, the popup will auto close
+           *   dismiss.
            *
            * @example <caption>Initialize the popup with
-           *          <code class="prettyprint">autoDismiss</code> option specified:</caption>
-           * $( ".selector" ).ojPopup( { "autoDismiss": "focusLoss" } );
+           *          <code class="prettyprint">auto-dismiss</code> attribute specified:</caption>
+           * &lt;oj-popup auto-dismiss="focusLoss" &gt;&lt;/oj-popup&gt;
            *
-           * @example <caption>Get or set the <code class="prettyprint">autoDismiss</code> option,
+           * @example <caption>Get or set the <code class="prettyprint">autoDismiss</code> property,
            *          after initialization:</caption>
            * // getter
-           * var autoDismiss = $( ".selector" ).ojPopup( "option", "autoDismiss" );
+           * var autoDismiss = myPopup.autoDismiss;
            * // setter
-           * $( ".selector" ).ojPopup( "option", "autoDismiss", "none" );
+           * myPopup.autoDismiss = "none";
            */
           autoDismiss : 'focusLoss',
           /**
@@ -272,7 +252,7 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
            * theme to the root dom of the popup to remove the default chrome.
            *
            * @expose
-           * @memberof! oj.ojPopup
+           * @memberof oj.ojPopup
            * @instance
            * @type {string}
            * @default <code class="prettyprint">"default"</code>
@@ -281,16 +261,16 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
            * @ojvalue {string} "none" turns off the outer chrome defined by the active theme.
            *
            * @example <caption>Initialize the popup with <code class="prettyprint">chrome</code>
-           *          option specified:</caption>
-           * $( ".selector" ).ojPopup( { "chrome": "none" } );
+           *          attribute specified:</caption>
+           * &lt;oj-popup chrome="none" &gt;&lt;/oj-popup&gt;
            *
-           * @example <caption>Get or set the <code class="prettyprint">chrome</code> option, after
+           * @example <caption>Get or set the <code class="prettyprint">chrome</code> property, after
            *          initialization:</caption>
            * // getter
-           * var chrome = $( ".selector" ).ojPopup( "option", "chrome" );
+           * var chrome = myPopup.chrome;
            *
            * // setter
-           * $( ".selector" ).ojPopup( "option", "chrome", "none" );
+           * myPopup.chrome = "none";
            */
           chrome : 'default',
           /**
@@ -299,12 +279,12 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
            * open.
            *
            * @expose
-           * @memberof! oj.ojPopup
+           * @memberof oj.ojPopup
            * @instance
            * @type {string}
            * @default <code class="prettyprint">"auto"</code>
-           * @ojvalue {string} "auto" option is derived from the values of the modality and
-           *          autoDismiss options
+           * @ojvalue {string} "auto" is derived from the values of the modality and
+           *          autoDismiss properties
            * @ojvalue {string} "none" prevents the popup from stealing focus when open.
            * @ojvalue {string} "firstFocusable" defines that a popup should grab focus to the first
            *          focusable element within the popup's content.
@@ -312,20 +292,20 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
            *          platforms).
            *
            * @example <caption>Initialize the popup with
-           *           <code class="prettyprint">initialFocus</code> option specified:</caption>
-           * $( ".selector" ).ojPopup( { "initialFocus": "none" } );
+           *           <code class="prettyprint">initial-focus</code> attribute specified:</caption>
+           * &lt;oj-popup initial-focus="none" &gt;&lt;/oj-popup&gt;
            *
-           * @example <caption>Get or set the <code class="prettyprint">initialFocus</code> option,
+           * @example <caption>Get or set the <code class="prettyprint">initialFocus</code> property,
            *          after initialization:</caption>
            * // getter
-           * var initialFocus = $( ".selector" ).ojPopup( "option", "initialFocus" );
+           * var initialFocus = myPopup.initialFocus;
            *
            * // setter
-           * $( ".selector" ).ojPopup( "option", "initialFocus", "none" );
+           * myPopup.initialFocus = "none";
            */
           initialFocus : 'auto',
           /**
-           * <p>Position object is used to establish the location the popup will appear relative to
+           * <p>Position property is used to establish the location the popup will appear relative to
            * another element. Positioning defines "my" alignment "at" the alignment "of" some other
            * thing which can be "offset" by so many pixels.</p>
            *
@@ -339,24 +319,26 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
            * position</a> syntax is deprectated in v3.0.0; Use of a percent unit with
            * "my" or "at" is not supported.
            * @expose
-           * @memberof! oj.ojPopup
+           * @memberof oj.ojPopup
            * @instance
            * @type {Object}
            * @example <caption>Initialize the popup with <code class="prettyprint">position</code>
-           *           option specified:</caption>
-           * $( ".selector" ).ojPopup( { "position": {"my": {"horizontal":"left", "vertical": "top"},
-           *                                    "at": {"horizontal":"right", "vertical": "top"} } );
+           *           attribute specified:</caption>
+           * &lt;oj-popup position.my.horizontal="left"
+           *           position.my.vertical="top"
+           *           position.at.horizontal="right"
+           *           position.at.vertical="top" &gt;&lt;/oj-popup&gt;
            *
-           * @example <caption>Get or set the <code class="prettyprint">position</code> option,
+           * @example <caption>Get or set the <code class="prettyprint">position</code> property,
            *          after initialization:</caption>
            * // getter
-           * var position = $( ".selector" ).ojPopup( "option", "position" );
+           * var position = myPopup.position;
            *
            * // setter
-           * $( ".selector" ).ojPopup( "option", "position",
+           * myPopup.position =
            *    {"my": {"horizontal": "start", "vertical": "bottom"},
            *     "at": {"horizontal": "end", "vertical": "top" },
-           *     "offset": {"x": 0, "y":5}} );
+           *     "offset": {"x": 0, "y":5}};
            */
           position :
             {
@@ -517,7 +499,7 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
            * vary per tail decoration.
            *
            * @expose
-           * @memberof! oj.ojPopup
+           * @memberof oj.ojPopup
            * @instance
            * @type {string}
            * @default <code class="prettyprint">"none"</code>
@@ -526,16 +508,16 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
            * @ojvalue {string} "simple" enables showing the tail defined by the current theme.
            *
            * @example <caption>Initialize the popup with <code class="prettyprint">tail</code>
-           *          option specified:</caption>
-           * $( ".selector" ).ojPopup( { "tail": "simple" } );
+           *          attribute specified:</caption>
+           * &lt;oj-popup tail="simple" &gt;&lt;/oj-popup&gt;
            *
-           * @example <caption>Get or set the <code class="prettyprint">tail</code> option, after
+           * @example <caption>Get or set the <code class="prettyprint">tail</code> property, after
            *          initialization:</caption>
            * // getter
-           * var tail = $( ".selector" ).ojPopup( "option", "tail" );
+           * var tail = myPopup.tail;
            *
            * // setter
-           * $( ".selector" ).ojPopup( "option", "tail", "simple" );
+           * myPopup.tail = "simple";
            */
           tail : 'none',
           /**
@@ -550,7 +532,7 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
            * @memberof oj.ojPopup
            * @instance
            * The modality of the popup. Valid values are:
-           * @default Varies by theme. <code class="prettyprint">"modless"</code> if not specified
+           * @default Varies by theme. <code class="prettyprint">"modeless"</code> if not specified
            *          in theme
            * @ojvalue {string} "modeless" defines a modeless popup.
            * @ojvalue {string} "modal" The popup is modal. Interactions with other page elements are
@@ -559,77 +541,38 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
            *
            * @example <caption>Initialize the popup to have modality
            *          <code class="prettyprint">modality</code></caption>
-           * $(".selector" ).ojPopup( {modality: "modal" } );
+           * &lt;oj-popup modality="modal" &gt;&lt;/oj-popup&gt;
            *
-           * @example <caption>Get or set the <code class="prettyprint">modality</code> option,
+           * @example <caption>Get or set the <code class="prettyprint">modality</code> property,
            *          after initialization:</caption>
            * // getter
-           * var modality = $(".selector" ).ojPopup( "option", "modality" );
+           * var modality = myPopup.modality;
            *
            * // setter
-           * $(".selector" ).ojPopup( "option", "modality", "modal");
+           * myPopup.modality = "modal";
            *
            * @example <caption>Set the default in the theme (SCSS) :</caption>
            * $popupModalityOptionDefault: modal !default;
            */
           modality : "modeless",
           /**
-           *
-           * The WAI-ARIA role of the popup. By default, role="tooltip" is added to the generated
-           * HTML markup that surrounds the popup.
-           *
-           * @expose
+           * @private
            * @memberof oj.ojPopup
            * @instance
            * @type {string}
-           * @default <code class="prettyprint">"tooltop"</code>
-           * @ojvalue {string} "tooltip" defines contextual popup that displays a description for an
-           *          element.
-           * @ojvalue {string} "dialog" defines an application window that is designed to interrupt
-           *          the current processing of an application in order to prompt the user to enter
-           *          information or require a response.
-           * @ojvalue {string} "alertdialog" defines type of dialog that contains an alert message,
-           *          where initial focus goes to an element within the dialog.
-           *
-           * @example <caption>Initialize the popup with the
-           *          <code class="prettyprint">role</code></caption> option specified:</caption>
-           * $(".selector" ).ojPopup( {role: "alertdialog" } );
-           *
-           * @example <caption>Get or set the <code class="prettyprint">role</code> option, after
-           *          initialization:</caption>
-           * // getter
-           * var role = $(".selector" ).ojPopup( "option", "role" );
-           *
-           * // setter
-           * $(".selector" ).ojDialog( "option", "role", "alertdialog");
            */
-          role : "tooltip",
+          'role' : "tooltip",
           // Events
           /**
            * Triggered before the popup is launched via the <code class="prettyprint">open()</code>
-           * method. The launch can be cancelled by calling
+           * method. The open can be cancelled by calling
            * <code class="prettyprint">event.preventDefault()</code>.
            *
            * @expose
            * @event
-           * @memberof! oj.ojPopup
+           * @memberof oj.ojPopup
            * @instance
-           * @property {Event} event <code class="prettyprint">jQuery</code> event object
-           * @property {Object} ui currently empty
-           *
-           * @example <caption>Initialize the popup with the
-           *          <code class="prettyprint">beforeOpen</code> callback specified:</caption>
-           * $( ".selector" ).ojPopup({
-           *     "beforeOpen": function( event, ui ) {}
-           * });
-           *
-           * @example <caption>Bind an event listener to the
-           *          <code class="prettyprint">ojbeforeopen</code> event:</caption>
-           * $( ".selector" ).on( "ojbeforeopen", function( event, ui )
-           *   {
-           *     // verify that the component firing the event is a component of interest
-           *     if ($(event.target).is(".mySelector")) {}
-           * } );
+           * @property {Event} event a custom event
            */
           beforeOpen : null,
           /**
@@ -638,24 +581,9 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
            *
            * @expose
            * @event
-           * @memberof! oj.ojPopup
+           * @memberof oj.ojPopup
            * @instance
-           * @property {Event} event <code class="prettyprint">jQuery</code> event object
-           * @property {Object} ui currently empty
-           *
-           * @example <caption>Initialize the popup with the <code class="prettyprint">open</code>
-           *          callback specified:</caption>
-           * $( ".selector" ).ojPopup({
-           *     "open": function( event, ui ) {}
-           * });
-           *
-           * @example <caption>Bind an event listener to the <code class="prettyprint">ojopen</code>
-           *          event:</caption>
-           * $( ".selector" ).on( "ojopen", function( event, ui )
-           *   {
-           *     // verify that the component firing the event is a component of interest
-           *     if ($(event.target).is(".mySelector")) {}
-           *   } );
+           * @property {Event} event a custom event
            */
           open : null,
           /**
@@ -665,24 +593,9 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
            *
            * @expose
            * @event
-           * @memberof! oj.ojPopup
+           * @memberof oj.ojPopup
            * @instance
-           * @property {Event} event <code class="prettyprint">jQuery</code> event object
-           * @property {Object} ui currently empty
-           *
-           * @example <caption>Initialize the popup with the
-           *          <code class="prettyprint">beforeClose</code> callback specified:</caption>
-           * $( ".selector" ).ojPopup({
-           *     "beforeClose": function( event, ui ) {}
-           * });
-           *
-           * @example <caption>Bind an event listener to the
-           *          <code class="prettyprint">ojbeforeclose</code> event:</caption>
-           * $( ".selector" ).on( "ojbeforeclose", function( event, ui )
-           *  {
-           *    // verify that the component firing the event is a component of interest
-           *    if ($(event.target).is(".mySelector")) {}
-           *  } );
+           * @property {Event} event a custom event
            */
           beforeClose : null,
           /**
@@ -691,53 +604,23 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
            *
            * @expose
            * @event
-           * @memberof! oj.ojPopup
+           * @memberof oj.ojPopup
            * @instance
-           * @property {Event} event <code class="prettyprint">jQuery</code> event object
-           * @property {Object} ui currently empty
-           *
-           * @example <caption>Initialize the popup with the <code class="prettyprint">close</code>
-           *          callback specified:</caption>
-           * $( ".selector" ).ojPopup({
-           *     "close": function( event, ui ) {}
-           * });
-           *
-           * @example <caption>Bind an event listener to the
-           *          <code class="prettyprint">ojclose</code> event:</caption>
-           * $( ".selector" ).on( "ojclose", function( event, ui )
-           *  {
-           *    // verify that the component firing the event is a component of interest
-           *    if ($(event.target).is(".mySelector")) {}
-           *  } );
+           * @property {Event} event a custom event
            */
           close : null,
           /**
            * Triggered after focus has been transfered to the popup. This will occur after the
            * <code class="prettyprint">open()</code> method is called, depending on the value
-           * of the <code class="prettyprint">initialFocus</code> option.  It's also triggered when
-           * using the <kbd>F6</kbd> key to toggle focus from the associated launcher element to the
-           * content of the popup.
+           * of the <code class="prettyprint">initialFocus</code> property.  It's also triggered
+           * when using the <kbd>F6</kbd> key to toggle focus from the associated launcher element
+           * to the content of the popup.
            *
            * @expose
            * @event
-           * @memberof! oj.ojPopup
+           * @memberof oj.ojPopup
            * @instance
-           * @property {Event} event <code class="prettyprint">jQuery</code> event object
-           * @property {Object} ui currently empty
-           *
-           * @example <caption>Initialize the popup with the <code class="prettyprint">focus</code>
-           *          callback specified:</caption>
-           * $( ".selector" ).ojPopup({
-           *     "focus": function( event, ui ) {}
-           * });
-           *
-           * @example <caption>Bind an event listener to the
-           *          <code class="prettyprint">ojfocus</code> event:</caption>
-           * $( ".selector" ).on( "ojfocus", function( event, ui )
-           *   {
-           *     // verify that the component firing the event is a component of interest
-           *     if ($(event.target).is(".mySelector")) {}
-           *   } );
+           * @property {Event} event a custom event
            */
           focus : null,
           /**
@@ -747,45 +630,34 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
            *
            * @expose
            * @event
-           * @memberof! oj.ojPopup
+           * @memberof oj.ojPopup
            * @instance
-           * @property {Event} event <code class="prettyprint">jQuery</code> event object
-           * @property {Object} ui Parameters
-           * @property {string} ui.action The action that is starting the animation. The number of
-           *            actions can vary from component to component. Suggested values are:
+           * @property {CustomEvent} event a custom event
+           * @property {Object} event.detail an object containing component specific event info
+           * @property {string} event.detail.action The action that is starting the animation.
+           *            The number of actions can vary from component to component.
+           *            Suggested values are:
            *                    <ul>
            *                      <li>"open" - when a popup component is opened</li>
            *                      <li>"close" - when a popup component is closed</li>
            *                    </ul>
-           * @property {Element} ui.element target of animation
-           * @property {function} ui.endCallback If the event listener calls event.preventDefault to
-           *            cancel the default animation, It must call the endCallback function when it
-           *            finishes its own animation handling and any custom animation has ended.
+           * @property {Element} event.detail.element target of animation
+           * @property {function} event.detail.endCallback If the event listener calls
+           *            event.preventDefault to cancel the default animation, It must call the
+           *            endCallback function when it finishes its own animation handling and any
+           *            custom animation has ended.
            *
            * @example <caption>Bind an event listener to the
-           *          <code class="prettyprint">animatestart</code> event to override the default
-           *          "open" animation:</caption>
-           * $( ".selector" ).ojPopup({"animateStart": function( event, ui )
-           *   {
-           *     // verify that the component firing the event is a component of interest and action
-           *      is open
-           *     if ($(event.target).is(".mySelector") && ui.action === "open") {
-           *       event.preventDefault();
-           *       oj.AnimationUtils.slideIn(ui.element).then(ui.endCallback);
-           *   }
-           * } );
-           *
-           * @example <caption>Bind an event listener to the
-           *          <code class="prettyprint">ojanimatestart</code> event to override the default
+           *          <code class="prettyprint">onOjAnimateStart</code> property to override the default
            *          "close" animation:</caption>
-           * $( ".selector" ).on( "ojanimatestart", function( event, ui )
+           * myPopup.onOjAnimateStart = function( event )
            *   {
            *     // verify that the component firing the event is a component of interest and action
            *      is close
-           *     if ($(event.target).is(".mySelector") && ui.action == "close") {
+           *     if (event.detail.action == "close") {
            *       event.preventDefault();
-           *       oj.AnimationUtils.slideOut(ui.element).then(ui.endCallback);
-           *   } );
+           *       oj.AnimationUtils.slideOut(event.detail.element).then(event.detail.endCallback);
+           *   };
            *
            * @example <caption>The default open and close animations are controlled via the theme
            *          (SCSS) :</caption>
@@ -801,36 +673,28 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
            *
            * @expose
            * @event
-           * @memberof! oj.ojPopup
+           * @memberof oj.ojPopup
            * @instance
-           * @property {Event} event <code class="prettyprint">jQuery</code> event object
-           * @property {Object} ui.element target of animation
-           * @property {string} ui.action The action that is starting the animation. The number of
-           *                    actions can vary from component to component. Suggested values are:
+           * @property {Event} event a custom event
+           * @property {Object} event.detail an object containing component specific event info
+           * @property {Element} event.detail.element target of animation
+           * @property {string} event.detail.action The action that is starting the animation.
+           *                   The number of actions can vary from component to component.
+           *                   Suggested values are:
            *                    <ul>
            *                      <li>"open" - when a popup component is opened</li>
            *                      <li>"close" - when a popup component is closed</li>
            *                    </ul>
-           * @example <caption>Bind an event listener to the
-           *          <code class="prettyprint">animateend</code> event to listen for "open" ending
-           *          animation:</caption>
-           * $( ".selector" ).ojPopup({"animateEnd": function( event, ui )
-           *   {
-           *     // verify that the component firing the event is a component of interest and action
-           *     is open
-           *     if (ui.action === "open") {}
-           *   }
-           * } );
            *
            * @example <caption>Bind an event listener to the
-           *          <code class="prettyprint">ojanimateend</code> event to listen for the "close"
+           *          <code class="prettyprint">onOjAnimateEnd</code> property to listen for the "close"
            *          ending animation:</caption>
-           * $( ".selector" ).on( "ojanimateend", function( event, ui )
+           * myPopup.onOjAnimateEnd = function( event )
            *   {
            *     // verify that the component firing the event is a component of interest and action
            *      is close
-           *     if ($(event.target).is(".mySelector") && ui.action == "close") {}
-           *   } );
+           *     if (event.detail.action == "close") {}
+           *   };
            *
            * @example <caption>The default open and close animations are controlled via the theme
            *          (SCSS) :</caption>
@@ -859,8 +723,8 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
         var content = $("<div>");
         content.addClass([rootStyle, "content"].join("-"));
         content.attr("role", "presentation");
-        content.append(element[0].childNodes);    // @HTMLUpdateOK move children to content
-        content.appendTo(element);   // @HTMLUpdateOK
+        content.append(element[0].childNodes);    //@HTMLUpdateOK; move app defined children to content wrapper
+        content.appendTo(element);   //@HTMLUpdateOK; attach programmaticly generated node
         this._content = content;
 
         this._setChrome();
@@ -909,14 +773,14 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
         // Move the children back under the root node removing the content node.
         var content = this._content;
         delete this._content;
-        element.append(content[0].childNodes);  // @HTMLUpdateOK move childeren back under root
+        element.append(content[0].childNodes);  //@HTMLUpdateOK; destructor move children back under root
         content.remove();
 
         var closeDelayTimer = this._closeDelayTimer;
-        if (!isNaN(closeDelayTimer))
+        if (closeDelayTimer)
         {
           delete this._closeDelayTimer;
-          window.clearTimeout(closeDelayTimer);
+          closeDelayTimer();
         }
 
         this._destroyVoiceOverAssist();
@@ -931,16 +795,16 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
        * @name oj.ojPopup#open
        * @memberof oj.ojPopup
        * @instance
-       * @param {?(string|jQuery|Element)} launcher jquery object, jquery selector or dom element
-       *        that is associated with the popup.
+       * @param {!(string|Element)} launcher selector or dom element that is associated with the
+       *        popup. Defines the context of how the popup is used. The argument is required.
        * @param {?Object} position an element relative to another
-       * @fires oj.ojPopup#beforeOpen
-       * @fires oj.ojPopup#open
-       * @fires oj.ojPopup#animationStart
-       * @fires oj.ojPopup#animationEnd
+       * @fires oj.ojPopup#ojBeforeOpen
+       * @fires oj.ojPopup#ojOpen
+       * @fires oj.ojPopup#ojAnimationStart
+       * @fires oj.ojPopup#ojAnimationEnd
        *
        * @example <caption>Invoke the <code class="prettyprint">open</code> method:</caption>
-       * var open = $( ".selector" ).ojPopup( "open" );
+       * var open = myPopup.open("#launcher");
        */
       open : function (launcher, position)
       {
@@ -996,6 +860,7 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
         psOptions[oj.PopupService.OPTION.EVENTS] = this._getPopupServiceEvents();
         psOptions[oj.PopupService.OPTION.LAYER_SELECTORS] = layerClass;
         psOptions[oj.PopupService.OPTION.MODALITY] = options["modality"];
+        psOptions[oj.PopupService.OPTION.CUSTOM_ELEMENT] = this._IsCustomElement();
         oj.PopupService.getInstance().open(psOptions);
 
       },
@@ -1020,7 +885,10 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
         var animationOptions = this.options["animation"];
         if (animationOptions && animationOptions["open"])
         {
-          return oj.AnimationUtils.startAnimation(element[0], "open",
+          var actionPrefix = animationOptions["actionPrefix"];
+          var action = actionPrefix ? [actionPrefix, "open"].join("-") : "open";
+
+          return oj.AnimationUtils.startAnimation(element[0], action,
             oj.PositionUtils.addTransformOriginAnimationEffectsOption(element,
             animationOptions["open"]), this);
         }
@@ -1051,8 +919,6 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
         this._on(element, {'keydown' : this._keyHandler, 'keyup' : this._keyHandler});
         if (launcher && launcher.length > 0)
           this._on(launcher, {'keydown' : this._keyHandler, 'keyup' : this._keyHandler});
-
-        this._isOpen = true;
       },
       /**
        * Closes the popup. This method does not accept any arguments.
@@ -1062,13 +928,13 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
        * @name oj.ojPopup#close
        * @memberof oj.ojPopup
        * @instance
-       * @fires oj.ojPopup#beforeClose
-       * @fires oj.ojPopup#close
-       * @fires oj.ojPopup#animationStart
-       * @fires oj.ojPopup#animationEnd
+       * @fires oj.ojPopup#ojBeforeClose
+       * @fires oj.ojPopup#ojClose
+       * @fires oj.ojPopup#ojAnimationStart
+       * @fires oj.ojPopup#ojAnimationEnd
        *
        * @example <caption>Invoke the <code class="prettyprint">close</code> method:</caption>
-       * var close = $( ".selector" ).ojPopup( "close" );
+       * myPopup.close();
        */
       close : function ()
       {
@@ -1082,7 +948,6 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
           return;
 
         this._setWhenReady("close");
-        delete this._isOpen;
 
         // if the content has focus, restore the the launcher
         this._restoreFocus();
@@ -1122,8 +987,11 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
         if (!this._ignoreBeforeCloseResultant && animationOptions && animationOptions["close"])
         {
           var style = element.attr("style");
+          var actionPrefix = animationOptions["actionPrefix"];
+          var action = actionPrefix ? [actionPrefix, "close"].join("-") : "close";
+
           /** @type {?} */
-          var promise = oj.AnimationUtils.startAnimation(element[0], "close",
+          var promise = oj.AnimationUtils.startAnimation(element[0], action,
             oj.PositionUtils.addTransformOriginAnimationEffectsOption(element,
               animationOptions["close"]), this)
             .then(function ()
@@ -1175,11 +1043,14 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
        * @return {boolean} <code>true</code> if the popup is open.
        *
        * @example <caption>Invoke the <code class="prettyprint">isOpen</code> method:</caption>
-       * var isOpen = $( ".selector" ).ojPopup( "isOpen" );
+       * var isOpen = myPopup.isOpen();
        */
       isOpen : function ()
       {
-        return this._isOpen ? true : false;
+        var status = oj.ZOrderUtils.getStatus(this.element);
+        return (status === oj.ZOrderUtils.STATUS.OPENING ||
+                status === oj.ZOrderUtils.STATUS.OPEN ||
+                status === oj.ZOrderUtils.STATUS.CLOSING);
       },
       /**
        * Causes the popup to reevaluate its position.  Call this function after
@@ -1195,7 +1066,7 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
        * @override
        *
        * @example <caption>Invoke the <code class="prettyprint">refresh</code> method:</caption>
-       * $( ".selector" ).ojPopup( "refresh" );
+       * myPopup.refresh();
        */
       refresh : function ()
       {
@@ -1313,7 +1184,7 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
         // id over "marker style" due to nesting popups in popups
         this._tailId = tailDom.attr("id", this._getSubId("tail")).attr("id");
         var element = this.element;
-        tailDom.appendTo(element);  // @HTMLUpdateOK
+        tailDom.appendTo(element);  //@HTMLUpdateOK; attach programmaticly generated node
 
         // tail "value" style is applied to the root dom for shadow and z-index adjustments
         element.addClass(tailStyle);
@@ -1476,6 +1347,33 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
 
         return position;
       },
+
+      /**
+       * Resolves a busy state blocking delayed call to implicitly close
+       * @memberof oj.ojPopup
+       * @instance
+       * @private
+       * @param {Function} busyStateResolver
+       */
+      _resolveBusyStateAndCloseImplicitly: function(busyStateResolver)
+      {
+        busyStateResolver();
+        delete this._closeDelayTimer;
+        this._closeImplicitly();
+      },
+      /**
+       * Cancels the delayed implicit closure.
+       * @memberof oj.ojPopup
+       * @instance
+       * @private
+       * @param {number} timer
+       * @param {Function} busyStateResolver
+       */
+      _resolveBusyStateAndCancelDelayedClosure: function (timer, busyStateResolver)
+      {
+        window.clearTimeout(timer);
+        busyStateResolver();
+      },
       /**
        * @memberof oj.ojPopup
        * @instance
@@ -1618,7 +1516,18 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
             // restore could fight scroll if the popup was closed due to the aligning
             // element being clipped.
             this._ignoreRestoreFocus = true;
-            this._closeDelayTimer = this._delay(this._closeImplicitly.bind(this), 1);
+
+            // operation needs to happen in the next stacking frame and guarded by a
+            // busy state.
+            var busyContext = oj.Context.getContext(this.element[0]).getBusyContext();
+            var bsOptions = {description: ["ojPopup identified by '", this.element.attr('id'),
+                                         "' is pending implicit closure."].join("")};
+            var resolver = busyContext.addBusyState(bsOptions);
+            var delayTimer = window.setTimeout(this._resolveBusyStateAndCloseImplicitly
+              .bind(this, resolver), 0);
+
+            this._closeDelayTimer = this._resolveBusyStateAndCancelDelayedClosure.bind(this,
+              delayTimer, resolver);
           }
         }
       },
@@ -2219,6 +2128,23 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
             });
           }
         });
+      },
+      /**
+       * Notifies the component that its subtree has been removed from the document
+       * programmatically after the component has been created.
+       *
+       * @memberof oj.ojPopup
+       * @instance
+       * @protected
+       * @override
+       */
+      _NotifyDetached: function()
+      {
+        // detaching an open popup results in implicit dismissal
+        if (oj.ZOrderUtils.getStatus(this.element) === oj.ZOrderUtils.STATUS.OPEN)
+          this._closeImplicitly();
+
+        this._super();
       }
     });
 
@@ -2339,27 +2265,6 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
    */
 
 (function () {
-  var propertyParser = function (value, name, meta, defaultParseFunction)
-  {
-    // Passthru to the jQuery UI component for parsing.  The parsing can't be done here
-    // due to not having all of the position object.  The new position structure changes
-    // position.start = "left+5 top-3" to:
-    //
-    // position.start.horizontal = "left"
-    // position.start.vertical = "top"
-    // position.offset.x = 5
-    // position.offset.y = -3
-    //
-    if (/^position/.test(name))
-    {
-      return value;
-    }
-    else
-    {
-      return defaultParseFunction(value);
-    }
-  };
-
   var ojPopupMeta = {
     "properties" : {
       "autoDismiss" : {
@@ -2382,7 +2287,7 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
         "type" : "object",
         "properties" : {
           "my" : {
-            "type" : "object",
+            "type" : "object|string",
             "properties" : {
               "horizontal" : {
                 "type" : "string",
@@ -2395,7 +2300,7 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
             }
           },
           "at" : {
-            "type" : "object",
+            "type" : "object|string",
             "properties" : {
               "horizontal" : {
                 "type" : "string",
@@ -2419,7 +2324,7 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
             }
           },
           "of" : {
-            "type" : "string|{x:number, y:number}"
+            "type" : "string|object"
           },
           "collision" : {
             "type" : "string",
@@ -2451,7 +2356,6 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
     }
   };
   oj.CustomElementBridge.registerMetadata('oj-popup', 'baseComponent', ojPopupMeta);
-  oj.CustomElementBridge.register('oj-popup', {'metadata' :
-      oj.CustomElementBridge.getMetadata('oj-popup'), 'parseFunction' : propertyParser});
+  oj.CustomElementBridge.register('oj-popup', {'metadata' : oj.CustomElementBridge.getMetadata('oj-popup')});
 })();
 });

@@ -1,7 +1,7 @@
 // Copyright (c) 2014, 2017, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-// WARNING: do not directly import this file, instead import the 
-//          version in your base theme's directory, 
+// WARNING: do not directly import this file, instead import the
+//          version in your base theme's directory,
 //          for example alta/widgets/_oj.alta.utilities.scss
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
@@ -23,7 +23,7 @@
 
 
     //colors
-   
+
     .oj-text-primary-color {
       color: $primaryTextColor;
     }
@@ -47,6 +47,11 @@
       color: $contrastTextColor
     }
 
+
+
+
+
+/* as of jet 4.0 oj-margin* and oj-padding* are deprecated in favor of responsive versions of these classes */
     // margins
     .oj-margin {
       margin: $spacingMedium;
@@ -214,6 +219,6 @@
         padding-left: $spacingLarge;
       }
     }
-    
+
   }
 }

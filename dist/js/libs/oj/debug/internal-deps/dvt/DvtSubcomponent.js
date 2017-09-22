@@ -258,13 +258,13 @@ dvt.LegendAttrGroupsRenderer._renderAttrGroupsContinuous = function(context, eve
   // Position the labels and the rectangle
   if (isRTL) {
     // BIDI
-    var maxLabelWidth = maxLabel.measureDimensions().w + dvt.LegendAttrGroupsRenderer._CONTINUOUS_ITEM_GAP;
+    var maxLabelWidth = maxLabel.getDimensions().w + dvt.LegendAttrGroupsRenderer._CONTINUOUS_ITEM_GAP;
     gradientRect.setTranslateX(maxLabelWidth);
     minLabel.setX(maxLabelWidth + gradientWidth);
   }
   else {
     // Non-BIDI
-    var minLabelWidth = minLabel.measureDimensions().w + dvt.LegendAttrGroupsRenderer._CONTINUOUS_ITEM_GAP;
+    var minLabelWidth = minLabel.getDimensions().w + dvt.LegendAttrGroupsRenderer._CONTINUOUS_ITEM_GAP;
     gradientRect.setTranslateX(minLabelWidth);
     maxLabel.setX(minLabelWidth + gradientWidth);
   }

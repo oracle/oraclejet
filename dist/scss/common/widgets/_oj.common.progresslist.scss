@@ -35,11 +35,13 @@
     }
 
     .oj-progressstatus-done-icon {
-      @extend .oj-fwk-icon-status-confirmation3;
+      @extend .oj-fwk-icon-status-confirmation;
+      @include oj-fwk-icon-status-confirmation-scale(1.5); // scale the 16px image to 24px
     }
 
     .oj-progressstatus-error-icon {
-      @extend .oj-fwk-icon-status-error3;
+      @extend .oj-fwk-icon-status-error;
+      @include oj-fwk-icon-status-error-scale(1.5); // scale the 16px image to 24px
     }
 
     .oj-progressstatus-cancel-icon {

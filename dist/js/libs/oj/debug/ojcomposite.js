@@ -6,7 +6,15 @@
 define(['ojs/ojcore', 'promise', 'ojs/ojcustomelement', 'ojs/ojcomposite-knockout'], function(oj)
 {
 /**
- * JET component custom element bridge
+ * JET component custom element bridge.
+ * 
+ * Composite connnected callbacks occur asynchronously so we cannot
+ * guarantee that child composite properties can be accessed before the
+ * child busy state resolves.
+ * 
+ * Composite code and applications should always wait on the element or page level 
+ * busy context before accessing properties or methods.
+ * 
  * @class
  * @ignore
  */
@@ -24,73 +32,63 @@ oj.CollectionUtils.copyInto(oj.CompositeElementBridge.proto,
     // Add subproperty getter/setter
     proto['setProperty'] = function(prop, value) { 
       var event = oj.__AttributeUtils.eventListenerPropertyToEventType(prop);
-      if (event)
+      var bridge = oj.BaseCustomElementBridge.getInstance(this);
+      var meta = oj.BaseCustomElementBridge.__GetPropertyMetadata(prop, oj.BaseCustomElementBridge.getProperties(bridge));
+
+      // If event listener or non component specific property, set directly on the element
+      if (event || !meta)
       {
         this[prop] = value;
       }
       else
       {
         var previousValue = this['getProperty'](prop);
-        // Property change events for top level properties will be triggered by __SetProperty so avoid firing twice
-        var bridge = oj.BaseCustomElementBridge.getInstance(this);
+        // This ultimately triggers our element defined property setter
+        bridge.ValidateAndSetProperty(bridge.GetAliasForProperty.bind(bridge), this, prop, value, this);
 
-        // Check value against any defined enums
-        var propsMeta = oj.BaseCustomElementBridge.getProperties(bridge);
-        var propAr = prop.split('.');
-        var meta = oj.BaseCustomElementBridge.__GetPropertyMetadata(prop, propsMeta);
-        if (!meta && propAr.length == 1) 
-        {
-          oj.Logger.error("Ignoring property set for undefined property " + prop + " on " + this.tagName);
-          return;
-        }
-
-        // Check readOnly property for top level property
-        if (propsMeta[propAr[0]]['readOnly'])
-          throw "Read-only property " + prop + " cannot be set on "+ this.tagName;
-        
-        oj.BaseCustomElementBridge.__CheckEnumValues(this, prop, value, meta);
-
-        oj.BaseCustomElementBridge.__SetProperty(bridge.GetAliasForProperty.bind(bridge), this, prop, value);
+        // Property change events for top level properties will be triggered by ValidateAndSetProperty so avoid firing twice
         if (bridge._READY_TO_FIRE && prop.indexOf('.') !== -1)
           oj.CompositeElementBridge._firePropertyChangeEvent(this, prop, value, previousValue, 'external');
       }
     };
     proto['getProperty'] = function(prop) { 
       var event = oj.__AttributeUtils.eventListenerPropertyToEventType(prop);
-      if (event)
-        return event;
+      var bridge = oj.BaseCustomElementBridge.getInstance(this);
+      var meta = oj.BaseCustomElementBridge.__GetPropertyMetadata(prop, oj.BaseCustomElementBridge.getProperties(bridge));
+
+      // For event listener and non component properties, retrieve the value directly stored on the element.
+      // For top level properties, this will delegate to our 'set' methods so we can handle default values.
+      if (event || !meta || prop.indexOf('.') === -1)
+        return this[prop];
       else
-      {
-        // Use the element/props getters for top level properties to handle default values
-        if (prop.indexOf('.') !== -1)
-          return oj.BaseCustomElementBridge.__GetProperty(this, prop);
-        else
-          return this[prop];
-      }
+        return oj.BaseCustomElementBridge.__GetProperty(this, prop);
     };
     proto['_propsProto']['setProperty'] = function(prop, value) { 
-      var previousValue = this['getProperty'](prop);
-
       // Check value against any defined enums
       var meta = oj.BaseCustomElementBridge.__GetPropertyMetadata(prop, oj.BaseCustomElementBridge.getProperties(this._BRIDGE));
-      if (!meta && prop.indexOf('.') === -1) 
-      {
-        oj.Logger.error("Ignoring property set for undefined property " + prop + " on " + this._ELEMENT.tagName);
-        return;
-      }
-      oj.BaseCustomElementBridge.__CheckEnumValues(this._ELEMENT, prop, value, meta);
 
-      // Property change events for top level properties will be triggered by __SetProperty so avoid firing twice
-      oj.BaseCustomElementBridge.__SetProperty(this._BRIDGE.GetAliasForProperty.bind(this._BRIDGE), this, prop, value);
-      if (prop.indexOf('.') !== -1)
-        oj.CompositeElementBridge._firePropertyChangeEvent(this._ELEMENT, prop, value, previousValue, 'internal');
+      if (!meta) 
+      {
+        this._ELEMENT[prop] = value;
+      }
+      else
+      {
+        var previousValue = this['getProperty'](prop);
+        // Property change events for top level properties will be triggered by ValidateAndSetProperty so avoid firing twice
+        this._BRIDGE.ValidateAndSetProperty(this._BRIDGE.GetAliasForProperty.bind(this._BRIDGE), this, prop, value, this._ELEMENT);
+
+        if (prop.indexOf('.') !== -1)
+          oj.CompositeElementBridge._firePropertyChangeEvent(this._ELEMENT, prop, value, previousValue, 'internal');
+      }
     };
     proto['_propsProto']['getProperty'] = function(prop) {
+      var meta = oj.BaseCustomElementBridge.__GetPropertyMetadata(prop, oj.BaseCustomElementBridge.getProperties(this._BRIDGE));
+
       // Use the element/props getters for top level properties to handle default values
-      if (prop.indexOf('.') !== -1)
-        return oj.BaseCustomElementBridge.__GetProperty(this, prop);
-      else
+      if (!meta || prop.indexOf('.') === -1)
         return this[prop];
+      else
+        return oj.BaseCustomElementBridge.__GetProperty(this, prop);
     };
     // Always add automation methods, but if the ViewModel defines overrides, wrap the overrides
     // and pass the default implementation in as the last parameter to the ViewModel's method.
@@ -110,103 +108,7 @@ oj.CollectionUtils.copyInto(oj.CompositeElementBridge.proto,
     };
   },
 
-  DefineMethodCallback: function (proto, method, methodMeta) 
-  {
-    proto[method] = function()
-    {
-      var methodName = methodMeta['internalName'] || method;
-      var bridge = oj.BaseCustomElementBridge.getInstance(this);
-      return bridge._VIEW_MODEL[methodName].apply(bridge._VIEW_MODEL, arguments);
-    };
-  },
-  
-  DefinePropertyCallback: function (proto, property, propertyMeta) 
-  {
-    var set = function(val, bOuterSet)
-    {
-      var propertyTracker = oj.CompositeElementBridge._getPropertyTracker(this._BRIDGE, property);
-      var old = propertyTracker.peek();
-      if (old !== val) // We should consider supporting custom comparators
-      {
-        oj.BaseCustomElementBridge.__CheckEnumValues(this._ELEMENT, property, val, propertyMeta);
-        propertyTracker(val);
-        if (propertyMeta._eventListener)
-        {
-          var event = oj.__AttributeUtils.eventListenerPropertyToEventType(property);
-          // Remove old event listener
-          if (old)
-            this._ELEMENT.removeEventListener(event, old);
-          // Add new event listener
-          if (val && val instanceof Function)
-            this._ELEMENT.addEventListener(event, val);
-        }
-
-        if (!propertyMeta._derived && (!bOuterSet || (bOuterSet && this._BRIDGE._READY_TO_FIRE)))
-        {
-          var updatedFrom = bOuterSet ? 'external' : 'internal';
-          oj.CompositeElementBridge._firePropertyChangeEvent(this._ELEMENT, property, val, old, updatedFrom);
-        }
-      }
-    }
-
-    // Called on the ViewModel props object
-    var innerSet = function(val)
-    {
-      set.bind(this)(val, false);
-    }
-
-    // Called on the custom element
-    var outerSet = function(val)
-    {
-      if (propertyMeta['readOnly'])
-        throw "Read-only property " + property + " cannot be set on "+ this.tagName;
-      var bridge = oj.BaseCustomElementBridge.getInstance(this);
-      set.bind(bridge._PROPS)(val, true);
-    }
-
-    // Called on the ViewModel props object
-    var innerGet = function()
-    {
-      var propertyTracker = oj.CompositeElementBridge._getPropertyTracker(this._BRIDGE, property);
-      // If the attribute has not been set, return the default value
-      var value = propertyTracker();
-      if (value == null)
-        return propertyMeta['value'];
-      return value;
-    }
-
-    // Called on the custom element
-    var outerGet = function()
-    {
-      var bridge = oj.BaseCustomElementBridge.getInstance(this);
-      var propertyTracker = oj.CompositeElementBridge._getPropertyTracker(bridge, property);
-      var value = propertyTracker.peek();
-      // If the attribute has not been set, return the default value
-      if (value == null)
-        return propertyMeta['value'];
-      return value;
-    }
-
-    // Don't add event listener properties for inner props
-    if (!propertyMeta._derived)
-      oj.CompositeElementBridge._defineDynamicObjectProperty(proto['_propsProto'], property, innerGet, innerSet);
-    oj.CompositeElementBridge._defineDynamicObjectProperty(proto, property, outerGet, outerSet);
-  },
-
-  GetMetadata: function(descriptor)
-  {
-    return descriptor['_metadata'];
-  },
-
-  HandleAttached: function(element)
-  {
-    // Loop through all element attributes to get initial properties
-    var props = oj.BaseCustomElementBridge.getProperties(this);
-    oj.BaseCustomElementBridge.__InitProperties(element, this._PROPS, props, this.PARSE_FUNCTION);
-    this.GetDelayedPropertiesPromise().resolvePromise();
-  },
-
-  HandleBindingsApplied: function(element, bindingContext) 
+  CreateComponent: function(element) 
   {
     if (this._MODEL_PROMISE) 
     {
@@ -235,30 +137,151 @@ oj.CollectionUtils.copyInto(oj.CompositeElementBridge.proto,
     {
       var view = values[0];
       if (!view)
+      {
+        this.resolveDelayedReadyPromise();
         throw "ojComposite is missing a View";
+      }
 
       var params = {
         props: bridge._PROPS,
         slotMap: bridge._SLOT_MAP,
         slotNodeCounts: slotNodeCounts,
         unique: bridge._VM_CONTEXT['unique'],
+        uniqueId: bridge._VM_CONTEXT['uniqueId'],
         viewModel: bridge._VIEW_MODEL,
         viewModelContext: bridge._VM_CONTEXT
       };
+      
+      
+      // Store the name of the binding provider on the element when we are about 
+      // to insert the view. This will allow custom elements within the view to look
+      // up the binding provider used by the composite (currently only KO).
+      Object.defineProperty(element, oj.Composite.__BINDING_PROVIDER, {value: 'knockout'});
 
-      oj.CompositeTemplateRenderer.renderTemplate(params, element, view, bindingContext);
+      oj.CompositeTemplateRenderer.renderTemplate(params, element, view);
 
       // Set flag when we can fire property change events
       bridge._READY_TO_FIRE = true;
 
       // Resolve the component busy state 
-      bridge.GetDelayedReadyPromise().resolvePromise();
-      
+      bridge.resolveDelayedReadyPromise();
+
       // Deprecated 3.0.0
       oj.CompositeElementBridge._fireEvent('ready', element);
     });
   },
 
+  DefineMethodCallback: function (proto, method, methodMeta) 
+  {
+    proto[method] = function()
+    {
+      var methodName = methodMeta['internalName'] || method;
+      var bridge = oj.BaseCustomElementBridge.getInstance(this);
+      return bridge._VIEW_MODEL[methodName].apply(bridge._VIEW_MODEL, arguments);
+    };
+  },
+  
+  DefinePropertyCallback: function (proto, property, propertyMeta) 
+  {
+    var set = function(val, bOuterSet)
+    {
+      // Property trackers are observables are referenced when the property is set or retrieved,
+      // which allows us to automatically update the View when the property is mutated.
+      var propertyTracker = oj.CompositeElementBridge._getPropertyTracker(this._BRIDGE, property);
+      var old = propertyTracker.peek();
+      if (old !== val) // We should consider supporting custom comparators
+      {
+        // Skip validation for inner sets
+        if (bOuterSet)
+          val = this._BRIDGE.ValidatePropertySet(this._ELEMENT, property, val)
+
+        propertyTracker(val);
+        if (propertyMeta._eventListener)
+        {
+          var event = oj.__AttributeUtils.eventListenerPropertyToEventType(property);
+          // Remove old event listener
+          if (old)
+            this._ELEMENT.removeEventListener(event, old);
+          // Add new event listener
+          if (val)
+          {
+            if (val instanceof Function)
+              this._ELEMENT.addEventListener(event, val);
+            else
+              oj.BaseCustomElementBridge.__ThrowTypeError(this, property, val, 'function');
+          }
+        }
+
+        if (!propertyMeta._derived && (!bOuterSet || (bOuterSet && this._BRIDGE._READY_TO_FIRE)))
+        {
+          var updatedFrom = bOuterSet ? 'external' : 'internal';
+          oj.CompositeElementBridge._firePropertyChangeEvent(this._ELEMENT, property, val, old, updatedFrom);
+        }
+      }
+    }
+
+    // Called on the ViewModel props object
+    var innerSet = function(val)
+    {
+      set.bind(this)(val, false);
+    }
+
+    // Called on the custom element
+    var outerSet = function(val)
+    {
+      var bridge = oj.BaseCustomElementBridge.getInstance(this);
+      if (propertyMeta['readOnly'])
+      {
+        bridge.resolveDelayedReadyPromise();
+        throw "Read-only property " + property + " cannot be set on "+ this.tagName;
+      }
+      set.bind(bridge._PROPS)(val, true);
+    }
+
+    var get = function(bOuterSet)
+    {
+      var propertyTracker = oj.CompositeElementBridge._getPropertyTracker(this._BRIDGE, property);
+      // If the attribute has not been set, return the default value
+      // Calling .peek() lets us check the propertyTracker value without creating a dependency
+      var value = bOuterSet ? propertyTracker.peek() : propertyTracker();
+      if (value === undefined)
+      {
+        value = propertyMeta['value'];
+        // Make a copy if the default value is an Object or Array to prevent modification
+        // of the metadata copy and store in the propertyTracker so we have a copy
+        // to modify in place for the object case
+        if (typeof value === 'object')
+          value = oj.CollectionUtils.copyInto({}, value, undefined, true);
+        else if (Array.isArray(value))
+          value = value.slice();
+        propertyTracker(value);
+      }
+      return value;
+    }
+
+    // Called on the ViewModel props object
+    var innerGet = function()
+    {
+      return get.bind(this, false)();
+    }
+
+    // Called on the custom element
+    var outerGet = function()
+    {
+      var bridge = oj.BaseCustomElementBridge.getInstance(this);
+      return get.bind(bridge._PROPS, true)();
+    }
+
+    // Don't add event listener properties for inner props
+    if (!propertyMeta._derived)
+      oj.CompositeElementBridge._defineDynamicObjectProperty(proto['_propsProto'], property, innerGet, innerSet);
+    oj.CompositeElementBridge._defineDynamicObjectProperty(proto, property, outerGet, outerSet);
+  },
+
+  GetMetadata: function(descriptor)
+  {
+    return descriptor['_metadata'];
+  },
 
   HandleBindingsCleaned: function(element)
   {
@@ -271,16 +294,29 @@ oj.CollectionUtils.copyInto(oj.CompositeElementBridge.proto,
     }
   },
 
-  HandleCreated: function(element) 
-  { 
+  HandleDetached: function(element) 
+  {
+    // Invoke callback on the superclass
+    oj.BaseCustomElementBridge.proto.HandleDetached.call(this, element);
+    
+    if (this._MODEL_PROMISE)
+    {
+      this._MODEL_PROMISE.then(function(model)
+      {
+        oj.CompositeTemplateRenderer.invokeViewModelMethod(model, 'detachedMethod', [element]);
+      });
+    }
+  },
+
+  InitializeElement: function(element)
+  {
+    // Invoke callback on the superclass
+    oj.BaseCustomElementBridge.proto.InitializeElement.call(this, element);
+    
     // Deprecated 3.0.0
     oj.CompositeElementBridge._fireEvent('pending', element);
 
     var descriptor = oj.BaseCustomElementBridge.__GetDescriptor(element.tagName);
-    if (!descriptor)
-      throw "Composite is missing a descriptor";
-
-    this.METADATA = this.GetMetadata(descriptor);
     this.PARSE_FUNCTION = descriptor['parseFunction'];
     if (element['_propsProto'])
     {
@@ -297,9 +333,10 @@ oj.CollectionUtils.copyInto(oj.CompositeElementBridge.proto,
       'slotNodeCounts': this._SLOTS_DELAYED_PROMISE.getPromise(),
       'unique': oj.CompositeElementBridge._getUnique()
     };
+    vmContext['uniqueId'] = element.id ? element.id : vmContext['unique'];
     this._VM_CONTEXT = vmContext;
 
-    var modelPromise = oj.CompositeElementBridge._getResourcePromise(descriptor, "viewModel");
+    var modelPromise = oj.CompositeElementBridge._getResourcePromise(descriptor, "viewModel", this);
     if (modelPromise)
     {
       var bridge = this;
@@ -317,44 +354,57 @@ oj.CollectionUtils.copyInto(oj.CompositeElementBridge.proto,
       );
     }
 
-    var viewPromise = oj.CompositeElementBridge._getResourcePromise(descriptor, "view");
-    if (viewPromise) 
+    var cache = oj.BaseCustomElementBridge.__GetCache(element.tagName);
+    if (!cache.view)
     {
-      this._VIEW_PROMISE = viewPromise.then(function(view) 
-      { 
-        return oj.CompositeElementBridge._getDomNodes(view); 
-      });
-    }
-
-    // The CSS Promise will be null if loaded by the require-css plugin
-    var cssPromise = oj.CompositeElementBridge._getResourcePromise(descriptor, "css");
-    if (cssPromise)
-    {
-      this._CSS_PROMISE = cssPromise.then(function(css)
+      var viewPromise = oj.CompositeElementBridge._getResourcePromise(descriptor, "view", this);
+      if (viewPromise)
       {
-        var style = document.createElement('style');
-        style.type = 'text/css';
-        if (style.styleSheet) // for IE
-          style.styleSheet.cssText = css;
-        else
-          style.appendChild(document.createTextNode(css)); // @HTMLUpdateOK
-        document.head.appendChild(style); // @HTMLUpdateOK
-      });
+        this._VIEW_PROMISE = viewPromise.then(function(view) 
+        {
+          if (typeof(view) === 'string')
+          {
+            view = oj.CompositeElementBridge._getDomNodes(view);
+          }
+          cache.view = view;
+
+          // Need to clone nodes
+          return oj.CompositeElementBridge._getDomNodes(cache.view);
+        });
+      }
     }
+    else
+    {
+      // Need to clone nodes
+      this._VIEW_PROMISE = Promise.resolve(oj.CompositeElementBridge._getDomNodes(cache.view));
+    }
+    
+    if (!cache.css)
+    {
+      // The CSS Promise will be null if loaded by the require-css plugin
+      var cssPromise = oj.CompositeElementBridge._getResourcePromise(descriptor, "css", this);
+      if (cssPromise)
+      {
+        cache.css = cssPromise.then(function(css)
+        {
+          var style = document.createElement('style');
+          style.type = 'text/css';
+          if (style.styleSheet) // for IE
+            style.styleSheet.cssText = css;
+          else
+            style.appendChild(document.createTextNode(css)); // @HTMLUpdateOK
+          document.head.appendChild(style); // @HTMLUpdateOK
+        });
+      }
+    }
+    this._CSS_PROMISE = cache.css;
+
+    // Loop through all element attributes to get initial properties
+    oj.BaseCustomElementBridge.__InitProperties(element, this._PROPS, this.PARSE_FUNCTION);
+    this.GetDelayedPropertiesPromise().resolvePromise();
   },
 
-  HandleDetached: function(element) 
-  {
-    if (this._MODEL_PROMISE)
-    {
-      this._MODEL_PROMISE.then(function(model)
-      {
-        oj.CompositeTemplateRenderer.invokeViewModelMethod(model, 'detachedMethod', [element]);
-      });
-    }
-  },
-
-  InitProto: function(proto)
+  InitializePrototype: function(proto)
   {
     Object.defineProperty(proto, '_propsProto', {value: {}});
   },
@@ -389,7 +439,7 @@ oj.CollectionUtils.copyInto(oj.CompositeElementBridge.proto,
         } 
         else 
         {
-          return oj.Components.getWidgetConstructor(component)('getNodeBySubId', clone);
+          return oj.Components.__GetWidgetConstructor(component)('getNodeBySubId', clone);
         }
       }
       else
@@ -473,7 +523,7 @@ oj.CollectionUtils.copyInto(oj.CompositeElementBridge.proto,
         } 
         else 
         {
-          locator = oj.Components.getWidgetConstructor(component)('getSubIdByNode', node);
+          locator = oj.Components.__GetWidgetConstructor(component)('getSubIdByNode', node);
         }
 
         if (locator)
@@ -532,7 +582,7 @@ oj.CollectionUtils.copyInto(oj.CompositeElementBridge.proto,
 oj.CompositeElementBridge.register = function(tagName, descriptor)
 {
   // Need to retrieve metadata to create prototype
-  if (oj.BaseCustomElementBridge.__Register(tagName, descriptor, oj.CompositeElementBridge.proto))
+  if (oj.BaseCustomElementBridge.__Register(tagName, descriptor, oj.CompositeElementBridge.proto, true))
   {
     var metadataPromise = oj.CompositeElementBridge.getMetadata(tagName);
     metadataPromise.then(function(metadata)
@@ -548,7 +598,7 @@ oj.CompositeElementBridge.register = function(tagName, descriptor)
       if (!metadata['jetVersion'])
         oj.Logger.warn('Required composite "jetVersion" missing from metadata for %s.', tagName);
       descriptor['_metadata'] = oj.BaseCustomElementBridge.__ProcessEventListeners(metadata, false);
-      document.registerElement(tagName.toLowerCase(), {'prototype': oj.CompositeElementBridge.proto.getPrototype(descriptor)});
+      customElements.define(tagName.toLowerCase(), oj.CompositeElementBridge.proto.getClass(descriptor));
     });
   }
 };
@@ -567,7 +617,7 @@ oj.CompositeElementBridge.getMetadata = function(tagName)
     var metadataPromise = descriptor['_metadataPromise'];
     if (!metadataPromise)
     {
-      metadataPromise = oj.CompositeElementBridge._getResourcePromise(descriptor, 'metadata');
+      metadataPromise = oj.CompositeElementBridge._getResourcePromise(descriptor, 'metadata', null);
       // Metadata is required starting in 3.0.0, but to be backwards compatible, just log a warning.
       if (!metadataPromise) {
         oj.Logger.warn("Required metadata is missing for " + tagName);
@@ -660,6 +710,8 @@ oj.CompositeElementBridge._getDomNodes = function(content)
   }
   else
   {
+    var bridge = oj.BaseCustomElementBridge.getInstance(this);
+    bridge.resolveDelayedReadyPromise();
     throw "The View (" + content + ") has an unsupported type";
   }
 };
@@ -697,7 +749,7 @@ oj.CompositeElementBridge._walkSubtree = function(subIdMap, nodeMap, node)
   if (!node.hasAttribute('slot'))
   {
     oj.CompositeElementBridge._addNodeToSubIdMap(subIdMap, nodeMap, node);
-    if (!oj.BaseCustomElementBridge.isRegistered(node.tagName) && !oj.Components.getWidgetConstructor(node))
+    if (!oj.BaseCustomElementBridge.getRegistered(node.tagName) && !oj.Components.__GetWidgetConstructor(node))
     {
       var children = node.children;
       for (var i = 0; i < children.length; i++)
@@ -787,30 +839,25 @@ oj.CompositeElementBridge._getPropertyTracker = function(bridge, property)
 /**
  * @ignore
  */
-oj.CompositeElementBridge._getResourcePromise = function(descriptor, resourceType)
+oj.CompositeElementBridge._getResourcePromise = function(descriptor, resourceType, bridge)
 {
   var promise = null;
-  var value = descriptor[resourceType];
-  if (value != null)
+  var resource = descriptor[resourceType];
+  if (resource != null)
   {
-    var key = Object.keys(value)[0];
-    var val = value[key];
-
-    if (key == null)
+    if (resource.hasOwnProperty('inline'))
+      promise = Promise.resolve(resource['inline']);
+    else if (resource.hasOwnProperty('promise'))
+      promise = resource['promise'];
+    else
     {
-      throw "Invalid component descriptor key";
-    }
-
-    switch(key)
-    {
-      case 'inline':
-        promise = Promise.resolve(val);
-        break;
-      case 'promise':
-        promise = val;
-        break;
-      default:
-        throw "Invalid descriptor key " + key + " for the resource type: " + resourceType;
+      // This method is called by the public getMetadata method where we don't have a
+      // bridge instance and don't need to resolve any Promises. All other cases are
+      // called during component creation and should resolve ready Promise for errors.
+      if (bridge)
+        bridge.resolveDelayedReadyPromise();
+      var key = Object.keys(resource)[0];
+      throw "Invalid descriptor key '" + key + "' for the resource type: " + resourceType;
     }
   }
   return promise;
@@ -837,14 +884,6 @@ oj.CompositeElementBridge._isDocumentFragment = function(content)
   {
     return content && content.nodeType === 11;
   }
-};
-
-/**
- * @ignore
- */
-oj.CompositeElementBridge._isSlotAssignable = function(node)
-{
-  return node.nodeType === 1 || node.nodeType === 3;
 };
 
 var _UNIQUE_INCR = 0;
@@ -957,8 +996,22 @@ var _UNIQUE = '_ojcomposite';
  * <h2 id="usage">Usage
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#usage"></a>
  * </h2>
- * <p>Once registered within a page, a composite component can be used in the DOM as a custom HTML element like in the example below.  Currently, composites need
- * to be in a knockout activated subtree, but this requirement may change in future releases.
+ * <p>
+ *   Once registered within a page, a composite component can be used in the DOM as a custom HTML element like in the example below.
+ *   A composite element will be recognized by the framework only after its module is loaded by the application. Once the element is 
+ *   recognized, the framework will register a busy state for the element and will begin the process of 'upgrading' the element. 
+ *   The element will not be ready for interaction (e.g. using properties or methods) until the upgrade process is complete. 
+ *   The application should listen to either the page-level or an element-scoped BusyContext before attempting to interact with 
+ *   any JET custom elements. See the <a href="../oj.BusyContext">BusyContext</a> documentation on how BusyContexts can be scoped.
+ * </p>
+ * <p>
+ *   The upgrade of JET composite elements relies on any data binding resolving, the management of which is done by a binding provider. 
+ *   The binding provider is responsible for setting and updating attribute expressions and any custom elements within its managed 
+ *   subtree will not finish upgrading until it applies bindings on that subtree. By default, there is a single binding provider for a page, 
+ *   but subtree specific binding providers can be added by using the <code>data-oj-binding-provider</code> attribute with values of 
+ *   "none" and "knockout". The default binding provider is knockout, but if a page or DOM subtree does not use any expression syntax or 
+ *   knockout, the application can set <code>data-oj-binding-provider="none"</code> on that element so its dependent JET composite custom 
+ *   elements do not need to wait for bindings to be applied to finish upgrading.
  * </p>
  * <pre class="prettyprint">
  * <code>
@@ -1139,11 +1192,6 @@ var _UNIQUE = '_ojcomposite';
  *               <td>A user friendly, translatable name of the property. Not used at run time.</td>
  *             </tr>
  *             <tr>
- *               <td class="name"><code>displayOrder</code></td>
- *               <td>{number}</td>
- *               <td>Display ranking of the property (nth property). Not used at run time.</td>
- *             </tr>
- *             <tr>
  *               <td class="name"><code>editable</code></td>
  *               <td>{boolean}</td>
  *               <td>Specifies whether the property can be changed within a design time environment. True by default. Not used at run time.</td>
@@ -1163,60 +1211,6 @@ var _UNIQUE = '_ojcomposite';
  *               <td class="name"><code>min</code></td>
  *               <td>{number}</td>
  *               <td>Validation metadata for number type properties. Specifies the low end of a possible range of values. Not used at run time.</td>
- *             </tr>
- *             <tr>
- *               <td class="name"><code>priority</code></td>
- *               <td>{string}</td>
- *               <td>Sets the priority for this property. Valid settings are:
- *                  <ul>
- *                    <li>
- *                      <em>"required"</em> - required to be set to a valid value at run time</li>
- *                    <li>
- *                      <em>"primary"</em> - specifying a value for this property should be encouraged when creating an instance of this component in a design time environment (e.g., provide a field for this property in a popup dialog at create time when the component is dragged onto the page from the component palette).</li>
- *                    <li>
- *                      <em>"optional"</em> - the default, if unspecified</li>
- *                  </ul>
- *                   Not used at run time.
- *               </td>
- *             </tr>
- *             <tr>
- *               <td class="name"><code>propertyEditorHint</code></td>
- *               <td>{string}</td>
- *               <td>Hint to the design time regarding what UI element to use for editing this property in the design time.  Valid settings:
- *                 <ul>
- *                   <li>
- *                      <em>"checkbox"</em> (input form of type "checkbox")
- *                   </li>
- *                   <li>
- *                      <em>"checkboxSet"</em> (multiple checkboxes allowing multi select)
- *                   </li>
- *                   <li>
- *                      <em>"combobox"</em> (editable single selection)
- *                   </li>
- *                   <li>
- *                      <em>"enumeration"</em> (icon-based radio buttons) 
- *                   </li>
- *                   <li>
- *                      <em>"inputDate"</em> (editable text field handling Date type input)
- *                   </li>
- *                   <li> 
- *                      <em>"inputText"</em> (input form of type "text")
- *                   </li>
- *                   <li>
- *                      <em>"none"</em> (do not display in the property inspector)
- *                   </li>
- *                   <li>
- *                      <em>"multiSelect" </em>(multiple selection allowed if the property is an enum, non-editable)
- *                   </li>
- *                   <li>
- *                      <em>"radioSet"</em> (text-based radio buttons)
- *                   </li>
- *                   <li>
- *                      <em>"select"</em> (single select dropdown, non-editable values)
- *                   </li>  
- *                 </ul>
- *                 Not used at run time.
- *               </td>
  *             </tr>
  *             <tr>
  *               <td class="name"><code>propertyEditorValues</code></td>
@@ -1284,17 +1278,17 @@ var _UNIQUE = '_ojcomposite';
  *                 working with subproperties.</td>
  *             </tr>
  *             <tr>
- *               <td class="name"><code>propertyGroup</code></td>
- *               <td>{string}</td>
- *               <td>Identifies a grouping bucket for this property.  For example, design time tools would typically group properties associated with data binding under a "Data" <code>propertyGroup</code>. Ordering within a <code>propertyGroup</code> is determined by <code>displayOrder</code>. Not used at run time.</td>
- *             </tr>
- *             <tr>
  *               <td class="name"><code>readOnly</code></td>
  *               <td>{boolean}</td>
  *               <td>Determines whether a property can be updated outside of the ViewModel.
  *                 False by default. If readOnly is true, the property can only be updated by the ViewModel or by the
  *                 components within the composite. This property only needs to be defined for the top level property, 
  *                 with subproperties inheriting that value.</td>
+ *             </tr>
+ *             <tr>
+ *               <td class="name"><code>required</code></td>
+ *               <td>{boolean}</td>
+ *               <td>Specifies whether the property must have a valid value at run time. False by default. Not used at run time.</td>
  *             </tr>
  *             <tr>
  *               <td class="name"><code>translatable</code></td>
@@ -1313,7 +1307,12 @@ var _UNIQUE = '_ojcomposite';
  *             <tr>
  *               <td class="name"><code>value</code></td>
  *               <td>{object}</td>
- *               <td>An optional default value for a property.</td>
+ *               <td>An optional default value for a property. Only supported on the top level property and will not be evaluated if set on nested subproperties.</td>
+ *             </tr>
+ *             <tr>
+ *               <td class="name"><code>visible</code></td>
+ *               <td>{boolean}</td>
+ *               <td>Specifies whether the property should be visible at design time. True by default. Not used at run time.</td>
  *             </tr>
  *             <tr>
  *               <td class="name"><code>writeback</code></td>
@@ -1375,6 +1374,11 @@ var _UNIQUE = '_ojcomposite';
  *               <td class="name"><code>return</code></td>
  *               <td>{string}</td>
  *               <td>The return type of the method, following Closure Compiler syntax. Not used at run time.</td>
+ *             </tr>
+ *             <tr>
+ *               <td class="name"><code>visible</code></td>
+ *               <td>{boolean}</td>
+ *               <td>Specifies whether the method should be visible at design time. True by default. Not used at run time.</td>
  *             </tr>
  *           </tbody>
  *         </table>
@@ -1446,6 +1450,11 @@ var _UNIQUE = '_ojcomposite';
  *                 </table>
  *               </td>
  *             </tr>
+ *             <tr>
+ *               <td class="name"><code>visible</code></td>
+ *               <td>{boolean}</td>
+ *               <td>Specifies whether the event should be visible at design time. True by default. Not used at run time.</td>
+ *             </tr>
  *           </tbody>
  *         </table>
  *       </td>
@@ -1484,6 +1493,11 @@ var _UNIQUE = '_ojcomposite';
  *               <td class="name"><code>displayName</code></td>
  *               <td>{string}</td>
  *               <td>A user friendly, translatable name of the slot. Not used at run time.</td>
+ *             </tr>
+*             <tr>
+ *               <td class="name"><code>visible</code></td>
+ *               <td>{boolean}</td>
+ *               <td>Specifies whether the slot should be visible at design time. True by default. Not used at run time.</td>
  *             </tr> 
  *           </tbody>
  *         </table>
@@ -1548,8 +1562,8 @@ var _UNIQUE = '_ojcomposite';
  * The following rules apply when mapping property to attribute names:
  * 
  * <ul>
- *  <li>Attribute names are case insensitive and are considered to be all lower case. Properties with camelCase are mapped to 
- *    attribute names by inserting a dash before the uppercase letter and converting that letter to lower case, 
+ *  <li>Attribute names are case insensitive. CamelCased properties are mapped to 
+ *    kebab-cased attribute names by inserting a dash before the uppercase letter and converting that letter to lower case, 
  *    e.g. a "chartType" property will be mapped to a "chart-type" attribute.</li>
  *  <li> The reverse occurs when mapping a property name from an attribute name.</li>
  * </ul>
@@ -1618,7 +1632,6 @@ var _UNIQUE = '_ojcomposite';
  *      <li>value - The new property value</li>
  *      <li>updatedFrom - Where the property was updated from. Supported values are:
  *        <ul>
- *          <li>default - The default value specified in the metadata.</li>
  *          <li>internal - The View or ViewModel</li>
  *          <li>external - The DOM Element either by its property setter, setAttribute, or external data binding.</li>
  *        </ul>
@@ -1639,7 +1652,6 @@ var _UNIQUE = '_ojcomposite';
  *      <li>value - The new property value</li>
  *      <li>updatedFrom - Where the property was updated from. Supported values are:
  *        <ul>
- *          <li>default - The default value specified in the metadata.</li>
  *          <li>internal - The View or ViewModel</li>
  *          <li>external - The DOM Element either by its property setter, setAttribute, or external data binding.</li>
  *        </ul>
@@ -1718,6 +1730,11 @@ var _UNIQUE = '_ojcomposite';
  *                <td>string</td>
  *                <td>A unique string that can be used for unique id generation.</td>
  *              </tr>
+ *              <tr>
+ *                <td class="name"><code>uniqueId</code></td>
+ *                <td>string</td>
+ *                <td>The ID of the composite component if specified. Otherwise, it is the same as <code>unique</code>.</td>
+ *              </tr>
  *            </tbody>
  *          </table>
  *        </td>
@@ -1775,6 +1792,11 @@ var _UNIQUE = '_ojcomposite';
  *                <td>string</td>
  *                <td>A unique string that can be used for unique id generation.</td>
  *              </tr>
+ *              <tr>
+ *                <td class="name"><code>uniqueId</code></td>
+ *                <td>string</td>
+ *                <td>The ID of the composite component if specified. Otherwise, it is the same as <code>unique</code>.</td>
+ *              </tr>
  *            </tbody>
  *          </table>
  *        </td>
@@ -1830,6 +1852,11 @@ var _UNIQUE = '_ojcomposite';
  *                <td>string</td>
  *                <td>A unique string that can be used for unique id generation.</td>
  *              </tr>
+ *              <tr>
+ *                <td class="name"><code>uniqueId</code></td>
+ *                <td>string</td>
+ *                <td>The ID of the composite component if specified. Otherwise, it is the same as <code>unique</code>.</td>
+ *              </tr>
  *            </tbody>
  *          </table>
  *        </td>
@@ -1884,6 +1911,11 @@ var _UNIQUE = '_ojcomposite';
  *                <td class="name"><code>unique</code></td>
  *                <td>string</td>
  *                <td>A unique string that can be used for unique id generation.</td>
+ *              </tr>
+ *              <tr>
+ *                <td class="name"><code>uniqueId</code></td>
+ *                <td>string</td>
+ *                <td>The ID of the composite component if specified. Otherwise, it is the same as <code>unique</code>.</td>
  *              </tr>
  *            </tbody>
  *          </table>
@@ -1945,10 +1977,9 @@ var _UNIQUE = '_ojcomposite';
  * Applications can control expression writeback in the composite component by using {{}} syntax for two-way writable binding expressions
  * or [[]] for one-way only expressions. In the example below, the salesData expression will not be written back to if the 'data' property
  * is updated by the composite component's ViewModel. The 'data' property will contain the current value, but the salesData expression will not
- * be updated. Alternatively, if the 'axisLabels' property is updated by the ViewModel, both the 'axisLabel' property and the showAxisLabels expression
- * will contain the updated value. Updating a readOnly property will disconnect the expression binding since the expression will no longer be
- * in sync with the property value. The property will still update and a property change event, [propertyName]Changed, will still be fired when 
- * the property value changes regardless of whether the expression is written back to.
+ * be updated. Please note that this will cause the expression and property values to be out of sync until the salesData expression is updated in the
+ * application's ViewModel. Alternatively, if the 'axisLabels' property is updated by the ViewModel, both the 'axisLabel' property and the 
+ * showAxisLabels expression will contain the updated value.
  * <pre class="prettyprint">
  * <code>
  * &lt;my-chart data="[[salesData]]" axis-labels={{showAxisLabels}} ... >
@@ -2020,20 +2051,20 @@ var _UNIQUE = '_ojcomposite';
  * <h5>Initial DOM</h5>
  * <pre class="prettyprint">
  * <code>
- * &lt;oj-a>
+ * &lt;component-a>
  *  &lt;div id="A" slot="foo">&lt;/div>
  *  &lt;div id="B" slot="bar">&lt;/div>
  *  &lt;div id="C">&lt;/div>
  *  &lt;div id="D" slot="foo">&lt;/div>
  *  &lt;div id="E" slot="cat">&lt;/div>
- * &lt;/oj-a>
+ * &lt;/component-a>
  * </code>
  * </pre>
  *
  * <h5>View</h5>
  * <pre class="prettyprint">
  * <code>
- * &lt;!-- oj-a View -->
+ * &lt;!-- component-a View -->
  * &lt;div id="outerFoo">
  *  &lt;oj-slot name="foo">&lt;/oj-slot>
  * &lt;/div>
@@ -2059,7 +2090,7 @@ var _UNIQUE = '_ojcomposite';
  * <h5>Final DOM</h5>
  * <pre class="prettyprint">
  * <code>
- * &lt;oj-a>
+ * &lt;component-a>
  *  &lt;div id="outerFoo">  
  *      &lt;div id="A" slot="foo">&lt;/div>
  *      &lt;div id="D" slot="foo">&lt;/div>
@@ -2074,7 +2105,7 @@ var _UNIQUE = '_ojcomposite';
  *  &lt;div id="outerDefault">
  *      &lt;div id="C">&lt;/div>
  *  &lt;/div>
- * &lt;/oj-a>
+ * &lt;/component-a>
  * </code>
  * </pre>
  *
@@ -2088,21 +2119,21 @@ var _UNIQUE = '_ojcomposite';
  * <h5>Initial DOM</h5>
  * <pre class="prettyprint">
  * <code>
- * &lt;oj-a>
+ * &lt;component-a>
  *  &lt;div id="A" slot="foo">&lt;/div>
- * &lt;/oj-a>
+ * &lt;/component-a>
  * </code>
  * </pre>
  *
  * <h5>View</h5>
  * <pre class="prettyprint">
  * <code>
- * &lt;!-- oj-a View -->
- * &lt;oj-b>
+ * &lt;!-- component-a View -->
+ * &lt;component-b>
  *  &lt;oj-slot name="foo">&lt;/oj-slot>
- * &lt;/oj-b>
+ * &lt;/component-b>
  *
- * &lt;!-- oj-b View -->
+ * &lt;!-- component-b View -->
  * &lt;div id="outerFoo">
  *  &lt;oj-slot name="foo">&lt;/oj-slot>
  * &lt;/div>
@@ -2112,57 +2143,85 @@ var _UNIQUE = '_ojcomposite';
  * </code>
  * </pre>
  *
- * <p>When applying bindings for the oj-a View, the oj-slot binding will replace
+ * <p>When applying bindings for the component-a View, the oj-slot binding will replace
  * slot foo with div A. Slot foo's slot attribute ("") overrides div A's ("foo")
  * so that the evaluated slot value ("") will be used when applying subsequent child bindings.<p>
  * <pre class="prettyprint">
  * <code>
  * &lt;!-- DOM -->
- * &lt;oj-a>
- *  &lt;!-- Start oj-a View -->
- *  &lt;oj-b>
+ * &lt;component-a>
+ *  &lt;!-- Start component-a View -->
+ *  &lt;component-b>
  *    &lt;!-- Evaluated slot value is "" -->
  *    &lt;div id="A" slot="foo">&lt;/div>
- *  &lt;/oj-b>
- *  &lt;!-- End oj-a View -->
- * &lt;/oj-a>
+ *  &lt;/component-b>
+ *  &lt;!-- End component-a View -->
+ * &lt;/component-a>
  * </code>
  * </pre>
  *
- * <p>When applying bindings for the oj-b View, the oj-slot binding will replace
- *  oj-b's default slot with div A since it's evaluated slot value is "".</p>
+ * <p>When applying bindings for the component-b View, the oj-slot binding will replace
+ *  component-b's default slot with div A since it's evaluated slot value is "".</p>
  * <pre class="prettyprint">
  * <code>
  * &lt;!-- DOM -->
- * &lt;oj-a>
- *  &lt;!-- Start oj-a View -->
- *  &lt;oj-b>
- *    &lt;!-- Start oj-b View -->
+ * &lt;component-a>
+ *  &lt;!-- Start component-a View -->
+ *  &lt;component-b>
+ *    &lt;!-- Start component-b View -->
  *    &lt;div id="outerFoo">
  *    &lt;/div>
  *    &lt;div id="outerDefault">
  *      &lt;div id="A" slot="foo">&lt;/div>
  *    &lt;/div>
- *    &lt;!-- End oj-b View -->
- *  &lt;/oj-b>
- *  &lt;!-- End oj-a View -->
- * &lt;/oj-a>
+ *    &lt;!-- End component-b View -->
+ *  &lt;/component-b>
+ *  &lt;!-- End component-a View -->
+ * &lt;/component-a>
  * </code>
  * </pre>
- * 
- * <h2 id="automation">Automation
- *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#automation"></a>
- * </h2>
- * <p>
- * The JET framework will by default expose <code>getNodeBySubId/getSubIdByNode</code> implementations on the composite element, using the presence of <code>data-oj-subid(-map)</code> 
- * attribute markup within the composite View to determine which elements to expose. The data-oj-subid attribute takes a single string which maps that element to the given subid 
- * The data-oj-subid-map attribute takes a JSON object containing custom subIds that map to component subIds when the component is another composite or JET component. 
- * If both attributes are specified, the data-oj-subid-map value takes precedence and data-oj-subid will be ignored as we do not recommend exposing both.
- * If the composite can expose all necessary subIds via the data-oj-subid(-map) attributes then it does not need to provide its own implementation. 
- * However, for cases like exposing subIds on stamped items, the composite can provide its own implementation on the composite ViewModel. For an example
- * and more details, please see the "Preparing Oracle JET Composite Components for Automation Testing" section of the Developer's Guide. The composite does not need to 
- * define <code>getNodeBySubId/getSubIdByNode</code> methods in the metadata except for documentation purposes.
- * </p>
+ *
+ * <h3>Deferred Slots</h3>
+ * As a performance enhancement, the composite can participate in deferred slot
+ * rendering by conditionally rendering a slot element inside a knockout if block
+ * and document that certain slots will be lazily rendered. This gives the application the opportunity
+ * to wrap their slot content in an <a href="../oj.ojDefer.html">oj-defer</a> element and have the
+ * bindings for that deferred content be delayed. oj.Components.subtreeHidden/Shown will automatically
+ * be called on the slot contents when they are added or removed from a slot.
+ *
+ * <h5>Initial DOM</h5>
+ * <pre class="prettyprint">
+ * <code>
+ * &lt;card-component>
+ *  &lt;oj-defer slot="front">
+ *    &lt;div>
+ *      ...
+ *    &lt;/div>
+ *  &lt;/oj-defer>
+ *  &lt;oj-defer slot="back">
+ *    &lt;div>
+ *      ...
+ *    &lt;/div>
+ *  &lt;/oj-defer>
+ * &lt;/card-component>
+ * </code>
+ * </pre>
+ *
+ * <h5>View</h5>
+ * <pre class="prettyprint">
+ * <code>
+ * &lt;!-- ko:if isFront -->
+ *   &lt;oj-slot class="card-component-front">
+ *     ...
+ *   &lt;/oj-slot>
+ * &lt;!-- /ko -->
+ * &lt;!-- ko:ifnot isFront -->
+ *   &lt;oj-slot class="card-component-back">
+ *     ...
+ *   &lt;/oj-slot>
+ * &lt;!-- /ko -->
+ * </code>
+ * </pre>
  * 
  * @namespace
  */
@@ -2287,8 +2346,22 @@ oj.Composite.getContainingComposite = function(node, stopBelow)
   return composite;
 };
 
+
+/**
+ * @ignore
+ */
+oj.Composite.getBindingProviderName = function(elem)
+{
+  return (elem ? elem[oj.Composite.__BINDING_PROVIDER] : null);
+}
+
 /**
  * @ignore
  */
 oj.Composite.__COMPOSITE_PROP = '__oj_composite';
+
+/**
+ * @ignore
+ */
+oj.Composite.__BINDING_PROVIDER = '__oj_binding_prvdr';
 });

@@ -3808,10 +3808,9 @@ dvt.PanZoomComponent.prototype.destroy = function() {
 /**
  * Ensures the displayable is in viewport
  * @param {dvt.KeyboardEvent} event
- * @param {DvtKeyboardNavigable} navigable The keyboard navigable, different fortmap
+ * @param {DvtKeyboardNavigable} navigable The keyboard navigable, different for tmap
  */
-dvt.PanZoomComponent.prototype.ensureObjInViewport = function(event, navigable) 
-    {
+dvt.PanZoomComponent.prototype.ensureObjInViewport = function(event, navigable) {
   if (!this._panZoomCanvas.isPanningEnabled()) {
     return;
   }
@@ -3869,9 +3868,9 @@ dvt.PanZoomComponent.prototype.ensureObjInViewport = function(event, navigable)
 };
 
 /**
-  * Returns whether the component is currently panning
-  * @return {boolean} true is component is currently panning
-  */
+ * Returns whether the component is currently panning
+ * @return {boolean} true is component is currently panning
+ */
 dvt.PanZoomComponent.prototype.isPanning = function() {
   return this._panAnimator != null || this._panningInterrupted;
 };
@@ -4128,6 +4127,7 @@ dvt.PanZoomCanvas.prototype.panBy = function(dx, dy, animator, panEndFunc)
   }
 
   mat.translate(deltaX, deltaY);
+
 
   var thisRef = this;
   var fireStartEventFunc = function() {
@@ -5830,12 +5830,14 @@ dvt.PanZoomCanvasKeyboardHandler.prototype.processKeyDown = function(event) {
       canvas.panBy(canvas.getPanIncrement(), 0);
     else
       canvas.panBy(0, canvas.getPanIncrement());
+    event.preventDefault();
   }
   else if (keyCode == dvt.KeyboardEvent.PAGE_DOWN) {
     if (event.ctrlKey || event.shiftKey)
       canvas.panBy(-canvas.getPanIncrement(), 0);
     else
       canvas.panBy(0, -canvas.getPanIncrement());
+    event.preventDefault();
   }
   else if (keyCode == dvt.KeyboardEvent.FORWARD_SLASH) {
     var controlPanel = canvas.getControlPanel();

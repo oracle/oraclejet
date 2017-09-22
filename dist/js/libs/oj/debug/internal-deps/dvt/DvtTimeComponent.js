@@ -440,9 +440,9 @@ dvt.TimeComponent.prototype.HandleMouseWheel = function(event)
     {
       var compPagePos = this.getCtx().getStageAbsolutePosition();
       if (this._isVertical)
-        var compLoc = event.pageY - compPagePos.y;
+        var compLoc = event.pageY - compPagePos.y - this.getStartYOffset();
       else
-        compLoc = event.pageX - compPagePos.x;
+        compLoc = event.pageX - compPagePos.x - this.getStartXOffset();
       var widthFactor = (this._end - this._start) / this.getContentLength();
 
       if (this.isRTL() && !this._isVertical)
@@ -500,8 +500,8 @@ dvt.TimeComponent.prototype.handleZoomWheel = function(newLength, time, compLoc,
   {
     this._viewStartTime = this._start;
     this._viewEndTime = this._viewStartTime + viewTime;
-    if (this._viewStartTime < this._start)
-      this._viewStartTime = this._start;
+    if (this._viewEndTime > this._end)
+      this._viewEndTime = this._end;
     this.setRelativeStartPos(0);
   }
 
@@ -587,6 +587,8 @@ dvt.TimeComponent.prototype.panZoomCanvasBy = function(delta)
     var viewTime = this._viewEndTime - this._viewStartTime;
     this._viewStartTime = this._start - (startPos / widthFactor);
     this._viewEndTime = this._viewStartTime + viewTime;
+    if (this._viewEndTime > this._end)
+      this._viewEndTime = this._end;
   }
   else
   {
@@ -606,6 +608,8 @@ dvt.TimeComponent.prototype.panZoomCanvasBy = function(delta)
     viewTime = this._viewEndTime - this._viewStartTime;
     this._viewStartTime = this._start - (startPos / widthFactor);
     this._viewEndTime = this._viewStartTime + viewTime;
+    if (this._viewEndTime > this._end)
+      this._viewEndTime = this._end;
   }
 };
 

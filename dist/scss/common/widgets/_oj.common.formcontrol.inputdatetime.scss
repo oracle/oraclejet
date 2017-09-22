@@ -819,62 +819,10 @@
 
     // Reduced font size for meridian wheel on some languages
 
-    .oj-timepicker-meridian .oj-timepicker-wheel-item:lang(ca),
-    .oj-timepicker-meridian .oj-timepicker-wheel-item:lang(cs),
-    .oj-timepicker-meridian .oj-timepicker-wheel-item:lang(es),
-    .oj-timepicker-meridian .oj-timepicker-wheel-item:lang(te),
-    .oj-timepicker-meridian .oj-timepicker-wheel-item:lang(sl),
-    .oj-timepicker-meridian .oj-timepicker-wheel-item.oj-timepicker-wheel-item-position0:lang(el),
-    .oj-timepicker-meridian .oj-timepicker-wheel-item.oj-timepicker-wheel-item-position0:lang(ja),
-    .oj-timepicker-meridian .oj-timepicker-wheel-item.oj-timepicker-wheel-item-position0:lang(ko),
-    .oj-timepicker-meridian .oj-timepicker-wheel-item.oj-timepicker-wheel-item-position0:lang(zh) {
-      font-size: 38px;
-    }
-
-    .oj-timepicker-meridian .oj-timepicker-wheel-item:lang(as),
-    .oj-timepicker-meridian .oj-timepicker-wheel-item:lang(bg),
-    .oj-timepicker-meridian .oj-timepicker-wheel-item:lang(bn),
-    .oj-timepicker-meridian .oj-timepicker-wheel-item:lang(brx),
-    .oj-timepicker-meridian .oj-timepicker-wheel-item:lang(he),
-    .oj-timepicker-meridian .oj-timepicker-wheel-item:lang(pa),
-    .oj-timepicker-meridian .oj-timepicker-wheel-item:lang(el),
-    .oj-timepicker-meridian .oj-timepicker-wheel-item:lang(ja),
-    .oj-timepicker-meridian .oj-timepicker-wheel-item:lang(ko),
-    .oj-timepicker-meridian .oj-timepicker-wheel-item:lang(zh) {
-      font-size: 28px;
-    }
-
-    .oj-timepicker-meridian .oj-timepicker-wheel-item:lang(de),
-    .oj-timepicker-meridian .oj-timepicker-wheel-item:lang(ne),
-    .oj-timepicker-meridian .oj-timepicker-wheel-item.oj-timepicker-wheel-item-position0:lang(hi) {
-      font-size: 24px;
-    }
-
-    .oj-timepicker-meridian .oj-timepicker-wheel-item:lang(kn),
-    .oj-timepicker-meridian .oj-timepicker-wheel-item:lang(lt),
-    .oj-timepicker-meridian .oj-timepicker-wheel-item:lang(nn),
-    .oj-timepicker-meridian .oj-timepicker-wheel-item:lang(pt),
-    .oj-timepicker-meridian .oj-timepicker-wheel-item:lang(ur),
-    .oj-timepicker-meridian .oj-timepicker-wheel-item:lang(th),
-    .oj-timepicker-meridian .oj-timepicker-wheel-item:lang(hi) {
-      font-size: 18px;
-    }
-
-    .oj-timepicker-meridian .oj-timepicker-wheel-item:lang(sr),
-    .oj-timepicker-meridian .oj-timepicker-wheel-item:lang(ta),
-    .oj-timepicker-meridian .oj-timepicker-wheel-item.oj-timepicker-wheel-item-position0:lang(sq) {
-      font-size: 16px;
-    }
-
-    .oj-timepicker-meridian .oj-timepicker-wheel-item:lang(mk),
-    .oj-timepicker-meridian .oj-timepicker-wheel-item:lang(nn),
-    .oj-timepicker-meridian .oj-timepicker-wheel-item:lang(sq) {
-      font-size: 14px;
-    }
-
-    .oj-timepicker-meridian .oj-timepicker-wheel-item:lang(be),
-    .oj-timepicker-meridian .oj-timepicker-wheel-item:lang(lv) {
-      font-size: 10px;
+    .oj-timepicker-meridian .oj-timepicker-wheel-item-content {
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
     }
 
     .oj-timepicker-wheel-item.oj-timepicker-wheel-item-position1 {

@@ -29,9 +29,15 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojdatasource-common'],
  * @export
  * @class oj.FlattenedTreeTableDataSource
  * @extends oj.TableDataSource
- * @classdesc Object representing data used by the rowexpander component
+ * @classdesc Object representing data used by Table with RowExpander.<br><br>
+ *            See the <a href="../jetCookbook.html?component=rowExpander&demo=tableRowExpander">Row Expander - Table</a> demo for an example.<br><br>
+ *            Refer to {@link oj.TableDataSource} for other data sources that represent tabular data.
  * @param {Object} data
- * @param {Object|null} options Array of options for the TreeTableDataSource
+ * @param {Object|null} options Options for the FlattenedTreeTableDataSource
+ * @param {string} options.startFetch Control whether to start initial fetch when the TableDataSource is bound to a component.  Valid values are:<br><br>
+ *                                    <b>"enabled"</b> (default) - Start initial fetch automatically when the TableDataSource is bound to a component.<br>
+ *                                    <b>"disabled"</b> - Do not start initial fetch automatically.  Application will call the <a href="#fetch">fetch()</a> method to
+ *                                                        start the first fetch.
  * @constructor
  */
 oj.FlattenedTreeTableDataSource = function(data, options)
@@ -140,10 +146,10 @@ oj.Object.createSubclass(oj.FlattenedTreeTableDataSource, oj.TableDataSource, "o
 
 /**
  * Initializes the instance.
- * @export
- * @expose
- * @memberof! oj.FlattenedTreeTableDataSource
+ * @memberof oj.FlattenedTreeTableDataSource
  * @instance
+ * @override
+ * @protected
  */
 oj.FlattenedTreeTableDataSource.prototype.Init = function()
 {
@@ -157,7 +163,7 @@ oj.FlattenedTreeTableDataSource.prototype.Init = function()
  *         Returns null if the feature is not recognized.
  * @export
  * @expose
- * @memberof! oj.FlattenedTreeTableDataSource
+ * @memberof oj.FlattenedTreeTableDataSource
  * @instance
  */
 oj.FlattenedTreeTableDataSource.prototype.getCapability = function(feature)
@@ -170,7 +176,7 @@ oj.FlattenedTreeTableDataSource.prototype.getCapability = function(feature)
  * @return {Object} the underlying oj.DataSource.
  * @export
  * @expose
- * @memberof! oj.FlattenedTreeTableDataSource
+ * @memberof oj.FlattenedTreeTableDataSource
  * @instance
  */
 oj.FlattenedTreeTableDataSource.prototype.getWrappedDataSource = function()
@@ -194,7 +200,7 @@ oj.FlattenedTreeTableDataSource.prototype.getWrappedDataSource = function()
  * </table>  
  * @export
  * @expose
- * @memberof! oj.FlattenedTreeTableDataSource
+ * @memberof oj.FlattenedTreeTableDataSource
  * @instance
  */
 oj.FlattenedTreeTableDataSource.prototype.fetch = function(options)
@@ -231,7 +237,7 @@ oj.FlattenedTreeTableDataSource.prototype.fetch = function(options)
  * </table>
  * @export
  * @expose
- * @memberof! oj.FlattenedTreeTableDataSource
+ * @memberof oj.FlattenedTreeTableDataSource
  * @instance
  */
 oj.FlattenedTreeTableDataSource.prototype.at = function(index, options)
@@ -257,7 +263,7 @@ oj.FlattenedTreeTableDataSource.prototype.at = function(index, options)
  * @param {Object} rowKey the key of the row to collapse
  * @export
  * @expose
- * @memberof! oj.FlattenedTreeTableDataSource
+ * @memberof oj.FlattenedTreeTableDataSource
  * @instance
  */
 oj.FlattenedTreeTableDataSource.prototype.collapse = function(rowKey)
@@ -271,7 +277,7 @@ oj.FlattenedTreeTableDataSource.prototype.collapse = function(rowKey)
  * @param {Object} rowKey the key of the row to expand
  * @export
  * @expose
- * @memberof! oj.FlattenedTreeTableDataSource
+ * @memberof oj.FlattenedTreeTableDataSource
  * @instance
  */
 oj.FlattenedTreeTableDataSource.prototype.expand = function(rowKey)
@@ -293,7 +299,7 @@ oj.FlattenedTreeTableDataSource.prototype.expand = function(rowKey)
  * </table>
  * @export
  * @expose
- * @memberof! oj.FlattenedTreeTableDataSource
+ * @memberof oj.FlattenedTreeTableDataSource
  * @instance
  */
 oj.FlattenedTreeTableDataSource.prototype.get = function(id, options)
@@ -314,7 +320,7 @@ oj.FlattenedTreeTableDataSource.prototype.get = function(id, options)
  * @param {function(Object)} eventHandler event handler function
  * @export
  * @expose
- * @memberof! oj.FlattenedTreeTableDataSource
+ * @memberof oj.FlattenedTreeTableDataSource
  * @instance
  */
 oj.FlattenedTreeTableDataSource.prototype.on = function(eventType, eventHandler)
@@ -338,7 +344,7 @@ oj.FlattenedTreeTableDataSource.prototype.on = function(eventType, eventHandler)
  * @param {function(Object)} eventHandler event handler function
  * @export
  * @expose
- * @memberof! oj.FlattenedTreeTableDataSource
+ * @memberof oj.FlattenedTreeTableDataSource
  * @instance
  */
 oj.FlattenedTreeTableDataSource.prototype.off = function(eventType, eventHandler)
@@ -363,7 +369,7 @@ oj.FlattenedTreeTableDataSource.prototype.off = function(eventType, eventHandler
  * @return {Promise} promise object triggering done when complete.
  * @export
  * @expose
- * @memberof! oj.FlattenedTreeTableDataSource
+ * @memberof oj.FlattenedTreeTableDataSource
  * @instance
  */
 oj.FlattenedTreeTableDataSource.prototype.sort = function(criteria)
@@ -409,7 +415,7 @@ oj.FlattenedTreeTableDataSource.prototype.sort = function(criteria)
  * @returns {number} total size of data
  * @export
  * @expose
- * @memberof! oj.FlattenedTreeTableDataSource
+ * @memberof oj.FlattenedTreeTableDataSource
  * @instance
  */
 oj.FlattenedTreeTableDataSource.prototype.totalSize = function()
@@ -429,7 +435,7 @@ oj.FlattenedTreeTableDataSource.prototype.totalSize = function()
  *                  "unknown" if the totalSize is unknown
  * @export
  * @expose
- * @memberof! oj.CollectionTableDataSource
+ * @memberof oj.FlattenedTreeTableDataSource
  * @instance 
  */
 oj.FlattenedTreeTableDataSource.prototype.totalSizeConfidence = function()

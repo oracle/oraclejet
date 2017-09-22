@@ -23,14 +23,22 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
  */
 
 /**
- * @preserve Copyright 2013 jQuery Foundation and other contributors
- * Released under the MIT license.
- * http://jquery.org/license
- */
-
-/**
- * The ojPagingControl component provides paging functionality.
+ * @ojcomponent oj.ojPagingControl
+ * @augments oj.baseComponent
  * 
+ * @classdesc
+ * <h3 id="pagingcontrolOverview-section">
+ *   JET PagingControl
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#pagingcontrolOverview-section"></a>
+ * </h3>
+ * <p>Description:</p>
+ * <p>A JET PagingControl provides paging functionality.</p>
+ * 
+ * <pre class="prettyprint"><code>&lt;oj-paging-control
+ *   data='{{pagingModel}}'
+ *   page-size='10'>
+ * &lt;/oj-paging-control></code></pre>
+ *
  * <h3 id="keyboard-section">
  *   Keyboard End User Information
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#keyboard-section"></a>
@@ -45,12 +53,6 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
  *
  * {@ojinclude "name":"touchDoc"}
  *  
- * @example  <caption>Initialize the paging control via the JET <code class="prettyprint">ojComponent</code> binding:</caption>
- * &lt;div id="paging" data-bind="ojComponent: {component: 'ojPagingControl', data: pagingModel, pageSize: 10}"&gt;
- *     
- * 
- * @ojcomponent oj.ojPagingControl
- * @augments oj.baseComponent
  */
 (function() {
   oj.__registerWidget("oj.ojPagingControl", $['oj']['baseComponent'],
@@ -61,7 +63,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
       options:
         {
           /** 
-           * The data to bind to the component.
+           * The data to bind to the PagingControl.
            * <p>
            * Must implement the oj.PagingModel interface {@link oj.PagingModel} 
            * @expose 
@@ -70,18 +72,38 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
            * @memberof! oj.ojPagingControl
            * @type {oj.PagingModel}
            * @default <code class="prettyprint">null</code>
+           *
+           * @example <caption>Initialize the PagingControl with the <code class="prettyprint">data</code> attribute specified:</caption>
+           * &lt;oj-paging-control data='{{pagingDataSource}}'>&lt;/oj-paging-control>
+           *
+           * @example <caption>Get or set the <code class="prettyprint">data</code> property after initialization:</caption>
+           * // getter
+           * var pagingDataSource = myPagingControl.data;
+           *
+           * // setter
+           * myPagingControl.data = pagingDataSource;
            */
           data: null,
           /** 
-           * Options for when the component width is too narrow to accommodate the controls in the paging control
+           * Options for when the PagingControl width is too narrow to accommodate the controls in the paging control
            * @expose 
            * @public 
            * @instance
            * @memberof! oj.ojPagingControl
            * @type {string}
-           * @ojvalue {string} "fit" Display as many controls as can fit in the component width.
+           * @ojvalue {string} "fit" Display as many controls as can fit in the PagingControl width.
            * @ojvalue {string} "none" Display all controls. Controls which cannot fit will be truncated.
-           * @default <code class="prettyprint">fit</code>
+           * @default <code class="prettyprint">"fit"</code>
+           *
+           * @example <caption>Initialize the PagingControl with the <code class="prettyprint">overflow</code> attribute specified:</caption>
+           * &lt;oj-paging-control overflow='none'>&lt;/oj-paging-control>
+           *
+           * @example <caption>Get or set the <code class="prettyprint">overflow</code> property after initialization:</caption>
+           * // getter
+           * var overflowValue = myPagingControl.overflow;
+           *
+           * // setter
+           * myPagingControl.overflow = 'none';
            */
           overflow: 'fit',
           /** 
@@ -93,61 +115,155 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
            * @memberof! oj.ojPagingControl
            * @type {number}
            * @default <code class="prettyprint">25</code>
+           *
+           * @example <caption>Initialize the PagingControl with the <code class="prettyprint">page-size</code> attribute specified:</caption>
+           * &lt;oj-paging-control page-size='50'>&lt;/oj-paging-control>
+           *
+           * @example <caption>Get or set the <code class="prettyprint">pageSize</code> property after initialization:</caption>
+           * // getter
+           * var pageSizeValue = myPagingControl.pageSize;
+           *
+           * // setter
+           * myPagingControl.pageSize = 50;
            */
           pageSize: 25,
           /** 
            * Options for page mode. 
-           * <p>
-           * Supported options are:
-           * <ul>
-           *   <li>layout: Array of paging navigation controls to be displayed (only applicable for numbers type).
-           *   <ul>Valid array values are:
-           *     <li>auto: Component decides which controls to display</li>
-           *     <li>all: Display all controls</li>
-           *     <li>input: Display the page input control</li>
-           *     <li>rangeText: Display the page range text control</li>
-           *     <li>pages: Display the page links</li>
-           *     <li>nav: Display the navigation arrows</li>
-           *   </ul>
-           *   </li>
-           *   <li>type: The type of page links. Specifying 'numbers' will render
-           *   numeric page links whereas specifying 'dots' will render dots.</li>
-           *   <li>orientation: The orientation of the page links. Can be either horizontal
-           *   or vertical.</li>
-           *   <li>maxPageLinks: The maximum number of page links to display (only applicable for numbers type). 
-           *   An ellipsis '...' will be displayed for pages which exceed the maximum.
-           *   maxPageLinks must be greater than 4.</li>
-           * </ul>
            * @expose 
            * @public 
            * @instance
            * @memberof! oj.ojPagingControl
            * @type {Object.<string, Array|number>}
-           * @property {Array} layout Array of paging navigation controls to be displayed (only applicable for numbers type)
-           * @property {string} orientation Horizontal or vertical
-           * @property {string} type Numbers or dots
-           * @property {number} maxPageLinks The maximum number of page links to display (only applicable for numbers type)
            * @default <code class="prettyprint">{layout: ['auto'], 'type': 'numbers', 'orientation': 'horizontal', maxPageLinks: 6}</code>
-           * @example <caption>Initialize the paging control with the <code class="prettyprint">pageOptions</code> option specified:</caption>
-           * &lt;div id="paging" data-bind="ojComponent: {component: 'ojPagingControl', data: pagingModel, pageSize: 10, pageOptions: {layout: ['auto', 'input', 'rangeText'], maxPageLinks: 8}}"&gt;
+           *
+           * @example <caption>Initialize the PagingControl, overriding some page-options values and leaving the others intact:</caption>
+           * &lt;!-- Using dot notation -->
+           * &lt;oj-paging-control page-options.some-key='some value' page-options.some-other-key='some other value'>&lt;/oj-paging-control>
+           * 
+           * &lt;!-- Using JSON notation -->
+           * &lt;oj-paging-control page-options='{"someKey":"some value", "someOtherKey":"some other value"}'>&lt;/oj-paging-control>
+           *
+           * @example <caption>Get or set the <code class="prettyprint">pageOptions</code> property after initialization:</caption>
+           * // Get one
+           * var value = myPagingControl.pageOptions.someKey;
+           *
+           * // Set one, leaving the others intact. Always use the setProperty API for 
+           * // subproperties rather than setting a subproperty directly.
+           * myPagingControl.setProperty('pageOptions.someKey', 'some value');
+           *
+           * // Get all
+           * var values = myPagingControl.pageOptions;
+           *
+           * // Set all.  Must list every pageOptions key, as those not listed are lost.
+           * myPagingControl.pageOptions = {
+           *     someKey: 'some value',
+           *     someOtherKey: 'some other value'
+           * };
            */
-          pageOptions: {'layout': ['auto'], 'type': 'numbers', 'maxPageLinks': 6, 'orientation': 'horizontal'},
+          pageOptions: {
+            /**
+             * Array of paging navigation controls to be displayed (only applicable for numbers type).
+             * <p>This is an array of one or more supported values.</p>
+             * <p>See the <a href="#pageOptions">page-options</a> attribute for usage examples.</p>
+             * @expose
+             * @name pageOptions.layout
+             * @memberof! oj.ojPagingControl
+             * @instance
+             * @type {Array}
+             * @ojvalue {string} 'auto' The PagingControl decides which controls to display
+             * @ojvalue {string} 'all' Display all controls
+             * @ojvalue {string} 'input' Display the page input control
+             * @ojvalue {string} 'rangeText' Display the page range text control
+             * @ojvalue {string} 'pages' Display the page links
+             * @ojvalue {string} 'nav' Display the navigation arrows
+             * @default <code class="prettyprint">['auto']</code>
+             */
+            'layout': ['auto'], 
+            /**
+             * The type of page links.
+             * <p>See the <a href="#pageOptions">page-options</a> attribute for usage examples.</p>
+             * @expose
+             * @name pageOptions.type
+             * @memberof! oj.ojPagingControl
+             * @instance
+             * @type {string}
+             * @ojvalue {string} 'numbers' Render numeric page links
+             * @ojvalue {string} 'dots' Render dots
+             * @default <code class="prettyprint">'numbers'</code>
+             */
+            'type': 'numbers', 
+            /**
+             * The maximum number of page links to display (only applicable for numbers type).
+             * An ellipsis '...' will be displayed for pages which exceed the maximum.
+             * maxPageLinks must be greater than 4.
+             * <p>See the <a href="#pageOptions">page-options</a> attribute for usage examples.</p>
+             * @expose
+             * @name pageOptions.maxPageLinks
+             * @memberof! oj.ojPagingControl
+             * @instance
+             * @type {number}
+             * @default <code class="prettyprint">6</code>
+             */
+            'maxPageLinks': 6, 
+            /**
+             * The orientation of the page links.
+             * <p>See the <a href="#pageOptions">page-options</a> attribute for usage examples.</p>
+             * @expose
+             * @name pageOptions.orientation
+             * @memberof! oj.ojPagingControl
+             * @instance
+             * @type {string}
+             * @ojvalue {string} 'horizontal'
+             * @ojvalue {string} 'vertical'
+             * @default <code class="prettyprint">'horizontal'</code>
+             */
+            'orientation': 'horizontal'
+          },
           /** 
            * Options for loadMore mode. 
-           * <p>
-           * Supported options are:
-           * <ul>
-           *   <li>maxCount: Integer</li>
-           * </ul> 
            * @expose 
            * @public 
            * @instance
            * @memberof! oj.ojPagingControl
            * @type {Object.<string, number>}
-           * @property {number} maxCount The maximum number items to display
            * @default <code class="prettyprint">{maxCount: 500}</code>
+           *
+           * @example <caption>Initialize the PagingControl, overriding load-more-options value:</caption>
+           * &lt;!-- Using dot notation -->
+           * &lt;oj-paging-control load-more-options.max-count='300'>&lt;/oj-paging-control>
+           * 
+           * &lt;!-- Using JSON notation -->
+           * &lt;oj-paging-control load-more-options='{"maxCount":300}'>&lt;/oj-paging-control>
+           *
+           * @example <caption>Get or set the <code class="prettyprint">loadMoreOptions</code> property after initialization:</caption>
+           * // Get one
+           * var value = myPagingControl.loadMoreOptions.maxCount;
+           *
+           * // Set one. Always use the setProperty API for 
+           * // subproperties rather than setting a subproperty directly.
+           * myPagingControl.setProperty('loadMoreOptions.maxCount', 300);
+           *
+           * // Get all
+           * var values = myPagingControl.loadMoreOptions;
+           *
+           * // Set all.  Must list every loadMoreOptions key, as those not listed are lost.
+           * myPagingControl.loadMoreOptions = {
+           *     maxCount: 300
+           * };
            */
-          loadMoreOptions: {'maxCount': 500},
+          loadMoreOptions: {
+            /**
+             * The maximum number items to display.
+             * <p>See the <a href="#loadMoreOptions">load-more-options</a> attribute for usage examples.</p>
+             * @expose
+             * @name loadMoreOptions.maxCount
+             * @memberof! oj.ojPagingControl
+             * @instance
+             * @type {number}
+             * @default <code class="prettyprint">500</code>
+             */
+            'maxCount': 500
+          },
           /** 
            * Paging mode.
            * @expose 
@@ -155,9 +271,19 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
            * @instance
            * @memberof! oj.ojPagingControl
            * @type {string}
-           * @ojvalue {string} "page" Display paging control in pagination mod.
+           * @ojvalue {string} "page" Display paging control in pagination mode.
            * @ojvalue {string} "loadMore" Display paging control in high watermark mode.
            * @default <code class="prettyprint">page</code>
+           *
+           * @example <caption>Initialize the PagingControl with the <code class="prettyprint">mode</code> attribute specified:</caption>
+           * &lt;oj-paging-control mode='loadMore'>&lt;/oj-paging-control>
+           *
+           * @example <caption>Get or set the <code class="prettyprint">mode</code> property after initialization:</caption>
+           * // getter
+           * var modeValue = myPagingControl.mode;
+           *
+           * // setter
+           * myPagingControl.mode = 'loadMore';
            */
           mode: 'page',
           /**
@@ -175,6 +301,8 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
             *
             * @example <caption>Bind an event listener to the <code class="prettyprint">ojready</code> event:</caption>
             * $( ".selector" ).on( "ojready", function() {} );
+            *
+            * @ignore
             */
           ready: null
         },
@@ -226,6 +354,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
           _DISABLED:                                      'oj-disabled',
           _ENABLED:                                       'oj-enabled',
           _FOCUS:                                         'oj-focus',
+          _FOCUS_HIGHLIGHT:                               'oj-focus-highlight',
           _HOVER:                                         'oj-hover',
           _SELECTED:                                      'oj-selected'
         },
@@ -345,13 +474,13 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
       /**
        * Load the first page of data
        * @expose
-       * @memberof! oj.ojPagingControl
+       * @memberof oj.ojPagingControl
        * @instance
        * @return {Promise} promise object triggering done when complete.
        * @throws {Error}
        * @export
        * @example <caption>Invoke the <code class="prettyprint">firstPage</code> method:</caption>
-       * $( ".selector" ).ojPagingControl( "firstPage" );
+       * myPagingControl.firstPage();
        */
       'firstPage': function()
       {
@@ -365,13 +494,13 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
       /**
        * Load the previous page of data
        * @expose
-       * @memberof! oj.ojPagingControl
+       * @memberof oj.ojPagingControl
        * @instance
        * @return {Promise} promise object triggering done when complete.
        * @throws {Error}
        * @export
        * @example <caption>Invoke the <code class="prettyprint">previousPage</code> method:</caption>
-       * $( ".selector" ).ojPagingControl( "previousPage" );
+       * myPagingControl.previousPage();
        */
       'previousPage': function()
       {
@@ -390,13 +519,13 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
       /**
        * Load the next page of data
        * @expose
-       * @memberof! oj.ojPagingControl
+       * @memberof oj.ojPagingControl
        * @instance
        * @return {Promise} promise object triggering done when complete.
        * @throws {Error}
        * @export
        * @example <caption>Invoke the <code class="prettyprint">nextPage</code> method:</caption>
-       * $( ".selector" ).ojPagingControl( "nextPage" );
+       * myPagingControl.nextPage();
        */
       'nextPage': function()
       {
@@ -416,13 +545,13 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
       /**
        * Load the last page of data
        * @expose
-       * @memberof! oj.ojPagingControl
+       * @memberof oj.ojPagingControl
        * @instance
        * @return {Promise} promise object triggering done when complete.
        * @throws {Error}
        * @export
        * @example <caption>Invoke the <code class="prettyprint">lastPage</code> method:</caption>
-       * $( ".selector" ).ojPagingControl( "lastPage" );
+       * myPagingControl.lastPage();
        */
       'lastPage': function()
       {
@@ -439,14 +568,14 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
       /**
        * Load the specified page of data
        * @expose
-       * @memberof! oj.ojPagingControl
+       * @memberof oj.ojPagingControl
        * @instance
        * @param {number} page  Page number. 
        * @return {Promise} promise object triggering done when complete.
        * @throws {Error}
        * @export
        * @example <caption>Invoke the <code class="prettyprint">page</code> method:</caption>
-       * $( ".selector" ).ojPagingControl( "page", 5 );
+       * myPagingControl.page(5);
        */
       'page': function(page)
       {
@@ -465,13 +594,13 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
       /**
        * Load the next set of data
        * @expose
-       * @memberof! oj.ojPagingControl
+       * @memberof oj.ojPagingControl
        * @instance
        * @return {Promise} promise object triggering done when complete.
        * @throws {Error}
        * @export
        * @example <caption>Invoke the <code class="prettyprint">loadNext</code> method:</caption>
-       * $( ".selector" ).ojPagingControl( "loadNext" );
+       * myPagingControl.loadNext();
        */
       'loadNext': function()
       {
@@ -485,18 +614,18 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
       /**
        * Refresh the paging control.
        * @expose
-       * @memberof! oj.ojPagingControl
+       * @memberof oj.ojPagingControl
        * @instance
        * @export
        * @example <caption>Invoke the <code class="prettyprint">refresh</code> method:</caption>
-       * $( ".selector" ).ojPagingControl( "refresh" );
+       * myPagingControl.refresh();
        */
       'refresh': function()
       {
         this._super();
         this._refresh();
       },
-      //** @inheritdoc */
+      // @inheritdoc
       'getNodeBySubId': function(locator)
       {
         if (locator == null)
@@ -575,7 +704,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
 
         return retval;
       },              
-      //** @inheritdoc */
+      // @inheritdoc
       'getSubIdByNode': function(node)
       {
         if ($(node).hasClass(this._CSS_CLASSES._PAGING_CONTROL_NAV_INPUT_CLASS))
@@ -1255,6 +1384,8 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
         {
           navArrow.addClass(this._MARKER_STYLE_CLASSES._DISABLED);
           navArrow.removeClass(this._MARKER_STYLE_CLASSES._ENABLED);
+          navArrow.removeClass(this._MARKER_STYLE_CLASSES._FOCUS_HIGHLIGHT);
+          navArrow.removeClass(this._MARKER_STYLE_CLASSES._FOCUS);
           navArrow.attr('aria-disabled', 'true');
           navArrow.attr('tabindex', '-1');
         }
@@ -1498,14 +1629,32 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
 
         if (activeElement.hasClass(this._CSS_CLASSES._PAGING_CONTROL_NAV_PAGE_CLASS))
         {
-          var pageNum = activeElement.attr('data-oj-pagenum');
+          var pageNum = parseInt(activeElement.attr('data-oj-pagenum'), 10);
           var self = this;
           setTimeout(function() 
           {
             if (pageNum >= 0)
             {
-              var navPage = self._getPagingControlContent().find('div[data-oj-pagenum=' + pageNum + ']');
-              navPage.focus();
+              // try to focus on the next page. If not the previous page
+              var nextPageNum = pageNum + 1;
+              var prevPageNum = pageNum - 1;
+              var nextNavPage = self._getPagingControlContent().find('a[data-oj-pagenum=' + nextPageNum + ']');
+              
+              if (nextNavPage != null &&
+                nextNavPage.length > 0)
+              {
+                nextNavPage.focus();
+              }
+              else
+              {
+                var prevNavPage = self._getPagingControlContent().find('a[data-oj-pagenum=' + prevPageNum + ']');
+                
+                if (prevNavPage != null &&
+                  prevNavPage.length > 0)
+                {
+                  prevNavPage.focus();
+                }
+              }
             }
             pageNum = null;
             self = null;
@@ -1516,28 +1665,45 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
           var self = this;
           setTimeout(function() 
           {
-            var firstArrow = self._getPagingControlContent().find('.' + self._CSS_CLASSES._PAGING_CONTROL_NAV_FIRST_CLASS);
-            firstArrow.focus();
+            //since we are already in the first page, focus should be on next arrow.
+            var nextArrow = self._getPagingControlContent().find('.' + self._CSS_CLASSES._PAGING_CONTROL_NAV_NEXT_CLASS);
+            nextArrow.focus();
             self = null;
           }, 100);
         }
         else if (activeElement.hasClass(this._CSS_CLASSES._PAGING_CONTROL_NAV_PREVIOUS_CLASS))
         {
           var self = this;
-          setTimeout(function() 
+          setTimeout(function ()
           {
             var previousArrow = self._getPagingControlContent().find('.' + self._CSS_CLASSES._PAGING_CONTROL_NAV_PREVIOUS_CLASS);
-            previousArrow.focus();
+            if (!previousArrow.hasClass(self._MARKER_STYLE_CLASSES._DISABLED))
+            {
+              previousArrow.focus();
+            }
+            else
+            {
+              var nextArrow = self._getPagingControlContent().find('.' + self._CSS_CLASSES._PAGING_CONTROL_NAV_NEXT_CLASS);
+              nextArrow.focus();
+            }
             self = null;
           }, 100);
         }
         else if (activeElement.hasClass(this._CSS_CLASSES._PAGING_CONTROL_NAV_NEXT_CLASS))
         {
           var self = this;
-          setTimeout(function() 
+          setTimeout(function ()
           {
             var nextArrow = self._getPagingControlContent().find('.' + self._CSS_CLASSES._PAGING_CONTROL_NAV_NEXT_CLASS);
-            nextArrow.focus();
+            if (!nextArrow.hasClass(self._MARKER_STYLE_CLASSES._DISABLED))
+            {
+              nextArrow.focus();
+            }
+            else
+            {
+              var previousArrow = self._getPagingControlContent().find('.' + self._CSS_CLASSES._PAGING_CONTROL_NAV_PREVIOUS_CLASS);
+              previousArrow.focus();
+            }
             self = null;
           }, 100);
         }
@@ -1546,8 +1712,8 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
           var self = this;
           setTimeout(function() 
           {
-            var lastArrow = self._getPagingControlContent().find('.' + self._CSS_CLASSES._PAGING_CONTROL_NAV_LAST_CLASS);
-            lastArrow.focus();
+            var previousArrow = self._getPagingControlContent().find('.' + self._CSS_CLASSES._PAGING_CONTROL_NAV_PREVIOUS_CLASS);
+            previousArrow.focus();
             self = null;
           }, 100);
         }
@@ -3441,101 +3607,105 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
     
     //////////////////     SUB-IDS     //////////////////
     /**
-     * <p>Sub-ID for the ojPagingControl component's page number navigation input.</p>
+     * <p>Sub-ID for the PagingControl page number navigation input.</p>
      *
      * @ojsubid oj-pagingcontrol-nav-input
      * @memberof oj.ojPagingControl
      *
      * @example <caption>Get the page number navigation input:</caption>
-     * var node = $( ".selector" ).ojPagingControl( "getNodeBySubId", {'subId': 'oj-pagingcontrol-nav-input'} );
+     * var node = myPagingControl.getNodeBySubId( {'subId': 'oj-pagingcontrol-nav-input'} );
      */
     
     /**
-     * <p>Sub-ID for the ojPagingControl component's current maximum page text.</p>
+     * <p>Sub-ID for the PagingControl current maximum page text.</p>
      *
      * @ojsubid oj-pagingcontrol-nav-input-max
      * @deprecated This sub-ID is not needed since it is not an interactive element.
      * @memberof oj.ojPagingControl
+     * @ignore
      *
      * @example <caption>Get the current maximum page text:</caption>
-     * var node = $( ".selector" ).ojPagingControl( "getNodeBySubId", {'subId': 'oj-pagingcontrol-nav-input-max'} );
+     * var node = myPagingControl.getNodeBySubId( {'subId': 'oj-pagingcontrol-nav-input-max'} );
      */
     
     /**
-     * <p>Sub-ID for the ojPagingControl component's summary items text.</p>
+     * <p>Sub-ID for the PagingControl summary items text.</p>
      *
      * @ojsubid oj-pagingcontrol-nav-input-summary
      * @deprecated This sub-ID is not needed since it is not an interactive element.
      * @memberof oj.ojPagingControl
+     * @ignore
      *
      * @example <caption>Get the summary items text:</caption>
-     * var node = $( ".selector" ).ojPagingControl( "getNodeBySubId", {'subId': 'oj-pagingcontrol-nav-input-summary'} );
+     * var node = myPagingControl.getNodeBySubId( {'subId': 'oj-pagingcontrol-nav-input-summary'} );
      */
     
     /**
-     * <p>Sub-ID for the ojPagingControl component's summary current items text.</p>
+     * <p>Sub-ID for the PagingControl summary current items text.</p>
      *
      * @ojsubid oj-pagingcontrol-nav-input-summary-current
      * @deprecated This sub-ID is not needed since it is not an interactive element.
      * @memberof oj.ojPagingControl
+     * @ignore
      *
      * @example <caption>Get the summary current items text:</caption>
-     * var node = $( ".selector" ).ojPagingControl( "getNodeBySubId", {'subId': 'oj-pagingcontrol-nav-input-summary-current'} );
+     * var node = myPagingControl.getNodeBySubId( {'subId': 'oj-pagingcontrol-nav-input-summary-current'} );
      */
     
     /**
-     * <p>Sub-ID for the ojPagingControl component's summary max items text.</p>
+     * <p>Sub-ID for the PagingControl summary max items text.</p>
      *
      * @ojsubid oj-pagingcontrol-nav-input-summary-max
      * @deprecated This sub-ID is not needed since it is not an interactive element.
      * @memberof oj.ojPagingControl
+     * @ignore
      *
      * @example <caption>Get the summary max items text:</caption>
-     * var node = $( ".selector" ).ojPagingControl( "getNodeBySubId", {'subId': 'oj-pagingcontrol-nav-input-summary-max'} );
+     * var node = myPagingControl.getNodeBySubId( {'subId': 'oj-pagingcontrol-nav-input-summary-max'} );
      */
     
     /**
-     * <p>Sub-ID for the ojPagingControl component's first page button.</p>
+     * <p>Sub-ID for the PagingControl first page button.</p>
      *
      * @ojsubid oj-pagingcontrol-nav-first
      * @memberof oj.ojPagingControl
      *
      * @example <caption>Get the first page button:</caption>
-     * var node = $( ".selector" ).ojPagingControl( "getNodeBySubId", {'subId': 'oj-pagingcontrol-nav-first'} );
+     * var node = myPagingControl.getNodeBySubId( {'subId': 'oj-pagingcontrol-nav-first'} );
      */
     
     /**
-     * <p>Sub-ID for the ojPagingControl component's next page button.</p>
+     * <p>Sub-ID for the PagingControl next page button.</p>
      *
      * @ojsubid oj-pagingcontrol-nav-next
      * @memberof oj.ojPagingControl
      *
      * @example <caption>Get the next page button:</caption>
-     * var node = $( ".selector" ).ojPagingControl( "getNodeBySubId", {'subId': 'oj-pagingcontrol-nav-next'} );
+     * var node = myPagingControl.getNodeBySubId( {'subId': 'oj-pagingcontrol-nav-next'} );
      */
     
     /**
-     * <p>Sub-ID for the ojPagingControl component's previous page button.</p>
+     * <p>Sub-ID for the PagingControl previous page button.</p>
      *
      * @ojsubid oj-pagingcontrol-nav-previous
      * @memberof oj.ojPagingControl
      *
      * @example <caption>Get the previous page button:</caption>
-     * var node = $( ".selector" ).ojPagingControl( "getNodeBySubId", {'subId': 'oj-pagingcontrol-nav-previous'} );
+     * var node = myPagingControl.getNodeBySubId( {'subId': 'oj-pagingcontrol-nav-previous'} );
      */
     
     /**
-     * <p>Sub-ID for the ojPagingControl component's previous page button.</p>
+     * <p>Sub-ID for the PagingControl previous page button.</p>
      *
      * @ojsubid oj-pagingcontrol-nav-last
      * @memberof oj.ojPagingControl
      *
      * @example <caption>Get the last page button:</caption>
-     * var node = $( ".selector" ).ojPagingControl( "getNodeBySubId", {'subId': 'oj-pagingcontrol-nav-last'} );
+     * var node = myPagingControl.getNodeBySubId( {'subId': 'oj-pagingcontrol-nav-last'} );
      */
     
     /**
-     * <p>Sub-ID for the ojPagingControl component's page button.</p>
+     * <p>Sub-ID for the PagingControl page button.</p>
      * To lookup a page button the locator object should have the following:
      * <ul>
      * <li><b>index</b>zero-based index of page number node</li>
@@ -3545,61 +3715,65 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
      * @memberof oj.ojPagingControl
      *
      * @example <caption>Get the page button:</caption>
-     * var node = $( ".selector" ).ojPagingControl( "getNodeBySubId", {'subId': 'oj-pagingcontrol-nav-page', 'index': 1} );
+     * var node = myPagingControl.getNodeBySubId( {'subId': 'oj-pagingcontrol-nav-page', 'index': 1} );
      */
     
     /**
-     * <p>Sub-ID for the ojPagingControl component's Show More link.</p>
+     * <p>Sub-ID for the PagingControl Show More link.</p>
      *
      * @ojsubid oj-pagingcontrol-load-more-link
      * @memberof oj.ojPagingControl
      *
      * @example <caption>Get the Show More link:</caption>
-     * var node = $( ".selector" ).ojPagingControl( "getNodeBySubId", {'subId': 'oj-pagingcontrol-load-more-link'} );
+     * var node = myPagingControl.getNodeBySubId( {'subId': 'oj-pagingcontrol-load-more-link'} );
      */
     
     /**
-     * <p>Sub-ID for the ojPagingControl component's load more range text.</p>
+     * <p>Sub-ID for the PagingControl load more range text.</p>
      *
      * @ojsubid oj-pagingcontrol-load-more-range
      * @deprecated This sub-ID is not needed since it is not an interactive element.
      * @memberof oj.ojPagingControl
+     * @ignore
      *
      * @example <caption>Get the load more range text:</caption>
-     * var node = $( ".selector" ).ojPagingControl( "getNodeBySubId", {'subId': 'oj-pagingcontrol-load-more-range'} );
+     * var node = myPagingControl.getNodeBySubId( {'subId': 'oj-pagingcontrol-load-more-range'} );
      */
     
     /**
-     * <p>Sub-ID for the ojPagingControl component's load more range current items text.</p>
+     * <p>Sub-ID for the PagingControl load more range current items text.</p>
      *
      * @ojsubid oj-pagingcontrol-load-more-range-current
      * @deprecated This sub-ID is not needed since it is not an interactive element.
      * @memberof oj.ojPagingControl
+     * @ignore
      *
      * @example <caption>Get the load more range current items text:</caption>
-     * var node = $( ".selector" ).ojPagingControl( "getNodeBySubId", {'subId': 'oj-pagingcontrol-load-more-range-current'} );
+     * var node = myPagingControl.getNodeBySubId( {'subId': 'oj-pagingcontrol-load-more-range-current'} );
      */
     
     /**
-     * <p>Sub-ID for the ojPagingControl component's load more range max items text.</p>
+     * <p>Sub-ID for the PagingControl load more range max items text.</p>
      *
      * @ojsubid oj-pagingcontrol-load-more-range-max
      * @deprecated This sub-ID is not needed since it is not an interactive element.
      * @memberof oj.ojPagingControl
+     * @ignore
      *
      * @example <caption>Get the load more range max items text:</caption>
-     * var node = $( ".selector" ).ojPagingControl( "getNodeBySubId", {'subId': 'oj-pagingcontrol-load-more-range-max'} );
+     * var node = myPagingControl.getNodeBySubId( {'subId': 'oj-pagingcontrol-load-more-range-max'} );
      */
     
     /**
-     * <p>Sub-ID for the ojPagingControl component's load more max message.</p>
+     * <p>Sub-ID for the PagingControl load more max message.</p>
      *
      * @ojsubid oj-pagingcontrol-load-more-max-rows
      * @deprecated This sub-ID is not needed since it is not an interactive element.
      * @memberof oj.ojPagingControl
+     * @ignore
      *
      * @example <caption>Get the load more max message:</caption>
-     * var node = $( ".selector" ).ojPagingControl( "getNodeBySubId", {'subId': 'oj-pagingcontrol-load-more-max-rows'} );
+     * var node = myPagingControl.getNodeBySubId( {'subId': 'oj-pagingcontrol-load-more-max-rows'} );
      */
 
 }());

@@ -16,7 +16,7 @@
        
    // This is to prevent the flash of unstyled content before the html becomes JET components.
    @if $initialVisibility == hidden {
-     oj-colorspectrum-container:not(.oj-complete) {
+     oj-color-spectrum:not(.oj-complete) {
        visibility: hidden;
      }      
    }

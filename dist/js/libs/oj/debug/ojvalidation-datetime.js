@@ -179,6 +179,18 @@ oj.DateTimeConverter.prototype.compareISODates = function (isoStr, isoStr2)
 {
   return oj.DateTimeConverter.superclass.compareISODates.call(this, isoStr, isoStr2);
 };
+
+/**
+ * Gets the supported timezones for the converter.<br/>
+ *
+ * @return {Array} supported timezones
+ * @export
+ */
+oj.DateTimeConverter.prototype.getAvailableTimeZones = function ()
+{
+  return oj.DateTimeConverter.superclass.getAvailableTimeZones.call(this);
+};
+
 /**
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
@@ -209,13 +221,14 @@ oj.DateTimeConverter.prototype.compareISODates = function (isoStr, isoStr2)
  * @export
  * @constructor
  * @since 0.6
+ * @augments oj.Validator
  */
 oj.DateRestrictionValidator = function _DateRestrictionValidator(options)
 {
   this.Init(options);
 };
 
-// Subclass from oj.Object 
+// Subclass from oj.Validator 
 oj.Object.createSubclass(oj.DateRestrictionValidator, oj.Validator, "oj.DateRestrictionValidator");
 
 /**
@@ -389,6 +402,7 @@ oj.DateRestrictionValidator.prototype.getHint = function ()
  * <code class="prettyprint">oj-validator.range.datetime.messageSummary.rangeOverflow</code>.
  * @export
  * @constructor
+ * @augments oj.Validator
  * @since 0.6
 */
 oj.DateTimeRangeValidator = function _DateTimeRangeValidator(options)
@@ -396,7 +410,7 @@ oj.DateTimeRangeValidator = function _DateTimeRangeValidator(options)
   this.Init(options);
 };
 
-// Subclass from oj.Object 
+// Subclass from oj.Validator 
 oj.Object.createSubclass(oj.DateTimeRangeValidator, oj.Validator, "oj.DateTimeRangeValidator");
 
 /**
@@ -1963,6 +1977,48 @@ oj.IntlDateTimeConverter.prototype._isOptionSet = function (optionName)
 {
   var ro = this.resolvedOptions(), hasOption = ro[optionName] ? true : false;
   return hasOption;
+};
+
+/**
+ * Gets the supported timezones for the converter. The returned value is an array of objects. Each object represents a timezone
+ * and contains 2 properties: <br/>
+ * <p style='padding-left: 5px;'>
+ * <table class="generic-table styling-table">
+ *   <thead>
+ *     <tr>
+ *       <th>Property</th>
+ *       <th>Description</th>
+ *     </tr>
+ *   </thead>
+ *   <tbody>
+ *     <tr>
+ *       <td>id</td>
+ *       <td>IANA timezone ID</td>
+ *     </tr>
+ *     <tr>
+ *       <td>displayName</td>
+ *       <td><ul>It is the concatenation of 3 string:
+ *              <li>UTC timezone offset</li>
+ *              <li>City name</li>
+ *              <li>Generic time zone name</li>
+ *           </ul>
+ *       </td>
+ *     </tr>
+ *   </tbody>
+ * </table>
+ * </p>
+ * @example <caption>Example of an array entry in en-US locale</caption>
+ * {id: 'America/Edmonton', displayName: '(UTC-07:00) Edmonton - Mountain Time'} <br/>
+ * 
+ * @example <caption>Example of above entry in fr-FR locale</caption>
+ * {id: 'America/Edmonton', displayName: '(UTC-07:00) Edmonton - heure des Rocheuses' } <br/> 
+ * 
+ * @return {Array} supported timezones
+ * @export
+ */
+oj.IntlDateTimeConverter.prototype.getAvailableTimeZones = function ()
+{
+  return this._getWrapped().getAvailableTimeZones(oj.LocaleData.__getBundle());
 };
 
 /**

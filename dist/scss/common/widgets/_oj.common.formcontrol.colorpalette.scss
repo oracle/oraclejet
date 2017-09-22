@@ -15,7 +15,7 @@
        
    // This is to prevent the flash of unstyled content before the html becomes JET components.
    @if $initialVisibility == hidden {
-     oj-colorpalette-container:not(.oj-complete) {
+     oj-color-palette:not(.oj-complete) {
        visibility: hidden;
      }      
    }
@@ -70,7 +70,7 @@
    .oj-colorpalette-swatch-none-icon {
      background-color: #FFFFFF;
      display: inline-block;
-     background-image: oj-common-image-url('colorPalette_none.svg');
+     background-image: oj-common-image-url('none.svg');
      background-repeat: no-repeat;
      background-size: 100% 100%;
      width: 100%;

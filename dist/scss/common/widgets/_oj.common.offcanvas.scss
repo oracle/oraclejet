@@ -241,6 +241,37 @@
       opacity: 0.4;
     }
 
+
+    /*
+     * applied to the overlay offcanvas when it is open
+     */
+    .oj-offcanvas-start.oj-offcanvas-overlay.oj-offcanvas-open.oj-offcanvas-overlay-shadow {
+      @include oj-ltr() {
+        @include oj-box-shadow(3px 0px 3px 0 rgba(0,0,0,0.10));
+      }
+      @include oj-rtl() {
+        @include oj-box-shadow(-3px 0px 3px 0 rgba(0,0,0,0.10));
+      }
+    }
+
+    .oj-offcanvas-end.oj-offcanvas-overlay.oj-offcanvas-open.oj-offcanvas-overlay-shadow {
+      @include oj-ltr() {
+        @include oj-box-shadow(-3px 0px 3px 0 rgba(0,0,0,0.10));
+      }
+      @include oj-rtl() {
+        @include oj-box-shadow(3px 0px 3px 0 rgba(0,0,0,0.10));
+      }
+    }
+
+    .oj-offcanvas-top.oj-offcanvas-overlay.oj-offcanvas-open.oj-offcanvas-overlay-shadow {
+      @include oj-box-shadow(0px 3px 3px 0 rgba(0,0,0,0.10));
+    }
+
+    .oj-offcanvas-bottom.oj-offcanvas-overlay.oj-offcanvas-open.oj-offcanvas-overlay-shadow {
+      @include oj-box-shadow(0px -3px 3px 0 rgba(0,0,0,0.10));
+    }
+
+
     // Native theming
     //--------------------------------------------
 

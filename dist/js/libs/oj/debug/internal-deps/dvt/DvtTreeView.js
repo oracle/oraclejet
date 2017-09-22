@@ -1528,7 +1528,7 @@ DvtTreeNode.prototype.Init = function(treeView, props)
   this._id = props['id'] || props['label']; // If id is undefined, use label as id
   this._color = props['color'] ? props['color'] : DvtTreeNode._DEFAULT_FILL_COLOR;
   this._textStr = props['label'];
-  this._labelStyle = typeof props['labelStyle'] == 'string' ? new dvt.CSSStyle(props['labelStyle']) : props['labelStyle'];
+  this._labelStyle = props['labelStyle'] ? new dvt.CSSStyle(props['labelStyle']) : null;
   this._pattern = props['pattern'];
   this._selectable = props['selectable'];
   this._shortDesc = props['shortDesc'] ? props['shortDesc'] : props['tooltip'];
@@ -2706,14 +2706,14 @@ DvtTreeLegendRenderer._renderLabels = function(context, treeView, legend, availW
       sizeLabel.setCSSStyle(attrTypeStyle);
 
       labelContainer.addChild(sizeLabel);
-      sizeLabelWidth = sizeLabel.measureDimensions().w;
+      sizeLabelWidth = sizeLabel.getDimensions().w;
 
       // Size Value Label
       sizeValueLabel = new dvt.OutputText(context, sizeValueStr, 0, 0);
       sizeValueLabel.setCSSStyle(attrValueStyle);
 
       labelContainer.addChild(sizeValueLabel);
-      sizeValueLabelWidth = sizeValueLabel.measureDimensions().w;
+      sizeValueLabelWidth = sizeValueLabel.getDimensions().w;
 
       // Size section width
       sizeWidth = sizeLabelWidth + sizeValueLabelWidth + DvtTreeLegendRenderer._LEGEND_LABEL_GAP;
@@ -2732,14 +2732,14 @@ DvtTreeLegendRenderer._renderLabels = function(context, treeView, legend, availW
       colorLabel.setCSSStyle(attrTypeStyle);
 
       labelContainer.addChild(colorLabel);
-      colorLabelWidth = colorLabel.measureDimensions().w;
+      colorLabelWidth = colorLabel.getDimensions().w;
 
       // Color Value Label
       colorValueLabel = new dvt.OutputText(context, colorValueStr, 0, 0);
       colorValueLabel.setCSSStyle(attrValueStyle);
 
       labelContainer.addChild(colorValueLabel);
-      colorValueLabelWidth = colorValueLabel.measureDimensions().w;
+      colorValueLabelWidth = colorValueLabel.getDimensions().w;
 
       // Size section width
       colorWidth = colorLabelWidth + colorValueLabelWidth + DvtTreeLegendRenderer._LEGEND_LABEL_GAP;
@@ -2753,7 +2753,7 @@ DvtTreeLegendRenderer._renderLabels = function(context, treeView, legend, availW
         // Both don't fit, truncate and reposition
         var sizeValueSpace = widthPerSection - sizeLabelWidth - DvtTreeLegendRenderer._LEGEND_LABEL_GAP;
         if (dvt.TextUtils.fitText(sizeValueLabel, sizeValueSpace, Infinity, labelContainer)) {
-          sizeValueLabelWidth = sizeValueLabel.measureDimensions().w;
+          sizeValueLabelWidth = sizeValueLabel.getDimensions().w;
           eventManager.associate(sizeValueLabel, new dvt.SimpleObjPeer(sizeValueStr));
         }
         else {
@@ -2765,7 +2765,7 @@ DvtTreeLegendRenderer._renderLabels = function(context, treeView, legend, availW
 
         var colorValueSpace = widthPerSection - colorLabelWidth - DvtTreeLegendRenderer._LEGEND_LABEL_GAP;
         if (dvt.TextUtils.fitText(colorValueLabel, colorValueSpace, Infinity, labelContainer)) {
-          colorValueLabelWidth = colorValueLabel.measureDimensions().w;
+          colorValueLabelWidth = colorValueLabel.getDimensions().w;
           eventManager.associate(colorValueLabel, new dvt.SimpleObjPeer(colorValueStr));
         }
         else {
@@ -2777,7 +2777,7 @@ DvtTreeLegendRenderer._renderLabels = function(context, treeView, legend, availW
       }
       else if (sizeWidth > colorWidth) { // Reduce the size label size
         if (dvt.TextUtils.fitText(sizeValueLabel, availWidth - colorWidth - sizeLabelWidth - DvtTreeLegendRenderer._LEGEND_LABEL_GAP, Infinity, labelContainer)) {
-          sizeValueLabelWidth = sizeValueLabel.measureDimensions().w;
+          sizeValueLabelWidth = sizeValueLabel.getDimensions().w;
           eventManager.associate(sizeValueLabel, new dvt.SimpleObjPeer(sizeValueStr));
         }
         else {
@@ -2789,7 +2789,7 @@ DvtTreeLegendRenderer._renderLabels = function(context, treeView, legend, availW
       }
       else { // Reduce the color label size
         if (dvt.TextUtils.fitText(colorValueLabel, availWidth - sizeWidth - colorLabelWidth - DvtTreeLegendRenderer._LEGEND_LABEL_GAP, Infinity, labelContainer)) {
-          colorValueLabelWidth = colorValueLabel.measureDimensions().w;
+          colorValueLabelWidth = colorValueLabel.getDimensions().w;
           eventManager.associate(colorValueLabel, new dvt.SimpleObjPeer(colorValueStr));
         }
         else {
@@ -3113,7 +3113,7 @@ DvtTreeUtils.findRootAndAncestors = function(nodes, rootId, ancestors) {
   }
   return null;
 };
-// Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
+// Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
 
 /**
   *  Provides automation services for treemap/sunburst.  To obtain a
@@ -3125,7 +3125,6 @@ DvtTreeUtils.findRootAndAncestors = function(nodes, rootId, ancestors) {
 var DvtTreeAutomation = function(treeView)
 {
   this._treeView = treeView;
-  this._root = treeView.getRootNode();
 };
 
 dvt.Obj.createSubclass(DvtTreeAutomation, dvt.Automation);
@@ -3141,6 +3140,21 @@ DvtTreeAutomation.NODE_ID_PREFIX = 'node';
 DvtTreeAutomation.BREADCRUMBS_PREFIX = 'breadcrumbs';
 
 /**
+ * The subId suffix for expand/collapse buttons. Applies to sunburst.
+ */
+DvtTreeAutomation.DISCLOSURE_SUFFIX = 'disclosure';
+
+/**
+ * The subId suffix for isolate buttons. Applies to treemap.
+ */
+DvtTreeAutomation.ISOLATE_SUFFIX = 'isolate';
+
+/**
+ * The subId for the restore button. Applies to treemap.
+ */
+DvtTreeAutomation.RESTORE = 'restore';
+
+/**
  * Valid subIds inlcude:
  * <ul>
  * <li>node[nodeIndex0][nodeIndex1]...[nodeIndexN]</li>
@@ -3149,40 +3163,80 @@ DvtTreeAutomation.BREADCRUMBS_PREFIX = 'breadcrumbs';
  */
 DvtTreeAutomation.prototype.GetSubIdForDomElement = function(displayable) {
   var logicalObj = this._treeView.getLogicalObject(displayable);
+  var rootNode = this._treeView.getRootNode();
+
+  // check if we have a button
+  var isButton = (displayable instanceof dvt.Button);
+  if (displayable.getParent() instanceof dvt.Button) {
+    displayable = displayable.getParent();
+    isButton = true;
+  }
 
   if (!logicalObj) { // could be a breadcrumb
-    if (displayable.getParent() instanceof dvt.Button) {
-      displayable = displayable.getParent();
-    }
     var parent = displayable.getParent();
     if (parent instanceof dvt.Breadcrumbs)
       return DvtTreeAutomation.BREADCRUMBS_PREFIX + '[' + parent.getCrumbIndex(displayable) + ']';
     return null;
   }
 
-  if (logicalObj instanceof DvtTreeNode)
+  var nodeSubId = null;
+  if (logicalObj instanceof DvtTreePeer && isButton) {  // sunburst expand/collapse buttons
+    var node = logicalObj._node;
+    nodeSubId = this.GetSubIdForDomElement(node.getDisplayable());
+    return this._getSubIdForButton(nodeSubId, node, displayable);
+  }
+  else if (logicalObj instanceof DvtTreeNode)
   {
     var currentNode = logicalObj;
     var indices = '';
 
-    if (!this._root.isArtificialRoot()) {
+    if (!rootNode.isArtificialRoot()) {
       // If logicalObj represents real root node, return default subId
       // Else include index for real root as first index in string of indices
-      if (currentNode == this._root)
+      if (currentNode == rootNode)
         return DvtTreeAutomation.NODE_ID_PREFIX + '[0]';
       else
         indices += '[0]';
     }
     // Indices for nodes beyond the root
-    var childIndices = this._getIndicesFromNode(currentNode, this._root.getChildNodes());
+    var childIndices = this._getIndicesFromNode(currentNode, rootNode.getChildNodes());
     indices = childIndices ? indices + childIndices : indices;
 
     if (indices.length > 0)
-      return DvtTreeAutomation.NODE_ID_PREFIX + indices;
+      nodeSubId = DvtTreeAutomation.NODE_ID_PREFIX + indices;
+
+    if (isButton) // treemap isolate/restore buttons
+      return this._getSubIdForButton(nodeSubId, logicalObj, displayable);
+    else
+      return nodeSubId;
   }
+
   return null;
 };
 
+/**
+ * Returns the subId of a tree node button based on its state
+ * @param {String} nodeSubId The subId for the tree node
+ * @param {Object} node The tree node
+ * @param {DvtButton} displayable The button
+ * @return {String} node[nodeIndex0][nodeIndex1]...[nodeIndexN]:state
+ * @private
+ */
+DvtTreeAutomation.prototype._getSubIdForButton = function(nodeSubId, node, displayable) {
+  if (nodeSubId) {
+    if (node instanceof DvtTreemapNode) {
+      // In the event of executing a click on the button during automation, the node state is updated before this check
+      // so we have to check the displayable aria properties to determine the button's state
+      var ariaLabel = displayable.getAriaProperty('label');
+      var isolatedText = dvt.Bundle.getTranslation(options, 'stateIsolated', dvt.Bundle.UTIL_PREFIX, 'STATE_ISOLATED');
+      return (ariaLabel.indexOf(isolatedText) >= 0) ? DvtTreeAutomation.RESTORE : nodeSubId + ':' + DvtTreeAutomation.ISOLATE_SUFFIX;
+    }
+    else if (node instanceof DvtSunburstNode)
+      return nodeSubId + ':' + DvtTreeAutomation.DISCLOSURE_SUFFIX;
+  }
+
+  return null;
+};
 
 /**
  * Returns the index values of the given node
@@ -3219,27 +3273,58 @@ DvtTreeAutomation.prototype.getDomElementForSubId = function(subId) {
   if (!subId)
     return null;
 
+  var rootNode = this._treeView.getRootNode();
+
   // tooltip
   if (subId == dvt.Automation.TOOLTIP_SUBID)
     return this.GetTooltipElement(this._treeView);
 
+  // treemap breadcrumbs
   if (subId.indexOf(DvtTreeAutomation.BREADCRUMBS_PREFIX) == 0) {
     var index = subId.substring(subId.indexOf('[') + 1, subId.indexOf(']'));
-    var crumb = this._root.getView().getBreadcrumbs().getCrumb(index);
+    var crumb = rootNode.getView().getBreadcrumbs().getCrumb(index);
     return crumb ? crumb.getElem() : null;
   }
 
-  //If root is real remove first index from subId because we begin searching at the root
-  if (!this._root.isArtificialRoot()) {
-    subId = subId.substring(0, subId.indexOf('[')) + subId.substring(subId.indexOf(']') + 1);
-    // If no more indices exist in the string return the root dom element
-    if (subId == DvtTreeAutomation.NODE_ID_PREFIX)
-      return this._root.getDisplayable().getElem();
+  // treemap restore button
+  if (subId == DvtTreeAutomation.RESTORE) {
+    var restoreNode = this._treeView._restoreNode || this._treeView.__getLastIsolatedNode();
+    if (restoreNode)
+      return restoreNode.getIsolateRestoreButton().getElem();
   }
 
-  var foundNode = this._getNodeFromSubId(this._root, subId);
-  if (foundNode)
-    return foundNode.getDisplayable().getElem();
+  // If root is real remove first index from subId because we begin searching at the root
+  if (!rootNode.isArtificialRoot())
+    subId = subId.substring(0, subId.indexOf('[')) + subId.substring(subId.indexOf(']') + 1);
+
+  // If no more indices exist in the string at this point, the desired node is the root node.
+  // If not, find the node.
+  var nextOpenParen = subId.indexOf('[');
+  var foundNode = (nextOpenParen == -1) ? rootNode : this._getNodeFromSubId(rootNode, subId);
+
+  if (foundNode) {
+    // Check if the subId is for a child element of the node
+    var colon = subId.indexOf(':');
+    if (colon >= 0) {
+      subId = subId.substring(colon + 1);
+
+      // sunburst expand/collapse buttons
+      if (foundNode instanceof DvtSunburstNode && subId == DvtTreeAutomation.DISCLOSURE_SUFFIX) {
+        var expandCollapseBtn = foundNode.getExpandCollapseButton();
+        if (expandCollapseBtn)
+          return expandCollapseBtn.getElem();
+      }
+
+      // treemap isolate buttons
+      if (foundNode instanceof DvtTreemapNode && subId == DvtTreeAutomation.ISOLATE_SUFFIX) {
+        var isolateRestoreBtn = foundNode.getIsolateRestoreButton();
+        if (isolateRestoreBtn)
+          return isolateRestoreBtn.getElem();
+      }
+    }
+    else // return the node element
+      return foundNode.getDisplayable().getElem();
+  }
 
   return null;
 };
@@ -3306,12 +3391,13 @@ DvtTreeAutomation.prototype._getNodeFromPath = function(node, path) {
  * @return {Object} An object containing data for the node
  */
 DvtTreeAutomation.prototype.getNode = function(subIdPath) {
+  var rootNode = this._treeView.getRootNode();
   // If the root is real, remove first element of subIdPath since we already start searching at the root
-  if (!this._root.isArtificialRoot() && subIdPath[0] == 0)
+  if (!rootNode.isArtificialRoot() && subIdPath[0] == 0)
     subIdPath.shift();
 
   // If root index was the only element of subIdPath, set the node to get data for as the root, else search for the correct node
-  var node = (subIdPath.length == 0) ? this._root : this._getNodeFromPath(this._root, subIdPath);
+  var node = (subIdPath.length == 0) ? rootNode : this._getNodeFromPath(rootNode, subIdPath);
 
   var nodeData = {
     'color': node.getColor(),
@@ -3699,7 +3785,7 @@ dvt.Treemap.prototype.__isolate = function(node) {
  * Restores the full tree from the isolated state.
  */
 dvt.Treemap.prototype.__restore = function() {
-  var restoreNode = this._isolatedNodes.pop();
+  this._restoreNode = this._isolatedNodes.pop(); // store the node for automation purposes
 
   // Update the options state
   this.getOptions()['isolatedNode'] = (this._isolatedNodes.length > 0) ? this._isolatedNodes[this._isolatedNodes.length - 1].getId() : null;
@@ -3709,7 +3795,7 @@ dvt.Treemap.prototype.__restore = function() {
     currentNavigable.hideKeyboardFocusEffect();
 
   // after we restore the full tree, set keyboard focus on the node that was previously isolated
-  this.__setNavigableIdToFocus(restoreNode.getId());
+  this.__setNavigableIdToFocus(this._restoreNode.getId());
 
   // Update state
   this.dispatchEvent(dvt.EventFactory.newTreemapIsolateEvent());
@@ -3720,7 +3806,8 @@ dvt.Treemap.prototype.__restore = function() {
   this._isolateRestoreLayout = false;
 
   // Render the changes
-  this._renderIsolateRestore(restoreNode);
+  this._renderIsolateRestore(this._restoreNode);
+  this._restoreNode = null;
 };
 
 /**
@@ -4057,7 +4144,7 @@ DvtTreemapNode.prototype.render = function(container) {
       var backgroundColor = this.getLabelBackgroundColor();
       // For pattern nodes, add a background to make the text readable
       if (this._textStyle != DvtTreemapNode.TEXT_STYLE_HEADER && (this._pattern || backgroundColor)) {
-        var dims = this._text.measureDimensions();
+        var dims = this._text.getDimensions();
         this._textBackground = new dvt.Rect(this.getView().getCtx(), dims.x, dims.y, dims.w, dims.h);
         if (backgroundColor)
           this._textBackground.setSolidFill(backgroundColor);
@@ -4528,7 +4615,7 @@ DvtTreemapNode.prototype.setLayoutParams = function(x, y, width, height) {
     var text = new dvt.OutputText(this.getView().getCtx(), this._textStr);
     text.setFontSize(this.GetTextSize());
     this.ApplyHeaderTextStyle(text, 'labelStyle');
-    var headerLabelHeight = dvt.TextUtils.guessTextDimensions(text).h;
+    var headerLabelHeight = text.getDimensions().h;
     this._titleBarHeight = Math.max(this._titleBarHeight, headerLabelHeight);
 
     // Additional space for isolate/restore button
@@ -4979,7 +5066,7 @@ DvtTreemapNode.prototype._createTextNode = function(container) {
     // Calculate the vertical text position after the fitText call
     if (this._textStyle == DvtTreemapNode.TEXT_STYLE_NODE) {
       // Get the text height
-      var textHeight = dvt.TextUtils.getTextHeight(text);
+      var textHeight = text.getDimensions().h;
 
       // Vertical Alignment
       if (this._labelValign == 'top')
@@ -5145,8 +5232,9 @@ DvtTreemapNode.prototype._updateShapes = function() {
     this._removeChildShape(this._contentRoot);
     this._contentRoot = null;
   }
-  else if (options['nodeContent'] && options['nodeContent']['renderer'])
+  else if (options['nodeContent'] && options['nodeContent']['renderer'] && this._textStyle != DvtTreemapNode.TEXT_STYLE_HEADER) {
     this._removeAllNodeContent();
+  }
   else {
     // No template, update the text
     // Remove the text background
@@ -5300,6 +5388,14 @@ DvtTreemapNode.prototype.__restoreNode = function(event) {
 };
 
 /**
+ * Returns the isolate/restore button. Used for automation.
+ * @return {dvt.Displayable}
+ */
+DvtTreemapNode.prototype.getIsolateRestoreButton = function() {
+  return this._isolateButton;
+};
+
+/**
  * @override
  */
 DvtTreemapNode.prototype.getDatatip = function(target, x, y) {
@@ -5379,6 +5475,8 @@ DvtTreemapNode.prototype._createCustomNodeContent = function() {
       'data': this.getOptions(),
       'component': options['_widgetConstructor']
     };
+    dataContext = context.fixRendererContext(dataContext);
+
     var parentDiv = context.getContainer();
     var customContent = nodeRenderer(dataContext);
     if (!customContent)
@@ -5995,6 +6093,8 @@ dvt.Sunburst._BUFFER_SPACE = 3;
 /** @const @private **/
 dvt.Sunburst._MIN_BUFFER_SPACE = 2; // Minimum buffer for very small sunbursts
 
+/** @const **/
+dvt.Sunburst.LARGE_DATASET_THRESHOLD = 1000;
 
 /**
  * Returns a new instance of dvt.Sunburst.
@@ -6529,6 +6629,8 @@ DvtSunburstNode._EXPAND_ICON_SIZE = 16;
 /** @private @const */
 DvtSunburstNode._ROOT_NODE_MARGIN = 2;
 /** @private @const */
+DvtSunburstNode._MIN_ARC_LENGTH = 1.5;
+/** @private @const */
 DvtSunburstNode._MIN_ANGLE_EXTENT = 0.0006;
 
 // Constant for efficiency
@@ -6594,7 +6696,7 @@ DvtSunburstNode.prototype.render = function(container) {
       // For pattern nodes, add a background to make the text readable
       var backgroundColor = this.getLabelBackgroundColor();
       if (this._pattern || backgroundColor) {
-        var dims = this._text.measureDimensions();
+        var dims = this._text.getDimensions();
         this._textBackground = new dvt.Rect(this.getView().getCtx(), dims.x, dims.y, dims.w, dims.h);
         if (backgroundColor)
           this._textBackground.setSolidFill(backgroundColor);
@@ -6633,13 +6735,28 @@ DvtSunburstNode.prototype.render = function(container) {
 DvtSunburstNode.prototype.renderChildren = function(container) {
   // Render children of this node
   var children = this.getChildNodes();
+  var hasLargeNodeCount = this.getView().__getNodeCount() >= dvt.Sunburst.LARGE_DATASET_THRESHOLD;
   if (children != null) {
+    var prevEndCoord = 0;
     for (var i = 0; i < children.length; i++) {
       var angleExtent = children[i]._angleExtent;
 
       //  - rendering issues for funnel/pie/sunburst charts
       if (angleExtent < DvtSunburstNode._MIN_ANGLE_EXTENT)
         continue; // skip render
+
+      // Skip rendering some of the thin sunburst outer nodes
+      if (hasLargeNodeCount) {
+        var nodeOuterRadius = children[i]._getOuterRadius();
+        var nodeArc = angleExtent * nodeOuterRadius;
+        var endCoord = (children[i]._startAngle + angleExtent) * nodeOuterRadius;
+
+        if (nodeArc < DvtSunburstNode._MIN_ARC_LENGTH && Math.abs(prevEndCoord - endCoord) < DvtSunburstNode._MIN_ARC_LENGTH) {
+          continue; // skip render
+        }
+        else
+          prevEndCoord = endCoord;
+      }
 
       children[i].render(container);
     }
@@ -6668,8 +6785,12 @@ DvtSunburstNode.prototype.setSelected = function(selected) {
     // Restore the regular effect to the shape
     this._shape.setSelected(false);
 
-    // Restore the z-order
-    if (this._nodeContainer)
+    //  - collapse button is under the node on mobile devices.
+    // During de-selection on mobile, if the node has an expand/collapse button it must still be moved to the front of
+    // the z-order or else the button can get obscured.
+    if (dvt.Agent.isTouchDevice() && this._expandButton)
+      this.getView().__moveToSelectedLayer(this._shape);
+    else if (this._nodeContainer) // Restore the z-order
       this._nodeContainer.addChild(this._shape);
   }
 };
@@ -7283,17 +7404,26 @@ DvtSunburstNode.prototype._createExpandCollapseButton = function(container) {
 
   // Create the button and add to the container
   var button = bDisclosed ? this._getCollapseButton() : this._getExpandButton();
-  var center = DvtSunburstNode._calcPointOnArc(this._outerRadius, this._startAngle + this._angleExtent / 2);
-  button.setTranslate(center.x - DvtSunburstNode._EXPAND_ICON_SIZE / 2, center.y - DvtSunburstNode._EXPAND_ICON_SIZE / 2);
+  this._positionButton(button);
   container.addChild(button);
 
   // Associate a blank peer so the button is not treated as part of the node
-  var tooltip = dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, this.isDisclosed() ? 'COLLAPSE' : 'EXPAND');
+  var tooltip = dvt.Bundle.getTranslation(this.getView().getOptions(), this.isDisclosed() ? 'tooltipCollapse' : 'tooltipExpand', dvt.Bundle.SUNBURST_PREFIX, this.isDisclosed() ? 'COLLAPSE' : 'EXPAND');
+
   this.getView().getEventManager().associate(button, new DvtTreePeer(this, this.getId(), tooltip));
 
   return button;
 };
 
+/**
+ * Positions the expand or collapse button button for this node.
+ * @param {dvt.Button} button
+ * @private
+ */
+DvtSunburstNode.prototype._positionButton = function(button) {
+  var center = DvtSunburstNode._calcPointOnArc(this._outerRadius, this._startAngle + this._angleExtent / 2);
+  button.setTranslate(center.x - DvtSunburstNode._EXPAND_ICON_SIZE / 2, center.y - DvtSunburstNode._EXPAND_ICON_SIZE / 2);
+};
 
 /**
  * Creates and return the text element for this node.
@@ -7363,19 +7493,20 @@ DvtSunburstNode.prototype._createTextHoriz = function(container) {
     text.setMouseEnabled(false);
 
     // Find the estimated dimensions of the label
-    var estimatedDims = dvt.TextUtils.guessTextDimensions(text);
+    var textDims = text.getDimensions();
+
 
     // Find the largest rectangle that will fit.  The height is accurate, so we only need to check the width.
     var x1 = textAnchor.x;
     var x2 = textAnchor.x;
-    var y1 = textAnchor.y - estimatedDims.h / 2;
-    var y2 = textAnchor.y + estimatedDims.h / 2;
+    var y1 = textAnchor.y - textDims.h / 2;
+    var y2 = textAnchor.y + textDims.h / 2;
 
     // Calculate the left-most x1 that will fit
     var fitX1 = true;
     while (this.contains(x1, y1) && this.contains(x1, y2) && fitX1) {
       x1--;
-      if (this._angleExtent > Math.PI && textAnchor.x - x1 >= estimatedDims.w / 2)
+      if (this._angleExtent > Math.PI && textAnchor.x - x1 >= textDims.w)
         fitX1 = false;
     }
 
@@ -7383,7 +7514,7 @@ DvtSunburstNode.prototype._createTextHoriz = function(container) {
     var fitX2 = true;
     while (this.contains(x2, y1) && this.contains(x2, y2) && fitX2) {
       x2++;
-      if (this._angleExtent > Math.PI && x2 - textAnchor.x >= estimatedDims.w / 2)
+      if (this._angleExtent > Math.PI && x2 - textAnchor.x >= textDims.w)
         fitX2 = false;
     }
 
@@ -7393,14 +7524,14 @@ DvtSunburstNode.prototype._createTextHoriz = function(container) {
 
     // Adjust the anchor point to the midpoint of available space if truncation would occur centered at current anchor
     var usableSpace = 2 * Math.min(textAnchor.x - x1, x2 - textAnchor.x);
-    if (usableSpace < estimatedDims.w) {
+    if (usableSpace < textDims.w) {
       text.setX((x1 + x2) / 2);
       usableSpace = x2 - x1;
     }
 
     // Truncate and return the text if it fits in the available space
     var labelMinLength = this.getView().getOptions()['nodeDefaults']['labelMinLength'];
-    return dvt.TextUtils.fitText(text, usableSpace, estimatedDims.h, container, labelMinLength) ? text : null;
+    return dvt.TextUtils.fitText(text, usableSpace, textDims.h, container, labelMinLength) ? text : null;
   }
 };
 
@@ -7539,7 +7670,7 @@ DvtSunburstNode.prototype.updateShapes = function(bRecurse) {
     // Recalculate text background size and position
     var backgroundColor = this.getLabelBackgroundColor();
     if (this._text && (this._pattern || backgroundColor)) {
-      var dims = this._text.measureDimensions();
+      var dims = this._text.getDimensions();
       if (this._textBackground)
         this._textBackground.setRect(dims.x, dims.y, dims.w, dims.h);
       else {
@@ -7562,6 +7693,10 @@ DvtSunburstNode.prototype.updateShapes = function(bRecurse) {
       this._textBackground = null;
     }
   }
+
+  // Reposition the expandButton, which might be visible while rotating on touch devices
+  if (dvt.Agent.isTouchDevice() && this._expandButton)
+    this._positionButton(this._expandButton);
 
   // Update the color
   this._shape.setFill(this.GetFill());
@@ -7652,6 +7787,15 @@ DvtSunburstNode.prototype.expandCollapse = function(event) {
   // Stop propagation to prevent selection from changing
   event.stopPropagation();
 };
+
+/**
+ * Returns the expand/collapse button. Used for automation.
+ * @return {dvt.Displayable}
+ */
+DvtSunburstNode.prototype.getExpandCollapseButton = function() {
+  return this._expandButton;
+};
+
 
 /**
  * Returns true if the root content should be displayed
@@ -7758,6 +7902,8 @@ DvtSunburstNode.prototype._createRootNodeContent = function() {
     'data': this.getOptions(),
     'component': options['_widgetConstructor']
   };
+  dataContext = context.fixRendererContext(dataContext);
+
   var parentDiv = context.getContainer();
   var customContent = rootNodeRenderer(dataContext);
   if (!customContent)
@@ -8055,7 +8201,9 @@ DvtSunburstEventManager.prototype.RotateEndTouch = function(event, touch) {
 
 
 dvt.Bundle.addDefaultStrings(dvt.Bundle.SUNBURST_PREFIX, {
+  'COLLAPSE': 'Collapse',
   'COLOR': 'Color',
+  'EXPAND': 'Expand',
   'OTHER': 'Other',
   'SIZE': 'Size'
 });

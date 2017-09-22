@@ -22,6 +22,7 @@ define(['ojs/ojcore', 'jquery', 'hammerjs', 'promise', 'ojs/ojoffcanvas'],
  * @class Utility methods for swipe to reveal.
  * @since 1.2.0
  * @export
+ * @ojstatus preview
  *
  * @classdesc
  * This class provides functions for setting up and handling swipe to reveal on an offcanvas element.  The offcanvas
@@ -88,29 +89,6 @@ oj.SwipeToRevealUtils.setupSwipeActions = function(elem, options)
 
     outerWrapper = oj.OffcanvasUtils._getOuterWrapper(drawer);
 
-    if (options != null)
-    {
-        threshold = options['threshold'];
-    }
-
-    if (threshold != null)
-    {
-        threshold = parseInt(threshold, 10);
-
-        // check if it's percentage value
-        if (/%$/.test(options['threshold']))
-        {
-            threshold = (threshold / 100) * outerWrapper.outerWidth();
-        }
-    }
-    else
-    {
-        // by default it will be 55% of the outer wrapper
-        threshold = outerWrapper.outerWidth() * 0.55;
-    }
-    // by default the minimum will be the lesser of the width of the offcanvas and half of the outer wrapper
-    minimum = Math.min(outerWrapper.outerWidth() * 0.3, drawer.outerWidth());
-
     // the panning triggers a click event at the end (since we are doing translation on move, the relative position has not changed)
     // this is to prevent the click event from bubbling (to list item for example, see )
     drawerShown = false;
@@ -140,6 +118,34 @@ oj.SwipeToRevealUtils.setupSwipeActions = function(elem, options)
         }
         else
         {
+            // figure out the threshold for default action and the minimum distance
+            // to keep the offcanvas open
+            if (minimum == null)
+            {
+                if (options != null)
+                {
+                    threshold = options['threshold'];
+                }
+
+                if (threshold != null)
+                {
+                    threshold = parseInt(threshold, 10);
+
+                    // check if it's percentage value
+                    if (/%$/.test(options['threshold']))
+                    {
+                        threshold = (threshold / 100) * outerWrapper.outerWidth();
+                    }
+                }
+                else
+                {
+                    // by default it will be 55% of the outer wrapper
+                    threshold = outerWrapper.outerWidth() * 0.55;
+                }
+                // by default the minimum will be the lesser of the width of the offcanvas and half of the outer wrapper
+                minimum = Math.min(outerWrapper.outerWidth() * 0.3, drawer.outerWidth());
+            }
+
             // setup default style class
             drawer.children().addClass("oj-swipetoreveal-action");
 

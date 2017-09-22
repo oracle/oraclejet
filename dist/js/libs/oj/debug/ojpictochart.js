@@ -19,21 +19,19 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/in
  *
  * @classdesc
  * <h3 id="pictoChartOverview-section">
- *   JET PictoChart Component
+ *   JET PictoChart
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#pictoChartOverview-section"></a>
  * </h3>
  *
  * <p>PictoChart uses icons to visualize an absolute number, or the relative sizes of the different parts of a population.</p>
  *
- * {@ojinclude "name":"warning"}
  *
  * <pre class="prettyprint">
  * <code>
- * &lt;div data-bind="ojComponent: {
- *   component: 'ojPictoChart',
- *   items: [{name: 'Red', shape: 'human', color: '#ed6647', count: 3},
- *           {name: 'Blue', shape: 'circle', color: '#267db3', count: 17}]
- * }"/>
+ * &lt;oj-picto-chart
+ *   items='[{"name": "Red", "shape": "human", "color": "#ed6647", "count": 3},
+ *          {"name": "Blue", "shape": "circle", "color": "#267db3", "count": 17}]'>
+ * &lt;/oj-picto-chart>
  * </code>
  * </pre>
  *
@@ -77,10 +75,10 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/in
  * </h3>
  *
  * <h4>Fixed and Flowing Layout</h4>
- * <p>PictoChart supports both fixed and flowing layout. If the component div element has a fixed width and height
+ * <p>PictoChart supports both fixed and flowing layout. If the element has a fixed width and height
  * (set by the inline style, style class, etc.), then the pictoChart will use a <i>fixed layout</i>, which means that
  * the shapes will be resized to occupy the given space as much as possible. Otherwise, the pictoChart will use a
- * <i>flowing layout</i>, which means that the shapes are rendered at a constant size and the component will take up as
+ * <i>flowing layout</i>, which means that the shapes are rendered at a constant size and the element will take up as
  * much space as necessary. It is possible to fix just one of the two dimensions, and the pictoChart would still
  * use the flowing layout.</p>
  * <p>If fixed layout is used, please avoid using the <code class="prettyprint">rowHeight</code> and <code class="prettyprint">columnWidth</code>
@@ -89,21 +87,14 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/in
  * <h4>Layout Orientation and Origin</h4>
  * <p>PictoChart currently supports rectangular layouts with two different orientations (<i>horizontal</i> and <i>vertical</i>)
  * and four different origins (<i>topStart</i>, <i>topEnd</i>, <i>bottomStart</i>, and <i>bottomEnd</i>). Please refer to the
- * <a href="../uiComponents-pictoChart-layout.html">cookbook demo</a> to see how these layout attributes work.</p>
+ * <a href="../jetCookbook.html?component=pictoChart&demo=default">cookbook demo</a> to see how these layout attributes work.</p>
  *
  * <h4>Mixed Sizes</h4>
  * <p>PictoChart supports items that are varying in sizes by specifying the <code class="prettyprint">columnSpan</code> and
  * <code class="prettyprint">rowSpan</code> attributes on the items. To ensure the best layout, it is recommended that the
- * bigger items are rendered first because the layout algorithm is greedy and will position items to the first available space.</p>
+ * bigger items are ordered first because the layout algorithm is greedy and will position items to the first available space.</p>
  *
  * {@ojinclude "name":"rtl"}
- *
- * @desc Creates a JET PictoChart.
- * @example <caption>Initialize the PictoChart:</caption>
- * $(".selector").ojPictoChart({items: [
- *     {name: 'Red', shape: 'human', color: '#ed6647', count: 3},
- *     {name: 'Blue', shape: 'circle', color: '#267db3', count: 17}
- * ]);
  */
 oj.__registerWidget('oj.ojPictoChart', $['oj']['dvtBaseComponent'],
 {
@@ -113,16 +104,7 @@ oj.__registerWidget('oj.ojPictoChart', $['oj']['dvtBaseComponent'],
     /**
      * Triggered during a drill gesture (double click if selection is enabled, single click otherwise).
      *
-     * @property {Object} ui event payload
-     * @property {string} ui.id the id of the drilled object
-     *
-     * @example <caption>Initialize the component with the <code class="prettyprint">drill</code> callback specified:</caption>
-     * $(".selector").ojPictoChart({
-     *   "drill": function(event, ui){}
-     * });
-     *
-     * @example <caption>Bind an event listener to the <code class="prettyprint">ojdrill</code> event:</caption>
-     * $(".selector").on("ojdrill", function(event, ui){});
+     * @property {string} id the id of the drilled object
      *
      * @expose
      * @event
@@ -310,11 +292,11 @@ oj.__registerWidget('oj.ojPictoChart', $['oj']['dvtBaseComponent'],
  *   <tbody>
  *     <tr>
  *       <td><kbd>Tab</kbd></td>
- *       <td>Move focus to next component.</td>
+ *       <td>Move focus to next element.</td>
  *     </tr>
  *     <tr>
  *       <td><kbd>Shift + Tab</kbd></td>
- *       <td>Move focus to previous component.</td>
+ *       <td>Move focus to previous element.</td>
  *     </tr>
  *     <tr>
  *       <td><kbd>UpArrow</kbd></td>
@@ -378,6 +360,422 @@ oj.__registerWidget('oj.ojPictoChart', $['oj']['dvtBaseComponent'],
  * @memberof oj.ojPictoChart
  */
 
+/**
+ *  The number of rows that the picto chart has. The number of rows will be automatically computed if not specified. 
+ * @expose
+ * @name rowCount
+ * @memberof oj.ojPictoChart
+ * @instance
+ * @type {number}
+ * @default <code class="prettyprint">null</code>
+ */
+/**
+ *  The number of columns that the picto chart has. The number of columns will be automatically computed if not specified. 
+ * @expose
+ * @name columnCount
+ * @memberof oj.ojPictoChart
+ * @instance
+ * @type {number}
+ * @default <code class="prettyprint">null</code>
+ */
+/**
+ *  The height of a row in pixels. Setting this property in a fixed layout (when the element width and height are defined) may cause items to be truncated. 
+ * @expose
+ * @name rowHeight
+ * @memberof oj.ojPictoChart
+ * @instance
+ * @type {number}
+ * @default <code class="prettyprint">null</code>
+ */
+/**
+ *  The width of a column in pixels. Setting this property in a fixed layout (when the element width and height are defined) may cause items to be truncated. 
+ * @expose
+ * @name columnWidth
+ * @memberof oj.ojPictoChart
+ * @instance
+ * @type {number}
+ * @default <code class="prettyprint">null</code>
+ */
+/**
+ *  The direction in which the items are laid out. 
+ * @expose
+ * @name layout
+ * @memberof oj.ojPictoChart
+ * @instance
+ * @type {string}
+ * @ojvalue {string} "vertical"
+ * @ojvalue {string} "horizontal"
+ * @default <code class="prettyprint">"horizontal"</code>
+ */
+/**
+ *  Defines where the first item is rendered. The subsequent items follow the first item according to the layout. 
+ * @expose
+ * @name layoutOrigin
+ * @memberof oj.ojPictoChart
+ * @instance
+ * @type {string}
+ * @ojvalue {string} "topEnd"
+ * @ojvalue {string} "bottomStart"
+ * @ojvalue {string} "bottomEnd"
+ * @ojvalue {string} "topStart"
+ * @default <code class="prettyprint">"topStart"</code>
+ */
+/**
+ *  The animation when the data changes. 
+ * @expose
+ * @name animationOnDataChange
+ * @memberof oj.ojPictoChart
+ * @instance
+ * @type {string}
+ * @ojvalue {string} "auto"
+ * @ojvalue {string} "none"
+ * @default <code class="prettyprint">"none"</code>
+ */
+/**
+ *  The animation that is shown on initial display. 
+ * @expose
+ * @name animationOnDisplay
+ * @memberof oj.ojPictoChart
+ * @instance
+ * @type {string}
+ * @ojvalue {string} "auto"
+ * @ojvalue {string} "popIn"
+ * @ojvalue {string} "alphaFade"
+ * @ojvalue {string} "zoom"
+ * @ojvalue {string} "none"
+ * @default <code class="prettyprint">"none"</code>
+ */
+/**
+ *  The duration of the animations, in milliseconds. 
+ * @expose
+ * @name animationDuration
+ * @memberof oj.ojPictoChart
+ * @instance
+ * @type {number}
+ * @default <code class="prettyprint">null</code>
+ */
+/**
+ *  An array of id strings, used to define the selected objects. 
+ * @expose
+ * @name selection
+ * @memberof oj.ojPictoChart
+ * @instance
+ * @type {Array.<string>}
+ * @default <code class="prettyprint">null</code>
+ * @ojwriteback
+ */
+/**
+ *  The type of selection behavior that is enabled on the picto chart. 
+ * @expose
+ * @name selectionMode
+ * @memberof oj.ojPictoChart
+ * @instance
+ * @type {string}
+ * @ojvalue {string} "single"
+ * @ojvalue {string} "multiple"
+ * @ojvalue {string} "none"
+ * @default <code class="prettyprint">"none"</code>
+ */
+/**
+ *  An array of category strings used for category filtering. Data items with a category in hiddenCategories will be filtered. 
+ * @expose
+ * @name hiddenCategories
+ * @memberof oj.ojPictoChart
+ * @instance
+ * @type {Array.<string>}
+ * @default <code class="prettyprint">null</code>
+ * @ojwriteback
+ */
+/**
+ *  An array of category strings used for category highlighting. Data items with a category in highlightedCategories will be highlighted. 
+ * @expose
+ * @name highlightedCategories
+ * @memberof oj.ojPictoChart
+ * @instance
+ * @type {Array.<string>}
+ * @default <code class="prettyprint">null</code>
+ * @ojwriteback
+ */
+/**
+ *  The matching condition for the highlightedCategories property. By default, highlightMatch is 'all' and only items whose categories match all of the values specified in the highlightedCategories array will be highlighted. If highlightMatch is 'any', then items that match at least one of the highlightedCategories values will be highlighted. 
+ * @expose
+ * @name highlightMatch
+ * @memberof oj.ojPictoChart
+ * @instance
+ * @type {string}
+ * @ojvalue {string} "any"
+ * @ojvalue {string} "all"
+ * @default <code class="prettyprint">"all"</code>
+ */
+/**
+ *  The behavior applied when hovering over data items. 
+ * @expose
+ * @name hoverBehavior
+ * @memberof oj.ojPictoChart
+ * @instance
+ * @type {string}
+ * @ojvalue {string} "dim"
+ * @ojvalue {string} "none"
+ * @default <code class="prettyprint">"none"</code>
+ */
+/**
+ *  Specifies initial hover delay in ms for highlighting data items.
+ * @expose
+ * @name hoverBehaviorDelay
+ * @memberof oj.ojPictoChart
+ * @instance
+ * @type {number}
+ * @default <code class="prettyprint">null</code>
+ */
+/**
+ *  Whether drilling is enabled. Drillable items will show a pointer cursor on hover and fire an <code class="prettyprint">ojDrill</code> event on click (double click if selection is enabled). To enable or disable drilling on individual items, use the drilling attribute in each item. 
+ * @expose
+ * @name drilling
+ * @memberof oj.ojPictoChart
+ * @instance
+ * @type {string}
+ * @ojvalue {string} "on"
+ * @ojvalue {string} "off"
+ * @default <code class="prettyprint">"off"</code>
+ */
+/**
+ *  An object containing an optional callback function for tooltip customization. 
+ * @expose
+ * @name tooltip
+ * @memberof oj.ojPictoChart
+ * @instance
+ * @type {object}
+ * @default <code class="prettyprint">null</code>
+ */
+/**
+ *  A function that returns a custom tooltip. The function takes a dataContext argument,
+ *  provided by the picto chart, with the following properties:
+ *  <ul>
+ *    <li>parentElement: The tooltip element. The function can directly modify or append content to this element.</li>
+ *    <li>id: The id of the hovered item.</li>
+ *    <li>name: The name of the hovered item.</li>
+ *    <li>count: The count of the hovered item.</li>
+ *    <li>color: The color of the hovered item.</li>
+ *    <li>componentElement: The picto chart HTML element.</li>
+ *  </ul>
+ *  The function should return an Object that contains only one of the two properties:
+ *  <ul>
+ *    <li>insert: HTMLElement | string - An HTML element, which will be appended to the tooltip, or a tooltip string.</li> 
+ *    <li>preventDefault: <code>true</code> - Indicates that the tooltip should not be displayed. It is not necessary to return {preventDefault:false} to display tooltip, since this is a default behavior.</li> 
+ *  </ul>
+ * @expose
+ * @name tooltip.renderer
+ * @memberof! oj.ojPictoChart
+ * @instance
+ * @type {function(object)}
+ * @default <code class="prettyprint">null</code>
+ */
+/**
+ *  An array of objects with the following properties that defines the pictoChart items. 
+ * @expose
+ * @name items
+ * @memberof oj.ojPictoChart
+ * @instance
+ * @type {Array.<object>}
+ * @default <code class="prettyprint">null</code>
+ */
+/**
+ *  The id of the item. 
+ * @expose
+ * @name items[].id
+ * @memberof! oj.ojPictoChart
+ * @instance
+ * @type {string}
+ * @default <code class="prettyprint">null</code>
+ */
+/**
+ *  The name of the item. Used for default tooltip and accessibility. 
+ * @expose
+ * @name items[].name
+ * @memberof! oj.ojPictoChart
+ * @instance
+ * @type {string}
+ * @default <code class="prettyprint">null</code>
+ */
+/**
+ *  The shape of the item. Can take the name of a built-in shape or the svg path commands for a custom shape. "None" will make the item transparent and can be used to create gaps. Does not apply if custom image is specified. 
+ * @expose
+ * @name items[].shape
+ * @memberof! oj.ojPictoChart
+ * @instance
+ * @type {string}
+ * @ojvalue {string} "ellipse"
+ * @ojvalue {string} "square"
+ * @ojvalue {string} "circle"
+ * @ojvalue {string} "diamond"
+ * @ojvalue {string} "triangleUp"
+ * @ojvalue {string} "triangleDown"
+ * @ojvalue {string} "star"
+ * @ojvalue {string} "plus"
+ * @ojvalue {string} "human"
+ * @ojvalue {string} "none"
+ * @ojvalue {string} "rectangle"
+ * @default <code class="prettyprint">"rectangle"</code>
+ */
+/**
+ *  The color of the item. Does not apply if custom image is specified. 
+ * @expose
+ * @name items[].color
+ * @memberof! oj.ojPictoChart
+ * @instance
+ * @type {string}
+ * @default <code class="prettyprint">null</code>
+ */
+/**
+ *  The border color of the item. Does not apply if custom image is specified. 
+ * @expose
+ * @name items[].borderColor
+ * @memberof! oj.ojPictoChart
+ * @instance
+ * @type {string}
+ * @default <code class="prettyprint">null</code>
+ */
+/**
+ *  The border width of the item in pixels. Does not apply if custom image is specified. 
+ * @expose
+ * @name items[].borderWidth
+ * @memberof! oj.ojPictoChart
+ * @instance
+ * @type {number}
+ * @default <code class="prettyprint">null</code>
+ */
+/**
+ *  The URI of the custom image. If specified, it takes precedence over shape. 
+ * @expose
+ * @name items[].source
+ * @memberof! oj.ojPictoChart
+ * @instance
+ * @type {string}
+ * @default <code class="prettyprint">null</code>
+ */
+/**
+ * The CSS style class to apply to the item. The style class and inline style will override any other styling specified with other properties. For tooltip interactivity, it's recommended to also pass a representative color to the item color attribute. Does not apply if custom image is specified.
+ * @ignore
+ * @name items[].className
+ * @memberof! oj.ojPictoChart
+ * @instance
+ * @type {string}
+ * @default <code class="prettyprint">null</code>
+ * @deprecated This attribute is deprecated, use the svgClassName attribute instead.
+ */
+/**
+ * The inline style to apply to the item. The style class and inline style will override any other styling specified with other properties. For tooltip interactivity, it's recommended to also pass a representative color to the item color attribute. Does not apply if custom image is specified.
+ * @ignore
+ * @name items[].style
+ * @memberof! oj.ojPictoChart
+ * @instance
+ * @type {object}
+ * @default <code class="prettyprint">null</code>
+ * @deprecated This attribute is deprecated, use the svgStyle attribute instead.
+ */
+/**
+ * The CSS style class to apply to the item. The style class and inline style will override any other styling specified with other properties. For tooltip interactivity, it's recommended to also pass a representative color to the item color attribute. Does not apply if custom image is specified.
+ * @expose
+ * @name items[].svgClassName
+ * @memberof! oj.ojPictoChart
+ * @instance
+ * @type {string}
+ * @default <code class="prettyprint">null</code>
+ */
+/**
+ * The inline style to apply to the item. The style class and inline style will override any other styling specified with other properties. For tooltip interactivity, it's recommended to also pass a representative color to the item color attribute. Does not apply if custom image is specified.
+ * @expose
+ * @name items[].svgStyle
+ * @memberof! oj.ojPictoChart
+ * @instance
+ * @type {object}
+ * @default <code class="prettyprint">null</code>
+ */
+/**
+ *  The optional URI for the hover state. If not specified, the source image will be used. 
+ * @expose
+ * @name items[].sourceHover
+ * @memberof! oj.ojPictoChart
+ * @instance
+ * @type {string}
+ * @default <code class="prettyprint">null</code>
+ */
+/**
+ *  The optional URI for the selected state. If not specified, the source image will be used. 
+ * @expose
+ * @name items[].sourceSelected
+ * @memberof! oj.ojPictoChart
+ * @instance
+ * @type {string}
+ * @default <code class="prettyprint">null</code>
+ */
+/**
+ *  The optional URI for the hover selected state. If not specified, the source image will be used. 
+ * @expose
+ * @name items[].sourceHoverSelected
+ * @memberof! oj.ojPictoChart
+ * @instance
+ * @type {string}
+ * @default <code class="prettyprint">null</code>
+ */
+/**
+ *  Specifies the number of times that the shape (or custom image) is drawn. Fractional counts (such as 4.5) are supported; however, fractions other than the multiples of 0.5 should be avoided because the fractional rendering ignores the gaps between shapes and the irregularity of the shapes. 
+ * @expose
+ * @name items[].count
+ * @memberof! oj.ojPictoChart
+ * @instance
+ * @type {number}
+ * @default <code class="prettyprint">1</code>
+ */
+/**
+ *  The number of rows each shape (or custom image) spans. Used for creating a pictoChart with mixed item sizes. 
+ * @expose
+ * @name items[].rowSpan
+ * @memberof! oj.ojPictoChart
+ * @instance
+ * @type {number}
+ * @default <code class="prettyprint">1</code>
+ */
+/**
+ *  The number of columns each shape (or custom image) spans. Used for creating a pictoChart with mixed item sizes. 
+ * @expose
+ * @name items[].columnSpan
+ * @memberof! oj.ojPictoChart
+ * @instance
+ * @type {number}
+ * @default <code class="prettyprint">1</code>
+ */
+/**
+ *  Short description string for accessibility users. 
+ * @expose
+ * @name items[].shortDesc
+ * @memberof! oj.ojPictoChart
+ * @instance
+ * @type {string}
+ * @default <code class="prettyprint">null</code>
+ */
+/**
+ *  An array of category strings corresponding to this item. If not specified, defaults to the item id or name. This enables highlighting and filtering of individual data items through interactions with other visualization elements. 
+ * @expose
+ * @name items[].categories
+ * @memberof! oj.ojPictoChart
+ * @instance
+ * @type {Array.<string>}
+ * @default <code class="prettyprint">null</code>
+ */
+/**
+ *  Whether drilling is enabled for the item. Drillable items will show a pointer cursor on hover and fire an <code class="prettyprint">ojDrill</code> event on click (double click if selection is enabled). To enable drilling for all items at once, use the drilling attribute in the top level. 
+ * @expose
+ * @name items[].drilling
+ * @memberof! oj.ojPictoChart
+ * @instance
+ * @type {string}
+ * @ojvalue {string} "on"
+ * @ojvalue {string} "off"
+ * @ojvalue {string} "inherit"
+ * @default <code class="prettyprint">"inherit"</code>
+ */
+
 // SubId Locators **************************************************************
 
 /**
@@ -389,7 +787,7 @@ oj.__registerWidget('oj.ojPictoChart', $['oj']['dvtBaseComponent'],
  * @memberof oj.ojPictoChart
  *
  * @example <caption>Gets the first tag cloud item:</caption>
- * var nodes = $( ".selector" ).ojPictoChart( "getNodeBySubId", {'subId': 'oj-pictochart-item', 'index': 0} );
+ * var nodes = myPictoChart.getNodeBySubId({'subId': 'oj-pictochart-item', 'index': 0});
  */
 
 /**
@@ -399,7 +797,7 @@ oj.__registerWidget('oj.ojPictoChart', $['oj']['dvtBaseComponent'],
  * @memberof oj.ojPictoChart
  *
  * @example <caption>Get the tooltip object of the tag cloud, if displayed:</caption>
- * var nodes = $( ".selector" ).ojPictoChart( "getNodeBySubId", {'subId': 'oj-pictochart-tooltip'} );
+ * var nodes = myPictoChart.getNodeBySubId({'subId': 'oj-pictochart-tooltip'});
  */
 
 // Node Context Objects ********************************************************
@@ -412,28 +810,6 @@ oj.__registerWidget('oj.ojPictoChart', $['oj']['dvtBaseComponent'],
  * @ojnodecontext oj-pictochart-item
  * @memberof oj.ojPictoChart
  */
-
-/**
- * The knockout template used to render the content of the tooltip.
- *
- * This attribute is only exposed via the <code class="prettyprint">ojComponent</code> binding, and is not a
- * component option. The following variables are also passed into the template:
- *  <ul> 
- *   <li>parentElement: The tooltip element. The function can directly modify or append content to this element.</li> 
- *   <li>id: The id of the hovered item.</li> 
- *   <li>name: The name of the hovered item.</li> 
- *   <li>count: The count of the hovered item.</li> 
- *   <li>color: The color of the hovered item.</li> 
- *  </ul>
- *
- * @ojbindingonly
- * @name tooltip.template
- * @memberof! oj.ojPictoChart
- * @instance
- * @type {string|null}
- * @default <code class="prettyprint">null</code>
- */
-
 /**
  * Ignore tag only needed for DVTs that have jsDoc in separate _doc.js files.
  * @ignore
@@ -480,8 +856,9 @@ var ojPictoChartMeta = {
     },
     "hoverBehaviorDelay": {
       "type": "number"
-    },    "items": {
-      "type": "Array<object>"
+    },    
+    "items": {
+      "type": "Array<object>|Promise"
     },
     "layout": {
       "type": "string",

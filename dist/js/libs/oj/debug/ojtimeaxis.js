@@ -6,26 +6,161 @@
 define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/internal-deps/dvt/DvtTimeAxis', 'ojs/ojvalidation-datetime'], function (oj, $, comp, base, dvt)
 {
 /**
+ * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used to format the labels of the time axis. If not specified, the default converter is used. If a single converter is specified, it will be used for all 'scale' values. Otherwise, an object whose keys are 'scale' values that map to the converter instances is expected. See <a href="oj.DateTimeConverterFactory.html">oj.DateTimeConverterFactory</a> for details on creating built-in datetime converters.
+ * @expose
+ * @name converter
+ * @memberof oj.ojTimeAxis
+ * @instance
+ * @type {object}
+ * @default <code class="prettyprint">null</code>
+ */
+/**
+ * The default converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) to use for all 'scale' values that do not otherwise have a converter object provided. See <a href="oj.DateTimeConverterFactory.html">oj.DateTimeConverterFactory</a> for details on creating built-in datetime converters.
+ * @expose
+ * @name converter.default
+ * @memberof! oj.ojTimeAxis
+ * @instance
+ * @type {object}
+ * @default <code class="prettyprint">null</code>
+ */
+/**
+ * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used for the 'seconds' scale. If not specified, the default converter will be used for this scale. See <a href="oj.DateTimeConverterFactory.html">oj.DateTimeConverterFactory</a> for details on creating built-in datetime converters.
+ * @expose
+ * @name converter.seconds
+ * @memberof! oj.ojTimeAxis
+ * @instance
+ * @type {object}
+ * @default <code class="prettyprint">null</code>
+ */
+/**
+ * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used for the 'minutes' scale. If not specified, the default converter will be used for this scale. See <a href="oj.DateTimeConverterFactory.html">oj.DateTimeConverterFactory</a> for details on creating built-in datetime converters.
+ * @expose
+ * @name converter.minutes
+ * @memberof! oj.ojTimeAxis
+ * @instance
+ * @type {object}
+ * @default <code class="prettyprint">null</code>
+ */
+/**
+ * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used for the 'hours' scale. If not specified, the default converter will be used for this scale. See <a href="oj.DateTimeConverterFactory.html">oj.DateTimeConverterFactory</a> for details on creating built-in datetime converters.
+ * @expose
+ * @name converter.hours
+ * @memberof! oj.ojTimeAxis
+ * @instance
+ * @type {object}
+ * @default <code class="prettyprint">null</code>
+ */
+/**
+ * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used for the 'days' scale. If not specified, the default converter will be used for this scale. See <a href="oj.DateTimeConverterFactory.html">oj.DateTimeConverterFactory</a> for details on creating built-in datetime converters.
+ * @expose
+ * @name converter.days
+ * @memberof! oj.ojTimeAxis
+ * @instance
+ * @type {object}
+ * @default <code class="prettyprint">null</code>
+ */
+/**
+ * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used for the 'weeks' scale. If not specified, the default converter will be used for this scale. See <a href="oj.DateTimeConverterFactory.html">oj.DateTimeConverterFactory</a> for details on creating built-in datetime converters.
+ * @expose
+ * @name converter.weeks
+ * @memberof! oj.ojTimeAxis
+ * @instance
+ * @type {object}
+ * @default <code class="prettyprint">null</code>
+ */
+/**
+ * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used for the 'months' scale. If not specified, the default converter will be used for this scale. See <a href="oj.DateTimeConverterFactory.html">oj.DateTimeConverterFactory</a> for details on creating built-in datetime converters.
+ * @expose
+ * @name converter.months
+ * @memberof! oj.ojTimeAxis
+ * @instance
+ * @type {object}
+ * @default <code class="prettyprint">null</code>
+ */
+/**
+ * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used for the 'quarters' scale. If not specified, the default converter will be used for this scale. See <a href="oj.DateTimeConverterFactory.html">oj.DateTimeConverterFactory</a> for details on creating built-in datetime converters.
+ * @expose
+ * @name converter.quarters
+ * @memberof! oj.ojTimeAxis
+ * @instance
+ * @type {object}
+ * @default <code class="prettyprint">null</code>
+ */
+/**
+ * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used for the 'years' scale. If not specified, the default converter will be used for this scale. See <a href="oj.DateTimeConverterFactory.html">oj.DateTimeConverterFactory</a> for details on creating built-in datetime converters.
+ * @expose
+ * @name converter.years
+ * @memberof! oj.ojTimeAxis
+ * @instance
+ * @type {object}
+ * @default <code class="prettyprint">null</code>
+ */
+/**
+ * The start time of the time axis. This is required in order for the time axis to properly render. See <a href="oj.ojTimeAxis.html#formats-section">Date and Time Formats</a> for more details on string formats.
+ * @expose
+ * @name start
+ * @memberof oj.ojTimeAxis
+ * @instance
+ * @type {number|string}
+ * @default <code class="prettyprint">null</code>
+ * @deprecated The number type is deprecated in 3.0.0.
+ */
+/**
+ * The end time of the time axis. This is required in order for the time axis to properly render. See <a href="oj.ojTimeAxis.html#formats-section">Date and Time Formats</a> for more details on string formats.
+ * @expose
+ * @name end
+ * @memberof oj.ojTimeAxis
+ * @instance
+ * @type {number|string}
+ * @default <code class="prettyprint">null</code>
+ * @deprecated The number type is deprecated in 3.0.0.
+ */
+/**
+ * The time scale used for the time axis. This is required in order for the time axis to properly render.
+ * @expose
+ * @name scale
+ * @memberof oj.ojTimeAxis
+ * @instance
+ * @type {string}
+ * @ojvalue {string} "seconds"
+ * @ojvalue {string} "minutes"
+ * @ojvalue {string} "hours"
+ * @ojvalue {string} "days"
+ * @ojvalue {string} "weeks"
+ * @ojvalue {string} "months"
+ * @ojvalue {string} "quarters"
+ * @ojvalue {string} "years"
+ * @default <code class="prettyprint">null</code>
+ */
+
+/**
+ * Copyright (c) 2016, Oracle and/or its affiliates.
+ * All rights reserved.
+ */
+
+/**
  * @ojcomponent oj.ojTimeAxis
  * @augments oj.dvtBaseComponent
  * @since 2.1.0
+ * @ojstatus preview
  *
  * @classdesc
  * <h3 id="TimeAxisOverview-section">
- *   JET Time Axis Component
+ *   JET Time Axis
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#TimeAxisOverview-section"></a>
  * </h3>
  * <p>Description:</p>
- * <p>A JET Time Axis is a themable, WAI-ARIA compliant component that displays a range of dates based on specified start and end date and time scale.  The Time Axis is intended to be placed in the header of ojDataGrid or ojTable.</p>
+ * <p>A JET Time Axis is a themable, WAI-ARIA compliant element that displays a range of dates based on specified start and end date and time scale.  The Time Axis is intended to be placed in the header of JET DataGrid or Table.</p>
  *
  * <pre class="prettyprint">
  * <code>
- * &lt;div data-bind="ojComponent: {
- *   component: 'ojTimeAxis',
- *   scale: 'months',
- *   start: new Date("Jan 1, 2016").toISOString(),
- *   end: new Date("Dec 31, 2016").toISOString()
- * }"/>
+ * &lt;oj-time-axis
+ *   scale="months"
+ *   start='{{oj.IntlConverterUtils.dateToLocalIso(new Date("Jan 1, 2016"))}}'
+ *   end='{{oj.IntlConverterUtils.dateToLocalIso(new Date("Dec 31, 2016"))}}'
+ *   style="height:38px"
+ *   aria-hidden="true">
+ * &lt;/oj-time-axis>
  * </code>
  * </pre>
  *
@@ -83,21 +218,21 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/in
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#a11y-section"></a>
  * </h3>
  *
- * <p>The application is responsible for supplying a meaningful <code class="prettyprint"><span class="pln">aria</span><span class="pun">-</span><span class="pln">label</span></code> to the component element.</p>
+ * <p>The application is responsible for supplying a meaningful <code class="prettyprint"><span class="pln">aria</span><span class="pun">-</span><span class="pln">label</span></code> to the element.</p>
  *
  * <h3 id="touch-section">
  *   Touch End User Information
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#touch-section"></a>
  * </h3>
  *
- * <p>The ojTimeAxis component is intended to be used inside of an ojTable or ojDataGrid component. All touch interactions are the same as those of the root components. See the <a href="oj.ojTable.html#touch-section">ojTable</a> and <a href="oj.ojDataGrid.html#touch-section">ojDataGrid</a> touch doc for more details.</p>
+ * <p>The Time Axis is intended to be used inside of a JET Table or DataGrid. All touch interactions are the same as those of the root elements. See the <a href="oj.ojTable.html#touch-section">Table</a> and <a href="oj.ojDataGrid.html#touch-section">DataGrid</a> touch doc for more details.</p>
  *
  * <h3 id="keyboard-section">
  *   Keyboard End User Information
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#keyboard-section"></a>
  * </h3>
  *
- * <p>The ojTimeAxis component is intended to be used inside of an ojTable or ojDataGrid component. All keyboard interactions are the same as those of the root components. See the <a href="oj.ojTable.html#keyboard-section">ojTable</a> and <a href="oj.ojDataGrid.html#keyboard-section">ojDataGrid</a> keyboard doc for more details.</p>
+ * <p>The Time Axis is intended to be used inside of a JET Table or DataGrid. All keyboard interactions are the same as those of the root elements. See the <a href="oj.ojTable.html#keyboard-section">Table</a> and <a href="oj.ojDataGrid.html#keyboard-section">DataGrid</a> keyboard doc for more details.</p>
  *
  * <h3 id="perf-section">
  *   Performance
@@ -112,12 +247,9 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/in
  *    can cause severe performance degradation. Depending on the amount of space allocated,
  *    this many intervals can also cause visual clutteredness.
  *
- * @desc Creates a JET TimeAxis.
- * @example <caption>Initialize the time axis with some options:</caption>
- * $(".selector").ojTimeAxis({scale: 'weeks'});
+ * {@ojinclude "name":"trackResize"}
  *
- * @example <caption>Initialize the time axis via the JET <code class="prettyprint">ojComponent</code> binding:</caption>
- * &lt;div data-bind="ojComponent: {component: 'ojTimeAxis'}">
+ * {@ojinclude "name":"rtl"}
  */
 oj.__registerWidget('oj.ojTimeAxis', $['oj']['dvtBaseComponent'],
 {
@@ -159,6 +291,12 @@ oj.__registerWidget('oj.ojTimeAxis', $['oj']['dvtBaseComponent'],
     var ret = this._super();
     ret['DvtUtilBundle.TIMEAXIS'] = translations['componentName'];
     return ret;
+  },
+  
+  //** @inheritdoc */
+  _GetComponentRendererOptions: function() {
+    //the function should be removed if the component will support 'tooltip.renderer' attr
+    return [];
   },
 
   //** @inheritdoc */
@@ -239,6 +377,10 @@ oj.__registerWidget('oj.ojTimeAxis', $['oj']['dvtBaseComponent'],
     resources['firstDayOfWeek'] = oj.LocaleData.getFirstDayOfWeek();
   }
 });
+/**
+ * Ignore tag only needed for DVTs that have jsDoc in separate _doc.js files.
+ * @ignore
+ */
 (function() {
 var ojTimeAxisMeta = {
   "properties": {

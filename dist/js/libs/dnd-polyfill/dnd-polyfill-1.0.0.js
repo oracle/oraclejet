@@ -1,3 +1,8 @@
+/**
+ * Copyright (c) 2015, 2017, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ */
+
 (function() {
 
 /* exported localRequire */
@@ -1107,6 +1112,7 @@ define('glassPane',['./eventDispatcher'], function(EventDispatcher) {
       // Event listeners may need the last hit point, so set this first.
       _lastInputProps = inputProps;
 
+      document.body.addEventListener("mouseenter", _handleGlassMouseEnter, true);
       document.body.addEventListener("mousemove", _handleGlassMouseMove, true);
       document.body.addEventListener("mouseup", _handleGlassMouseUp, true);
 
@@ -1124,6 +1130,7 @@ define('glassPane',['./eventDispatcher'], function(EventDispatcher) {
         _dragIntervalId = null;
       }
 
+      document.body.removeEventListener("mouseenter", _handleGlassMouseEnter, true);
       document.body.removeEventListener("mousemove", _handleGlassMouseMove, true);
       document.body.removeEventListener("mouseup", _handleGlassMouseUp, true);
     }
@@ -1156,6 +1163,20 @@ define('glassPane',['./eventDispatcher'], function(EventDispatcher) {
       }
     }
 
+    function _handleGlassMouseEnter(event) {
+      // If the mouse pointer has re-entered the document body, check the mouse
+      // button.  If it's no longer down, cancel the drag.
+      // This check used to be in mousemove listener, but IE sometimes doesn't 
+      // set event.buttons correctly if the element underneath the pointer
+      // changes, causing the drag to be cancelled incorrectly.
+      if (event.target === document.body && event.buttons !== _initButtons) {
+        // Remember the last mouse position.
+        _lastInputProps = EventDispatcher.getMouseEventProps(event);
+
+        endCallback(_lastInputProps, true);
+      }
+    }
+
     function _handleGlassMouseMove(event) {
       // Set _initButtons if it hasn't been set so that we can remember which
       // buttons are pressed when the drag is initiated.  We can't rely on
@@ -1172,12 +1193,7 @@ define('glassPane',['./eventDispatcher'], function(EventDispatcher) {
       // events.
       _lastInputProps = EventDispatcher.getMouseEventProps(event);
 
-      if (event.buttons !== _initButtons) {
-        // If mouse buttons have changed, cancel the drag
-        endCallback(_lastInputProps, true);
-      } else {
-        _processDrag();
-      }
+      _processDrag();
     }
 
     function _handleGlassMouseUp(event) {
@@ -1397,10 +1413,12 @@ define('touchDragDriver',['./args'], function(Args) {
 
     function _install() {
       rootElement.addEventListener("touchstart", _handleRootTouchStart, true);
+      rootElement.addEventListener("touchmove", _handleRootTouchMove, true);
     }
 
     function _remove() {
       rootElement.removeEventListener("touchstart", _handleRootTouchStart, true);
+      rootElement.removeEventListener("touchmove", _handleRootTouchMove, true);
     }
 
     function _handleRootTouchStart(event) {
@@ -1415,6 +1433,15 @@ define('touchDragDriver',['./args'], function(Args) {
       if (elem) {
         _setupEventListeners(elem);
       }
+    }
+
+    function _handleRootTouchMove() {
+      // On iOS, if there is no pre-existing touchmove listener in the ancestor
+      // chain when touchstart happens on an element, adding a touchmove 
+      // listener afterwards and calling event.preventDefault has no effect and 
+      // still allow the document to scroll.
+      //
+      // Register a no-op touchmove listener to work around this problem.
     }
 
     function _setupEventListeners(elem) {

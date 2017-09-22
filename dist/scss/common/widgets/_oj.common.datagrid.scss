@@ -12,6 +12,17 @@
             }
         }
 
+        /* Component option defaults. */
+        $datagridDefaultOptions: ();
+ 
+        @if ($loadingIndicatorDelayDuration != null)
+        {
+           $datagridDefaultOptions: map-merge($datagridDefaultOptions, (showIndicatorDelay: $loadingIndicatorDelayDuration));
+        }
+        .oj-datagrid-option-defaults {
+           font-family: oj-json-from-map($datagridDefaultOptions);
+        }
+
         /* Styling for the datagrid widget container */
         .oj-datagrid {
             display: block;
@@ -33,7 +44,6 @@
         .oj-datagrid-cell:focus,
         .oj-datagrid-header-cell:focus,
         .oj-datagrid-end-header-cell:focus,
-        .oj-datagrid-row:focus,
         .oj-datagrid-scrollers:focus,
         .oj-datagrid-databody:focus,{
             outline: none;
@@ -45,13 +55,13 @@
         .oj-datagrid-column-end-header-cell {
             width: $dataGridColumnWidth;
         }
-
-        /* Styling on rows, the default row height should be set here*/
-        .oj-datagrid-row {
-            position:absolute;
-            box-sizing: border-box;
-            height: #{$dataGridRowHeight};
-        }
+        
+        /* The default row height should be set here*/
+        .oj-datagrid-cell,
+        .oj-datagrid-row-header-cell,
+        .oj-datagrid-row-end-header-cell {
+            height: $dataGridRowHeight;
+        }  
 
         /* Styling on the row header and row end header containere*/
         .oj-datagrid-row-header,
@@ -221,7 +231,6 @@
             // cells are positioned absolute, and use border-box sizing
             position: absolute;
             box-sizing: border-box;
-            height: 100%;
             // override the text and color properties in the cells
             font-size: $dataGridCellFontSize;
             color: $dataGridCellTextColor;
@@ -243,10 +252,8 @@
         .oj-datagrid-cell.oj-focus::after,
         .oj-datagrid-header-cell.oj-focus::after,
         .oj-datagrid-end-header-cell.oj-focus::after,
-        .oj-datagrid-row .oj-datagrid-cell.oj-selected.oj-datagrid-selected-top::before,
-        .oj-datagrid-row .oj-datagrid-cell.oj-selected.oj-datagrid-selected-bottom::before,
-        .oj-datagrid-row.oj-selected.oj-datagrid-selected-top .oj-datagrid-cell::before,
-        .oj-datagrid-row.oj-selected.oj-datagrid-selected-bottom .oj-datagrid-cell::before {
+        .oj-datagrid-cell.oj-selected.oj-datagrid-selected-top::before,
+        .oj-datagrid-cell.oj-selected.oj-datagrid-selected-bottom::before {
             content: "";
             position: absolute;
             box-sizing: border-box;
@@ -265,40 +272,36 @@
 
         /* Styling on databody cell outlines when they can be overwritten, to use a background color don't use the after psuedo class */
         .oj-datagrid-editable .oj-datagrid-cell.oj-focus::after,
-        .oj-hicontrast .oj-datagrid.oj-datagrid-editable.oj-focus .oj-datagrid-row .oj-datagrid-cell.oj-focus::after {
+        .oj-hicontrast .oj-datagrid.oj-datagrid-editable.oj-focus .oj-datagrid-cell.oj-focus::after {
             border: 2px solid $dataGridEditableCellBorderColorFocus;
         }
 
         /* Styling on databody cells when they are being edited */
         .oj-datagrid-editable .oj-datagrid-cell.oj-datagrid-cell-edit,
-        .oj-hicontrast .oj-datagrid.oj-datagrid-editable.oj-focus .oj-datagrid-row .oj-datagrid-cell.oj-datagrid-cell-edit {
+        .oj-hicontrast .oj-datagrid.oj-datagrid-editable.oj-focus .oj-datagrid-cell.oj-datagrid-cell-edit {
             // actively editable cells have no padding so input controls consume the whole cell
             padding: 0;
         }
 
         /* Styling on databody cell outlines when they are being edited, to use a background color don't use the after psuedo class */
         .oj-datagrid-editable .oj-datagrid-cell.oj-datagrid-cell-edit::after,
-        .oj-hicontrast .oj-datagrid.oj-datagrid-editable.oj-focus .oj-datagrid-row .oj-datagrid-cell.oj-datagrid-cell-edit::after {
+        .oj-hicontrast .oj-datagrid.oj-datagrid-editable.oj-focus .oj-datagrid-cell.oj-datagrid-cell-edit::after {
             border: 1px solid $dataGridEditableCellBorderColorFocus;
         }
 
         /* Styling for the selection top and bottom borders */
-        .oj-datagrid-row .oj-datagrid-cell.oj-selected.oj-datagrid-selected-top::before,
-        .oj-datagrid-row .oj-datagrid-cell.oj-selected.oj-datagrid-selected-bottom::before,
-        .oj-datagrid-row.oj-selected.oj-datagrid-selected-top .oj-datagrid-cell::before,
-        .oj-datagrid-row.oj-selected.oj-datagrid-selected-bottom .oj-datagrid-cell::before {
+        .oj-datagrid-cell.oj-selected.oj-datagrid-selected-top::before,
+        .oj-datagrid-cell.oj-selected.oj-datagrid-selected-bottom::before {
           border: 0 solid $dataGridCellBorderColorSelected;
         }
 
         // selection borders width application
-        .oj-datagrid-row .oj-datagrid-cell.oj-selected.oj-datagrid-selected-top::before,
-        .oj-datagrid-row.oj-selected.oj-datagrid-selected-top .oj-datagrid-cell::before {
+        .oj-datagrid-cell.oj-selected.oj-datagrid-selected-top::before {
           border-top-width:2px;
         }
 
         // selection borders width application
-        .oj-datagrid-row .oj-datagrid-cell.oj-selected.oj-datagrid-selected-bottom::before,
-        .oj-datagrid-row.oj-selected.oj-datagrid-selected-bottom .oj-datagrid-cell::before {
+        .oj-datagrid-cell.oj-selected.oj-datagrid-selected-bottom::before {
           border-bottom-width:2px;
         }
 
@@ -350,39 +353,32 @@
 
         // styling is set on row or cell level for the cell and row selection case optimizations
         /* Styling on row and column banding */
-        .oj-datagrid-row.oj-datagrid-banded .oj-datagrid-cell,
         .oj-datagrid-cell.oj-datagrid-banded {
             background-color: $dataGridCellBandedBgColor;
         }
 
         /* Styling on read only datagrid cells, oj-readOnly must be applied by the application */
-        .oj-datagrid-row .oj-datagrid-cell.oj-read-only {
+        .oj-datagrid-cell.oj-read-only {
             background-color: $dataGridEditableCellBgColorReadOnly;
         }
 
         /* Styling on row and cell hover */
-        .oj-datagrid-row.oj-hover .oj-datagrid-cell,
-        //specificity required to overwrite row banding with cell selection
-        .oj-datagrid-row .oj-datagrid-cell.oj-hover {
+        .oj-datagrid-cell.oj-hover {
             background-color: $dataGridCellBgColorHover;
         }
 
         /* Styling on row and cell selection */
-        .oj-datagrid.oj-focus .oj-datagrid-row.oj-selected .oj-datagrid-cell,
         .oj-datagrid.oj-focus .oj-datagrid-cell.oj-selected {
             background-color: $dataGridCellBgColorSelected;
         }
 
         /* Styling on row and cell inactive selection (when the grid root is not the focus) */
-        .oj-datagrid-row.oj-selected .oj-datagrid-cell,
-        .oj-datagrid-row .oj-datagrid-cell.oj-selected {
+        .oj-datagrid-cell.oj-selected {
             background-color: $dataGridCellBgColorSelectedInactive;
         }
 
         /* Styling on focused row and cell outlines, to use a background color don't use the after psuedo class */
-        // need the specificity of .oj-datagrid-row to overwrite the selected value on the row
-        .oj-datagrid.oj-focus.oj-read-only .oj-datagrid-row.oj-focus-highlight .oj-datagrid-cell::after,
-        .oj-datagrid.oj-focus.oj-read-only .oj-datagrid-row .oj-datagrid-cell.oj-focus-highlight::after,
+        .oj-datagrid.oj-focus.oj-read-only .oj-datagrid-cell.oj-focus-highlight::after,
         .oj-datagrid.oj-focus .oj-datagrid-header-cell.oj-focus-highlight::after,
         .oj-datagrid.oj-focus .oj-datagrid-end-header-cell.oj-focus-highlight::after {
             top: 1px;
@@ -412,7 +408,6 @@
         }
 
         /* Styling for the data cell elements in selected state when data grid in high contrast mode. */
-        .oj-hicontrast .oj-datagrid.oj-focus .oj-datagrid-row.oj-selected .oj-datagrid-cell,
         .oj-hicontrast .oj-datagrid.oj-focus .oj-datagrid-cell.oj-selected {
             border-width: 3px;
             border-style: double;
@@ -458,10 +453,18 @@
         .oj-datagrid-status {
             position: absolute;
             display: none;
-            background-color: $dataGridStatusBgColor;
-            border: 1px $dataGridCellBorderColor solid;
-            padding: $dataGridCellPadding;
-            top: 50%;
+        }
+
+        /* Styling for the activity indicator */
+        .oj-datagrid-loading-icon {
+            display: block;
+            width: 40px;
+            height: 40px;
+            margin: auto;
+            @include oj-icon-content(
+                $icon: oj-image-url("spinner_full.gif"),
+                $lowResProportion: 0.25
+            );
         }
 
         /* Styling for the empty data grid text, default only used for positioning */
@@ -566,7 +569,7 @@
 
 
         /* Styling for the gradient for sort icons on hover in the header */
-        .oj-hover .oj-datagrid-sort-icon-container {
+        .oj-datagrid-header-cell.oj-hover .oj-datagrid-sort-icon-container {
             @include oj-ltr() {
                 @include oj-background-image(linear-gradient(to right, rgba($dataGridHeaderBgColorHover,0), rgba($dataGridHeaderBgColorHover,1) 40%),
                 $slowOverride: false);
@@ -595,8 +598,7 @@
         }
 
         /* Styling for the row that is cut during a context menu or CTRL-X cut and paste operation */
-        .oj-datagrid-row.oj-datagrid-cut .oj-datagrid-cell,
-        .oj-datagrid-row.oj-datagrid-cut {
+        .oj-datagrid-cell.oj-datagrid-cut {
             opacity: 0.8;
         }
 
@@ -606,7 +608,7 @@
         }
 
         /* Styling for the row that is being moved using drag */
-        .oj-datagrid-row.oj-drag {
+        .oj-datagrid .oj-drag {
             opacity: 0.8;
             //bring in front of other rows
             z-index: 1;
