@@ -22,6 +22,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojcollapsible'],
  * @ojcomponent oj.ojAccordion
  * @augments oj.baseComponent
  * @since 0.6
+ * @ojstatus preview
  * 
  * @classdesc
  * <h3 id="accordionOverview-section">

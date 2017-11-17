@@ -9,6 +9,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/in
  * @ojcomponent oj.ojSparkChart
  * @augments oj.dvtBaseComponent
  * @since 0.7
+ * @ojstatus preview
  *
  * @classdesc
  * <h3 id="sparkChartOverview-section">
@@ -341,7 +342,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof oj.ojChart
  * @instance
  * @type {Array.<object>|Promise}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The name of the series, displayed in the legend and tooltips.
@@ -350,7 +351,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * An array of values or an array of objects with the following properties that defines the data items for the series.
@@ -359,7 +360,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {Array.<object>|Array.<number>}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * An array of nested data items to be used for defining the markers for outliers or additional data items of a box plot. 
@@ -368,7 +369,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {Array.<object>|Array.<number>}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * (Optional) The id of the data item. This id will be provided as part of the context for events on the chart.
@@ -377,7 +378,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The x value for a scatter or bubble chart or the date on a time axis.
@@ -386,7 +387,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {number|string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The y value. Also the primary value for charts without a y-Axis, such as pie charts.
@@ -395,7 +396,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {number}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The z value. Defines the bubble radius for a bubble chart, as well as the width of a bar or a box plot item.
@@ -404,7 +405,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {number}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The low value for range bar/area, stock candlestick, or box plot item. Define 'low' and 'high' instead of 'value' or 'y' to create a range bar/area chart.
@@ -413,7 +414,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {number}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The high value for range bar/area, stock candlestick, or box plot item. Define 'low' and 'high' instead of 'value' or 'y' to create a range bar/area chart.
@@ -422,7 +423,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {number}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The open value for stock candlestick.
@@ -431,7 +432,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {number}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The close value for stock candlestick. When bar, line, or area series type are used on a stock chart, this value is displayed.
@@ -440,7 +441,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {number}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The value for stock volume bar. When this value is provided, the volume bar is displayed on the y2 axis.
@@ -449,7 +450,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {number}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The first quartile value for box plot.
@@ -458,7 +459,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {number}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The second quartile (median) value for box plot.
@@ -467,7 +468,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {number}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The third quartile value for box plot.
@@ -476,7 +477,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {number}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The description of this object. This is used for accessibility and also for customizing the tooltip text.
@@ -485,7 +486,8 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
+ * @ojtranslatable
  */
 /**
  * The color of the data item.
@@ -494,7 +496,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The border color of the data item. For funnel and pyramid charts, it is used for the slice border.
@@ -503,7 +505,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The border width of the data item. For funnel and pyramid charts, it is used for the slice border.
@@ -512,7 +514,8 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {number}
- * @default <code class="prettyprint">null</code>
+ * @default null
+ * @ojunits pixels
  */
 /**
  * The pattern used to fill the data item. A solid fill is used by default, unless the seriesEffect is 'pattern'.
@@ -534,7 +537,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @ojvalue {string} "largeDiamond"
  * @ojvalue {string} "largeTriangle"
  * @ojvalue {string} "auto"
- * @default <code class="prettyprint">"auto"</code>
+ * @default "auto"
  */
 /**
  * The CSS style class to apply to the data item. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the item color attribute.
@@ -543,7 +546,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  * @deprecated This attribute is deprecated, use the svgClassName attribute instead.
  */
 /**
@@ -553,7 +556,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default null
  * @deprecated This attribute is deprecated, use the svgStyle attribute instead.
  */
 /**
@@ -563,7 +566,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The inline style to apply to the data item. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the item color attribute.
@@ -572,7 +575,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * Defines whether the data marker is displayed. Only applies to line, area, scatter, and bubble series. If auto, the markers will be displayed whenever the data points are not connected by a line.
@@ -584,7 +587,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @ojvalue {string} "on"
  * @ojvalue {string} "off"
  * @ojvalue {string} "auto"
- * @default <code class="prettyprint">"auto"</code>
+ * @default "auto"
  */
 /**
  * The shape of the data markers. In addition to the built-in shapes, it may also take SVG path commands to specify a custom shape. The chart will style the custom shapes the same way as built-in shapes, supporting properties like color and borderColor and applying hover and selection effects. Only 'auto' is supported for range series. 
@@ -602,7 +605,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @ojvalue {string} "human"
  * @ojvalue {string} "star"
  * @ojvalue {string} "auto"
- * @default <code class="prettyprint">"auto"</code>
+ * @default "auto"
  */
 /**
  * The size of the data markers. Does not apply to bubble charts, which calculate marker size based on the z values.
@@ -611,7 +614,8 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {number}
- * @default <code class="prettyprint">null</code>
+ * @default null
+ * @ojunits pixels
  */
 /**
  *  The URI of the custom image. If specified, it takes precedence over shape. 
@@ -620,7 +624,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  *  The optional URI for the hover state. If not specified, the source image will be used. 
@@ -629,7 +633,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  *  The optional URI for the selected state. If not specified, the source image will be used. 
@@ -638,7 +642,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  *  The optional URI for the hover selected state. If not specified, the source image will be used. 
@@ -647,7 +651,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The label for the data item. For range series, if an array of two values are provided, the first and second value will apply to the low and high point respectively. Not supported for box plot or candlestick.
@@ -656,7 +660,8 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string|Array.<string>}
- * @default <code class="prettyprint">null</code>
+ * @default null
+ * @ojtranslatable
  */
 /**
  * The position of the data label. For range series, if an array of two values are provided, the first and second value will apply to the low and high point respectively. The 'outsideSlice' value only applies to pie charts. The 'aboveMarker', 'belowMarker', 'beforeMarker', and 'afterMarker' values only apply to line, area, scatter, and bubble series. The 'insideBarEdge' and 'outsideBarEdge' values only apply to non-polar bar series. Stacked bars do not support 'outsideBarEdge'. The chart does not currently adjust layout to fit labels within the plot area or deal with any overlaps between labels. 
@@ -675,7 +680,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @ojvalue {string} "outsideBarEdge"
  * @ojvalue {string} "none"
  * @ojvalue {string} "auto"
- * @default <code class="prettyprint">"auto"</code>
+ * @default "auto"
  */
 /**
  * The CSS style object defining the style of the data label. For range series, if an array of two values are provided, the first and second value will apply to the low and high point respectively.
@@ -684,7 +689,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {object|Array.<object>}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * An optional array of category strings corresponding to this data item. This enables highlighting and filtering of individual data items through interactions with the legend or other visualization elements. If not defined, series categories are used.
@@ -693,7 +698,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {Array.<string>}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The value for this data item. Corresponding to the y value for bar, line, area, and combo charts and the slice values for pie, funnel and pyramid charts.
@@ -702,7 +707,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {number}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The target value for a funnel chart. When this is set, the value attribute defines the filled area within the slice and this represents the value of the whole slice.
@@ -711,7 +716,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {number}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  *  Whether drilling is enabled for the data item. Drillable objects will show a pointer cursor on hover and fire an <code class="prettyprint">ojDrill</code> event on click (double click if selection is enabled). To enable drilling for all data items at once, use the drilling attribute in the top level. 
@@ -723,7 +728,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @ojvalue {string} "on"
  * @ojvalue {string} "off"
  * @ojvalue {string} "inherit"
- * @default <code class="prettyprint">"inherit"</code>
+ * @default "inherit"
  */
 /**
  * An object containing the style properties of the box plot item.
@@ -732,7 +737,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  *  The color of the Q2 segment of the box.
@@ -741,7 +746,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  *  The CSS style class to apply to the Q2 segment of the box. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the q2Color attribute. 
@@ -750,7 +755,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  * @deprecated This attribute is deprecated, use the q2SvgClassName attribute instead.
  */
 /**
@@ -760,7 +765,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default null
  * @deprecated This attribute is deprecated, use the q2SvgStyle attribute instead.
  */
 /**
@@ -770,7 +775,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  *  The CSS inline style to apply to the Q2 segment of the box. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the q2Color attribute. 
@@ -779,7 +784,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  *  The CSS inline style to apply to the Q3 segment of the box. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the q3Color attribute. 
@@ -788,7 +793,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default null
  * @deprecated This attribute is deprecated, use the q3SvgStyle attribute instead.
  */
 /**
@@ -798,7 +803,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  * @deprecated This attribute is deprecated, use the q3SvgClassName attribute instead.
  */
 /**
@@ -808,7 +813,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  *  The CSS style class to apply to the Q3 segment of the box. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the q3Color attribute. 
@@ -817,7 +822,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The CSS style class to apply to the whisker stems.
@@ -826,7 +831,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  * @deprecated This attribute is deprecated, use the whiskerSvgClassName attribute instead.
  */
 /**
@@ -836,7 +841,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default null
  * @deprecated This attribute is deprecated, use the whiskerSvgStyle attribute instead.
  */
 /**
@@ -846,7 +851,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  * @deprecated This attribute is deprecated, use the whiskerEndSvgClassName attribute instead.
  */
 /**
@@ -856,7 +861,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default null
  * @deprecated This attribute is deprecated, use the whiskerEndSvgStyle attribute instead.
  */
 /**
@@ -866,7 +871,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The CSS inline style to apply to the whisker stems.
@@ -875,7 +880,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The CSS style class to apply to the whisker ends.
@@ -884,7 +889,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The CSS inline style to apply to the whisker ends.
@@ -893,7 +898,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  *  Specifies the length of the whisker ends in pixels (e.g. '9px') or as a percentage of the box width (e.g. '50%'). The specified length will be rounded down to an odd number of pixels to ensure symmetry. 
@@ -902,7 +907,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The CSS style class to apply to the median line.
@@ -911,7 +916,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  * @deprecated This attribute is deprecated, use the medianSvgClassName attribute instead.
  */
 /**
@@ -921,7 +926,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default null
  * @deprecated This attribute is deprecated, use the medianSvgStyle attribute instead.
  */
 /**
@@ -931,7 +936,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The CSS inline style to apply to the median line.
@@ -940,7 +945,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The id of the series. Defaults to the name or the series index if not specified.
@@ -949,7 +954,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The type of data objects to display for this series. Only applies to bar, line, area, stock, box plot, and combo charts.
@@ -965,7 +970,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @ojvalue {string} "candlestick"
  * @ojvalue {string} "boxPlot"
  * @ojvalue {string} "auto"
- * @default <code class="prettyprint">"auto"</code>
+ * @default "auto"
  */
 /**
  * The color of the series.
@@ -974,7 +979,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The border color of the series.
@@ -983,7 +988,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The border width of the series.
@@ -992,7 +997,8 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {number}
- * @default <code class="prettyprint">null</code>
+ * @default null
+ * @ojunits pixels
  */
 /**
  * The area color of the series. Only applies if series type is area or lineWithArea.
@@ -1001,7 +1007,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The CSS style class to apply if series type is area or lineWithArea. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the color attribute.
@@ -1010,7 +1016,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  * @deprecated This attribute is deprecated, use the areaSvgClassName attribute instead.
  */
 /**
@@ -1020,7 +1026,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default null
  * @deprecated This attribute is deprecated, use the areaSvgStyle attribute instead.
  */
 /**
@@ -1030,7 +1036,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The inline style to apply if series type is area or lineWithArea. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the color attribute.
@@ -1039,7 +1045,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The CSS style class to apply to the series. For series of type lineWithArea, this style will only be applied to the line if areaClassName is also specified. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the color attribute.
@@ -1048,7 +1054,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  * @deprecated This attribute is deprecated, use the svgClassName attribute instead.
  */
 /**
@@ -1058,7 +1064,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default null
  * @deprecated This attribute is deprecated, use the svgStyle attribute instead.
  */
 /**
@@ -1068,7 +1074,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The inline style to apply to the series. For series of type lineWithArea, this style will only be applied to the line if areaStyle is also specified.The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the color attribute.
@@ -1077,7 +1083,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The CSS style class to apply to the data markers.The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the marker color attribute.
@@ -1086,7 +1092,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  * @deprecated This attribute is deprecated, use the markerSvgClassName attribute instead.
  */
 /**
@@ -1096,7 +1102,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default null
  * @deprecated This attribute is deprecated, use the markerSvgStyle attribute instead.
  */
 /**
@@ -1106,7 +1112,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The inline style to apply to the data markers. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the marker color attribute.
@@ -1115,7 +1121,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The pattern used to fill the series. A solid fill is used by default, unless the seriesEffect is 'pattern'.
@@ -1137,7 +1143,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @ojvalue {string} "largeDiamond"
  * @ojvalue {string} "largeTriangle"
  * @ojvalue {string} "auto"
- * @default <code class="prettyprint">"auto"</code>
+ * @default "auto"
  */
 /**
  * The shape of the data markers. In addition to the built-in shapes, it may also take SVG path commands to specify a custom shape. The chart will style the custom shapes the same way as built-in shapes, supporting properties like color and borderColor and applying hover and selection effects. Only 'auto' is supported for range series. 
@@ -1155,7 +1161,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @ojvalue {string} "human"
  * @ojvalue {string} "star"
  * @ojvalue {string} "auto"
- * @default <code class="prettyprint">"auto"</code>
+ * @default "auto"
  */
 /**
  * The color of the data markers, if different from the series color.
@@ -1164,7 +1170,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * Defines whether the data markers should be displayed. Only applies to line, area, scatter, and bubble series. If auto, the markers will be displayed whenever the data points are not connected by a line.
@@ -1176,7 +1182,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @ojvalue {string} "on"
  * @ojvalue {string} "off"
  * @ojvalue {string} "auto"
- * @default <code class="prettyprint">"auto"</code>
+ * @default "auto"
  */
 /**
  * The size of the data markers.
@@ -1185,7 +1191,8 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {number}
- * @default <code class="prettyprint">null</code>
+ * @default null
+ * @ojunits pixels
  */
 /**
  * The width of the data line. Only applies to line, lineWithArea, scatter, and bubble series.
@@ -1194,7 +1201,9 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {number}
- * @default <code class="prettyprint">null</code>
+ * @default null
+ * @ojunits pixels
+ * @ojmin 0
  */
 /**
  * The line style of the data line. Only applies to line, lineWithArea, scatter, and bubble series.
@@ -1206,7 +1215,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @ojvalue {string} "dotted"
  * @ojvalue {string} "dashed"
  * @ojvalue {string} "solid"
- * @default <code class="prettyprint">"solid"</code>
+ * @default "solid"
  */
 /**
  * The line type of the data line or area. Only applies to line, area, scatter, and bubble series. centeredStepped and centeredSegmented are not supported for polar, scatter, and bubble charts. 
@@ -1223,7 +1232,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @ojvalue {string} "centeredSegmented"
  * @ojvalue {string} "none"
  * @ojvalue {string} "auto"
- * @default <code class="prettyprint">"auto"</code>
+ * @default "auto"
  */
 /**
  *  The URI of the custom image. If specified, it takes precedence over shape. 
@@ -1232,7 +1241,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  *  The optional URI for the hover state. If not specified, the source image will be used. 
@@ -1241,7 +1250,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  *  The optional URI for the selected state. If not specified, the source image will be used. 
@@ -1250,7 +1259,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  *  The optional URI for the hover selected state. If not specified, the source image will be used. 
@@ -1259,7 +1268,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * A number from 0 to 1 indicating the amount to explode the pie slice. Only applies to pie charts.
@@ -1268,7 +1277,9 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {number}
- * @default <code class="prettyprint">0</code>
+ * @default 0
+ * @ojmin 0
+ * @ojmax 1
  */
 /**
  * Defines whether the series is associated with the y2 axis. Only applies to Cartesian bar, line, area, and combo charts.
@@ -1279,7 +1290,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @type {string}
  * @ojvalue {string} "on"
  * @ojvalue {string} "off"
- * @default <code class="prettyprint">"off"</code>
+ * @default "off"
  */
 /**
  * In stacked charts, groups series together for stacking. All series without a stackCategory will be assigned to the same stack.
@@ -1288,7 +1299,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * Defines whether the series should be displayed.
@@ -1299,7 +1310,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @type {string}
  * @ojvalue {string} "hidden"
  * @ojvalue {string} "visible"
- * @default <code class="prettyprint">"visible"</code>
+ * @default "visible"
  * @deprecated Use hiddenCategories instead
  */
 /**
@@ -1312,7 +1323,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @ojvalue {string} "on"
  * @ojvalue {string} "off"
  * @ojvalue {string} "auto"
- * @default <code class="prettyprint">"auto"</code>
+ * @default "auto"
  */
 /**
  *  Whether drilling is enabled on the series item. Drillable objects will show a pointer cursor on hover and fire an <code class="prettyprint">ojDrill</code> event on click. To enable drilling for all series items at once, use the drilling attribute in the top level. 
@@ -1324,7 +1335,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @ojvalue {string} "on"
  * @ojvalue {string} "off"
  * @ojvalue {string} "inherit"
- * @default <code class="prettyprint">"inherit"</code>
+ * @default "inherit"
  */
 /**
  * An optional array of category strings corresponding to this series. This allows highlighting and filtering of a series through interactions with legend sections. If not defined, the series id is used.
@@ -1333,7 +1344,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {Array.<string>}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The description of this series. This is used for accessibility and for customizing the tooltip text on the corressponding legend item for the series.
@@ -1342,7 +1353,8 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
+ * @ojtranslatable
  */
 /**
  * An object containing the style properties of the box plot series.
@@ -1351,7 +1363,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  *  The color of the Q2 segment of the box.
@@ -1360,7 +1372,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  *  The CSS style class to apply to the Q2 segment of the box. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the q2Color attribute. 
@@ -1369,7 +1381,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  * @deprecated This attribute is deprecated, use the q2SvgClassName attribute instead.
  */
 /**
@@ -1379,7 +1391,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default null
  * @deprecated This attribute is deprecated, use the q2SvgStyle attribute instead.
  */
 /**
@@ -1389,7 +1401,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  *  The CSS inline style to apply to the Q2 segment of the box. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the q2Color attribute. 
@@ -1398,7 +1410,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  *  The color of the Q3 segment of the box.
@@ -1407,7 +1419,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  *  The CSS style class to apply to the Q3 segment of the box. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the q3Color attribute. 
@@ -1416,7 +1428,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  * @deprecated This attribute is deprecated, use the q3SvgClassName attribute instead.
  */
 /**
@@ -1426,7 +1438,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default null
  * @deprecated This attribute is deprecated, use the q3SvgStyle attribute instead.
  */
 /**
@@ -1436,7 +1448,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  *  The CSS inline style to apply to the Q3 segment of the box. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the q3Color attribute. 
@@ -1445,7 +1457,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The CSS style class to apply to the whisker stems.
@@ -1454,7 +1466,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  * @deprecated This attribute is deprecated, use the whiskerSvgClassName attribute instead.
  */
 /**
@@ -1464,7 +1476,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default null
  * @deprecated This attribute is deprecated, use the whiskerSvgStyle attribute instead.
  */
 /**
@@ -1474,7 +1486,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  * @deprecated This attribute is deprecated, use the whiskerEndSvgClassName attribute instead.
  */
 /**
@@ -1484,7 +1496,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default null
  * @deprecated This attribute is deprecated, use the whiskerEndSvgStyle attribute instead.
  */
 /**
@@ -1494,7 +1506,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The CSS inline style to apply to the whisker stems.
@@ -1503,7 +1515,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The CSS style class to apply to the whisker ends.
@@ -1512,7 +1524,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The CSS inline style to apply to the whisker ends.
@@ -1521,7 +1533,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  *  Specifies the length of the whisker ends in pixels (e.g. '9px') or as a percentage of the box width (e.g. '50%'). 
@@ -1530,7 +1542,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The CSS style class to apply to the median line.
@@ -1539,7 +1551,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  * @deprecated This attribute is deprecated, use the medianSvgClassName attribute instead.
  */
 /**
@@ -1549,7 +1561,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default null
  * @deprecated This attribute is deprecated, use the medianSvgStyle attribute instead.
  */
 /**
@@ -1559,7 +1571,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The CSS inline style to apply to the median line.
@@ -1568,7 +1580,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * An array of strings identifying the group labels, or an array of objects with the following properties. Also accepts a Promise for deferred data rendering.
@@ -1577,7 +1589,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof oj.ojChart
  * @instance
  * @type {Array.<object>|Array.<string>|Promise}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The name of the group.
@@ -1586,7 +1598,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The id of the group. Defaults to the name if not specified.
@@ -1595,7 +1607,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The CSS style object defining the style of the group label text and only applies to a categorical axis.
@@ -1603,7 +1615,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The description of the group. This is used for customizing the tooltip text and only applies to a categorical axis.
@@ -1612,7 +1624,8 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
+ * @ojtranslatable
  */
 /**
  *  Whether drilling is enabled on the group label. Drillable objects will show a pointer cursor on hover and fire an <code class="prettyprint">ojDrill</code> event on click. To enable drilling for all group labels at once, use the drilling attribute in the top level. 
@@ -1624,7 +1637,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @ojvalue {string} "on"
  * @ojvalue {string} "off"
  * @ojvalue {string} "inherit"
- * @default <code class="prettyprint">"inherit"</code>
+ * @default "inherit"
  */
 /**
  * An array of nested group objects.
@@ -1633,7 +1646,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {Array.<string>|Array.<object>}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * An array used to define the ids of the initially selected objects.
@@ -1717,7 +1730,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof oj.ojChart
  * @instance
  * @type {Array.<string>}
- * @default <code class="prettyprint">null</code>
+ * @default []
  * @ojwriteback
  */
 /**
@@ -1730,7 +1743,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @ojvalue {string} "on"
  * @ojvalue {string} "off"
  * @ojvalue {string} "auto"
- * @default <code class="prettyprint">"auto"</code>
+ * @default "auto"
  */
 /**
  * In a split dual-Y chart, specifies the fraction of the space that is given to the Y-axis subchart. Valid values are numbers from 0 to 1.
@@ -1739,7 +1752,9 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof oj.ojChart
  * @instance
  * @type {number}
- * @default <code class="prettyprint">null</code>
+ * @default 0.5
+ * @ojmin 0
+ * @ojmax 1
  */
 /**
  * The type of time axis to display in the chart. Time axis is only supported for Cartesian bar, line, area, stock, box plot, and combo charts. If the type is "enabled" or "skipGaps", the time values must be provided through the "groups" attribute and stacking is supported. If the type is "skipGaps", the groups will be rendered at a regular interval regardless of any time gaps that may exist in the data. If the type is "mixedFrequency", the time values must be provided through the "x" attribute of the the data items and stacking is not supported.
@@ -1753,7 +1768,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @ojvalue {string} "skipGaps"
  * @ojvalue {string} "disabled"
  * @ojvalue {string} "auto"
- * @default <code class="prettyprint">"auto"</code>
+ * @default "auto"
  */
 /**
  * The type of selection behavior that is enabled on the chart.
@@ -1765,7 +1780,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @ojvalue {string} "single"
  * @ojvalue {string} "multiple"
  * @ojvalue {string} "none"
- * @default <code class="prettyprint">"none"</code>
+ * @default "none"
  */
 /**
  * The action that is performed when a drag occurs on the chart. Pan and marquee zoom are only available if zoom and scroll is turned on. Marquee select is only available if multiple selection is turned on. If the value is set to "user" and multiple actions are available, buttons will be displayed on the plot area to let users switch between modes.
@@ -1779,7 +1794,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @ojvalue {string} "select"
  * @ojvalue {string} "off"
  * @ojvalue {string} "user"
- * @default <code class="prettyprint">"user"</code>
+ * @default "user"
  */
 /**
  * The chart type.
@@ -1800,7 +1815,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @ojvalue {string} "funnel"
  * @ojvalue {string} "pyramid"
  * @ojvalue {string} "bar"
- * @default <code class="prettyprint">"bar"</code>
+ * @default "bar"
  */
 /**
  * Defines whether the data items are stacked. Only applies to bar, line, area, and combo charts. Does not apply to range series.
@@ -1811,7 +1826,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @type {string}
  * @ojvalue {string} "on"
  * @ojvalue {string} "off"
- * @default <code class="prettyprint">"off"</code>
+ * @default "off"
  */
 /**
  * Defines whether or not the total values of stacked data items should be displayed. Only applies to bar charts. It can be formatted by the valueFormat of the type 'label'.
@@ -1822,7 +1837,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @type {string}
  * @ojvalue {string} "on"
  * @ojvalue {string} "off"
- * @default <code class="prettyprint">"off"</code>
+ * @default "off"
  */
 /**
  * The chart orientation. Only applies to bar, line, area, combo, box plot, and funnel charts.
@@ -1833,7 +1848,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @type {string}
  * @ojvalue {string} "horizontal"
  * @ojvalue {string} "vertical"
- * @default <code class="prettyprint">"vertical"</code>
+ * @default "vertical"
  */
 /**
  * Defines whether the grid shape of the polar chart is circle or polygon. Only applies to polar line and area charts.
@@ -1844,7 +1859,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @type {string}
  * @ojvalue {string} "polygon"
  * @ojvalue {string} "circle"
- * @default <code class="prettyprint">"circle"</code>
+ * @default "circle"
  */
 /**
  * The coordinate system of the chart. Only applies to bar, line, area, combo, scatter, and bubble charts.
@@ -1855,7 +1870,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @type {string}
  * @ojvalue {string} "polar"
  * @ojvalue {string} "cartesian"
- * @default <code class="prettyprint">"cartesian"</code>
+ * @default "cartesian"
  */
 /**
  * Defines the hide and show behavior that is performed when clicking on a legend item. When data items are hidden, the y axes can be optionally rescaled to fit to the remaining data.
@@ -1867,7 +1882,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @ojvalue {string} "withRescale"
  * @ojvalue {string} "withoutRescale"
  * @ojvalue {string} "none"
- * @default <code class="prettyprint">"none"</code>
+ * @default "none"
  */
 /**
  * An array of category strings used for filtering. Series or data items with any category matching an item in this array will be filtered.
@@ -1876,7 +1891,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof oj.ojChart
  * @instance
  * @type {Array.<string>}
- * @default <code class="prettyprint">null</code>
+ * @default []
  * @ojwriteback
  */
 /**
@@ -1888,7 +1903,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @type {string}
  * @ojvalue {string} "dim"
  * @ojvalue {string} "none"
- * @default <code class="prettyprint">"none"</code>
+ * @default "none"
  */
 /**
  * An array of category strings used for highlighting. Series or data items matching all categories in this array will be highlighted.
@@ -1897,7 +1912,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof oj.ojChart
  * @instance
  * @type {Array.<string>}
- * @default <code class="prettyprint">null</code>
+ * @default []
  * @ojwriteback
  */
 /**
@@ -1909,7 +1924,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @type {string}
  * @ojvalue {string} "any"
  * @ojvalue {string} "all"
- * @default <code class="prettyprint">"all"</code>
+ * @default "all"
  */
 /**
  * Defines the animation that is applied on data changes. Animation is automatically disabled when there are a large number of data items.
@@ -1922,7 +1937,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @ojvalue {string} "slideToLeft"
  * @ojvalue {string} "slideToRight"
  * @ojvalue {string} "none"
- * @default <code class="prettyprint">"none"</code>
+ * @default "none"
  */
 /**
  * Defines the animation that is shown on initial display. Animation is automatically disabled when there are a large number of data items.
@@ -1935,7 +1950,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @ojvalue {string} "alphaFade"
  * @ojvalue {string} "zoom"
  * @ojvalue {string} "none"
- * @default <code class="prettyprint">"none"</code>
+ * @default "none"
  */
 /**
  * Defines whether the data cursor is enabled. If set to "auto", the data cursor is shown only for line or area charts on touch devices. The data cursor is not shown when the tooltip is null and it is not supported on polar charts. 
@@ -1947,7 +1962,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @ojvalue {string} "on"
  * @ojvalue {string} "off"
  * @ojvalue {string} "auto"
- * @default <code class="prettyprint">"auto"</code>
+ * @default "auto"
  */
 /**
  * Defines the behavior of the data cursor when moving between data items.
@@ -1959,7 +1974,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @ojvalue {string} "smooth"
  * @ojvalue {string} "snap"
  * @ojvalue {string} "auto"
- * @default <code class="prettyprint">"auto"</code>
+ * @default "auto"
  */
 /**
  * Speficies the position of the data cursor. Used for synchronizing data cursors across multiple charts. Null if the data cursor is not displayed.
@@ -1968,7 +1983,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default null
  * @ojwriteback
  */
 /**
@@ -1978,7 +1993,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {number|string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The y value of the data cursor. If both y and y2 are defined, y will take precedence.
@@ -1987,7 +2002,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {number}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The y2 value of the data cursor. If both y and y2 are defined, y will take precedence.
@@ -1996,7 +2011,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {number}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * Specifies the sorting of the data. It should only be used for pie charts, bar/line/area charts with one series, or stacked bar/area charts. Sorting will not apply when using a hierarchical group axis.
@@ -2008,7 +2023,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @ojvalue {string} "ascending"
  * @ojvalue {string} "descending"
  * @ojvalue {string} "off"
- * @default <code class="prettyprint">"off"</code>
+ * @default "off"
  */
 /**
  * Specifies the fraction of the whole pie under which a slice would be aggregated into an "Other" slice. Valid values range from 0 (default) to 1. For example, a value of 0.1 would cause all slices which are less than 10% of the pie to be aggregated into the "Other" slice. Only applies to pie chart.
@@ -2017,7 +2032,9 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof oj.ojChart
  * @instance
  * @type {number}
- * @default <code class="prettyprint">0</code>
+ * @default 0
+ * @ojmin 0
+ * @ojmax 1
  */
 /**
  * An object defining the style and positioning of the chart title.
@@ -2026,7 +2043,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default null
  * @deprecated This attribute is deprecated as titles should be rendered outside the element for consistency with other text on the page.
  */
 /**
@@ -2036,7 +2053,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  * @deprecated 
  */
 /**
@@ -2046,7 +2063,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  * @deprecated 
  */
 /**
@@ -2062,7 +2079,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @ojvalue {string} "plotAreaCenter"
  * @ojvalue {string} "plotAreaEnd"
  * @ojvalue {string} "start"
- * @default <code class="prettyprint">"start"</code>
+ * @default "start"
  * @deprecated 
  */
 /**
@@ -2072,7 +2089,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default null
  * @deprecated This attribute is deprecated as subtitles should be rendered outside the element for consistency with other text on the page.
  */
 /**
@@ -2082,7 +2099,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  * @deprecated 
  */
 /**
@@ -2092,7 +2109,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  * @deprecated 
  */
 /**
@@ -2102,7 +2119,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default null
  * @deprecated This attribute is deprecated as footnotes should be rendered outside the element for consistency with other text on the page.
  */
 /**
@@ -2112,7 +2129,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  * @deprecated 
  */
 /**
@@ -2122,7 +2139,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  * @deprecated 
  */
 /**
@@ -2138,7 +2155,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @ojvalue {string} "plotAreaCenter"
  * @ojvalue {string} "plotAreaEnd"
  * @ojvalue {string} "start"
- * @default <code class="prettyprint">"start"</code>
+ * @default "start"
  * @deprecated 
  */
 /**
@@ -2148,7 +2165,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default null
  * @deprecated Use pieCenter instead
  */
 /**
@@ -2158,7 +2175,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  * @deprecated 
  */
 /**
@@ -2168,7 +2185,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default null
  * @deprecated
  */
 /**
@@ -2178,7 +2195,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default {}
  */
 /**
  * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) to format the label if it is numeric. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
@@ -2187,7 +2204,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The scaling behavior of the label if it is numeric. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
@@ -2203,7 +2220,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @ojvalue {string} "trillion"
  * @ojvalue {string} "quadrillion"
  * @ojvalue {string} "auto"
- * @default <code class="prettyprint">"auto"</code>
+ * @default "auto"
  */
 /**
  * Specifies the text for the label. When a innerRadius is specified, the label will automatically be scaled to fit within the inner circle. If the innerRadius is 0, the default font size will be used.
@@ -2212,7 +2229,8 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
+ * @ojtranslatable
  */
 /**
  * The CSS style object defining the style of the label.
@@ -2221,7 +2239,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default {}
  */
 /**
  * A function that returns custom center content. The function takes a dataContext argument, 
@@ -2248,7 +2266,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {function(object)}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * An object defining properties for the axis, tick marks, tick labels, and axis titles.
@@ -2257,7 +2275,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default {}
  */
 /**
  * Defines whether the axis is rendered.
@@ -2268,7 +2286,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @type {string}
  * @ojvalue {string} "off"
  * @ojvalue {string} "on"
- * @default <code class="prettyprint">"on"</code>
+ * @default "on"
  */
 /**
  * Defines the size of the axis in pixels (e.g. '50px') or percent (e.g. '15%').
@@ -2277,7 +2295,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * Defines the maximum size of the axis in pixels (e.g. '50px') or percent (e.g. '15%').
@@ -2286,7 +2304,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The axis title. Does not apply to polar charts.
@@ -2295,7 +2313,8 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
+ * @ojtranslatable
  */
 /**
  * The array of reference objects associated with the axis.
@@ -2304,7 +2323,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {Array.<object>}
- * @default <code class="prettyprint">null</code>
+ * @default []
  */
 /**
  * The id of the reference object.
@@ -2313,7 +2332,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * An optional array of category strings corresponding to this reference object. This allows highlighting and filtering of a reference object through interactions with legend sections. If not defined, the reference object id is used.
@@ -2322,7 +2341,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {Array.<string>}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The text displayed in the legend for the reference object.
@@ -2331,7 +2350,8 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
+ * @ojtranslatable
  */
 /**
  * The type of reference object being shown.
@@ -2342,7 +2362,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @type {string}
  * @ojvalue {string} "area"
  * @ojvalue {string} "line"
- * @default <code class="prettyprint">"line"</code>
+ * @default "line"
  */
 /**
  * The location of the reference object relative to the data items.
@@ -2353,7 +2373,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @type {string}
  * @ojvalue {string} "front"
  * @ojvalue {string} "back"
- * @default <code class="prettyprint">"back"</code>
+ * @default "back"
  */
 /**
  * The color of the reference object.
@@ -2362,7 +2382,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The width of the reference line.
@@ -2371,7 +2391,9 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {number}
- * @default <code class="prettyprint">null</code>
+ * @default null
+ * @ojunits pixels
+ * @ojmin 0
  */
 /**
  * The line style of the reference line.
@@ -2383,7 +2405,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @ojvalue {string} "dotted"
  * @ojvalue {string} "dashed"
  * @ojvalue {string} "solid"
- * @default <code class="prettyprint">"solid"</code>
+ * @default "solid"
  */
 /**
  * The line type of the reference line. Only applies if the line value is not constant. centeredStepped and centeredSegmented are not supported for polar, scatter, and bubble charts.
@@ -2398,7 +2420,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @ojvalue {string} "segmented"
  * @ojvalue {string} "centeredSegmented"
  * @ojvalue {string} "straight"
- * @default <code class="prettyprint">"straight"</code>
+ * @default "straight"
  */
 /**
  * The CSS style class to apply to the reference object. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the reference object color attribute.
@@ -2407,7 +2429,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  * @deprecated This attribute is deprecated, use the svgClassName attribute instead.
  */
 /**
@@ -2417,7 +2439,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default null
  * @deprecated This attribute is deprecated, use the svgStyle attribute instead.
  */
 /**
@@ -2427,7 +2449,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The inline style to apply to the reference object. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the reference object color attribute.
@@ -2436,7 +2458,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The value of a reference line. For categorical axes, the value represents the group index. For example,   0 is the position of the first group, and 1.5 is the position half way between the second and the third group.
@@ -2445,7 +2467,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {number}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The low value of a reference area. For categorical axes, the value represents the group index. For example,   0 is the position of the first group, and 1.5 is the position half way between the second and the third group.
@@ -2454,7 +2476,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {number}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The high value of a reference area. For categorical axes, the value represents the group index. For example,    0 is the position of the first group, and 1.5 is the position half way between the second and the third group.
@@ -2463,7 +2485,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {number}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The description of this object. This is used for accessibility and also for customizing the tooltip text.
@@ -2472,7 +2494,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * Defines whether the reference object should be shown in the legend.
@@ -2483,7 +2505,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @type {string}
  * @ojvalue {string} "on"
  * @ojvalue {string} "off"
- * @default <code class="prettyprint">"off"</code>
+ * @default "off"
  */
 /**
  * The minimum value of the axis. Defaults to null for automatic calculation based on the data. For categorical axes, the value represents the group index. For example, 0 is the position of the first group, and 1.5 is the position half way between the second and the third group.
@@ -2492,7 +2514,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {number|string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The maximum value of the axis. Defaults to null for automatic calculation based on the data. For categorical axes, the value represents the group index. For example, 0 is the position of the first group, and 1.5 is the position half way between the second and the third group.
@@ -2501,7 +2523,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {number|string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The minimum data value corresponding to an axis. If specified, the automatic axis extent calculation will use this value. Only applies to numerical axes.
@@ -2510,7 +2532,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {number}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The maximum data value corresponding to an axis. If specified, the automatic axis extent calculation will use this value. Only applies to numerical axes.
@@ -2519,7 +2541,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {number}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The increment between major tick marks. Defaults to null for automatic calculation based on the data. Only applies to time and numerical axes. For log axis, the step is a multiplier, so for example, if the step is 2, the major tick marks will be rendered at 1, 2, 4, 8, and so on.
@@ -2528,7 +2550,8 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {number}
- * @default <code class="prettyprint">null</code>
+ * @default null
+ * @ojexclusivemin 0
  */
 /**
  * The minimum increment between major tick marks. This is typically used to prevent fractional axis values for discrete measures. Only applies to numerical axes.
@@ -2537,7 +2560,8 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {number}
- * @default <code class="prettyprint">null</code>
+ * @default null
+ * @ojexclusivemin 0
  */
 /**
  * The increment between minor tick marks. Defaults to null for automatic calculation based on the data. Only applies to numerical axes. For log axis, the step is a multiplier, so for example, if the minorStep is 2, the minor tick marks will be rendered at 1, 2, 4, 8, and so on.
@@ -2546,7 +2570,8 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {number}
- * @default <code class="prettyprint">null</code>
+ * @default null
+ * @ojexclusivemin 0
  */
 /**
  * Defines the axis scale. Only applies to numerical axes.
@@ -2557,7 +2582,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @type {string}
  * @ojvalue {string} "log"
  * @ojvalue {string} "linear"
- * @default <code class="prettyprint">"linear"</code>
+ * @default "linear"
  */
 /**
  * The CSS style object defining the style of the axis title. The CSS white-space property can be defined with value "nowrap" to disable default text wrapping of the title.
@@ -2566,7 +2591,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default {}
  */
 /**
  * An object defining the properties of the tick labels.
@@ -2575,7 +2600,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default {}
  */
 /**
  * Defines whether the tick labels are rendered.
@@ -2586,7 +2611,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @type {string}
  * @ojvalue {string} "off"
  * @ojvalue {string} "on"
- * @default <code class="prettyprint">"on"</code>
+ * @default "on"
  */
 /**
  * The CSS style object defining the style of the labels. The CSS white-space property can be defined with value "nowrap" to disable default text wrapping of categorical labels.
@@ -2595,7 +2620,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default {}
  */
 /**
  * The scaling behavior of the labels. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
@@ -2611,7 +2636,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @ojvalue {string} "trillion"
  * @ojvalue {string} "quadrillion"
  * @ojvalue {string} "auto"
- * @default <code class="prettyprint">"auto"</code>
+ * @default "auto"
  */
 /**
  * Defines whether the chart will automatically rotate the labels by 90 degrees in order to fit more labels on the axis. The rotation will only be applied to categorical labels for a horizontal axis.
@@ -2622,7 +2647,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @type {string}
  * @ojvalue {string} "none"
  * @ojvalue {string} "auto"
- * @default <code class="prettyprint">"auto"</code>
+ * @default "auto"
  */
 /**
  * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) to format the labels. When using a time axis, this attribute also takes an array of two converters, which apply respectively to the first and second label levels. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
@@ -2631,7 +2656,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * An object defining properties for the axis line.
@@ -2640,7 +2665,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default {}
  */
 /**
  * The color of the axis line.
@@ -2649,7 +2674,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The width of the axis line.
@@ -2658,7 +2683,9 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {number}
- * @default <code class="prettyprint">null</code>
+ * @default null
+ * @ojunits pixels
+ * @ojmin 0
  */
 /**
  * Defines whether the axis line is rendered.
@@ -2669,7 +2696,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @type {string}
  * @ojvalue {string} "off"
  * @ojvalue {string} "on"
- * @default <code class="prettyprint">"on"</code>
+ * @default "on"
  */
 /**
  * An object defining properties for the major tick marks.
@@ -2678,7 +2705,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default {}
  */
 /**
  * The color of the major tick marks.
@@ -2687,7 +2714,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The line style of the major tick marks.
@@ -2699,7 +2726,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @ojvalue {string} "dotted"
  * @ojvalue {string} "dashed"
  * @ojvalue {string} "solid"
- * @default <code class="prettyprint">"solid"</code>
+ * @default "solid"
  */
 /**
  * The width of the major tick marks.
@@ -2708,7 +2735,9 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {number}
- * @default <code class="prettyprint">null</code>
+ * @default null
+ * @ojunits pixels
+ * @ojmin 0
  */
 /**
  * The color of the major tick mark at the baseline (x = 0). Valid values are auto, inherit, or a custom color. If set to inherit, it will follow the lineColor attribute.
@@ -2719,7 +2748,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @type {string}
  * @ojvalue {string} "inherit"
  * @ojvalue {string} "auto"
- * @default <code class="prettyprint">"auto"</code>
+ * @default "auto"
  */
 /**
  * The line style of the major tick mark at the baseline (x = 0). If not specified, it will follow the lineStyle attribute.
@@ -2731,7 +2760,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @ojvalue {string} "dotted"
  * @ojvalue {string} "dashed"
  * @ojvalue {string} "solid"
- * @default <code class="prettyprint">"solid"</code>
+ * @default "solid"
  */
 /**
  * The width of the major tick mark at the baseline (x = 0) If not specified, it will follow the lineWidth attribute.
@@ -2740,7 +2769,9 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {number}
- * @default <code class="prettyprint">null</code>
+ * @default null
+ * @ojunits pixels
+ * @ojmin 0
  */
 /**
  * Defines whether the major tick marks are rendered.
@@ -2752,7 +2783,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @ojvalue {string} "on"
  * @ojvalue {string} "off"
  * @ojvalue {string} "auto"
- * @default <code class="prettyprint">"auto"</code>
+ * @default "auto"
  */
 /**
  * An object defining properties for the minor tick marks.
@@ -2761,7 +2792,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default {}
  */
 /**
  * The color of the minor tick marks.
@@ -2770,7 +2801,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The line style of the minor tick marks.
@@ -2782,7 +2813,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @ojvalue {string} "dotted"
  * @ojvalue {string} "dashed"
  * @ojvalue {string} "solid"
- * @default <code class="prettyprint">"solid"</code>
+ * @default "solid"
  */
 /**
  * The width of the minor tick marks.
@@ -2791,7 +2822,9 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {number}
- * @default <code class="prettyprint">null</code>
+ * @default null
+ * @ojunits pixels
+ * @ojmin 0
  */
 /**
  * Defines whether the minor tick marks are rendered.
@@ -2803,7 +2836,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @ojvalue {string} "on"
  * @ojvalue {string} "off"
  * @ojvalue {string} "auto"
- * @default <code class="prettyprint">"auto"</code>
+ * @default "auto"
  */
 /**
  * Defines whether the axis baseline starts at the minimum value of the data or at zero. Only applies to numerical data axes.
@@ -2814,7 +2847,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @type {string}
  * @ojvalue {string} "min"
  * @ojvalue {string} "zero"
- * @default <code class="prettyprint">"zero"</code>
+ * @default "zero"
  */
 /**
  * Specifies the minimum x coordinate of the current viewport for zoom and scroll. For group axis, the group index will be treated as the axis coordinate. If both viewportStartGroup and viewportMin are specified, then viewportMin takes precedence. If not specified, this value will be the axis min.
@@ -2823,7 +2856,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {number|string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * Specifies the maximum x coordinate of the current viewport for zoom and scroll. For group axis, the group index will be treated as the axis coordinate. If both viewportEndGroup and viewportMax are specified, then viewportMax takes precedence. If not specified, this value will be the axis max.
@@ -2832,7 +2865,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {number|string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * Specifies the start group of the current viewport. Only applies to charts with group or time axis. If not specified, the default start group is the first group in the data set.
@@ -2841,7 +2874,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {number|string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * Specifies the end group of the current viewport. Only applies to charts with group or time axis. If not specified, the default end group is the last group in the data set.
@@ -2850,7 +2883,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {number|string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * An object defining properties for the axis, tick marks, tick labels, and axis titles.
@@ -2859,7 +2892,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default {}
  */
 /**
  * Defines whether the axis is rendered.
@@ -2870,7 +2903,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @type {string}
  * @ojvalue {string} "off"
  * @ojvalue {string} "on"
- * @default <code class="prettyprint">"on"</code>
+ * @default "on"
  */
 /**
  * Defines the size of the axis in pixels (e.g. '50px') or percent (e.g. '15%').
@@ -2879,7 +2912,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * Defines the maximum size of the axis in pixels (e.g. '50px') or percent (e.g. '15%').
@@ -2888,7 +2921,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The axis title. Does not apply to polar charts.
@@ -2897,7 +2930,8 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
+ * @ojtranslatable
  */
 /**
  * The position of the axis relative to its content. For vertical charts, only start and end apply. For horizontal charts, only top and bottom apply.
@@ -2911,7 +2945,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @ojvalue {string} "top"
  * @ojvalue {string} "bottom"
  * @ojvalue {string} "auto"
- * @default <code class="prettyprint">"auto"</code>
+ * @default "auto"
  */
 /**
  * The array of reference objects associated with the axis.
@@ -2920,7 +2954,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {Array.<object>}
- * @default <code class="prettyprint">null</code>
+ * @default []
  */
 /**
  * The id of the reference object.
@@ -2929,7 +2963,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * An optional array of category strings corresponding to this reference object. This allows highlighting and filtering of a reference object through interactions with legend sections. If not defined, the reference object id is used.
@@ -2938,7 +2972,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {Array.<string>}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The text displayed in the legend for the reference object.
@@ -2947,7 +2981,8 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
+ * @ojtranslatable
  */
 /**
  * The type of reference object being shown.
@@ -2958,7 +2993,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @type {string}
  * @ojvalue {string} "area"
  * @ojvalue {string} "line"
- * @default <code class="prettyprint">"line"</code>
+ * @default "line"
  */
 /**
  * The location of the reference object relative to the data items.
@@ -2969,7 +3004,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @type {string}
  * @ojvalue {string} "front"
  * @ojvalue {string} "back"
- * @default <code class="prettyprint">"back"</code>
+ * @default "back"
  */
 /**
  * The color of the reference object.
@@ -2978,7 +3013,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The width of the reference line.
@@ -2987,7 +3022,9 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {number}
- * @default <code class="prettyprint">null</code>
+ * @default null
+ * @ojunits pixels
+ * @ojmin 0
  */
 /**
  * The line style of the reference line.
@@ -2999,7 +3036,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @ojvalue {string} "dotted"
  * @ojvalue {string} "dashed"
  * @ojvalue {string} "solid"
- * @default <code class="prettyprint">"solid"</code>
+ * @default "solid"
  */
 /**
  * The line type of the reference line. Only applies if the line value is not constant. centeredStepped and centeredSegmented are not supported for polar, scatter, and bubble charts.
@@ -3014,7 +3051,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @ojvalue {string} "segmented"
  * @ojvalue {string} "centeredSegmented"
  * @ojvalue {string} "straight"
- * @default <code class="prettyprint">"straight"</code>
+ * @default "straight"
  */
 /**
  * The CSS style class to apply to the reference object. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the reference object color attribute.
@@ -3023,7 +3060,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  * @deprecated This attribute is deprecated, use the svgClassName attribute instead.
  */
 /**
@@ -3033,7 +3070,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default null
  * @deprecated This attribute is deprecated, use the svgStyle attribute instead.
  */
 /**
@@ -3043,7 +3080,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The inline style to apply to the reference object. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the reference object color attribute.
@@ -3052,7 +3089,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The value of a reference line. This property defines a constant value across the entire reference line and is ignored if the items array is specified.
@@ -3061,7 +3098,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {number}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The low value of a reference area. This property defines a constant value across the entire reference area and is ignored if the items array is specified.
@@ -3070,7 +3107,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {number}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The high value of a reference area. This property defines a constant value across the entire reference area and is ignored if the items array is specified.
@@ -3079,7 +3116,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {number}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The description of this object. This is used for accessibility and also for customizing the tooltip text.
@@ -3088,7 +3125,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * Defines whether the reference object should be shown in the legend.
@@ -3099,7 +3136,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @type {string}
  * @ojvalue {string} "on"
  * @ojvalue {string} "off"
- * @default <code class="prettyprint">"off"</code>
+ * @default "off"
  */
 /**
  * An array of values or an array of objects with the following properties that defines the data for a varying reference object. Only supported for y1 and y2 axes for all chart types.
@@ -3108,7 +3145,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {Array.<object>|Array.<number>}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The low value of this point of a reference area.
@@ -3117,7 +3154,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {number}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The high value of this point of a reference area.
@@ -3126,7 +3163,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {number}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The value of this point of a line object.
@@ -3135,7 +3172,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {number}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The x-value on a data axis or date on a time axis for this point, not used for categorical axis.
@@ -3144,7 +3181,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {number|string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The minimum value of the axis. Defaults to null for automatic calculation based on the data.
@@ -3153,7 +3190,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {number}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The maximum value of the axis. Defaults to null for automatic calculation based on the data.
@@ -3162,7 +3199,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {number}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The minimum data value corresponding to an axis. If specified, the automatic axis extent calculation will use this value.
@@ -3171,7 +3208,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {number}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The maximum data value corresponding to an axis. If specified, the automatic axis extent calculation will use this value.
@@ -3180,7 +3217,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {number}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The increment between major tick marks. Defaults to null for automatic calculation based on the data. For log axis, the step is a multiplier, so for example, if the step is 2, the major tick marks will be rendered at 1, 2, 4, 8, and so on.
@@ -3189,7 +3226,8 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {number}
- * @default <code class="prettyprint">null</code>
+ * @default null
+ * @ojexclusivemin 0
  */
 /**
  * The minimum increment between major tick marks. This is typically used to prevent fractional axis values for discrete measures.
@@ -3198,7 +3236,8 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {number}
- * @default <code class="prettyprint">null</code>
+ * @default null
+ * @ojexclusivemin 0
  */
 /**
  * The increment between minor tick marks. Defaults to null for automatic calculation based on the data. For log axis, the step is a multiplier, so for example, if the minorStep is 2, the minor tick marks will be rendered at 1, 2, 4, 8, and so on.
@@ -3207,7 +3246,8 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {number}
- * @default <code class="prettyprint">null</code>
+ * @default null
+ * @ojexclusivemin 0
  */
 /**
  * Defines the axis scale. Only applies to numerical axes.
@@ -3218,7 +3258,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @type {string}
  * @ojvalue {string} "log"
  * @ojvalue {string} "linear"
- * @default <code class="prettyprint">"linear"</code>
+ * @default "linear"
  */
 /**
  * The CSS style object defining the style of the axis title.
@@ -3227,7 +3267,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default {}
  */
 /**
  * An object defining the properties of the tick labels.
@@ -3236,7 +3276,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default {}
  */
 /**
  * Defines whether the tick labels are rendered.
@@ -3247,7 +3287,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @type {string}
  * @ojvalue {string} "off"
  * @ojvalue {string} "on"
- * @default <code class="prettyprint">"on"</code>
+ * @default "on"
  */
 /**
  * Defines the position of the tick labels relative to the plot area. Inside position is not supported for scatter and bubble charts.
@@ -3258,7 +3298,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @type {string}
  * @ojvalue {string} "inside"
  * @ojvalue {string} "outside"
- * @default <code class="prettyprint">"outside"</code>
+ * @default "outside"
  */
 /**
  * The CSS style object defining the style of the labels.
@@ -3267,7 +3307,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default {}
  */
 /**
  * The scaling behavior of the labels. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
@@ -3283,7 +3323,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @ojvalue {string} "trillion"
  * @ojvalue {string} "quadrillion"
  * @ojvalue {string} "auto"
- * @default <code class="prettyprint">"auto"</code>
+ * @default "auto"
  */
 /**
  * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) to format the labels. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
@@ -3292,7 +3332,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * An object defining properties for the axis line.
@@ -3301,7 +3341,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default {}
  */
 /**
  * The color of the axis line.
@@ -3310,7 +3350,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The width of the axis line.
@@ -3319,7 +3359,9 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {number}
- * @default <code class="prettyprint">null</code>
+ * @default null
+ * @ojunits pixels
+ * @ojmin 0
  */
 /**
  * Defines whether the axis line is rendered.
@@ -3331,7 +3373,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @ojvalue {string} "on"
  * @ojvalue {string} "off"
  * @ojvalue {string} "auto"
- * @default <code class="prettyprint">"auto"</code>
+ * @default "auto"
  */
 /**
  * An object defining properties for the major tick marks.
@@ -3340,7 +3382,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default {}
  */
 /**
  * The color of the major tick marks.
@@ -3349,7 +3391,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The width of the major tick marks.
@@ -3358,7 +3400,9 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {number}
- * @default <code class="prettyprint">null</code>
+ * @default null
+ * @ojunits pixels
+ * @ojmin 0
  */
 /**
  * The line style of the major tick marks.
@@ -3370,7 +3414,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @ojvalue {string} "dotted"
  * @ojvalue {string} "dashed"
  * @ojvalue {string} "solid"
- * @default <code class="prettyprint">"solid"</code>
+ * @default "solid"
  */
 /**
  * The color of the major tick mark at the baseline (y = 0). Valid values are auto, inherit, or a custom color. If set to inherit, it will follow the lineColor attribute.
@@ -3381,7 +3425,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @type {string}
  * @ojvalue {string} "inherit"
  * @ojvalue {string} "auto"
- * @default <code class="prettyprint">"auto"</code>
+ * @default "auto"
  */
 /**
  * The line style of the major tick mark at the baseline (y = 0). If not specified, it will follow the lineStyle attribute.
@@ -3393,7 +3437,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @ojvalue {string} "dotted"
  * @ojvalue {string} "dashed"
  * @ojvalue {string} "solid"
- * @default <code class="prettyprint">"solid"</code>
+ * @default "solid"
  */
 /**
  * The width of the major tick mark at the baseline (y = 0) If not specified, it will follow the lineWidth attribute.
@@ -3402,7 +3446,9 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {number}
- * @default <code class="prettyprint">null</code>
+ * @default null
+ * @ojunits pixels
+ * @ojmin 0
  */
 /**
  * Defines whether the major tick marks are rendered.
@@ -3414,7 +3460,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @ojvalue {string} "on"
  * @ojvalue {string} "off"
  * @ojvalue {string} "auto"
- * @default <code class="prettyprint">"auto"</code>
+ * @default "auto"
  */
 /**
  * An object defining properties for the minor tick marks.
@@ -3423,7 +3469,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default {}
  */
 /**
  * The color of the minor tick marks.
@@ -3432,7 +3478,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The line style of the minor tick marks.
@@ -3444,7 +3490,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @ojvalue {string} "dotted"
  * @ojvalue {string} "dashed"
  * @ojvalue {string} "solid"
- * @default <code class="prettyprint">"solid"</code>
+ * @default "solid"
  */
 /**
  * The width of the minor tick marks.
@@ -3453,7 +3499,9 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {number}
- * @default <code class="prettyprint">null</code>
+ * @default null
+ * @ojunits pixels
+ * @ojmin 0
  */
 /**
  * Defines whether the minor tick marks are rendered.
@@ -3465,7 +3513,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @ojvalue {string} "on"
  * @ojvalue {string} "off"
  * @ojvalue {string} "auto"
- * @default <code class="prettyprint">"auto"</code>
+ * @default "auto"
  */
 /**
  * Defines whether the axis baseline starts at the minimum value of the data or at zero. Only applies to numerical data axes.
@@ -3476,7 +3524,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @type {string}
  * @ojvalue {string} "min"
  * @ojvalue {string} "zero"
- * @default <code class="prettyprint">"zero"</code>
+ * @default "zero"
  */
 /**
  * Specifies the minimum y coordinate of the current viewport for zoom and scroll. Only applies to bubble and scatter charts. If not specified, this value will be the axis min.
@@ -3485,7 +3533,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {number}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * Specifies the maximum y coordinate of the current viewport for zoom and scroll. Only applies to bubble and scatter charts. If not specified, this value will be the axis max.
@@ -3494,7 +3542,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {number}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * An object defining properties for the axis, tick marks, tick labels, and axis titles. Y2 axis is only supported for Cartesian bar, line, area, and combo charts.
@@ -3503,7 +3551,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default {}
  */
 /**
  * Defines whether the axis is rendered.
@@ -3514,7 +3562,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @type {string}
  * @ojvalue {string} "off"
  * @ojvalue {string} "on"
- * @default <code class="prettyprint">"on"</code>
+ * @default "on"
  */
 /**
  * Defines the size of the axis in pixels (e.g. '50px') or percent (e.g. '15%').
@@ -3523,7 +3571,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * Defines the maximum size of the axis in pixels (e.g. '50px') or percent (e.g. '15%').
@@ -3532,7 +3580,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The axis title.
@@ -3541,7 +3589,8 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
+ * @ojtranslatable
  */
 /**
  * The position of the axis relative to its content. For vertical charts, only start and end apply. For horizontal charts, only top and bottom apply.
@@ -3555,7 +3604,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @ojvalue {string} "top"
  * @ojvalue {string} "bottom"
  * @ojvalue {string} "auto"
- * @default <code class="prettyprint">"auto"</code>
+ * @default "auto"
  */
 /**
  * The array of reference objects associated with the axis.
@@ -3564,7 +3613,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {Array.<object>}
- * @default <code class="prettyprint">null</code>
+ * @default []
  */
 /**
  * The id of the reference object.
@@ -3573,7 +3622,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * An optional array of category strings corresponding to this reference object. This allows highlighting and filtering of a reference object through interactions with legend sections. If not defined, the reference object id is used.
@@ -3582,7 +3631,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {Array.<string>}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The text displayed in the legend for the reference object.
@@ -3591,7 +3640,8 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
+ * @ojtranslatable
  */
 /**
  * The type of reference object being shown.
@@ -3602,7 +3652,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @type {string}
  * @ojvalue {string} "area"
  * @ojvalue {string} "line"
- * @default <code class="prettyprint">"line"</code>
+ * @default "line"
  */
 /**
  * The location of the reference object relative to the data items.
@@ -3613,7 +3663,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @type {string}
  * @ojvalue {string} "front"
  * @ojvalue {string} "back"
- * @default <code class="prettyprint">"back"</code>
+ * @default "back"
  */
 /**
  * The color of the reference object.
@@ -3622,7 +3672,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The width of the reference line.
@@ -3631,7 +3681,9 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {number}
- * @default <code class="prettyprint">null</code>
+ * @default null
+ * @ojunits pixels
+ * @ojmin 0
  */
 /**
  * The line style of the reference line.
@@ -3643,7 +3695,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @ojvalue {string} "dotted"
  * @ojvalue {string} "dashed"
  * @ojvalue {string} "solid"
- * @default <code class="prettyprint">"solid"</code>
+ * @default "solid"
  */
 /**
  * The line type of the reference line. Only applies if the line value is not constant. centeredStepped and centeredSegmented are not supported for polar, scatter, and bubble charts.
@@ -3658,7 +3710,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @ojvalue {string} "segmented"
  * @ojvalue {string} "centeredSegmented"
  * @ojvalue {string} "straight"
- * @default <code class="prettyprint">"straight"</code>
+ * @default "straight"
  */
 /**
  * The CSS style class to apply to the reference object. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the reference object color attribute.
@@ -3667,7 +3719,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  * @deprecated This attribute is deprecated, use the svgClassName attribute instead.
  */
 /**
@@ -3677,7 +3729,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default null
  * @deprecated This attribute is deprecated, use the svgStyle attribute instead.
  */
 /**
@@ -3687,7 +3739,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The inline style to apply to the reference object. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the reference object color attribute.
@@ -3696,7 +3748,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The value of a reference line. This property defines a constant value across the entire reference line and is ignored if the items array is specified.
@@ -3705,7 +3757,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {number}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The low value of a reference area. This property defines a constant value across the entire reference area and is ignored if the items array is specified.
@@ -3714,7 +3766,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {number}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The high value of a reference area. This property defines a constant value across the entire reference area and is ignored if the items array is specified.
@@ -3723,7 +3775,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {number}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The description of this object. This is used for accessibility and also for customizing the tooltip text.
@@ -3732,7 +3784,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * Defines whether the reference object should be shown in the legend.
@@ -3743,7 +3795,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @type {string}
  * @ojvalue {string} "on"
  * @ojvalue {string} "off"
- * @default <code class="prettyprint">"off"</code>
+ * @default "off"
  */
 /**
  * An array of values or an array of objects with the following properties that defines the data for a varying reference object. Only supported for y1 and y2 axes for all chart types.
@@ -3752,7 +3804,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {Array.<object>|Array.<number>}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The low value of this point of a reference area.
@@ -3761,7 +3813,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {number}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The high value of this point of a reference area.
@@ -3770,7 +3822,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {number}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The value of this point of a line object.
@@ -3779,7 +3831,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {number}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The x-value on a data axis or date on a time axis for this point, not used for categorical axis.
@@ -3788,7 +3840,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {number|string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The minimum value of the axis. Defaults to null for automatic calculation based on the data.
@@ -3797,7 +3849,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {number}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The maximum value of the axis. Defaults to null for automatic calculation based on the data.
@@ -3806,7 +3858,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {number}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The minimum data value corresponding to an axis. If specified, the automatic axis extent calculation will use this value.
@@ -3815,7 +3867,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {number}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The maximum data value corresponding to an axis. If specified, the automatic axis extent calculation will use this value.
@@ -3824,7 +3876,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {number}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The increment between major tick marks. Defaults to null for automatic calculation based on the data. For log axis, the step is a multiplier, so for example, if the step is 2, the major tick marks will be rendered at 1, 2, 4, 8, and so on.
@@ -3833,7 +3885,8 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {number}
- * @default <code class="prettyprint">null</code>
+ * @default null
+ * @ojexclusivemin 0
  */
 /**
  * The minimum increment between major tick marks. This is typically used to prevent fractional axis values for discrete measures.
@@ -3842,7 +3895,8 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {number}
- * @default <code class="prettyprint">null</code>
+ * @default null
+ * @ojexclusivemin 0
  */
 /**
  * The increment between minor tick marks. Defaults to null for automatic calculation based on the data. For log axis, the step is a multiplier, so for example, if the minorStep is 2, the minor tick marks will be rendered at 1, 2, 4, 8, and so on.
@@ -3851,7 +3905,8 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {number}
- * @default <code class="prettyprint">null</code>
+ * @default null
+ * @ojexclusivemin 0
  */
 /**
  * Defines the axis scale. Only applies to numerical axes.
@@ -3862,7 +3917,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @type {string}
  * @ojvalue {string} "log"
  * @ojvalue {string} "linear"
- * @default <code class="prettyprint">"linear"</code>
+ * @default "linear"
  */
 /**
  * The CSS style object defining the style of the axis title.
@@ -3871,7 +3926,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default {}
  */
 /**
  * An object defining the properties of the tick labels.
@@ -3880,7 +3935,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default {}
  */
 /**
  * Defines whether the tick labels are rendered.
@@ -3891,7 +3946,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @type {string}
  * @ojvalue {string} "off"
  * @ojvalue {string} "on"
- * @default <code class="prettyprint">"on"</code>
+ * @default "on"
  */
 /**
  * Defines the position of the tick labels relative to the plot area.
@@ -3902,7 +3957,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @type {string}
  * @ojvalue {string} "inside"
  * @ojvalue {string} "outside"
- * @default <code class="prettyprint">"outside"</code>
+ * @default "outside"
  */
 /**
  * The CSS style object defining the style of the labels.
@@ -3911,7 +3966,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default {}
  */
 /**
  * The scaling behavior of the labels. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
@@ -3927,7 +3982,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @ojvalue {string} "trillion"
  * @ojvalue {string} "quadrillion"
  * @ojvalue {string} "auto"
- * @default <code class="prettyprint">"auto"</code>
+ * @default "auto"
  */
 /**
  * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) to format the labels. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
@@ -3936,7 +3991,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * An object defining properties for the axis line.
@@ -3945,7 +4000,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default {}
  */
 /**
  * The color of the axis line.
@@ -3954,7 +4009,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The width of the axis line.
@@ -3963,7 +4018,9 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {number}
- * @default <code class="prettyprint">null</code>
+ * @default null
+ * @ojunits pixels
+ * @ojmin 0
  */
 /**
  * Defines whether the axis line is rendered.
@@ -3975,7 +4032,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @ojvalue {string} "on"
  * @ojvalue {string} "off"
  * @ojvalue {string} "auto"
- * @default <code class="prettyprint">"auto"</code>
+ * @default "auto"
  */
 /**
  * An object defining properties for the major tick marks.
@@ -3984,7 +4041,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default {}
  */
 /**
  * The color of the major tick marks.
@@ -3993,7 +4050,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The line style of the major tick marks.
@@ -4005,7 +4062,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @ojvalue {string} "dotted"
  * @ojvalue {string} "dashed"
  * @ojvalue {string} "solid"
- * @default <code class="prettyprint">"solid"</code>
+ * @default "solid"
  */
 /**
  * The width of the major tick marks.
@@ -4014,7 +4071,9 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {number}
- * @default <code class="prettyprint">null</code>
+ * @default null
+ * @ojunits pixels
+ * @ojmin 0
  */
 /**
  * The color of the major tick mark at the baseline (y = 0). Valid values are auto, inherit, or a custom color. If set to inherit, it will follow the lineColor attribute.
@@ -4025,7 +4084,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @type {string}
  * @ojvalue {string} "inherit"
  * @ojvalue {string} "auto"
- * @default <code class="prettyprint">"auto"</code>
+ * @default "auto"
  */
 /**
  * The line style of the major tick mark at the baseline (y = 0). If not specified, it will follow the lineStyle attribute.
@@ -4037,7 +4096,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @ojvalue {string} "dotted"
  * @ojvalue {string} "dashed"
  * @ojvalue {string} "solid"
- * @default <code class="prettyprint">"solid"</code>
+ * @default "solid"
  */
 /**
  * The width of the major tick mark at the baseline (y = 0) If not specified, it will follow the lineWidth attribute.
@@ -4046,7 +4105,9 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {number}
- * @default <code class="prettyprint">null</code>
+ * @default null
+ * @ojunits pixels
+ * @ojmin 0
  */
 /**
  * Defines whether the major tick marks are rendered.
@@ -4058,7 +4119,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @ojvalue {string} "on"
  * @ojvalue {string} "off"
  * @ojvalue {string} "auto"
- * @default <code class="prettyprint">"auto"</code>
+ * @default "auto"
  */
 /**
  * An object defining properties for the minor tick marks.
@@ -4067,7 +4128,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default {}
  */
 /**
  * The color of the minor tick marks.
@@ -4076,7 +4137,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The line style of the minor tick marks.
@@ -4088,7 +4149,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @ojvalue {string} "dotted"
  * @ojvalue {string} "dashed"
  * @ojvalue {string} "solid"
- * @default <code class="prettyprint">"solid"</code>
+ * @default "solid"
  */
 /**
  * The width of the minor tick marks.
@@ -4097,7 +4158,9 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {number}
- * @default <code class="prettyprint">null</code>
+ * @default null
+ * @ojunits pixels
+ * @ojmin 0
  */
 /**
  * Defines whether the minor tick marks are rendered.
@@ -4109,7 +4172,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @ojvalue {string} "on"
  * @ojvalue {string} "off"
  * @ojvalue {string} "auto"
- * @default <code class="prettyprint">"auto"</code>
+ * @default "auto"
  */
 /**
  * Defines whether the axis baseline starts at the minimum value of the data or at zero. Only applies to numerical data axes.
@@ -4120,7 +4183,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @type {string}
  * @ojvalue {string} "min"
  * @ojvalue {string} "zero"
- * @default <code class="prettyprint">"zero"</code>
+ * @default "zero"
  */
 /**
  * Defines whether the tick marks of the y1 and y2 axes are aligned. Not supported for logarithmic axes.
@@ -4131,7 +4194,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @type {string}
  * @ojvalue {string} "off"
  * @ojvalue {string} "on"
- * @default <code class="prettyprint">"on"</code>
+ * @default "on"
  */
 /**
  * An object defining the overview scrollbar. Only applies if zoomAndScroll is not off. Currently only supported for vertical bar, line, area, stock, and combo charts.
@@ -4140,7 +4203,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default {}
  */
 /**
  * Specifies whether the overview scrollbar is rendered. If not, simple scrollbar will be used.
@@ -4151,7 +4214,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @type {string}
  * @ojvalue {string} "on"
  * @ojvalue {string} "off"
- * @default <code class="prettyprint">"off"</code>
+ * @default "off"
  */
 /**
  * Specifies the height of the overview scrollbar in pixels (e.g. '50px') or percent (e.g. '15%').
@@ -4160,7 +4223,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * An object containing the property override for the overview chart. The API is the same as the chart property API, and the property provided here will be merged on top of the default property of the overview chart. This can be used to customize the style or the type of the overview chart.
@@ -4169,7 +4232,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default {}
  */
 /**
  * An object defining the style of the plot area.
@@ -4178,7 +4241,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default {}
  */
 /**
  * The border color to be set on the chart's plot area.
@@ -4187,7 +4250,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The border width to be set on the chart's plot area.
@@ -4196,7 +4259,8 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {number}
- * @default <code class="prettyprint">null</code>
+ * @default null
+ * @ojunits pixels
  */
 /**
  * The color of the plot area background.
@@ -4205,7 +4269,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * Specifies whether the plot area is rendered.
@@ -4216,7 +4280,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @type {string}
  * @ojvalue {string} "off"
  * @ojvalue {string} "on"
- * @default <code class="prettyprint">"on"</code>
+ * @default "on"
  */
 /**
  * An object defining the style, positioning, and behavior of the legend.
@@ -4225,7 +4289,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default {}
  */
 /**
  * The legend title.
@@ -4234,7 +4298,8 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
+ * @ojtranslatable
  */
 /**
  * An array of objects with the following properties defining the additional legend sections, other than the default series and reference object sections.
@@ -4243,7 +4308,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {Array.<object>}
- * @default <code class="prettyprint">null</code>
+ * @default []
  */
 /**
  * The title of the legend section.
@@ -4252,7 +4317,8 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
+ * @ojtranslatable
  */
 /**
  * The horizontal alignment of the section title. If the section is collapsible or nested, only start alignment is supported.
@@ -4264,7 +4330,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @ojvalue {string} "center"
  * @ojvalue {string} "end"
  * @ojvalue {string} "start"
- * @default <code class="prettyprint">"start"</code>
+ * @default "start"
  */
 /**
  * The CSS style object defining the style of the section title.
@@ -4273,7 +4339,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * An array of nested legend sections.
@@ -4282,7 +4348,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {Array.<object>}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * An array of objects with the following properties defining the legend items. Also accepts a Promise for deferred data rendering.
@@ -4291,7 +4357,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {Array.<object>|Promise}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The id of the legend item, which is provided as part of the context for events fired by this chart. If not specified, the id defaults to the text of the legend item.
@@ -4300,7 +4366,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The legend item text.
@@ -4309,7 +4375,8 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
+ * @ojtranslatable
  */
 /**
  * An array of categories for the legend item. Legend items currently only support a single category. If no category is specified, this defaults to the id or text of the legend item.
@@ -4318,7 +4385,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {Array.<string>}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The type of legend symbol to display.
@@ -4331,7 +4398,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @ojvalue {string} "lineWithMarker"
  * @ojvalue {string} "image"
  * @ojvalue {string} "marker"
- * @default <code class="prettyprint">"marker"</code>
+ * @default "marker"
  */
 /**
  * The URI of the image of the legend symbol.
@@ -4340,7 +4407,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The color of the legend symbol (line or marker). When symbolType is "lineWithMarker", this attribute defines the line color and the markerColor attribute defines the marker color.
@@ -4349,7 +4416,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The border color of the marker. Only applies if symbolType is "marker" or "lineWithMarker".
@@ -4358,7 +4425,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The pattern used to fill the marker. Only applies if symbolType is "marker" or "lineWithMarker".
@@ -4380,7 +4447,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @ojvalue {string} "largeDiamond"
  * @ojvalue {string} "largeTriangle"
  * @ojvalue {string} "none"
- * @default <code class="prettyprint">"none"</code>
+ * @default "none"
  */
 /**
  * The line style. Only applies when the symbolType is "line" or "lineWithMarker".
@@ -4392,7 +4459,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @ojvalue {string} "dotted"
  * @ojvalue {string} "dashed"
  * @ojvalue {string} "solid"
- * @default <code class="prettyprint">"solid"</code>
+ * @default "solid"
  */
 /**
  * The line width in pixels. Only applies when the symbolType is "line" or "lineWithMarker".
@@ -4401,7 +4468,9 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {number}
- * @default <code class="prettyprint">null</code>
+ * @default null
+ * @ojunits pixels
+ * @ojmin 0
  */
 /**
  * The shape of the marker. In addition to the built-in shapes, it may also take SVG path commands to specify a custom shape. The legend will style the custom shapes the same way as built-in shapes, supporting properties like color and borderColor and applying hover and filter effects. Only applies if symbolType is "marker" or "lineWithMarker". 
@@ -4419,7 +4488,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @ojvalue {string} "rectangle"
  * @ojvalue {string} "star"
  * @ojvalue {string} "square"
- * @default <code class="prettyprint">"square"</code>
+ * @default "square"
  */
 /**
  * The color of the marker, if different than the line color. Only applies if the symbolType is "lineWithMarker".
@@ -4428,7 +4497,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * Defines whether the legend item corresponds to visible data items. A hollow symbol is shown if the value is "hidden".
@@ -4439,7 +4508,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @type {string}
  * @ojvalue {string} "hidden"
  * @ojvalue {string} "visible"
- * @default <code class="prettyprint">"visible"</code>
+ * @default "visible"
  */
 /**
  * The description of this legend item. This is used for accessibility and for customizing the tooltip text.
@@ -4448,7 +4517,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * An object with the following properties for the series section in the legend.
@@ -4457,7 +4526,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default {}
  */
 /**
  * The title of the series section.
@@ -4466,7 +4535,8 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
+ * @ojtranslatable
  */
 /**
  * The horizontal alignment of the section title. If the section is collapsible or nested, only start alignment is supported.
@@ -4478,7 +4548,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @ojvalue {string} "center"
  * @ojvalue {string} "end"
  * @ojvalue {string} "start"
- * @default <code class="prettyprint">"start"</code>
+ * @default "start"
  */
 /**
  * The CSS style object defining the style of the section title.
@@ -4487,7 +4557,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default {}
  */
 /**
  * An object with the following properties for the reference object section in the legend.
@@ -4496,7 +4566,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default {}
  */
 /**
  * The title of the reference object section.
@@ -4505,7 +4575,8 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
+ * @ojtranslatable
  */
 /**
  * The horizontal alignment of the section title. If the section is collapsible or nested, only start alignment is supported.
@@ -4517,7 +4588,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @ojvalue {string} "center"
  * @ojvalue {string} "end"
  * @ojvalue {string} "start"
- * @default <code class="prettyprint">"start"</code>
+ * @default "start"
  */
 /**
  * The CSS style object defining the style of the section title.
@@ -4526,7 +4597,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default {}
  */
 /**
  * The position of the legend within the chart. By default, the legend will be placed on the side or bottom, based on the size of the chart and the legend contents.
@@ -4540,7 +4611,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @ojvalue {string} "bottom"
  * @ojvalue {string} "top"
  * @ojvalue {string} "auto"
- * @default <code class="prettyprint">"auto"</code>
+ * @default "auto"
  */
 /**
  * Defines whether the legend is displayed. If set to auto, the legend will be hidden for charts with a large number of series. To turn on legend for stock, funnel and pyramid charts, set the displayInLegend property for the series items to 'on'.
@@ -4552,7 +4623,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @ojvalue {string} "on"
  * @ojvalue {string} "off"
  * @ojvalue {string} "auto"
- * @default <code class="prettyprint">"auto"</code>
+ * @default "auto"
  */
 /**
  * Defines the size of the legend in pixels (e.g. '50px') or percent (e.g. '15%').
@@ -4561,7 +4632,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * Defines the maximum size of the legend in pixels (e.g. '50px') or percent (e.g. '15%').
@@ -4570,7 +4641,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The color of the legend background.
@@ -4579,7 +4650,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The border color of the legend.
@@ -4588,7 +4659,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The CSS style object defining the style of the legend text.
@@ -4597,7 +4668,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default {}
  */
 /**
  * The width of the legend symbol (line or marker) in pixels.
@@ -4606,7 +4677,8 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {number}
- * @default <code class="prettyprint">null</code>
+ * @default null
+ * @ojunits pixels
  */
 /**
  * The height of the legend symbol (line or marker) in pixels.
@@ -4615,7 +4687,8 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {number}
- * @default <code class="prettyprint">null</code>
+ * @default null
+ * @ojunits pixels
  */
 /**
  * The horizontal alignment of the title.
@@ -4627,7 +4700,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @ojvalue {string} "center"
  * @ojvalue {string} "end"
  * @ojvalue {string} "start"
- * @default <code class="prettyprint">"start"</code>
+ * @default "start"
  */
 /**
  * The CSS style object defining the style of the title.
@@ -4636,7 +4709,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default {}
  */
 /**
  * Defines whether scrolling is enabled for the legend.
@@ -4647,7 +4720,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @type {string}
  * @ojvalue {string} "off"
  * @ojvalue {string} "asNeeded"
- * @default <code class="prettyprint">"asNeeded"</code>
+ * @default "asNeeded"
  */
 /**
  * An object defining the default styles for series colors, marker shapes, and other style attributes. Properties specified on this object may be overridden by specifications on the data object.
@@ -4656,7 +4729,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default {}
  */
 /**
  * Defines the fill effect for the data items.
@@ -4668,7 +4741,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @ojvalue {string} "color"
  * @ojvalue {string} "pattern"
  * @ojvalue {string} "gradient"
- * @default <code class="prettyprint">"gradient"</code>
+ * @default "gradient"
  */
 /**
  * The array defining the default color ramp for the series.
@@ -4677,7 +4750,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {Array.<string>}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The array defining the default pattern ramp for the series. This is used only when seriesEffect is 'pattern'.
@@ -4686,7 +4759,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {Array.<string>}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * Specifies the color of the "Other" slice. Only applies to pie chart.
@@ -4695,7 +4768,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The array defining the default shape ramp for the series. Valid values are defined in the markerShape attribute.
@@ -4704,7 +4777,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {Array.<string>}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The default border color for the data items. For funnel and pyramid charts, it is used for the slice border.
@@ -4713,7 +4786,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The default border width for the data items. For funnel and pyramid charts, it is used for the slice border.
@@ -4722,7 +4795,8 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {number}
- * @default <code class="prettyprint">null</code>
+ * @default null
+ * @ojunits pixels
  */
 /**
  * The default background color of the data items. Currently applies only for funnel charts with actual/target values.
@@ -4731,7 +4805,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  * @deprecated Use funnelBackgroundColor instead.
  */
 /**
@@ -4741,7 +4815,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * Defines whether the chart is displayed with a 3D effect. Only applies to pie, funnel and pyramid charts.
@@ -4752,7 +4826,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @type {string}
  * @ojvalue {string} "on"
  * @ojvalue {string} "off"
- * @default <code class="prettyprint">"off"</code>
+ * @default "off"
  */
 /**
  * The selection effect that is applied to selected items. The values explode and highlightAndExplode only apply to pie charts.
@@ -4764,7 +4838,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @ojvalue {string} "explode"
  * @ojvalue {string} "highlightAndExplode"
  * @ojvalue {string} "highlight"
- * @default <code class="prettyprint">"highlight"</code>
+ * @default "highlight"
  */
 /**
  * The duration of the animations, in milliseconds.
@@ -4773,7 +4847,9 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {number}
- * @default <code class="prettyprint">null</code>
+ * @default null
+ * @ojunits milliseconds
+ * @ojmin 0
  */
 /**
  * Defines whether data change indicators are displayed during animation.
@@ -4784,7 +4860,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @type {string}
  * @ojvalue {string} "none"
  * @ojvalue {string} "all"
- * @default <code class="prettyprint">"all"</code>
+ * @default "all"
  */
 /**
  * The color of the indicator shown for an increasing data change animation.
@@ -4793,7 +4869,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The color of the indicator shown for a decreasing data change animation.
@@ -4802,7 +4878,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The fill color of the marquee. Applies to marquee selection and marquee zoom.
@@ -4811,7 +4887,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The border color of the marquee. Applies to marquee selection and marquee zoom.
@@ -4820,7 +4896,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  *  Specifies the radius of the inner circle that can be used to create a donut chart. Valid values range from 0 (default) to 1. Not supported if 3D effect is on.
@@ -4829,7 +4905,9 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {number}
- * @default <code class="prettyprint">0</code>
+ * @default 0
+ * @ojmin 0
+ * @ojmax 1
  */
 /**
  * The width of the data line. Only applies to line, lineWithArea, scatter, and bubble series.
@@ -4838,7 +4916,9 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {number}
- * @default <code class="prettyprint">null</code>
+ * @default null
+ * @ojunits pixels
+ * @ojmin 0
  */
 /**
  * The line type of the data line or area. Only applies to line, area, scatter, and bubble series. centeredStepped and centeredSegmented are not supported for polar, scatter, and bubble charts. 
@@ -4855,7 +4935,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @ojvalue {string} "centeredSegmented"
  * @ojvalue {string} "none"
  * @ojvalue {string} "auto"
- * @default <code class="prettyprint">"auto"</code>
+ * @default "auto"
  */
 /**
  * The line style of the data line. Only applies to line, lineWithArea, scatter, and bubble series.
@@ -4867,7 +4947,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @ojvalue {string} "dotted"
  * @ojvalue {string} "dashed"
  * @ojvalue {string} "solid"
- * @default <code class="prettyprint">"solid"</code>
+ * @default "solid"
  */
 /**
  * The color of the data markers, if different from the series color.
@@ -4876,7 +4956,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * Defines whether the data markers should be displayed. Only applies to line, area, scatter, and bubble series. If auto, the markers will be displayed whenever the data points are not connected by a line.
@@ -4888,7 +4968,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @ojvalue {string} "on"
  * @ojvalue {string} "off"
  * @ojvalue {string} "auto"
- * @default <code class="prettyprint">"auto"</code>
+ * @default "auto"
  */
 /**
  * The shape of the data markers. In addition to the built-in shapes, it may also take SVG path commands to specify a custom shape. The chart will style the custom shapes the same way as built-in shapes, supporting properties like color and borderColor and applying hover and selection effects. Only 'auto' is supported for range series. 
@@ -4906,7 +4986,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @ojvalue {string} "human"
  * @ojvalue {string} "star"
  * @ojvalue {string} "auto"
- * @default <code class="prettyprint">"auto"</code>
+ * @default "auto"
  */
 /**
  * The size of the data markers in pixels.
@@ -4915,7 +4995,8 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {number}
- * @default <code class="prettyprint">null</code>
+ * @default null
+ * @ojunits pixels
  */
 /**
  * The color of the line extending from the pie slice to the slice label.
@@ -4924,7 +5005,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * Specifies the presence and size of the gaps between data items, such as bars, markers, and areas. Valid values are a percentage string from 0% to 100%, where 100% produces the maximum supported gaps.
@@ -4933,7 +5014,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * In stock charts, the color of the candlestick when the 'close' value is greater than the 'open' value.
@@ -4942,7 +5023,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * In stock charts, the color of the candlestick when the 'open' value is greater than the 'close' value.
@@ -4951,7 +5032,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * In stock charts, the color of the range bars for candlestick.
@@ -4960,7 +5041,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * In stock charts, the color of the volume bars. If specified, overrides the default rising and falling colors used by the volume bars.
@@ -4969,7 +5050,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The position of the data label. For range series, if an array of two values are provided, the first and second value will apply to the low and high point respectively. The 'outsideSlice' value only applies to pie charts. The 'aboveMarker', 'belowMarker', 'beforeMarker', and 'afterMarker' values only apply to line, area, scatter, and bubble series. The 'insideBarEdge' and 'outsideBarEdge' values only apply to non-polar bar series. Stacked bars do not support 'outsideBarEdge'. The chart does not currently adjust layout to fit labels within the plot area or deal with any overlaps between labels. 
@@ -4988,7 +5069,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @ojvalue {string} "outsideBarEdge"
  * @ojvalue {string} "none"
  * @ojvalue {string} "auto"
- * @default <code class="prettyprint">"auto"</code>
+ * @default "auto"
  */
 /**
  * The CSS style object defining the style of the data label text. For range series, if an array of two values are provided, the first and second value will apply to the low and high point respectively.
@@ -4997,7 +5078,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {object|Array.<object>}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The CSS style object defining the style of the stack label. Only applies to stacked bar charts.
@@ -5006,7 +5087,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default {}
  */
 /**
  * Specifies the width of the bar group gap as a ratio of the group width. The valid value is a number from 0 to 1.
@@ -5015,7 +5096,9 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {number}
- * @default <code class="prettyprint">null</code>
+ * @default null
+ * @ojmin 0
+ * @ojmax 1
  */
 /**
  * Specifies the maximum width of each bar in pixels.
@@ -5024,7 +5107,8 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {number}
- * @default <code class="prettyprint">null</code>
+ * @default null
+ * @ojunits pixels
  */
 /**
  * Specifies initial hover delay in ms for highlighting items in chart.
@@ -5033,7 +5117,9 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {number}
- * @default <code class="prettyprint">null</code>
+ * @default null
+ * @ojunits milliseconds
+ * @ojmin 0
  */
 /**
  * The CSS style object defining the style of the labels in the tooltip.
@@ -5042,7 +5128,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default {}
  */
 /**
  * The CSS style object defining the style of the values in the tooltip.
@@ -5051,7 +5137,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default {}
  */
 /**
  * An object defining the data cursor style.
@@ -5060,7 +5146,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default {}
  */
 /**
  * The width of the data cursor line in pixels.
@@ -5069,7 +5155,9 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {number}
- * @default <code class="prettyprint">null</code>
+ * @default null
+ * @ojunits pixels
+ * @ojmin 0
  */
 /**
  * The color of the data cursor line.
@@ -5078,7 +5166,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The line style of the data cursor line.
@@ -5090,7 +5178,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @ojvalue {string} "dotted"
  * @ojvalue {string} "dashed"
  * @ojvalue {string} "solid"
- * @default <code class="prettyprint">"solid"</code>
+ * @default "solid"
  */
 /**
  * The color of the data cursor marker. Defaults to the data series color.
@@ -5099,7 +5187,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The size of the data cursor marker in pixels.
@@ -5108,7 +5196,8 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {number}
- * @default <code class="prettyprint">null</code>
+ * @default null
+ * @ojunits pixels
  */
 /**
  * Whether the data cursor marker is displayed. Marker should only be hidden if the data cursor is displaying information for the entire group.
@@ -5119,7 +5208,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @type {string}
  * @ojvalue {string} "off"
  * @ojvalue {string} "on"
- * @default <code class="prettyprint">"on"</code>
+ * @default "on"
  */
 /**
  * An object defining the style for hierarchical label separators.
@@ -5128,7 +5217,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default {}
  */
 /**
  * Defines whether the group separators are displayed.
@@ -5139,7 +5228,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @type {string}
  * @ojvalue {string} "off"
  * @ojvalue {string} "on"
- * @default <code class="prettyprint">"on"</code>
+ * @default "on"
  */
 /**
  * The color of the separators lines.
@@ -5148,7 +5237,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * An object containing the style properties of the box plot items.
@@ -5157,7 +5246,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default {}
  */
 /**
  * The CSS style class to apply to the whisker stems.
@@ -5166,7 +5255,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  * @deprecated This attribute is deprecated, use the whiskerSvgClassName attribute instead.
  */
 /**
@@ -5176,7 +5265,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default null
  * @deprecated This attribute is deprecated, use the whiskerSvgStyle attribute instead.
  */
 /**
@@ -5186,7 +5275,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  * @deprecated This attribute is deprecated, use the whiskerEndSvgClassName attribute instead.
  */
 /**
@@ -5196,7 +5285,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default null
  * @deprecated This attribute is deprecated, use the whiskerEndSvgStyle attribute instead.
  */
 /**
@@ -5206,7 +5295,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default ""
  */
 /**
  * The CSS inline style to apply to the whisker stems.
@@ -5215,7 +5304,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default {}
  */
 /**
  * The CSS style class to apply to the whisker ends.
@@ -5224,7 +5313,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default ""
  */
 /**
  * The CSS inline style to apply to the whisker ends.
@@ -5233,7 +5322,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default {}
  */
 /**
  *  Specifies the length of the whisker ends in pixels (e.g. '9px') or as a percentage of the box width (e.g. '50%'). 
@@ -5242,7 +5331,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The CSS style class to apply to the median line.
@@ -5251,7 +5340,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default ""
  * @deprecated This attribute is deprecated, use the medianSvgClassName attribute instead.
  */
 /**
@@ -5261,7 +5350,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default {}
  * @deprecated This attribute is deprecated, use the medianSvgStyle attribute instead.
  */
 /**
@@ -5271,7 +5360,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default ""
  */
 /**
  * The CSS inline style to apply to the median line.
@@ -5280,7 +5369,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default {}
  */
 /**
  * An object specifying value formatting and tooltip behavior, whose keys generally correspond to the attribute names on the data items.
@@ -5288,7 +5377,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default {}
  */
 /**
  * Specifies tooltip behavior for the series.
@@ -5297,7 +5386,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default {}
  */
 /**
  * A string representing the label that is displayed before the value in the tooltip.
@@ -5306,7 +5395,8 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
+ * @ojtranslatable
  */
 /**
  * Whether the value is displayed in the tooltip.
@@ -5317,7 +5407,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @type {string}
  * @ojvalue {string} "off"
  * @ojvalue {string} "auto"
- * @default <code class="prettyprint">"auto"</code>
+ * @default "auto"
  */
 /**
  * Specifies tooltip behavior for the groups.
@@ -5326,7 +5416,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default {}
  */
 /**
  * A string representing the label that is displayed before the value in the tooltip. This value can also take an array of strings to be applied to hierarchical group names, from outermost to innermost.
@@ -5335,7 +5425,8 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string|Array.<string>}
- * @default <code class="prettyprint">null</code>
+ * @default null
+ * @ojtranslatable
  */
 /**
  * Whether the value is displayed in the tooltip.
@@ -5346,7 +5437,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @type {string}
  * @ojvalue {string} "off"
  * @ojvalue {string} "auto"
- * @default <code class="prettyprint">"auto"</code>
+ * @default "auto"
  */
 /**
  * Specifies the value formatting and tooltip behavior for the x values.
@@ -5355,7 +5446,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default {}
  */
 /**
  * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used to format the label. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
@@ -5364,7 +5455,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The scaling behavior of the value. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
@@ -5380,7 +5471,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @ojvalue {string} "trillion"
  * @ojvalue {string} "quadrillion"
  * @ojvalue {string} "auto"
- * @default <code class="prettyprint">"auto"</code>
+ * @default "auto"
  */
 /**
  * A string representing the label that is displayed before the value in the tooltip.
@@ -5389,7 +5480,8 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
+ * @ojtranslatable
  */
 /**
  * Whether the value is displayed in the tooltip.
@@ -5400,7 +5492,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @type {string}
  * @ojvalue {string} "off"
  * @ojvalue {string} "auto"
- * @default <code class="prettyprint">"auto"</code>
+ * @default "auto"
  */
 /**
  * Specifies the value formatting and tooltip behavior for the y values.
@@ -5409,7 +5501,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default {}
  */
 /**
  * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used to format the label. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
@@ -5418,7 +5510,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The scaling behavior of the value. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
@@ -5434,7 +5526,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @ojvalue {string} "trillion"
  * @ojvalue {string} "quadrillion"
  * @ojvalue {string} "auto"
- * @default <code class="prettyprint">"auto"</code>
+ * @default "auto"
  */
 /**
  * A string representing the label that is displayed before the value in the tooltip.
@@ -5443,7 +5535,8 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
+ * @ojtranslatable
  */
 /**
  * Whether the value is displayed in the tooltip.
@@ -5454,7 +5547,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @type {string}
  * @ojvalue {string} "off"
  * @ojvalue {string} "auto"
- * @default <code class="prettyprint">"auto"</code>
+ * @default "auto"
  */
 /**
  * Specifies the value formatting and tooltip behavior for the y2 values.
@@ -5463,7 +5556,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default {}
  */
 /**
  * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used to format the label. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
@@ -5472,7 +5565,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The scaling behavior of the value. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
@@ -5488,7 +5581,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @ojvalue {string} "trillion"
  * @ojvalue {string} "quadrillion"
  * @ojvalue {string} "auto"
- * @default <code class="prettyprint">"auto"</code>
+ * @default "auto"
  */
 /**
  * A string representing the label that is displayed before the value in the tooltip.
@@ -5497,7 +5590,8 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
+ * @ojtranslatable
  */
 /**
  * Whether the value is displayed in the tooltip.
@@ -5508,7 +5602,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @type {string}
  * @ojvalue {string} "off"
  * @ojvalue {string} "auto"
- * @default <code class="prettyprint">"auto"</code>
+ * @default "auto"
  */
 /**
  * Specifies the value formatting and tooltip behavior for the z values.
@@ -5517,7 +5611,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default {}
  */
 /**
  * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used to format the label. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
@@ -5526,7 +5620,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The scaling behavior of the value. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
@@ -5542,7 +5636,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @ojvalue {string} "trillion"
  * @ojvalue {string} "quadrillion"
  * @ojvalue {string} "auto"
- * @default <code class="prettyprint">"auto"</code>
+ * @default "auto"
  */
 /**
  * A string representing the label that is displayed before the value in the tooltip.
@@ -5551,7 +5645,8 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
+ * @ojtranslatable
  */
 /**
  * Whether the value is displayed in the tooltip.
@@ -5562,7 +5657,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @type {string}
  * @ojvalue {string} "off"
  * @ojvalue {string} "auto"
- * @default <code class="prettyprint">"auto"</code>
+ * @default "auto"
  */
 /**
  * Specifies the value formatting and tooltip behavior for the values.
@@ -5571,7 +5666,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default {}
  */
 /**
  * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used to format the label. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
@@ -5580,7 +5675,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The scaling behavior of the value. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
@@ -5596,7 +5691,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @ojvalue {string} "trillion"
  * @ojvalue {string} "quadrillion"
  * @ojvalue {string} "auto"
- * @default <code class="prettyprint">"auto"</code>
+ * @default "auto"
  */
 /**
  * A string representing the label that is displayed before the value in the tooltip.
@@ -5605,7 +5700,8 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
+ * @ojtranslatable
  */
 /**
  * Whether the value is displayed in the tooltip.
@@ -5616,7 +5712,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @type {string}
  * @ojvalue {string} "off"
  * @ojvalue {string} "auto"
- * @default <code class="prettyprint">"auto"</code>
+ * @default "auto"
  */
 /**
  * Specifies the value formatting and tooltip behavior for the target values of a funnel chart.
@@ -5625,7 +5721,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default {}
  */
 /**
  * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used to format the label. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
@@ -5634,7 +5730,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The scaling behavior of the value. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
@@ -5650,7 +5746,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @ojvalue {string} "trillion"
  * @ojvalue {string} "quadrillion"
  * @ojvalue {string} "auto"
- * @default <code class="prettyprint">"auto"</code>
+ * @default "auto"
  */
 /**
  * A string representing the label that is displayed before the value in the tooltip.
@@ -5659,7 +5755,8 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
+ * @ojtranslatable
  */
 /**
  * Whether the value is displayed in the tooltip.
@@ -5670,7 +5767,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @type {string}
  * @ojvalue {string} "off"
  * @ojvalue {string} "auto"
- * @default <code class="prettyprint">"auto"</code>
+ * @default "auto"
  */
 /**
  * Specifies the value formatting and tooltip behavior for the low values.
@@ -5679,7 +5776,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default {}
  */
 /**
  * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used to format the label. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
@@ -5688,7 +5785,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The scaling behavior of the value. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
@@ -5704,7 +5801,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @ojvalue {string} "trillion"
  * @ojvalue {string} "quadrillion"
  * @ojvalue {string} "auto"
- * @default <code class="prettyprint">"auto"</code>
+ * @default "auto"
  */
 /**
  * A string representing the label that is displayed before the value in the tooltip.
@@ -5713,7 +5810,8 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
+ * @ojtranslatable
  */
 /**
  * Whether the value is displayed in the tooltip.
@@ -5724,7 +5822,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @type {string}
  * @ojvalue {string} "off"
  * @ojvalue {string} "auto"
- * @default <code class="prettyprint">"auto"</code>
+ * @default "auto"
  */
 /**
  * Specifies the value formatting and tooltip behavior for the high values.
@@ -5733,7 +5831,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default {}
  */
 /**
  * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used to format the label. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
@@ -5742,7 +5840,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The scaling behavior of the value. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
@@ -5758,7 +5856,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @ojvalue {string} "trillion"
  * @ojvalue {string} "quadrillion"
  * @ojvalue {string} "auto"
- * @default <code class="prettyprint">"auto"</code>
+ * @default "auto"
  */
 /**
  * A string representing the label that is displayed before the value in the tooltip.
@@ -5767,7 +5865,8 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
+ * @ojtranslatable
  */
 /**
  * Whether the value is displayed in the tooltip.
@@ -5778,7 +5877,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @type {string}
  * @ojvalue {string} "off"
  * @ojvalue {string} "auto"
- * @default <code class="prettyprint">"auto"</code>
+ * @default "auto"
  */
 /**
  * Specifies the value formatting and tooltip behavior for the open values of a stock chart.
@@ -5787,7 +5886,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default {}
  */
 /**
  * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used to format the label. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
@@ -5796,7 +5895,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The scaling behavior of the value. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
@@ -5812,7 +5911,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @ojvalue {string} "trillion"
  * @ojvalue {string} "quadrillion"
  * @ojvalue {string} "auto"
- * @default <code class="prettyprint">"auto"</code>
+ * @default "auto"
  */
 /**
  * A string representing the label that is displayed before the value in the tooltip.
@@ -5821,7 +5920,8 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
+ * @ojtranslatable
  */
 /**
  * Whether the value is displayed in the tooltip.
@@ -5832,7 +5932,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @type {string}
  * @ojvalue {string} "off"
  * @ojvalue {string} "auto"
- * @default <code class="prettyprint">"auto"</code>
+ * @default "auto"
  */
 /**
  * Specifies the value formatting and tooltip behavior for the close values of a stock chart.
@@ -5841,7 +5941,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default {}
  */
 /**
  * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used to format the label. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
@@ -5850,7 +5950,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The scaling behavior of the value. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
@@ -5866,7 +5966,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @ojvalue {string} "trillion"
  * @ojvalue {string} "quadrillion"
  * @ojvalue {string} "auto"
- * @default <code class="prettyprint">"auto"</code>
+ * @default "auto"
  */
 /**
  * A string representing the label that is displayed before the value in the tooltip.
@@ -5875,7 +5975,8 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
+ * @ojtranslatable
  */
 /**
  * Whether the value is displayed in the tooltip.
@@ -5886,7 +5987,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @type {string}
  * @ojvalue {string} "off"
  * @ojvalue {string} "auto"
- * @default <code class="prettyprint">"auto"</code>
+ * @default "auto"
  */
 /**
  * Specifies the value formatting and tooltip behavior for the volume values of a stock chart.
@@ -5895,7 +5996,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default {}
  */
 /**
  * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used to format the label. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
@@ -5904,7 +6005,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The scaling behavior of the value. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
@@ -5920,7 +6021,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @ojvalue {string} "trillion"
  * @ojvalue {string} "quadrillion"
  * @ojvalue {string} "auto"
- * @default <code class="prettyprint">"auto"</code>
+ * @default "auto"
  */
 /**
  * A string representing the label that is displayed before the value in the tooltip.
@@ -5929,7 +6030,8 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
+ * @ojtranslatable
  */
 /**
  * Whether the value is displayed in the tooltip.
@@ -5940,7 +6042,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @type {string}
  * @ojvalue {string} "off"
  * @ojvalue {string} "auto"
- * @default <code class="prettyprint">"auto"</code>
+ * @default "auto"
  */
 /**
  * Specifies the value formatting and tooltip behavior for the q1 values of a box plot.
@@ -5949,7 +6051,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default {}
  */
 /**
  * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used to format the label. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
@@ -5958,7 +6060,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The scaling behavior of the value. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
@@ -5974,7 +6076,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @ojvalue {string} "trillion"
  * @ojvalue {string} "quadrillion"
  * @ojvalue {string} "auto"
- * @default <code class="prettyprint">"auto"</code>
+ * @default "auto"
  */
 /**
  * A string representing the label that is displayed before the value in the tooltip.
@@ -5983,7 +6085,8 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
+ * @ojtranslatable
  */
 /**
  * Whether the value is displayed in the tooltip.
@@ -5994,7 +6097,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @type {string}
  * @ojvalue {string} "off"
  * @ojvalue {string} "auto"
- * @default <code class="prettyprint">"auto"</code>
+ * @default "auto"
  */
 /**
  * Specifies the value formatting and tooltip behavior for the q2 values of a box plot.
@@ -6003,7 +6106,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default {}
  */
 /**
  * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used to format the label. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
@@ -6012,7 +6115,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The scaling behavior of the value. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
@@ -6028,7 +6131,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @ojvalue {string} "trillion"
  * @ojvalue {string} "quadrillion"
  * @ojvalue {string} "auto"
- * @default <code class="prettyprint">"auto"</code>
+ * @default "auto"
  */
 /**
  * A string representing the label that is displayed before the value in the tooltip.
@@ -6037,7 +6140,8 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
+ * @ojtranslatable
  */
 /**
  * Whether the value is displayed in the tooltip.
@@ -6048,7 +6152,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @type {string}
  * @ojvalue {string} "off"
  * @ojvalue {string} "auto"
- * @default <code class="prettyprint">"auto"</code>
+ * @default "auto"
  */
 /**
  * Specifies the value formatting and tooltip behavior for the q3 values of a box plot.
@@ -6057,7 +6161,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default {}
  */
 /**
  * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used to format the label. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
@@ -6066,7 +6170,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The scaling behavior of the value. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
@@ -6082,7 +6186,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @ojvalue {string} "trillion"
  * @ojvalue {string} "quadrillion"
  * @ojvalue {string} "auto"
- * @default <code class="prettyprint">"auto"</code>
+ * @default "auto"
  */
 /**
  * A string representing the label that is displayed before the value in the tooltip.
@@ -6091,7 +6195,8 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
+ * @ojtranslatable
  */
 /**
  * Whether the value is displayed in the tooltip.
@@ -6102,7 +6207,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @type {string}
  * @ojvalue {string} "off"
  * @ojvalue {string} "auto"
- * @default <code class="prettyprint">"auto"</code>
+ * @default "auto"
  */
 /**
  * Specifies the value formatting for the data item labels.
@@ -6111,7 +6216,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default {}
  */
 /**
  * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used to format the label. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
@@ -6120,7 +6225,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The scaling behavior of the value. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
@@ -6136,7 +6241,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @ojvalue {string} "trillion"
  * @ojvalue {string} "quadrillion"
  * @ojvalue {string} "auto"
- * @default <code class="prettyprint">"auto"</code>
+ * @default "auto"
  */
 /**
  * Specifies the zoom and scroll behavior of the chart. "Live" behavior means that the chart will be updated continuously as it is being manipulated, while "delayed" means that the update will wait until the zoom/scroll action is done. While "live" zoom and scroll provides the best end user experience, no guarantess are made about the rendering performance or usability for large data sets or slow client environments. If performance is an issue, "delayed" zoom and scroll should be used instead.
@@ -6150,7 +6255,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @ojvalue {string} "delayed"
  * @ojvalue {string} "live"
  * @ojvalue {string} "off"
- * @default <code class="prettyprint">"off"</code>
+ * @default "off"
  */
 /**
  * Specifies the zoom direction of bubble and scatter charts. "Auto" zooms in both x and y direction. Use "x" or "y" for single direction zooming. 
@@ -6162,7 +6267,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @ojvalue {string} "x"
  * @ojvalue {string} "y"
  * @ojvalue {string} "auto"
- * @default <code class="prettyprint">"auto"</code>
+ * @default "auto"
  */
 /**
  * Whether automatic initial zooming is enabled. The valid values are "first" to initially zoom to the first data points (after the viewportMin) that can fit in the plot area, "last" to initially zoom to the last data points (before the viewportMax), and "none" to disable initial zooming. Only applies to bar, line, area, and combo charts with zoomAndScroll turned on.
@@ -6174,7 +6279,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @ojvalue {string} "first"
  * @ojvalue {string} "last"
  * @ojvalue {string} "none"
- * @default <code class="prettyprint">"none"</code>
+ * @default "none"
  */
 /**
  *  Whether drilling is enabled. Drillable objects will show a pointer cursor on hover and fire an <code class="prettyprint">ojDrill</code> event on click (double click if selection is enabled). Use "on" to enable drilling for all series objects (legend items), group objects (x-axis labels), and data items. Use "seriesOnly" or "groupsOnly" to enable drilling for series objects or group objects only. To enable or disable drilling on individual series, group, or data item, use the drilling attribute in each series, group, or data item. 
@@ -6187,7 +6292,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @ojvalue {string} "seriesOnly"
  * @ojvalue {string} "groupsOnly"
  * @ojvalue {string} "off"
- * @default <code class="prettyprint">"off"</code>
+ * @default "off"
  */
 /**
  * An object containing an optional callback function for tooltip customization. 
@@ -6196,7 +6301,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default {}
  */
 /**
  *  A function that returns a custom tooltip. The function takes a dataContext argument, 
@@ -6230,7 +6335,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {function(object)}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * Data visualizations require a press and hold delay before triggering tooltips, marquee selection, and rollover effects on mobile devices to avoid interfering with page panning, but these hold delays can make applications seem slower and less responsive. For a better user experience, the application can remove the touch and hold delay when data visualizations are used within a non scrolling container or if there is sufficient space outside of the visualization for panning. If touchResponse is touchStart the element will instantly trigger the touch gesture and consume the page pan events if the element does not require an internal feature that requires a touch start gesture like panning, zooming, or when marquee selection is initiated. If touchResponse is auto, the element will behave like touchStart if it determines that it is not rendered within scrolling content and if panning is not available for those elements that support the feature. 
@@ -6241,7 +6346,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @type {string}
  * @ojvalue {string} "touchStart"
  * @ojvalue {string} "auto"
- * @default <code class="prettyprint">"auto"</code>
+ * @default "auto"
  */
 /**
  *  A function that returns a custom data label. The function takes a dataContext argument, provided by the chart, with the following properties: <ul> <li>id: The id of the data item.</li> <li>series: The id of the series the data item belongs to.</li> <li>group: The id or an array of ids of the group(s) the data item belongs to. For hierarchical groups, it will be an array of outermost to innermost group ids.</li> <li>value, targetValue, x, y, z, low, high, open, close, volume: The values of the data item.</li> <li>label: The label for the data item if the dataLabel callback is ignored. The dataLabel callback can concatenate this with another string to easily enhance the default label.</li> <li>totalValue: The total of all values in the chart. This will only be included for pie charts.</li> <li>data: The data object of the data item. For nested items, it will be an array containing the parent item data and nested item data.</li> <li>seriesData: The data for the series the data item belongs to.</li> <li>groupData: An array of data for the group the data item belongs to. For hierarchical groups, it will be an array of outermost to innermost group data related to the data item.</li> <li>componentElement: The chart element.</li> </ul> The function may return a number or a string or in the case of range charts, an array of numbers or strings. If any label is a number, it will be formatted by the valueFormat of the type 'label' before being used as labels. 
@@ -6250,7 +6355,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof oj.ojChart
  * @instance
  * @type {function(object)}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * Provides support for HTML5 Drag and Drop events. Please refer to <a href="https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/Drag_and_drop">third party documentation</a> on HTML5 Drag and Drop to learn how to use it. 
@@ -6259,7 +6364,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default {}
  */
 /**
  * An object that describes drag functionality.
@@ -6268,7 +6373,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default {}
  */
 /**
  * Allows dragging of chart data items, including bars, line/area/scatter markers, bubbles, and pie/funnel/pyramid slices. 
@@ -6277,7 +6382,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default {}
  */
 /**
  * The MIME types to use for the dragged data in the dataTransfer object. This can be a string if there is only one type, or an array of strings if multiple types are needed. For example, if selected employee data items are being dragged, dataTypes could be "application/employees+json". Drop targets can examine the data types and decide whether to accept the data. For each type in the array, dataTransfer.setData will be called with the specified type and the data. The data is an array of the dataContexts of the selected data items. The dataContext is the JSON version of the dataContext that we use for "tooltip" and "dataLabels" properties, excluding componentElement and parentElement. This property is required unless the application calls setData itself in a dragStart callback function. 
@@ -6286,7 +6391,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string|Array.<string>}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * An optional callback function that receives the "drag" event as argument. 
@@ -6295,7 +6400,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {function(Event)}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * An optional callback function that receives the "dragend" event as argument. 
@@ -6304,7 +6409,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {function(Event)}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * An optional callback function that receives the "dragstart" event and context information as arguments. The context information is as follows: <ul> <li> item {Array.(object)}: An array of dataContexts of the dragged data items. The dataContext is the same as what we use for "tooltip" and "dataLabels" properties. </li> </ul> This function can set its own data and drag image as needed. When this function is called, event.dataTransfer is already populated with the default data and drag image. 
@@ -6313,7 +6418,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {function(Event, object)}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * Allows dragging of chart series from the legend items.
@@ -6322,7 +6427,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default {}
  */
 /**
  * The MIME types to use for the dragged data in the dataTransfer object. This can be a string if there is only one type, or an array of strings if multiple types are needed. For example, if selected employee data items are being dragged, dataTypes could be "application/employees+json". Drop targets can examine the data types and decide whether to accept the data. For each type in the array, dataTransfer.setData will be called with the specified type and the data. The data is an array of the dataContexts of the selected series. The dataContext is the JSON version of the dataContext that we use for "tooltip" and "dataLabels" properties, excluding componentElement and parentElement. This property is required unless the application calls setData itself in a dragStart callback function.
@@ -6331,7 +6436,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string|Array.<string>}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * An optional callback function that receives the "drag" event as argument. 
@@ -6340,7 +6445,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {function(Event)}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * An optional callback function that receives the "dragend" event as argument. 
@@ -6349,7 +6454,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {function(Event)}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * An optional callback function that receives the "dragstart" event and context information as arguments. The context information is as follows: <ul> <li> series {Array.(object)}: An array of dataContexts of the dragged series. The dataContext is the same as what we use for "tooltip" and "dataLabels" properties. </li> </ul> This function can set its own data and drag image as needed. When this function is called, event.dataTransfer is already populated with the default data and drag image. 
@@ -6358,7 +6463,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {function(Event, object)}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * Allows dragging of chart groups from the categorical axis labels.
@@ -6367,7 +6472,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default {}
  */
 /**
  * The MIME types to use for the dragged data in the dataTransfer object. This can be a string if there is only one type, or an array of strings if multiple types are needed. For example, if selected employee data items are being dragged, dataTypes could be "application/employees+json". Drop targets can examine the data types and decide whether to accept the data. For each type in the array, dataTransfer.setData will be called with the specified type and the data. The data is an array of the dataContexts of the selected groups. The dataContext is the JSON version of the dataContext that we use for "tooltip" and "dataLabels" properties, excluding componentElement and parentElement. This property is required unless the application calls setData itself in a dragStart callback function.
@@ -6376,7 +6481,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string|Array.<string>}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * An optional callback function that receives the "drag" event as argument. 
@@ -6385,7 +6490,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {function(Event)}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * An optional callback function that receives the "dragend" event as argument. 
@@ -6394,7 +6499,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {function(Event)}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * An optional callback function that receives the "dragstart" event and context information as arguments. The context information is as follows: <ul> <li> groups {Array.(object)}: An array of dataContexts of the dragged groups. The dataContext is the same as what we use for "tooltip" and "dataLabels" properties. </li> </ul> This function can set its own data and drag image as needed. When this function is called, event.dataTransfer is already populated with the default data and drag image. 
@@ -6403,7 +6508,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {function(Event, object)}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * An object that describes drop functionality.
@@ -6412,7 +6517,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default {}
  */
 /**
  * Allows dropping on the plot area.
@@ -6421,7 +6526,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default {}
  */
 /**
  * An array of MIME data types this element can accept. This property is required unless dragEnter, dragOver, and drop callback functions are specified to handle the corresponding events.
@@ -6430,7 +6535,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string|Array.<string>}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * An optional callback function that receives the "dragenter" event and context information as arguments. The context information is as follows: <ul> <li>x {number}: The X axis value at the event position.</li> <li>y {number}: The Y axis value at the event position.</li> <li>y2 {number}: The Y2 axis value at the event position.</li> </ul> This function should call <code class="prettyprint">event.preventDefault()</code> to indicate the dragged data can be accepted. Otherwise, dataTypes will be matched against the drag data types to determine if the data is acceptable.
@@ -6439,7 +6544,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {function(Event, object)}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * An optional callback function that receives the "dragover" event and context information as arguments. The context information is as follows: <ul> <li>x {number}: The X axis value at the event position.</li> <li>y {number}: The Y axis value at the event position.</li> <li>y2 {number}: The Y2 axis value at the event position.</li> </ul> This function should call <code class="prettyprint">event.preventDefault()</code> to indicate the dragged data can be accepted. Otherwise, dataTypes will be matched against the drag data types to determine if the data is acceptable. 
@@ -6448,7 +6553,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {function(Event, object)}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * An optional callback function that receives the "dragleave" event and context information as arguments. The context information is as follows: <ul> <li>x {number}: The X axis value at the event position.</li> <li>y {number}: The Y axis value at the event position.</li> <li>y2 {number}: The Y2 axis value at the event position.</li> </ul> 
@@ -6457,7 +6562,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {function(Event, object)}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * An optional callback function that receives the "drop" event and context information as arguments. The context information is as follows: <ul> <li>x {number}: The X axis value at the event position.</li> <li>y {number}: The Y axis value at the event position.</li> <li>y2 {number}: The Y2 axis value at the event position.</li> </ul> This function should call <code class="prettyprint">event.preventDefault()</code> to indicate the dragged data can be accepted. 
@@ -6466,7 +6571,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {function(Event, object)}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * Allows dropping on the X axis.
@@ -6475,7 +6580,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default {}
  */
 /**
  * An array of MIME data types this element can accept. This property is required unless dragEnter, dragOver, and drop callback functions are specified to handle the corresponding events.
@@ -6484,7 +6589,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string|Array.<string>}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * An optional callback function that receives the "dragenter" event and context information as arguments. The context information is as follows: <ul> <li>x {number}: The X axis value at the event position.</li> </ul> This function should call <code class="prettyprint">event.preventDefault()</code> to indicate the dragged data can be accepted. Otherwise, dataTypes will be matched against the drag data types to determine if the data is acceptable.
@@ -6493,7 +6598,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {function(Event, object)}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * An optional callback function that receives the "dragover" event and context information as arguments. The context information is as follows: <ul> <li>x {number}: The X axis value at the event position.</li> </ul> This function should call <code class="prettyprint">event.preventDefault()</code> to indicate the dragged data can be accepted. Otherwise, dataTypes will be matched against the drag data types to determine if the data is acceptable. 
@@ -6502,7 +6607,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {function(Event, object)}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * An optional callback function that receives the "dragleave" event and context information as arguments. The context information is as follows: <ul> <li>x {number}: The X axis value at the event position.</li> </ul> 
@@ -6511,7 +6616,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {function(Event, object)}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * An optional callback function that receives the "drop" event and context information as arguments. The context information is as follows: <ul> <li>x {number}: The X axis value at the event position.</li> </ul> This function should call <code class="prettyprint">event.preventDefault()</code> to indicate the dragged data can be accepted. 
@@ -6520,7 +6625,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {function(Event, object)}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * Allows dropping on the Y axis.
@@ -6529,7 +6634,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default {}
  */
 /**
  * An array of MIME data types this element can accept. This property is required unless dragEnter, dragOver, and drop callback functions are specified to handle the corresponding events.
@@ -6538,7 +6643,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string|Array.<string>}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * An optional callback function that receives the "dragenter" event and context information as arguments. The context information is as follows: <ul> <li>y {number}: The Y axis value at the event position.</li> </ul> This function should call <code class="prettyprint">event.preventDefault()</code> to indicate the dragged data can be accepted. Otherwise, dataTypes will be matched against the drag data types to determine if the data is acceptable.
@@ -6547,7 +6652,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {function(Event, object)}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * An optional callback function that receives the "dragover" event and context information as arguments. The context information is as follows: <ul> <li>y {number}: The Y axis value at the event position.</li> </ul> This function should call <code class="prettyprint">event.preventDefault()</code> to indicate the dragged data can be accepted. Otherwise, dataTypes will be matched against the drag data types to determine if the data is acceptable. 
@@ -6556,7 +6661,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {function(Event, object)}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * An optional callback function that receives the "dragleave" event and context information as arguments. The context information is as follows: <ul> <li>y {number}: The Y axis value at the event position.</li> </ul> 
@@ -6565,7 +6670,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {function(Event, object)}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * An optional callback function that receives the "drop" event and context information as arguments. The context information is as follows: <ul> <li>y {number}: The Y axis value at the event position.</li> </ul> This function should call <code class="prettyprint">event.preventDefault()</code> to indicate the dragged data can be accepted. 
@@ -6574,7 +6679,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {function(Event, object)}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * Allows dropping on the Y2 axis.
@@ -6583,7 +6688,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default {}
  */
 /**
  * An array of MIME data types this element can accept. This property is required unless dragEnter, dragOver, and drop callback functions are specified to handle the corresponding events. 
@@ -6592,7 +6697,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string|Array.<string>}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * An optional callback function that receives the "dragenter" event and context information as arguments. The context information is as follows: <ul> <li>y2 {number}: The Y2 axis value at the event position.</li> </ul> This function should call <code class="prettyprint">event.preventDefault()</code> to indicate the dragged data can be accepted. Otherwise, dataTypes will be matched against the drag data types to determine if the data is acceptable. 
@@ -6601,7 +6706,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {function(Event, object)}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * An optional callback function that receives the "dragover" event and context information as arguments. The context information is as follows: <ul> <li>y2 {number}: The Y2 axis value at the event position.</li> </ul> This function should call <code class="prettyprint">event.preventDefault()</code> to indicate the dragged data can be accepted. Otherwise, dataTypes will be matched against the drag data types to determine if the data is acceptable. 
@@ -6610,7 +6715,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {function(Event, object)}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * An optional callback function that receives the "dragleave" event and context information as arguments. The context information is as follows: <ul> <li>y2 {number}: The Y2 axis value at the event position.</li> </ul> 
@@ -6619,7 +6724,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {function(Event, object)}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * An optional callback function that receives the "drop" event and context information as arguments. The context information is as follows: <ul> <li>y2 {number}: The Y2 axis value at the event position.</li> </ul> This function should call <code class="prettyprint">event.preventDefault()</code> to indicate the dragged data can be accepted. 
@@ -6628,7 +6733,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {function(Event, object)}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * Allows dropping on the legend.
@@ -6637,7 +6742,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default {}
  */
 /**
  * An array of MIME data types this element can accept. This property is required unless dragEnter, dragOver, and drop callback functions are specified to handle the corresponding events. 
@@ -6646,7 +6751,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {string|Array.<string>}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * An optional callback function that receives the "dragenter" event and empty context information as arguments. This function should call <code class="prettyprint">event.preventDefault()</code> to indicate the dragged data can be accepted. Otherwise, dataTypes will be matched against the drag data types to determine if the data is acceptable. 
@@ -6655,7 +6760,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {function(Event, object)}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * An optional callback function that receives the "dragover" event and empty context information as arguments. This function should call <code class="prettyprint">event.preventDefault()</code> to indicate the dragged data can be accepted. Otherwise, dataTypes will be matched against the drag data types to determine if the data is acceptable. 
@@ -6664,7 +6769,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {function(Event, object)}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * An optional callback function that receives the "dragleave" event and empty context information as arguments. 
@@ -6673,7 +6778,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {function(Event, object)}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * An optional callback function that receives the "drop" event and emtpy context information as arguments. This function should call <code class="prettyprint">event.preventDefault()</code> to indicate the dragged data can be accepted. 
@@ -6682,7 +6787,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojChart
  * @instance
  * @type {function(Event, object)}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 
 // SubId Locators **************************************************************
@@ -7431,6 +7536,9 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @ojcomponent oj.ojChart
  * @augments oj.dvtBaseComponent
  * @since 0.7
+ * @ojstatus preview
+ * @ojshortdesc Chart Element
+ * @ojrole application
  *
  * @classdesc
  * <h3 id="chartOverview-section">
@@ -7524,6 +7632,7 @@ oj.__registerWidget('oj.ojChart', $['oj']['dvtBaseComponent'],
        * @event
        * @memberof oj.ojChart
        * @instance
+       * @ojbubbles
        */
       selectInput: null,
 
@@ -7541,6 +7650,7 @@ oj.__registerWidget('oj.ojChart', $['oj']['dvtBaseComponent'],
        * @event
        * @memberof oj.ojChart
        * @instance
+       * @ojbubbles
        */
       viewportChange: null,
 
@@ -7560,6 +7670,7 @@ oj.__registerWidget('oj.ojChart', $['oj']['dvtBaseComponent'],
        * @event
        * @memberof oj.ojChart
        * @instance
+       * @ojbubbles
        */
       viewportChangeInput: null,
 
@@ -7577,6 +7688,7 @@ oj.__registerWidget('oj.ojChart', $['oj']['dvtBaseComponent'],
        * @event
        * @memberof oj.ojChart
        * @instance
+       * @ojbubbles
        */
       drill: null
     },

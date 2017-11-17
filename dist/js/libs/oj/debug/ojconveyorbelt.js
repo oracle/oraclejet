@@ -1696,6 +1696,7 @@ ConveyorBeltCommon._SWIPE_THRESHOLD = .33;
  * @ojcomponent oj.ojConveyorBelt
  * @augments oj.baseComponent
  * @since 0.6
+ * @ojstatus preview
  * 
  * @classdesc
  * <h3 id="conveyorBeltOverview-section">

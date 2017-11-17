@@ -249,12 +249,12 @@ var pickerView =
   "                         accept: acceptStr}\">" + 
   "</input>" +
   "<div class='oj-filepicker-clickable'>" +
-  "  <oj-slot name='trigger'>" +
+  "  <oj-bind-slot name='trigger'>" +
   "    <div tabindex='0'" +
   "         class='oj-filepicker-dropzone'>" +
   "      <p class='oj-filepicker-text' data-bind='text: defDropzoneText'></p>" +
   "    </div>" +
-  "  </oj-slot>" +
+  "  </oj-bind-slot>" +
   "</div>";
 
 function pickerViewModel (context) {
@@ -358,6 +358,8 @@ function pickerViewModel (context) {
   //delegate the click to the internal input element to select files
   function selectingFiles(event) {
     selecting = true;
+    // - form submit event is triggered when the file upload button is clicked
+    event.preventDefault();
     inputElem.click();
     return true;
   };

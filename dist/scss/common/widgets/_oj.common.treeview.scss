@@ -42,12 +42,12 @@
     .oj-treeview-item {
       white-space: nowrap;
       @include oj-ltr() {
-        margin-left: 24px;
+        margin-left: $treeViewSpacerWidth;
       }
       @include oj-rtl() {
-        margin-right: 24px;
+        margin-right: $treeViewSpacerWidth;
       }
-      min-width: 24px;
+      min-width: $treeViewSpacerWidth;
       vertical-align: middle;
     }
 
@@ -131,8 +131,8 @@
 
     // Disclosure icon or the spacer
     .oj-treeview-spacer {
-      width: 24px;
-      height: 30px;
+      width: $treeViewSpacerWidth;
+      height: $treeViewSpacerHeight;
     }
 
     .oj-treeview-disclosure-icon {

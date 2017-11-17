@@ -1,0 +1,74 @@
+{
+  "name": "ojOption",
+  "version": "4.1.0",
+  "jetVersion": "4.1.0",
+  "displayName": " Option",
+  "preview": true,
+  "description": "ojOption",
+  "properties": {
+    "disabled": {
+      "description": "Disables the oj-option if set to true.",
+      "type": "boolean",
+      "displayName": "Disabled",
+      "value": false
+    },
+    "value": {
+      "description": "Specifies the oj-option's value. The value is associated with the oj-option element whose display value may be different.",
+      "type": "*",
+      "displayName": "Value"
+    }
+  },
+  "methods": {
+    "setProperty": {
+      "description": "Sets a property or a single subproperty for complex properties and notifies the component of the change, triggering a [property]Changed event.",
+      "params": [
+        {
+          "name": "property",
+          "description": "The property name to set. Supports dot notation for subproperty access.",
+          "type": "string"
+        },
+        {
+          "name": "value",
+          "description": "The new value to set the property to.",
+          "type": "*"
+        }
+      ]
+    },
+    "getProperty": {
+      "description": "Retrieves a value for a property or a single subproperty for complex properties.",
+      "params": [
+        {
+          "name": "property",
+          "description": "The property name to get. Supports dot notation for subproperty access.",
+          "type": "string"
+        }
+      ],
+      "return": "*"
+    },
+    "refresh": {
+      "description": "Refreshes the visual state of the component."
+    },
+    "setProperties": {
+      "description": "Performs a batch set of properties.",
+      "params": [
+        {
+          "name": "properties",
+          "description": "An object containing the property and value pairs to set.",
+          "type": "Object"
+        }
+      ]
+    }
+  },
+  "slots": {
+    "": {
+      "description": "Child content for oj-option. This is normally the text node that displays for oj-option.",
+      "displayName": "default"
+    },
+    "endIcon": {
+      "description": "Named slot for the oj-option's end icon."
+    },
+    "startIcon": {
+      "description": "Named slot for the oj-option's start icon."
+    }
+  }
+}

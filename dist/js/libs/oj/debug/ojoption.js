@@ -83,6 +83,7 @@ OptionRenderer.render = function(elem)
 /**
  * @ojcomponent oj.ojOption
  * @since 4.0.0
+ * @ojstatus preview
  *
  * @classdesc
  * <h3 id="optionOverview-section">
@@ -249,10 +250,12 @@ OptionRenderer.render = function(elem)
   var ojOptionMeta = {
     "properties": {
       "disabled": {
-        "type": "boolean"
+        "type": "boolean",
+        "value": false
       }, 
       "value": {
-        "type": "any"
+        "type": "any",
+        "value": null
       },
       // not documented
       "customOptionRenderer": {}

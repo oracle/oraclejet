@@ -1,0 +1,113 @@
+{
+  "name": "ojAvatar",
+  "version": "4.1.0",
+  "jetVersion": "4.1.0",
+  "displayName": " Avatar",
+  "preview": true,
+  "styleClasses": [
+    {
+      "styleGroup": [
+        "oj-avatar-group-image"
+      ],
+      "description": "Use to diplay avatar group placeholder image instead of single person placeholder image."
+    }
+  ],
+  "description": "Themeable, WAI-ARIA-compliant element that often represents a person",
+  "properties": {
+    "initials": {
+      "description": "Specifies the initials of the avatar. Will only be displayed if the src attribute is null. Required if src attribute is provided for accessibility purposes. Will be displayed if the src attribute is not specified, or in high contrast mode for accessibility purposes.",
+      "type": "string",
+      "displayName": "Initials",
+      "value": null
+    },
+    "size": {
+      "description": "Specifies the size of the avatar.",
+      "type": "string",
+      "displayName": "Size",
+      "value": "md",
+      "enumValues": [
+        "lg",
+        "md",
+        "sm",
+        "xl",
+        "xs",
+        "xxl",
+        "xxs"
+      ],
+      "propertyEditorValues": {
+        "lg": {
+          "description": "large avatar",
+          "displayName": "Lg"
+        },
+        "md": {
+          "description": "medium avatar, default value",
+          "displayName": "Md"
+        },
+        "sm": {
+          "description": "small avatar",
+          "displayName": "Sm"
+        },
+        "xl": {
+          "description": "extra large avatar",
+          "displayName": "Xl"
+        },
+        "xs": {
+          "description": "extra small avatar",
+          "displayName": "Xs"
+        },
+        "xxl": {
+          "description": "extra, extra large avatar",
+          "displayName": "Xxl"
+        },
+        "xxs": {
+          "description": "extra, extra small avatar",
+          "displayName": "Xxs"
+        }
+      }
+    },
+    "src": {
+      "description": "Specifies the src for the image of the avatar. Image will be rendered as a background image. In high contrast mode, initials will be displayed instead since background images will not be rendered.",
+      "type": "string",
+      "displayName": "Src",
+      "value": null
+    }
+  },
+  "methods": {
+    "setProperty": {
+      "description": "Sets a property or a single subproperty for complex properties and notifies the component of the change, triggering a [property]Changed event.",
+      "params": [
+        {
+          "name": "property",
+          "description": "The property name to set. Supports dot notation for subproperty access.",
+          "type": "string"
+        },
+        {
+          "name": "value",
+          "description": "The new value to set the property to.",
+          "type": "*"
+        }
+      ]
+    },
+    "getProperty": {
+      "description": "Retrieves a value for a property or a single subproperty for complex properties.",
+      "params": [
+        {
+          "name": "property",
+          "description": "The property name to get. Supports dot notation for subproperty access.",
+          "type": "string"
+        }
+      ],
+      "return": "*"
+    },
+    "setProperties": {
+      "description": "Performs a batch set of properties.",
+      "params": [
+        {
+          "name": "properties",
+          "description": "An object containing the property and value pairs to set.",
+          "type": "Object"
+        }
+      ]
+    }
+  }
+}

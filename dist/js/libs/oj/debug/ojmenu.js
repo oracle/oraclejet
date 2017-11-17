@@ -23,6 +23,7 @@ define(['ojs/ojcore', 'jquery', "hammerjs", "ojs/ojjquery-hammer", 'promise', 'o
  * @ojcomponent oj.ojMenu
  * @augments oj.baseComponent
  * @since 0.6
+ * @ojstatus preview
  *
  * @classdesc
  * <h3 id="menuOverview-section">
@@ -2045,9 +2046,18 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
         }
 
         var launcher = openOptions.launcher;
-        launcher = $.type(launcher) === "string"
-                   ? $(launcher)
-                   : launcher;
+        if (!this._IsCustomElement())
+        {
+            launcher = $.type(launcher) === "string"
+                       ? $(launcher)
+                       : launcher;
+        }
+        else
+        {
+            launcher = $.type(launcher) === "string"
+                       ? $(document.getElementById(launcher))
+                       : $(launcher);
+        }
 
         if (!launcher || !launcher.length) {
             // need launcher so can return focus to it.

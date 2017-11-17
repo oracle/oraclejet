@@ -36,6 +36,9 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojoption'],
  * @ojcomponent oj.ojButton
  * @augments oj.baseComponent
  * @since 0.6
+ * @ojstatus preview
+ * @ojshortdesc A clickable button.
+ * @ojrole button
  *
  * @classdesc
  * <h3 id="buttonOverview-section">
@@ -152,7 +155,7 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
          * @ojvalue {string} "half" In typical themes, half-chrome buttons acquire chrome only in their hover, active, and selected states. Half-chroming is recommended for buttons in a toolbar.
          *     (This is the toolbar default in most themes.)
          * @ojvalue {string} "outlined" In typical themes, outlined buttons are similar to half-chrome buttons, but have a border in the default state.
-         * @default Varies by theme and containership as detailed above.
+         * @ojshortdesc Indicates in what states the button has chrome (background and border).
          *
          * @example <caption>Initialize the Button with the <code class="prettyprint">chroming</code> attribute specified:</caption>
          * &lt;oj-button chroming='half'>&lt;/oj-button>
@@ -176,9 +179,9 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
          * @type {string}
          * @ojvalue {string} "full" In typical themes, full-chrome buttons always have chrome.
          * @ojvalue {string} "half" In typical themes, half-chrome buttons acquire chrome only in their hover, active, and selected states. Half-chroming is recommended for buttons in a toolbar.
-         *     (This is the toolbar default in most themes.)
+         * (This is the toolbar default in most themes.)
          * @ojvalue {string} "outlined" In typical themes, outlined buttons are similar to half-chrome buttons, but have a border in the default state.
-         * @default Varies by theme and containership as detailed above.
+         * @ojshortdesc Indicates in what states the button has chrome (background and border).
          *
          * @example <caption>Initialize the Menu Button with the <code class="prettyprint">chroming</code> attribute specified:</caption>
          * &lt;oj-menu-button chroming='half'>&lt;/oj-menu-button>
@@ -220,7 +223,8 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
          * @name disabled
          * @memberof oj.ojButton
          * @type {boolean}
-         * @default the DOM <code class="prettyprint">disabled</code> value otherwise
+         * @default false
+         * @ojshortdesc Specifies that the button element should be disabled.
          *
          * @example <caption>Initialize the Button with the <code class="prettyprint">disabled</code> attribute specified:</caption>
          * &lt;oj-button disabled='true'>&lt;/oj-button>
@@ -239,7 +243,8 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
          * @name disabled
          * @memberof oj.ojMenuButton
          * @type {boolean}
-         * @default the DOM <code class="prettyprint">disabled</code> value otherwise
+         * @default false
+         * @ojshortdesc Specifies that the button element should be disabled.
          *
          * @example <caption>Initialize the Menu Button with the <code class="prettyprint">disabled</code> attribute specified:</caption>
          * &lt;oj-menu-button disabled='true'>&lt;/oj-menu-button>
@@ -274,7 +279,8 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
          * @type {string}
          * @ojvalue {string} "all" Display both the label and icons.
          * @ojvalue {string} "icons" Display only the icons.
-         * @default <code class="prettyprint">"all"</code>
+         * @default "all"
+         * @ojshortdesc Specifies whether the button displays label and icons, or just icons.
          *
          * @example <caption>Initialize the Button with the <code class="prettyprint">display</code> attribute specified:</caption>
          * &lt;oj-button display='icons'>&lt;/oj-button>
@@ -297,7 +303,8 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
          * @type {string}
          * @ojvalue {string} "all" Display both the label and icons.
          * @ojvalue {string} "icons" Display only the icons.
-         * @default <code class="prettyprint">"all"</code>
+         * @default "all"
+         * @ojshortdesc Specifies whether the button displays label and icons, or just icons.
          *
          * @example <caption>Initialize the Menu Button with the <code class="prettyprint">display</code> attribute specified:</caption>
          * &lt;oj-menu-button display='icons'>&lt;/oj-menu-button>
@@ -1136,39 +1143,7 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
         }
     },
     
-    /**
-     * Refreshes the menu button. JET components require a <code class="prettyprint">refresh()</code> after a supported DOM change is made
-     * that affects the component, of which the component would otherwise be unaware.  In particular, if the Menu Button is reparented from
-     * inside a Buttonset or Toolbar to a location that's not in a Buttonset or Toolbar, then <code class="prettyprint">refresh()</code>
-     * must be called.
-     *
-     * <p>Note that anything having an API, such as the Menu Button's disabled state, must be set via the API, not
-     * by mutating the DOM and calling <code class="prettyprint">refresh()</code>. 
-     *
-     * @expose
-     * @memberof oj.ojMenuButton
-     * @instance
-     *
-     * @example <caption>Invoke the <code class="prettyprint">refresh</code> method:</caption>
-     * myMenuButton.refresh();
-     */
-
-    /**
-     * Refreshes the button. JET components require a <code class="prettyprint">refresh()</code> after a supported DOM change is made
-     * that affects the component, of which the component would otherwise be unaware.  In particular, if the Button is reparented from
-     * inside a Buttonset or Toolbar to a location that's not in a Buttonset or Toolbar, then <code class="prettyprint">refresh()</code>
-     * must be called.
-     *
-     * <p>Note that anything having an API, such as the Button's disabled state, must be set via the API, not
-     * by mutating the DOM and calling <code class="prettyprint">refresh()</code>. 
-     *
-     * @expose
-     * @memberof oj.ojButton
-     * @instance
-     *
-     * @example <caption>Invoke the <code class="prettyprint">refresh</code> method:</caption>
-     * myButton.refresh();
-     */
+    // @inheritdoc
     refresh: function() // Override of public base class method (unlike JQUI).  Method name needn't be quoted since is in externs.js.
     {
         this._super();
@@ -2069,20 +2044,17 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
      *       <td>oj-button-sm<br>
      *           oj-button-lg<br>
      *           oj-button-xl</td>
-     *       <td>Makes the button small, large, or extra large.
-     *           <p>Is applied to the Button's root element.</td>
+     *       <td>Makes the button small, large, or extra large. Is applied to the Button's root element.</td>
      *     </tr>
      *     <tr>
      *       <td>oj-button-primary</td>
      *       <td>Draws attention to the button, often identifying the primary action in a set of buttons.
-     *           Designed for use with a push button. In some themes, this class does nothing.
-     *           <p>Is applied to the Button's root element.</td>
+     *           Designed for use with a push button. In some themes, this class does nothing. Is applied to the Button's root element.</td>
      *       </td>
      *     </tr>
      *     <tr>
      *       <td>oj-button-confirm</td>
-     *       <td>Identifies an action to confirm. Designed for use with a push button.
-     *           <p>Is applied to the Button's root element.</td>
+     *       <td>Identifies an action to confirm. Designed for use with a push button. Is applied to the Button's root element.</td>
      *       </td>
      *     </tr>
      *     <tr>
@@ -2100,7 +2072,11 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
 /**
  * @ojcomponent oj.ojMenuButton
  * @since 4.0
+ * @ojstatus preview
  * @augments oj.ojButton
+ * @ojshortdesc A button that launches a menu when clicked.
+ * @ojrole button
+ *
  * @classdesc
  * <h3 id="menubuttonOverview-section">
  *   JET Menu Button
@@ -2180,7 +2156,12 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
 /**
  * @ojcomponent oj.ojButtonsetOne
  * @since 0.6
+ * @ojstatus preview
  * @augments oj.ojButtonset
+ * @ojshortdesc A grouping of related buttons where only one button may be selected.
+ * @ojrole button
+ * @ojrole radiogroup
+ *
  * @classdesc
  * <h3 id="buttonsetOverview-section">
  *   JET Buttonset One
@@ -2220,7 +2201,12 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
 /**
  * @ojcomponent oj.ojButtonsetMany
  * @since 0.6
+ * @ojstatus preview
  * @augments oj.ojButtonset
+ * @ojshortdesc A grouping of related buttons where any number of buttons may be selected.
+ * @ojrole button
+ * @ojrole group
+ *
  * @classdesc
  * <h3 id="buttonsetOverview-section">
  *   JET Buttonset Many
@@ -2263,6 +2249,7 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
  * @since 0.6
  * @abstract
  * @classdesc
+ * @hideconstructor
  */
 
 /**
@@ -2369,8 +2356,9 @@ oj.__registerWidget("oj.ojButtonset", $['oj']['baseComponent'],
          * @name value
          * @memberof oj.ojButtonsetOne
          * @type {*}
-         * @default null    
-         * @ojwriteback         
+         * @default null
+         * @ojwriteback
+         * @ojshortdesc Indicates which oj-option in the buttonset is selected.
          *
          * @example <caption>Initialize the Buttonset with the <code class="prettyprint">value</code> attribute specified:</caption>
          * &lt;oj-buttonset-one value='bold'>&lt;/oj-buttonset-one>
@@ -2394,10 +2382,11 @@ oj.__registerWidget("oj.ojButtonset", $['oj']['baseComponent'],
          *
          * @name value
          * @memberof oj.ojButtonsetMany
-         * @type {Array.<*>|undefined}
+         * @type {Array.<*>|null}
          * @default null
          * @ojwriteback
-         *         
+         * @ojshortdesc Indicates which oj-options in the buttonset are selected.
+         *
          * @example <caption>Initialize the Buttonset with the <code class="prettyprint">value</code> attribute specified:</caption>
          * &lt;oj-buttonset-many value='{{["bold", "italic"]}}'>&lt;/oj-buttonset-many>
          *
@@ -2449,7 +2438,7 @@ oj.__registerWidget("oj.ojButtonset", $['oj']['baseComponent'],
          * @ojvalue {string} "half" In typical themes, half-chrome buttons acquire chrome only in their hover, active, and selected states. Half-chroming is recommended for buttons in a toolbar.
          *     (This is the toolbar default in most themes.)
          * @ojvalue {string} "outlined" In typical themes, outlined buttons are similar to half-chrome buttons, but have a border in the default state.
-         * @default Varies by theme and containership as detailed above.
+         * @ojshortdesc Indicates in what states the buttonset has chrome (background and border).
          *
          * @example <caption>Initialize the Buttonset with the <code class="prettyprint">chroming</code> attribute specified:</caption>
          * &lt;oj-buttonset-one chroming='half'>&lt;/oj-buttonset-one>
@@ -2474,7 +2463,7 @@ oj.__registerWidget("oj.ojButtonset", $['oj']['baseComponent'],
          * @ojvalue {string} "half" In typical themes, half-chrome buttons acquire chrome only in their hover, active, and selected states. Half-chroming is recommended for buttons in a toolbar.
          *     (This is the toolbar default in most themes.)
          * @ojvalue {string} "outlined" In typical themes, outlined buttons are similar to half-chrome buttons, but have a border in the default state.
-         * @default Varies by theme and containership as detailed above.
+         * @ojshortdesc Indicates in what states the buttonset has chrome (background and border).
          *
          * @example <caption>Initialize the Buttonset with the <code class="prettyprint">chroming</code> attribute specified:</caption>
          * &lt;oj-buttonset-many chroming='half'>&lt;/oj-buttonset-many>
@@ -2521,7 +2510,8 @@ oj.__registerWidget("oj.ojButtonset", $['oj']['baseComponent'],
          * @type {string}
          * @ojvalue {string} "all" Display both the label and icons.
          * @ojvalue {string} "icons" Display only the icons.
-         * @default <code class="prettyprint">"all"</code>
+         * @default "all"
+         * @ojshortdesc Specifies whether the buttonset displays label and icons, or just icons.
          *
          * @example <caption>Initialize the Buttonset with the <code class="prettyprint">display</code> attribute specified:</caption>
          * &lt;oj-buttonset-one display='icons'>&lt;/oj-buttonset-one>
@@ -2541,7 +2531,8 @@ oj.__registerWidget("oj.ojButtonset", $['oj']['baseComponent'],
          * @type {string}
          * @ojvalue {string} "all" Display both the label and icons.
          * @ojvalue {string} "icons" Display only the icons.
-         * @default <code class="prettyprint">"all"</code>
+         * @default "all"
+         * @ojshortdesc Specifies whether the buttonset displays label and icons, or just icons.
          *
          * @example <caption>Initialize the Buttonset with the <code class="prettyprint">display</code> attribute specified:</caption>
          * &lt;oj-buttonset-many display='icons'>&lt;/oj-buttonset-many>
@@ -2573,7 +2564,8 @@ oj.__registerWidget("oj.ojButtonset", $['oj']['baseComponent'],
          * @name disabled
          * @memberof oj.ojButtonsetOne
          * @type {boolean}
-         * @default <code class="prettyprint">false</code>
+         * @default false
+         * @ojshortdesc Specifies that the buttonset element should be disabled.
          *
          * @example <caption>Initialize the Buttonset with the <code class="prettyprint">disabled</code> attribute specified:</caption>
          * &lt;oj-buttonset-one disabled='true'>&lt;/oj-buttonset-one>
@@ -2592,7 +2584,8 @@ oj.__registerWidget("oj.ojButtonset", $['oj']['baseComponent'],
          * @name disabled
          * @memberof oj.ojButtonsetMany
          * @type {boolean}
-         * @default <code class="prettyprint">false</code>
+         * @default false
+         * @ojshortdesc Specifies that the buttonset element should be disabled.
          *
          * @example <caption>Initialize the Buttonset with the <code class="prettyprint">disabled</code> attribute specified:</caption>
          * &lt;oj-buttonset-many disabled='true'>&lt;/oj-buttonset-many>
@@ -2629,7 +2622,8 @@ oj.__registerWidget("oj.ojButtonset", $['oj']['baseComponent'],
          * @type {string}
          * @ojvalue {string} "oneTabstop" Focus management is enabled.  The Buttonset is a single tabstop with arrow-key navigation.
          * @ojvalue {string} "none" Focus management is disabled, to avoid interfering with the focus management of a containing component.
-         * @default <code class="prettyprint">"oneTabstop"</code>
+         * @default "oneTabstop"
+         * @ojshortdesc Should be set to none when the buttonset is placed within a toolbar.
          *
          * @example <caption>Initialize the Buttonset with the <code class="prettyprint">focusManagement</code> attribute specified:</caption>
          * &lt;oj-buttonset-one focus-management='none'>&lt;/oj-buttonset-one>
@@ -2649,7 +2643,8 @@ oj.__registerWidget("oj.ojButtonset", $['oj']['baseComponent'],
          * @type {string}
          * @ojvalue {string} "oneTabstop" Focus management is enabled.  The Buttonset is a single tabstop with arrow-key navigation.
          * @ojvalue {string} "none" Focus management is disabled, to avoid interfering with the focus management of a containing component.
-         * @default <code class="prettyprint">"oneTabstop"</code>
+         * @default "oneTabstop"
+         * @ojshortdesc Should be set to none when the buttonset is placed within a toolbar.
          *
          * @example <caption>Initialize the Buttonset with the <code class="prettyprint">focusManagement</code> attribute specified:</caption>
          * &lt;oj-buttonset-many focus-management='none'>&lt;/oj-buttonset-many>
@@ -3192,31 +3187,7 @@ oj.__registerWidget("oj.ojButtonset", $['oj']['baseComponent'],
 
     // TODO: JSDoc says: "refresh() is required ... after a change to the disabled status of any of the buttons in the buttonset."  Instead, shouldn't
     // Button._setOption("disabled") look for a containing Buttonset and do the necessary housekeeping?
-    /**
-     * Refreshes the buttonset, including the following:
-     *
-     * <ul>
-     *   <li>Creates JET Buttons out of all contained DOM elements supported by JET Button that are not already Buttons, by calling <code class="prettyprint">ojButton()</code> on them.</li>
-     *   <li>Re-applies focus management / keyboard navigation.</li>
-     *   <li>Applies special styles to the first and last button of the buttonset (e.g. for rounded corners, depending on theming).</li>
-     *   <li>Rechecks the reading direction (LTR vs. RTL).</li>
-     * </ul>
-     *
-     * <p>A <code class="prettyprint">refresh()</code> is required in the following circumstances:
-     * <ul>
-     *   <li>After buttons are added to, removed from, or reordered within the buttonset.</li>
-     *   <li>After the buttonset is reparented from inside a toolbar to a location that's not in a toolbar.</li>
-     *   <li>After a change to the [disabled]{@link oj.ojButton#disabled} status of any of the buttons in the buttonset.</li>
-     *   <li>After the reading direction (LTR vs. RTL) changes.</li>
-     * </ul>
-     *
-     * @expose
-     * @memberof oj.ojButtonset
-     * @instance
-     *
-     * @example <caption>Invoke the <code class="prettyprint">refresh</code> method:</caption>
-     * myButtonset.refresh();
-     */
+    // @inheritdoc
     refresh: function() // Override of public base class method (unlike JQUI).  Method name needn't be quoted since is in externs.js.
     {
         this._super();

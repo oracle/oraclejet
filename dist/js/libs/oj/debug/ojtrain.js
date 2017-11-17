@@ -25,6 +25,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
 /**
  * @ojcomponent oj.ojTrain
  * @augments oj.baseComponent
+ * @ojstatus preview
  * @classdesc
  * <h3 id="trainOverview-section">
  *   JET Train

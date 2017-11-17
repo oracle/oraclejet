@@ -90,6 +90,7 @@ oj.CollectionNodeSet.prototype._getCollection = function() {
 * Gets the parent key for this result set.  
 * @return {Object} the parent key for this result set. 
 * @export
+* @memberof oj.CollectionNodeSet
 */
 oj.CollectionNodeSet.prototype.getParent = function()
 {
@@ -99,7 +100,8 @@ oj.CollectionNodeSet.prototype.getParent = function()
 /**
 * Gets the start index of the result set.  
 * @return {number} the start index of the result set.
-* @export	
+* @export
+* @memberof oj.CollectionNodeSet
 */
 oj.CollectionNodeSet.prototype.getStart = function()
 {
@@ -109,7 +111,8 @@ oj.CollectionNodeSet.prototype.getStart = function()
 /**
 * Gets the actual count of the result set.  
 * @return {number} the actual count of the result set.
-* @export	
+* @export
+* @memberof oj.CollectionNodeSet
 */
 oj.CollectionNodeSet.prototype.getCount = function()
 {
@@ -123,6 +126,7 @@ oj.CollectionNodeSet.prototype.getCount = function()
 * @return {Object} the data for the specified index.  oj.RowData should be returned for data that represents a row
 *         with a number of columns.
 * @export
+* @memberof oj.CollectionNodeSet
 */
 oj.CollectionNodeSet.prototype.getData = function(index)
 {
@@ -147,6 +151,7 @@ oj.CollectionNodeSet.prototype._checkRange = function(index) {
 * @param {number} index the index of the node/row in which we want to retrieve the metadata from.  
 * @return {Object} the metadata object for the specific index.
 * @export
+* @memberof oj.CollectionNodeSet
 */	
 oj.CollectionNodeSet.prototype.getMetadata = function(index)
 {
@@ -170,6 +175,7 @@ oj.CollectionNodeSet.prototype.getMetadata = function(index)
  * @param {number} index the index of the node/row in which we want to retrieve the child node set
  * @return {oj.CollectionNodeSet|null} the child node set representing the child collection.
  * @export
+ * @memberof oj.CollectionNodeSet
  */
 oj.CollectionNodeSet.prototype.getChildNodeSet = function(index) {
   if (this.treeDataSource._virtual) {
@@ -221,6 +227,7 @@ oj.Object.createSubclass(oj.CollectionTreeDataSource, oj.TreeDataSource, "oj.Col
 
 /**
  * Initializes the data source.
+ * @memberof oj.CollectionTreeDataSource
  * @export
  */
 oj.CollectionTreeDataSource.prototype.Init = function()
@@ -236,6 +243,7 @@ oj.CollectionTreeDataSource.prototype.Init = function()
  * @param {Object} parent the parent key.  Specify null if inquiring child count of the root.
  * @return {number} the number of children for the specified parent.
  * @export
+ * @memberof oj.CollectionTreeDataSource
  */
 oj.CollectionTreeDataSource.prototype.getChildCount = function(parent)
 {
@@ -257,6 +265,7 @@ oj.CollectionTreeDataSource.prototype.getChildCount = function(parent)
  * @param {Object} key the parent key in which to create an OJ collection for.
  * @param {Object} callbacks success and error callbacks.  The success callback will provide the child collection as the first argument
  * @export
+ * @memberof oj.CollectionTreeDataSource
  */
 oj.CollectionTreeDataSource.prototype.getChildCollection = function(key, callbacks) {
     this.fetchChildren(key, null, {'success':function(nodeSet) {
@@ -279,6 +288,7 @@ oj.CollectionTreeDataSource.prototype.getChildCollection = function(key, callbac
  *        the order of the fetch operations.  When queueOnly is false/null/undefined, any queued fetch operations are then
  *        flushed and executed in the order they are queued.  This flag is ignored if the datasource does not support batching.
  * @export
+ * @memberof oj.CollectionTreeDataSource
  */
 oj.CollectionTreeDataSource.prototype.fetchChildren = function(parent, range, callbacks, options)
 {
@@ -724,6 +734,7 @@ oj.CollectionTreeDataSource.prototype._fetch = function(collectionCacheObj, star
  *  {number=} maxCount the maximum number of children to fetch.  If a non-positive number is specified, then the value is ignored and
  *        there is no maximum fetch count.
  * @export
+ * @memberof oj.CollectionTreeDataSource
  */
 oj.CollectionTreeDataSource.prototype.fetchDescendants = function(parent, callbacks, options)
 {
@@ -766,6 +777,7 @@ oj.CollectionTreeDataSource.prototype.fetchDescendants = function(parent, callba
  * @param {function({status: Object})} callbacks.success the callback to invoke when the sort completed successfully.<p>
  * callbacks.error the callback to invoke when sort failed.
  * @export
+ * @memberof oj.CollectionTreeDataSource
  */
 oj.CollectionTreeDataSource.prototype.sort = function(criteria, callbacks)
 {
@@ -810,6 +822,7 @@ oj.CollectionTreeDataSource.prototype._applySortToCollection = function(collecti
  *         criteria.key the key identifying the attribute (column) to sort on.  Value is null if it's not sorted.
  *         criteria.direction the sort direction, valid values are "ascending", "descending", "none" (default)
  * @export
+ * @memberof oj.CollectionTreeDataSource
  */
 oj.CollectionTreeDataSource.prototype.getSortCriteria = function()
 {
@@ -827,6 +840,7 @@ oj.CollectionTreeDataSource.prototype.getSortCriteria = function()
  * @param {function()} callbacks.success the callback to invoke when the move completed successfully.  
  * @param {function({status: Object})} callbacks.error the callback to invoke when move failed.
  * @export
+ * @memberof oj.CollectionTreeDataSource
  */ 
 oj.CollectionTreeDataSource.prototype.move = function(rowToMove, referenceRow, position, callbacks)
 {
@@ -843,6 +857,7 @@ oj.CollectionTreeDataSource.prototype.move = function(rowToMove, referenceRow, p
  *        the element at a specific point among the reference row's current children.
  * @return {string} returns "valid" if the move is valid, "invalid" otherwise.
  * @export
+ * @memberof oj.CollectionTreeDataSource
  */ 
 oj.CollectionTreeDataSource.prototype.moveOK = function(rowToMove, referenceRow, position)
 {
@@ -859,6 +874,7 @@ oj.CollectionTreeDataSource.prototype.moveOK = function(rowToMove, referenceRow,
  *         For "move", the valid return values are: "default", "none".  
  *         For "batchFetch", the valid return values are: "enable", "disable".  
  * @export
+ * @memberof oj.CollectionTreeDataSource
  */
 oj.CollectionTreeDataSource.prototype.getCapability = function(feature)
 {

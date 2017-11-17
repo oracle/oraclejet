@@ -107,7 +107,7 @@
             @include oj-flex-property(1 1 auto);
             @include oj-align-items-property(center);
         }
-
+        
         // For simple links case
         a.oj-tabbar-item-content {
             text-decoration: none;
@@ -145,8 +145,9 @@
             overflow-x: hidden;
             display: inline-block;
             line-height: normal;
+            min-width: $tabBarTruncatedLabelMinWidth;
         }
-        
+
         .oj-tabbar-item-text-wrap .oj-tabbar-item-label {
             white-space: normal;
         }
@@ -1089,6 +1090,68 @@
            font-size: 24px;
         }
 
+        /* Styling for the drag image */
+        .oj-tabbar-drag-image {
+            background-color: transparent;
+            position: fixed;
+            top: 10000px;
+            border: 1px solid transparent;
+            overflow-x: initial;
+            padding: 3px;
+        }
+
+        /* Styling for hiding the original item being dragged */
+        .oj-tabbar-drag-item {
+            display: none;
+        }
+
+        /* Styling item that is draggable (no affordance) */
+        .oj-tabbar-item.oj-draggable {
+            cursor: move;
+        }
+
+        /* Styling for the item that is being moved using drag */
+        .oj-tabbar-item.oj-drag {
+            box-shadow: $largeBoxShadow;
+            border-top: 1px solid $dataGridCellDragImageBorderColor;
+            border-bottom: 1px solid $dataGridCellDragImageBorderColor;
+        }
+
+        /* Styling all drop targets in the list */
+        .oj-tabbar .oj-tabbar-item.oj-drop,
+        .oj-tabbar .oj-tabbar-item.oj-drop.oj-active,
+        .oj-tabbar .oj-tabbar-item.oj-drop.oj-default,
+        .oj-tabbar .oj-tabbar-item.oj-drop.oj-disabled,
+        .oj-tabbar .oj-tabbar-item.oj-drop.oj-selected,
+        .oj-tabbar .oj-tabbar-item.oj-drop.oj-hover,
+        .oj-tabbar .oj-tabbar-item.oj-drop.oj-hover:not(.oj-selected) {
+            box-sizing: border-box;
+            border: 1px solid $dropTarget2Color;
+            background-color: $dropTarget1Color;
+        }
+        
+        /* Used when there are no items in tabbar */
+        .oj-tabbar-no-data-message {
+            padding: $panelPadding;
+            background-color: $dataGridCellBgColor;
+            min-height: $fontSize;
+        }
+
+        /* Styling for an item that is cut during a context menu cut operation */
+        .oj-tabbar-cut {
+            opacity: 0.8;
+        }
+        .oj-tabbar-remove-icon {
+          @extend .oj-fwk-icon-cross;
+          @include oj-align-self-property(center);
+          @include oj-ltr() {
+            padding-right: 5px;
+          }
+          @include oj-rtl() {
+            padding-left: 5px;
+          }
+          padding-top: 3px;
+        }
         /* Override  default options*/
         $tabBarDefaultOptions: ();
         $tabBarAnimationDefaults: ();

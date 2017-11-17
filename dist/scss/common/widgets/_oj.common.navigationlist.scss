@@ -1429,6 +1429,11 @@
               border-right: 1px solid $menuBorderColor;
             }
         }
+        .oj-navigationlist-no-data-message {
+            padding: $panelPadding;
+            background-color: $dataGridCellBgColor;
+            min-height: $fontSize;
+        }
         /* Override  default options*/
         $navigationListDefaultOptions: ();
         $navigationListAnimationDefaults: ();

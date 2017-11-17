@@ -1,0 +1,527 @@
+{
+  "name": "ojTabBar",
+  "version": "4.1.0",
+  "jetVersion": "4.1.0",
+  "displayName": " Tab Bar",
+  "preview": true,
+  "roles": [
+    "tablist"
+  ],
+  "styleClasses": [
+    {
+      "styleGroup": [
+        "oj-tabbar-stack-icon-label"
+      ],
+      "description": "Displays horizontal Tab Bar with icon and label stacked. Applicable only when \"edge\" is \"top\"."
+    },
+    {
+      "styleGroup": [
+        "oj-tabbar-category-divider"
+      ],
+      "description": "Use this class to add horizontal divider line between two categories of items."
+    },
+    {
+      "styleGroup": [
+        "oj-tabbar-item-icon"
+      ],
+      "description": "Use this class to add icon to list item."
+    },
+    {
+      "styleGroup": [
+        "oj-tabbar-item-title"
+      ],
+      "description": "When arbitrary content is placed inside item's content area, it's title text can be marked using this style class. This helps component in identifying the Item's label."
+    },
+    {
+      "styleGroup": [
+        "oj-tabbar-item-text-wrap"
+      ],
+      "description": "Use this class to wrap item label text. Note: On IE11, this is not supported when \"overflow\" attribute is set to \"popup\"."
+    },
+    {
+      "styleGroup": [
+        "oj-tabbar-item-dividers"
+      ],
+      "description": "Use this class to show dividers between horizontal tab bar items."
+    },
+    {
+      "styleGroup": [
+        "oj-sm-condense"
+      ],
+      "description": "Use this class to condense horizontal tab bar items on small screens and larger."
+    },
+    {
+      "styleGroup": [
+        "oj-md-condense"
+      ],
+      "description": "Use this class to condense horizontal tab bar items on medium screens and larger."
+    },
+    {
+      "styleGroup": [
+        "oj-lg-condense"
+      ],
+      "description": "Use this class to condense horizontal tab bar items on large screens and larger."
+    },
+    {
+      "styleGroup": [
+        "oj-xl-condense"
+      ],
+      "description": "Use this class to condense horizontal tab bar items on extra large screens and larger."
+    },
+    {
+      "styleGroup": [
+        "oj-tabbar-nofollow-link"
+      ],
+      "description": "Use this class to prevent automatic navigation to the url specified on \"&lt;a\n\" tag's \"href\" attribute. In this case, navigation can be handled programmatically by using \"selectionChanged\" event. This is useful to execute some custom tasks before browser triggers navigation."
+    },
+    {
+      "styleGroup": [
+        "oj-removable"
+      ],
+      "description": "Use this class to make an item removable."
+    },
+    {
+      "styleGroup": [
+        "oj-focus-highlight"
+      ],
+      "description": "Under normal circumstances this class is applied automatically. It is documented here for the rare cases that an app developer needs per-instance control.\nThe \"oj-focus-highlight\" class applies focus styling that may not be desirable when the focus results from pointer interaction (touch or mouse), but which is needed for accessibility when the focus occurs by a non-pointer mechanism, for example keyboard or initial page load.\nThe application-level behavior for this component is controlled in the theme by the \"$focusHighlightPolicy\" SASS variable; however, note that this same variable controls the focus highlight policy of many components and patterns. The values for the variable are:\n\"nonPointer\": \"oj-focus-highlight\" is applied only when focus is not the result of pointer interaction. Most themes default to this value.\n\"all\": \"oj-focus-highlight\" is applied regardless of the focus mechanism.\n\"none\": \"oj-focus-highlight\" is never applied. This behavior is not accessible, and is intended for use when the application wishes to use its own event listener to precisely control when the class is applied (see below). The application must ensure the accessibility of the result.\nTo change the behavior on a per-instance basis, the application can set the SASS variable as desired and then use event listeners to toggle this class as needed."
+    }
+  ],
+  "description": "Displays tab bar with advanced interactive features.",
+  "properties": {
+    "currentItem": {
+      "description": "Gets and sets the key of the item that should have keyboard focus.",
+      "type": "*",
+      "displayName": "Current Item",
+      "value": null,
+      "writeback": true
+    },
+    "data": {
+      "description": "Gets and sets the data provider for tabbar.",
+      "type": "oj.TableDataSource",
+      "displayName": "Data",
+      "value": null
+    },
+    "display": {
+      "description": "Gets and sets whether all or only icons need to be displayed.",
+      "type": "string",
+      "displayName": "Display",
+      "value": "all",
+      "enumValues": [
+        "all",
+        "icons"
+      ],
+      "propertyEditorValues": {
+        "all": {
+          "description": "Display both the label and icons.",
+          "displayName": "All"
+        },
+        "icons": {
+          "description": "Display only the icons.",
+          "displayName": "Icons"
+        }
+      }
+    },
+    "edge": {
+      "description": "Gets and sets the edge position of the Tab Bar.",
+      "type": "string",
+      "displayName": "Edge",
+      "value": "start",
+      "enumValues": [
+        "bottom",
+        "end",
+        "start",
+        "top"
+      ],
+      "propertyEditorValues": {
+        "bottom": {
+          "description": "This renders list items horizontally. Generally used when tab bar placed on bottom of content section.",
+          "displayName": "Bottom"
+        },
+        "end": {
+          "description": "This renders list items vertically. Generally used when tab bar placed on right/end of content section.",
+          "displayName": "End"
+        },
+        "start": {
+          "description": "This renders list items vertically. Generally used when tab bar placed on left/start of content section.",
+          "displayName": "Start"
+        },
+        "top": {
+          "description": "This renders list items horizontally. Generally used when tab bar placed on top of content section.",
+          "displayName": "Top"
+        }
+      }
+    },
+    "item": {
+      "description": "Customize the functionalities of each tab on Tab bar.",
+      "type": "",
+      "displayName": "Item",
+      "properties": {
+        "renderer": {
+          "description": "Gets and sets the renderer for the tab item.",
+          "type": "function|null",
+          "value": null
+        },
+        "selectable": {
+          "description": "Gets and sets whether the tab can be selected.",
+          "type": "function|boolean",
+          "value": true
+        }
+      }
+    },
+    "overflow": {
+      "description": "Gets and sets overflow behaviour for Tab bar.",
+      "type": "string",
+      "displayName": "Overflow",
+      "value": "hidden",
+      "enumValues": [
+        "hidden",
+        "popup"
+      ],
+      "propertyEditorValues": {
+        "hidden": {
+          "description": "overflow is clipped, and the rest of the content will be invisible.",
+          "displayName": "Hidden"
+        },
+        "popup": {
+          "description": "popup menu will be shown with overflowed items.",
+          "displayName": "Popup"
+        }
+      }
+    },
+    "reorderable": {
+      "description": "Enable or disable the item reordering functionalities.",
+      "type": "string",
+      "displayName": "Reorderable",
+      "value": "disabled",
+      "preview": true,
+      "enumValues": [
+        "disabled",
+        "enabled"
+      ],
+      "propertyEditorValues": {
+        "disabled": {
+          "description": "Disables reordering of items in tabbar.",
+          "displayName": "Disabled"
+        },
+        "enabled": {
+          "description": "Enables reordering of items in tabbar.",
+          "displayName": "Enabled"
+        }
+      }
+    },
+    "selection": {
+      "description": "Gets and sets the key of the selected item.",
+      "type": "*",
+      "displayName": "Selection",
+      "value": null,
+      "writeback": true
+    },
+    "translations": {
+      "description": "A collection of translated resources from the translation bundle, or null if this\ncomponent has no resources. Resources may be accessed and overridden individually or collectively, as seen in the examples.\n\nIf this component has translations, their documentation immediately follows this doc entry.",
+      "type": "Object",
+      "displayName": "Translations",
+      "value": null,
+      "properties": {
+        "accessibleReorderAfterItem": {
+          "description": "Provides properties to customize the screen reader text when the tentative drop target is after a certain item.",
+          "type": "Object",
+          "value": "After {item}"
+        },
+        "accessibleReorderBeforeItem": {
+          "description": "Provides properties to customize the screen reader text when the tentative drop target is before a certain item.",
+          "type": "Object",
+          "value": "Before {item}"
+        },
+        "accessibleReorderTouchInstructionText": {
+          "description": "Provides properties to customize the screen reader touch instructional text for reordering items.",
+          "type": "Object",
+          "value": "Double tap and hold.  Wait for the sound then drag to rearrange."
+        },
+        "labelCut": {
+          "description": "Provides properties to customize the context menu cut label.\n\nSee the translations attribute for usage examples.",
+          "type": "Object",
+          "value": "Cut"
+        },
+        "labelPasteAfter": {
+          "description": "Provides properties to customize the context menu paste after label.\n\nSee the translations attribute for usage examples.",
+          "type": "Object",
+          "value": "Paste After"
+        },
+        "labelPasteBefore": {
+          "description": "Provides properties to customize the context menu paste before label.\n\nSee the translations attribute for usage examples.",
+          "type": "Object",
+          "value": "Paste Before"
+        },
+        "labelRemove": {
+          "description": "Provides properties to customize the context menu remove label.\n\nSee the translations attribute for usage examples.",
+          "type": "Object",
+          "value": "Remove"
+        },
+        "msgFetchingData": {
+          "description": "Provides properties to customize the message text used by Tab Bar when waiting for data.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Fetching Data..."
+        },
+        "msgNoData": {
+          "description": "Provides properties to customize the message text used by Tab Bar when there are no items.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "No items to display."
+        },
+        "overflowItemLabel": {
+          "description": "Label for overflow menu button.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "More"
+        },
+        "removeCueText": {
+          "description": "Text cue for the removable tab, used as the aria-label for the close icon.",
+          "type": "string",
+          "value": "Removable"
+        },
+        "selectedLabel": {
+          "description": "Provides text to read to screen reader when an item is selected.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "selected"
+        }
+      }
+    },
+    "truncation": {
+      "description": "Gets and sets whether truncation needs to be applied.",
+      "type": "string",
+      "displayName": "Truncation",
+      "value": "none",
+      "preview": true,
+      "enumValues": [
+        "none",
+        "progressive"
+      ],
+      "propertyEditorValues": {
+        "none": {
+          "description": "tabs always take up the space needed by the title texts.",
+          "displayName": "None"
+        },
+        "progressive": {
+          "description": "If not enough space is available to display all of the tabs, then the width of each tab title is restricted just enough to allow all tabs to fit. All tab titles that are truncated are displayed with ellipses. However the width of each tab title will not be truncated below $tabBarTruncatedLabelMinWidth.",
+          "displayName": "Progressive"
+        }
+      }
+    }
+  },
+  "methods": {
+    "getContextByNode": {
+      "description": "Returns an object with context for the given child DOM node. This will always contain the subid for the node,\ndefined as the 'subId' property on the context object. Additional component specific information may also be included.\n\nFor more details on returned objects, see context objects.",
+      "params": [
+        {
+          "name": "node",
+          "description": "The child DOM node",
+          "type": "Element"
+        }
+      ],
+      "return": "Object|null"
+    },
+    "refresh": {
+      "description": "Refreshes the visual state of the Tab Bar."
+    },
+    "setProperty": {
+      "description": "Sets a property or a single subproperty for complex properties and notifies the component\nof the change, triggering a [property]Changed event.",
+      "params": [
+        {
+          "name": "property",
+          "description": "The property name to set. Supports dot notation for subproperty access.",
+          "type": "string"
+        },
+        {
+          "name": "value",
+          "description": "The new value to set the property to.",
+          "type": "*"
+        }
+      ]
+    },
+    "getProperty": {
+      "description": "Retrieves a value for a property or a single subproperty for complex properties.",
+      "params": [
+        {
+          "name": "property",
+          "description": "The property name to get. Supports dot notation for subproperty access.",
+          "type": "string"
+        }
+      ],
+      "return": "*"
+    },
+    "setProperties": {
+      "description": "Performs a batch set of properties.",
+      "params": [
+        {
+          "name": "properties",
+          "description": "An object containing the property and value pairs to set.",
+          "type": "Object"
+        }
+      ]
+    }
+  },
+  "events": {
+    "animateStart": {
+      "description": "Event handler for when the default animation of a particular action is about to start.",
+      "detail": {
+        "action": {
+          "description": "the action that starts the animation. See animation section for a list of actions.",
+          "type": "Object"
+        },
+        "element": {
+          "description": "the target of animation.",
+          "type": "Object"
+        },
+        "endCallback": {
+          "description": "if the event listener calls event.preventDefault to cancel the default animation, it must call the endCallback function when it finishes its own animation handling and when any custom animation ends.",
+          "type": "function"
+        }
+      }
+    },
+    "animateEnd": {
+      "description": "Event handler for when the default animation of a particular action has ended.",
+      "detail": {
+        "action": {
+          "description": "the action that started the animation. See animation section for a list of actions.",
+          "type": "Object"
+        },
+        "element": {
+          "description": "the target of animation.",
+          "type": "Object"
+        }
+      }
+    },
+    "beforeSelect": {
+      "description": "Event handler for when before the selection is changed.",
+      "cancelable": true,
+      "detail": {
+        "key": {
+          "description": "Selected list item Key.",
+          "type": "Object|string"
+        },
+        "item": {
+          "description": "Selected list item.",
+          "type": "Element"
+        }
+      }
+    },
+    "beforeCurrentItem": {
+      "description": "Event handler for when before the current item is changed.",
+      "cancelable": true,
+      "detail": {
+        "previousKey": {
+          "description": "the Key of the previous item",
+          "type": "Object|string"
+        },
+        "previousItem": {
+          "description": "the previous item",
+          "type": "Element"
+        },
+        "key": {
+          "description": "the Key of the new current item",
+          "type": "Object|string"
+        },
+        "item": {
+          "description": "the new current item",
+          "type": "Element"
+        }
+      }
+    },
+    "beforeDeselect": {
+      "description": "Event handler for when before tab is deselected.",
+      "cancelable": true,
+      "preview": true,
+      "detail": {
+        "fromKey": {
+          "description": "the key of the tab item being navigated from",
+          "type": "Object"
+        },
+        "fromItem": {
+          "description": "the tab item being navigated from",
+          "type": "Element"
+        },
+        "toKey": {
+          "description": "the key of the tab item being navigated to",
+          "type": "Object"
+        },
+        "toItem": {
+          "description": "the tab item being navigated to",
+          "type": "Element"
+        }
+      }
+    },
+    "deselect": {
+      "description": "Event handler for when a tab is deselected.",
+      "preview": true,
+      "detail": {
+        "fromKey": {
+          "description": "the key of the tab item being navigated from",
+          "type": "Object"
+        },
+        "fromItem": {
+          "description": "the tab item being navigated from",
+          "type": "Element"
+        },
+        "toKey": {
+          "description": "the key of the tab item being navigated to",
+          "type": "Object"
+        },
+        "toItem": {
+          "description": "the tab item being navigated to",
+          "type": "Element"
+        }
+      }
+    },
+    "beforeRemove": {
+      "description": "Event handler for when a tab is about to be removed.",
+      "cancelable": true,
+      "preview": true,
+      "detail": {
+        "item": {
+          "description": "Item being removed",
+          "type": "Element"
+        },
+        "key": {
+          "description": "Key of the item being removed",
+          "type": "string"
+        }
+      }
+    },
+    "remove": {
+      "description": "Event handler for when a tab is removed.",
+      "preview": true,
+      "detail": {
+        "item": {
+          "description": "Item removed",
+          "type": "Element"
+        },
+        "key": {
+          "description": "Key of the item removed",
+          "type": "string"
+        }
+      }
+    },
+    "reorder": {
+      "description": "Event handler for when a tab is reordered.",
+      "preview": true,
+      "detail": {
+        "item": {
+          "description": "Item to be moved",
+          "type": "Element"
+        },
+        "position": {
+          "description": "the drop position relative to the reference item. Possible values are \"before\" and \"after\".",
+          "type": "string"
+        },
+        "reference": {
+          "description": "the item where the moved items are drop on.",
+          "type": "Element"
+        }
+      }
+    }
+  },
+  "slots": {
+    "contextMenu": {
+      "description": "The contextMenu slot is set on the oj-menu within this element. \nThis is used to designate the JET Menu that this component should launch as a context menu on right-click, Shift-F10, Press & Hold, or component-specific gesture. \nIf specified, the browser's native context menu will be replaced by the JET Menu specified in this slot.\n\nThe application can register a listener for the Menu's ojBeforeOpen event. The listener can cancel the launch via event.preventDefault(), \nor it can customize the menu contents by editing the menu DOM directly, and then calling refresh() on the Menu.\n\nTo help determine whether it's appropriate to cancel the launch or customize the menu, the ojBeforeOpen listener can use component API's to determine which \ntable cell, chart item, etc., is the target of the context menu. See the JSDoc and demos of the individual components for details. \n\nKeep in mind that any such logic must work whether the context menu was launched via right-click, Shift-F10, Press & Hold, or component-specific touch gesture."
+    }
+  }
+}

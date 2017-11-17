@@ -1,0 +1,913 @@
+{
+  "name": "ojTable",
+  "version": "4.1.0",
+  "jetVersion": "4.1.0",
+  "displayName": " Table",
+  "preview": true,
+  "roles": [
+    "grid",
+    "gridcell",
+    "rowheader",
+    "columnheader"
+  ],
+  "styleClasses": [
+    {
+      "styleGroup": [
+        "oj-table-data-cell-no-padding"
+      ],
+      "description": "Used to style a table cell so that it has no padding. An app developer would likely use this in the case of editable tables when an editable cell content does not need the default cell padding.\nThe class is applied as follows:\nThe class must be applied to the table cell."
+    },
+    {
+      "styleGroup": [
+        "oj-table-data-cell-padding"
+      ],
+      "description": "Used to style a table cell so that it has the default padding. An app developer would likely use this in the case of editable tables when an editable cell content needs to maintain default cell padding.\nThe class is applied as follows:\nThe class must be applied to the table cell."
+    }
+  ],
+  "description": "Table Element",
+  "properties": {
+    "accessibility": {
+      "description": "Accessibility attributes.",
+      "type": "Object.<string, string>|null",
+      "displayName": "Accessibility",
+      "value": null,
+      "properties": {
+        "rowHeader": {
+          "description": "The column id to be used as the row header by screen readers.\n\nThe td cells in the column specified by this\nattribute will be assigned an id and then referenced by the\nheaders attribute in the rest of the cells in the row.\nThis is required by screen readers. By default the first column\nwill be taken as the row header.\nSee the accessibility attribute for usage examples.",
+          "type": "string"
+        }
+      }
+    },
+    "columns": {
+      "description": "An array of column definitions.\nIf the application change the column definitions after the Table is loaded, it must call the\nrefresh() method to update the Table display.",
+      "type": "Array.<Object>|null",
+      "displayName": "Columns",
+      "value": null,
+      "properties": {
+        "className": {
+          "description": "The CSS class to apply to the column cells\n\nSee the columns attribute for usage examples.",
+          "type": "string|null",
+          "value": null
+        },
+        "field": {
+          "description": "The data field this column refers to.\n\nSee the columns attribute for usage examples.",
+          "type": "string|null",
+          "value": null
+        },
+        "footerClassName": {
+          "description": "The CSS class to apply to the footer cell.\n\nSee the columns attribute for usage examples.",
+          "type": "string|null",
+          "value": null
+        },
+        "footerRenderer": {
+          "description": "The renderer function that renders the content of the footer.\nThe function will be passed a context object which contains\nthe following objects: columnIndex: The column index component: A reference to the ojTable widgetConstructor datasource: Instance of the datasource used by the table status: Contains the rowIndex, rowKey, and currentRow parentElement: Empty rendered element\n\nThe function should return one of the following: An Object with the following property: insert: HTMLElement | string - A string or a DOM element of the content inside the footer. undefined: If the developer chooses to manipulate the footer element directly, the function should return undefined.\n\nIf no renderer is specified, the Table will treat the footer data as a String.\n\nSee the columns attribute for usage examples.",
+          "type": "function|null",
+          "value": null
+        },
+        "footerStyle": {
+          "description": "The CSS styling to apply to the footer cell.\n\nSee the columns attribute for usage examples.",
+          "type": "string|null",
+          "value": null
+        },
+        "headerClassName": {
+          "description": "The CSS class to apply to the column header text.\n\nSee the columns attribute for usage examples.",
+          "type": "string|null",
+          "value": null
+        },
+        "headerRenderer": {
+          "description": "The renderer function that renders the content of the header.\nThe function will be passed a context object which contains\nthe following objects: columnIndex: The column index component: A reference to the ojTable widgetConstructor parentElement: Empty rendered TH element columnHeaderDefaultRenderer(options, delegateRenderer): If the column is not sortable then this function will be included in the context. The options parameter specifies the options (future use) for the renderer while the delegateRenderer parameter specifies the function which the developer would like to be called during rendering of the column header. columnHeaderSortableIconRenderer(options, delegateRenderer): If the column is sortable then this function will be included in the context. The options parameter specifies the options (future use) for the renderer while the delegateRenderer parameter specifies the function which the developer would like to be called during rendering of the sortable column header. Calling the columnHeaderSortableIconRenderer function enables rendering custom header content while also preserving the sort icons.\n\nThe function should return one of the following: An Object with the following property: insert: HTMLElement | string - A string or a DOM element of the content inside the header. undefined: If the developer chooses to manipulate the header element directly, the function should return undefined.\n\nIf no renderer is specified, the Table will treat the header data as a String.\n\nSee the columns attribute for usage examples.",
+          "type": "function|null",
+          "value": null
+        },
+        "headerStyle": {
+          "description": "The CSS styling to apply to the column header text.\n\nSee the columns attribute for usage examples.",
+          "type": "string|null",
+          "value": null
+        },
+        "headerText": {
+          "description": "Text to display in the header of the column.\n\nSee the columns attribute for usage examples.",
+          "type": "string|null",
+          "value": null
+        },
+        "id": {
+          "description": "The identifier for the column\n\nSee the columns attribute for usage examples.",
+          "type": "string|null",
+          "value": null
+        },
+        "renderer": {
+          "description": "The renderer function that renders the content of the cell.\nThe function will be passed a context object which contains\nthe following objects: data: The cell data columnIndex: The column index component: A reference to the ojTable widgetConstructor datasource: Instance of the datasource used by the table row: Key/value pairs of the row status: Contains the rowIndex, rowKey, and currentRow parentElement: Empty rendered element\n\nThe function should return one of the following: An Object with the following property: insert: HTMLElement | string - A string or a DOM element of the content inside the header. undefined: If the developer chooses to manipulate the cell element directly, the function should return undefined.\n\nIf no renderer is specified, the Table will treat the cell data as a String.\n\nSee the columns attribute for usage examples.",
+          "type": "function|null",
+          "value": null
+        },
+        "resizable": {
+          "description": "Enable or disable width resize along the column end headers.",
+          "type": "string|null",
+          "value": "disabled",
+          "properties": [
+            {
+              "name": "width",
+              "description": "column end header width resizable valid values are: \"enabled\", \"disabled\"",
+              "type": "string"
+            }
+          ]
+        },
+        "sortProperty": {
+          "description": "Indicates the row attribute used for sorting when sort is invoked on this\ncolumn. Useful for concatenated columns, where the sort is done by only a subset\nof the concatenated items.\n\nSee the columns attribute for usage examples.",
+          "type": "string|null",
+          "value": null
+        },
+        "sortable": {
+          "description": "Whether or not the column is sortable.\n\nA sortable column has a clickable header that (when clicked)\nsorts the table by that column's property. Note that\nin order for a column to be sortable, this attribute\nmust be set to \"enabled\" and the underlying model must\nsupport sorting by this column's property. If this attribute\nis set to \"auto\" then the column will be sortable if the\nunderlying model supports sorting. A value of \"disabled\" will\ndisable sorting on the column.\n\nSee the columns attribute for usage examples.",
+          "type": "string|null",
+          "value": "auto",
+          "enumValues": [
+            "auto",
+            "disabled",
+            "enabled"
+          ],
+          "propertyEditorValues": {
+            "auto": {
+              "description": "Column will be sortable if the underlying model supports sorting.",
+              "displayName": "Auto"
+            },
+            "disabled": {
+              "description": "Disabled.",
+              "displayName": "Disabled"
+            },
+            "enabled": {
+              "description": "Enabled.",
+              "displayName": "Enabled"
+            }
+          }
+        },
+        "style": {
+          "description": "The CSS styling to apply to the column cells\n\nSee the columns attribute for usage examples.",
+          "type": "string|null",
+          "value": null
+        },
+        "width": {
+          "description": "The width in px of the column",
+          "type": "number|null",
+          "value": null
+        }
+      }
+    },
+    "columnsDefault": {
+      "description": "Default values to apply to all columns objects.",
+      "type": "Object.<string, (string|null)>",
+      "displayName": "Columns Default",
+      "value": null,
+      "properties": {
+        "className": {
+          "description": "The default CSS class for column cells\n\nSee the columns-default attribute for usage examples.",
+          "type": "string|null",
+          "value": null
+        },
+        "field": {
+          "description": "The default data field for column.\n\nSee the columns-default attribute for usage examples.",
+          "type": "string|null",
+          "value": null
+        },
+        "footerClassName": {
+          "description": "The CSS class to apply to the footer cell.\n\nSee the columns-default attribute for usage examples.",
+          "type": "string|null",
+          "value": null
+        },
+        "footerRenderer": {
+          "description": "The renderer function that renders the content of the footer.\nThe function will be passed a context object which contains\nthe following objects: columnIndex: The column index component: A reference to the ojTable widgetConstructor datasource: Instance of the datasource used by the table status: Contains the rowIndex, rowKey, and currentRow parentElement: Empty rendered element\n\nThe function should return one of the following: An Object with the following property: insert: HTMLElement | string - A string or a DOM element of the content inside the footer. undefined: If the developer chooses to manipulate the footer element directly, the function should return undefined.\n\nIf no renderer is specified, the Table will treat the footer data as a String.\n\nSee the columns-default attribute for usage examples.",
+          "type": "function|null",
+          "value": null
+        },
+        "footerStyle": {
+          "description": "The CSS styling to apply to the footer cell.\n\nSee the columns-default attribute for usage examples.",
+          "type": "string|null",
+          "value": null
+        },
+        "headerClassName": {
+          "description": "The default CSS class to apply to the column header.\n\nSee the columns-default attribute for usage examples.",
+          "type": "string|null",
+          "value": null
+        },
+        "headerRenderer": {
+          "description": "The renderer function that renders the content of the header.\nThe function will be passed a context object which contains\nthe following objects: columnIndex: The column index component: A reference to the ojTable widgetConstructor parentElement: Empty rendered TH element columnHeaderDefaultRenderer(options, delegateRenderer): If the column is not sortable then this function will be included in the context. The options parameter specifies the options (future use) for the renderer while the delegateRenderer parameter specifies the function which the developer would like to be called during rendering of the column header. columnHeaderSortableIconRenderer(options, delegateRenderer): If the column is sortable then this function will be included in the context. The options parameter specifies the options (future use) for the renderer while the delegateRenderer parameter specifies the function which the developer would like to be called during rendering of the sortable column header. Calling the columnHeaderSortableIconRenderer function enables rendering custom header content while also preserving the sort icons.\n\nThe function should return one of the following: An Object with the following property: insert: HTMLElement | string - A string or a DOM element of the content inside the header. undefined: If the developer chooses to manipulate the header element directly, the function should return undefined.\n\nIf no renderer is specified, the Table will treat the header data as a String.\n\nSee the columns-default attribute for usage examples.",
+          "type": "function|null",
+          "value": null
+        },
+        "headerStyle": {
+          "description": "The default CSS styling to apply to the column header.\n\nSee the columns-default attribute for usage examples.",
+          "type": "string|null",
+          "value": null
+        },
+        "headerText": {
+          "description": "Default text to display in the header of the column.\n\nSee the columns-default attribute for usage examples.",
+          "type": "string|null",
+          "value": null
+        },
+        "renderer": {
+          "description": "The renderer function that renders the content of the cell.\nThe function will be passed a context object which contains\nthe following objects: data: The cell data columnIndex: The column index component: A reference to the ojTable widgetConstructor datasource: Instance of the datasource used by the table row: Key/value pairs of the row status: Contains the rowIndex, rowKey, and currentRow parentElement: Empty rendered element\n\nThe function should return one of the following: An Object with the following property: insert: HTMLElement | string - A string or a DOM element of the content inside the header. undefined: If the developer chooses to manipulate the cell element directly, the function should return undefined.\n\nIf no renderer is specified, the Table will treat the cell data as a String.\n\nSee the columns-default attribute for usage examples.",
+          "type": "function|null",
+          "value": null
+        },
+        "resizable": {
+          "description": "Enable or disable width resize along the column end headers.",
+          "type": "string|null",
+          "value": "disabled",
+          "properties": [
+            {
+              "name": "width",
+              "description": "column end header width resizable valid values are: \"enabled\", \"disabled\"",
+              "type": "string"
+            }
+          ]
+        },
+        "sortProperty": {
+          "description": "Indicates the row attribute used for sorting when sort is invoked on this\ncolumn. Useful for concatenated columns, where the sort is done by only a subset\nof the concatenated items.\n\nSee the columns-default attribute for usage examples.",
+          "type": "string|null",
+          "value": null
+        },
+        "sortable": {
+          "description": "Whether or not the column is sortable.\n\nA sortable column has a clickable header that (when clicked)\nsorts the table by that column's property. Note that\nin order for a column to be sortable, this attribute\nmust be set to \"enabled\" and the underlying model must\nsupport sorting by this column's property. If this attribute\nis set to \"auto\" then the column will be sortable if the\nunderlying model supports sorting. A value of \"disabled\" will\ndisable sorting on the column.\n\nSee the columns-default attribute for usage examples.",
+          "type": "string|null",
+          "value": "auto",
+          "enumValues": [
+            "auto",
+            "disabled",
+            "enabled"
+          ],
+          "propertyEditorValues": {
+            "auto": {
+              "description": "Column will be sortable if the underlying model supports sorting.",
+              "displayName": "Auto"
+            },
+            "disabled": {
+              "description": "Disabled.",
+              "displayName": "Disabled"
+            },
+            "enabled": {
+              "description": "Enabled.",
+              "displayName": "Enabled"
+            }
+          }
+        },
+        "style": {
+          "description": "Default CSS styling to apply to the column cells\n\nSee the columns-default attribute for usage examples.",
+          "type": "string|null",
+          "value": null
+        },
+        "width": {
+          "description": "Default CSS width to apply to the column",
+          "type": "number|null",
+          "value": null
+        }
+      }
+    },
+    "currentRow": {
+      "description": "The row that currently have keyboard focus. Can be an index and/or key value.\nWhen both are specified, the index is used as a hint.\nReturns the current row or null if there is none.",
+      "type": "Object",
+      "displayName": "Current Row",
+      "value": null,
+      "writeback": true
+    },
+    "data": {
+      "description": "The data to bind to the element.\n\nMust be of type oj.IteratingDataProvider IteratingDataProvider\nor type oj.TableDataSource TableDataSource",
+      "type": "oj.IteratingDataProvider|oj.TableDataSource|null",
+      "displayName": "Data",
+      "value": null
+    },
+    "display": {
+      "description": "Whether to display table in list or grid mode. Setting a value of grid\nwill cause the table to display in grid mode. The default value of this\nattribute is set through the theme.",
+      "type": "string",
+      "displayName": "Display",
+      "value": "list",
+      "enumValues": [
+        "grid",
+        "list"
+      ],
+      "propertyEditorValues": {
+        "grid": {
+          "description": "Display table in grid mode. This is a more compact look than list mode.",
+          "displayName": "Grid"
+        },
+        "list": {
+          "description": "Display table in list mode.",
+          "displayName": "List"
+        }
+      }
+    },
+    "dnd": {
+      "description": "Enable drag and drop functionality.\nJET provides support for HTML5 Drag and Drop events. Please refer to mozilla.org/en-US/docs/Web/Guide/HTML/Drag_and_drop third party documentation \non HTML5 Drag and Drop to learn how to use it.",
+      "type": "Object",
+      "displayName": "Dnd",
+      "value": "{drag: null, drop: null, reorder: {columns :disabled}}",
+      "properties": {
+        "drag": {
+          "description": "An object that describes drag functionlity.\n\nSee the dnd attribute for usage examples.",
+          "type": "Object",
+          "value": null,
+          "properties": {
+            "rows": {
+              "description": "If this object is specified, the table will initiate drag operation when the user drags on selected rows.\n\nSee the dnd attribute for usage examples.",
+              "type": "Object",
+              "properties": [
+                {
+                  "name": "dataTypes",
+                  "description": "(optional) The MIME types to use for the dragged data in the dataTransfer object. This can be a string if there is only one\ntype, or an array of strings if multiple types are needed.\nFor example, if selected rows of employee data are being dragged, dataTypes could be \"application/employees+json\". Drop targets can examine the data types and decide\nwhether to accept the data. A text input may only accept \"text\" data type, while a chart for displaying employee data may be configured to accept the \"application/employees+json\" type.\nFor each type in the array, dataTransfer.setData will be called with the specified type and the JSON version of the selected rows data as the value. The selected rows data \nis an array of objects, with each object representing one selected row in the format returned by TableDataSource.get().\nThis property is required unless the application calls setData itself in a dragStart callback function.",
+                  "type": "string|Array.string"
+                },
+                {
+                  "name": "dragStart",
+                  "description": "(optional) A callback function that receives the \"dragstart\" event and context information as arguments:\nfunction(event, context)\nParameters:\nevent: The DOM event object\ncontext: Context object with the following properties: rows: An array of objects, with each object representing the data of one selected row in the structure below: dataThe raw row data indexThe index for the row keyThe key value for the row \n\nThis function can set its own data and drag image as needed. If dataTypes is specified, event.dataTransfer is already populated with the default data when this function is invoked.\nIf dataTypes is not specified, this function must call event.dataTransfer.setData to set the data or else the drag operation will be cancelled. In either case, the drag image is \nset to an image of the selected rows visible on the table.",
+                  "type": "function"
+                },
+                {
+                  "name": "drag",
+                  "description": "(optional) A callback function that receives the \"drag\" event as argument:\nfunction(event)\nParameters:\nevent: The DOM event object",
+                  "type": "function"
+                },
+                {
+                  "name": "dragEnd",
+                  "description": "(optional) A callback function that receives the \"dragend\" event as argument:\nfunction(event)\nParameters:\nevent: The DOM event object",
+                  "type": "function"
+                }
+              ]
+            }
+          }
+        },
+        "drop": {
+          "description": "An object that describes drop functionlity.\n\nSee the dnd attribute for usage examples.",
+          "type": "Object",
+          "value": null,
+          "properties": {
+            "columns": {
+              "description": "An object that specifies callback functions to handle dropping columns\nFor all callback functions, the following arguments will be passed:\nevent: The DOM event object\ncontext: Context object with the following properties: columnIndex: The index of the column being dropped on\n\n\nSee the dnd attribute for usage examples.",
+              "type": "Object",
+              "properties": [
+                {
+                  "name": "dataTypes",
+                  "description": "A data type or an array of data types this element can accept.\nThis property is required unless dragEnter, dragOver, and drop callback functions are specified to handle the corresponding events.",
+                  "type": "string|Array.string"
+                },
+                {
+                  "name": "dragEnter",
+                  "description": "(optional) A callback function that receives the \"dragenter\" event and context information as arguments:\nfunction(event, context)\nThis function should call event.preventDefault() to indicate the dragged data can be accepted.\nCalling event.preventDefault() is required by HTML5 Drag and Drop to indicate acceptance of data.\nIf dataTypes is specified, it will be matched against the drag data types to determine if the data is acceptable. If there is a match, JET will call \nevent.preventDefault() to indicate that the data can be accepted.",
+                  "type": "function"
+                },
+                {
+                  "name": "dragOver",
+                  "description": "(optional) A callback function that receives the \"dragover\" event and context information as arguments:\nfunction(event, context)\nSimilar to dragEnter, this function should call event.preventDefault() to indicate the dragged data can be accepted. If dataTypes is specified,\nit will be matched against the drag data types to determine if the data is acceptable.",
+                  "type": "function"
+                },
+                {
+                  "name": "dragLeave",
+                  "description": "(optional) A callback function that receives the \"dragleave\" event and context information as arguments:\nfunction(event, context)",
+                  "type": "function"
+                },
+                {
+                  "name": "drop",
+                  "description": "(required) A callback function that receives the \"drop\" event and context information as arguments:\nfunction(event, context)\nThis function should call event.preventDefault() to indicate the dragged data is accepted.",
+                  "type": "function"
+                }
+              ]
+            },
+            "rows": {
+              "description": "An object that specifies callback functions to handle dropping rows\nFor all callback functions, the following arguments will be passed:\nevent: The DOM event object\ncontext: Context object with the following properties: rowIndex: The index of the row being dropped on\n\n\nSee the dnd attribute for usage examples.",
+              "type": "Object",
+              "properties": [
+                {
+                  "name": "dataTypes",
+                  "description": "A data type or an array of data types this element can accept.\nThis property is required unless dragEnter, dragOver, and drop callback functions are specified to handle the corresponding events.",
+                  "type": "string|Array.string"
+                },
+                {
+                  "name": "dragEnter",
+                  "description": "(optional) A callback function that receives the \"dragenter\" event and context information as arguments:\nfunction(event, context)\nThis function should call event.preventDefault() to indicate the dragged data can be accepted.\nCalling event.preventDefault() is required by HTML5 Drag and Drop to indicate acceptance of data.\nIf dataTypes is specified, it will be matched against the drag data types to determine if the data is acceptable. If there is a match, JET will call\nevent.preventDefault() to indicate that the data can be accepted.",
+                  "type": "function"
+                },
+                {
+                  "name": "dragOver",
+                  "description": "(optional) A callback function that receives the \"dragover\" event and context information as arguments:\nfunction(event, context)\nSimilar to dragEnter, this function should call event.preventDefault() to indicate the dragged data can be accepted. If dataTypes is specified,\nit will be matched against the drag data types to determine if the data is acceptable.",
+                  "type": "function"
+                },
+                {
+                  "name": "dragLeave",
+                  "description": "(optional) A callback function that receives the \"dragleave\" event and context information as arguments:\nfunction(event, context)",
+                  "type": "function"
+                },
+                {
+                  "name": "drop",
+                  "description": "(required) A callback function that receives the \"drop\" event and context information as arguments:\nfunction(event, context)\nThis function should call event.preventDefault() to indicate the dragged data is accepted.\nIf the application needs to look at the data for the row being dropped on, it can use the getDataForVisibleRow method.",
+                  "type": "function"
+                }
+              ]
+            }
+          }
+        },
+        "reorder": {
+          "description": "An object that describes reorder functionlity.\n\nSee the dnd attribute for usage examples.",
+          "type": "Object",
+          "value": "{columns :disabled}",
+          "properties": {
+            "columns": {
+              "description": "Enable or disable reordering the columns within the same table using drag and drop.\nRe-ordering is supported one column at a time. In addition, re-ordering will not re-order\nany cells which have the colspan attribute with value > 1. Such cells will need to be re-ordered manually by listening to\nthe property change event on the columns property.\n\nSee the dnd attribute for usage examples.",
+              "type": "string",
+              "value": "disabled",
+              "writeback": true,
+              "enumValues": [
+                "disabled",
+                "enabled"
+              ],
+              "propertyEditorValues": {
+                "disabled": {
+                  "description": "Disable column reordering",
+                  "displayName": "Disabled"
+                },
+                "enabled": {
+                  "description": "Enable column reordering",
+                  "displayName": "Enabled"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "editMode": {
+      "description": "Determine if the table is read only or editable. Use 'none' if the table is strictly read only and will be a single Tab stop on the page.\nUse 'rowEdit' if you want single row at a time editability. The table will initially render with all rows in read only mode. Pressing Enter/F2 or double click will make the current row editable and pressing Tab navigates to the next cell. Pressing ESC/F2 while in this mode will switch the table back to all rows in read only mode and will be a single Tab stop the page.",
+      "type": "string|null",
+      "displayName": "Edit Mode",
+      "value": "none",
+      "enumValues": [
+        "none",
+        "rowEdit"
+      ],
+      "propertyEditorValues": {
+        "none": {
+          "description": "The table is read only and is a single Tab stop.",
+          "displayName": "None"
+        },
+        "rowEdit": {
+          "description": "The table has single row at a time editability and the cells within the editable row are tabbable.",
+          "displayName": "Row Edit"
+        }
+      }
+    },
+    "horizontalGridVisible": {
+      "description": "Whether the horizontal gridlines are to be drawn. Can be enabled or disabled.\nThe default value of auto means it's determined by the display attribute.",
+      "type": "string",
+      "displayName": "Horizontal Grid Visible",
+      "value": "auto",
+      "enumValues": [
+        "auto",
+        "disabled",
+        "enabled"
+      ],
+      "propertyEditorValues": {
+        "auto": {
+          "description": "Determined by display attribute.",
+          "displayName": "Auto"
+        },
+        "disabled": {
+          "description": "Disabled.",
+          "displayName": "Disabled"
+        },
+        "enabled": {
+          "description": "Enabled.",
+          "displayName": "Enabled"
+        }
+      }
+    },
+    "rowRenderer": {
+      "description": "The row renderer function to use.\n\nThe renderer function will be passed in an Object which contains the fields: component: A reference to the ojTable widgetConstructor row: Key/value pairs of the row status: Contains the rowIndex, rowKey, and currentRow parentElement: Empty rendered TR element\n\nThe function returns either a String or\na DOM element of the content inside the row. If the developer chooses\nto manipulate the row element directly, the function should return\nnothing.",
+      "type": "function|null",
+      "displayName": "Row Renderer",
+      "value": null
+    },
+    "scrollPolicy": {
+      "description": "Specifies the mechanism used to scroll the data inside the table. Possible values are: auto and loadMoreOnScroll.\nWhen loadMoreOnScroll is specified, additional data are fetched when the user scrolls to the bottom of the table.",
+      "type": "string|null",
+      "displayName": "Scroll Policy",
+      "value": "auto",
+      "enumValues": [
+        "auto",
+        "loadMoreOnScroll"
+      ],
+      "propertyEditorValues": {
+        "auto": {
+          "description": "Determined by element. The default is to display all data.",
+          "displayName": "Auto"
+        },
+        "loadMoreOnScroll": {
+          "description": "Additional data are fetched when the user scrolls to the bottom of the table.",
+          "displayName": "Load More On Scroll"
+        }
+      }
+    },
+    "scrollPolicyOptions": {
+      "description": "scrollPolicy options.\n\nWhen scrollPolicy is loadMoreOnScroll, the next block of rows is fetched\nwhen the user scrolls to the end of the table. The fetchSize property\ndetermines how many rows are fetched in each block.",
+      "type": "Object.<string, string>|null",
+      "displayName": "Scroll Policy Options",
+      "value": "{fetchSize: 25, maxCount: 500}",
+      "properties": {
+        "fetchSize": {
+          "description": "The number of rows to fetch in each block of rows.\nSee the scroll-policy-options attribute for usage examples.",
+          "type": "number",
+          "value": 25,
+          "minimum": "1"
+        },
+        "maxCount": {
+          "description": "The maximum number of rows which will be displayed before fetching more rows will be stopped.\nSee the scroll-policy-options attribute for usage examples.",
+          "type": "number",
+          "value": 500,
+          "minimum": "0"
+        }
+      }
+    },
+    "selection": {
+      "description": "Specifies the current selections in the table. Can be either an index or key value.\nWhen both are specified, the index is used as a hint.\nReturns an array of range objects, or an empty array if there's no selection.",
+      "type": "Array.<Object>",
+      "displayName": "Selection",
+      "value": "[]",
+      "writeback": true
+    },
+    "selectionMode": {
+      "description": "The row and column selection modes. Both can be either single or multiple.",
+      "type": "Object.<string, string>|null",
+      "displayName": "Selection Mode",
+      "value": null,
+      "properties": {
+        "column": {
+          "description": "The selection mode for columns.\n\nSee the selection-mode attribute for usage examples.\nBy default, this element does not allow any selection.",
+          "type": "string",
+          "enumValues": [
+            "multiple",
+            "single"
+          ],
+          "propertyEditorValues": {
+            "multiple": {
+              "description": "Allow multiple selections",
+              "displayName": "Multiple"
+            },
+            "single": {
+              "description": "Allow single selection",
+              "displayName": "Single"
+            }
+          }
+        },
+        "row": {
+          "description": "The selection mode for rows.\n\nSee the selection-mode attribute for usage examples.\nBy default, this element does not allow any selection.",
+          "type": "string",
+          "enumValues": [
+            "multiple",
+            "single"
+          ],
+          "propertyEditorValues": {
+            "multiple": {
+              "description": "Allow multiple selections",
+              "displayName": "Multiple"
+            },
+            "single": {
+              "description": "Allow single selection",
+              "displayName": "Single"
+            }
+          }
+        }
+      }
+    },
+    "selectionRequired": {
+      "description": "Whether selection is required. If true, then at least one row will always\nremain selected.",
+      "type": "string",
+      "displayName": "Selection Required",
+      "value": false
+    },
+    "translations": {
+      "description": "A collection of translated resources from the translation bundle, or null if this\ncomponent has no resources. Resources may be accessed and overridden individually or collectively, as seen in the examples.\n\nIf this component has translations, their documentation immediately follows this doc entry.",
+      "type": "Object",
+      "displayName": "Translations",
+      "value": null,
+      "properties": {
+        "labelAccSelectionAffordanceBottom": {
+          "description": "Label for the bottom selection affordance on touch devices.\n\nSee the translations attribute for usage examples.",
+          "type": "Object"
+        },
+        "labelAccSelectionAffordanceTop": {
+          "description": "Label for the top selection affordance on touch devices.\n\nSee the translations attribute for usage examples.",
+          "type": "Object"
+        },
+        "labelDisableNonContiguousSelection": {
+          "description": "Provides properties to customize the context menu label for exiting non-contigous selection.\n\nSee the translations attribute for usage examples.",
+          "type": "Object"
+        },
+        "labelEditRow": {
+          "description": "Edit row label.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Edit Row"
+        },
+        "labelEnableNonContiguousSelection": {
+          "description": "Provides properties to customize the context menu label for entering non-contigous selection.\n\nSee the translations attribute for usage examples.",
+          "type": "Object"
+        },
+        "labelResize": {
+          "description": "Provides properties to customize the context menu label for column resize.\n\nSee the translations option for usage examples.",
+          "type": "Object"
+        },
+        "labelResizePopupSpinner": {
+          "description": "Provides properties to customize the resize popup spinner label.\n\nSee the translations option for usage examples.",
+          "type": "Object"
+        },
+        "labelResizePopupSubmit": {
+          "description": "Provides properties to customize the resize popup submit button.\n\nSee the translations option for usage examples.",
+          "type": "Object"
+        },
+        "labelSelectAndEditRow": {
+          "description": "Select and Edit row label.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Select And Edit Row"
+        },
+        "labelSelectColum": {
+          "description": "Select column label.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Select Column"
+        },
+        "labelSelectRow": {
+          "description": "Select row label.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Select Row"
+        },
+        "labelSort": {
+          "description": "Context menu label for sort.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Sort"
+        },
+        "labelSortAsc": {
+          "description": "Context menu label for sort ascending.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Sort Ascending"
+        },
+        "labelSortDsc": {
+          "description": "Context menu label for sort descending.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Sort Descending"
+        },
+        "msgColumnResizeWidthValidation": {
+          "description": "Column resize input width validation\n\nSee the translations option for usage examples.",
+          "type": "string",
+          "value": "Width value must be an integer."
+        },
+        "msgFetchingData": {
+          "description": "Fetching data message.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Fetching Data..."
+        },
+        "msgInitializing": {
+          "description": "Table initializing message.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Initializing..."
+        },
+        "msgNoData": {
+          "description": "No data to display message.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "No data to display."
+        },
+        "msgScrollPolicyMaxCountDetail": {
+          "description": "Warning message detail that maxCount has been reached for scrollPolicy=loadMoreOnScroll\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Please reload with smaller data set."
+        },
+        "msgScrollPolicyMaxCountSummary": {
+          "description": "Warning message summary that maxCount has been reached for scrollPolicy=loadMoreOnScroll\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Exceeded maximum rows for table scrolling."
+        },
+        "msgStatusSortAscending": {
+          "description": "Sort ascending status notification for accessibility\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "{0} sorted in ascending order."
+        },
+        "msgStatusSortDescending": {
+          "description": "Sort descending status notification for accessibility\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "{0} sorted in descending order."
+        }
+      }
+    },
+    "verticalGridVisible": {
+      "description": "Whether the vertical gridlines are to be drawn. Can be enabled or disabled.\nThe default value of auto means it's determined by the display attribute.",
+      "type": "string",
+      "displayName": "Vertical Grid Visible",
+      "value": "auto",
+      "enumValues": [
+        "auto",
+        "disabled",
+        "enabled"
+      ],
+      "propertyEditorValues": {
+        "auto": {
+          "description": "Determined by display attribute.",
+          "displayName": "Auto"
+        },
+        "disabled": {
+          "description": "Disabled.",
+          "displayName": "Disabled"
+        },
+        "enabled": {
+          "description": "Enabled.",
+          "displayName": "Enabled"
+        }
+      }
+    }
+  },
+  "methods": {
+    "getContextByNode": {
+      "description": "Returns an object with context for the given child DOM node. This will always contain the subid for the node,\ndefined as the 'subId' property on the context object. Additional component specific information may also be included.\n\nFor more details on returned objects, see context objects.",
+      "params": [
+        {
+          "name": "node",
+          "description": "The child DOM node",
+          "type": "Element"
+        }
+      ],
+      "return": "Object|null"
+    },
+    "getDataForVisibleRow": {
+      "description": "Return the row data for a rendered row in the table.",
+      "params": [
+        {
+          "name": "rowIndex",
+          "description": "row index",
+          "type": "Number"
+        }
+      ],
+      "return": "Object|null"
+    },
+    "refresh": {
+      "description": "Refresh the table."
+    },
+    "refreshRow": {
+      "description": "Refresh a row in the table.",
+      "params": [
+        {
+          "name": "rowIdx",
+          "description": "Index of the row to refresh.",
+          "type": "number"
+        }
+      ],
+      "return": "Promise"
+    },
+    "setProperty": {
+      "description": "Sets a property or a single subproperty for complex properties and notifies the component\nof the change, triggering a [property]Changed event.",
+      "params": [
+        {
+          "name": "property",
+          "description": "The property name to set. Supports dot notation for subproperty access.",
+          "type": "string"
+        },
+        {
+          "name": "value",
+          "description": "The new value to set the property to.",
+          "type": "*"
+        }
+      ]
+    },
+    "getProperty": {
+      "description": "Retrieves a value for a property or a single subproperty for complex properties.",
+      "params": [
+        {
+          "name": "property",
+          "description": "The property name to get. Supports dot notation for subproperty access.",
+          "type": "string"
+        }
+      ],
+      "return": "*"
+    },
+    "setProperties": {
+      "description": "Performs a batch set of properties.",
+      "params": [
+        {
+          "name": "properties",
+          "description": "An object containing the property and value pairs to set.",
+          "type": "Object"
+        }
+      ]
+    }
+  },
+  "events": {
+    "animateStart": {
+      "description": "Triggered when the default animation of a particular action is about to start. The default animation can be cancelled by calling event.preventDefault.\nIf the event listener calls event.preventDefault to cancel the default animation, it must call the ui.endCallback function when it finishes its own animation handling.\nRow animations will only be triggered for rows in the current viewport and an event will be triggered for each cell in the animated row.",
+      "bubbles": true,
+      "cancelable": true,
+      "detail": {
+        "action": {
+          "description": "the action that starts the animation. See animation section for a list of actions.",
+          "type": "Object"
+        },
+        "element": {
+          "description": "the target of animation. For row animations this will be the cell contents wrapped in a div.",
+          "type": "Object"
+        },
+        "endCallback": {
+          "description": "if the event listener calls event.preventDefault to cancel the default animation, it must call the endCallback function when it finishes its own animation handling and when any custom animation ends.",
+          "type": "function"
+        }
+      }
+    },
+    "animateEnd": {
+      "description": "Triggered when the default animation of a particular action has ended. Note this event will not be triggered if application cancelled the default animation on animateStart.\nRow animations will only be triggered for rows in the current viewport and an event will be triggered for each cell in the animated row.",
+      "bubbles": true,
+      "cancelable": true,
+      "detail": {
+        "action": {
+          "description": "the action that started the animation. See animation section for a list of actions.",
+          "type": "Object"
+        },
+        "element": {
+          "description": "the target of animation. For row animations this will be the cell contents wrapped in a div.",
+          "type": "Object"
+        }
+      }
+    },
+    "beforeCurrentRow": {
+      "description": "Triggered before the current row is changed via the currentRow property or via the UI.",
+      "bubbles": true,
+      "cancelable": true,
+      "detail": {
+        "currentRow": {
+          "description": "the new current row",
+          "type": "Object",
+          "properties": {
+            "rowIndex": {
+              "description": "current row index",
+              "type": "number"
+            },
+            "rowKey": {
+              "description": "current row key",
+              "type": "string"
+            }
+          }
+        },
+        "previousCurrentRow": {
+          "description": "the previous current row",
+          "type": "number",
+          "properties": {
+            "rowIndex": {
+              "description": "previous current row index",
+              "type": "number"
+            },
+            "rowKey": {
+              "description": "previous current row key",
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "beforeRowEdit": {
+      "description": "Triggered before the table is going to enter edit mode. To prevent editing the row, call event.preventDefault() in the listener.",
+      "bubbles": true,
+      "cancelable": true,
+      "detail": {
+        "rowContext": {
+          "description": "the rowContext of the row that editing is going to be performed on.",
+          "type": "Object"
+        }
+      }
+    },
+    "beforeRowEditEnd": {
+      "description": "Triggered before the table is going to exit edit mode. To prevent exit editing, call event.preventDefault() in the listener. \nThere is a provided beforeRowEditEnd function, oj.DataCollectionEditUtils.basicHandleRowEditEnd, which can be specified. \nThis function will handle canceling edits as well as invoking validation on input elements.",
+      "bubbles": true,
+      "cancelable": true,
+      "detail": {
+        "rowContext": {
+          "description": "the rowContext of the row that editing is going to be performed on.",
+          "type": "Object"
+        },
+        "cancelEdit": {
+          "description": "true if the edit should be negated based on actions (i.e. escape key).",
+          "type": "Object"
+        }
+      }
+    },
+    "sort": {
+      "description": "Triggered when a sort is performed on the table",
+      "bubbles": true,
+      "cancelable": true,
+      "detail": {
+        "header": {
+          "description": "the key of the header which was sorted on",
+          "type": "Element"
+        },
+        "direction": {
+          "description": "the direction of the sort ascending/descending",
+          "type": "string"
+        }
+      }
+    }
+  },
+  "slots": {
+    "bottom": {
+      "description": "Named slot for the Table's bottom panel where applications can add content such as a paging control."
+    },
+    "contextMenu": {
+      "description": "The contextMenu slot is set on the oj-menu within this element. \nThis is used to designate the JET Menu that this component should launch as a context menu on right-click, Shift-F10, Press & Hold, or component-specific gesture. \nIf specified, the browser's native context menu will be replaced by the JET Menu specified in this slot.\n\nThe application can register a listener for the Menu's ojBeforeOpen event. The listener can cancel the launch via event.preventDefault(), \nor it can customize the menu contents by editing the menu DOM directly, and then calling refresh() on the Menu.\n\nTo help determine whether it's appropriate to cancel the launch or customize the menu, the ojBeforeOpen listener can use component API's to determine which \ntable cell, chart item, etc., is the target of the context menu. See the JSDoc and demos of the individual components for details. \n\nKeep in mind that any such logic must work whether the context menu was launched via right-click, Shift-F10, Press & Hold, or component-specific touch gesture."
+    }
+  }
+}

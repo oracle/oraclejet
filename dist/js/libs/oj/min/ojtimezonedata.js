@@ -3,4 +3,4 @@
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
-define(["ojs/ojcore","ojL10n!ojtranslations/nls/timezoneData","ojs/ojvalidation-base"],function(a,g){a.No={};a.No.Wca=function(c){var b=a.vb.ol();a.tc.Gd(b,c,void 0,!0)};a.No.wCa=function(){return a.No.Zda};a.No.GCa=function(){a.No.Zda.push("/timezoneData")};a.No.Zda=[];a.No.GCa();a.No.Wca("undefined"===typeof g?{}:g)});
+define(["ojs/ojcore","ojL10n!ojtranslations/nls/timezoneData","ojs/ojvalidation-base"],function(a,g){a.jp={};a.jp.Kfa=function(c){var b=a.ub.Gl();a.oc.Ed(b,c,void 0,!0)};a.jp.jGa=function(){return a.jp.Nga};a.jp.uGa=function(){a.jp.Nga.push("/timezoneData")};a.jp.Nga=[];a.jp.uGa();a.jp.Kfa("undefined"===typeof g?{}:g)});

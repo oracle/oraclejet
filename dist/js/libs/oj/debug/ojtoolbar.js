@@ -17,8 +17,11 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
 
 /**
  * @ojcomponent oj.ojToolbar
+ * @ojdisplayname Toolbar
  * @augments oj.baseComponent
+ * @ojrole toolbar
  * @since 0.6
+ * @ojstatus preview
  * 
  * @classdesc
  * <h3 id="toolbarOverview-section">
@@ -164,8 +167,6 @@ oj.__registerWidget("oj.ojToolbar", $['oj']['baseComponent'], {
          * @ojvalue {string} "half" In typical themes, half-chrome buttons acquire chrome only in their hover, active, and selected states. Half-chroming is recommended for buttons in a toolbar.  
          *     (This is the toolbar default in most themes.)
          * @ojvalue {string} "outlined" In typical themes, outlined buttons are similar to half-chrome buttons, but have a border in the default state.
-         * @default Varies by theme. <code class="prettyprint">"half"</code> if <code class="prettyprint">$toolbarChromingOptionDefault</code> 
-         *          not specified in theme.
          *
          ** @example <caption>Initialize the Toolbar with the <code class="prettyprint">chroming</code> attribute specified:</caption>
          * &lt;oj-toolbar chroming='half'>&lt;/oj-toolbar>
@@ -812,6 +813,7 @@ oj.__registerWidget("oj.ojToolbar", $['oj']['baseComponent'], {
  * @param {!Element} radio  a radio button.  Not a JQ object, other button or element type, or null.
  * @param {jQuery=} $elems  optional JQ object, containing 0 or more elems that aren't necessarily radios or buttons, in which to look for groupmates.
  *                          E.g. the elements in a buttonset or toolbar.  Must not contain any false positives as defined above.
+ * @private
  */
 var _radioGroup = function( radio, $elems ) {
     var name = radio.name,

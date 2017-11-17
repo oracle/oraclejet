@@ -69,6 +69,7 @@ oj.Object.createSubclass(oj.CollectionTableDataSource, oj.TableDataSource, "oj.C
 
 /**
  * @export
+ * @memberof oj.CollectionTableDataSource
  * @desc If set to a function(row1, row2), then this function is called comparing raw row data (see the
  * JavaScript array.sort() for details)
  */
@@ -328,6 +329,7 @@ oj.CollectionTableDataSource.prototype.totalSizeConfidence = function()
 /**
  * Add event listeners to the collection
  * @private
+ * @memberof oj.CollectionTableDataSource
  */
 oj.CollectionTableDataSource.prototype._addCollectionEventListeners = function()
 {
@@ -532,6 +534,7 @@ oj.CollectionTableDataSource.prototype._fetchInternal = function(options)
  * Indicate starting fetch
  * @param {Object} options
  * @private
+ * @memberof oj.CollectionTableDataSource
  */
 oj.CollectionTableDataSource.prototype._startFetch = function(options)
 {
@@ -548,6 +551,7 @@ oj.CollectionTableDataSource.prototype._startFetch = function(options)
  * @param {Object} result Result object
  * @param {*} error Error
  * @private
+ * @memberof oj.CollectionTableDataSource
  */
 oj.CollectionTableDataSource.prototype._endFetch = function(options, result, error)
 {

@@ -247,6 +247,8 @@ oj.BaseCustomElementBridge.proto =
           this['setProperty'](prop, oj.BaseCustomElementBridge.__ParseAttrValue(this, attr, prop, newValue, propMeta, bridge.PARSE_FUNCTION));
       }
 
+      // This allows subclasses to handle special cases like global transfer 
+      // attributes for JET components
       bridge.HandleAttributeChanged(this, attr, oldValue, newValue);
     }
   },
@@ -880,15 +882,30 @@ oj.BaseCustomElementBridge.__ParseAttrValue = function(elem, attr, prop, val, me
     return val;
   
   var type = metadata['type'];
+  var bridge = oj.BaseCustomElementBridge.getInstance(elem);
+  function _coerceVal(value) {
+    var coercedValue;
+    try 
+    {
+      coercedValue = oj.__AttributeUtils.coerceValue(elem, attr, value, type);
+    }
+    catch (ex)
+    {
+      bridge.resolveDelayedReadyPromise();
+      throw ex;
+    }
+    return coercedValue;
+  }
+
   if (parseFunction)
   {
     return parseFunction(val, prop, metadata, 
       function(value) {
-        return oj.__AttributeUtils.coerceValue(elem, attr, value, type); 
+        return _coerceVal(value); 
       }
     );
   }
-  return oj.__AttributeUtils.coerceValue(elem, attr, val, type);
+  return _coerceVal(val);
 };
 
 /**
@@ -1009,4 +1026,296 @@ oj.BaseCustomElementBridge.__DelayedPromise = function()
 
 
 
+/** 
+ * @ojoverviewdoc CustomElementOverview - JET Custom Elements
+ * @classdesc
+ * {@ojinclude "name":"customElementOverviewDoc"}
+ */ 
+
+/**
+ *       <h3 id="ce-usage-section" class="subsection-title">
+ *               JET Custom Element Usage
+ *           <a class="bookmarkable-link" title="Bookmarkable Link" href="#ce-usage-section"></a>
+ *        </h3>
+ *        <p>
+ *            JET components are implemented as 
+ *            <a href="https://developer.mozilla.org/en-US/docs/Web/Web_Components/Custom_Elements">custom HTML elements</a>
+ *            and programmatic access to these components is similar to interacting with regular HTML elements. 
+ *            All JET custom elements have names starting with 'oj-'. A custom element will be recognized by the framework 
+ *            only after its module is loaded by the application. Once the element is recognized, the framework will register 
+ *            a busy state for the element and will begin the process of 'upgrading' the element. The element will not be 
+ *            ready for interaction (e.g. using properties or methods) until the upgrade process is complete. The application should 
+ *            listen to either the page-level or an element-scoped BusyContext before attempting to interact with 
+ *            any JET custom elements. See the <a href="oj.BusyContext.html">BusyContext</a> documentation
+ *            on how BusyContexts can be scoped.
+ *        </p>
+ *        
+ *        <h4 id="ce-attributes-section" class="subsection-title">Attributes
+ *            <a class="bookmarkable-link" title="Bookmarkable Link" href="#ce-attributes-section"></a>
+ *        </h4>
+ *        <h5 id="ce-attrs-basics-sectionn" class="subsection-title">Basics
+ *            <a class="bookmarkable-link" title="Bookmarkable Link" href="#ce-attrs-basics-section"></a>
+ *        </h5>
+ *        <p>
+ *          The next two sections will discuss how to work with custom element attributes and properties. Attributes
+ *          are declared in the custom element's HTML while properties are accessed using JavaScript on the element
+ *          instance. Attribute values set as string literals will be parsed and coerced to the property type. JET currently
+ *          only supports the following string literal type coercions: boolean, number, string, Object and Array, where 
+ *          Object and Array types must use JSON notation with double quoted strings. A special 'any' type is also supported
+ *          and is described <a href="#ce-attrs-any-section">below</a>.  All other types need to be set using 
+ *          <a href="#ce-databind-section">expression syntax</a> in the DOM or using the property setters 
+ *          after the JET element has been upgraded.
+ *        </p>
+ *        <p> 
+ *          Attribute removals are treated as unsetting of a property where the component default value will be used if one exists. 
+ *        </p>
+ *        <p> 
+ *          As described <a href="#ce-databind-section">below</a, JET uses [[...]] and {{...}} syntax to represent data bound expressions. 
+ *          JET does not currently provide any escaping syntax for "[[" or "{{" appearing at the beginning of the attribute 
+ *          value. You will need to add a space character to avoid having the string literal value interpreted as a binding 
+ *          expression (e.g. &lt;oj-some-element some-attribute='[ ["arrayValue1", "arrayValue2", ... ] ]'>&lt;/oj-some-element>).
+ *        </p>
+ *        <h5 id="ce-attrs-boolean-section" class="subsection-title">Boolean Attributes
+ *            <a class="bookmarkable-link" title="Bookmarkable Link" href="#ce-attrs-boolean-section"></a>
+ *        </h5>
+ *        <p>
+ *          JET custom elements treat boolean attributes differently than HTML5. Since a common application use case
+ *          is to toggle a data bound boolean attribute, JET will coerce the string literal "false" to the boolean
+ *          false for boolean attributes. The absence of a boolean attribute in the DOM will also be interpreted as false.
+ *          JET will coerce the following string literal values to the boolean true and throw an Error for all other 
+ *          invalid values.
+ *          <ul>
+ *            <li>No value assignment (e.g. &lt;oj-some-element boolean-attribute>&lt;/oj-some-element>)</li>
+ *            <li>Empty string (e.g. &lt;oj-some-element boolean-attribute=''>&lt;/oj-some-element>)</li>
+ *            <li>The 'true' string literal (e.g. &lt;oj-some-element boolean-attribute='true'>&lt;/oj-some-element>)</li>
+ *            <li>The case-insensitive attribute name (e.g. &lt;oj-some-element boolean-attribute='boolean-attribute'>&lt;/oj-some-element>)</li>
+ *          </ul>
+ *        </p>
+ *        <h5 id="ce-attrs-object-section" class="subsection-title">Object-Typed Attributes
+ *            <a class="bookmarkable-link" title="Bookmarkable Link" href="#ce-attrs-object-section"></a>
+ *        </h5>
+ *        <p>
+ *          Attributes that support Object type can be declaratively set using dot notation. 
+ *          Note that applications should not set overlapping attributes as these will cause an error to be thrown.
+ *          <pre class="prettyprint">
+ *            <code>
+ *              &lt;!-- person is an Object typed attribute with a firstName subproperty -->
+ *              &lt;oj-some-element person.first-name="{{name}}">&lt;/oj-some-element>
+ *              
+ *              &lt;!-- overlapping attributes will throw an error -->
+ *              &lt;oj-some-element person="{{personInfo}}" person.first-name="{{name}}">&lt;/oj-some-element>
+ *            </code>
+ *          </pre>
+ *          If applications need to programmatically set subproperties, they can call  the JET custom element's <code>setProperty</code> 
+ *          method with dot notation using the camelCased property syntax (e.g. element.setProperty("person.firstName", "Sally")).
+ *        </p>
+ *        <h5 id="ce-attrs-any-section" class="subsection-title">Any-Typed Attributes
+ *            <a class="bookmarkable-link" title="Bookmarkable Link" href="#ce-attrs-any-section"></a>
+ *        </h5>
+ *        <p>
+ *          Attributes that support any type are documented with type {*} in the API doc and will be coerced as
+ *          Objects, Arrays, or strings. This limitation is due to the fact that we cannot determine whether value='2' 
+ *          for a property supporting any type should be parsed as a string or a number. The application should use 
+ *          data binding for all other value types.
+ *        </p>
+ *        <h4 id="ce-properties-section" class="subsection-title">Properties
+ *            <a class="bookmarkable-link" title="Bookmarkable Link" href="#ce-properties-section"></a>
+ *        </h4>
+ *        <p>
+ *            Every attribute listed in the component API doc will have a corresponding property
+ *            on the HTML element and can be accessed once the component is fully upgraded. 
+ *            See the <a href="#ce-proptoattr-section">property to attribute mapping</a>
+ *            section below to see the syntax difference between setting attributes and properties. 
+ *            Note that some properties are read only and updates to those properties using the property 
+ *            setter will be ignored. The undefined value is treated as unsetting of a property when passed to the
+ *            property setter and will result in the component using the default value if one exists.
+ *            Property sets will not result in DOM attribute updates and after the custom element is upgraded, the
+ *            application should use the custom element properties, not attributes to check the current value.
+ *        </p>
+ *        <p>
+ *            When a property or attribute value changes, a [property]Changed <code>CustomEvent</code> 
+ *            will be fired with the following properties in the event's detail property.
+ *            <table class="props">
+ *                <thead>
+ *                    <tr>
+ *                        <th>Name</th>
+ *                        <th>Type</th>
+ *                        <th>Description</th>
+ *                    </tr>
+ *                </thead>
+ *                <tbody>
+ *                    <tr>
+ *                        <td>value</td>
+ *                        <td>*</td>
+ *                        <td>The current value of the property that changed.</td>
+ *                    </tr>
+ *                    <tr>
+ *                        <td>previousValue</td>
+ *                        <td>*</td>
+ *                        <td>The previous value of the property that changed.</td>
+ *                    </tr>
+ *                    <tr>
+ *                        <td>subproperty</td>
+ *                        <td>Object</td>
+ *                        <td>An object holding information about the subproperty that changed.
+ *                            <table class="props">
+ *                                <thead>
+ *                                    <tr>
+ *                                        <th>Name</th>
+ *                                        <th>Type</th>
+ *                                        <th>Description</th>
+ *                                    </tr>
+ *                                </thead>
+ *                                <tbody>
+ *                                    <tr>
+ *                                        <td>path</td>
+ *                                        <td>string</td>
+ *                                        <td>The subproperty path that changed.</td>
+ *                                    </tr>
+ *                                    <tr>
+ *                                        <td>value</td>
+ *                                        <td>*</td>
+ *                                        <td>The current value of the subproperty that changed.</td>
+ *                                    </tr>
+ *                                    <tr>
+ *                                        <td>previousValue</td>
+ *                                        <td>*</td>
+ *                                        <td>The previous value of the subproperty that changed.</td>
+ *                                    </tr>
+ *                                </tbody>
+ *                            </table>
+ *                        </td>
+ *                    </tr>
+ *                </tbody>
+ *            </table>
+ *        </p>
+ *        <p>
+ *          Please note that in order for components to be notified of a property change for Array properties, the
+ *          value should be data bound and updated using an expression, setting the property to an updated copy 
+ *          by calling slice(), or by refreshing the component after an in place Array mutation.
+ *        </p>
+ *        <p>
+ *          The application can listen to these [property]Changed events by adding a listener either declaratively:
+ *          <pre class="prettyprint">
+ *            <code>
+ *              &lt;oj-some-element value="{{currentValue}}" on-value-changed="{{valueChangedListener}}">&lt;/oj-some-element>
+ *            </code>
+ *          </pre>
+ *          or programmatically using the element property or the DOM addEventListener :
+ *          <pre class="prettyprint">
+ *            <code>
+ *              someElement.addEventListener("valueChanged", function(event) {...});
+ *            </code>
+ *            <code>
+ *              someElement.onValueChanged = function(event) {...};
+ *            </code>
+ *          </pre>
+ *        </p>
+ *        <p>
+ *          Some JET components support complex properties. If the application needs to set a single subproperty
+ *          instead of the entire complex property, the <a href="#setProperty">setProperty</a> method should be used 
+ *          instead to ensure that [property]Changed events will be fired correctly. Note that directly updating
+ *          the subproperty via dot notation (e.g. element.topProp.subProp = newValue) will not result in a 
+ *          [property]Changed event being fired.
+ *        </p>
+ *        <h4 id="ce-proptoattr-section" class="subsection-title">Property-to-Attribute Mapping
+ *          <a class="bookmarkable-link" title="Bookmarkable Link" href="#ce-proptoattr-section"></a>
+ *        </h4>
+ *        <p>
+ *          The following rules apply when mapping property to attribute names:
+ *          <ul>
+ *             <li>Attribute names are case insensitive. CamelCased properties are mapped to 
+ *               kebab-cased attribute names by inserting a dash before the uppercase letter and converting that letter to lower case
+ *               (e.g. a "chartType" property will be mapped to a "chart-type" attribute).</li>
+ *             <li> The reverse occurs when mapping a property name from an attribute name.</li>
+ *          </ul>
+ *        </p>        
+ *        <h4 id="ce-databind-section" class="subsection-title">Data Binding and Expression Writeback
+ *          <a class="bookmarkable-link" title="Bookmarkable Link" href="#ce-databind-section"></a>
+ *        </h4>
+ *          The upgrade of JET custom elements relies on any data binding resolving, the management of which 
+ *          is done by a binding provider. The binding provider is responsible for setting and updating attribute
+ *          expressions and any custom elements within its managed subtree will not finish upgrading until it
+ *          applies bindings on that subtree. By default, there is a single binding provider for a page, 
+ *          but subtree specific binding providers can be added by using the <code>data-oj-binding-provider</code> 
+ *          attribute with values of "none" and "knockout". The default binding provider is knockout, but if a 
+ *          page or DOM subtree does not use any expression syntax or knockout, the application can set 
+ *          <code>data-oj-binding-provider="none"</code> on that element so its dependent JET custom elements
+ *          do not need to wait for bindings to be applied to finish upgrading. <b>When using the knockout binding
+ *          provider, applications should require the ojknockout module.</b>
+ *        <p>
+ *          When a JET custom element is managed by a binding provider, its attributes may be set to a binding
+ *          expression. Component attributes can be set directly using one-way [[...]] or two-way {{...}} data binding syntax
+ *          whereas global attributes and attributes on any native HTML element may be one-way bound by prefixing the attribute
+ *          name with ':' (e.g. :id='[[idVar]]'). The attribute binding syntax results in the attribute being set in the DOM
+ *          with the evaluated expression. In the case of component attributes, applications are recommended to bind the attribute
+ *          names directly and avoid the use of the ":" prefix.
+ *        </p>
+ *        <p>
+ *          JET also supports a style binding using the same ':' prefix which takes an expression resolving to an Object. 
+ *          The style Object names should be the JavaScript names for that style (e.g. fontWeight instead of font-weight). 
+ *          Since the style attribute supports Object types, it also supports dot notation for setting style subproperties
+ *          directly (e.g. :style.font-weight='[[...]]').
+ *        </p>
+ *        <p>
+ *          Applications can control expression writeback in the 
+ *          custom element by using {{...}} syntax for two-way writable binding expressions or [[...]] for 
+ *          one-way only expressions. Most component properties do not writeback and those that do will indicate
+ *          it in their API doc. Please note that there should be no spaces between the braces when using the data 
+ *          bind syntax (e.g. some-attribute='[ [...] ]').
+ *        </p>
+ *        <p>
+ *          Certain properties such as 'value' on editable components support updating the associated expression 
+ *          automatically whenever their value changes. This functionality is also known as 'writeback'. 
+ *          Applications can control expression writeback by using  the {{...}} syntax for two-way writable 
+ *          binding expressions or [[...]] for one-way only expressions. The one-way expressions should 
+ *          be used when the application needs expressions strictly for 'downstream-only' purposes, e.g. only for 
+ *          updating a component property. This is different from the read-only properties, which are 'upstream-only', 
+ *          e.g. they are used only to monitor component state. Thus an expression associated with a read-only property 
+ *          should always use the {{}} syntax. Most component properties do not writeback and those that do will 
+ *          indicate it in their API doc. Please note that there should be no spaces between the braces when using 
+ *          the data bind syntax (e.g. some-attribute='[ [...] ]').
+ *        </p>
+ *        <pre class="prettyprint">
+ *          <code>
+ *            &lt;oj-some-element value="[[currentValue]]" selection={{currentSelection}}>&lt;/oj-some-element>
+ *          </code>
+ *        </pre>        
+ *        <h4 id="ce-methods-section" class="subsection-title">Methods
+ *          <a class="bookmarkable-link" title="Bookmarkable Link" href="#ce-methods-section"></a>
+ *        </h4>
+ *        <p>
+ *          Methods can be accessed on the JET custom HTML element after the element is fully upgraded. See
+ *          the specific method doc for sample usages.
+ *        </p>        
+ *        <h4 id="ce-events-section" class="subsection-title">Events and Listeners
+ *          <a class="bookmarkable-link" title="Bookmarkable Link" href="#ce-events-section"></a>
+ *        </h4>
+ *        <p>
+ *          By default, JET components will fire [property]Changed (e.g. valueChanged) <code>CustomEvents</code>
+ *          whenever a property is updated. See the <a href="#ce-properties-section">properties section</a> above
+ *          for details on the event payload.
+ *        </p>
+ *        <p>
+ *          In addition to supporting event listeners via the standard addEventListener
+ *          mechanism, JET custom elements support declarative specification of event
+ *          listeners via <code>on-[event-name]</code> attributes (e.g. on-click, on-value-
+ *          changed or on-oj-expand).  These attributes only support data bound expressions
+ *          that evaluate to functions; arbitrary JavaScript will not be accepted.  Sample
+ *          usages can be seen in the attribute API doc. Please note that there is a
+ *          current limitation where event listeners specified using this syntax can only be
+ *          set during component initialization. Subsequent setAttribute calls for the
+ *          event listener attributes will be ignored.
+ *        </p>
+ *        <p>
+ *          Component events that are specifically documented in a JET custom element's API
+ *          doc (including [property]Changed events) can also have listeners set via direct
+ *          assignment of an on[EventName] property on the element (e.g. onClick or
+ *          onOjExpand).  Note however that when these events bubble up through the DOM,
+ *          they can only be listened to via addEventListener calls or on-[event-name]
+ *          attributes on parent elements.
+ *        </p>
+ * @ojfragment customElementOverviewDoc - General description doc fragment that shows up in every component's page via a link.
+ * @memberof CustomElementOverview
+ */
 });

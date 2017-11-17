@@ -605,6 +605,7 @@ oj.PagingTableDataSource.prototype._updateEndIndex = function(lastRowIdx, reset)
  * @export
  * Event types
  * @enum {string}
+ * @memberof oj.PagingTableDataSource
  */
 oj.PagingTableDataSource.EventType =
   {
@@ -649,12 +650,11 @@ oj.PagingModel = function()
  * @return {number} The current page
  * @export
  * @expose
+ * @method
+ * @name getPage
  * @memberof! oj.PagingModel
  * @instance
  */
-oj.PagingModel.prototype.getPage = function()
-{
-};
 
 /**
  * Set the current page
@@ -664,60 +664,55 @@ oj.PagingModel.prototype.getPage = function()
  * @return {Promise} promise object triggering done when complete..
  * @export
  * @expose
+ * @method
+ * @name setPage
  * @memberof! oj.PagingModel
  * @instance
  */
-oj.PagingModel.prototype.setPage = function(value, options)
-{
-};
 
 /**
  * Get the current page start index
  * @return {number} The current page start index
  * @export
  * @expose
+ * @method
+ * @name getStartItemIndex
  * @memberof! oj.PagingModel
  * @instance
  */
-oj.PagingModel.prototype.getStartItemIndex = function()
-{
-};
 
 /**
  * Get the current page end index
  * @return {number} The current page end index
  * @export
  * @expose
+ * @method
+ * @name getEndItemIndex
  * @memberof! oj.PagingModel
  * @instance
  */
-oj.PagingModel.prototype.getEndItemIndex = function()
-{
-};
 
 /**
  * Get the page count
  * @return {number} The total number of pages
  * @export
  * @expose
+ * @method
+ * @name getPageCount
  * @memberof! oj.PagingModel
  * @instance
  */
-oj.PagingModel.prototype.getPageCount = function()
-{
-};
 
 /**
  * @export
  * Return the total number of items. Returns -1 if unknown.
  * @returns {number} total number of items
  * @expose
+ * @method
+ * @name totalSize
  * @memberof! oj.PagingModel
  * @instance
  */
-oj.PagingModel.prototype.totalSize = function()
-{
-};
 
 /**
  * Returns the confidence for the totalSize value. 
@@ -727,12 +722,11 @@ oj.PagingModel.prototype.totalSize = function()
  *                  "unknown" if the totalSize is unknown
  * @export
  * @expose
+ * @method
+ * @name totalSizeConfidence
  * @memberof! oj.PagingModel
  * @instance 
  */
-oj.PagingModel.prototype.totalSizeConfidence = function()
-{ 
-};
 
 /**
  * @export
@@ -763,4 +757,5 @@ oj.PagingModel.EventType =
   };
 
 
+//# sourceMappingURL=PagingModel.js.map
 });

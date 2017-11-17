@@ -25,6 +25,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
 
 /**
  * @ojcomponent oj.ojProgress
+ * @ojstatus preview
  * @augments oj.baseComponent
  * @classdesc
  * <h3 id="progressOverview-section">

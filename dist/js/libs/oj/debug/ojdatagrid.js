@@ -19681,7 +19681,7 @@ DvtDataGridOptions.prototype.getScrollPolicy = function()
 
     return mode;
 };
-﻿/**
+/**
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
  */
@@ -19690,6 +19690,7 @@ DvtDataGridOptions.prototype.getScrollPolicy = function()
  * @ojcomponent oj.ojDataGrid
  * @augments oj.baseComponent
  * @since 0.6
+ * @ojstatus preview
  *
  * @classdesc
  * <h3 id="datagridOverview-section">

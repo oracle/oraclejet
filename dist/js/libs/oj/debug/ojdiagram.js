@@ -542,6 +542,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/in
 /**
  * Specifies the nodes that should be expanded on initial render. It should contain an array of node ids to expand on initial render. Specify 'all' to expand all nodes.
  * @ignore
+ * @expose
  * @name expanded
  * @memberof oj.ojDiagram
  * @instance
@@ -1418,7 +1419,9 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/in
  * @default <code class="prettyprint">null</code>
  */
 /**
- * The CSS style object defining the style of the primary label.
+ * The CSS style object defining the style of the primary label. Supports color, 
+ * fontFamily, fontSize, fontStyle, fontWeight, textDecoration, cursor,
+ * backgroundColor, borderColor, borderRadius, and borderWidth properties. 
  * @expose
  * @name styleDefaults.nodeDefaults.labelStyle
  * @memberof! oj.ojDiagram
@@ -1741,7 +1744,9 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/in
  * @default <code class="prettyprint">1.0</code>
  */
 /**
- * The CSS style object defining the style of the primary label.
+ * The CSS style object defining the style of the primary label.  Supports color, 
+ * fontFamily, fontSize, fontStyle, fontWeight, textDecoration, cursor,
+ * backgroundColor, borderColor, borderRadius, and borderWidth properties. 
  * @expose
  * @name styleDefaults.linkDefaults.labelStyle
  * @memberof! oj.ojDiagram
@@ -2102,6 +2107,20 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/in
  * @memberof oj.DvtDiagramLayoutContext  
  * @export
  */
+ 
+ /**
+ * Gets event data object. Values can be retrieved from the object using 'type' and 'data' keys.
+ * @method getEventData
+ * @instance 
+ * @return {Object} event data object
+ * @property {string} type Event type - "add", "remove" or "change".
+ * @property {Object} data Event payload object for the event - 
+ *            see <a href="oj.DiagramDataSource.html#EventType">EventType</a> for event details. 
+ * @memberof oj.DvtDiagramLayoutContext
+ * @since 4.0.0
+ * @export
+ */
+
 // Copyright (c) 2008, 2014, Oracle and/or its affiliates. All rights reserved.
 
 /**
@@ -2818,6 +2837,7 @@ oj.ConversionDiagramDataSource.prototype.getDescendantsConnectivity = function(n
  * @ojcomponent oj.ojDiagram
  * @augments oj.dvtBaseComponent
  * @since 1.1.0
+ * @ojstatus preview
  *
  * @classdesc
  * <h3 id="diagramOverview-section">
@@ -2825,7 +2845,10 @@ oj.ConversionDiagramDataSource.prototype.getDescendantsConnectivity = function(n
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#diagramOverview-section"></a>
  * </h3>
  *
- * <p>Diagrams are used to display a set of nodes and the links between them.</p>
+ * <p>Diagrams are used to display a set of nodes and the links between them. The node positions 
+ * and link paths are specified by an application-provided layout function
+ * (see <a href="oj.ojDiagram.html#diagramLayout-section">JET Diagram Layout</a>).
+ * </p>
  *
  * <pre class="prettyprint">
  * <code>
@@ -2835,6 +2858,20 @@ oj.ConversionDiagramDataSource.prototype.getDescendantsConnectivity = function(n
  * &lt;/oj-diagram>
  * </code>
  * </pre>
+ * <h3 id="diagramLayout-section">
+ *   JET Diagram Layout
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#diagramLayout-section"></a>
+ * </h3>
+ *
+ * <p>In order to create JET Diagram component, applications are required to provide a layout callback function for 
+ * positioning nodes and links. The component does not deliver a default layout. 
+ * However there is a set of demo layouts that are delivered with the Cookbook application. 
+ * The demo layouts can be reused by the application, but in most cases we expect that the 
+ * application will want to create their own layout. The layout code must conform to the pluggable layout contract. 
+ * See {@link oj.ojDiagram#layout} for additional information on layout API.</p>
+ *
+ * <p>In the case when the node positions are known in advance or derived from an external layout engine, 
+ * the layout can be generated using [layout helper utility]{@link oj.DiagramUtils}.</p>
  *
  * {@ojinclude "name":"a11yKeyboard"}
  *
@@ -3227,6 +3264,7 @@ oj.__registerWidget('oj.ojDiagram', $['oj']['dvtBaseComponent'],
    * @param {String} nodeId The id of the node to collapse
    * @param {boolean} vetoable Whether the event should be vetoable
    * @ignore
+   * @expose
    * @instance
    * @memberof oj.ojDiagram
    */
@@ -3242,6 +3280,7 @@ oj.__registerWidget('oj.ojDiagram', $['oj']['dvtBaseComponent'],
    * Expands a collapsed parent node. When vetoable is set to false, beforeExpand event will still be fired but the event cannot be veto.
    * @param {String} nodeId The id of the node to expand
    * @param {boolean} vetoable Whether the event should be vetoable
+   * @expose
    * @ignore
    * @instance
    * @memberof oj.ojDiagram

@@ -1,0 +1,1063 @@
+{
+  "name": "ojTreemap",
+  "version": "4.1.0",
+  "jetVersion": "4.1.0",
+  "displayName": " Treemap",
+  "preview": true,
+  "description": "ojTreemap",
+  "properties": {
+    "animationDuration": {
+      "description": "Specifies the animation duration in milliseconds. For data change animations with multiple stages, this attribute defines the duration of each stage. For example, if an animation contains two stages, the total duration will be two times this attribute's value.",
+      "type": "number",
+      "displayName": "Animation Duration",
+      "value": null
+    },
+    "animationOnDataChange": {
+      "description": "Specifies the animation that is applied on data changes.",
+      "type": "string",
+      "displayName": "Animation On Data Change",
+      "value": "none",
+      "enumValues": [
+        "auto",
+        "none"
+      ],
+      "propertyEditorValues": {
+        "auto": {
+          "displayName": "Auto"
+        },
+        "none": {
+          "displayName": "None"
+        }
+      }
+    },
+    "animationOnDisplay": {
+      "description": "Specifies the animation that is shown on initial display.",
+      "type": "string",
+      "displayName": "Animation On Display",
+      "value": "none",
+      "enumValues": [
+        "auto",
+        "none"
+      ],
+      "propertyEditorValues": {
+        "auto": {
+          "displayName": "Auto"
+        },
+        "none": {
+          "displayName": "None"
+        }
+      }
+    },
+    "animationUpdateColor": {
+      "description": "The color that is displayed during a data change animation when a node is updated.",
+      "type": "string",
+      "displayName": "Animation Update Color",
+      "value": null
+    },
+    "colorLabel": {
+      "description": "Specifies the label describing the color metric of the treemap. This label will be used in the legend.",
+      "type": "string",
+      "displayName": "Color Label",
+      "value": null
+    },
+    "displayLevels": {
+      "description": "The number of levels of nodes to display. By default all nodes are displayed.",
+      "type": "number",
+      "displayName": "Display Levels",
+      "value": null
+    },
+    "drilling": {
+      "description": "Specifies whether drilling is enabled. Drillable nodes will show a pointer cursor on hover and fire an ojBeforeDrill and ojDrill event on click (double click if selection is enabled). Drilling on a node causes a property change to the rootNode attribute. The displayLevels attribute can be used in conjunction with drilling to display very deep hieracrchies. Use \"on\" to enable drilling for all nodes. To enable or disable drilling on individual nodes use the drilling attribute in each node.",
+      "type": "string",
+      "displayName": "Drilling",
+      "value": "off",
+      "enumValues": [
+        "off",
+        "on"
+      ],
+      "propertyEditorValues": {
+        "off": {
+          "displayName": "Off"
+        },
+        "on": {
+          "displayName": "On"
+        }
+      }
+    },
+    "groupGaps": {
+      "description": "Specifies whether gaps are displayed between groups. Gaps can be useful for drawing attention to the differences between groups.",
+      "type": "string",
+      "displayName": "Group Gaps",
+      "value": "outer",
+      "enumValues": [
+        "all",
+        "none",
+        "outer"
+      ],
+      "propertyEditorValues": {
+        "all": {
+          "displayName": "All"
+        },
+        "none": {
+          "displayName": "None"
+        },
+        "outer": {
+          "displayName": "Outer"
+        }
+      }
+    },
+    "hiddenCategories": {
+      "description": "An array of category strings used for filtering. Nodes with any category matching an item in this array will be filtered.",
+      "type": "Array.<string>",
+      "displayName": "Hidden Categories",
+      "value": null
+    },
+    "highlightMatch": {
+      "description": "The matching condition for the highlightedCategories property. By default, highlightMatch is 'all' and only items whose categories match all of the values specified in the highlightedCategories array will be highlighted. If highlightMatch is 'any', then items that match at least one of the highlightedCategories values will be highlighted.",
+      "type": "string",
+      "displayName": "Highlight Match",
+      "value": "all",
+      "enumValues": [
+        "all",
+        "any"
+      ],
+      "propertyEditorValues": {
+        "all": {
+          "displayName": "All"
+        },
+        "any": {
+          "displayName": "Any"
+        }
+      }
+    },
+    "highlightedCategories": {
+      "description": "An array of category strings used for highlighting. Nodes matching all categories in this array will be highlighted.",
+      "type": "Array.<string>",
+      "displayName": "Highlighted Categories",
+      "value": null
+    },
+    "hoverBehavior": {
+      "description": "Defines the behavior applied when hovering over the nodes.",
+      "type": "string",
+      "displayName": "Hover Behavior",
+      "value": "none",
+      "enumValues": [
+        "dim",
+        "none"
+      ],
+      "propertyEditorValues": {
+        "dim": {
+          "displayName": "Dim"
+        },
+        "none": {
+          "displayName": "None"
+        }
+      }
+    },
+    "hoverBehaviorDelay": {
+      "description": "Specifies initial hover delay in ms for highlighting nodes.",
+      "type": "number",
+      "displayName": "Hover Behavior Delay",
+      "value": null
+    },
+    "isolatedNode": {
+      "description": "The id of the initially isolated node.",
+      "type": "string",
+      "displayName": "Isolated Node",
+      "value": null
+    },
+    "layout": {
+      "description": "Specifies the layout of the treemap. The squarified layout results in nodes that are as square as possible, for easier comparison of node sizes. The sliceAndDice layouts are useful for animation, as the ordering of the data is maintained. SliceAndDice layouts are also useful for small form factor treemaps.",
+      "type": "string",
+      "displayName": "Layout",
+      "value": "squarified",
+      "enumValues": [
+        "sliceAndDiceHorizontal",
+        "sliceAndDiceVertical",
+        "squarified"
+      ],
+      "propertyEditorValues": {
+        "sliceAndDiceHorizontal": {
+          "displayName": "Slice And Dice Horizontal"
+        },
+        "sliceAndDiceVertical": {
+          "displayName": "Slice And Dice Vertical"
+        },
+        "squarified": {
+          "displayName": "Squarified"
+        }
+      }
+    },
+    "nodeContent": {
+      "description": "An object defining custom node content for the treemap. Only leaf nodes with no child nodes will have the custom content rendered.",
+      "type": "object",
+      "displayName": "Node Content",
+      "value": null,
+      "properties": {
+        "renderer": {
+          "description": "A function that returns custom node content. The function takes a dataContext argument, \nprovided by the treemap, with the following properties: bounds: Object containing (x, y, width, height) of the node area. The x and y coordinates are relative to the top, left corner of the element. id: The id of the node. data: The data object of the node. componentElement: The treemap element.\n\nThe function should return an Object with the following property: insert: HTMLElement - An HTML element, which will be overlaid on top of the treemap. This HTML element will block interactivity of the treemap by default, but the CSS pointer-events property can be set to 'none' on this element if the treemap's interactivity is desired. \n",
+          "type": "function",
+          "value": null
+        }
+      }
+    },
+    "nodeDefaults": {
+      "description": "An object defining default properties for the nodes.",
+      "type": "object",
+      "displayName": "Node Defaults",
+      "value": null,
+      "properties": {
+        "groupLabelDisplay": {
+          "description": "The label display behavior for group nodes.",
+          "type": "string",
+          "value": "header",
+          "enumValues": [
+            "header",
+            "node",
+            "off"
+          ],
+          "propertyEditorValues": {
+            "header": {
+              "displayName": "Header"
+            },
+            "node": {
+              "displayName": "Node"
+            },
+            "off": {
+              "displayName": "Off"
+            }
+          }
+        },
+        "header": {
+          "description": "An object defining default properties for the node header.",
+          "type": "object",
+          "value": null,
+          "properties": {
+            "backgroundColor": {
+              "description": "The background color of the node headers.",
+              "type": "string",
+              "value": null
+            },
+            "borderColor": {
+              "description": "The border color of the node headers.",
+              "type": "string",
+              "value": null
+            },
+            "hoverBackgroundColor": {
+              "description": "The background color of the node hover feedback.",
+              "type": "string",
+              "value": null
+            },
+            "hoverInnerColor": {
+              "description": "The inner color of the node hover feedback.",
+              "type": "string",
+              "value": null
+            },
+            "hoverOuterColor": {
+              "description": "The outer color of the node hover feedback.",
+              "type": "string",
+              "value": null
+            },
+            "isolate": {
+              "description": "Specifies whether isolate behavior is enabled on the node.",
+              "type": "string",
+              "value": "on",
+              "enumValues": [
+                "off",
+                "on"
+              ],
+              "propertyEditorValues": {
+                "off": {
+                  "displayName": "Off"
+                },
+                "on": {
+                  "displayName": "On"
+                }
+              }
+            },
+            "labelHalign": {
+              "description": "The horizontal alignment of the header title.",
+              "type": "string",
+              "value": "start",
+              "enumValues": [
+                "center",
+                "end",
+                "start"
+              ],
+              "propertyEditorValues": {
+                "center": {
+                  "displayName": "Center"
+                },
+                "end": {
+                  "displayName": "End"
+                },
+                "start": {
+                  "displayName": "Start"
+                }
+              }
+            },
+            "labelStyle": {
+              "description": "The CSS style string defining the style of the header title.",
+              "type": "object",
+              "value": null
+            },
+            "selectedBackgroundColor": {
+              "description": "The background color of the node selection feedback.",
+              "type": "string",
+              "value": null
+            },
+            "selectedInnerColor": {
+              "description": "The inner color of the node selection feedback.",
+              "type": "string",
+              "value": null
+            },
+            "selectedOuterColor": {
+              "description": "The outer color of the node selection feedback.",
+              "type": "string",
+              "value": null
+            },
+            "useNodeColor": {
+              "description": "Specifies whether the node color should be displayed in the header.",
+              "type": "string",
+              "value": "off",
+              "enumValues": [
+                "off",
+                "on"
+              ],
+              "propertyEditorValues": {
+                "off": {
+                  "displayName": "Off"
+                },
+                "on": {
+                  "displayName": "On"
+                }
+              }
+            }
+          }
+        },
+        "hoverColor": {
+          "description": "The color of the node hover feedback.",
+          "type": "string",
+          "value": null
+        },
+        "labelDisplay": {
+          "description": "The label display behavior for leaf nodes.",
+          "type": "string",
+          "value": "node",
+          "enumValues": [
+            "node",
+            "off"
+          ],
+          "propertyEditorValues": {
+            "node": {
+              "displayName": "Node"
+            },
+            "off": {
+              "displayName": "Off"
+            }
+          }
+        },
+        "labelHalign": {
+          "description": "The horizontal alignment for labels displayed within the node.",
+          "type": "string",
+          "value": "center",
+          "enumValues": [
+            "center",
+            "end",
+            "start"
+          ],
+          "propertyEditorValues": {
+            "center": {
+              "displayName": "Center"
+            },
+            "end": {
+              "displayName": "End"
+            },
+            "start": {
+              "displayName": "Start"
+            }
+          }
+        },
+        "labelMinLength": {
+          "description": "The minimum number of visible characters needed in order to render a truncated label. If the minimum is not met when calculating the truncated label then the label is not displayed.",
+          "type": "number",
+          "value": 1
+        },
+        "labelStyle": {
+          "description": "The CSS style object defining the style of the label. The CSS white-space property can be defined with value \"nowrap\" to disable default text wrapping.",
+          "type": "object",
+          "value": null
+        },
+        "labelValign": {
+          "description": "The vertical alignment for labels displayed within the node.",
+          "type": "string",
+          "value": "center",
+          "enumValues": [
+            "bottom",
+            "center",
+            "top"
+          ],
+          "propertyEditorValues": {
+            "bottom": {
+              "displayName": "Bottom"
+            },
+            "center": {
+              "displayName": "Center"
+            },
+            "top": {
+              "displayName": "Top"
+            }
+          }
+        },
+        "selectedInnerColor": {
+          "description": "The inner color of the node selection feedback.",
+          "type": "string",
+          "value": null
+        },
+        "selectedOuterColor": {
+          "description": "The outer color of the node selection feedback.",
+          "type": "string",
+          "value": null
+        }
+      }
+    },
+    "nodeSeparators": {
+      "description": "Specifies the visual effect for separating the nodes from each other. This allows for adjacent nodes of the same color to be distinguished.",
+      "type": "string",
+      "displayName": "Node Separators",
+      "value": "gaps",
+      "enumValues": [
+        "bevels",
+        "gaps"
+      ],
+      "propertyEditorValues": {
+        "bevels": {
+          "displayName": "Bevels"
+        },
+        "gaps": {
+          "displayName": "Gaps"
+        }
+      }
+    },
+    "nodes": {
+      "description": "An array of objects with the following properties that defines the data for the nodes. Also accepts a Promise for deferred data rendering. No data will be rendered if the Promise is rejected.",
+      "type": "Array.<object>|Promise",
+      "displayName": "Nodes",
+      "value": null,
+      "properties": {
+        "categories": {
+          "description": "An optional array of category strings corresponding to this data item. This enables highlighting and filtering of individual data items through interactions with the legend and other visualization elements. The categories array of each node is required to be a superset of the categories array of its parent node. If not specified, the ids of the node and its ancestors will be used.",
+          "type": "Array.<string>",
+          "value": null
+        },
+        "color": {
+          "description": "The fill color of the node.",
+          "type": "string",
+          "value": null
+        },
+        "drilling": {
+          "description": "Specifies whether drilling is enabled for the node. Drillable nodes will show a pointer cursor on hover and fire an ojDrill event on click (double click if selection is enabled). To enable drilling for all nodes at once, use the drilling attribute in the top level.",
+          "type": "string",
+          "value": "inherit",
+          "enumValues": [
+            "inherit",
+            "off",
+            "on"
+          ],
+          "propertyEditorValues": {
+            "inherit": {
+              "displayName": "Inherit"
+            },
+            "off": {
+              "displayName": "Off"
+            },
+            "on": {
+              "displayName": "On"
+            }
+          }
+        },
+        "groupLabelDisplay": {
+          "description": "The label display behavior for group nodes.",
+          "type": "string",
+          "value": "header",
+          "enumValues": [
+            "header",
+            "node",
+            "off"
+          ],
+          "propertyEditorValues": {
+            "header": {
+              "displayName": "Header"
+            },
+            "node": {
+              "displayName": "Node"
+            },
+            "off": {
+              "displayName": "Off"
+            }
+          }
+        },
+        "header": {
+          "description": "An object defining the properties for the node header.",
+          "type": "object",
+          "value": null,
+          "properties": {
+            "isolate": {
+              "description": "Specifies whether isolate behavior is enabled on the node.",
+              "type": "string",
+              "value": "on",
+              "enumValues": [
+                "off",
+                "on"
+              ],
+              "propertyEditorValues": {
+                "off": {
+                  "displayName": "Off"
+                },
+                "on": {
+                  "displayName": "On"
+                }
+              }
+            },
+            "labelHalign": {
+              "description": "The horizontal alignment of the header title.",
+              "type": "string",
+              "value": "start",
+              "enumValues": [
+                "center",
+                "end",
+                "start"
+              ],
+              "propertyEditorValues": {
+                "center": {
+                  "displayName": "Center"
+                },
+                "end": {
+                  "displayName": "End"
+                },
+                "start": {
+                  "displayName": "Start"
+                }
+              }
+            },
+            "labelStyle": {
+              "description": "The CSS style object defining the style of the header title.",
+              "type": "object",
+              "value": null
+            },
+            "useNodeColor": {
+              "description": "Specifies whether the node color should be displayed in the header.",
+              "type": "string",
+              "value": "off",
+              "enumValues": [
+                "off",
+                "on"
+              ],
+              "propertyEditorValues": {
+                "off": {
+                  "displayName": "Off"
+                },
+                "on": {
+                  "displayName": "On"
+                }
+              }
+            }
+          }
+        },
+        "id": {
+          "description": "The id of the node.",
+          "type": "string",
+          "value": null
+        },
+        "label": {
+          "description": "The label for this node.",
+          "type": "string",
+          "value": null
+        },
+        "labelDisplay": {
+          "description": "The label display behavior for leaf nodes.",
+          "type": "string",
+          "value": "node",
+          "enumValues": [
+            "node",
+            "off"
+          ],
+          "propertyEditorValues": {
+            "node": {
+              "displayName": "Node"
+            },
+            "off": {
+              "displayName": "Off"
+            }
+          }
+        },
+        "labelHalign": {
+          "description": "The horizontal alignment for labels displayed within the node.",
+          "type": "string",
+          "value": "center",
+          "enumValues": [
+            "center",
+            "end",
+            "start"
+          ],
+          "propertyEditorValues": {
+            "center": {
+              "displayName": "Center"
+            },
+            "end": {
+              "displayName": "End"
+            },
+            "start": {
+              "displayName": "Start"
+            }
+          }
+        },
+        "labelStyle": {
+          "description": "The CSS style object defining the style of the label. The CSS white-space property can be defined with value \"nowrap\" to disable default text wrapping.",
+          "type": "object",
+          "value": null
+        },
+        "labelValign": {
+          "description": "The vertical alignment for labels displayed within the node.",
+          "type": "string",
+          "value": "center",
+          "enumValues": [
+            "bottom",
+            "center",
+            "top"
+          ],
+          "propertyEditorValues": {
+            "bottom": {
+              "displayName": "Bottom"
+            },
+            "center": {
+              "displayName": "Center"
+            },
+            "top": {
+              "displayName": "Top"
+            }
+          }
+        },
+        "nodes": {
+          "description": "An array of objects with properties for the child nodes.",
+          "type": "Array.<object>",
+          "value": null
+        },
+        "pattern": {
+          "description": "The pattern used to fill the node.",
+          "type": "string",
+          "value": "none",
+          "enumValues": [
+            "largeChecker",
+            "largeCrosshatch",
+            "largeDiagonalLeft",
+            "largeDiagonalRight",
+            "largeDiamond",
+            "largeTriangle",
+            "none",
+            "smallChecker",
+            "smallCrosshatch",
+            "smallDiagonalLeft",
+            "smallDiagonalRight",
+            "smallDiamond",
+            "smallTriangle"
+          ],
+          "propertyEditorValues": {
+            "largeChecker": {
+              "displayName": "Large Checker"
+            },
+            "largeCrosshatch": {
+              "displayName": "Large Crosshatch"
+            },
+            "largeDiagonalLeft": {
+              "displayName": "Large Diagonal Left"
+            },
+            "largeDiagonalRight": {
+              "displayName": "Large Diagonal Right"
+            },
+            "largeDiamond": {
+              "displayName": "Large Diamond"
+            },
+            "largeTriangle": {
+              "displayName": "Large Triangle"
+            },
+            "none": {
+              "displayName": "None"
+            },
+            "smallChecker": {
+              "displayName": "Small Checker"
+            },
+            "smallCrosshatch": {
+              "displayName": "Small Crosshatch"
+            },
+            "smallDiagonalLeft": {
+              "displayName": "Small Diagonal Left"
+            },
+            "smallDiagonalRight": {
+              "displayName": "Small Diagonal Right"
+            },
+            "smallDiamond": {
+              "displayName": "Small Diamond"
+            },
+            "smallTriangle": {
+              "displayName": "Small Triangle"
+            }
+          }
+        },
+        "selectable": {
+          "description": "Specifies whether or not the node will be selectable.",
+          "type": "string",
+          "value": "auto",
+          "enumValues": [
+            "auto",
+            "off"
+          ],
+          "propertyEditorValues": {
+            "auto": {
+              "displayName": "Auto"
+            },
+            "off": {
+              "displayName": "Off"
+            }
+          }
+        },
+        "shortDesc": {
+          "description": "The description of this node. This is used for accessibility and also for customizing the tooltip text.",
+          "type": "string",
+          "value": null
+        },
+        "svgClassName": {
+          "description": "The CSS style class to apply to the node. The style class and inline style will override any other styling specified through the properties. For tooltip interactivity, it's recommended to also pass a representative color to the node color attribute.",
+          "type": "string",
+          "value": null
+        },
+        "svgStyle": {
+          "description": "The inline style to apply to the node. The style class and inline style will override any other styling specified through the properties. For tooltip interactivity, it's recommended to also pass a representative color to the node color attribute.",
+          "type": "object",
+          "value": null
+        },
+        "value": {
+          "description": "The value of the node. The value determines the relative size of the node.",
+          "type": "number",
+          "value": null
+        }
+      }
+    },
+    "rootNode": {
+      "description": "The id of the root node. When specified, only the root node and children of the root will be displayed.",
+      "type": "string",
+      "displayName": "Root Node",
+      "value": null
+    },
+    "selection": {
+      "description": "An array containing the ids of the initially selected nodes.",
+      "type": "Array.<string>",
+      "displayName": "Selection",
+      "value": null
+    },
+    "selectionMode": {
+      "description": "Specifies the selection mode.",
+      "type": "string",
+      "displayName": "Selection Mode",
+      "value": "multiple",
+      "enumValues": [
+        "multiple",
+        "none",
+        "single"
+      ],
+      "propertyEditorValues": {
+        "multiple": {
+          "displayName": "Multiple"
+        },
+        "none": {
+          "displayName": "None"
+        },
+        "single": {
+          "displayName": "Single"
+        }
+      }
+    },
+    "sizeLabel": {
+      "description": "Specifies the label describing the size metric of the treemap. This label will be used in the legend.",
+      "type": "string",
+      "displayName": "Size Label",
+      "value": null
+    },
+    "sorting": {
+      "description": "Specifies whether the nodes are sorted by size. When sorting is enabled, nodes that have the same parent are sorted in order of descending size.",
+      "type": "string",
+      "displayName": "Sorting",
+      "value": "off",
+      "enumValues": [
+        "off",
+        "on"
+      ],
+      "propertyEditorValues": {
+        "off": {
+          "displayName": "Off"
+        },
+        "on": {
+          "displayName": "On"
+        }
+      }
+    },
+    "tooltip": {
+      "description": "An object containing an optional callback function for tooltip customization.",
+      "type": "object",
+      "displayName": "Tooltip",
+      "value": null,
+      "properties": {
+        "renderer": {
+          "description": "A function that returns a custom tooltip. The function takes a dataContext argument,\nprovided by the treemap, with the following properties: parentElement: The tooltip element. The function can directly modify or append content to this element. id: The id of the hovered node. label: The label of the hovered node. value: The value of the hovered node. color: The color of the hovered node. data: The data object of the hovered node. componentElement: The treemap element. The function should return an Object that contains only one of the two properties: insert: HTMLElement | string - An HTML element, which will be appended to the tooltip, or a tooltip string. preventDefault: true - Indicates that the tooltip should not be displayed. It is not necessary to return {preventDefault:false} to display tooltip, since this is a default behavior. ",
+          "type": "function",
+          "value": null
+        }
+      }
+    },
+    "touchResponse": {
+      "description": "Data visualizations require a press and hold delay before triggering tooltips and rollover effects on mobile devices to avoid interfering with page panning, but these hold delays can make applications seem slower and less responsive. For a better user experience, the application can remove the touch and hold delay when data visualizations are used within a non scrolling container or if there is sufficient space outside of the visualization for panning. If touchResponse is touchStart the element will instantly trigger the touch gesture and consume the page pan events. If touchResponse is auto, the element will behave like touchStart if it determines that it is not rendered within scrolling content and if panning is not available for those elements that support the feature.",
+      "type": "string",
+      "displayName": "Touch Response",
+      "value": "auto",
+      "enumValues": [
+        "auto",
+        "touchStart"
+      ],
+      "propertyEditorValues": {
+        "auto": {
+          "displayName": "Auto"
+        },
+        "touchStart": {
+          "displayName": "Touch Start"
+        }
+      }
+    },
+    "trackResize": {
+      "description": "Defines whether the element will automatically render in response to\nchanges in size. If set to off, then the\napplication is responsible for calling refresh\nto render the element at the new size.",
+      "type": "string",
+      "displayName": "Track Resize",
+      "value": "on",
+      "enumValues": [
+        "off",
+        "on"
+      ],
+      "propertyEditorValues": {
+        "off": {
+          "displayName": "Off"
+        },
+        "on": {
+          "displayName": "On"
+        }
+      }
+    },
+    "translations": {
+      "description": "A collection of translated resources from the translation bundle, or null if this\ncomponent has no resources. Resources may be accessed and overridden individually or collectively, as seen in the examples.\n\nIf this component has translations, their documentation immediately follows this doc entry.",
+      "type": "Object",
+      "displayName": "Translations",
+      "value": null,
+      "properties": {
+        "componentName": {
+          "description": "Used to describe the data visualization type for accessibility.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Treemap"
+        },
+        "labelAndValue": {
+          "description": "Used to display a label and its value.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "{0}: {1}"
+        },
+        "labelClearSelection": {
+          "description": "Text shown for clearing multiple selection on touch devices.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Clear Selection"
+        },
+        "labelColor": {
+          "description": "Used for the color label.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Color"
+        },
+        "labelCountWithTotal": {
+          "description": "Used to display a count out of a total.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "{0} of {1}"
+        },
+        "labelDataVisualization": {
+          "description": "Label for data visualizations used for accessibility.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Data Visualization"
+        },
+        "labelInvalidData": {
+          "description": "Text shown when the component receives invalid data.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Invalid data"
+        },
+        "labelNoData": {
+          "description": "Text shown when the component receives no data.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "No data to display"
+        },
+        "labelSize": {
+          "description": "Used for the size label.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Size"
+        },
+        "stateCollapsed": {
+          "description": "Used to describe the collapsed state for accessibility.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Collapsed"
+        },
+        "stateDrillable": {
+          "description": "Used to describe a drillable object for accessibility.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Drillable"
+        },
+        "stateExpanded": {
+          "description": "Used to describe the expanded state for accessibility.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Expanded"
+        },
+        "stateHidden": {
+          "description": "Used to describe the hidden state for accessibility.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Hidden"
+        },
+        "stateIsolated": {
+          "description": "Used to describe the isolated state for accessibility.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Isolated"
+        },
+        "stateMaximized": {
+          "description": "Used to describe the maximized state for accessibility.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Maximized"
+        },
+        "stateMinimized": {
+          "description": "Used to describe the minimized state for accessibility.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Minimized"
+        },
+        "stateSelected": {
+          "description": "Used to describe the selected state for accessibility.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Selected"
+        },
+        "stateUnselected": {
+          "description": "Used to describe the unselected state for accessibility.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Unselected"
+        },
+        "stateVisible": {
+          "description": "Used to describe the visible state for accessibility.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Visible"
+        },
+        "tooltipIsolate": {
+          "description": "Used for the isolate tooltip.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Isolate"
+        },
+        "tooltipRestore": {
+          "description": "Used for the restore tooltip.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Restore"
+        }
+      }
+    }
+  },
+  "methods": {
+    "getNode": {
+      "description": "Returns an object with the following properties for automation testing verification of the node with the specified subid path.",
+      "params": [
+        {
+          "name": "subIdPath",
+          "description": "The array of indices in the subId for the desired node",
+          "type": "Array"
+        }
+      ],
+      "return": "Object|null"
+    },
+    "getContextByNode": {
+      "description": "Returns an object with context for the given child DOM node. This will always contain the subid for the node,\ndefined as the 'subId' property on the context object. Additional component specific information may also be included.\n\nFor more details on returned objects, see context objects.",
+      "params": [
+        {
+          "name": "node",
+          "description": "The child DOM node",
+          "type": "Element"
+        }
+      ],
+      "return": "Object|null"
+    },
+    "refresh": {
+      "description": "Refreshes the component."
+    },
+    "setProperty": {
+      "description": "Sets a property or a single subproperty for complex properties and notifies the component\nof the change, triggering a [property]Changed event.",
+      "params": [
+        {
+          "name": "property",
+          "description": "The property name to set. Supports dot notation for subproperty access.",
+          "type": "string"
+        },
+        {
+          "name": "value",
+          "description": "The new value to set the property to.",
+          "type": "*"
+        }
+      ]
+    },
+    "getProperty": {
+      "description": "Retrieves a value for a property or a single subproperty for complex properties.",
+      "params": [
+        {
+          "name": "property",
+          "description": "The property name to get. Supports dot notation for subproperty access.",
+          "type": "string"
+        }
+      ],
+      "return": "*"
+    },
+    "setProperties": {
+      "description": "Performs a batch set of properties.",
+      "params": [
+        {
+          "name": "properties",
+          "description": "An object containing the property and value pairs to set.",
+          "type": "Object"
+        }
+      ]
+    }
+  },
+  "events": {
+    "beforeDrill": {
+      "description": "Triggered immediately before any node in the treemap is drilled into. The drill event can be vetoed if the beforeDrill callback returns false.",
+      "detail": {
+        "id": {
+          "description": "the id of the drilled object",
+          "type": "string"
+        },
+        "data": {
+          "description": "the data object of the drilled node",
+          "type": "Object"
+        }
+      }
+    },
+    "drill": {
+      "description": "Triggered during a drill gesture (double click if selection is enabled, single click otherwise).",
+      "detail": {
+        "id": {
+          "description": "the id of the drilled object",
+          "type": "string"
+        },
+        "data": {
+          "description": "the data object of the drilled node",
+          "type": "Object"
+        }
+      }
+    }
+  },
+  "slots": {
+    "contextMenu": {
+      "description": "The contextMenu slot is set on the oj-menu within this element. \nThis is used to designate the JET Menu that this component should launch as a context menu on right-click, Shift-F10, Press & Hold, or component-specific gesture. \nIf specified, the browser's native context menu will be replaced by the JET Menu specified in this slot.\n\nThe application can register a listener for the Menu's ojBeforeOpen event. The listener can cancel the launch via event.preventDefault(), \nor it can customize the menu contents by editing the menu DOM directly, and then calling refresh() on the Menu.\n\nTo help determine whether it's appropriate to cancel the launch or customize the menu, the ojBeforeOpen listener can use component API's to determine which \ntable cell, chart item, etc., is the target of the context menu. See the JSDoc and demos of the individual components for details. \n\nKeep in mind that any such logic must work whether the context menu was launched via right-click, Shift-F10, Press & Hold, or component-specific touch gesture."
+    }
+  }
+}

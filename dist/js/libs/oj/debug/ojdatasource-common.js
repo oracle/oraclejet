@@ -44,6 +44,7 @@ oj.Object.createSubclass(oj.DataSource, oj.EventSource, "oj.DataSource");
 /**
  * Initializes the instance.
  * @export
+ * @memberof oj.DataSource
  */
 oj.DataSource.prototype.Init = function()
 {
@@ -54,7 +55,7 @@ oj.DataSource.prototype.Init = function()
  * Determines whether this DataSource supports the specified feature.
  * @method
  * @name getCapability
- * @memberof! oj.DataSource
+ * @memberof oj.DataSource
  * @instance
  * @param {string} feature the feature in which its capabilities is inquired. 
  * @return {string|null} the capability of the specified feature.  Returns null if the feature is not recognized.
@@ -450,6 +451,7 @@ oj.TableDataSource.prototype.totalSizeConfidence = function()
  * @export
  * Event types
  * @enum {string}
+ * @memberof oj.TableDataSource
  */
 oj.TableDataSource.EventType =
   {
@@ -542,8 +544,7 @@ oj.TableDataSource._LOGGER_MSG =
  
  /**
  * Base class for Diagram DataSource.  Implementations must implement all of the functions documented here.
-
- * @param {Object} data data supported by the component
+ * @param {Object} data data required by the DiagramDataSource implementation
  * @export
  * @extends oj.DataSource
  * @constructor
@@ -558,6 +559,37 @@ oj.DiagramDataSource = function(data)
 oj.Object.createSubclass(oj.DiagramDataSource, oj.DataSource, "oj.DiagramDataSource");
 
 /**
+ * Object that defines diagram node. The object might also have additional custom properties that can be 
+ * mapped to node styles (see {@link oj.ojDiagram#nodeProperties}) 
+ * or used during Diagram layout (see {@link oj.DvtDiagramLayoutContextNode#getData}).
+ * @typedef {Object} NodeObject
+ * @memberof oj.DiagramDataSource
+ * @property {string} id Node id
+ * @property {Array.<string>=} categories An optional array of additional category strings corresponding to the node.
+ * @property {string=} label Node label
+ * @property {Array.<object>=} nodes An array of objects with properties for the child nodes.
+ *                     Set value to null to indicate leaf node, if child nodes could be fetched on container disclosure.
+ *                     Set value to 'undefined' to indicate potential child nodes, if the child nodes should be fetched on container disclosure.
+ * @property {string=} selectable Specifies whether or not the node will be selectable. Acceptable values are 'off' and 'auto'. Default value is 'auto'
+ * @property {string=} shortDesc  The description of the node. This is used for accessibility and also for customizing the tooltip text.
+ */
+ 
+/**
+ * Object that defines diagram link. The object might also have additional custom properties that can be 
+ * mapped to link styles (see {@link oj.ojDiagram#linkProperties})
+ * or used during Diagram layout (see {@link oj.DvtDiagramLayoutContextLink#getData}).
+ * @typedef {Object} LinkObject
+ * @memberof oj.DiagramDataSource
+ * @property {string} id Link id
+ * @property {string} startNode Start node id.
+ * @property {string} endNode End node id.
+ * @property {Array.<string>=} categories An optional array of additional category strings corresponding to the link.
+ * @property {string=} label Link label
+ * @property {string=} selectable Specifies whether or not the node will be selectable. Acceptable values are 'off' and 'auto'. Default value is 'auto'
+ * @property {string=} shortDesc  The description of the node. This is used for accessibility and also for customizing the tooltip text.
+ */
+
+/**
  * Returns child data for the given parent.
  * The data include all immediate child nodes along with links whose endpoints
  * both descend from the current parent node. 
@@ -567,32 +599,34 @@ oj.Object.createSubclass(oj.DiagramDataSource, oj.DataSource, "oj.DiagramDataSou
  * optimal way to return links is as part of the data of the
  * nearest common ancestor of the link's endpoints.
  *
- * @param {Object|null} parentData An object that contains data for the parent node.
+ * @param {Object|null} parentData An object that contains data for the parent node. See {@link oj.DiagramDataSource.NodeObject} section.
  *                     If parentData is null, the method retrieves data for top level nodes.
  * @return {Promise} Promise resolves to a component object with the following structure:<p>
  * <table>
  * <tbody>
- * <tr><td><b>nodes</b></td><td>An array of objects for the child nodes for the given parent</td></tr>
- * <tr><td><b>links</b></td><td>An array of objects for the links for the given parent</td></tr>
+ * <tr><td><b>nodes</b></td><td>An array of objects for the child nodes for the given parent.
+ *              See {@link oj.DiagramDataSource.NodeObject} section.</td></tr>
+ * <tr><td><b>links</b></td><td>An array of objects for the links for the given parent.
+ *              See {@link oj.DiagramDataSource.LinkObject} section.</td></tr>
  * </tbody>
  * </table>
  * @method
  * @name getData
- * @memberof! oj.DiagramDataSource
+ * @memberof oj.DiagramDataSource
  * @instance
  */
  
 /**
  * Retrieves number of child nodes
  * @param {Object} nodeData A data object for the node in question.
- *                          See node properties section.
+ *                          See {@link oj.DiagramDataSource.NodeObject} section.
  * @return {number} Number of child nodes if child count is available.
  *                  The method returns 0 for leaf nodes.
  *                  The method returns -1 if the child count is unknown
  *                  (e.g. if the children have not been fetched).
  * @method
  * @name getChildCount
- * @memberof! oj.DiagramDataSource
+ * @memberof oj.DiagramDataSource
  * @instance
  */
  
@@ -601,11 +635,11 @@ oj.Object.createSubclass(oj.DiagramDataSource, oj.DataSource, "oj.DiagramDataSou
  * that should be discovered in order to display promoted links.
  *
  * @param {Object} nodeData A data object for the container node in question.
- *                          See node properties section.
+ *                          See {@link oj.DiagramDataSource.NodeObject} section
  * @return {string} the valid values are "connected", "disjoint", "unknown"
  * @method
  * @name getDescendantsConnectivity
- * @memberof! oj.DiagramDataSource
+ * @memberof oj.DiagramDataSource
  * @instance
  */
  
@@ -613,6 +647,7 @@ oj.Object.createSubclass(oj.DiagramDataSource, oj.DataSource, "oj.DiagramDataSou
  * @export
  * Event types
  * @enum {string}
+ * @memberof oj.DiagramDataSource
  */
 oj.DiagramDataSource.EventType =
 {
@@ -624,8 +659,8 @@ oj.DiagramDataSource.EventType =
    * <tbody>
    * <tr><td><b>data</b></td><td>Object</td><td>An object with the following properties:
    *  <ul>
-   *    <li>nodes: an array of node objects</li>
-   *    <li>links: an array of link objects</li>
+   *    <li>nodes: An array of node objects. See {@link oj.DiagramDataSource.NodeObject} section.</li>
+   *    <li>links: An array of link objects. See {@link oj.DiagramDataSource.LinkObject} section.</li>
    *  </ul>
    * </td></tr>
    * <tr><td><b>parentId</b></td><td>string</td><td>parent id for nodes and links</td></tr>
@@ -642,8 +677,8 @@ oj.DiagramDataSource.EventType =
    * <tbody>
    * <tr><td><b>data</b></td><td>Object</td><td>An object with the following properties:
    *  <ul>
-   *    <li>nodes: an array of node objects</li>
-   *    <li>links: an array of link objects</li>
+   *    <li>nodes: An array of node objects. See {@link oj.DiagramDataSource.NodeObject} section.</li>
+   *    <li>links: An array of link objects. See {@link oj.DiagramDataSource.LinkObject} section.</li>
    *  </ul>
    * </td></tr>
    * <tr><td><b>parentId</b></td><td>string</td><td>parent id for nodes and links</td></tr>
@@ -659,8 +694,8 @@ oj.DiagramDataSource.EventType =
    * <tbody>
    * <tr><td><b>data</b></td><td>Object</td><td>An object with the following properties:
    *  <ul>
-   *    <li>nodes: an array of node objects</li>
-   *    <li>links: an array of link objects</li>
+   *    <li>nodes: An array of node objects. See {@link oj.DiagramDataSource.NodeObject} section.</li>
+   *    <li>links: An array of link objects. See {@link oj.DiagramDataSource.LinkObject} section.</li>
    *  </ul>
    * </td></tr>
    * </tbody>

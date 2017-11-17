@@ -33,8 +33,10 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue'],
    */
   /**
    * @ojcomponent oj.ojSwitch
+   * @ojdisplayname Switch
    * @augments oj.editableValue
    * @since 0.7
+   * @ojstatus preview
    *
    * @classdesc
    * <p>

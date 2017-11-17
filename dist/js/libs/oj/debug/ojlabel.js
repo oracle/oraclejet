@@ -122,6 +122,7 @@ define(['ojs/ojcore', 'jquery', 'hammerjs', 'ojs/ojjquery-hammer', 'ojs/ojcompon
    * {@ojinclude "name":"keyboardDoc"}
    * @ojstatus preview
    * @ojcomponent oj.ojLabel
+   * @ojshortdesc Label Element
    * @since 4.0.0
    * @augments oj.baseComponent
    */
@@ -155,7 +156,7 @@ define(['ojs/ojcore', 'jquery', 'hammerjs', 'ojs/ojjquery-hammer', 'ojs/ojcompon
        * @memberof oj.ojLabel
        * @instance
        * @type {string|null}
-       * @default <code class="prettyprint">null</code>
+       * @default null
        * @since 4.0.0
        *
        * @example <caption>Associate oj-label to the oj-input-text using the 
@@ -186,7 +187,7 @@ define(['ojs/ojcore', 'jquery', 'hammerjs', 'ojs/ojjquery-hammer', 'ojs/ojcompon
        * @memberof oj.ojLabel
        * @instance
        * @type {Object.<string, string>|null}
-       * @default <code class="prettyprint">help = '{"definition" :null, "source": null}'</code>
+       * @default {'definition' :null, 'source': null}
        * @since 4.0.0
        *
        * @example <caption>Initialize the label with the help definition and help source:</caption>
@@ -217,7 +218,7 @@ define(['ojs/ojcore', 'jquery', 'hammerjs', 'ojs/ojjquery-hammer', 'ojs/ojcompon
          * @memberof! oj.ojLabel
          * @instance
          * @type {string|null}
-         * @default <code class="prettyprint">null</code>
+         * @default null
          * @since 4.0.0
          */
         definition: null,
@@ -229,7 +230,7 @@ define(['ojs/ojcore', 'jquery', 'hammerjs', 'ojs/ojjquery-hammer', 'ojs/ojcompon
          * @memberof! oj.ojLabel
          * @instance
          * @type {string|null}
-         * @default <code class="prettyprint">null</code>
+         * @default null
          * @since 4.0.0
          */
         source: null
@@ -248,7 +249,7 @@ define(['ojs/ojcore', 'jquery', 'hammerjs', 'ojs/ojjquery-hammer', 'ojs/ojcompon
        * associate with a JET form component's <code class="prettyprint">labelled-by</code> attribute.
        * @expose
        * @type {string|null}
-       * @default <code class="prettyprint">null</code>
+       * @default null
        * @public
        * @instance
        * @since 4.0.0 
@@ -271,7 +272,7 @@ define(['ojs/ojcore', 'jquery', 'hammerjs', 'ojs/ojjquery-hammer', 'ojs/ojcompon
        * associated JET form component to make sure they are in sync.
        * @expose
        * @type {?boolean}
-       * @default <code class="prettyprint">false</code>
+       * @default false
        * @public
        * @instance
        * @memberof oj.ojLabel
@@ -308,13 +309,14 @@ define(['ojs/ojcore', 'jquery', 'hammerjs', 'ojs/ojjquery-hammer', 'ojs/ojcompon
        * @memberof oj.ojLabel
        * @instance
        * @type {Object}
-       * @default <code class="prettyprint">{ id: null, class: null, style:null }</code>
+       * @default {'id': null, 'class': null, 'style':null}
        * @ignore
        */
       rootAttributes: null
     },
     /**
      * @private
+     * @memberof oj.ojLabel
      * @const
      */
     _BUNDLE_KEY:
@@ -490,6 +492,7 @@ define(['ojs/ojcore', 'jquery', 'hammerjs', 'ojs/ojjquery-hammer', 'ojs/ojcompon
     /**
      * set up dom and styles on create
      * @private
+     * @memberof oj.ojLabel
      */
     _drawOnCreate: function ()
     {
@@ -568,6 +571,7 @@ define(['ojs/ojcore', 'jquery', 'hammerjs', 'ojs/ojjquery-hammer', 'ojs/ojcompon
     * that is linked to the oj-label.
     * @private
     * @instance
+    * @memberof oj.ojLabel
     * @return {Element|null} forTargetElement is a reference to an Element object, 
     * or null if the element with id equal to the label's for attribute is not found.
     * 
@@ -611,6 +615,7 @@ define(['ojs/ojcore', 'jquery', 'hammerjs', 'ojs/ojjquery-hammer', 'ojs/ojcompon
     * If oj-label, then add described-by for the required icon on the custom form element.
     * This will be oj-checkboxset or oj-radioset only.
     * @private
+    * @memberof oj.ojLabel
     * @instance
     * 
     */
@@ -635,6 +640,7 @@ define(['ojs/ojcore', 'jquery', 'hammerjs', 'ojs/ojjquery-hammer', 'ojs/ojcompon
     * requiredIcon span.
     * @private
     * @instance
+    * @memberof oj.ojLabel
     * 
     */
     _removeRequiredDescribedByOnCustomFormElement : function()
@@ -655,6 +661,7 @@ define(['ojs/ojcore', 'jquery', 'hammerjs', 'ojs/ojjquery-hammer', 'ojs/ojcompon
     * div role='group'..
     * @private
     * @instance
+    * @memberof oj.ojLabel
     * @param {string} helpSpanId The id of the help span
     * 
     */
@@ -674,6 +681,7 @@ define(['ojs/ojcore', 'jquery', 'hammerjs', 'ojs/ojjquery-hammer', 'ojs/ojcompon
     * described-by on JET form element with the help icon span's id or aria-labelledby on
     * div role='group'.
     * @private
+    * @memberof oj.ojLabel
     * @instance
     */
     _removeHelpSpanIdOnTarget : function(helpSpanId)
@@ -694,6 +702,7 @@ define(['ojs/ojcore', 'jquery', 'hammerjs', 'ojs/ojjquery-hammer', 'ojs/ojcompon
     * @param {Element} targetElement
     * @return {string|null} the attribute, aria-describedby, aria-labelledby, or described-by
     * @private
+    * @memberof oj.ojLabel
     * @instance
     */
     _getAriaAttributeForTarget : function(targetElement)
@@ -722,6 +731,7 @@ define(['ojs/ojcore', 'jquery', 'hammerjs', 'ojs/ojjquery-hammer', 'ojs/ojcompon
     * Return the target element of the 'for' option. Called for custom element oj-label.
     * @private
     * @instance
+    * @memberof oj.ojLabel
     * @return {Element|null} is a reference to an Element object, 
     * or null if the element with id equal to the label's for attribute is not found.
     * 
@@ -735,6 +745,8 @@ define(['ojs/ojcore', 'jquery', 'hammerjs', 'ojs/ojjquery-hammer', 'ojs/ojcompon
     * e.g., aria-labelledby attribute set to labelId.
     * @private
     * @instance
+    * @memberof oj.ojLabel
+    * @param attrName the attribute name to look for. e.g., labelled-by or aria-labelledby
     * @param {string} id
     * @return {Element|null} is a reference to an Element object, 
     * or null if the element is not found.
@@ -746,7 +758,10 @@ define(['ojs/ojcore', 'jquery', 'hammerjs', 'ojs/ojjquery-hammer', 'ojs/ojcompon
       
       if (id)
       {
-        attributeSearchString = "["+attrName+"~=" + id + "]";
+        // The ~ means to look to see if the id is in a list of whitespace-separated
+        // values, one of which is exactly equal to id, and labelled-by could have a
+        // list of whitespace-separated ids.
+        attributeSearchString = "["+attrName+"~='" + id + "']";
         return document.querySelector(attributeSearchString);
       }
       else
@@ -756,6 +771,7 @@ define(['ojs/ojcore', 'jquery', 'hammerjs', 'ojs/ojjquery-hammer', 'ojs/ojcompon
     * If targetElement's tagName starts with "oj-", return true, else return false.
     * @param {Element|null} targetElement the HTML element the 'for' attribute is pointing to
     * @private
+    * @memberof oj.ojLabel
     * @instance
     * @return {boolean} return true if targetElement's tagName starts with "oj-". Else return false.
     * 
@@ -773,6 +789,7 @@ define(['ojs/ojcore', 'jquery', 'hammerjs', 'ojs/ojjquery-hammer', 'ojs/ojcompon
     * are the only components that do not support aria-required.
     * @param {Element|null} targetElement the HTML element the 'for' attribute is pointing to
     * @private
+    * @memberof oj.ojLabel
     * @instance
     * @return {boolean} true if targetElement's tagName is oj-radioset or oj-checkboxset.
     * 
@@ -807,6 +824,7 @@ define(['ojs/ojcore', 'jquery', 'hammerjs', 'ojs/ojjquery-hammer', 'ojs/ojcompon
     * @param {string} id the id to add to the attribute
     * @param {string} attr the attribute to add to. e.g., "aria-describedby"
     * @private
+    * @memberof oj.ojLabel
     * @instance
     * 
     */
@@ -834,6 +852,7 @@ define(['ojs/ojcore', 'jquery', 'hammerjs', 'ojs/ojjquery-hammer', 'ojs/ojcompon
    * @param {string} id the id to remove from the attr
    * @param {string} attr the attribute to remove from. e.g., "aria-describedby"
    * @private
+   * @memberof oj.ojLabel
    * @instance
    */
   _removeElementAttribute : function (elem, id, attr)
@@ -875,6 +894,7 @@ define(['ojs/ojcore', 'jquery', 'hammerjs', 'ojs/ojjquery-hammer', 'ojs/ojcompon
     *       
     * </p>
     * @private
+    * @memberof oj.ojLabel
     * @instance
     * @param {Element} forTargetElement
     */
@@ -894,6 +914,7 @@ define(['ojs/ojcore', 'jquery', 'hammerjs', 'ojs/ojjquery-hammer', 'ojs/ojcompon
     /**
      * Create help.
      * @private
+     * @memberof oj.ojLabel
      * @instance
      */
     _createHelp: function (helpSpan)
@@ -910,6 +931,7 @@ define(['ojs/ojcore', 'jquery', 'hammerjs', 'ojs/ojjquery-hammer', 'ojs/ojcompon
     /**
      * Create required icon span dom and its contents
      * @private
+     * @memberof oj.ojLabel
      * @instance
      */
     _createRequiredIconSpanDom: function ()
@@ -922,6 +944,7 @@ define(['ojs/ojcore', 'jquery', 'hammerjs', 'ojs/ojjquery-hammer', 'ojs/ojcompon
     /**
      * @throws error if showRequired is not a boolean
      * @private
+     * @memberof oj.ojLabel
      * @instance
      */
     _checkRequiredOption: function ()
@@ -935,6 +958,7 @@ define(['ojs/ojcore', 'jquery', 'hammerjs', 'ojs/ojjquery-hammer', 'ojs/ojcompon
      * Add an id to the label element if there isn't one already there. 
      * Called during init and refresh.
      * @private
+     * @memberof oj.ojLabel
      * @instance
      */
     _addIdsToDom: function ()
@@ -961,6 +985,7 @@ define(['ojs/ojcore', 'jquery', 'hammerjs', 'ojs/ojjquery-hammer', 'ojs/ojcompon
     /**
      * move oj-label* classes from label element onto the root dom element
      * @private
+     * @memberof oj.ojLabel
      * @instance
      */
     _moveLabelStyleClassesToRootDom: function ()
@@ -1007,6 +1032,7 @@ define(['ojs/ojcore', 'jquery', 'hammerjs', 'ojs/ojjquery-hammer', 'ojs/ojcompon
      * we always want the label element to come last.
      * @returns {Element}
      * @private
+     * @memberof oj.ojLabel
      * @instance
      */
     _createIconSpan: function (id, isHelp)
@@ -1030,6 +1056,7 @@ define(['ojs/ojcore', 'jquery', 'hammerjs', 'ojs/ojjquery-hammer', 'ojs/ojcompon
      * For ojLabel component only, not oj-label.
      * return the dom node for the root dom element
      * @private
+     * @memberof oj.ojLabel
      * @instance
      */
     _createRootDomElement: function ()
@@ -1060,6 +1087,7 @@ define(['ojs/ojcore', 'jquery', 'hammerjs', 'ojs/ojjquery-hammer', 'ojs/ojcompon
    /**
      * return the dom node for the oj-label-group node
      * @private
+     * @memberof oj.ojLabel
      * @instance
      */
     _createOjLabelGroupDom: function ()
@@ -1074,6 +1102,7 @@ define(['ojs/ojcore', 'jquery', 'hammerjs', 'ojs/ojjquery-hammer', 'ojs/ojcompon
     /**
      * return the dom node for the span with oj-label-required-icon
      * @private
+     * @memberof oj.ojLabel
      * @instance
      */
     _createRequiredIconDomElement: function ()
@@ -1094,6 +1123,7 @@ define(['ojs/ojcore', 'jquery', 'hammerjs', 'ojs/ojjquery-hammer', 'ojs/ojcompon
      * if (helpSource), add href
      * if (helpDef), add 'aria-label'=helpDef on help icon.
      * @private
+     * @memberof oj.ojLabel
      * @instance
      */
     _createHelpIconAnchorDomElement: function (helpDef, source)
@@ -1159,6 +1189,7 @@ define(['ojs/ojcore', 'jquery', 'hammerjs', 'ojs/ojjquery-hammer', 'ojs/ojcompon
      * On ios, a quick tap shows touchstart touchend mousedown mouseup click (I only register those events)
      * all right after another.
      * @private
+     * @memberof oj.ojLabel
      */
     _attachHelpDefToIconAnchor: function ()
     {
@@ -1266,6 +1297,7 @@ define(['ojs/ojcore', 'jquery', 'hammerjs', 'ojs/ojjquery-hammer', 'ojs/ojcompon
     /**
      * Create the div that will be used as the popup for the help definition.
      * @private
+     * @memberof oj.ojLabel
      */
     _createHelpDefPopupDiv: function ()
     {
@@ -1321,6 +1353,7 @@ define(['ojs/ojcore', 'jquery', 'hammerjs', 'ojs/ojjquery-hammer', 'ojs/ojcompon
      * @param {jQuery} $helpIcon
      * @returns {undefined}
      * @instance
+     * @memberof oj.ojLabel
      * @private
      */
     _addShowHelpDefinitionEventHandlers: function ($helpIcon)
@@ -1371,6 +1404,7 @@ define(['ojs/ojcore', 'jquery', 'hammerjs', 'ojs/ojjquery-hammer', 'ojs/ojcompon
     /**
      * Handle open popup for help definition.
      * @instance
+     * @memberof oj.ojLabel
      * @private
      */
     _handleOpenHelpDefPopup: function (event, helpDefPopupDiv, helpIcon)
@@ -1425,6 +1459,7 @@ define(['ojs/ojcore', 'jquery', 'hammerjs', 'ojs/ojjquery-hammer', 'ojs/ojcompon
      * Close helpDef popup. This is called from _NotifyDetached and _NotifyHidden and
      * as a callback for this._closePopupForHelpDefCallbackListener.
      * @private
+     * @memberof oj.ojLabel
      */
     _handleCloseHelpDefPopup: function ()
     {
@@ -1440,6 +1475,7 @@ define(['ojs/ojcore', 'jquery', 'hammerjs', 'ojs/ojjquery-hammer', 'ojs/ojcompon
      * Remove the event listeners for opening a popup on the help def icon and for eating
      * the clicks on the 'press' event. Called from destroy and when we remove the help icon.
      * @private
+     * @memberof oj.ojLabel
      */
     _removeHelpDefIconEventListeners: function (helpIcon)
     {
@@ -1461,6 +1497,7 @@ define(['ojs/ojcore', 'jquery', 'hammerjs', 'ojs/ojjquery-hammer', 'ojs/ojcompon
      * removes the help def popup dom and variables
      * @returns {undefined}
      * @private
+     * @memberof oj.ojLabel
      */
     _removeHelpDefPopup: function ()
     {
@@ -1479,18 +1516,33 @@ define(['ojs/ojcore', 'jquery', 'hammerjs', 'ojs/ojjquery-hammer', 'ojs/ojcompon
     },
     /**
      * @private
+     * @memberof oj.ojLabel
      * @returns {boolean}
      */
     _needsHelpIcon: function ()
-    {
+    {  
       var options = this.options;
-      return (options.help['source'] != null) || (options.help['definition'] != null);
+      var helpDef;
+      var helpSource = options.help['source'];
+      var needsIcon;
+      
+      // "", or null, or undefined all mean help.source is not specified.
+      needsIcon = (helpSource !== "" && helpSource != null);
+      if (!needsIcon)
+      {
+        // Now check helpDef: "", or null, or undefined all mean help.definition is not specified.
+        helpDef = options.help['definition'];
+        needsIcon = (helpDef !== "" && helpDef != null);
+      }
+      
+      return needsIcon;
     },
     /**
      * refresh the help dom --
      * find the help root dom node and remove it if it is there
      * and add back the help html. Helpful if a help option changed.
      * @private
+     * @memberof oj.ojLabel
      */
     _refreshHelp: function ()
     {
@@ -1542,6 +1594,7 @@ define(['ojs/ojcore', 'jquery', 'hammerjs', 'ojs/ojjquery-hammer', 'ojs/ojcompon
      * if required is false, remove the required dom if it is there.
      * Helpful if the required option changed.
      * @private
+     * @memberof oj.ojLabel
      */
     _refreshRequired: function ()
     {
@@ -1589,6 +1642,7 @@ define(['ojs/ojcore', 'jquery', 'hammerjs', 'ojs/ojjquery-hammer', 'ojs/ojcompon
      * and if it is found, it adds the 'for' onto the label element (as a sub-id or directly, 
      * depending upon what the 'for' target element is.
      * @private
+     * @memberof oj.ojLabel
      */
     _refreshFor: function ()
     {
@@ -1605,6 +1659,7 @@ define(['ojs/ojcore', 'jquery', 'hammerjs', 'ojs/ojjquery-hammer', 'ojs/ojcompon
      * Set the label element's id to label-id. If label-id is not set,
      * then use the <oj-label>'s id attribute to set a sub-id on the label element.
      * @private
+     * @memberof oj.ojLabel
      */
     _refreshLabelId: function ()
     {

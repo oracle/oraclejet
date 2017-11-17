@@ -125,6 +125,10 @@ oj.__registerWidget('oj.dvtBaseGauge', $['oj']['dvtBaseComponent'],
  * @ojcomponent oj.ojLedGauge
  * @augments oj.dvtBaseGauge
  * @since 0.7
+ * @ojstatus preview
+ * @ojshortdesc LED Gauge Element
+ * @ojrole img
+ * @ojrole application
  *
  * @classdesc
  * <h3 id="ledGaugeOverview-section">
@@ -233,6 +237,10 @@ oj.__registerWidget('oj.ojLedGauge', $['oj']['dvtBaseGauge'],
  * @ojcomponent oj.ojRatingGauge
  * @augments oj.dvtBaseGauge
  * @since 0.7
+ * @ojstatus preview
+ * @ojshortdesc Rating Gauge Element
+ * @ojrole img
+ * @ojrole application
  *
  * @classdesc
  * <h3 id="ratingGaugeOverview-section">
@@ -385,8 +393,8 @@ oj.__registerWidget('oj.ojRatingGauge', $['oj']['dvtBaseGauge'],
  * @name value
  * @memberof oj.ojLedGauge
  * @instance
- * @type {number}
- * @default <code class="prettyprint">null</code>
+ * @type {?number}
+ * @default null
  * @ojwriteback
  */
 /**
@@ -396,7 +404,7 @@ oj.__registerWidget('oj.ojRatingGauge', $['oj']['dvtBaseGauge'],
  * @memberof oj.ojLedGauge
  * @instance
  * @type {number}
- * @default <code class="prettyprint">0</code>
+ * @default 0
  */
 /**
  * The maximum value of the gauge.
@@ -405,7 +413,7 @@ oj.__registerWidget('oj.ojRatingGauge', $['oj']['dvtBaseGauge'],
  * @memberof oj.ojLedGauge
  * @instance
  * @type {number}
- * @default <code class="prettyprint">100</code>
+ * @default 100
  */
 /**
  * The rotation angle for the gauge. Useful for changing the direction of triangle or arrow gauges.
@@ -418,7 +426,7 @@ oj.__registerWidget('oj.ojRatingGauge', $['oj']['dvtBaseGauge'],
  * @ojvalue {number} 180
  * @ojvalue {number} 270
  * @ojvalue {number} 0
- * @default <code class="prettyprint">0</code>
+ * @default 0
  */
 /**
  * The CSS style class to apply to the gauge. The style class and inline style will override any other styling specified through the properties. For tooltip interactivity, it's recommended to also pass a representative color to the color attribute.
@@ -427,7 +435,7 @@ oj.__registerWidget('oj.ojRatingGauge', $['oj']['dvtBaseGauge'],
  * @memberof oj.ojLedGauge
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default ""
  */
 /**
  * The inline style to apply to the gauge. The style class and inline style will override any other styling specified through the properties. For tooltip interactivity, it's recommended to also pass a representative color to the color attribute.
@@ -436,7 +444,7 @@ oj.__registerWidget('oj.ojRatingGauge', $['oj']['dvtBaseGauge'],
  * @memberof oj.ojLedGauge
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default {}
  */
 /**
  * The CSS style class to apply to the gauge. The style class and inline style will override any other styling specified through the properties. For tooltip interactivity, it's recommended to also pass a representative color to the color attribute.
@@ -445,7 +453,7 @@ oj.__registerWidget('oj.ojRatingGauge', $['oj']['dvtBaseGauge'],
  * @memberof oj.ojLedGauge
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  * @deprecated This attribute is deprecated, use the svgClassName attribute instead.
  */
 /**
@@ -455,7 +463,7 @@ oj.__registerWidget('oj.ojRatingGauge', $['oj']['dvtBaseGauge'],
  * @memberof oj.ojLedGauge
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default null
  * @deprecated This attribute is deprecated, use the svgStyle attribute instead.
  */
 /**
@@ -465,7 +473,9 @@ oj.__registerWidget('oj.ojRatingGauge', $['oj']['dvtBaseGauge'],
  * @memberof oj.ojLedGauge
  * @instance
  * @type {number}
- * @default <code class="prettyprint">1</code>
+ * @default 1
+ * @ojmin 0
+ * @ojmax 1
  */
 /**
  * An array of objects with the following properties defining the thresholds for the gauge.
@@ -474,7 +484,7 @@ oj.__registerWidget('oj.ojRatingGauge', $['oj']['dvtBaseGauge'],
  * @memberof oj.ojLedGauge
  * @instance
  * @type {Array.<object>}
- * @default <code class="prettyprint">null</code>
+ * @default []
  */
 /**
  * The upper bound of the threshold. This value is ignored for the final threshold, which uses the maximum value of the gauge.
@@ -483,7 +493,7 @@ oj.__registerWidget('oj.ojRatingGauge', $['oj']['dvtBaseGauge'],
  * @memberof! oj.ojLedGauge
  * @instance
  * @type {number}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The color of the threshold.
@@ -492,7 +502,7 @@ oj.__registerWidget('oj.ojRatingGauge', $['oj']['dvtBaseGauge'],
  * @memberof! oj.ojLedGauge
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The border color of the threshold.
@@ -501,7 +511,7 @@ oj.__registerWidget('oj.ojRatingGauge', $['oj']['dvtBaseGauge'],
  * @memberof! oj.ojLedGauge
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * Specific description for the threshold and overwrites the shortDesc specified on gauge. This is used for accessibility and also for customizing the tooltip text.
@@ -510,7 +520,8 @@ oj.__registerWidget('oj.ojRatingGauge', $['oj']['dvtBaseGauge'],
  * @memberof! oj.ojLedGauge
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
+ * @ojtranslatable
  */
 /**
  *  An object containing an optional callback function for tooltip customization. 
@@ -519,7 +530,7 @@ oj.__registerWidget('oj.ojRatingGauge', $['oj']['dvtBaseGauge'],
  * @memberof oj.ojLedGauge
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default {}
  */
 /**
  * A function that returns a custom tooltip. The function takes a dataContext argument,
@@ -540,7 +551,7 @@ oj.__registerWidget('oj.ojRatingGauge', $['oj']['dvtBaseGauge'],
  * @memberof! oj.ojLedGauge
  * @instance
  * @type {function(object)}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The shape of the LED gauge. Can take the name of a built-in shape or the svg path commands for a custom shape. 
@@ -558,7 +569,7 @@ oj.__registerWidget('oj.ojRatingGauge', $['oj']['dvtBaseGauge'],
  * @ojvalue {string} "human"
  * @ojvalue {string} "circle"
  * @ojvalue {string} "ellipse"
- * @default <code class="prettyprint">"circle"</code>
+ * @default "circle"
  */
 /**
  * The color of the gauge. Only applies when thresholds are not defined.
@@ -567,7 +578,7 @@ oj.__registerWidget('oj.ojRatingGauge', $['oj']['dvtBaseGauge'],
  * @memberof oj.ojLedGauge
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The border color of the gauge. Only applies when thresholds are not defined.
@@ -576,7 +587,7 @@ oj.__registerWidget('oj.ojRatingGauge', $['oj']['dvtBaseGauge'],
  * @memberof oj.ojLedGauge
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * An object defining the value label.
@@ -585,7 +596,7 @@ oj.__registerWidget('oj.ojRatingGauge', $['oj']['dvtBaseGauge'],
  * @memberof oj.ojLedGauge
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default {}
  */
 /**
  * The CSS style string defining the style of the label.
@@ -594,7 +605,7 @@ oj.__registerWidget('oj.ojRatingGauge', $['oj']['dvtBaseGauge'],
  * @memberof! oj.ojLedGauge
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default {}
  */
 /**
  * Defines whether the label is a number or a percentage of the total value.
@@ -605,7 +616,7 @@ oj.__registerWidget('oj.ojRatingGauge', $['oj']['dvtBaseGauge'],
  * @type {string}
  * @ojvalue {string} "percent"
  * @ojvalue {string} "number"
- * @default <code class="prettyprint">"number"</code>
+ * @default "number"
  */
 /**
  * Defines if the label is rendered.
@@ -616,7 +627,7 @@ oj.__registerWidget('oj.ojRatingGauge', $['oj']['dvtBaseGauge'],
  * @type {string}
  * @ojvalue {string} "on"
  * @ojvalue {string} "off"
- * @default <code class="prettyprint">"off"</code>
+ * @default "off"
  */
 /**
  * The scaling behavior of the labels. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
@@ -632,7 +643,7 @@ oj.__registerWidget('oj.ojRatingGauge', $['oj']['dvtBaseGauge'],
  * @ojvalue {string} "trillion"
  * @ojvalue {string} "quadrillion"
  * @ojvalue {string} "auto"
- * @default <code class="prettyprint">"auto"</code>
+ * @default "auto"
  */
 /**
  * The converter used to format the labels. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
@@ -641,7 +652,7 @@ oj.__registerWidget('oj.ojRatingGauge', $['oj']['dvtBaseGauge'],
  * @memberof! oj.ojLedGauge
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The text for the label. If specified, text will overwrite the numeric value that is displayed by default. The converter, scaling, and textType attributes are ignored when text is specified.
@@ -650,7 +661,8 @@ oj.__registerWidget('oj.ojRatingGauge', $['oj']['dvtBaseGauge'],
  * @memberof! oj.ojLedGauge
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
+ * @ojtranslatable
  */
 /**
  * An object defining the label.
@@ -659,7 +671,7 @@ oj.__registerWidget('oj.ojRatingGauge', $['oj']['dvtBaseGauge'],
  * @memberof oj.ojLedGauge
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default {}
  */
 /**
  * The CSS style string defining the style of the label.
@@ -668,7 +680,7 @@ oj.__registerWidget('oj.ojRatingGauge', $['oj']['dvtBaseGauge'],
  * @memberof! oj.ojLedGauge
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default {}
  */
 /**
  * The text for the label.
@@ -677,7 +689,8 @@ oj.__registerWidget('oj.ojRatingGauge', $['oj']['dvtBaseGauge'],
  * @memberof! oj.ojLedGauge
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
+ * @ojtranslatable
  */
 /**
  * An object defining the title.
@@ -686,7 +699,7 @@ oj.__registerWidget('oj.ojRatingGauge', $['oj']['dvtBaseGauge'],
  * @memberof oj.ojLedGauge
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default null
  * @deprecated This attribute is deprecated, use the label attribute instead.
  */
 /**
@@ -696,7 +709,7 @@ oj.__registerWidget('oj.ojRatingGauge', $['oj']['dvtBaseGauge'],
  * @memberof! oj.ojLedGauge
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The text for the title.
@@ -705,7 +718,8 @@ oj.__registerWidget('oj.ojRatingGauge', $['oj']['dvtBaseGauge'],
  * @memberof! oj.ojLedGauge
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
+ * @ojtranslatable
  */
 /**
  * Defines whether visual effects such as overlays are applied to the gauge.
@@ -716,7 +730,7 @@ oj.__registerWidget('oj.ojRatingGauge', $['oj']['dvtBaseGauge'],
  * @type {string}
  * @ojvalue {string} "none"
  * @ojvalue {string} "auto"
- * @default <code class="prettyprint">"auto"</code>
+ * @default "auto"
  */
 
 // SubId Locators **************************************************************
@@ -808,8 +822,8 @@ oj.__registerWidget('oj.ojRatingGauge', $['oj']['dvtBaseGauge'],
  * @name value
  * @memberof oj.ojStatusMeterGauge
  * @instance
- * @type {number}
- * @default <code class="prettyprint">null</code>
+ * @type {?number}
+ * @default null
  * @ojwriteback
  */
 /**
@@ -819,7 +833,7 @@ oj.__registerWidget('oj.ojRatingGauge', $['oj']['dvtBaseGauge'],
  * @memberof oj.ojStatusMeterGauge
  * @instance
  * @type {number}
- * @default <code class="prettyprint">0</code>
+ * @default 0
  */
 /**
  * The maximum value of the gauge.
@@ -828,7 +842,7 @@ oj.__registerWidget('oj.ojRatingGauge', $['oj']['dvtBaseGauge'],
  * @memberof oj.ojStatusMeterGauge
  * @instance
  * @type {number}
- * @default <code class="prettyprint">100</code>
+ * @default 100
  */
 /**
  * An array of objects with the following properties defining the reference lines for the gauge.
@@ -837,7 +851,7 @@ oj.__registerWidget('oj.ojRatingGauge', $['oj']['dvtBaseGauge'],
  * @memberof oj.ojStatusMeterGauge
  * @instance
  * @type {Array.<object>}
- * @default <code class="prettyprint">null</code>
+ * @default []
  */
 /**
  * The value of the reference line.
@@ -845,8 +859,8 @@ oj.__registerWidget('oj.ojRatingGauge', $['oj']['dvtBaseGauge'],
  * @name referenceLines[].value
  * @memberof! oj.ojStatusMeterGauge
  * @instance
- * @type {number}
- * @default <code class="prettyprint">null</code>
+ * @type {?number}
+ * @default null
  */
 /**
  * The color of the reference line.
@@ -855,7 +869,7 @@ oj.__registerWidget('oj.ojRatingGauge', $['oj']['dvtBaseGauge'],
  * @memberof! oj.ojStatusMeterGauge
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * An array of objects with the following properties defining the thresholds for the gauge.
@@ -864,7 +878,7 @@ oj.__registerWidget('oj.ojRatingGauge', $['oj']['dvtBaseGauge'],
  * @memberof oj.ojStatusMeterGauge
  * @instance
  * @type {Array.<object>}
- * @default <code class="prettyprint">null</code>
+ * @default []
  */
 /**
  * The upper bound of the threshold. This value is ignored for the final threshold, which uses the maximum value of the gauge.
@@ -872,8 +886,8 @@ oj.__registerWidget('oj.ojRatingGauge', $['oj']['dvtBaseGauge'],
  * @name thresholds[].max
  * @memberof! oj.ojStatusMeterGauge
  * @instance
- * @type {number}
- * @default <code class="prettyprint">null</code>
+ * @type {?number}
+ * @default null
  */
 /**
  * The color of the threshold.
@@ -882,7 +896,7 @@ oj.__registerWidget('oj.ojRatingGauge', $['oj']['dvtBaseGauge'],
  * @memberof! oj.ojStatusMeterGauge
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The border color of the threshold.
@@ -891,7 +905,7 @@ oj.__registerWidget('oj.ojRatingGauge', $['oj']['dvtBaseGauge'],
  * @memberof! oj.ojStatusMeterGauge
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * Specific description for the threshold and overwrites the shortDesc specified on gauge. This is used for accessibility and also for customizing the tooltip text.
@@ -900,7 +914,8 @@ oj.__registerWidget('oj.ojRatingGauge', $['oj']['dvtBaseGauge'],
  * @memberof! oj.ojStatusMeterGauge
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
+ * @ojtranslatable
  */
 /**
  * Defines the border radius of the indicator and plot area. When set to "auto", the border radius is set to a built-in default. Acceptable input follows CSS border-radius attribute specifications. The plot area border radius can be overwritten with the plotArea borderRadius atribute.
@@ -910,7 +925,7 @@ oj.__registerWidget('oj.ojRatingGauge', $['oj']['dvtBaseGauge'],
  * @instance
  * @type {string}
  * @ojvalue {string} "auto"
- * @default <code class="prettyprint">"auto"</code>
+ * @default "auto"
  */
 /**
  *  An object containing an optional callback function for tooltip customization. 
@@ -919,7 +934,7 @@ oj.__registerWidget('oj.ojRatingGauge', $['oj']['dvtBaseGauge'],
  * @memberof oj.ojStatusMeterGauge
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default {}
  */
 /**
  * A function that returns a custom tooltip. The function takes a dataContext argument,
@@ -940,7 +955,7 @@ oj.__registerWidget('oj.ojRatingGauge', $['oj']['dvtBaseGauge'],
  * @memberof! oj.ojStatusMeterGauge
  * @instance
  * @type {function(object)}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The color of the gauge. Only applies when thresholds are not defined.
@@ -949,7 +964,7 @@ oj.__registerWidget('oj.ojRatingGauge', $['oj']['dvtBaseGauge'],
  * @memberof oj.ojStatusMeterGauge
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The CSS style class to apply to the gauge indicator. The style class and inline style will override any other styling specified through the properties. For tooltip interactivity, it's recommended to also pass a representative color to the color attribute.
@@ -958,7 +973,7 @@ oj.__registerWidget('oj.ojRatingGauge', $['oj']['dvtBaseGauge'],
  * @memberof oj.ojStatusMeterGauge
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default ""
  */
 /**
  * The inline style to apply to the gauge indicator. The style class and inline style will override any other styling specified through the properties. For tooltip interactivity, it's recommended to also pass a representative color to the color attribute.
@@ -967,7 +982,7 @@ oj.__registerWidget('oj.ojRatingGauge', $['oj']['dvtBaseGauge'],
  * @memberof oj.ojStatusMeterGauge
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default {}
  */
 /**
  * The CSS style class to apply to the gauge indicator. The style class and inline style will override any other styling specified through the properties. For tooltip interactivity, it's recommended to also pass a representative color to the color attribute.
@@ -976,7 +991,7 @@ oj.__registerWidget('oj.ojRatingGauge', $['oj']['dvtBaseGauge'],
  * @memberof oj.ojStatusMeterGauge
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  * @deprecated This attribute is deprecated, use the svgClassName attribute instead.
  */
 /**
@@ -986,7 +1001,7 @@ oj.__registerWidget('oj.ojRatingGauge', $['oj']['dvtBaseGauge'],
  * @memberof oj.ojStatusMeterGauge
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default null
  * @deprecated This attribute is deprecated, use the svgStyle attribute instead.
  */
 /**
@@ -996,7 +1011,7 @@ oj.__registerWidget('oj.ojRatingGauge', $['oj']['dvtBaseGauge'],
  * @memberof oj.ojStatusMeterGauge
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * An object defining the value label.
@@ -1005,7 +1020,7 @@ oj.__registerWidget('oj.ojRatingGauge', $['oj']['dvtBaseGauge'],
  * @memberof oj.ojStatusMeterGauge
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default {}
  */
 /**
  * Defines the position of the metric label for horizontal and vertical gauges. The default position of the metric label is outside of the plot area. If the label is not rendered, then 'withLabel' will render the metric label outside the plot area. When the label is rendered, all positions are treated as 'withLabel' except 'auto' and 'outsidePlotArea' which render the metric label outside the plot area. When the metric label is rendered 'withLabel', the metric label is displayed with the same style as the label. The position in the 'withLabel' case is specified by the label position attribute.
@@ -1020,16 +1035,16 @@ oj.__registerWidget('oj.ojRatingGauge', $['oj']['dvtBaseGauge'],
  * @ojvalue {string} "outsidePlotArea"
  * @ojvalue {string} "withLabel"
  * @ojvalue {string} "auto"
- * @default <code class="prettyprint">"auto"</code>
+ * @default "auto"
  */
 /**
- * The CSS style string defining the style of the label.
+ * The CSS style object defining the style of the label.
  * @expose
  * @name metricLabel.style
  * @memberof! oj.ojStatusMeterGauge
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default {}
  */
 /**
  * Defines whether the label is a number or a percentage of the total value.
@@ -1040,7 +1055,7 @@ oj.__registerWidget('oj.ojRatingGauge', $['oj']['dvtBaseGauge'],
  * @type {string}
  * @ojvalue {string} "percent"
  * @ojvalue {string} "number"
- * @default <code class="prettyprint">"number"</code>
+ * @default "number"
  */
 /**
  * Defines if the label is rendered. If set to auto, the label is rendered if the orientation is circular.
@@ -1052,7 +1067,7 @@ oj.__registerWidget('oj.ojRatingGauge', $['oj']['dvtBaseGauge'],
  * @ojvalue {string} "on"
  * @ojvalue {string} "off"
  * @ojvalue {string} "auto"
- * @default <code class="prettyprint">"auto"</code>
+ * @default "auto"
  */
 /**
  * The scaling behavior of the labels. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
@@ -1068,7 +1083,7 @@ oj.__registerWidget('oj.ojRatingGauge', $['oj']['dvtBaseGauge'],
  * @ojvalue {string} "trillion"
  * @ojvalue {string} "quadrillion"
  * @ojvalue {string} "auto"
- * @default <code class="prettyprint">"auto"</code>
+ * @default "auto"
  */
 /**
  * The converter used to format the labels. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
@@ -1077,7 +1092,7 @@ oj.__registerWidget('oj.ojRatingGauge', $['oj']['dvtBaseGauge'],
  * @memberof! oj.ojStatusMeterGauge
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The text for the label. If specified, text will overwrite the numeric value that is displayed by default. The converter, scaling, and textType attributes are ignored when text is specified.
@@ -1086,7 +1101,8 @@ oj.__registerWidget('oj.ojRatingGauge', $['oj']['dvtBaseGauge'],
  * @memberof! oj.ojStatusMeterGauge
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
+ * @ojtranslatable
  */
 /**
  * An object defining the label.
@@ -1095,7 +1111,7 @@ oj.__registerWidget('oj.ojRatingGauge', $['oj']['dvtBaseGauge'],
  * @memberof oj.ojStatusMeterGauge
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default {}
  */
 /**
  * Defines the position of the label for horizontal and vertical gauges. The default position for horizontal gauges is 'start' and for vertical gauges is 'center'.
@@ -1107,16 +1123,16 @@ oj.__registerWidget('oj.ojRatingGauge', $['oj']['dvtBaseGauge'],
  * @ojvalue {string} "center"
  * @ojvalue {string} "start"
  * @ojvalue {string} "auto"
- * @default <code class="prettyprint">"auto"</code>
+ * @default "auto"
  */
 /**
- * The CSS style string defining the style of the label.
+ * The CSS style object defining the style of the label.
  * @expose
  * @name label.style
  * @memberof! oj.ojStatusMeterGauge
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default {}
  */
 /**
  * The text for the label.
@@ -1125,7 +1141,8 @@ oj.__registerWidget('oj.ojRatingGauge', $['oj']['dvtBaseGauge'],
  * @memberof! oj.ojStatusMeterGauge
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
+ * @ojtranslatable
  */
 /**
  * An object defining the title.
@@ -1134,7 +1151,7 @@ oj.__registerWidget('oj.ojRatingGauge', $['oj']['dvtBaseGauge'],
  * @memberof oj.ojStatusMeterGauge
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default null
  * @deprecated This attribute is deprecated, use the label attribute instead.
  */
 /**
@@ -1147,7 +1164,7 @@ oj.__registerWidget('oj.ojRatingGauge', $['oj']['dvtBaseGauge'],
  * @ojvalue {string} "center"
  * @ojvalue {string} "start"
  * @ojvalue {string} "auto"
- * @default <code class="prettyprint">"auto"</code>
+ * @default "auto"
  */
 /**
  * The CSS style string defining the style of the title.
@@ -1156,7 +1173,7 @@ oj.__registerWidget('oj.ojRatingGauge', $['oj']['dvtBaseGauge'],
  * @memberof! oj.ojStatusMeterGauge
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The text for the title.
@@ -1165,7 +1182,8 @@ oj.__registerWidget('oj.ojRatingGauge', $['oj']['dvtBaseGauge'],
  * @memberof! oj.ojStatusMeterGauge
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
+ * @ojtranslatable
  */
 /**
  * Defines whether visual effects such as overlays are applied to the gauge.
@@ -1176,7 +1194,7 @@ oj.__registerWidget('oj.ojRatingGauge', $['oj']['dvtBaseGauge'],
  * @type {string}
  * @ojvalue {string} "none"
  * @ojvalue {string} "auto"
- * @default <code class="prettyprint">"auto"</code>
+ * @default "auto"
  */
 /**
  * The duration of the animations, in milliseconds.
@@ -1185,7 +1203,9 @@ oj.__registerWidget('oj.ojRatingGauge', $['oj']['dvtBaseGauge'],
  * @memberof oj.ojStatusMeterGauge
  * @instance
  * @type {number}
- * @default <code class="prettyprint">null</code>
+ * @default null
+ * @ojunits milliseconds
+ * @ojmin 0
  */
 /**
  * Defines the animation that is applied on data changes.
@@ -1196,7 +1216,7 @@ oj.__registerWidget('oj.ojRatingGauge', $['oj']['dvtBaseGauge'],
  * @type {string}
  * @ojvalue {string} "auto"
  * @ojvalue {string} "none"
- * @default <code class="prettyprint">"none"</code>
+ * @default "none"
  */
 /**
  * Defines the animation that is shown on initial display.
@@ -1207,7 +1227,7 @@ oj.__registerWidget('oj.ojRatingGauge', $['oj']['dvtBaseGauge'],
  * @type {string}
  * @ojvalue {string} "auto"
  * @ojvalue {string} "none"
- * @default <code class="prettyprint">"none"</code>
+ * @default "none"
  */
 /**
  * Defines whether the value of the gauge can be changed by the end user.
@@ -1217,7 +1237,7 @@ oj.__registerWidget('oj.ojRatingGauge', $['oj']['dvtBaseGauge'],
  * @memberof oj.ojStatusMeterGauge
  * @instance
  * @type {boolean}
- * @default <code class="prettyprint">false</code>
+ * @default false
  */
 /**
  * Plot Area for Status Meter Guage
@@ -1226,7 +1246,7 @@ oj.__registerWidget('oj.ojRatingGauge', $['oj']['dvtBaseGauge'],
  * @memberof oj.ojStatusMeterGauge
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default {}
  */
 /**
  * Defines the border radius of the plot area shape. When set to "auto", the border radius is the same as the top level border radius. Acceptable input follows CSS border-radius attribute specifications.
@@ -1236,7 +1256,7 @@ oj.__registerWidget('oj.ojRatingGauge', $['oj']['dvtBaseGauge'],
  * @instance
  * @type {string}
  * @ojvalue {string} "auto"
- * @default <code class="prettyprint">"auto"</code>
+ * @default "auto"
  */
 /**
  * The color of the plot area. Only applies when useThresholdFillColor is off.
@@ -1245,7 +1265,7 @@ oj.__registerWidget('oj.ojRatingGauge', $['oj']['dvtBaseGauge'],
  * @memberof! oj.ojStatusMeterGauge
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The border color of the plot area.
@@ -1254,7 +1274,7 @@ oj.__registerWidget('oj.ojRatingGauge', $['oj']['dvtBaseGauge'],
  * @memberof! oj.ojStatusMeterGauge
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * Defines if the plot area is to be rendered. If set to auto, the plot area is rendered if the orientation is circular or if the thresholdDisplay is not onIndicator.
@@ -1266,7 +1286,7 @@ oj.__registerWidget('oj.ojRatingGauge', $['oj']['dvtBaseGauge'],
  * @ojvalue {string} "on"
  * @ojvalue {string} "off"
  * @ojvalue {string} "auto"
- * @default <code class="prettyprint">"auto"</code>
+ * @default "auto"
  */
 /**
  * The CSS style class to apply to the plot area. The style class and inline style will override any other styling specified through the properties.
@@ -1275,7 +1295,7 @@ oj.__registerWidget('oj.ojRatingGauge', $['oj']['dvtBaseGauge'],
  * @memberof! oj.ojStatusMeterGauge
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default ""
  */
 /**
  * The inline style to apply to the plot area. The style class and inline style will override any other styling specified through the properties.
@@ -1284,7 +1304,7 @@ oj.__registerWidget('oj.ojRatingGauge', $['oj']['dvtBaseGauge'],
  * @memberof! oj.ojStatusMeterGauge
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default {}
  */
 /**
  * The CSS style class to apply to the plot area. The style class and inline style will override any other styling specified through the properties.
@@ -1293,7 +1313,7 @@ oj.__registerWidget('oj.ojRatingGauge', $['oj']['dvtBaseGauge'],
  * @memberof! oj.ojStatusMeterGauge
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  * @deprecated This attribute is deprecated, use the svgClassName attribute instead.
  */
 /**
@@ -1303,7 +1323,7 @@ oj.__registerWidget('oj.ojRatingGauge', $['oj']['dvtBaseGauge'],
  * @memberof! oj.ojStatusMeterGauge
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default null
  * @deprecated This attribute is deprecated, use the svgStyle attribute instead.
  */
 /**
@@ -1313,7 +1333,7 @@ oj.__registerWidget('oj.ojRatingGauge', $['oj']['dvtBaseGauge'],
  * @memberof oj.ojStatusMeterGauge
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default {}
  */
 /**
  * A function that returns custom center content. The function takes a dataContext argument,
@@ -1342,7 +1362,7 @@ oj.__registerWidget('oj.ojRatingGauge', $['oj']['dvtBaseGauge'],
  * @memberof! oj.ojStatusMeterGauge
  * @instance
  * @type {function(object)}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * Specifies the start angle of a gauge with circular orientation. Value should be provided in degrees.
@@ -1351,7 +1371,10 @@ oj.__registerWidget('oj.ojRatingGauge', $['oj']['dvtBaseGauge'],
  * @memberof oj.ojStatusMeterGauge
  * @instance
  * @type {number}
- * @default <code class="prettyprint">90</code>
+ * @default 90
+ * @ojunits degrees
+ * @ojmin 0
+ * @ojmax 360
  */
 /**
  * Specifies the angle extent of a gauge with circular orientation. Value should be provided in degrees.
@@ -1360,7 +1383,10 @@ oj.__registerWidget('oj.ojRatingGauge', $['oj']['dvtBaseGauge'],
  * @memberof oj.ojStatusMeterGauge
  * @instance
  * @type {number}
- * @default <code class="prettyprint">360</code>
+ * @default 360
+ * @ojunits degrees
+ * @ojmin 0
+ * @ojmax 360
  */
 /**
  * Specifies the inner radius of a gauge with circular orientation, defined by the distance from the center of the gauge to the innermost edge of the indicator and plot area. Valid values are a percent or ratio from 0 to 1.
@@ -1369,7 +1395,9 @@ oj.__registerWidget('oj.ojRatingGauge', $['oj']['dvtBaseGauge'],
  * @memberof oj.ojStatusMeterGauge
  * @instance
  * @type {number}
- * @default <code class="prettyprint">.7</code>
+ * @default .7
+ * @ojmin 0
+ * @ojmax 1
  */
 /**
  * Controls whether the current threshold is displayed on the indicator, in the plotArea, or if all the thresholds are diplayed in the plot area
@@ -1381,7 +1409,7 @@ oj.__registerWidget('oj.ojRatingGauge', $['oj']['dvtBaseGauge'],
  * @ojvalue {string} "currentOnly"
  * @ojvalue {string} "all"
  * @ojvalue {string} "onIndicator"
- * @default <code class="prettyprint">"onIndicator"</code>
+ * @default "onIndicator"
  */
 /**
  * Defines the ratio of relative thickness of the indicator to the plot area.
@@ -1390,7 +1418,8 @@ oj.__registerWidget('oj.ojRatingGauge', $['oj']['dvtBaseGauge'],
  * @memberof oj.ojStatusMeterGauge
  * @instance
  * @type {number}
- * @default <code class="prettyprint">1</code>
+ * @default 1
+ * @ojmin 0
  */
 /**
  * Defines the type of status meter to be rendered.
@@ -1402,7 +1431,7 @@ oj.__registerWidget('oj.ojRatingGauge', $['oj']['dvtBaseGauge'],
  * @ojvalue {string} "circular"
  * @ojvalue {string} "vertical"
  * @ojvalue {string} "horizontal"
- * @default <code class="prettyprint">"horizontal"</code>
+ * @default "horizontal"
  */
 /**
  * Specifies the increment by which values can be changed by the end user when readonly is false. The step must be a positive value that is smaller than the difference between the min and max.
@@ -1411,7 +1440,8 @@ oj.__registerWidget('oj.ojRatingGauge', $['oj']['dvtBaseGauge'],
  * @memberof oj.ojStatusMeterGauge
  * @instance
  * @type {number}
- * @default <code class="prettyprint">null</code>
+ * @default null
+ * @ojexclusivemin 0
  */
 
  // SubId Locators **************************************************************
@@ -1690,6 +1720,10 @@ oj.__registerWidget('oj.ojDialGauge', $['oj']['dvtBaseGauge'],
  * @ojcomponent oj.ojStatusMeterGauge
  * @augments oj.dvtBaseGauge
  * @since 0.7
+ * @ojstatus preview
+ * @ojshortdesc Status Meter Gauge Element
+ * @ojrole img
+ * @ojrole application
  *
  * @classdesc
  * <h3 id="statusMeterGaugeOverview-section">
@@ -1906,9 +1940,10 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $['oj']['dvtBaseGauge'],
  * @name value
  * @memberof oj.ojRatingGauge
  * @instance
- * @type {number}
- * @default <code class="prettyprint">null</code>
+ * @type {?number}
+ * @default null
  * @ojwriteback
+ * @ojmin 0
  */
 /**
  * Integer value specifying the maximum value of the gauge, which determines the number of shapes or images that are displayed.
@@ -1917,7 +1952,8 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $['oj']['dvtBaseGauge'],
  * @memberof oj.ojRatingGauge
  * @instance
  * @type {number}
- * @default <code class="prettyprint">5</code>
+ * @default 5
+ * @ojmin 0
  */
 /**
  * The minimum value that can be set on the gauge by the end user. Does not affect the value set on the gauge by API.
@@ -1926,7 +1962,8 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $['oj']['dvtBaseGauge'],
  * @memberof oj.ojRatingGauge
  * @instance
  * @type {number}
- * @default <code class="prettyprint">0</code>
+ * @default 0
+ * @ojmin 0
  */
 /**
  * Whether there has been a value entered by the user.
@@ -1935,7 +1972,7 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $['oj']['dvtBaseGauge'],
  * @memberof oj.ojRatingGauge
  * @instance
  * @type {boolean}
- * @default <code class="prettyprint">false</code>
+ * @default false
  * @ojwriteback
  */
 /**
@@ -1945,7 +1982,7 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $['oj']['dvtBaseGauge'],
  * @memberof oj.ojRatingGauge
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default {}
  */
 /**
  * A function that returns a custom tooltip. The function takes a dataContext argument,
@@ -1966,7 +2003,7 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $['oj']['dvtBaseGauge'],
  * @memberof! oj.ojRatingGauge
  * @instance
  * @type {function(object)}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * An array of objects with the following properties defining the thresholds for the gauge.
@@ -1975,7 +2012,7 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $['oj']['dvtBaseGauge'],
  * @memberof oj.ojRatingGauge
  * @instance
  * @type {Array.<object>}
- * @default <code class="prettyprint">null</code>
+ * @default []
  */
 /**
  * The upper bound of the threshold. This value is ignored for the final threshold, which uses the maximum value of the gauge.
@@ -1984,7 +2021,7 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $['oj']['dvtBaseGauge'],
  * @memberof! oj.ojRatingGauge
  * @instance
  * @type {number}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The color of the threshold.
@@ -1993,7 +2030,7 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $['oj']['dvtBaseGauge'],
  * @memberof! oj.ojRatingGauge
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The border color of the threshold.
@@ -2002,7 +2039,7 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $['oj']['dvtBaseGauge'],
  * @memberof! oj.ojRatingGauge
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * Specific description for the threshold and overwrites the shortDesc specified on gauge. This is used for accessibility and also for customizing the tooltip text.
@@ -2011,7 +2048,8 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $['oj']['dvtBaseGauge'],
  * @memberof! oj.ojRatingGauge
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
+ * @ojtranslatable
  */
 /**
  * The unselected shape for the gauge.
@@ -2020,7 +2058,7 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $['oj']['dvtBaseGauge'],
  * @memberof oj.ojRatingGauge
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default {}
  */
 /**
  * The shape to be used. Can take the name of a built-in shape or the svg path commands for a custom shape. Does not apply if a custom image is specified.
@@ -2037,7 +2075,7 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $['oj']['dvtBaseGauge'],
  * @ojvalue {string} "dot"
  * @ojvalue {string} "none"
  * @ojvalue {string} "star"
- * @default <code class="prettyprint">"star"</code>
+ * @default "star"
  */
 /**
  * The URI of the custom image. If specified, it takes precedence over shape. For SVG images, the width and height must be defined on the SVG element as pixels. 
@@ -2046,7 +2084,7 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $['oj']['dvtBaseGauge'],
  * @memberof! oj.ojRatingGauge
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The color for unselected state. Does not apply if a custom image is specified.
@@ -2055,7 +2093,7 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $['oj']['dvtBaseGauge'],
  * @memberof! oj.ojRatingGauge
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The border color for unselected state. Does not apply if a custom image is specified.
@@ -2064,7 +2102,7 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $['oj']['dvtBaseGauge'],
  * @memberof! oj.ojRatingGauge
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The CSS style class to apply to the unselected state. The style class and inline style will override any other styling specified through the properties. Does not apply if custom image is specified.
@@ -2073,7 +2111,7 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $['oj']['dvtBaseGauge'],
  * @memberof! oj.ojRatingGauge
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default ""
  */
 /**
  * The inline style to apply to the unselected state. The style class and inline style will override any other styling specified through the properties. Does not apply if custom image is specified.
@@ -2082,7 +2120,7 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $['oj']['dvtBaseGauge'],
  * @memberof! oj.ojRatingGauge
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default {}
  */
 /**
  * The CSS style class to apply to the unselected state. The style class and inline style will override any other styling specified through the properties. Does not apply if custom image is specified.
@@ -2091,7 +2129,7 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $['oj']['dvtBaseGauge'],
  * @memberof! oj.ojRatingGauge
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  * @deprecated This attribute is deprecated, use the svgClassName attribute instead.
  */
 /**
@@ -2101,7 +2139,7 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $['oj']['dvtBaseGauge'],
  * @memberof! oj.ojRatingGauge
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default null
  * @deprecated This attribute is deprecated, use the svgStyle attribute instead.
  */
 /**
@@ -2111,7 +2149,7 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $['oj']['dvtBaseGauge'],
  * @memberof oj.ojRatingGauge
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default {}
  */
 /**
  * The shape to be used. Can take the name of a built-in shape or the svg path commands for a custom shape. Does not apply if a custom image is specified.
@@ -2126,7 +2164,7 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $['oj']['dvtBaseGauge'],
  * @ojvalue {string} "triangle"
  * @ojvalue {string} "human"
  * @ojvalue {string} "star"
- * @default <code class="prettyprint">"star"</code>
+ * @default "star"
  */
 /**
  * The URI of the custom image. If specified, it takes precedence over shape. For SVG images, the width and height must be defined on the SVG element as pixels. 
@@ -2135,7 +2173,7 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $['oj']['dvtBaseGauge'],
  * @memberof! oj.ojRatingGauge
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The color for selected state. Does not apply if a custom image is specified.
@@ -2144,7 +2182,7 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $['oj']['dvtBaseGauge'],
  * @memberof! oj.ojRatingGauge
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The border color for selected state. Does not apply if a custom image is specified.
@@ -2153,7 +2191,7 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $['oj']['dvtBaseGauge'],
  * @memberof! oj.ojRatingGauge
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The CSS style class to apply to the selected state. The style class and inline style will override any other styling specified through the properties. Does not apply if custom image is specified.
@@ -2162,7 +2200,7 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $['oj']['dvtBaseGauge'],
  * @memberof! oj.ojRatingGauge
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default ""
  */
 /**
  * The inline style to apply to the selected state. The style class and inline style will override any other styling specified through the properties. Does not apply if custom image is specified.
@@ -2171,7 +2209,7 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $['oj']['dvtBaseGauge'],
  * @memberof! oj.ojRatingGauge
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default {}
  */
 /**
  * The CSS style class to apply to the selected state. The style class and inline style will override any other styling specified through the properties. Does not apply if custom image is specified.
@@ -2180,7 +2218,7 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $['oj']['dvtBaseGauge'],
  * @memberof! oj.ojRatingGauge
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  * @deprecated This attribute is deprecated, use the svgClassName attribute instead.
  */
 /**
@@ -2190,7 +2228,7 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $['oj']['dvtBaseGauge'],
  * @memberof! oj.ojRatingGauge
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default null
  * @deprecated This attribute is deprecated, use the svgStyle attribute instead.
  */
 /**
@@ -2200,7 +2238,7 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $['oj']['dvtBaseGauge'],
  * @memberof oj.ojRatingGauge
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default {}
  */
 /**
  * The shape to be used. Can take the name of a built-in shape or the svg path commands for a custom shape. Does not apply if a custom image is specified.
@@ -2215,7 +2253,7 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $['oj']['dvtBaseGauge'],
  * @ojvalue {string} "triangle"
  * @ojvalue {string} "human"
  * @ojvalue {string} "star"
- * @default <code class="prettyprint">"star"</code>
+ * @default "star"
  */
 /**
  * The URI of the custom image. If specified, it takes precedence over shape. For SVG images, the width and height must be defined on the SVG element as pixels. 
@@ -2224,7 +2262,7 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $['oj']['dvtBaseGauge'],
  * @memberof! oj.ojRatingGauge
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The color for hover state. Does not apply if a custom image is specified.
@@ -2233,7 +2271,7 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $['oj']['dvtBaseGauge'],
  * @memberof! oj.ojRatingGauge
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The border color for hover state. Does not apply if a custom image is specified.
@@ -2242,7 +2280,7 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $['oj']['dvtBaseGauge'],
  * @memberof! oj.ojRatingGauge
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The CSS style class to apply to the hover state. The style class and inline style will override any other styling specified through the properties. Does not apply if custom image is specified.
@@ -2251,7 +2289,7 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $['oj']['dvtBaseGauge'],
  * @memberof! oj.ojRatingGauge
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default ""
  */
 /**
  * The inline style to apply to the hover state. The style class and inline style will override any other styling specified through the properties. Does not apply if custom image is specified.
@@ -2260,7 +2298,7 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $['oj']['dvtBaseGauge'],
  * @memberof! oj.ojRatingGauge
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default {}
  */
 /**
  * The CSS style class to apply to the hover state. The style class and inline style will override any other styling specified through the properties. Does not apply if custom image is specified.
@@ -2269,7 +2307,7 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $['oj']['dvtBaseGauge'],
  * @memberof! oj.ojRatingGauge
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  * @deprecated This attribute is deprecated, use the svgClassName attribute instead.
  */
 /**
@@ -2279,7 +2317,7 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $['oj']['dvtBaseGauge'],
  * @memberof! oj.ojRatingGauge
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default null
  * @deprecated This attribute is deprecated, use the svgStyle attribute instead.
  */
 /**
@@ -2289,7 +2327,7 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $['oj']['dvtBaseGauge'],
  * @memberof oj.ojRatingGauge
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default {}
  */
 /**
  * The shape to be used. Can take the name of a built-in shape or the svg path commands for a custom shape. Does not apply if a custom image is specified.
@@ -2304,7 +2342,7 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $['oj']['dvtBaseGauge'],
  * @ojvalue {string} "triangle"
  * @ojvalue {string} "human"
  * @ojvalue {string} "star"
- * @default <code class="prettyprint">"star"</code>
+ * @default "star"
  */
 /**
  * The URI of the custom image. If specified, it takes precedence over shape. For SVG images, the width and height must be defined on the SVG element as pixels. 
@@ -2313,7 +2351,7 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $['oj']['dvtBaseGauge'],
  * @memberof! oj.ojRatingGauge
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The color for changed state. Does not apply if a custom image is specified.
@@ -2322,7 +2360,7 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $['oj']['dvtBaseGauge'],
  * @memberof! oj.ojRatingGauge
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The border color for changed state. Does not apply if a custom image is specified.
@@ -2331,7 +2369,7 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $['oj']['dvtBaseGauge'],
  * @memberof! oj.ojRatingGauge
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The CSS style class to apply to the changed state. The style class and inline style will override any other styling specified through the properties. Does not apply if custom image is specified.
@@ -2340,7 +2378,7 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $['oj']['dvtBaseGauge'],
  * @memberof! oj.ojRatingGauge
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default ""
  */
 /**
  * The inline style to apply to the changed state. The style class and inline style will override any other styling specified through the properties. Does not apply if custom image is specified.
@@ -2349,7 +2387,7 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $['oj']['dvtBaseGauge'],
  * @memberof! oj.ojRatingGauge
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default {}
  */
 /**
  * The CSS style class to apply to the changed state. The style class and inline style will override any other styling specified through the properties. Does not apply if custom image is specified.
@@ -2358,7 +2396,7 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $['oj']['dvtBaseGauge'],
  * @memberof! oj.ojRatingGauge
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  * @deprecated This attribute is deprecated, use the svgClassName attribute instead.
  */
 /**
@@ -2368,7 +2406,7 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $['oj']['dvtBaseGauge'],
  * @memberof! oj.ojRatingGauge
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default null
  * @deprecated This attribute is deprecated, use the svgStyle attribute instead.
  */
 /**
@@ -2380,7 +2418,7 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $['oj']['dvtBaseGauge'],
  * @type {string}
  * @ojvalue {string} "none"
  * @ojvalue {string} "auto"
- * @default <code class="prettyprint">"auto"</code>
+ * @default "auto"
  */
 /**
  * Specifies the increment by which values can be specified by the end user.
@@ -2391,7 +2429,7 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $['oj']['dvtBaseGauge'],
  * @type {number}
  * @ojvalue {number} 0.5
  * @ojvalue {number} 1
- * @default <code class="prettyprint">1</code>
+ * @default 1
  */
 /**
  * Defines the type of rating gauge to be rendered.
@@ -2402,7 +2440,7 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $['oj']['dvtBaseGauge'],
  * @type {string}
  * @ojvalue {string} "vertical"
  * @ojvalue {string} "horizontal"
- * @default <code class="prettyprint">"horizontal"</code>
+ * @default "horizontal"
  */
 /**
  * Defines whether the value of the gauge can be changed by the end user.
@@ -2412,7 +2450,7 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $['oj']['dvtBaseGauge'],
  * @memberof oj.ojRatingGauge
  * @instance
  * @type {boolean}
- * @default <code class="prettyprint">false</code>
+ * @default false
  */
 /**
  * Specifies whether the images provided should show up at their defined aspect ratio. With 'none', the space is allocated evenly, and shapes could be stretched. With 'meet', The aspect ratio of the shape or image is taken into account when space is allocated. When aspect ratios conflict, the aspect ratio of the selectedState will be used.
@@ -2423,7 +2461,7 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $['oj']['dvtBaseGauge'],
  * @type {string}
  * @ojvalue {string} "none"
  * @ojvalue {string} "meet"
- * @default <code class="prettyprint">"meet"</code>
+ * @default "meet"
  */
  
  // SubId Locators **************************************************************
@@ -3061,7 +3099,7 @@ var ojLedGaugeMeta = {
           "enumValues": ["auto", "none", "thousand", "million", "billion", "trillion", "quadrillion"]
         },
         "style": {
-          "type": "string"
+          "type": "object"
         },
         "text": {
           "type": "string",
@@ -3092,7 +3130,7 @@ var ojLedGaugeMeta = {
       "type": "object",
       "properties": {
         "style": {
-          "type": "string"
+          "type": "object"
         },
         "text": {
           "type": "string"
@@ -3399,7 +3437,7 @@ var ojStatusMeterGaugeMeta = {
           "enumValues": ["auto", "none", "thousand", "million", "billion", "trillion", "quadrillion"]
         },
         "style": {
-          "type": "string"
+          "type": "object"
         },
         "text": {
           "type": "string"
@@ -3472,7 +3510,7 @@ var ojStatusMeterGaugeMeta = {
           "enumValues": ["auto", "center", "start"]
         },
         "style": {
-          "type": "string"
+          "type": "object"
         },
         "text": {
           "type": "string"

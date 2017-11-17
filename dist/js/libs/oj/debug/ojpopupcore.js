@@ -12,16 +12,17 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore', 'jqueryui-amd/
 ** Copyright (c) 2004, 2012, Oracle and/or its affiliates. All rights reserved.
 */
 /**
- * Utilities used in conjunction with the jquery positon utility.
- * @ignore
- */
-
-/**
  * @preserve Copyright 2013 jQuery Foundation and other contributors
  * Released under the MIT license.
  * http://jquery.org/license
  */
 
+/**
+ * Utilities used in conjunction with the jquery positon utility.
+ * @ignore
+ * @class oj.PositionUtils
+ * @ojtsignore
+ */
 oj.PositionUtils = {};
 
 /**
@@ -138,6 +139,7 @@ oj.PositionUtils.normalizePositionOf = function(of, launcher, event)
  * [2] http://api.jqueryui.com/position/
  * [3] http://www.w3.org/TR/touch-events/#touch-interface et. seq.
  *
+ * @private
  * @param event
  */
 oj.PositionUtils._normalizeEventForPosition = function(event)
@@ -162,7 +164,16 @@ oj.PositionUtils._normalizeEventForPosition = function(event)
   });
 };
 
+/**
+ * @private
+ * @const
+ */
 oj.PositionUtils._ALIGN_RULE_PROPERTIES = ['my', 'at'];
+
+/**
+ * @private
+ * @const
+ */
 oj.PositionUtils._SUB_ALIGN_RULE_PROPERTIES = ['vertical', 'horizontal'];
 
 /**
@@ -791,8 +802,8 @@ oj.PositionUtils.coerceToJqUi = function (source)
 };
 
 /**
- *
  * Custom jquery UI position collision rule that will first apply the "flip" rule and follow with "center" alignment.
+ * @ojtsignore
  */
 $.ui.position["flipcenter"] =
 {
@@ -913,6 +924,10 @@ $.ui.position["flipcenter"] =
  * @private
  */
 var _origLeftFlipCollisionRule = $.ui.position["flip"]["left"];  //stash away the original left flip rule
+
+/**
+ * @ojtsignore
+ */
 $.ui.position["flip"] = {
   "left": _origLeftFlipCollisionRule.bind(this),
   /**
@@ -974,12 +989,15 @@ $.ui.position["flip"] = {
  */
 
 /**
+ * Internal framework service for managing popup instances.
+ *
  * @extends {oj.Object}
  * @protected
  * @constructor
  * @since 1.1.0
- * @class Internal framework service for managing popup instances.
+ * @class oj.PopupService
  * @ignore
+ * @ojtsignore
  */
 oj.PopupService = function ()
 {
@@ -1074,6 +1092,7 @@ oj.PopupService.prototype.destroy = function ()
  * Dialog modality states.
  * @enum {string}
  * @public
+ * @ojtsignore
  */
 oj.PopupService.MODALITY =
   {
@@ -1090,6 +1109,7 @@ oj.PopupService.MODALITY =
  * property.
  * @enum {string}
  * @public
+ * @ojtsignore
  */
 oj.PopupService.EVENT =
   {
@@ -1153,6 +1173,7 @@ oj.PopupService.EVENT =
  * property.
  * @enum {string}
  * @public
+ * @ojtsignore
  */
 oj.PopupService.LAYER_LEVEL =
   {
@@ -1173,6 +1194,7 @@ oj.PopupService.LAYER_LEVEL =
  * @public
  * @see oj.PopupService#close
  * @see oj.PopupService#open
+ * @ojtsignore
  */
 oj.PopupService.OPTION =
   {
@@ -1241,6 +1263,7 @@ oj.PopupService.OPTION =
  * @constructor
  * @since 1.1.0
  * @ignore
+ * @ojtsignore
  */
 oj.PopupServiceImpl = function ()
 {
@@ -1528,8 +1551,11 @@ oj.PopupServiceImpl.prototype.changeOptions = function (options)
   var popup = options[oj.PopupService.OPTION.POPUP];
   oj.Assert.assertPrototype(popup, $);
 
+  if (oj.ZOrderUtils.getStatus(popup) !== oj.ZOrderUtils.STATUS.OPEN)
+    return;
+
   /** @type {!jQuery} */
-  var layer = oj.ZOrderUtils.getFirstAncestorLayer(popup);
+  var layer = oj.ZOrderUtils.getOpenPopupLayer(popup);
   oj.Assert.assertPrototype(layer, $);
 
   /** @type Object.<oj.PopupService.EVENT, function(...)> */
@@ -1891,6 +1917,7 @@ oj.PopupServiceImpl._REFRESH_DELAY = 10;
  * Utilities used by the popup framework.
  * @since 1.1.0
  * @ignore
+ * @ojtsignore
  */
 oj.ZOrderUtils = {};
 
@@ -1900,6 +1927,7 @@ oj.ZOrderUtils = {};
  * @public
  * @see oj.ZOrderUtils.getStatus
  * @see oj.ZOrderUtils.setStatus
+ * @ojtsignore
  */
 oj.ZOrderUtils.STATUS =
 {
@@ -2369,6 +2397,7 @@ oj.ZOrderUtils._removeOverlayFromAncestorLayer = function (layer)
  * @public
  * @see oj.ZOrderUtils.postOrderVisit
  * @see oj.ZOrderUtils.preOrderVisit
+ * @ojtsignore
  */
 oj.ZOrderUtils.VISIT_RESULT =
   {
@@ -2835,15 +2864,17 @@ oj.__registerWidget("oj.ojSurrogate", $['oj']['baseComponent'],
       oj.CustomElementBridge.getMetadata('oj-surrogate')});
 
 /**
+ * Invokes the callback function with the touchstart event if the touch sequence
+ * resulted in a "Tap".  The goal is to distinguish a touchstart that doesn't result
+ * in scroll.
  * @extends {oj.Object}
  * @public
  * @constructor
+ * @class oj.SimpleTapRecognizer
  * @since 1.1.0
- * @class Invokes the callback function with the touchstart event if the touch sequence
- *        resulted in a "Tap".  The goal is to distinguish a touchstart that doesn't result
- *        in scroll.
- * @ignore
  * @param {function(!Event)} tapCallback function invoked when a Tap is detected
+ * @ignore
+ * @ojtsignore
  */
 oj.SimpleTapRecognizer = function (tapCallback)
 {
@@ -2947,12 +2978,14 @@ oj.SimpleTapRecognizer._TOUCHEVENTS = ["touchstart", "touchmove", "touchcancel",
 oj.SimpleTapRecognizer._PRESSHOLDTHRESSHOLD = 700;
 
 /**
+ * Utility for handling popup voice over messages sent to a aria live region.
  * @extends {oj.Object}
  * @public
  * @constructor
  * @since 1.1
- * @class Utility for handling popup voice over messages sent to a aria live region.
+ * @class oj.PopupLiveRegion
  * @ignore
+ * @ojtsignore
  */
 oj.PopupLiveRegion = function () {
   this.Init();
@@ -3042,16 +3075,18 @@ oj.PopupLiveRegion._getLiveRegion = function ()
 oj.PopupLiveRegion._POPUP_LIVE_REGION_ID = "__oj_popup_arialiveregion";
 
 /**
+ * Utility that injects a hidden link relative to another for voice support
+ * @class oj.PopupSkipLink
  * @extends {oj.Object}
  * @public
  * @constructor
  * @since 1.1
- * @class Utility that injects a hidden link relative to another for voice support
  * @ignore
  * @param {jQuery} sibling element to the new skip link element
  * @param {string} message text assigned to the skip link
  * @param {function(!Event)} callback fired for activation of the skip link
  * @param {string=} id assigned to the skiplink component
+ * @ojtsignore
  */
 oj.PopupSkipLink = function (sibling, message, callback, id)
 {
@@ -3147,19 +3182,21 @@ oj.PopupSkipLink.prototype.getLink = function ()
 oj.PopupSkipLink._SKIPLINK_ATTR = "oj-skiplink";
 
 /**
+ * Coordinate communications between an event being fulfilled and one or more promises
+ * being resolved.  The window of time between the instance creation and the associated event
+ * triggered is guarded by the {@link oj.BusyContext}.  The
+ * @link{oj.PopupWhenReadyMediator#getWhenReadyPromise} promise will resolve when either the
+ * target event is triggered or instance destroyed.
+ * @class oj.PopupWhenReadyMediator
  * @extends {oj.Object}
  * @constructor
  * @since 3.0.0
- * @class Coordinate communications between an event being fulfilled and one or more promises
- *        being resolved.  The window of time between the instance creation and the associated event
- *        triggered is guarded by the {@link oj.BusyContext}.  The
- *        @link{oj.PopupWhenReadyMediator#getWhenReadyPromise} promise will resolve when either the
- *        target event is triggered or instance destroyed.
  * @ignore
  * @param {jQuery} element to subscribe on the event type triggered on completion of the operation
  * @param {string} operation that completion will resolve one or more promises
  * @param {string} widgetName component constructor
  * @param {boolean} isCustomElement <code>true</code> if the widget is created as a custom element
+ * @ojtsignore
  */
 oj.PopupWhenReadyMediator = function (element, operation, widgetName, isCustomElement)
 {

@@ -24,6 +24,12 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'ojs/ojradiocheckbox', 'o
  * @ojcomponent oj.ojCheckboxset
  * @augments oj.editableValue
  * @since 0.6
+ * @ojshortdesc Checkbox Set Element
+ * @ojrole checkbox
+ * @ojrole checkboxgroup
+ * @ojrole option
+ * @ojdisplayname Checkbox Set
+ * @ojstatus preview
  * @classdesc
  * <h3 id="checkboxsetOverview-section">
  *   JET Checkboxset
@@ -157,7 +163,7 @@ oj.__registerWidget("oj.ojCheckboxset", $['oj']['editableValue'],
      *
      * @expose
      * @type {boolean|undefined}
-     * @default <code class="prettyprint">false</code>
+     * @default false
      * @public
      * @instance
      * @memberof oj.ojCheckboxset
@@ -238,6 +244,9 @@ oj.__registerWidget("oj.ojCheckboxset", $['oj']['editableValue'],
      * {@link oj.RequiredValidator} - is implicitly used if no explicit required validator is set. 
      * An explicit required validator can be set by page authors using the validators option. 
      * 
+     * when the option is not set, the element's required property is used as its initial 
+     * value if it exists.
+     * 
      * @example <caption>Initialize the component with the <code class="prettyprint">required</code> attribute:</caption>
      * &lt;oj-checkboxset required>
      *   &lt;oj-option value="blue">Blue&lt;/oj-option>
@@ -263,8 +272,6 @@ oj.__registerWidget("oj.ojCheckboxset", $['oj']['editableValue'],
      * @expose 
      * @access public
      * @instance
-     * @default when the option is not set, the element's required property is used as its initial 
-     * value if it exists.
      * @memberof oj.ojCheckboxset
      * @type {boolean}
      * @default false
@@ -279,6 +286,9 @@ oj.__registerWidget("oj.ojCheckboxset", $['oj']['editableValue'],
      * When <code class="prettyprint">value</code> property changes due to programmatic
      * intervention, the component always clears all messages and runs deferred validation, and
      * always refreshes UI display value.</br>
+     * 
+     * When the option is not set, value is set to an array built from the checked checkboxes, if
+     * any are checked.
      *
      * <h4>Clearing Messages</h4>
      * <ul>
@@ -307,9 +317,6 @@ oj.__registerWidget("oj.ojCheckboxset", $['oj']['editableValue'],
      * @expose
      * @access public
      * @instance
-     * @default <code class="prettyprint">[]</code>
-     * When the option is not set, value is set to an array built from the checked checkboxes, if
-     * any are checked.
      * @memberof oj.ojCheckboxset
      * @type {Array.<*>|undefined}
      */
@@ -329,6 +336,7 @@ oj.__registerWidget("oj.ojCheckboxset", $['oj']['editableValue'],
    * myComp.refresh();
    * 
    * @expose
+   * @public
    * @memberof oj.ojCheckboxset
    * @instance
    */
@@ -345,6 +353,7 @@ oj.__registerWidget("oj.ojCheckboxset", $['oj']['editableValue'],
    * @expose
    * @memberof oj.ojCheckboxset
    * @instance
+   * @public
    * @return {jQuery} the checkbox
    * @ignore
   */
@@ -726,6 +735,7 @@ oj.__registerWidget("oj.ojCheckboxset", $['oj']['editableValue'],
    * @return {jQuery} jquery object of all the checkboxes within the root dom element
    * that have the same 'name' attribute as the first checkbox found.
    * @private
+   * @memberof oj.ojCheckboxset
    */
   _findCheckboxesWithMatchingName : function ()
 
@@ -1137,6 +1147,7 @@ oj.__registerWidget("oj.ojCheckboxset", $['oj']['editableValue'],
    * 
    * @param {boolean} disabled
    * @private
+   * @memberof oj.ojCheckboxset
    */
   _propagateDisabled: function( disabled ) {
       disabled = !!disabled;
@@ -1162,6 +1173,7 @@ oj.__registerWidget("oj.ojCheckboxset", $['oj']['editableValue'],
   /**
    * @override
    * @private
+   * @memberof oj.ojCheckboxset
    */
   _setOption : function (key, value, flags)
   {
@@ -1279,6 +1291,7 @@ oj.__registerWidget("oj.ojCheckboxset", $['oj']['editableValue'],
   /**
    * @ignore
    * @protected
+   * @memberof oj.ojCheckboxset
    * @override
    */
   _destroy : function ()

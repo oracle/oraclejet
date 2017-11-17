@@ -46,9 +46,9 @@ var _oldVal = _scope['oj'];
  */
 var oj = _scope['oj'] =
 {
-  'version': "4.0.0",
-  'build' : "3",
-  'revision': "37938",
+  'version': "4.1.0",
+  'build' : "5",
+  'revision': "39607",
           
   // This function is only meant to be used outside the library, so quoting the name
   // to avoid renaming is appropriate
@@ -2091,6 +2091,28 @@ oj.Config.logVersionInfo = function()
 {
     console.log(oj.Config.getVersionInfo());
 };
+
+/**
+ * Retrives JET's template engine for dealing with inline templates (currently internal only)
+ * @ignore
+ */
+oj.Config.__getTemplateEngine = function()
+{
+  if (!oj.Config._templateEnginePromise)
+  {
+    if (!oj.__isAmdLoaderPresent())
+    {
+      throw "JET Temlate engine cannot be loaded with an AMD loader";
+    }
+    oj.Config._templateEnginePromise = new Promise(
+      function(resolve, reject)
+      {
+        require(['./ojtemplateengine'], resolve, reject);
+      }
+    );
+  }
+  return oj.Config._templateEnginePromise;
+};
 /* The custom element (webcomponents) support requires the native CustomEvent
  * object.  This polyfill provides CustomEvent implementation for browsers that
  * don't support it yet.
@@ -2238,6 +2260,51 @@ oj.Config.logVersionInfo = function()
   window["setImmediate"] = setImmediateImpl;
   window["clearImmediate"] = clearImmediateImpl;
 })();
+
+(function ()
+{
+  if (typeof window === 'undefined' || window["__extends"])
+  {
+    return;
+  }
+  
+  var __extends = (this && this.__extends) || (function () {
+      var extendStatics = Object.setPrototypeOf ||
+          ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+          function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+      return function (d, b) {
+          extendStatics(d, b);
+          /**
+           * @constructor
+           */
+          function __() { this.constructor = d; }
+          d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+      };
+  })();
+  
+  window["__extends"] = __extends; 
+})();
+
+(function ()
+{
+  if (typeof window === 'undefined') {
+    return;
+  }
+  if (window['Symbol']) {
+    if (!window['Symbol']['asyncIterator']) {
+      window['Symbol']['asyncIterator'] = 'asyncIterator';
+    }
+
+    if (!window['Symbol']['iterator']) {
+      window['Symbol']['iterator'] = 'iterator';
+    }
+  } else {
+    window['Symbol'] = {};
+    window['Symbol']['asyncIterator'] = 'asyncIterator';
+    window['Symbol']['iterator'] = 'iterator';
+  }
+})();
+
 
 
 /**
@@ -3777,8 +3844,11 @@ oj.BusyState._getTs = function ()
  *     {
  *       var component = document.querySelector("#myInput");
  *       component.value = "foo";
- *       if (!component.isValid())
- *         component.value = "foobar";
+ *       component.validate().then(function (isValid)
+ *       {
+ *         if (!isValid)
+ *           component.value = "foobar";
+ *       });
  *     });
  *     </code></pre>
  *
@@ -3915,6 +3985,29 @@ oj.BusyContext.prototype.Init = function (hostNode)
       return Promise.race([master, slaveTimeoutPromise])
                                   .then(this._clearAllSlaveTimeouts.bind(this));
     },
+
+    /**
+     * @private
+     * @ignore
+     * @return {Promise} resolves on the next-tick using setImmediate.
+     */
+    getNextTickPromise: function()
+    {
+      if (!this._nextTickPromise)
+      {
+        this._nextTickPromise = new Promise(function (resolve)
+        {
+          window.setImmediate(function ()
+          {
+            this._nextTickPromise = null;
+            resolve(true);
+          }.bind(this));
+        }.bind(this));
+      }
+
+      return this._nextTickPromise;
+    },
+
     /**
      * Clears all window timeout timeers that are slave when ready promises.
      *
@@ -3969,7 +4062,15 @@ oj.BusyContext.prototype.Init = function (hostNode)
        * @ignore
        * @private
        */
-      //_masterWhenReadyPromiseResolver : undefined
+      //_masterWhenReadyPromiseResolver : undefined,
+      /**
+       * Promise evaluated next-tick.
+       *
+       * @type {Promise|undefined}
+       * @ignore
+       * @private
+       */
+      //_nextTickPromise : undefined
   };
 };
 
@@ -4190,8 +4291,9 @@ oj.BusyContext.prototype.whenReady = function (timeout)
   var statesMap = this._statesMap;
 
   var mediator = this._mediator;
-
-  var promise =  oj.BusyContext._BOOTSTRAP_MEDIATOR.whenReady().then(
+  var nextTickPromise = mediator.getNextTickPromise();
+  var bootstrapPromise = oj.BusyContext._BOOTSTRAP_MEDIATOR.whenReady();
+  var promise = Promise.all([nextTickPromise, bootstrapPromise]).then(
     function()
     {
       oj.Logger.log("BusyContext.whenReady: bootstrap mediator ready scope=%s", debugScope);
@@ -4236,16 +4338,16 @@ oj.BusyContext.prototype.whenReady = function (timeout)
           ' Application bootstrap busy state is released by calling' +
           ' "oj.Context.getPageContext().getBusyContext().applicationBootstrapComplete();".');
       }
-       else
-       {
-          error = new Error(expiredText + "with the following busy states: " +
+      else
+      {
+        error = new Error(expiredText + "with the following busy states: " +
                             busyStates.join(", "));
-       }
+      }
 
-       error["busyStates"] = busyStates;
+      error["busyStates"] = busyStates;
 
-       oj.Logger.log("BusyContext.whenReady: rejected scope='%s'\n%s", debugScope, error.message);
-       return error;
+      oj.Logger.log("BusyContext.whenReady: rejected scope='%s'\n%s", debugScope, error.message);
+      return error;
 
     };
     promise = mediator.getSlaveTimeoutPromise(promise, handleTimeout, timeout);
@@ -4623,11 +4725,12 @@ oj.BusyContext._BOOTSTRAP_MEDIATOR = new /** @constructor */(function()
 
     if (_resolveCallback)
     {
-      // resovle the promise in the next tick.
+      // resovle the promise in the next-tick.
       window.setImmediate(function ()
       {
         _tracking = false;
         _resolveCallback(true);
+        _resolveCallback = null;
       });
     }
     else
@@ -4811,6 +4914,128 @@ oj.Context.getParentElement = function (element)
   return element.parentElement;
 };
 
+/**
+ * Timing related utilities
+ * @namespace
+ */
+oj.TimerUtils = {};
+
+/**
+ * A Timer encapsulates a Promise associated with a deferred function execution
+ * and the ability to cancel the timer before timeout.
+ * @interface Timer
+ */
+ function Timer() {};
+ /**
+  * Get the Promise assocaited with this timer.  Promise callbacks will be
+  * passed a single boolean value indicating if the timer's timeout expired
+  * normally (without being canceled/cleared).  If the timer is left to expire
+  * after its configured timeout has been exceeded, then it will pass
+  * boolean(true) to the callbacks.  If the timer's {@link #clear} method is
+  * called before its configured timeout has been reached, then the callbacks
+  * will receive boolean(false).
+  * @memberof Timer
+  * @return {Promise} This timer's Promise
+  */
+ Timer.prototype.getPromise = function() {};
+ /**
+  * Clears the timer and resolves the Promise.  If the normal timeout hasn't
+  * yet expired, the value passed to the Promise callbacks will be boolean(false).
+  * If the timeout has already expired, this function will do nothing, and all of
+  * its Promise callbacks will receive boolean(true).
+  * @memberof Timer
+  */
+ Timer.prototype.clear = function() {};
+
+/**
+ * Get a Timer object with the given timeout in milliseconds.  The Promise
+ * associated with the timer is resolved when the timeout window expires, or if
+ * the clear() function is called.
+ * This is useful for when code needs to be executed on timeout (setTimeout) and
+ * must handle cleanup tasks such as clearing {@link BusyState} when the timer
+ * expires or is canceled.
+ *
+ * @param  {number} timeout The timeout value in milliseconds to wait before the
+ * promise is resolved.
+ * @return {Timer}
+ * A Timer object which encapsulates the Promise that will be
+ * resolved once the timeout has been exceeded or cleared.
+ * @export
+ * @memberof oj.TimerUtils
+ * @example <caption>Get a timer to execute code on normal timeout and
+ * cancelation.  If the timeout occurs normally (not canceled), both
+ * callbacks are executed and the value of the 'completed' parameter will be
+ * true.</caption>
+ * var timer = oj.TimerUtils.getTimer(1000);
+ * timer.getPromise().then(function(completed) {
+ *     if (completed) {
+ *       // Delayed code
+ *     }
+ *   })
+ * timer.getPromise().then(function() {
+ *   // Code always to be run
+ * })
+ *
+ * @example <caption>Get a timer to execute code on normal timeout and cancelation.
+ * In this example, the timer is canceled before its timeout expires, and the
+ * value of the 'completed' parameter will be false.</caption>
+ * var timer = oj.TimerUtils.getTimer(1000);
+ * timer.getPromise()
+ *   .then(function(completed) {
+ *     if (completed) {
+ *       // Delayed code
+ *     }
+ *   })
+ * timer.getPromise()
+ *   .then(function() {
+ *     // Code always to be run
+ *   })
+ * ...
+ * timer.clear(); // timer cleared before timeout expires
+ */
+oj.TimerUtils.getTimer = function(timeout) {
+    return new oj.TimerUtils._TimerImpl(timeout);
+}
+
+/**
+ * @constructor
+ * @implements {Timer}
+ * @param  {number} timeout The timeout value in milliseconds.
+ * @private
+ */
+oj.TimerUtils._TimerImpl = function(timeout) {
+    var _promise;
+    var _resolve;
+    var _timerId;
+
+    this.getPromise = function() {
+        return _promise;
+    }
+    this.clear = function() {
+        window.clearTimeout(_timerId);
+        _timerId = null;
+        _timerDone(false);
+    }
+
+    /**
+     * Called on normal and early timeout (cancelation)
+     */
+    function _timerDone(completed) {
+        _timerId = null;
+        _resolve(completed);
+    }
+
+    if (typeof window === 'undefined') {
+        _promise = Promise.reject();
+    }
+    else {
+        _promise = new Promise(function(resolve) {
+            _resolve = resolve;
+            _timerId = window.setTimeout(_timerDone.bind(null, true), timeout);
+        });
+    }
+};
+
 (function () {  
   if (typeof window === 'undefined') {
     return;
@@ -4976,8 +5201,6 @@ oj.Context.getParentElement = function (element)
   {
     if (!type)
     {
-      var bridge = oj.BaseCustomElementBridge.getInstance(elem);
-      bridge.resolveDelayedReadyPromise();
       throw "Unable to parse " + attr + "='" + value + "' for " + elem.tagName + " with id " + elem.id + 
       " . This attribute only supports data bound values. Check the API doc for supported types";
     }
@@ -5003,8 +5226,6 @@ oj.Context.getParentElement = function (element)
       }
       catch (ex) 
       {
-        var bridge = oj.BaseCustomElementBridge.getInstance(elem);
-        bridge.resolveDelayedReadyPromise();
         throw "Unable to parse " + attr + "='" + value + "' for " + elem.tagName + " with id " + elem.id +
         " to a JSON Object. Check the value for correct JSON syntax, e.g. double quoted strings. " + ex;
       }
@@ -5036,8 +5257,6 @@ oj.Context.getParentElement = function (element)
         return value;
     }
 
-    var bridge = oj.BaseCustomElementBridge.getInstance(elem);
-    bridge.resolveDelayedReadyPromise();
     throw "Unable to parse " + attr + "='" + value + "' for " + elem.tagName + " with id " + elem.id + " to a " + type + ".";
   }
   

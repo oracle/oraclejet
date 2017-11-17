@@ -401,7 +401,9 @@
       }
     }
 
-
+    // This is used by the oj-form-layout custom element component.
+    @include oj-form-responsive($selectorPrefix: "oj-ofl");
+    
     @if $responsiveQuerySmallUp and $responsiveQuerySmallUp != none {
       @media #{$responsiveQuerySmallUp} 
       {

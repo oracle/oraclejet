@@ -1137,6 +1137,9 @@ $.widget("oj.ojResizable", {
    * @ojcomponent oj.ojDialog
    * @augments oj.baseComponent
    * @since 0.6
+   * @ojrole dialog
+   * @ojdisplayname Dialog
+   * @ojstatus preview
    *
    * @classdesc
    * <h3 id="dialogOverview-section">
@@ -1207,7 +1210,7 @@ $.widget("oj.ojResizable", {
    *
    * <pre class="prettyprint">
    * <code>
-   * &lt;oj-dialog id="wideDialog" title="Wide Dialog" style="width: 400px; min-width: 100px; max-width 500px;"&gt; 
+   * &lt;oj-dialog id="wideDialog" title="Wide Dialog" style="width: 400px; min-width: 100px; max-width 500px;"&gt;
    *    &lt;div slot="body"&gt;
    *       &lt;p&gt; Dialog Text
    *    &lt;/div&gt;
@@ -1299,7 +1302,7 @@ $.widget("oj.ojResizable", {
    *
    * <pre class="prettyprint">
    * <code>
-   * &lt;oj-dialog id="dialogWithFooter" title="Dialog with Footer" style="width: 400px; min-width: 100px; max-width 500px;"&gt; 
+   * &lt;oj-dialog id="dialogWithFooter" title="Dialog with Footer" style="width: 400px; min-width: 100px; max-width 500px;"&gt;
    *    &lt;div slot="body"&gt;
    *       &lt;p&gt; Dialog Text
    *    &lt;/div&gt;
@@ -1316,7 +1319,7 @@ $.widget("oj.ojResizable", {
    *
    * <pre class="prettyprint">
    * <code>
-   * &lt;oj-dialog id="dialog" title="Dialog Title"&gt; 
+   * &lt;oj-dialog id="dialog" title="Dialog Title"&gt;
    *    &lt;div slot="header"&gt;
    *       &lt;span id="dialog-title-id" class="oj-dialog-title"&gt; User Defined Header&lt;/span&gt;
    *    &lt;/div&gt;
@@ -1352,7 +1355,7 @@ $.widget("oj.ojResizable", {
          * @memberof oj.ojDialog
          * @instance
          * @type {string}
-         * @default <code class="prettyprint">"icon"</code>
+         * @default "icon"
          *
          * @example <caption>Initialize the dialog to disable the default <code class="prettyprint">cancelBehavior</code></caption>
          * &lt;oj-dialog cancel-behavior="none" &gt;&lt;/oj-dialog&gt;
@@ -1378,7 +1381,7 @@ $.widget("oj.ojResizable", {
          * @memberof oj.ojDialog
          * @instance
          * @type {string}
-         * @default <code class="prettyprint">"title-bar"</code>
+         * @default "title-bar"
          *
          * @example <caption>Initialize the dialog to disable dragging <code class="prettyprint">dragAffordance</code></caption>
          * &lt;oj-dialog drag-affordance="none" &gt;&lt;/oj-dialog&gt;
@@ -1394,14 +1397,14 @@ $.widget("oj.ojResizable", {
         /**
          * <p> Set the initial visibility of the dialog.
          * If set to <code class="prettyprint">"show"</code>, the dialog will automatically open upon initialization.
-         * If <code class="prettyprint">"hide"</code>, the dialog will stay hidden until 
+         * If <code class="prettyprint">"hide"</code>, the dialog will stay hidden until
          * the <a href="#method-open"><code class="prettyprint">open()</code></a> method is called.
          *
          * @expose
          * @memberof oj.ojDialog
          * @instance
          * @type {string}
-         * @default <code class="prettyprint">"hide"</code>
+         * @default "hide"
          *
          * @example <caption>Initialize the dialog with the <code class="prettyprint">initialVisibility</code> property:</caption>
          * &lt;oj-dialog initial-visibility="show" &gt;&lt;/oj-dialog&gt;
@@ -1429,7 +1432,7 @@ $.widget("oj.ojResizable", {
          * @expose
          * @memberof oj.ojDialog
          * @instance
-         * @default <code class="prettyprint">"modal"</code>
+         * @default "modal"
          * @type {string}
          *
          * @example <caption>Initialize the dialog to a specific modality <code class="prettyprint">modality</code></caption>
@@ -1453,8 +1456,8 @@ $.widget("oj.ojResizable", {
            * represents the other element that can be identified by "of". The values of these properties
            * describe horizontal and vertical alignments.</p>
            *
-           * @deprecated <a href="http://api.jqueryui.com/position/">jQuery UI
-           * position</a> syntax is deprectated in v4.0.0; Use of a percent unit with
+           * @deprecated 3.0.0 <a href="http://api.jqueryui.com/position/">jQuery UI
+           * position</a> syntax is deprectated; Use of a percent unit with
            * "my" or "at" is not supported.
            * @expose
            * @memberof oj.ojDialog
@@ -1488,7 +1491,7 @@ $.widget("oj.ojResizable", {
                * @instance
                * @alias position.my
                * @type {{horizontal:string, vertical:string}}
-               * @default <code class="prettyprint">{"horizontal":"center","vertical":"center"}</code>
+               * @default {"horizontal":"center","vertical":"center"}
                */
               my : {
                 /**
@@ -1497,7 +1500,7 @@ $.widget("oj.ojResizable", {
                  * @instance
                  * @alias position.my.horizontal
                  * @type {string}
-                 * @default <code class="prettyprint">center</code>
+                 * @default center
                  * @ojvalue {string} "start" evaluates to "left" in LTR mode and "right" in RTL mode.
                  * @ojvalue {string} "end" evaluates to "right" in LTR mode and "left" in RTL mode.
                  * @ojvalue {string} "left"
@@ -1511,7 +1514,7 @@ $.widget("oj.ojResizable", {
                  * @instance
                  * @alias position.my.vertical
                  * @type {string}
-                 * @default <code class="prettyprint">center</code>
+                 * @default center
                  * @ojvalue {string} "top"
                  * @ojvalue {string} "center"
                  * @ojvalue {string} "bottom"
@@ -1533,7 +1536,7 @@ $.widget("oj.ojResizable", {
                  * @instance
                  * @alias position.offset.x
                  * @type {number}
-                 * @default <code class="prettyprint">0</code>
+                 * @default 0
                  */
                 x: 0,
                 /**
@@ -1542,7 +1545,7 @@ $.widget("oj.ojResizable", {
                  * @instance
                  * @alias position.offset.y
                  * @type {number}
-                 * @default <code class="prettyprint">0</code>
+                 * @default 0
                  */
                 y: 0
               },
@@ -1555,7 +1558,7 @@ $.widget("oj.ojResizable", {
                * @instance
                * @alias position.at
                * @type {{horizontal:string, vertical:string}}
-               * @default <code class="prettyprint">{"horizontal":"center","vertical":"center"}</code>
+               * @default {"horizontal":"center","vertical":"center"}
                */
               at : {
                 /**
@@ -1564,7 +1567,7 @@ $.widget("oj.ojResizable", {
                  * @instance
                  * @alias position.at.horizontal
                  * @type {string}
-                 * @default <code class="prettyprint">center</code>
+                 * @default center
                  * @ojvalue {string} "start" evaluates to "left" in LTR mode and "right" in RTL mode.
                  * @ojvalue {string} "end" evaluates to "right" in LTR mode and "left" in RTL mode.
                  * @ojvalue {string} "left"
@@ -1578,7 +1581,7 @@ $.widget("oj.ojResizable", {
                  * @instance
                  * @alias position.at.vertical
                  * @type {string}
-                 * @default <code class="prettyprint">center</code>
+                 * @default center
                  * @ojvalue {string} "top"
                  * @ojvalue {string} "center"
                  * @ojvalue {string} "bottom"
@@ -1603,7 +1606,7 @@ $.widget("oj.ojResizable", {
               * @memberof! oj.ojDialog
               * @instance
               * @type {string}
-              * @default <code class="prettyprint">"fit"</code>
+              * @default "fit"
               *
               */
               collision : 'fit',
@@ -1624,7 +1627,7 @@ $.widget("oj.ojResizable", {
          * @memberof oj.ojDialog
          * @instance
          * @type {string}
-         * @default <code class="prettyprint">"resizable"</code>
+         * @default "resizable"
          *
          * @example <caption>Initialize the dialog to a specific resizeBehavior <code class="prettyprint">resizeBehavior</code></caption>
          * &lt;oj-dialog resize-behavior="none" &gt;&lt;/oj-dialog&gt;
@@ -1649,7 +1652,7 @@ $.widget("oj.ojResizable", {
          * @memberof oj.ojDialog
          * @instance
          * @type {string}
-         * @default <code class="prettyprint">"dialog"</code>
+         * @default "dialog"
          *
          * @example <caption>Initialize the dialog with the <code class="prettyprint">role</code></caption> property specified:</caption>
          * &lt;oj-dialog role="alertdialog" &gt;&lt;/oj-dialog&gt;
@@ -1667,6 +1670,7 @@ $.widget("oj.ojResizable", {
          * Specify the title of the dialog. null is the default.
          *
          * @expose
+         * @ignore
          * @memberof oj.ojDialog
          * @instance
          * @type {string|null}
@@ -1695,6 +1699,8 @@ $.widget("oj.ojResizable", {
            * @event
            * @memberof oj.ojDialog
            * @instance
+           * @ojcancelable
+           * @ojbubbles
            * @property {Event} event a custom event
            */
         beforeClose: null,
@@ -1707,6 +1713,8 @@ $.widget("oj.ojResizable", {
            * @event
            * @memberof oj.ojDialog
            * @instance
+           * @ojcancelable
+           * @ojbubbles
            * @property {Event} event a custom event
            */
         beforeOpen: null,
@@ -1718,6 +1726,7 @@ $.widget("oj.ojResizable", {
            * @event
            * @memberof oj.ojDialog
            * @instance
+           * @ojbubbles
            * @property {Event} event a custom event
            */
         close: null,
@@ -1728,6 +1737,7 @@ $.widget("oj.ojResizable", {
            * @event
            * @memberof oj.ojDialog
            * @instance
+           * @ojbubbles
            * @property {Event} event a custom event
            */
         focus: null,
@@ -1739,6 +1749,8 @@ $.widget("oj.ojResizable", {
            * @event
            * @memberof oj.ojDialog
            * @instance
+           * @ojcancelable
+           * @ojbubbles
            * @property {Event} event a custom event
            */
         open: null,
@@ -1749,6 +1761,7 @@ $.widget("oj.ojResizable", {
          * @event
          * @memberof oj.ojDialog
          * @instance
+         * @ojbubbles
          * @property {Event} event a custom event
 
          */
@@ -1760,6 +1773,8 @@ $.widget("oj.ojResizable", {
          * @event
          * @memberof oj.ojDialog
          * @instance
+         * @ojcancelable
+         * @ojbubbles
          * @property {Event} event a custom event
          *
          * <ul>
@@ -1811,6 +1826,8 @@ $.widget("oj.ojResizable", {
          * @event
          * @memberof oj.ojDialog
          * @instance
+         * @ojcancelable
+         * @ojbubbles
          * @property {Event} event a custom event
          *
          * <ul>
@@ -1865,6 +1882,8 @@ $.widget("oj.ojResizable", {
            * @event
            * @memberof oj.ojDialog
            * @instance
+           * @ojcancelable
+           * @ojbubbles
            * @property {CustomEvent} event a custom event
            * @property {Object} event.detail an object containing component specific event info
            * @property {string} event.detail.action The action that is starting the animation.
@@ -1909,6 +1928,8 @@ $.widget("oj.ojResizable", {
            * @event
            * @memberof oj.ojDialog
            * @instance
+           * @ojcancelable
+           * @ojbubbles
            * @property {Event} event a custom event
            * @property {Object} event.detail an object containing component specific event info
            * @property {Element} event.detail.element target of animation
@@ -2241,7 +2262,7 @@ $.widget("oj.ojResizable", {
 
       this._off(this.element, "keydown");
 
-      if (this.isOpen())
+      if (oj.ZOrderUtils.getStatus(this.element) === oj.ZOrderUtils.STATUS.OPEN)
         this._closeImplicitly();
 
       this._setWhenReady("none");
@@ -2318,7 +2339,7 @@ $.widget("oj.ojResizable", {
       if (this._isOperationPending("close", [event]))
         return;
 
-      if (!this.isOpen())
+      if (oj.ZOrderUtils.getStatus(this.element) !== oj.ZOrderUtils.STATUS.OPEN)
         return;
 
       if (this._trigger("beforeClose", event) === false && !this._ignoreBeforeCloseResultant) {
@@ -2411,8 +2432,11 @@ $.widget("oj.ojResizable", {
       this._trigger("close", event);
     },
     /**
-     * Returns true if the dialog is currently open.
-     * This method does not accept any arguments.
+     * <p>Returns true if the dialog is currently open. This method does not accept any arguments.
+     * </p>
+     *
+     * The "open" state reflects the period of time the dialog is visible, including open and
+     * close animations.
      *
      * @method
      * @name oj.ojDialog#isOpen
@@ -2455,7 +2479,7 @@ $.widget("oj.ojResizable", {
         return;
       }
 
-      if (this.isOpen()) {
+      if (oj.ZOrderUtils.getStatus(this.element) === oj.ZOrderUtils.STATUS.OPEN) {
         this._focusTabbable();
         return;
       }
@@ -2659,10 +2683,10 @@ $.widget("oj.ojResizable", {
 
         // if (event.target === last[0] || event.target === this._uiDialogContent[0]) {
 
-        // Check document.activeElement instead of event.target since descendant 
+        // Check document.activeElement instead of event.target since descendant
         // elements such as ojTable may change focus when handling Tab key.
         // This aligns with browser behavior because it determines next tabstop
-        // based on activeElement.        
+        // based on activeElement.
         if (document.activeElement === last[0] || document.activeElement === this.element[0]) {
           first.focus();
           event.preventDefault();
@@ -2687,7 +2711,7 @@ $.widget("oj.ojResizable", {
         // For SHIFT-TAB, we reverse the tab order.
         //
 
-        // Check document.activeElement instead of event.target since descendant 
+        // Check document.activeElement instead of event.target since descendant
         // elements such as ojTable may change focus when handling Tab key.
         // This aligns with browser behavior because it determines next tabstop
         // based on activeElement.
@@ -2760,17 +2784,17 @@ $.widget("oj.ojResizable", {
         this.closeButtonDiv.setAttribute('data-oj-binding-provider', 'none')
         this.closeButtonDiv.setAttribute('display', 'icons')
         this.closeButtonDiv.setAttribute('chroming', 'half')
-        
+
         var closeButtonLabel = document.createElement('span');
         closeButtonLabel.textContent = this.getTranslatedString('labelCloseIcon');
-        
+
         var closeButtonStartIcon = document.createElement('span');
         closeButtonStartIcon.className = 'oj-fwk-icon oj-fwk-icon-cross';
         closeButtonStartIcon.setAttribute('slot', 'startIcon');
-        
+
         this.closeButtonDiv.appendChild(closeButtonStartIcon);
         this.closeButtonDiv.appendChild(closeButtonLabel);
-        
+
         divParentElement.appendChild(this.closeButtonDiv); // @HTMLUpdateOK
         oj.Components.subtreeAttached(this.closeButtonDiv);
 
@@ -2985,116 +3009,120 @@ $.widget("oj.ojResizable", {
 
       this._super(key, value, flags);
 
-      switch (key)
-      {
-        case "dragAffordance":
+      switch (key) {
+      case "dragAffordance":
 
-          // isDraggable = uiDialog.is(":data(oj-draggable)");
-          isDraggable = this.element.hasClass("oj-draggable");
+        // isDraggable = uiDialog.is(":data(oj-draggable)");
+        isDraggable = this.element.hasClass("oj-draggable");
 
-          if (isDraggable && value === "none") {
-            this.element.draggable("destroy");
-            this.element.removeClass("oj-draggable");
-          }
+        if (isDraggable && value === "none") {
+          this.element.draggable("destroy");
+          this.element.removeClass("oj-draggable");
+        }
 
-          if (!isDraggable && value === "title-bar") {
-            this._makeDraggable();
-          }
+        if (!isDraggable && value === "title-bar") {
+          this._makeDraggable();
+        }
 
-          break;
+        break;
 
-        case "position":
-          // convert to the internal position format and reevaluate the position.
-          var options = this.options;
-          options["position"] = oj.PositionUtils.coerceToJet(value, options["position"]);
-          this._position();
+      case "position":
+        // convert to the internal position format and reevaluate the position.
+        var options = this.options;
+        options["position"] = oj.PositionUtils.coerceToJet(value, options["position"]);
+        this._position();
 
-          // setting the option is handled here.  don't call on super.
-          return;
+        // setting the option is handled here.  don't call on super.
+        return;
 
-        case "resizeBehavior":
+      case "resizeBehavior":
 
-          isResizable = false;
-          if (this._resizableComponent)
-            isResizable = true;
+        isResizable = false;
+        if (this._resizableComponent)
+          isResizable = true;
 
-          // currently resizable, becoming non-resizable
-          if (isResizable && value !== "resizable") {
-            // uiDialog._resizableComponent("destroy");
-            if (this._resizableComponent("instance"))
-              this._resizableComponent("destroy");
-            this._resizableComponent = null;
-          }
+        // currently resizable, becoming non-resizable
+        if (isResizable && value !== "resizable") {
+          // uiDialog._resizableComponent("destroy");
+          if (this._resizableComponent("instance"))
+            this._resizableComponent("destroy");
+          this._resizableComponent = null;
+        }
 
-          // currently non-resizable, becoming resizable
-          if (!isResizable && value === "resizable") {
-            this._makeResizable();
-          }
+        // currently non-resizable, becoming resizable
+        if (!isResizable && value === "resizable") {
+          this._makeResizable();
+        }
 
-          break;
+        break;
 
-        case "title":
-          this._title(this._uiDialogTitlebar.find(".oj-dialog-title"));
-          break;
+      case "title":
 
-        case "role":
-          this.element.attr("role", value);
-          break;
+        if (this.userDefinedDialogHeader) {
+          this._title(this._userDefinedHeaderDiv.querySelector('.oj-dialog-title'));
+        } else {
+          this._title(this._uiDialogTitlebarDiv.querySelector(".oj-dialog-title"));
+        }
+        break;
 
-        case "modality":
-          if (this.isOpen())
-          {
-            /** @type {!Object.<oj.PopupService.OPTION, ?>} */
-            var psOptions = {};
-            psOptions[oj.PopupService.OPTION.POPUP] = this.element;
-            psOptions[oj.PopupService.OPTION.MODALITY] = value;
-            oj.PopupService.getInstance().changeOptions(psOptions);
-          }
-          break;
+      case "role":
+        this.element.attr("role", value);
+        break;
 
-        case "cancelBehavior":
+      case "modality":
+        if (oj.ZOrderUtils.getStatus(this.element) === oj.ZOrderUtils.STATUS.OPEN)
+        {
+          /** @type {!Object.<oj.PopupService.OPTION, ?>} */
+          var psOptions = {};
+          psOptions[oj.PopupService.OPTION.POPUP] = this.element;
+          psOptions[oj.PopupService.OPTION.MODALITY] = value;
+          oj.PopupService.getInstance().changeOptions(psOptions);
+        }
+        break;
 
-          if (value === "none" || value === "escape") {
+      case "cancelBehavior":
 
-            // we may need additional code here
-            // if (this.userDefinedDialogHeader) {   }
+        if (value === "none" || value === "escape") {
+
+          // we may need additional code here
+          // if (this.userDefinedDialogHeader) {   }
+
+          this._destroyCloseButton();
+
+        }
+        else if (value === "icon") {
+
+          if (this.userDefinedDialogHeader) {
 
             this._destroyCloseButton();
+            this._createCloseButton(this._userDefinedHeaderDiv);
 
-          }
-          else if (value === "icon") {
+            //
+            // Insert oj-dialog-title between oj-dialog-header and oj-dialog-header-close-wrapper
+            //
+            this._userDefinedTitleDiv = this._userDefinedHeaderDiv.querySelector('.oj-dialog-title');
+            this._userDefinedTitle = $(this._userDefinedTitleDiv);
 
-            if (this.userDefinedDialogHeader) {
+            if (this._userDefinedTitleDiv != null) {
+              this.closeButtonDiv.parentElement.appendChild(this._userDefinedTitleDiv); // @HTMLUpdateOK
+              oj.Components.subtreeAttached(this._userDefinedTitleDiv);
+            }
 
-              this._destroyCloseButton();
-              this._createCloseButton(this._userDefinedHeaderDiv);
+          } else {
 
-              //
-              // Insert oj-dialog-title between oj-dialog-header and oj-dialog-header-close-wrapper
-              //
-              this._userDefinedTitleDiv = this._userDefinedHeaderDiv.querySelector('.oj-dialog-title');
-              this._userDefinedTitle = $(this._userDefinedTitleDiv);
+            this._destroyCloseButton();
+            this._createCloseButton(this._uiDialogTitlebarDiv);
 
-              if (this._userDefinedTitleDiv != null) {
-                this.closeButtonDiv.parentElement.appendChild(this._userDefinedTitleDiv); // @HTMLUpdateOK
-                oj.Components.subtreeAttached(this._userDefinedTitleDiv);
-              }
+            this.standardTitleDiv = this._uiDialogTitlebarDiv.querySelector(".oj-dialog-title");
+            this.standardTitle = $(this.standardTitleDiv);
 
-            } else {
-
-              this._destroyCloseButton();
-              this._createCloseButton(this._uiDialogTitlebarDiv);
-
-              this.standardTitleDiv = this._uiDialogTitlebarDiv.querySelector(".oj-dialog-title");
-              this.standardTitle = $(this.standardTitleDiv);
-
-              if (this.standardTitleDiv != null) {
-                this.closeButtonDiv.parentElement.insertBefore(this.closeButtonDiv, this.standardTitleDiv);  // @HTMLUpdateOK
-                oj.Components.subtreeAttached(this.standardTitleDiv);
-              }
+            if (this.standardTitleDiv != null) {
+              this.closeButtonDiv.parentElement.insertBefore(this.closeButtonDiv, this.standardTitleDiv);  // @HTMLUpdateOK
+              oj.Components.subtreeAttached(this.standardTitleDiv);
             }
           }
-          break;
+        }
+        break;
       }
     },
 
@@ -3336,13 +3364,14 @@ $.widget("oj.ojResizable", {
      }
 
     /**
-     * <p>The default slot is the dialog's body. The <code class="prettyprint">&lt;oj-dialog></code> 
+     * <p>The default slot is the dialog's body. The <code class="prettyprint">&lt;oj-dialog></code>
      * element accepts DOM nodes as children for the default slot.
-     * The default slot can also be named with "body". 
+     * The default slot can also be named with "body".
      * For styling, the default body slot will be rendered with the <code class="prettyprint">oj-dialog-body</code> class.
      *
      * @ojchild Default
      * @memberof oj.ojDialog
+     * @since 4.0.0
      *
      * @example <caption>Initialize the Dialog with body content:</caption>
      * &lt;oj-dialog>
@@ -3356,23 +3385,24 @@ $.widget("oj.ojResizable", {
      */
 
     /**
-     * <p>The <code class="prettyprint">footer</code> slot is for the dialog's footer area. 
+     * <p>The <code class="prettyprint">footer</code> slot is for the dialog's footer area.
      * The <code class="prettyprint">&lt;oj-dialog></code> element accepts DOM nodes as children
      * with the footer slot.
      * For styling, the footer body slot will be rendered with the <code class="prettyprint">oj-dialog-footer</code> class.
      *
      * @ojslot footer
      * @memberof oj.ojDialog
+     * @since 4.0.0
      *
      * @example <caption>Initialize the Dialog with body and footer content:</caption>
      * &lt;oj-dialog>
      *   &lt;div>Dialog Content&lt;/div>
      *   &lt;div slot='footer'>Footer Content&lt;/div>
      * &lt;/oj-dialog>
-     */     
-     
+     */
+
     /**
-     * <p>The <code class="prettyprint">header</code> slot is for the dialog's header area. 
+     * <p>The <code class="prettyprint">header</code> slot is for the dialog's header area.
      * The  <code class="prettyprint">&lt;oj-dialog></code> element accepts DOM nodes as children
      * with the header slot.
      * For styling, the header slot will be rendered with the <code class="prettyprint">oj-dialog-header</code> class.
@@ -3382,13 +3412,14 @@ $.widget("oj.ojResizable", {
      * to the dialog title.
      * @ojslot header
      * @memberof oj.ojDialog
+     * @since 4.0.0
      *
      * @example <caption>Initialize the Dialog with header and body content:</caption>
      * &lt;oj-dialog>
      *   &lt;div slot='header'>Header Content&lt;/div>
      *   &lt;div>Dialog Content&lt;/div>
      * &lt;/oj-dialog>
-     */     
+     */
 
     /**
      * <table class="keyboard-table">
@@ -3526,7 +3557,7 @@ $.widget("oj.ojResizable", {
      *
      * @ojsubid oj-dialog-body
      * @memberof oj.ojDialog
-     * @deprecated This sub-ID is not needed.  Since the application supplies this element, it can supply a unique ID by which the element can be accessed.
+     * @deprecated 1.2
      *
      * @example <caption>Get the node for the dialog body:</caption>
      * var node = myComponent.getNodeBySubId({'subId': 'oj-dialog-body'});
@@ -3557,7 +3588,7 @@ $.widget("oj.ojResizable", {
      *
      * @ojsubid oj-dialog-close-icon
      * @memberof oj.ojDialog
-     * @deprecated this sub-ID is deprecated.
+     * @deprecated 1.2
      *
      * @example <caption>Get the node for the dialog close-icon:</caption>
      * var node = myComponent.getNodeBySubId({'subId': 'oj-dialog-close-icon'});
@@ -3568,7 +3599,7 @@ $.widget("oj.ojResizable", {
      *
      * @ojsubid oj-dialog-close
      * @memberof oj.ojDialog
-     * @deprecated this sub-ID is deprecated.
+     * @deprecated 2.1.0
      *
      * @example <caption>Get the node for the dialog close affordance:</caption>
      * var node = myComponent.getNodeBySubId({'subId': 'oj-dialog-close'});

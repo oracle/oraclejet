@@ -1904,6 +1904,444 @@ oj.ComponentBinding.getDefaultInstance().setupManagedAttributes({
 })();
 
 
+/*!
+  Knockout Fast Foreach v0.6.0 (2016-07-28T11:02:54.197Z)
+  By: Brian M Hunt (C) 2015 | License: MIT
+
+  Adds `fastForEach` to `ko.bindingHandlers`.
+  
+  Modification notice: The code is obtained from https://github.com/brianmhunt/knockout-fast-foreach 
+  and modified by Oracle JET team to be included into Oracle JET project.
+*/
+
+(function() {
+  "use strict";
+// index.js
+// --------
+// Fast For Each
+//
+// Employing sound techniques to make a faster Knockout foreach binding.
+// --------
+
+//      Utilities
+var MAX_LIST_SIZE = 9007199254740991;
+
+// from https://github.com/jonschlinkert/is-plain-object
+function isPlainObject(o) {
+  return !!o && typeof o === 'object' && o.constructor === Object;
+}
+
+// From knockout/src/virtualElements.js
+var commentNodesHaveTextProperty = document && document.createComment("test").text === "<!--test-->";
+var startCommentRegex = commentNodesHaveTextProperty ? /^<!--\s*ko(?:\s+([\s\S]+))?\s*-->$/ : /^\s*ko(?:\s+([\s\S]+))?\s*$/;
+var supportsDocumentFragment = document && typeof document.createDocumentFragment === "function";
+function isVirtualNode(node) {
+  return (node.nodeType === 8) && startCommentRegex.test(commentNodesHaveTextProperty ? node.text : node.nodeValue);
+}
+
+
+// Get a copy of the (possibly virtual) child nodes of the given element,
+// put them into a container, then empty the given node.
+function makeTemplateNode(sourceNode) {
+  var container = document.createElement("div");
+  var parentNode;
+  if(sourceNode['_templateNode'] && sourceNode['_templateNode'].content) 
+  {
+    // For e.g. <template> tags
+    parentNode = sourceNode['_templateNode'].content; //parentNode = sourceNode.content;
+  }
+  else if (sourceNode['_templateNode']) 
+  {
+    parentNode = sourceNode['_templateNode'];
+  }
+  
+  ko.utils.arrayForEach(ko.virtualElements.childNodes(parentNode), function (child) {
+    // FIXME - This cloneNode could be expensive; we may prefer to iterate over the
+    // parentNode children in reverse (so as not to foul the indexes as childNodes are
+    // removed from parentNode when inserted into the container)
+    if (child) {
+      container.insertBefore(child.cloneNode(true), null);
+    }
+  });
+  return container;
+}
+
+// Mimic a KO change item 'add'
+function valueToChangeAddItem(value, index) {
+  return {
+    status: 'added',
+    value: value,
+    index: index
+  };
+}
+
+// KO 3.4 doesn't seem to export this utility function so it's here just to be sure
+function createSymbolOrString(identifier) {
+  //return typeof Symbol === 'function' ? Symbol(identifier) : identifier;
+  return identifier;
+}
+
+// store a symbol for caching the pending delete info index in the data item objects
+var PENDING_DELETE_INDEX_KEY = createSymbolOrString("_ko_ffe_pending_delete_index");
+
+/**
+ * @constructor
+ */
+function OjForEach(spec) {
+  this.element = spec.element;
+  this.container = isVirtualNode(this.element) ?
+                   this.element.parentNode : this.element;
+  this['$context'] = spec['$context'];
+  this['data'] = spec['data'];
+  this['as'] = spec['as'];
+  this['templateNode'] = makeTemplateNode(spec.element);
+  this.changeQueue = [];
+  this.firstLastNodesList = [];
+  this.indexesToDelete = [];
+  this.rendering_queued = false;
+  this.pendingDeletes = [];
+
+  // Remove existing content.
+  ko.virtualElements['emptyNode'](this.element);
+
+  // Prime content
+  var primeData = ko.unwrap(this['data']);
+  if (primeData.map) {
+    this.onArrayChange(primeData.map(valueToChangeAddItem), true);
+  }
+
+  // Watch for changes
+  if (ko.isObservable(this['data'])) {
+    if (!this['data'].indexOf) {
+      // Make sure the observable is trackable.
+      this['data'] = this['data']['extend']({ 'trackArrayChanges': true });
+    }
+    this.changeSubs = this['data']['subscribe'](this.onArrayChange, this, 'arrayChange');
+  }
+}
+
+OjForEach.PENDING_DELETE_INDEX_KEY = PENDING_DELETE_INDEX_KEY;
+
+OjForEach.prototype.dispose = function () {
+  if (this.changeSubs) {
+    this.changeSubs['dispose']();
+  }
+  this.flushPendingDeletes();
+};
+
+
+// If the array changes we register the change.
+OjForEach.prototype.onArrayChange = function (changeSet, isInitial) {
+  var self = this;
+  var changeMap = {
+    'added': [],
+    'deleted': []
+  };
+
+  // knockout array change notification index handling:
+  // - sends the original array indexes for deletes
+  // - sends the new array indexes for adds
+  // - sorts them all by index in ascending order
+  // because of this, when checking for possible batch additions, any delete can be between to adds with neighboring indexes, so only additions should be checked
+  for (var i = 0, len = changeSet.length; i < len; i++) {
+
+    if (changeMap['added'].length && changeSet[i].status == 'added') {
+      var lastAdd = changeMap['added'][changeMap['added'].length - 1];
+      var lastIndex = lastAdd.isBatch ? lastAdd.index + lastAdd.values.length - 1 : lastAdd.index;
+      if (lastIndex + 1 == changeSet[i].index) {
+        if (!lastAdd.isBatch) {
+          // transform the last addition into a batch addition object
+          lastAdd = {
+            isBatch: true,
+            status: 'added',
+            index: lastAdd.index,
+            values: [lastAdd.value]
+          };
+          changeMap['added'].splice(changeMap['added'].length - 1, 1, lastAdd);
+        }
+        lastAdd.values.push(changeSet[i].value);
+        continue;
+      }
+    }
+
+    changeMap[changeSet[i].status].push(changeSet[i]);
+  }
+
+  if (changeMap['deleted'].length > 0) {
+    this.changeQueue.push.apply(this.changeQueue, changeMap['deleted']);
+    this.changeQueue.push({ status: 'clearDeletedIndexes' });
+  }
+  this.changeQueue.push.apply(this.changeQueue, changeMap['added']);
+  // Once a change is registered, the ticking count-down starts for the processQueue.
+  if (this.changeQueue.length > 0 && !this.rendering_queued) {
+    this.rendering_queued = true;
+    self.processQueue();
+  }
+};
+
+
+// Reflect all the changes in the queue in the DOM, then wipe the queue.
+OjForEach.prototype.processQueue = function () {
+  var self = this;
+  var lowestIndexChanged = MAX_LIST_SIZE;
+
+  ko.utils.arrayForEach(this.changeQueue, function (changeItem) {
+    if (typeof changeItem.index === 'number') {
+      lowestIndexChanged = Math.min(lowestIndexChanged, changeItem.index);
+    }
+    // console.log(self['data'](), "CI", JSON.stringify(changeItem, null, 2), JSON.stringify($(self.element).text()))
+    self[changeItem.status](changeItem);
+    // console.log("  ==> ", JSON.stringify($(self.element).text()))
+  });
+  this.flushPendingDeletes();
+  this.rendering_queued = false;
+
+  // Update our indexes.
+  this.updateIndexes(lowestIndexChanged);
+
+  this.changeQueue = [];
+};
+
+
+// Process a changeItem with {status: 'added', ...}
+/**
+ * @expose
+ * @ignore 
+ */
+OjForEach.prototype.added = function (changeItem) {
+  var index = changeItem.index;
+  var valuesToAdd = changeItem.isBatch ? changeItem.values : [changeItem.value];
+  var referenceElement = this.getLastNodeBeforeIndex(index);
+  // gather all childnodes for a possible batch insertion
+  var allChildNodes = [];
+
+  for (var i = 0, len = valuesToAdd.length; i < len; ++i) {
+    var childNodes;
+
+    // we check if we have a pending delete with reusable nodesets for this data, and if yes, we reuse one nodeset
+    var pendingDelete = this.getPendingDeleteFor(valuesToAdd[i]);
+    if (pendingDelete && pendingDelete.nodesets.length) {
+      childNodes = pendingDelete.nodesets.pop();
+    } else {
+      var templateClone = this['templateNode'].cloneNode(true);
+      var current = {
+          'data': valuesToAdd[i],
+          'index': index + i,
+          'observableIndex': ko.observable()
+        };
+      var childContext = this['$context']['extend']({
+        '$root': undefined,
+        '$parent': undefined,
+        '$parents': undefined,
+        '$current': current
+      });
+      if (this['as']) {
+        childContext[this['as']] = current;
+      }
+
+      // apply bindings first, and then process child nodes, because bindings can add childnodes
+      ko.applyBindingsToDescendants(childContext, templateClone);
+
+      childNodes = ko.virtualElements.childNodes(templateClone);
+    }
+
+    // Note discussion at https://github.com/angular/angular.js/issues/7851
+    allChildNodes.push.apply(allChildNodes, Array.prototype.slice.call(childNodes));
+    this.firstLastNodesList.splice(index + i, 0, { first: childNodes[0], last: childNodes[childNodes.length - 1] });
+  }
+
+  this.insertAllAfter(allChildNodes, referenceElement);
+};
+
+OjForEach.prototype.getNodesForIndex = function (index) {
+  var result = [],
+    ptr = this.firstLastNodesList[index].first,
+    last = this.firstLastNodesList[index].last;
+  result.push(ptr);
+  while (ptr && ptr !== last) {
+    ptr = ptr.nextSibling;
+    result.push(ptr);
+  }
+  return result;
+};
+
+OjForEach.prototype.getLastNodeBeforeIndex = function (index) {
+  if (index < 1 || index - 1 >= this.firstLastNodesList.length)
+    return null;
+  return this.firstLastNodesList[index - 1].last;
+};
+
+OjForEach.prototype.insertAllAfter = function (nodeOrNodeArrayToInsert, insertAfterNode) {
+  var frag, len, i,
+    containerNode = this.element;
+
+  // poor man's node and array check, should be enough for this
+  if (nodeOrNodeArrayToInsert.nodeType === undefined && nodeOrNodeArrayToInsert.length === undefined) {
+    throw new Error("Expected a single node or a node array");
+  }
+  if (nodeOrNodeArrayToInsert.nodeType !== undefined) {
+    ko.virtualElements.insertAfter(containerNode, nodeOrNodeArrayToInsert, insertAfterNode);
+    return [nodeOrNodeArrayToInsert];
+  } else if (nodeOrNodeArrayToInsert.length === 1) {
+    ko.virtualElements.insertAfter(containerNode, nodeOrNodeArrayToInsert[0], insertAfterNode);
+  } else if (supportsDocumentFragment) {
+    frag = document.createDocumentFragment();
+
+    for (i = 0, len = nodeOrNodeArrayToInsert.length; i !== len; ++i) {
+      frag.appendChild(nodeOrNodeArrayToInsert[i]);
+    }
+    ko.virtualElements.insertAfter(containerNode, frag, insertAfterNode);
+  } else {
+    // Nodes are inserted in reverse order - pushed down immediately after
+    // the last node for the previous item or as the first node of element.
+    for (i = nodeOrNodeArrayToInsert.length - 1; i >= 0; --i) {
+      var child = nodeOrNodeArrayToInsert[i];
+      if (!child) { break; }
+      ko.virtualElements.insertAfter(containerNode, child, insertAfterNode);
+    }
+  }
+  return nodeOrNodeArrayToInsert;
+};
+
+// checks if the deleted data item should be handled with delay for a possible reuse at additions
+OjForEach.prototype.shouldDelayDeletion = function (data) {
+  return data && (typeof data === "object" || typeof data === "function");
+};
+
+// gets the pending deletion info for this data item
+OjForEach.prototype.getPendingDeleteFor = function (data) {
+  var index = data && data[PENDING_DELETE_INDEX_KEY];
+  if (index === undefined) return null;
+  return this.pendingDeletes[index];
+};
+
+// tries to find the existing pending delete info for this data item, and if it can't, it registeres one
+OjForEach.prototype.getOrCreatePendingDeleteFor = function (data) {
+  var pd = this.getPendingDeleteFor(data);
+  if (pd) {
+    return pd;
+  }
+  pd = {
+    data: data,
+    nodesets: []
+  };
+  data[PENDING_DELETE_INDEX_KEY] = this.pendingDeletes.length;
+  this.pendingDeletes.push(pd);
+  return pd;
+};
+
+// Process a changeItem with {status: 'deleted', ...}
+/**
+ * @expose
+ * @ignore
+ */
+OjForEach.prototype.deleted = function (changeItem) {
+  // if we should delay the deletion of this data, we add the nodeset to the pending delete info object
+  if (this.shouldDelayDeletion(changeItem.value)) {
+    var pd = this.getOrCreatePendingDeleteFor(changeItem.value);
+    pd.nodesets.push(this.getNodesForIndex(changeItem.index));
+  } else { // simple data, just remove the nodes
+    this.removeNodes(this.getNodesForIndex(changeItem.index));
+  }
+  this.indexesToDelete.push(changeItem.index);
+};
+
+// removes a set of nodes from the DOM
+OjForEach.prototype.removeNodes = function (nodes) {
+  if (!nodes.length) { return; }
+
+  var removeFn = function () {
+    var parent = nodes[0].parentNode;
+    for (var i = nodes.length - 1; i >= 0; --i) {
+      ko.cleanNode(nodes[i]);
+      parent.removeChild(nodes[i]);
+    }
+  };
+
+  removeFn();
+};
+
+// flushes the pending delete info store
+// this should be called after queue processing has finished, so that data items and remaining (not reused) nodesets get cleaned up
+// we also call it on dispose not to leave any mess
+OjForEach.prototype.flushPendingDeletes = function () {
+  for (var i = 0, len = this.pendingDeletes.length; i != len; ++i) {
+    var pd = this.pendingDeletes[i];
+    while (pd.nodesets.length) {
+      this.removeNodes(pd.nodesets.pop());
+    }
+    if (pd.data && pd.data[PENDING_DELETE_INDEX_KEY] !== undefined)
+      delete pd.data[PENDING_DELETE_INDEX_KEY];
+  }
+  this.pendingDeletes = [];
+};
+
+// We batch our deletion of item indexes in our parallel array.
+// See brianmhunt/knockout-fast-foreach#6/#8
+/**
+ * @expose
+ * @ignore 
+ */
+OjForEach.prototype.clearDeletedIndexes = function () {
+  // We iterate in reverse on the presumption (following the unit tests) that KO's diff engine
+  // processes diffs (esp. deletes) monotonically ascending i.e. from index 0 -> N.
+  for (var i = this.indexesToDelete.length - 1; i >= 0; --i) {
+    this.firstLastNodesList.splice(this.indexesToDelete[i], 1);
+  }
+  this.indexesToDelete = [];
+};
+
+
+OjForEach.prototype.getContextStartingFrom = function (node) {
+  var ctx;
+  while (node) {
+    ctx = ko.contextFor(node);
+    if (ctx) { return ctx; }
+    node = node.nextSibling;
+  }
+};
+
+
+OjForEach.prototype.updateIndexes = function (fromIndex) {
+  var ctx;
+  for (var i = fromIndex, len = this.firstLastNodesList.length; i < len; ++i) {
+    ctx = this.getContextStartingFrom(this.firstLastNodesList[i].first);
+    if (ctx && ctx['$current']) {
+      ctx['$current']['observableIndex'](i);
+    }
+  }
+};
+
+ko['bindingHandlers']['_ojBindForEach_'] = {
+  // Valid valueAccessors:
+  //    []
+  //    ko.observable([])
+  //    ko.observableArray([])
+  //    ko.computed
+  //    {data: array, name: string, as: string}
+  'init': function init(element, valueAccessor, bindings, vm, context) {
+    var ffe, value = valueAccessor();
+    if (isPlainObject(value)) {
+      value.element = value.element || element;
+      value['$context'] = context;
+      ffe = new OjForEach(value);
+    } else {
+      ffe = new OjForEach({
+        element: element,
+        'data': ko.unwrap(context['$rawData']) === value ? context['$rawData'] : value,
+        '$context': context
+      });
+    }
+
+    ko.utils.domNodeDisposal.addDisposeCallback(element, function () {
+      ffe.dispose();
+    });
+    return { 'controlsDescendantBindings': true };
+  },
+};
+
+ko.virtualElements.allowedBindings['_ojBindForEach_'] = true;
+})();
 /**
  * @ignore
  * @constructor
@@ -2236,7 +2674,44 @@ oj.__ExpressionPropertyUpdater = function(element, bindingContext, isComposite)
   var _changeListeners = {};
   var _settingProperties = {};
   var _CHANGED_EVENT_SUFFIX = "Changed";
-}
+};
+
+/**
+ * @ojstatus preview
+ * @ojcomponent oj.ojBindIf
+ * @ojbindingelement
+ * @since 4.1.0
+ *
+ * @classdesc
+ * <h3 id="chartOverview-section">
+ *   If Binding
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#ifOverview-section"></a>
+ * </h3>
+ * <p>Use &lt;oj-bind-if&gt; to conditionally render its contents only if a provided test 
+ * returns true. Note that the &lt;oj-bind-if&gt; element will be removed from the DOM 
+ * after binding is applied. For slotting, applications need to wrap the oj-bind-if element 
+ * inside another HTML element (e.g. &lt;span&gt;) with the slot attribute. The oj-bind-if element does not support 
+ * the slot attribute.</p>
+ *
+ * @example <caption>Initialize the oj-bind-if:</caption>
+ * &lt;oj-bind-if test='[[myTest]]'>
+ *   &lt;div>My Contents&lt;/div>
+ * &lt;/oj-bind-if>
+ */
+
+/**
+ * The test condition for the if clause. The children of the element will 
+ * only be rendered if the test is true.
+ * @expose
+ * @name test
+ * @memberof oj.ojBindIf
+ * @instance
+ * @type {boolean}
+ * @example <caption>Initialize the oj-bind-if:</caption>
+ * &lt;oj-bind-if test='[[myTest]]'>
+ *   &lt;div>My Contents&lt;/div>
+ * &lt;/oj-bind-if>
+ */
 
 /*jslint browser: true*/
 /*
@@ -2338,7 +2813,7 @@ oj.ResponsiveKnockoutUtils.createMediaQueryObservable = function(queryString)
   }
   
   return observable;
-}
+};
 
 
 /**
@@ -2439,7 +2914,7 @@ oj.ResponsiveKnockoutUtils.createScreenRangeObservable = function()
     throw new Error(" NO MATCH in oj.ResponsiveKnockoutUtils.createScreenRangeObservable");
 
   });
-}
+};
 
 /**
  * Common method to handle managed attributes for both init and update
@@ -2486,17 +2961,28 @@ oj.ComponentBinding.getDefaultInstance().setupManagedAttributes({
 });
 
 /**
+ * Utility methods for knockout templates.
+ * 
+ * @ojstatus preview
+ * @since 4.0.0
+ * @namespace
  * @export
  */
 oj.KnockoutTemplateUtils = {};
 
 /**
- * Returns a renderer for a knockout template.
- * @param {string} template The template name to render
- * @param {boolean=} bReplaceNode True if the entire target node will be replaced by the output of the template.
+ * JET custom elements do not support template binding attributes, so applications using knockout templates 
+ * should use this utility to convert their knockout templates to a renderer function for use in component 
+ * renderer APIs instead.
+ * 
+ * @param {string} template The name of the knockout template to use.
+ * @param {boolean=} bReplaceNode True if the entire target node should be replaced by the output of the template.
  *                                If false or omitted, the children of the target node will be replaced.
- * @return {function(Object)}
+ * @return {function(Object)} A renderer function that takes a context object.
  * @export
+ * 
+ * @example <caption>Convert a knockout template to a custom tooltip renderer function:</caption>
+ * &lt;oj-tag-cloud tooltip.renderer="[[oj.KnockoutTemplateUtils.getRenderer('tooltip_template')]]">&lt;/oj-tag-cloud>
  */
 oj.KnockoutTemplateUtils.getRenderer = function(template, bReplaceNode) 
 {
@@ -2541,6 +3027,42 @@ oj.KnockoutTemplateUtils.getRenderer = function(template, bReplaceNode)
   };
 };
 /**
+ * @ojstatus preview
+ * @ojcomponent oj.ojBindText
+ * @ojbindingelement
+ * @since 4.1.0
+ *
+ * @classdesc
+ * <h3 id="chartOverview-section">
+ *   Text Binding
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#textOverview-section"></a>
+ * </h3>
+ * <p>Use &lt;oj-bind-text&gt; to bind a text node to a variable. Note that the
+ * &lt;oj-bind-text&gt; element will be removed from the DOM after binding is
+ * applied, and any child elements it has will be removed. For slotting, applications 
+ * need to wrap the oj-bind-text element inside another HTML element (e.g. &lt;span&gt;) with the slot attribute. 
+ * The oj-bind-text element does not support the slot attribute.</p>
+ *
+ * @example <caption>Initialize the oj-bind-text:</caption>
+ * &lt;span>
+ *   &lt;oj-bind-text value='[[myText]]'>&lt;/oj-bind-text>
+ * &lt;/span>
+ */
+
+/**
+ * The value of the text node.
+ * @expose
+ * @name value
+ * @memberof oj.ojBindText
+ * @instance
+ * @type {string}
+ * @example <caption>Initialize the oj-bind-text:</caption>
+ * &lt;span>
+ *   &lt;oj-bind-text value='[[myText]]'>&lt;/oj-bind-text>
+ * &lt;/span>
+ */
+
+/**
  * Common method to handle managed attributes for both init and update
  * @param {string} name the name of the attribute
  * @param {Object} value the value of the attribute
@@ -2566,6 +3088,286 @@ oj.ComponentBinding.getDefaultInstance().setupManagedAttributes({
   'for': 'ojTreemap'
 });
 
+/**
+ * @ignore
+ */
+(function () {
+  oj.__KO_CUSTOM_BINDING_PROVIDER_INSTANCE.addPostprocessor
+  (
+    {
+      'preprocessNode': function(node, wrappedReturn)
+      {
+        var newNodes;
+        if (node.nodeType === 1)
+        {
+          var nodeName = node.nodeName.toLowerCase();
+
+          if ('oj-bind-text' === nodeName)
+          {
+            newNodes = _replaceWithKo(node, 'text', 'value', true);
+          }
+          else if ('oj-bind-if' === nodeName)
+          {
+            newNodes = _replaceWithKo(node, 'if', 'test', false);
+          }
+          else if ('oj-bind-for-each' === nodeName) 
+          {
+            newNodes = _replaceWithKoForEach(node);
+          }
+        }
+        return newNodes? newNodes: wrappedReturn;
+      },
+      'nodeHasBindings': function (node, wrappedReturn) {
+        var bindings = _getBindings(node);
+        return wrappedReturn || bindings._ATTR_BIND != null || bindings._STYLE_BIND != null;
+      },
+      'getBindingAccessors': function (node, bindingContext, wrappedReturn) 
+      {
+        if (node.nodeType === 1) 
+        {
+          wrappedReturn = wrappedReturn || {};
+
+
+          var bindings = _getBindings(node);
+          // Style bindings
+          var styleAttrs = bindings._STYLE_BIND;
+          if (styleAttrs)
+          {
+            if (wrappedReturn['style'])
+              throw new Error("Cannot have both style data-bind and JET style binding on " + node.tagName + " with id " + node.id);
+
+            // If :style is set, any additional :style.* attributes would have thrown an error earlier
+            if (styleAttrs === 'style')
+            {
+              wrappedReturn[styleAttrs] = _getValueEvaluator(node, styleAttrs,  node.getAttribute(_getBoundAttrName(styleAttrs)), bindingContext, 'object');
+            }
+            else
+            {
+              var styleEvaluators = {};
+              for (var i = 0; i < styleAttrs.length; i++)
+              {
+                var attr = styleAttrs[i];
+                var styleProp = oj.__AttributeUtils.attributeToPropertyName(attr.substring(6));
+                styleEvaluators[styleProp] = _getValueEvaluator(node, attr,  node.getAttribute(_getBoundAttrName(attr)), bindingContext, 'string');
+              }
+              wrappedReturn['style'] = _getObjectEvaluator(styleEvaluators);
+            }
+          }
+
+          // All other attribute bindings
+          var boundAttrs = bindings._ATTR_BIND;
+          if (boundAttrs)
+          {
+            if (wrappedReturn['attr'])
+              throw new Error("Cannot have both attr data-bind and JET attribute binding on " + node.tagName + " with id " + node.id);
+            
+            var attrEvaluators = {};
+            for (var i = 0; i < boundAttrs.length; i++)
+            {
+              var attr = boundAttrs[i];
+              attrEvaluators[attr] = _getValueEvaluator(node, attr, node.getAttribute(_getBoundAttrName(attr)), bindingContext, 'string');
+            }
+
+            wrappedReturn['attr'] = _getObjectEvaluator(attrEvaluators);
+          }
+          
+        }
+        return wrappedReturn;
+      }
+    }
+  );
+
+  function _replaceWithKo(node, bindableAttr, nodeAttr, stringify)
+  {
+    var expr = _getExpression(node.getAttribute(nodeAttr), stringify);
+    if (!expr)
+      return;
+
+    var binding = 'ko ' + bindableAttr + ':' + expr;
+    return _getReplacementNodes(node, bindableAttr, binding);
+  }
+  
+  function _replaceWithKoForEach(node)
+  {
+    var dataValue = node.getAttribute('data');
+    var dataExp = oj.__AttributeUtils.getExpressionInfo(dataValue).expr;
+    if (!dataExp) 
+    {
+      try 
+      {
+        var literalValue = JSON.parse(dataValue);
+        if (Array.isArray(literalValue))
+          dataExp = dataValue;
+        else
+          throw new Error("got value " + dataValue);
+      }
+      catch (e) 
+      {
+        throw new Error("The value on the oj-bind-for-each data attribute should be either a JSON array or an expression : " + e);
+      }
+    }
+
+    var asExp = _getExpression(node.getAttribute('as'), true);
+    if (!dataExp)
+      return;
+    
+    var binding = "ko _ojBindForEach_:{data:" + dataExp;
+    binding += asExp ? ",as:" + asExp + "}" : "}";
+    return _getReplacementNodes(node, "_ojBindForEach_", binding);
+  }
+  
+  function _getReplacementNodes (node, bindableAttr, binding){
+    var openComment = document.createComment(binding);
+    var closeComment = document.createComment('/ko');
+
+    var newNodes = [openComment];
+
+    var parent  = node.parentNode;
+    parent.insertBefore(openComment, node); // @HTMLUpdateOK
+
+    // Copy the oj-bind-x children into the comment node
+    if (bindableAttr === 'if')
+    {
+      while (node.childNodes.length > 0)
+      {
+        var child = node.childNodes[0];
+        parent.insertBefore(child, node); // @HTMLUpdateOK
+        newNodes.push(child);
+      }
+    }
+    else if (bindableAttr === '_ojBindForEach_') 
+    {
+      while (node.childNodes.length > 0)
+      {
+        var child = node.childNodes[0];
+        parent.insertBefore(child, node); // @HTMLUpdateOK
+        newNodes.push(child);
+        if (child.nodeType === 1 && "template" === child.nodeName.toLowerCase()) 
+        {
+          if (!openComment['_templateNode'])
+            Object.defineProperty(openComment, '_templateNode', { 'value': child, 'enumerable': false });
+          else 
+            throw new Error("Multiple templates found: oj-bind-for-each requires a single template element as its direct child");
+        }
+      }
+      // check for the template since it is a required attribute for oj-bind-for-each.
+      if (!openComment['_templateNode'])
+        throw new Error("Template not found: oj-bind-for-each requires a single template element as its direct child");
+    }
+    newNodes.push(closeComment);
+
+    parent.replaceChild(closeComment, node);
+
+    return newNodes;
+  }
+
+  function _getExpression(attrValue, stringify)
+  {
+    if (attrValue != null)
+    {
+      var exp = oj.__AttributeUtils.getExpressionInfo(attrValue).expr;
+      if (exp == null)
+      {
+        if (stringify)
+          exp = "'" + attrValue + "'";
+        else
+          exp = attrValue;
+      }
+      return exp;
+    }
+
+    return null;
+  }
+
+  function _getValueEvaluator(elem, attr, value, bindingContext, type)
+  {
+    var exp = oj.__AttributeUtils.getExpressionInfo(value).expr;
+    if (exp == null)
+    {
+      return function() { 
+        return type === 'object' ? oj.__AttributeUtils.coerceValue(elem, attr, value, type) : value; 
+      };
+    }
+    else
+      return oj.ComponentBinding.__CreateEvaluator(exp).bind(null, bindingContext);
+  }
+
+  function _getObjectEvaluator(attrEvaluators) 
+  {
+    return function() {
+      var evaluatedExprs = {};
+      var attrs = Object.keys(attrEvaluators);
+      for (var i = 0; i < attrs.length; i++)
+      {
+        var attr = attrs[i];
+        evaluatedExprs[attr] = attrEvaluators[attr]();
+      }
+      return evaluatedExprs;
+    };
+  }
+
+  function _getBindings(node)
+  {
+    if (node.nodeType !== 1)
+      return {};
+
+    if (!node[_BINDINGS])
+    {
+      // Iterate through all attributes on the element and find those that are using our
+      // data bind attibute syntax
+      var bindings = {}; 
+      var boundAttrs = [];
+      var boundStyle = [];
+      var attrs = node.attributes; // attrs is a NamedNodeMap
+      for (var i = 0; i < attrs.length; i++)
+      {
+        var attr = attrs[i];
+        var unboundAttrName = _getUnboundAttrName(attr.name);
+        if (unboundAttrName)
+        {
+          // An element can have a style binding or several style.* bindings.
+          // Throw an error if both are present.
+          if (unboundAttrName === 'style')
+            bindings._STYLE_BIND = unboundAttrName;
+          else if (unboundAttrName.substring(0,6) === 'style.')
+            boundStyle.push(unboundAttrName);
+          else
+            boundAttrs.push(unboundAttrName);
+        }
+      }
+
+      // Cache attribute map as a non-enumerable property so we don't have to loop again
+      // in getBindingAccessors
+      if (boundStyle.length)
+      {
+        if (bindings._STYLE_BIND)
+          throw new Error('Cannot have both style and style.* data bound attributes on ' + node.tagName + ' with id ' + node.id);
+        else
+          bindings._STYLE_BIND = boundStyle;
+      }
+
+      if (boundAttrs.length)
+        bindings._ATTR_BIND = boundAttrs;
+
+      Object.defineProperty(node, _BINDINGS, {'value': bindings});
+    }
+    return node[_BINDINGS];
+  }
+
+  function _getUnboundAttrName(attr)
+  {
+    if (attr && attr.charAt(0) === ':')
+      return attr.slice(1);
+    return null;
+  }
+
+  function _getBoundAttrName(attr)
+  {
+    return ':' + attr;
+  }
+
+  var _BINDINGS = "_ojbindingsobj";
+})();
 /**
  * Returns a renderer function and executes the template specified in the binding attribute. (for example, a knockout template).
  * @param {Object} bindingContext the ko binding context
@@ -2736,10 +3538,90 @@ oj.koStringTemplateEngine.install = function()
 };
 
 
+/**
+ * @ojstatus preview
+ * @ojcomponent oj.ojBindForEach
+ * @ojbindingelement
+ * @since 4.1.0
+ *
+ * @classdesc
+ * <h3 id="oj-for-each-overview-section">
+ *   ForEach Binding
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#oj-for-each-overview-section"></a>
+ * </h3>
+ * <p>Use &lt;oj-bind-for-each&gt; to bind items of an array to the specified markup section. 
+ * The markup section is duplicated for each array item when element is rendered. 
+ * &lt;oj-bind-for-each&gt; requires the application to specify a single &lt;template&gt; element 
+ * as its direct child.  The markup being stamped out should be placed inside of this &lt;template&gt; element. 
+ * </p>
+ * <p>During iteration, each item will have access to the same binding context that is applied to the 
+ * &lt;oj-bind-for-each&gt; element. 
+ * In addition the binding context will contain the following properties:
+ *  <ul>
+ *   <li><code>$current</code> - An object that contains information for the current array item being rendered.</li>
+ *    <ul>
+ *       <li><code>data</code> - The current array item being rendered.</li>
+ *       <li><code>index</code> - Zero-based index of the current array item being rendered.
+ *                                The index value is not updated in response to array additions and removals and
+ *                                is only recommended for static arrays.</li>
+ *       <li><code>observableIndex</code> - An observable that refers to the zero-based index of the current array item being rendered. 
+ *                                          The <code>observableIndex</code> value is updated in response to array additions and removals
+ *                                          and can be used for both static and dynamic arrays.</li>
+ *    </ul>
+ *   <li>alias - If <b>as</b> attribute was specified, the value will be used to provide an 
+ *        application-named alias for <code>$current</code>. This can be especially useful 
+ *        if multiple oj-bind-for-each elements are nested to provide access to the data 
+ *        for each level of iteration.
+ *   </li>
+ *  </ul>
+ * </p>
+ * <p>Note that the &lt;oj-bind-for-each&gt; element will be removed from the DOM after binding is applied.
+ * For slotting, applications need to wrap the oj-bind-for-each element inside another HTML element (e.g. &lt;span&gt;) with the slot attribute.
+ * The oj-bind-for-each element does not support the slot attribute.</p>
+ *
+ * @example <caption>Initialize the oj-bind-for-each - access data using <code>$current</code>:</caption>
+ *  &lt;oj-bind-for-each data='[{"type":"Apple"},{"type":"Orange"}]'>
+ *    &lt;template>
+ *      &lt;p>&lt;oj-bind-text value='[[$current.data.type]]'>&lt;/oj-bind-text>&lt;/p>
+ *    &lt;/template>
+ *  &lt;/oj-bind-for-each>
+ *
+ * @example <caption>Initialize the oj-bind-for-each - access data using alias:</caption>
+ *  &lt;oj-bind-for-each data="[[fruits]]" as="fruit">
+ *    &lt;template>
+ *      &lt;p>&lt;oj-bind-text value="[[fruit.data.type]]">&lt;/oj-bind-text>&lt;/p>
+ *    &lt;/template>
+ *  &lt;/oj-bind-for-each>
+ */
+
+/**
+ * The array that you wish to iterate over. Required property.
+ * @expose
+ * @name data
+ * @memberof oj.ojBindForEach
+ * @instance
+ * @type {array}
+ */
+ 
+ /**
+ * An alias for the array item. This can be especially useful 
+ * if multiple oj-bind-for-each elements are nested to provide access to the data 
+ * for each level of iteration.
+ * @expose
+ * @name as
+ * @memberof oj.ojBindForEach
+ * @instance
+ * @type {string}
+ */
+
+/**
+ * @ignore
+ */
 (function()
 {
   ko['bindingHandlers']['_ojCustomElement'] =
   {
+    'after': ['attr'], // Ensure attr binding is processed first so to handle :disabled case since we only process on init
     'init': function(element, valueAccessor, allBindingsAccessor, viewModel, bindingContext)
     {
        // Apply child bindings first
@@ -2789,7 +3671,7 @@ oj.koStringTemplateEngine.install = function()
 
         // setupExpression will only update properties defined in metadata so it's safe to iterate through all element attributes
         // including ones defined on the base HTML prototype
-        var attrs = element.attributes; // attrs is a NodeList
+        var attrs = element.attributes; // attrs is a NamedNodeMap
         for (var i = 0; i < attrs.length; i++)
         {
           var attr = attrs[i];
@@ -3114,6 +3996,9 @@ oj.ComponentBinding.getDefaultInstance().setupManagedAttributes(
     'for': 'ojTable'
   });
 
+/**
+ * @ignore
+ */
 oj.__KO_CUSTOM_BINDING_PROVIDER_INSTANCE.addPostprocessor({'getBindingAccessors': _replaceComponentBindingWithV2});
 
 

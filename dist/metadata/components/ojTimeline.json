@@ -1,0 +1,876 @@
+{
+  "name": "ojTimeline",
+  "version": "4.1.0",
+  "jetVersion": "4.1.0",
+  "displayName": " Timeline",
+  "preview": true,
+  "description": "A JET Timeline is a themable, WAI-ARIA compliant element that displays a set of events in chronological order",
+  "properties": {
+    "animationOnDataChange": {
+      "description": "Defines the animation that is applied on data changes.",
+      "type": "string",
+      "displayName": "Animation On Data Change",
+      "value": "none",
+      "enumValues": [
+        "auto",
+        "none"
+      ],
+      "propertyEditorValues": {
+        "auto": {
+          "displayName": "Auto"
+        },
+        "none": {
+          "displayName": "None"
+        }
+      }
+    },
+    "animationOnDisplay": {
+      "description": "Defines the animation that is shown on initial display.",
+      "type": "string",
+      "displayName": "Animation On Display",
+      "value": "none",
+      "enumValues": [
+        "auto",
+        "none"
+      ],
+      "propertyEditorValues": {
+        "auto": {
+          "displayName": "Auto"
+        },
+        "none": {
+          "displayName": "None"
+        }
+      }
+    },
+    "end": {
+      "description": "The end time of the timeline. This is required in order for the timeline to properly render.",
+      "type": "string",
+      "displayName": "End",
+      "value": null
+    },
+    "majorAxis": {
+      "description": "An object with the following properties, used to define a timeline axis. If not specified, no axis labels will be shown above the minor axis or in the overview.",
+      "type": "object",
+      "displayName": "Major Axis",
+      "value": null,
+      "properties": {
+        "converter": {
+          "description": "The converter (an object literal or instance that duck types oj.Converter) used to format the labels of the major axis. If not specified, the default converter is used. If a single converter is specified, it will be used for all 'scale' values. Otherwise, an object whose keys are 'scale' values that map to the converter instances is expected. See oj.DateTimeConverterFactory for details on creating built-in datetime converters.",
+          "type": "object",
+          "value": null,
+          "properties": {
+            "days": {
+              "description": "The converter (an object literal or instance that duck types oj.Converter) used for the 'days' scale. If not specified, the default converter will be used for this scale. See oj.DateTimeConverterFactory for details on creating built-in datetime converters.",
+              "type": "object",
+              "value": null
+            },
+            "default": {
+              "description": "The default converter (an object literal or instance that duck types oj.Converter) to use for all 'scale' values that do not otherwise have a converter object provided. See oj.DateTimeConverterFactory for details on creating built-in datetime converters.",
+              "type": "object",
+              "value": null
+            },
+            "hours": {
+              "description": "The converter (an object literal or instance that duck types oj.Converter) used for the 'hours' scale. If not specified, the default converter will be used for this scale. See oj.DateTimeConverterFactory for details on creating built-in datetime converters.",
+              "type": "object",
+              "value": null
+            },
+            "minutes": {
+              "description": "The converter (an object literal or instance that duck types oj.Converter) used for the 'minutes' scale. If not specified, the default converter will be used for this scale. See oj.DateTimeConverterFactory for details on creating built-in datetime converters.",
+              "type": "object",
+              "value": null
+            },
+            "months": {
+              "description": "The converter (an object literal or instance that duck types oj.Converter) used for the 'months' scale. If not specified, the default converter will be used for this scale. See oj.DateTimeConverterFactory for details on creating built-in datetime converters.",
+              "type": "object",
+              "value": null
+            },
+            "quarters": {
+              "description": "The converter (an object literal or instance that duck types oj.Converter) used for the 'quarters' scale. If not specified, the default converter will be used for this scale. See oj.DateTimeConverterFactory for details on creating built-in datetime converters.",
+              "type": "object",
+              "value": null
+            },
+            "seconds": {
+              "description": "The converter (an object literal or instance that duck types oj.Converter) used for the 'seconds' scale. If not specified, the default converter will be used for this scale. See oj.DateTimeConverterFactory for details on creating built-in datetime converters.",
+              "type": "object",
+              "value": null
+            },
+            "weeks": {
+              "description": "The converter (an object literal or instance that duck types oj.Converter) used for the 'weeks' scale. If not specified, the default converter will be used for this scale. See oj.DateTimeConverterFactory for details on creating built-in datetime converters.",
+              "type": "object",
+              "value": null
+            },
+            "years": {
+              "description": "The converter (an object literal or instance that duck types oj.Converter) used for the 'years' scale. If not specified, the default converter will be used for this scale. See oj.DateTimeConverterFactory for details on creating built-in datetime converters.",
+              "type": "object",
+              "value": null
+            }
+          }
+        },
+        "scale": {
+          "description": "The time scale used for the major axis. If not specified, no axis labels will be shown above the minor axis or in the overview.",
+          "type": "string",
+          "value": null,
+          "enumValues": [
+            "days",
+            "hours",
+            "minutes",
+            "months",
+            "quarters",
+            "seconds",
+            "weeks",
+            "years"
+          ],
+          "propertyEditorValues": {
+            "days": {
+              "displayName": "Days"
+            },
+            "hours": {
+              "displayName": "Hours"
+            },
+            "minutes": {
+              "displayName": "Minutes"
+            },
+            "months": {
+              "displayName": "Months"
+            },
+            "quarters": {
+              "displayName": "Quarters"
+            },
+            "seconds": {
+              "displayName": "Seconds"
+            },
+            "weeks": {
+              "displayName": "Weeks"
+            },
+            "years": {
+              "displayName": "Years"
+            }
+          }
+        },
+        "svgStyle": {
+          "description": "The CSS style defining any additional styling of the axis. If not specified, no additional styling will be applied.",
+          "type": "object",
+          "value": null
+        }
+      }
+    },
+    "minorAxis": {
+      "description": "An object with the following properties, used to define a timeline axis. This is required in order for the timeline to properly render.",
+      "type": "object",
+      "displayName": "Minor Axis",
+      "value": null,
+      "properties": {
+        "converter": {
+          "description": "The converter (an object literal or instance that duck types oj.Converter) used to format the labels of the minor axis. If not specified, the default converter is used. If a single converter is specified, it will be used for all 'scale' values. Otherwise, an object whose keys are 'scale' values that map to the converter instances is expected. See oj.DateTimeConverterFactory for details on creating built-in datetime converters.",
+          "type": "object",
+          "value": null,
+          "properties": {
+            "days": {
+              "description": "The converter (an object literal or instance that duck types oj.Converter) used for the 'days' scale. If not specified, the default converter will be used for this scale. See oj.DateTimeConverterFactory for details on creating built-in datetime converters.",
+              "type": "object",
+              "value": null
+            },
+            "default": {
+              "description": "The default converter (an object literal or instance that duck types oj.Converter) to use for all 'scale' values that do not otherwise have a converter object provided. See oj.DateTimeConverterFactory for details on creating built-in datetime converters.",
+              "type": "object",
+              "value": null
+            },
+            "hours": {
+              "description": "The converter (an object literal or instance that duck types oj.Converter) used for the 'hours' scale. If not specified, the default converter will be used for this scale. See oj.DateTimeConverterFactory for details on creating built-in datetime converters.",
+              "type": "object",
+              "value": null
+            },
+            "minutes": {
+              "description": "The converter (an object literal or instance that duck types oj.Converter) used for the 'minutes' scale. If not specified, the default converter will be used for this scale. See oj.DateTimeConverterFactory for details on creating built-in datetime converters.",
+              "type": "object",
+              "value": null
+            },
+            "months": {
+              "description": "The converter (an object literal or instance that duck types oj.Converter) used for the 'months' scale. If not specified, the default converter will be used for this scale. See oj.DateTimeConverterFactory for details on creating built-in datetime converters.",
+              "type": "object",
+              "value": null
+            },
+            "quarters": {
+              "description": "The converter (an object literal or instance that duck types oj.Converter) used for the 'quarters' scale. If not specified, the default converter will be used for this scale. See oj.DateTimeConverterFactory for details on creating built-in datetime converters.",
+              "type": "object",
+              "value": null
+            },
+            "seconds": {
+              "description": "The converter (an object literal or instance that duck types oj.Converter) used for the 'seconds' scale. If not specified, the default converter will be used for this scale. See oj.DateTimeConverterFactory for details on creating built-in datetime converters.",
+              "type": "object",
+              "value": null
+            },
+            "weeks": {
+              "description": "The converter (an object literal or instance that duck types oj.Converter) used for the 'weeks' scale. If not specified, the default converter will be used for this scale. See oj.DateTimeConverterFactory for details on creating built-in datetime converters.",
+              "type": "object",
+              "value": null
+            },
+            "years": {
+              "description": "The converter (an object literal or instance that duck types oj.Converter) used for the 'years' scale. If not specified, the default converter will be used for this scale. See oj.DateTimeConverterFactory for details on creating built-in datetime converters.",
+              "type": "object",
+              "value": null
+            }
+          }
+        },
+        "scale": {
+          "description": "The time scale used for the minor axis. This is required in order for the timeline to properly render.",
+          "type": "string",
+          "value": null,
+          "enumValues": [
+            "days",
+            "hours",
+            "minutes",
+            "months",
+            "quarters",
+            "seconds",
+            "weeks",
+            "years"
+          ],
+          "propertyEditorValues": {
+            "days": {
+              "displayName": "Days"
+            },
+            "hours": {
+              "displayName": "Hours"
+            },
+            "minutes": {
+              "displayName": "Minutes"
+            },
+            "months": {
+              "displayName": "Months"
+            },
+            "quarters": {
+              "displayName": "Quarters"
+            },
+            "seconds": {
+              "displayName": "Seconds"
+            },
+            "weeks": {
+              "displayName": "Weeks"
+            },
+            "years": {
+              "displayName": "Years"
+            }
+          }
+        },
+        "svgStyle": {
+          "description": "The CSS style defining any additional styling of the axis. If not specified, no additional styling will be applied.",
+          "type": "object",
+          "value": null
+        },
+        "zoomOrder": {
+          "description": "An array of strings containing the names of scales used for zooming from longest to shortest. If not specified, the 'scale' specified on the minor axis will be used at all zoom levels.",
+          "type": "Array.<string>",
+          "value": null
+        }
+      }
+    },
+    "orientation": {
+      "description": "The orientation of the element.",
+      "type": "string",
+      "displayName": "Orientation",
+      "value": "horizontal",
+      "enumValues": [
+        "horizontal",
+        "vertical"
+      ],
+      "propertyEditorValues": {
+        "horizontal": {
+          "displayName": "Horizontal"
+        },
+        "vertical": {
+          "displayName": "Vertical"
+        }
+      }
+    },
+    "overview": {
+      "description": "An object with the following properties, used to define a timeline overview. If not specified, no overview will be shown.",
+      "type": "object",
+      "displayName": "Overview",
+      "value": null,
+      "properties": {
+        "rendered": {
+          "description": "Specifies whether the overview scrollbar is rendered.",
+          "type": "string",
+          "value": "off",
+          "enumValues": [
+            "off",
+            "on"
+          ],
+          "propertyEditorValues": {
+            "off": {
+              "displayName": "Off"
+            },
+            "on": {
+              "displayName": "On"
+            }
+          }
+        },
+        "svgStyle": {
+          "description": "The CSS style defining any additional styling of the overview. If not specified, no additional styling will be applied.",
+          "type": "object",
+          "value": null
+        }
+      }
+    },
+    "referenceObjects": {
+      "description": "The array of reference objects associated with the timeline. For each reference object, a line is rendered at the specified value. Currently only the first reference object in the array is supported. Any additional objects supplied in the array will be ignored.",
+      "type": "Array.<object>",
+      "displayName": "Reference Objects",
+      "value": null,
+      "properties": {
+        "value": {
+          "description": "The value of this reference object. If not specified, no reference object will be shown.",
+          "type": "string",
+          "value": null
+        }
+      }
+    },
+    "selection": {
+      "description": "An array of strings containing the ids of the initially selected items.",
+      "type": "Array.<string>",
+      "displayName": "Selection",
+      "value": null
+    },
+    "selectionMode": {
+      "description": "The type of selection behavior that is enabled on the timeline. If 'single' is specified, only a single item across all series can be selected at once. If 'multiple', any number of items across all series can be selected at once. Otherwise, selection is disabled.",
+      "type": "string",
+      "displayName": "Selection Mode",
+      "value": "none",
+      "enumValues": [
+        "multiple",
+        "none",
+        "single"
+      ],
+      "propertyEditorValues": {
+        "multiple": {
+          "displayName": "Multiple"
+        },
+        "none": {
+          "displayName": "None"
+        },
+        "single": {
+          "displayName": "Single"
+        }
+      }
+    },
+    "series": {
+      "description": "An array of objects with the following properties, used to define a timeline series. Also accepts a Promise or callback function for deferred data rendering. The function should return one of the following: Promise: A Promise that will resolve with an array of data items. No data will be rendered if the Promise is rejected. Array: An array of data items. ",
+      "type": "Array.<object>|Promise",
+      "displayName": "Series",
+      "value": null,
+      "properties": {
+        "emptyText": {
+          "description": "The text of an empty timeline series.",
+          "type": "string",
+          "value": null
+        },
+        "id": {
+          "description": "The identifier for the timeline series.",
+          "type": "string",
+          "value": null
+        },
+        "itemLayout": {
+          "description": "The direction in which items are laid out when in a horizontal orientation. This attribute is ignored when in a vertical orientation.",
+          "type": "string",
+          "value": "auto",
+          "enumValues": [
+            "auto",
+            "bottomToTop",
+            "topToBottom"
+          ],
+          "propertyEditorValues": {
+            "auto": {
+              "displayName": "Auto"
+            },
+            "bottomToTop": {
+              "displayName": "Bottom To Top"
+            },
+            "topToBottom": {
+              "displayName": "Top To Bottom"
+            }
+          }
+        },
+        "items": {
+          "description": "An array of objects with the following properties, used to define a timeline item. If not specified, no data will be shown in this series.",
+          "type": "Array.<object>",
+          "value": null,
+          "properties": {
+            "description": {
+              "description": "The description text displayed on the timeline item. If not specified, no description will be shown.",
+              "type": "string",
+              "value": null
+            },
+            "durationFillColor": {
+              "description": "The color applied to the duration bar of the timeline item. If not specified, this will be determined by the color ramp of the series.",
+              "type": "string",
+              "value": null
+            },
+            "end": {
+              "description": "The end time of this timeline item. If not specified, no duration bar will be shown.",
+              "type": "string",
+              "value": null
+            },
+            "id": {
+              "description": "The identifier for the timeline item. This must be unique across all items in the timeline, and is required in order for the timeline to properly render.",
+              "type": "string",
+              "value": null
+            },
+            "start": {
+              "description": "The start time of this timeline item. This is required in order for the timeline item to properly render.",
+              "type": "string",
+              "value": null
+            },
+            "svgStyle": {
+              "description": "The CSS style defining any additional styling of the item. If not specified, no additional styling will be applied.",
+              "type": "object",
+              "value": null
+            },
+            "thumbnail": {
+              "description": "An optional URI specifying the location of an image resource to be displayed on the item. The image will be rendered at 32px x 32px in size. If not specified, no thumbnail will be shown.",
+              "type": "string",
+              "value": null
+            },
+            "title": {
+              "description": "The title text displayed on the timeline item. If not specified, no title will be shown.",
+              "type": "string",
+              "value": null
+            }
+          }
+        },
+        "label": {
+          "description": "The label displayed on the timeline series. In not specified, no label will be shown.",
+          "type": "string",
+          "value": null
+        },
+        "svgStyle": {
+          "description": "The CSS style defining any additional styling of the series. If not specified, no additional styling will be applied.",
+          "type": "object",
+          "value": null
+        }
+      }
+    },
+    "start": {
+      "description": "The start time of the timeline. This is required in order for the timeline to properly render.",
+      "type": "string",
+      "displayName": "Start",
+      "value": null
+    },
+    "styleDefaults": {
+      "description": "An object with the following properties, used to define default styling for the timeline.",
+      "type": "object",
+      "displayName": "Style Defaults",
+      "value": null,
+      "properties": {
+        "animationDuration": {
+          "description": "The duration of the animations, in milliseconds. Also accepts CSS strings such as 1s and 1000ms. For data change animations with multiple stages, this attribute defines the duration of each stage. For example, if an animation contains two stages, the total duration will be two times this attribute's value.",
+          "type": "number",
+          "value": null
+        },
+        "borderColor": {
+          "description": "The border color of the timeline.",
+          "type": "string",
+          "value": null
+        },
+        "item": {
+          "description": "An object with the following properties, used to define the default styling for the timeline item.",
+          "type": "object",
+          "value": null,
+          "properties": {
+            "backgroundColor": {
+              "description": "The background color of the timeline items.",
+              "type": "string",
+              "value": null
+            },
+            "borderColor": {
+              "description": "The border color of the timeline items.",
+              "type": "string",
+              "value": null
+            },
+            "descriptionStyle": {
+              "description": "The CSS style defining the style of the timeline item description text.",
+              "type": "object",
+              "value": null
+            },
+            "hoverBackgroundColor": {
+              "description": "The background color of the highlighted timeline items.",
+              "type": "string",
+              "value": null
+            },
+            "hoverBorderColor": {
+              "description": "The border color of the highlighted timeline items.",
+              "type": "string",
+              "value": null
+            },
+            "selectedBackgroundColor": {
+              "description": "The background color of the selected timeline items.",
+              "type": "string",
+              "value": null
+            },
+            "selectedBorderColor": {
+              "description": "The border color of the selected timeline items.",
+              "type": "string",
+              "value": null
+            },
+            "titleStyle": {
+              "description": "The CSS style defining the style of the timeline item title text.",
+              "type": "object",
+              "value": null
+            }
+          }
+        },
+        "majorAxis": {
+          "description": "An object with the following properties, used to define the default styling for the major time axis.",
+          "type": "object",
+          "value": null,
+          "properties": {
+            "labelStyle": {
+              "description": "The CSS style defining the style of the major time axis label text.",
+              "type": "object",
+              "value": null
+            },
+            "separatorColor": {
+              "description": "The color of the major time axis separators.",
+              "type": "string",
+              "value": null
+            }
+          }
+        },
+        "minorAxis": {
+          "description": "An object with the following properties, used to define the default styling for the time axis.",
+          "type": "object",
+          "value": null,
+          "properties": {
+            "backgroundColor": {
+              "description": "The background color of the time axis.",
+              "type": "string",
+              "value": null
+            },
+            "borderColor": {
+              "description": "The border color of the time axis.",
+              "type": "string",
+              "value": null
+            },
+            "labelStyle": {
+              "description": "The CSS style defining the style of the time axis label text.",
+              "type": "object",
+              "value": null
+            },
+            "separatorColor": {
+              "description": "The color of the time axis separators.",
+              "type": "string",
+              "value": null
+            }
+          }
+        },
+        "overview": {
+          "description": "An object with the following properties, used to define the default styling for the timeline overview.",
+          "type": "object",
+          "value": null,
+          "properties": {
+            "backgroundColor": {
+              "description": "The background color of the timeline overview.",
+              "type": "string",
+              "value": null
+            },
+            "labelStyle": {
+              "description": "The CSS style defining the style of the timeline overview label text.",
+              "type": "object",
+              "value": null
+            },
+            "window": {
+              "description": "An object with the following properties, used to define the default styling for the timeline overview window.",
+              "type": "object",
+              "value": null,
+              "properties": {
+                "backgroundColor": {
+                  "description": "The background color of the timeline overview window.",
+                  "type": "string",
+                  "value": null
+                },
+                "borderColor": {
+                  "description": "The border color of the timeline overview window.",
+                  "type": "string",
+                  "value": null
+                }
+              }
+            }
+          }
+        },
+        "referenceObject": {
+          "description": "An object with the following properties, used to define the default styling for the reference objects.",
+          "type": "object",
+          "value": null,
+          "properties": {
+            "color": {
+              "description": "The color of the reference objects.",
+              "type": "string",
+              "value": null
+            }
+          }
+        },
+        "series": {
+          "description": "An object with the following properties, used to define the default styling for the timeline series.",
+          "type": "object",
+          "value": null,
+          "properties": {
+            "backgroundColor": {
+              "description": "The background color of the series.",
+              "type": "string",
+              "value": null
+            },
+            "colors": {
+              "description": "The array defining the default color ramp for the series items.",
+              "type": "Array.<string>",
+              "value": null
+            },
+            "emptyTextStyle": {
+              "description": "The CSS style defining the style of the series empty text.",
+              "type": "object",
+              "value": null
+            },
+            "labelStyle": {
+              "description": "The CSS style defining the style of the series label text.",
+              "type": "object",
+              "value": null
+            }
+          }
+        }
+      }
+    },
+    "trackResize": {
+      "description": "Defines whether the element will automatically render in response to\nchanges in size. If set to off, then the\napplication is responsible for calling refresh\nto render the element at the new size.",
+      "type": "string",
+      "displayName": "Track Resize",
+      "value": "on",
+      "enumValues": [
+        "off",
+        "on"
+      ],
+      "propertyEditorValues": {
+        "off": {
+          "displayName": "Off"
+        },
+        "on": {
+          "displayName": "On"
+        }
+      }
+    },
+    "translations": {
+      "description": "A collection of translated resources from the translation bundle, or null if this\ncomponent has no resources. Resources may be accessed and overridden individually or collectively, as seen in the examples.\n\nIf this component has translations, their documentation immediately follows this doc entry.",
+      "type": "Object",
+      "displayName": "Translations",
+      "value": null,
+      "properties": {
+        "accessibleItemDesc": {
+          "description": "Provides properties to customize the screen reader text describing an item's description text.",
+          "type": "string",
+          "value": "Description is {0}."
+        },
+        "accessibleItemEnd": {
+          "description": "Provides properties to customize the screen reader text describing an item's end time.",
+          "type": "string",
+          "value": "End time is {0}."
+        },
+        "accessibleItemStart": {
+          "description": "Provides properties to customize the screen reader text describing an item's start time.",
+          "type": "string",
+          "value": "Start time is {0}."
+        },
+        "accessibleItemTitle": {
+          "description": "Provides properties to customize the screen reader text describing an item's title text.",
+          "type": "string",
+          "value": "Title is {0}."
+        },
+        "componentName": {
+          "description": "Used to describe the data visualization type for accessibility.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Timeline"
+        },
+        "labelAndValue": {
+          "description": "Used to display a label and its value.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "{0}: {1}"
+        },
+        "labelClearSelection": {
+          "description": "Text shown for clearing multiple selection on touch devices.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Clear Selection"
+        },
+        "labelCountWithTotal": {
+          "description": "Used to display a count out of a total.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "{0} of {1}"
+        },
+        "labelDataVisualization": {
+          "description": "Label for data visualizations used for accessibility.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Data Visualization"
+        },
+        "labelInvalidData": {
+          "description": "Text shown when the component receives invalid data.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Invalid data"
+        },
+        "labelNoData": {
+          "description": "Text shown when the component receives no data.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "No data to display"
+        },
+        "labelSeries": {
+          "description": "Used for accessibility.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Series"
+        },
+        "stateCollapsed": {
+          "description": "Used to describe the collapsed state for accessibility.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Collapsed"
+        },
+        "stateDrillable": {
+          "description": "Used to describe a drillable object for accessibility.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Drillable"
+        },
+        "stateExpanded": {
+          "description": "Used to describe the expanded state for accessibility.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Expanded"
+        },
+        "stateHidden": {
+          "description": "Used to describe the hidden state for accessibility.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Hidden"
+        },
+        "stateIsolated": {
+          "description": "Used to describe the isolated state for accessibility.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Isolated"
+        },
+        "stateMaximized": {
+          "description": "Used to describe the maximized state for accessibility.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Maximized"
+        },
+        "stateMinimized": {
+          "description": "Used to describe the minimized state for accessibility.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Minimized"
+        },
+        "stateSelected": {
+          "description": "Used to describe the selected state for accessibility.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Selected"
+        },
+        "stateUnselected": {
+          "description": "Used to describe the unselected state for accessibility.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Unselected"
+        },
+        "stateVisible": {
+          "description": "Used to describe the visible state for accessibility.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Visible"
+        },
+        "tooltipZoomIn": {
+          "description": "Used for the zoom in tooltip.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Zoom In"
+        },
+        "tooltipZoomOut": {
+          "description": "Used for the zoom out tooltip.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Zoom Out"
+        }
+      }
+    },
+    "viewportEnd": {
+      "description": "The end time of the timeline's viewport. If not specified, this will default to a value determined by the initial 'scale' of the minor axis and the width of the timeline.",
+      "type": "string",
+      "displayName": "Viewport End",
+      "value": null
+    },
+    "viewportStart": {
+      "description": "The start time of the timeline's viewport. If not specified, this will default to a value determined by the initial 'scale' of the minor axis and the width of the timeline.",
+      "type": "string",
+      "displayName": "Viewport Start",
+      "value": null
+    }
+  },
+  "methods": {
+    "getContextByNode": {
+      "description": "Returns an object with context for the given child DOM node. This will always contain the subid for the node,\ndefined as the 'subId' property on the context object. Additional component specific information may also be included.\n\nFor more details on returned objects, see context objects.",
+      "params": [
+        {
+          "name": "node",
+          "description": "The child DOM node",
+          "type": "Element"
+        }
+      ],
+      "return": "Object|null"
+    },
+    "refresh": {
+      "description": "Refreshes the component."
+    },
+    "setProperty": {
+      "description": "Sets a property or a single subproperty for complex properties and notifies the component\nof the change, triggering a [property]Changed event.",
+      "params": [
+        {
+          "name": "property",
+          "description": "The property name to set. Supports dot notation for subproperty access.",
+          "type": "string"
+        },
+        {
+          "name": "value",
+          "description": "The new value to set the property to.",
+          "type": "*"
+        }
+      ]
+    },
+    "getProperty": {
+      "description": "Retrieves a value for a property or a single subproperty for complex properties.",
+      "params": [
+        {
+          "name": "property",
+          "description": "The property name to get. Supports dot notation for subproperty access.",
+          "type": "string"
+        }
+      ],
+      "return": "*"
+    },
+    "setProperties": {
+      "description": "Performs a batch set of properties.",
+      "params": [
+        {
+          "name": "properties",
+          "description": "An object containing the property and value pairs to set.",
+          "type": "Object"
+        }
+      ]
+    }
+  },
+  "events": {
+    "viewportChange": {
+      "description": "Triggered after the viewport is changed due to a zoom or scroll operation.",
+      "detail": {
+        "viewportStart": {
+          "description": "the start of the new viewport on a timeline",
+          "type": "string"
+        },
+        "viewportEnd": {
+          "description": "the end of the new viewport on a timeline",
+          "type": "string"
+        },
+        "minorAxisScale": {
+          "description": "the time scale of the minor axis",
+          "type": "string"
+        }
+      }
+    }
+  },
+  "slots": {
+    "contextMenu": {
+      "description": "The contextMenu slot is set on the oj-menu within this element. \nThis is used to designate the JET Menu that this component should launch as a context menu on right-click, Shift-F10, Press & Hold, or component-specific gesture. \nIf specified, the browser's native context menu will be replaced by the JET Menu specified in this slot.\n\nThe application can register a listener for the Menu's ojBeforeOpen event. The listener can cancel the launch via event.preventDefault(), \nor it can customize the menu contents by editing the menu DOM directly, and then calling refresh() on the Menu.\n\nTo help determine whether it's appropriate to cancel the launch or customize the menu, the ojBeforeOpen listener can use component API's to determine which \ntable cell, chart item, etc., is the target of the context menu. See the JSDoc and demos of the individual components for details. \n\nKeep in mind that any such logic must work whether the context menu was launched via right-click, Shift-F10, Press & Hold, or component-specific touch gesture."
+    }
+  }
+}

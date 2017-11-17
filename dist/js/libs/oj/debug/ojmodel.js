@@ -823,7 +823,7 @@ oj.Model.prototype.validate = null;
 /**
  * @export
  * @desc The last value returned from a validate callback
- * @type {string|Object|null}}
+ * @type {string|Object|null}
  */
 oj.Model.prototype.validationError = null;
 

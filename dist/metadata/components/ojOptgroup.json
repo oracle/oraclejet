@@ -1,0 +1,68 @@
+{
+  "name": "ojOptgroup",
+  "version": "4.1.0",
+  "jetVersion": "4.1.0",
+  "displayName": " Optgroup",
+  "preview": true,
+  "description": "ojOptgroup",
+  "properties": {
+    "disabled": {
+      "description": "Disables the oj-optgroup if set to true.",
+      "type": "boolean",
+      "displayName": "Disabled",
+      "value": false
+    },
+    "label": {
+      "description": "Specifies the oj-optgroup's label.",
+      "type": "string",
+      "displayName": "Label"
+    }
+  },
+  "methods": {
+    "setProperty": {
+      "description": "Sets a property or a single subproperty for complex properties and notifies the component of the change, triggering a [property]Changed event.",
+      "params": [
+        {
+          "name": "property",
+          "description": "The property name to set. Supports dot notation for subproperty access.",
+          "type": "string"
+        },
+        {
+          "name": "value",
+          "description": "The new value to set the property to.",
+          "type": "*"
+        }
+      ]
+    },
+    "getProperty": {
+      "description": "Retrieves a value for a property or a single subproperty for complex properties.",
+      "params": [
+        {
+          "name": "property",
+          "description": "The property name to get. Supports dot notation for subproperty access.",
+          "type": "string"
+        }
+      ],
+      "return": "*"
+    },
+    "refresh": {
+      "description": "Refreshes the visual state of the component."
+    },
+    "setProperties": {
+      "description": "Performs a batch set of properties.",
+      "params": [
+        {
+          "name": "properties",
+          "description": "An object containing the property and value pairs to set.",
+          "type": "Object"
+        }
+      ]
+    }
+  },
+  "slots": {
+    "": {
+      "description": "The oj-optgroup element accepts oj-options as children. See the [oj-option]ojOption doc for details about accepted children and slots.",
+      "displayName": "default"
+    }
+  }
+}

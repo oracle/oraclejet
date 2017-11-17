@@ -1,0 +1,269 @@
+{
+  "name": "ojMasonryLayout",
+  "version": "4.1.0",
+  "jetVersion": "4.1.0",
+  "displayName": " Masonry Layout",
+  "preview": true,
+  "description": "A grid of tiles",
+  "properties": {
+    "reorderHandle": {
+      "description": "Specify the selector of the descendant DOM element in a oj-masonry-layout child that can be used to reorder the child by drag-and-drop. This attribute value is null by default, meaning that oj-masonry-layout children cannot be reordered. If each child that can be reordered has an element with style class 'my-reorder-handle', then the reorder-handle attribute would be specified as '.my-reorder-handle'. When specifying a reorder-handle, the application should also specify a context menu with actions to cut and paste tiles as an accessible alternative to drag-and-drop reordering. To specify a context menu, see the documentation of oj-menu.",
+      "type": "string",
+      "displayName": "Reorder Handle",
+      "value": null
+    },
+    "translations": {
+      "description": "A collection of translated resources from the translation bundle, or null if this\ncomponent has no resources. Resources may be accessed and overridden individually or collectively, as seen in the examples.\n\nIf this component has translations, their documentation immediately follows this doc entry.",
+      "type": "Object",
+      "displayName": "Translations",
+      "value": null,
+      "properties": {
+        "labelCut": {
+          "description": "Context menu text used for cutting a tile.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Cut"
+        },
+        "labelPasteAfter": {
+          "description": "Context menu text used for pasting a tile after another tile.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Paste After"
+        },
+        "labelPasteBefore": {
+          "description": "Context menu text used for pasting a tile before another tile.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Paste Before"
+        }
+      }
+    }
+  },
+  "methods": {
+    "refresh": {
+      "description": "Refreshes the visual state of the masonryLayout. JET elements require a refresh() after the DOM is programmatically changed underneath the element. This method does not accept any arguments."
+    },
+    "resizeTile": {
+      "description": "Resize a tile in the masonryLayout.",
+      "params": [
+        {
+          "name": "selector",
+          "description": "Selector identifying the tile to resize.",
+          "type": "string"
+        },
+        {
+          "name": "sizeStyleClass",
+          "description": "New size style class to apply to the tile.",
+          "type": "string"
+        }
+      ]
+    },
+    "insertTile": {
+      "description": "Insert a tile into the masonryLayout.",
+      "params": [
+        {
+          "name": "selector",
+          "description": "Selector identifying the tile to insert. The tile does not need to be a child of the oj-masonry-layout when this method is called. This method will reparent the tile to the oj-masonry-layout.",
+          "type": "string"
+        },
+        {
+          "name": "index",
+          "description": "The 0-based index into the set of rendered oj-masonry-layout children where the tile will be inserted.",
+          "type": "number"
+        }
+      ]
+    },
+    "removeTile": {
+      "description": "Remove a tile from the masonryLayout.",
+      "params": [
+        {
+          "name": "selector",
+          "description": "Selector identifying the tile to remove.",
+          "type": "string"
+        }
+      ]
+    },
+    "setProperty": {
+      "description": "Sets a property or a single subproperty for complex properties and notifies the component\nof the change, triggering a [property]Changed event.",
+      "params": [
+        {
+          "name": "property",
+          "description": "The property name to set. Supports dot notation for subproperty access.",
+          "type": "string"
+        },
+        {
+          "name": "value",
+          "description": "The new value to set the property to.",
+          "type": "*"
+        }
+      ]
+    },
+    "getProperty": {
+      "description": "Retrieves a value for a property or a single subproperty for complex properties.",
+      "params": [
+        {
+          "name": "property",
+          "description": "The property name to get. Supports dot notation for subproperty access.",
+          "type": "string"
+        }
+      ],
+      "return": "*"
+    },
+    "setProperties": {
+      "description": "Performs a batch set of properties.",
+      "params": [
+        {
+          "name": "properties",
+          "description": "An object containing the property and value pairs to set.",
+          "type": "Object"
+        }
+      ]
+    }
+  },
+  "events": {
+    "animateStart": {
+      "description": "Triggered when a default animation is about to start on the element. The default animation can be cancelled by calling event.preventDefault(), followed by a call to event.detail.endCallback(). event.detail.endCallback() should be called immediately after event.preventDefault() if the application merely wants to cancel animation, or it should be called when the custom animation ends if the application is invoking another animation function. Failure to call event.detail.endCallback() may prevent the element from working properly. For more information on customizing animations, see the documentation of oj.AnimationUtils. The default animations are controlled via the theme (SCSS) : $masonryLayoutInsertAnimation: ((effect: \"zoomIn\", duration: $masonryLayoutAnimationDuration, timingFunction: \"ease-in-out\"), \"fadeIn\") !default; $masonryLayoutRemoveAnimation: ((effect: \"zoomOut\", duration: $masonryLayoutAnimationDuration, timingFunction: \"ease-in-out\"), \"fadeOut\") !default; $masonryLayoutMoveAnimation: (effect: \"addTransition\", duration: $masonryLayoutAnimationDuration, timingFunction: \"ease-in-out\", transitionProperties: ('top', 'left', 'right')) !default; $masonryLayoutResizeAnimation: (effect: \"addTransition\", duration: $masonryLayoutAnimationDuration, timingFunction: \"ease-in-out\", transitionProperties: ('width', 'height', 'top', 'left', 'right')) !default; $masonryLayoutReorderAnimation: (effect: \"addTransition\", duration: $masonryLayoutAnimationDurationFast, timingFunction: \"ease-in-out\", transitionProperties: ('width', 'height', 'top', 'left', 'right')) !default; ",
+      "detail": {
+        "action": {
+          "description": "The action that triggers the animation. Supported values are: \"insert\" - when a tile is inserted \"move\" - when a tile is moved \"remove\" - when a tile is removed \"resize\" - when a tile is resized \"reorder\" - when a tile is reordered Note that some animation effects may not look appropriate for a given action.",
+          "type": "string"
+        },
+        "element": {
+          "description": "The element being animated.",
+          "type": "Element"
+        },
+        "endCallback": {
+          "description": "If the event listener calls event.preventDefault to cancel the default animation, it must call the endCallback function after it finishes its own animation handling and any custom animation has ended.",
+          "type": "function"
+        }
+      }
+    },
+    "animateEnd": {
+      "description": "Triggered when a default animation has ended.",
+      "detail": {
+        "action": {
+          "description": "The action that triggers the animation. Supported values are: \"insert\" - when a tile is inserted \"move\" - when a tile is moved \"remove\" - when a tile is removed \"resize\" - when a tile is resized \"reorder\" - when a tile is reordered ",
+          "type": "string"
+        },
+        "element": {
+          "description": "The element being animated.",
+          "type": "Element"
+        }
+      }
+    },
+    "beforeInsert": {
+      "description": "Triggered immediately before a tile is inserted. This event can be cancelled by calling event.preventDefault().",
+      "detail": {
+        "tile": {
+          "description": "The tile that is about to be inserted.",
+          "type": "Element"
+        },
+        "index": {
+          "description": "The 0-based index into the set of rendered oj-masonry-layout children where the tile will be inserted.",
+          "type": "number"
+        }
+      }
+    },
+    "insert": {
+      "description": "Triggered immediately after a tile is inserted.",
+      "detail": {
+        "tile": {
+          "description": "The tile that was inserted.",
+          "type": "Element"
+        },
+        "index": {
+          "description": "The 0-based index into the set of rendered oj-masonry-layout children where the tile was inserted.",
+          "type": "number"
+        }
+      }
+    },
+    "beforeRemove": {
+      "description": "Triggered immediately before a tile is removed. This event can be cancelled by calling event.preventDefault().",
+      "detail": {
+        "tile": {
+          "description": "The tile that will be removed.",
+          "type": "Element"
+        }
+      }
+    },
+    "remove": {
+      "description": "Triggered immediately after a tile is removed.",
+      "detail": {
+        "tile": {
+          "description": "The tile that was removed.",
+          "type": "Element"
+        }
+      }
+    },
+    "beforeResize": {
+      "description": "Triggered immediately before a tile is resized. This event can be cancelled by calling event.preventDefault().",
+      "detail": {
+        "tile": {
+          "description": "The tile that will be resized.",
+          "type": "Element"
+        },
+        "previousSizeStyleClass": {
+          "description": "The previous size style class applied to the tile.",
+          "type": "string"
+        },
+        "sizeStyleClass": {
+          "description": "The new size style class that will be applied to the tile.",
+          "type": "string"
+        }
+      }
+    },
+    "resize": {
+      "description": "Triggered immediately after a tile is resized.",
+      "detail": {
+        "tile": {
+          "description": "The tile that was resized.",
+          "type": "Element"
+        },
+        "previousSizeStyleClass": {
+          "description": "The previous size style class applied to the tile.",
+          "type": "string"
+        },
+        "sizeStyleClass": {
+          "description": "The new size style class applied to to the tile.",
+          "type": "string"
+        }
+      }
+    },
+    "beforeReorder": {
+      "description": "Triggered immediately before a tile is reordered. This event can be cancelled by calling event.preventDefault().",
+      "detail": {
+        "tile": {
+          "description": "The tile that will be reordered.",
+          "type": "Element"
+        },
+        "fromIndex": {
+          "description": "The 0-based index into the set of rendered oj-masonry-layout children from which the tile will be reordered.",
+          "type": "number"
+        }
+      }
+    },
+    "reorder": {
+      "description": "Triggered immediately after a tile is reordered.",
+      "detail": {
+        "tile": {
+          "description": "The tile that was reordered.",
+          "type": "Element"
+        },
+        "fromIndex": {
+          "description": "The 0-based index into the set of rendered oj-masonry-layout children from which the tile was reordered.",
+          "type": "number"
+        },
+        "toIndex": {
+          "description": "The 0-based index into the set of rendered oj-masonry-layout children to which the tile was reordered.",
+          "type": "number"
+        }
+      }
+    }
+  },
+  "slots": {
+    "": {
+      "description": " <oj-masonry-layout> accepts arbitrary direct child elements that can be sized and positioned, which it will lay out as a grid of tiles. Each direct child element must be styled using one of the predefined oj-masonrylayout-tile-CxR style classes to specify the size of that tile. A tile can span multiple columns and/or rows.",
+      "displayName": "default"
+    },
+    "contextMenu": {
+      "description": "The contextMenu slot is set on the oj-menu within this element. \nThis is used to designate the JET Menu that this component should launch as a context menu on right-click, Shift-F10, Press & Hold, or component-specific gesture. \nIf specified, the browser's native context menu will be replaced by the JET Menu specified in this slot.\n\nThe application can register a listener for the Menu's ojBeforeOpen event. The listener can cancel the launch via event.preventDefault(), \nor it can customize the menu contents by editing the menu DOM directly, and then calling refresh() on the Menu.\n\nTo help determine whether it's appropriate to cancel the launch or customize the menu, the ojBeforeOpen listener can use component API's to determine which \ntable cell, chart item, etc., is the target of the context menu. See the JSDoc and demos of the individual components for details. \n\nKeep in mind that any such logic must work whether the context menu was launched via right-click, Shift-F10, Press & Hold, or component-specific touch gesture."
+    }
+  }
+}

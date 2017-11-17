@@ -14,6 +14,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/in
  * @ojcomponent oj.ojThematicMap
  * @augments oj.dvtBaseComponent
  * @since 0.7
+ * @ojstatus preview
  *
  * @classdesc
  * <h3 id="thematicMapOverview-section">

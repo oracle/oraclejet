@@ -37,6 +37,10 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'ojs/ojvalidation-number'
  * @ojcomponent oj.ojInputNumber
  * @augments oj.editableValue
  * @since 0.6
+ * @ojshortdesc Input Number Element
+ * @ojrole textbox
+ * @ojrole spinbutton
+ * @ojstatus preview
  * @classdesc
  * <h3 id="inputNumberOverview-section">
  *   JET InputNumber Component
@@ -123,6 +127,7 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
      * <p>
      * When <code class="prettyprint">converter</code> property changes due to programmatic
      * intervention, the component performs various tasks based on the current state it is in. </br>
+     * When initialized with no options, the default options for the current locale are assumed. </br>
      *
      * <h4>Steps Performed Always</h4>
      * <ul>
@@ -199,8 +204,7 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
      * myComponent.converter = salaryConverter;
      *
      *
-     * @default <code class="prettyprint">oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_NUMBER).createConverter()</code>.
-     * When initialized with no options, the default options for the current locale are assumed.
+     * @default oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_NUMBER).createConverter()
      *
      * @expose
      * @access public
@@ -227,7 +231,7 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
      * @memberof oj.ojInputNumber
      * @instance
      * @type {?number}
-     * @default <code class="prettyprint">null</code>
+     * @default null
      * @example <caption>Initialize the inputNumber with the
      * <code class="prettyprint">max</code> attribute specified:</caption>
      * &lt;oj-input-number max="100">&lt;/oj-input-number>
@@ -262,7 +266,7 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
      * @memberof oj.ojInputNumber
      * @instance
      * @type {?number}
-     * @default <code class="prettyprint">null</code>
+     * @default null
      * @example <caption>Initialize the inputNumber with the
      * <code class="prettyprint">min</code> attribute specified:</caption>
      * &lt;oj-input-number min="0">&lt;/oj-input-number>
@@ -296,7 +300,7 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
      * // Setter
      * myComponent.placeholder = "Address";
      *
-     * @default If the attribute is not set then the default can be a converter hint. See display-options for
+     * If the attribute is not set then the default can be a converter hint. See display-options for
      * details.
      *
      * @expose
@@ -319,10 +323,9 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
      * @expose
      * @access public
      * @instance
-     * @default n/a
      * @memberof oj.ojInputNumber
      * @type {string|undefined}
-     * @since 1.2
+     * @since 1.2.0
      * @readonly
      * @ojwriteback
      */
@@ -341,10 +344,10 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
      * myComponent.readonly = false;
      *
      * @default false
+     * @access public
      * @expose
      * @type {?boolean}
      * @alias readonly
-     * @default <code class="prettyprint">false</code>
      * @instance
      * @memberof oj.ojInputNumber
      */
@@ -448,8 +451,9 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
      * @expose
      * @instance
      * @type {?number}
-     * @default <code class="prettyprint">1</code>
+     * @default 1
      * @memberof oj.ojInputNumber
+     * @access public
      * @example <caption>Initialize the inputNumber with the
      * <code class="prettyprint">step</code> attribute specified:</caption>
      * &lt;oj-input-number step="2">&lt;/oj-input-number>
@@ -482,8 +486,9 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
      * @ojvalue {string} "on" enable autofill
      * @ojvalue {string} "off" disable autofill
      * @alias autocomplete
-     * @default <code class="prettyprint">"off"</code>
+     * @default "off"
      * @instance
+     * @access public
      * @memberof oj.ojInputNumber
      */
     autocomplete: undefined,
@@ -506,7 +511,8 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
      * @expose 
      * @type {boolean|undefined}
      * @alias autofocus
-     * @default <code class="prettyprint">false</code>
+     * @access public
+     * @default false
      * @instance
      * @memberof oj.ojInputNumber
      */
@@ -527,7 +533,7 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
      * @expose 
      * @type {string|undefined}
      * @alias name
-     * @default
+     * @access public
      * @instance
      * @memberof oj.ojInputNumber
      */
@@ -622,7 +628,7 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
      * @access public
      * @instance
      * @memberof oj.ojInputNumber
-     * @type {Array|undefined}
+     * @type {Array.<Object>|undefined}
      */
     
     validators: undefined,    
@@ -653,7 +659,7 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
      * @expose 
      * @access public
      * @instance
-     * @default <code class="prettyprint">null</code>
+     * @default null
      * @ojwriteback
      * @memberof oj.ojInputNumber
      * @type {?number}
@@ -735,6 +741,7 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
    * </ul>
    * @expose
    * @memberof oj.ojInputNumber
+   * @access public
    * @instance
    * @example <caption>Invoke the <code class="prettyprint">refresh</code> method:</caption>
    * myComp.refresh();
@@ -753,6 +760,7 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
    * @expose
    * @instance
    * @memberof oj.ojInputNumber
+   * @access public
    * @example <caption>Invoke the <code class="prettyprint">stepDown</code> method:</caption>
    * myComp.stepDown();
    */
@@ -769,7 +777,8 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
    * @expose
    * @instance
    * @memberof oj.ojInputNumber
-    * @example <caption>Invoke the <code class="prettyprint">stepUp</code> method:</caption>
+   * @access public
+   * @example <caption>Invoke the <code class="prettyprint">stepUp</code> method:</caption>
    * myComp.stepUp();
   */
   stepUp: function(steps)
@@ -786,6 +795,7 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
    * @memberof oj.ojInputNumber
    * @instance
    * @return {jQuery} the inputnumber
+   * @access public
    * @ignore
    */
   widget: function()
@@ -1454,6 +1464,7 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
   /**
    * @private
    * @const
+   * @memberof oj.ojInputNumber
    */
   _BUNDLE_KEY:
   {
@@ -1464,6 +1475,7 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
    * when below listed options are passed to the component, corresponding CSS will be toggled
    * @private
    * @const
+   * @memberof oj.ojInputNumber
    * @type {Object}
    */
   _OPTION_TO_CSS_MAPPING:
@@ -1471,9 +1483,10 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
     "readOnly": "oj-read-only"
   },
 
-    /**
+  /**
    * _setup is called on create and refresh.
    * @private
+   * @memberof oj.ojInputNumber
    */
   _setup: function()
   {
@@ -1501,12 +1514,20 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
   // Mark internal JET components for automation support. The automation
   // support needs to know while traversing the nodes that the JET button/buttonset 
   // is not the root JET component, but an internal node to a JET component.
+  /**
+   * @private
+   * @memberof oj.ojInputNumber
+   */
   _markInternalComponents: function ()
   {
      this.upButton.attr('data-oj-internal', '');
      this.downButton.attr('data-oj-internal', '');
      this.buttonSet.attr('data-oj-internal', '');
   },
+  /**
+   * @private
+   * @memberof oj.ojInputNumber
+   */
   _createOjButtonset: function()
   {
     var $upButton = this.uiInputNumber.find(".oj-inputnumber-up");
@@ -1521,6 +1542,7 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
   },
   /**
    * @private
+   * @memberof oj.ojInputNumber
    */
   _draw: function()
   {
@@ -1568,6 +1590,7 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
   },
   /**
    * @private
+   * @memberof oj.ojInputNumber
    */
   _keydown: function(event)
   {
@@ -1591,6 +1614,7 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
   },
   /**
    * @private
+   * @memberof oj.ojInputNumber
    */
   _uiInputNumberHtml: function()
   {
@@ -1600,6 +1624,7 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
   },
   /**
    * @private
+   * @memberof oj.ojInputNumber
    */
   _buttonHtml: function()
   {
@@ -1609,6 +1634,7 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
   },
   /**
    * @private
+   * @memberof oj.ojInputNumber
    */
   _start: function()
   {
@@ -1619,6 +1645,7 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
    * Calls _spin to increment or decrement the number. It is called in a loop until
    * this.timer is cleared (see this._stop(event) or min/max is reached. 
    * @private
+   * @memberof oj.ojInputNumber
    */
   _repeat: function(i, steps, event)
   {
@@ -1657,6 +1684,7 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
   },
   /**
    * @private
+   * @memberof oj.ojInputNumber
    * @param {Number} step - Number of steps to increment.
    * @param {Object=} event an optional event if this was a result of ui interaction.
    */
@@ -1694,6 +1722,7 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
   /**
    * called from _adjustValue
    * @private
+   * @memberof oj.ojInputNumber
    */
   _precision: function(minOpt, stepOpt, value)
   {
@@ -1713,6 +1742,7 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
    * return the number of digits after the '.'
    * called from _adjustValue->_precision
    * @private
+   * @memberof oj.ojInputNumber
    * @param {Number} num - Number from which to calculate the precision
    */
   _precisionOf: function(num)
@@ -1733,6 +1763,7 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
    * that is an integral multiple of the step, and that is less than or equal
    * to the maximum.
    * @private
+   * @memberof oj.ojInputNumber
    * @param {number} value - the current value
    * @param {number} step - the step you want to adjust the value by
    * @param {number} minOpt - the min option
@@ -1839,6 +1870,7 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
    * great about adding decimal fractions. e.g., 0.1 + 0.2 is not equal to 0.3. It is 
    * an intentional consequence of the IEEE Standard for Binary Floating-Point Arithmetic (IEEE 754)
    * @private
+   * @memberof oj.ojInputNumber
    * @param {number} value - the current value
    * @param {number} step - the step you want to adjust the value by
    * @param {number} minOpt - the min option
@@ -1870,6 +1902,7 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
   },
   /**
    * @private
+   * @memberof oj.ojInputNumber
    */
   _stop: function(event)
   {
@@ -1882,6 +1915,7 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
   },
   /**
    * @private
+   * @memberof oj.ojInputNumber
    * @return {boolean} true if there is no touch detected within the last 500 ms
    */
   _isRealMouseEvent: function(event)
@@ -1893,6 +1927,7 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
    * is on the screen after conversion plus what min/max are set to.
    * e.g., $10.00 is on the screen, valuenow is 10
    * @private
+   * @memberof oj.ojInputNumber
    */
   _updateButtons: function(valuenow)
   {
@@ -1965,6 +2000,7 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
    * The converted display value is used for 'valuenow'. For example,
    * the display value might be $6.00, but we want valuenow to be 6.
    * @private
+   * @memberof oj.ojInputNumber
    */
   _getConvertedDisplayValue: function()
   {
@@ -1988,6 +2024,7 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
   },
   /**
    * @private
+   * @memberof oj.ojInputNumber
    */
   _blurEnterSetValue: function(event)
   {
@@ -2007,6 +2044,7 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
    *  hints, messageSummary and messageDetail.
    * Use the 'min' and 'max' options.
    * @private
+   * @memberof oj.ojInputNumber
    */
   _createRangeValidator: function()
   {
@@ -2102,6 +2140,7 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
    * @param val value to parse
    * @throws {Error} if option value is invalid
    * @private
+   * @memberof oj.ojInputNumber
    */
   _parse: function(option, val)
   {
@@ -2124,6 +2163,7 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
    * Chrome defaults it to 1 if it is not.
    * @throws {Error} if option value is invalid
    * @private
+   * @memberof oj.ojInputNumber
    */
   _parseStep: function(val)
   {
@@ -2148,6 +2188,7 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
    * @param {string} option
    * @param {Object|string|boolean} value
    * @private
+   * @memberof oj.ojInputNumber
    */
   _refreshStateTheming: function(option, value)
   {
@@ -2164,6 +2205,7 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
    * @param {string} option
    * @param {Object|string|boolean} readOnly
    * @private
+   * @memberof oj.ojInputNumber
    */
   _refreshRoleSpinbutton: function(option, readOnly)
   {
@@ -2176,6 +2218,10 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
       this.element.attr("role", "spinbutton");
   },
   /* updates the aria-value information */
+  /**
+   * @private
+   * @memberof oj.ojInputNumber
+   */
   _refreshAriaMinMaxValue: function(valuenow)
   {
     var element = this.element;
@@ -2188,6 +2234,10 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
     this._refreshAriaText(valuenow);
   },
   /* updates the aria-text if needed */
+  /**
+   * @private
+   * @memberof oj.ojInputNumber
+   */
   _refreshAriaText: function(valuenow)
   {
     var element = this.element;
@@ -2199,6 +2249,7 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
   /**
    * step the inputnumber value up or down
    * @private
+   * @memberof oj.ojInputNumber
    * @param {Number} steps - Number of steps to increment.
    * @param {boolean} up If true step up, else step down.
    */

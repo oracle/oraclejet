@@ -26,6 +26,7 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore', 'ojs/ojanimati
  * @ojcomponent oj.ojCollapsible
  * @augments oj.baseComponent
  * @since 0.6
+ * @ojstatus preview
  *
  * @classdesc
  * <h3 id="collapsibleOverview-section">

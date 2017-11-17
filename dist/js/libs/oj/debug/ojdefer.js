@@ -58,6 +58,7 @@ ko['bindingHandlers']['_ojDefer_'] =
 /**
  * @ojstatus preview
  * @ojcomponent oj.ojDefer
+ * @ojshortdesc Defer Element
  * @classdesc
  * The oj-defer custom element delays applying bindings to its children until it is activated.
  * It works by disconnecting child elements from the DOM tree until the parent component activates its subtree. In addition, the tag will

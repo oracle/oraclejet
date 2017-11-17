@@ -1,0 +1,83 @@
+{
+  "name": "ojFormLayout",
+  "version": "4.1.0",
+  "jetVersion": "4.1.0",
+  "displayName": " Form Layout",
+  "preview": true,
+  "description": "ojFormLayout",
+  "properties": {
+    "labelEdge": {
+      "description": "Specifies how the label is aligned with its editable value component.",
+      "type": "string",
+      "displayName": "Label Edge",
+      "value": "top",
+      "enumValues": [
+        "start",
+        "top"
+      ],
+      "propertyEditorValues": {
+        "start": {
+          "description": "Label is inline with the start of its editable value component",
+          "displayName": "Start"
+        },
+        "top": {
+          "description": "Label is on top of its editable value component",
+          "displayName": "Top"
+        }
+      }
+    },
+    "labelWidth": {
+      "description": "Specifies the label width.\nThis specifies the width of the oj-label elements. This can be any legal CSS width.",
+      "type": "string",
+      "displayName": "Label Width",
+      "value": "33%"
+    },
+    "maxColumns": {
+      "description": "Specifies the maximum number of columns.",
+      "type": "number",
+      "displayName": "Max Columns",
+      "value": 1
+    }
+  },
+  "methods": {
+    "setProperty": {
+      "description": "Sets a property or a single subproperty for complex properties and notifies the component\nof the change, triggering a [property]Changed event.",
+      "params": [
+        {
+          "name": "property",
+          "description": "The property name to set. Supports dot notation for subproperty access.",
+          "type": "string"
+        },
+        {
+          "name": "value",
+          "description": "The new value to set the property to.",
+          "type": "*"
+        }
+      ]
+    },
+    "getProperty": {
+      "description": "Retrieves a value for a property or a single subproperty for complex properties.",
+      "params": [
+        {
+          "name": "property",
+          "description": "The property name to get. Supports dot notation for subproperty access.",
+          "type": "string"
+        }
+      ],
+      "return": "*"
+    },
+    "setProperties": {
+      "description": "Performs a batch set of properties.",
+      "params": [
+        {
+          "name": "properties",
+          "description": "An object containing the property and value pairs to set.",
+          "type": "Object"
+        }
+      ]
+    },
+    "refresh": {
+      "description": "Refreshes the visual state of the component."
+    }
+  }
+}

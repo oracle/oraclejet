@@ -32,8 +32,12 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'jqueryui-amd/widgets/dra
 
   /**
    * @ojcomponent oj.ojSlider
+   * @ojdisplayname Slider
    * @augments oj.editableValue
+   * @ojsignature class ojSlider extends editableValue<number>
+   * @ojrole slider
    * @since 0.7
+   * @ojstatus preview
    *
    * @classdesc
    * <h3 id="sliderOverview-section">
@@ -173,7 +177,8 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'jqueryui-amd/widgets/dra
        * @memberof oj.ojSlider
        * @instance
        * @type {?number}
-       * @default <code class="prettyprint">null</code>
+       * @default null
+       * @since 0.7
        * @example <caption>Initialize the slider with the
        * <code class="prettyprint">max</code> attribute:</caption>
        * &lt;oj-slider max=100>&lt;/oj-slider>
@@ -194,7 +199,8 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'jqueryui-amd/widgets/dra
        * @memberof oj.ojSlider
        * @instance
        * @type {?number}
-       * @default <code class="prettyprint">null</code>
+       * @default null
+       * @since 0.7
        * @example <caption>Initialize the slider with the
        * <code class="prettyprint">min</code> attribute:</caption>
        * &lt;oj-slider min=0>&lt;/oj-slider>
@@ -216,7 +222,8 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'jqueryui-amd/widgets/dra
        * @type {string}
        * @ojvalue {string} "horizontal" Orient the slider horizontally.
        * @ojvalue {string} "vertical" Orient the slider vertically.
-       * @default <code class="prettyprint">"horizontal"</code>
+       * @default "horizontal"
+       * @since 0.7
        *
        * @example <caption>Initialize the slider with the
        * <code class="prettyprint">orientation</code> attribute:</caption>
@@ -255,7 +262,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'jqueryui-amd/widgets/dra
        *
        * @private
        * @type {?boolean}
-       * @default <code class="prettyprint">false</code>
+       * @default false
        * @instance
        * @memberof oj.ojSlider
        */
@@ -277,11 +284,11 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'jqueryui-amd/widgets/dra
        * 
        * // Setter
        * myComponent.disabled = true;
-       * 
        *
        * @expose
        * @type {?boolean}
-       * @default <code class="prettyprint">false</code>
+       * @default false
+       * @since 0.7
        * @instance
        * @memberof oj.ojSlider
        */
@@ -295,7 +302,8 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'jqueryui-amd/widgets/dra
        * @expose
        * @instance
        * @type {?number}
-       * @default <code class="prettyprint">1</code>
+       * @default 1
+       * @since 0.7
        * @memberof oj.ojSlider
        * @example <caption>Initialize the slider with the
        * <code class="prettyprint">step</code> attribute:</caption>
@@ -321,7 +329,8 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'jqueryui-amd/widgets/dra
        * the slider thumb to the the slider max.
        * @ojvalue {string} "single" A single-thumb slider where the value bar has no
        * additional styling.
-       * @default <code class="prettyprint">"fromMin"</code>
+       * @default "fromMin"
+       * @since 0.7
        * @instance
        * @memberof oj.ojSlider
        *
@@ -334,7 +343,6 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'jqueryui-amd/widgets/dra
        * 
        * // Setter
        * myComponent.type = "fromMax";
-       * 
        *
        */
 
@@ -361,12 +369,15 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'jqueryui-amd/widgets/dra
        * @expose
        * @access public
        * @instance
-       * @default <code class="prettyprint">0</code>
+       * @default 0
+       * @since 0.7
        * @ojwriteback
        * @memberof oj.ojSlider
        * @type {?number}
+       * @ojsignature number|undefined
        */
       value: 0,
+      // note - rawValue not exposed for custom elements.
       /**
        * <p>The  <code class="prettyprint">rawValue</code> is the read-only attribute for
        * retrieving the transient value from the slider.</p>
@@ -382,7 +393,6 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'jqueryui-amd/widgets/dra
        * @access public
        * @ignore
        * @instance
-       * @default n/a
        * @memberof oj.ojSlider
        * @type {?number|undefined}
        * @since 1.2
@@ -635,7 +645,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'jqueryui-amd/widgets/dra
      * (content) element value. Widgets can override this method to update the element
      * appropriately.
      *
-     * @param {String} displayValue of the new string to be displayed
+     * @param {string} displayValue of the new string to be displayed
      *
      * @memberof oj.slider
      * @instance

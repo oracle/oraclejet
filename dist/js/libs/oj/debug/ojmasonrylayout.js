@@ -16,6 +16,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojdnd', 'ojs/ojanimation
  * @ojcomponent oj.ojMasonryLayout
  * @augments oj.baseComponent
  * @since 1.1.0
+ * @ojstatus preview
  * 
  * @classdesc
  * <h3 id="masonryLayoutOverview-section">
@@ -2558,7 +2559,10 @@ oj.__registerWidget("oj.ojMasonryLayout", $['oj']['baseComponent'],
     //notify the element that it's been detached from the DOM BEFORE actually
     //detaching it so that components can save state
     oj.Components.subtreeDetached(tile);
-    elem.replaceChild(tile, dropSite);
+    //FIX : calling DOM replaceChild() seems to break in IE11 on Win7, so instead call
+    //equivalent insertBefore() and removeChild()
+    elem.insertBefore(tile, dropSite);
+    elem.removeChild(dropSite);
     //notify the element that it's been attached to the DOM
     oj.Components.subtreeAttached(tile);
     tile._jetDataMasonryOriginalOrder = dropSite._jetDataMasonryOriginalOrder;

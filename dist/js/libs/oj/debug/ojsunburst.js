@@ -15,6 +15,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/in
  * @ojcomponent oj.ojSunburst
  * @augments oj.dvtBaseComponent
  * @since 0.7
+ * @ojstatus preview
  *
  * @classdesc
  * <h3 id="sunburstOverview-section">
@@ -572,6 +573,7 @@ oj.__registerWidget('oj.ojSunburst', $['oj']['dvtBaseComponent'],
 /**
  * Specifies the nodes that should be expanded on initial render. It should contain an array of node ids to expand on initial render. Specify 'all' to expand all nodes.
  * @ignore 
+ * @expose
  * @name expanded
  * @memberof oj.ojSunburst
  * @instance

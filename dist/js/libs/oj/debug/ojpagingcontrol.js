@@ -25,6 +25,10 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
 /**
  * @ojcomponent oj.ojPagingControl
  * @augments oj.baseComponent
+ * @ojstatus preview
+ * @ojshortdesc Paging Control Element
+ * @ojrole navigation
+ * @ojrole button
  * 
  * @classdesc
  * <h3 id="pagingcontrolOverview-section">
@@ -71,7 +75,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
            * @instance
            * @memberof! oj.ojPagingControl
            * @type {oj.PagingModel}
-           * @default <code class="prettyprint">null</code>
+           * @default null
            *
            * @example <caption>Initialize the PagingControl with the <code class="prettyprint">data</code> attribute specified:</caption>
            * &lt;oj-paging-control data='{{pagingDataSource}}'>&lt;/oj-paging-control>
@@ -93,7 +97,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
            * @type {string}
            * @ojvalue {string} "fit" Display as many controls as can fit in the PagingControl width.
            * @ojvalue {string} "none" Display all controls. Controls which cannot fit will be truncated.
-           * @default <code class="prettyprint">"fit"</code>
+           * @default "fit"
            *
            * @example <caption>Initialize the PagingControl with the <code class="prettyprint">overflow</code> attribute specified:</caption>
            * &lt;oj-paging-control overflow='none'>&lt;/oj-paging-control>
@@ -114,7 +118,8 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
            * @instance
            * @memberof! oj.ojPagingControl
            * @type {number}
-           * @default <code class="prettyprint">25</code>
+           * @default 25
+           * @ojmin 1
            *
            * @example <caption>Initialize the PagingControl with the <code class="prettyprint">page-size</code> attribute specified:</caption>
            * &lt;oj-paging-control page-size='50'>&lt;/oj-paging-control>
@@ -134,7 +139,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
            * @instance
            * @memberof! oj.ojPagingControl
            * @type {Object.<string, Array|number>}
-           * @default <code class="prettyprint">{layout: ['auto'], 'type': 'numbers', 'orientation': 'horizontal', maxPageLinks: 6}</code>
+           * @default {'layout': ['auto'], 'type': 'numbers', 'orientation': 'horizontal', 'maxPageLinks': 6}
            *
            * @example <caption>Initialize the PagingControl, overriding some page-options values and leaving the others intact:</caption>
            * &lt;!-- Using dot notation -->
@@ -167,6 +172,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
              * <p>See the <a href="#pageOptions">page-options</a> attribute for usage examples.</p>
              * @expose
              * @name pageOptions.layout
+             * @public
              * @memberof! oj.ojPagingControl
              * @instance
              * @type {Array}
@@ -176,7 +182,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
              * @ojvalue {string} 'rangeText' Display the page range text control
              * @ojvalue {string} 'pages' Display the page links
              * @ojvalue {string} 'nav' Display the navigation arrows
-             * @default <code class="prettyprint">['auto']</code>
+             * @default ['auto']
              */
             'layout': ['auto'], 
             /**
@@ -184,12 +190,13 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
              * <p>See the <a href="#pageOptions">page-options</a> attribute for usage examples.</p>
              * @expose
              * @name pageOptions.type
+             * @public
              * @memberof! oj.ojPagingControl
              * @instance
              * @type {string}
              * @ojvalue {string} 'numbers' Render numeric page links
              * @ojvalue {string} 'dots' Render dots
-             * @default <code class="prettyprint">'numbers'</code>
+             * @default "numbers"
              */
             'type': 'numbers', 
             /**
@@ -199,10 +206,12 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
              * <p>See the <a href="#pageOptions">page-options</a> attribute for usage examples.</p>
              * @expose
              * @name pageOptions.maxPageLinks
+             * @public
              * @memberof! oj.ojPagingControl
              * @instance
              * @type {number}
-             * @default <code class="prettyprint">6</code>
+             * @default 6
+             * @ojmin 5
              */
             'maxPageLinks': 6, 
             /**
@@ -210,12 +219,13 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
              * <p>See the <a href="#pageOptions">page-options</a> attribute for usage examples.</p>
              * @expose
              * @name pageOptions.orientation
+             * @public
              * @memberof! oj.ojPagingControl
              * @instance
              * @type {string}
              * @ojvalue {string} 'horizontal'
              * @ojvalue {string} 'vertical'
-             * @default <code class="prettyprint">'horizontal'</code>
+             * @default "horizontal"
              */
             'orientation': 'horizontal'
           },
@@ -226,7 +236,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
            * @instance
            * @memberof! oj.ojPagingControl
            * @type {Object.<string, number>}
-           * @default <code class="prettyprint">{maxCount: 500}</code>
+           * @default {maxCount: 500}
            *
            * @example <caption>Initialize the PagingControl, overriding load-more-options value:</caption>
            * &lt;!-- Using dot notation -->
@@ -260,7 +270,8 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
              * @memberof! oj.ojPagingControl
              * @instance
              * @type {number}
-             * @default <code class="prettyprint">500</code>
+             * @default 500
+             * @ojmin 0
              */
             'maxCount': 500
           },
@@ -273,7 +284,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
            * @type {string}
            * @ojvalue {string} "page" Display paging control in pagination mode.
            * @ojvalue {string} "loadMore" Display paging control in high watermark mode.
-           * @default <code class="prettyprint">page</code>
+           * @default "page"
            *
            * @example <caption>Initialize the PagingControl with the <code class="prettyprint">mode</code> attribute specified:</caption>
            * &lt;oj-paging-control mode='loadMore'>&lt;/oj-paging-control>
@@ -476,6 +487,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
        * @expose
        * @memberof oj.ojPagingControl
        * @instance
+       * @public
        * @return {Promise} promise object triggering done when complete.
        * @throws {Error}
        * @export
@@ -496,6 +508,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
        * @expose
        * @memberof oj.ojPagingControl
        * @instance
+       * @public
        * @return {Promise} promise object triggering done when complete.
        * @throws {Error}
        * @export
@@ -521,6 +534,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
        * @expose
        * @memberof oj.ojPagingControl
        * @instance
+       * @public
        * @return {Promise} promise object triggering done when complete.
        * @throws {Error}
        * @export
@@ -547,6 +561,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
        * @expose
        * @memberof oj.ojPagingControl
        * @instance
+       * @public
        * @return {Promise} promise object triggering done when complete.
        * @throws {Error}
        * @export
@@ -570,6 +585,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
        * @expose
        * @memberof oj.ojPagingControl
        * @instance
+       * @public
        * @param {number} page  Page number. 
        * @return {Promise} promise object triggering done when complete.
        * @throws {Error}
@@ -596,6 +612,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
        * @expose
        * @memberof oj.ojPagingControl
        * @instance
+       * @public
        * @return {Promise} promise object triggering done when complete.
        * @throws {Error}
        * @export
@@ -616,6 +633,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
        * @expose
        * @memberof oj.ojPagingControl
        * @instance
+       * @public
        * @export
        * @example <caption>Invoke the <code class="prettyprint">refresh</code> method:</caption>
        * myPagingControl.refresh();
@@ -931,7 +949,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
        */
       _events:
         {
-          /**
+          /*
            * invoke loading next page of data
            */
           'mouseup .oj-pagingcontrol-loadmore-link': function(event)
@@ -942,7 +960,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
             $(event.target).data('_mouseup', true);
             event.preventDefault();
           },
-          /**
+          /*
            * invoke loading next page of data
            */
           'click .oj-pagingcontrol-loadmore-link': function(event)
@@ -957,7 +975,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
             }
             event.preventDefault();
           },
-          /**
+          /*
            * invoke loading page of data
            */
           'click .oj-pagingcontrol-nav-dot': function(event)
@@ -981,7 +999,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
             }
             event.preventDefault();
           },
-          /**
+          /*
            * invoke loading page of data
            */
           'click .oj-pagingcontrol-nav-page': function(event)
@@ -1005,7 +1023,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
             }
             event.preventDefault();
           },
-          /**
+          /*
            * invoke loading first page of data
            */
           'click .oj-pagingcontrol-nav-first': function(event)
@@ -1028,7 +1046,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
             }
             event.preventDefault();
           },
-          /**
+          /*
            * invoke loading previous page of data
            */
           'click .oj-pagingcontrol-nav-previous': function(event)
@@ -1051,7 +1069,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
             }
             event.preventDefault();
           },
-          /**
+          /*
            * invoke loading next page of data
            */
           'click .oj-pagingcontrol-nav-next': function(event)
@@ -1074,7 +1092,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
             }
             event.preventDefault();
           },
-          /**
+          /*
            * invoke loading last page of data
            */
           'click .oj-pagingcontrol-nav-last': function(event)
@@ -1097,7 +1115,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
             }
             event.preventDefault();
           },
-          /**
+          /*
            * prevent submission of form on enter
            */
           'keypress .oj-pagingcontrol-nav-input': function(event)
@@ -1109,7 +1127,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
               event.preventDefault();
             }
           },
-          /**
+          /*
            * Add oj-active
            */
           'mousedown .oj-pagingcontrol-nav-first': function(event)
@@ -1120,7 +1138,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
             }
             event.preventDefault();
           },
-          /**
+          /*
            * Add oj-active
            */
           'mousedown .oj-pagingcontrol-nav-previous': function(event)
@@ -1131,7 +1149,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
             }
             event.preventDefault();
           },
-          /**
+          /*
            * Add oj-active
            */
           'mousedown .oj-pagingcontrol-nav-next': function(event)
@@ -1142,7 +1160,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
             }
             event.preventDefault();
           },
-          /**
+          /*
            * Add oj-active
            */
           'mousedown .oj-pagingcontrol-nav-last': function(event)
@@ -1153,7 +1171,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
             }
             event.preventDefault();
           },
-          /**
+          /*
            * Remove oj-active
            */
           'mouseup .oj-pagingcontrol-nav-first': function(event)
@@ -1161,7 +1179,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
             $(event.target).removeClass(this._MARKER_STYLE_CLASSES._ACTIVE);
             event.preventDefault();
           },
-          /**
+          /*
            * Remove oj-active
            */
           'mouseup .oj-pagingcontrol-nav-previous': function(event)
@@ -1169,7 +1187,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
             $(event.target).removeClass(this._MARKER_STYLE_CLASSES._ACTIVE);
             event.preventDefault();
           },
-          /**
+          /*
            * Remove oj-active
            */
           'mouseup .oj-pagingcontrol-nav-next': function(event)
@@ -1177,7 +1195,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
             $(event.target).removeClass(this._MARKER_STYLE_CLASSES._ACTIVE);
             event.preventDefault();
           },
-          /**
+          /*
            * Remove oj-active
            */
           'mouseup .oj-pagingcontrol-nav-last': function(event)
@@ -1185,7 +1203,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
             $(event.target).removeClass(this._MARKER_STYLE_CLASSES._ACTIVE);
             event.preventDefault();
           },
-          /**
+          /*
            * Remove oj-active
            */
           'mouseleave .oj-pagingcontrol-nav-first': function(event)
@@ -1193,7 +1211,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
             $(event.target).removeClass(this._MARKER_STYLE_CLASSES._ACTIVE);
             event.preventDefault();
           },
-          /**
+          /*
            * Remove oj-active
            */
           'mouseleave .oj-pagingcontrol-nav-previous': function(event)
@@ -1201,7 +1219,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
             $(event.target).removeClass(this._MARKER_STYLE_CLASSES._ACTIVE);
             event.preventDefault();
           },
-          /**
+          /*
            * Remove oj-active
            */
           'mouseleave .oj-pagingcontrol-nav-next': function(event)
@@ -1209,7 +1227,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
             $(event.target).removeClass(this._MARKER_STYLE_CLASSES._ACTIVE);
             event.preventDefault();
           },
-          /**
+          /*
            * Remove oj-active
            */
           'mouseleave .oj-pagingcontrol-nav-last': function(event)
@@ -3620,7 +3638,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
      * <p>Sub-ID for the PagingControl current maximum page text.</p>
      *
      * @ojsubid oj-pagingcontrol-nav-input-max
-     * @deprecated This sub-ID is not needed since it is not an interactive element.
+     * @deprecated 2.0.2 This sub-ID is not needed since it is not an interactive element.
      * @memberof oj.ojPagingControl
      * @ignore
      *
@@ -3632,7 +3650,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
      * <p>Sub-ID for the PagingControl summary items text.</p>
      *
      * @ojsubid oj-pagingcontrol-nav-input-summary
-     * @deprecated This sub-ID is not needed since it is not an interactive element.
+     * @deprecated 2.0.2 This sub-ID is not needed since it is not an interactive element.
      * @memberof oj.ojPagingControl
      * @ignore
      *
@@ -3644,7 +3662,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
      * <p>Sub-ID for the PagingControl summary current items text.</p>
      *
      * @ojsubid oj-pagingcontrol-nav-input-summary-current
-     * @deprecated This sub-ID is not needed since it is not an interactive element.
+     * @deprecated 2.0.2 This sub-ID is not needed since it is not an interactive element.
      * @memberof oj.ojPagingControl
      * @ignore
      *
@@ -3656,7 +3674,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
      * <p>Sub-ID for the PagingControl summary max items text.</p>
      *
      * @ojsubid oj-pagingcontrol-nav-input-summary-max
-     * @deprecated This sub-ID is not needed since it is not an interactive element.
+     * @deprecated 2.0.2 This sub-ID is not needed since it is not an interactive element.
      * @memberof oj.ojPagingControl
      * @ignore
      *
@@ -3732,7 +3750,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
      * <p>Sub-ID for the PagingControl load more range text.</p>
      *
      * @ojsubid oj-pagingcontrol-load-more-range
-     * @deprecated This sub-ID is not needed since it is not an interactive element.
+     * @deprecated 2.0.2 This sub-ID is not needed since it is not an interactive element.
      * @memberof oj.ojPagingControl
      * @ignore
      *
@@ -3744,7 +3762,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
      * <p>Sub-ID for the PagingControl load more range current items text.</p>
      *
      * @ojsubid oj-pagingcontrol-load-more-range-current
-     * @deprecated This sub-ID is not needed since it is not an interactive element.
+     * @deprecated 2.0.2 This sub-ID is not needed since it is not an interactive element.
      * @memberof oj.ojPagingControl
      * @ignore
      *
@@ -3756,7 +3774,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
      * <p>Sub-ID for the PagingControl load more range max items text.</p>
      *
      * @ojsubid oj-pagingcontrol-load-more-range-max
-     * @deprecated This sub-ID is not needed since it is not an interactive element.
+     * @deprecated 2.0.2 This sub-ID is not needed since it is not an interactive element.
      * @memberof oj.ojPagingControl
      * @ignore
      *
@@ -3768,7 +3786,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
      * <p>Sub-ID for the PagingControl load more max message.</p>
      *
      * @ojsubid oj-pagingcontrol-load-more-max-rows
-     * @deprecated This sub-ID is not needed since it is not an interactive element.
+     * @deprecated 2.0.2 This sub-ID is not needed since it is not an interactive element.
      * @memberof oj.ojPagingControl
      * @ignore
      *

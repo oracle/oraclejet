@@ -695,6 +695,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/in
  * @ojcomponent oj.ojTagCloud
  * @augments oj.dvtBaseComponent
  * @since 1.1.0
+ * @ojstatus preview
  *
  * @classdesc
  * <h3 id="tagCloudOverview-section">

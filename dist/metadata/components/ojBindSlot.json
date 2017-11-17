@@ -1,0 +1,15 @@
+{
+  "name": "ojBindSlot",
+  "version": "4.1.0",
+  "jetVersion": "4.1.0",
+  "displayName": " Bind Slot",
+  "preview": true,
+  "description": "ojBindSlot",
+  "properties": {
+    "name": {
+      "description": "The name of the slot.",
+      "type": "boolean",
+      "displayName": "Name"
+    }
+  }
+}

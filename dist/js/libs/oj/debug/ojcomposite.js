@@ -910,8 +910,7 @@ var _UNIQUE = '_ojcomposite';
  *
  * Note that the 'jet-composites/my-chart' mapping is only required if the 'my-chart' composite module maps to a folder other than 
  * 'someSubFolder/jet-composites/my-chart' using the configuration below.
- * <pre class="prettyprint">
- * <code>
+ * <pre class="prettyprint"><code>
  * requirejs.config(
  * {
  *   baseUrl: 'js',
@@ -922,8 +921,7 @@ var _UNIQUE = '_ojcomposite';
  *     'jet-composites/my-table': 'https://someServerUrl'
  *   }
  * }
- * </code>
- * </pre>
+ * </code></pre>
  * </p>
  * 
  * <p>
@@ -936,10 +934,10 @@ var _UNIQUE = '_ojcomposite';
  * each piece will be loaded, either inline or as a Promise. See below for sample loader.js file configurations.
  * </p>
  *
- * Note that in this example we are using a RequireJS plugin for loading css which will load the styles within our page
- * so we do not need to pass any css into the register call.
- * <pre class="prettyprint">
- * <code>
+ * Note that in this example we are using require-css, a RequireJS plugin for loading css which will load the styles within our page
+ * so we do not need to pass any css into the register call. This is the recommended way to load CSS, especially for cases
+ * where the composite styles contain references to any external resources.
+ * <pre class="prettyprint"><code>
  * define(['text!./my-chart.html', './my-chart', 'text!./my-chart.json', 'css!./my-chart'],
  *   function(view, viewModel, metadata) {
  *     oj.Composite.register('my-chart',
@@ -950,29 +948,10 @@ var _UNIQUE = '_ojcomposite';
  *     });
  *   }
  * );
- * </code>
- * </pre>
- *
- * This example shows how to pass inline CSS to the register call.
- * <pre class="prettyprint">
- * <code>
- * define(['text!./my-chart.html', './my-chart', 'text!./my-chart.json'],
- *   function(view, viewModel, metadata) {
- *     oj.Composite.register('my-chart',
- *     {
- *       metadata: {inline: JSON.parse(metadata)},
- *       view: {inline: view},
- *       viewModel: {inline: viewModel},
- *       css: {inline: 'my-chart {font-size:20px; color:blue;}'}
- *     });
- *   }
- * );
- * </code>
- * </pre>
+ * </code></pre>
  *
  * This example shows how to register a custom parse function which will be called to parse attribute values defined in the metadata.
- * <pre class="prettyprint">
- * <code>
+ * <pre class="prettyprint"><code>
  * define(['text!./my-chart.html', './my-chart', 'text!./my-chart.json'],
  *   function(view, viewModel, metadata) {
  *     var myChartParseFunction = function(value, name, meta, defaultParseFunction) {
@@ -990,8 +969,7 @@ var _UNIQUE = '_ojcomposite';
  *     });
  *   }
  * );
- * </code>
- * </pre>
+ * </code></pre>
  *
  * <h2 id="usage">Usage
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#usage"></a>
@@ -1002,7 +980,7 @@ var _UNIQUE = '_ojcomposite';
  *   recognized, the framework will register a busy state for the element and will begin the process of 'upgrading' the element. 
  *   The element will not be ready for interaction (e.g. using properties or methods) until the upgrade process is complete. 
  *   The application should listen to either the page-level or an element-scoped BusyContext before attempting to interact with 
- *   any JET custom elements. See the <a href="../oj.BusyContext">BusyContext</a> documentation on how BusyContexts can be scoped.
+ *   any JET custom elements. See the <a href="oj.BusyContext.html">BusyContext</a> documentation on how BusyContexts can be scoped.
  * </p>
  * <p>
  *   The upgrade of JET composite elements relies on any data binding resolving, the management of which is done by a binding provider. 
@@ -1013,22 +991,23 @@ var _UNIQUE = '_ojcomposite';
  *   knockout, the application can set <code>data-oj-binding-provider="none"</code> on that element so its dependent JET composite custom 
  *   elements do not need to wait for bindings to be applied to finish upgrading.
  * </p>
- * <pre class="prettyprint">
- * <code>
+ * <pre class="prettyprint"><code>
  * &lt;my-chart type="bubble" data="{{dataModel}}">&lt;/my-chart>
- * </code>
- * </pre>
+ * </code></pre>
  *
  * <h2 id="metadata">Metadata
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#metadata"></a>
  * </h2>
- * <p>Metadata can be provided via JSON format which will be used to define the composite component.
- *  The Metadata can be extended by appending any extra information in an "extension" field except at the first level of 
- *  the "properties", "methods", "events" or "slots" objects. Any metadata in an extension field will be ignored.</p>
+ * <p>The composite Metadata is a JSON formatted object which defines the properties, methods, slots, and events fired by
+ *  the composite. <b>The name of the composite component properties, event listeners, and methods should avoid collision 
+ *  with the existing <a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement">HTMLElement</a> properties, 
+ *  event listeners, and methods. Additionally, the composite should not re-define any
+ *  <a href="https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes">global attributes</a> or events.</b></p>
  *  
  * <p>The Metadata JSON object should have the following required properties: "name", "version", "jetVersion" and 
  *  the following optional properties: "description", "compositeDependencies", "icon", "displayName", "properties", "methods", "events", or "slots". 
- *  See the tables below for descriptions of these properties.</p>
+ *  See the tables below for descriptions of these properties. The Metadata can be extended by appending any extra information in an "extension" 
+ *  field except at the first level of the "properties", "methods", "events" or "slots" objects. Any metadata in an extension field will be ignored.</p>
  *  
  * <p>Keys defined in the "properties" top level object should map to the composite component's properties following
  *  the same naming convention described in the <a href="#attr-to-prop-mapping">Property-to-Attribute mapping</a> section.
@@ -1509,8 +1488,7 @@ var _UNIQUE = '_ojcomposite';
  * <h3>Example of Run Time Metadata</h3>
  * <p>The JET framework will ignore "extension" fields. Extension fields cannot be defined at 
  *   the first level of the "properties", "methods", "events", or "slots" objects.</p>
- * <pre class="prettyprint">
- * <code>
+ * <pre class="prettyprint"><code>
  * {
  *  "name": "demo-card",
  *  "version": "1.0.2",
@@ -1539,8 +1517,7 @@ var _UNIQUE = '_ojcomposite';
  *     "cardclick": {}
  *   }
  * }
- * </code>
- * </pre>
+ * </code></pre>
  *
  * <h2 id="properties">Properties
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#properties"></a>
@@ -1582,27 +1559,35 @@ var _UNIQUE = '_ojcomposite';
  * <p>Subproperties can also be set programmatically using the <code>set/getProperty</code> methods. 
  * Note that while setting the subproperty using dot notation via the element's top level property is allowed, the setProperty method must be used in order
  * to trigger a property change event.
- * <pre class="prettyprint">
- * <code>
+ * <pre class="prettyprint"><code>
  * element.setProperty("person.firstName", Fred);
  * var firstName = element.getProperty("person.firstName");
- * </code>
- * </pre>
+ * </code></pre>
  * </p>
  * 
  * <h2 id="styling">Styling
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#styling"></a>
  * </h2>
  * <p>
- * Composite component styling can be done via provided css. The application should note that
- * CSS will not be scoped to the composite component and selectors will need to be appropriately selective.
- * The JET framework will add the <code>oj-complete</code> class to the composite DOM element after metadata properties have been resolved.
- * To prevent a flash of unstyled content before the composite properties have been setup, the composite css can include the following rule to hide the
- * composite until the <code>oj-complete</code> class is set on the element.
+ * Composite component styling can be done via provided css. The JET framework will add the <code>oj-complete</code> class to the composite DOM 
+ * element after metadata properties have been resolved. To prevent a flash of unstyled content before the composite properties have been setup, 
+ * the composite css can include the following rule to hide the composite until the <code>oj-complete</code> class is set on the element.
  * <pre class="prettyprint">
  * <code>
  * my-chart:not(.oj-complete) {
  *   visibility: hidden;
+ * }
+ * </code>
+ * </pre>
+ * </p>
+ *
+ * <p>
+ * Composite CSS will not be scoped to the composite component and selectors will need to be appropriately selective. We recommend scoping CSS classes 
+ * and prefixing class names with the composite name as seen in the example below.
+ * <pre class="prettyprint">
+ * <code>
+ * my-chart .my-chart-text {
+ *   color: white;
  * }
  * </code>
  * </pre>
@@ -1980,12 +1965,10 @@ var _UNIQUE = '_ojcomposite';
  * be updated. Please note that this will cause the expression and property values to be out of sync until the salesData expression is updated in the
  * application's ViewModel. Alternatively, if the 'axisLabels' property is updated by the ViewModel, both the 'axisLabel' property and the 
  * showAxisLabels expression will contain the updated value.
- * <pre class="prettyprint">
- * <code>
+ * <pre class="prettyprint"><code>
  * &lt;my-chart data="[[salesData]]" axis-labels={{showAxisLabels}} ... >
  * &lt;/my-chart>
- * </code>
- * </pre>
+ * </code></pre>
  * </p>
  * <h3>readOnly</h3>
  * <p>The composite component Metadata also defines properties to control expression writeback and property updates.
@@ -2001,34 +1984,13 @@ var _UNIQUE = '_ojcomposite';
  * </h2>
  * <p>
  * Complex composite components which can contain additional composites and/or content for child facets defined in its associated View can be constructed via slotting.
+ * See the <a href="oj.ojBindSlot.html">oj-bind-slot</a> API doc for more information.
  * </p>
- * <h3>Definitions</h3>
- * <h4>Assignable Node</h4>
- * <h5>Properties</h5>
- * <ul>
- *  <li>Nodes with slot attributes will be assigned to the corresponding named slots (if
- *    present) and all other assignable nodes (Text or Element) will be assigned to
- *    the default slot (if present).</li>
- *  <li>The slot attribute of a node is only applied once. If the View contains a
- *    composite and the node's assigned slot is a child of that composite, the slot
- *    attribute of the assigned slot is inherited for the slotting of that composite.</li>
- *  <li>Nodes with slot attributes that reference slots not present in the View will not appear in the DOM.</li>
- *  <li>If the View does not contain a default slot, nodes assigned to the default slot will not appear in the DOM.</li>
- *  <li>Nodes that are not assigned to a slot will not appear in the DOM.</li>
- * </ul>
  *
- * <h4>Slot</h4>
- * <h5>Properties</h5>
- * <ul>
- *  <li>A default slot is a slot element whose slot name is the empty string or missing.</li>
- *  <li>More than one node can be assigned to the same slot.</li>
- *  <li>A slot can also have a slot attribute and be assigned to another slot.</li>
- *  <li>A slot can have fallback content which are its child nodes that will be used in the DOM in its place if it has no assigned nodes.</li>
- *  <li>A slot can also also have an index attribute to allow the slot's assigned nodes
- *    to be individually slotted (e.g. in conjunction with a Knockout foreach binding).</li>
- * </ul>
- *
- * <h3>Applying Bindings</h3>
+ * <h2 id="bindorder-section">
+ *   Binding Order
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#bindorder-section"></a>
+ * </h2>
  * <p>The following steps will occur when processing the binding for a composite component:
  * <ol>
  *  <li>Apply bindings to children using the composite component's binding context.</li>
@@ -2040,189 +2002,12 @@ var _UNIQUE = '_ojcomposite';
  *  <li>Insert the View and apply bindings to it with the ViewModel's binding context.
  *    <ol>
  *      <li>The composite's children will be 'slotted' into their assigned View slots.</li>
- *      <li>The oj-slot's slot attribute, which is "" by default, will override its assigned node's slot attribute.</li>
+ *      <li>The oj-bind-slot's slot attribute, which is "" by default, will override its assigned node's slot attribute.</li>
  *    </ol>
  *  </li>
  * </ol>
  * </p>
  *
- * <h4>Example #1: Basic Usage</h4>
- * Note that the IDs are provided for sample purposes only.
- * <h5>Initial DOM</h5>
- * <pre class="prettyprint">
- * <code>
- * &lt;component-a>
- *  &lt;div id="A" slot="foo">&lt;/div>
- *  &lt;div id="B" slot="bar">&lt;/div>
- *  &lt;div id="C">&lt;/div>
- *  &lt;div id="D" slot="foo">&lt;/div>
- *  &lt;div id="E" slot="cat">&lt;/div>
- * &lt;/component-a>
- * </code>
- * </pre>
- *
- * <h5>View</h5>
- * <pre class="prettyprint">
- * <code>
- * &lt;!-- component-a View -->
- * &lt;div id="outerFoo">
- *  &lt;oj-slot name="foo">&lt;/oj-slot>
- * &lt;/div>
- * &lt;div id="outerBar">
- *  &lt;oj-slot name="bar">&lt;/oj-slot>
- * &lt;/div>
- * &lt;div id="outerBaz">
- *  &lt;oj-slot name="baz">
- *    &lt;!-- Default Content -->
- *    &lt;img id="F">&lt;/img>
- *    &lt;div id="G">&lt;/div>
- *  &lt;/oj-slot>
- * &lt;/div>
- * &lt;div id="outerDefault">
- *  &lt;oj-slot>
- *    &lt;!-- Default Content -->
- *    &lt;div id="H">&lt;/div>
- *  &lt;/oj-slot>
- * &lt;/div>
- * </code>
- * </pre>
- *
- * <h5>Final DOM</h5>
- * <pre class="prettyprint">
- * <code>
- * &lt;component-a>
- *  &lt;div id="outerFoo">  
- *      &lt;div id="A" slot="foo">&lt;/div>
- *      &lt;div id="D" slot="foo">&lt;/div>
- *  &lt;/div>
- *  &lt;div id="outerBar">
- *      &lt;div id="B" slot="bar">&lt;/div>
- *   &lt;/div>
- *  &lt;div id="outerBaz">
- *      &lt;img id="F">&lt;/img>
- *      &lt;div id="G">&lt;/div>
- *  &lt;/div>
- *  &lt;div id="outerDefault">
- *      &lt;div id="C">&lt;/div>
- *  &lt;/div>
- * &lt;/component-a>
- * </code>
- * </pre>
- *
- * <h4>Example #2: Slot Attribute Evaluation</h4>
- * <p>When a node is assigned to a slot, its slot value is not used for subsequent
- *  slot assignments when child bindings are applied. Instead that slot's slot attribute,
- *  which by default is "", overrides the assigned node's slot attribute. No actual
- *  DOM changes will be made to the assigned node's slot attribute, but its evaluated
- *  slot value will be managed internally and used for applying subsequent child bindings.</p>
- *
- * <h5>Initial DOM</h5>
- * <pre class="prettyprint">
- * <code>
- * &lt;component-a>
- *  &lt;div id="A" slot="foo">&lt;/div>
- * &lt;/component-a>
- * </code>
- * </pre>
- *
- * <h5>View</h5>
- * <pre class="prettyprint">
- * <code>
- * &lt;!-- component-a View -->
- * &lt;component-b>
- *  &lt;oj-slot name="foo">&lt;/oj-slot>
- * &lt;/component-b>
- *
- * &lt;!-- component-b View -->
- * &lt;div id="outerFoo">
- *  &lt;oj-slot name="foo">&lt;/oj-slot>
- * &lt;/div>
- * &lt;div id="outerDefault">
- *  &lt;oj-slot>&lt;/oj-slot>
- * &lt;/div>
- * </code>
- * </pre>
- *
- * <p>When applying bindings for the component-a View, the oj-slot binding will replace
- * slot foo with div A. Slot foo's slot attribute ("") overrides div A's ("foo")
- * so that the evaluated slot value ("") will be used when applying subsequent child bindings.<p>
- * <pre class="prettyprint">
- * <code>
- * &lt;!-- DOM -->
- * &lt;component-a>
- *  &lt;!-- Start component-a View -->
- *  &lt;component-b>
- *    &lt;!-- Evaluated slot value is "" -->
- *    &lt;div id="A" slot="foo">&lt;/div>
- *  &lt;/component-b>
- *  &lt;!-- End component-a View -->
- * &lt;/component-a>
- * </code>
- * </pre>
- *
- * <p>When applying bindings for the component-b View, the oj-slot binding will replace
- *  component-b's default slot with div A since it's evaluated slot value is "".</p>
- * <pre class="prettyprint">
- * <code>
- * &lt;!-- DOM -->
- * &lt;component-a>
- *  &lt;!-- Start component-a View -->
- *  &lt;component-b>
- *    &lt;!-- Start component-b View -->
- *    &lt;div id="outerFoo">
- *    &lt;/div>
- *    &lt;div id="outerDefault">
- *      &lt;div id="A" slot="foo">&lt;/div>
- *    &lt;/div>
- *    &lt;!-- End component-b View -->
- *  &lt;/component-b>
- *  &lt;!-- End component-a View -->
- * &lt;/component-a>
- * </code>
- * </pre>
- *
- * <h3>Deferred Slots</h3>
- * As a performance enhancement, the composite can participate in deferred slot
- * rendering by conditionally rendering a slot element inside a knockout if block
- * and document that certain slots will be lazily rendered. This gives the application the opportunity
- * to wrap their slot content in an <a href="../oj.ojDefer.html">oj-defer</a> element and have the
- * bindings for that deferred content be delayed. oj.Components.subtreeHidden/Shown will automatically
- * be called on the slot contents when they are added or removed from a slot.
- *
- * <h5>Initial DOM</h5>
- * <pre class="prettyprint">
- * <code>
- * &lt;card-component>
- *  &lt;oj-defer slot="front">
- *    &lt;div>
- *      ...
- *    &lt;/div>
- *  &lt;/oj-defer>
- *  &lt;oj-defer slot="back">
- *    &lt;div>
- *      ...
- *    &lt;/div>
- *  &lt;/oj-defer>
- * &lt;/card-component>
- * </code>
- * </pre>
- *
- * <h5>View</h5>
- * <pre class="prettyprint">
- * <code>
- * &lt;!-- ko:if isFront -->
- *   &lt;oj-slot class="card-component-front">
- *     ...
- *   &lt;/oj-slot>
- * &lt;!-- /ko -->
- * &lt;!-- ko:ifnot isFront -->
- *   &lt;oj-slot class="card-component-back">
- *     ...
- *   &lt;/oj-slot>
- * &lt;!-- /ko -->
- * </code>
- * </pre>
- * 
  * @namespace
  */
 oj.Composite = {};
@@ -2286,8 +2071,10 @@ oj.Composite.getMetadata = function(name)
  * documented above and ultimately resolve to a JSON object.
  * @param {Object} descriptor.view Describes how component's View is loaded. The object must contain one of the keys
  * documented above and ultimately resolve to a string, array of DOM nodes, or document fragment.
- * @param {Object} descriptor.css Describes how component's CSS is loaded. If specified, the object must contain one of the keys
- * documented above and ultimately resolve to a string if loaded inline or as a Promise.
+ * @param {Object} descriptor.css (Deprecated) Describes how component's CSS is loaded. If specified, the object must contain one of the keys
+ * documented above and ultimately resolve to a string if loaded inline or as a Promise. <b>Note that this key should not be used if the composite
+ * styles contain references to any external resources and is deprecated in 4.1.0. require-css, a RequireJS CSS plugin, is the
+ * current recommendation for CSS loading.</b>
  * @param {Object} descriptor.viewModel Describes how component's ViewModel is loaded. If specified, the object must contain one of the keys
  * documented above. This option is only applicable to composites hosting a Knockout template
  * with a ViewModel and ultimately resolves to a constructor function or object instance. If the initial ViewModel resolves to an object instance, the

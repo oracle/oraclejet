@@ -63,9 +63,9 @@ oj.ListViewDndContext.prototype.reset = function()
  * Retrieve options for drag or drop
  * @param {string} op either drag or drop 
  * @return {Object} options for drag or drop
- * @private
+ * @protected
  */
-oj.ListViewDndContext.prototype._getDndOptions = function(op)
+oj.ListViewDndContext.prototype.GetDndOptions = function(op)
 {
     var dnd = this.listview.GetOption("dnd");
     if (dnd != null && dnd[op])
@@ -83,7 +83,7 @@ oj.ListViewDndContext.prototype._getDndOptions = function(op)
  */
 oj.ListViewDndContext.prototype._getDragOptions = function()
 {
-    return this._getDndOptions('drag');
+    return this.GetDndOptions('drag');
 };
 
 /**
@@ -93,7 +93,7 @@ oj.ListViewDndContext.prototype._getDragOptions = function()
  */
 oj.ListViewDndContext.prototype._getDropOptions = function()
 {
-    return this._getDndOptions('drop');
+    return this.GetDndOptions('drop');
 };
 
 /**
@@ -102,18 +102,58 @@ oj.ListViewDndContext.prototype._getDropOptions = function()
  */
 oj.ListViewDndContext.prototype._isItemReordering = function()
 {
-    var option = this._getDndOptions('reorder');
+    var option = this.GetDndOptions('reorder');
     return (option == "enabled");
 };
 
 /**
  * Gets the default drag affordance marker class
  * @return {string} affordance marker class
- * @private
+ * @protected
  */
-oj.ListViewDndContext.prototype._getDragAffordanceClass = function()
+oj.ListViewDndContext.prototype.GetDragAffordanceClass = function()
 {
     return "oj-listview-drag-handle";
+};
+
+/**
+ * Gets the drag Image class. Need to be override by navlist.
+ * @return {string} drag image class
+ * @protected
+ */
+oj.ListViewDndContext.prototype.GetDragImageClass = function()
+{
+    return "oj-listview-drag-image";
+};
+
+/**
+ * Gets the drag Item class.  Need to be override by navlist.
+ * @return {string} drag Item class
+ * @protected
+ */
+oj.ListViewDndContext.prototype.GetDragItemClass = function()
+{
+    return "oj-listview-drag-item";
+};
+
+/**
+ * Gets the cut command style class.  Need to be override by navlist.
+ * @return {string} cut command style class
+ * @protected
+ */
+oj.ListViewDndContext.prototype.GetCutStyleClass = function()
+{
+    return "oj-listview-cut";
+};
+
+/**
+ * Gets the style class prefix.  Need to be override by navlist.
+ * @return {string} style class prefix
+ * @protected
+ */
+oj.ListViewDndContext.prototype.GetCommandPrefix = function()
+{
+    return "oj-listview-";
 };
 
 oj.ListViewDndContext.prototype._findItem = function(target)
@@ -212,7 +252,7 @@ oj.ListViewDndContext.prototype.itemRenderComplete = function(elem, context)
         elem = elem.firstElementChild;
     }
 
-    dragHandle = $(elem).find("."+this._getDragAffordanceClass());
+    dragHandle = $(elem).find("."+this.GetDragAffordanceClass());
     if (dragHandle != null && dragHandle.length > 0)
     {
         ariaLabelledBy = dragHandle.attr("aria-labelledby");        
@@ -283,7 +323,7 @@ oj.ListViewDndContext.prototype._setItemDraggable = function(item)
     var cls, dragHandle;
 
     // if the item contains the drag affordance, then bail
-    cls = this._getDragAffordanceClass();
+    cls = this.GetDragAffordanceClass();
     dragHandle = item.find("."+cls);
     if (dragHandle != null && dragHandle.length > 0)
     {
@@ -317,7 +357,7 @@ oj.ListViewDndContext.prototype._setDraggable = function(target)
 
     if (this._getDragOptions() != null || this._isItemReordering())
     {
-        cls = this._getDragAffordanceClass();
+        cls = this.GetDragAffordanceClass();
         if (target.hasClass(cls))
         {
             dragger = $(target);
@@ -325,31 +365,38 @@ oj.ListViewDndContext.prototype._setDraggable = function(target)
         else
         {
             item = this._findItem(target);
-            if (item != null)
+            if (!this.shouldDragCurrentItem())
             {
-                skipped = this._setItemDraggable(item);
-                if (skipped)
+                if (item != null)
                 {
-                    // contains affordance, bail out.
-                    return;
+                    skipped = this._setItemDraggable(item);
+                    if (skipped)
+                    {
+                        // contains affordance, bail out.
+                        return;
+                    }
                 }
-            }
 
-            // if dragging an item, it must be already the current item or one of the selected item
-            selectedItems = this._getSelectedItems();
-            if (selectedItems.length > 0)
+              // if dragging an item, it must be already the current item or one of the selected item
+              selectedItems = this._getSelectedItems();
+              if (selectedItems.length > 0)
+              {
+                  // in order to initiate drag the item must be the current active item
+                  if (item != null && selectedItems.indexOf(item[0]) > -1)
+                  {
+                      dragger = item;
+                  }
+                  else
+                  {
+                      // the active item would change, so remove oj-draggable now
+                      // note for multiple selection case see setSelectionDraggable
+                      $(selectedItems[0]).removeClass("oj-draggable");
+                  }   
+              }
+            } 
+            else 
             {
-                // in order to initiate drag the item must be the current active item
-                if (item != null && selectedItems.indexOf(item[0]) > -1)
-                {
-                    dragger = item;
-                }
-                else
-                {
-                    // the active item would change, so remove oj-draggable now
-                    // note for multiple selection case see setSelectionDraggable
-                    $(selectedItems[0]).removeClass("oj-draggable");
-                }   
+                dragger = item;
             }
         }
 
@@ -372,7 +419,7 @@ oj.ListViewDndContext.prototype._unsetDraggable = function(target)
 
     if (this._getDragOptions() != null || this._isItemReordering())
     {
-        cls = this._getDragAffordanceClass();
+        cls = this.GetDragAffordanceClass();
         if (target.hasClass(cls))
         {
             dragger = $(target);
@@ -481,7 +528,7 @@ oj.ListViewDndContext.prototype._setDragItemDataTransfer = function(event, dataT
     if (itemDataArray.length > 0)
     {
         this._setDragItemData(event.originalEvent, dataTypes, itemDataArray);
-        this._setDragItemImage(event.originalEvent, items);
+        this.SetDragItemImage(event.originalEvent, items);
 
         return {'items': itemDataArray};
     }
@@ -516,16 +563,16 @@ oj.ListViewDndContext.prototype._setDragItemData = function(nativeEvent, dataTyp
     }
 
     // tag datatransfer so we could determine whether this is dnd within same listview
-    dataTransfer.setData("text/ojlistview-dragsource-id", this.listview.element.get(0).id);
+    dataTransfer.setData(this.GetDragSourceType(), this.listview.element.get(0).id);
 };
 
 /**
  * Create and sets the drag image into the dataTransfer object
  * @param {Event} nativeEvent  DOM event object 
  * @param {Array.<Element>} items array of row data
- * @private
+ * @protected
  */
-oj.ListViewDndContext.prototype._setDragItemImage = function(nativeEvent, items)
+oj.ListViewDndContext.prototype.SetDragItemImage = function(nativeEvent, items)
 {
     var target, dragImage, i, minTop = Number.MAX_VALUE, offsetTop, offsetWidth, clone, container, left = 0, top = 0;
 
@@ -535,7 +582,7 @@ oj.ListViewDndContext.prototype._setDragItemImage = function(nativeEvent, items)
     {
         dragImage = $(document.createElement("ul"));
         dragImage.get(0).className = this.listview.element.get(0).className;
-        dragImage.addClass("oj-listview-drag-image")
+        dragImage.addClass(this.GetDragImageClass())
                  .css({"width":this.listview.element.css("width"),
                        "height":this.listview.element.css("height")});
         
@@ -561,7 +608,7 @@ oj.ListViewDndContext.prototype._setDragItemImage = function(nativeEvent, items)
     else
     {
         // calculate offset if drag on affordance
-        if ($(target).hasClass(this._getDragAffordanceClass()))
+        if ($(target).hasClass(this.GetDragAffordanceClass()))
         {
             offsetTop = 0;
             if ($.contains(items[0], target.offsetParent))
@@ -584,8 +631,8 @@ oj.ListViewDndContext.prototype._setDragItemImage = function(nativeEvent, items)
 
         dragImage = $(document.createElement("ul"));
         dragImage.get(0).className = this.listview.element.get(0).className;
-        dragImage.addClass("oj-listview-drag-image")
-                 .css({"width":this.listview.element.css("width"),
+        dragImage.addClass(this.GetDragImageClass())
+                 .css({"width": this.GetDragImageWidth(items[0]),
                        "height":items[0].offsetHeight * 2})
                  .append(clone); //@HTMLUpdateOK
     }
@@ -602,11 +649,21 @@ oj.ListViewDndContext.prototype._setDragItemImage = function(nativeEvent, items)
 };
 
 /**
- * Returns the default data type
- * @return {string} the default data type
- * @private
+ * Returns the Drag image width. Need to be overriden by navlist.
+ * @return {string} width
+ * @protected
  */
-oj.ListViewDndContext.prototype._getDefaultDataType = function()
+oj.ListViewDndContext.prototype.GetDragImageWidth = function(item)
+{
+    return this.listview.element.css("width");
+};
+
+/**
+ * Returns the default data type. Need to be overriden by navlist
+ * @return {string} the default data type
+ * @protected
+ */
+oj.ListViewDndContext.prototype.GetDefaultDataType = function()
 {
     return "text/ojlistview-items-data";
 };
@@ -633,10 +690,10 @@ oj.ListViewDndContext.prototype._handleDragStart = function(event)
         }
         else
         {
-            dataTypes = this._getDefaultDataType();
+            dataTypes = this.GetDefaultDataType();
         }
 
-        if ($(event.target).hasClass(this._getDragAffordanceClass()))
+        if ($(event.target).hasClass(this.GetDragAffordanceClass()) || this.shouldDragCurrentItem())
         {
             // if it's affordance then use event target
             items = [];
@@ -716,7 +773,7 @@ oj.ListViewDndContext.prototype._handleDragEnd = function(event)
     if (this.m_currentDragItem != null && this.m_dragItems != null)
     {
         // for drag affordance case
-        this.m_currentDragItem.find("."+this._getDragAffordanceClass())
+        this.m_currentDragItem.find("."+this.GetDragAffordanceClass())
                               .removeAttr("draggable");
 
         this.m_currentDragItem.removeClass("oj-drag oj-draggable")
@@ -724,7 +781,7 @@ oj.ListViewDndContext.prototype._handleDragEnd = function(event)
 
         for (i=0; i<this.m_dragItems.length; i++)
         {
-            $(this.m_dragItems[i]).removeClass("oj-listview-drag-item")
+            $(this.m_dragItems[i]).removeClass(this.GetDragItemClass())
                                   .css("display", "");           
         }
     }
@@ -819,7 +876,7 @@ oj.ListViewDndContext.prototype._createDropTarget = function(item)
         dropTarget = $(item.get(0).cloneNode(false));
         dropTarget.addClass("oj-drop")
                   .removeClass("oj-drag oj-draggable oj-hover oj-focus oj-selected")
-                  .css({"display": "block", "height": item.outerHeight()});
+                  .css({"display": "block", "height": item.outerHeight(), "width": item.outerWidth()});
         
         this.m_dropTarget = dropTarget;
     }
@@ -991,12 +1048,12 @@ oj.ListViewDndContext.prototype._handleDragOver = function(event)
             dropTarget = this._createDropTarget(item);
 
             for (i=0; i<this.m_dragItems.length; i++)
-            {
-                // we have to override inline style instead of doing it inside style class since
-                // custom style class could override it
-                $(this.m_dragItems[i]).addClass("oj-listview-drag-item")
-                                      .css("display", "none");           
-            }
+        {
+            // we have to override inline style instead of doing it inside style class since
+            // custom style class could override it
+            $(this.m_dragItems[i]).addClass(this.GetDragItemClass())
+                                  .css("display", "none");           
+        }
 
             dropTarget.insertBefore(item); //@HTMLUpdateOK
             this.m_dropTargetIndex = dropTarget.index();
@@ -1165,7 +1222,7 @@ oj.ListViewDndContext.prototype._handleDrop = function(event)
         return;
     }
 
-    source = event.originalEvent.dataTransfer.getData("text/ojlistview-dragsource-id");
+    source = event.originalEvent.dataTransfer.getData(this.GetDragSourceType());
 
     // invoke callback
     if (this.m_currentDropItem.hasClass(this.listview.getEmptyTextStyleClass()))
@@ -1203,9 +1260,11 @@ oj.ListViewDndContext.prototype._handleDrop = function(event)
     if (ui['reorder'])
     {
         // the order in which dragEnd and drop event is called is inconsistent, hence the check
-        ui['items'] = this.m_itemsDragged == null ? this.m_dragItems : this.m_itemsDragged;
-        ui['reference'] = ui['item'];
-        this.listview.Trigger("reorder", event, ui);
+        //Always we should check for this.m_dragItems as it will be null only if dragend already invoked 
+        //and items are copied to this.m_itemsDragged.
+        ui['items'] = this.m_dragItems == null ? this.m_itemsDragged : this.m_dragItems;
+        
+        this.listview.Trigger("reorder", event, this.CreateReorderPayload(ui['items'], ui['position'], ui['item']));
 
         // the drop should be complete regardless the value of callback
         event.preventDefault();
@@ -1221,10 +1280,26 @@ oj.ListViewDndContext.prototype._handleDrop = function(event)
     {
         return;
     }
-    else
+    else  
     { 
         return returnValue;
     }
+};
+
+/**
+ * Returns payload object for reorder event. Navlist overrides this.
+ * @param {Array} items, items to be moved. 
+ * @param {string} position, the drop position relative to the reference item.
+ * @param {Element} reference, the item where the moved items are drop on.
+ * @returns {Object} payload object
+ * @protected
+ */
+oj.ListViewDndContext.prototype.CreateReorderPayload = function (items, position, reference) {
+  return {
+    'items': items,
+    'position': position,
+    'reference': reference
+  };
 };
 
 /*********************************** Context menu ***********************************************/
@@ -1296,6 +1371,31 @@ oj.ListViewDndContext.prototype.prepareContextMenu = function(contextMenu)
 };
 
 /**
+ * Returns selector to extract only the context menu items with valid commands. 
+ * Navlist has remove menu item which needs to be ignored by listview. 
+ * @returns {string} jquery selector string. 
+ */
+oj.ListViewDndContext.prototype._getDndContextMenuItemSelector = function()
+{
+    var self = this, query = '', commands = ['cut', 'copy', 'paste', 'paste-before', 'paste-after', 'pasteBefore', 'pasteAfter'];
+    
+    if (!this.m_dndMenuItemSelector) 
+    {
+        commands.forEach(function (command, index) 
+        {
+            query += '[data-oj-command=' + self.GetCommandPrefix() + command + '],';
+            query += '[data-oj-command=' + command + ']';
+            if (index < commands.length - 1) 
+            {
+                query += ',';
+            }
+        });
+        this.m_dndMenuItemSelector = query;
+    }
+    return this.m_dndMenuItemSelector;
+};
+
+/**
  * Retrieves a list of commands from the context menu.
  * @param {Element} contextMenu the context menu element
  * @param {function(Element, string)=} callback the function to invoke on each menu item found
@@ -1304,18 +1404,18 @@ oj.ListViewDndContext.prototype.prepareContextMenu = function(contextMenu)
  */
 oj.ListViewDndContext.prototype._getCommands = function(contextMenu, callback)
 {
-    var capabilities, listItems;
-
+    var capabilities, listItems, self;
+    self = this;
     capabilities = [];
-    listItems = $(contextMenu).find('[data-oj-command]');
+    listItems = $(contextMenu).find(this._getDndContextMenuItemSelector());
     listItems.each(function() {
         var command, anchor, newListItem;
         anchor = $(this).children('a');
         if (anchor.length === 0)
         {
-            if ($(this).attr('data-oj-command').indexOf('oj-listview-') == 0)
+            if ($(this).attr('data-oj-command').indexOf(self.GetCommandPrefix()) == 0)
             {
-                command = $(this).attr('data-oj-command').substring(12);
+                command = $(this).attr('data-oj-command').substring(self.GetCommandPrefix().length);
                 if (callback)
                 {
                     callback(this, command);
@@ -1408,15 +1508,27 @@ oj.ListViewDndContext.prototype._handleCut = function(event)
     // first restore style of any previously cut items
     if (this.m_clipboard != null)
     {
-        $(this.m_clipboard).removeClass("oj-listview-cut");
+        $(this.m_clipboard).removeClass(this.GetCutStyleClass());
     }
-
-    items = this._getSelectedItems();
-    $(items).addClass("oj-listview-cut");
+    
+    items = this.GetCutItems(event);
+    //focus should be moved back to listview after context menu is closed
+    this.listview.ojContext.element.focus();
+    $(items).addClass(this.GetCutStyleClass());
     this.m_clipboard = items;
-
+    
     // fire cut event
     this.listview.Trigger('cut', event, {'items': items});
+};
+
+/**
+ * Returns cut items. Navlist overrides this.
+ * @param {Event} event jQuery event
+ * @returns {Array} array of items to be moved
+ */
+oj.ListViewDndContext.prototype.GetCutItems = function(event)
+{
+    return this._getSelectedItems();
 };
 
 /**
@@ -1431,10 +1543,10 @@ oj.ListViewDndContext.prototype._handleCopy = function(event)
     // first restore style of any previously cut items
     if (this.m_clipboard != null)
     {
-        $(this.m_clipboard).removeClass("oj-listview-cut");
+        $(this.m_clipboard).removeClass(this.GetCutStyleClass());
     }
 
-    items = this._getSelectedItems();
+      items = this._getSelectedItems();
     this.m_clipboard = items;
 
     // fire cut event
@@ -1454,10 +1566,10 @@ oj.ListViewDndContext.prototype._handlePaste = function(event, item, position)
     this.listview.Trigger("paste", event, {'item': item.get(0)});
     
     // restore cut item style
-    $(this.m_clipboard).removeClass("oj-listview-cut");
+    $(this.m_clipboard).removeClass(this.GetCutStyleClass());
 
     // fire reorder event
-    this.listview.Trigger("reorder", event, {'items': this.m_clipboard, 'position': position, 'reference': item.get(0)});
+    this.listview.Trigger("reorder", event, this.CreateReorderPayload(this.m_clipboard, position, /** @type {Element} */ (item.get(0))));
 
     // clear the clipboard
     this.m_clipboard = null;
@@ -1552,7 +1664,7 @@ oj.ListViewDndContext.prototype._handleContextMenuBeforeOpen = function(event, u
 
     // disable all menu items first, needs to be done even if there's no default menu items since
     // there could be one from before refresh
-    menuContainer.find("[data-oj-command]")
+    menuContainer.find(this._getDndContextMenuItemSelector())
                  .addClass("oj-disabled");
 
     item = ui ? ui['openOptions']['launcher'] : event['detail']['openOptions']['launcher'];
@@ -1677,5 +1789,25 @@ oj.ListViewDndContext.prototype.HandleKeyDown = function(event)
     }
 
     return false;
+};
+
+/**
+ * Return true to drag current item. Need to be overriden by navlist.
+ * @return {boolean} true to drag current item.
+ * @private
+ */
+oj.ListViewDndContext.prototype.shouldDragCurrentItem = function()
+{
+    return false;
+};
+
+/**
+ * Returns drag source type. Need to be overriden by navlist.
+ * @return {string} drag source type.
+ * @private
+ */
+oj.ListViewDndContext.prototype.GetDragSourceType = function()
+{
+    return "text/ojlistview-dragsource-id";
 };
 });

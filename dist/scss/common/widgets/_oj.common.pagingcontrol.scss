@@ -81,6 +81,15 @@
       }
     }
 
+    /* Styling for the input section labels */
+    .oj-pagingcontrol-nav-label.oj-label-inline,
+    .oj-pagingcontrol-nav-input-max.oj-label-inline,
+    .oj-pagingcontrol-nav-input-summary.oj-label-inline {
+      margin-top: 0.2em;
+      padding-top: 0.5 * $fontSize;
+      line-height: 1;
+    }
+    
     /* Styling for the page mode navigation arrows section. */
     .oj-pagingcontrol-nav-arrow-section {
       display: inline-block;
@@ -205,6 +214,7 @@
       max-height: 2 * $fontSize;
       font-size: $fontSize;
       padding-left: 2px;
+      padding-top: 0px;
       padding-right: 2px;
       margin-top: 0.2em;
     }
@@ -214,9 +224,6 @@
       color: $formControlLabelColor;
       min-width: $fontSize;
       max-width: $fontSize;
-      min-height: 0;
-      max-height: none;
-      margin-top: 0.1em;
     }
 
     /* Styling for the page mode maximum number of pages text. */
@@ -254,6 +261,7 @@
       border: 1px solid transparent;
       @include oj-border-radius($buttonBorderRadius);
       padding: 5px;
+      padding-top: 0.5 * $fontSize;
       cursor: $buttonCursor;
     }
 

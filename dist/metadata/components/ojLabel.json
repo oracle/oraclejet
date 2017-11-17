@@ -1,0 +1,118 @@
+{
+  "name": "ojLabel",
+  "version": "4.1.0",
+  "jetVersion": "4.1.0",
+  "displayName": " Label",
+  "preview": true,
+  "styleClasses": [
+    {
+      "styleGroup": [
+        "oj-focus-highlight"
+      ],
+      "description": "Under normal circumstances this class is applied automatically. It is documented here for the rare cases that an app developer needs per-instance control.\nThe \"oj-focus-highlight\" class applies focus styling that may not be desirable when the focus results from pointer interaction (touch or mouse), but which is needed for accessibility when the focus occurs by a non-pointer mechanism, for example keyboard or initial page load.\nThe application-level behavior for this component is controlled in the theme by the \"$focusHighlightPolicy\" SASS variable; however, note that this same variable controls the focus highlight policy of many components and patterns. The values for the variable are:\n\"nonPointer\": \"oj-focus-highlight\" is applied only when focus is not the result of pointer interaction. Most themes default to this value.\n\"all\": \"oj-focus-highlight\" is applied regardless of the focus mechanism.\n\"none\": \"oj-focus-highlight\" is never applied. This behavior is not accessible, and is intended for use when the application wishes to use its own event listener to precisely control when the class is applied (see below). The application must ensure the accessibility of the result.\nTo change the behavior on a per-instance basis, the application can set the SASS variable as desired and then use event listeners to toggle this class as needed."
+    }
+  ],
+  "description": "Label Element",
+  "properties": {
+    "for": {
+      "description": "\nThe for attribute refers to the id of the \nelement this oj-label element is associated with.\nSome JET form components support using oj-label's for attribute to point to its id attribute\n(e.g., oj-input-text, oj-slider), and others do not (e.g., oj-checkboxset). \n\nFor the oj-radioset, oj-checkboxset, oj-color-palette, and oj-color-spectrum components, \ninstead of the for attribute, use the \nid attribute on oj-label \nwith JET's form element's labelled-by attribute.\n\n\nRefer to the JET's form element's documentation/demos for more examples showing the \nuse of for/id \nand the use of id/labelled-by.\n",
+      "type": "string|null",
+      "displayName": "For",
+      "value": null
+    },
+    "help": {
+      "description": "The help information that goes on the oj-label. The help attributes are:\n\ndefinition - this is the help definition text. \nIt is what shows up\nwhen the user hovers over the help icon, or tabs into the help icon, or press\nand holds the help icon on a mobile device. No formatted text is available for\nhelp definition attribute.\nsource - this is the help source url.\nIf present, a help icon will\nrender next to the label. For security reasons we only support urls with protocol http: or https:.\nIf the url doesn't comply we ignore it and throw an error.\nPass in an encoded URL since we do not encode the URL.\n",
+      "type": "Object.<string, string>|null",
+      "displayName": "Help",
+      "value": "{definition :null, source: null}",
+      "properties": {
+        "definition": {
+          "description": "help definition text. See the top-level help option for details.",
+          "type": "string|null",
+          "value": null
+        },
+        "source": {
+          "description": "help source url. See the top-level help option for details.",
+          "type": "string|null",
+          "value": null
+        }
+      }
+    },
+    "labelId": {
+      "description": "label-id sets the id \nattribute on the internal label element. The use case where this may be needed\nis if you are using a <div aria-labelledby> \nand for accessibility reasons you need to point to the \noj-label's label\nelement. This should be a corner case. Most often you'd use oj-label's \nfor attribute to\nassociate with a form component's id attribute or use oj-label's \nid attribute to \nassociate with a JET form component's labelled-by attribute.",
+      "type": "string|null",
+      "displayName": "Label Id",
+      "value": null
+    },
+    "showRequired": {
+      "description": "Whether this label should have a required icon. It is recommended that you\nbind the show-required attribute to the same binding \nas the required attribute on the\nassociated JET form component to make sure they are in sync.",
+      "type": "boolean",
+      "displayName": "Show Required",
+      "value": false
+    },
+    "translations": {
+      "description": "A collection of translated resources from the translation bundle, or null if this\ncomponent has no resources. Resources may be accessed and overridden individually or collectively, as seen in the examples.\n\nIf this component has translations, their documentation immediately follows this doc entry.",
+      "type": "Object",
+      "displayName": "Translations",
+      "value": null,
+      "properties": {
+        "tooltipHelp": {
+          "description": "Used for the default help icon tooltip.. Most likely the application developer\nwould use the oj-label's help.definition property to specify the help definition\ntext per oj-label element.",
+          "type": "string",
+          "value": "Help"
+        },
+        "tooltipRequired": {
+          "description": "Used for the default required icon tooltip.",
+          "type": "string",
+          "value": "Required"
+        }
+      }
+    }
+  },
+  "methods": {
+    "refresh": {
+      "description": "Refreshes the component with all the current attributes.\n\nCall refresh if the id changes, though \nchanging the id shouldn't be needed.\n\n\nAlso, call refresh after required\nor help changes.\nThe locale could have changed in the meantime, and refresh is needed to update the \nrequired and \nhelp tooltips.\n\nThere should be no need to call refresh for other attribute changes."
+    },
+    "setProperty": {
+      "description": "Sets a property or a single subproperty for complex properties and notifies the component\nof the change, triggering a [property]Changed event.",
+      "params": [
+        {
+          "name": "property",
+          "description": "The property name to set. Supports dot notation for subproperty access.",
+          "type": "string"
+        },
+        {
+          "name": "value",
+          "description": "The new value to set the property to.",
+          "type": "*"
+        }
+      ]
+    },
+    "getProperty": {
+      "description": "Retrieves a value for a property or a single subproperty for complex properties.",
+      "params": [
+        {
+          "name": "property",
+          "description": "The property name to get. Supports dot notation for subproperty access.",
+          "type": "string"
+        }
+      ],
+      "return": "*"
+    },
+    "setProperties": {
+      "description": "Performs a batch set of properties.",
+      "params": [
+        {
+          "name": "properties",
+          "description": "An object containing the property and value pairs to set.",
+          "type": "Object"
+        }
+      ]
+    }
+  },
+  "slots": {
+    "contextMenu": {
+      "description": "The contextMenu slot is set on the oj-menu within this element. \nThis is used to designate the JET Menu that this component should launch as a context menu on right-click, Shift-F10, Press & Hold, or component-specific gesture. \nIf specified, the browser's native context menu will be replaced by the JET Menu specified in this slot.\n\nThe application can register a listener for the Menu's ojBeforeOpen event. The listener can cancel the launch via event.preventDefault(), \nor it can customize the menu contents by editing the menu DOM directly, and then calling refresh() on the Menu.\n\nTo help determine whether it's appropriate to cancel the launch or customize the menu, the ojBeforeOpen listener can use component API's to determine which \ntable cell, chart item, etc., is the target of the context menu. See the JSDoc and demos of the individual components for details. \n\nKeep in mind that any such logic must work whether the context menu was launched via right-click, Shift-F10, Press & Hold, or component-specific touch gesture."
+    }
+  }
+}

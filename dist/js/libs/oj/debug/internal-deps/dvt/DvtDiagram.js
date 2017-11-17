@@ -8560,11 +8560,17 @@ DvtDiagramLink._renderLinkLabels = function(diagram, linkData, container) {
  * @param {string} style the CSS style string to apply to the text
  * @param {string} halign the horizontal alignment
  * @param {string} valign the vertical alignment
- * @return {dvt.OutputText} the text element
+ * @return {dvt.OutputText|dvt.BackgroundOutputText} the text element
  */
 DvtDiagramLink.createText = function(ctx, strText, style, halign, valign) {
-  var text = new dvt.OutputText(ctx, strText, 0, 0);
-  text.setCSSStyle(new dvt.CSSStyle(style));
+  var cssStyle = new dvt.CSSStyle(style);
+  var text;
+  if (cssStyle.hasBackgroundStyles())
+    text = new dvt.BackgroundOutputText(ctx, strText, 0, 0, cssStyle);
+  else {
+    text = new dvt.OutputText(ctx, strText, 0, 0);
+    text.setCSSStyle(cssStyle);
+  }
   text.setHorizAlignment(halign);
   text.setVertAlignment(valign);
   return text;
@@ -9588,11 +9594,17 @@ DvtDiagramNode._renderNodeLabels = function(diagram, nodeData, container) {
  * @param {string} style the CSS style string to apply to the text
  * @param {string} halign the horizontal alignment
  * @param {string} valign the vertical alignment
- * @return {dvt.OutputText} the text element
+ * @return {dvt.OutputText|dvt.BackgroundOutputText} the text element
  */
 DvtDiagramNode.createText = function(ctx, strText, style, halign, valign) {
-  var text = new dvt.OutputText(ctx, strText, 0, 0);
-  text.setCSSStyle(new dvt.CSSStyle(style));
+  var cssStyle = new dvt.CSSStyle(style);
+  var text;
+  if (cssStyle.hasBackgroundStyles())
+    text = new dvt.BackgroundOutputText(ctx, strText, 0, 0, cssStyle);
+  else {
+    text = new dvt.OutputText(ctx, strText, 0, 0);
+    text.setCSSStyle(cssStyle);
+  }
   text.setHorizAlignment(halign);
   text.setVertAlignment(valign);
   return text;

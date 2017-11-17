@@ -307,6 +307,8 @@ oj.ListViewIndexerModel.prototype._findGroupHeader = function(section)
  * @since 1.2.0
  * @ojstatus preview
  * 
+ * @ojshortdesc Displays a list of sections that corresponds to group headers of a list.
+ * @ojrole slider
  * @classdesc
  * <h3 id="indexerOverview-section">
  *   JET Indexer Component
@@ -365,11 +367,12 @@ oj.__registerWidget('oj.ojIndexer', $['oj']['baseComponent'],
         * set to the return value of the getIndexerModel method on the ListView instance.
         * The data attribute should always be specified.  If not specified, then an empty indexer is rendered.
         *
+        * @ojshortdesc The data provider for the Indexer.
         * @expose
         * @memberof! oj.ojIndexer
         * @instance
         * @type {oj.IndexerModel}
-        * @default <code class="prettyprint">null</code>
+        * @default null
         *
         * @example <caption>Initialize the Indexer with an IndexModel:</caption>
         * &lt;oj-indexer data='{{myIndexerModel}}'>&lt;/oj-indexer>
@@ -482,6 +485,7 @@ oj.__registerWidget('oj.ojIndexer', $['oj']['baseComponent'],
 
     /**
      * Returns a jQuery object containing the root dom element of the indexer
+     * @ignore
      * @expose
      * @override
      * @memberof! oj.ojIndexer
@@ -498,6 +502,7 @@ oj.__registerWidget('oj.ojIndexer', $['oj']['baseComponent'],
      *
      * <p>This method does not accept any arguments.
      *
+     * @ojshortdesc Redraw the entire indexer.
      * @expose
      * @memberof! oj.ojIndexer
      * @instance

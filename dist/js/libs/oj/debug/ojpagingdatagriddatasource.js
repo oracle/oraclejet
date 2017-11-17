@@ -190,6 +190,7 @@ oj.Object.createSubclass(oj.PagingDataGridDataSource, oj.DataGridDataSource, "oj
 /**
  * Initializes the instance.
  * @export
+ * @memberof oj.PagingDataGridDataSource
  */
 oj.PagingDataGridDataSource.prototype.Init = function()
 {
@@ -200,6 +201,7 @@ oj.PagingDataGridDataSource.prototype.Init = function()
 /**
  * Register event handlers on the underlying datasource.
  * @private
+ * @memberof oj.PagingDataGridDataSource 
  */
 oj.PagingDataGridDataSource.prototype._registerEventListeners = function()
 {
@@ -212,7 +214,7 @@ oj.PagingDataGridDataSource.prototype._registerEventListeners = function()
  * @export
  * @expose
  * @instance
- * @memberof! oj.PagingDataGridDataSource 
+ * @memberof oj.PagingDataGridDataSource 
  */
 oj.PagingDataGridDataSource.prototype.getPage = function()
 {
@@ -227,7 +229,7 @@ oj.PagingDataGridDataSource.prototype.getPage = function()
  * @export
  * @expose
  * @instance
- * @memberof! oj.PagingDataGridDataSource 
+ * @memberof oj.PagingDataGridDataSource 
  */
 oj.PagingDataGridDataSource.prototype.setPage = function(value, options)
 {
@@ -268,6 +270,7 @@ oj.PagingDataGridDataSource.prototype.setPage = function(value, options)
 /**
  * Calls fetch on the datasource with paging options.
  * @private
+ * @memberof oj.PagingDataGridDataSource 
  */
 oj.PagingDataGridDataSource.prototype._fetchInternal = function(options)
 {
@@ -289,7 +292,7 @@ oj.PagingDataGridDataSource.prototype._fetchInternal = function(options)
  * @return {Promise} Promise object resolves when done
  * @export
  * @expose
- * @memberof! oj.PagingDataGridDataSource
+ * @memberof oj.PagingDataGridDataSource
  * @instance
  */
 oj.PagingDataGridDataSource.prototype.fetch = function(options)
@@ -305,7 +308,7 @@ oj.PagingDataGridDataSource.prototype.fetch = function(options)
  * @export
  * @expose
  * @instance
- * @memberof! oj.PagingDataGridDataSource 
+ * @memberof oj.PagingDataGridDataSource 
  */
 oj.PagingDataGridDataSource.prototype.getStartItemIndex = function()
 {
@@ -318,7 +321,7 @@ oj.PagingDataGridDataSource.prototype.getStartItemIndex = function()
  * @export
  * @expose
  * @instance
- * @memberof! oj.PagingDataGridDataSource 
+ * @memberof oj.PagingDataGridDataSource 
  */
 oj.PagingDataGridDataSource.prototype.getEndItemIndex = function()
 {
@@ -331,7 +334,7 @@ oj.PagingDataGridDataSource.prototype.getEndItemIndex = function()
  * @export
  * @expose
  * @instance
- * @memberof! oj.PagingDataGridDataSource 
+ * @memberof oj.PagingDataGridDataSource 
  */
 oj.PagingDataGridDataSource.prototype.getPageCount = function()
 {
@@ -343,6 +346,7 @@ oj.PagingDataGridDataSource.prototype.getPageCount = function()
  * Handle data grid change events
  * @param {Object} options the options associated with the oj.DataGridDataSource event.
  * @private
+ * @memberof oj.PagingDataGridDataSource 
  */
 oj.PagingDataGridDataSource.prototype._handleChange = function(options) {
     var operation;
@@ -385,7 +389,7 @@ oj.PagingDataGridDataSource.prototype._handleChange = function(options) {
  * @export
  * @expose
  * @instance
- * @memberof! oj.PagingDataGridDataSource 
+ * @memberof oj.PagingDataGridDataSource 
  */
 oj.PagingDataGridDataSource.prototype.getCount = function(axis)
 {
@@ -410,7 +414,7 @@ oj.PagingDataGridDataSource.prototype.getCount = function(axis)
  * @export
  * @expose
  * @instance
- * @memberof! oj.PagingDataGridDataSource 
+ * @memberof oj.PagingDataGridDataSource 
  */
 oj.PagingDataGridDataSource.prototype.getCountPrecision = function(axis)
 {
@@ -435,7 +439,7 @@ oj.PagingDataGridDataSource.prototype.getCountPrecision = function(axis)
  * @export
  * @expose
  * @instance
- * @memberof! oj.PagingDataGridDataSource 
+ * @memberof oj.PagingDataGridDataSource 
  */
 oj.PagingDataGridDataSource.prototype.fetchHeaders = function(headerRange, callbacks, callbackObjects)
 {
@@ -472,6 +476,7 @@ oj.PagingDataGridDataSource.prototype.fetchHeaders = function(headerRange, callb
  * @param {Object} headerRange
  * @param {Object} endHeaderSet a headerSet object
  * @private
+ * @memberof oj.PagingDataGridDataSource 
  */
 oj.PagingDataGridDataSource.prototype._handleRowHeaderFetchSuccess = function(headerSet, headerRange, endHeaderSet)
 {
@@ -506,6 +511,7 @@ oj.PagingDataGridDataSource.prototype._handleRowHeaderFetchSuccess = function(he
  * Handle row header fetch error
  * @param {Object} error error
  * @private
+ * @memberof oj.PagingDataGridDataSource 
  */
 oj.PagingDataGridDataSource.prototype._handleRowHeaderFetchError = function(error)
 {
@@ -534,7 +540,7 @@ oj.PagingDataGridDataSource.prototype._handleRowHeaderFetchError = function(erro
  * @export
  * @expose
  * @instance
- * @memberof! oj.PagingDataGridDataSource 
+ * @memberof oj.PagingDataGridDataSource 
  */
 oj.PagingDataGridDataSource.prototype.fetchCells = function(cellRanges, callbacks, callbackObjects)
 {
@@ -582,6 +588,7 @@ oj.PagingDataGridDataSource.prototype.fetchCells = function(cellRanges, callback
  *        values are "row" and "column".
  * @param {number} cellRanges.start the start index of the range for this axis in which the cells are fetched.
  * @private
+ * @memberof oj.PagingDataGridDataSource 
  */
 oj.PagingDataGridDataSource.prototype._handleCellsFetchSuccess = function(cellSet, cellRanges)
 {
@@ -620,6 +627,7 @@ oj.PagingDataGridDataSource.prototype._handleCellsFetchSuccess = function(cellSe
  * Handle a cell fetch error
  * @param {Object} error error
  * @private
+ * @memberof oj.PagingDataGridDataSource 
  */
 oj.PagingDataGridDataSource.prototype._handleCellsFetchError = function(error)
 {
@@ -640,7 +648,7 @@ oj.PagingDataGridDataSource.prototype._handleCellsFetchError = function(error)
  * @export
  * @expose
  * @instance
- * @memberof! oj.PagingDataGridDataSource 
+ * @memberof oj.PagingDataGridDataSource 
  */
 oj.PagingDataGridDataSource.prototype.keys = function(indexes)
 {
@@ -657,7 +665,7 @@ oj.PagingDataGridDataSource.prototype.keys = function(indexes)
  * @export
  * @expose
  * @instance
- * @memberof! oj.PagingDataGridDataSource 
+ * @memberof oj.PagingDataGridDataSource 
  */
 oj.PagingDataGridDataSource.prototype.indexes = function(keys)
 {
@@ -677,7 +685,7 @@ oj.PagingDataGridDataSource.prototype.indexes = function(keys)
  * @export
  * @expose
  * @instance
- * @memberof! oj.PagingDataGridDataSource 
+ * @memberof oj.PagingDataGridDataSource 
  */
 oj.PagingDataGridDataSource.prototype.getCapability = function(feature)
 {
@@ -690,7 +698,7 @@ oj.PagingDataGridDataSource.prototype.getCapability = function(feature)
  * done yet.
  * @returns {number} size of data
  * @expose
- * @memberof! oj.PagingDataGridDataSource
+ * @memberof oj.PagingDataGridDataSource
  * @instance
  */
 oj.PagingDataGridDataSource.prototype.size = function()
@@ -723,7 +731,7 @@ oj.PagingDataGridDataSource.prototype.size = function()
  * @export
  * @expose
  * @instance
- * @memberof! oj.PagingDataGridDataSource 
+ * @memberof oj.PagingDataGridDataSource 
  */
 oj.PagingDataGridDataSource.prototype.sort = function(criteria, callbacks, callbackObjects)
 {
@@ -735,7 +743,7 @@ oj.PagingDataGridDataSource.prototype.sort = function(criteria, callbacks, callb
  * Return the total size of data available, including server side if not local.
  * @returns {number} total size of data
  * @expose
- * @memberof! oj.PagingDataGridDataSource
+ * @memberof oj.PagingDataGridDataSource
  * @instance
  */
 oj.PagingDataGridDataSource.prototype.totalSize = function()
@@ -755,7 +763,7 @@ oj.PagingDataGridDataSource.prototype.totalSize = function()
  *                  "unknown" if the totalSize is unknown
  * @export
  * @expose
- * @memberof! oj.PagingDataGridDataSource
+ * @memberof oj.PagingDataGridDataSource
  * @instance 
  */
 oj.PagingDataGridDataSource.prototype.totalSizeConfidence = function()
@@ -774,7 +782,7 @@ oj.PagingDataGridDataSource.prototype.totalSizeConfidence = function()
  * @export
  * @expose
  * @instance
- * @memberof! oj.PagingDataGridDataSource 
+ * @memberof oj.PagingDataGridDataSource 
  */
 oj.PagingDataGridDataSource.prototype.moveOK = function(rowToMove, referenceRow, position)
 {
@@ -794,7 +802,7 @@ oj.PagingDataGridDataSource.prototype.moveOK = function(rowToMove, referenceRow,
  * @export
  * @expose
  * @instance
- * @memberof! oj.PagingDataGridDataSource 
+ * @memberof oj.PagingDataGridDataSource 
  */
 oj.PagingDataGridDataSource.prototype.move = function(moveKey, atKey, position, callbacks, callbackObjects)
 {

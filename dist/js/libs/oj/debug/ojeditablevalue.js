@@ -2641,6 +2641,9 @@ var _CUSTOM_LABEL_ELEMENT_ID = "|label";
  * @augments oj.baseComponent
  * @abstract
  * @since 0.6
+ * @ojshortdesc Abstract EditableValue element
+ * @ojrole input
+ * @hideconstructor
  * 
  * @classdesc
  * Abstract base class for all editable components that are value holders and that require 
@@ -2788,7 +2791,7 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
      *
      * @expose 
      * @type {boolean}
-     * @default <code class="prettyprint">false</code>
+     * @default false
      * @public
      * @instance
      * @memberof oj.editableValue
@@ -2892,13 +2895,7 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
      * @expose 
      * @access public
      * @instance
-     * @default <code class="prettyprint">
-     * {<br/>
-     * &nbsp;&nbsp;'messages': ['inline'], <br/>
-     * &nbsp;&nbsp;'converterHint': ['placeholder', 'notewindow'], <br/>
-     * &nbsp;&nbsp;'validatorHint': ['notewindow'], <br/>
-     * &nbsp;&nbsp;'helpInstruction': ['notewindow']<br/>
-     * }</code>
+     * @default {'messages': ['inline'],'converterHint': ['placeholder','notewindow'],'validatorHint': ['notewindow'],'helpInstruction': ['notewindow']}
      * @memberof oj.editableValue
      * @type {Object|undefined}
      * @since 0.7
@@ -2916,8 +2913,9 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
      * @expose 
      * @memberof oj.editableValue
      * @instance
+     * @public
      * @type {Object.<string, string>}
-     * @default <code class="prettyprint">{help : {instruction: null}}</code>
+     * @default {'help' : {'instruction': null}}
      */
     help: 
     {
@@ -2930,7 +2928,7 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
      * @instance
      * @type {?string}
      * @ignore
-     * @default <code class="prettyprint">null</code>
+     * @default null
      * 
      * @example <caption>Get or set the <code class="prettyprint">help.definition</code> sub-option, after initialization:</caption>
      * // getter
@@ -2949,7 +2947,7 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
      * @instance
      * @ignore
      * @type {?string}
-     * @default <code class="prettyprint">null</code>
+     * @default null
      * 
      * @example <caption>Get or set the <code class="prettyprint">help.source</code> sub-option, after initialization:</caption>
      * // getter
@@ -2960,7 +2958,118 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
      */      
       source: null
     },
-    
+    /**
+     * Represents hints for oj-form-layout element to render help information on the label of the editable component. 
+     * <p>This is used only if the editable component is added as a direct child to an oj-form-layout element, and the labelHint property is also specified.</p>
+     * 
+     * <p>
+     * The helpHints object contains a definition property and a source property.
+     * </p>
+     * <ul>
+     * <li><code class="prettyprint">definition</code> - hint for help definition text.</li>
+     * <li><code class="prettyprint">source</code> - hint for help source URL.</li>
+     * </ul>
+     *
+     * @example <caption>Initialize the component with help hints:</caption>
+     * &lt;!-- Using dot notation -->
+     * &lt;oj-some-element help-hints.definition='some value' help-hints.source='some-url'>&lt;/oj-some-element>
+     * 
+     * &lt;!-- Using JSON notation -->
+     * &lt;oj-some-element help-hints='{"definition":"some value", "source":"some-url"}'>&lt;/oj-some-element>
+     *
+     * @example <caption>Get or set the <code class="prettyprint">helpHints</code> property after 
+     * initialization:</caption>
+     * 
+     * // Get one
+     * var value = myComponent.helpHints.definition;
+     * 
+     * // Set one, leaving the others intact. Always use the setProperty API for 
+     * // subproperties rather than setting a subproperty directly.
+     * myComponent.setProperty('helpHints.definition', 'some new value');
+     *
+     * // Get all
+     * var values = myComponent.helpHints;
+     *
+     * // Set all.  Must list every subproperty, as those not listed are lost.
+     * myComponent.helpHints = {
+     *     definition: 'some new value',
+     *     source: 'some-new-url'
+     * };
+     *
+     * @expose
+     * @access public
+     * @memberof oj.editableValue
+     * @instance
+     * @type {Object.<string, string>}
+     * @default {'definition': "", 'source': ""}
+     * @since 4.1.0
+     */
+    helpHints:
+    {
+    /**
+     * Hint for help definition text associated with the label. 
+     * <p>It is what shows up when the user hovers over the help icon, or tabs into the help icon, or press and holds the help icon on a mobile device. No formatted text is available for help definition attribute.</p>
+     * 
+     * <p>See the <a href="#helpHints">help-hints</a> attribute for usage examples.</p>
+     *
+     * @expose
+     * @alias helpHints.definition
+     * @memberof! oj.editableValue
+     * @instance
+     * @type {string}
+     * @default ""
+     * @since 4.1.0
+     */
+      definition: "",
+    /**
+     * Hint for help source URL associated with the label. 
+     * <p>If present, a help icon will render next to the label. For security reasons we only support urls with protocol http: or https:. If the url doesn't comply we ignore it and throw an error. 
+     * Pass in an encoded URL since we do not encode the URL.</p>
+     * 
+     * <p>See the <a href="#helpHints">help-hints</a> attribute for usage examples.</p>
+     *
+     * @expose
+     * @alias helpHints.source
+     * @memberof! oj.editableValue
+     * @instance
+     * @type {string}
+     * @default ""
+     * @since 4.1.0
+     */
+      source: ""
+    },
+    /** 
+     * Represents a hint for oj-form-layout element to render a label on the editable component. 
+     * <p>This is used only if the editable component is added as a direct child to an oj-form-layout element.</p>
+     * 
+     * <p>
+     * When labelHint is present it gives a hint to the oj-form-layout element to create an oj-label element for the editable component.
+     * When the <code class="prettyprint">labelHint</code> property changes oj-form-layout element refreshes to 
+     * display the updated label information. 
+     * </p>
+     *  
+     * @example <caption>Initialize the component with the <code class="prettyprint">label-hint</code> attribute specified:</caption>
+     * &lt;oj-some-element label-hint='input label'>&lt;/oj-some-element>
+     *
+     * @example <caption>Get or set the <code class="prettyprint">labelHint</code> property after 
+     * initialization:</caption>
+     * 
+     * // getter
+     * var value = myComponent.labelHint;
+     * 
+     * // setter
+     * myComponent.labelHint = 'some new value'
+     * 
+     * @expose 
+     * @access public
+     * @instance
+     * @alias labelHint
+     * @default ""
+     * @memberof! oj.editableValue
+     * @type {string}
+     * @since 4.1.0
+     */  
+    labelHint: "",
     /**
      * List of messages an app would add to the component when it has business/custom validation 
      * errors that it wants the component to show. When this option is set the message shows to the 
@@ -2983,8 +3092,8 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
      * @access public
      * @instance
      * @memberof oj.editableValue
-     * @default empty array when no option is set.
-     * @type {Array|undefined}
+     * @default []
+     * @type {Array.<Object>|undefined}
      * @since 0.7
      * @ojwriteback
      */    
@@ -3013,8 +3122,8 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
      * @access public
      * @instance
      * @memberof oj.editableValue
-     * @default empty array when no option is set.
-     * @type {Array|undefined}
+     * @default []
+     * @type {Array.<Object>|undefined}
      * @since 0.7
      * @see #showMessages
      * @readonly
@@ -3047,8 +3156,8 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
      * @access public
      * @instance
      * @memberof oj.editableValue
-     * @default empty array when no option is set.
-     * @type {Array|undefined}
+     * @default []
+     * @type {Array.<Object>|undefined}
      * @since 0.7
      * @readonly
      * @ignore
@@ -3109,7 +3218,7 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
      * @access public
      * @instance
      * @alias help.instruction
-     * @default <code class="prettyprint">null</code> 
+     * @default null
      * @memberof! oj.editableValue
      * @type {string|undefined}
      */    
@@ -3144,7 +3253,7 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
      * @expose 
      * @access public
      * @instance
-     * @default <code class="prettyprint">null</code>
+     * @default null
      * @ojwriteback
      * @memberof oj.editableValue
      * @type {Object|undefined}
@@ -3177,6 +3286,8 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
      * @expose
      * @event
      * @memberof oj.editableValue
+     * @ojbubbles
+     * @ojcancelable
      * @instance
      * @property {string} action The action that triggers the animation. Supported values are:
      *                    <ul>
@@ -3223,6 +3334,8 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
      *
      * @expose
      * @event
+     * @ojbubbles
+     * @ojcancelable
      * @memberof oj.editableValue
      * @instance
      * @property {string} action The action that triggers the animation. Supported values are:
@@ -4735,6 +4848,7 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
    * <li>'TITLE' - updates only title, when the title property changes</li>
    * </ul>
    * @private
+   * @memberof oj.editableValue
    */
   _MESSAGING_CONTENT_UPDATE_TYPE : {ALL : 1, 
                                     VALIDITY_STATE : 2, 
@@ -4844,6 +4958,7 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
    * the changed flag be true will guarantee that the property changed event is fired even if the
    * the property value is equal to what you are setting it to.
    * @private
+   * @memberof oj.editableValue
    */
   _setMessagesOption : function (key, value, event, changed)
   {
@@ -5059,7 +5174,14 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
   {
     return this._oj_lastModelValue;
   },
-          
+  
+  /**
+   * Gets the last display value
+   * 
+   * @private
+   * @memberof oj.editableValue
+   * @instance
+   */
   _getLastDisplayValue : function () 
   {
     // initially, _oj_lastElementValue is undefined. But the browser returns "" for the 
@@ -5272,6 +5394,11 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
     }
   },
 
+  /**        
+   * @private
+   * @memberof oj.editableValue
+   * @instance
+   */
   _getValidityState : function ()
   {
     if (this._validityState)
@@ -5409,7 +5536,11 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
                             context ? context.originalEvent : null,
                             flags && flags['changed']);
   },
-
+  /**        
+   * @private
+   * @memberof oj.editableValue
+   * @instance
+   */
   _placeholderOptionChanged : function (flags)
   {
     var context = flags && flags['_context'] || {};
@@ -5438,17 +5569,29 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
       this._customPlaceholderSet = false;
     }
   },
-    
+  /**        
+   * @private
+   * @memberof oj.editableValue
+   * @instance
+   */  
   _setLastModelValue : function (value)
   {
     this._oj_lastModelValue = value;
   },
-
+  /**        
+   * @private
+   * @memberof oj.editableValue
+   * @instance
+   */
   _setLastSubmittedValue : function (value) 
   {
     this._oj_lastElementValue = value;
   },
-
+  /**        
+   * @private
+   * @memberof oj.editableValue
+   * @instance
+   */
   _titleOptionChanged : function ()
   {
     // when title changes push new title to messaging
@@ -5495,6 +5638,7 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
    * display.
    * 
    * @private
+   * @memberof oj.editableValue
    */
   _updateMessagingContent : function() 
   {
@@ -5924,7 +6068,10 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
     
     return parsedValue;
   },
-
+  /**
+   * @private
+   * @memberof oj.editableValue
+   */
   _addValidationError : function(e, msgs)
   {
     var detail;
@@ -5991,7 +6138,10 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
     
     return componentMsgs || null;
   },
-  
+  /**
+   * @private
+   * @memberof oj.editableValue
+   */
   _createComponentMessage : function (summary, detail, severity, options)
   {
     var cMsg;
@@ -6181,7 +6331,10 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
     }
   },
     
-  
+  /**
+   * @private
+   * @memberof oj.editableValue
+   */
   _updateElementDisplayValue : function (modelValue, event)
   {
     var actualDisplayValue;
@@ -7037,6 +7190,20 @@ var editableValueMeta = {
           "type": "string"
         }
       }
+    }, 
+    "helpHints": {
+      "type": "Object",
+      "properties": {
+        "definition": {
+          "type": "string"
+         },
+         "source": {
+           "type": "string"
+         }
+       }
+    },
+    "labelHint": {
+      "type": "string"
     },
     "messagesCustom": {
       "type": "Array",

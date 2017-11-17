@@ -103,6 +103,7 @@ oj.Object.createSubclass(oj.ArrayTableDataSource, oj.TableDataSource, "oj.ArrayT
  * @export
  * @desc If set to a function(row1, row2), then this function is called comparing raw row data (see the
  * JavaScript array.sort() for details)
+ * @memberof oj.ArrayTableDataSource
  */
 oj.ArrayTableDataSource.prototype.comparator = null;
 
@@ -114,6 +115,7 @@ oj.ArrayTableDataSource.prototype.comparator = null;
  * @type {Object} criteria the sort criteria.
  * @property {Object} criteria.key The key that identifies which field to sort
  * @property {string} criteria.direction the sort direction, valid values are "ascending", "descending", "none" (default)
+ * @memberof oj.ArrayTableDataSource
  */
 oj.ArrayTableDataSource.prototype.sortCriteria = null;
 
@@ -763,6 +765,7 @@ oj.ArrayTableDataSource.prototype._setRow = function(index, row)
  * Indicate starting fetch
  * @param {Object} options
  * @private
+ * @memberof oj.ArrayTableDataSource
  */
 oj.ArrayTableDataSource.prototype._startFetch = function(options)
 {
@@ -778,6 +781,7 @@ oj.ArrayTableDataSource.prototype._startFetch = function(options)
  * @param {Object} result Result object
  * @param {Object} error Error
  * @private
+ * @memberof oj.ArrayTableDataSource
  */
 oj.ArrayTableDataSource.prototype._endFetch = function(options, result, error)
 {

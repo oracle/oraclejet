@@ -63,7 +63,14 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
   /**
    * @ojcomponent oj.ojPopup
    * @augments oj.baseComponent
+   * @ojstatus preview
    *
+   * @ojdisplayname Popup
+   * @ojshortdesc Themeable, WAI-ARIA-compliant popup that can display arbitrary content.
+   * @ojrole tooltip
+   * @ojrole dialog
+   * @ojrole alertdialog
+   * 
    * @classdesc
    * <h3 id="popupOverview-section">
    *   JET Popup Component
@@ -226,7 +233,7 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
            * @memberof oj.ojPopup
            * @instance
            * @type {string}
-           * @default <code class="prettyprint">"focusLoss"</code>
+           * @default focusLoss
            * @ojvalue {string} "none" disables auto dismissal behaviors.
            * @ojvalue {string} "focusLoss" defines auto dismissal behavior when focus leaves the
            *   content of the popup or associated launcher.  In addition, if what the popup is
@@ -255,7 +262,7 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
            * @memberof oj.ojPopup
            * @instance
            * @type {string}
-           * @default <code class="prettyprint">"default"</code>
+           * @default default
            * @ojvalue {string} "default" describes the popups border, shadow, and background color
            *           defined by the active theme.
            * @ojvalue {string} "none" turns off the outer chrome defined by the active theme.
@@ -282,7 +289,7 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
            * @memberof oj.ojPopup
            * @instance
            * @type {string}
-           * @default <code class="prettyprint">"auto"</code>
+           * @default auto
            * @ojvalue {string} "auto" is derived from the values of the modality and
            *          autoDismiss properties
            * @ojvalue {string} "none" prevents the popup from stealing focus when open.
@@ -315,8 +322,7 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
            * when the popup opens.  The values of these properties describe horizontal and
            * vertical alignments.</p>
            *
-           * @deprecated <a href="http://api.jqueryui.com/position/">jQuery UI
-           * position</a> syntax is deprectated in v3.0.0; Use of a percent unit with
+           * @deprecated v3.0.0 jQuery UI position syntax; Use of a percent unit with
            * "my" or "at" is not supported.
            * @expose
            * @memberof oj.ojPopup
@@ -350,16 +356,16 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
                * @instance
                * @alias position.my
                * @type {{horizontal:string, vertical:string}}
-               * @default <code class="prettyprint">{"horizontal":"start","vertical":"top"}</code>
                */
               'my' : {
                 /**
+                 * Defines the horizontal alignment of the popup.
                  * @expose
                  * @memberof! oj.ojPopup
                  * @instance
                  * @alias position.my.horizontal
                  * @type {string}
-                 * @default <code class="prettyprint">start</code>
+                 * @default start
                  * @ojvalue {string} "start" evaluates to "left" in LTR mode and "right" in RTL mode.
                  * @ojvalue {string} "end" evaluates to "right" in LTR mode and "left" in RTL mode.
                  * @ojvalue {string} "left"
@@ -368,12 +374,13 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
                  */
                 'horizontal': 'start',
                 /**
+                 * Defines the vertical alignment of the popup.
                  * @expose
                  * @memberof! oj.ojPopup
                  * @instance
                  * @alias position.my.vertical
                  * @type {string}
-                 * @default <code class="prettyprint">top</code>
+                 * @default top
                  * @ojvalue {string} "top"
                  * @ojvalue {string} "center"
                  * @ojvalue {string} "bottom"
@@ -390,21 +397,23 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
                */
               'offset': {
                 /**
+                 * Horizontal aligment offset.
                  * @expose
                  * @memberof! oj.ojPopup
                  * @instance
                  * @alias position.offset.x
                  * @type {number}
-                 * @default <code class="prettyprint">0</code>
+                 * @default 0
                  */
                 'x': 0,
                 /**
+                 * Vertical alignment offset.
                  * @expose
                  * @memberof! oj.ojPopup
                  * @instance
                  * @alias position.offset.y
                  * @type {number}
-                 * @default <code class="prettyprint">0</code>
+                 * @default 0
                  */
                 'y': 0
               },
@@ -417,16 +426,16 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
                * @instance
                * @alias position.at
                * @type {{horizontal:string, vertical:string}}
-               * @default <code class="prettyprint">{"horizontal":"start","vertical":"bottom"}</code>
                */
               'at' : {
                 /**
+                 * Defines the horizontal alignment of what the popup is aligned to.
                  * @expose
                  * @memberof! oj.ojPopup
                  * @instance
                  * @alias position.at.horizontal
                  * @type {string}
-                 * @default <code class="prettyprint">start</code>
+                 * @default start
                  * @ojvalue {string} "start" evaluates to "left" in LTR mode and "right" in RTL mode.
                  * @ojvalue {string} "end" evaluates to "right" in LTR mode and "left" in RTL mode.
                  * @ojvalue {string} "left"
@@ -435,12 +444,13 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
                  */
                 'horizontal': 'start',
                 /**
+                 * Defines the vertical alignment of what the popup is aligned to.
                  * @expose
                  * @memberof! oj.ojPopup
                  * @instance
                  * @alias position.at.vertical
                  * @type {string}
-                 * @default <code class="prettyprint">top</code>
+                 * @default top
                  * @ojvalue {string} "top"
                  * @ojvalue {string} "center"
                  * @ojvalue {string} "bottom"
@@ -471,14 +481,14 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
                */
               'of' : undefined,
               /**
-               * Defines rules for alternate alignment.
+               * Rule for alternate alignment.
                *
                * @expose
                * @memberof! oj.ojPopup
                * @instance
                * @alias position.collision
                * @type {string}
-               * @default <code class="prettyprint">flip</code>
+               * @default flip
                * @ojvalue {string} "flip" the element to the opposite side of the target and the
                *  collision detection is run again to see if it will fit. Whichever side
                *  allows more of the element to be visible will be used.
@@ -502,7 +512,7 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
            * @memberof oj.ojPopup
            * @instance
            * @type {string}
-           * @default <code class="prettyprint">"none"</code>
+           * @default none
            * @ojvalue {string} "none" no decoration will be displayed from the popup pointing to the
            *          launcher.
            * @ojvalue {string} "simple" enables showing the tail defined by the current theme.
@@ -525,15 +535,12 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
            * overlay pane.
            *
            * <p>The default modality varies by theme.  Each theme can set its default by setting
-           * <code class="prettyprint">$popupModalityOptionDefault</code> as seen in the example
-           * below.
+           * <code class="prettyprint">$popupModalityOptionDefault</code>.
            *
            * @expose
            * @memberof oj.ojPopup
            * @instance
            * The modality of the popup. Valid values are:
-           * @default Varies by theme. <code class="prettyprint">"modeless"</code> if not specified
-           *          in theme
            * @ojvalue {string} "modeless" defines a modeless popup.
            * @ojvalue {string} "modal" The popup is modal. Interactions with other page elements are
            *          disabled. Modal popups overlay other page elements.
@@ -572,6 +579,8 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
            * @event
            * @memberof oj.ojPopup
            * @instance
+           * @ojcancelable
+           * @ojbubbles
            * @property {Event} event a custom event
            */
           beforeOpen : null,
@@ -583,6 +592,7 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
            * @event
            * @memberof oj.ojPopup
            * @instance
+           * @ojbubbles
            * @property {Event} event a custom event
            */
           open : null,
@@ -595,6 +605,8 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
            * @event
            * @memberof oj.ojPopup
            * @instance
+           * @ojcancelable
+           * @ojbubbles
            * @property {Event} event a custom event
            */
           beforeClose : null,
@@ -606,6 +618,7 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
            * @event
            * @memberof oj.ojPopup
            * @instance
+           * @ojbubbles
            * @property {Event} event a custom event
            */
           close : null,
@@ -620,6 +633,7 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
            * @event
            * @memberof oj.ojPopup
            * @instance
+           * @ojbubbles
            * @property {Event} event a custom event
            */
           focus : null,
@@ -632,6 +646,8 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
            * @event
            * @memberof oj.ojPopup
            * @instance
+           * @ojcancelable
+           * @ojbubbles
            * @property {CustomEvent} event a custom event
            * @property {Object} event.detail an object containing component specific event info
            * @property {string} event.detail.action The action that is starting the animation.
@@ -675,6 +691,8 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
            * @event
            * @memberof oj.ojPopup
            * @instance
+           * @ojcancelable
+           * @ojbubbles
            * @property {Event} event a custom event
            * @property {Object} event.detail an object containing component specific event info
            * @property {Element} event.detail.element target of animation
@@ -759,7 +777,7 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
        */
       _destroy : function ()
       {
-        if (this.isOpen())
+        if (oj.ZOrderUtils.getStatus(this.element) === oj.ZOrderUtils.STATUS.OPEN)
           this._closeImplicitly();
 
         this._setWhenReady("none");
@@ -811,10 +829,8 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
         if (this._isOperationPending("open", [launcher, position]))
           return;
 
-        if (this.isOpen())
-        {
+        if (oj.ZOrderUtils.getStatus(this.element) === oj.ZOrderUtils.STATUS.OPEN)
           this._closeImplicitly();
-        }
 
         this._setLauncher(launcher);
 
@@ -941,7 +957,7 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
         if (this._isOperationPending("close", []))
           return;
 
-        if (!this.isOpen())
+        if (oj.ZOrderUtils.getStatus(this.element) !== oj.ZOrderUtils.STATUS.OPEN)
           return;
 
         if (this._trigger("beforeClose") === false && !this._ignoreBeforeCloseResultant)
@@ -1032,8 +1048,11 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
         }
       },
       /**
-       * Returns the state of whether the popup is currently open. This method does not accept any
-       * arguments.
+       * <p>Returns the state of whether the popup is currently open. This method does not accept
+       * any arguments.</p>
+       *
+       * The "open" state reflects the period of time the popup is visible, including open and
+       * close animations.
        *
        * @expose
        * @method
@@ -1072,7 +1091,7 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
       {
         this._super();
 
-        if (!this.isOpen())
+        if (oj.ZOrderUtils.getStatus(this.element) !== oj.ZOrderUtils.STATUS.OPEN)
           return;
 
         if (!this._reposition())
@@ -1115,11 +1134,11 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
             // with multiple component instances.
             return;
           case "autoDismiss":
-            if (this.isOpen() && value !== options["autoDismiss"])
+            if (oj.ZOrderUtils.getStatus(this.element) === oj.ZOrderUtils.STATUS.OPEN && value !== options["autoDismiss"])
               this._setAutoDismiss(value);
             break;
           case "modality":
-            if (this.isOpen())
+            if (oj.ZOrderUtils.getStatus(this.element) === oj.ZOrderUtils.STATUS.OPEN)
             {
               var element = this.element;
               /** @type {!Object.<oj.PopupService.OPTION, ?>} */
@@ -1191,7 +1210,7 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
 
         // The tail can change the z-index of the layer that defines the stacking context
         // of the popup.  If the popup is open, update the layers class.
-        if (this.isOpen())
+        if (oj.ZOrderUtils.getStatus(this.element) === oj.ZOrderUtils.STATUS.OPEN)
         {
           var layerClass = [rootStyle, "layer"].join("-");
           layerClass += " " + tailStyle;
@@ -1241,7 +1260,7 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
 
         // if the popup is open, reseed the layer class removing the
         // tail style.
-        if (this.isOpen())
+        if (oj.ZOrderUtils.getStatus(this.element) === oj.ZOrderUtils.STATUS.OPEN)
         {
           var layerClass = [rootStyle, "layer"].join("-");
           /** @type {!Object.<oj.PopupService.OPTION, ?>} */
@@ -1825,7 +1844,7 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
           events[oj.PopupService.EVENT.POPUP_AUTODISMISS] = focusLossCallback;
         }
 
-        if (this.isOpen())
+        if (oj.ZOrderUtils.getStatus(this.element) === oj.ZOrderUtils.STATUS.OPEN)
         {
           var element = this.element;
           /** @type {!Object.<oj.PopupService.OPTION, ?>} */
@@ -1843,7 +1862,7 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
        */
       _dismissalHandler : function (event)
       {
-        if (!this.isOpen())
+        if (oj.ZOrderUtils.getStatus(this.element) !== oj.ZOrderUtils.STATUS.OPEN)
           return;
 
         var launcher = this._launcher;

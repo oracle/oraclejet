@@ -220,7 +220,11 @@ var yearDisplay = oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_T
 /**
  * @ojcomponent oj.ojDatePicker
  * @augments oj.ojInputDate
- * @since 0.6
+ * @since 4.0.0
+ * @ojstatus preview
+ * @ojshortdesc Inline Date Picker Element
+ * @ojdisplayname Inline Date Picker
+ * @ojrole combobox
  *
  * @classdesc
  * <h3 id="inputDateOverview-section">
@@ -273,7 +277,11 @@ var yearDisplay = oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_T
 /**
  * @ojcomponent oj.ojInputDate
  * @augments oj.inputBase
+ * @ojsignature class ojInputDate extends inputBase<string>
  * @since 0.6
+ * @ojstatus preview
+ * @ojshortdesc Date Picker Element
+ * @ojrole combobox
  *
  * @classdesc
  * <h3 id="inputDateOverview-section">
@@ -394,6 +402,7 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
      * @memberof! oj.ojDatePicker
      * @name datePicker
      * @type {Object}
+     * @ojtsignore
      *
      * @example <caption>Override defaults in the theme (SCSS) :</caption>
      * $inputDateTimeDatePickerOptionDefault: (footerLayout: 'today', weekDisplay: 'number') !default;
@@ -473,7 +482,7 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
        * @type {string}
        * @ojvalue {string} '' Do not show anything
        * @ojvalue {string} 'today' Show the today button
-       * @default <code class="prettyprint">'today'</code>
+       * @default "today"
        */
       footerLayout : "",  
 
@@ -489,7 +498,7 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
        * @type {string}
        * @ojvalue {string} 'select' As a button
        * @ojvalue {string} 'none' As text
-       * @default <code class="prettyprint">'select'</code>
+       * @default "select"
        */
       changeMonth : "select",
 
@@ -505,7 +514,7 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
        * @type {string}
        * @ojvalue {string} 'select' As a button
        * @ojvalue {string} 'none' As text
-       * @default <code class="prettyprint">'select'</code>
+       * @default "select"
        */
       changeYear : "select",
 
@@ -519,7 +528,9 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
        * @memberof! oj.ojInputDate
        * @instance
        * @type {number}
-       * @default <code class="prettyprint">0</code>
+       * @default 0
+       * @ojmin 0
+       * @ojmax 12
        */
       currentMonthPos : 0,
 
@@ -536,7 +547,7 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
        * @ojvalue {string} 'hidden' Days outside the current viewing month will be hidden
        * @ojvalue {string} 'visible' Days outside the current viewing month will be visible
        * @ojvalue {string} 'selectable' Days outside the current viewing month will be visible + selectable
-       * @default <code class="prettyprint">'hidden'</code>
+       * @default "hidden"
        */
       daysOutsideMonth : "hidden",
 
@@ -554,7 +565,8 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
        * @memberof! oj.ojInputDate
        * @instance
        * @type {number}
-       * @default <code class="prettyprint">1</code>
+       * @default 1
+       * @ojmin 1
        */
       numberOfMonths : 1,
 
@@ -571,13 +583,22 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
        * @ojvalue {string} 'focus' when the element receives focus or when the trigger calendar image is
        *   clicked. When the picker is closed, the field regains focus and is editable.
        * @ojvalue {string} 'image' when the trigger calendar image is clicked
-       * @default <code class="prettyprint">'focus'</code>
+       * @default "focus"
        */
       showOn : "focus",
 
       /**
-       * How the prev + next will step back/forward the months.
-       *
+       * How the prev + next will step back/forward the months. The following are the valid values:
+       * 
+       * <ul>
+       * <li>
+       * <code class="prettyprint">"numberOfMonths"</code> - When set to this string, will use numberOfMonths property value as value.
+       * </li>
+       * <li>
+       * <code class="prettyprint"> &lt;number&gt;</code> - Number of months to step back/forward.
+       * </li>
+       * </ul>
+       * 
        * <p>See the <a href="#datePicker">date-picker</a> attribute for usage examples.
        *
        * @expose
@@ -585,9 +606,7 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
        * @memberof! oj.ojInputDate
        * @instance
        * @type {string|number}
-       * @ojvalue {string} 'numberOfMonths' Will use numberOfMonths property value as value
-       * @ojvalue {number} &lt;number&gt; Number of months to step back/forward
-       * @default <code class="prettyprint">'numberOfMonths'</code>
+       * @default "numberOfMonths"
        */
       stepMonths : "numberOfMonths",
 
@@ -601,7 +620,7 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
        * @memberof! oj.ojInputDate
        * @instance
        * @type {number}
-       * @default <code class="prettyprint">12</code>
+       * @default 12
        */
       stepBigMonths : 12,
 
@@ -617,7 +636,7 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
        * @type {string}
        * @ojvalue {string} 'number' Will show the week of the year as a number
        * @ojvalue {string} 'none' Nothing will be shown
-       * @default <code class="prettyprint">'none'</code>
+       * @default "none"
        */
       weekDisplay : "none", // "number" to show week of the year, "none" to not show it
 
@@ -634,7 +653,7 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
        * @memberof! oj.ojInputDate
        * @instance
        * @type {string}
-       * @default <code class="prettyprint">'c-10:c+10'</code>
+       * @default "c-10:c+10"
        */
       yearRange : "c-10:c+10" // Range of years to display in drop-down,
       // either relative to today's year (-nn:+nn), relative to currently displayed year
@@ -664,7 +683,7 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
      * @instance
      * @memberof! oj.ojInputDate
      * @type {Object}
-     * @default <code class="prettyprint">oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter()</code>
+     * @default oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({"day":"2-digit","month":"2-digit","year":"2-digit"})
      */
     converter : oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter(
     {
@@ -699,6 +718,10 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
     /**
      * Determines if keyboard entry of the text is allowed.
      * When disabled the picker must be used to select a date.
+     * 
+     * Default value depends on the theme. In alta-android, alta-ios and alta-windows themes, the
+     * default is <code class="prettyprint">"disabled"</code>
+     * and it's <code class="prettyprint">"enabled"</code> for alta web theme.
      *
      * @expose
      * @instance
@@ -706,9 +729,6 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
      * @type {string}
      * @ojvalue {string} "enabled"  Allow keyboard entry of the date.
      * @ojvalue {string} "disabled" Changing the date can only be done with the picker.
-     * @default Default value depends on the theme. In alta-android, alta-ios and alta-windows themes, the
-     * default is <code class="prettyprint">"disabled"</code>
-     * and it's <code class="prettyprint">"enabled"</code> for alta web theme.
      *
      * @example <caption>Initialize the InputDate with the <code class="prettyprint">keyboard-edit</code> attribute specified:</caption>
      * &lt;oj-input-date keyboard-edit='disabled'>&lt;/oj-input-date>
@@ -726,16 +746,14 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
     keyboardEdit : "enabled",
 
     /**
-     * The maximum selectable date. When set to null, there is no maximum.
+     * The maximum selectable date (in ISO string format). When set to null, there is no maximum.
      *
      * @expose
      * @instance
      * @memberof! oj.ojDatePicker
      * @name max
      * @type {string|null}
-     * @ojvalue {string} &lt;string&gt; ISO string of the maximum selectable date
-     * @ojvalue {null} null No limit
-     * @default <code class="prettyprint">null</code>
+     * @default null
      *
      * @example <caption>Initialize the InputDate with the <code class="prettyprint">max</code> attribute specified:</caption>
      * &lt;oj-date-picker max='2018-09-25'>&lt;/oj-date-picker>
@@ -748,15 +766,13 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
      * myInputDate.max = '2018-09-25';
      */
     /**
-     * The maximum selectable date. When set to null, there is no maximum.
+     * The maximum selectable date (ISO string). When set to null, there is no maximum.
      *
      * @expose
      * @instance
      * @memberof! oj.ojInputDate
      * @type {string|null}
-     * @ojvalue {string} &lt;string&gt; ISO string of the maximum selectable date
-     * @ojvalue {null} null No limit
-     * @default <code class="prettyprint">null</code>
+     * @default null
      *
      * @example <caption>Initialize the InputDate with the <code class="prettyprint">max</code> attribute specified:</caption>
      * &lt;oj-input-date max='2018-09-25'>&lt;/oj-input-date>
@@ -771,16 +787,14 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
     max : undefined,
 
     /**
-     * The minimum selectable date. When set to null, there is no minimum.
+     * The minimum selectable date (ISO string format). When set to null, there is no minimum.
      *
      * @expose
      * @instance
      * @memberof! oj.ojDatePicker
      * @name min
      * @type {string|null}
-     * @ojvalue {string} &lt;string&gt; ISO string of the minimum selectable date
-     * @ojvalue {null} null No limit
-     * @default <code class="prettyprint">null</code>
+     * @default null
      *
      * @example <caption>Initialize the InputDate with the <code class="prettyprint">min</code> attribute specified:</caption>
      * &lt;oj-date-picker min='2014-08-25'>&lt;/oj-date-picker>
@@ -793,15 +807,13 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
      * myInputDate.min = '2014-08-25';
      */
     /**
-     * The minimum selectable date. When set to null, there is no minimum.
+     * The minimum selectable date (in ISO string format). When set to null, there is no minimum.
      *
      * @expose
      * @instance
      * @memberof! oj.ojInputDate
      * @type {string|null}
-     * @ojvalue {string} &lt;string&gt; ISO string of the minimum selectable date
-     * @ojvalue {null} null No limit
-     * @default <code class="prettyprint">null</code>
+     * @default null
      *
      * @example <caption>Initialize the InputDate with the <code class="prettyprint">min</code> attribute specified:</caption>
      * &lt;oj-input-date min='2014-08-25'>&lt;/oj-input-date>
@@ -835,7 +847,7 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
      * @memberof! oj.ojInputDate
      * @instance
      * @type {?Object}
-     * @default <code class="prettyprint">null</code>
+     * @default null
      */
     pickerAttributes: null,
 
@@ -849,7 +861,7 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
      * @name renderMode
      * @type {string}
      * @ojvalue {string} 'jet' Applications get full JET functionality.
-     * @default jet.
+     * @default "jet"
      *
      * @example <caption>Initialize the InputDate with the <code class="prettyprint">render-mode</code> attribute specified:</caption>
      * &lt;oj-date-picker render-mode='jet'>&lt;/oj-date-picker>
@@ -867,6 +879,9 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
     /**
      * Allows applications to specify whether to render date picker in JET or
      * as a native picker control.</br>
+     * 
+     * Default value depends on the theme. In alta-android, alta-ios and alta-windows themes, the
+     * default is "native" and it's "jet" for alta web theme.
      *
      * @expose
      * @memberof! oj.ojInputDate
@@ -887,8 +902,6 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
      *      <li>translations sub properties pertaining to the picker is not available</li>
      *      <li>All of the 'datepicker' sub-properties except 'showOn' are not available</li>
      *    </ul>
-     * @default value depends on the theme. In alta-android, alta-ios and alta-windows themes, the
-     * default is "native" and it's "jet" for alta web theme.
      *
      * @example <caption>Initialize the InputDate with the <code class="prettyprint">render-mode</code> attribute specified:</caption>
      * &lt;oj-input-date render-mode='native'>&lt;/oj-input-date>
@@ -918,7 +931,7 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
      * @instance
      * @memberof! oj.ojInputDate
      * @type {Function}
-     * @default <code class="prettyprint">null</code>
+     * @default null
      */
     dayFormatter : null
 
@@ -937,7 +950,7 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
      * @instance
      * @memberof! oj.ojInputDate
      * @type {object}
-     * @default <code class="prettyprint">null</code>
+     * @default null
      * @example
      * {2013: {11: {25: {disabled: true, className: 'holiday', tooltip: 'Stuff to display'}, 5: {disabled: true}}}}}
      */
@@ -1029,6 +1042,9 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
 
     /**
      * The value of the DatePicker element which should be an ISOString.
+     * 
+     * When the attribute is not set, the element's value attribute is used as its initial value
+     * if it exists. This value must be an ISOString.
      *
      * @example <caption>Initialize the element with the <code class="prettyprint">value</code> attribute:</caption>
      * &lt;oj-date-picker value='2014-09-10' /&gt;
@@ -1046,12 +1062,13 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
      * @instance
      * @memberof! oj.ojDatePicker
      * @type {string}
-     * @default When the attribute is not set, the element's value attribute is used as its initial value
-     * if it exists. This value must be an ISOString.
      * @ojwriteback
      */
     /**
      * The value of the InputDate element which should be an ISOString.
+     * 
+     * When the attribute is not set, the element's value attribute is used as its initial value
+     * if it exists. This value must be an ISOString.
      *
      * @example <caption>Initialize the element with the <code class="prettyprint">value</code> attribute:</caption>
      * &lt;oj-input-date value='2014-09-10' /&gt;
@@ -1069,8 +1086,6 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
      * @instance
      * @memberof! oj.ojInputDate
      * @type {string}
-     * @default When the attribute is not set, the element's value attribute is used as its initial value
-     * if it exists. This value must be an ISOString.
      * @ojwriteback
      */
 
@@ -1081,6 +1096,7 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
   /**
    * @ignore
    * @protected
+   * @memberof oj.ojInputDate
    */
   _InitBase : function ()
   {
@@ -1272,6 +1288,7 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
    * @ignore
    * @protected
    * @override
+   * @memberof oj.ojInputDate
    */
   _setOption : function (key, value, flags)
   {
@@ -1394,7 +1411,7 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
    *
    * @protected
    * @instance
-   * @memberOf !oj.ojInputDate
+   * @memberof oj.ojInputDate
    */
   _AppendInputHelperParent : function ()
   {
@@ -3813,8 +3830,9 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
   },
 
   /**
+   * Refreshes the element. Usually called after dom changes have been made.
    * @expose
-   * @memberof! oj.ojInputDate
+   * @memberof oj.ojInputDate
    * @instance
    */
   refresh : function ()
@@ -3967,6 +3985,8 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
    * Shows the HTML datepicker
    *
    * @ignore
+   * @protected
+   * @memberof oj.ojInputDate
    */
   _ShowHTMLDatePicker : function ()
   {
@@ -4498,7 +4518,11 @@ function _getTimePickerConverter(converter, addOpts) {
 /**
  * @ojcomponent oj.ojInputTime
  * @augments oj.inputBase
+ * @ojsignature class ojInputTime extends inputBase<string>
  * @since 0.6
+ * @ojstatus preview
+ * @ojshortdesc Time Picker Element
+ * @ojrole combobox
  *
  * @classdesc
  * <h3 id="inputTimeOverview-section">
@@ -4574,7 +4598,7 @@ oj.__registerWidget("oj.ojInputTime", $['oj']['inputBase'],
      * @memberof! oj.ojInputTime
      * @instance
      * @type {Object}
-     * @default <code class="prettyprint">oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({"hour": "2-digit", "minute": "2-digit"})</code>
+     * @default oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({"hour": "2-digit", "minute": "2-digit"})
      */
     converter : oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter(
     {
@@ -4584,6 +4608,10 @@ oj.__registerWidget("oj.ojInputTime", $['oj']['inputBase'],
     /**
      * Determines if keyboard entry of the text is allowed.
      * When disabled the picker must be used to select a time.
+     * 
+     * Default value depends on the theme. In alta-android, alta-ios and alta-windows themes, the
+     * default is <code class="prettyprint">"disabled"</code> and
+     * it's <code class="prettyprint">"enabled"</code> for alta web theme.
      *
      * @expose
      * @instance
@@ -4591,9 +4619,6 @@ oj.__registerWidget("oj.ojInputTime", $['oj']['inputBase'],
      * @type {string}
      * @ojvalue {string} "enabled"  Allow keyboard entry of the time.
      * @ojvalue {string} "disabled" Changing the time can only be done with the picker.
-     * @default Default value depends on the theme. In alta-android, alta-ios and alta-windows themes, the
-     * default is <code class="prettyprint">"disabled"</code> and
-     * it's <code class="prettyprint">"enabled"</code> for alta web theme.
      *
      * @example <caption>Initialize the InputTime with the <code class="prettyprint">keyboard-edit</code> attribute specified:</caption>
      * &lt;oj-input-time keyboard-edit='disabled'>&lt;/oj-input-time>
@@ -4622,7 +4647,7 @@ oj.__registerWidget("oj.ojInputTime", $['oj']['inputBase'],
      * @instance
      * @memberof! oj.ojInputTime
      * @type {string|null}
-     * @default <code class="prettyprint">null</code>
+     * @default null
      *
      * @example <caption>Initialize the InputTime with the <code class="prettyprint">max</code> attribute specified:</caption>
      * &lt;oj-input-time max='T13:30:00.000-08:00'>&lt;/oj-input-time>
@@ -4648,7 +4673,7 @@ oj.__registerWidget("oj.ojInputTime", $['oj']['inputBase'],
      * @instance
      * @memberof! oj.ojInputTime
      * @type {string|null}
-     * @default <code class="prettyprint">null</code>
+     * @default null
      *
      * @example <caption>Initialize the InputTime with the <code class="prettyprint">min</code> attribute specified:</caption>
      * &lt;oj-input-time min='T08:00:00.000-08:00'>&lt;/oj-input-time>
@@ -4697,13 +4722,16 @@ oj.__registerWidget("oj.ojInputTime", $['oj']['inputBase'],
      * @memberof! oj.ojInputTime
      * @instance
      * @type {?Object}
-     * @default <code class="prettyprint">null</code>
+     * @default null
      */
     pickerAttributes: null,
 
     /**
      * Allows applications to specify whether to render time picker in JET or
      * as a native picker control.</br>
+     * 
+     * Default value depends on the theme. In alta-android, alta-ios and alta-windows themes, the
+     * default is "native" and it's "jet" for alta web theme.
      *
      * @expose
      * @memberof! oj.ojInputTime
@@ -4723,8 +4751,6 @@ oj.__registerWidget("oj.ojInputTime", $['oj']['inputBase'],
      *      <li>translations sub properties pertaining to the picker is not available</li>
      *      <li>'timePicker.timeIncrement' property is limited to iOS and will only take a precision of minutes</li>
      *    </ul>
-     * @default value depends on the theme. In alta-android, alta-ios and alta-windows themes, the
-     * default is "native" and it's "jet" for alta web theme.
      *
      * @example <caption>Initialize the InputTime with the <code class="prettyprint">render-mode</code> attribute specified:</caption>
      * &lt;oj-input-time render-mode='native'>&lt;/oj-input-time>
@@ -4791,7 +4817,7 @@ oj.__registerWidget("oj.ojInputTime", $['oj']['inputBase'],
        * @type {string}
        * @ojvalue {string} '' Do not show anything
        * @ojvalue {string} 'now' Show the now button
-       * @default <code class="prettyprint">'now'</code>
+       * @default ""
        */
       footerLayout : "",
 
@@ -4806,7 +4832,7 @@ oj.__registerWidget("oj.ojInputTime", $['oj']['inputBase'],
        * @memberof! oj.ojInputTime
        * @instance
        * @type {string}
-       * @default <code class="prettyprint">'00:05:00:00'</code>
+       * @default "00:05:00:00"
        */
       timeIncrement : "00:05:00:00",
 
@@ -4822,7 +4848,7 @@ oj.__registerWidget("oj.ojInputTime", $['oj']['inputBase'],
        * @type {string}
        * @ojvalue {string} 'focus' when the element receives focus or when the trigger clock image is clicked. When the picker is closed, the field regains focus and is editable.
        * @ojvalue {string} 'image' when the trigger clock image is clicked
-       * @default <code class="prettyprint">'focus'</code>
+       * @default "focus"
        */
       showOn : "focus"
     }
@@ -5812,9 +5838,10 @@ oj.__registerWidget("oj.ojInputTime", $['oj']['inputBase'],
   },
 
   /**
+   * Refreshes the element. Usually called after dom changes have been made.
    * @expose
    * @instance
-   * @memberof! oj.ojInputTime
+   * @memberof oj.ojInputTime
    */
   refresh : function ()
   {
@@ -7413,7 +7440,7 @@ function TimePickerModel(properties)
     }
   }
 
-  /**
+  /*
    * recalculates dependent values after settings change
    */
   function refreshSettings()
@@ -7768,6 +7795,7 @@ function TimePickerModel(properties)
 
 /**
  * @protected
+ * @ignore
  */
 function createWheelGroup(timePickerModel)
 {
@@ -7787,6 +7815,7 @@ function createWheelGroup(timePickerModel)
 
 /**
  * @protected
+ * @ignore
  */
   function createDom()
   {
@@ -7796,6 +7825,7 @@ function createWheelGroup(timePickerModel)
   
 /**
  * @protected
+ * @ignore
  */
   function defineMethods()
   {
@@ -7804,6 +7834,7 @@ function createWheelGroup(timePickerModel)
 
 /**
  * @protected
+ * @ignore
  */
   function defineEvents()
   {
@@ -7812,6 +7843,7 @@ function createWheelGroup(timePickerModel)
 
 /**
  * @protected
+ * @ignore
  */
   function keydownHandler(event)
   {
@@ -7833,6 +7865,7 @@ function createWheelGroup(timePickerModel)
 
 /**
  * @protected
+ * @ignore
  */
   function focusHandler(event)
   {
@@ -7855,6 +7888,7 @@ function createWheelGroup(timePickerModel)
 
 /**
  * @protected
+ * @ignore
  */
   function blurHandler()
   {
@@ -7866,6 +7900,7 @@ function createWheelGroup(timePickerModel)
 
 /**
  * @protected
+ * @ignore
  */
   function refresh()
   {
@@ -7882,6 +7917,7 @@ function createWheelGroup(timePickerModel)
 
 /**
  * @protected
+ * @ignore
  */
   function createWheels()
   {
@@ -7947,7 +7983,11 @@ var timeSwitcherConverter =  $["oj"]["ojInputTime"]["prototype"]["options"]["con
 /**
  * @ojcomponent oj.ojDateTimePicker
  * @augments oj.ojInputDateTime
- * @since 0.6
+ * @since 4.0.0
+ * @ojstatus preview
+ * @ojshortdesc Inline Date Time Picker Element
+ * @ojdisplayname Inline Date Time Picker
+ * @ojrole combobox
  * 
  * @classdesc
  * <h3 id="inputDateTimeOverview-section">
@@ -8001,6 +8041,9 @@ var timeSwitcherConverter =  $["oj"]["ojInputTime"]["prototype"]["options"]["con
  * @ojcomponent oj.ojInputDateTime
  * @augments oj.ojInputDate
  * @since 0.6
+ * @ojstatus preview
+ * @ojshortdesc Date Time Picker Element
+ * @ojrole combobox
  * 
  * @classdesc
  * <h3 id="inputDateTimeOverview-section">
@@ -8073,7 +8116,7 @@ oj.__registerWidget("oj.ojInputDateTime", $['oj']['ojInputDate'],
      * @instance
      * @memberof! oj.ojInputDateTime
      * @type {Object}
-     * @default <code class="prettyprint">oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({"day": "2-digit", "month": "2-digit", "year": "2-digit", "hour": "2-digit", "minute": "2-digit"})</code>
+     * @default oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({"day": "2-digit", "month": "2-digit", "year": "2-digit", "hour": "2-digit", "minute": "2-digit"})
      */
     converter : oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter(
     {
@@ -8090,7 +8133,7 @@ oj.__registerWidget("oj.ojInputDateTime", $['oj']['ojInputDate'],
      * @name renderMode
      * @type {string}
      * @ojvalue {string} 'jet' Applications get full JET functionality.
-     * @default jet.
+     * @default "jet"
      *
      * @example <caption>Initialize the InputDate with the <code class="prettyprint">render-mode</code> attribute specified:</caption>
      * &lt;oj-date-time-picker render-mode='jet'>&lt;/oj-date-time-picker>
@@ -8110,6 +8153,9 @@ oj.__registerWidget("oj.ojInputDateTime", $['oj']['ojInputDate'],
      * in JET or as a native picker control.</br>
      * 
      * Valid values: jet, native
+     * 
+     * Default value depends on the theme. In alta-android, alta-ios and alta-windows themes, the 
+     * default is "native" and it's "jet" for alta web theme.
      *
      * <ul>
      *  <li> jet - Applications get full JET functionality.</li>
@@ -8133,8 +8179,22 @@ oj.__registerWidget("oj.ojInputDateTime", $['oj']['ojInputDate'],
      * @memberof! oj.ojInputDateTime
      * @instance
      * @type {string}
-     * @default value depends on the theme. In alta-android, alta-ios and alta-windows themes, the 
-     * default is "native" and it's "jet" for alta web theme.
+     * @ojvalue {string} 'jet' Applications get full JET functionality.
+     * @ojvalue {string} 'native' Applications get the functionality of the native picker. Native picker is
+     *  not available when the picker is inline, defaults to jet instead.</br></br>
+     *  Note that the native picker support is limited to Cordova plugin published
+     *  at 'https://github.com/VitaliiBlagodir/cordova-plugin-datepicker'.</br></br>
+     *  With native renderMode, the functionality that is sacrificed compared to jet renderMode are:
+     *    <ul>
+     *      <li>Date Time picker cannot be themed</li>
+     *      <li>Accessibility is limited to what the native picker supports</li>
+     *      <li>pickerAttributes is not applied</li>
+     *      <li>Sub-IDs are not available</li>
+     *      <li>hide() function is no-op</li>
+     *      <li>translations sub properties pertaining to the picker is not available</li>
+     *      <li>All of the 'datepicker' sub-properties except 'showOn' are not available</li>
+     *      <li>'timePicker.timeIncrement' property is limited to iOS and will only take a precision of minutes</li>
+     *    </ul>
      *
      * @example <caption>Get or set the <code class="prettyprint">renderMode</code> property for
      * an InputDateTime after initialization:</caption>
@@ -8166,6 +8226,7 @@ oj.__registerWidget("oj.ojInputDateTime", $['oj']['ojInputDate'],
      * @memberof! oj.ojDateTimePicker
      * @name timePicker
      * @type {Object}
+     * @ojtsignore
      *
      * @example <caption>Initialize the component, overriding some time-picker attributes and leaving the others intact:</caption>
      * &lt;!-- Using dot notation -->
@@ -8241,7 +8302,7 @@ oj.__registerWidget("oj.ojInputDateTime", $['oj']['ojInputDate'],
        * @memberof! oj.ojInputDateTime
        * @instance
        * @type {string}
-       * @default <code class="prettyprint">'00:05:00:00'</code>
+       * @default "00:05:00:00"
        */
       timeIncrement : "00:05:00:00",
 
@@ -8257,7 +8318,7 @@ oj.__registerWidget("oj.ojInputDateTime", $['oj']['ojInputDate'],
        * @type {string}
        * @ojvalue {string} 'focus' when the element receives focus or when the trigger clock image is clicked. When the picker is closed, the field regains focus and is editable.
        * @ojvalue {string} 'image' when the trigger clock image is clicked
-       * @default <code class="prettyprint">'focus'</code>
+       * @default "focus"
        */
       showOn : "focus"
     }
@@ -8278,7 +8339,7 @@ oj.__registerWidget("oj.ojInputDateTime", $['oj']['ojInputDate'],
      * @instance
      * @memberof! oj.ojDateTimePicker
      * @type {string|null}
-     * @default <code class="prettyprint">null</code>
+     * @default null
      */
     /**
      * The maximum selectable datetime. When set to null, there is no maximum.
@@ -8296,7 +8357,7 @@ oj.__registerWidget("oj.ojInputDateTime", $['oj']['ojInputDate'],
      * @instance
      * @memberof! oj.ojInputDateTime
      * @type {string|null}
-     * @default <code class="prettyprint">null</code>
+     * @default null
      */
     
     /**
@@ -8315,7 +8376,7 @@ oj.__registerWidget("oj.ojInputDateTime", $['oj']['ojInputDate'],
      * @instance
      * @memberof! oj.ojDateTimePicker
      * @type {string|null}
-     * @default <code class="prettyprint">null</code>
+     * @default null
      */
     /**
      * The minimum selectable date. When set to null, there is no minimum.
@@ -8333,7 +8394,7 @@ oj.__registerWidget("oj.ojInputDateTime", $['oj']['ojInputDate'],
      * @instance
      * @memberof! oj.ojInputDateTime
      * @type {string|null}
-     * @default <code class="prettyprint">null</code>
+     * @default null
      */
     
     /** 
@@ -8735,6 +8796,7 @@ oj.__registerWidget("oj.ojInputDateTime", $['oj']['ojInputDate'],
    * @ignore
    * @protected
    * @override
+   * @memberof oj.ojInputDateTime
    */
   _destroy : function ()
   {
@@ -8744,6 +8806,7 @@ oj.__registerWidget("oj.ojInputDateTime", $['oj']['ojInputDate'],
   /**
    * @ignore
    * @private
+   * @memberof oj.ojInputDateTime
    */
   _cleanUpDateTimeResources : function ()
   {
@@ -9152,10 +9215,11 @@ oj.__registerWidget("oj.ojInputDateTime", $['oj']['ojInputDate'],
   },
   
   /** 
-   * @ignore
+   * Refreshes the element. Usually called after dom changes have been made.
+   * @expose
    * @override
    * @instance
-   * @memberof! oj.ojInputDateTime
+   * @memberof oj.ojInputDateTime
    */
   refresh : function ()
   {
@@ -9938,7 +10002,7 @@ function WheelModel(parentModel, properties)
       return false;
     };
 
-    /**
+    /*
      * 
      * called by wheel on blur
      */
@@ -10078,7 +10142,7 @@ function WheelModel(parentModel, properties)
     }
   }
 
-  /**
+  /*
    * recalculates dependent values after settings change
    */
   function refreshSettings()

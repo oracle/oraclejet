@@ -1769,7 +1769,7 @@ DvtLegendRenderer._renderTitle = function(legend, container, titleStr, availSpac
  * @private
  */
 DvtLegendRenderer._renderSections = function(legend, container, sections, availSpace, id) {
-  if (!sections)
+  if (!sections || sections.length == 0)
     return new dvt.Rectangle(0, 0, 0, 0);
 
   var options = legend.getOptions();
@@ -1913,6 +1913,8 @@ DvtLegendRenderer._renderVerticalSection = function(legend, container, section, 
   var colGap = DvtLegendDefaults.getGapSize(legend, options['layout']['columnGap']);
   var context = legend.getCtx();
   var isRTL = dvt.Agent.isRightToLeft(context);
+  var hasSections = section['sections'] != null && section['sections'].length > 0;
+  var hasItems = section['items'] != null && section['items'].length > 0;
 
   var sectionSpace = availSpace.clone();
   if (options['scrolling'] != 'off')
@@ -1949,7 +1951,7 @@ DvtLegendRenderer._renderVerticalSection = function(legend, container, section, 
   var sectionDim = buttonDim ? titleDim.getUnion(buttonDim) : titleDim;
 
   // See if this is a section group which contains more legend sections
-  if ((!section['items'] && !section['sections']) || section['expanded'] == 'off' || section['expanded'] == false)
+  if ((!hasItems && !hasSections) || section['expanded'] == 'off' || section['expanded'] == false)
     return sectionDim;
 
   // Title+button should always be on its own row
@@ -1960,12 +1962,12 @@ DvtLegendRenderer._renderVerticalSection = function(legend, container, section, 
   }
 
   // Render nested sections
-  if (section['sections']) {
+  if (hasSections) {
     var nestedSectionDim = DvtLegendRenderer._renderSections(legend, container, section['sections'], sectionSpace, id);
     sectionDim = sectionDim.getUnion(nestedSectionDim);
   }
 
-  if (!section['items'])
+  if (!hasItems)
     return sectionDim;
 
   // Determine needed cols and rows
@@ -2040,14 +2042,14 @@ DvtLegendRenderer._renderHorizontalSection = function(legend, container, section
   var symbolGap = DvtLegendDefaults.getGapSize(legend, options['layout']['symbolGapWidth']);
   var colGap = DvtLegendDefaults.getGapSize(legend, options['layout']['columnGap']);
   var titleGap = DvtLegendDefaults.getGapSize(legend, options['layout']['titleGapWidth']);
-  var numItems = section['items'].length;
+  var hasItems = section['items'] != null && section['items'].length > 0;
   var isRTL = dvt.Agent.isRightToLeft(legend.getCtx());
   var sectionSpace = availSpace.clone();
 
   // Determine legend section title
   var title = DvtLegendRenderer._renderTitle(legend, container, section['title'], availSpace, section, false);
   var titleDim = title ? title.getDimensions() : new dvt.Rectangle(isRTL ? availSpace.x + availSpace.w : availSpace.x, availSpace.y, 0, 0);
-  if (!section['items'])
+  if (!hasItems)
     return titleDim;
   else if (titleDim.w > 0) {
     sectionSpace.w -= titleDim.w + titleGap;
@@ -2059,6 +2061,7 @@ DvtLegendRenderer._renderHorizontalSection = function(legend, container, section
   var textWidths = [];
   var totalWidth = availSpace.w - sectionSpace.w;
   var item, textWidth, i;
+  var numItems = section['items'].length;
   for (i = 0; i < numItems; i++) {
     item = section['items'][i];
     textWidth = Math.ceil(dvt.TextUtils.getTextStringWidth(legend.getCtx(), item['text'], options['textStyle']));

@@ -17,6 +17,7 @@ define(['ojs/ojcore', 'ojs/ojcomponentcore', 'ojs/ojcustomelement'],
  * @ojcomponent oj.ojSwitcher
  * @since 4.0.0
  * @ojstatus preview
+ * @ojshortdesc Dynamically decides which child element should be made visible.
  * @classdesc The switcher element dynamically decides which child element should be made visible. It will make a child element visible only if it's <code class="prettyprint">slot</code> attribute's value matches with switcher's <code class="prettyprint">value</code> property.
  * <pre class="prettyprint">
  * <code>
@@ -86,7 +87,8 @@ define(['ojs/ojcore', 'ojs/ojcomponentcore', 'ojs/ojcustomelement'],
  * @memberof oj.ojSwitcher
  * @instance
  * @type {string}
- * @default <code class="prettyprint">undefined</code>
+ * @default undefined
+ * @ojshortdesc Gets and Sets value for this switcher.
  * @desc <code class="prettyprint">value</code> of the switcher. Setting <code class="prettyprint">value</code> will make all child elements with matching <code class="prettyprint">slot</code> attribute as visible and hides elements which are not matching.
  * @example <caption>Initialize the Switcher with the <code class="prettyprint">value</code> attribute specified:</caption>
  *  &lt;oj-switcher value='settings'> ... &lt;/oj-switcher>
@@ -112,7 +114,8 @@ var switcherMetadata =
         {
           "properties": {
             "value": {
-              "type": "string"
+              "type": "string",
+              "value": ""
             }
           },
           "extension": {

@@ -1,0 +1,153 @@
+{
+  "name": "ojButton",
+  "version": "4.1.0",
+  "jetVersion": "4.1.0",
+  "displayName": " Button",
+  "preview": true,
+  "roles": [
+    "button"
+  ],
+  "styleClasses": [
+    {
+      "styleGroup": [
+        "oj-button-sm",
+        "oj-button-lg",
+        "oj-button-xl"
+      ],
+      "description": "Makes the button small, large, or extra large. Is applied to the Button's root element."
+    },
+    {
+      "styleGroup": [
+        "oj-button-primary"
+      ],
+      "description": "Draws attention to the button, often identifying the primary action in a set of buttons. Designed for use with a push button. In some themes, this class does nothing. Is applied to the Button's root element."
+    },
+    {
+      "styleGroup": [
+        "oj-button-confirm"
+      ],
+      "description": "Identifies an action to confirm. Designed for use with a push button. Is applied to the Button's root element."
+    },
+    {
+      "styleGroup": [
+        "oj-focus-highlight"
+      ],
+      "description": "Under normal circumstances this class is applied automatically. It is documented here for the rare cases that an app developer needs per-instance control.\nThe \"oj-focus-highlight\" class applies focus styling that may not be desirable when the focus results from pointer interaction (touch or mouse), but which is needed for accessibility when the focus occurs by a non-pointer mechanism, for example keyboard or initial page load.\nThe application-level behavior for this component is controlled in the theme by the \"$focusHighlightPolicy\" SASS variable; however, note that this same variable controls the focus highlight policy of many components and patterns. The values for the variable are:\n\"nonPointer\": \"oj-focus-highlight\" is applied only when focus is not the result of pointer interaction. Most themes default to this value.\n\"all\": \"oj-focus-highlight\" is applied regardless of the focus mechanism.\n\"none\": \"oj-focus-highlight\" is never applied. This behavior is not accessible, and is intended for use when the application wishes to use its own event listener to precisely control when the class is applied (see below). The application must ensure the accessibility of the result.\nTo change the behavior on a per-instance basis, the application can set the SASS variable as desired and then use event listeners to toggle this class as needed."
+    }
+  ],
+  "description": "A clickable button.",
+  "properties": {
+    "translations": {
+      "description": "A collection of translated resources from the translation bundle, or null if this\ncomponent has no resources. Resources may be accessed and overridden individually or collectively, as seen in the examples.\n\nIf this component has translations, their documentation immediately follows this doc entry.",
+      "type": "Object",
+      "displayName": "Translations",
+      "value": null
+    },
+    "chroming": {
+      "description": "Indicates in what states the button has chrome (background and border).",
+      "type": "string",
+      "displayName": "Chroming",
+      "enumValues": [
+        "full",
+        "half",
+        "outlined"
+      ],
+      "propertyEditorValues": {
+        "full": {
+          "description": "In typical themes, full-chrome buttons always have chrome.",
+          "displayName": "Full"
+        },
+        "half": {
+          "description": "In typical themes, half-chrome buttons acquire chrome only in their hover, active, and selected states. Half-chroming is recommended for buttons in a toolbar. (This is the toolbar default in most themes.)",
+          "displayName": "Half"
+        },
+        "outlined": {
+          "description": "In typical themes, outlined buttons are similar to half-chrome buttons, but have a border in the default state.",
+          "displayName": "Outlined"
+        }
+      }
+    },
+    "disabled": {
+      "description": "Specifies that the button element should be disabled.",
+      "type": "boolean",
+      "displayName": "Disabled",
+      "value": false
+    },
+    "display": {
+      "description": "Specifies whether the button displays label and icons, or just icons.",
+      "type": "string",
+      "displayName": "Display",
+      "value": "all",
+      "enumValues": [
+        "all",
+        "icons"
+      ],
+      "propertyEditorValues": {
+        "all": {
+          "description": "Display both the label and icons.",
+          "displayName": "All"
+        },
+        "icons": {
+          "description": "Display only the icons.",
+          "displayName": "Icons"
+        }
+      }
+    }
+  },
+  "methods": {
+    "refresh": {
+      "description": "Refreshes the component."
+    },
+    "setProperty": {
+      "description": "Sets a property or a single subproperty for complex properties and notifies the component\nof the change, triggering a [property]Changed event.",
+      "params": [
+        {
+          "name": "property",
+          "description": "The property name to set. Supports dot notation for subproperty access.",
+          "type": "string"
+        },
+        {
+          "name": "value",
+          "description": "The new value to set the property to.",
+          "type": "*"
+        }
+      ]
+    },
+    "getProperty": {
+      "description": "Retrieves a value for a property or a single subproperty for complex properties.",
+      "params": [
+        {
+          "name": "property",
+          "description": "The property name to get. Supports dot notation for subproperty access.",
+          "type": "string"
+        }
+      ],
+      "return": "*"
+    },
+    "setProperties": {
+      "description": "Performs a batch set of properties.",
+      "params": [
+        {
+          "name": "properties",
+          "description": "An object containing the property and value pairs to set.",
+          "type": "Object"
+        }
+      ]
+    }
+  },
+  "slots": {
+    "": {
+      "description": "The default slot is the button's text label. The <oj-button> element accepts plain text or DOM nodes as children for the default slot. A default slot label is required for all buttons for accessibility purposes. The label can be hidden using the display attribute. If a text node is provided it will be wrapped in a span.",
+      "displayName": "default"
+    },
+    "contextMenu": {
+      "description": "The contextMenu slot is set on the oj-menu within this element. \nThis is used to designate the JET Menu that this component should launch as a context menu on right-click, Shift-F10, Press & Hold, or component-specific gesture. \nIf specified, the browser's native context menu will be replaced by the JET Menu specified in this slot.\n\nThe application can register a listener for the Menu's ojBeforeOpen event. The listener can cancel the launch via event.preventDefault(), \nor it can customize the menu contents by editing the menu DOM directly, and then calling refresh() on the Menu.\n\nTo help determine whether it's appropriate to cancel the launch or customize the menu, the ojBeforeOpen listener can use component API's to determine which \ntable cell, chart item, etc., is the target of the context menu. See the JSDoc and demos of the individual components for details. \n\nKeep in mind that any such logic must work whether the context menu was launched via right-click, Shift-F10, Press & Hold, or component-specific touch gesture."
+    },
+    "endIcon": {
+      "description": "The endIcon slot is the button's end icon. The <oj-button> element accepts DOM nodes as children with the endIcon slot."
+    },
+    "startIcon": {
+      "description": "The startIcon slot is the button's start icon. The <oj-button> element accepts DOM nodes as children with the startIcon slot."
+    }
+  }
+}

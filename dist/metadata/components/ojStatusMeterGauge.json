@@ -1,0 +1,689 @@
+{
+  "name": "ojStatusMeterGauge",
+  "version": "4.1.0",
+  "jetVersion": "4.1.0",
+  "displayName": " Status Meter Gauge",
+  "preview": true,
+  "roles": [
+    "img",
+    "application"
+  ],
+  "description": "Status Meter Gauge Element",
+  "properties": {
+    "angleExtent": {
+      "description": "Specifies the angle extent of a gauge with circular orientation. Value should be provided in degrees.",
+      "type": "number",
+      "displayName": "Angle Extent",
+      "value": 360,
+      "maximum": "360",
+      "minimum": "0",
+      "units": "degrees"
+    },
+    "animationDuration": {
+      "description": "The duration of the animations, in milliseconds.",
+      "type": "number",
+      "displayName": "Animation Duration",
+      "value": null,
+      "minimum": "0",
+      "units": "milliseconds"
+    },
+    "animationOnDataChange": {
+      "description": "Defines the animation that is applied on data changes.",
+      "type": "string",
+      "displayName": "Animation On Data Change",
+      "value": "none",
+      "enumValues": [
+        "auto",
+        "none"
+      ],
+      "propertyEditorValues": {
+        "auto": {
+          "displayName": "Auto"
+        },
+        "none": {
+          "displayName": "None"
+        }
+      }
+    },
+    "animationOnDisplay": {
+      "description": "Defines the animation that is shown on initial display.",
+      "type": "string",
+      "displayName": "Animation On Display",
+      "value": "none",
+      "enumValues": [
+        "auto",
+        "none"
+      ],
+      "propertyEditorValues": {
+        "auto": {
+          "displayName": "Auto"
+        },
+        "none": {
+          "displayName": "None"
+        }
+      }
+    },
+    "borderColor": {
+      "description": "The border color of the gauge. Only applies when thresholds are not defined.",
+      "type": "string",
+      "displayName": "Border Color",
+      "value": null
+    },
+    "borderRadius": {
+      "description": "Defines the border radius of the indicator and plot area. When set to \"auto\", the border radius is set to a built-in default. Acceptable input follows CSS border-radius attribute specifications. The plot area border radius can be overwritten with the plotArea borderRadius atribute.",
+      "type": "string",
+      "displayName": "Border Radius",
+      "value": "auto",
+      "enumValues": [
+        "auto"
+      ],
+      "propertyEditorValues": {
+        "auto": {
+          "displayName": "Auto"
+        }
+      }
+    },
+    "center": {
+      "description": "An object defining the center content of a status meter with circular orientation.",
+      "type": "object",
+      "displayName": "Center",
+      "value": "{}",
+      "properties": {
+        "renderer": {
+          "description": "A function that returns custom center content. The function takes a dataContext argument,\nprovided by the gauge, with the following properties: outerBounds: Object containing (x, y, width, height) of the rectangle circumscribing the center area. The outer bounds are useful for creating background for the entire center area when used with a CSS border-radius. If the angleExtent isn't 360 then we will provide the clipped square. The x and y coordinates are relative to the top, left corner of the element. innerBounds: Object containing (x, y, width, height) of the rectangle inscribed in the center area. The inner bounds are useful for inserting content that is guaranteed to fit within the center area. If the angleExtent isn't 360 then we will provide the clipped square. The x and y coordinates are relative to the top, left corner of the element. metricLabel: The computed metric label. componentElement: The status meter gauge HTML element.\n\nThe function should return an Object with the following property: insert: HTMLElement - HTML element, which will be overlaid on top of the gauge. This HTML element will block interactivity of the gauge by default, but the CSS pointer-events property can be set to 'none' on this element if the gauge's interactivity is desired. \n",
+          "type": "function",
+          "value": null
+        }
+      }
+    },
+    "color": {
+      "description": "The color of the gauge. Only applies when thresholds are not defined.",
+      "type": "string",
+      "displayName": "Color",
+      "value": null
+    },
+    "indicatorSize": {
+      "description": "Defines the ratio of relative thickness of the indicator to the plot area.",
+      "type": "number",
+      "displayName": "Indicator Size",
+      "value": 1,
+      "minimum": "0"
+    },
+    "innerRadius": {
+      "description": "Specifies the inner radius of a gauge with circular orientation, defined by the distance from the center of the gauge to the innermost edge of the indicator and plot area. Valid values are a percent or ratio from 0 to 1.",
+      "type": "number",
+      "displayName": "Inner Radius",
+      "value": 0.7,
+      "maximum": "1",
+      "minimum": "0"
+    },
+    "label": {
+      "description": "An object defining the label.",
+      "type": "object",
+      "displayName": "Label",
+      "value": "{}",
+      "properties": {
+        "position": {
+          "description": "Defines the position of the label for horizontal and vertical gauges. The default position for horizontal gauges is 'start' and for vertical gauges is 'center'.",
+          "type": "string",
+          "value": "auto",
+          "enumValues": [
+            "auto",
+            "center",
+            "start"
+          ],
+          "propertyEditorValues": {
+            "auto": {
+              "displayName": "Auto"
+            },
+            "center": {
+              "displayName": "Center"
+            },
+            "start": {
+              "displayName": "Start"
+            }
+          }
+        },
+        "style": {
+          "description": "The CSS style object defining the style of the label.",
+          "type": "object",
+          "value": "{}"
+        },
+        "text": {
+          "description": "The text for the label.",
+          "type": "string",
+          "value": null,
+          "translatable": true
+        }
+      }
+    },
+    "max": {
+      "description": "The maximum value of the gauge.",
+      "type": "number",
+      "displayName": "Max",
+      "value": 100
+    },
+    "metricLabel": {
+      "description": "An object defining the value label.",
+      "type": "object",
+      "displayName": "Metric Label",
+      "value": "{}",
+      "properties": {
+        "converter": {
+          "description": "The converter used to format the labels. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.",
+          "type": "object",
+          "value": null
+        },
+        "position": {
+          "description": "Defines the position of the metric label for horizontal and vertical gauges. The default position of the metric label is outside of the plot area. If the label is not rendered, then 'withLabel' will render the metric label outside the plot area. When the label is rendered, all positions are treated as 'withLabel' except 'auto' and 'outsidePlotArea' which render the metric label outside the plot area. When the metric label is rendered 'withLabel', the metric label is displayed with the same style as the label. The position in the 'withLabel' case is specified by the label position attribute.",
+          "type": "string",
+          "value": "auto",
+          "enumValues": [
+            "auto",
+            "center",
+            "insideIndicatorEdge",
+            "outsideIndicatorEdge",
+            "outsidePlotArea",
+            "withLabel"
+          ],
+          "propertyEditorValues": {
+            "auto": {
+              "displayName": "Auto"
+            },
+            "center": {
+              "displayName": "Center"
+            },
+            "insideIndicatorEdge": {
+              "displayName": "Inside Indicator Edge"
+            },
+            "outsideIndicatorEdge": {
+              "displayName": "Outside Indicator Edge"
+            },
+            "outsidePlotArea": {
+              "displayName": "Outside Plot Area"
+            },
+            "withLabel": {
+              "displayName": "With Label"
+            }
+          }
+        },
+        "rendered": {
+          "description": "Defines if the label is rendered. If set to auto, the label is rendered if the orientation is circular.",
+          "type": "string",
+          "value": "auto",
+          "enumValues": [
+            "auto",
+            "off",
+            "on"
+          ],
+          "propertyEditorValues": {
+            "auto": {
+              "displayName": "Auto"
+            },
+            "off": {
+              "displayName": "Off"
+            },
+            "on": {
+              "displayName": "On"
+            }
+          }
+        },
+        "scaling": {
+          "description": "The scaling behavior of the labels. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.",
+          "type": "string",
+          "value": "auto",
+          "enumValues": [
+            "auto",
+            "billion",
+            "million",
+            "none",
+            "quadrillion",
+            "thousand",
+            "trillion"
+          ],
+          "propertyEditorValues": {
+            "auto": {
+              "displayName": "Auto"
+            },
+            "billion": {
+              "displayName": "Billion"
+            },
+            "million": {
+              "displayName": "Million"
+            },
+            "none": {
+              "displayName": "None"
+            },
+            "quadrillion": {
+              "displayName": "Quadrillion"
+            },
+            "thousand": {
+              "displayName": "Thousand"
+            },
+            "trillion": {
+              "displayName": "Trillion"
+            }
+          }
+        },
+        "style": {
+          "description": "The CSS style object defining the style of the label.",
+          "type": "object",
+          "value": "{}"
+        },
+        "text": {
+          "description": "The text for the label. If specified, text will overwrite the numeric value that is displayed by default. The converter, scaling, and textType attributes are ignored when text is specified.",
+          "type": "string",
+          "value": null,
+          "translatable": true
+        },
+        "textType": {
+          "description": "Defines whether the label is a number or a percentage of the total value.",
+          "type": "string",
+          "value": "number",
+          "enumValues": [
+            "number",
+            "percent"
+          ],
+          "propertyEditorValues": {
+            "number": {
+              "displayName": "Number"
+            },
+            "percent": {
+              "displayName": "Percent"
+            }
+          }
+        }
+      }
+    },
+    "min": {
+      "description": "The minimum value of the gauge.",
+      "type": "number",
+      "displayName": "Min",
+      "value": 0
+    },
+    "orientation": {
+      "description": "Defines the type of status meter to be rendered.",
+      "type": "string",
+      "displayName": "Orientation",
+      "value": "horizontal",
+      "enumValues": [
+        "circular",
+        "horizontal",
+        "vertical"
+      ],
+      "propertyEditorValues": {
+        "circular": {
+          "displayName": "Circular"
+        },
+        "horizontal": {
+          "displayName": "Horizontal"
+        },
+        "vertical": {
+          "displayName": "Vertical"
+        }
+      }
+    },
+    "plotArea": {
+      "description": "Plot Area for Status Meter Guage",
+      "type": "object",
+      "displayName": "Plot Area",
+      "value": "{}",
+      "properties": {
+        "borderColor": {
+          "description": "The border color of the plot area.",
+          "type": "string",
+          "value": null
+        },
+        "borderRadius": {
+          "description": "Defines the border radius of the plot area shape. When set to \"auto\", the border radius is the same as the top level border radius. Acceptable input follows CSS border-radius attribute specifications.",
+          "type": "string",
+          "value": "auto",
+          "enumValues": [
+            "auto"
+          ],
+          "propertyEditorValues": {
+            "auto": {
+              "displayName": "Auto"
+            }
+          }
+        },
+        "color": {
+          "description": "The color of the plot area. Only applies when useThresholdFillColor is off.",
+          "type": "string",
+          "value": null
+        },
+        "rendered": {
+          "description": "Defines if the plot area is to be rendered. If set to auto, the plot area is rendered if the orientation is circular or if the thresholdDisplay is not onIndicator.",
+          "type": "string",
+          "value": "auto",
+          "enumValues": [
+            "auto",
+            "off",
+            "on"
+          ],
+          "propertyEditorValues": {
+            "auto": {
+              "displayName": "Auto"
+            },
+            "off": {
+              "displayName": "Off"
+            },
+            "on": {
+              "displayName": "On"
+            }
+          }
+        },
+        "svgClassName": {
+          "description": "The CSS style class to apply to the plot area. The style class and inline style will override any other styling specified through the properties.",
+          "type": "string"
+        },
+        "svgStyle": {
+          "description": "The inline style to apply to the plot area. The style class and inline style will override any other styling specified through the properties.",
+          "type": "object",
+          "value": "{}"
+        }
+      }
+    },
+    "readOnly": {
+      "description": "Defines whether the value of the gauge can be changed by the end user.",
+      "type": "boolean",
+      "displayName": "Read Only",
+      "value": false
+    },
+    "referenceLines": {
+      "description": "An array of objects with the following properties defining the reference lines for the gauge.",
+      "type": "Array.<object>",
+      "displayName": "Reference Lines",
+      "value": "[]",
+      "properties": {
+        "color": {
+          "description": "The color of the reference line.",
+          "type": "string",
+          "value": null
+        },
+        "value": {
+          "description": "The value of the reference line.",
+          "type": "number",
+          "value": null
+        }
+      }
+    },
+    "startAngle": {
+      "description": "Specifies the start angle of a gauge with circular orientation. Value should be provided in degrees.",
+      "type": "number",
+      "displayName": "Start Angle",
+      "value": 90,
+      "maximum": "360",
+      "minimum": "0",
+      "units": "degrees"
+    },
+    "step": {
+      "description": "Specifies the increment by which values can be changed by the end user when readonly is false. The step must be a positive value that is smaller than the difference between the min and max.",
+      "type": "number",
+      "displayName": "Step",
+      "value": null,
+      "exclusiveMinimum": "0"
+    },
+    "svgClassName": {
+      "description": "The CSS style class to apply to the gauge indicator. The style class and inline style will override any other styling specified through the properties. For tooltip interactivity, it's recommended to also pass a representative color to the color attribute.",
+      "type": "string",
+      "displayName": "Svg Class Name"
+    },
+    "svgStyle": {
+      "description": "The inline style to apply to the gauge indicator. The style class and inline style will override any other styling specified through the properties. For tooltip interactivity, it's recommended to also pass a representative color to the color attribute.",
+      "type": "object",
+      "displayName": "Svg Style",
+      "value": "{}"
+    },
+    "thresholdDisplay": {
+      "description": "Controls whether the current threshold is displayed on the indicator, in the plotArea, or if all the thresholds are diplayed in the plot area",
+      "type": "string",
+      "displayName": "Threshold Display",
+      "value": "onIndicator",
+      "enumValues": [
+        "all",
+        "currentOnly",
+        "onIndicator"
+      ],
+      "propertyEditorValues": {
+        "all": {
+          "displayName": "All"
+        },
+        "currentOnly": {
+          "displayName": "Current Only"
+        },
+        "onIndicator": {
+          "displayName": "On Indicator"
+        }
+      }
+    },
+    "thresholds": {
+      "description": "An array of objects with the following properties defining the thresholds for the gauge.",
+      "type": "Array.<object>",
+      "displayName": "Thresholds",
+      "value": "[]",
+      "properties": {
+        "borderColor": {
+          "description": "The border color of the threshold.",
+          "type": "string",
+          "value": null
+        },
+        "color": {
+          "description": "The color of the threshold.",
+          "type": "string",
+          "value": null
+        },
+        "max": {
+          "description": "The upper bound of the threshold. This value is ignored for the final threshold, which uses the maximum value of the gauge.",
+          "type": "number",
+          "value": null
+        },
+        "shortDesc": {
+          "description": "Specific description for the threshold and overwrites the shortDesc specified on gauge. This is used for accessibility and also for customizing the tooltip text.",
+          "type": "string",
+          "value": null,
+          "translatable": true
+        }
+      }
+    },
+    "tooltip": {
+      "description": "An object containing an optional callback function for tooltip customization.",
+      "type": "object",
+      "displayName": "Tooltip",
+      "value": "{}",
+      "properties": {
+        "renderer": {
+          "description": "A function that returns a custom tooltip. The function takes a dataContext argument,\nprovided by the gauge, with the following properties: parentElement: The tooltip element. The function can directly modify or append content to this element. label: The computed metric label. color: The indicator color of the gauge. componentElement: The status meter gauge HTML elment. The function should return an Object that contains only one of the two properties: insert: HTMLElement | string - An HTML element, which will be appended to the tooltip, or a tooltip string. preventDefault: true - Indicates that the tooltip should not be displayed. It is not necessary to return {preventDefault:false} to display tooltip, since this is a default behavior. ",
+          "type": "function",
+          "value": null
+        }
+      }
+    },
+    "trackResize": {
+      "description": "Defines whether the element will automatically render in response to\nchanges in size. If set to off, then the\napplication is responsible for calling refresh\nto render the element at the new size.",
+      "type": "string",
+      "displayName": "Track Resize",
+      "value": "on",
+      "enumValues": [
+        "off",
+        "on"
+      ],
+      "propertyEditorValues": {
+        "off": {
+          "displayName": "Off"
+        },
+        "on": {
+          "displayName": "On"
+        }
+      }
+    },
+    "translations": {
+      "description": "A collection of translated resources from the translation bundle, or null if this\ncomponent has no resources. Resources may be accessed and overridden individually or collectively, as seen in the examples.\n\nIf this component has translations, their documentation immediately follows this doc entry.",
+      "type": "Object",
+      "displayName": "Translations",
+      "value": null,
+      "properties": {
+        "componentName": {
+          "description": "Used to describe the data visualization type for accessibility.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Gauge"
+        },
+        "labelAndValue": {
+          "description": "Used to display a label and its value.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "{0}: {1}"
+        },
+        "labelClearSelection": {
+          "description": "Text shown for clearing multiple selection on touch devices.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Clear Selection"
+        },
+        "labelCountWithTotal": {
+          "description": "Used to display a count out of a total.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "{0} of {1}"
+        },
+        "labelDataVisualization": {
+          "description": "Label for data visualizations used for accessibility.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Data Visualization"
+        },
+        "labelInvalidData": {
+          "description": "Text shown when the component receives invalid data.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Invalid data"
+        },
+        "labelNoData": {
+          "description": "Text shown when the component receives no data.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "No data to display"
+        },
+        "stateCollapsed": {
+          "description": "Used to describe the collapsed state for accessibility.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Collapsed"
+        },
+        "stateDrillable": {
+          "description": "Used to describe a drillable object for accessibility.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Drillable"
+        },
+        "stateExpanded": {
+          "description": "Used to describe the expanded state for accessibility.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Expanded"
+        },
+        "stateHidden": {
+          "description": "Used to describe the hidden state for accessibility.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Hidden"
+        },
+        "stateIsolated": {
+          "description": "Used to describe the isolated state for accessibility.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Isolated"
+        },
+        "stateMaximized": {
+          "description": "Used to describe the maximized state for accessibility.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Maximized"
+        },
+        "stateMinimized": {
+          "description": "Used to describe the minimized state for accessibility.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Minimized"
+        },
+        "stateSelected": {
+          "description": "Used to describe the selected state for accessibility.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Selected"
+        },
+        "stateUnselected": {
+          "description": "Used to describe the unselected state for accessibility.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Unselected"
+        },
+        "stateVisible": {
+          "description": "Used to describe the visible state for accessibility.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Visible"
+        }
+      }
+    },
+    "value": {
+      "description": "The metric value.",
+      "type": "number",
+      "displayName": "Value",
+      "value": null,
+      "writeback": true
+    },
+    "visualEffects": {
+      "description": "Defines whether visual effects such as overlays are applied to the gauge.",
+      "type": "string",
+      "displayName": "Visual Effects",
+      "value": "auto",
+      "enumValues": [
+        "auto",
+        "none"
+      ],
+      "propertyEditorValues": {
+        "auto": {
+          "displayName": "Auto"
+        },
+        "none": {
+          "displayName": "None"
+        }
+      }
+    }
+  },
+  "methods": {
+    "getMetricLabel": {
+      "description": "Returns the gauge's metric label.",
+      "return": "Object"
+    },
+    "refresh": {
+      "description": "Refreshes the component."
+    },
+    "setProperty": {
+      "description": "Sets a property or a single subproperty for complex properties and notifies the component\nof the change, triggering a [property]Changed event.",
+      "params": [
+        {
+          "name": "property",
+          "description": "The property name to set. Supports dot notation for subproperty access.",
+          "type": "string"
+        },
+        {
+          "name": "value",
+          "description": "The new value to set the property to.",
+          "type": "*"
+        }
+      ]
+    },
+    "getProperty": {
+      "description": "Retrieves a value for a property or a single subproperty for complex properties.",
+      "params": [
+        {
+          "name": "property",
+          "description": "The property name to get. Supports dot notation for subproperty access.",
+          "type": "string"
+        }
+      ],
+      "return": "*"
+    },
+    "setProperties": {
+      "description": "Performs a batch set of properties.",
+      "params": [
+        {
+          "name": "properties",
+          "description": "An object containing the property and value pairs to set.",
+          "type": "Object"
+        }
+      ]
+    }
+  },
+  "slots": {
+    "contextMenu": {
+      "description": "The contextMenu slot is set on the oj-menu within this element. \nThis is used to designate the JET Menu that this component should launch as a context menu on right-click, Shift-F10, Press & Hold, or component-specific gesture. \nIf specified, the browser's native context menu will be replaced by the JET Menu specified in this slot.\n\nThe application can register a listener for the Menu's ojBeforeOpen event. The listener can cancel the launch via event.preventDefault(), \nor it can customize the menu contents by editing the menu DOM directly, and then calling refresh() on the Menu.\n\nTo help determine whether it's appropriate to cancel the launch or customize the menu, the ojBeforeOpen listener can use component API's to determine which \ntable cell, chart item, etc., is the target of the context menu. See the JSDoc and demos of the individual components for details. \n\nKeep in mind that any such logic must work whether the context menu was launched via right-click, Shift-F10, Press & Hold, or component-specific touch gesture."
+    }
+  }
+}

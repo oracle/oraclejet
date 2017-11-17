@@ -7173,7 +7173,7 @@ DvtBaseDrawEffect.prototype.setId = function(id) {
 DvtBaseDrawEffect.prototype.mergeProps = function(obj) {
   obj.setId(this._id);
 };
-// Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
+// Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
 /*-------------------------------------------------------------------------*/
 /*   dvt.ColorUtils       A static class for css color manipulation         */
 /*-------------------------------------------------------------------------*/
@@ -7609,16 +7609,13 @@ dvt.ColorUtils._getChannel = function(c, chan)
   else {
 
     //  rgb() or rgba() format
-    var x2 = clr.indexOf(')');
-    var ar = clr.substring(x1 + 1, x2).split(',');
+    var ar = clr.substring(x1 + 1).match(/[^,|)]+/gm);
 
     if (ar.length === 3 && chan === dvt.ColorUtils._ALPHA) {
       chval = 1;
     }
-    else {
-      chval = ar[chan];
-      chval = parseFloat(chval);
-    }
+    else
+      chval = parseFloat(ar[chan]);
   }
 
   return chval;
@@ -18737,16 +18734,7 @@ dvt.Displayable.prototype._manageDefinitions = function(oldObj, newObj) {
  * @param {Number} ty   The vertical translation to apply, in pixels.
  */
 dvt.Displayable.prototype.setTranslate = function(tx, ty) {
-  //the matrix is the ultimate source of truth, because
-  //it contains all the transform information
-  var mat = this.getMatrix().clone();
-  var decomp = mat._decompose();
-  if (tx != null)
-    decomp[dvt.Matrix._DECOMP_TX] = tx;
-  if (ty != null)
-    decomp[dvt.Matrix._DECOMP_TY] = ty;
-  mat._recompose(decomp);
-  this.setMatrix(mat);
+  this._modifyMatrix(null, null, tx, ty);
 };
 
 
@@ -18770,13 +18758,7 @@ dvt.Displayable.prototype.getTranslateX = function() {
  *  @param {Number} tx   The horizontal translation to apply, in pixels.
  */
 dvt.Displayable.prototype.setTranslateX = function(tx) {
-  //the matrix is the ultimate source of truth, because
-  //it contains all the transform information
-  var mat = this.getMatrix().clone();
-  var decomp = mat._decompose();
-  decomp[dvt.Matrix._DECOMP_TX] = tx;
-  mat._recompose(decomp);
-  this.setMatrix(mat);
+  this._modifyMatrix(null, null, tx);
 };
 
 
@@ -18800,13 +18782,7 @@ dvt.Displayable.prototype.getTranslateY = function() {
  *  @param {Number} ty   The vertical translation to apply, in pixels.
  */
 dvt.Displayable.prototype.setTranslateY = function(ty) {
-  //the matrix is the ultimate source of truth, because
-  //it contains all the transform information
-  var mat = this.getMatrix().clone();
-  var decomp = mat._decompose();
-  decomp[dvt.Matrix._DECOMP_TY] = ty;
-  mat._recompose(decomp);
-  this.setMatrix(mat);
+  this._modifyMatrix(null, null, null, ty);
 };
 
 
@@ -18816,16 +18792,7 @@ dvt.Displayable.prototype.setTranslateY = function(ty) {
  * @param {Number} sy   The vertical scale to apply.
  */
 dvt.Displayable.prototype.setScale = function(sx, sy) {
-  //the matrix is the ultimate source of truth, because
-  //it contains all the transform information
-  var mat = this.getMatrix().clone();
-  var decomp = mat._decompose();
-  if (sx)
-    decomp[dvt.Matrix._DECOMP_SX] = sx;
-  if (sy)
-    decomp[dvt.Matrix._DECOMP_SY] = sy;
-  mat._recompose(decomp);
-  this.setMatrix(mat);
+  this._modifyMatrix(sx, sy);
 };
 
 
@@ -18849,13 +18816,7 @@ dvt.Displayable.prototype.getScaleX = function() {
  *  @param {Number} sx   The horizontal scale to apply.
  */
 dvt.Displayable.prototype.setScaleX = function(sx) {
-  //the matrix is the ultimate source of truth, because
-  //it contains all the transform information
-  var mat = this.getMatrix().clone();
-  var decomp = mat._decompose();
-  decomp[dvt.Matrix._DECOMP_SX] = sx;
-  mat._recompose(decomp);
-  this.setMatrix(mat);
+  this._modifyMatrix(sx);
 };
 
 
@@ -18879,13 +18840,7 @@ dvt.Displayable.prototype.getScaleY = function() {
  *  @param {Number} sy   The horizontal scale to apply.
  */
 dvt.Displayable.prototype.setScaleY = function(sy) {
-  //the matrix is the ultimate source of truth, because
-  //it contains all the transform information
-  var mat = this.getMatrix().clone();
-  var decomp = mat._decompose();
-  decomp[dvt.Matrix._DECOMP_SY] = sy;
-  mat._recompose(decomp);
-  this.setMatrix(mat);
+  this._modifyMatrix(null, sy);
 };
 
 
@@ -18909,13 +18864,7 @@ dvt.Displayable.prototype.getRotation = function() {
  *  @param {Number} angleRads   The rotation to apply, in radians.
  */
 dvt.Displayable.prototype.setRotation = function(angleRads) {
-  //the matrix is the ultimate source of truth, because
-  //it contains all the transform information
-  var mat = this.getMatrix().clone();
-  var decomp = mat._decompose();
-  decomp[dvt.Matrix._DECOMP_R] = angleRads;
-  mat._recompose(decomp);
-  this.setMatrix(mat);
+  this._modifyMatrix(null, null, null, null, angleRads);
 };
 
 
@@ -18993,7 +18942,53 @@ dvt.Displayable.prototype.setMatrix = function(mat) {
     }
   }
 };
-// Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
+
+/**
+ * Sets the scales,translations and rotation to apply to this container.
+ * @param {Number} sx   The horizontal scale to apply.
+ * @param {Number} sy   The vertical scale to apply.
+ * @param {Number} tx   The horizontal translation to apply, in pixels.
+ * @param {Number} ty   The vertical translation to apply, in pixels.
+ * @param {Number} angleRads   The rotation to apply, in radians.
+ * @private
+ */
+dvt.Displayable.prototype._modifyMatrix = function(sx, sy, tx, ty, angleRads) {
+  //the matrix is the ultimate source of truth, because
+  //it contains all the transform information
+  var decomp = this.getMatrix()._decompose();
+  var matrixSx = decomp[dvt.Matrix._DECOMP_SX];
+  var matrixSy = decomp[dvt.Matrix._DECOMP_SY];
+  var matrixTx = decomp[dvt.Matrix._DECOMP_TX];
+  var matrixTy = decomp[dvt.Matrix._DECOMP_TY];
+  var matrixR = decomp[dvt.Matrix._DECOMP_R];
+  var isMatrixAdjusted = false;
+  if (sx != null && matrixSx != sx) {
+    decomp[dvt.Matrix._DECOMP_SX] = sx;
+    isMatrixAdjusted = true;
+  }
+  if (sy != null && matrixSy != sy) {
+    decomp[dvt.Matrix._DECOMP_SY] = sy;
+    isMatrixAdjusted = true;
+  }
+  if (tx != null && matrixTx != tx) {
+    decomp[dvt.Matrix._DECOMP_TX] = tx;
+    isMatrixAdjusted = true;
+  }
+  if (ty != null && matrixTy != ty) {
+    decomp[dvt.Matrix._DECOMP_TY] = ty;
+    isMatrixAdjusted = true;
+  }
+  if (angleRads != null && matrixR != angleRads) {
+    decomp[dvt.Matrix._DECOMP_R] = angleRads;
+    isMatrixAdjusted = true;
+  }
+  if (isMatrixAdjusted) {
+    var mat = this.getMatrix().clone();
+    mat._recompose(decomp);
+    this.setMatrix(mat);
+  }
+};
+// Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
 /**
  * Container for displayable objects.
  * @extends {dvt.Displayable}
@@ -19460,10 +19455,12 @@ dvt.Container.prototype.getDimensionsWithStroke = function() {
       }
     }
 
-    //add any children of current object to end of array
-    numChildren = child.getNumChildren();
-    for (var i = 0; i < numChildren; i++) {
-      ar.push(child.getChildAt(i));
+    if (!child.includeChildSubtree || child.includeChildSubtree()) {
+      //add any children of current object to end of array
+      numChildren = child.getNumChildren();
+      for (var i = 0; i < numChildren; i++) {
+        ar.push(child.getChildAt(i));
+      }
     }
   }
   return totalDims;
@@ -19547,6 +19544,16 @@ dvt.Container.prototype.setHollow = function(fc, strokeWidth) {
     var childColor = child.getFill() ? child.getFill().getColor() : fc;
     child.setHollow(childColor, strokeWidth);
   }
+};
+
+/**
+ * Whether or not to evaluate the children of a container when calculating dimensions.
+ * Note: Should be overridden to return false for any container that overrides GetDimensionsWithStroke
+ * to not return null
+ * @return {boolean}
+ */
+dvt.Container.prototype.includeChildSubtree = function() {
+  return true;
 };
 // Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 /**
@@ -24050,7 +24057,6 @@ dvt.BackgroundOutputText.prototype.setMatrix = function(mat) {
     this._backgroundRect.setMatrix(mat);
 };
 
-
 /**
  *  @override
  */
@@ -24078,6 +24084,54 @@ dvt.BackgroundOutputText.prototype.getDimensions = function(targetCoordinateSpac
   dims.x -= padding;
   dims.w += (2 * padding);
   return this.ConvertCoordSpaceRect(dims, targetCoordinateSpace);
+};
+
+/**
+ * @override
+ */
+dvt.BackgroundOutputText.prototype.getDimensionsWithStroke = function() {
+  // we want this to behave like a shape as opposed to a container
+  // get the dims for this shape by itself
+  return this.GetElemDimensionsWithStroke();
+
+};
+
+/**
+ * @override
+ */
+dvt.BackgroundOutputText.prototype.GetDimensionsWithStroke = function(targetCoordinateSpace) {
+  // we want this to behave like a shape as opposed to a container
+  //get the dims for this shape by itself
+  var dims = this.GetElemDimensionsWithStroke();
+  if (!targetCoordinateSpace || targetCoordinateSpace === this)
+    return dims;
+  else {
+    // Calculate the bounds relative to the target space
+    return this.ConvertCoordSpaceRect(dims, targetCoordinateSpace);
+  }
+};
+
+/**
+ * @override
+ */
+dvt.BackgroundOutputText.prototype.GetElemDimensionsWithStroke = function() {
+  // we want this to behave like a shape as opposed to a container
+  // get the dims for this shape by itself
+  var dims = this.getDimensions();
+
+  var elementWithStroke = this._backgroundRect ? this._backgroundRect : this.TextInstance;
+  var stroke = elementWithStroke.getStroke();
+  if (dims && stroke) {
+    var sw = stroke.getWidth();
+    if (sw) {
+      var halfSw = .5 * sw;
+      dims.x -= halfSw;
+      dims.y -= halfSw;
+      dims.w += sw;
+      dims.h += sw;
+    }
+  }
+  return dims;
 };
 
 /**
@@ -24226,12 +24280,16 @@ dvt.BackgroundOutputText.prototype.GetTextDimensionsForRealign = function(dims) 
  * @return {boolean} true if style has any of the background styles
  */
 dvt.BackgroundOutputText._hasBackgroundStyles = function(style) {
-  if (!style) {
+  if (!style)
     return false;
-  }
-  if (style.getStyle(dvt.CSSStyle.BORDER_COLOR) || style.getStyle(dvt.CSSStyle.BORDER_WIDTH) ||
-      style.getStyle(dvt.CSSStyle.BORDER_RADIUS) || style.getStyle(dvt.CSSStyle.BACKGROUND_COLOR))
-    return true;
+
+  return style.hasBackgroundStyles();
+};
+
+/**
+ *  @override
+ */
+dvt.BackgroundOutputText.prototype.includeChildSubtree = function() {
   return false;
 };
 // Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
@@ -26819,6 +26877,17 @@ dvt.CSSStyle.prototype.getBackgroundImage = function() {
   return ret;
 };
 
+/**
+ * returns true if style has any of the background styles
+ * @return {boolean} true if the style has any background styles
+ */
+dvt.CSSStyle.prototype.hasBackgroundStyles = function() {
+  if (this.getStyle(dvt.CSSStyle.BORDER_COLOR) || this.getStyle(dvt.CSSStyle.BORDER_WIDTH) ||
+      this.getStyle(dvt.CSSStyle.BORDER_RADIUS) || this.getStyle(dvt.CSSStyle.BACKGROUND_COLOR))
+    return true;
+
+  return false;
+};
 
 /**
  * Determine if the given string specifies a color value.
@@ -27056,8 +27125,9 @@ dvt.CSSStyle.prototype.hashCodeForTextMeasurement = function() {
   var ret = '';
   var textProperties = dvt.CSSStyle.getTextMeasurementProperties();
   for (var index = 0; index < textProperties.length; index++) {
-    if (this.getStyle(textProperties[index])) {
-      ret += this.getStyle(textProperties[index]);
+    var style = this.getStyle(textProperties[index]);
+    if (style) {
+      ret += style;
     }
   }
   return ret;

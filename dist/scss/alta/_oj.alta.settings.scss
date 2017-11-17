@@ -1830,6 +1830,9 @@
 // listbox data can be a tree, meaning the item is nested.
 // this is the additional padding per nesting level
 //$listboxIndentWidth: 15px !default;
+// listbox message color
+//$listboxMessageTextColor: $secondaryTextColor !default;
+
 
 // Common values for datepicker and timepicker
 //-----------------------------------------------------------------------------
@@ -2110,6 +2113,10 @@
 // dnd
 //$treeViewDropLineColor:               $interaction1Color !default;
 //$treeViewDropMarkerColor:             $interaction1Color !default;
+
+// spacer
+//$treeViewSpacerWidth:                 24px !default;
+//$treeViewSpacerHeight:                30px !default;
 
 
 // TABLE
@@ -2426,6 +2433,9 @@
 //$tabBarCategoryDividerColor:                        $border1Color !default;
 
 //sizing
+
+//minimum label width ensured during progressive truncation
+//$tabBarTruncatedLabelMinWidth:                      3rem !default; 
 // Not applicable to icon-only
 //$tabBarItemStartEndPadding:                           oj-px-to-rem(15px, $baseFontSize: 14px) !default;
 //$tabBarIconToTextPadding:                             oj-px-to-rem(10px, $baseFontSize: 14px) !default;

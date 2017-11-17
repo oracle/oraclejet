@@ -3,8 +3,8 @@
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
-define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojanimation', 'ojdnd'],
-       function(oj, $)
+define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojanimation', 'ojs/ojkeyset', 'ojdnd'],
+    function(oj, $)
 {
 
 /**
@@ -12,6 +12,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojanimation', 'ojdnd
  * @augments oj.baseComponent
  * @ojstatus preview
  * @since 4.0.0
+ * @ojstatus preview
  *
  * @classdesc
  * <h3 id="treeViewOverview-section">
@@ -157,12 +158,11 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojanimation', 'ojdnd
  * performance, please avoid putting a large number of heavy-weight components inside because as it adds more complexity
  * to the structure, and the effect will be multiplied because there can be many items in the TreeView.</p>
  *
- * <!-- HIDDEN UNTIL EXPANDED IS EXPOSED -->
- * <!-- <h4>Expand All</h4>
+ * <h4>Expand All</h4>
  * <p>While TreeView provides a convenient way to initially expand all parent items in the TreeView, it might have an impact
  * on the initial rendering performance since expanding each parent item might cause a fetch from the server depending on
  * the TreeDataSource. Other factors that could impact performance includes the depth of the tree, and the number of children
- * in each level.</p> -->
+ * in each level.</p>
  *
  * <h3 id="animation-section">
  *   Animation
@@ -330,26 +330,19 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojanimation', 'ojdnd
         drop: null
       },
 
-      // TODO: Unhide "Expand All" perf section in API doc
       /**
-       * Specifies which items in TreeView should be expanded. Specifies "all" value to expand all items. Specifies
-       * an array of keys to expand specific items.
-       *
-       * Note that expanded does not return the currently expanded items. This only returns what is specified
-       * by default to improve the performance of the component. To retrieve the keys of currently expanded items, 
-       * use the <code class="prettyprint">getExpanded</code> method.
+       * Specifies the key set containing the keys of the TreeView items that should be expanded.
        *
        * @expose
-       * @ignore
        * @memberof! oj.ojTreeView
        * @instance
-       * @type {Array.<Object>|string}
-       * @default <code class="prettyprint">[]</code>
+       * @type {KeySet}
+       * @default <code class="prettyprint">new keySet.ExpandedKeySet()</code>
        *
-       * @example <caption>Initialize the TreeView with a fixed expanded state:</caption>
-       * myTreeView.expanded = ['item1', 'item2'];
+       * @example <caption>Initialize the TreeView with some expanded items:</caption>
+       * myTreeView.expanded = new oj.ExpandedKeySet(['item1', 'item2']);
        */
-      expanded: [],
+      expanded: new oj.ExpandedKeySet(),
 
       /**
        * The item attribute contains a subset of attributes for items.
@@ -490,9 +483,8 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojanimation', 'ojdnd
        */
       animateStart: null,
 
-      // TODO: add back "via the <code class="prettyprint">expanded</code> attribute, the <code class="prettyprint">collapse</code> method, or via the UI"
       /**
-       * Triggered before an item is collapsed.
+       * Triggered before an item is collapsed via the <code class="prettyprint">expanded</code> attribute or via the UI.
        * Call <code class="prettyprint">event.preventDefault()</code> to veto the event, which prevents collapsing the item.
        *
        * @expose
@@ -519,9 +511,8 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojanimation', 'ojdnd
        */
       beforeCurrentItem: null,
 
-      // TODO: add back "via the <code class="prettyprint">expanded</code> attribute, the <code class="prettyprint">expand</code> method, or via the UI"
       /**
-       * Triggered before an item is expanded.
+       * Triggered before an item is expanded via the <code class="prettyprint">expanded</code> attribute or via the UI.
        * Call <code class="prettyprint">event.preventDefault()</code> to veto the event, which prevents expanding the item.
        *
        * @expose
@@ -562,14 +553,98 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojanimation', 'ojdnd
     _ComponentCreate: function()
     {
       this._super();
-      
     },
 
     // @inheritdoc
     _AfterCreate: function()
     {
       this._super();
+      this._initRender();
       this._render();
+    },
+
+    /**
+     * Initializes the TreeView.
+     * @private
+     */
+    _initRender: function()
+    {
+      var self = this;
+
+      // Event listeners
+      this._on(this.element, {
+        'click': function(event)
+        {
+          self._handleClick(event);
+        },
+        'mouseover': function(event)
+        {
+          self._handleMouseOver(event);
+        },
+        'mouseout': function(event)
+        {
+          self._handleMouseOut(event);
+        },
+        'mousedown': function(event)
+        {
+          self._handleMouseDown(event);
+        },
+        'mouseup': function(event)
+        {
+          self._handleMouseUp(event);
+        },
+        'keydown': function(event)
+        {
+          self._handleKeyDown(event);
+        },
+        'dragstart': function(event)
+        {
+          self._handleDragStart(event);
+        },
+        'drag': function(event)
+        {
+          self._handleDragSourceEvent(event, 'drag');
+        },
+        'dragend': function(event)
+        {
+          self._handleDragSourceEvent(event, 'dragEnd');
+        },
+        'dragenter': function(event)
+        {
+          self._handleDropTargetEvent(event, 'dragEnter');
+        },
+        'dragover': function(event)
+        {
+          self._handleDropTargetEvent(event, 'dragOver');
+        },
+        'dragleave': function(event)
+        {
+          self._handleDropTargetEvent(event, 'dragLeave');
+        },
+        'drop': function(event)
+        {
+          self._handleDropTargetEvent(event, 'drop');
+        }
+      });
+
+      // Drop marker
+      var dropMarkerIcon = $(document.createElement('span'))
+        .addClass('oj-treeview-drop-marker-icon oj-component-icon');
+
+      this._dropMarker = $(document.createElement('div'))
+        .addClass('oj-treeview-drop-marker')
+        .append(dropMarkerIcon) // @HTMLUpdateOK
+        .appendTo(this.element); // @HTMLUpdateOK
+
+      this._dropMarkerRect = this._dropMarker[0].getBoundingClientRect();
+      this._dropMarker.hide();
+
+      this._dropLine = $(document.createElement('div'))
+        .addClass('oj-treeview-drop-line')
+        .appendTo(this.element); // @HTMLUpdateOK
+
+      this._dropLineRect = this._dropLine[0].getBoundingClientRect();
+      this._dropLine.hide();
     },
 
     /**
@@ -579,7 +654,6 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojanimation', 'ojdnd
     _render: function()
     {
       var self = this;
-      this.element.off(); // Remove all event listeners
       this.element.removeClass('oj-complete');
 
       if (this.options['data'])
@@ -643,9 +717,6 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojanimation', 'ojdnd
      */
     _renderItems: function(nodeSet, parentElem)
     {
-      if (nodeSet.getCount() <= 0)
-        return;
-
       var ulElem = $(document.createElement('ul'))
         .addClass('oj-treeview-list')
         .attr('role', 'group')
@@ -743,106 +814,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojanimation', 'ojdnd
      */
     _decorateTree: function()
     {
-      // TODO: inline style on <oj-treeview> not working
-      // TODO: empty folder
-
       var self = this;
-
-      // Event listeners
-      this._on(this.element, {
-        'click': function(event)
-        {
-          self._handleClick(event);
-        },
-        'mouseover': function(event)
-        {
-          self._handleMouseOver(event);
-        },
-        'mouseout': function(event)
-        {
-          self._handleMouseOut(event);
-        },
-        'mousedown': function(event)
-        {
-          self._handleMouseDown(event);
-        },
-        'mouseup': function(event)
-        {
-          self._handleMouseUp(event);
-        },
-        'keydown': function(event)
-        {
-          self._handleKeyDown(event);
-        }
-      });
-
-      // Drag & drop listeners
-      var dragOptions = this._getDragOptions();
-      if (Object.keys(dragOptions).length > 0)
-      {
-        this._on(this.element, {
-          'dragstart': function(event)
-          {
-            self._handleDragStart(event);
-          },
-          'drag': function(event)
-          {
-            self._handleDragSourceEvent(event, 'drag');
-          },
-          'dragend': function(event)
-          {
-            self._handleDragSourceEvent(event, 'dragEnd');
-          }
-        });
-      }
-
-      var dropOptions = this._getDropOptions();
-      if (Object.keys(dropOptions).length > 0)
-      {
-        this._on(this.element, {
-          'dragenter': function(event)
-          {
-            self._handleDropTargetEvent(event, 'dragEnter');
-          },
-          'dragover': function(event)
-          {
-            self._handleDropTargetEvent(event, 'dragOver');
-          },
-          'dragleave': function(event)
-          {
-            self._handleDropTargetEvent(event, 'dragLeave');
-          },
-          'drop': function(event)
-          {
-            self._handleDropTargetEvent(event, 'drop');
-          }
-        });
-      }
-
-      // Drop marker
-      if (!this._dropMarker)
-      {
-        var dropMarkerIcon = $(document.createElement('span'))
-          .addClass('oj-treeview-drop-marker-icon oj-component-icon');
-
-        this._dropMarker = $(document.createElement('div'))
-          .addClass('oj-treeview-drop-marker')
-          .append(dropMarkerIcon) // @HTMLUpdateOK
-          .appendTo(this.element); // @HTMLUpdateOK
-
-        this._dropMarkerRect = this._dropMarker[0].getBoundingClientRect();
-      }
-      this._dropMarker.hide();
-
-      if (!this._dropLine)
-      {
-        this._dropLine = $(document.createElement('div'))
-          .addClass('oj-treeview-drop-line')
-          .appendTo(this.element); // @HTMLUpdateOK
-
-        this._dropLineRect = this._dropLine[0].getBoundingClientRect();
-      }
-      this._dropLine.hide();
 
       // Keyboard focus and ARIA attributes
       var root = this._getRoot();
@@ -1046,7 +1018,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojanimation', 'ojdnd
     {
       var key = this._getKey(item);
       var expanded = this.options['expanded'];
-      return (expanded == 'all') || (expanded.indexOf(key) != -1);
+      return (expanded && expanded.has) ? expanded.has(key) : false;
     },
 
     /**
@@ -1125,6 +1097,12 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojanimation', 'ojdnd
         {
           item.removeClass('oj-treeview-animated');
           self._trigger('expand', event, self._getEventPayload(item));
+
+          // Update option and fire optionChange
+          var expanded = self.options['expanded'];
+          var newExpanded = expanded.add([self._getKey(item)]);
+          self._userOptionChange('expanded', newExpanded, event);
+
           busyResolve();
         });
       }
@@ -1165,6 +1143,12 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojanimation', 'ojdnd
           subtree.css('max-height', 0);
           item.removeClass('oj-treeview-animated');
           self._trigger('collapse', event, self._getEventPayload(item));
+
+          // Update option and fire optionChange
+          var expanded = self.options['expanded'];
+          var newExpanded = expanded.delete([self._getKey(item)]);
+          self._userOptionChange('expanded', newExpanded, event);
+
           busyResolve();
         });
       }
@@ -1843,7 +1827,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojanimation', 'ojdnd
         });
       });
 
-      var dragDataTypes = dragOptions['dataTypes'];
+      var dragDataTypes = dragOptions['dataTypes'] || [];
       for (var i = 0; i < dragDataTypes.length; i++)
       {
         dataTransfer.setData(dragDataTypes[i], JSON.stringify(dragData));
@@ -1885,7 +1869,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojanimation', 'ojdnd
     _handleDropTargetEvent: function(event, eventType)
     {
       var dropOptions = this._getDropOptions();
-      var dropDataTypes = dropOptions['dataTypes'];
+      var dropDataTypes = dropOptions['dataTypes'] || [];
       var callback = dropOptions[eventType];
       var targetItem = $(event.target).closest('.oj-treeview-item');
 
@@ -1903,7 +1887,17 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojanimation', 'ojdnd
       if (callback)
         callback(event.originalEvent, {'item': targetItem[0], 'position': position});
 
-      if (eventType == 'dragEnter' || eventType == 'dragOver')
+      for (var i = 0; i < dropDataTypes.length; i++)
+      {
+        var dataTypes = event.originalEvent.dataTransfer.types;
+        if (dataTypes && dataTypes.indexOf(dropDataTypes[i]) >= 0)
+        {
+          event.preventDefault();
+          break;
+        }
+      }
+
+      if ((eventType == 'dragEnter' || eventType == 'dragOver') && event.originalEvent.defaultPrevented)
       {
         var isRTL = this._GetReadingDirection() == "rtl";
 
@@ -1946,16 +1940,6 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojanimation', 'ojdnd
         // Remove the drop target effect on dragLeave and drop
         this._dropMarker.hide();
         this._dropLine.hide();
-      }
-
-      for (var i = 0; i < dropDataTypes.length; i++)
-      {
-        var dataTypes = event.originalEvent.dataTransfer.types;
-        if (dataTypes && dataTypes.indexOf(dropDataTypes[i]) >= 0)
-        {
-          event.preventDefault();
-          return;
-        }
       }
     },
 
@@ -2063,64 +2047,6 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojanimation', 'ojdnd
       return context;
     },
 
-    /**
-     * Gets the keys of currently expanded items.
-     *
-     * @expose
-     * @ignore
-     * @memberof oj.ojTreeView
-     * @instance
-     * @return {Array} array of keys of currently expanded items
-     */
-    getExpanded: function()
-    {
-      var self = this;
-      var expanded = [];
-
-      this._getItems().each(function()
-      {
-        var item = $(this);
-        if (self._isExpanded(item))
-          expanded.push(self._getKey(item));
-      });
-
-      return expanded;
-    },
-
-    /**
-     * Expands an item.<p>
-     * When vetoable is set to false, beforeExpand event will still be fired but the event cannot be vetoed.<p>
-     *
-     * @expose
-     * @ignore
-     * @memberof oj.ojTreeView
-     * @instance
-     * @param {Object} key the key of the item to expand
-     * @param {boolean} vetoable whether the event is vetoable
-     */
-    expand: function(key, vetoable)
-    {
-      var item = this._getItemByKey(key);
-      this._expand(item, true, null, vetoable);
-    },
-
-    /**
-     * Collapses an item.<p>
-     * When vetoable is set to false, beforeCollapse event will still be fired but the event cannot be vetoed.<p>
-     *
-     * @expose
-     * @ignore
-     * @memberof oj.ojTreeView
-     * @instance
-     * @param {Object} key the key of the item to collapse
-     * @param {boolean} vetoable whether the event is vetoable
-     */
-    collapse: function(key, vetoable)
-    {
-      var item = this._getItemByKey(key);
-      this._collapse(item, true, null, vetoable);
-    },
-
     // @inheritdoc
     _setOption: function(key, value, flags)
     {
@@ -2154,8 +2080,6 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojanimation', 'ojdnd
       }
       else
       {
-        // Make sure item expansions are maintained
-        this.options['expanded'] = this.getExpanded();
         this.refresh();
         return;
       }
@@ -2354,6 +2278,9 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojanimation', 'ojdnd
             }
           }
         }
+      },
+      'expanded': {
+        'writeback': true
       },
       'item': {
         'type': 'object',

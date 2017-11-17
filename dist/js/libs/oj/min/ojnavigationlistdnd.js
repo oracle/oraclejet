@@ -1,0 +1,9 @@
+/**
+ * Copyright (c) 2014, 2017, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ */
+"use strict";
+define(["ojs/ojcore","jquery","ojs/ojnavigationlist","ojs/ojlistviewdnd"],function(a,g){"undefined"!=typeof a.ua&&(a.ai=function(c){a.ai.N.constructor.call(this,c)},a.f.va(a.ai,a.ua,"oj.NavigationListDndContext"),a.ai.prototype.Cv=function(){return"oj-tabbar-drag-handle"},a.ai.prototype.lO=function(){return"oj-tabbar-drag-image"},a.ai.prototype.nY=function(){return"oj-tabbar-drag-item"},a.ai.prototype.bH=function(){return"oj-tabbar-cut"},a.ai.prototype.hO=function(){return"oj-tabbar-"},a.ai.prototype.uX=
+function(){return!0},a.ai.prototype.mO=function(c){var b=this.wa.Nc("edge");return"top"===b||"bottom"===b?c.offsetWidth:a.ai.N.mO.call(this,c)},a.ai.prototype.oY=function(){return"text/ojnavigationlist-dragsource-id"},a.ai.prototype.ZX=function(a,b,d){return{item:a[0],position:b,reference:d}},a.ai.prototype.kO=function(a){var b=this.wa.options.dnd;return null!=b&&b[a]?b[a].items:null},a.ai.prototype.Lba=function(){return"text/ojnavigationlist-items-data"},a.ai.prototype.Hca=function(a,b){var d,e,
+f=0,h=0,f=Math.max(0,a.offsetX),h=Math.max(0,a.offsetY);e=g(b[0].cloneNode(!0));e.removeClass("oj-selected oj-focus oj-focus-highlight  oj-hover").addClass("oj-drag");d=g(document.createElement("div"));d.get(0).className=this.wa.fa.element.get(0).className;d.addClass(this.lO()).css({width:this.mO(b[0]),height:b[0].offsetHeight}).append(e);g("body").append(d);this.lG=d;a.dataTransfer.setDragImage(d.get(0),f,h)},a.ai.prototype.Kba=function(){var a=[];a.push(this.Po&&0<this.Po.length?this.Po[0]:this.n2());
+return a})});

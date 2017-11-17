@@ -1,0 +1,473 @@
+{
+  "name": "ojDialog",
+  "version": "4.1.0",
+  "jetVersion": "4.1.0",
+  "displayName": "Dialog",
+  "preview": true,
+  "roles": [
+    "dialog"
+  ],
+  "styleClasses": [
+    {
+      "styleGroup": [
+        "oj-dialog-header"
+      ],
+      "description": "Class automatically generated on the header slot."
+    },
+    {
+      "styleGroup": [
+        "oj-dialog-title"
+      ],
+      "description": "Class used to format the title. Automatically created headers use \" oj-dialog-title \" to format the title. For user-defined headers, you may want to use the \" oj-dialog-title \" so that the title in your user-defined header is stylistically similar to a default title."
+    },
+    {
+      "styleGroup": [
+        "oj-dialog-body"
+      ],
+      "description": "Class automatically generated on the default (body) slot."
+    },
+    {
+      "styleGroup": [
+        "oj-dialog-footer"
+      ],
+      "description": "Class automatically generated on the footer slot."
+    },
+    {
+      "styleGroup": [
+        "oj-dialog-footer-separator"
+      ],
+      "description": "A separator between the dialog body and the dialog footer can be added by using a second style class ( \" oj-dialog-footer-separator \") in the footer. So use:\noj-dialog-footer oj-dialog-footer-separator\nto add a footer separator to the dialog. Note that for themes that have a built-in footer separator (specifically the iOS theme), this class has no effect.\nSee the demo section for a live example of the footer separator."
+    },
+    {
+      "styleGroup": [
+        "oj-progress-bar-embedded"
+      ],
+      "description": "Optional markup. Used to format a progress bar embedded in the dialog header."
+    },
+    {
+      "styleGroup": [
+        "oj-focus-highlight"
+      ],
+      "description": "Under normal circumstances this class is applied automatically. It is documented here for the rare cases that an app developer needs per-instance control.\nThe \"oj-focus-highlight\" class applies focus styling that may not be desirable when the focus results from pointer interaction (touch or mouse), but which is needed for accessibility when the focus occurs by a non-pointer mechanism, for example keyboard or initial page load.\nThe application-level behavior for this component is controlled in the theme by the \"$focusHighlightPolicy\" SASS variable; however, note that this same variable controls the focus highlight policy of many components and patterns. The values for the variable are:\n\"nonPointer\": \"oj-focus-highlight\" is applied only when focus is not the result of pointer interaction. Most themes default to this value.\n\"all\": \"oj-focus-highlight\" is applied regardless of the focus mechanism.\n\"none\": \"oj-focus-highlight\" is never applied. This behavior is not accessible, and is intended for use when the application wishes to use its own event listener to precisely control when the class is applied (see below). The application must ensure the accessibility of the result.\nTo change the behavior on a per-instance basis, the application can set the SASS variable as desired and then use event listeners to toggle this class as needed."
+    }
+  ],
+  "description": "Themeable, WAI-ARIA-compliant dialog component",
+  "properties": {
+    "cancelBehavior": {
+      "description": "Specifies the cancel behavior of the dialog. The following are valid values: \"icon\" - (the default) (a) a close icon will automatically be created, and (b) the dialog will close when it has focus and user presses the escape (ESC) key. \"none\" - no actions will be associated with the escape key. \"escape\" - the dialog will close when it has focus and user presses the escape (ESC) key. A close icon will not automatically be created. Note that the cancelBehavior applies to both automatic and user-defined headers. So by default, a user-defined header will have a system generated close icon.",
+      "type": "string",
+      "displayName": "Cancel Behavior",
+      "value": "icon"
+    },
+    "dragAffordance": {
+      "description": "Specifies the drag affordance. If set to \"title-bar\" (the default) the dialog will be draggable by the title bar. If \"none\", the dialog will not be draggable.",
+      "type": "string",
+      "displayName": "Drag Affordance",
+      "value": "title-bar"
+    },
+    "initialVisibility": {
+      "description": " Set the initial visibility of the dialog. If set to \"show\", the dialog will automatically open upon initialization. If \"hide\", the dialog will stay hidden until the open() method is called.",
+      "type": "string",
+      "displayName": "Initial Visibility",
+      "value": "hide"
+    },
+    "modality": {
+      "description": "The modality of the dialog. Valid values are: \"modal\" - (the default) The dialog is modal. Interactions with other page elements are disabled. Modal dialogs overlay other page elements. \"modeless\" - defines a modeless dialog. ",
+      "type": "string",
+      "displayName": "Modality",
+      "value": "modal"
+    },
+    "position": {
+      "deprecated": {
+        "since": "3.0.0",
+        "description": "jQuery UI\rposition syntax is deprectated; Use of a percent unit with\r\"my\" or \"at\" is not supported."
+      },
+      "description": "Position object is used to establish the location the dialog will appear relative to another element. Positioning defines \"my\" alignment \"at\" the alignment \"of\" some other thing which can be \"offset\" by so many pixels. The \"my\" and \"at\" properties defines aligment points relative to the dialog and other element. The \"my\" property represents the dialog's alignment where the \"at\" property represents the other element that can be identified by \"of\". The values of these properties describe horizontal and vertical alignments.",
+      "type": "Object",
+      "displayName": "Position",
+      "properties": {
+        "at": {
+          "description": "Defines which position on the target element (\"of\") to align the positioned element against.",
+          "type": "Object",
+          "value": "{horizontal:center,vertical:center}",
+          "properties": {
+            "horizontal": {
+              "description": "",
+              "type": "string",
+              "value": "center",
+              "enumValues": [
+                "center",
+                "end",
+                "left",
+                "right",
+                "start"
+              ],
+              "propertyEditorValues": {
+                "center": {
+                  "displayName": "Center"
+                },
+                "end": {
+                  "description": "evaluates to \"right\" in LTR mode and \"left\" in RTL mode.",
+                  "displayName": "End"
+                },
+                "left": {
+                  "displayName": "Left"
+                },
+                "right": {
+                  "displayName": "Right"
+                },
+                "start": {
+                  "description": "evaluates to \"left\" in LTR mode and \"right\" in RTL mode.",
+                  "displayName": "Start"
+                }
+              }
+            },
+            "vertical": {
+              "description": "",
+              "type": "string",
+              "value": "center",
+              "enumValues": [
+                "bottom",
+                "center",
+                "top"
+              ],
+              "propertyEditorValues": {
+                "bottom": {
+                  "displayName": "Bottom"
+                },
+                "center": {
+                  "displayName": "Center"
+                },
+                "top": {
+                  "displayName": "Top"
+                }
+              }
+            }
+          }
+        },
+        "collision": {
+          "description": "",
+          "type": "string",
+          "value": "fit"
+        },
+        "my": {
+          "description": "Defines which edge on the dialog to align with the target (\"of\") element.",
+          "type": "Object",
+          "value": "{horizontal:center,vertical:center}",
+          "properties": {
+            "horizontal": {
+              "description": "",
+              "type": "string",
+              "value": "center",
+              "enumValues": [
+                "center",
+                "end",
+                "left",
+                "right",
+                "start"
+              ],
+              "propertyEditorValues": {
+                "center": {
+                  "displayName": "Center"
+                },
+                "end": {
+                  "description": "evaluates to \"right\" in LTR mode and \"left\" in RTL mode.",
+                  "displayName": "End"
+                },
+                "left": {
+                  "displayName": "Left"
+                },
+                "right": {
+                  "displayName": "Right"
+                },
+                "start": {
+                  "description": "evaluates to \"left\" in LTR mode and \"right\" in RTL mode.",
+                  "displayName": "Start"
+                }
+              }
+            },
+            "vertical": {
+              "description": "",
+              "type": "string",
+              "value": "center",
+              "enumValues": [
+                "bottom",
+                "center",
+                "top"
+              ],
+              "propertyEditorValues": {
+                "bottom": {
+                  "displayName": "Bottom"
+                },
+                "center": {
+                  "displayName": "Center"
+                },
+                "top": {
+                  "displayName": "Top"
+                }
+              }
+            }
+          }
+        },
+        "of": {
+          "description": "Which element to position the dialog against. If the value is a string, it should be a selector or the literal string valueof window. Otherwise, a point of x,y.",
+          "type": "string|Object"
+        },
+        "offset": {
+          "description": "Defines a point offset in pixels from the (\"my\") alignment.",
+          "type": "Object",
+          "properties": {
+            "x": {
+              "description": "",
+              "type": "number",
+              "value": 0
+            },
+            "y": {
+              "description": "",
+              "type": "number",
+              "value": 0
+            }
+          }
+        }
+      }
+    },
+    "resizeBehavior": {
+      "description": "The resizeBehavior of the dialog. \"resizable\" (default) makes the dialog resizable. \"none\" disables dialog resizability.",
+      "type": "string",
+      "displayName": "Resize Behavior",
+      "value": "resizable"
+    },
+    "role": {
+      "description": "The WAI-ARIA role of the dialog. By default, role=\"dialog\" is added to the generated HTML markup that surrounds the dialog. When used as an alert dialog, the user should set role to \"alertdialog\".",
+      "type": "string",
+      "displayName": "Role",
+      "value": "dialog"
+    },
+    "translations": {
+      "description": "A collection of translated resources from the translation bundle, or null if this\ncomponent has no resources. Resources may be accessed and overridden individually or collectively, as seen in the examples.\n\nIf this component has translations, their documentation immediately follows this doc entry.",
+      "type": "Object",
+      "displayName": "Translations",
+      "value": null,
+      "properties": {
+        "labelCloseIcon": {
+          "description": "Label for the dialog close button.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Close"
+        }
+      }
+    }
+  },
+  "methods": {
+    "close": {
+      "description": "Closes the dialog.",
+      "return": "void"
+    },
+    "isOpen": {
+      "description": "Returns true if the dialog is currently open. This method does not accept any arguments. The \"open\" state reflects the period of time the dialog is visible, including open and close animations.",
+      "return": "boolean"
+    },
+    "open": {
+      "description": "Opens the dialog.",
+      "return": "void"
+    },
+    "refresh": {
+      "description": "Refreshes the component."
+    },
+    "setProperty": {
+      "description": "Sets a property or a single subproperty for complex properties and notifies the component\nof the change, triggering a [property]Changed event.",
+      "params": [
+        {
+          "name": "property",
+          "description": "The property name to set. Supports dot notation for subproperty access.",
+          "type": "string"
+        },
+        {
+          "name": "value",
+          "description": "The new value to set the property to.",
+          "type": "*"
+        }
+      ]
+    },
+    "getProperty": {
+      "description": "Retrieves a value for a property or a single subproperty for complex properties.",
+      "params": [
+        {
+          "name": "property",
+          "description": "The property name to get. Supports dot notation for subproperty access.",
+          "type": "string"
+        }
+      ],
+      "return": "*"
+    },
+    "setProperties": {
+      "description": "Performs a batch set of properties.",
+      "params": [
+        {
+          "name": "properties",
+          "description": "An object containing the property and value pairs to set.",
+          "type": "Object"
+        }
+      ]
+    }
+  },
+  "events": {
+    "beforeClose": {
+      "description": "Triggered before the dialog is dismissed via the close() method. The close can be cancelled by calling event.preventDefault().",
+      "bubbles": true,
+      "cancelable": true,
+      "detail": {
+        "event": {
+          "description": "a custom event",
+          "type": "Event"
+        }
+      }
+    },
+    "beforeOpen": {
+      "description": "Triggered before the dialog is launched via the open() method. The open can be cancelled by calling event.preventDefault().",
+      "bubbles": true,
+      "cancelable": true,
+      "detail": {
+        "event": {
+          "description": "a custom event",
+          "type": "Event"
+        }
+      }
+    },
+    "close": {
+      "description": "Triggered after the dialog is dismissed via the close() method.",
+      "bubbles": true,
+      "detail": {
+        "event": {
+          "description": "a custom event",
+          "type": "Event"
+        }
+      }
+    },
+    "focus": {
+      "description": "Triggered after focus has been transfered to the dialog.",
+      "bubbles": true,
+      "detail": {
+        "event": {
+          "description": "a custom event",
+          "type": "Event"
+        }
+      }
+    },
+    "open": {
+      "description": "Triggered after the dialog is launched via the open() method.",
+      "bubbles": true,
+      "cancelable": true,
+      "detail": {
+        "event": {
+          "description": "a custom event",
+          "type": "Event"
+        }
+      }
+    },
+    "resize": {
+      "description": "Triggered when the dialog is being resized.",
+      "bubbles": true,
+      "detail": {
+        "event": {
+          "description": "a custom event",
+          "type": "Event"
+        }
+      }
+    },
+    "resizeStart": {
+      "description": "Triggered when the user starts resizing the dialog.",
+      "bubbles": true,
+      "cancelable": true,
+      "detail": {
+        "event": {
+          "description": "a custom event event Type: Event ui Type: Object originalPosition Type: Object The CSS position of the dialog prior to being resized. position Type: Object The current CSS position of the dialog. originalSize Type: Object The size of the dialog prior to being resized. size Type: Object The current size of the dialog. ",
+          "type": "Event"
+        }
+      }
+    },
+    "resizeStop": {
+      "description": "Triggered when the user stops resizing the dialog.",
+      "bubbles": true,
+      "cancelable": true,
+      "detail": {
+        "event": {
+          "description": "a custom event event Type: Event ui Type: Object originalPosition Type: Object The CSS position of the dialog prior to being resized. position Type: Object The current CSS position of the dialog. originalSize Type: Object The size of the dialog prior to being resized. size Type: Object The current size of the dialog. ",
+          "type": "Event"
+        }
+      }
+    },
+    "animateStart": {
+      "description": "Triggered when a default animation is about to start, such as when the component is being opened/closed or a child item is being added/removed. The default animation can be cancelled by calling event.preventDefault.",
+      "bubbles": true,
+      "cancelable": true,
+      "detail": {
+        "event": {
+          "description": "a custom event",
+          "type": "CustomEvent",
+          "properties": {
+            "detail": {
+              "description": "an object containing component specific event info",
+              "type": "Object",
+              "properties": {
+                "action": {
+                  "description": "The action that is starting the animation. The number of actions can vary from component to component. Suggested values are: \"open\" - when a dialog component is opened \"close\" - when a dialog component is closed ",
+                  "type": "string"
+                },
+                "element": {
+                  "description": "target of animation",
+                  "type": "Element"
+                },
+                "endCallback": {
+                  "description": "If the event listener calls event.preventDefault to cancel the default animation, It must call the endCallback function when it finishes its own animation handling and any custom animation has ended.",
+                  "type": "function"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "animateEnd": {
+      "description": "Triggered when a default animation has ended, such as when the component is being opened/closed or a child item is being added/removed. This event is not triggered if the application has called preventDefault on the animateStart event.",
+      "bubbles": true,
+      "cancelable": true,
+      "detail": {
+        "event": {
+          "description": "a custom event",
+          "type": "Event",
+          "properties": {
+            "detail": {
+              "description": "an object containing component specific event info",
+              "type": "Object",
+              "properties": {
+                "element": {
+                  "description": "target of animation",
+                  "type": "Element"
+                },
+                "action": {
+                  "description": "The action that is starting the animation. The number of actions can vary from component to component. Suggested values are: \"open\" - when a dialog component is opened \"close\" - when a dialog component is closed ",
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "slots": {
+    "": {
+      "description": "The default slot is the dialog's body. The <oj-dialog> element accepts DOM nodes as children for the default slot. The default slot can also be named with \"body\". For styling, the default body slot will be rendered with the oj-dialog-body class.",
+      "displayName": "default"
+    },
+    "contextMenu": {
+      "description": "The contextMenu slot is set on the oj-menu within this element. \nThis is used to designate the JET Menu that this component should launch as a context menu on right-click, Shift-F10, Press & Hold, or component-specific gesture. \nIf specified, the browser's native context menu will be replaced by the JET Menu specified in this slot.\n\nThe application can register a listener for the Menu's ojBeforeOpen event. The listener can cancel the launch via event.preventDefault(), \nor it can customize the menu contents by editing the menu DOM directly, and then calling refresh() on the Menu.\n\nTo help determine whether it's appropriate to cancel the launch or customize the menu, the ojBeforeOpen listener can use component API's to determine which \ntable cell, chart item, etc., is the target of the context menu. See the JSDoc and demos of the individual components for details. \n\nKeep in mind that any such logic must work whether the context menu was launched via right-click, Shift-F10, Press & Hold, or component-specific touch gesture."
+    },
+    "footer": {
+      "description": "The footer slot is for the dialog's footer area. The <oj-dialog> element accepts DOM nodes as children with the footer slot. For styling, the footer body slot will be rendered with the oj-dialog-footer class."
+    },
+    "header": {
+      "description": "The header slot is for the dialog's header area. The <oj-dialog> element accepts DOM nodes as children with the header slot. For styling, the header slot will be rendered with the oj-dialog-header class. If a header slot is not specified by the user, a header will automatically be created. The automatically generated header will contain a close button, and the header title will be set to the dialog title."
+    }
+  }
+}

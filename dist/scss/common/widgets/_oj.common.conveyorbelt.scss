@@ -73,7 +73,8 @@
     //when a navList is wrapped by a conveyorBelt, allow the navList to
     //grow so that its items can grow, like a navList not wrapped by a 
     //conveyorBelt
-    .oj-conveyorbelt-item.oj-navigationlist {
+    .oj-conveyorbelt-item.oj-navigationlist,
+    .oj-conveyorbelt-item.oj-tabbar {
         @include oj-flex-property(1 0 auto);
     }
     

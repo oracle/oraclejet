@@ -224,6 +224,7 @@ oj.FilmStripPagingModel.prototype.totalSizeConfidence = function()
  * @ojcomponent oj.ojFilmStrip
  * @augments oj.baseComponent
  * @since 1.1.0
+ * @ojstatus preview
  * 
  * @classdesc
  * <h3 id="filmStripOverview-section">

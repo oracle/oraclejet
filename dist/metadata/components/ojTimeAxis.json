@@ -1,0 +1,282 @@
+{
+  "name": "ojTimeAxis",
+  "version": "4.1.0",
+  "jetVersion": "4.1.0",
+  "displayName": " Time Axis",
+  "preview": true,
+  "description": "A JET Time Axis is a themable, WAI-ARIA compliant element that displays a range of dates based on specified start and end date and time scale",
+  "properties": {
+    "converter": {
+      "description": "The converter (an object literal or instance that duck types oj.Converter) used to format the labels of the time axis. If not specified, the default converter is used. If a single converter is specified, it will be used for all 'scale' values. Otherwise, an object whose keys are 'scale' values that map to the converter instances is expected. See oj.DateTimeConverterFactory for details on creating built-in datetime converters.",
+      "type": "object",
+      "displayName": "Converter",
+      "value": null,
+      "properties": {
+        "days": {
+          "description": "The converter (an object literal or instance that duck types oj.Converter) used for the 'days' scale. If not specified, the default converter will be used for this scale. See oj.DateTimeConverterFactory for details on creating built-in datetime converters.",
+          "type": "object",
+          "value": null
+        },
+        "default": {
+          "description": "The default converter (an object literal or instance that duck types oj.Converter) to use for all 'scale' values that do not otherwise have a converter object provided. See oj.DateTimeConverterFactory for details on creating built-in datetime converters.",
+          "type": "object",
+          "value": null
+        },
+        "hours": {
+          "description": "The converter (an object literal or instance that duck types oj.Converter) used for the 'hours' scale. If not specified, the default converter will be used for this scale. See oj.DateTimeConverterFactory for details on creating built-in datetime converters.",
+          "type": "object",
+          "value": null
+        },
+        "minutes": {
+          "description": "The converter (an object literal or instance that duck types oj.Converter) used for the 'minutes' scale. If not specified, the default converter will be used for this scale. See oj.DateTimeConverterFactory for details on creating built-in datetime converters.",
+          "type": "object",
+          "value": null
+        },
+        "months": {
+          "description": "The converter (an object literal or instance that duck types oj.Converter) used for the 'months' scale. If not specified, the default converter will be used for this scale. See oj.DateTimeConverterFactory for details on creating built-in datetime converters.",
+          "type": "object",
+          "value": null
+        },
+        "quarters": {
+          "description": "The converter (an object literal or instance that duck types oj.Converter) used for the 'quarters' scale. If not specified, the default converter will be used for this scale. See oj.DateTimeConverterFactory for details on creating built-in datetime converters.",
+          "type": "object",
+          "value": null
+        },
+        "seconds": {
+          "description": "The converter (an object literal or instance that duck types oj.Converter) used for the 'seconds' scale. If not specified, the default converter will be used for this scale. See oj.DateTimeConverterFactory for details on creating built-in datetime converters.",
+          "type": "object",
+          "value": null
+        },
+        "weeks": {
+          "description": "The converter (an object literal or instance that duck types oj.Converter) used for the 'weeks' scale. If not specified, the default converter will be used for this scale. See oj.DateTimeConverterFactory for details on creating built-in datetime converters.",
+          "type": "object",
+          "value": null
+        },
+        "years": {
+          "description": "The converter (an object literal or instance that duck types oj.Converter) used for the 'years' scale. If not specified, the default converter will be used for this scale. See oj.DateTimeConverterFactory for details on creating built-in datetime converters.",
+          "type": "object",
+          "value": null
+        }
+      }
+    },
+    "end": {
+      "deprecated": {
+        "since": "3.0.0",
+        "description": "The number type is deprecated in 3.0.0."
+      },
+      "description": "The end time of the time axis. This is required in order for the time axis to properly render. See Date and Time Formats for more details on string formats.",
+      "type": "number|string",
+      "displayName": "End",
+      "value": null
+    },
+    "scale": {
+      "description": "The time scale used for the time axis. This is required in order for the time axis to properly render.",
+      "type": "string",
+      "displayName": "Scale",
+      "value": null,
+      "enumValues": [
+        "days",
+        "hours",
+        "minutes",
+        "months",
+        "quarters",
+        "seconds",
+        "weeks",
+        "years"
+      ],
+      "propertyEditorValues": {
+        "days": {
+          "displayName": "Days"
+        },
+        "hours": {
+          "displayName": "Hours"
+        },
+        "minutes": {
+          "displayName": "Minutes"
+        },
+        "months": {
+          "displayName": "Months"
+        },
+        "quarters": {
+          "displayName": "Quarters"
+        },
+        "seconds": {
+          "displayName": "Seconds"
+        },
+        "weeks": {
+          "displayName": "Weeks"
+        },
+        "years": {
+          "displayName": "Years"
+        }
+      }
+    },
+    "start": {
+      "deprecated": {
+        "since": "3.0.0",
+        "description": "The number type is deprecated in 3.0.0."
+      },
+      "description": "The start time of the time axis. This is required in order for the time axis to properly render. See Date and Time Formats for more details on string formats.",
+      "type": "number|string",
+      "displayName": "Start",
+      "value": null
+    },
+    "trackResize": {
+      "description": "Defines whether the element will automatically render in response to\nchanges in size. If set to off, then the\napplication is responsible for calling refresh\nto render the element at the new size.",
+      "type": "string",
+      "displayName": "Track Resize",
+      "value": "on",
+      "enumValues": [
+        "off",
+        "on"
+      ],
+      "propertyEditorValues": {
+        "off": {
+          "displayName": "Off"
+        },
+        "on": {
+          "displayName": "On"
+        }
+      }
+    },
+    "translations": {
+      "description": "A collection of translated resources from the translation bundle, or null if this\ncomponent has no resources. Resources may be accessed and overridden individually or collectively, as seen in the examples.\n\nIf this component has translations, their documentation immediately follows this doc entry.",
+      "type": "Object",
+      "displayName": "Translations",
+      "value": null,
+      "properties": {
+        "componentName": {
+          "description": "Used to describe the data visualization type for accessibility.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Time Axis"
+        },
+        "labelAndValue": {
+          "description": "Used to display a label and its value.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "{0}: {1}"
+        },
+        "labelClearSelection": {
+          "description": "Text shown for clearing multiple selection on touch devices.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Clear Selection"
+        },
+        "labelCountWithTotal": {
+          "description": "Used to display a count out of a total.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "{0} of {1}"
+        },
+        "labelDataVisualization": {
+          "description": "Label for data visualizations used for accessibility.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Data Visualization"
+        },
+        "labelInvalidData": {
+          "description": "Text shown when the component receives invalid data.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Invalid data"
+        },
+        "labelNoData": {
+          "description": "Text shown when the component receives no data.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "No data to display"
+        },
+        "stateCollapsed": {
+          "description": "Used to describe the collapsed state for accessibility.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Collapsed"
+        },
+        "stateDrillable": {
+          "description": "Used to describe a drillable object for accessibility.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Drillable"
+        },
+        "stateExpanded": {
+          "description": "Used to describe the expanded state for accessibility.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Expanded"
+        },
+        "stateHidden": {
+          "description": "Used to describe the hidden state for accessibility.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Hidden"
+        },
+        "stateIsolated": {
+          "description": "Used to describe the isolated state for accessibility.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Isolated"
+        },
+        "stateMaximized": {
+          "description": "Used to describe the maximized state for accessibility.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Maximized"
+        },
+        "stateMinimized": {
+          "description": "Used to describe the minimized state for accessibility.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Minimized"
+        },
+        "stateSelected": {
+          "description": "Used to describe the selected state for accessibility.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Selected"
+        },
+        "stateUnselected": {
+          "description": "Used to describe the unselected state for accessibility.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Unselected"
+        },
+        "stateVisible": {
+          "description": "Used to describe the visible state for accessibility.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Visible"
+        }
+      }
+    }
+  },
+  "methods": {
+    "refresh": {
+      "description": "Refreshes the component."
+    },
+    "setProperty": {
+      "description": "Sets a property or a single subproperty for complex properties and notifies the component\nof the change, triggering a [property]Changed event.",
+      "params": [
+        {
+          "name": "property",
+          "description": "The property name to set. Supports dot notation for subproperty access.",
+          "type": "string"
+        },
+        {
+          "name": "value",
+          "description": "The new value to set the property to.",
+          "type": "*"
+        }
+      ]
+    },
+    "getProperty": {
+      "description": "Retrieves a value for a property or a single subproperty for complex properties.",
+      "params": [
+        {
+          "name": "property",
+          "description": "The property name to get. Supports dot notation for subproperty access.",
+          "type": "string"
+        }
+      ],
+      "return": "*"
+    },
+    "setProperties": {
+      "description": "Performs a batch set of properties.",
+      "params": [
+        {
+          "name": "properties",
+          "description": "An object containing the property and value pairs to set.",
+          "type": "Object"
+        }
+      ]
+    }
+  },
+  "slots": {
+    "contextMenu": {
+      "description": "The contextMenu slot is set on the oj-menu within this element. \nThis is used to designate the JET Menu that this component should launch as a context menu on right-click, Shift-F10, Press & Hold, or component-specific gesture. \nIf specified, the browser's native context menu will be replaced by the JET Menu specified in this slot.\n\nThe application can register a listener for the Menu's ojBeforeOpen event. The listener can cancel the launch via event.preventDefault(), \nor it can customize the menu contents by editing the menu DOM directly, and then calling refresh() on the Menu.\n\nTo help determine whether it's appropriate to cancel the launch or customize the menu, the ojBeforeOpen listener can use component API's to determine which \ntable cell, chart item, etc., is the target of the context menu. See the JSDoc and demos of the individual components for details. \n\nKeep in mind that any such logic must work whether the context menu was launched via right-click, Shift-F10, Press & Hold, or component-specific touch gesture."
+    }
+  }
+}

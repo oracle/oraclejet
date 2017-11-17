@@ -37,6 +37,7 @@ oj.CollectionHeaderSet = function(start, end, headers, rowHeader, sortInfo)
  * Sets the models used in this header set.
  * @param {Array} models an array of oj model for the header set
  * @private
+ * @memberof oj.CollectionHeaderSet
  */
 oj.CollectionHeaderSet.prototype.setModels = function(models)
 {
@@ -57,7 +58,7 @@ oj.CollectionHeaderSet.prototype.setModels = function(models)
  * @export
  * @expose
  * @instance
- * @memberof! oj.CollectionHeaderSet 
+ * @memberof oj.CollectionHeaderSet
  */
 oj.CollectionHeaderSet.prototype.getData = function(index, level)
 {
@@ -96,7 +97,7 @@ oj.CollectionHeaderSet.prototype.getData = function(index, level)
  * @export
  * @expose
  * @instance
- * @memberof! oj.CollectionHeaderSet 
+ * @memberof oj.CollectionHeaderSet
  */
 oj.CollectionHeaderSet.prototype.getMetadata = function(index, level)
 {
@@ -136,7 +137,7 @@ oj.CollectionHeaderSet.prototype.getMetadata = function(index, level)
  * @export
  * @expose
  * @instance
- * @memberof! oj.CollectionHeaderSet 
+ * @memberof oj.CollectionHeaderSet
  */
 oj.CollectionHeaderSet.prototype.getLevelCount = function()
 {
@@ -165,7 +166,7 @@ oj.CollectionHeaderSet.prototype.getLevelCount = function()
  * @export
  * @expose
  * @instance
- * @memberof! oj.CollectionHeaderSet 
+ * @memberof oj.CollectionHeaderSet
  */
 oj.CollectionHeaderSet.prototype.getExtent = function(index, level)
 { 
@@ -183,7 +184,7 @@ oj.CollectionHeaderSet.prototype.getExtent = function(index, level)
  * @export
  * @expose
  * @instance
- * @memberof! oj.CollectionHeaderSet 
+ * @memberof oj.CollectionHeaderSet
  */
 oj.CollectionHeaderSet.prototype.getDepth = function(index, level)
 {
@@ -199,7 +200,7 @@ oj.CollectionHeaderSet.prototype.getDepth = function(index, level)
  * @export
  * @expose
  * @instance
- * @memberof! oj.CollectionHeaderSet 
+ * @memberof oj.CollectionHeaderSet
  */
 oj.CollectionHeaderSet.prototype.getCount = function()
 {
@@ -211,6 +212,7 @@ oj.CollectionHeaderSet.prototype.getCount = function()
  * @return {number} the start index of the result set.
  * @export
  * @ignore
+ * @memberof oj.CollectionHeaderSet
  */
 oj.CollectionHeaderSet.prototype.getStart = function()
 {
@@ -221,6 +223,7 @@ oj.CollectionHeaderSet.prototype.getStart = function()
  * For internal testing purposes. Gets the m_end property
  * @export
  * @ignore
+ * @memberof oj.CollectionHeaderSet
  */
 oj.CollectionHeaderSet.prototype.getEnd = function()
 {
@@ -231,6 +234,7 @@ oj.CollectionHeaderSet.prototype.getEnd = function()
  * For internal testing purposes. Gets the m_headers property
  * @export
  * @ignore
+ * @memberof oj.CollectionHeaderSet
  */
 oj.CollectionHeaderSet.prototype.getHeaders = function()
 {
@@ -241,6 +245,7 @@ oj.CollectionHeaderSet.prototype.getHeaders = function()
  * For internal testing purposes. Gets the m_rowHeader property
  * @export
  * @ignore
+ * @memberof oj.CollectionHeaderSet
  */
 oj.CollectionHeaderSet.prototype.getRowHeader = function()
 {
@@ -278,6 +283,7 @@ oj.CollectionCellSet = function(startRow, endRow, startColumn, endColumn, column
 /**
  * Sets the models used in this cell set.
  * @param {Array} models an array of oj model for the cell set
+ * @memberof oj.CollectionCellSet
  * @private
  */
 oj.CollectionCellSet.prototype.setModels = function(models)
@@ -300,7 +306,7 @@ oj.CollectionCellSet.prototype.setModels = function(models)
  * @export
  * @expose
  * @instance
- * @memberof! oj.CollectionCellSet 
+ * @memberof oj.CollectionCellSet 
  */
 oj.CollectionCellSet.prototype.getData = function(indexes)
 {
@@ -337,7 +343,7 @@ oj.CollectionCellSet.prototype.getData = function(indexes)
  * @export
  * @expose
  * @instance
- * @memberof! oj.CollectionCellSet 
+ * @memberof oj.CollectionCellSet 
  */
 oj.CollectionCellSet.prototype.getMetadata = function(indexes)
 {
@@ -360,6 +366,7 @@ oj.CollectionCellSet.prototype.getMetadata = function(indexes)
 /**
  * Gets the Model based on indexes.
  * @private
+ * @memberof oj.CollectionCellSet
  */
 oj.CollectionCellSet.prototype._getModel = function(indexes)
 {
@@ -390,7 +397,7 @@ oj.CollectionCellSet.prototype._getModel = function(indexes)
  * @export
  * @expose
  * @instance
- * @memberof! oj.CollectionCellSet 
+ * @memberof oj.CollectionCellSet 
  */
 oj.CollectionCellSet.prototype.getCount = function(axis)
 {
@@ -428,7 +435,7 @@ oj.CollectionCellSet.prototype.getCount = function(axis)
  * @export
  * @expose
  * @instance
- * @memberof! oj.CollectionCellSet
+ * @memberof oj.CollectionCellSet
  */
 oj.CollectionCellSet.prototype.getExtent = function(indexes)
 {
@@ -440,6 +447,7 @@ oj.CollectionCellSet.prototype.getExtent = function(indexes)
  * Gets the m_startRow property for testing
  * @export
  * @ignore
+ * @memberof oj.CollectionCellSet
  */
 oj.CollectionCellSet.prototype.getStartRow = function()
 {
@@ -450,6 +458,7 @@ oj.CollectionCellSet.prototype.getStartRow = function()
  * Gets the m_endRow property for testing
  * @export
  * @ignore
+ * @memberof oj.CollectionCellSet
  */
 oj.CollectionCellSet.prototype.getEndRow = function()
 {
@@ -460,6 +469,7 @@ oj.CollectionCellSet.prototype.getEndRow = function()
  * Gets the m_startColumn property for testing
  * @export
  * @ignore
+ * @memberof oj.CollectionCellSet
  */
 oj.CollectionCellSet.prototype.getStartColumn = function()
 {
@@ -470,6 +480,7 @@ oj.CollectionCellSet.prototype.getStartColumn = function()
  * Gets the m_endColumn property for testing
  * @export
  * @ignore
+ * @memberof oj.CollectionCellSet
  */
 oj.CollectionCellSet.prototype.getEndColumn = function()
 {
@@ -480,6 +491,7 @@ oj.CollectionCellSet.prototype.getEndColumn = function()
  * Gets the m_columns property for testing
  * @export
  * @ignore
+ * @memberof oj.CollectionCellSet
  */
 oj.CollectionCellSet.prototype.getColumns = function()
 {
@@ -553,6 +565,7 @@ oj.Object.createSubclass(oj.CollectionDataGridDataSource, oj.DataGridDataSource,
 /**
  * Initial the OJ collection based data source.
  * @export
+ * @memberof oj.CollectionDataGridDataSource
  */
 oj.CollectionDataGridDataSource.prototype.Init = function()
 {
@@ -566,6 +579,7 @@ oj.CollectionDataGridDataSource.prototype.Init = function()
 /**
  * Register event handlers on the underlying OJ collection.
  * @private
+ * @memberof oj.CollectionDataGridDataSource
  */
 oj.CollectionDataGridDataSource.prototype._registerEventListeners = function()
 {
@@ -580,6 +594,7 @@ oj.CollectionDataGridDataSource.prototype._registerEventListeners = function()
  * Determines if data has been fetched if virtual
  * @return {boolean} true if data is locally available, false otherwise.
  * @private
+ * @memberof oj.CollectionDataGridDataSource
  */
 oj.CollectionDataGridDataSource.prototype._isDataAvailable = function()
 {
@@ -594,7 +609,7 @@ oj.CollectionDataGridDataSource.prototype._isDataAvailable = function()
  * @export
  * @expose
  * @instance
- * @memberof! oj.CollectionDataGridDataSource 
+ * @memberof oj.CollectionDataGridDataSource 
  */
 oj.CollectionDataGridDataSource.prototype.getCount = function(axis)
 {
@@ -647,7 +662,7 @@ oj.CollectionDataGridDataSource.prototype.getCount = function(axis)
  * @export
  * @expose
  * @instance
- * @memberof! oj.CollectionDataGridDataSource 
+ * @memberof oj.CollectionDataGridDataSource 
  */
 oj.CollectionDataGridDataSource.prototype.getCountPrecision = function(axis)
 {
@@ -677,7 +692,7 @@ oj.CollectionDataGridDataSource.prototype.getCountPrecision = function(axis)
  * @export
  * @expose
  * @instance
- * @memberof! oj.CollectionDataGridDataSource 
+ * @memberof oj.CollectionDataGridDataSource 
  */
 oj.CollectionDataGridDataSource.prototype.fetchHeaders = function(headerRange, callbacks, callbackObjects)
 {
@@ -713,6 +728,7 @@ oj.CollectionDataGridDataSource.prototype.fetchHeaders = function(headerRange, c
  * @param {number} actualRange.start the start index of the data the server returned
  * @param {number} actualRange.count the size of the range the server returned
  * @private
+ * @memberof oj.CollectionDataGridDataSource
  */
 oj.CollectionDataGridDataSource.prototype._handleHeaderFetchSuccess = function(headerRange, callbacks, callbackObjects, actualRange)
 {
@@ -769,6 +785,7 @@ oj.CollectionDataGridDataSource.prototype._handleHeaderFetchSuccess = function(h
  * @param {number} cellRanges.count the size of the range for this axis in which the cells are fetched.
  * @return {Object} an object containing rowStart, rowCount, colStart, colCount
  * @private
+ * @memberof oj.CollectionDataGridDataSource
  */
 oj.CollectionDataGridDataSource.prototype._getRanges = function(cellRanges)
 {
@@ -812,6 +829,7 @@ oj.CollectionDataGridDataSource.prototype._getRanges = function(cellRanges)
  * @param {number} actualRange.start the start index of the data the server returned
  * @param {number} actualRange.count the size of the range the server returned
  * @private
+ * @memberof oj.CollectionDataGridDataSource
  */
 oj.CollectionDataGridDataSource.prototype._handleCellFetchSuccess = function(cellRanges, callbacks, callbackObjects, actualRange)
 {
@@ -849,6 +867,7 @@ oj.CollectionDataGridDataSource.prototype._handleCellFetchSuccess = function(cel
  * @param {Object=} callbackObjects the object in which the callback function is invoked on.  This is optional.
  *        You can specify the callback object for each callbacks using the "success" and "error" keys.
  * @private
+ * @memberof oj.CollectionDataGridDataSource
  */
 oj.CollectionDataGridDataSource.prototype._resolveModels = function(rowStart, rowEnd, set, ranges, callbacks, callbackObjects)
 {
@@ -886,7 +905,7 @@ oj.CollectionDataGridDataSource.prototype._resolveModels = function(rowStart, ro
  * @export
  * @expose
  * @instance
- * @memberof! oj.CollectionDataGridDataSource
+ * @memberof oj.CollectionDataGridDataSource
  */
 oj.CollectionDataGridDataSource.prototype.fetchCells = function(cellRanges, callbacks, callbackObjects)
 {
@@ -907,6 +926,7 @@ oj.CollectionDataGridDataSource.prototype.fetchCells = function(cellRanges, call
  * Processing pending header callbacks.
  * @param {string} axis the axis to check for pending header callbacks.
  * @private
+ * @memberof oj.CollectionDataGridDataSource
  */
 oj.CollectionDataGridDataSource.prototype._processPendingHeaderCallbacks = function(axis)
 {
@@ -934,6 +954,7 @@ oj.CollectionDataGridDataSource.prototype._processPendingHeaderCallbacks = funct
 /**
  * Processing pending cell callbacks.
  * @private
+ * @memberof oj.CollectionDataGridDataSource
  */
 oj.CollectionDataGridDataSource.prototype._processPendingCellCallbacks = function()
 {
@@ -958,6 +979,7 @@ oj.CollectionDataGridDataSource.prototype._processPendingCellCallbacks = functio
  * @param {number} cellRanges.start the start index of the range for this axis in which the cells are fetched.
  * @param {number} cellRanges.count the size of the range for this axis in which the cells are fetched.
  * @private
+ * @memberof oj.CollectionDataGridDataSource
  */
 oj.CollectionDataGridDataSource.prototype._fetchCells = function(cellRanges)
 {
@@ -1005,6 +1027,7 @@ oj.CollectionDataGridDataSource.prototype._fetchCells = function(cellRanges)
  * Handles error from setRangeLocal call in fetchCells.
  * @param {Object} error the error returned from setRangeLocal error callback.
  * @private
+ * @memberof oj.CollectionDataGridDataSource
  */
 oj.CollectionDataGridDataSource.prototype._fetchCellsError = function(error)
 {
@@ -1030,6 +1053,7 @@ oj.CollectionDataGridDataSource.prototype._fetchCellsError = function(error)
  * @param {string} axis the header axis
  * @param {Object} error the error returned from setRangeLocal error callback
  * @private
+ * @memberof oj.CollectionDataGridDataSource
  */
 oj.CollectionDataGridDataSource.prototype._processPendingHeaderErrorCallbacks = function(axis, error)
 {
@@ -1057,6 +1081,7 @@ oj.CollectionDataGridDataSource.prototype._processPendingHeaderErrorCallbacks = 
  * Handles any pending cell callbacks in the case of error being thrown.
  * @param {Object} error the error returned from setRangeLocal error callback
  * @private
+ * @memberof oj.CollectionDataGridDataSource
  */
 oj.CollectionDataGridDataSource.prototype._processPendingCellErrorCallbacks = function(error)
 {
@@ -1085,6 +1110,7 @@ oj.CollectionDataGridDataSource.prototype._processPendingCellErrorCallbacks = fu
  * @param {number} cellRanges.start the start index of the range for this axis in which the cells are fetched.
  * @param {number} cellRanges.count the size of the range for this axis in which the cells are fetched.
  * @private
+ * @memberof oj.CollectionDataGridDataSource
  */
 oj.CollectionDataGridDataSource.prototype._fetchCellsComplete = function(cellRanges)
 {
@@ -1114,6 +1140,7 @@ oj.CollectionDataGridDataSource.prototype._fetchCellsComplete = function(cellRan
  * @param {number} start the start index from the server
  * @param {number} count the count of records from the server
  * @private
+ * @memberof oj.CollectionDataGridDataSource
  */
 oj.CollectionDataGridDataSource.prototype._setActualCallbackRanges = function(start, count)
 {
@@ -1146,6 +1173,7 @@ oj.CollectionDataGridDataSource.prototype._setupColumns = function(model)
  * @param {Object} indexes.column the index for the column axis
  * @return {Object} a Promise object which upon resolution will pass in an object containing the keys for each axis
  * @export
+ * @memberof oj.CollectionDataGridDataSource
  */
 oj.CollectionDataGridDataSource.prototype.keys = function(indexes)
 {
@@ -1184,7 +1212,7 @@ oj.CollectionDataGridDataSource.prototype.keys = function(indexes)
  * @export
  * @expose
  * @instance
- * @memberof! oj.CollectionDataGridDataSource 
+ * @memberof oj.CollectionDataGridDataSource 
  */
 oj.CollectionDataGridDataSource.prototype.indexes = function(keys)
 {
@@ -1240,7 +1268,7 @@ oj.CollectionDataGridDataSource.prototype.indexes = function(keys)
  * @export
  * @expose
  * @instance
- * @memberof! oj.CollectionDataGridDataSource 
+ * @memberof oj.CollectionDataGridDataSource 
  */
 oj.CollectionDataGridDataSource.prototype.getCapability = function(feature)
 {
@@ -1272,7 +1300,7 @@ oj.CollectionDataGridDataSource.prototype.getCapability = function(feature)
  * @export
  * @expose
  * @instance
- * @memberof! oj.CollectionDataGridDataSource 
+ * @memberof oj.CollectionDataGridDataSource 
  */
 oj.CollectionDataGridDataSource.prototype.sort = function(criteria, callbacks, callbackObjects)
 {
@@ -1407,6 +1435,7 @@ oj.CollectionDataGridDataSource.prototype.sort = function(criteria, callbacks, c
  * @param {Object=} callbackObjects the object in which the callback function is invoked on.  This is optional.
  *        You can specify the callback object for each callbacks using the "success" and "error" properties.
  * @private
+ * @memberof oj.CollectionDataGridDataSource
  */
 oj.CollectionDataGridDataSource.prototype._resetSortOrder = function(callbacks, callbackObjects)
 {
@@ -1424,6 +1453,7 @@ oj.CollectionDataGridDataSource.prototype._resetSortOrder = function(callbacks, 
  * Get sort info from the collection and setup the original sortInfo
  * @param {string|number=} key the key of the sorted column if we have performed a sort
  * @private
+ * @memberof oj.CollectionDataGridDataSource
  */
 oj.CollectionDataGridDataSource.prototype._setSortInfo = function(key)
 {
@@ -1456,7 +1486,7 @@ oj.CollectionDataGridDataSource.prototype._setSortInfo = function(key)
  * @export
  * @expose
  * @instance
- * @memberof! oj.CollectionDataGridDataSource 
+ * @memberof oj.CollectionDataGridDataSource 
  */
 oj.CollectionDataGridDataSource.prototype.move = function(moveKey, atKey, position, callbacks, callbackObjects)
 {
@@ -1507,7 +1537,7 @@ oj.CollectionDataGridDataSource.prototype.move = function(moveKey, atKey, positi
  * @export
  * @expose
  * @instance
- * @memberof! oj.CollectionDataGridDataSource 
+ * @memberof oj.CollectionDataGridDataSource 
  */
 oj.CollectionDataGridDataSource.prototype.moveOK = function(rowToMove, referenceRow, position)
 {
@@ -1525,6 +1555,7 @@ oj.CollectionDataGridDataSource.prototype.moveOK = function(rowToMove, reference
  * @param {number=} columnIndex the index for the column axis
  * @return {Object} an object containing the the source, operation, and keys of the event
  * @private
+ * @memberof oj.CollectionDataGridDataSource
  */
 oj.CollectionDataGridDataSource.prototype._getModelEvent = function(operation, rowKey, columnKey, rowIndex, columnIndex)
 {
@@ -1542,6 +1573,7 @@ oj.CollectionDataGridDataSource.prototype._getModelEvent = function(operation, r
  * @param {Object} collection The coleection the model was added to
  * @param {Object} args additional params passed by the event
  * @private
+ * @memberof oj.CollectionDataGridDataSource
  */
 oj.CollectionDataGridDataSource.prototype._handleModelAdded = function(model, collection, args)
 {
@@ -1557,6 +1589,7 @@ oj.CollectionDataGridDataSource.prototype._handleModelAdded = function(model, co
  * @param {Object} collection The coleection the model was added to
  * @param {Object} args additional params passed by the event
  * @private
+ * @memberof oj.CollectionDataGridDataSource
  */
 oj.CollectionDataGridDataSource.prototype._handleModelDeleted = function(model, collection, args)
 {
@@ -1573,6 +1606,7 @@ oj.CollectionDataGridDataSource.prototype._handleModelDeleted = function(model, 
  * @param {Object} collection The coleection the model was added to
  * @param {Object} args additional params passed by the event
  * @private
+ * @memberof oj.CollectionDataGridDataSource
  */
 oj.CollectionDataGridDataSource.prototype._handleModelChanged = function(model, collection, args)
 {
@@ -1586,6 +1620,7 @@ oj.CollectionDataGridDataSource.prototype._handleModelChanged = function(model, 
 /**
  * Handle a collection refresh, by firing change event with operation refresh
  * @private
+ * @memberof oj.CollectionDataGridDataSource
  */
 oj.CollectionDataGridDataSource.prototype._handleCollectionRefresh = function()
 {
@@ -1598,6 +1633,7 @@ oj.CollectionDataGridDataSource.prototype._handleCollectionRefresh = function()
 /**
  * Handle a collection reset, by firing change event with operation reset
  * @private
+ * @memberof oj.CollectionDataGridDataSource
  */
 oj.CollectionDataGridDataSource.prototype._handleCollectionReset = function()
 {
@@ -1613,6 +1649,7 @@ oj.CollectionDataGridDataSource.prototype._handleCollectionReset = function()
  * limit it.
  * @returns {number} length of the collection
  * @private
+ * @memberof oj.CollectionDataGridDataSource
  */
 oj.CollectionDataGridDataSource.prototype._size = function()
 {
@@ -1623,6 +1660,7 @@ oj.CollectionDataGridDataSource.prototype._size = function()
  * Return the total size of data available, including server side if not local.
  * @returns {number} total size of data
  * @private
+ * @memberof oj.CollectionDataGridDataSource
  */
 oj.CollectionDataGridDataSource.prototype._totalSize = function()
 {
@@ -1634,6 +1672,7 @@ oj.CollectionDataGridDataSource.prototype._totalSize = function()
  * Gets the collection property for testing
  * @export
  * @ignore
+ * @memberof oj.CollectionDataGridDataSource
  */
 oj.CollectionDataGridDataSource.prototype.getCollection = function()
 {
@@ -1644,6 +1683,7 @@ oj.CollectionDataGridDataSource.prototype.getCollection = function()
  * Gets the columns property for testing
  * @export
  * @ignore
+ * @memberof oj.CollectionDataGridDataSource
  */
 oj.CollectionDataGridDataSource.prototype.getColumns = function()
 {
@@ -1654,6 +1694,7 @@ oj.CollectionDataGridDataSource.prototype.getColumns = function()
  * Gets the rowHeader property for testing
  * @export
  * @ignore
+ * @memberof oj.CollectionDataGridDataSource
  */
 oj.CollectionDataGridDataSource.prototype.getRowHeader = function()
 {
@@ -1664,6 +1705,7 @@ oj.CollectionDataGridDataSource.prototype.getRowHeader = function()
  * Gets the data property for testing
  * @export
  * @ignore
+ * @memberof oj.CollectionDataGridDataSource
  */
 oj.CollectionDataGridDataSource.prototype.getData = function()
 {

@@ -1,0 +1,1068 @@
+{
+  "name": "ojThematicMap",
+  "version": "4.1.0",
+  "jetVersion": "4.1.0",
+  "displayName": " Thematic Map",
+  "preview": true,
+  "description": "ojThematicMap",
+  "properties": {
+    "animationDuration": {
+      "description": "The duration of the animations in milliseconds.",
+      "type": "number",
+      "displayName": "Animation Duration",
+      "value": null
+    },
+    "animationOnDisplay": {
+      "description": "The type of animation to apply when the element is initially displayed",
+      "type": "string",
+      "displayName": "Animation On Display",
+      "value": "none",
+      "enumValues": [
+        "auto",
+        "none"
+      ],
+      "propertyEditorValues": {
+        "auto": {
+          "displayName": "Auto"
+        },
+        "none": {
+          "displayName": "None"
+        }
+      }
+    },
+    "areas": {
+      "description": "An array of objects with the following properties that define a row of data for an area data layer. \nAlso accepts a Promise where no data will be rendered if the Promise is rejected. Regardless of the\nset value type, we will wrap and return a Promise when accessing the areas property.",
+      "type": "Array.<object>|Promise",
+      "displayName": "Areas",
+      "value": null,
+      "properties": {
+        "categories": {
+          "description": "An array of category strings corresponding to this area. This allows highlighting and filtering of areas.",
+          "type": "Array.<string>",
+          "value": null
+        },
+        "color": {
+          "description": "The data object color.",
+          "type": "string",
+          "value": null
+        },
+        "id": {
+          "description": "The identifier for this data object.",
+          "type": "string",
+          "value": null
+        },
+        "label": {
+          "description": "Text used for the area's label.",
+          "type": "string",
+          "value": null
+        },
+        "labelStyle": {
+          "description": "The CSS style defining the label style for this area.",
+          "type": "object",
+          "value": null
+        },
+        "location": {
+          "description": "The id of the state or country this area is associated with.",
+          "type": "string",
+          "value": null
+        },
+        "opacity": {
+          "description": "The data object opacity.",
+          "type": "number",
+          "value": 1
+        },
+        "selectable": {
+          "description": "Specifies whether or not the area will be selectable.",
+          "type": "string",
+          "value": "auto",
+          "enumValues": [
+            "auto",
+            "off"
+          ],
+          "propertyEditorValues": {
+            "auto": {
+              "displayName": "Auto"
+            },
+            "off": {
+              "displayName": "Off"
+            }
+          }
+        },
+        "shortDesc": {
+          "description": "The text that displays in the area's tooltip.",
+          "type": "string",
+          "value": null
+        },
+        "svgClassName": {
+          "description": "The CSS style class to apply to the data item. The style class and inline style will override any \nother styling specified through the options. For tooltips and hover interactivity, it's recommended \nto also pass a representative color to the item color attribute.",
+          "type": "string",
+          "value": null
+        },
+        "svgStyle": {
+          "description": "The CSS style object defining the style of the data item. The style class and inline style will override any other styling specified through the options. For tooltips and hover interactivity, it's recommended to also pass a representative color to the item color attribute.",
+          "type": "object",
+          "value": null
+        }
+      }
+    },
+    "focusRenderer": {
+      "description": "An optional callback function to update the data item in response to changes in keyboard focus state. \nThe function takes a single argument, provided by the element, with the following properties: componentElement: The thematic map element. data: The data object for a stamped data visualization. parentElement: An element that is part of a displayed subtree on the DOM. Modifications of the parentElement are not supported. rootElement: Null on initial rendering or the current data item SVG element. state: An object that reflects the current state of the data item with the following parameters: hovered: hovered state, boolean. selected: selected state, boolean. focused: focused state, boolean. previousState: An object that reflects the previous state of the data item with the following parameters: hovered: hovered state, boolean. selected: selected state, boolean. focused: focused state, boolean. id: The id of the hovered item. label: The data label of the hovered item. color: The color of the hovered item. location: The location id of the hovered item which can be null if x/y are set instead. x: The x coordinate of the hovered item which can be null if location is set instead. y: The y coordinate of the hovered item which can be null if location is set instead. renderDefaultFocus: Function for rendering default focus effect for the data item. renderDefaultHover: Function for rendering default hover effect for the data item. renderDefaultSelection: Function for rendering default selection effect for the data item. \n\n\nThe function should return one of the following: An Object with the following property: insert: SVGElement - An SVG element, which will be used as the data item. undefined: Indicates that the existing DOM has been directly modified and no further action is required.\n",
+      "type": "function",
+      "displayName": "Focus Renderer",
+      "value": null
+    },
+    "hiddenCategories": {
+      "description": "An array of category strings used for category filtering. Data items with a category in \nhiddenCategories will be filtered.",
+      "type": "Array.<string>",
+      "displayName": "Hidden Categories",
+      "value": null
+    },
+    "highlightMatch": {
+      "description": "The matching condition for the highlightedCategories option. By default, highlightMatch is \n'all' and only items whose categories match all of the values specified in the highlightedCategories \narray will be highlighted. If highlightMatch is 'any', then items that match at least one of the \nhighlightedCategories values will be highlighted.",
+      "type": "string",
+      "displayName": "Highlight Match",
+      "value": "all",
+      "enumValues": [
+        "all",
+        "any"
+      ],
+      "propertyEditorValues": {
+        "all": {
+          "displayName": "All"
+        },
+        "any": {
+          "displayName": "Any"
+        }
+      }
+    },
+    "highlightedCategories": {
+      "description": "An array of category strings used for category highlighting. Data items with a category in \nhighlightedCategories will be highlighted.",
+      "type": "Array.<string>",
+      "displayName": "Highlighted Categories",
+      "value": null
+    },
+    "hoverBehavior": {
+      "description": "Defines the behavior applied when hovering over data items.",
+      "type": "string",
+      "displayName": "Hover Behavior",
+      "value": "none",
+      "enumValues": [
+        "dim",
+        "none"
+      ],
+      "propertyEditorValues": {
+        "dim": {
+          "displayName": "Dim"
+        },
+        "none": {
+          "displayName": "None"
+        }
+      }
+    },
+    "hoverRenderer": {
+      "description": "An optional callback function to update the node in response to changes in hover state. \nThe function takes a single argument, provided by the element, with the following properties: componentElement: The thematic map element. data: The data object for a stamped data visualization. parentElement: An element that is part of a displayed subtree on the DOM. Modifications of the parentElement are not supported. rootElement: Null on initial rendering or the current data item SVG element. state: An object that reflects the current state of the data item with the following parameters: hovered: hovered state, boolean. selected: selected state, boolean. focused: focused state, boolean. previousState: An object that reflects the previous state of the data item with the following parameters: hovered: hovered state, boolean. selected: selected state, boolean. focused: focused state, boolean. id: The id of the hovered item. label: The data label of the hovered item. color: The color of the hovered item. location: The location id of the hovered item which can be null if x/y are set instead. x: The x coordinate of the hovered item which can be null if location is set instead. y: The y coordinate of the hovered item which can be null if location is set instead. renderDefaultFocus: Function for rendering default focus effect for the data item. renderDefaultHover: Function for rendering default hover effect for the data item. renderDefaultSelection: Function for rendering default selection effect for the data item. \n\n\nThe function should return one of the following: An Object with the following property: insert: SVGElement - An SVG element, which will be used as the data item. undefined: Indicates that the existing DOM has been directly modified and no further action is required.\n",
+      "type": "function",
+      "displayName": "Hover Renderer",
+      "value": null
+    },
+    "initialZooming": {
+      "description": "Specifies whether the map will zoom to fit the data objects on initial render.",
+      "type": "string",
+      "displayName": "Initial Zooming",
+      "value": "none",
+      "enumValues": [
+        "auto",
+        "none"
+      ],
+      "propertyEditorValues": {
+        "auto": {
+          "displayName": "Auto"
+        },
+        "none": {
+          "displayName": "None"
+        }
+      }
+    },
+    "isolatedItem": {
+      "description": "The id for the isolated area of this area data layer. If set, only the isolated area will be displayed.",
+      "type": "string",
+      "displayName": "Isolated Item",
+      "value": null
+    },
+    "labelDisplay": {
+      "description": "Determines how labels for this layer should be displayed.",
+      "type": "string",
+      "displayName": "Label Display",
+      "value": "off",
+      "enumValues": [
+        "auto",
+        "off",
+        "on"
+      ],
+      "propertyEditorValues": {
+        "auto": {
+          "description": "Renders the label if it fits within the area bounds.",
+          "displayName": "Auto"
+        },
+        "off": {
+          "displayName": "Off"
+        },
+        "on": {
+          "displayName": "On"
+        }
+      }
+    },
+    "labelType": {
+      "description": "Determines which of the basemap labels to display",
+      "type": "string",
+      "displayName": "Label Type",
+      "value": "short",
+      "enumValues": [
+        "long",
+        "short"
+      ],
+      "propertyEditorValues": {
+        "long": {
+          "displayName": "Long"
+        },
+        "short": {
+          "displayName": "Short"
+        }
+      }
+    },
+    "links": {
+      "description": "An array of objects with the following properties that define the data for links.\nAlso accepts a Promise where no data will be rendered if the Promise is rejected. Regardless of the\nset value type, we will wrap and return a Promise when accessing the links property.",
+      "type": "Array.<object>|Promise",
+      "displayName": "Links",
+      "value": null,
+      "properties": {
+        "categories": {
+          "description": "An array of category strings corresponding to this link. This allows highlighting and filtering of links.",
+          "type": "Array.<string>",
+          "value": null
+        },
+        "color": {
+          "description": "The link color.",
+          "type": "string",
+          "value": null
+        },
+        "endLocation": {
+          "description": "An object with the following key/value pairs used to determine the end point of the link: id: The marker or area id to be used as the end point. location: The string location name of a built-in city or area. x: The x coordinate which can represent latitude. y: The y coordinate which can represent longitude. \n",
+          "type": "object",
+          "value": null
+        },
+        "id": {
+          "description": "The identifier for this data object.",
+          "type": "string",
+          "value": null
+        },
+        "selectable": {
+          "description": "Specifies whether or not the area will be selectable.",
+          "type": "string",
+          "value": "auto",
+          "enumValues": [
+            "auto",
+            "off"
+          ],
+          "propertyEditorValues": {
+            "auto": {
+              "displayName": "Auto"
+            },
+            "off": {
+              "displayName": "Off"
+            }
+          }
+        },
+        "shortDesc": {
+          "description": "The text that displays in the area's tooltip.",
+          "type": "string",
+          "value": null
+        },
+        "startLocation": {
+          "description": "An object with the following key/value pairs used to determine the start point of the link: id: The marker or area id to be used as the start point. location: The string location name of a built-in city or area. x: The x coordinate which can represent latitude. y: The y coordinate which can represent longitude. ",
+          "type": "object",
+          "value": null
+        },
+        "svgClassName": {
+          "description": "The CSS style class to apply to the data item. The style class and inline style will override any other \nstyling specified through the options. For tooltips and hover interactivity, it's recommended to \nalso pass a representative color to the item color attribute.",
+          "type": "string",
+          "value": null
+        },
+        "svgStyle": {
+          "description": "The CSS style object defining the style of the data item. The style class and inline style will override \nany other styling specified through the options. For tooltips and hover interactivity, \nit's recommended to also pass a representative color to the item color attribute.",
+          "type": "object",
+          "value": null
+        },
+        "width": {
+          "description": "The link width in pixels.",
+          "type": "number",
+          "value": 2
+        }
+      }
+    },
+    "mapProvider": {
+      "description": "An object with the following properties, used to define a custom basemap.",
+      "type": "object",
+      "displayName": "Map Provider",
+      "value": null,
+      "properties": {
+        "geo": {
+          "description": "The GeoJSON object containing custom area coordinates. Only GeoJSON objects of \"type\" Feature or \nFeatureCollection and Feature \"geometry\" objects of \"type\" Polygon or MultiPolygon are currently \nsupported. Each Feature object will contain a thematic map area and each Feature's \"properties\" \nobject will at a minimum need to contain a key, which can be defined in the propertiesKeys object, \nthat will be used as the ID of the area.",
+          "type": "object",
+          "value": null
+        },
+        "propertiesKeys": {
+          "description": "The object specifying the GeoJSON Feature \"properties\" object keys to use for the custom \narea id, short label, and long label mappings. id: The required name of the \"properties\" key to use as the location id that will map a data item to a map area. shortLabel: The optional name of the \"properties\" key to use for rendering area labels when labelType is set to \"short\". longLabel: The optional name of the \"properties\" key to use for rendering area labels when labelType is set to \"long\".\n",
+          "type": "object",
+          "value": null
+        }
+      }
+    },
+    "markerZoomBehavior": {
+      "description": "Specifies marker behavior on zoom.",
+      "type": "string",
+      "displayName": "Marker Zoom Behavior",
+      "value": "fixed",
+      "enumValues": [
+        "fixed",
+        "zoom"
+      ],
+      "propertyEditorValues": {
+        "fixed": {
+          "displayName": "Fixed"
+        },
+        "zoom": {
+          "displayName": "Zoom"
+        }
+      }
+    },
+    "markers": {
+      "description": "An array of objects with the following properties that define a row of data for a data layer.\nAlso accepts a Promise where no data will be rendered if the Promise is rejected. Regardless of the\nset value type, we will wrap and return a Promise when accessing the markers property.",
+      "type": "Array.<object>|Promise",
+      "displayName": "Markers",
+      "value": null,
+      "properties": {
+        "borderColor": {
+          "description": "The border color.",
+          "type": "string",
+          "value": null
+        },
+        "borderStyle": {
+          "description": "The border style.",
+          "type": "string",
+          "value": "solid",
+          "enumValues": [
+            "none",
+            "solid"
+          ],
+          "propertyEditorValues": {
+            "none": {
+              "displayName": "None"
+            },
+            "solid": {
+              "displayName": "Solid"
+            }
+          }
+        },
+        "borderWidth": {
+          "description": "The border width in pixels.",
+          "type": "number",
+          "value": null
+        },
+        "categories": {
+          "description": "An array of category strings corresponding to this marker. This allows highlighting and filtering of markers.",
+          "type": "Array.<string>",
+          "value": null
+        },
+        "color": {
+          "description": "The marker color.",
+          "type": "string",
+          "value": null
+        },
+        "height": {
+          "description": "The pixel height for this marker. Note that this option will be ignored if a value is provided \nto calculate marker sizes.",
+          "type": "number",
+          "value": null
+        },
+        "id": {
+          "description": "The identifier for this data object.",
+          "type": "string",
+          "value": null
+        },
+        "label": {
+          "description": "Text used for the marker's label.",
+          "type": "string",
+          "value": null
+        },
+        "labelPosition": {
+          "description": "Determines the position relative to the marker that the label should be displayed.",
+          "type": "string",
+          "value": "center",
+          "enumValues": [
+            "bottom",
+            "center",
+            "top"
+          ],
+          "propertyEditorValues": {
+            "bottom": {
+              "displayName": "Bottom"
+            },
+            "center": {
+              "displayName": "Center"
+            },
+            "top": {
+              "displayName": "Top"
+            }
+          }
+        },
+        "labelStyle": {
+          "description": "The CSS style defining the label style for this marker.",
+          "type": "object",
+          "value": null
+        },
+        "location": {
+          "description": "The id of the area this marker is associated with.",
+          "type": "string",
+          "value": null
+        },
+        "opacity": {
+          "description": "The marker opacity.",
+          "type": "number",
+          "value": 1
+        },
+        "rotation": {
+          "description": "The angle to rotate the marker in clockwise degrees around the center of the image.",
+          "type": "number",
+          "value": null
+        },
+        "selectable": {
+          "description": "Specifies whether or not the marker will be selectable.",
+          "type": "string",
+          "value": "auto",
+          "enumValues": [
+            "auto",
+            "off"
+          ],
+          "propertyEditorValues": {
+            "auto": {
+              "displayName": "Auto"
+            },
+            "off": {
+              "displayName": "Off"
+            }
+          }
+        },
+        "shape": {
+          "description": "Specifies the shape of a marker. Can take the name of a built-in shape or the svg path \ncommands for a custom shape.",
+          "type": "string",
+          "value": "circle",
+          "enumValues": [
+            "circle",
+            "diamond",
+            "ellipse",
+            "human",
+            "plus",
+            "rectangle",
+            "square",
+            "star",
+            "triangleDown",
+            "triangleUp"
+          ],
+          "propertyEditorValues": {
+            "circle": {
+              "displayName": "Circle"
+            },
+            "diamond": {
+              "displayName": "Diamond"
+            },
+            "ellipse": {
+              "displayName": "Ellipse"
+            },
+            "human": {
+              "displayName": "Human"
+            },
+            "plus": {
+              "displayName": "Plus"
+            },
+            "rectangle": {
+              "displayName": "Rectangle"
+            },
+            "square": {
+              "displayName": "Square"
+            },
+            "star": {
+              "displayName": "Star"
+            },
+            "triangleDown": {
+              "displayName": "Triangle Down"
+            },
+            "triangleUp": {
+              "displayName": "Triangle Up"
+            }
+          }
+        },
+        "shortDesc": {
+          "description": "The text that displays in the marker's tooltip.",
+          "type": "string",
+          "value": null
+        },
+        "source": {
+          "description": "Specifies an URI specifying the location of the image resource to use for the marker instead of a built-in shape. \nThe shape attribute is ignored if the source image is defined.",
+          "type": "string",
+          "value": null
+        },
+        "sourceHover": {
+          "description": "An optional URI specifying the location of the hover image resource. If not defined, the source image will be used.",
+          "type": "string",
+          "value": null
+        },
+        "sourceHoverSelected": {
+          "description": "An optional URI specifying the location of the selected image resource on hover. If not defined, the \nsourceSelected image will be used. If sourceSelected is not defined, then the source image will be used.",
+          "type": "string",
+          "value": null
+        },
+        "sourceSelected": {
+          "description": "An optional URI specifying the location of the selected image. If not defined, the source image will be used.",
+          "type": "string",
+          "value": null
+        },
+        "svgClassName": {
+          "description": "The CSS style class to apply to the data item. The style class and inline style will override any other \nstyling specified through the options. For tooltips and hover interactivity, it's recommended to also \npass a representative color to the item color attribute.",
+          "type": "string",
+          "value": null
+        },
+        "svgStyle": {
+          "description": "The CSS style object defining the style of the data item. The style class and inline style will override any other \nstyling specified through the options. For tooltips and hover interactivity, it's recommended to also \npass a representative color to the item color attribute.",
+          "type": "object",
+          "value": null
+        },
+        "value": {
+          "description": "A data value used to calculate the marker dimensions based on the range of all the data values and the \nelement size. Markers with negative or zero data values will not be rendered. If specified, this value \ntakes precedence over the width and height options.",
+          "type": "number",
+          "value": null
+        },
+        "width": {
+          "description": "The pixel width for this marker. Note that this option will be ignored if a value is provided to calculate marker sizes.",
+          "type": "number",
+          "value": null
+        }
+      }
+    },
+    "maxZoom": {
+      "description": "Specifies the maximum zoom level for this element. This can be any number greater than 1.0 \nwhich indicates the maximum point to which the map can be scaled. A value of 2.0 implies that \nthe map can be zoomed in until it reaches twice the viewport size. A maxZoom of 1.0 indicates \nthat the user cannot zoom the map beyond the viewport size.",
+      "type": "number",
+      "displayName": "Max Zoom",
+      "value": 6
+    },
+    "panning": {
+      "description": "Determines whether element panning is allowed.",
+      "type": "string",
+      "displayName": "Panning",
+      "value": "none",
+      "enumValues": [
+        "auto",
+        "none"
+      ],
+      "propertyEditorValues": {
+        "auto": {
+          "displayName": "Auto"
+        },
+        "none": {
+          "displayName": "None"
+        }
+      }
+    },
+    "renderer": {
+      "description": "A callback function used to stamp custom SVG elements for a data layer. The function takes a single argument, \nprovided by the element, with the following properties: componentElement: The thematic map element. data: The data object for a stamped data visualization. parentElement: An element that is part of a displayed subtree on the DOM. Modifications of the parentElement are not supported. rootElement: Null on initial rendering or the current data item SVG element. state: An object that reflects the current state of the data item with the following parameters: hovered: hovered state, boolean. selected: selected state, boolean. focused: focused state, boolean. previousState: An object that reflects the previous state of the data item with the following parameters: hovered: hovered state, boolean. selected: selected state, boolean. focused: focused state, boolean. id: The id of the hovered item. label: The data label of the hovered item. color: The color of the hovered item. location: The location id of the hovered item which can be null if x/y are set instead. x: The x coordinate of the hovered item which can be null if location is set instead. y: The y coordinate of the hovered item which can be null if location is set instead. renderDefaultFocus: Function for rendering default focus effect for the data item. renderDefaultHover: Function for rendering default hover effect for the data item. renderDefaultSelection: Function for rendering default selection effect for the data item. \n\n\nThe function should an Object with the following property: insert: SVGElement - An SVG element, which will be used as the data item.\n",
+      "type": "function",
+      "displayName": "Renderer",
+      "value": null
+    },
+    "selection": {
+      "description": "An array of id strings, used to define the selected data items.",
+      "type": "Array.<string>",
+      "displayName": "Selection",
+      "value": null,
+      "writeback": true
+    },
+    "selectionMode": {
+      "description": "The type of selection behavior that is enabled on the thematic map.",
+      "type": "string",
+      "displayName": "Selection Mode",
+      "value": "none",
+      "enumValues": [
+        "multiple",
+        "none",
+        "single"
+      ],
+      "propertyEditorValues": {
+        "multiple": {
+          "displayName": "Multiple"
+        },
+        "none": {
+          "displayName": "None"
+        },
+        "single": {
+          "displayName": "Single"
+        }
+      }
+    },
+    "selectionRenderer": {
+      "description": "An optional callback function to update the data item in response to changes in selection state. \nThe function takes a single argument, provided by the element, with the following properties: componentElement: The thematic map element. data: The data object for a stamped data visualization. parentElement: An element that is part of a displayed subtree on the DOM. Modifications of the parentElement are not supported. rootElement: Null on initial rendering or the current data item SVG element. state: An object that reflects the current state of the data item with the following parameters: hovered: hovered state, boolean. selected: selected state, boolean. focused: focused state, boolean. previousState: An object that reflects the previous state of the data item with the following parameters: hovered: hovered state, boolean. selected: selected state, boolean. focused: focused state, boolean. id: The id of the hovered item. label: The data label of the hovered item. color: The color of the hovered item. location: The location id of the hovered item which can be null if x/y are set instead. x: The x coordinate of the hovered item which can be null if location is set instead. y: The y coordinate of the hovered item which can be null if location is set instead. renderDefaultFocus: Function for rendering default focus effect for the data item. renderDefaultHover: Function for rendering default hover effect for the data item. renderDefaultSelection: Function for rendering default selection effect for the data item. \n\n\nThe function should return one of the following: An Object with the following property: insert: SVGElement - An SVG element, which will be used as the data item. undefined: Indicates that the existing DOM has been directly modified and no further action is required.\n",
+      "type": "function",
+      "displayName": "Selection Renderer",
+      "value": null
+    },
+    "styleDefaults": {
+      "description": "An object defining the style defaults for this thematic map.",
+      "type": "object",
+      "displayName": "Style Defaults",
+      "value": null,
+      "properties": {
+        "areaSvgStyle": {
+          "description": "The CSS style object defining the style of the area layer areas.",
+          "type": "object",
+          "value": null
+        },
+        "dataAreaDefaults": {
+          "description": "An object defining the default styles for data areas. Properties specified on this object \nmay be overridden by specifications on the data object.",
+          "type": "object",
+          "value": null,
+          "properties": {
+            "borderColor": {
+              "description": "The area stroke color for the area data layer.",
+              "type": "string",
+              "value": null
+            },
+            "hoverColor": {
+              "description": "The hover data area border color.",
+              "type": "string",
+              "value": null
+            },
+            "selectedInnerColor": {
+              "description": "The outer selected data area border color.",
+              "type": "string",
+              "value": null
+            },
+            "selectedOuterColor": {
+              "description": "The outer selected data area border color.",
+              "type": "string",
+              "value": null
+            }
+          }
+        },
+        "dataMarkerDefaults": {
+          "description": "An object defining the default styles for data markers. Properties specified on this object may be \noverridden by specifications on the data object.",
+          "type": "object",
+          "value": null,
+          "properties": {
+            "borderColor": {
+              "description": "The border color.",
+              "type": "string",
+              "value": null
+            },
+            "borderStyle": {
+              "description": "The border style.",
+              "type": "string",
+              "value": "solid",
+              "enumValues": [
+                "none",
+                "solid"
+              ],
+              "propertyEditorValues": {
+                "none": {
+                  "displayName": "None"
+                },
+                "solid": {
+                  "displayName": "Solid"
+                }
+              }
+            },
+            "borderWidth": {
+              "description": "The border width in pixels.",
+              "type": "number",
+              "value": null
+            },
+            "color": {
+              "description": "The fill color of a marker.",
+              "type": "string",
+              "value": null
+            },
+            "height": {
+              "description": "The default marker pixel height. Note that this option will be ignored if a value is provided to calculate marker sizes.",
+              "type": "number",
+              "value": null
+            },
+            "labelStyle": {
+              "description": "The CSS style for a marker label.",
+              "type": "object",
+              "value": null
+            },
+            "opacity": {
+              "description": "The default marker opacity.",
+              "type": "number",
+              "value": 1
+            },
+            "shape": {
+              "description": "The default marker shape. Can take the name of a built-in shape or the svg path commands for a custom shape.",
+              "type": "string",
+              "value": "circle",
+              "enumValues": [
+                "circle",
+                "diamond",
+                "ellipse",
+                "human",
+                "plus",
+                "rectangle",
+                "square",
+                "star",
+                "triangleDown",
+                "triangleUp"
+              ],
+              "propertyEditorValues": {
+                "circle": {
+                  "displayName": "Circle"
+                },
+                "diamond": {
+                  "displayName": "Diamond"
+                },
+                "ellipse": {
+                  "displayName": "Ellipse"
+                },
+                "human": {
+                  "displayName": "Human"
+                },
+                "plus": {
+                  "displayName": "Plus"
+                },
+                "rectangle": {
+                  "displayName": "Rectangle"
+                },
+                "square": {
+                  "displayName": "Square"
+                },
+                "star": {
+                  "displayName": "Star"
+                },
+                "triangleDown": {
+                  "displayName": "Triangle Down"
+                },
+                "triangleUp": {
+                  "displayName": "Triangle Up"
+                }
+              }
+            },
+            "width": {
+              "description": "The default marker pixel width. Note that this option will be ignored if a value is provided to calculate marker sizes.",
+              "type": "number",
+              "value": null
+            }
+          }
+        },
+        "hoverBehaviorDelay": {
+          "description": "Specifies initial hover delay in ms for highlighting data items.",
+          "type": "number",
+          "value": null
+        },
+        "labelStyle": {
+          "description": "The CSS style for the area layer labels.",
+          "type": "object",
+          "value": null
+        },
+        "linkDefaults": {
+          "description": "An object defining the default styles for data areas. Properties specified on this object may be \noverridden by specifications on the data object.",
+          "type": "object",
+          "value": null,
+          "properties": {
+            "color": {
+              "description": "The stroke color for links.",
+              "type": "string",
+              "value": null
+            },
+            "width": {
+              "description": "The stroke width for links in pixels.",
+              "type": "number",
+              "value": 2
+            }
+          }
+        }
+      }
+    },
+    "tooltip": {
+      "description": "An object containing an optional callback function for tooltip customization.",
+      "type": "object",
+      "displayName": "Tooltip",
+      "value": null,
+      "properties": {
+        "renderer": {
+          "description": "A function that returns a custom tooltip. The function takes a dataContext argument, provided by the thematic map, with the following properties: color: The color of the hovered item or null if the hovered item if not associated with any data. componentElement: The thematic map element. data: The data object of the hovered item or null if the hovered item if not associated with any data. id: The id of the hovered item or null if the hovered item if not associated with any data. label: The data label of the hovered item or null if the hovered item if not associated with any data. location: The location id of the hovered item which can be null if x/y are set instead. locationName: The location name of the hovered item if location id is set. parentElement: The tooltip element. This can be used to change the tooltip border or background color. tooltip: The default tooltip string constructed by the element if any. x: The x coordinate of the hovered item which can be null if location is set instead. y: The y coordinate of the hovered item which can be null if location is set instead. The function should return an Object that contains only one of the two properties: insert: HTMLElement | string - An HTML element, which will be appended to the tooltip, or a tooltip string. preventDefault: true - Indicates that the tooltip should not be displayed. It is not necessary to return {preventDefault:false} to display tooltip, since this is a default behavior. ",
+          "type": "function",
+          "value": null
+        }
+      }
+    },
+    "tooltipDisplay": {
+      "description": "Specifies the tooltip behavior of the thematic map.",
+      "type": "string",
+      "displayName": "Tooltip Display",
+      "value": "none",
+      "enumValues": [
+        "auto",
+        "labelAndShortDesc",
+        "none",
+        "shortDesc"
+      ],
+      "propertyEditorValues": {
+        "auto": {
+          "displayName": "Auto"
+        },
+        "labelAndShortDesc": {
+          "displayName": "Label And Short Desc"
+        },
+        "none": {
+          "displayName": "None"
+        },
+        "shortDesc": {
+          "displayName": "Short Desc"
+        }
+      }
+    },
+    "touchResponse": {
+      "description": "Data visualizations require a press and hold delay before triggering tooltips and \nrollover effects on mobile devices to avoid interfering with page panning, but these \nhold delays can make applications seem slower and less responsive. For a better user \nexperience, the application can remove the touch and hold delay when data visualizations \nare used within a non scrolling container or if there is sufficient space outside of the \nvisualization for panning. If touchResponse is touchStart the element will instantly \ntrigger the touch gesture and consume the page pan events if the element does not require \nan internal feature that requires a touch start gesture like panning or zooming. \nIf touchResponse is auto, the element will behave like touchStart if it determines that \nit is not rendered within scrolling content and if element panning is not available for \nthose elements that support the feature.",
+      "type": "string",
+      "displayName": "Touch Response",
+      "value": "auto",
+      "enumValues": [
+        "auto",
+        "touchStart"
+      ],
+      "propertyEditorValues": {
+        "auto": {
+          "displayName": "Auto"
+        },
+        "touchStart": {
+          "displayName": "Touch Start"
+        }
+      }
+    },
+    "trackResize": {
+      "description": "Defines whether the element will automatically render in response to\nchanges in size. If set to off, then the\napplication is responsible for calling refresh\nto render the element at the new size.",
+      "type": "string",
+      "displayName": "Track Resize",
+      "value": "on",
+      "enumValues": [
+        "off",
+        "on"
+      ],
+      "propertyEditorValues": {
+        "off": {
+          "displayName": "Off"
+        },
+        "on": {
+          "displayName": "On"
+        }
+      }
+    },
+    "translations": {
+      "description": "A collection of translated resources from the translation bundle, or null if this\ncomponent has no resources. Resources may be accessed and overridden individually or collectively, as seen in the examples.\n\nIf this component has translations, their documentation immediately follows this doc entry.",
+      "type": "Object",
+      "displayName": "Translations",
+      "value": null,
+      "properties": {
+        "componentName": {
+          "description": "Used to describe the data visualization type for accessibility.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Thematic Map"
+        },
+        "labelAndValue": {
+          "description": "Used to display a label and its value.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "{0}: {1}"
+        },
+        "labelClearSelection": {
+          "description": "Text shown for clearing multiple selection on touch devices.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Clear Selection"
+        },
+        "labelCountWithTotal": {
+          "description": "Used to display a count out of a total.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "{0} of {1}"
+        },
+        "labelDataVisualization": {
+          "description": "Label for data visualizations used for accessibility.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Data Visualization"
+        },
+        "labelInvalidData": {
+          "description": "Text shown when the component receives invalid data.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Invalid data"
+        },
+        "labelNoData": {
+          "description": "Text shown when the component receives no data.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "No data to display"
+        },
+        "stateCollapsed": {
+          "description": "Used to describe the collapsed state for accessibility.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Collapsed"
+        },
+        "stateDrillable": {
+          "description": "Used to describe a drillable object for accessibility.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Drillable"
+        },
+        "stateExpanded": {
+          "description": "Used to describe the expanded state for accessibility.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Expanded"
+        },
+        "stateHidden": {
+          "description": "Used to describe the hidden state for accessibility.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Hidden"
+        },
+        "stateIsolated": {
+          "description": "Used to describe the isolated state for accessibility.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Isolated"
+        },
+        "stateMaximized": {
+          "description": "Used to describe the maximized state for accessibility.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Maximized"
+        },
+        "stateMinimized": {
+          "description": "Used to describe the minimized state for accessibility.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Minimized"
+        },
+        "stateSelected": {
+          "description": "Used to describe the selected state for accessibility.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Selected"
+        },
+        "stateUnselected": {
+          "description": "Used to describe the unselected state for accessibility.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Unselected"
+        },
+        "stateVisible": {
+          "description": "Used to describe the visible state for accessibility.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Visible"
+        }
+      }
+    },
+    "zooming": {
+      "description": "Determines whether element zooming is allowed.",
+      "type": "string",
+      "displayName": "Zooming",
+      "value": "none",
+      "enumValues": [
+        "auto",
+        "none"
+      ],
+      "propertyEditorValues": {
+        "auto": {
+          "displayName": "Auto"
+        },
+        "none": {
+          "displayName": "None"
+        }
+      }
+    }
+  },
+  "methods": {
+    "getArea": {
+      "description": "Returns an object with the following properties for automation testing verification of an area with the specified index in the areas property.",
+      "params": [
+        {
+          "name": "index",
+          "description": "",
+          "type": "number"
+        }
+      ],
+      "return": "Object|null"
+    },
+    "getMarker": {
+      "description": "Returns an object with the following properties for automation testing verification of a marker with the specified index in the markers property.",
+      "params": [
+        {
+          "name": "index",
+          "description": "",
+          "type": "number"
+        }
+      ],
+      "return": "Object|null"
+    },
+    "getLink": {
+      "description": "Returns an object with the following properties for automation testing verification of a link with the specified index in the links property.",
+      "params": [
+        {
+          "name": "index",
+          "description": "",
+          "type": "number"
+        }
+      ],
+      "return": "Object|null"
+    },
+    "getContextByNode": {
+      "description": "Returns an object with context for the given child DOM node. This will always contain the subid for the node,\ndefined as the 'subId' property on the context object. Additional component specific information may also be included.\n\nFor more details on returned objects, see context objects.",
+      "params": [
+        {
+          "name": "node",
+          "description": "The child DOM node",
+          "type": "Element"
+        }
+      ],
+      "return": "Object|null"
+    },
+    "refresh": {
+      "description": "Refreshes the component."
+    },
+    "setProperty": {
+      "description": "Sets a property or a single subproperty for complex properties and notifies the component\nof the change, triggering a [property]Changed event.",
+      "params": [
+        {
+          "name": "property",
+          "description": "The property name to set. Supports dot notation for subproperty access.",
+          "type": "string"
+        },
+        {
+          "name": "value",
+          "description": "The new value to set the property to.",
+          "type": "*"
+        }
+      ]
+    },
+    "getProperty": {
+      "description": "Retrieves a value for a property or a single subproperty for complex properties.",
+      "params": [
+        {
+          "name": "property",
+          "description": "The property name to get. Supports dot notation for subproperty access.",
+          "type": "string"
+        }
+      ],
+      "return": "*"
+    },
+    "setProperties": {
+      "description": "Performs a batch set of properties.",
+      "params": [
+        {
+          "name": "properties",
+          "description": "An object containing the property and value pairs to set.",
+          "type": "Object"
+        }
+      ]
+    }
+  },
+  "slots": {
+    "contextMenu": {
+      "description": "The contextMenu slot is set on the oj-menu within this element. \nThis is used to designate the JET Menu that this component should launch as a context menu on right-click, Shift-F10, Press & Hold, or component-specific gesture. \nIf specified, the browser's native context menu will be replaced by the JET Menu specified in this slot.\n\nThe application can register a listener for the Menu's ojBeforeOpen event. The listener can cancel the launch via event.preventDefault(), \nor it can customize the menu contents by editing the menu DOM directly, and then calling refresh() on the Menu.\n\nTo help determine whether it's appropriate to cancel the launch or customize the menu, the ojBeforeOpen listener can use component API's to determine which \ntable cell, chart item, etc., is the target of the context menu. See the JSDoc and demos of the individual components for details. \n\nKeep in mind that any such logic must work whether the context menu was launched via right-click, Shift-F10, Press & Hold, or component-specific touch gesture."
+    }
+  }
+}

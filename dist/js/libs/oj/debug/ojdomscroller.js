@@ -20,8 +20,9 @@ define(['ojs/ojcore', 'jquery'], function(oj, $)
  * @class oj.DomScroller
  * @classdesc Adds implicit highwatermark scrolling to DOM element
  * @param {Object} element Scrollable DOM element
- * @param {Object} datasource Instance of the TableDataSource
+ * @param {Object} dataprovider dataprovider
  * @param {Object=} options Options for the DomScroller<p>
+ *                  <b>asyncIterator</>the iterator for the dataprovider
  *                  <b>success</b>: a user callback called when a fetch has completed successfully after scroll to bottom. Also called with maxCount information if maxCount is reached after scroll to bottom.<br>
  *                  <b>error</b>: a user callback function called if the fetch fails. The callback is called with the failed fetch content.<br>
  *                  <b>fetchSize</b>: the fetch size. Default is 25.<br>
@@ -30,10 +31,11 @@ define(['ojs/ojcore', 'jquery'], function(oj, $)
  *                  <b>fetchTrigger</b>: how close should the scroll position be relative to the maximum scroll position before a fetch is triggered. Default is 1 pixel.<br>
  * @constructor
  */
-oj.DomScroller = function(element, datasource, options)
+oj.DomScroller = function(element, dataprovider, options)
 {
   options = options || {};
-  this._data = datasource;
+  this._data = dataprovider;
+  this._asyncIterator = options['asyncIterator'];
   this._element = $(element)[0];
   this._fetchSize = options['fetchSize'];
   this._fetchSize = this._fetchSize > 0 ? this._fetchSize : 25;
@@ -41,6 +43,7 @@ oj.DomScroller = function(element, datasource, options)
   this._maxCount = this._maxCount > 0 ? this._maxCount : 500;
   this._rowCount = options['initialRowCount'] > 0 ? options['initialRowCount'] : 0;
   this._successCallback = options['success'];
+  this._requestCallback = options['request'];
   this._errorCallback = options['error'];
   this._registerDataSourceEventListeners();
   this._fetchTrigger = options['fetchTrigger'];
@@ -154,7 +157,7 @@ oj.DomScroller.prototype.destroy = function()
  */
 oj.DomScroller.prototype.checkViewport = function()
 {
-  if (this._element.clientHeight > 0 && 
+  if (this._asyncIterator && this._element.clientHeight > 0 && 
       !this._checkOverflow())
   {
     return this._fetchMoreRows();
@@ -168,16 +171,32 @@ oj.DomScroller.prototype.checkViewport = function()
  */
 oj.DomScroller.prototype._handleScrollerScrollTop = function(scrollTop, maxScrollTop)
 {
-  if (maxScrollTop - scrollTop <= 1 && !this._fetchPromise)
+  if (maxScrollTop - scrollTop <= 1 && scrollTop > this._fetchTrigger && !this._fetchPromise)
   {
-    var self = this;
-    this._fetchMoreRows().then(function(result) 
+    if (this._asyncIterator)
     {
-      if (self._successCallback != null )
+      var self = this;
+      this._fetchMoreRows().then(function(result) 
       {
-        self._successCallback(result);
+        if (self._successCallback)
+        {
+          self._successCallback(result);
+        }
+      }, function(reason) 
+      { 
+        if (self._errorCallback)      
+        {
+          self._errorCallback(reason);
+        } 
+      });
+    }
+    else
+    {
+      if (this._errorCallback != null)
+      {
+        this._errorCallback();
       }
-    }, this._errorCallback);
+    }
   }
 };
 
@@ -214,32 +233,50 @@ oj.DomScroller.prototype._fetchMoreRows = function()
       {
         pageSize = remainingCount;
       }
-      var fetchPromise = this._fetchNext({'pageSize': pageSize});
-
-      this._fetchPromise = new Promise(function(resolve, reject)
+      if (this._asyncIterator)
       {
-        fetchPromise.then(function(result)
+        if (this._requestCallback != null )
+        {
+          this._requestCallback();
+        }
+        this._fetchPromise = this._asyncIterator.next().then(function(result)
         {
           self._fetchPromise = null;
-          
-          if (result != null)
+
+          if (result != null &&
+            result.value != null)
           {
-            if (result['data'].length > 0)
+            if (result.value['data'].length > 0)
             {
-              self._rowCount = result['data'].length + result['startIndex'];
+              self._rowCount = self._rowCount + result.value['data'].length;
 
               if (remainingCount < self._fetchSize)
               {
                 result['maxCount'] = self._maxCount;
-                result['maxCountLimit'] = true;
+                result['maxCountLimit'] = true
+                
+                if (result.value['data'].length > remainingCount) 
+                {
+                  result.value['data'] = result.value['data'].slice(0, remainingCount);
+                  result.value['metadata'] = result.value['metadata'].slice(0, remainingCount);
+                  if (result.value['fetchParameters'] != null) 
+                  {
+                    result.value['fetchParameters']['size'] = remainingCount;
+                  }
+                }
               }
             }
+
+            // we have exhausted the iterator, discard so we won't attempt to fetch from it again
+            if (result.done)
+            {
+              self._asyncIterator = null;
+            }
           }
-          resolve(result);
+          return Promise.resolve(result);
         });
-      });
-      
-      return this._fetchPromise;
+        return this._fetchPromise;
+      }
     }
      // we need to indicate that we've hit maxCount
     return Promise.resolve({'maxCount': this._maxCount, 'maxCountLimit': true});
@@ -250,60 +287,25 @@ oj.DomScroller.prototype._fetchMoreRows = function()
   }
 };
 
-oj.DomScroller.prototype._fetchNext = function(options)
-{ 
-  options = options || {};
-  var pageSize = options['pageSize'];
+oj.DomScroller.prototype._handleDataRowMutateEvent = function(event)
+{
+  var mutationType = null;
+  var eventDetail = null;
   
-  if (!this._currentStartIndex)
+  if (event['detail']['remove'] != null)
   {
-    this._currentStartIndex = this._rowCount;
+    mutationType = 'remove';
+    eventDetail = event['detail']['remove'];
   }
-  else
+  if (event['detail']['add'] != null)
   {
-    this._currentStartIndex = this._currentStartIndex + pageSize;
+    mutationType = 'add';
+    eventDetail = event['detail']['add'];
   }
-    
-  if (this._data.totalSize() == -1 || 
-      !this._isTotalSizeConfidenceActual() ||
-      (this._isTotalSizeConfidenceActual() && this._data.totalSize() > this._currentStartIndex))
+  
+  if (mutationType != null)
   {
-    var self = this;
-    return new Promise(function(resolve, reject)
-    {
-      self._data.fetch({'startIndex': self._currentStartIndex, 'pageSize': pageSize}).then(function(result)
-      {
-        resolve(result);
-      }, function (error)
-      {
-        reject(null);  
-      });
-    });
-  }
-  return Promise.resolve();
-};
-
-oj.DomScroller.prototype._handleDataReset = function()
-{
-  this._currentStartIndex = null;
-  this._rowCount = 0;
-}
-
-oj.DomScroller.prototype._handleDataSync = function(event)
-{
-  this._currentStartIndex = event['startIndex'];
-  if (event['data'].length > 0)
-  {
-    this._rowCount = event['data'].length + this._currentStartIndex;
-  }
-}
-
-oj.DomScroller.prototype._handleDataRowEventFunc = function(eventType)
-{
-  return function(event)
-  {
-    event = event || {};
-    var eventIndexes = event['indexes'];
+    var eventIndexes = eventDetail['indexes'];
     var i, eventIndexesCount = eventIndexes.length;
     for (i = 0; i < eventIndexesCount; i++)
     {
@@ -314,34 +316,17 @@ oj.DomScroller.prototype._handleDataRowEventFunc = function(eventType)
           this._rowCount > 0 &&
           rowIdx <= this._rowCount)
       {
-        if (eventType == oj.TableDataSource.EventType['ADD'])
+        if (mutationType == 'add')
         {
           this._rowCount = this._rowCount + 1;
         }
-        else if (eventType == oj.TableDataSource.EventType['REMOVE'])
+        else if (mutationType == 'remove')
         {
           this._rowCount = this._rowCount - 1;
         }
       }
     }
   };
-};
-
-/**
- * Check if the totalSize confidence is "actual"
- * @return {boolean} true or false
- * @private
- */
-oj.DomScroller.prototype._isTotalSizeConfidenceActual = function()
-{
-  var data = this._data;
-
-  if (data != null && data.totalSizeConfidence() == "actual")
-  {
-    return true;
-  }
-
-  return false;
 };
 
 /**
@@ -356,20 +341,15 @@ oj.DomScroller.prototype._registerDataSourceEventListeners = function()
   {
     this._unregisterDataSourceEventListeners();
 
-    this._dataSourceEventHandlers = [];
-    this._dataSourceEventHandlers.push({'eventType': oj.TableDataSource.EventType['SORT'], 'eventHandler': this._handleDataReset.bind(this)});
-    this._dataSourceEventHandlers.push({'eventType': oj.TableDataSource.EventType['REFRESH'], 'eventHandler': this._handleDataReset.bind(this)});
-    this._dataSourceEventHandlers.push({'eventType': oj.TableDataSource.EventType['RESET'], 'eventHandler': this._handleDataReset.bind(this)});
-    this._dataSourceEventHandlers.push({'eventType': oj.TableDataSource.EventType['SYNC'], 'eventHandler': this._handleDataSync.bind(this)});
-    this._dataSourceEventHandlers.push({'eventType': oj.TableDataSource.EventType['ADD'], 'eventHandler': this._handleDataRowEventFunc(oj.TableDataSource.EventType['ADD']).bind(this)});
-    this._dataSourceEventHandlers.push({'eventType': oj.TableDataSource.EventType['REMOVE'], 'eventHandler': this._handleDataRowEventFunc(oj.TableDataSource.EventType['REMOVE']).bind(this)});
+    this._dataProviderEventHandlers = [];
+    this._dataProviderEventHandlers.push({'eventType': 'mutate', 'eventHandler': this._handleDataRowMutateEvent.bind(this)});
 
     var i;
     var ev;
-    for (i = 0; i < this._dataSourceEventHandlers.length; i++) {
-      ev = data.on(this._dataSourceEventHandlers[i]['eventType'], this._dataSourceEventHandlers[i]['eventHandler']);
+    for (i = 0; i < this._dataProviderEventHandlers.length; i++) {
+      ev = data.addEventListener(this._dataProviderEventHandlers[i]['eventType'], this._dataProviderEventHandlers[i]['eventHandler']);
       if (ev) {
-          this._dataSourceEventHandlers[i]['eventHandler'] = ev;
+          this._dataProviderEventHandlers[i]['eventHandler'] = ev;
       }
     }
   }
@@ -383,11 +363,11 @@ oj.DomScroller.prototype._unregisterDataSourceEventListeners = function()
 {
   var data = this._data;
   // unregister the listeners on the datasource
-  if (this._dataSourceEventHandlers != null && data != null)
+  if (this._dataProviderEventHandlers != null && data != null)
   {
     var i;
-    for (i = 0; i < this._dataSourceEventHandlers.length; i++)
-      data.off(this._dataSourceEventHandlers[i]['eventType'], this._dataSourceEventHandlers[i]['eventHandler']);
+    for (i = 0; i < this._dataProviderEventHandlers.length; i++)
+      data.removeEventListener(this._dataProviderEventHandlers[i]['eventType'], this._dataProviderEventHandlers[i]['eventHandler']);
   }
 };
 

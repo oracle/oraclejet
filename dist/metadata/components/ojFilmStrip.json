@@ -1,0 +1,179 @@
+{
+  "name": "ojFilmStrip",
+  "version": "4.1.0",
+  "jetVersion": "4.1.0",
+  "displayName": " Film Strip",
+  "preview": true,
+  "description": "Container element that lays out its children in a single row or column across logical pages and allows navigating through them",
+  "properties": {
+    "arrowPlacement": {
+      "description": "Specify the placement of the navigation arrows.",
+      "type": "string",
+      "displayName": "Arrow Placement",
+      "value": "adjacent",
+      "enumValues": [
+        "adjacent",
+        "overlay"
+      ],
+      "propertyEditorValues": {
+        "adjacent": {
+          "description": "Arrows are outside, adjacent to the filmStrip content. The arrows are still inside the bounds of the filmStrip element itself.",
+          "displayName": "Adjacent"
+        },
+        "overlay": {
+          "description": "Arrows are inside, overlaying the filmStrip content.",
+          "displayName": "Overlay"
+        }
+      }
+    },
+    "arrowVisibility": {
+      "description": "Specify the visibility of the navigation arrows.",
+      "type": "string",
+      "displayName": "Arrow Visibility",
+      "value": "auto",
+      "enumValues": [
+        "auto",
+        "hidden",
+        "hover",
+        "visible"
+      ],
+      "propertyEditorValues": {
+        "auto": {
+          "description": "Behaves as if the value were visible when the arrow-placement attribute is set to adjacent, and hover when the arrow-placement attribute is set to overlay.",
+          "displayName": "Auto"
+        },
+        "hidden": {
+          "description": "Arrows are hidden.",
+          "displayName": "Hidden"
+        },
+        "hover": {
+          "description": "Arrows are visible when the mouse is over the filmStrip, and hidden otherwise.",
+          "displayName": "Hover"
+        },
+        "visible": {
+          "description": "Arrows are visible.",
+          "displayName": "Visible"
+        }
+      }
+    },
+    "currentItem": {
+      "description": "Specify the child item whose logical page should be displayed. The position of the item on the logical page is not guaranteed. This attribute can be set to an object containing either string id of the item or numeric 0-based index of the item or both. If the object contains both string id and numeric index, string id takes precedence. FilmStrip will automatically update the value of this attribute when the logical page is changed to be the first item on the new logical page. When the value is updated automatically, it will be an object containing numeric index and string id, if available. When the element is resized, FilmStrip will preserve the value of this attribute to show the new logical page on which the item is located.",
+      "type": "Object",
+      "displayName": "Current Item",
+      "value": "{index : 0}",
+      "writeback": true
+    },
+    "maxItemsPerPage": {
+      "description": "Specify the maximum number of child items to show in a logical page. A value of 0 (the default) means that FilmStrip will show as many items per logical page as will fit based on the element and item sizes. FilmStrip may show fewer than the specified number of items when max-items-per-page is set to a value other than 0 if the element size is smaller than what would be required to show that many items.",
+      "type": "number",
+      "displayName": "Max Items Per Page",
+      "value": 0
+    },
+    "orientation": {
+      "description": "Specify the orientation of the FilmStrip.",
+      "type": "string",
+      "displayName": "Orientation",
+      "value": "horizontal",
+      "enumValues": [
+        "horizontal",
+        "vertical"
+      ],
+      "propertyEditorValues": {
+        "horizontal": {
+          "description": "Orient the FilmStrip horizontally.",
+          "displayName": "Horizontal"
+        },
+        "vertical": {
+          "description": "Orient the FilmStrip vertically.",
+          "displayName": "Vertical"
+        }
+      }
+    },
+    "translations": {
+      "description": "A collection of translated resources from the translation bundle, or null if this\ncomponent has no resources. Resources may be accessed and overridden individually or collectively, as seen in the examples.\n\nIf this component has translations, their documentation immediately follows this doc entry.",
+      "type": "Object",
+      "displayName": "Translations",
+      "value": null,
+      "properties": {
+        "labelAccArrowNextPage": {
+          "description": "Accessible label for the next page navigation arrow.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Next Page"
+        },
+        "labelAccArrowPreviousPage": {
+          "description": "Accessible label for the previous page navigation arrow.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Previous Page"
+        },
+        "tipArrowNextPage": {
+          "description": "Tooltip for the next page navigation arrow.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Next"
+        },
+        "tipArrowPreviousPage": {
+          "description": "Tooltip for the previous page navigation arrow.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Previous"
+        }
+      }
+    }
+  },
+  "methods": {
+    "refresh": {
+      "description": "Refreshes the visual state of the FilmStrip. JET elements require a refresh() after the DOM is programmatically changed underneath the element. This method does not accept any arguments."
+    },
+    "getItemsPerPage": {
+      "description": "Get the actual number of items shown per logical page. The value returned by this method may be different from the value of the maxItemsPerPage property.",
+      "return": "number"
+    },
+    "getPagingModel": {
+      "description": "Get the PagingModel created and used by the FilmStrip. The PagingModel provides information about the FilmStrip's logical pages and a way to programmatically change pages.",
+      "return": "Object"
+    },
+    "setProperty": {
+      "description": "Sets a property or a single subproperty for complex properties and notifies the component\nof the change, triggering a [property]Changed event.",
+      "params": [
+        {
+          "name": "property",
+          "description": "The property name to set. Supports dot notation for subproperty access.",
+          "type": "string"
+        },
+        {
+          "name": "value",
+          "description": "The new value to set the property to.",
+          "type": "*"
+        }
+      ]
+    },
+    "getProperty": {
+      "description": "Retrieves a value for a property or a single subproperty for complex properties.",
+      "params": [
+        {
+          "name": "property",
+          "description": "The property name to get. Supports dot notation for subproperty access.",
+          "type": "string"
+        }
+      ],
+      "return": "*"
+    },
+    "setProperties": {
+      "description": "Performs a batch set of properties.",
+      "params": [
+        {
+          "name": "properties",
+          "description": "An object containing the property and value pairs to set.",
+          "type": "Object"
+        }
+      ]
+    }
+  },
+  "slots": {
+    "": {
+      "description": "The <oj-film-strip> element lays out its children in a single row or column across logical pages and allows navigating through them.",
+      "displayName": "default"
+    },
+    "contextMenu": {
+      "description": "The contextMenu slot is set on the oj-menu within this element. \nThis is used to designate the JET Menu that this component should launch as a context menu on right-click, Shift-F10, Press & Hold, or component-specific gesture. \nIf specified, the browser's native context menu will be replaced by the JET Menu specified in this slot.\n\nThe application can register a listener for the Menu's ojBeforeOpen event. The listener can cancel the launch via event.preventDefault(), \nor it can customize the menu contents by editing the menu DOM directly, and then calling refresh() on the Menu.\n\nTo help determine whether it's appropriate to cancel the launch or customize the menu, the ojBeforeOpen listener can use component API's to determine which \ntable cell, chart item, etc., is the target of the context menu. See the JSDoc and demos of the individual components for details. \n\nKeep in mind that any such logic must work whether the context menu was launched via right-click, Shift-F10, Press & Hold, or component-specific touch gesture."
+    }
+  }
+}

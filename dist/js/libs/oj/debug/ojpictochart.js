@@ -16,6 +16,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/in
  * @ojcomponent oj.ojPictoChart
  * @augments oj.dvtBaseComponent
  * @since 1.2.0
+ * @ojstatus preview
  *
  * @classdesc
  * <h3 id="pictoChartOverview-section">

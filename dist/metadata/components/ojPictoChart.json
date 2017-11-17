@@ -1,0 +1,604 @@
+{
+  "name": "ojPictoChart",
+  "version": "4.1.0",
+  "jetVersion": "4.1.0",
+  "displayName": " Picto Chart",
+  "preview": true,
+  "description": "ojPictoChart",
+  "properties": {
+    "animationDuration": {
+      "description": "The duration of the animations, in milliseconds.",
+      "type": "number",
+      "displayName": "Animation Duration",
+      "value": null
+    },
+    "animationOnDataChange": {
+      "description": "The animation when the data changes.",
+      "type": "string",
+      "displayName": "Animation On Data Change",
+      "value": "none",
+      "enumValues": [
+        "auto",
+        "none"
+      ],
+      "propertyEditorValues": {
+        "auto": {
+          "displayName": "Auto"
+        },
+        "none": {
+          "displayName": "None"
+        }
+      }
+    },
+    "animationOnDisplay": {
+      "description": "The animation that is shown on initial display.",
+      "type": "string",
+      "displayName": "Animation On Display",
+      "value": "none",
+      "enumValues": [
+        "alphaFade",
+        "auto",
+        "none",
+        "popIn",
+        "zoom"
+      ],
+      "propertyEditorValues": {
+        "alphaFade": {
+          "displayName": "Alpha Fade"
+        },
+        "auto": {
+          "displayName": "Auto"
+        },
+        "none": {
+          "displayName": "None"
+        },
+        "popIn": {
+          "displayName": "Pop In"
+        },
+        "zoom": {
+          "displayName": "Zoom"
+        }
+      }
+    },
+    "columnCount": {
+      "description": "The number of columns that the picto chart has. The number of columns will be automatically computed if not specified.",
+      "type": "number",
+      "displayName": "Column Count",
+      "value": null
+    },
+    "columnWidth": {
+      "description": "The width of a column in pixels. Setting this property in a fixed layout (when the element width and height are defined) may cause items to be truncated.",
+      "type": "number",
+      "displayName": "Column Width",
+      "value": null
+    },
+    "drilling": {
+      "description": "Whether drilling is enabled. Drillable items will show a pointer cursor on hover and fire an ojDrill event on click (double click if selection is enabled). To enable or disable drilling on individual items, use the drilling attribute in each item.",
+      "type": "string",
+      "displayName": "Drilling",
+      "value": "off",
+      "enumValues": [
+        "off",
+        "on"
+      ],
+      "propertyEditorValues": {
+        "off": {
+          "displayName": "Off"
+        },
+        "on": {
+          "displayName": "On"
+        }
+      }
+    },
+    "hiddenCategories": {
+      "description": "An array of category strings used for category filtering. Data items with a category in hiddenCategories will be filtered.",
+      "type": "Array.<string>",
+      "displayName": "Hidden Categories",
+      "value": null,
+      "writeback": true
+    },
+    "highlightMatch": {
+      "description": "The matching condition for the highlightedCategories property. By default, highlightMatch is 'all' and only items whose categories match all of the values specified in the highlightedCategories array will be highlighted. If highlightMatch is 'any', then items that match at least one of the highlightedCategories values will be highlighted.",
+      "type": "string",
+      "displayName": "Highlight Match",
+      "value": "all",
+      "enumValues": [
+        "all",
+        "any"
+      ],
+      "propertyEditorValues": {
+        "all": {
+          "displayName": "All"
+        },
+        "any": {
+          "displayName": "Any"
+        }
+      }
+    },
+    "highlightedCategories": {
+      "description": "An array of category strings used for category highlighting. Data items with a category in highlightedCategories will be highlighted.",
+      "type": "Array.<string>",
+      "displayName": "Highlighted Categories",
+      "value": null,
+      "writeback": true
+    },
+    "hoverBehavior": {
+      "description": "The behavior applied when hovering over data items.",
+      "type": "string",
+      "displayName": "Hover Behavior",
+      "value": "none",
+      "enumValues": [
+        "dim",
+        "none"
+      ],
+      "propertyEditorValues": {
+        "dim": {
+          "displayName": "Dim"
+        },
+        "none": {
+          "displayName": "None"
+        }
+      }
+    },
+    "hoverBehaviorDelay": {
+      "description": "Specifies initial hover delay in ms for highlighting data items.",
+      "type": "number",
+      "displayName": "Hover Behavior Delay",
+      "value": null
+    },
+    "items": {
+      "description": "An array of objects with the following properties that defines the pictoChart items.",
+      "type": "Array.<object>",
+      "displayName": "Items",
+      "value": null,
+      "properties": {
+        "borderColor": {
+          "description": "The border color of the item. Does not apply if custom image is specified.",
+          "type": "string",
+          "value": null
+        },
+        "borderWidth": {
+          "description": "The border width of the item in pixels. Does not apply if custom image is specified.",
+          "type": "number",
+          "value": null
+        },
+        "categories": {
+          "description": "An array of category strings corresponding to this item. If not specified, defaults to the item id or name. This enables highlighting and filtering of individual data items through interactions with other visualization elements.",
+          "type": "Array.<string>",
+          "value": null
+        },
+        "color": {
+          "description": "The color of the item. Does not apply if custom image is specified.",
+          "type": "string",
+          "value": null
+        },
+        "columnSpan": {
+          "description": "The number of columns each shape (or custom image) spans. Used for creating a pictoChart with mixed item sizes.",
+          "type": "number",
+          "value": 1
+        },
+        "count": {
+          "description": "Specifies the number of times that the shape (or custom image) is drawn. Fractional counts (such as 4.5) are supported; however, fractions other than the multiples of 0.5 should be avoided because the fractional rendering ignores the gaps between shapes and the irregularity of the shapes.",
+          "type": "number",
+          "value": 1
+        },
+        "drilling": {
+          "description": "Whether drilling is enabled for the item. Drillable items will show a pointer cursor on hover and fire an ojDrill event on click (double click if selection is enabled). To enable drilling for all items at once, use the drilling attribute in the top level.",
+          "type": "string",
+          "value": "inherit",
+          "enumValues": [
+            "inherit",
+            "off",
+            "on"
+          ],
+          "propertyEditorValues": {
+            "inherit": {
+              "displayName": "Inherit"
+            },
+            "off": {
+              "displayName": "Off"
+            },
+            "on": {
+              "displayName": "On"
+            }
+          }
+        },
+        "id": {
+          "description": "The id of the item.",
+          "type": "string",
+          "value": null
+        },
+        "name": {
+          "description": "The name of the item. Used for default tooltip and accessibility.",
+          "type": "string",
+          "value": null
+        },
+        "rowSpan": {
+          "description": "The number of rows each shape (or custom image) spans. Used for creating a pictoChart with mixed item sizes.",
+          "type": "number",
+          "value": 1
+        },
+        "shape": {
+          "description": "The shape of the item. Can take the name of a built-in shape or the svg path commands for a custom shape. \"None\" will make the item transparent and can be used to create gaps. Does not apply if custom image is specified.",
+          "type": "string",
+          "value": "rectangle",
+          "enumValues": [
+            "circle",
+            "diamond",
+            "ellipse",
+            "human",
+            "none",
+            "plus",
+            "rectangle",
+            "square",
+            "star",
+            "triangleDown",
+            "triangleUp"
+          ],
+          "propertyEditorValues": {
+            "circle": {
+              "displayName": "Circle"
+            },
+            "diamond": {
+              "displayName": "Diamond"
+            },
+            "ellipse": {
+              "displayName": "Ellipse"
+            },
+            "human": {
+              "displayName": "Human"
+            },
+            "none": {
+              "displayName": "None"
+            },
+            "plus": {
+              "displayName": "Plus"
+            },
+            "rectangle": {
+              "displayName": "Rectangle"
+            },
+            "square": {
+              "displayName": "Square"
+            },
+            "star": {
+              "displayName": "Star"
+            },
+            "triangleDown": {
+              "displayName": "Triangle Down"
+            },
+            "triangleUp": {
+              "displayName": "Triangle Up"
+            }
+          }
+        },
+        "shortDesc": {
+          "description": "Short description string for accessibility users.",
+          "type": "string",
+          "value": null
+        },
+        "source": {
+          "description": "The URI of the custom image. If specified, it takes precedence over shape.",
+          "type": "string",
+          "value": null
+        },
+        "sourceHover": {
+          "description": "The optional URI for the hover state. If not specified, the source image will be used.",
+          "type": "string",
+          "value": null
+        },
+        "sourceHoverSelected": {
+          "description": "The optional URI for the hover selected state. If not specified, the source image will be used.",
+          "type": "string",
+          "value": null
+        },
+        "sourceSelected": {
+          "description": "The optional URI for the selected state. If not specified, the source image will be used.",
+          "type": "string",
+          "value": null
+        },
+        "svgClassName": {
+          "description": "The CSS style class to apply to the item. The style class and inline style will override any other styling specified with other properties. For tooltip interactivity, it's recommended to also pass a representative color to the item color attribute. Does not apply if custom image is specified.",
+          "type": "string",
+          "value": null
+        },
+        "svgStyle": {
+          "description": "The inline style to apply to the item. The style class and inline style will override any other styling specified with other properties. For tooltip interactivity, it's recommended to also pass a representative color to the item color attribute. Does not apply if custom image is specified.",
+          "type": "object",
+          "value": null
+        }
+      }
+    },
+    "layout": {
+      "description": "The direction in which the items are laid out.",
+      "type": "string",
+      "displayName": "Layout",
+      "value": "horizontal",
+      "enumValues": [
+        "horizontal",
+        "vertical"
+      ],
+      "propertyEditorValues": {
+        "horizontal": {
+          "displayName": "Horizontal"
+        },
+        "vertical": {
+          "displayName": "Vertical"
+        }
+      }
+    },
+    "layoutOrigin": {
+      "description": "Defines where the first item is rendered. The subsequent items follow the first item according to the layout.",
+      "type": "string",
+      "displayName": "Layout Origin",
+      "value": "topStart",
+      "enumValues": [
+        "bottomEnd",
+        "bottomStart",
+        "topEnd",
+        "topStart"
+      ],
+      "propertyEditorValues": {
+        "bottomEnd": {
+          "displayName": "Bottom End"
+        },
+        "bottomStart": {
+          "displayName": "Bottom Start"
+        },
+        "topEnd": {
+          "displayName": "Top End"
+        },
+        "topStart": {
+          "displayName": "Top Start"
+        }
+      }
+    },
+    "rowCount": {
+      "description": "The number of rows that the picto chart has. The number of rows will be automatically computed if not specified.",
+      "type": "number",
+      "displayName": "Row Count",
+      "value": null
+    },
+    "rowHeight": {
+      "description": "The height of a row in pixels. Setting this property in a fixed layout (when the element width and height are defined) may cause items to be truncated.",
+      "type": "number",
+      "displayName": "Row Height",
+      "value": null
+    },
+    "selection": {
+      "description": "An array of id strings, used to define the selected objects.",
+      "type": "Array.<string>",
+      "displayName": "Selection",
+      "value": null,
+      "writeback": true
+    },
+    "selectionMode": {
+      "description": "The type of selection behavior that is enabled on the picto chart.",
+      "type": "string",
+      "displayName": "Selection Mode",
+      "value": "none",
+      "enumValues": [
+        "multiple",
+        "none",
+        "single"
+      ],
+      "propertyEditorValues": {
+        "multiple": {
+          "displayName": "Multiple"
+        },
+        "none": {
+          "displayName": "None"
+        },
+        "single": {
+          "displayName": "Single"
+        }
+      }
+    },
+    "tooltip": {
+      "description": "An object containing an optional callback function for tooltip customization.",
+      "type": "object",
+      "displayName": "Tooltip",
+      "value": null,
+      "properties": {
+        "renderer": {
+          "description": "A function that returns a custom tooltip. The function takes a dataContext argument, provided by the picto chart, with the following properties: parentElement: The tooltip element. The function can directly modify or append content to this element. id: The id of the hovered item. name: The name of the hovered item. count: The count of the hovered item. color: The color of the hovered item. componentElement: The picto chart HTML element. The function should return an Object that contains only one of the two properties: insert: HTMLElement | string - An HTML element, which will be appended to the tooltip, or a tooltip string. preventDefault: true - Indicates that the tooltip should not be displayed. It is not necessary to return {preventDefault:false} to display tooltip, since this is a default behavior. ",
+          "type": "function",
+          "value": null
+        }
+      }
+    },
+    "trackResize": {
+      "description": "Defines whether the element will automatically render in response to\nchanges in size. If set to off, then the\napplication is responsible for calling refresh\nto render the element at the new size.",
+      "type": "string",
+      "displayName": "Track Resize",
+      "value": "on",
+      "enumValues": [
+        "off",
+        "on"
+      ],
+      "propertyEditorValues": {
+        "off": {
+          "displayName": "Off"
+        },
+        "on": {
+          "displayName": "On"
+        }
+      }
+    },
+    "translations": {
+      "description": "A collection of translated resources from the translation bundle, or null if this\ncomponent has no resources. Resources may be accessed and overridden individually or collectively, as seen in the examples.\n\nIf this component has translations, their documentation immediately follows this doc entry.",
+      "type": "Object",
+      "displayName": "Translations",
+      "value": null,
+      "properties": {
+        "componentName": {
+          "description": "Used to describe the data visualization type for accessibility.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Picture Chart"
+        },
+        "labelAndValue": {
+          "description": "Used to display a label and its value.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "{0}: {1}"
+        },
+        "labelClearSelection": {
+          "description": "Text shown for clearing multiple selection on touch devices.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Clear Selection"
+        },
+        "labelCountWithTotal": {
+          "description": "Used to display a count out of a total.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "{0} of {1}"
+        },
+        "labelDataVisualization": {
+          "description": "Label for data visualizations used for accessibility.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Data Visualization"
+        },
+        "labelInvalidData": {
+          "description": "Text shown when the component receives invalid data.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Invalid data"
+        },
+        "labelNoData": {
+          "description": "Text shown when the component receives no data.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "No data to display"
+        },
+        "stateCollapsed": {
+          "description": "Used to describe the collapsed state for accessibility.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Collapsed"
+        },
+        "stateDrillable": {
+          "description": "Used to describe a drillable object for accessibility.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Drillable"
+        },
+        "stateExpanded": {
+          "description": "Used to describe the expanded state for accessibility.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Expanded"
+        },
+        "stateHidden": {
+          "description": "Used to describe the hidden state for accessibility.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Hidden"
+        },
+        "stateIsolated": {
+          "description": "Used to describe the isolated state for accessibility.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Isolated"
+        },
+        "stateMaximized": {
+          "description": "Used to describe the maximized state for accessibility.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Maximized"
+        },
+        "stateMinimized": {
+          "description": "Used to describe the minimized state for accessibility.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Minimized"
+        },
+        "stateSelected": {
+          "description": "Used to describe the selected state for accessibility.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Selected"
+        },
+        "stateUnselected": {
+          "description": "Used to describe the unselected state for accessibility.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Unselected"
+        },
+        "stateVisible": {
+          "description": "Used to describe the visible state for accessibility.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Visible"
+        }
+      }
+    }
+  },
+  "methods": {
+    "getItem": {
+      "description": "Returns an object with the following properties for automation testing verification of the item at the specified index.",
+      "params": [
+        {
+          "name": "index",
+          "description": "The index.",
+          "type": "number"
+        }
+      ],
+      "return": "Object"
+    },
+    "getItemCount": {
+      "description": "Returns the number of items in the pictoChart data.",
+      "return": "number"
+    },
+    "getContextByNode": {
+      "description": "Returns an object with context for the given child DOM node. This will always contain the subid for the node,\ndefined as the 'subId' property on the context object. Additional component specific information may also be included.\n\nFor more details on returned objects, see context objects.",
+      "params": [
+        {
+          "name": "node",
+          "description": "The child DOM node",
+          "type": "Element"
+        }
+      ],
+      "return": "Object|null"
+    },
+    "refresh": {
+      "description": "Refreshes the component."
+    },
+    "setProperty": {
+      "description": "Sets a property or a single subproperty for complex properties and notifies the component\nof the change, triggering a [property]Changed event.",
+      "params": [
+        {
+          "name": "property",
+          "description": "The property name to set. Supports dot notation for subproperty access.",
+          "type": "string"
+        },
+        {
+          "name": "value",
+          "description": "The new value to set the property to.",
+          "type": "*"
+        }
+      ]
+    },
+    "getProperty": {
+      "description": "Retrieves a value for a property or a single subproperty for complex properties.",
+      "params": [
+        {
+          "name": "property",
+          "description": "The property name to get. Supports dot notation for subproperty access.",
+          "type": "string"
+        }
+      ],
+      "return": "*"
+    },
+    "setProperties": {
+      "description": "Performs a batch set of properties.",
+      "params": [
+        {
+          "name": "properties",
+          "description": "An object containing the property and value pairs to set.",
+          "type": "Object"
+        }
+      ]
+    }
+  },
+  "events": {
+    "drill": {
+      "description": "Triggered during a drill gesture (double click if selection is enabled, single click otherwise).",
+      "detail": {
+        "id": {
+          "description": "the id of the drilled object",
+          "type": "string"
+        }
+      }
+    }
+  },
+  "slots": {
+    "contextMenu": {
+      "description": "The contextMenu slot is set on the oj-menu within this element. \nThis is used to designate the JET Menu that this component should launch as a context menu on right-click, Shift-F10, Press & Hold, or component-specific gesture. \nIf specified, the browser's native context menu will be replaced by the JET Menu specified in this slot.\n\nThe application can register a listener for the Menu's ojBeforeOpen event. The listener can cancel the launch via event.preventDefault(), \nor it can customize the menu contents by editing the menu DOM directly, and then calling refresh() on the Menu.\n\nTo help determine whether it's appropriate to cancel the launch or customize the menu, the ojBeforeOpen listener can use component API's to determine which \ntable cell, chart item, etc., is the target of the context menu. See the JSDoc and demos of the individual components for details. \n\nKeep in mind that any such logic must work whether the context menu was launched via right-click, Shift-F10, Press & Hold, or component-specific touch gesture."
+    }
+  }
+}

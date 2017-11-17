@@ -1,0 +1,15 @@
+{
+  "name": "ojBindIf",
+  "version": "4.1.0",
+  "jetVersion": "4.1.0",
+  "displayName": " Bind If",
+  "preview": true,
+  "description": "ojBindIf",
+  "properties": {
+    "test": {
+      "description": "The test condition for the if clause. The children of the element will \nonly be rendered if the test is true.",
+      "type": "boolean",
+      "displayName": "Test"
+    }
+  }
+}

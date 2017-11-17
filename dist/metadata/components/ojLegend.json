@@ -1,0 +1,743 @@
+{
+  "name": "ojLegend",
+  "version": "4.1.0",
+  "jetVersion": "4.1.0",
+  "displayName": " Legend",
+  "preview": true,
+  "description": "ojLegend",
+  "properties": {
+    "drilling": {
+      "description": "Whether drilling is enabled on all legend items. Drillable objects will show a pointer cursor on hover and fire ojDrill event on click. To enable or disable drilling on individual legend item, use the drilling attribute in each legend item.",
+      "type": "string",
+      "displayName": "Drilling",
+      "value": "off",
+      "enumValues": [
+        "off",
+        "on"
+      ],
+      "propertyEditorValues": {
+        "off": {
+          "displayName": "Off"
+        },
+        "on": {
+          "displayName": "On"
+        }
+      }
+    },
+    "halign": {
+      "description": "Defines the horizontal alignment of the legend contents.",
+      "type": "string",
+      "displayName": "Halign",
+      "value": "start",
+      "enumValues": [
+        "center",
+        "end",
+        "start"
+      ],
+      "propertyEditorValues": {
+        "center": {
+          "displayName": "Center"
+        },
+        "end": {
+          "displayName": "End"
+        },
+        "start": {
+          "displayName": "Start"
+        }
+      }
+    },
+    "hiddenCategories": {
+      "description": "An array of categories that will be hidden.",
+      "type": "Array.<string>",
+      "displayName": "Hidden Categories",
+      "value": null,
+      "writeback": true
+    },
+    "hideAndShowBehavior": {
+      "description": "Defines whether the legend can be used to initiate hide and show behavior on referenced data items.",
+      "type": "string",
+      "displayName": "Hide And Show Behavior",
+      "value": "off",
+      "enumValues": [
+        "off",
+        "on"
+      ],
+      "propertyEditorValues": {
+        "off": {
+          "displayName": "Off"
+        },
+        "on": {
+          "displayName": "On"
+        }
+      }
+    },
+    "highlightedCategories": {
+      "description": "An array of categories that will be highlighted.",
+      "type": "Array.<string>",
+      "displayName": "Highlighted Categories",
+      "value": null,
+      "writeback": true
+    },
+    "hoverBehavior": {
+      "description": "Defines the behavior applied when hovering over a legend item.",
+      "type": "string",
+      "displayName": "Hover Behavior",
+      "value": "none",
+      "enumValues": [
+        "dim",
+        "none"
+      ],
+      "propertyEditorValues": {
+        "dim": {
+          "displayName": "Dim"
+        },
+        "none": {
+          "displayName": "None"
+        }
+      }
+    },
+    "hoverBehaviorDelay": {
+      "description": "Specifies initial hover delay in ms for highlighting items in legend.",
+      "type": "number",
+      "displayName": "Hover Behavior Delay",
+      "value": null
+    },
+    "orientation": {
+      "description": "Defines the orientation of the legend, which determines the direction in which the legend items are laid out.",
+      "type": "string",
+      "displayName": "Orientation",
+      "value": "vertical",
+      "enumValues": [
+        "horizontal",
+        "vertical"
+      ],
+      "propertyEditorValues": {
+        "horizontal": {
+          "displayName": "Horizontal"
+        },
+        "vertical": {
+          "displayName": "Vertical"
+        }
+      }
+    },
+    "scrolling": {
+      "description": "Defines whether scrolling is enabled for the legend.",
+      "type": "string",
+      "displayName": "Scrolling",
+      "value": "asNeeded",
+      "enumValues": [
+        "asNeeded",
+        "off"
+      ],
+      "propertyEditorValues": {
+        "asNeeded": {
+          "displayName": "As Needed"
+        },
+        "off": {
+          "displayName": "Off"
+        }
+      }
+    },
+    "sections": {
+      "description": "An array of objects with the following properties defining the legend sections.",
+      "type": "Array.<object>",
+      "displayName": "Sections",
+      "value": null,
+      "properties": {
+        "collapsible": {
+          "description": "Whether the section is collapsible. Only applies if the legend orientation is vertical.",
+          "type": "string",
+          "value": "off",
+          "enumValues": [
+            "off",
+            "on"
+          ],
+          "propertyEditorValues": {
+            "off": {
+              "displayName": "Off"
+            },
+            "on": {
+              "displayName": "On"
+            }
+          }
+        },
+        "expanded": {
+          "description": "Whether the section is initially expanded. Only applies if the section is collapsible.",
+          "type": "string",
+          "value": "on",
+          "enumValues": [
+            "off",
+            "on"
+          ],
+          "propertyEditorValues": {
+            "off": {
+              "displayName": "Off"
+            },
+            "on": {
+              "displayName": "On"
+            }
+          }
+        },
+        "items": {
+          "description": "An array of objects with the following properties defining the legend items. Also accepts a Promise for deferred data rendering. No data will be rendered if the Promise is rejected.",
+          "type": "Array.<object>|Promise",
+          "value": null,
+          "properties": {
+            "borderColor": {
+              "description": "The border color of the marker. Only applies if symbolType is \"marker\" or \"lineWithMarker\".",
+              "type": "string",
+              "value": null
+            },
+            "categories": {
+              "description": "An array of categories for the legend item. Legend items currently only support a single category. If no category is specified, this defaults to the id or text of the legend item.",
+              "type": "Array.<string>",
+              "value": null
+            },
+            "categoryVisibility": {
+              "description": "Defines whether the legend item corresponds to visible data items. A hollow symbol is shown if the value is \"hidden\".",
+              "type": "string",
+              "value": "visible",
+              "enumValues": [
+                "hidden",
+                "visible"
+              ],
+              "propertyEditorValues": {
+                "hidden": {
+                  "displayName": "Hidden"
+                },
+                "visible": {
+                  "displayName": "Visible"
+                }
+              }
+            },
+            "color": {
+              "description": "The color of the legend symbol (line or marker). When symbolType is \"lineWithMarker\", this attribute defines the line color and the markerColor attribute defines the marker color.",
+              "type": "string",
+              "value": null
+            },
+            "drilling": {
+              "description": "Whether drilling is enabled on the legend item. Drillable objects will show a pointer cursor on hover and fire ojDrill event on click. To enable drilling for all legend items at once, use the drilling attribute in the top level.",
+              "type": "string",
+              "value": "inherit",
+              "enumValues": [
+                "inherit",
+                "off",
+                "on"
+              ],
+              "propertyEditorValues": {
+                "inherit": {
+                  "displayName": "Inherit"
+                },
+                "off": {
+                  "displayName": "Off"
+                },
+                "on": {
+                  "displayName": "On"
+                }
+              }
+            },
+            "id": {
+              "description": "The id of the legend item, which is provided as part of the context for events fired by the legend. If not specified, the id defaults to the text of the legend item.",
+              "type": "string",
+              "value": null
+            },
+            "lineStyle": {
+              "description": "The line style. Only applies when the symbolType is \"line\" or \"lineWithMarker\".",
+              "type": "string",
+              "value": "solid",
+              "enumValues": [
+                "dashed",
+                "dotted",
+                "solid"
+              ],
+              "propertyEditorValues": {
+                "dashed": {
+                  "displayName": "Dashed"
+                },
+                "dotted": {
+                  "displayName": "Dotted"
+                },
+                "solid": {
+                  "displayName": "Solid"
+                }
+              }
+            },
+            "lineWidth": {
+              "description": "The line width in pixels. Only applies when the symbolType is \"line\" or \"lineWithMarker\".",
+              "type": "number",
+              "value": null
+            },
+            "markerColor": {
+              "description": "The color of the marker, if different than the line color. Only applies if the symbolType is \"lineWithMarker\".",
+              "type": "string",
+              "value": null
+            },
+            "markerShape": {
+              "description": "The shape of the marker. Only applies if symbolType is \"marker\" or \"lineWithMarker\". Can take the name of a built-in shape or the svg path commands for a custom shape. Does not apply if a custom image is specified.",
+              "type": "string",
+              "value": "square",
+              "enumValues": [
+                "circle",
+                "diamond",
+                "ellipse",
+                "human",
+                "plus",
+                "rectangle",
+                "square",
+                "star",
+                "triangleDown",
+                "triangleUp"
+              ],
+              "propertyEditorValues": {
+                "circle": {
+                  "displayName": "Circle"
+                },
+                "diamond": {
+                  "displayName": "Diamond"
+                },
+                "ellipse": {
+                  "displayName": "Ellipse"
+                },
+                "human": {
+                  "displayName": "Human"
+                },
+                "plus": {
+                  "displayName": "Plus"
+                },
+                "rectangle": {
+                  "displayName": "Rectangle"
+                },
+                "square": {
+                  "displayName": "Square"
+                },
+                "star": {
+                  "displayName": "Star"
+                },
+                "triangleDown": {
+                  "displayName": "Triangle Down"
+                },
+                "triangleUp": {
+                  "displayName": "Triangle Up"
+                }
+              }
+            },
+            "markerSvgClassName": {
+              "description": "The CSS style class to apply to the marker. The style class and inline style will override any other styling specified through the options. For tooltips and hover interactivity, it's recommended to also pass a representative color to the markerColor attribute.",
+              "type": "string",
+              "value": null
+            },
+            "markerSvgStyle": {
+              "description": "The inline style to apply to the marker. The style class and inline style will override any other styling specified through the options. For tooltips and hover interactivity, it's recommended to also pass a representative color to the markerColor attribute.",
+              "type": "object",
+              "value": null
+            },
+            "pattern": {
+              "description": "The pattern used to fill the marker. Only applies if symbolType is \"marker\" or \"lineWithMarker\".",
+              "type": "string",
+              "value": "none",
+              "enumValues": [
+                "largeChecker",
+                "largeCrosshatch",
+                "largeDiagonalLeft",
+                "largeDiagonalRight",
+                "largeDiamond",
+                "largeTriangle",
+                "none",
+                "smallChecker",
+                "smallCrosshatch",
+                "smallDiagonalLeft",
+                "smallDiagonalRight",
+                "smallDiamond",
+                "smallTriangle"
+              ],
+              "propertyEditorValues": {
+                "largeChecker": {
+                  "displayName": "Large Checker"
+                },
+                "largeCrosshatch": {
+                  "displayName": "Large Crosshatch"
+                },
+                "largeDiagonalLeft": {
+                  "displayName": "Large Diagonal Left"
+                },
+                "largeDiagonalRight": {
+                  "displayName": "Large Diagonal Right"
+                },
+                "largeDiamond": {
+                  "displayName": "Large Diamond"
+                },
+                "largeTriangle": {
+                  "displayName": "Large Triangle"
+                },
+                "none": {
+                  "displayName": "None"
+                },
+                "smallChecker": {
+                  "displayName": "Small Checker"
+                },
+                "smallCrosshatch": {
+                  "displayName": "Small Crosshatch"
+                },
+                "smallDiagonalLeft": {
+                  "displayName": "Small Diagonal Left"
+                },
+                "smallDiagonalRight": {
+                  "displayName": "Small Diagonal Right"
+                },
+                "smallDiamond": {
+                  "displayName": "Small Diamond"
+                },
+                "smallTriangle": {
+                  "displayName": "Small Triangle"
+                }
+              }
+            },
+            "shortDesc": {
+              "description": "The description of this legend item. This is used for accessibility and for customizing the tooltip text.",
+              "type": "string",
+              "value": null
+            },
+            "source": {
+              "description": "The URI of the image of the legend symbol.",
+              "type": "string",
+              "value": null
+            },
+            "svgClassName": {
+              "description": "The CSS style class to apply to the legend item. The style class and inline style will override any other styling specified through the options. For tooltips and hover interactivity, it's recommended to also pass a representative color to the color attribute.",
+              "type": "string",
+              "value": null
+            },
+            "svgStyle": {
+              "description": "The inline style to apply to the legend item. The style class and inline style will override any other styling specified through the options. For tooltips and hover interactivity, it's recommended to also pass a representative color to the color attribute.",
+              "type": "object",
+              "value": null
+            },
+            "symbolType": {
+              "description": "The type of legend symbol to display.",
+              "type": "string",
+              "value": "marker",
+              "enumValues": [
+                "image",
+                "line",
+                "lineWithMarker",
+                "marker"
+              ],
+              "propertyEditorValues": {
+                "image": {
+                  "displayName": "Image"
+                },
+                "line": {
+                  "displayName": "Line"
+                },
+                "lineWithMarker": {
+                  "displayName": "Line With Marker"
+                },
+                "marker": {
+                  "displayName": "Marker"
+                }
+              }
+            },
+            "text": {
+              "description": "The legend item text.",
+              "type": "string",
+              "value": null
+            }
+          }
+        },
+        "sections": {
+          "description": "An array of nested legend sections.",
+          "type": "Array.<object>",
+          "value": null
+        },
+        "title": {
+          "description": "The title of the legend section.",
+          "type": "string",
+          "value": null
+        },
+        "titleHalign": {
+          "description": "The horizontal alignment of the section title. If the section is collapsible or nested, only start alignment is supported.",
+          "type": "string",
+          "value": "start",
+          "enumValues": [
+            "center",
+            "end",
+            "start"
+          ],
+          "propertyEditorValues": {
+            "center": {
+              "displayName": "Center"
+            },
+            "end": {
+              "displayName": "End"
+            },
+            "start": {
+              "displayName": "Start"
+            }
+          }
+        },
+        "titleStyle": {
+          "description": "The CSS style object defining the style of the section title.",
+          "type": "object",
+          "value": null
+        }
+      }
+    },
+    "symbolHeight": {
+      "description": "The height of the legend symbol (line or marker) in pixels.",
+      "type": "number",
+      "displayName": "Symbol Height",
+      "value": null
+    },
+    "symbolWidth": {
+      "description": "The width of the legend symbol (line or marker) in pixels.",
+      "type": "number",
+      "displayName": "Symbol Width",
+      "value": null
+    },
+    "textStyle": {
+      "description": "The CSS style object defining the style of the legend item text.",
+      "type": "object",
+      "displayName": "Text Style",
+      "value": null
+    },
+    "trackResize": {
+      "description": "Defines whether the element will automatically render in response to\nchanges in size. If set to off, then the\napplication is responsible for calling refresh\nto render the element at the new size.",
+      "type": "string",
+      "displayName": "Track Resize",
+      "value": "on",
+      "enumValues": [
+        "off",
+        "on"
+      ],
+      "propertyEditorValues": {
+        "off": {
+          "displayName": "Off"
+        },
+        "on": {
+          "displayName": "On"
+        }
+      }
+    },
+    "translations": {
+      "description": "A collection of translated resources from the translation bundle, or null if this\ncomponent has no resources. Resources may be accessed and overridden individually or collectively, as seen in the examples.\n\nIf this component has translations, their documentation immediately follows this doc entry.",
+      "type": "Object",
+      "displayName": "Translations",
+      "value": null,
+      "properties": {
+        "componentName": {
+          "description": "Used to describe the data visualization type for accessibility.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Legend"
+        },
+        "labelAndValue": {
+          "description": "Used to display a label and its value.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "{0}: {1}"
+        },
+        "labelClearSelection": {
+          "description": "Text shown for clearing multiple selection on touch devices.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Clear Selection"
+        },
+        "labelCountWithTotal": {
+          "description": "Used to display a count out of a total.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "{0} of {1}"
+        },
+        "labelDataVisualization": {
+          "description": "Label for data visualizations used for accessibility.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Data Visualization"
+        },
+        "labelInvalidData": {
+          "description": "Text shown when the component receives invalid data.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Invalid data"
+        },
+        "labelNoData": {
+          "description": "Text shown when the component receives no data.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "No data to display"
+        },
+        "stateCollapsed": {
+          "description": "Used to describe the collapsed state for accessibility.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Collapsed"
+        },
+        "stateDrillable": {
+          "description": "Used to describe a drillable object for accessibility.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Drillable"
+        },
+        "stateExpanded": {
+          "description": "Used to describe the expanded state for accessibility.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Expanded"
+        },
+        "stateHidden": {
+          "description": "Used to describe the hidden state for accessibility.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Hidden"
+        },
+        "stateIsolated": {
+          "description": "Used to describe the isolated state for accessibility.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Isolated"
+        },
+        "stateMaximized": {
+          "description": "Used to describe the maximized state for accessibility.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Maximized"
+        },
+        "stateMinimized": {
+          "description": "Used to describe the minimized state for accessibility.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Minimized"
+        },
+        "stateSelected": {
+          "description": "Used to describe the selected state for accessibility.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Selected"
+        },
+        "stateUnselected": {
+          "description": "Used to describe the unselected state for accessibility.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Unselected"
+        },
+        "stateVisible": {
+          "description": "Used to describe the visible state for accessibility.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Visible"
+        }
+      }
+    },
+    "valign": {
+      "description": "Defines the vertical alignment of the legend contents.",
+      "type": "string",
+      "displayName": "Valign",
+      "value": "top",
+      "enumValues": [
+        "bottom",
+        "middle",
+        "top"
+      ],
+      "propertyEditorValues": {
+        "bottom": {
+          "displayName": "Bottom"
+        },
+        "middle": {
+          "displayName": "Middle"
+        },
+        "top": {
+          "displayName": "Top"
+        }
+      }
+    }
+  },
+  "methods": {
+    "getSection": {
+      "description": "Returns an object with the following properties for automation testing verification of the legend section with the specified subid path.",
+      "params": [
+        {
+          "name": "subIdPath",
+          "description": "The array of indices in the subId for the desired legend section.",
+          "type": "Array"
+        }
+      ],
+      "return": "Object|null"
+    },
+    "getItem": {
+      "description": "Returns an object with the following properties for automation testing verification of the legend item with the specified subid path.",
+      "params": [
+        {
+          "name": "subIdPath",
+          "description": "The array of indices in the subId for the desired legend item.",
+          "type": "Array"
+        }
+      ],
+      "return": "Object|null"
+    },
+    "getPreferredSize": {
+      "description": "Returns the preferred size of the legend, given the available width and height. A re-render must be triggered by calling refresh after invoking this function.",
+      "params": [
+        {
+          "name": "width",
+          "description": "The available width.",
+          "type": "Number"
+        },
+        {
+          "name": "height",
+          "description": "The available height.",
+          "type": "Number"
+        }
+      ],
+      "return": "Object"
+    },
+    "getContextByNode": {
+      "description": "Returns an object with context for the given child DOM node. This will always contain the subid for the node,\ndefined as the 'subId' property on the context object. Additional component specific information may also be included.\n\nFor more details on returned objects, see context objects.",
+      "params": [
+        {
+          "name": "node",
+          "description": "The child DOM node",
+          "type": "Element"
+        }
+      ],
+      "return": "Object|null"
+    },
+    "refresh": {
+      "description": "Refreshes the component."
+    },
+    "setProperty": {
+      "description": "Sets a property or a single subproperty for complex properties and notifies the component\nof the change, triggering a [property]Changed event.",
+      "params": [
+        {
+          "name": "property",
+          "description": "The property name to set. Supports dot notation for subproperty access.",
+          "type": "string"
+        },
+        {
+          "name": "value",
+          "description": "The new value to set the property to.",
+          "type": "*"
+        }
+      ]
+    },
+    "getProperty": {
+      "description": "Retrieves a value for a property or a single subproperty for complex properties.",
+      "params": [
+        {
+          "name": "property",
+          "description": "The property name to get. Supports dot notation for subproperty access.",
+          "type": "string"
+        }
+      ],
+      "return": "*"
+    },
+    "setProperties": {
+      "description": "Performs a batch set of properties.",
+      "params": [
+        {
+          "name": "properties",
+          "description": "An object containing the property and value pairs to set.",
+          "type": "Object"
+        }
+      ]
+    }
+  },
+  "events": {
+    "drill": {
+      "description": "Triggered during a drill gesture (single click on the legend item).",
+      "detail": {
+        "id": {
+          "description": "the id of the drilled object",
+          "type": "string"
+        }
+      }
+    }
+  },
+  "slots": {
+    "contextMenu": {
+      "description": "The contextMenu slot is set on the oj-menu within this element. \nThis is used to designate the JET Menu that this component should launch as a context menu on right-click, Shift-F10, Press & Hold, or component-specific gesture. \nIf specified, the browser's native context menu will be replaced by the JET Menu specified in this slot.\n\nThe application can register a listener for the Menu's ojBeforeOpen event. The listener can cancel the launch via event.preventDefault(), \nor it can customize the menu contents by editing the menu DOM directly, and then calling refresh() on the Menu.\n\nTo help determine whether it's appropriate to cancel the launch or customize the menu, the ojBeforeOpen listener can use component API's to determine which \ntable cell, chart item, etc., is the target of the context menu. See the JSDoc and demos of the individual components for details. \n\nKeep in mind that any such logic must work whether the context menu was launched via right-click, Shift-F10, Press & Hold, or component-specific touch gesture."
+    }
+  }
+}

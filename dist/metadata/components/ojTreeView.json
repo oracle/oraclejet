@@ -1,0 +1,329 @@
+{
+  "name": "ojTreeView",
+  "version": "4.1.0",
+  "jetVersion": "4.1.0",
+  "displayName": " Tree View",
+  "preview": true,
+  "description": "ojTreeView",
+  "properties": {
+    "currentItem": {
+      "description": "The key of the item that has the browser focus.\nThis is a read-only attribute so page authors cannot set or change it directly.",
+      "type": "Object",
+      "displayName": "Current Item",
+      "readOnly": true
+    },
+    "data": {
+      "description": "The data source for the TreeView. Accepts an instance of oj.TreeDataSource.\nSee the data source section in the introduction for out of the box data source types.\nIf the data attribute is not specified, the child elements are used as content. If there's no\ncontent specified, then an empty list is rendered.",
+      "type": "oj.TreeDataSource",
+      "displayName": "Data",
+      "value": null
+    },
+    "dnd": {
+      "description": "Enable drag and drop functionality.\nJET provides support for HTML5 Drag and Drop events. Please refer to mozilla.org/en-US/docs/Web/Guide/HTML/Drag_and_drop third party documentation \non HTML5 Drag and Drop to learn how to use it.",
+      "type": "",
+      "displayName": "Dnd",
+      "properties": {
+        "drag": {
+          "description": "",
+          "type": "Object",
+          "value": null,
+          "properties": [
+            {
+              "name": "items",
+              "description": "If this object is specified, TreeView will initiate drag operation when the user drags on an item.",
+              "type": "Object",
+              "properties": [
+                {
+                  "name": "dataTypes",
+                  "description": "(optional) The MIME types to use for the dragged data in the dataTransfer object. This can be a string if there is only one\ntype, or an array of strings if multiple types are needed.\nFor example, if selected items of employee data are being dragged, dataTypes could be \"application/employees+json\". Drop targets can examine the data types and decide\nwhether to accept the data. A text input may only accept \"text\" data type, while a chart for displaying employee data may be configured to accept the \"application/employees+json\" type.\nFor each type in the array, dataTransfer.setData will be called with the specified type and the JSON version of the selected item data as the value. The selected item data \nis an array of objects, with each object representing a model object from the underlying data source. For example, if the underlying data is an oj.Collection, then this\nwould be a oj.Model object. Note that when static HTML is used, then the value would be the HTML string of the selected item.\nThis property is required unless the application calls setData itself in a dragStart callback function.",
+                  "type": "string|Array.<string>"
+                },
+                {
+                  "name": "dragStart",
+                  "description": "(optional) A callback function that receives the \"dragstart\" event and context information as arguments:\nfunction(event, context)\nAll of the event payloads listed below can be found under the context argument.\nitems: An array of objects, with each object representing the data of one selected item.\nThis function can set its own data and drag image as needed. If dataTypes is specified, event.dataTransfer is already populated with the default data when this function is invoked.\nIf dataTypes is not specified, this function must call event.dataTransfer.setData to set the data or else the drag operation will be cancelled. In either case, the drag image is\nset to an image of the dragged items on the TreeView.",
+                  "type": "function"
+                },
+                {
+                  "name": "drag",
+                  "description": "(optional) A callback function that receives the \"drag\" event as argument:\nfunction(event)",
+                  "type": "function"
+                },
+                {
+                  "name": "dragEnd",
+                  "description": "(optional) A callback function that receives the \"dragend\" event as argument:\nfunction(event)",
+                  "type": "function"
+                }
+              ]
+            }
+          ]
+        },
+        "drop": {
+          "description": "",
+          "type": "Object",
+          "value": null,
+          "properties": [
+            {
+              "name": "items",
+              "description": "An object that specifies callback functions to handle dropping items",
+              "type": "Object",
+              "properties": [
+                {
+                  "name": "dataTypes",
+                  "description": "A data type or an array of data types this component can accept.\nThis property is required unless dragEnter, dragOver, and drop callback functions are specified to handle the corresponding events.",
+                  "type": "string|Array.<string>"
+                },
+                {
+                  "name": "dragEnter",
+                  "description": "(optional) A callback function that receives the \"dragenter\" event and context information as arguments:\nfunction(event, context)\nAll of the event payloads listed below can be found under the context argument.\nitem: The item being entered.\nThis function should call event.preventDefault() to indicate the dragged data can be accepted.\nOtherwise, dataTypes will be matched against the drag dataTypes to determine if the data is acceptable. If there is a match, event.preventDefault()\nwill be called to indicate that the data can be accepted.",
+                  "type": "function"
+                },
+                {
+                  "name": "dragOver",
+                  "description": "(optional) A callback function that receives the \"dragover\" event and context information as arguments:\nfunction(event, context)\nAll of the event payloads listed below can be found under the context argument.\nitem: The item being dragged over.\nThis function should call event.preventDefault() to indicate the dragged data can be accepted.\nOtherwise, dataTypes will be matched against the drag dataTypes to determine if the data is acceptable. If there is a match, event.preventDefault()\nwill be called to indicate that the data can be accepted.",
+                  "type": "function"
+                },
+                {
+                  "name": "dragLeave",
+                  "description": "(optional) A callback function that receives the \"dragleave\" event and context information as arguments:\nfunction(event, context)\nAll of the event payloads listed below can be found under the context argument.\nitem: The item that was last entered.",
+                  "type": "function"
+                },
+                {
+                  "name": "drop",
+                  "description": "(required) A callback function that receives the \"drop\" event and context information as arguments:\nfunction(event, context)\nAll of the event payloads listed below can be found under the context argument.\nitem: The item being dropped on.\nposition: The drop position relative to the item being dropped on.\nValid values are \"inside\", \"before\", \"after\", and \"first\" (the first child of the item being dropped on).\nThis function should call event.preventDefault() to indicate the dragged data can be accepted.\nIf the application needs to look at the data for the item being dropped on, it can use the getContextByNode method.",
+                  "type": "function"
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    "expanded": {
+      "description": "Specifies the key set containing the keys of the TreeView items that should be expanded.",
+      "type": "KeySet",
+      "displayName": "Expanded",
+      "value": "new keySet.ExpandedKeySet()"
+    },
+    "item": {
+      "description": "The item attribute contains a subset of attributes for items.",
+      "type": "",
+      "displayName": "Item",
+      "properties": {
+        "focusable": {
+          "description": "A function that returns whether the item is focusable.\nA item that is not focusable cannot be clicked on or navigated to.\nSee itemContext in the introduction\nto see the object passed into the focusable function.\nIf no function is specified, then all the items will be focusable.",
+          "type": "function|null",
+          "value": null
+        },
+        "renderer": {
+          "description": "The renderer function that renders the contents of the item. See itemContext\nin the introduction to see the object passed into the renderer function.\nThe function should return one of the following: An Object with the following property: insert: HTMLElement | string - A string or a DOM element of the content inside the item. undefined: If the developer chooses to manipulate the item element directly, the function should return undefined.\n",
+          "type": "function|null",
+          "value": null
+        },
+        "selectable": {
+          "description": "A function that returns whether the item can be selected.\nIf selectionMode is set to \"none\" this attribute is ignored.\nSee itemContext in the introduction\nto see the object passed into the selectable function. \nIf no function is specified, then all the items will be selectable.",
+          "type": "function|null",
+          "value": null
+        }
+      }
+    },
+    "selection": {
+      "description": "The current selections in the TreeView. An empty array indicates nothing is selected.",
+      "type": "Array.<Object>",
+      "displayName": "Selection",
+      "value": "[]"
+    },
+    "selectionMode": {
+      "description": "Specifies whether selection can be made and the cardinality of selection in the TreeView.",
+      "type": "string",
+      "displayName": "Selection Mode",
+      "value": "none",
+      "enumValues": [
+        "multiple",
+        "none:",
+        "single"
+      ],
+      "propertyEditorValues": {
+        "multiple": {
+          "description": "Multiple items can be selected at the same time.",
+          "displayName": "Multiple"
+        },
+        "none:": {
+          "description": "Selection is disabled.",
+          "displayName": "None:"
+        },
+        "single": {
+          "description": "Only one item can be selected at a time.",
+          "displayName": "Single"
+        }
+      }
+    },
+    "translations": {
+      "description": "A collection of translated resources from the translation bundle, or null if this\ncomponent has no resources. Resources may be accessed and overridden individually or collectively, as seen in the examples.\n\nIf this component has translations, their documentation immediately follows this doc entry.",
+      "type": "Object",
+      "displayName": "Translations",
+      "value": null
+    }
+  },
+  "methods": {
+    "getContextByNode": {
+      "description": "Returns an object with context for the given child DOM node. This will always contain the subid for the node,\ndefined as the 'subId' property on the context object. Additional component specific information may also be included.\n\nFor more details on returned objects, see context objects.",
+      "params": [
+        {
+          "name": "node",
+          "description": "The child DOM node",
+          "type": "Element"
+        }
+      ],
+      "return": "Object|null"
+    },
+    "refresh": {
+      "description": "Refreshes the component."
+    },
+    "setProperty": {
+      "description": "Sets a property or a single subproperty for complex properties and notifies the component\nof the change, triggering a [property]Changed event.",
+      "params": [
+        {
+          "name": "property",
+          "description": "The property name to set. Supports dot notation for subproperty access.",
+          "type": "string"
+        },
+        {
+          "name": "value",
+          "description": "The new value to set the property to.",
+          "type": "*"
+        }
+      ]
+    },
+    "getProperty": {
+      "description": "Retrieves a value for a property or a single subproperty for complex properties.",
+      "params": [
+        {
+          "name": "property",
+          "description": "The property name to get. Supports dot notation for subproperty access.",
+          "type": "string"
+        }
+      ],
+      "return": "*"
+    },
+    "setProperties": {
+      "description": "Performs a batch set of properties.",
+      "params": [
+        {
+          "name": "properties",
+          "description": "An object containing the property and value pairs to set.",
+          "type": "Object"
+        }
+      ]
+    }
+  },
+  "events": {
+    "animateEnd": {
+      "description": "Triggered when the default animation of a particular action has ended.\nNote this event will not be triggered if application cancelled the default animation on animateStart.",
+      "detail": {
+        "action": {
+          "description": "The action that started the animation. See animation section for a list of actions.",
+          "type": "Object"
+        },
+        "element": {
+          "description": "The target of animation.",
+          "type": "Object"
+        }
+      }
+    },
+    "animateStart": {
+      "description": "Triggered when the default animation of a particular action is about to start.\nThe default animation can be cancelled by calling event.preventDefault().",
+      "detail": {
+        "action": {
+          "description": "The action that starts the animation. See animation section for a list of actions.",
+          "type": "Object"
+        },
+        "element": {
+          "description": "The target of animation.",
+          "type": "Object"
+        },
+        "endCallback": {
+          "description": "If the event listener calls event.preventDefault() to cancel the default animation, it must call the endCallback function when it finishes its own animation handling and when any custom animation ends.",
+          "type": "function"
+        }
+      }
+    },
+    "beforeCollapse": {
+      "description": "Triggered before an item is collapsed via the expanded attribute or via the UI.\nCall event.preventDefault() to veto the event, which prevents collapsing the item.",
+      "detail": {
+        "key": {
+          "description": "The key of the item to be collapsed.",
+          "type": "Object"
+        },
+        "item": {
+          "description": "The item to be collapsed.",
+          "type": "Element"
+        }
+      }
+    },
+    "beforeCurrentItem": {
+      "description": "Triggered before the current item is changed via the currentItem attribute or via the UI.\nCall event.preventDefault() to veto the event, which prevents changing the current item.",
+      "detail": {
+        "previousKey": {
+          "description": "The key of the previous item.",
+          "type": "Object"
+        },
+        "previousItem": {
+          "description": "The previous item.",
+          "type": "Element"
+        },
+        "key": {
+          "description": "The key of the new current item.",
+          "type": "Object"
+        },
+        "item": {
+          "description": "The new current item.",
+          "type": "Element"
+        }
+      }
+    },
+    "beforeExpand": {
+      "description": "Triggered before an item is expanded via the expanded attribute or via the UI.\nCall event.preventDefault() to veto the event, which prevents expanding the item.",
+      "detail": {
+        "key": {
+          "description": "The key of the item to be expanded.",
+          "type": "Object"
+        },
+        "item": {
+          "description": "The item to be expanded.",
+          "type": "Element"
+        }
+      }
+    },
+    "collapse": {
+      "description": "Triggered after an item has been collapsed.",
+      "detail": {
+        "key": {
+          "description": "The key of the item that was just collapsed.",
+          "type": "Object"
+        },
+        "item": {
+          "description": "The item that was just collapsed.",
+          "type": "Element"
+        }
+      }
+    },
+    "expand": {
+      "description": "Triggered after an item has been expanded.",
+      "detail": {
+        "key": {
+          "description": "The key of the item that was just expanded.",
+          "type": "Object"
+        },
+        "item": {
+          "description": "The item that was just expanded.",
+          "type": "Element"
+        }
+      }
+    }
+  },
+  "slots": {
+    "contextMenu": {
+      "description": "The contextMenu slot is set on the oj-menu within this element. \nThis is used to designate the JET Menu that this component should launch as a context menu on right-click, Shift-F10, Press & Hold, or component-specific gesture. \nIf specified, the browser's native context menu will be replaced by the JET Menu specified in this slot.\n\nThe application can register a listener for the Menu's ojBeforeOpen event. The listener can cancel the launch via event.preventDefault(), \nor it can customize the menu contents by editing the menu DOM directly, and then calling refresh() on the Menu.\n\nTo help determine whether it's appropriate to cancel the launch or customize the menu, the ojBeforeOpen listener can use component API's to determine which \ntable cell, chart item, etc., is the target of the context menu. See the JSDoc and demos of the individual components for details. \n\nKeep in mind that any such logic must work whether the context menu was launched via right-click, Shift-F10, Press & Hold, or component-specific touch gesture."
+    }
+  }
+}

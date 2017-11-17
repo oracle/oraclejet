@@ -20,6 +20,11 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'ojs/ojradiocheckbox', 'o
  * @ojcomponent oj.ojRadioset
  * @augments oj.editableValue
  * @since 0.6
+ * @ojshortdesc Radio Set Element
+ * @ojrole radio
+ * @ojrole radiogroup
+ * @ojrole option
+ * @ojstatus preview
  * @classdesc
  * <h3 id="radiosetOverview-section">
  *   JET Radioset
@@ -157,7 +162,7 @@ oj.__registerWidget("oj.ojRadioset", $['oj']['editableValue'],
      * 
      * @expose 
      * @type {boolean|null}
-     * @default <code class="prettyprint">false</code>
+     * @default false
      * @public
      * @instance
      * @memberof oj.ojRadioset
@@ -238,6 +243,9 @@ oj.__registerWidget("oj.ojRadioset", $['oj']['editableValue'],
      * {@link oj.RequiredValidator} - is implicitly used if no explicit required validator is set. 
      * An explicit required validator can be set by page authors using the validators option. 
      * 
+     * When the option is not set, the element's required property is used as its initial 
+     * value if it exists.
+     * 
      * @example <caption>Initialize the component with the <code class="prettyprint">required</code> attribute:</caption>
      * &lt;oj-radioset required>
      *   &lt;oj-option value="blue">Blue&lt;/oj-option>
@@ -263,8 +271,6 @@ oj.__registerWidget("oj.ojRadioset", $['oj']['editableValue'],
      * @expose 
      * @access public
      * @instance
-     * @default when the option is not set, the element's required property is used as its initial 
-     * value if it exists.
      * @memberof oj.ojRadioset
      * @type {boolean}
      * @default false
@@ -311,7 +317,7 @@ oj.__registerWidget("oj.ojRadioset", $['oj']['editableValue'],
      * @access public
      * @instance
      * @ojwriteback
-     * @default <code class="prettyprint">null</code>
+     * @default null
      * When the option is not set, the value of the checked radio is used, if a radio is checked.
      * @memberof oj.ojRadioset
      * @type {*}
@@ -333,6 +339,7 @@ oj.__registerWidget("oj.ojRadioset", $['oj']['editableValue'],
    * 
    * @expose 
    * @memberof oj.ojRadioset
+   * @public
    * @instance
    */
   refresh: function() 
@@ -353,6 +360,7 @@ oj.__registerWidget("oj.ojRadioset", $['oj']['editableValue'],
    * @expose
    * @memberof oj.ojRadioset
    * @instance
+   * @public
    * @return {jQuery} the radio
    * @ignore
   */
@@ -703,6 +711,7 @@ oj.__registerWidget("oj.ojRadioset", $['oj']['editableValue'],
    * @return {jQuery} jquery object of all the radios within the root dom element
    * that have the same 'name' attribute as the first radio found.
    * @private
+   * @memberof oj.ojRadioset
    */
   _findRadiosWithMatchingName : function ()
   {
@@ -1028,6 +1037,7 @@ oj.__registerWidget("oj.ojRadioset", $['oj']['editableValue'],
   
   /**
    * @private
+   * @memberof oj.ojRadioset
    */
   _propagateDisabled: function( disabled ) {
       disabled = !!disabled;
@@ -1055,6 +1065,7 @@ oj.__registerWidget("oj.ojRadioset", $['oj']['editableValue'],
    * It only gets called when the component has already been created.
    * @override
    * @private
+   * @memberof oj.ojRadioset
    */
   _setOption : function (key, value, flags)
   {
@@ -1183,6 +1194,7 @@ oj.__registerWidget("oj.ojRadioset", $['oj']['editableValue'],
   /**
    * @ignore
    * @protected
+   * @memberof oj.ojRadioset
    * @override
    */
   _destroy : function ()
@@ -1226,7 +1238,7 @@ oj.__registerWidget("oj.ojRadioset", $['oj']['editableValue'],
  * <p>Sub-ID for the radioset's radios.</p>
  *
  * @ojsubid oj-radioset-inputs
- * @deprecated This sub-ID is not needed.  Since the application supplies the input elements, it can supply a unique ID by which the input elements can be accessed.
+ * @deprecated 4.0.0 Since the application supplies the input elements, it can supply a unique ID by which the input elements can be accessed.
  * @memberof oj.ojRadioset
  *
  * @example <caption>Get the nodes for the radios:</caption>

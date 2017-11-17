@@ -1,0 +1,433 @@
+{
+  "name": "ojTagCloud",
+  "version": "4.1.0",
+  "jetVersion": "4.1.0",
+  "displayName": " Tag Cloud",
+  "preview": true,
+  "description": "ojTagCloud",
+  "properties": {
+    "animationOnDataChange": {
+      "description": "Defines the animation that is applied on data changes.",
+      "type": "string",
+      "displayName": "Animation On Data Change",
+      "value": "none",
+      "enumValues": [
+        "auto",
+        "none"
+      ],
+      "propertyEditorValues": {
+        "auto": {
+          "displayName": "Auto"
+        },
+        "none": {
+          "displayName": "None"
+        }
+      }
+    },
+    "animationOnDisplay": {
+      "description": "Defines the animation that is shown on initial display.",
+      "type": "string",
+      "displayName": "Animation On Display",
+      "value": "none",
+      "enumValues": [
+        "auto",
+        "none"
+      ],
+      "propertyEditorValues": {
+        "auto": {
+          "displayName": "Auto"
+        },
+        "none": {
+          "displayName": "None"
+        }
+      }
+    },
+    "hiddenCategories": {
+      "description": "An array of category strings used for category filtering. Data items with a category \nin hiddenCategories will be filtered.",
+      "type": "Array.<string>",
+      "displayName": "Hidden Categories",
+      "value": null,
+      "writeback": true
+    },
+    "highlightMatch": {
+      "description": "The matching condition for the highlightedCategories option. By default, highlightMatch is 'all' \nand only items whose categories match all of the values specified in the highlightedCategories \narray will be highlighted. If highlightMatch is 'any', then items that match at least one of \nthe highlightedCategories values will be highlighted.",
+      "type": "string",
+      "displayName": "Highlight Match",
+      "value": "all",
+      "enumValues": [
+        "all",
+        "any"
+      ],
+      "propertyEditorValues": {
+        "all": {
+          "displayName": "All"
+        },
+        "any": {
+          "displayName": "Any"
+        }
+      }
+    },
+    "highlightedCategories": {
+      "description": "An array of category strings used for category highlighting. Data items with a \ncategory in highlightedCategories will be highlighted.",
+      "type": "Array.<string>",
+      "displayName": "Highlighted Categories",
+      "value": null,
+      "writeback": true
+    },
+    "hoverBehavior": {
+      "description": "Defines the behavior applied when hovering over data items.",
+      "type": "string",
+      "displayName": "Hover Behavior",
+      "value": "none",
+      "enumValues": [
+        "dim",
+        "none"
+      ],
+      "propertyEditorValues": {
+        "dim": {
+          "displayName": "Dim"
+        },
+        "none": {
+          "displayName": "None"
+        }
+      }
+    },
+    "items": {
+      "description": "An array of objects with the following properties that defines the data items for the tag cloud items. \nAlso accepts a Promise or callback function for deferred data rendering. The function should return \none of the following: Promise: A Promise that will resolve with an array of data items. No data will be rendered if the Promise is rejected. Array: An array of data items. \n",
+      "type": "Array.<object>|Promise",
+      "displayName": "Items",
+      "value": null,
+      "properties": {
+        "categories": {
+          "description": "An array of category strings corresponding to the tag cloud items. This allows highlighting and filtering of items.",
+          "type": "Array.<string>",
+          "value": null
+        },
+        "color": {
+          "description": "The color of the text. Will be overridden by any color defined in the style option.",
+          "type": "string",
+          "value": null
+        },
+        "id": {
+          "description": "The id of the tag.",
+          "type": "string",
+          "value": null
+        },
+        "label": {
+          "description": "The text of the tag.",
+          "type": "string",
+          "value": null
+        },
+        "shortDesc": {
+          "description": "The description of the tag. This is used for customizing the tooltip text.",
+          "type": "string",
+          "value": null
+        },
+        "svgClassName": {
+          "description": "The CSS style class defining the style of the text.",
+          "type": "string",
+          "value": null
+        },
+        "svgStyle": {
+          "description": "The CSS style object defining the style of the text.",
+          "type": "object",
+          "value": null
+        },
+        "url": {
+          "description": "The url this tag references.",
+          "type": "string",
+          "value": null
+        },
+        "value": {
+          "description": "The value of the tag which will be used to scale its font-size within the tag cloud.",
+          "type": "number",
+          "value": null
+        }
+      }
+    },
+    "layout": {
+      "description": "The layout to use for tag display.",
+      "type": "string",
+      "displayName": "Layout",
+      "value": "rectangular",
+      "enumValues": [
+        "cloud",
+        "rectangular"
+      ],
+      "propertyEditorValues": {
+        "cloud": {
+          "displayName": "Cloud"
+        },
+        "rectangular": {
+          "displayName": "Rectangular"
+        }
+      }
+    },
+    "selection": {
+      "description": "An array of id strings, used to define the selected data items.",
+      "type": "Array.<string>",
+      "displayName": "Selection",
+      "value": null,
+      "writeback": true
+    },
+    "selectionMode": {
+      "description": "The type of selection behavior that is enabled on the tag cloud.",
+      "type": "string",
+      "displayName": "Selection Mode",
+      "value": "none",
+      "enumValues": [
+        "multiple",
+        "none",
+        "single"
+      ],
+      "propertyEditorValues": {
+        "multiple": {
+          "displayName": "Multiple"
+        },
+        "none": {
+          "displayName": "None"
+        },
+        "single": {
+          "displayName": "Single"
+        }
+      }
+    },
+    "styleDefaults": {
+      "description": "An object defining the default styles for the tag cloud. Properties specified on this object may \nbe overridden by specifications on the data item.",
+      "type": "object",
+      "displayName": "Style Defaults",
+      "value": null,
+      "properties": {
+        "animationDuration": {
+          "description": "The duration of the animations in milliseconds.",
+          "type": "number",
+          "value": null
+        },
+        "hoverBehaviorDelay": {
+          "description": "Specifies initial hover delay in ms for highlighting data items.",
+          "type": "number",
+          "value": null
+        },
+        "svgStyle": {
+          "description": "The CSS style object defining the style of the items.",
+          "type": "object",
+          "value": null
+        }
+      }
+    },
+    "tooltip": {
+      "description": "An object containing an optional callback function for tooltip customization.",
+      "type": "object",
+      "displayName": "Tooltip",
+      "value": null,
+      "properties": {
+        "renderer": {
+          "description": "A function that returns a custom tooltip. The function takes a dataContext argument, provided by the tag cloud, with the following properties: color: The color of the hovered item. componentElement: The tag cloud element. id: The id of the hovered item. label: The data label of the hovered item. parentElement: The tooltip element. The function can directly modify or append content to this element. value: The value of the hovered item. The function should return an Object that contains only one of the two properties: insert: HTMLElement | string - An HTML element, which will be appended to the tooltip, or a tooltip string. preventDefault: true - Indicates that the tooltip should not be displayed. It is not necessary to return {preventDefault:false} to display tooltip, since this is a default behavior. ",
+          "type": "function",
+          "value": null
+        }
+      }
+    },
+    "touchResponse": {
+      "description": "Data visualizations require a press and hold delay before triggering tooltips and rollover effects on \nmobile devices to avoid interfering with page panning, but these hold delays can make applications seem \nslower and less responsive. For a better user experience, the application can remove the touch and hold \n\\delay when data visualizations are used within a non scrolling container or if there is sufficient space \noutside of the visualization for panning. If touchResponse is touchStart the element will instantly trigger \nthe touch gesture and consume the page pan events. If touchResponse is auto, the element will behave like \ntouchStart if it determines that it is not rendered within scrolling content and if element panning is not \navailable for those elements that support the feature.",
+      "type": "string",
+      "displayName": "Touch Response",
+      "value": "auto",
+      "enumValues": [
+        "auto",
+        "touchStart"
+      ],
+      "propertyEditorValues": {
+        "auto": {
+          "displayName": "Auto"
+        },
+        "touchStart": {
+          "displayName": "Touch Start"
+        }
+      }
+    },
+    "trackResize": {
+      "description": "Defines whether the element will automatically render in response to\nchanges in size. If set to off, then the\napplication is responsible for calling refresh\nto render the element at the new size.",
+      "type": "string",
+      "displayName": "Track Resize",
+      "value": "on",
+      "enumValues": [
+        "off",
+        "on"
+      ],
+      "propertyEditorValues": {
+        "off": {
+          "displayName": "Off"
+        },
+        "on": {
+          "displayName": "On"
+        }
+      }
+    },
+    "translations": {
+      "description": "A collection of translated resources from the translation bundle, or null if this\ncomponent has no resources. Resources may be accessed and overridden individually or collectively, as seen in the examples.\n\nIf this component has translations, their documentation immediately follows this doc entry.",
+      "type": "Object",
+      "displayName": "Translations",
+      "value": null,
+      "properties": {
+        "componentName": {
+          "description": "Used to describe the data visualization type for accessibility.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Tag Cloud"
+        },
+        "labelAndValue": {
+          "description": "Used to display a label and its value.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "{0}: {1}"
+        },
+        "labelClearSelection": {
+          "description": "Text shown for clearing multiple selection on touch devices.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Clear Selection"
+        },
+        "labelCountWithTotal": {
+          "description": "Used to display a count out of a total.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "{0} of {1}"
+        },
+        "labelDataVisualization": {
+          "description": "Label for data visualizations used for accessibility.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Data Visualization"
+        },
+        "labelInvalidData": {
+          "description": "Text shown when the component receives invalid data.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Invalid data"
+        },
+        "labelNoData": {
+          "description": "Text shown when the component receives no data.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "No data to display"
+        },
+        "stateCollapsed": {
+          "description": "Used to describe the collapsed state for accessibility.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Collapsed"
+        },
+        "stateDrillable": {
+          "description": "Used to describe a drillable object for accessibility.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Drillable"
+        },
+        "stateExpanded": {
+          "description": "Used to describe the expanded state for accessibility.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Expanded"
+        },
+        "stateHidden": {
+          "description": "Used to describe the hidden state for accessibility.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Hidden"
+        },
+        "stateIsolated": {
+          "description": "Used to describe the isolated state for accessibility.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Isolated"
+        },
+        "stateMaximized": {
+          "description": "Used to describe the maximized state for accessibility.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Maximized"
+        },
+        "stateMinimized": {
+          "description": "Used to describe the minimized state for accessibility.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Minimized"
+        },
+        "stateSelected": {
+          "description": "Used to describe the selected state for accessibility.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Selected"
+        },
+        "stateUnselected": {
+          "description": "Used to describe the unselected state for accessibility.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Unselected"
+        },
+        "stateVisible": {
+          "description": "Used to describe the visible state for accessibility.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Visible"
+        }
+      }
+    }
+  },
+  "methods": {
+    "getItem": {
+      "description": "Returns an object with the following properties for automation testing verification of the item at the specified index.",
+      "params": [
+        {
+          "name": "index",
+          "description": "The index.",
+          "type": "number"
+        }
+      ],
+      "return": "Object"
+    },
+    "getItemCount": {
+      "description": "Returns the number of items in the tag cloud data.",
+      "return": "number"
+    },
+    "getContextByNode": {
+      "description": "Returns an object with context for the given child DOM node. This will always contain the subid for the node,\ndefined as the 'subId' property on the context object. Additional component specific information may also be included.\n\nFor more details on returned objects, see context objects.",
+      "params": [
+        {
+          "name": "node",
+          "description": "The child DOM node",
+          "type": "Element"
+        }
+      ],
+      "return": "Object|null"
+    },
+    "refresh": {
+      "description": "Refreshes the component."
+    },
+    "setProperty": {
+      "description": "Sets a property or a single subproperty for complex properties and notifies the component\nof the change, triggering a [property]Changed event.",
+      "params": [
+        {
+          "name": "property",
+          "description": "The property name to set. Supports dot notation for subproperty access.",
+          "type": "string"
+        },
+        {
+          "name": "value",
+          "description": "The new value to set the property to.",
+          "type": "*"
+        }
+      ]
+    },
+    "getProperty": {
+      "description": "Retrieves a value for a property or a single subproperty for complex properties.",
+      "params": [
+        {
+          "name": "property",
+          "description": "The property name to get. Supports dot notation for subproperty access.",
+          "type": "string"
+        }
+      ],
+      "return": "*"
+    },
+    "setProperties": {
+      "description": "Performs a batch set of properties.",
+      "params": [
+        {
+          "name": "properties",
+          "description": "An object containing the property and value pairs to set.",
+          "type": "Object"
+        }
+      ]
+    }
+  },
+  "slots": {
+    "contextMenu": {
+      "description": "The contextMenu slot is set on the oj-menu within this element. \nThis is used to designate the JET Menu that this component should launch as a context menu on right-click, Shift-F10, Press & Hold, or component-specific gesture. \nIf specified, the browser's native context menu will be replaced by the JET Menu specified in this slot.\n\nThe application can register a listener for the Menu's ojBeforeOpen event. The listener can cancel the launch via event.preventDefault(), \nor it can customize the menu contents by editing the menu DOM directly, and then calling refresh() on the Menu.\n\nTo help determine whether it's appropriate to cancel the launch or customize the menu, the ojBeforeOpen listener can use component API's to determine which \ntable cell, chart item, etc., is the target of the context menu. See the JSDoc and demos of the individual components for details. \n\nKeep in mind that any such logic must work whether the context menu was launched via right-click, Shift-F10, Press & Hold, or component-specific touch gesture."
+    }
+  }
+}

@@ -1,0 +1,592 @@
+{
+  "name": "ojRatingGauge",
+  "version": "4.1.0",
+  "jetVersion": "4.1.0",
+  "displayName": " Rating Gauge",
+  "preview": true,
+  "roles": [
+    "img",
+    "application"
+  ],
+  "description": "Rating Gauge Element",
+  "properties": {
+    "changed": {
+      "description": "Whether there has been a value entered by the user.",
+      "type": "boolean",
+      "displayName": "Changed",
+      "value": false,
+      "writeback": true
+    },
+    "changedState": {
+      "description": "The changed shape for the gauge. Displayed after the user has set a value, or when the changed attribute of the data object is set to true.",
+      "type": "object",
+      "displayName": "Changed State",
+      "value": "{}",
+      "properties": {
+        "borderColor": {
+          "description": "The border color for changed state. Does not apply if a custom image is specified.",
+          "type": "string",
+          "value": null
+        },
+        "color": {
+          "description": "The color for changed state. Does not apply if a custom image is specified.",
+          "type": "string",
+          "value": null
+        },
+        "shape": {
+          "description": "The shape to be used. Can take the name of a built-in shape or the svg path commands for a custom shape. Does not apply if a custom image is specified.",
+          "type": "string",
+          "value": "star",
+          "enumValues": [
+            "circle",
+            "diamond",
+            "human",
+            "square",
+            "star",
+            "triangle"
+          ],
+          "propertyEditorValues": {
+            "circle": {
+              "displayName": "Circle"
+            },
+            "diamond": {
+              "displayName": "Diamond"
+            },
+            "human": {
+              "displayName": "Human"
+            },
+            "square": {
+              "displayName": "Square"
+            },
+            "star": {
+              "displayName": "Star"
+            },
+            "triangle": {
+              "displayName": "Triangle"
+            }
+          }
+        },
+        "source": {
+          "description": "The URI of the custom image. If specified, it takes precedence over shape. For SVG images, the width and height must be defined on the SVG element as pixels.",
+          "type": "string",
+          "value": null
+        },
+        "svgClassName": {
+          "description": "The CSS style class to apply to the changed state. The style class and inline style will override any other styling specified through the properties. Does not apply if custom image is specified.",
+          "type": "string"
+        },
+        "svgStyle": {
+          "description": "The inline style to apply to the changed state. The style class and inline style will override any other styling specified through the properties. Does not apply if custom image is specified.",
+          "type": "object",
+          "value": "{}"
+        }
+      }
+    },
+    "hoverState": {
+      "description": "The shape that displays on hover.",
+      "type": "object",
+      "displayName": "Hover State",
+      "value": "{}",
+      "properties": {
+        "borderColor": {
+          "description": "The border color for hover state. Does not apply if a custom image is specified.",
+          "type": "string",
+          "value": null
+        },
+        "color": {
+          "description": "The color for hover state. Does not apply if a custom image is specified.",
+          "type": "string",
+          "value": null
+        },
+        "shape": {
+          "description": "The shape to be used. Can take the name of a built-in shape or the svg path commands for a custom shape. Does not apply if a custom image is specified.",
+          "type": "string",
+          "value": "star",
+          "enumValues": [
+            "circle",
+            "diamond",
+            "human",
+            "square",
+            "star",
+            "triangle"
+          ],
+          "propertyEditorValues": {
+            "circle": {
+              "displayName": "Circle"
+            },
+            "diamond": {
+              "displayName": "Diamond"
+            },
+            "human": {
+              "displayName": "Human"
+            },
+            "square": {
+              "displayName": "Square"
+            },
+            "star": {
+              "displayName": "Star"
+            },
+            "triangle": {
+              "displayName": "Triangle"
+            }
+          }
+        },
+        "source": {
+          "description": "The URI of the custom image. If specified, it takes precedence over shape. For SVG images, the width and height must be defined on the SVG element as pixels.",
+          "type": "string",
+          "value": null
+        },
+        "svgClassName": {
+          "description": "The CSS style class to apply to the hover state. The style class and inline style will override any other styling specified through the properties. Does not apply if custom image is specified.",
+          "type": "string"
+        },
+        "svgStyle": {
+          "description": "The inline style to apply to the hover state. The style class and inline style will override any other styling specified through the properties. Does not apply if custom image is specified.",
+          "type": "object",
+          "value": "{}"
+        }
+      }
+    },
+    "max": {
+      "description": "Integer value specifying the maximum value of the gauge, which determines the number of shapes or images that are displayed.",
+      "type": "number",
+      "displayName": "Max",
+      "value": 5,
+      "minimum": "0"
+    },
+    "min": {
+      "description": "The minimum value that can be set on the gauge by the end user. Does not affect the value set on the gauge by API.",
+      "type": "number",
+      "displayName": "Min",
+      "value": 0,
+      "minimum": "0"
+    },
+    "orientation": {
+      "description": "Defines the type of rating gauge to be rendered.",
+      "type": "string",
+      "displayName": "Orientation",
+      "value": "horizontal",
+      "enumValues": [
+        "horizontal",
+        "vertical"
+      ],
+      "propertyEditorValues": {
+        "horizontal": {
+          "displayName": "Horizontal"
+        },
+        "vertical": {
+          "displayName": "Vertical"
+        }
+      }
+    },
+    "preserveAspectRatio": {
+      "description": "Specifies whether the images provided should show up at their defined aspect ratio. With 'none', the space is allocated evenly, and shapes could be stretched. With 'meet', The aspect ratio of the shape or image is taken into account when space is allocated. When aspect ratios conflict, the aspect ratio of the selectedState will be used.",
+      "type": "string",
+      "displayName": "Preserve Aspect Ratio",
+      "value": "meet",
+      "enumValues": [
+        "meet",
+        "none"
+      ],
+      "propertyEditorValues": {
+        "meet": {
+          "displayName": "Meet"
+        },
+        "none": {
+          "displayName": "None"
+        }
+      }
+    },
+    "readOnly": {
+      "description": "Defines whether the value of the gauge can be changed by the end user.",
+      "type": "boolean",
+      "displayName": "Read Only",
+      "value": false
+    },
+    "selectedState": {
+      "description": "The selected shape for the gauge.",
+      "type": "object",
+      "displayName": "Selected State",
+      "value": "{}",
+      "properties": {
+        "borderColor": {
+          "description": "The border color for selected state. Does not apply if a custom image is specified.",
+          "type": "string",
+          "value": null
+        },
+        "color": {
+          "description": "The color for selected state. Does not apply if a custom image is specified.",
+          "type": "string",
+          "value": null
+        },
+        "shape": {
+          "description": "The shape to be used. Can take the name of a built-in shape or the svg path commands for a custom shape. Does not apply if a custom image is specified.",
+          "type": "string",
+          "value": "star",
+          "enumValues": [
+            "circle",
+            "diamond",
+            "human",
+            "square",
+            "star",
+            "triangle"
+          ],
+          "propertyEditorValues": {
+            "circle": {
+              "displayName": "Circle"
+            },
+            "diamond": {
+              "displayName": "Diamond"
+            },
+            "human": {
+              "displayName": "Human"
+            },
+            "square": {
+              "displayName": "Square"
+            },
+            "star": {
+              "displayName": "Star"
+            },
+            "triangle": {
+              "displayName": "Triangle"
+            }
+          }
+        },
+        "source": {
+          "description": "The URI of the custom image. If specified, it takes precedence over shape. For SVG images, the width and height must be defined on the SVG element as pixels.",
+          "type": "string",
+          "value": null
+        },
+        "svgClassName": {
+          "description": "The CSS style class to apply to the selected state. The style class and inline style will override any other styling specified through the properties. Does not apply if custom image is specified.",
+          "type": "string"
+        },
+        "svgStyle": {
+          "description": "The inline style to apply to the selected state. The style class and inline style will override any other styling specified through the properties. Does not apply if custom image is specified.",
+          "type": "object",
+          "value": "{}"
+        }
+      }
+    },
+    "step": {
+      "description": "Specifies the increment by which values can be specified by the end user.",
+      "type": "number",
+      "displayName": "Step",
+      "value": 1,
+      "enumValues": [
+        "0",
+        "1",
+        "5"
+      ],
+      "propertyEditorValues": {
+        "0": {
+          "displayName": "0"
+        },
+        "1": {
+          "displayName": "1"
+        },
+        "5": {
+          "displayName": "5"
+        }
+      }
+    },
+    "thresholds": {
+      "description": "An array of objects with the following properties defining the thresholds for the gauge.",
+      "type": "Array.<object>",
+      "displayName": "Thresholds",
+      "value": "[]",
+      "properties": {
+        "borderColor": {
+          "description": "The border color of the threshold.",
+          "type": "string",
+          "value": null
+        },
+        "color": {
+          "description": "The color of the threshold.",
+          "type": "string",
+          "value": null
+        },
+        "max": {
+          "description": "The upper bound of the threshold. This value is ignored for the final threshold, which uses the maximum value of the gauge.",
+          "type": "number",
+          "value": null
+        },
+        "shortDesc": {
+          "description": "Specific description for the threshold and overwrites the shortDesc specified on gauge. This is used for accessibility and also for customizing the tooltip text.",
+          "type": "string",
+          "value": null,
+          "translatable": true
+        }
+      }
+    },
+    "tooltip": {
+      "description": "An object containing an optional callback function for tooltip customization.",
+      "type": "object",
+      "displayName": "Tooltip",
+      "value": "{}",
+      "properties": {
+        "renderer": {
+          "description": "A function that returns a custom tooltip. The function takes a dataContext argument,\nprovided by the gauge, with the following properties: parentElement: The tooltip element. The function can directly modify or append content to this element. label: The computed metric label. color: The indicator color of the gauge. componentElement: The rating gauge HTML element. The function should return an Object that contains only one of the two properties: insert: HTMLElement | string - An HTML element, which will be appended to the tooltip, or a tooltip string. preventDefault: true - Indicates that the tooltip should not be displayed. It is not necessary to return {preventDefault:false} to display tooltip, since this is a default behavior. ",
+          "type": "function",
+          "value": null
+        }
+      }
+    },
+    "trackResize": {
+      "description": "Defines whether the element will automatically render in response to\nchanges in size. If set to off, then the\napplication is responsible for calling refresh\nto render the element at the new size.",
+      "type": "string",
+      "displayName": "Track Resize",
+      "value": "on",
+      "enumValues": [
+        "off",
+        "on"
+      ],
+      "propertyEditorValues": {
+        "off": {
+          "displayName": "Off"
+        },
+        "on": {
+          "displayName": "On"
+        }
+      }
+    },
+    "translations": {
+      "description": "A collection of translated resources from the translation bundle, or null if this\ncomponent has no resources. Resources may be accessed and overridden individually or collectively, as seen in the examples.\n\nIf this component has translations, their documentation immediately follows this doc entry.",
+      "type": "Object",
+      "displayName": "Translations",
+      "value": null,
+      "properties": {
+        "componentName": {
+          "description": "Used to describe the data visualization type for accessibility.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Gauge"
+        },
+        "labelAndValue": {
+          "description": "Used to display a label and its value.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "{0}: {1}"
+        },
+        "labelClearSelection": {
+          "description": "Text shown for clearing multiple selection on touch devices.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Clear Selection"
+        },
+        "labelCountWithTotal": {
+          "description": "Used to display a count out of a total.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "{0} of {1}"
+        },
+        "labelDataVisualization": {
+          "description": "Label for data visualizations used for accessibility.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Data Visualization"
+        },
+        "labelInvalidData": {
+          "description": "Text shown when the component receives invalid data.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Invalid data"
+        },
+        "labelNoData": {
+          "description": "Text shown when the component receives no data.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "No data to display"
+        },
+        "stateCollapsed": {
+          "description": "Used to describe the collapsed state for accessibility.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Collapsed"
+        },
+        "stateDrillable": {
+          "description": "Used to describe a drillable object for accessibility.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Drillable"
+        },
+        "stateExpanded": {
+          "description": "Used to describe the expanded state for accessibility.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Expanded"
+        },
+        "stateHidden": {
+          "description": "Used to describe the hidden state for accessibility.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Hidden"
+        },
+        "stateIsolated": {
+          "description": "Used to describe the isolated state for accessibility.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Isolated"
+        },
+        "stateMaximized": {
+          "description": "Used to describe the maximized state for accessibility.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Maximized"
+        },
+        "stateMinimized": {
+          "description": "Used to describe the minimized state for accessibility.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Minimized"
+        },
+        "stateSelected": {
+          "description": "Used to describe the selected state for accessibility.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Selected"
+        },
+        "stateUnselected": {
+          "description": "Used to describe the unselected state for accessibility.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Unselected"
+        },
+        "stateVisible": {
+          "description": "Used to describe the visible state for accessibility.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Visible"
+        }
+      }
+    },
+    "unselectedState": {
+      "description": "The unselected shape for the gauge.",
+      "type": "object",
+      "displayName": "Unselected State",
+      "value": "{}",
+      "properties": {
+        "borderColor": {
+          "description": "The border color for unselected state. Does not apply if a custom image is specified.",
+          "type": "string",
+          "value": null
+        },
+        "color": {
+          "description": "The color for unselected state. Does not apply if a custom image is specified.",
+          "type": "string",
+          "value": null
+        },
+        "shape": {
+          "description": "The shape to be used. Can take the name of a built-in shape or the svg path commands for a custom shape. Does not apply if a custom image is specified.",
+          "type": "string",
+          "value": "star",
+          "enumValues": [
+            "circle",
+            "diamond",
+            "dot",
+            "human",
+            "none",
+            "square",
+            "star",
+            "triangle"
+          ],
+          "propertyEditorValues": {
+            "circle": {
+              "displayName": "Circle"
+            },
+            "diamond": {
+              "displayName": "Diamond"
+            },
+            "dot": {
+              "displayName": "Dot"
+            },
+            "human": {
+              "displayName": "Human"
+            },
+            "none": {
+              "displayName": "None"
+            },
+            "square": {
+              "displayName": "Square"
+            },
+            "star": {
+              "displayName": "Star"
+            },
+            "triangle": {
+              "displayName": "Triangle"
+            }
+          }
+        },
+        "source": {
+          "description": "The URI of the custom image. If specified, it takes precedence over shape. For SVG images, the width and height must be defined on the SVG element as pixels.",
+          "type": "string",
+          "value": null
+        },
+        "svgClassName": {
+          "description": "The CSS style class to apply to the unselected state. The style class and inline style will override any other styling specified through the properties. Does not apply if custom image is specified.",
+          "type": "string"
+        },
+        "svgStyle": {
+          "description": "The inline style to apply to the unselected state. The style class and inline style will override any other styling specified through the properties. Does not apply if custom image is specified.",
+          "type": "object",
+          "value": "{}"
+        }
+      }
+    },
+    "value": {
+      "description": "The value set on the gauge.",
+      "type": "number",
+      "displayName": "Value",
+      "value": null,
+      "writeback": true,
+      "minimum": "0"
+    },
+    "visualEffects": {
+      "description": "Defines whether visual effects such as overlays are applied to the gauge.",
+      "type": "string",
+      "displayName": "Visual Effects",
+      "value": "auto",
+      "enumValues": [
+        "auto",
+        "none"
+      ],
+      "propertyEditorValues": {
+        "auto": {
+          "displayName": "Auto"
+        },
+        "none": {
+          "displayName": "None"
+        }
+      }
+    }
+  },
+  "methods": {
+    "refresh": {
+      "description": "Refreshes the component."
+    },
+    "setProperty": {
+      "description": "Sets a property or a single subproperty for complex properties and notifies the component\nof the change, triggering a [property]Changed event.",
+      "params": [
+        {
+          "name": "property",
+          "description": "The property name to set. Supports dot notation for subproperty access.",
+          "type": "string"
+        },
+        {
+          "name": "value",
+          "description": "The new value to set the property to.",
+          "type": "*"
+        }
+      ]
+    },
+    "getProperty": {
+      "description": "Retrieves a value for a property or a single subproperty for complex properties.",
+      "params": [
+        {
+          "name": "property",
+          "description": "The property name to get. Supports dot notation for subproperty access.",
+          "type": "string"
+        }
+      ],
+      "return": "*"
+    },
+    "setProperties": {
+      "description": "Performs a batch set of properties.",
+      "params": [
+        {
+          "name": "properties",
+          "description": "An object containing the property and value pairs to set.",
+          "type": "Object"
+        }
+      ]
+    }
+  },
+  "slots": {
+    "contextMenu": {
+      "description": "The contextMenu slot is set on the oj-menu within this element. \nThis is used to designate the JET Menu that this component should launch as a context menu on right-click, Shift-F10, Press & Hold, or component-specific gesture. \nIf specified, the browser's native context menu will be replaced by the JET Menu specified in this slot.\n\nThe application can register a listener for the Menu's ojBeforeOpen event. The listener can cancel the launch via event.preventDefault(), \nor it can customize the menu contents by editing the menu DOM directly, and then calling refresh() on the Menu.\n\nTo help determine whether it's appropriate to cancel the launch or customize the menu, the ojBeforeOpen listener can use component API's to determine which \ntable cell, chart item, etc., is the target of the context menu. See the JSDoc and demos of the individual components for details. \n\nKeep in mind that any such logic must work whether the context menu was launched via right-click, Shift-F10, Press & Hold, or component-specific touch gesture."
+    }
+  }
+}

@@ -1,0 +1,265 @@
+{
+  "name": "ojMenu",
+  "version": "4.1.0",
+  "jetVersion": "4.1.0",
+  "displayName": " Menu",
+  "preview": true,
+  "description": "Themeable, WAI-ARIA-compliant popup menu with touch, mouse and keyboard interactions for navigation",
+  "properties": {
+    "disabled": {
+      "description": "Disables the menu if set to true.",
+      "type": "boolean",
+      "displayName": "Disabled",
+      "value": false
+    },
+    "openOptions": {
+      "description": "A collection of settings impacting the launch of a menu. These openOptions may be accessed and overridden individually or collectively, as seen in the examples. The values set here can be overridden on a per-launch basis by passing the corresponding params into the open method. Those per-launch values can be further customized by a ojBeforeOpen listener. The built-in [menu button]ojMenuButton and [context menu]baseComponent#contextMenu functionality overrides some of the Menu's openOptions, for WAI-ARIA compliance and other reasons. Thus, if the app really wants to customize those values, it must do so in a ojBeforeOpen listener. If the built-in menu button or context menu functionality is modified in this way, it is the app's responsibility to ensure that the result is both correct and accessible.",
+      "type": "Object",
+      "displayName": "Open Options",
+      "properties": {
+        "display": {
+          "description": "Determines whether the menu is displayed as a dropDown menu or a sheet menu. The default value is \"auto\", in which case the behavior is a function of the screen width and the $menuDropDownThresholdWidth SASS variable. For example, if that variable is set to 768px, then for screen widths of 768px and larger, the menu will display as a dropDown, and for screen widths less than 768px, the menu will display as a sheet. To avoid disorienting the user, if the screen width changes while the menu is already open (e.g. due to a device rotation), the display may not change until the next launch. If the SASS variable is set to 0 or a huge value such as 99999px, then all menus with display set to \"auto\" will always display as a dropDown or sheet, respectively.",
+          "type": "string",
+          "value": "auto",
+          "enumValues": [
+            "auto",
+            "dropDown",
+            "sheet"
+          ],
+          "propertyEditorValues": {
+            "auto": {
+              "description": "Displays the menu as a sheet or dropDown, depending on the screen width.",
+              "displayName": "Auto"
+            },
+            "dropDown": {
+              "description": "Displays the menu as a dropDown.",
+              "displayName": "Drop Down"
+            },
+            "sheet": {
+              "description": "Displays the menu as a sheet.",
+              "displayName": "Sheet"
+            }
+          }
+        },
+        "initialFocus": {
+          "description": "Determines focus behavior when the menu is initially opened.",
+          "type": "string",
+          "value": "menu",
+          "enumValues": [
+            "firstItem",
+            "menu",
+            "none"
+          ],
+          "propertyEditorValues": {
+            "firstItem": {
+              "description": "Focuses the first menu item (e.g. MenuButton DownArrow behavior).",
+              "displayName": "First Item"
+            },
+            "menu": {
+              "description": "Focuses the menu itself, with no menu item focused (e.g. typical Context Menu behavior).",
+              "displayName": "Menu"
+            },
+            "none": {
+              "description": "Leaves focus where it is, e.g. on the launching component. The application must verify that the result is accessible.",
+              "displayName": "None"
+            }
+          }
+        },
+        "launcher": {
+          "description": "The DOM node (which may or may not be a JET component) that launches this menu. This node must be focusable, as focus is returned to it upon menu dismissal. The launcher must either be specified in this component option, or on each menu launch -- see open() and ojBeforeOpen.",
+          "type": "string|Object",
+          "value": null
+        },
+        "position": {
+          "description": "Determines the position of a dropDown menu when launched via the open() method or via menu button or context menu functionality. Ignored for sheet menus. Please refer to the jQuery UI [Position]jqueryui.com/position/ utility for details about the various choices. In addition to that syntax, note that JET supports the following reading direction-aware extended syntax in the my and at fields: JET supports start and end values wherever left and right are supported. The start value means \"left in LTR; right in RTL\", while the end value means \"right in LTR; left in RTL.\" Similarly, JET supports > and < operators wherever + and - are supported. The > value means \"+ in LTR; - in RTL\", while the < value means \"- in LTR; + in RTL.\" E.g. a my value of \"start>40\" shifts the menu 40px \"endward,\" while a my value of \"start<40\" shifts the menu 40px \"startward.\" Menu also supports the following extended syntax for the of field: The \"event\" keyword means \"position the menu relative to the UI event that opened the menu.\" The \"launcher\" keyword means \"position the menu relative to the launcher element.\" By default, when the of field is not set, the menu is positioned relative to the launcher.",
+          "type": "Object",
+          "value": "{ my: start top, at: start bottom, collision: flipfit }"
+        }
+      }
+    },
+    "translations": {
+      "description": "A collection of translated resources from the translation bundle, or null if this\ncomponent has no resources. Resources may be accessed and overridden individually or collectively, as seen in the examples.\n\nIf this component has translations, their documentation immediately follows this doc entry.",
+      "type": "Object",
+      "displayName": "Translations",
+      "value": null,
+      "properties": {
+        "labelCancel": {
+          "description": "Label for the \"Cancel\" menu item.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Cancel"
+        }
+      }
+    }
+  },
+  "methods": {
+    "refresh": {
+      "description": "Refreshes the visual state of the menu. JET components require a refresh() after the DOM is programmatically changed underneath the component. For Menu, this includes: After menu items are added or removed. After a change to a menu item's disabled status (which is set by applying or removing the oj-disabled class from the menu item). After the reading direction (LTR vs. RTL) changes. "
+    },
+    "open": {
+      "description": "Launches this menu after firing the ojBeforeOpen event. Listeners to that event can cancel the launch via event.preventDefault(). If the launch is not canceled, then the the open event is fired after the launch. This method's optional openOptionsparam can be used to specify per-launch values for the settings in the corresponding component options, without altering those options. Those per-launch values can be further customized by a ojBeforeOpen listener. Menus launched manually (as opposed to those launched by built-in functionality such as the [menu button]ojButton#menu and [context menu]baseComponent#contextMenu functionality) must be launched via this API, not by simply unhiding the Menu DOM (such as via jQuery's show() API.",
+      "params": [
+        {
+          "name": "event",
+          "description": "What triggered the menu launch. May be null. May be omitted if subsequent params are omitted.",
+          "type": "Object"
+        },
+        {
+          "name": "openOptions",
+          "description": "Options to merge with the openOptions option. May be null. May be omitted if subsequent params are omitted.",
+          "type": "Object"
+        }
+      ]
+    },
+    "setProperty": {
+      "description": "Sets a property or a single subproperty for complex properties and notifies the component\nof the change, triggering a [property]Changed event.",
+      "params": [
+        {
+          "name": "property",
+          "description": "The property name to set. Supports dot notation for subproperty access.",
+          "type": "string"
+        },
+        {
+          "name": "value",
+          "description": "The new value to set the property to.",
+          "type": "*"
+        }
+      ]
+    },
+    "getProperty": {
+      "description": "Retrieves a value for a property or a single subproperty for complex properties.",
+      "params": [
+        {
+          "name": "property",
+          "description": "The property name to get. Supports dot notation for subproperty access.",
+          "type": "string"
+        }
+      ],
+      "return": "*"
+    },
+    "setProperties": {
+      "description": "Performs a batch set of properties.",
+      "params": [
+        {
+          "name": "properties",
+          "description": "An object containing the property and value pairs to set.",
+          "type": "Object"
+        }
+      ]
+    }
+  },
+  "events": {
+    "animateStart": {
+      "description": "Triggered when a default animation is about to start, such as when the component is being opened/closed or a child item is being added/removed. The default animation can be cancelled by calling event.preventDefault. The default animations are controlled via the theme (SCSS) : // dropdown menu $menuDropDownOpenAnimation: (effect: \"zoomIn\", transformOrigin: \"#myPosition\", duration: $animationDurationShort) !default; $menuDropDownCloseAnimation: (effect: \"none\") !default; // sheet menu $menuSheetOpenAnimation: (effect: \"slideIn\", direction: \"top\", duration: $animationDurationShort) !default; $menuSheetCloseAnimation: (effect: \"slideOut\", direction: \"bottom\", duration: $animationDurationShort) !default; ",
+      "detail": {
+        "event": {
+          "description": "a custom event",
+          "type": "CustomEvent",
+          "properties": {
+            "detail": {
+              "description": "an object containing component specific event info",
+              "type": "Object",
+              "properties": {
+                "action": {
+                  "description": "The action that is starting the animation. The number of actions can vary from component to component. Suggested values are: \"open\" - when a menu is opened \"close\" - when a menu is closed ",
+                  "type": "string"
+                },
+                "element": {
+                  "description": "target of animation",
+                  "type": "Element"
+                },
+                "endCallback": {
+                  "description": "If the event listener calls event.preventDefault to cancel the default animation, it must call the endCallback function when it finishes its own animation handling and any custom animation has ended.",
+                  "type": "function"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "animateEnd": {
+      "description": "Triggered when a default animation has ended, such as when the component is being opened/closed or a child item is being added/removed. This event is not triggered if the application has called preventDefault on the animateStart event.",
+      "detail": {
+        "event": {
+          "description": "a custom event",
+          "type": "Event",
+          "properties": {
+            "detail": {
+              "description": "an object containing component specific event info",
+              "type": "Object",
+              "properties": {
+                "element": {
+                  "description": "target of animation",
+                  "type": "Element"
+                },
+                "action": {
+                  "description": "The action that is starting the animation. The number of actions can vary from component to component. Suggested values are: \"open\" - when a menu component is opened \"close\" - when a menu component is closed ",
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "beforeOpen": {
+      "description": "Triggered before this menu is launched via the open method or via menu button or context menu functionality. The launch can be cancelled by calling event.preventDefault(). The ui.openOptions payload field contains the settings being used for this menu launch, resulting from merging the openOptions passed to open(), if any, with the openOptions component option. This field is \"live\", meaning that the listener can alter fields such as position to affect this launch without affecting the component option. Since these changes are applied to the merged object, they supersede both the openOptions passed to open() and the openOptions component option. If any of the above techniques are used to alter the built-in [menu button]ojButton#menu or [context menu]baseComponent#contextMenu functionality, it is the app's responsibility to ensure that the result is both correct and accessible.",
+      "detail": {
+        "event": {
+          "description": "a custom event",
+          "type": "Event",
+          "properties": {
+            "detail": {
+              "description": "an object containing component specific event info",
+              "type": "Object",
+              "properties": {
+                "openOptions": {
+                  "description": "Settings in use for this menu launch.",
+                  "type": "Object"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "close": {
+      "description": "Triggered after this menu is closed.",
+      "detail": {
+        "event": {
+          "description": "a custom event",
+          "type": "Event"
+        }
+      }
+    },
+    "open": {
+      "description": "Triggered after this menu is launched via the open method or via menu button or context menu functionality.",
+      "detail": {
+        "event": {
+          "description": "a custom event",
+          "type": "Event"
+        }
+      }
+    },
+    "action": {
+      "description": "Triggered when a menu item (other than the built-in \"Cancel\" item) is selected. To ensure keyboard accessibility, the only correct, supported way to react to the selection of a menu item is to listen for this event. Click listeners and href navigation should not be used.",
+      "detail": {
+        "event": {
+          "description": "a custom event",
+          "type": "Event",
+          "properties": {
+            "detail": {
+              "description": "an object containing component specific event info",
+              "type": "Object"
+            }
+          }
+        }
+      }
+    }
+  },
+  "slots": {
+    "contextMenu": {
+      "description": "The contextMenu slot is set on the oj-menu within this element. \nThis is used to designate the JET Menu that this component should launch as a context menu on right-click, Shift-F10, Press & Hold, or component-specific gesture. \nIf specified, the browser's native context menu will be replaced by the JET Menu specified in this slot.\n\nThe application can register a listener for the Menu's ojBeforeOpen event. The listener can cancel the launch via event.preventDefault(), \nor it can customize the menu contents by editing the menu DOM directly, and then calling refresh() on the Menu.\n\nTo help determine whether it's appropriate to cancel the launch or customize the menu, the ojBeforeOpen listener can use component API's to determine which \ntable cell, chart item, etc., is the target of the context menu. See the JSDoc and demos of the individual components for details. \n\nKeep in mind that any such logic must work whether the context menu was launched via right-click, Shift-F10, Press & Hold, or component-specific touch gesture."
+    }
+  }
+}

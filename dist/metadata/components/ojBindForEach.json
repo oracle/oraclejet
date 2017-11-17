@@ -1,0 +1,20 @@
+{
+  "name": "ojBindForEach",
+  "version": "4.1.0",
+  "jetVersion": "4.1.0",
+  "displayName": " Bind For Each",
+  "preview": true,
+  "description": "ojBindForEach",
+  "properties": {
+    "as": {
+      "description": "An alias for the array item. This can be especially useful \nif multiple oj-bind-for-each elements are nested to provide access to the data \nfor each level of iteration.",
+      "type": "string",
+      "displayName": "As"
+    },
+    "data": {
+      "description": "The array that you wish to iterate over. Required property.",
+      "type": "array",
+      "displayName": "Data"
+    }
+  }
+}

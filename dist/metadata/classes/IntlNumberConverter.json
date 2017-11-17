@@ -1,0 +1,53 @@
+{
+  "name": "IntlNumberConverter",
+  "version": "4.1.0",
+  "jetVersion": "4.1.0",
+  "displayName": "IntlNumberConverter",
+  "description": "IntlNumberConverter",
+  "methods": {
+    "Init": {
+      "description": "Initializes the number converter instance with the set options.",
+      "params": [
+        {
+          "name": "options",
+          "description": "an object literal used to provide an optional information to \ninitialize the converter.",
+          "type": "Object"
+        }
+      ]
+    },
+    "format": {
+      "description": "Formats a Number and returns the formatted string, using the options this converter was \ninitialized with.",
+      "params": [
+        {
+          "name": "value",
+          "description": "to be formatted for display",
+          "type": "Number|number"
+        }
+      ],
+      "return": "string"
+    },
+    "getHint": {
+      "description": "Retrieves a hint String describing the format the value is expected to be in.",
+      "return": "String"
+    },
+    "getOptions": {
+      "description": "Returns the options called with converter initialization.",
+      "return": "Object"
+    },
+    "parse": {
+      "description": "Parses a string value to return a Number, using the options this converter was initialized with.",
+      "params": [
+        {
+          "name": "value",
+          "description": "to parse",
+          "type": "String|string"
+        }
+      ],
+      "return": "number|null"
+    },
+    "resolvedOptions": {
+      "description": "Returns an object literal with properties reflecting the number formatting options computed based \non the options parameter. If options (or pattern) is not provided, the properties will be derived \nfrom the locale defaults.",
+      "return": "Object"
+    }
+  }
+}

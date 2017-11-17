@@ -1,0 +1,161 @@
+{
+  "name": "ojButtonsetMany",
+  "version": "4.1.0",
+  "jetVersion": "4.1.0",
+  "displayName": " Buttonset Many",
+  "preview": true,
+  "roles": [
+    "button",
+    "group"
+  ],
+  "styleClasses": [
+    {
+      "styleGroup": [
+        "oj-buttonset-width-auto"
+      ],
+      "description": "Forces Buttonset Buttons' widths to be determined by the total width of their icons and label contents, overriding any theming defaults.\nOptionally, specify the overall width of the Buttonset for further width control.\nCan be applied to Buttonset's root element, or on an ancestor such as Toolbar or document."
+    },
+    {
+      "styleGroup": [
+        "oj-buttonset-width-equal"
+      ],
+      "description": "Forces Buttonset Buttons' widths to be equal, overriding any theming defaults.\nNote that the overall width of the Buttonset defaults to 100%; set the \"max-width\" (recommended) or \"width\" of the Buttonset for further width control.\nCan be applied to Buttonset's root element, or on an ancestor such as Toolbar or document."
+    }
+  ],
+  "description": "A grouping of related buttons where any number of buttons may be selected.",
+  "properties": {
+    "translations": {
+      "description": "A collection of translated resources from the translation bundle, or null if this\ncomponent has no resources. Resources may be accessed and overridden individually or collectively, as seen in the examples.\n\nIf this component has translations, their documentation immediately follows this doc entry.",
+      "type": "Object",
+      "displayName": "Translations",
+      "value": null
+    },
+    "chroming": {
+      "description": "Indicates in what states the buttonset has chrome (background and border).",
+      "type": "string",
+      "displayName": "Chroming",
+      "enumValues": [
+        "full",
+        "half",
+        "outlined"
+      ],
+      "propertyEditorValues": {
+        "full": {
+          "description": "In typical themes, full-chrome buttons always have chrome.",
+          "displayName": "Full"
+        },
+        "half": {
+          "description": "In typical themes, half-chrome buttons acquire chrome only in their hover, active, and selected states. Half-chroming is recommended for buttons in a toolbar. (This is the toolbar default in most themes.)",
+          "displayName": "Half"
+        },
+        "outlined": {
+          "description": "In typical themes, outlined buttons are similar to half-chrome buttons, but have a border in the default state.",
+          "displayName": "Outlined"
+        }
+      }
+    },
+    "disabled": {
+      "description": "Specifies that the buttonset element should be disabled.",
+      "type": "boolean",
+      "displayName": "Disabled",
+      "value": false
+    },
+    "display": {
+      "description": "Specifies whether the buttonset displays label and icons, or just icons.",
+      "type": "string",
+      "displayName": "Display",
+      "value": "all",
+      "enumValues": [
+        "all",
+        "icons"
+      ],
+      "propertyEditorValues": {
+        "all": {
+          "description": "Display both the label and icons.",
+          "displayName": "All"
+        },
+        "icons": {
+          "description": "Display only the icons.",
+          "displayName": "Icons"
+        }
+      }
+    },
+    "focusManagement": {
+      "description": "Should be set to none when the buttonset is placed within a toolbar.",
+      "type": "string",
+      "displayName": "Focus Management",
+      "value": "oneTabstop",
+      "enumValues": [
+        "none",
+        "oneTabstop"
+      ],
+      "propertyEditorValues": {
+        "none": {
+          "description": "Focus management is disabled, to avoid interfering with the focus management of a containing component.",
+          "displayName": "None"
+        },
+        "oneTabstop": {
+          "description": "Focus management is enabled. The Buttonset is a single tabstop with arrow-key navigation.",
+          "displayName": "One Tabstop"
+        }
+      }
+    },
+    "value": {
+      "description": "Indicates which oj-options in the buttonset are selected.",
+      "type": "Array.<*>|null",
+      "displayName": "Value",
+      "value": null,
+      "writeback": true
+    }
+  },
+  "methods": {
+    "refresh": {
+      "description": "Refreshes the component."
+    },
+    "setProperty": {
+      "description": "Sets a property or a single subproperty for complex properties and notifies the component\nof the change, triggering a [property]Changed event.",
+      "params": [
+        {
+          "name": "property",
+          "description": "The property name to set. Supports dot notation for subproperty access.",
+          "type": "string"
+        },
+        {
+          "name": "value",
+          "description": "The new value to set the property to.",
+          "type": "*"
+        }
+      ]
+    },
+    "getProperty": {
+      "description": "Retrieves a value for a property or a single subproperty for complex properties.",
+      "params": [
+        {
+          "name": "property",
+          "description": "The property name to get. Supports dot notation for subproperty access.",
+          "type": "string"
+        }
+      ],
+      "return": "*"
+    },
+    "setProperties": {
+      "description": "Performs a batch set of properties.",
+      "params": [
+        {
+          "name": "properties",
+          "description": "An object containing the property and value pairs to set.",
+          "type": "Object"
+        }
+      ]
+    }
+  },
+  "slots": {
+    "": {
+      "description": "The <oj-buttonset-many> element accepts oj-options as children. See the oj-option doc for details about accepted children and slots.",
+      "displayName": "default"
+    },
+    "contextMenu": {
+      "description": "The contextMenu slot is set on the oj-menu within this element. \nThis is used to designate the JET Menu that this component should launch as a context menu on right-click, Shift-F10, Press & Hold, or component-specific gesture. \nIf specified, the browser's native context menu will be replaced by the JET Menu specified in this slot.\n\nThe application can register a listener for the Menu's ojBeforeOpen event. The listener can cancel the launch via event.preventDefault(), \nor it can customize the menu contents by editing the menu DOM directly, and then calling refresh() on the Menu.\n\nTo help determine whether it's appropriate to cancel the launch or customize the menu, the ojBeforeOpen listener can use component API's to determine which \ntable cell, chart item, etc., is the target of the context menu. See the JSDoc and demos of the individual components for details. \n\nKeep in mind that any such logic must work whether the context menu was launched via right-click, Shift-F10, Press & Hold, or component-specific touch gesture."
+    }
+  }
+}

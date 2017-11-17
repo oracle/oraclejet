@@ -1071,6 +1071,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojtime-base', 'ojs/i
  * @ojcomponent oj.ojTimeline
  * @augments oj.dvtTimeComponent
  * @since 1.1.0
+ * @ojstatus preview
  *
  * @classdesc
  * <h3 id="timelineOverview-section">

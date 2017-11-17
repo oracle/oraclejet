@@ -1,0 +1,494 @@
+{
+  "name": "ojPopup",
+  "version": "4.1.0",
+  "jetVersion": "4.1.0",
+  "displayName": "Popup",
+  "preview": true,
+  "roles": [
+    "tooltip",
+    "dialog",
+    "alertdialog"
+  ],
+  "styleClasses": [
+    {
+      "styleGroup": [
+        "oj-focus-highlight"
+      ],
+      "description": "Under normal circumstances this class is applied automatically. It is documented here for the rare cases that an app developer needs per-instance control.\nThe \"oj-focus-highlight\" class applies focus styling that may not be desirable when the focus results from pointer interaction (touch or mouse), but which is needed for accessibility when the focus occurs by a non-pointer mechanism, for example keyboard or initial page load.\nThe application-level behavior for this component is controlled in the theme by the \"$focusHighlightPolicy\" SASS variable; however, note that this same variable controls the focus highlight policy of many components and patterns. The values for the variable are:\n\"nonPointer\": \"oj-focus-highlight\" is applied only when focus is not the result of pointer interaction. Most themes default to this value.\n\"all\": \"oj-focus-highlight\" is applied regardless of the focus mechanism.\n\"none\": \"oj-focus-highlight\" is never applied. This behavior is not accessible, and is intended for use when the application wishes to use its own event listener to precisely control when the class is applied (see below). The application must ensure the accessibility of the result.\nTo change the behavior on a per-instance basis, the application can set the SASS variable as desired and then use event listeners to toggle this class as needed."
+    }
+  ],
+  "description": "Themeable, WAI-ARIA-compliant popup that can display arbitrary content.",
+  "properties": {
+    "autoDismiss": {
+      "description": "Defines conditions that will cause an open popup to auto close dismiss. A value of\nfocusLoss defines the dismissal condition where focus\nhas left the content of the popup or from the associated launcher or if what the popup\nis aligned to is not fully visible within an overflow area.",
+      "type": "string",
+      "displayName": "Auto Dismiss",
+      "value": "focusLoss",
+      "enumValues": [
+        "focusLoss",
+        "none"
+      ],
+      "propertyEditorValues": {
+        "focusLoss": {
+          "description": "defines auto dismissal behavior when focus leaves the content of the popup or associated launcher. In addition, if what the popup is positioned to is not visible within an overflow area, the popup will auto close dismiss.",
+          "displayName": "Focus Loss"
+        },
+        "none": {
+          "description": "disables auto dismissal behaviors.",
+          "displayName": "None"
+        }
+      }
+    },
+    "chrome": {
+      "description": "Defines the presents of border, shadow and background color of the root popup dom.\nValue of none applies the\noj-popup-no-chrome selector defined by the active\ntheme to the root dom of the popup to remove the default chrome.",
+      "type": "string",
+      "displayName": "Chrome",
+      "value": "default",
+      "enumValues": [
+        "default",
+        "none"
+      ],
+      "propertyEditorValues": {
+        "default": {
+          "description": "describes the popups border, shadow, and background color defined by the active theme.",
+          "displayName": "Default"
+        },
+        "none": {
+          "description": "turns off the outer chrome defined by the active theme.",
+          "displayName": "None"
+        }
+      }
+    },
+    "initialFocus": {
+      "description": "Determines if the popup should steal focus to its content when initially open. A value\nof none prevents the popup from grabbing focus when\nopen.",
+      "type": "string",
+      "displayName": "Initial Focus",
+      "value": "auto",
+      "enumValues": [
+        "auto",
+        "firstFocusable",
+        "none",
+        "popup"
+      ],
+      "propertyEditorValues": {
+        "auto": {
+          "description": "is derived from the values of the modality and autoDismiss properties",
+          "displayName": "Auto"
+        },
+        "firstFocusable": {
+          "description": "defines that a popup should grab focus to the first focusable element within the popup's content.",
+          "displayName": "First Focusable"
+        },
+        "none": {
+          "description": "prevents the popup from stealing focus when open.",
+          "displayName": "None"
+        },
+        "popup": {
+          "description": "focus to the root popup container (good choice for touch platforms).",
+          "displayName": "Popup"
+        }
+      }
+    },
+    "modality": {
+      "description": "Determines if the popup should block user input of the page behind with a blocking\noverlay pane.\n\nThe default modality varies by theme. Each theme can set its default by setting\n$popupModalityOptionDefault.",
+      "type": "string",
+      "displayName": "Modality",
+      "enumValues": [
+        "modal",
+        "modeless"
+      ],
+      "propertyEditorValues": {
+        "modal": {
+          "description": "The popup is modal. Interactions with other page elements are disabled. Modal popups overlay other page elements.",
+          "displayName": "Modal"
+        },
+        "modeless": {
+          "description": "defines a modeless popup.",
+          "displayName": "Modeless"
+        }
+      }
+    },
+    "position": {
+      "deprecated": {
+        "since": "3.0.0",
+        "description": "v3.0.0 jQuery UI position syntax; Use of a percent unit with\n\"my\" or \"at\" is not supported."
+      },
+      "description": "Position property is used to establish the location the popup will appear relative to\nanother element. Positioning defines \"my\" alignment \"at\" the alignment \"of\" some other\nthing which can be \"offset\" by so many pixels.\n\nThe \"my\" and \"at\" properties defines aligment points relative to the popup and other\nelement. The \"my\" property represents the popups alignment where the \"at\" property\nrepresents the other element that can be identified by \"of\" or defauts to the launcher\nwhen the popup opens. The values of these properties describe horizontal and\nvertical alignments.",
+      "type": "Object",
+      "displayName": "Position",
+      "properties": {
+        "at": {
+          "description": "Defines which position on the target element (\"of\") to align the positioned element\nagainst.",
+          "type": "Object",
+          "properties": {
+            "horizontal": {
+              "description": "Defines the horizontal alignment of what the popup is aligned to.",
+              "type": "string",
+              "value": "start",
+              "enumValues": [
+                "center",
+                "end",
+                "left",
+                "right",
+                "start"
+              ],
+              "propertyEditorValues": {
+                "center": {
+                  "displayName": "Center"
+                },
+                "end": {
+                  "description": "evaluates to \"right\" in LTR mode and \"left\" in RTL mode.",
+                  "displayName": "End"
+                },
+                "left": {
+                  "displayName": "Left"
+                },
+                "right": {
+                  "displayName": "Right"
+                },
+                "start": {
+                  "description": "evaluates to \"left\" in LTR mode and \"right\" in RTL mode.",
+                  "displayName": "Start"
+                }
+              }
+            },
+            "vertical": {
+              "description": "Defines the vertical alignment of what the popup is aligned to.",
+              "type": "string",
+              "value": "top",
+              "enumValues": [
+                "bottom",
+                "center",
+                "top"
+              ],
+              "propertyEditorValues": {
+                "bottom": {
+                  "displayName": "Bottom"
+                },
+                "center": {
+                  "displayName": "Center"
+                },
+                "top": {
+                  "displayName": "Top"
+                }
+              }
+            }
+          }
+        },
+        "collision": {
+          "description": "Rule for alternate alignment.",
+          "type": "string",
+          "value": "flip",
+          "enumValues": [
+            "fit",
+            "flip",
+            "flipfit",
+            "none"
+          ],
+          "propertyEditorValues": {
+            "fit": {
+              "description": "shift the element away from the edge of the window.",
+              "displayName": "Fit"
+            },
+            "flip": {
+              "description": "the element to the opposite side of the target and the collision detection is run again to see if it will fit. Whichever side allows more of the element to be visible will be used.",
+              "displayName": "Flip"
+            },
+            "flipfit": {
+              "description": "first applies the flip logic, placing the element on whichever side allows more of the element to be visible. Then the fit logic is applied to ensure as much of the element is visible as possible.",
+              "displayName": "Flipfit"
+            },
+            "none": {
+              "description": "no collision detection.",
+              "displayName": "None"
+            }
+          }
+        },
+        "my": {
+          "description": "Defines which edge on the popup to align with the target (\"of\") element.",
+          "type": "Object",
+          "properties": {
+            "horizontal": {
+              "description": "Defines the horizontal alignment of the popup.",
+              "type": "string",
+              "value": "start",
+              "enumValues": [
+                "center",
+                "end",
+                "left",
+                "right",
+                "start"
+              ],
+              "propertyEditorValues": {
+                "center": {
+                  "displayName": "Center"
+                },
+                "end": {
+                  "description": "evaluates to \"right\" in LTR mode and \"left\" in RTL mode.",
+                  "displayName": "End"
+                },
+                "left": {
+                  "displayName": "Left"
+                },
+                "right": {
+                  "displayName": "Right"
+                },
+                "start": {
+                  "description": "evaluates to \"left\" in LTR mode and \"right\" in RTL mode.",
+                  "displayName": "Start"
+                }
+              }
+            },
+            "vertical": {
+              "description": "Defines the vertical alignment of the popup.",
+              "type": "string",
+              "value": "top",
+              "enumValues": [
+                "bottom",
+                "center",
+                "top"
+              ],
+              "propertyEditorValues": {
+                "bottom": {
+                  "displayName": "Bottom"
+                },
+                "center": {
+                  "displayName": "Center"
+                },
+                "top": {
+                  "displayName": "Top"
+                }
+              }
+            }
+          }
+        },
+        "of": {
+          "description": "Which element to position the popup against. The default is the\nlauncher argument passed to the\nopen method.\n\nIf the value is a string, it should be a selector or the literal string value\nof window. Otherwise, a point of x,y. When a point\nis used, the values are relative to the whole document. Page horizontal and vertical\nscroll offsets need to be factored into this point - see UIEvent\npageX,\npageY.",
+          "type": "string|Object|undefined"
+        },
+        "offset": {
+          "description": "Defines a point offset in pixels from the (\"my\") alignment.",
+          "type": "Object",
+          "properties": {
+            "x": {
+              "description": "Horizontal aligment offset.",
+              "type": "number",
+              "value": 0
+            },
+            "y": {
+              "description": "Vertical alignment offset.",
+              "type": "number",
+              "value": 0
+            }
+          }
+        }
+      }
+    },
+    "tail": {
+      "description": "Determines if a decoration will be displayed from the popup that points to the element\nthe popup is aligned to. The simple value enables the\ntail defined by the current theme. In addtion, the\noj-popup-tail-simple selector will be applied to the\nroot dom element. This is to allow the box-shadow, z-index and other chrome styling to\nvary per tail decoration.",
+      "type": "string",
+      "displayName": "Tail",
+      "value": "none",
+      "enumValues": [
+        "none",
+        "simple"
+      ],
+      "propertyEditorValues": {
+        "none": {
+          "description": "no decoration will be displayed from the popup pointing to the launcher.",
+          "displayName": "None"
+        },
+        "simple": {
+          "description": "enables showing the tail defined by the current theme.",
+          "displayName": "Simple"
+        }
+      }
+    },
+    "translations": {
+      "description": "A collection of translated resources from the translation bundle, or null if this\ncomponent has no resources. Resources may be accessed and overridden individually or collectively, as seen in the examples.\n\nIf this component has translations, their documentation immediately follows this doc entry.",
+      "type": "Object",
+      "displayName": "Translations",
+      "value": null
+    }
+  },
+  "methods": {
+    "open": {
+      "description": "Opens the popup. This method accepts two arguments but both are optional.",
+      "params": [
+        {
+          "name": "launcher",
+          "description": "selector or dom element that is associated with the popup. Defines the context of how the popup is used. The argument is required.",
+          "type": "string|Element"
+        },
+        {
+          "name": "position",
+          "description": "an element relative to another",
+          "type": "Object"
+        }
+      ]
+    },
+    "close": {
+      "description": "Closes the popup. This method does not accept any arguments."
+    },
+    "isOpen": {
+      "description": "Returns the state of whether the popup is currently open. This method does not accept\nany arguments.\n\nThe \"open\" state reflects the period of time the popup is visible, including open and\nclose animations.",
+      "return": "boolean"
+    },
+    "refresh": {
+      "description": "Refreshes the component."
+    },
+    "setProperty": {
+      "description": "Sets a property or a single subproperty for complex properties and notifies the component\nof the change, triggering a [property]Changed event.",
+      "params": [
+        {
+          "name": "property",
+          "description": "The property name to set. Supports dot notation for subproperty access.",
+          "type": "string"
+        },
+        {
+          "name": "value",
+          "description": "The new value to set the property to.",
+          "type": "*"
+        }
+      ]
+    },
+    "getProperty": {
+      "description": "Retrieves a value for a property or a single subproperty for complex properties.",
+      "params": [
+        {
+          "name": "property",
+          "description": "The property name to get. Supports dot notation for subproperty access.",
+          "type": "string"
+        }
+      ],
+      "return": "*"
+    },
+    "setProperties": {
+      "description": "Performs a batch set of properties.",
+      "params": [
+        {
+          "name": "properties",
+          "description": "An object containing the property and value pairs to set.",
+          "type": "Object"
+        }
+      ]
+    }
+  },
+  "events": {
+    "beforeOpen": {
+      "description": "Triggered before the popup is launched via the open()\nmethod. The open can be cancelled by calling\nevent.preventDefault().",
+      "bubbles": true,
+      "cancelable": true,
+      "detail": {
+        "event": {
+          "description": "a custom event",
+          "type": "Event"
+        }
+      }
+    },
+    "open": {
+      "description": "Triggered after the popup is launched via the open()\nmethod.",
+      "bubbles": true,
+      "detail": {
+        "event": {
+          "description": "a custom event",
+          "type": "Event"
+        }
+      }
+    },
+    "beforeClose": {
+      "description": "Triggered before the popup is dismissed via the\nclose() method. The close can be cancelled by calling\nevent.preventDefault().",
+      "bubbles": true,
+      "cancelable": true,
+      "detail": {
+        "event": {
+          "description": "a custom event",
+          "type": "Event"
+        }
+      }
+    },
+    "close": {
+      "description": "Triggered after the popup is dismissed via the\nclose() method.",
+      "bubbles": true,
+      "detail": {
+        "event": {
+          "description": "a custom event",
+          "type": "Event"
+        }
+      }
+    },
+    "focus": {
+      "description": "Triggered after focus has been transfered to the popup. This will occur after the\nopen() method is called, depending on the value\nof the initialFocus property. It's also triggered\nwhen using the F6 key to toggle focus from the associated launcher element\nto the content of the popup.",
+      "bubbles": true,
+      "detail": {
+        "event": {
+          "description": "a custom event",
+          "type": "Event"
+        }
+      }
+    },
+    "animateStart": {
+      "description": "Triggered when a default animation is about to start, such as when the component is\nbeing opened/closed or a child item is being added/removed. The default animation can\nbe cancelled by calling event.preventDefault.",
+      "bubbles": true,
+      "cancelable": true,
+      "detail": {
+        "event": {
+          "description": "a custom event",
+          "type": "CustomEvent",
+          "properties": {
+            "detail": {
+              "description": "an object containing component specific event info",
+              "type": "Object",
+              "properties": {
+                "action": {
+                  "description": "The action that is starting the animation. The number of actions can vary from component to component. Suggested values are: \"open\" - when a popup component is opened \"close\" - when a popup component is closed ",
+                  "type": "string"
+                },
+                "element": {
+                  "description": "target of animation",
+                  "type": "Element"
+                },
+                "endCallback": {
+                  "description": "If the event listener calls event.preventDefault to cancel the default animation, It must call the endCallback function when it finishes its own animation handling and any custom animation has ended.",
+                  "type": "function"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "animateEnd": {
+      "description": "Triggered when a default animation has ended, such as when the component is being\nopened/closed or a child item is being added/removed. This event is not triggered if\nthe application has called preventDefault on the animateStart\nevent.",
+      "bubbles": true,
+      "cancelable": true,
+      "detail": {
+        "event": {
+          "description": "a custom event",
+          "type": "Event",
+          "properties": {
+            "detail": {
+              "description": "an object containing component specific event info",
+              "type": "Object",
+              "properties": {
+                "element": {
+                  "description": "target of animation",
+                  "type": "Element"
+                },
+                "action": {
+                  "description": "The action that is starting the animation. The number of actions can vary from component to component. Suggested values are: \"open\" - when a popup component is opened \"close\" - when a popup component is closed ",
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "slots": {
+    "contextMenu": {
+      "description": "The contextMenu slot is set on the oj-menu within this element. \nThis is used to designate the JET Menu that this component should launch as a context menu on right-click, Shift-F10, Press & Hold, or component-specific gesture. \nIf specified, the browser's native context menu will be replaced by the JET Menu specified in this slot.\n\nThe application can register a listener for the Menu's ojBeforeOpen event. The listener can cancel the launch via event.preventDefault(), \nor it can customize the menu contents by editing the menu DOM directly, and then calling refresh() on the Menu.\n\nTo help determine whether it's appropriate to cancel the launch or customize the menu, the ojBeforeOpen listener can use component API's to determine which \ntable cell, chart item, etc., is the target of the context menu. See the JSDoc and demos of the individual components for details. \n\nKeep in mind that any such logic must work whether the context menu was launched via right-click, Shift-F10, Press & Hold, or component-specific touch gesture."
+    }
+  }
+}

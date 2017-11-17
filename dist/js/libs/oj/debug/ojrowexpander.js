@@ -2408,6 +2408,7 @@ oj.FlattenedTreeDataSource.prototype.getCapability = function(feature)
  * @ojcomponent oj.ojRowExpander
  * @augments oj.baseComponent
  * @since 1.0.0
+ * @ojstatus preview
  *
  * @classdesc
  * <h3 id="rowexpanderOverview-section">

@@ -306,19 +306,37 @@ oj.Components.__getDefaultOptions = function(hierarchyNames)
  * @param {?Element|?Node} node - DOM node
  * @return {?Element|?Node} componentElement - JET component element
  * A component element is the DOM element on which the JET component is
- * initialized. It could be a custom element, composite element or a JQueryUI
- * element. The static methods take a component element, figure out what type it
- * is and then use the appropriate syntax to make the specified method or property
- * call.
+ * initialized.
  * @export
 */
 oj.Components.getComponentElementByNode = function(node)
 { 
+  //Temporarily exposing this private flag in order to allow
+  //MonkeyTalk to access JET components that are part of the 
+  //composite's implementation. We are not exposing this flag
+  //as a public API as a) accessing composite implementation
+  //components is bad and b) the need for this method will soon
+  //go away. Once our new automation API (recording adapters) are
+  //in place, even MonkeyTalk will no longer need this flag. Adding
+  //this as a stop-gap measure to allow MonkeyTalk to carry on in the
+  //meantime. Callers other than MonkeyTalk must avoid specifying this flag. 
+  var mtAccessCompositeInternals = arguments.length > 1 && arguments[1] ? true : false;
+  return _getComponentElementByNode(node, mtAccessCompositeInternals);
+};
+
+/**
+ * Private method implementing the functionality of
+ * getComponentElementByNode. This was done because Closure
+ * throws an error when the private, undocumented flag (mtAccessCompositeInternals)
+ * is passed to recursive calls of getComponentElementByNode.
+ * @private
+*/ 
+function _getComponentElementByNode(node, mtAccessCompositeInternals){
   if (node == null)
   {
     return null;
   }
-  var containingComposite = (oj.Composite ? oj.Composite.getContainingComposite(node) : null);
+  var containingComposite = (oj.Composite && !mtAccessCompositeInternals ? oj.Composite.getContainingComposite(node) : null);
   if (containingComposite)
   { // node is in or is a composite, return composite
     return containingComposite;
@@ -327,9 +345,9 @@ oj.Components.getComponentElementByNode = function(node)
     if (node.parentNode.hasAttribute('data-oj-surrogate-id'))
     { // internal component is a popup
       node = document.querySelector('[data-oj-popup-' + node.id + '-parent]'); // retrieves popups parent element
-      return oj.Components.getComponentElementByNode(node);
+      return _getComponentElementByNode(node, mtAccessCompositeInternals);
     }
-    return oj.Components.getComponentElementByNode(node.parentNode);
+    return _getComponentElementByNode(node.parentNode, mtAccessCompositeInternals);
   } else if (_isComponentElement(node))
   { // node is a component element
     return node;
@@ -343,10 +361,10 @@ oj.Components.getComponentElementByNode = function(node)
   } else if (node.hasAttribute('data-oj-containerid'))
   { // node is non-internal component popup e.g listbox
       node = document.getElementById(node.getAttribute('data-oj-containerid'));
-      return oj.Components.getComponentElementByNode(node);
+      return _getComponentElementByNode(node, mtAccessCompositeInternals);
   }
-  return oj.Components.getComponentElementByNode(node.parentNode);
-};
+  return _getComponentElementByNode(node.parentNode, mtAccessCompositeInternals);
+}
 
 /**
  * Retrieves the subId of the node as
@@ -2035,7 +2053,7 @@ $.widget('oj.' + _BASE_COMPONENT,
    * @private
    */
   _triggerCustomEvent : function (type, event, data) {
-    var eventName, detail = {}, cancelable, rootElement = this._getRootElement();
+    var eventName, detail = {}, bubbles, cancelable, rootElement = this._getRootElement();
     if (type === 'optionChange') {
       var property = oj.CustomElementBridge.getPropertyForAlias(rootElement, data['option']);
       if (!oj.CustomElementBridge.isKnownProperty(rootElement, property)) {
@@ -2081,6 +2099,7 @@ $.widget('oj.' + _BASE_COMPONENT,
       if (!oj.CustomElementBridge.isKnownEvent(rootElement, type)) {
         return {'proceed':true, 'event':null};
       }
+      bubbles = true;
       cancelable = true;
       eventName = oj.__AttributeUtils.eventTriggerToEventType(type);
       detail = this._resolveJQueryObjects(data);
@@ -2089,8 +2108,11 @@ $.widget('oj.' + _BASE_COMPONENT,
       detail['originalEvent'] = event instanceof $.Event ? event.originalEvent : event;
     }
     var params = {'detail': detail};
+    if (bubbles)
+      params['bubbles'] = true;
     if (cancelable)
       params['cancelable'] = true;
+    
     var customEvent = new CustomEvent(eventName, params);
     rootElement.dispatchEvent(customEvent);
     return {'proceed':!customEvent.defaultPrevented, 'event':customEvent};
@@ -6300,6 +6322,31 @@ oj.ComponentValidity.prototype._getImmediateMessages = function ()
   return immediateMsgs;
 };
 
+var DataProviderFeatureChecker = (function () {
+    function DataProviderFeatureChecker() {
+    }
+    DataProviderFeatureChecker.isIteratingDataProvider = function (dataprovider) {
+        if (dataprovider['fetchFirst']) {
+            return true;
+        }
+        return false;
+    };
+    DataProviderFeatureChecker.isFetchByKeys = function (dataprovider) {
+        if (dataprovider['fetchByKeys']) {
+            return true;
+        }
+        return false;
+    };
+    DataProviderFeatureChecker.isFetchByOffset = function (dataprovider) {
+        if (dataprovider['fetchByOffset']) {
+            return true;
+        }
+        return false;
+    };
+    return DataProviderFeatureChecker;
+}());
+oj.DataProviderFeatureChecker = DataProviderFeatureChecker;
+//# sourceMappingURL=DataProviderFeatureChecker.js.map
 /*jslint browser: true*/
 /*
 ** Copyright (c) 2017, Oracle and/or its affiliates. All rights reserved.
@@ -6999,7 +7046,16 @@ oj.CollectionUtils.copyInto(oj.CustomElementBridge.proto,
       if (this._WIDGET_ELEM.hasAttribute(attrName))
       {
         var value = this._WIDGET_ELEM.getAttribute(attrName);
-        var coercedValue = oj.__AttributeUtils.coerceValue(elem, attrName, value, propMeta["type"]);
+        var coercedValue;
+        try 
+        {
+          coercedValue = oj.__AttributeUtils.coerceValue(elem, attrName, value, propMeta["type"]);
+        }
+        catch (ex)
+        {
+          this.resolveDelayedReadyPromise();
+          throw ex;
+        }
         return coercedValue;
       }
       return null;
@@ -7585,7 +7641,21 @@ oj.CollectionUtils.copyInto(oj.DefinitionalElementBridge.proto,
       'get': function() 
       { 
         var bridge = oj.BaseCustomElementBridge.getInstance(this);
-        return bridge._PROPS[property];
+        var value = bridge._PROPS[property];
+        // If the attribute has not been set, return the default value
+        if (value === undefined)
+        {
+          value = propertyMeta['value'];
+          // Make a copy if the default value is an Object or Array to prevent modification
+          // of the metadata copy and store in the propertyTracker so we have a copy
+          // to modify in place for the object case
+          if (typeof value === 'object')
+            value = oj.CollectionUtils.copyInto({}, value, undefined, true);
+          else if (Array.isArray(value))
+            value = value.slice();
+          bridge._PROPS[property] = value;
+        }
+        return value;
       },
       'set': function(value) 
       {

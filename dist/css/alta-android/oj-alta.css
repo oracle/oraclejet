@@ -1091,7 +1091,7 @@ a.oj-disabled.oj-clickable-icon-nocontext,
   font-size: 9px; }
 
 /* Icon Font Icons =========== */
-.oj-fwk-icon-cross:before, .oj-panel-remove-icon:before, .oj-error.oj-train-icon:before, .oj-dialog-close-icon:before, .oj-combobox-clear-entry-icon:before, .oj-select-clear-entry-icon:before, .oj-progressstatus-cancel-icon:before {
+.oj-fwk-icon-cross:before, .oj-panel-remove-icon:before, .oj-error.oj-train-icon:before, .oj-tabbar-remove-icon:before, .oj-dialog-close-icon:before, .oj-combobox-clear-entry-icon:before, .oj-select-clear-entry-icon:before, .oj-progressstatus-cancel-icon:before {
   content: "\e608"; }
 
 .oj-fwk-icon-cross02:before, .oj-menu-icons .oj-menu-cancel-icon:before {
@@ -2363,7 +2363,8 @@ oj-conveyor-belt {
   -webkit-flex: 0 0 auto;
   flex: 0 0 auto; }
 
-.oj-conveyorbelt-item.oj-navigationlist {
+.oj-conveyorbelt-item.oj-navigationlist,
+.oj-conveyorbelt-item.oj-tabbar {
   -webkit-flex: 1 0 auto;
   flex: 1 0 auto; }
 
@@ -5691,6 +5692,11 @@ html:not([dir="rtl"]) .oj-navigationlist-hierarchical-menu .oj-menu-item-icon {
   html[dir="rtl"] .oj-menu-item-icon.oj-navigationlist-level-indicator {
     border-right: 1px solid #c8d7e0; }
 
+.oj-navigationlist-no-data-message {
+  padding: 0.5rem;
+  background-color: #ffffff;
+  min-height: 1rem; }
+
 /* Override  default options*/
 .oj-navigationlist-option-defaults {
   font-family: '{"animation":{"addHorizontalItem":[{"effect":"expand","direction":"width"},"fadeIn"],"removeHorizontalItem":[{"effect":"collapse","direction":"width","persist":"all"},"fadeOut"],"add":[{"effect":"expand"},"fadeIn"],"remove":[{"effect":"collapse"},"fadeOut"],"update":{"effect":"fadeIn"},"expand":{"effect":"expand"},"collapse":{"effect":"collapse"},"sliderExpand":{"effect":"slideIn","direction":"start","duration":"400ms"},"sliderCollapse":{"effect":"slideIn","direction":"end","duration":"400ms"},"pointerUp":{"effect":"ripple"}},"hierarchyMenuDisplayThresholdLevel":-1}'; }
@@ -5831,7 +5837,8 @@ a.oj-tabbar-item-content .oj-tabbar-item-label {
   white-space: nowrap;
   overflow-x: hidden;
   display: inline-block;
-  line-height: normal; }
+  line-height: normal;
+  min-width: 3rem; }
 
 .oj-tabbar-item-text-wrap .oj-tabbar-item-label {
   white-space: normal; }
@@ -6381,6 +6388,60 @@ html[dir="rtl"] .oj-tabbar-horizontal.oj-tabbar-icon-only .oj-tabbar-item:first-
 .oj-tabbar-overflow-item-icon {
   display: none;
   font-size: 24px; }
+
+/* Styling for the drag image */
+.oj-tabbar-drag-image {
+  background-color: transparent;
+  position: fixed;
+  top: 10000px;
+  border: 1px solid transparent;
+  overflow-x: initial;
+  padding: 3px; }
+
+/* Styling for hiding the original item being dragged */
+.oj-tabbar-drag-item {
+  display: none; }
+
+/* Styling item that is draggable (no affordance) */
+.oj-tabbar-item.oj-draggable {
+  cursor: move; }
+
+/* Styling for the item that is being moved using drag */
+.oj-tabbar-item.oj-drag {
+  box-shadow: 1px 1px 10px 0 rgba(0, 0, 0, 0.45);
+  border-top: 1px solid transparent;
+  border-bottom: 1px solid transparent; }
+
+/* Styling all drop targets in the list */
+.oj-tabbar .oj-tabbar-item.oj-drop,
+.oj-tabbar .oj-tabbar-item.oj-drop.oj-active,
+.oj-tabbar .oj-tabbar-item.oj-drop.oj-default,
+.oj-tabbar .oj-tabbar-item.oj-drop.oj-disabled,
+.oj-tabbar .oj-tabbar-item.oj-drop.oj-selected,
+.oj-tabbar .oj-tabbar-item.oj-drop.oj-hover,
+.oj-tabbar .oj-tabbar-item.oj-drop.oj-hover:not(.oj-selected) {
+  box-sizing: border-box;
+  border: 1px solid #c2eaf3;
+  background-color: #D9F4FA; }
+
+/* Used when there are no items in tabbar */
+.oj-tabbar-no-data-message {
+  padding: 0.5rem;
+  background-color: #ffffff;
+  min-height: 1rem; }
+
+/* Styling for an item that is cut during a context menu cut operation */
+.oj-tabbar-cut {
+  opacity: 0.8; }
+
+.oj-tabbar-remove-icon {
+  -webkit-align-self: center;
+  align-self: center;
+  padding-top: 3px; }
+  html:not([dir="rtl"]) .oj-tabbar-remove-icon {
+    padding-right: 5px; }
+  html[dir="rtl"] .oj-tabbar-remove-icon {
+    padding-left: 5px; }
 
 /* Override  default options*/
 .oj-tabbar-option-defaults {
@@ -7449,6 +7510,14 @@ oj-paging-control:not(.oj-complete) {
   html[dir="rtl"] .oj-pagingcontrol-nav-input-section {
     padding-left: 5px; }
 
+/* Styling for the input section labels */
+.oj-pagingcontrol-nav-label.oj-label-inline,
+.oj-pagingcontrol-nav-input-max.oj-label-inline,
+.oj-pagingcontrol-nav-input-summary.oj-label-inline {
+  margin-top: 0.2em;
+  padding-top: 0.5rem;
+  line-height: 1; }
+
 /* Styling for the page mode navigation arrows section. */
 .oj-pagingcontrol-nav-arrow-section {
   display: inline-block;
@@ -7563,6 +7632,7 @@ input.oj-pagingcontrol-nav-input.oj-inputtext-input {
   max-height: 2rem;
   font-size: 1rem;
   padding-left: 2px;
+  padding-top: 0px;
   padding-right: 2px;
   margin-top: 0.2em; }
   input.oj-pagingcontrol-nav-input.oj-inputtext-input::-webkit-input-placeholder {
@@ -7579,10 +7649,7 @@ input.oj-pagingcontrol-nav-input.oj-inputtext-input {
 input[readOnly].oj-pagingcontrol-nav-input.oj-inputtext-input {
   color: #3a3a3a;
   min-width: 1rem;
-  max-width: 1rem;
-  min-height: 0;
-  max-height: none;
-  margin-top: 0.1em; }
+  max-width: 1rem; }
 
 /* Styling for the page mode maximum number of pages text. */
 .oj-pagingcontrol-nav-input-max {
@@ -7613,6 +7680,7 @@ input[readOnly].oj-pagingcontrol-nav-input.oj-inputtext-input {
   border: 1px solid transparent;
   border-radius: 2px;
   padding: 5px;
+  padding-top: 0.5rem;
   cursor: default; }
 
 /* Styling for the page mode navigation page arrows in hover state. */
@@ -11628,6 +11696,62 @@ html:not([dir="rtl"]) .oj-listbox-no-results {
 
 html[dir="rtl"] .oj-listbox-no-results {
   padding-right: 5px; }
+
+/* 
+     * Applied to the filter message container
+     */
+.oj-listbox-filter-message-box {
+  padding-left: 5px;
+  padding-right: 5px; }
+
+/* 
+     * Applied to the filter message text
+     */
+.oj-listbox-filter-message-text {
+  line-height: 1.8rem;
+  color: #595959;
+  font-size: 0.875rem;
+  padding-top: 5px;
+  padding-bottom: 5px; }
+
+/* 
+     * Applied to the filter message separator
+     */
+.oj-listbox-filter-message-separator {
+  border-bottom: 1px solid #c8d7e0; }
+
+/*
+     * Applied to the data fetching indicator container
+     */
+.oj-listbox-loading-icon-container {
+  display: -webkit-flex;
+  display: flex;
+  -webkit-justify-content: center;
+  justify-content: center;
+  -webkit-align-items: center;
+  align-items: center;
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 1;
+  border-style: none; }
+
+/* 
+     * Applied to the data fetching indicator icon
+     */
+.oj-listbox-loading-icon {
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+  margin: auto; }
+  .oj-listbox-loading-icon:before {
+    content: url("images/spinner_full.gif");
+    -webkit-transform: translate(-42.5%, -42.5%) scale(0.15);
+    transform: translate(-42.5%, -42.5%) scale(0.15); }
 
 .oj-hicontrast .oj-listbox-results .oj-hover {
   border: 1px solid #b2b2b2; }
@@ -17201,6 +17325,126 @@ html[dir="rtl"] .oj-flex-bar-end {
 .oj-form-layout > .oj-form-no-dividers[class*="oj-form-cols-"] > .oj-flex:last-child,
 .oj-form-layout > .oj-flex-item > .oj-form-no-dividers > .oj-flex:last-child {
   border-width: 0; }
+
+html:not([dir="rtl"]) .oj-form-layout:not(.oj-ofl-only-flex-direction-column) > .oj-flex-item:not(:first-child) {
+  margin-left: 1rem; }
+
+html[dir="rtl"] .oj-form-layout:not(.oj-ofl-only-flex-direction-column) > .oj-flex-item:not(:first-child) {
+  margin-right: 1rem; }
+
+.oj-form > .oj-flex > .oj-flex-item:nth-child(odd) > .oj-ofl-label-nowrap,
+.oj-ofl-labels-nowrap > .oj-flex > .oj-flex-item:nth-child(odd) > .oj-label,
+.oj-ofl-labels-nowrap > .oj-flex > .oj-flex-item:nth-child(odd) > .oj-label-nocomp {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis; }
+
+.oj-form > .oj-flex > .oj-flex-item:nth-child(odd) > .oj-ofl-label-inline,
+.oj-ofl-labels-inline > .oj-flex > .oj-flex-item:nth-child(odd) > .oj-label,
+.oj-ofl-labels-inline > .oj-flex > .oj-flex-item:nth-child(odd) > .oj-label-nocomp {
+  width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
+  text-overflow: ellipsis; }
+
+.oj-ofl-labels-inline > .oj-flex > .oj-flex-item:nth-child(even) {
+  text-align: right; }
+  html[dir="rtl"] .oj-ofl-labels-inline > .oj-flex > .oj-flex-item:nth-child(even) {
+    text-align: left; }
+
+html:not([dir="rtl"]) .oj-ofl-form-across > .oj-flex > .oj-flex-item:nth-child(2n+3) {
+  padding-left: 1rem; }
+
+html[dir="rtl"] .oj-ofl-form-across > .oj-flex > .oj-flex-item:nth-child(2n+3) {
+  padding-right: 1rem; }
+
+html:not([dir="rtl"]) .oj-ofl-form-across > .oj-flex > .oj-flex-item:nth-child(even) {
+  padding-right: 1rem; }
+
+html[dir="rtl"] .oj-ofl-form-across > .oj-flex > .oj-flex-item:nth-child(even) {
+  padding-left: 1rem; }
+
+.oj-ofl-label-inline .oj-label-required-icon,
+.oj-ofl-labels-inline > .oj-flex > .oj-flex-item:nth-child(odd) .oj-label-required-icon {
+  margin-top: 1px; }
+
+.oj-ofl-label-inline .oj-label-required-icon,
+.oj-ofl-labels-inline > .oj-flex > .oj-flex-item:nth-child(odd) .oj-label-required-icon,
+.oj-ofl-label-inline .oj-label-help-icon,
+.oj-ofl-labels-inline > .oj-flex > .oj-flex-item:nth-child(odd) .oj-label-help-icon,
+.oj-ofl-label-inline.oj-label label,
+.oj-ofl-labels-inline > .oj-flex > .oj-flex-item:nth-child(odd) label {
+  float: none; }
+
+html:not([dir="rtl"]) .oj-ofl-label-inline.oj-label label {
+  float: none; }
+
+html[dir="rtl"] .oj-ofl-label-inline.oj-label label {
+  float: none; }
+
+html:not([dir="rtl"]) .oj-ofl-label-inline .oj-label-required-icon, html:not([dir="rtl"])
+.oj-ofl-labels-inline > .oj-flex > .oj-flex-item:nth-child(odd) .oj-label-required-icon, html:not([dir="rtl"])
+.oj-ofl-label-inline .oj-label-help-icon, html:not([dir="rtl"])
+.oj-ofl-labels-inline > .oj-flex > .oj-flex-item:nth-child(odd) .oj-label-help-icon {
+  margin-left: 0;
+  margin-right: 6px; }
+
+html[dir="rtl"] .oj-ofl-label-inline .oj-label-required-icon, html[dir="rtl"]
+.oj-ofl-labels-inline > .oj-flex > .oj-flex-item:nth-child(odd) .oj-label-required-icon, html[dir="rtl"]
+.oj-ofl-label-inline .oj-label-help-icon, html[dir="rtl"]
+.oj-ofl-labels-inline > .oj-flex > .oj-flex-item:nth-child(odd) .oj-label-help-icon {
+  margin-right: 0;
+  margin-left: 6px; }
+
+.oj-ofl-label-inline .oj-label-help-icon-anchor,
+.oj-ofl-labels-inline > .oj-flex > .oj-flex-item:nth-child(odd) .oj-label-help-icon-anchor {
+  float: none; }
+
+.oj-ofl-label-inline.oj-label,
+.oj-ofl-labels-inline > .oj-flex > .oj-flex-item > .oj-label,
+.oj-ofl-labels-inline > .oj-flex > .oj-flex-item > .oj-label-nocomp {
+  display: inline-block;
+  vertical-align: top;
+  margin-top: 0.3em;
+  box-sizing: border-box; }
+  html:not([dir="rtl"]) .oj-ofl-label-inline.oj-label, html:not([dir="rtl"])
+  .oj-ofl-labels-inline > .oj-flex > .oj-flex-item > .oj-label, html:not([dir="rtl"])
+  .oj-ofl-labels-inline > .oj-flex > .oj-flex-item > .oj-label-nocomp {
+    padding-right: 1rem; }
+  html[dir="rtl"] .oj-ofl-label-inline.oj-label, html[dir="rtl"]
+  .oj-ofl-labels-inline > .oj-flex > .oj-flex-item > .oj-label, html[dir="rtl"]
+  .oj-ofl-labels-inline > .oj-flex > .oj-flex-item > .oj-label-nocomp {
+    padding-left: 1rem; }
+
+.oj-ofl-label-inline.oj-label-inline-top,
+.oj-ofl-labels-inline > .oj-flex > .oj-flex-item > .oj-label-inline-top,
+.oj-ofl-label-inline.oj-label-nocomp.oj-label-for-non-control,
+.oj-ofl-labels-inline > .oj-flex > .oj-flex-item > .oj-label-nocomp.oj-label-for-non-control {
+  margin-top: 0; }
+
+.oj-ofl-label-inline.oj-radioset-label,
+.oj-ofl-labels-inline > .oj-flex > .oj-flex-item > .oj-radioset-label,
+.oj-ofl-label-inline.oj-checkboxset-label,
+.oj-ofl-labels-inline > .oj-flex > .oj-flex-item > .oj-checkboxset-label {
+  margin-top: 0.6rem;
+  margin-bottom: 0; }
+
+.oj-form > .oj-flex > .oj-flex-item:nth-child(odd) > .oj-ofl-label-nowrap .oj-label-group,
+.oj-ofl-labels-nowrap > .oj-flex > .oj-flex-item:nth-child(odd) > .oj-label .oj-label-group {
+  width: inherit;
+  overflow: inherit;
+  text-overflow: inherit; }
+
+.oj-form > .oj-flex > .oj-flex-item:nth-child(odd) > .oj-ofl-label-inline .oj-label-group,
+.oj-ofl-labels-inline > .oj-flex > .oj-flex-item:nth-child(odd) > .oj-label .oj-label-group {
+  width: inherit;
+  overflow: inherit;
+  text-overflow: inherit;
+  line-height: 1.6em; }
+
+.oj-ofl-labels-inline > .oj-flex > .oj-flex-item:nth-child(odd) >
+.oj-label-nocomp:not(.oj-label-for-non-control) {
+  line-height: 1.6em; }
 
 @media print, screen {
   html:not([dir="rtl"]) .oj-form-layout:not(.oj-sm-only-flex-direction-column) > .oj-flex-item:not(:first-child) {

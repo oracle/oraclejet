@@ -472,14 +472,8 @@ oj.ModuleBinding._EMPTY_MODULE = "oj:blank";
                   ctx['$module'] = model;
                   ctx['$params'] = params;
                 });
-      
-                _koNodesForEach(nodes[0], cacheHolder,
-                  function(node)
-                  {
-                    ko.applyBindings(childBindingContext, node);
-                  }
                 
-                );
+                _applyBindingsToNodes(targetElement, nodes[0], childBindingContext, cacheHolder);
                 
                 _invokeLifecycleListener(lifecycleListener, 'bindingsApplied', [targetElement, valueAccessor, model]);
                 _invokeViewModelMethod(model, 'bindingsAppliedHandler', [targetElement, valueAccessor]);
@@ -553,6 +547,7 @@ oj.ModuleBinding._EMPTY_MODULE = "oj:blank";
   
   // Allow ojModule binding on virtual elements (comment nodes) 
   ko.virtualElements.allowedBindings['ojModule'] = true;
+  
   
   
   /**
@@ -808,6 +803,37 @@ oj.ModuleBinding._EMPTY_MODULE = "oj:blank";
       }
       node = next;
     }
+  }
+  
+  /**
+   * @ignore 
+   */
+  function _applyBindingsToNodes(parentNode, first, bindingContext, cacheHolder)
+  {
+    // Workaround for KO not calling preprocessNode() on the node where .applyBindings() is called
+    var provider = ko.bindingProvider['instance'];
+    var preprocessNode = provider['preprocessNode'];
+    
+    if (preprocessNode)
+    {
+      _koNodesForEach(first, cacheHolder,
+        function(node)
+        {
+          preprocessNode.call(provider, node);
+        }
+      );
+      
+      // Get the new first node since a new node could have been inserted at the very top
+      first =  ko.virtualElements.firstChild(parentNode);
+      
+    }
+    
+    _koNodesForEach(first, cacheHolder,
+      function(node)
+      {
+        ko.applyBindings(bindingContext, node);
+      }
+    );
   }
   
   /**

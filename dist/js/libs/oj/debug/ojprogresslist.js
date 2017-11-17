@@ -360,11 +360,11 @@ var progressItemView =
   "        <div data-bind='text: message' class='oj-progresslist-error-message'></div>" +
   "      </div>" +
   "      <div class='oj-flex oj-sm-align-items-center'>" +
-  "        <oj-slot name='itemInfo'>" +
+  "        <oj-bind-slot name='itemInfo'>" +
   "          <div class='oj-flex-item oj-flex oj-progresslist-info'>" +
   "            <span data-bind='text: $data.getSizeInBKMGT($props.data.size)'></span>" +
   "          </div>" +
-  "        </oj-slot>" +
+  "        </oj-bind-slot>" +
   "        <div class='oj-flex-item oj-flex'>" +
   "          <oj-progress-status status='{{status}}'" +
   "                              progress='{{progress}}'>" +

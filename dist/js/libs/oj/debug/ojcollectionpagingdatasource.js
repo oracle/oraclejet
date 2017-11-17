@@ -47,6 +47,7 @@ oj.Object.createSubclass(oj.CollectionPagingDataSource, oj.DataSource, "oj.Colle
 /**
  * Initializes the instance.
  * @export
+ * @memberof oj.CollectionPagingDataSource
  */
 oj.CollectionPagingDataSource.prototype.Init = function()
 {
@@ -93,6 +94,7 @@ oj.CollectionPagingDataSource.prototype._refreshObservableDataWindow = function(
  * Return the current set of data in the paging window
  * 
  * @returns {Array} the current set of data in the paging window
+ * @memberof oj.CollectionPagingDataSource
  */
 oj.CollectionPagingDataSource.prototype.getWindow = function() {
     return this.dataWindow;
@@ -103,6 +105,7 @@ oj.CollectionPagingDataSource.prototype.getWindow = function() {
  * Get the observable array representing the current set of data in the paging window
  * 
  * @returns {Object} an observable array representing the current data in the paging window
+ * @memberof oj.CollectionPagingDataSource
  */
 oj.CollectionPagingDataSource.prototype.getWindowObservable = function() {
     if (this.observableDataWindow === undefined) {
@@ -117,7 +120,7 @@ oj.CollectionPagingDataSource.prototype.getWindowObservable = function() {
  * @return {number} The current page
  * @export
  * @expose
- * @memberof! oj.CollectionPagingDataSource
+ * @memberof oj.CollectionPagingDataSource
  * @instance
  */
 oj.CollectionPagingDataSource.prototype.getPage = function()
@@ -133,7 +136,7 @@ oj.CollectionPagingDataSource.prototype.getPage = function()
  * @return {Promise} promise object triggering done when complete..
  * @export
  * @expose
- * @memberof! oj.CollectionPagingDataSource
+ * @memberof oj.CollectionPagingDataSource
  * @instance
  */
 oj.CollectionPagingDataSource.prototype.setPage = function(value, options)
@@ -176,7 +179,7 @@ oj.CollectionPagingDataSource.prototype.setPage = function(value, options)
  * @return {number} The current page start index
  * @export
  * @expose
- * @memberof! oj.CollectionPagingDataSource
+ * @memberof oj.CollectionPagingDataSource
  * @instance
  */
 oj.CollectionPagingDataSource.prototype.getStartItemIndex = function()
@@ -189,7 +192,7 @@ oj.CollectionPagingDataSource.prototype.getStartItemIndex = function()
  * @return {number} The current page end index
  * @export
  * @expose
- * @memberof! oj.CollectionPagingDataSource
+ * @memberof oj.CollectionPagingDataSource
  * @instance
  */
 oj.CollectionPagingDataSource.prototype.getEndItemIndex = function()
@@ -202,7 +205,7 @@ oj.CollectionPagingDataSource.prototype.getEndItemIndex = function()
  * @return {number} The total number of pages
  * @export
  * @expose
- * @memberof! oj.CollectionPagingDataSource
+ * @memberof oj.CollectionPagingDataSource
  * @instance
  */
 oj.CollectionPagingDataSource.prototype.getPageCount = function()
@@ -226,7 +229,7 @@ oj.CollectionPagingDataSource.prototype.getPageCount = function()
  * </table>  
  * @export
  * @expose
- * @memberof! oj.CollectionPagingDataSource
+ * @memberof oj.CollectionPagingDataSource
  * @instance
  */
 oj.CollectionPagingDataSource.prototype.fetch = function(options)
@@ -308,6 +311,7 @@ oj.CollectionPagingDataSource.prototype.handleEvent = function(eventType, event)
 /**
  * Return whether there is more data which can be fetched.
  * @private
+ * @memberof oj.CollectionPagingDataSource
  */
 oj.CollectionPagingDataSource.prototype._hasMore = function()
 {
@@ -319,6 +323,7 @@ oj.CollectionPagingDataSource.prototype._hasMore = function()
  * 
  * @param {number} n page size
  * @private
+ * @memberof oj.CollectionPagingDataSource
  */
 oj.CollectionPagingDataSource.prototype._setPageSize = function(n)
 {
@@ -341,7 +346,7 @@ oj.CollectionPagingDataSource.prototype.setFetchCallback = function(callback) {
  * done yet.
  * @returns {number} size of data
  * @expose
- * @memberof! oj.CollectionPagingDataSource
+ * @memberof oj.CollectionPagingDataSource
  * @instance
  */
 oj.CollectionPagingDataSource.prototype.size = function()
@@ -355,7 +360,7 @@ oj.CollectionPagingDataSource.prototype.size = function()
  * Return the total size of data available, including server side if not local.
  * @returns {number} total size of data
  * @expose
- * @memberof! oj.CollectionPagingDataSource
+ * @memberof oj.CollectionPagingDataSource
  * @instance
  */
 oj.CollectionPagingDataSource.prototype.totalSize = function()
@@ -371,7 +376,7 @@ oj.CollectionPagingDataSource.prototype.totalSize = function()
  *                  "unknown" if the totalSize is unknown
  * @export
  * @expose
- * @memberof! oj.CollectionPagingDataSource
+ * @memberof oj.CollectionPagingDataSource
  * @instance 
  */
 oj.CollectionPagingDataSource.prototype.totalSizeConfidence = function()
@@ -386,7 +391,7 @@ oj.CollectionPagingDataSource.prototype.totalSizeConfidence = function()
  *         Returns null if the feature is not recognized.
  * @export
  * @expose
- * @memberof! oj.CollectionPagingDataSource
+ * @memberof oj.CollectionPagingDataSource
  * @instance
  */
 oj.CollectionPagingDataSource.prototype.getCapability = function(feature)

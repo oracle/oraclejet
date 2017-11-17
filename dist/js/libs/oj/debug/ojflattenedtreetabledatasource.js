@@ -110,7 +110,7 @@ oj.FlattenedTreeTableDataSource = function(data, options)
       rowIdx = rowKeys[i]['index'];
       // just create a dummy row for deletion
       rowArray.push('');
-      keyArray.push('');
+      keyArray.push(rowKeys[i]['key']);
       indexArray.push(rowIdx);
       self._nodeSetList.splice(rowIdx, 1);
       // update the startIndex of the shifted rows

@@ -1,0 +1,140 @@
+{
+  "name": "ojFilePicker",
+  "version": "4.1.0",
+  "jetVersion": "4.1.0",
+  "displayName": " File Picker",
+  "preview": true,
+  "styleClasses": [
+    {
+      "styleGroup": [
+        "oj-filepicker-custom"
+      ],
+      "description": "Apply to a custom file picker if the entire dropzone is replaced with another clickable element like button or menu item. Note that the oj-filepicker-custom class doesn't have to be specified in order to change the dropzone text."
+    },
+    {
+      "styleGroup": [
+        "oj-filepicker-dropzone"
+      ],
+      "description": "Apply to the dropzone of the file picker."
+    },
+    {
+      "styleGroup": [
+        "oj-filepicker-text"
+      ],
+      "description": "Apply to the dropzone text of the file picker."
+    }
+  ],
+  "description": "By default the file picker shows a clickable dropzone for selecting files for upload",
+  "properties": {
+    "accept": {
+      "description": "An array of strings of allowed MIME types or file extensions that can be uploaded. If not specified, accept all file types \nNote: If accept is specified, files with empty string type will be rejected if no match found in the \"accept\" value.",
+      "type": "Array",
+      "displayName": "Accept",
+      "value": "undefined"
+    },
+    "selectOn": {
+      "description": "The type of event to select the files.",
+      "type": "string",
+      "displayName": "Select On",
+      "value": "auto",
+      "enumValues": [
+        "auto",
+        "click",
+        "clickAndDrop",
+        "drop"
+      ],
+      "propertyEditorValues": {
+        "auto": {
+          "description": "either click or drag and drop to select the files",
+          "displayName": "Auto"
+        },
+        "click": {
+          "description": "click to select the files",
+          "displayName": "Click"
+        },
+        "clickAndDrop": {
+          "description": "either click or drag and drop to select the files",
+          "displayName": "Click And Drop"
+        },
+        "drop": {
+          "description": "drag and drop the files",
+          "displayName": "Drop"
+        }
+      }
+    },
+    "selectionMode": {
+      "description": "Whether to allow single or multiple file selection.",
+      "type": "string",
+      "displayName": "Selection Mode",
+      "value": "multiple",
+      "enumValues": [
+        "multiple",
+        "single"
+      ],
+      "propertyEditorValues": {
+        "multiple": {
+          "description": "multiple file selection",
+          "displayName": "Multiple"
+        },
+        "single": {
+          "description": "single file selection",
+          "displayName": "Single"
+        }
+      }
+    }
+  },
+  "methods": {
+    "setProperty": {
+      "description": "Sets a property or a single subproperty for complex properties and notifies the component of the change, triggering a [property]Changed event.",
+      "params": [
+        {
+          "name": "property",
+          "description": "The property name to set. Supports dot notation for subproperty access.",
+          "type": "string"
+        },
+        {
+          "name": "value",
+          "description": "The new value to set the property to.",
+          "type": "*"
+        }
+      ]
+    },
+    "getProperty": {
+      "description": "Retrieves a value for a property or a single subproperty for complex properties.",
+      "params": [
+        {
+          "name": "property",
+          "description": "The property name to get. Supports dot notation for subproperty access.",
+          "type": "string"
+        }
+      ],
+      "return": "*"
+    },
+    "setProperties": {
+      "description": "Performs a batch set of properties.",
+      "params": [
+        {
+          "name": "properties",
+          "description": "An object containing the property and value pairs to set.",
+          "type": "Object"
+        }
+      ]
+    }
+  },
+  "events": {
+    "select": {
+      "description": "Triggered after the files are selected",
+      "detail": {
+        "files": {
+          "description": "The files that were just selected.",
+          "type": "FileList"
+        }
+      }
+    }
+  },
+  "slots": {
+    "trigger": {
+      "description": "The trigger slot is set on the custom content of the file picker."
+    }
+  }
+}

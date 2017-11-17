@@ -65,6 +65,8 @@ oj.Object.createSubclass(oj.ArrayDataGridDataSource, oj.DataGridDataSource, "oj.
 /**
  * Initial the array based data source.
  * @export
+ * @memberof oj.ArrayDataGridDataSource
+ * @instance
  */
 oj.ArrayDataGridDataSource.prototype.Init = function()
 {
@@ -87,6 +89,7 @@ oj.ArrayDataGridDataSource.prototype.Init = function()
 
 /**
  * @export
+ * @memberof oj.ArrayDataGridDataSource
  * @desc If set to a function(row1, row2), then this function is called comparing raw row data (see the
  * JavaScript array.sort() for details)
  */
@@ -101,6 +104,7 @@ oj.ArrayDataGridDataSource.prototype.comparator = null;
  * @property {string} criteria.axis the sort axis valid values are "column", "row"
  * @property {string|number} criteria.key The key that identifies which field to sort
  * @property {string} criteria.direction the sort direction, valid values are "ascending", "descending", "none" (default)
+ * @memberof oj.ArrayDataGridDataSource
  */
 oj.ArrayDataGridDataSource.prototype.sortCriteria = null;
 
@@ -108,6 +112,7 @@ oj.ArrayDataGridDataSource.prototype.sortCriteria = null;
  * Extract the row header from the options
  * @param {Object|null=} options the options passed into the data source
  * @private
+ * @memberof oj.ArrayDataGridDataSource
  */
 oj.ArrayDataGridDataSource.prototype._getRowHeaderFromOptions = function(options)
 {
@@ -141,6 +146,7 @@ oj.ArrayDataGridDataSource.prototype._getRowHeaderFromOptions = function(options
 /**
  * Initialize the generated row keys.
  * @private
+ * @memberof oj.ArrayDataGridDataSource
  */
 oj.ArrayDataGridDataSource.prototype._initializeRowKeys = function()
 {
@@ -159,6 +165,7 @@ oj.ArrayDataGridDataSource.prototype._initializeRowKeys = function()
  * @param {Object} data the data to extract the column information.
  * @return {Array} the columns extracted from the data.
  * @private
+ * @memberof oj.ArrayDataGridDataSource
  */
 oj.ArrayDataGridDataSource.prototype._getColumnsForScaffolding = function(data)
 {
@@ -191,7 +198,7 @@ oj.ArrayDataGridDataSource.prototype._getColumnsForScaffolding = function(data)
  * @export
  * @expose
  * @instance
- * @memberof! oj.ArrayDataGridDataSource 
+ * @memberof oj.ArrayDataGridDataSource 
  */
 oj.ArrayDataGridDataSource.prototype.getCount = function(axis)
 {
@@ -217,7 +224,7 @@ oj.ArrayDataGridDataSource.prototype.getCount = function(axis)
  * @export
  * @expose
  * @instance
- * @memberof! oj.ArrayDataGridDataSource 
+ * @memberof oj.ArrayDataGridDataSource 
  */
 oj.ArrayDataGridDataSource.prototype.getCountPrecision = function(axis)
 {
@@ -229,6 +236,7 @@ oj.ArrayDataGridDataSource.prototype.getCountPrecision = function(axis)
  * @param {string} axis the axis of the header.  Valid values are "row" and "column".
  * @param {number} index the index in which to get the data.
  * @private
+ * @memberof oj.ArrayDataGridDataSource
  */
 oj.ArrayDataGridDataSource.prototype._getHeaderData = function(axis, index)
 {
@@ -261,6 +269,7 @@ oj.ArrayDataGridDataSource.prototype._getHeaderData = function(axis, index)
  * @param {string} axis the axis of the header.  Valid values are "row" and "column".
  * @param {number} index the index in which to get the metadata.
  * @private
+ * @memberof oj.ArrayDataGridDataSource
  */
 oj.ArrayDataGridDataSource.prototype._getHeaderMetadata = function(axis, index)
 {
@@ -299,7 +308,7 @@ oj.ArrayDataGridDataSource.prototype._getHeaderMetadata = function(axis, index)
  * @export
  * @expose
  * @instance
- * @memberof! oj.ArrayDataGridDataSource 
+ * @memberof oj.ArrayDataGridDataSource 
  */
 oj.ArrayDataGridDataSource.prototype.fetchHeaders = function(headerRange, callbacks, callbackObjects)
 {
@@ -346,6 +355,7 @@ oj.ArrayDataGridDataSource.prototype.fetchHeaders = function(headerRange, callba
  * @param {number} row the row index in which to get the data.
  * @param {number} column the column index in which to get the data.
  * @private
+ * @memberof oj.ArrayDataGridDataSource
  */
 oj.ArrayDataGridDataSource.prototype._getCellData = function(row, column)
 {
@@ -358,6 +368,7 @@ oj.ArrayDataGridDataSource.prototype._getCellData = function(row, column)
  * @param {number} row the row index in which to get the data.
  * @param {number} column the column index in which to get the data.
  * @private
+ * @memberof oj.ArrayDataGridDataSource
  */
 oj.ArrayDataGridDataSource.prototype._setCellData = function(row, column, newValue)
 {
@@ -369,6 +380,7 @@ oj.ArrayDataGridDataSource.prototype._setCellData = function(row, column, newVal
  * @param {number} row the row index in which to get the data.
  * @param {number} column the column index in which to get the data.
  * @private
+ * @memberof oj.ArrayDataGridDataSource
  */
 oj.ArrayDataGridDataSource.prototype._getCellMetadata = function(row, column)
 {
@@ -393,7 +405,7 @@ oj.ArrayDataGridDataSource.prototype._getCellMetadata = function(row, column)
  * @export
  * @expose
  * @instance
- * @memberof! oj.ArrayDataGridDataSource 
+ * @memberof oj.ArrayDataGridDataSource 
  */
 oj.ArrayDataGridDataSource.prototype.fetchCells = function(cellRanges, callbacks, callbackObjects)
 {
@@ -452,7 +464,7 @@ oj.ArrayDataGridDataSource.prototype.fetchCells = function(cellRanges, callbacks
  * @export
  * @expose
  * @instance
- * @memberof! oj.ArrayDataGridDataSource 
+ * @memberof oj.ArrayDataGridDataSource 
  */
 oj.ArrayDataGridDataSource.prototype.keys = function(indexes)
 {
@@ -472,7 +484,7 @@ oj.ArrayDataGridDataSource.prototype.keys = function(indexes)
  * @export
  * @expose
  * @instance
- * @memberof! oj.ArrayDataGridDataSource 
+ * @memberof oj.ArrayDataGridDataSource 
  */
 oj.ArrayDataGridDataSource.prototype.indexes = function(keys)
 {
@@ -497,7 +509,7 @@ oj.ArrayDataGridDataSource.prototype.indexes = function(keys)
  * @export
  * @expose
  * @instance
- * @memberof! oj.ArrayDataGridDataSource 
+ * @memberof oj.ArrayDataGridDataSource 
  */
 oj.ArrayDataGridDataSource.prototype.sort = function(criteria, callbacks, callbackObjects)
 {
@@ -589,6 +601,7 @@ oj.ArrayDataGridDataSource.prototype.sort = function(criteria, callbacks, callba
  * @param {Object=} callbackObjects the object in which the callback function is invoked on.  This is optional.  
  *        You can specify the callback object for each callbacks using the "success" and "error" properties.
  * @private
+ * @memberof oj.ArrayDataGridDataSource
  */
 oj.ArrayDataGridDataSource.prototype._resetSortOrder = function(callbacks, callbackObjects)
 {
@@ -619,7 +632,7 @@ oj.ArrayDataGridDataSource.prototype._resetSortOrder = function(callbacks, callb
  * @export
  * @expose
  * @instance
- * @memberof! oj.ArrayDataGridDataSource 
+ * @memberof oj.ArrayDataGridDataSource 
  */
 oj.ArrayDataGridDataSource.prototype.getCapability = function(feature)
 {
@@ -639,6 +652,7 @@ oj.ArrayDataGridDataSource.prototype.getCapability = function(feature)
  * Get the sort comparator either from the property or the internal one in natural sort
  * @returns {function(Object, Object)|undefined} a comapartor function, dependent on direction
  * @private
+ * @memberof oj.ArrayDataGridDataSource
  */
 oj.ArrayDataGridDataSource.prototype._getComparator = function()
 {
@@ -661,6 +675,7 @@ oj.ArrayDataGridDataSource.prototype._getComparator = function()
  * @param {string} axis
  * @returns {function(Object, Object)|undefined} a comapartor function, dependent on direction
  * @private
+ * @memberof oj.ArrayDataGridDataSource
  */
 oj.ArrayDataGridDataSource.prototype._naturalSort = function(direction, key, axis)
 {
@@ -780,7 +795,7 @@ oj.ArrayDataGridDataSource.prototype._naturalSort = function(direction, key, axi
  * @export
  * @expose
  * @instance
- * @memberof! oj.ArrayDataGridDataSource 
+ * @memberof oj.ArrayDataGridDataSource 
  */
 oj.ArrayDataGridDataSource.prototype.move = function(moveKey, atKey, position, callbacks, callbackObjects)
 {
@@ -835,7 +850,7 @@ oj.ArrayDataGridDataSource.prototype.move = function(moveKey, atKey, position, c
  * @export
  * @expose
  * @instance
- * @memberof! oj.ArrayDataGridDataSource 
+ * @memberof oj.ArrayDataGridDataSource 
  */
 oj.ArrayDataGridDataSource.prototype.moveOK = function(rowToMove, referenceRow, position)
 {
@@ -846,6 +861,7 @@ oj.ArrayDataGridDataSource.prototype.moveOK = function(rowToMove, referenceRow, 
  * Gets the data array, if the data property is a function call it, else return data
  * @return {Object|Array} the array of the data
  * @private
+ * @memberof oj.ArrayDataGridDataSource
  */
 oj.ArrayDataGridDataSource.prototype.getDataArray = function()
 {
@@ -861,6 +877,7 @@ oj.ArrayDataGridDataSource.prototype.getDataArray = function()
  * @param {string|number|Object|null} key the key to get row index of
  * @return {number} the index with a certain key, -1 if the key doesn't exist
  * @private
+ * @memberof oj.ArrayDataGridDataSource
  */
 oj.ArrayDataGridDataSource.prototype._getRowIndexByKey = function(key)
 {
@@ -880,6 +897,7 @@ oj.ArrayDataGridDataSource.prototype._getRowIndexByKey = function(key)
  * @param {number} index the index to get row key of
  * @return {string|number|null} the key at index, null if the index doesn't exist
  * @private
+ * @memberof oj.ArrayDataGridDataSource
  */
 oj.ArrayDataGridDataSource.prototype._getRowKeyByIndex = function(index)
 {
@@ -901,6 +919,7 @@ oj.ArrayDataGridDataSource.prototype._getRowKeyByIndex = function(index)
  * @param {boolean=} silent should the event be silent
  * @return {Object} an object containing the the source, operation, and keys of the event
  * @private
+ * @memberof oj.ArrayDataGridDataSource
  */
 oj.ArrayDataGridDataSource.prototype._getModelEvent = function(operation, rowKey, columnKey, rowIndex, columnIndex, silent)
 {
@@ -917,6 +936,7 @@ oj.ArrayDataGridDataSource.prototype._getModelEvent = function(operation, rowKey
  * Subscribe to knockout events
  * @param {Array} changes an array of change objects fired by an observable array
  * @private
+ * @memberof oj.ArrayDataGridDataSource
  */
 oj.ArrayDataGridDataSource.prototype._subscribe = function(changes)
 {
@@ -1004,6 +1024,7 @@ oj.ArrayDataGridDataSource.prototype._subscribe = function(changes)
  * limit it.
  * @returns {number} length of the collection
  * @private
+ * @memberof oj.ArrayDataGridDataSource
  */
 oj.ArrayDataGridDataSource.prototype._size = function()
 {
@@ -1016,6 +1037,7 @@ oj.ArrayDataGridDataSource.prototype._size = function()
  * @return {string|null} the row header key
  * @export
  * @ignore
+ * @memberof oj.ArrayDataGridDataSource
  */
 oj.ArrayDataGridDataSource.prototype.getRowHeaderKey = function()
 {
@@ -1027,6 +1049,7 @@ oj.ArrayDataGridDataSource.prototype.getRowHeaderKey = function()
  * @return {Array|null} the keys of the column headers
  * @export
  * @ignore
+ * @memberof oj.ArrayDataGridDataSource
  */
 oj.ArrayDataGridDataSource.prototype.getColumns = function()
 {
@@ -1038,6 +1061,7 @@ oj.ArrayDataGridDataSource.prototype.getColumns = function()
  * @return {Array|Object|null} the underlying array data.
  * @export
  * @ignore
+ * @memberof oj.ArrayDataGridDataSource
  */
 oj.ArrayDataGridDataSource.prototype.getData = function()
 {
@@ -1076,7 +1100,7 @@ oj.ArrayHeaderSet = function(start, end, axis, callback)
  * @export
  * @expose
  * @instance
- * @memberof! oj.ArrayHeaderSet 
+ * @memberof oj.ArrayHeaderSet 
  */
 oj.ArrayHeaderSet.prototype.getData = function(index, level)
 {
@@ -1104,7 +1128,7 @@ oj.ArrayHeaderSet.prototype.getData = function(index, level)
  * @export
  * @expose
  * @instance
- * @memberof! oj.ArrayHeaderSet 
+ * @memberof oj.ArrayHeaderSet 
  */
 oj.ArrayHeaderSet.prototype.getMetadata = function(index, level)
 {
@@ -1128,7 +1152,7 @@ oj.ArrayHeaderSet.prototype.getMetadata = function(index, level)
  * @export
  * @expose
  * @instance
- * @memberof! oj.ArrayHeaderSet 
+ * @memberof oj.ArrayHeaderSet 
  */
 oj.ArrayHeaderSet.prototype.getLevelCount = function()
 {
@@ -1157,7 +1181,7 @@ oj.ArrayHeaderSet.prototype.getLevelCount = function()
  * @export
  * @expose
  * @instance
- * @memberof! oj.ArrayHeaderSet 
+ * @memberof oj.ArrayHeaderSet 
  */
 oj.ArrayHeaderSet.prototype.getExtent = function(index, level)
 {
@@ -1175,7 +1199,7 @@ oj.ArrayHeaderSet.prototype.getExtent = function(index, level)
  * @export
  * @expose
  * @instance
- * @memberof! oj.ArrayHeaderSet 
+ * @memberof oj.ArrayHeaderSet 
  */
 oj.ArrayHeaderSet.prototype.getDepth = function(index, level)
 {
@@ -1191,7 +1215,7 @@ oj.ArrayHeaderSet.prototype.getDepth = function(index, level)
  * @export
  * @expose
  * @instance
- * @memberof! oj.ArrayHeaderSet 
+ * @memberof oj.ArrayHeaderSet 
  */
 oj.ArrayHeaderSet.prototype.getCount = function()
 {
@@ -1208,6 +1232,7 @@ oj.ArrayHeaderSet.prototype.getCount = function()
  * @return {number} the start index of the result set.
  * @export
  * @ignore
+ * @memberof oj.ArrayHeaderSet
  */
 oj.ArrayHeaderSet.prototype.getStart = function()
 {
@@ -1249,7 +1274,7 @@ oj.ArrayCellSet = function(startRow, endRow, startColumn, endColumn, callback)
  * @export
  * @expose
  * @instance
- * @memberof! oj.ArrayCellSet 
+ * @memberof oj.ArrayCellSet 
  */
 oj.ArrayCellSet.prototype.getData = function(indexes)
 {
@@ -1277,7 +1302,7 @@ oj.ArrayCellSet.prototype.getData = function(indexes)
  * @export
  * @expose
  * @instance
- * @memberof! oj.ArrayCellSet 
+ * @memberof oj.ArrayCellSet 
  */
 oj.ArrayCellSet.prototype.getMetadata = function(indexes)
 {
@@ -1291,7 +1316,7 @@ oj.ArrayCellSet.prototype.getMetadata = function(indexes)
  * @export
  * @expose
  * @instance
- * @memberof! oj.ArrayCellSet 
+ * @memberof oj.ArrayCellSet 
  */
 oj.ArrayCellSet.prototype.getStart = function(axis)
 {
@@ -1314,7 +1339,7 @@ oj.ArrayCellSet.prototype.getStart = function(axis)
  * @export
  * @expose
  * @instance
- * @memberof! oj.ArrayCellSet 
+ * @memberof oj.ArrayCellSet 
  */
 oj.ArrayCellSet.prototype.getCount = function(axis)
 {
@@ -1352,7 +1377,7 @@ oj.ArrayCellSet.prototype.getCount = function(axis)
  * @export
  * @expose
  * @instance
- * @memberof! oj.ArrayCellSet
+ * @memberof oj.ArrayCellSet
  */
 oj.ArrayCellSet.prototype.getExtent = function(indexes)
 {
@@ -1366,6 +1391,7 @@ oj.ArrayCellSet.prototype.getExtent = function(indexes)
  * @return {number} the start row
  * @export
  * @ignore
+ * @memberof oj.ArrayCellSet
  */
 oj.ArrayCellSet.prototype.getStartRow = function()
 {
@@ -1377,6 +1403,7 @@ oj.ArrayCellSet.prototype.getStartRow = function()
  * @return {number} the start column
  * @export
  * @ignore
+ * @memberof oj.ArrayCellSet
  */
 oj.ArrayCellSet.prototype.getStartColumn = function()
 {

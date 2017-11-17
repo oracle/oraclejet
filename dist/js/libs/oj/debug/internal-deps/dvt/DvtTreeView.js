@@ -4616,6 +4616,7 @@ DvtTreemapNode.prototype.setLayoutParams = function(x, y, width, height) {
     text.setFontSize(this.GetTextSize());
     this.ApplyHeaderTextStyle(text, 'labelStyle');
     var headerLabelHeight = text.getDimensions().h;
+    text = null;
     this._titleBarHeight = Math.max(this._titleBarHeight, headerLabelHeight);
 
     // Additional space for isolate/restore button

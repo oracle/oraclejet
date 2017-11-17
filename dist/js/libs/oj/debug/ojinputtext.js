@@ -21,7 +21,10 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue'],
  * @augments oj.editableValue
  * @abstract
  * @since 0.6
- * 
+ * @ojshortdesc Abstract InputBase element
+ * @ojrole input
+ * @hideconstructor
+ *
  * @classdesc
  * <h3 id="inputBaseOverview-section">
  *   Abstract inputBase component
@@ -50,6 +53,7 @@ oj.__registerWidget("oj.inputBase", $['oj']['editableValue'],
    * 1) [{"attr": "type", "setMandatory": "text"}]
    * 
    * @expose
+   * @memberof! oj.inputBase
    * @private
    */
   _ATTR_CHECK : [],
@@ -58,6 +62,7 @@ oj.__registerWidget("oj.inputBase", $['oj']['editableValue'],
    * Class names to be applied to this.element()
    * 
    * @expose
+   * @memberof! oj.inputBase
    * @private
    */
   _CLASS_NAMES : "",
@@ -68,6 +73,7 @@ oj.__registerWidget("oj.inputBase", $['oj']['editableValue'],
    * Note that if this value is defined then the this.element will be wrapped with a root dom element
    * 
    * @expose
+   * @memberof! oj.inputBase
    * @private
    */
   _WIDGET_CLASS_NAMES : "",
@@ -82,6 +88,7 @@ oj.__registerWidget("oj.inputBase", $['oj']['editableValue'],
    * can add extra dom to the root dom element for inline messaging.
    * 
    * @expose
+   * @memberof! oj.inputBase
    * @private
    */
   _ELEMENT_TRIGGER_WRAPPER_CLASS_NAMES : "",
@@ -90,6 +97,7 @@ oj.__registerWidget("oj.inputBase", $['oj']['editableValue'],
    * Array to be used for oj.EditableValueUtils.initializeOptionsFromDom attribute is the html-5 dom attribute name.
    * If option is different, like in the case of readonly (readonly html vs readOnly (camelcase) component option), specify both attribute and option.
    * @expose
+   * @memberof! oj.inputBase
    * @private
    */
   _GET_INIT_OPTIONS_PROPS: [{attribute: 'disabled', validateOption: true},
@@ -107,6 +115,7 @@ oj.__registerWidget("oj.inputBase", $['oj']['editableValue'],
    * Note the component must also be wrapped
    * 
    * @expose
+   * @memberof! oj.inputBase
    * @private
    */
   _INPUT_HELPER_KEY: "",
@@ -178,7 +187,7 @@ oj.__registerWidget("oj.inputBase", $['oj']['editableValue'],
      * // setter
      * myComp.placeholder = myPlaceholder;
      * 
-     * @default If the attribute is not set and if a converter is set then the
+     * If the attribute is not set and if a converter is set then the
      * converter hint is used. See displayOptions for details.
      * 
      * 
@@ -203,10 +212,9 @@ oj.__registerWidget("oj.inputBase", $['oj']['editableValue'],
      * @expose 
      * @access public
      * @instance
-     * @default n/a
-      * @memberof! oj.inputBase
+     * @memberof! oj.inputBase
      * @type {string|undefined}
-     * @since 1.2
+     * @since 1.2.0
      * @readonly
      * @ojwriteback
      */
@@ -227,7 +235,7 @@ oj.__registerWidget("oj.inputBase", $['oj']['editableValue'],
      * @expose 
      * @type {boolean|undefined}
      * @alias readonly
-     * @default <code class="prettyprint">false</code>
+     * @default false
      * @instance
      * @memberof! oj.inputBase
      */
@@ -309,7 +317,8 @@ oj.__registerWidget("oj.inputBase", $['oj']['editableValue'],
      * @see #translations
      */
     required: false,
-        /** 
+    
+    /** 
      * List of validators used by component when performing validation. Each item is either an 
      * instance that duck types {@link oj.Validator}, or is an Object literal containing the 
      * properties listed below. Implicit validators created by a component when certain attributes 
@@ -399,6 +408,7 @@ oj.__registerWidget("oj.inputBase", $['oj']['editableValue'],
      * @access public
      * @instance
      * @memberof oj.inputBase
+     * @ojsignature  Array<{type: string, options?: object}>|undefined
      * @type {Array|undefined}
      */    
     validators: undefined,
@@ -422,7 +432,7 @@ oj.__registerWidget("oj.inputBase", $['oj']['editableValue'],
      * @ojvalue {string} "on" enable autofill
      * @ojvalue {string} "off" disable autofill
      * @alias autocomplete
-     * @default <code class="prettyprint">"off"</code>
+     * @default "on"
      * @instance
      * @memberof! oj.inputBase
      */
@@ -446,7 +456,7 @@ oj.__registerWidget("oj.inputBase", $['oj']['editableValue'],
      * @expose 
      * @type {boolean|undefined}
      * @alias autofocus
-     * @default <code class="prettyprint">false</code>
+     * @default false
      * @instance
      * @memberof! oj.inputBase
      */
@@ -479,7 +489,7 @@ oj.__registerWidget("oj.inputBase", $['oj']['editableValue'],
      * @ojvalue {string} "email" Email input
      * @ojvalue {string} "url" URL input
      * @alias inputmode
-     * @default <code class="prettyprint">"latin"</code>
+     * @default "latin"
      * @instance
      * @memberof! oj.inputBase
      */
@@ -500,7 +510,6 @@ oj.__registerWidget("oj.inputBase", $['oj']['editableValue'],
      * @expose 
      * @type {string|undefined}
      * @alias name
-     * @default <code class="prettyprint">myName</code>
      * @instance
      * @memberof! oj.inputBase
      */
@@ -772,6 +781,7 @@ oj.__registerWidget("oj.inputBase", $['oj']['editableValue'],
   /**
    * @ignore
    * @protected
+   * @memberof! oj.inputBase
    * @override
    */
   _setOption : function (key, value, flags)
@@ -828,6 +838,7 @@ oj.__registerWidget("oj.inputBase", $['oj']['editableValue'],
   /**
    * @ignore
    * @protected
+   * @memberof! oj.inputBase
    * @override
    */
   _destroy : function ()
@@ -912,6 +923,7 @@ oj.__registerWidget("oj.inputBase", $['oj']['editableValue'],
    /**
    * when below listed options are passed to the component, corresponding CSS will be toggled
    * @private
+   * @memberof! oj.inputBase
    * @const
    * @type {Object}
    */
@@ -923,6 +935,7 @@ oj.__registerWidget("oj.inputBase", $['oj']['editableValue'],
    * Performs the attribute check/set by using _ATTR_CHECK variable [i.e. ojInputText must have type be set to "text"].
    * 
    * @private
+   * @memberof! oj.inputBase
    */
   _processAttrCheck : function ()
   {
@@ -947,6 +960,7 @@ oj.__registerWidget("oj.inputBase", $['oj']['editableValue'],
    * 
    * @ignore
    * @protected
+   * @memberof! oj.inputBase
    * @param {Event} event
    */
   _onBlurHandler : function (event) 
@@ -959,6 +973,7 @@ oj.__registerWidget("oj.inputBase", $['oj']['editableValue'],
    * 
    * @ignore
    * @protected
+   * @memberof! oj.inputBase
    * @param {Event} event
    */
   _onKeyDownHandler : function (event) 
@@ -972,6 +987,7 @@ oj.__registerWidget("oj.inputBase", $['oj']['editableValue'],
    * 
    * @ignore
    * @protected
+   * @memberof! oj.inputBase
    * @param {Event} event
    */
   _onKeyUpHandler : function (event) 
@@ -987,6 +1003,7 @@ oj.__registerWidget("oj.inputBase", $['oj']['editableValue'],
    * 
    * @ignore
    * @protected
+   * @memberof! oj.inputBase
    * @param {Event} event
    */
   _onInputHandler : function (event) 
@@ -1000,6 +1017,7 @@ oj.__registerWidget("oj.inputBase", $['oj']['editableValue'],
    * 
    * @ignore
    * @protected
+   * @memberof! oj.inputBase
    * @return {boolean}
    */
   _DoWrapElement : function ()
@@ -1013,6 +1031,7 @@ oj.__registerWidget("oj.inputBase", $['oj']['editableValue'],
    * 
    * @ignore
    * @protected
+   * @memberof! oj.inputBase
    * @return {boolean}
    */
   _DoWrapElementAndTriggers : function ()
@@ -1024,6 +1043,7 @@ oj.__registerWidget("oj.inputBase", $['oj']['editableValue'],
    * Wraps the this.element and adds _WIDGET_CLASS_NAMES classes to the wrapped element
    * 
    * @private
+   * @memberof! oj.inputBase
    */
   _wrapElementInRootDomElement : function () 
   {
@@ -1042,6 +1062,7 @@ oj.__registerWidget("oj.inputBase", $['oj']['editableValue'],
    * 
    * @protected
    * @ignore
+   * @memberof! oj.inputBase
    * @return {jQuery}
    */
   _WrapElement : function () 
@@ -1057,7 +1078,7 @@ oj.__registerWidget("oj.inputBase", $['oj']['editableValue'],
    *  
    * @protected
    * @instance
-   * @memberOf !oj.inputBase
+   * @memberof! oj.inputBase
    */
   _AppendInputHelper : function ()
   {
@@ -1079,6 +1100,7 @@ oj.__registerWidget("oj.inputBase", $['oj']['editableValue'],
    * 
    * @param {string} escapeMe
    * @return {jQuery|string}
+   * @memberof! oj.inputBase
    * @ignore
    */
   _EscapeXSS : function (escapeMe) 
@@ -1091,7 +1113,7 @@ oj.__registerWidget("oj.inputBase", $['oj']['editableValue'],
    *  
    * @protected
    * @instance
-   * @memberOf !oj.inputBase
+   * @memberof! oj.inputBase
    */
   _AppendInputHelperParent : function () 
   {
@@ -1148,6 +1170,7 @@ oj.__registerWidget("oj.inputBase", $['oj']['editableValue'],
    * the oj-read-only selector needs to be toggled.
    * @param {string} option
    * @param {Object|string} value 
+   * @memberof! oj.inputBase
    * @private
    */        
   _refreshStateTheming : function (option, value)
@@ -1162,6 +1185,7 @@ oj.__registerWidget("oj.inputBase", $['oj']['editableValue'],
   /**
    * Returns the regexp validator instance or creates it if needed and caches it.
    * @private
+   * @memberof! oj.inputBase
    */
   _getImplicitRegExpValidator : function ()
   {
@@ -1184,6 +1208,7 @@ oj.__registerWidget("oj.inputBase", $['oj']['editableValue'],
    * @protected
    * @param {string} sub
    * @return {string}
+   * @memberof! oj.inputBase
    */
   _GetSubId : function (sub)
   {
@@ -1194,6 +1219,7 @@ oj.__registerWidget("oj.inputBase", $['oj']['editableValue'],
    * @ignore
    * @protected
    * @return {boolean}
+   * @memberof! oj.inputBase
    */
   _IsRTL : function ()
   {
@@ -1209,6 +1235,7 @@ oj.__registerWidget("oj.inputBase", $['oj']['editableValue'],
 
    * @expose
    * @memberof oj.inputBase
+   * @public
    * @instance
    */
   refresh: function()
@@ -1330,6 +1357,9 @@ oj.__registerWidget("oj.inputBase", $['oj']['editableValue'],
  * @ojcomponent oj.ojInputPassword
  * @augments oj.inputBase
  * @since 0.6
+ * @ojshortdesc Input Password Element
+ * @ojrole textbox
+ * @ojstatus preview
  *
  * @classdesc
  * <h3 id="inputPasswordOverview-section">
@@ -1391,18 +1421,21 @@ oj.__registerWidget("oj.ojInputPassword", $['oj']['inputBase'],
   /**
    * @expose
    * @private
+   * @memberof! oj.ojInputPassword
    */
   _ATTR_CHECK : [{"attr": "type", "setMandatory": "password"}],
 
   /**
    * @expose
    * @private
+   * @memberof! oj.ojInputPassword
    */
   _CLASS_NAMES : "oj-inputpassword-input",
 
   /**
    * @expose
    * @private
+   * @memberof! oj.ojInputPassword
    */
   _WIDGET_CLASS_NAMES : "oj-inputpassword oj-form-control oj-component",
 
@@ -1553,7 +1586,7 @@ oj.__registerWidget("oj.ojInputPassword", $['oj']['inputBase'],
  *
  * @ojsubid oj-inputpassword-input
  * @memberof oj.ojInputPassword
- * @deprecated This sub-ID is not needed.  Since the application supplies this element, it can supply a unique ID by which the element can be accessed.
+ * @deprecated 4.0.0 Since the application supplies this element, it can supply a unique ID by which the element can be accessed.
  *
  * @example <caption>Get the node for the input element:</caption>
  * var node = myComp.getNodeBySubId("oj-inputpassword-input");
@@ -1568,6 +1601,9 @@ oj.__registerWidget("oj.ojInputPassword", $['oj']['inputBase'],
  * @ojcomponent oj.ojTextArea
  * @augments oj.inputBase
  * @since 0.6
+ * @ojshortdesc TextArea Element
+ * @ojrole textbox
+ * @ojstatus preview
  *
  * @classdesc
  * <h3 id="textAreaOverview-section">
@@ -1633,18 +1669,21 @@ oj.__registerWidget("oj.ojTextArea", $['oj']['inputBase'],
   /**
    * @expose
    * @private
+   * @memberof! oj.ojTextArea
    */
   _ATTR_CHECK : [],
 
   /**
    * @expose
    * @private
+   * @memberof! oj.ojTextArea
    */
   _CLASS_NAMES : "oj-textarea-input",
 
   /**
    * @expose
    * @private
+   * @memberof! oj.ojTextArea
    */
   _WIDGET_CLASS_NAMES : "oj-textarea oj-form-control oj-component",
 
@@ -1733,6 +1772,7 @@ oj.__registerWidget("oj.ojTextArea", $['oj']['inputBase'],
      * @expose
      * @instance
      * @memberof! oj.ojTextArea
+     * @default false
      * @type {boolean|undefined}
      */
     spellcheck: false,
@@ -1878,7 +1918,7 @@ oj.__registerWidget("oj.ojTextArea", $['oj']['inputBase'],
  * 
  * @ojsubid oj-textarea-input
  * @memberof oj.ojTextArea
- * @deprecated This sub-ID is not needed.  Since the application supplies this element, it can supply a unique ID by which the element can be accessed.
+ * @deprecated 4.0.0  Since the application supplies this element, it can supply a unique ID by which the element can be accessed.
  *
  * @example <caption>Get the node for the input element:</caption>
  * var node = myComp.getNodeBySubId("oj-textarea-input");
@@ -1893,6 +1933,9 @@ oj.__registerWidget("oj.ojTextArea", $['oj']['inputBase'],
  * @ojcomponent oj.ojInputText
  * @augments oj.inputBase
  * @since 0.6
+ * @ojshortdesc Input Text Element
+ * @ojrole textbox
+ * @ojstatus preview
  *
  * @classdesc
  * <h3 id="inputTextOverview-section">
@@ -2064,6 +2107,7 @@ oj.__registerWidget("oj.ojInputText", $['oj']['inputBase'],
      * @instance
      * @memberof! oj.ojInputText
      * @type {string|undefined}
+     * @public
      */
     list: "",
     /** 
@@ -2085,7 +2129,9 @@ oj.__registerWidget("oj.ojInputText", $['oj']['inputBase'],
      * @expose
      * @instance
      * @memberof! oj.ojInputText
+     * @default false
      * @type {boolean|undefined}
+     * @public
      */
     spellcheck: false
 

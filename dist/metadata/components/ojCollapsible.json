@@ -1,0 +1,156 @@
+{
+  "name": "ojCollapsible",
+  "version": "4.1.0",
+  "jetVersion": "4.1.0",
+  "displayName": " Collapsible",
+  "preview": true,
+  "description": "A JET Collapsible displays a header that can be expanded to show additional content beneath it",
+  "properties": {
+    "disabled": {
+      "description": "Disables the collapsible if set to true.",
+      "type": "boolean",
+      "displayName": "Disabled",
+      "value": false
+    },
+    "expandArea": {
+      "description": "Where in the header to click to toggle disclosure.",
+      "type": "string",
+      "displayName": "Expand Area",
+      "value": "header",
+      "enumValues": [
+        "disclosureIcon",
+        "header"
+      ],
+      "propertyEditorValues": {
+        "disclosureIcon": {
+          "description": "click the disclosureIcon to toggle disclosure",
+          "displayName": "Disclosure Icon"
+        },
+        "header": {
+          "description": "click any where in the header to toggle disclosure",
+          "displayName": "Header"
+        }
+      }
+    },
+    "expanded": {
+      "description": "Specifies if the content is expanded.",
+      "type": "boolean",
+      "displayName": "Expanded",
+      "value": false,
+      "writeback": true
+    },
+    "translations": {
+      "description": "A collection of translated resources from the translation bundle, or null if this\ncomponent has no resources. Resources may be accessed and overridden individually or collectively, as seen in the examples.\n\nIf this component has translations, their documentation immediately follows this doc entry.",
+      "type": "Object",
+      "displayName": "Translations",
+      "value": null
+    }
+  },
+  "methods": {
+    "refresh": {
+      "description": "Refreshes the visual state of the collapsible. This method does not accept any arguments."
+    },
+    "setProperty": {
+      "description": "Sets a property or a single subproperty for complex properties and notifies the component\nof the change, triggering a [property]Changed event.",
+      "params": [
+        {
+          "name": "property",
+          "description": "The property name to set. Supports dot notation for subproperty access.",
+          "type": "string"
+        },
+        {
+          "name": "value",
+          "description": "The new value to set the property to.",
+          "type": "*"
+        }
+      ]
+    },
+    "getProperty": {
+      "description": "Retrieves a value for a property or a single subproperty for complex properties.",
+      "params": [
+        {
+          "name": "property",
+          "description": "The property name to get. Supports dot notation for subproperty access.",
+          "type": "string"
+        }
+      ],
+      "return": "*"
+    },
+    "setProperties": {
+      "description": "Performs a batch set of properties.",
+      "params": [
+        {
+          "name": "properties",
+          "description": "An object containing the property and value pairs to set.",
+          "type": "Object"
+        }
+      ]
+    }
+  },
+  "events": {
+    "beforeExpand": {
+      "description": "Triggered immediately before the collapsible is expanded. Call event.preventDefault() in the event listener to veto the event, which prevents the content from expanding.",
+      "detail": {
+        "header": {
+          "description": "The header that is about to be expanded.",
+          "type": "Element"
+        },
+        "content": {
+          "description": "The content that is about to be expanded.",
+          "type": "Element"
+        }
+      }
+    },
+    "expand": {
+      "description": "Triggered after the collapsible has been expanded (after animation completes).",
+      "detail": {
+        "header": {
+          "description": "The header that was just expanded.",
+          "type": "Element"
+        },
+        "content": {
+          "description": "The content that was just expanded.",
+          "type": "Element"
+        }
+      }
+    },
+    "beforeCollapse": {
+      "description": "Triggered immediately before the collapsible is collapsed. Call event.preventDefault() in the event listener to veto the event, which prevents the content from collapsing.",
+      "detail": {
+        "header": {
+          "description": "The header that is about to be collapsed.",
+          "type": "Element"
+        },
+        "content": {
+          "description": "The content that is about to be collapsed.",
+          "type": "Element"
+        }
+      }
+    },
+    "collapse": {
+      "description": "Triggered after the collapsible has been collapsed.",
+      "detail": {
+        "header": {
+          "description": "The header that was just collapsed.",
+          "type": "Element"
+        },
+        "content": {
+          "description": "The content that was just collapsed.",
+          "type": "Element"
+        }
+      }
+    }
+  },
+  "slots": {
+    "": {
+      "description": "The default slot is the collapsible's content.",
+      "displayName": "default"
+    },
+    "contextMenu": {
+      "description": "The contextMenu slot is set on the oj-menu within this element. \nThis is used to designate the JET Menu that this component should launch as a context menu on right-click, Shift-F10, Press & Hold, or component-specific gesture. \nIf specified, the browser's native context menu will be replaced by the JET Menu specified in this slot.\n\nThe application can register a listener for the Menu's ojBeforeOpen event. The listener can cancel the launch via event.preventDefault(), \nor it can customize the menu contents by editing the menu DOM directly, and then calling refresh() on the Menu.\n\nTo help determine whether it's appropriate to cancel the launch or customize the menu, the ojBeforeOpen listener can use component API's to determine which \ntable cell, chart item, etc., is the target of the context menu. See the JSDoc and demos of the individual components for details. \n\nKeep in mind that any such logic must work whether the context menu was launched via right-click, Shift-F10, Press & Hold, or component-specific touch gesture."
+    },
+    "header": {
+      "description": "The header slot is the collapsible's header. If not specified, the header contains only an open/close icon. Note that the header text is required for JET collapsible for accessibility purposes."
+    }
+  }
+}

@@ -15,6 +15,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
 /**
  * @ojcomponent oj.ojOptgroup
  * @since 4.0.0
+ * @ojstatus preview
  *
  * @classdesc
  * <h3 id="optgroupOverview-section">
@@ -163,14 +164,20 @@ OptionGroupRenderer.render = function(elem)
       customRenderer(elem);    
 };
  
+/**
+ * @protected
+ * @ignore
+ */
 (function() {
   var ojOptgroupMeta = {
     "properties": {
       "disabled": {
-        "type": "boolean"
+        "type": "boolean",
+        "value": false
       }, 
       "label": {
-        "type": "string"
+        "type": "string",
+        "value": ""
       },
       // not documented
       "customOptgroupRenderer": {}

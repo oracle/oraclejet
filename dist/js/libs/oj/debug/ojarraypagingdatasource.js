@@ -50,6 +50,7 @@ oj.Object.createSubclass(oj.ArrayPagingDataSource, oj.DataSource, "oj.ArrayPagin
 /**
  * Initializes the instance.
  * @export
+ * @memberof oj.ArrayPagingDataSource
  */
 oj.ArrayPagingDataSource.prototype.Init = function()
 {
@@ -106,6 +107,7 @@ oj.ArrayPagingDataSource.prototype.handleEvent = function(eventType, event)
  * Return the current set of data in the paging window
  * 
  * @returns {Array} the current set of data in the paging window
+ * @memberof oj.ArrayPagingDataSource
  */
 oj.ArrayPagingDataSource.prototype.getWindow = function() {
     return this.dataWindow;
@@ -116,6 +118,7 @@ oj.ArrayPagingDataSource.prototype.getWindow = function() {
  * Get the observable array representing the current set of data in the paging window
  * 
  * @returns {Object} an observable array representing the current data in the paging window
+ * @memberof oj.ArrayPagingDataSource
  */
 oj.ArrayPagingDataSource.prototype.getWindowObservable = function() {
     if (this.observableDataWindow === undefined) {
@@ -130,7 +133,7 @@ oj.ArrayPagingDataSource.prototype.getWindowObservable = function() {
  * @return {number} The current page
  * @export
  * @expose
- * @memberof! oj.ArrayPagingDataSource
+ * @memberof oj.ArrayPagingDataSource
  * @instance
  */
 oj.ArrayPagingDataSource.prototype.getPage = function()
@@ -146,7 +149,7 @@ oj.ArrayPagingDataSource.prototype.getPage = function()
  * @return {Promise} promise object triggering done when complete..
  * @export
  * @expose
- * @memberof! oj.ArrayPagingDataSource
+ * @memberof oj.ArrayPagingDataSource
  * @instance
  */
 oj.ArrayPagingDataSource.prototype.setPage = function(value, options)
@@ -189,7 +192,7 @@ oj.ArrayPagingDataSource.prototype.setPage = function(value, options)
  * @return {number} The current page start index
  * @export
  * @expose
- * @memberof! oj.ArrayPagingDataSource
+ * @memberof oj.ArrayPagingDataSource
  * @instance
  */
 oj.ArrayPagingDataSource.prototype.getStartItemIndex = function()
@@ -202,7 +205,7 @@ oj.ArrayPagingDataSource.prototype.getStartItemIndex = function()
  * @return {number} The current page end index
  * @export
  * @expose
- * @memberof! oj.ArrayPagingDataSource
+ * @memberof oj.ArrayPagingDataSource
  * @instance
  */
 oj.ArrayPagingDataSource.prototype.getEndItemIndex = function()
@@ -215,7 +218,7 @@ oj.ArrayPagingDataSource.prototype.getEndItemIndex = function()
  * @return {number} The total number of pages
  * @export
  * @expose
- * @memberof! oj.ArrayPagingDataSource
+ * @memberof oj.ArrayPagingDataSource
  * @instance
  */
 oj.ArrayPagingDataSource.prototype.getPageCount = function()
@@ -239,7 +242,7 @@ oj.ArrayPagingDataSource.prototype.getPageCount = function()
  * </table>  
  * @export
  * @expose
- * @memberof! oj.ArrayPagingDataSource
+ * @memberof oj.ArrayPagingDataSource
  * @instance
  */
 oj.ArrayPagingDataSource.prototype.fetch = function(options)
@@ -261,6 +264,7 @@ oj.ArrayPagingDataSource.prototype.fetch = function(options)
 /**
  * Fetch the row data.
  * @private
+ * @memberof oj.ArrayPagingDataSource
  */
 oj.ArrayPagingDataSource.prototype._fetchInternal = function(options)
 {
@@ -281,6 +285,7 @@ oj.ArrayPagingDataSource.prototype._fetchInternal = function(options)
 /**
  * Return whether there is more data which can be fetched.
  * @private
+ * @memberof oj.ArrayPagingDataSource
  */
 oj.ArrayPagingDataSource.prototype._hasMore = function()
 {
@@ -291,6 +296,7 @@ oj.ArrayPagingDataSource.prototype._hasMore = function()
  * Set or change the number of models in a page
  * 
  * @private
+ * @memberof oj.ArrayPagingDataSource
  */
 oj.ArrayPagingDataSource.prototype._setPageSize = function(n)
 {
@@ -303,7 +309,7 @@ oj.ArrayPagingDataSource.prototype._setPageSize = function(n)
  * Return the total size of data available, including server side if not local.
  * @returns {number} total size of data
  * @expose
- * @memberof! oj.ArrayPagingDataSource
+ * @memberof oj.ArrayPagingDataSource
  * @instance
  */
 oj.ArrayPagingDataSource.prototype.totalSize = function()
@@ -319,7 +325,7 @@ oj.ArrayPagingDataSource.prototype.totalSize = function()
  *                  "unknown" if the totalSize is unknown
  * @export
  * @expose
- * @memberof! oj.ArrayPagingDataSource
+ * @memberof oj.ArrayPagingDataSource
  * @instance 
  */
 oj.ArrayPagingDataSource.prototype.totalSizeConfidence = function()
@@ -333,6 +339,7 @@ oj.ArrayPagingDataSource.prototype.totalSizeConfidence = function()
  * @return {string|null} the name of the feature.  For sort, the valid return values are: "full", "none".  Returns null if the
  *         feature is not recognized.
  * @export
+ * @memberof oj.ArrayPagingDataSource
  */
 oj.ArrayPagingDataSource.prototype.getCapability = function(feature)
 {

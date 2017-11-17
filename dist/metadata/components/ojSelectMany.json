@@ -1,0 +1,298 @@
+{
+  "name": "ojSelectMany",
+  "version": "4.1.0",
+  "jetVersion": "4.1.0",
+  "displayName": "Multi Select",
+  "preview": true,
+  "roles": [
+    "combobox"
+  ],
+  "description": "JET Select Many provides support for multi-select and search filtering.",
+  "properties": {
+    "describedBy": {
+      "description": "It is used to establish a relationship between this component and another element.\nTypically this is not used by the application developer, but by the oj-label custom element's\ncode. One use case is where the oj-label custom element code writes described-by\non its form component for accessibility reasons.\nTo facilitate correct screen reader behavior, the described-by attribute is\ncopied to the aria-describedby attribute on the component's dom element.",
+      "type": "string",
+      "displayName": "Described By"
+    },
+    "disabled": {
+      "description": "Whether the component is disabled. The default is false.\n\n\nWhen the disabled property changes due to programmatic \nintervention, the component may clear messages and run validation in some cases. \n\nwhen a required component is initialized as disabled \nvalue=\"{{currentValue}}\" required disabled, \ndeferred validation is skipped.\nwhen a disabled component is enabled, if component is invalid and showing messages then all component messages are cleared, and full validation run using the display value. if there are validation errors, they are shown. if no errors result from the validation, the value property is updated. Page authors can listen to the onValueChanged event to clear custom errors. if component is valid and has no errors then deferred validation is run. if there is a deferred validation error, then the valid property is updated. if component is invalid and deferred errors then component messages are cleared and deferred validation re-run. if there is a deferred validation error, then the valid property is updated. \n\nwhen enabled component is disabled then no validation is run and the component appears \ndisabled.\n\n",
+      "type": "boolean",
+      "displayName": "Disabled",
+      "value": false
+    },
+    "displayOptions": {
+      "description": "Display options for auxilliary content that determines where it should be displayed \nin relation to the component. \n\n\nThe types of messaging content for which display options can be configured include \nmessages, converterHint, \nvalidatorHint and helpInstruction.\nThe display options for each type is specified either as an array of strings or a string. When \nan array is specified the first display option takes precedence over the second and so on. \n\n\nJET editable components set defaults that apply to the entire app/page. \nIt is possible to override the defaults on \na per instance basis as explained in the examples below or change defaults for the entire\napplication using \noj.Components#setDefaultOptions method.\nIt is much easier to change the defaults using setDefaultOptions once rather than putting\nthe displayOptions option on every component instance.\n\n\nWhen display-options changes due to programmatic intervention, the component updates its \ndisplay to reflect the updated choices. For example, if 'help.instruction' property goes from \n'notewindow' to 'none' then it no longer shows in the notewindow.\n\n\nA side note: help.instruction and message detail text can include formatted HTML text, whereas hints and \nmessage summary text cannot. If you use formatted text, it should be accessible \nand make sense to the user if formatting wasn't there.\nTo format the help.instruction, you could do this:\n<html>Enter <b>at least</b> 6 characters</html>\n",
+      "type": "Object|undefined",
+      "displayName": "Display Options",
+      "value": "{messages: [inline],converterHint: [placeholder,notewindow],validatorHint: [notewindow],helpInstruction: [notewindow]}",
+      "properties": [
+        {
+          "name": "converterHint",
+          "description": "supported values are 'placeholder', \n'notewindow', 'none'. The \ndefault value is ['placeholder', 'notewindow']. When there \nis already a placeholder set on the component, the converter hint falls back to display \ntype of 'notewindow'.\nTo change the default value you can do this - \nE.g. {'displayOptions: {'converterHint': ['none']}}",
+          "type": "Array|string"
+        },
+        {
+          "name": "validatorHint",
+          "description": "supported values are 'notewindow', \n'none'.\nTo change the default value you can do this - \n{'displayOptions: {'validatorHint': ['none']}}",
+          "type": "Array|string"
+        },
+        {
+          "name": "messages",
+          "description": "supported values are 'notewindow', \n'inline',\n'none'. The default is 'inline'. \nTo change the default value you can do this - \nE.g. {'displayOptions: {'messages': 'none'}}",
+          "type": "Array|string"
+        },
+        {
+          "name": "helpInstruction",
+          "description": "supported values are 'notewindow', \n'none'.\nTo change the default value you can do this - \nE.g. displayOptions='{\"helpInstruction\": \"none\"}'",
+          "type": "Array|string"
+        }
+      ]
+    },
+    "help": {
+      "description": "Form component help information.\n\nThe properties supported on the help option are:",
+      "type": "Object.<string, string>",
+      "displayName": "Help",
+      "value": "{help : {instruction: null}}",
+      "properties": [
+        {
+          "name": "instruction",
+          "description": "this represents advisory information for the component\nThe default value is null.",
+          "type": "string"
+        }
+      ]
+    },
+    "helpHints": {
+      "description": "Represents hints for oj-form-layout element to render help information on the label of the editable component. \nThis is used only if the editable component is added as a direct child to an oj-form-layout element, and the labelHint property is also specified.\n\n\nThe helpHints object contains a definition property and a source property.\n\n\ndefinition - hint for help definition text.\nsource - hint for help source URL.\n",
+      "type": "Object.<string, string>",
+      "displayName": "Help Hints",
+      "value": "{definition: , source: }",
+      "properties": {
+        "definition": {
+          "description": "Hint for help definition text associated with the label. \nIt is what shows up when the user hovers over the help icon, or tabs into the help icon, or press and holds the help icon on a mobile device. No formatted text is available for help definition attribute.\n\nSee the help-hints attribute for usage examples.",
+          "type": "string"
+        },
+        "source": {
+          "description": "Hint for help source URL associated with the label. \nIf present, a help icon will render next to the label. For security reasons we only support urls with protocol http: or https:. If the url doesn't comply we ignore it and throw an error. \nPass in an encoded URL since we do not encode the URL.\n\nSee the help-hints attribute for usage examples.",
+          "type": "string"
+        }
+      }
+    },
+    "labelHint": {
+      "description": "Represents a hint for oj-form-layout element to render a label on the editable component. \nThis is used only if the editable component is added as a direct child to an oj-form-layout element.\n\n\nWhen labelHint is present it gives a hint to the oj-form-layout element to create an oj-label element for the editable component.\nWhen the labelHint property changes oj-form-layout element refreshes to \ndisplay the updated label information. \n",
+      "type": "string",
+      "displayName": "Label Hint"
+    },
+    "messagesCustom": {
+      "description": "List of messages an app would add to the component when it has business/custom validation \nerrors that it wants the component to show. When this option is set the message shows to the \nuser right away. To clear the custom message, set messagesCustom\nback to an empty array.\nEach message in the array is an object that duck types oj.Message. \nSee Message for details.",
+      "type": "Array.<Object>|undefined",
+      "displayName": "Messages Custom",
+      "value": "[]",
+      "writeback": true
+    },
+    "minimumResultsForSearch": {
+      "description": "The threshold for showing the search box in the dropdown.",
+      "type": "number",
+      "displayName": "Minimum Results For Search",
+      "value": 15,
+      "minimum": "0"
+    },
+    "optionRenderer": {
+      "description": "The renderer function that renders the content of each option.",
+      "type": "function|null",
+      "displayName": "Option Renderer",
+      "value": null
+    },
+    "options": {
+      "description": "The option items for the Select.",
+      "type": "Array.<(oj.Option|oj.Optgroup)>",
+      "displayName": "Options",
+      "value": null
+    },
+    "optionsKeys": {
+      "deprecated": {
+        "since": "4.1.0",
+        "description": "Please use oj.ListDataProviderView with data mapping for the options attribute instead."
+      },
+      "description": "Specify the key names to use in the options array. Please note that this attribute is not supported if the options attribute is an oj.IteratingDataProvider. This attribute is deprecated to allow better type checking in Typescript. Please see oj.ListDataProviderView with data mapping as a replacement. Depending on options-keys means that the signature of the data does not match what is supported by the options attribute. When using Typescript, this would result in a compilation error.",
+      "type": "Object",
+      "displayName": "Options Keys",
+      "value": null
+    },
+    "pickerAttributes": {
+      "description": "The style attributes for the drop down.",
+      "type": "Object",
+      "displayName": "Picker Attributes",
+      "value": null
+    },
+    "placeholder": {
+      "description": "A short hint that can be displayed before user selects a value.",
+      "type": "string|null|undefined",
+      "displayName": "Placeholder",
+      "value": null
+    },
+    "renderMode": {
+      "description": "Specifies whether to render select in JET or as a HTML Select tag.",
+      "type": "string",
+      "displayName": "Render Mode"
+    },
+    "required": {
+      "description": "Specifies whether a value is required.",
+      "type": "boolean",
+      "displayName": "Required",
+      "value": false
+    },
+    "translations": {
+      "description": "A collection of translated resources from the translation bundle, or null if this\ncomponent has no resources. Resources may be accessed and overridden individually or collectively, as seen in the examples.\n\nIf this component has translations, their documentation immediately follows this doc entry.",
+      "type": "Object",
+      "displayName": "Translations",
+      "value": null,
+      "properties": {
+        "filterFurther": {
+          "description": "Text at the top of drop down when not all results are fetched and users need to filter further.",
+          "type": "string",
+          "value": "More results available, please filter further."
+        },
+        "moreMatchesFound": {
+          "description": "Text for the drop down when more than one options are found.",
+          "type": "string",
+          "value": "num matches found"
+        },
+        "noMatchesFound": {
+          "description": "Text for the drop down when no options are found.",
+          "type": "string",
+          "value": "No matches found"
+        },
+        "oneMatchesFound": {
+          "description": "Text for the drop down when one option is found.",
+          "type": "string",
+          "value": "One match found"
+        },
+        "required": {
+          "description": "Provides properties to customize the summary, detail and hint text used by the\nimplicit required validator associated to any editable component that supports the\nrequired option.\n\nSee the translations attribute and\nrequired option for usage examples.",
+          "type": "Object",
+          "properties": {
+            "hint": {
+              "description": "Hint text used by required validation error.\n\nSee the translations attribute for usage examples.",
+              "type": "string"
+            },
+            "messageDetail": {
+              "description": "Message text that describes the details of the required validation error.\n\nSee the translations attribute for usage examples.",
+              "type": "string"
+            },
+            "messageSummary": {
+              "description": "Message text for summarizing a required validation error.\n\nSee the translations attribute for usage examples.",
+              "type": "string"
+            }
+          }
+        },
+        "searchField": {
+          "description": "Tooltip text for the search box",
+          "type": "string",
+          "value": "Search field"
+        }
+      }
+    },
+    "value": {
+      "description": "The value of the element.",
+      "type": "Array.<*>",
+      "displayName": "Value"
+    }
+  },
+  "methods": {
+    "refresh": {
+      "description": "Refreshes the visual state of the select. JET elements require a refresh() after the DOM is programmatically changed. This method does not accept any arguments."
+    },
+    "validate": {
+      "description": " All messages are cleared, including custom messages added by the app. The implicit required validator is run first if the component is marked required. At the end of validation if there are errors, the messages are shown. If there were no errors, then the value option is updated. ",
+      "preview": true,
+      "return": "Promise"
+    },
+    "reset": {
+      "description": "Resets the component by clearing all messages and messages attributes - \nmessagesCustom -\nand updates the component's display value using the attribute value. User entered values will be \nerased when this method is called."
+    },
+    "showMessages": {
+      "description": "Takes all deferred messages and shows them. \nIf there were no deferred messages this method simply returns. \n\n\nTo view messages user has to set focus on the component. \n"
+    },
+    "setProperty": {
+      "description": "Sets a property or a single subproperty for complex properties and notifies the component\nof the change, triggering a [property]Changed event.",
+      "params": [
+        {
+          "name": "property",
+          "description": "The property name to set. Supports dot notation for subproperty access.",
+          "type": "string"
+        },
+        {
+          "name": "value",
+          "description": "The new value to set the property to.",
+          "type": "*"
+        }
+      ]
+    },
+    "getProperty": {
+      "description": "Retrieves a value for a property or a single subproperty for complex properties.",
+      "params": [
+        {
+          "name": "property",
+          "description": "The property name to get. Supports dot notation for subproperty access.",
+          "type": "string"
+        }
+      ],
+      "return": "*"
+    },
+    "setProperties": {
+      "description": "Performs a batch set of properties.",
+      "params": [
+        {
+          "name": "properties",
+          "description": "An object containing the property and value pairs to set.",
+          "type": "Object"
+        }
+      ]
+    }
+  },
+  "events": {
+    "animateStart": {
+      "description": "Triggered when a default animation is about to start on an element owned by the component.\n\nThe default animation can be cancelled by calling event.preventDefault, followed by\na call to ui.endCallback. ui.endCallback should be\ncalled immediately after event.preventDefault if the application merely wants to cancel animation, \nor it should be called when the custom animation ends if the application is invoking another animation function. Failure to\ncall ui.endCallback may prevent the component from working properly.\nFor more information on customizing animations, see the documentation of \noj.AnimationUtils.\n\nThe default animations are controlled via the theme (SCSS) :\n\n// default animations for \"notewindow\" display option\n$noteWindowOpenAnimation: (effect: \"zoomIn\", transformOrigin: \"#myPosition\") !default;\n$noteWindowCloseAnimation: (effect: \"none\") !default;\n\n// default animations for \"inline\" display option\n$messageInlineOpenAnimation: (effect: \"expand\", startMaxHeight: \"#oldHeight\") !default;\n$messageInlineCloseAnimation: (effect: \"collapse\", endMaxHeight: \"#newHeight\") !default;\n",
+      "bubbles": true,
+      "cancelable": true,
+      "detail": {
+        "action": {
+          "description": "The action that triggers the animation. Supported values are: \"inline-open\" - when an inline message container opens or increases in size \"inline-close\" - when an inline message container closes or decreases in size \"notewindow-open\" - when a note window opens \"notewindow-close\" - when a note window closes ",
+          "type": "string"
+        },
+        "element": {
+          "description": "The element being animated.",
+          "type": "Element"
+        },
+        "endCallback": {
+          "description": "If the event listener calls event.preventDefault to cancel the default animation, it must call the endCallback function when it finishes its own animation handling and any custom animation has ended.",
+          "type": "function"
+        }
+      }
+    },
+    "animateEnd": {
+      "description": "Triggered when a default animation has ended.",
+      "bubbles": true,
+      "cancelable": true,
+      "detail": {
+        "action": {
+          "description": "The action that triggers the animation. Supported values are: \"inline-open\" - when an inline message container opens or increases in size \"inline-close\" - when an inline message container closes or decreases in size \"notewindow-open\" - when a note window opens \"notewindow-close\" - when a note window closes ",
+          "type": "string"
+        },
+        "element": {
+          "description": "The element being animated.",
+          "type": "Element"
+        }
+      }
+    }
+  },
+  "slots": {
+    "": {
+      "description": "The <oj-select-many> element accepts oj-options as children. See the [oj-option]ojOption doc for details about accepted children and slots.",
+      "displayName": "default"
+    },
+    "contextMenu": {
+      "description": "The contextMenu slot is set on the oj-menu within this element. \nThis is used to designate the JET Menu that this component should launch as a context menu on right-click, Shift-F10, Press & Hold, or component-specific gesture. \nIf specified, the browser's native context menu will be replaced by the JET Menu specified in this slot.\n\nThe application can register a listener for the Menu's ojBeforeOpen event. The listener can cancel the launch via event.preventDefault(), \nor it can customize the menu contents by editing the menu DOM directly, and then calling refresh() on the Menu.\n\nTo help determine whether it's appropriate to cancel the launch or customize the menu, the ojBeforeOpen listener can use component API's to determine which \ntable cell, chart item, etc., is the target of the context menu. See the JSDoc and demos of the individual components for details. \n\nKeep in mind that any such logic must work whether the context menu was launched via right-click, Shift-F10, Press & Hold, or component-specific touch gesture."
+    }
+  }
+}

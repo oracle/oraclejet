@@ -1,0 +1,375 @@
+{
+  "name": "ojPagingControl",
+  "version": "4.1.0",
+  "jetVersion": "4.1.0",
+  "displayName": " Paging Control",
+  "preview": true,
+  "roles": [
+    "navigation",
+    "button"
+  ],
+  "description": "Paging Control Element",
+  "properties": {
+    "data": {
+      "description": "The data to bind to the PagingControl.\n\nMust implement the oj.PagingModel interface PagingModel",
+      "type": "oj.PagingModel",
+      "displayName": "Data",
+      "value": null
+    },
+    "loadMoreOptions": {
+      "description": "Options for loadMore mode.",
+      "type": "Object.<string, number>",
+      "displayName": "Load More Options",
+      "value": "{maxCount: 500}",
+      "properties": {
+        "maxCount": {
+          "description": "The maximum number items to display.\nSee the load-more-options attribute for usage examples.",
+          "type": "number",
+          "value": 500,
+          "minimum": "0"
+        }
+      }
+    },
+    "mode": {
+      "description": "Paging mode.",
+      "type": "string",
+      "displayName": "Mode",
+      "value": "page",
+      "enumValues": [
+        "loadMore",
+        "page"
+      ],
+      "propertyEditorValues": {
+        "loadMore": {
+          "description": "Display paging control in high watermark mode.",
+          "displayName": "Load More"
+        },
+        "page": {
+          "description": "Display paging control in pagination mode.",
+          "displayName": "Page"
+        }
+      }
+    },
+    "overflow": {
+      "description": "Options for when the PagingControl width is too narrow to accommodate the controls in the paging control",
+      "type": "string",
+      "displayName": "Overflow",
+      "value": "fit",
+      "enumValues": [
+        "fit",
+        "none"
+      ],
+      "propertyEditorValues": {
+        "fit": {
+          "description": "Display as many controls as can fit in the PagingControl width.",
+          "displayName": "Fit"
+        },
+        "none": {
+          "description": "Display all controls. Controls which cannot fit will be truncated.",
+          "displayName": "None"
+        }
+      }
+    },
+    "pageOptions": {
+      "description": "Options for page mode.",
+      "type": "Object.<string, (Array|number)>",
+      "displayName": "Page Options",
+      "value": "{layout: [auto], type: numbers, orientation: horizontal, maxPageLinks: 6}",
+      "properties": {
+        "layout": {
+          "description": "Array of paging navigation controls to be displayed (only applicable for numbers type).\nThis is an array of one or more supported values.\nSee the page-options attribute for usage examples.",
+          "type": "Array",
+          "value": "[auto]",
+          "enumValues": [
+            "all",
+            "auto",
+            "input",
+            "nav",
+            "pages",
+            "rangeText"
+          ],
+          "propertyEditorValues": {
+            "all": {
+              "description": "Display all controls",
+              "displayName": "All"
+            },
+            "auto": {
+              "description": "The PagingControl decides which controls to display",
+              "displayName": "Auto"
+            },
+            "input": {
+              "description": "Display the page input control",
+              "displayName": "Input"
+            },
+            "nav": {
+              "description": "Display the navigation arrows",
+              "displayName": "Nav"
+            },
+            "pages": {
+              "description": "Display the page links",
+              "displayName": "Pages"
+            },
+            "rangeText": {
+              "description": "Display the page range text control",
+              "displayName": "Range Text"
+            }
+          }
+        },
+        "maxPageLinks": {
+          "description": "The maximum number of page links to display (only applicable for numbers type).\nAn ellipsis '...' will be displayed for pages which exceed the maximum.\nmaxPageLinks must be greater than 4.\nSee the page-options attribute for usage examples.",
+          "type": "number",
+          "value": 6,
+          "minimum": "5"
+        },
+        "orientation": {
+          "description": "The orientation of the page links.\nSee the page-options attribute for usage examples.",
+          "type": "string",
+          "value": "horizontal",
+          "enumValues": [
+            "horizontal",
+            "vertical"
+          ],
+          "propertyEditorValues": {
+            "horizontal": {
+              "displayName": "Horizontal"
+            },
+            "vertical": {
+              "displayName": "Vertical"
+            }
+          }
+        },
+        "type": {
+          "description": "The type of page links.\nSee the page-options attribute for usage examples.",
+          "type": "string",
+          "value": "numbers",
+          "enumValues": [
+            "dots",
+            "numbers"
+          ],
+          "propertyEditorValues": {
+            "dots": {
+              "description": "Render dots",
+              "displayName": "Dots"
+            },
+            "numbers": {
+              "description": "Render numeric page links",
+              "displayName": "Numbers"
+            }
+          }
+        }
+      }
+    },
+    "pageSize": {
+      "description": "Page size.\n",
+      "type": "number",
+      "displayName": "Page Size",
+      "value": 25,
+      "minimum": "1"
+    },
+    "translations": {
+      "description": "A collection of translated resources from the translation bundle, or null if this\ncomponent has no resources. Resources may be accessed and overridden individually or collectively, as seen in the examples.\n\nIf this component has translations, their documentation immediately follows this doc entry.",
+      "type": "Object",
+      "displayName": "Translations",
+      "value": null,
+      "properties": {
+        "labelAccNavFirstPage": {
+          "description": "First page label for screen readers.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "First Page"
+        },
+        "labelAccNavLastPage": {
+          "description": "Last page label for screen readers.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Last Page"
+        },
+        "labelAccNavNextPage": {
+          "description": "Next page label for screen readers.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Next Page"
+        },
+        "labelAccNavPage": {
+          "description": "Current page label for screen readers.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Page"
+        },
+        "labelAccNavPreviousPage": {
+          "description": "Previous page label for screen readers.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Previous Page"
+        },
+        "labelAccPaging": {
+          "description": "Paging control label for screen readers.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Pagination"
+        },
+        "labelLoadMore": {
+          "description": "Load more link text.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Show More..."
+        },
+        "labelLoadMoreMaxRows": {
+          "description": "Label for when load more has reached the maximum limit of rows to fetch.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Reached Maximum Limit of {maxRows} rows"
+        },
+        "labelNavInputPage": {
+          "description": "Current page label.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Page"
+        },
+        "labelNavInputPageMax": {
+          "description": "Maximum page label.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "of {pageMax}"
+        },
+        "maxPageLinksInvalid": {
+          "description": "Invalid max page links value error.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Value for maxPageLinks is invalid."
+        },
+        "msgItemRangeCurrent": {
+          "description": "Item range text for known row count.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "{pageFrom}-{pageTo}"
+        },
+        "msgItemRangeCurrentSingle": {
+          "description": "Item range text for single page range.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "{pageFrom}"
+        },
+        "msgItemRangeItems": {
+          "description": "Item range items text.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "items"
+        },
+        "msgItemRangeOf": {
+          "description": "Item range \"of\" text.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "of"
+        },
+        "msgItemRangeOfApprox": {
+          "description": "Item range \"of approx\" text.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "approx."
+        },
+        "msgItemRangeOfAtLeast": {
+          "description": "Item range \"of at least\" text.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "at least"
+        },
+        "pageInvalid": {
+          "description": "Invalid page error.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "The page value entered is invalid."
+        },
+        "tipNavFirstPage": {
+          "description": "First page button tip.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "First"
+        },
+        "tipNavInputPage": {
+          "description": "Current page tip.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Go To Page"
+        },
+        "tipNavLastPage": {
+          "description": "Last page button tip.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Last"
+        },
+        "tipNavNextPage": {
+          "description": "Next page button tip.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Next"
+        },
+        "tipNavPageLink": {
+          "description": "Current page link tip.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Go To Page {pageNum}"
+        },
+        "tipNavPreviousPage": {
+          "description": "Previous page button tip.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Previous"
+        }
+      }
+    }
+  },
+  "methods": {
+    "firstPage": {
+      "description": "Load the first page of data",
+      "return": "Promise"
+    },
+    "previousPage": {
+      "description": "Load the previous page of data",
+      "return": "Promise"
+    },
+    "nextPage": {
+      "description": "Load the next page of data",
+      "return": "Promise"
+    },
+    "lastPage": {
+      "description": "Load the last page of data",
+      "return": "Promise"
+    },
+    "page": {
+      "description": "Load the specified page of data",
+      "params": [
+        {
+          "name": "page",
+          "description": "Page number.",
+          "type": "number"
+        }
+      ],
+      "return": "Promise"
+    },
+    "loadNext": {
+      "description": "Load the next set of data",
+      "return": "Promise"
+    },
+    "refresh": {
+      "description": "Refresh the paging control."
+    },
+    "setProperty": {
+      "description": "Sets a property or a single subproperty for complex properties and notifies the component\nof the change, triggering a [property]Changed event.",
+      "params": [
+        {
+          "name": "property",
+          "description": "The property name to set. Supports dot notation for subproperty access.",
+          "type": "string"
+        },
+        {
+          "name": "value",
+          "description": "The new value to set the property to.",
+          "type": "*"
+        }
+      ]
+    },
+    "getProperty": {
+      "description": "Retrieves a value for a property or a single subproperty for complex properties.",
+      "params": [
+        {
+          "name": "property",
+          "description": "The property name to get. Supports dot notation for subproperty access.",
+          "type": "string"
+        }
+      ],
+      "return": "*"
+    },
+    "setProperties": {
+      "description": "Performs a batch set of properties.",
+      "params": [
+        {
+          "name": "properties",
+          "description": "An object containing the property and value pairs to set.",
+          "type": "Object"
+        }
+      ]
+    }
+  },
+  "slots": {
+    "contextMenu": {
+      "description": "The contextMenu slot is set on the oj-menu within this element. \nThis is used to designate the JET Menu that this component should launch as a context menu on right-click, Shift-F10, Press & Hold, or component-specific gesture. \nIf specified, the browser's native context menu will be replaced by the JET Menu specified in this slot.\n\nThe application can register a listener for the Menu's ojBeforeOpen event. The listener can cancel the launch via event.preventDefault(), \nor it can customize the menu contents by editing the menu DOM directly, and then calling refresh() on the Menu.\n\nTo help determine whether it's appropriate to cancel the launch or customize the menu, the ojBeforeOpen listener can use component API's to determine which \ntable cell, chart item, etc., is the target of the context menu. See the JSDoc and demos of the individual components for details. \n\nKeep in mind that any such logic must work whether the context menu was launched via right-click, Shift-F10, Press & Hold, or component-specific touch gesture."
+    }
+  }
+}
