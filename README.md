@@ -34,13 +34,13 @@ npm install -g @oracle/ojet-cli
 
 ojet create <app name>
 ```
-See the [Oracle JET Developer Guide](http://docs.oracle.com/middleware/jet420/jet/) for complete installation details, including prerequisites.
+See the [Oracle JET Developer Guide](http://www.oracle.com/pls/topic/lookup?ctx=jet420) for complete installation details, including prerequisites.
 
 ## Related GitHub Projects
 All related projects on GitHub are associated under the [oracle-jet topic](https://github.com/search?q=topic%3Aoracle-jet+org%3Aoracle&type=Repositories).
 
-## [Documentation](http://docs.oracle.com/middleware/jet420/jet/)
-Oracle JET comes with a full [Developers Guide](http://docs.oracle.com/middleware/jet420/jet/) to help with Getting Started and many common issues.
+## [Documentation](http://www.oracle.com/pls/topic/lookup?ctx=jet420)
+Oracle JET comes with a full [Developers Guide](http://www.oracle.com/pls/topic/lookup?ctx=jet420) to help with Getting Started and many common issues.
 
 ## [Contributing](https://github.com/oracle/oraclejet/tree/master/CONTRIBUTING.md)
 Oracle JET is an open source project. Pull Requests are currently not being accepted. See 

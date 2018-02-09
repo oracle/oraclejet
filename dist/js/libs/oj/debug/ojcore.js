@@ -47,7 +47,7 @@ var _oldVal = _scope['oj'];
 var oj = _scope['oj'] =
 {
   'version': "4.2.0",
-  'build' : "8",
+  'build' : "9",
   'revision': "41239",
           
   // This function is only meant to be used outside the library, so quoting the name
