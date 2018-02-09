@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2014, 2017, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
@@ -86,6 +86,13 @@ oj.ModuleBinding._EMPTY_MODULE = "oj:blank";
       var endCommentNode;
       var busyStateResolver;
       var currentEmpty;
+      var currentCleanupMode;
+      var isCustomElement = element.parentNode && element.parentNode.nodeName === "OJ-MODULE"; //custom element check
+
+      var legacyViewModelMethodFunc = isCustomElement ? function(){}: _invokeViewModelMethod;
+      var legacyLifecycleListenerFunc = isCustomElement ? function(){}: _invokeLifecycleListener;
+      var viewModelMethodFunc = isCustomElement ? _invokeViewModelMethodOnElement : function(){};
+      var dispatchLifecycleEventFunc = isCustomElement ? _dispatchLifecycleEvent : function(){};
       
       function resolveBusyState()
       {
@@ -98,7 +105,7 @@ oj.ModuleBinding._EMPTY_MODULE = "oj:blank";
 
       var invokeModelDispose = function(model)
       {
-        _invokeViewModelMethod(model, 'disposeMethod', [element, valueAccessor]);
+        legacyViewModelMethodFunc(model, 'disposeMethod', [element, valueAccessor]);
       };
       
       var disposeAssociatedComponentViewModel = function ()
@@ -127,7 +134,7 @@ oj.ModuleBinding._EMPTY_MODULE = "oj:blank";
       var _IGNORE_PROMISE = new Error("Promise cancelled because ojModule is fetching new View and ViewModel");
       
       // This function is used to interrupt Promise chains when the new view/viewModel combination is being loaded
-      var checkPeningId = function(id)
+      var checkPendingId = function(id)
       {
         if (id != pendingViewId)
         {
@@ -151,7 +158,7 @@ oj.ModuleBinding._EMPTY_MODULE = "oj:blank";
       
       if (element.nodeType === 8) //comment
       {
-        contextElement = element.parentElement;
+        contextElement = element.parentNode;
         ko.virtualElements.setDomNodeChildren(element, []); // remove all child nodes of the virtual element
         endCommentNode = element.nextSibling;
       }
@@ -188,6 +195,7 @@ oj.ModuleBinding._EMPTY_MODULE = "oj:blank";
         var viewPath;
         var view;
         var viewModel;
+        var cleanupMode;
 
         if (typeof value === 'string')
         {
@@ -206,6 +214,7 @@ oj.ModuleBinding._EMPTY_MODULE = "oj:blank";
           view = unwrap(value['view']);
           viewModel = unwrap(value['viewModel']);
           requireFunc = unwrap(value['require']);
+          cleanupMode = unwrap(value['cleanupMode']);
         }
         
         if (requireFunc != null && !(requireFunc instanceof Function))
@@ -219,7 +228,8 @@ oj.ModuleBinding._EMPTY_MODULE = "oj:blank";
         
         var empty = (oj.ModuleBinding._EMPTY_MODULE === viewName);
         
-        var attachPromise = _invokeLifecycleListener(lifecycleListener, 'activated', [element, valueAccessor]);
+        var attachPromise = legacyLifecycleListenerFunc(lifecycleListener, 'activated', [element, valueAccessor]);
+        dispatchLifecycleEventFunc(contextElement, 'ojTransitionStart', [viewModel]);
         
         var viewPromise;
         var modelPromise;
@@ -272,7 +282,7 @@ oj.ModuleBinding._EMPTY_MODULE = "oj:blank";
             modelPromise = modelPromise.then(
               function(id, viewModel)
               {
-                checkPeningId(id);
+                checkPendingId(id);
                 
                 if (typeof viewModel === 'function')
                 {
@@ -281,7 +291,7 @@ oj.ModuleBinding._EMPTY_MODULE = "oj:blank";
                 else 
                 {
                   // If the function returns a value, use it as the new model instance
-                  viewModel = _invokeViewModelMethod(viewModel, 'initializeMethod', [element, valueAccessor]) || viewModel;
+                  viewModel = legacyViewModelMethodFunc(viewModel, 'initializeMethod', [element, valueAccessor]) || viewModel;
                 }
                 
                 return viewModel;
@@ -294,7 +304,7 @@ oj.ModuleBinding._EMPTY_MODULE = "oj:blank";
               viewPromise = modelPromise.then(
                 function(id, model)
                 {
-                  checkPeningId(id);
+                  checkPendingId(id);
                   
                   if (model == null)
                   {
@@ -348,8 +358,8 @@ oj.ModuleBinding._EMPTY_MODULE = "oj:blank";
           modelAttachPromise = modelPromise.then(
               function(id, viewModel)
               {
-                checkPeningId(id);
-                return _invokeViewModelMethod(viewModel, 'activatedHandler', [element, valueAccessor]);
+                checkPendingId(id);
+                return legacyViewModelMethodFunc(viewModel, 'activatedHandler', [element, valueAccessor]);
                 
               }.bind(null, pendingViewId)
           );
@@ -392,6 +402,10 @@ oj.ModuleBinding._EMPTY_MODULE = "oj:blank";
               cachedNodeArray = oldDomNodes;
               initCacheHolder();
             }
+            else if(isCustomElement) // need view nodes for the event payload
+            {
+              cachedNodeArray = oldDomNodes;
+            }
 
             
             var oldNodesRemoved = false;
@@ -405,13 +419,23 @@ oj.ModuleBinding._EMPTY_MODULE = "oj:blank";
               
               oldNodesRemoved = true;
               
-              if (saveInCache)
+              if (saveInCache) // legacy cache case - move the node into cacheHolder, then detach
               {
                 // Keep the cached nodes connected as a workaround for the Knockout removing observable subscriptions when
                 // they fire on disconnected nodes
                 _moveDomNodes(oldDomNodes, cacheHolder);
+                _detachOldView(element, oldViewParent || element, cacheHolder);
               }
-              else
+              else if (isCustomElement && currentCleanupMode === 'none') // external cache case
+              {
+                // detach from DOM by simply removing to preserve applied binding on the nodes
+                for (var i = 0; i < cachedNodeArray.length; i++) 
+                {
+                  var cachedNode = cachedNodeArray[i];
+                  cachedNode.parentNode.removeChild(cachedNode);
+                }
+              }
+              else // cache is not involved - clean up and detach
               {
                 oldKoNodes.forEach(
                   function(n)
@@ -419,17 +443,18 @@ oj.ModuleBinding._EMPTY_MODULE = "oj:blank";
                     ko.cleanNode(n);
                   }
                 );
+                _detachOldView(element, oldViewParent || element, cacheHolder);
               }
-              
-              _detachOldView(element, oldViewParent || element, cacheHolder);
               
               if (!isInitial) // ensure that this is not the very first view displayed by the binding
               {
-                _invokeLifecycleListener(lifecycleListener, 'detached', [element, valueAccessor, currentViewModel, cachedNodeArray]);
-                _invokeViewModelMethod(currentViewModel, 'detachedHandler', [element, valueAccessor, cachedNodeArray]);
+                legacyLifecycleListenerFunc(lifecycleListener, 'detached', [element, valueAccessor, currentViewModel, cachedNodeArray]);
+                legacyViewModelMethodFunc(currentViewModel, 'detachedHandler', [element, valueAccessor, cachedNodeArray]);
+                viewModelMethodFunc(currentViewModel, 'disconnected');
+                dispatchLifecycleEventFunc (contextElement, 'ojViewDisconnected', [currentViewModel, cachedNodeArray]);
                 
-                _invokeLifecycleListener(lifecycleListener, 'deactivated', [element, valueAccessor, currentViewModel]);
-                _invokeViewModelMethod(currentViewModel, 'deactivatedHandler', [element, valueAccessor]);
+                legacyLifecycleListenerFunc(lifecycleListener, 'deactivated', [element, valueAccessor, currentViewModel]);
+                legacyViewModelMethodFunc(currentViewModel, 'deactivatedHandler', [element, valueAccessor]);
               }
               
               if (saveInCache)
@@ -437,14 +462,14 @@ oj.ModuleBinding._EMPTY_MODULE = "oj:blank";
                 _invokeOnSubtree(cachedNodeArray, oj.Components? oj.Components.subtreeHidden: null);
                 cache[currentCacheKey] = {model: currentViewModel, view: cachedNodeArray};
               }
-              else
+              else if (! (isCustomElement && currentCleanupMode === 'none'))
               {
                 disposeAssociatedComponentViewModel();
               }
-    
               currentViewModel = model;
               currentCacheKey = cacheKey;
               currentEmpty = empty;
+              currentCleanupMode = cleanupMode;
             };
             
             
@@ -461,10 +486,13 @@ oj.ModuleBinding._EMPTY_MODULE = "oj:blank";
                 _invokeOnSubtree(nodes, oj.Components? oj.Components.subtreeShown: null);
               }
               
-              _invokeLifecycleListener(lifecycleListener, 'attached', [targetElement, valueAccessor, model, fromCache]);
-              _invokeViewModelMethod(model, 'attachedHandler', [targetElement, valueAccessor, fromCache]);
-    
-              if (!fromCache)
+              legacyLifecycleListenerFunc(lifecycleListener, 'attached', [targetElement, valueAccessor, model, fromCache]);
+              legacyViewModelMethodFunc(model, 'attachedHandler', [targetElement, valueAccessor, fromCache]);
+              viewModelMethodFunc(model, 'connected');
+              dispatchLifecycleEventFunc(contextElement, 'ojViewConnected', [model]);
+              
+              var bindingApplied = isCustomElement && _isBindingApplied(nodes, model);
+              if (!fromCache && !bindingApplied)
               {
                 var childBindingContext = bindingContext['createChildContext'](model,
                 undefined, function (ctx)
@@ -473,25 +501,38 @@ oj.ModuleBinding._EMPTY_MODULE = "oj:blank";
                   ctx['$params'] = params;
                 });
                 
+                if (isCustomElement) {
+                  // nulling out the composite binding context props from the contained module
+                  childBindingContext['$parent'] = undefined;
+                  childBindingContext['$parents'] = undefined;
+                  childBindingContext['$parentContext'] = undefined;
+                  childBindingContext['$props'] = undefined;
+                  childBindingContext['$slotNodeCounts'] = undefined;
+                  childBindingContext['$unique'] = undefined;
+                  childBindingContext['$uniqueId'] = undefined;
+                }
+                
                 _applyBindingsToNodes(targetElement, nodes[0], childBindingContext, cacheHolder);
                 
-                _invokeLifecycleListener(lifecycleListener, 'bindingsApplied', [targetElement, valueAccessor, model]);
-                _invokeViewModelMethod(model, 'bindingsAppliedHandler', [targetElement, valueAccessor]);
+                legacyLifecycleListenerFunc(lifecycleListener, 'bindingsApplied', [targetElement, valueAccessor, model]);
+                legacyViewModelMethodFunc(model, 'bindingsAppliedHandler', [targetElement, valueAccessor]);
               }
               
             };
             
             var transitionComplete = function()
             {
-              _invokeLifecycleListener(lifecycleListener, 'transitionCompleted', [element, valueAccessor, model]);
-              _invokeViewModelMethod(model, 'transitionCompletedHandler', [element, valueAccessor]);
+              legacyLifecycleListenerFunc(lifecycleListener, 'transitionCompleted', [element, valueAccessor, model]);
+              legacyViewModelMethodFunc(model, 'transitionCompletedHandler', [element, valueAccessor]);
+              viewModelMethodFunc(model, 'transitionCompleted');
+              dispatchLifecycleEventFunc(contextElement, 'ojTransitionEnd', [model]);
               resolveBusyState();
             };
             
             
             if (animation != null)
             {
-              var actx = _createAnimationContext(element, valueAccessor, isInitial, currentViewModel, model);
+              var actx = _createAnimationContext(element, valueAccessor, isInitial, currentViewModel, model, isCustomElement);
               var promise = _animate(actx, animation, element, oldDomNodes, 
                                                  insertAndActivateNewNodes, removeOldDomNodes, transitionComplete);
               // wrap currentAnimationPromise is a promise that never gets rejected, so that the ojModule can still
@@ -607,12 +648,13 @@ oj.ModuleBinding._EMPTY_MODULE = "oj:blank";
       {
         _insertNodes(element, newDomNodes);
         
-        if (oj.Components)
+        var isCustomElement = element.parentNode && element.parentNode.nodeName === "OJ-MODULE"; //custom element check
+        if (oj.Components && !isCustomElement)
         {
            // The subtree just got moved to a new parent, so notify components
            // of the 'detach' imeddiately followed by the 'attach'
            _invokeOnSubtree(newDomNodes, oj.Components.subtreeDetached);
-           _invokeOnSubtree(newDomNodes, oj.Components.subtreeAttached);  
+           _invokeOnSubtree(newDomNodes, oj.Components.subtreeAttached);
         }
       }
     }
@@ -677,6 +719,21 @@ oj.ModuleBinding._EMPTY_MODULE = "oj:blank";
   /**
    * @ignore
    */
+  function _isBindingApplied (nodes, model) 
+  {
+    var bindingContext;
+    for (var i = 0; i < nodes.length; i++) 
+    {
+      bindingContext = ko.contextFor(nodes[i]);
+      if (bindingContext) 
+        break;
+    }
+    return bindingContext && bindingContext['$module'] && bindingContext['$module'] == model;
+  }
+  
+  /**
+   * @ignore
+   */
   function _isDocumentFragment(content) 
   {
     if (window['DocumentFragment'])
@@ -687,6 +744,20 @@ oj.ModuleBinding._EMPTY_MODULE = "oj:blank";
     {
       return content && content.nodeType === 11;
     }
+  };
+  
+  /**
+   * @ignore
+   */
+  function _dispatchLifecycleEvent (element, eventName, params)
+  {
+    var detail = {};
+    if (params[0])
+      detail['viewModel'] = params[0];
+    if (params[1])
+      detail['view'] = params[1];
+    var customEvent = new CustomEvent(eventName, {'detail': detail});
+    element.dispatchEvent(customEvent);
   };
   
   /**
@@ -747,7 +818,23 @@ oj.ModuleBinding._EMPTY_MODULE = "oj:blank";
     }
   };
   
-  
+  /**
+   * @ignore
+   * @param {?Object} model 
+   * @param {string} name
+   */
+  function _invokeViewModelMethodOnElement(model, name)
+  {
+    if(model && name)
+    {
+      var handler = model[name];
+      if (typeof handler === 'function')
+      {
+        //suspend dependency detection while listeners are invoked
+        ko.ignoreDependencies(handler, model);
+      }
+    }
+  };
   
   /**
    * @ignore
@@ -851,9 +938,11 @@ oj.ModuleBinding._EMPTY_MODULE = "oj:blank";
   /**
    * @ignore
    */
-  function _createAnimationContext(node, valueAccessor, isInitial, oldViewModel, newViewModel)
+  function _createAnimationContext(node, valueAccessor, isInitial, oldViewModel, newViewModel, isCustomElement)
   {
-    return {'node': node, 'valueAccessor': valueAccessor, 'isInitial' : isInitial,
+    return {'node': isCustomElement ? node.parentNode : node, 
+            'valueAccessor': isCustomElement ?  null : valueAccessor, 
+            'isInitial' : isInitial,
             'oldViewModel': oldViewModel, 'newViewModel': newViewModel};
   }
   
@@ -1406,7 +1495,7 @@ oj.ModuleBinding._EMPTY_MODULE = "oj:blank";
    * @param {Object} context.newViewModel the instance of the ViewModel for the new View
    * @param {Node} context.newViewParent the 'newViewParent' parameter returned by the prepareAnimation() method
    * @param {Node} context.oldViewParent the 'oldViewParent' parameter returned by the prepareAnimation() method
-   * @param {Function} context.removeOldViewcalling this function will remove the DOM nodes representing the old View. If this
+   * @param {Function} context.removeOldView calling this function will remove the DOM nodes representing the old View. If this
    * function is not invoked by the ModuleAnimation implementation, and the old View is still connected when the Promise is 
    * resolved, the old View will be removed by ojModule.
    * @param {Function} context.insertNewView calling this function will insert new View's DOM nodes into the location

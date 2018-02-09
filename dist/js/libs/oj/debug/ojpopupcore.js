@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2014, 2017, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
@@ -1717,7 +1717,7 @@ oj.PopupServiceImpl.prototype._eventFilterCallback = function (event)
     // the first tabstop in the document.  Eat this event if it's under the
     // modal glass (not within the zorder container) and don't redistribute.
 
-    oj.ZOrderUtils.eatEvent($.Event(event));
+    oj.ZOrderUtils.eatEvent(event);
     return;
   }
 
@@ -2722,7 +2722,7 @@ oj.ZOrderUtils.compareStackingContexts = function (el1, el2)
 
 /**
  * Event listener that will stop propagation and prevent default on the event.
- * @param {jQuery.event=} event
+ * @param {jQuery.Event|Event} event
  * @return {void}
  * @public
  */
@@ -3098,7 +3098,7 @@ oj.PopupSkipLink = function (sibling, message, callback, id)
   this._sibling = sibling;
   this._message = message;
   this._callback = callback;
-  this._id = !id ? "" : id;
+  this._id = id;
   this.Init();
 };
 
@@ -3120,14 +3120,43 @@ oj.PopupSkipLink.prototype.Init = function ()
   var id = this._id;
   this._id = null;
 
-  var link = $("<a>").attr({'tabindex' : '-1', 'href' : '#'});
-  if (!oj.StringUtils.isEmpty(id))
-    link.attr("id", id);
+  var link = $("<a>").attr({'tabindex' : '-1', 'href' : '#', 'role': 'link'});
+  link.attr("id", id);
   link.addClass("oj-helper-hidden-accessible");
   link.text(message);
   link.insertAfter(sibling);  //@HtmlUpdateOk
-  link.on("click", callback);
+
+  link.on("click",
+      oj.PopupSkipLink._activateHandler.bind(this, callback));
+
+  // This could only happen in some kind of simulator as this skip link is only used on the iOS
+  // platform. Prevent click generated from an "enter" key press by eating the event.
+  link.on("keydown keyup keypress", oj.PopupSkipLink._keyHandler);
+
   sibling.data(oj.PopupSkipLink._SKIPLINK_ATTR, link);
+};
+
+/**
+ * Handles activation of the skiplink.  Cancels the click event.
+ * @private
+ * @param {?} listener
+ * @param {Event} event
+ */
+oj.PopupSkipLink._activateHandler = function (listener, event)
+{
+  oj.ZOrderUtils.eatEvent(event);
+  window.setImmediate(listener);
+};
+
+/**
+ * Listener registered on the skip link element to prevent an enter key from generating a click
+ * @private
+ * @param {jQuery.Event|Event} event
+ */
+oj.PopupSkipLink._keyHandler = function (event)
+{
+  if (event.keyCode === $.ui.keyCode.ENTER)
+    oj.ZOrderUtils.eatEvent(event);
 };
 
 /**
@@ -3138,10 +3167,8 @@ oj.PopupSkipLink.prototype.Init = function ()
 oj.PopupSkipLink.prototype.destroy = function ()
 {
   var sibling = this._sibling;
-  this._sibling = null;
-
-  var callback = this._callback;
-  this._callback = null;
+  delete this._sibling;
+  delete this._callback;
 
   if (sibling)
   {
@@ -3149,7 +3176,7 @@ oj.PopupSkipLink.prototype.destroy = function ()
     sibling.removeData(oj.PopupSkipLink._SKIPLINK_ATTR);
     if (link)
     {
-      link.off("click", callback);
+      link.off("click keydown keyup keypress");
       link.remove();
     }
   }

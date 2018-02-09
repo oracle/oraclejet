@@ -1,13 +1,13 @@
 {
-  "name": "ojProgressList",
-  "version": "4.1.0",
-  "jetVersion": "4.1.0",
-  "displayName": " Progress List",
+  "name": "oj-progress-list",
+  "version": "4.2.0",
+  "jetVersion": "4.2.0",
+  "displayName": "Progress List",
   "preview": true,
-  "description": "Display a ListView where the data is a TableDataSource and data rows are ProgressItems with ko data-bind progress, status and message",
+  "description": "Displays a ListView where data rows are ProgressItems.",
   "properties": {
     "data": {
-      "description": "Data used by the file upload progress list.",
+      "description": "Data used by the ProgressList.",
       "type": "null|oj.TableDataSource",
       "displayName": "Data",
       "value": null

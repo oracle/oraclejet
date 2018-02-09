@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2014, 2017, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
@@ -8989,7 +8989,13 @@ $ul.css('max-height', '') ;   //JRM
                         this._data.ui.focused = true ;
                         var n ;
 
-                        if (this._data.ui.lastHovered) {
+                        // Tree has gained focus, highlight a node as current.
+                        // If no last "current" or selected, will default to the top node. 
+                        if (this._data.ui.hovered)    // . Check if mouse is over a node, before
+                        {                             // defaulting to another node as described above.
+                          n = this._data.ui.hovered ;
+                        }
+                        else  if (this._data.ui.lastHovered) {
                           this._data.ui.hovered =  this._data.ui.lastHovered ;
                           n = this._data.ui.hovered ;
                         }

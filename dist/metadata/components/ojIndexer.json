@@ -1,8 +1,8 @@
 {
-  "name": "ojIndexer",
-  "version": "4.1.0",
-  "jetVersion": "4.1.0",
-  "displayName": " Indexer",
+  "name": "oj-indexer",
+  "version": "4.2.0",
+  "jetVersion": "4.2.0",
+  "displayName": "Indexer",
   "preview": true,
   "roles": [
     "slider"

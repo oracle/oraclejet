@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2014, 2017, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
@@ -15,7 +15,10 @@ define(['ojs/ojcore', 'jquery', 'knockout', 'ojs/ojcomponentcore', 'ojs/ojcompos
 
 /**
  * @ojcomponent oj.ojFilePicker
+ * @ojtsimport ojcomposite
  * @since 4.0.0
+ * @ojdisplayname File Picker
+ * @ojshortdesc Displays a clickable dropzone for selecting files from the device storage.
  * @ojstatus preview
  *
  * @classdesc 
@@ -57,14 +60,15 @@ define(['ojs/ojcore', 'jquery', 'knockout', 'ojs/ojcomponentcore', 'ojs/ojcompos
  */
 
 /**
+ * An array of strings of allowed MIME types or file extensions that can be uploaded. If not specified, accept all file types
+<p>Note: If accept is specified, files with empty string type will be rejected if no match found in the "accept" value.
  * @member
  * @name accept
  * @memberof oj.ojFilePicker
  * @instance
- * @type {Array}
- * @default <code class="prettyprint">undefined</code>
- * @desc An array of strings of allowed MIME types or file extensions that can be uploaded. If not specified, accept all file types
-<p>Note: If accept is specified, files with empty string type will be rejected if no match found in the "accept" value.
+ * @type {Array.<string>}
+ * @default null
+ * @ojshortdesc An array of strings of allowed MIME types or file extensions that can be uploaded. If not specified, accept all file types
  *
  * @example <caption>Initialize the file picker with the <code class="prettyprint">accept</code> attribute specified:</caption>
  * &lt;oj-file-picker accept='image/*'>&lt;/oj-file-picker>
@@ -78,6 +82,7 @@ define(['ojs/ojcore', 'jquery', 'knockout', 'ojs/ojcomponentcore', 'ojs/ojcompos
  */
 
 /**
+ * Whether to allow single or multiple file selection.
  * @member
  * @name selectionMode
  * @memberof oj.ojFilePicker
@@ -85,8 +90,8 @@ define(['ojs/ojcore', 'jquery', 'knockout', 'ojs/ojcomponentcore', 'ojs/ojcompos
  * @type {string}
  * @ojvalue {string} "multiple" multiple file selection
  * @ojvalue {string} "single" single file selection
- * @default <code class="prettyprint">"multiple"</code>
- * @desc Whether to allow single or multiple file selection.
+ * @default "multiple"
+ * @ojshortdesc Whether to allow single or multiple file selection.
  *
  * @example <caption>Initialize the file picker with the <code class="prettyprint">selection-mode</code> attribute specified:</caption>
  * &lt;oj-file-picker selection-mode='single'>&lt;/oj-file-picker>
@@ -100,6 +105,7 @@ define(['ojs/ojcore', 'jquery', 'knockout', 'ojs/ojcomponentcore', 'ojs/ojcompos
  */
 
 /**
+ * The type of event to select the files.
  * @member
  * @name selectOn
  * @memberof oj.ojFilePicker
@@ -109,8 +115,8 @@ define(['ojs/ojcore', 'jquery', 'knockout', 'ojs/ojcomponentcore', 'ojs/ojcompos
  * @ojvalue {string} "click" click to select the files
  * @ojvalue {string} "drop" drag and drop the files
  * @ojvalue {string} "clickAndDrop" either click or drag and drop to select the files
- * @default <code class="prettyprint">auto</code>
- * @desc The type of event to select the files.
+ * @default "auto"
+ * @ojshortdesc The type of event to select the files.
  *
  * @example <caption>Initialize the file picker with the <code class="prettyprint">select-on</code> attribute specified:</caption>
  * &lt;oj-file-picker select-on='click'>&lt;/oj-file-picker>
@@ -125,12 +131,13 @@ define(['ojs/ojcore', 'jquery', 'knockout', 'ojs/ojcomponentcore', 'ojs/ojcompos
 
 
 /**
+ * Triggered after the files are selected
  * @member
  * @name select
  * @memberof oj.ojFilePicker
  * @instance
  * @event
- * @desc Triggered after the files are selected
+ * @ojshortdesc Triggered after the files are selected
  * @property {FileList} files The files that were just selected.
  */
 
@@ -533,7 +540,8 @@ function pickerViewModel (context) {
   };
 
   function handleFilesAdded (files, oEvent) {
-    var event = new CustomEvent("select", 
+    // - oj_file_picker does not fire ojselect event
+    var event = new CustomEvent("ojSelect", 
                                 {detail: {'files': files,
                                           'originalEvent': oEvent}});
     element.dispatchEvent(event);

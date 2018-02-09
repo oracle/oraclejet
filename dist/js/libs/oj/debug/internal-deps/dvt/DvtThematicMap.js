@@ -38,7 +38,6 @@ dvt.ThematicMap.prototype.Init = function(context, callback, callbackObj) {
   this._layers = [];
   this._createLayers();
   this._bRendered = false;
-  this._bBaseMapChanged = false;
   this.Defaults = new DvtThematicMapDefaults();
 
   this._initialZooming = false;
@@ -253,6 +252,10 @@ dvt.ThematicMap.prototype.setInitialZooming = function(attr) {
  */
 dvt.ThematicMap.prototype.PreRender = function() {
   dvt.ThematicMap.superclass.PreRender.call(this);
+
+  // Set map changed flag before parsing and rendering
+  this._bBaseMapChanged = false;
+
   // 3 cases we need to handle
   // 1. Initial render
   // 2. New base map
@@ -1639,7 +1642,7 @@ DvtThematicMapAutomation.prototype._getSubId = function(dataObject) {
             return this._getDataLayerId(id) + ':' + 'link[' + k + ']';
         }
       }
-      else if (displayable instanceof dvt.SimpleMarker || displayable instanceof dvt.ImageMarker) {
+      else {
         var markers = dataLayers[id].getMarkerObjects();
         for (var k = 0; k < markers.length; k++) {
           if (markers[k] === dataObject)
@@ -5658,7 +5661,7 @@ DvtThematicMapEventManager.prototype.ShowFocusEffect = function(event, obj) {
   if (!this._tmap.isPanning())
     DvtThematicMapEventManager.superclass.ShowFocusEffect.call(this, event, obj);
 };
-// Copyright (c) 2011, 2017, Oracle and/or its affiliates. All rights reserved.
+// Copyright (c) 2011, 2018, Oracle and/or its affiliates. All rights reserved.
 /**
  * Thematic Map JSON parser
  * @param {dvt.ThematicMap} tmap The thematic map to update
@@ -5698,7 +5701,9 @@ DvtThematicMapJsonParser.prototype.Init = function(tmap) {
  * @param {Object} options The JSON object to parse
  */
 DvtThematicMapJsonParser.prototype.parse = function(options) {
-  this._mapProvider = options['mapProvider'];
+  var mapProvider = options['mapProvider'];
+  if (DvtMapProviderUtils.containsGeoJson(mapProvider))
+    this._mapProvider = mapProvider;
   this._parseMapProperties(options);
   this._parseStyles(options['styleDefaults']);
   this._parseAreaLayer(options['areaLayers']);
@@ -6093,7 +6098,7 @@ DvtThematicMapJsonParser.prototype._createMarker = function(layer, dataLayer, da
   var center;
   // MapProvider coordinates are already projected, but need to flip the y coordinate for svg
   // because 0,0 is top left instead of bottom left
-  if (this._mapProvider && this._mapProvider['geo'] != null && !data['location'])
+  if (this._mapProvider && !data['location'])
     center = new dvt.Point(data['x'], -data['y']);
   else
     center = DvtThematicMapJsonParser.getCenter(dataLayer, data['location'], data['x'], data['y']);
@@ -6221,7 +6226,7 @@ DvtThematicMapJsonParser.prototype._createCustomDataItem = function(layer, dataL
   var center;
   // MapProvider coordinates are already projected, but need to flip the y coordinate for svg
   // because 0,0 is top left instead of bottom left
-  if (this._mapProvider && this._mapProvider['geo'] != null && !data['location'])
+  if (this._mapProvider && !data['location'])
     center = new dvt.Point(data['x'], -data['y']);
   else
     center = DvtThematicMapJsonParser.getCenter(dataLayer, data['location'], data['x'], data['y']);
@@ -6355,7 +6360,7 @@ DvtThematicMapJsonParser.prototype._createLink = function(dataLayer, data) {
  */
 DvtThematicMapJsonParser.prototype._getPtFromLocation = function(dataLayer, loc) {
   // Ensure mapProvider object is declared and not empty
-  if (this._mapProvider && this._mapProvider['geo'] != null) {
+  if (this._mapProvider) {
     return new dvt.Point(loc['x'], -loc['y']);
   } else {
     return DvtThematicMapJsonParser.getCenter(dataLayer, loc['location'], loc['x'], loc['y']);
@@ -7364,6 +7369,16 @@ DvtMapProviderUtils._SHORT_LABEL = 'shortLabel';
 DvtMapProviderUtils._LONG_LABEL = 'longLabel';
 
 /**
+ * Does a basic check to see if an object contains geo JSON, returning true if it does. We need this check
+ * because the default JET property for mapProvider produces an empty object for the 'geo' subproperty.
+ * @param {Object} mapProvider The mapProvider object
+ * @return {boolean}
+ */
+DvtMapProviderUtils.containsGeoJson = function(mapProvider) {
+  return mapProvider && mapProvider['geo'] && mapProvider['geo'][DvtMapProviderUtils._TYPE];
+};
+
+/**
  * Parses a GeoJSON object and returns the map info that Thematic Map needs to render an area layer
  * @param {dvt.Context} context The rendering context.
  * @param  {Object} mapProvider The mapProvider object
@@ -7389,7 +7404,7 @@ DvtMapProviderUtils.parseMapInfo = function(context, mapProvider) {
     }
   }
   else if (type === DvtMapProviderUtils._TYPE_FEATURE) {
-    DvtMapProviderUtils._parseFeature(geoJson, keys, areas, labels);
+    DvtMapProviderUtils._parseFeature(context, geoJson, keys, areas, labels);
   }
   else {
     throw new Error('GeoJSON type of ' + type + ' is not supported. ' +

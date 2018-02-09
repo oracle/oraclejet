@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2014, 2017, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
@@ -20,7 +20,7 @@ oj.DataCollectionEditUtils = {};
 oj.DataCollectionEditUtils.basicHandleEditEnd = function(event, ui)
 {
     var input, cancel, widgetConstructor;
-    if (ui == null)
+    if (ui == null || ui['cellContext'] == null)
     {
         ui = event.detail;
     }

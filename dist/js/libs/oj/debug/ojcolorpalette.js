@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2014, 2017, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
@@ -44,11 +44,14 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojarraytabledatasour
   var  /** @const */  TRANSKEY_NONE  = "labelNone" ;
 
 
-/**
+ /**
   * @ojcomponent oj.ojColorPalette
   * @augments oj.editableValue
   * @since 3.0.0
   * @ojstatus preview
+  * @class oj.ojColorPalette
+  * @ojshortdesc Color Palette element that allows an application to display a set of pre-defined
+  * colors from which a specific color can be selected.
   *
   * @classdesc
   * <h3 id="#colorPaletteOverview-section">
@@ -90,12 +93,13 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojarraytabledatasour
 
      options: {
 
-          /**
+         /**
           * Labelled-by is used to establish a relationship between this and another element.
           * A common use is to tie the oj-label and the oj-color-palette together.
           * The oj-label custom element has an id, and you use the labelled-by attribute
           * to tie the two elements together.
           *
+          * @ojshortdesc Used to establish a relationship between this element and another element.
           * @example <caption>Initialize the color palette with the <code class="prettyprint">labelled-by</code> attribute specified:</caption>
           * &ltoj-label id="labelId">Name:&lt/oj-label>
           * &ltoj-color-palette labelled-by="labelId">&lt;/oj-color-palette>
@@ -109,23 +113,23 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojarraytabledatasour
           *
           * @expose
           * @type {?string}
-          * @public
+          * @default null
           * @instance
           * @memberof oj.ojColorPalette
           */
          labelledBy: null,
 
-         /**
+          /**
            * Specify an array of objects defining the palette's color set, and optionally, descriptive labels for the colors.
            * Each object has the following structure:
            * @property {oj.Color} color the color definition
            * @property {string} label optional descriptive string (refer to attribute <em>label-display</em>).
            *                                         If omitted, <em>label</em> defaults to the color's hex string format.
            *
-           *
            * @member
            * @type {Array}
-           * @default <code class="prettyprint">null</code>
+           * @default null
+           * @ojshortdesc Specifies an array of objects defining the palette's color set.
            * @example <caption>Initialize the color palette with the <code class="prettyprint">palette</code> attribute specified:</caption>
            * &ltoj-color-palette palette='[[myPalette]]'>&lt;/oj-color-palette>
            *
@@ -144,14 +148,16 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojarraytabledatasour
            * @expose
            * @instance
            * @memberof oj.ojColorPalette
+           * @ojtranslatable
            */
           palette:       null,
 
-         /**
+          /**
            * The swatch size.  If the size is <em>'sm'</em> or <em>'xs'</em>, the color <em>label</em> property is used as a tooltip.
            * @member
            * @type {string}
-           * @default <code class="prettyprint">'lg'</code>
+           * @default "lg"
+           * @ojshortdesc Specifies the swatch size.
            * @ojvalue {string} "xs" extra small swatch
            * @ojvalue {string} "sm" small swatch
            * @ojvalue {string} "lg" large swatch
@@ -171,11 +177,12 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojarraytabledatasour
            */
           swatchSize:    'lg',
 
-         /**
+          /**
            * Specifies whether a text label accompanies the color swatch.
            * @member
            * @type {string}
-           * @default <code class="prettyprint">"off"</code>
+           * @default "off"
+           * @ojshortdesc Specifies whether a text label accompanies the color swatch.
            * @ojvalue {string} "auto" labels are displayed if the <em>layout</em> property is <em>'list'</em> and swatch-size is <em>'sm'</em> or if the <em>layout</em> is <em>'grid'</em> and <em>swatch-size</em> is <em>'lg'</em>
            * @ojvalue {string} "off" labels are not displayed
            *
@@ -193,11 +200,12 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojarraytabledatasour
            * @memberof oj.ojColorPalette
            */
           labelDisplay:  "off",
-         /**
+          /**
            * Specifies the layout of the color swatches.
            * @member
            * @type {string}
-           * @default <code class="prettyprint">'grid'</code>
+           * @default "grid"
+           * @ojshortdesc Specifies the layout of the color swatches.
            * @ojvalue {string} "grid" Layout the color swatches in a grid
            * @ojvalue {string} "list" Layout the color swatches in a list
            * @expose
@@ -214,11 +222,12 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojarraytabledatasour
            * @memberof oj.ojColorPalette
            */
           layout:        'grid',
-         /**
+          /**
            * The current value of the palette element.
            * @member
            * @type {oj.Color}
-           * @default <code class="prettyprint">null</code>
+           * @default null
+           * @ojshortdesc The current value of the palette element.
            * @ojwriteback
            * @expose
            * @instance
@@ -305,18 +314,17 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojarraytabledatasour
         return ret ;
      },
 
-     /**
-       * Add an entry to the palette.
-       * @param {oj.Color | Object}   newEntry  An oj.Color object specfying the color to be added,
-       * or an object of the same format as used for defining a palette - see the <code class="prettyprint">palette</code> option.
-       * @memberof oj.ojColorPalette
-       * @expose
-       * @public
-       * @deprecated This is deprecated for API consistency with the <code class="prettyprint">remove</code> function. The same functionality can be achieved by mutating the observable array
-       * that is set as the <code class="prettyprint">palette</code>.
-       * @ignore
-       * @instance
-       */
+    /**
+     * Add an entry to the palette.
+     * @param {oj.Color | Object}   newEntry  An oj.Color object specfying the color to be added,
+     * or an object of the same format as used for defining a palette - see the <code class="prettyprint">palette</code> option.
+     * @memberof oj.ojColorPalette
+     * @expose
+     * @deprecated 4.0.0 This is deprecated for API consistency with the remove function. The same functionality can be achieved by mutating the observable array
+     * that is set as the palette.
+     * @ignore
+     * @instance
+     */
      add : function(newEntry)
      {
         var o = null, c ;
@@ -354,18 +362,17 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojarraytabledatasour
      },
 
      /**
-       * Remove an entry from the palette.
-       * @param {Object | number | oj.Color}  palEntry  Can be the zero-based index to the entry, or an
-       * object containing the color specfication (using the same format as used for defining the
-       * palette - see the <code class="prettyprint">palette</code> option, or an oj.Color object.
-       * @memberof oj.ojColorPalette
-       * @expose
-       * @public
-       * @deprecated This is deprecated due to a name collision with HTMLElement. The same functionality can be achieved by mutating the observable array
-       * that is set as the <code class="prettyprint">palette</code>.
-       * @ignore
-       * @instance
-       */
+      * Remove an entry from the palette.
+      * @param {Object | number | oj.Color}  palEntry  Can be the zero-based index to the entry, or an
+      * object containing the color specfication (using the same format as used for defining the
+      * palette - see the <code class="prettyprint">palette</code> option, or an oj.Color object.
+      * @memberof oj.ojColorPalette
+      * @expose
+      * @deprecated 4.0.0 This is deprecated due to a name collision with HTMLElement. The same functionality can be achieved by mutating the observable array
+      * that is set as the palette.
+      * @ignore
+      * @instance
+      */
      remove : function(palEntry)
      {
         var index = -1,
@@ -411,10 +418,10 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojarraytabledatasour
 
      /**
       * Returns a Promise that resolves when the component is ready and has finished rendering.
-      * <p>This method does not accept any arguments.
+      * This method does not accept any arguments.
+      * @ojshortdesc Returns a Promise that resolves when the component is ready and has finished rendering.
       * @memberof oj.ojColorPalette
       * @expose
-      * @public
       * @ignore
       * @instance
       * @return {Promise} A Promise that resolves when the component is ready.
@@ -433,6 +440,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojarraytabledatasour
 
      /**
       * Destroy the Color Palette
+      * @return {void}
       * @memberof oj.ojColorPalette
       * @instance
       * @override
@@ -455,15 +463,24 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojarraytabledatasour
      },
 
      /**
-       *  Called the first time the widget is called on an element.
-       *  @private
-       */
+      * Called the first time the widget is called on an element.
+      * @return {void}
+      * @memberof oj.ojColorPalette
+      * @instance
+      * @private
+      */
      _ComponentCreate: function ()
      {
         this._super() ;
         this._initPalette() ;
      },
 
+    /**
+     * @return {void}
+     * @memberof oj.ojColorPalette
+     * @instance
+     * @private
+     */
     _AfterCreate: function()
     {
       var label;
@@ -501,13 +518,16 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojarraytabledatasour
     },
 
      /**
-       *  Handle an option change.
-       *  Called by $(selector).ojColorPalette("option", "prop", value)
-       *  @param {string}   key
-       *  @param {string | oj.Color | boolean}   newval
-       *  @param {Object}   flags
-       *  @private
-       */
+      * Handle an option change.
+      * Called by $(selector).ojColorPalette("option", "prop", value)
+      * @param {string}   key
+      * @param {string | oj.Color | boolean}   newval
+      * @param {Object}   flags
+      * @return {void}
+      * @memberof oj.ojColorPalette
+      * @instance
+      * @private
+      */
      _setOption: function (key, newval, flags)
      {
         var originalValue = this.options["labelledBy"];
@@ -534,19 +554,24 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojarraytabledatasour
         this._super(key, newval, flags);
      },
 
-   /**
-    * If custom element, get the labelledBy option, and set this
-    * onto the root dom element as aria-labelledby. We append "|label" so it matches the id that
-    * is on the oj-label's label element.
-    * @memberof oj.ojColorPalette
-    * @instance
-    * @private
-    */
+    /**
+     * If custom element, get the labelledBy option, and set this
+     * onto the root dom element as aria-labelledby. We append "|label" so it matches the id that
+     * is on the oj-label's label element.
+     * @memberof oj.ojColorPalette
+     * @instance
+     * @private
+     */
     _updateLabelledBy : oj.EditableValueUtils._updateLabelledBy,
 
      /**
-       *  @private
-       */
+      * @param {Event} event the associated Event object.
+      * @param {Object} ui the context object.
+      * @return {void}
+      * @private
+      * @memberof oj.ojColorPalette
+      * @instance
+      */
      _onLVOptionChange: function(event, ui)
      {
        if (ui.option === "selection") {
@@ -556,9 +581,12 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojarraytabledatasour
 
 
      /**
-       *  Wait for ListView to be ready, and complete the add/remove
-       *  @private
-       */
+      * Wait for ListView to be ready, and complete the add/remove
+      * @return {void}
+      * @memberof oj.ojColorPalette
+      * @instance
+      * @private
+      */
      _waitForLV: function()
      {
         if (this._LVResolve) {
@@ -637,12 +665,14 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojarraytabledatasour
 
 
      /**
-       *  Compares two color values (oj.Colors)
-       *  @param {oj.Color}   color1   a color to match
-       *  @param {oj.Color}   color2   a color to match
-       *  @returns {boolean}  true if colors match, else false.
-       *  @private
-       */
+      * Compares two color values (oj.Colors)
+      * @param {oj.Color}   color1   a color to match
+      * @param {oj.Color}   color2   a color to match
+      * @returns {boolean}  true if colors match, else false.
+      * @memberof oj.ojColorPalette
+      * @instance
+      * @private
+      */
      _compareColorValues  :  function(color1, color2)
      {
         var t1  = (color1 instanceof oj.Color),
@@ -657,12 +687,15 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojarraytabledatasour
      },
 
      /**
-       *  Fire optionChange event
-       *  @param {string}  key             the option key whose property value has been changed.
-       *  @param {Object | null}  newVal   the new value after the change
-       *  @param {Event | null} origEvent  false if option change is not due to user interaction.
-       *  @private
-       */
+      * Fire optionChange event
+      * @param {string}  key             the option key whose property value has been changed.
+      * @param {Object | null}  newVal   the new value after the change
+      * @param {Event | null} origEvent  false if option change is not due to user interaction.
+      * @return {void}
+      * @memberof oj.ojColorPalette
+      * @instance
+      * @private
+      */
      _fireOptionChangeEvent : function(key, newVal, origEvent)
      {
         if (key === "palette")  {
@@ -675,11 +708,13 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojarraytabledatasour
      },
 
      /**
-       *  Find the supplied oj.Color in the palette and return the index to it.
-       *  @param {oj.Color}  color  the color to be found.
-       *  @returns {number}  the index in the palette array, or -1 if not found.
-       *  @private
-       */
+      * Find the supplied oj.Color in the palette and return the index to it.
+      * @param {oj.Color}  color  the color to be found.
+      * @returns {number}  the index in the palette array, or -1 if not found.
+      * @memberof oj.ojColorPalette
+      * @instance
+      * @private
+      */
      _findColorInPalette: function(color)
      {
         var  index = -1,
@@ -702,11 +737,13 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojarraytabledatasour
 
 
      /**
-       *  Returns the swatch ID of the supplied oj.Color in the palette.
-       *  @param {oj.Color}  color  the color to be found.
-       *  @returns {string | null}  the ID of the swatch, or null if not found.
-       *  @private
-       */
+      * Returns the swatch ID of the supplied oj.Color in the palette.
+      * @param {oj.Color}  color  the color to be found.
+      * @returns {string | null}  the ID of the swatch, or null if not found.
+      * @memberof oj.ojColorPalette
+      * @instance
+      * @private
+      */
      _findSwatchIdOfColorInPalette: function(color)
      {
         var  id = null,
@@ -729,12 +766,14 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojarraytabledatasour
 
 
      /**
-       *  Returns the index to the swatch with the supplied ID in the array.
-       *  @param {string}  a   the array to be searched.
-       *  @param {string}  id   the ID to be found.
-       *  @returns {number}  the index to the swatch, or -1 if not found.
-       *  @private
-       */
+      * Returns the index to the swatch with the supplied ID in the array.
+      * @param {string}  a   the array to be searched.
+      * @param {string}  id   the ID to be found.
+      * @returns {number}  the index to the swatch, or -1 if not found.
+      * @memberof oj.ojColorPalette
+      * @instance
+      * @private
+      */
      _findIndexOfSwatchById: function(a, id)
      {
         var  index = -1,
@@ -756,9 +795,13 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojarraytabledatasour
 
 
      /**
-       *  set Palette BusyContext
-       *  @private
-       */
+      * set Palette BusyContext
+      * @param {string} description
+      * @return {void}
+      * @memberof oj.ojColorPalette
+      * @instance
+      * @private
+      */
      _setPaletteBusyContext : function(description)
      {
         // The busy state resolver will be invoked when ListView completes the add.
@@ -770,9 +813,12 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojarraytabledatasour
       },
 
      /**
-       *  Resolve PaletteBusyContext
-       *  @private
-       */
+      * Resolve PaletteBusyContext
+      * @return {void}
+      * @memberof oj.ojColorPalette
+      * @instance
+      * @private
+      */
      _resolvePaletteBusyContext : function()
      {
         if (this._resolve)
@@ -783,10 +829,13 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojarraytabledatasour
      },
 
      /**
-       *  Swatch renderer  called from ojListView.
-       *  @param {Object}  context the ojListView context.
-       *  @private
-       */
+      * Swatch renderer  called from ojListView.
+      * @param {Object}  context the ojListView context.
+      * @return {Object}
+      * @memberof oj.ojColorPalette
+      * @instance
+      * @private
+      */
      _renderer : function(context)
      {
        var raw ;
@@ -857,13 +906,17 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojarraytabledatasour
      },
 
      /**
-      *  Render a standard swatch
-      *  @param {oj.Color}  color
-      *  @param {boolean}   showLabels
-      *  @param {string}    label
-      *  @param {string}    swatchClass
-      *  @param {string}    selectedClass
-      *  @private
+      * Render a standard swatch
+      * @param {oj.Color}  color
+      * @param {boolean}   showLabels
+      * @param {string}    label
+      * @param {string}    tooltip
+      * @param {string}    swatchClass
+      * @param {string}    selectedClass
+      * @return {Object}
+      * @memberof oj.ojColorPalette
+      * @instance
+      * @private
       */
      _renderStandard : function(color, showLabels, label, tooltip, swatchClass, selectedClass)
      {
@@ -887,11 +940,14 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojarraytabledatasour
 
      /**
       * Render a 'none' swatch.
-      *  @param {boolean}   showLabels
+      * @param {boolean}   showLabels
       * @param {string} label
+      * @param {string}    tooltip
       * @param {string} swatchClass
       * @param {string} selectedClass
-      * @param {string} tooltip
+      * @return {Object}
+      * @memberof oj.ojColorPalette
+      * @instance
       * @private
       */
      _renderNone: function(showLabels, label, tooltip, swatchClass, selectedClass)
@@ -917,11 +973,14 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojarraytabledatasour
      },
 
      /**
-       *   Handle selection event of a swatch from ListView
-       *   @param {Event}   event  the associated Event object.
-       *   @param {Object}  ui the context object.
-       *   @private
-       */
+      * Handle selection event of a swatch from ListView
+      * @param {Event}   event  the associated Event object.
+      * @param {Object}  ui the context object.
+      * @return {void}
+      * @memberof oj.ojColorPalette
+      * @instance
+      * @private
+      */
      _selected : function(event, ui)
      {
          var newColor = null, swatch, lastSelected ;
@@ -979,6 +1038,9 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojarraytabledatasour
       * @param {boolean}  disabled  the "disabled" option value.
       * @param {boolean} applyOnlyIfDifferent Only apply the new value if it's different from the
       *        current value.
+      * @return {void}
+      * @memberof oj.ojColorPalette
+      * @instance
       * @private
       */
      _setOptDisabled : function(disabled, applyOnlyIfDifferent)
@@ -1023,10 +1085,13 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojarraytabledatasour
      },
 
      /**
-       *  Handle "value" option change.
-       *  @param {oj.Color}  color  the "value" option color.
-       *  @private
-       */
+      * Handle "value" option change.
+      * @param {oj.Color}  color  the "value" option color.
+      * @return {boolean}
+      * @memberof oj.ojColorPalette
+      * @instance
+      * @private
+      */
      _setOptValue :  function(color)
      {
         var palIndex = -1;
@@ -1056,10 +1121,13 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojarraytabledatasour
      },
 
      /**
-       *  Handle "palette" option change.
-       *  @param {Array}  palette  the "palette" option array.
-       *  @private
-       */
+      * Handle "palette" option change.
+      * @param {Array}  palette  the "palette" option array.
+      * @return {void}
+      * @memberof oj.ojColorPalette
+      * @instance
+      * @private
+      */
      _setOptPalette :  function(palette)
      {
         if ($.isArray(palette))
@@ -1083,9 +1151,13 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojarraytabledatasour
      },
 
      /**
-       *   Handle "swatchSize" option change.
-       *   @private
-       */
+      * Handle "swatchSize" option change.
+      * @param {string} swatchSize
+      * @return {void}
+      * @memberof oj.ojColorPalette
+      * @instance
+      * @private
+      */
      _setOptSwatchSize :  function(swatchSize)
      {
         if (typeof swatchSize === "string")
@@ -1101,10 +1173,13 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojarraytabledatasour
      },
 
      /**
-       *  Handle "labelDisplay" option change.
-       *  @param {string}  labelDisplay  the "labelDisplay" option value.
-       *  @private
-       */
+      * Handle "labelDisplay" option change.
+      * @param {string}  labelDisplay  the "labelDisplay" option value.
+      * @return {void}
+      * @memberof oj.ojColorPalette
+      * @instance
+      * @private
+      */
      _setOptLabelDisplay :  function(labelDisplay)
      {
         if (typeof labelDisplay === "string")
@@ -1121,10 +1196,13 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojarraytabledatasour
      },
 
      /**
-       *  Handle "layout" option change.
-       *  @param {string}  layout  the "layout" option value.
-       *  @private
-       */
+      * Handle "layout" option change.
+      * @param {string}  layout  the "layout" option value.
+      * @return {void}
+      * @memberof oj.ojColorPalette
+      * @instance
+      * @private
+      */
      _setOptLayout :  function(layout)
      {
         if (typeof layout === "string")
@@ -1139,9 +1217,12 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojarraytabledatasour
      },
 
      /**
-       * Update the ListView display format
-       * @private
-       */
+      * Update the ListView display format
+      * @return {void}
+      * @memberof oj.ojColorPalette
+      * @instance
+      * @private
+      */
      _setDisplayFormat:  function()
      {
         var grid         = (this._layout === 'grid') ;
@@ -1156,9 +1237,15 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojarraytabledatasour
      },
 
      /**
-       *  Update the ListView data option
-       *  @private
-       */
+      * Update the ListView data option
+      * @param {Array} palette
+      * @param {number} initSelected
+      * @param {boolean} setOption
+      * @return {void}
+      * @memberof oj.ojColorPalette
+      * @instance
+      * @private
+      */
      _setData : function(palette, initSelected, setOption)
      {
        this._addIdsToPalette(palette) ;            // add "id" props
@@ -1190,10 +1277,13 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojarraytabledatasour
      },
 
 
-    /**
-      *   Initializes the widget, examines options and sets up
-      *   internal data structures.
-      *   @private
+     /**
+      * Initializes the widget, examines options and sets up
+      * internal data structures.
+      * @return {void}
+      * @memberof oj.ojColorPalette
+      * @instance
+      * @private
       */
      _initPalette : function()
      {
@@ -1204,9 +1294,12 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojarraytabledatasour
      },
 
      /**
-       *  Perform setup, and init the ListView
-       *  @private
-       */
+      * Perform setup, and init the ListView
+      * @return {void}
+      * @memberof oj.ojColorPalette
+      * @instance
+      * @private
+      */
      _setup :  function()
      {
         // Add new listview markup as a child of this component's DOM element
@@ -1260,9 +1353,12 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojarraytabledatasour
         });
      },
 
-    /**
-      *  Set up instance data
-      *  @private
+     /**
+      * Set up instance data
+      * @return {void}
+      * @memberof oj.ojColorPalette
+      * @instance
+      * @private
       */
      _initData : function()
      {
@@ -1294,9 +1390,12 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojarraytabledatasour
      },
 
 
-    /**
-      *  Process the component options
-      *  @private
+     /**
+      * Process the component options
+      * @return {void}
+      * @memberof oj.ojColorPalette
+      * @instance
+      * @private
       */
      _applyOptions : function()
      {
@@ -1360,11 +1459,13 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojarraytabledatasour
         }
      },
 
-    /**
-      *  Returns true if an oj.Color represents the 'transparent'.
-      *  @param {oj.Color} color the color object to be tested.
-      *  @returns {boolean}  true if oj.Color is transparent, else false.
-      *  @private
+     /**
+      * Returns true if an oj.Color represents the 'transparent'.
+      * @param {oj.Color} color the color object to be tested.
+      * @returns {boolean}  true if oj.Color is transparent, else false.
+      * @memberof oj.ojColorPalette
+      * @instance
+      * @private
       */
     _isTransparent : function(color)
     {
@@ -1376,9 +1477,14 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojarraytabledatasour
        return (r === 0 && g === 0 && b === 0 && a === 0) ;
     },
 
-    /**
-      *   Compare two palette arrays. (index property is not checked.)
-      *   @private
+     /**
+      * Compare two palette arrays. (index property is not checked.)
+      * @param {Array} pal1
+      * @param {Array} pal2
+      * @return {boolean} 
+      * @memberof oj.ojColorPalette
+      * @instance
+      * @private
       */
     _isPaletteEqual : function(pal1, pal2)
     {
@@ -1409,9 +1515,13 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojarraytabledatasour
       return ret ;
     },
 
-    /**
-      *   Add "id" property to palette entries
-      *   @private
+     /**
+      * Add "id" property to palette entries
+      * @param {Array} palette
+      * @return {void}
+      * @memberof oj.ojColorPalette
+      * @instance
+      * @private
       */
     _addIdsToPalette : function(palette)
     {
@@ -1424,9 +1534,12 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojarraytabledatasour
     },
 
 
-    /**
-      *   Returns a new (unique) swatch id.
-      *   @private
+     /**
+      * Returns a new (unique) swatch id.
+      * @returns swatch id
+      * @memberof oj.ojColorPalette
+      * @instance
+      * @private
       */
     _getNewSwatchId :function()
     {
@@ -1436,9 +1549,12 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojarraytabledatasour
     },
 
      /**
-       *  Clear resources
-       *  @private
-       */
+      * Clear resources
+      * @return {void}
+      * @memberof oj.ojColorPalette
+      * @instance
+      * @private
+      */
      _clear : function()
      {
         this._converterFactory   =
@@ -1450,6 +1566,8 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojarraytabledatasour
     /**
      * Get the width of a vertical scrollbar.
      * @returns {number} Width of a vertical scrollbar
+     * @memberof oj.ojColorPalette
+     * @instance
      * @private
      */
     _getScrollbarWidth: function()
@@ -1469,6 +1587,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojarraytabledatasour
 
     /**
      * Returns a jquery object of the launcher element representing the content nodes.
+     * @returns {Object}
      * @protected
      * @override
      * @instance
@@ -1480,6 +1599,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojarraytabledatasour
 
     /**
      * Returns a jquery object of the elements representing the content nodes (spectrum thumb).
+     * @returns {Object}
      * @protected
      * @override
      * @instance
@@ -1493,7 +1613,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojarraytabledatasour
      * Returns the element's value. Normally, this is a call to this.element.val(), but for some
      * components, it could be something else. E.g., for ojRadioset the element's value is really the
      * value of the selected radio in the set.
-     *
+     * @returns {oj.Color} color value
      * @override
      * @memberof oj.ojColorPalette
      * @instance
@@ -1508,7 +1628,8 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojarraytabledatasour
      * Called when the display value on the element needs to be updated. This method updates the
      * (content) element value.
      *
-     * @param {String} displayValue of the new string to be displayed
+     * @param {string} displayValue of the new string to be displayed
+     * @return {void}
      *
      * @memberof oj.ojColorPalette
      * @instance

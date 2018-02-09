@@ -1,8 +1,8 @@
 {
-  "name": "ojMenuButton",
-  "version": "4.1.0",
-  "jetVersion": "4.1.0",
-  "displayName": " Menu Button",
+  "name": "oj-menu-button",
+  "version": "4.2.0",
+  "jetVersion": "4.2.0",
+  "displayName": "Menu Button",
   "preview": true,
   "roles": [
     "button"

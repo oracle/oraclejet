@@ -7,7 +7,7 @@ define(['./DvtToolkit', './DvtAxis', './DvtLegend', './DvtOverview'], function(d
   // Internal use only.  All APIs and functionality are subject to change at any time.
 
 (function(dvt) {
-// Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
+// Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
 
 /**
  * Chart component.
@@ -175,6 +175,34 @@ dvt.Chart.prototype.GetComponentDescription = function()
 dvt.Chart.prototype.SetOptions = function(options) {
 
   if (options) {
+    // DataProvider Support : Must be done before setting this.Options and before calling processDataObject()
+    if (options['data'] && !options['_dataInfoConverted']) {
+      // The data provider contract does not guarantee that series will be passed as
+      // objects, or that the items array is defined and empty. We handle that here.
+      var series = dvt.JsonUtils.clone(options['data']['series']);
+      if (series) {
+        series = series.map(function(seriesObject) {
+          if (typeof seriesObject == 'object') {
+            seriesObject['items'] = [];
+            return seriesObject;
+          }
+          else
+            return {'name': seriesObject, items: []};
+        });
+      }
+      else
+        series = [];
+
+      var groups = dvt.JsonUtils.clone(options['data']['groups']);
+
+      var convertedData = this._convertData(series, groups, 0);
+      options['series'] = convertedData['series'];
+      options['groups'] = convertedData['groups'];
+
+      // Avoid reprocessing on re-renders if no new options object was passed
+      options['_dataInfoConverted'] = true;
+    }
+
     // Combine the user options with the defaults and store
     this._rawOptions = options;
     this.Options = this.Defaults.calcOptions(options);
@@ -341,6 +369,63 @@ dvt.Chart.prototype.render = function(options, width, height)
   if (!this.Animation)
     // If not animating, that means we're done rendering, so fire the ready event.
     this.RenderComplete();
+};
+
+/**
+ * Converts the data from the chart data attribute to the syntax needed
+ * in the toolkit. i.e. items on group leaves -> items on series
+ * @param {Array} series
+ * @param {Array} groups
+ * @param {number} currentGroupCount The current number of group leafs found
+ * @return {Object} An object with the converted series and groups
+ * @private
+ */
+dvt.Chart.prototype._convertData = function(series, groups, currentGroupCount) 
+{
+  if (!currentGroupCount)
+    currentGroupCount = 0;
+
+  if (!series)
+    series = [];
+
+  if (groups) {
+    for (var g = 0; g < groups.length; g++) {
+      var nestedGroups = groups[g]['groups'];
+      if (nestedGroups && nestedGroups.length > 0) {
+        // Not a group leaf, recurse down the group tree to find the items
+        var convertedData = this._convertData(series, nestedGroups, currentGroupCount);
+        series = convertedData['series'];
+        groups[g]['groups'] = convertedData['groups'];
+        currentGroupCount = convertedData['currentGroupCount'];
+      }
+      else {
+        currentGroupCount++;
+
+        // Get the items in this leaf, push in order to series, then delete from groups
+        var itemsArray = groups[g]['items'];
+        if (itemsArray) {
+          var s = 0;
+          for (s; s < series.length; s++) {
+            // dataProvider contract guarantees that the data items were declared in order of the series
+            series[s]['items'].push(itemsArray[s] == undefined ? null : itemsArray[s]);
+          }
+          // Add a new series if this group has more items than the current number of existing series
+          while (s < itemsArray.length) {
+            var items = [];
+            for (var i = 0; i < currentGroupCount - 1; i++) {
+              items.push(null);
+            }
+            items.push(itemsArray[s]);
+            series.push({'name': 'Series ' + (s + 1), 'items': items});
+            s++;
+          }
+          delete groups[g]['items'];
+        }
+      }
+    }
+  }
+
+  return {'series': series, 'groups': groups, 'currentGroupCount' : currentGroupCount};
 };
 
 /**
@@ -14483,27 +14568,33 @@ DvtChartDataUtils.getHighValue = function(chart, seriesIndex, groupIndex) {
 
 
 /**
- * Returns the X value of a data point. For group axis, it will return the group index.
+ * Returns the X value of a data point.
  * @param {dvt.Chart} chart
  * @param {number} seriesIndex
  * @param {number} groupIndex
  * @return {number} The X value.
  */
 DvtChartDataUtils.getXValue = function(chart, seriesIndex, groupIndex) {
-  if (DvtChartAxisUtils.hasGroupAxis(chart)) {
-    return groupIndex;
-  }
-  else {
-    var dataItem = DvtChartDataUtils.getDataItem(chart, seriesIndex, groupIndex);
-    if (dataItem == null)
-      return null;
+  var dataItem = DvtChartDataUtils.getDataItem(chart, seriesIndex, groupIndex);
+  return DvtChartDataUtils.getXValueFromItem(chart, dataItem, groupIndex);
+};
 
-    var xVal = dataItem['x'];
-    if (xVal != null)
-      return xVal;
-    else
-      return DvtChartDataUtils.getGroupLabel(chart, groupIndex);
-  }
+
+/**
+ * Returns the X value given an item object and the group index. Used by series items and ref obj items.
+ * @param {dvt.Chart} chart
+ * @param {object} item The item object of a series or ref obj.
+ * @param {number} groupIndex
+ * @return {number} The X value.
+ */
+DvtChartDataUtils.getXValueFromItem = function(chart, item, groupIndex) {
+  if (item != null && item['x'] != null)
+    return item['x'];
+  if (DvtChartAxisUtils.hasGroupAxis(chart))
+    return groupIndex;
+  if (DvtChartAxisUtils.hasTimeAxis(chart) && !DvtChartAxisUtils.isMixedFrequency(chart))
+    return DvtChartDataUtils.getGroupLabel(chart, groupIndex);
+  return null;
 };
 
 
@@ -16418,15 +16509,7 @@ DvtChartRefObjUtils.getHighValue = function(item) {
  * @return {number}
  */
 DvtChartRefObjUtils.getXValue = function(chart, items, index) {
-  if (DvtChartAxisUtils.hasGroupAxis(chart)) {
-    return index;
-  }
-  else {
-    if (items[index] && items[index]['x'] != null)
-      return items[index]['x'];
-    else
-      return DvtChartDataUtils.getGroupLabel(chart, index);
-  }
+  return DvtChartDataUtils.getXValueFromItem(chart, items[index], index);
 };
 
 /**

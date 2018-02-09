@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2014, 2017, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
@@ -38,8 +38,9 @@ var EventTargetMixin = (function () {
     EventTargetMixin.prototype.dispatchEvent = function (evt) {
         if (this._eventListeners) {
             var i, returnValue;
-            for (i = 0; i < this._eventListeners.length; i++) {
-                var eventListener = this._eventListeners[i];
+            var eventListeners = this._eventListeners.slice(0);
+            for (i = 0; i < eventListeners.length; i++) {
+                var eventListener = eventListeners[i];
                 if (eventListener['type'] == evt.type) {
                     returnValue = eventListener['listener'].apply(this, [evt]);
                     if (returnValue === false) {
@@ -64,7 +65,7 @@ var EventTargetMixin = (function () {
     return EventTargetMixin;
 }());
 oj.EventTargetMixin = EventTargetMixin;
-//# sourceMappingURL=EventTargetMixin.js.map
+
 var GenericEvent = (function () {
     function GenericEvent(type, options) {
         this.type = type;
@@ -76,5 +77,5 @@ var GenericEvent = (function () {
     return GenericEvent;
 }());
 oj.GenericEvent = GenericEvent;
-//# sourceMappingURL=GenericEvent.js.map
+
 });

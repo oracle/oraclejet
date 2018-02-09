@@ -1,4 +1,4 @@
-// Copyright (c) 2014, 2017, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// Copyright (c) 2014, 2018, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 // WARNING: do not directly import this file, instead import the 
 //          version in your base theme's directory, 
@@ -213,6 +213,16 @@
             padding-right: calc(#{$menuIconToEdgePadding} + #{$menuIconSize} + #{$menuTextToIconPadding});
         }
     }
+    
+    .oj-menu-end-icons > .oj-menu-item > a { 
+        // leave space at start of item for icon plus spacing before/after it.  
+        @include oj-ltr() {
+            padding-right: calc(#{$menuIconToEdgePadding} + #{$menuIconSize} + #{$menuTextToIconPadding});
+        }
+        @include oj-rtl() {
+            padding-left: calc(#{$menuIconToEdgePadding} + #{$menuIconSize} + #{$menuTextToIconPadding});
+        }
+    }
 
     // need > rather than (space) to avoid matching the items of a submenu with icons whose ancestor menu lacks icons
     .oj-menu-text-only > .oj-menu-item > a {
@@ -335,9 +345,10 @@
 
     /* menu item icons (not submenu icons) */
 
-    .oj-menu-item-icon {
+    .oj-menu-item-icon,
+    .oj-menu-item-end-icon {
         color: $menuIconColor;
-
+        
         // To work around WebKit/Apple platform bug 151657, we can't use display:flex for elements with selector 
         // .oj-menu-item > a (see above), so we also can't use align-self.  
         // Use transform instead to vertically center icon until Apple fixes their VoiceOver bug.
@@ -347,7 +358,9 @@
         -webkit-transform: translateY(-50%);
         transform: translateY(-50%);
         // END of replacement for align-self
-        
+    }
+    
+    .oj-menu-item-icon {
         // negative start margin so that (a) icon is shifted startward into the space left for it by the menu item's 
         // start padding, and (b) total of icon's size, start margin, and end margin is 0, so that start edge of text 
         // is in the same horiz location whether there's an icon or not, so text lines up across menu items with and 
@@ -364,15 +377,32 @@
     
     }
     
+    .oj-menu-item-end-icon {
+        @include oj-ltr() {
+            right: 0;
+            margin-right:   $menuTextToIconPadding;
+            margin-left:   calc(-#{$menuIconSize} - #{$menuTextToIconPadding});
+        }
+        
+        @include oj-rtl() {
+            left: 0;
+            margin-left:  $menuTextToIconPadding;
+            margin-right:  calc(-#{$menuIconSize} - #{$menuTextToIconPadding});
+        }
+    }
+    
     // menu item icons (not submenu icons)
     // Need extra specificity to overcome sizes in the icons themselves, e.g. iOS/Android want to 
     // show 16px icons at 24px.
-    .oj-menu-item .oj-menu-item-icon {
+    .oj-menu-item .oj-menu-item-icon,
+    .oj-menu-item .oj-menu-item-end-icon {
         font-size: $menuIconSize;
     }
 
     .oj-menu.oj-disabled .oj-menu-item-icon,
-    .oj-menu-item.oj-disabled .oj-menu-item-icon {
+    .oj-menu.oj-disabled .oj-menu-item-end-icon,
+    .oj-menu-item.oj-disabled .oj-menu-item-icon,
+    .oj-menu-item.oj-disabled .oj-menu-item-end-icon {
         color: $menuIconColorDisabled;
         opacity: $menuIconOpacityDisabled;
     }

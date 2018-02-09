@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2014, 2017, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
@@ -17,6 +17,8 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojdnd', 'ojs/ojanimation
  * @augments oj.baseComponent
  * @since 1.1.0
  * @ojstatus preview
+ * @ojshortdesc Container element that lays out its children in a grid of tiles.
+ * @class oj.ojMasonryLayout
  * 
  * @classdesc
  * <h3 id="masonryLayoutOverview-section">
@@ -242,7 +244,8 @@ oj.__registerWidget("oj.ojMasonryLayout", $['oj']['baseComponent'],
      * @memberof oj.ojMasonryLayout
      * @instance
      * @type {?string}
-     * @default <code class="prettyprint">null</code>
+     * @default null
+     * @ojshortdesc Specifies the selector of the child DOM element that can be used to reorder the child.
      *
      * @example <caption>Initialize the masonryLayout with the 
      * <code class="prettyprint">reorder-handle</code> attribute specified:</caption>
@@ -282,7 +285,7 @@ oj.__registerWidget("oj.ojMasonryLayout", $['oj']['baseComponent'],
      * @memberof oj.ojMasonryLayout
      * @instance
      * @type {boolean}
-     * @default <code class="prettyprint">false</code>
+     * @default false
      * @ignore
      */
     // disabled attribute declared in superclass, but we still want the above API doc
@@ -313,6 +316,8 @@ oj.__registerWidget("oj.ojMasonryLayout", $['oj']['baseComponent'],
      * @event
      * @memberof oj.ojMasonryLayout
      * @instance
+     * @ojcancelable
+     * @ojshortdesc Event triggered when the default animation of a particular action is about to start.
      * @property {string} action The action that triggers the animation.
      *            Supported values are:
      *                    <ul>
@@ -325,7 +330,7 @@ oj.__registerWidget("oj.ojMasonryLayout", $['oj']['baseComponent'],
      *                    <br>Note that some animation effects may not look appropriate for a 
      *                    given action.
      * @property {Element} element The element being animated.
-     * @property {function} endCallback If the event listener calls
+     * @property {function()} endCallback If the event listener calls
      *            event.preventDefault to cancel the default animation, it must call the
      *            endCallback function after it finishes its own animation handling and any
      *            custom animation has ended.
@@ -368,6 +373,7 @@ oj.__registerWidget("oj.ojMasonryLayout", $['oj']['baseComponent'],
      * @event
      * @memberof oj.ojMasonryLayout
      * @instance
+     * @ojshortdesc Event triggered when the default animation of a particular action has ended.
      * @property {string} action The action that triggers the animation.
      *            Supported values are:
      *                    <ul>
@@ -390,6 +396,8 @@ oj.__registerWidget("oj.ojMasonryLayout", $['oj']['baseComponent'],
      * @event 
      * @memberof oj.ojMasonryLayout
      * @instance
+     * @ojcancelable
+     * @ojshortdesc Event triggered before a tile is inserted.
      * @property {Element} tile The tile that is about to be inserted.
      * @property {number} index The 0-based index into the set of rendered
      *                                       <code class="prettyprint">oj-masonry-layout</code> children where 
@@ -404,6 +412,7 @@ oj.__registerWidget("oj.ojMasonryLayout", $['oj']['baseComponent'],
      * @event 
      * @memberof oj.ojMasonryLayout
      * @instance
+     * @ojshortdesc Event triggered after a tile is inserted.
      * @property {Element} tile  The tile that was inserted.
      * @property {number} index The 0-based index into the set of rendered
      *                                       <code class="prettyprint">oj-masonry-layout</code> children where 
@@ -420,6 +429,8 @@ oj.__registerWidget("oj.ojMasonryLayout", $['oj']['baseComponent'],
      * @event 
      * @memberof oj.ojMasonryLayout
      * @instance
+     * @ojcancelable
+     * @ojshortdesc Event triggered before a tile is removed.
      * @property {Element} tile  The tile that will be removed.
      */
     beforeRemove: null,
@@ -431,6 +442,7 @@ oj.__registerWidget("oj.ojMasonryLayout", $['oj']['baseComponent'],
      * @event 
      * @memberof oj.ojMasonryLayout
      * @instance
+     * @ojshortdesc Event triggered after a tile is removed.
      * @property {Element} tile  The tile that was removed.
      */
     remove: null,
@@ -444,6 +456,8 @@ oj.__registerWidget("oj.ojMasonryLayout", $['oj']['baseComponent'],
      * @event 
      * @memberof oj.ojMasonryLayout
      * @instance
+     * @ojcancelable
+     * @ojshortdesc Event triggered before a tile is resized.
      * @property {Element} tile  The tile that will be resized.
      * @property {string} previousSizeStyleClass The previous size style
      *                                           class applied to the tile.
@@ -459,6 +473,7 @@ oj.__registerWidget("oj.ojMasonryLayout", $['oj']['baseComponent'],
      * @event 
      * @memberof oj.ojMasonryLayout
      * @instance
+     * @ojshortdesc Event triggered after a tile is resized.
      * @property {Element} tile  The tile that was resized.
      * @property {string} previousSizeStyleClass The previous size style
      *                                           class applied to the tile.
@@ -476,6 +491,8 @@ oj.__registerWidget("oj.ojMasonryLayout", $['oj']['baseComponent'],
      * @event 
      * @memberof oj.ojMasonryLayout
      * @instance
+     * @ojcancelable
+     * @ojshortdesc Event triggered before a tile is reordered.
      * @property {Element} tile  The tile that will be reordered.
      * @property {number} fromIndex The 0-based index into the set of rendered
      *                                           <code class="prettyprint">oj-masonry-layout</code> children from 
@@ -490,6 +507,7 @@ oj.__registerWidget("oj.ojMasonryLayout", $['oj']['baseComponent'],
      * @event 
      * @memberof oj.ojMasonryLayout
      * @instance
+     * @ojshortdesc Event triggered after a tile is reordered.
      * @property {Element} tile  The tile that was reordered.
      * @property {number} fromIndex The 0-based index into the set of rendered
      *                                           <code class="prettyprint">oj-masonry-layout</code> children from 
@@ -561,6 +579,7 @@ oj.__registerWidget("oj.ojMasonryLayout", $['oj']['baseComponent'],
    * @expose 
    * @memberof oj.ojMasonryLayout
    * @instance
+   * @ojshortdesc Refreshes the visual state of the masonryLayout.
    * 
    * @example <caption>Invoke the <code class="prettyprint">refresh</code> method:</caption>
    * myMasonryLayout.refresh();
@@ -863,6 +882,7 @@ oj.__registerWidget("oj.ojMasonryLayout", $['oj']['baseComponent'],
    * @expose 
    * @memberof oj.ojMasonryLayout
    * @instance
+   * @ojshortdesc Resize a tile.
    * 
    * @example <caption>Invoke the <code class="prettyprint">resizeTile</code> method:</caption>
    * myMasonryLayout.resizeTile('#tileSelector', 'oj-masonrylayout-tile-2x1');
@@ -926,6 +946,7 @@ oj.__registerWidget("oj.ojMasonryLayout", $['oj']['baseComponent'],
    * @expose 
    * @memberof oj.ojMasonryLayout
    * @instance
+   * @ojshortdesc Insert a tile.
    * 
    * @example <caption>Invoke the <code class="prettyprint">insertTile</code> method:</caption>
    * myMasonryLayout.insertTile('#tileSelector', 2);
@@ -995,6 +1016,7 @@ oj.__registerWidget("oj.ojMasonryLayout", $['oj']['baseComponent'],
    * @expose 
    * @memberof oj.ojMasonryLayout
    * @instance
+   * @ojshortdesc Remove a tile.
    * 
    * @example <caption>Invoke the <code class="prettyprint">removeTile</code> method:</caption>
    * myMasonryLayout.removeTile('#tileSelector');
@@ -1210,7 +1232,7 @@ oj.__registerWidget("oj.ojMasonryLayout", $['oj']['baseComponent'],
 
   /**
    * Callback to run after whole layout cycle is done.
-   * @param {Function} resolveBusyState Resolve function for busy state.
+   * @param {function()} resolveBusyState Resolve function for busy state.
    * @memberof oj.ojMasonryLayout
    * @instance
    * @private
@@ -2637,7 +2659,7 @@ oj.__registerWidget("oj.ojMasonryLayout", $['oj']['baseComponent'],
   /**
    * Add a busy state to the busy context.
    *
-   * @param {String} description Additional information about busy state.
+   * @param {string} description Additional information about busy state.
    * @returns {Function} Resolve function called by the registrant when the busy state completes.
    *          The resultant function will throw an error if the busy state is no longer registered.
    * @memberof oj.ojMasonryLayout
@@ -2745,6 +2767,7 @@ var _PX        = "px",
      * Get the position of an element relative to the document.
      * @param {Object} elem Element for which to get position.
      * @returns {Object} Object containing properties: top, left.
+     * @memberof oj.ojMasonryLayout
      * @private
      */
     _getRelativePosition = function(elem)
@@ -2756,6 +2779,7 @@ var _PX        = "px",
      * Add a style class name to an element.
      * @param {Object} elem Element to which to add style class.
      * @param {string} styleClass Style class name to add.
+     * @memberof oj.ojMasonryLayout
      * @private
      */
     _addStyleClassName = function(elem, styleClass)
@@ -2767,6 +2791,7 @@ var _PX        = "px",
      * Remove a style class name from an element.
      * @param {Object} elem Element from which to remove style class.
      * @param {string} styleClass Style class name to remove.
+     * @memberof oj.ojMasonryLayout
      * @private
      */
     _removeStyleClassName = function(elem, styleClass)
@@ -2778,6 +2803,7 @@ var _PX        = "px",
      * Get the masonry tile size style class applied to an element.
      * @param {Object} elem Element for which to get size style class name.
      * @returns {?string} Style class name.
+     * @memberof oj.ojMasonryLayout
      * @private
      */
     _getSizeStyleClassName = function(elem)
@@ -2797,6 +2823,7 @@ var _PX        = "px",
      * Get the masonry tile span of an element.
      * @param {Object} elem Element for which to get span.
      * @returns {Object} Object containing properties: colSpan, rowSpan.
+     * @memberof oj.ojMasonryLayout
      * @private
      */
     _getTileSpan = function(elem)
@@ -2823,6 +2850,7 @@ var _PX        = "px",
      * Sort tiles based on their original DOM order.
      * @param {Array} arTiles Array of tiles.
      * @returns {Array} The given array of tiles, sorted.
+     * @memberof oj.ojMasonryLayout
      * @private
      */
     _sortTilesOriginalOrder = function(arTiles)
@@ -2840,6 +2868,7 @@ var _PX        = "px",
      * @returns {number} 1 if tile2 should be sorted before tile1, -1 if tile1
      *          should be sorted before tile2, or 0 if the tile order doesn't
      *          need to change
+     * @memberof oj.ojMasonryLayout
      * @private
      */
     _compareTilesOriginalOrder = function(tile1, tile2)
@@ -2858,6 +2887,7 @@ var _PX        = "px",
      * @param {Object} elem Descendant element of a masonry tile.
      * @param {Object} rootElem Root of the masonryLayout.
      * @returns {Object} Masonry tile element.
+     * @memberof oj.ojMasonryLayout
      * @private
      */
     _findContainingTile = function(elem, rootElem)
@@ -2880,6 +2910,7 @@ var _PX        = "px",
      * Get the next visible sibling element.
      * @param {Object} elem Element for which to get next visible sibling.
      * @returns {Object} Next visible sibling element.
+     * @memberof oj.ojMasonryLayout
      * @private
      */
     _getNextElement = function(elem)
@@ -2943,6 +2974,8 @@ var _PX        = "px",
  *  - subtreeAttached: Called after a tile is attached to the DOM,
  *  - subtreeDetached: Called after a tile is detached from the DOM,
  *  - addBusyState: Add a busy state to the busy context.
+ * @class MasonryLayoutCommon
+ * @memberof MasonryLayoutCommon
  * @protected
  * @constructor
  * @ignore
@@ -3041,6 +3074,8 @@ function MasonryLayoutCommon(
  * @param {boolean} init True for initialization, false for refresh
  * @param {boolean} reorder True for reordering, false otherwise
  * @return {boolean} True if layout changed, false if not
+ * @memberof MasonryLayoutCommon
+ * @instance
  */
 MasonryLayoutCommon.prototype.setup = function(init, reorder)
 {
@@ -3072,6 +3107,8 @@ MasonryLayoutCommon.prototype.setup = function(init, reorder)
 
 /**
  * Destroy the masonry layout.
+ * @memberof MasonryLayoutCommon
+ * @instance
  */
 MasonryLayoutCommon.prototype.destroy = function()
 {
@@ -3125,8 +3162,10 @@ MasonryLayoutCommon.prototype.destroy = function()
 
 /**
  * Resize a child tile.
- * @param {String} selector Selector for the tile to resize
- * @param {String} sizeStyleClass New size style class 
+ * @param {string} selector Selector for the tile to resize
+ * @param {string} sizeStyleClass New size style class 
+ * @memberof MasonryLayoutCommon
+ * @instance
  */
 MasonryLayoutCommon.prototype.resizeTile = function(selector, sizeStyleClass)
 {
@@ -3152,7 +3191,9 @@ MasonryLayoutCommon.prototype.resizeTile = function(selector, sizeStyleClass)
 /**
  * Insert a tile into the masonryLayout.
  * @param {Object} tileDomElem Tile to insert
- * @param {Number} index Index at which to insert
+ * @param {number} index Index at which to insert
+ * @memberof MasonryLayoutCommon
+ * @instance
  */
 MasonryLayoutCommon.prototype.insertTileDomElem = function(tileDomElem, index)
 {
@@ -3173,7 +3214,9 @@ MasonryLayoutCommon.prototype.insertTileDomElem = function(tileDomElem, index)
 
 /**
  * Show a hidden tile.
- * @param {String} selector Selector for the tile to show
+ * @param {string} selector Selector for the tile to show
+ * @memberof MasonryLayoutCommon
+ * @instance
  */
 MasonryLayoutCommon.prototype.showTile = function(selector)
 {
@@ -3206,7 +3249,9 @@ MasonryLayoutCommon.prototype.showTile = function(selector)
 
 /**
  * Hide a tile.
- * @param {String} selector Selector for the tile to hide
+ * @param {string} selector Selector for the tile to hide
+ * @memberof MasonryLayoutCommon
+ * @instance
  */
 MasonryLayoutCommon.prototype.hideTile = function(selector)
 {
@@ -3226,6 +3271,8 @@ MasonryLayoutCommon.prototype.hideTile = function(selector)
 
 /**
  * Notify the MasonryLayoutCommon that the masonryLayout component has been resized.
+ * @memberof MasonryLayoutCommon
+ * @instance
  */
 MasonryLayoutCommon.prototype.resizeNotify = function()
 {
@@ -3251,6 +3298,8 @@ MasonryLayoutCommon.prototype.resizeNotify = function()
 /**
  * Get the size of a unit cell.
  * @return {Object} object specifying unit cell size with properties w and h
+ * @memberof MasonryLayoutCommon
+ * @instance
  */
 MasonryLayoutCommon.prototype.getCellSize = function()
 {
@@ -3260,6 +3309,8 @@ MasonryLayoutCommon.prototype.getCellSize = function()
 /**
  * Determine whether animation is enabled.
  * @return {boolean} true if animation is enabled, false if not
+ * @memberof MasonryLayoutCommon
+ * @instance
  */
 MasonryLayoutCommon.prototype.isAnimationEnabled = function()
 {
@@ -3292,6 +3343,8 @@ MasonryLayoutCommon.prototype.isAnimationEnabled = function()
 /**
  * Determine whether a layout cycle is currently underway.
  * @return {boolean} true if in a layout cycle, false otherwise
+ * @memberof MasonryLayoutCommon
+ * @instance
  */
 MasonryLayoutCommon.prototype.isInLayoutCycle = function()
 {
@@ -3304,6 +3357,8 @@ MasonryLayoutCommon.prototype.isInLayoutCycle = function()
 
 /**
  * Finish the current layout cycle, aborting and/or skipping any animations.
+ * @memberof MasonryLayoutCommon
+ * @instance
  */
 MasonryLayoutCommon.prototype.finishLayoutCycle = function()
 {
@@ -3368,6 +3423,8 @@ MasonryLayoutCommon.prototype.finishLayoutCycle = function()
  * Get the size of the given DOM element (including margins).
  * @param {Object} elem DOM element
  * @return {Object} Object specifying size of element with properties w and h
+ * @memberof MasonryLayoutCommon
+ * @private
  */
 MasonryLayoutCommon._getElemSize = function(elem)
 {
@@ -3386,6 +3443,8 @@ MasonryLayoutCommon._getElemSize = function(elem)
  * @return {Object} Object specifying size of insets with properties:
  *         paddingLeft, paddingRight, paddingTop, paddingBottom,
  *         bodrerLeftWidth, borderRightWidth, borderTopWidth, borderBottomWidth
+ * @memberof MasonryLayoutCommon
+ * @private
  */
 MasonryLayoutCommon._getElemInsets = function(elem)
 {
@@ -3405,6 +3464,8 @@ MasonryLayoutCommon._getElemInsets = function(elem)
  * Get the computed style of the given DOM element.
  * @param {Object} elem DOM element
  * @return {Object} Computed style for the element
+ * @memberof MasonryLayoutCommon
+ * @private
  */
 MasonryLayoutCommon._getComputedStyle = function(elem)
 {
@@ -3426,8 +3487,10 @@ MasonryLayoutCommon._getComputedStyle = function(elem)
 
 /**
  * Get the int value of a CSS length.
- * @param {string} cssLength cssLength as a String
+ * @param {string} cssLength cssLength as a string
  * @return {number} cssLength as an int
+ * @memberof MasonryLayoutCommon
+ * @private
  */
 MasonryLayoutCommon._getCSSLengthAsInt = function(cssLength)
 {
@@ -3449,6 +3512,8 @@ MasonryLayoutCommon._getCSSLengthAsInt = function(cssLength)
  * @param {Array} array Array to search
  * @param {Object} item Item to search for
  * @return {number} index of item in array, or -1 if not found
+ * @memberof MasonryLayoutCommon
+ * @private
  */
 MasonryLayoutCommon._arrayIndexOf = function(array, item)
 {
@@ -3467,10 +3532,12 @@ MasonryLayoutCommon._arrayIndexOf = function(array, item)
  * Gets whether the specified agent minimum requirements are met or exceeded.
  * Every 2 arguments past actualAgentType and actualAgentVersion must correspond
  * to a minimum required agent type and floating point version number.
- * @param {String} actualAgentType the actual agent type ("trident", "webkit", "gecko")
+ * @param {string} actualAgentType the actual agent type ("trident", "webkit", "gecko")
  * @param {number} actualAgentVersion the actual agent version number as a floating point number
  * @param {Array} agentRequirements the required agent types and versions
  * @return {boolean} whether the specified agent minimums are met
+ * @memberof MasonryLayoutCommon
+ * @private
  */
 MasonryLayoutCommon._isMinimumAgentMet = function(actualAgentType, actualAgentVersion, agentRequirements)
 {
@@ -3501,8 +3568,10 @@ MasonryLayoutCommon._isMinimumAgentMet = function(actualAgentType, actualAgentVe
 /**
  * Gets the agent type and version.
  * @param {string} givenUserAgentString the navigator's userAgent property
- * @return {Array} with 2 members, a String for the agent 
+ * @return {Array} with 2 members, a string for the agent 
  *         type ("trident", "webkit", "gecko") and a Float for the agent version
+ * @memberof MasonryLayoutCommon
+ * @private
  */
 MasonryLayoutCommon._getAgentTypeAndVersion = function(givenUserAgentString)
 {
@@ -3568,6 +3637,8 @@ MasonryLayoutCommon._getAgentTypeAndVersion = function(givenUserAgentString)
  * @param {RegExp} versionNumberPattern the regular expression pattern 
  *        used to extract a number that will be parsed into a float
  * @return {number} version number
+ * @memberof MasonryLayoutCommon
+ * @private
  */
 MasonryLayoutCommon._parseFloatVersion = function(userAgent, versionNumberPattern)
 {
@@ -3590,6 +3661,8 @@ MasonryLayoutCommon._parseFloatVersion = function(userAgent, versionNumberPatter
  * @return {number} -1 if pos1 should be sorted before pos2, 1 if pos2 should be sorted 
  *         before pos1, or 0 if the positions are the same (which should never happen
  *         in practice)
+ * @memberof MasonryLayoutCommon
+ * @private
  */
 MasonryLayoutCommon._compareTilePositions = function(pos1, pos2)
 {
@@ -3613,6 +3686,9 @@ MasonryLayoutCommon._compareTilePositions = function(pos1, pos2)
 
 /**
  * Queue a relayout.
+ * @memberof MasonryLayoutCommon
+ * @instance
+ * @private
  */
 MasonryLayoutCommon.prototype._queueRelayout = function()
 {
@@ -3637,6 +3713,9 @@ MasonryLayoutCommon.prototype._queueRelayout = function()
 /**
  * Get the rendered child tiles.
  * @return {Array} Array of rendered child tiles
+ * @memberof MasonryLayoutCommon
+ * @instance
+ * @private
  */
 MasonryLayoutCommon.prototype._getTileChildren = function()
 {
@@ -3657,6 +3736,9 @@ MasonryLayoutCommon.prototype._getTileChildren = function()
  * Layout and animate with a transition.  This is the second phase of the
  * <hide, layout, show> sequence.
  * @return {boolean} true if layout changed, otherwise false
+ * @memberof MasonryLayoutCommon
+ * @instance
+ * @private
  */
 MasonryLayoutCommon.prototype._transitionLayout = function()
 {
@@ -3707,6 +3789,9 @@ MasonryLayoutCommon.prototype._transitionLayout = function()
 /**
  * Layout.
  * @return {Array} Array of tiles that were moved
+ * @memberof MasonryLayoutCommon
+ * @instance
+ * @private
  */
 MasonryLayoutCommon.prototype._layout = function()
 {
@@ -3890,8 +3975,11 @@ MasonryLayoutCommon.prototype._layout = function()
   return arMovedInfolets;
 };
 
-/*
+/**
  * Update sizeDiv dimensions after the layout transition is complete
+ * @memberof MasonryLayoutCommon
+ * @instance
+ * @private
  */
 MasonryLayoutCommon.prototype._updateSizeDivOnEnd = function()
 {
@@ -3908,6 +3996,9 @@ MasonryLayoutCommon.prototype._updateSizeDivOnEnd = function()
 /**
  * Reorder tiles in the DOM to match the visual layout order so that tab order
  * and screen reader reading order match the visual layout order.
+ * @memberof MasonryLayoutCommon
+ * @instance
+ * @private
  */
 MasonryLayoutCommon.prototype._reorderTilesForLayout = function()
 {
@@ -3951,6 +4042,9 @@ MasonryLayoutCommon.prototype._reorderTilesForLayout = function()
  * Initialize the map of which cells are occupied.
  * @param {number} cols Number of columns in the layout
  * @param {number} rows Number of rows in the layout
+ * @memberof MasonryLayoutCommon
+ * @instance
+ * @private
  */
 MasonryLayoutCommon.prototype._initOccupancyMap = function(cols, rows)
 {
@@ -3967,6 +4061,9 @@ MasonryLayoutCommon.prototype._initOccupancyMap = function(cols, rows)
 
 /**
  * Add a row to the layout.
+ * @memberof MasonryLayoutCommon
+ * @instance
+ * @private
  */
 MasonryLayoutCommon.prototype._addRow = function()
 {
@@ -3985,6 +4082,9 @@ MasonryLayoutCommon.prototype._addRow = function()
  * @param {number} row Row index
  * @param {Object} childSpan Object specifying tile span with colSpan and rowSpan properties
  * @return {boolean} True if the tile fits, false otherwise
+ * @memberof MasonryLayoutCommon
+ * @instance
+ * @private
  */
 MasonryLayoutCommon.prototype._fits = function(col, row, childSpan)
 {
@@ -4013,6 +4113,9 @@ MasonryLayoutCommon.prototype._fits = function(col, row, childSpan)
  * @param {Object} childSpan Object specifying child span with colSpan and rowSpan properties
  * @param {Object} cellSize Object specifying unit cell size with w and h properties
  * @param {Object} insets The insets of the layout container
+ * @memberof MasonryLayoutCommon
+ * @instance
+ * @private
  */
 MasonryLayoutCommon.prototype._position = function(child, col, row, childSpan, cellSize, insets)
 {
@@ -4043,7 +4146,10 @@ MasonryLayoutCommon.prototype._position = function(child, col, row, childSpan, c
 
 /**
  * Remove a style class from all of the rendered tile children.
- * @param {String} styleClassName Style class to remove
+ * @param {string} styleClassName Style class to remove
+ * @memberof MasonryLayoutCommon
+ * @instance
+ * @private
  */
 MasonryLayoutCommon.prototype._removeStyleClassFromTiles = function(styleClassName)
 {
@@ -4052,6 +4158,14 @@ MasonryLayoutCommon.prototype._removeStyleClassFromTiles = function(styleClassNa
     this._removeStyleClassNameFunc(children[i], styleClassName);
 };
 
+/**
+ * Animate layout
+ * @param {Element} element The element to animate
+ * @param {string} action The element action
+ * @memberof MasonryLayoutCommon
+ * @instance
+ * @private
+ */
 MasonryLayoutCommon.prototype._animateLayout = function(element, action)
 {
   if (this.isAnimationEnabled())
@@ -4072,6 +4186,9 @@ MasonryLayoutCommon.prototype._animateLayout = function(element, action)
 /**
  * Start a layout transition.
  * @param {boolean} reorder True if this layout is due to a reorder, false otherwise
+ * @memberof MasonryLayoutCommon
+ * @instance
+ * @private
  */
 MasonryLayoutCommon.prototype._transitionStart = function(reorder)
 {
@@ -4085,6 +4202,9 @@ MasonryLayoutCommon.prototype._transitionStart = function(reorder)
 /**
  * Handle a layout transition end.
  * @param {Object} target Target element
+ * @memberof MasonryLayoutCommon
+ * @instance
+ * @private
  */
 MasonryLayoutCommon.prototype._handleTransitionEnd = function(target)
 {
@@ -4185,6 +4305,9 @@ MasonryLayoutCommon.prototype._handleTransitionEnd = function(target)
  * @param {Object} child Tile to use for calculating cell size
  * @param {Object} childSpan Object specifying child span with colSpan and rowSpan properties
  * @return {Object} Object specifying unit cell size with w and h properties
+ * @memberof MasonryLayoutCommon
+ * @instance
+ * @private
  */
 MasonryLayoutCommon.prototype._calcCellSize = function(child, childSpan)
 {
@@ -4196,6 +4319,9 @@ MasonryLayoutCommon.prototype._calcCellSize = function(child, childSpan)
 /**
  * Hide any tiles waiting to be hidden.  This is the first phase of the
  * <hide, layout, show> sequence.
+ * @memberof MasonryLayoutCommon
+ * @instance
+ * @private
  */
 MasonryLayoutCommon.prototype._hideTiles = function()
 {
@@ -4235,6 +4361,9 @@ MasonryLayoutCommon.prototype._hideTiles = function()
 /**
  * Handle the end of the hide transition.
  * @param {Element} target The target element
+ * @memberof MasonryLayoutCommon
+ * @instance
+ * @private
  */
 MasonryLayoutCommon.prototype._handleHideTransitionEnd = function(target)
 {
@@ -4356,6 +4485,9 @@ MasonryLayoutCommon.prototype._handleHideTransitionEnd = function(target)
 /**
  * Show any tiles that were inserted.  This is the third phase of the
  * <hide, layout, show> sequence.
+ * @memberof MasonryLayoutCommon
+ * @instance
+ * @private
  */
 MasonryLayoutCommon.prototype._showTiles = function()
 {
@@ -4401,6 +4533,9 @@ MasonryLayoutCommon.prototype._showTiles = function()
 /**
  * Handle the end of the show transition.
  * @param {Element} target The target element
+ * @memberof MasonryLayoutCommon
+ * @instance
+ * @private
  */
 MasonryLayoutCommon.prototype._handleShowTransitionEnd = function(target)
 {
@@ -4462,6 +4597,9 @@ MasonryLayoutCommon.prototype._handleShowTransitionEnd = function(target)
 
 /**
  * Resolve an outstanding busy state.
+ * @memberof MasonryLayoutCommon
+ * @instance
+ * @private
  */
 MasonryLayoutCommon.prototype._resolveBusyState = function()
 {
@@ -4474,14 +4612,20 @@ MasonryLayoutCommon.prototype._resolveBusyState = function()
 
 /**
  * Layout phase: hide deleted tiles.
+ * @memberof MasonryLayoutCommon
+ * @private
  */
 MasonryLayoutCommon._PHASE_HIDE = 1;
 /**
  * Layout phase: layout tiles.
+ * @memberof MasonryLayoutCommon
+ * @private
  */
 MasonryLayoutCommon._PHASE_LAYOUT = 2;
 /**
  * Layout phase: show inserted tiles.
+ * @memberof MasonryLayoutCommon
+ * @private
  */
 MasonryLayoutCommon._PHASE_SHOW = 3;
 (function() {

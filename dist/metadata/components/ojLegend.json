@@ -1,8 +1,8 @@
 {
-  "name": "ojLegend",
-  "version": "4.1.0",
-  "jetVersion": "4.1.0",
-  "displayName": " Legend",
+  "name": "oj-legend",
+  "version": "4.2.0",
+  "jetVersion": "4.2.0",
+  "displayName": "Legend",
   "preview": true,
   "description": "ojLegend",
   "properties": {
@@ -725,7 +725,7 @@
     }
   },
   "events": {
-    "drill": {
+    "ojDrill": {
       "description": "Triggered during a drill gesture (single click on the legend item).",
       "detail": {
         "id": {

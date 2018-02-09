@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2014, 2017, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
@@ -340,7 +340,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojanimation', 'ojs/o
        * @default <code class="prettyprint">new keySet.ExpandedKeySet()</code>
        *
        * @example <caption>Initialize the TreeView with some expanded items:</caption>
-       * myTreeView.expanded = new oj.ExpandedKeySet(['item1', 'item2']);
+       * myTreeView.expanded = new keySet.ExpandedKeySet(['item1', 'item2']);
        */
       expanded: new oj.ExpandedKeySet(),
 
@@ -1941,6 +1941,26 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojanimation', 'ojs/o
         this._dropMarker.hide();
         this._dropLine.hide();
       }
+    },
+
+    
+    // @override    
+    _NotifyContextMenuGesture: function(menu, event, eventType)
+    {
+      if (eventType === 'keyboard')
+      {
+        // If launched by Shift+F10, the context menu should be rendered next
+        // to the currentItem.
+        var launcher = this._currentItem ? this._getItemContent(this._currentItem) : this.element;
+        var openOptions = {
+          'launcher': launcher,
+          'initialFocus': 'menu',
+          'position': {'my': 'start top', 'at': 'start bottom', 'of': launcher}
+        };
+        this._OpenContextMenu(event, eventType, openOptions);
+      }
+      else
+        this._superApply(arguments);
     },
 
     // @inheritdoc

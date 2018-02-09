@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2014, 2017, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
@@ -46,9 +46,9 @@ var _oldVal = _scope['oj'];
  */
 var oj = _scope['oj'] =
 {
-  'version': "4.1.0",
-  'build' : "5",
-  'revision': "39607",
+  'version': "4.2.0",
+  'build' : "8",
+  'revision': "41239",
           
   // This function is only meant to be used outside the library, so quoting the name
   // to avoid renaming is appropriate
@@ -110,30 +110,35 @@ oj.Logger = {};
  * Log level none
  * @const
  * @export
+ * @memberof oj.Logger
  */
 oj.Logger.LEVEL_NONE = 0;
 /**
  * Log level error
  * @const
  * @export
+ * @memberof oj.Logger
  */
 oj.Logger.LEVEL_ERROR = 1;
 /**
  * Log level warning
  * @const
  * @export
+ * @memberof oj.Logger
  */
 oj.Logger.LEVEL_WARN = 2;
 /**
  * Log level info
  * @const
  * @export
+ * @memberof oj.Logger
  */
 oj.Logger.LEVEL_INFO = 3;
 /**
  * Log level - general message
  * @const
  * @export
+ * @memberof oj.Logger
  */
 oj.Logger.LEVEL_LOG = 4;
 
@@ -152,6 +157,7 @@ oj.Logger._options = oj.Logger._defaultOptions;
  * @param {...(Object|string|number)} args The method supports a variable number of arguments, string substitutions and accepts a function as a parameter.
  *                                See examples in the overview section above.
  * @export
+ * @memberof oj.Logger
  */
 oj.Logger.error = function(args)
 {
@@ -163,6 +169,7 @@ oj.Logger.error = function(args)
  * @param {...(Object|string|number)} args The method supports a variable number of arguments, string substitutions and accepts a function as a parameter.
  *                                See examples in the overview section above.
  * @export
+ * @memberof oj.Logger
  */
 oj.Logger.info = function(args)
 {
@@ -174,6 +181,7 @@ oj.Logger.info = function(args)
  * @param {...(Object|string|number)} args The method supports a variable number of arguments, string substitutions and accepts a function as a parameter.
  *                                See examples in the overview section above.
  * @export
+ * @memberof oj.Logger
  */
 oj.Logger.warn = function(args)
 {
@@ -185,6 +193,7 @@ oj.Logger.warn = function(args)
  * @param {...(Object|string|number)} args The method supports a variable number of arguments, string substitutions and accepts a function as a parameter.
  *                                See examples in the overview section above.
  * @export
+ * @memberof oj.Logger
  */
 oj.Logger.log = function(args)
 {
@@ -210,6 +219,7 @@ oj.Logger.log = function(args)
  * @param {Object|string=} key
  * @param {Object|string=} value
  * @export
+ * @memberof oj.Logger
  */
 oj.Logger.option = function (key, value)
 {
@@ -314,6 +324,7 @@ oj.CHECKPOINT_MANAGER = {};
  * @param {!string} name - the name of the checkpoint
  * @param {string=} description - optional description of the checkpoint
  * @export
+ * @memberof! oj.CHECKPOINT_MANAGER
  */
 oj.CHECKPOINT_MANAGER.startCheckpoint = function (name, description)
 {
@@ -327,6 +338,7 @@ oj.CHECKPOINT_MANAGER.startCheckpoint = function (name, description)
  * Ends a checkpoint
  * @param {!string} name - the name of the checkpoint
  * @export
+ * @memberof! oj.CHECKPOINT_MANAGER
  */
 oj.CHECKPOINT_MANAGER.endCheckpoint = function (name)
 {
@@ -341,6 +353,7 @@ oj.CHECKPOINT_MANAGER.endCheckpoint = function (name)
  * @param {!string} name - the name of the checkpoint
  * @return {undefined|{start: number, end: number, duration: number, name: {string}, description: (string|undefined)}}
  * @export
+ * @memberof! oj.CHECKPOINT_MANAGER
  */
 oj.CHECKPOINT_MANAGER.getRecord = function (name)
 {
@@ -352,6 +365,7 @@ oj.CHECKPOINT_MANAGER.getRecord = function (name)
  * @param {!RegExp} regexp - regular expression to match.
  * @return Array.{{start: number, end: number, duration: number, name: {string}, description: (string|undefined)}}
  * @export
+ * @memberof! oj.CHECKPOINT_MANAGER
  */
 oj.CHECKPOINT_MANAGER.matchRecords = function (regexp)
 {
@@ -362,6 +376,7 @@ oj.CHECKPOINT_MANAGER.matchRecords = function (regexp)
  * Dumps matched records into oj.Logger
  * @param {!RegExp} regexp - regular expression for the records to dump.
  * @export
+ * @memberof! oj.CHECKPOINT_MANAGER
  */
 oj.CHECKPOINT_MANAGER.dump = function (regexp)
 {
@@ -1119,7 +1134,7 @@ oj.__isAmdLoaderPresent = function()
  * Assertion utilities.
  * The container is expected to have already initialized the oj.Assert Object before this
  * code is executed and initialized the oj.Assert.DEBUG flag/
- * @constant {Object|Boolean} DEBUG <code>true</code> if assertions are enabled.
+ * @class
  * @export
  * @ignore
  */
@@ -1133,6 +1148,7 @@ var _DEBUG = 'DEBUG';
 /**
  * Forces DEBUG to be set to true
  * @export
+ * @memberof oj.Assert
  */
 oj.Assert.forceDebug = function()
 {
@@ -1142,6 +1158,7 @@ oj.Assert.forceDebug = function()
 /**
  * Forces DEBUG to be set to false
  * @export
+ * @memberof oj.Assert
  */
 oj.Assert.clearDebug = function() {
   oj.Assert[_DEBUG] = false;
@@ -1151,6 +1168,7 @@ oj.Assert.clearDebug = function() {
  * Determines whether oj.Assert is running in debug mode
  * @return {boolean} true for debug mode, false otherwise
  * @export
+ * @memberof oj.Assert
  */
 oj.Assert.isDebug = function()
 {
@@ -1165,6 +1183,7 @@ oj.Assert.isDebug = function()
  * @param {boolean} condition condition to test
  * @param {string=} message message to display
  * @export
+ * @memberof oj.Assert
  */
 oj.Assert.assert = function(
   condition,
@@ -1190,6 +1209,7 @@ oj.Assert.assert = function(
 /**
  * Convenience function for asserting when an abstact function is called
  * @export
+ * @memberof oj.Assert
  */
 oj.Assert.failedInAbstractFunction = function()
 {
@@ -1208,6 +1228,7 @@ oj.Assert.failedInAbstractFunction = function()
  * @param {Function} theConstructor
  * @param {string=} reason
  * @export
+ * @memberof oj.Assert
  */
 oj.Assert.assertPrototype = function(
   target,
@@ -1243,6 +1264,7 @@ oj.Assert.assertPrototype = function(
  * Asserts that the the target object has the same prototype as the example
  * type or is null.
  * @export
+ * @memberof oj.Assert
  */
 oj.Assert.assertPrototypeOrNull = function(
   target,
@@ -1278,6 +1300,7 @@ oj.Assert.assertPrototypeOrNull = function(
  * Asserts that the the target object has the same prototype as the example
  * types
  * @export
+ * @memberof oj.Assert
  */
 oj.Assert.assertPrototypes = function(
   target,
@@ -1305,6 +1328,7 @@ oj.Assert.assertPrototypes = function(
 /**
  * Asserts that the target is a DOM Node or Null
  * @export
+ * @memberof oj.Assert
  */
 oj.Assert.assertDomNodeOrNull = function(target, depth)
 {
@@ -1320,6 +1344,7 @@ oj.Assert.assertDomNodeOrNull = function(target, depth)
 /**
  * Asserts that the target is a DOM Node
  * @export
+ * @memberof oj.Assert
  */
 oj.Assert.assertDomNode = function(target, depth)
 {
@@ -1338,6 +1363,7 @@ oj.Assert.assertDomNode = function(target, depth)
  * @param {Object} target target object
  * @param {string=} nodeName name of the element
  * @export
+ * @memberof oj.Assert
  */
 oj.Assert.assertDomElement = function(target, nodeName)
 {
@@ -1360,6 +1386,7 @@ oj.Assert.assertDomElement = function(target, nodeName)
  * Asserts that the target is a DOM Element and optionally has the specified
  * element name
  * @export
+ * @memberof oj.Assert
  */
 oj.Assert.assertDomElementOrNull = function(target, nodeName)
 {
@@ -1388,6 +1415,7 @@ oj.Assert.assertDomElementOrNull = function(target, nodeName)
  * @param {number} depth stack depth to skip when printing stack traces
  * @param {boolean} nullOK true if a null value satisfies this condition
  * @export
+ * @memberof oj.Assert
  */
 oj.Assert.assertType = function(target,type,prefix,depth, nullOK)
 {
@@ -1418,6 +1446,7 @@ oj.Assert.assertType = function(target,type,prefix,depth, nullOK)
  * @param {Object} target description
  * @param {string=} prefix
  * @export
+ * @memberof oj.Assert
  */
 oj.Assert.assertObject = function(target, prefix)
 {
@@ -1432,6 +1461,7 @@ oj.Assert.assertObject = function(target, prefix)
  * @param {Object} target description
  * @param {string=} prefix
  * @export
+ * @memberof oj.Assert
  */
 oj.Assert.assertObjectOrNull = function(target, prefix)
 {
@@ -1444,6 +1474,7 @@ oj.Assert.assertObjectOrNull = function(target, prefix)
 /**
  * Asserts that the target is a non-empty String
  * @export
+ * @memberof oj.Assert
  */
 oj.Assert.assertNonEmptyString = function(target, prefix)
 {
@@ -1459,6 +1490,7 @@ oj.Assert.assertNonEmptyString = function(target, prefix)
  * @param target target object
  * @param {string=} prefix prefix string
  * @export
+ * @memberof oj.Assert
  */
 oj.Assert.assertString = function(target, prefix)
 {
@@ -1473,6 +1505,7 @@ oj.Assert.assertString = function(target, prefix)
  * @param {string|null|undefined|Object} target target object
  * @param {string=} prefix prefix string
  * @export
+ * @memberof oj.Assert
  */
 oj.Assert.assertStringOrNull = function(target, prefix)
 {
@@ -1487,6 +1520,7 @@ oj.Assert.assertStringOrNull = function(target, prefix)
  * @param {Object} target target object
  * @param {string=} prefix prefix string
  * @export
+ * @memberof oj.Assert
  */
 oj.Assert.assertFunction = function(target, prefix)
 {
@@ -1501,6 +1535,7 @@ oj.Assert.assertFunction = function(target, prefix)
  * @param {Object} target target object
  * @param {string=} prefix prefix
  * @export
+ * @memberof oj.Assert
  */
 oj.Assert.assertFunctionOrNull = function(target, prefix)
 {
@@ -1515,6 +1550,7 @@ oj.Assert.assertFunctionOrNull = function(target, prefix)
  * @param {Object} target description
  * @param {string=} prefix
  * @export
+ * @memberof oj.Assert
  */
 oj.Assert.assertBoolean = function(target, prefix)
 {
@@ -1527,6 +1563,7 @@ oj.Assert.assertBoolean = function(target, prefix)
 /**
  * Asserts that the target is a number
  * @export
+ * @memberof oj.Assert
  */
 oj.Assert.assertNumber = function(target, prefix)
 {
@@ -1539,6 +1576,7 @@ oj.Assert.assertNumber = function(target, prefix)
 /**
  * Asserts that the target is a number or Null
  * @export
+ * @memberof oj.Assert
  */
 oj.Assert.assertNumberOrNull = function(target, prefix)
 {
@@ -1554,6 +1592,7 @@ oj.Assert.assertNumberOrNull = function(target, prefix)
  * @param {Object} target target object
  * @param {string=} message optional message
  * @export
+ * @memberof oj.Assert
  */
 oj.Assert.assertArray = function(
   target,
@@ -1578,6 +1617,7 @@ oj.Assert.assertArray = function(
  * @param {Object} target target object
  * @param {string=} message optional message
  * @export
+ * @memberof oj.Assert
  */
 oj.Assert.assertArrayOrNull = function(
   target,
@@ -1602,6 +1642,7 @@ oj.Assert.assertArrayOrNull = function(
  * @param {Object} target target object
  * @param {string=} message optional message
  * @export
+ * @memberof oj.Assert
  */
 oj.Assert.assertNonNumeric = function(
   target,
@@ -1626,6 +1667,7 @@ oj.Assert.assertNonNumeric = function(
  * @param {Object} target target object
  * @param {string=} message optional message
  * @export
+ * @memberof oj.Assert
  */
 oj.Assert.assertNumeric = function(
   target,
@@ -1651,6 +1693,7 @@ oj.Assert.assertNumeric = function(
  * @param {Object} set set to check
  * @param {string=} message optional message
  * @export
+ * @memberof oj.Assert
  */
 oj.Assert.assertInSet = function(
   value,
@@ -1688,6 +1731,7 @@ oj.Assert.assertInSet = function(
  * @param {number} skipLevel assertion level
  * @param {string=} reason reason to display
  * @export
+ * @memberof oj.Assert
  */
 oj.Assert.assertionFailed = function(
   message,
@@ -1720,6 +1764,7 @@ oj.Assert.assertionFailed = function(
 
 /**
  * @private
+ * @memberof oj.Assert
  */
 var _assertSetting = _scope['__oj_Assert_DEBUG'];
 
@@ -2095,6 +2140,8 @@ oj.Config.logVersionInfo = function()
 /**
  * Retrives JET's template engine for dealing with inline templates (currently internal only)
  * @ignore
+ * @memberof oj.Config
+ * @private
  */
 oj.Config.__getTemplateEngine = function()
 {
@@ -2316,7 +2363,8 @@ oj.Config.__getTemplateEngine = function()
 
 
 /**
- * @class Utilities for qualifying the user agent string.
+ * @class oj.AgentUtils
+ * @classdesc Utilities for qualifying the user agent string.
  * @public
  * @ignore
  */
@@ -2326,6 +2374,7 @@ oj.AgentUtils = function () {};
  * Identity of the target browser.
  * @enum {string}
  * @public
+ * @memberof oj.AgentUtils
  */
 oj.AgentUtils.BROWSER =
 {
@@ -2340,6 +2389,7 @@ oj.AgentUtils.BROWSER =
  * Browser layout engine identity.
  * @enum {string}
  * @public
+ * @memberof oj.AgentUtils
  */
 oj.AgentUtils.ENGINE =
 {
@@ -2354,6 +2404,7 @@ oj.AgentUtils.ENGINE =
  * Operating system identity.
  * @enum {string}
  * @public
+ * @memberof oj.AgentUtils
  */
 oj.AgentUtils.OS =
 {
@@ -2373,6 +2424,7 @@ oj.AgentUtils.OS =
  * @return {{os: oj.AgentUtils.OS, browser: oj.AgentUtils.BROWSER, browserVersion: number,
  *          engine: oj.AgentUtils.ENGINE, engineVersion: number, hashCode: number}}
  * @public
+ * @memberof oj.AgentUtils
  */
 oj.AgentUtils.getAgentInfo = function (userAgent)
 {
@@ -2492,6 +2544,7 @@ oj.AgentUtils.getAgentInfo = function (userAgent)
  * @param {RegExp!} versionNumberPattern
  * @return {number}
  * @private
+ * @memberof oj.AgentUtils
  */
 oj.AgentUtils._parseFloatVersion = function (userAgent, versionNumberPattern)
 {
@@ -3092,6 +3145,7 @@ oj.ResponsiveUtils.compare = function(size1, size2)
 */
 /**
  * String utilities.
+ * @class oj.StringUtils
  * @export
  * @ignore
  */
@@ -3105,6 +3159,7 @@ oj.StringUtils._TRIM_ALL_RE = /^\s*|\s*$/g;
   * @param {Object|string|null} value
   * @returns {boolean} true if the string or Object (e.g., Array) is of zero length.
   * @export
+  * @memberof oj.StringUtils
   */
  oj.StringUtils.isEmpty = function(value)
  {
@@ -3124,6 +3179,7 @@ oj.StringUtils._TRIM_ALL_RE = /^\s*|\s*$/g;
   * @param {Object|string|null=} value
   * @returns {boolean} true if the string or Object (e.g., Array) is of zero length.
   * @export
+  * @memberof oj.StringUtils
   */
  oj.StringUtils.isEmptyOrUndefined = function (value)
  {
@@ -3140,6 +3196,7 @@ oj.StringUtils._TRIM_ALL_RE = /^\s*|\s*$/g;
  * @param {Object|string|null} obj object to test
  * @return {boolean} true if a string constant or string object
  * @export
+ * @memberof oj.StringUtils
  */
 oj.StringUtils.isString = function(obj)
 {
@@ -3151,6 +3208,7 @@ oj.StringUtils.isString = function(obj)
  * @param {Object|string|null} data to trim
  * @return {Object|string|null}
  * @export
+ * @memberof oj.StringUtils
  */
 oj.StringUtils.trim = function(data)
 {
@@ -3169,6 +3227,7 @@ oj.StringUtils.trim = function(data)
  * @param {string} str
  * @returns {number}
  * @public
+ * @memberof oj.StringUtils
  */
 oj.StringUtils.hashCode = function(str)
 {
@@ -3232,6 +3291,7 @@ oj.CollectionUtils = {};
  * @param {number=} maxRecursionDepth - the maximum depth of the recursion into plain Javascript object properties
  * @return target collection
  * @export
+ * @memberof! oj.CollectionUtils
  */
 oj.CollectionUtils.copyInto = function(
   target,
@@ -3256,6 +3316,7 @@ oj.CollectionUtils.copyInto = function(
  * 
  * @return {boolean} true if the object is a direct instance of Object, false otherwise
  * @export
+ * @memberof! oj.CollectionUtils
  */
 oj.CollectionUtils.isPlainObject = function(obj)
 {
@@ -3277,6 +3338,7 @@ oj.CollectionUtils.isPlainObject = function(obj)
 
 /**
  * @private
+ * @memberof! oj.CollectionUtils
  */
 oj.CollectionUtils._copyIntoImpl = function(
   target,
@@ -4651,6 +4713,7 @@ oj.BusyContext.prototype.toString = function ()
 
 /**
  * @ignore
+ * @private
  */
 oj.BusyContext._deliverThrottledUpdates = function()
 {
@@ -4897,6 +4960,7 @@ oj.Context._OJ_SURROGATE_ATTR = "data-oj-surrogate-id";
  * @public
  * @param {Element} element target
  * @return {Element} the logical parent of an element accounting for open popups
+ * @memberof oj.Context
  */
 oj.Context.getParentElement = function (element)
 {
@@ -5060,12 +5124,14 @@ oj.TimerUtils._TimerImpl = function(timeout) {
 
   /**
    * @ignore
+   * @private
    */
   oj.__AttributeUtils = {};
   
   /**
    * @ignore
    * @return {{expr: (null|string), downstreamOnly: boolean}} 
+   * @private
    */
   oj.__AttributeUtils.getExpressionInfo = function(attrValue)
   {
@@ -5091,6 +5157,7 @@ oj.TimerUtils._TimerImpl = function(timeout) {
    * @ignore
    * @param {string} attr attribute name
    * @return {string} property name
+   * @private
    */
   oj.__AttributeUtils.attributeToPropertyName = function(attr)
   {
@@ -5106,6 +5173,7 @@ oj.TimerUtils._TimerImpl = function(timeout) {
    * @ignore
    * @param {string} name property name
    * @return {string} attribute name
+   * @private
    */
   oj.__AttributeUtils.propertyNameToAttribute = function(name)
   {
@@ -5121,6 +5189,7 @@ oj.TimerUtils._TimerImpl = function(timeout) {
    * @ignore
    * @param {string} type event type (e.g. ojBeforeExpand)
    * @return {string} event listener property name (e.g. onOjBeforeExpand)
+   * @private
    */
   oj.__AttributeUtils.eventTypeToEventListenerProperty = function(type)
   {
@@ -5131,6 +5200,7 @@ oj.TimerUtils._TimerImpl = function(timeout) {
    * @ignore
    * @param {string} property event listener property name (e.g. onOjBeforeExpand)
    * @return {string|null} event type (e.g. ojBeforeExpand)
+   * @private
    */
   oj.__AttributeUtils.eventListenerPropertyToEventType = function(property)
   {
@@ -5144,6 +5214,7 @@ oj.TimerUtils._TimerImpl = function(timeout) {
    * @ignore
    * @param {string} name property name (e.g. expanded)
    * @return {string} change event type (e.g. expandedChanged)
+   * @private
    */
   oj.__AttributeUtils.propertyNameToChangeEventType = function(name)
   {
@@ -5154,6 +5225,7 @@ oj.TimerUtils._TimerImpl = function(timeout) {
    * @ignore
    * @param {string} type change event type (e.g. expandedChanged)
    * @return {string|null} propertyName (e.g. expanded)
+   * @private
    */
   oj.__AttributeUtils.changeEventTypeToPropertyName = function(type)
   {
@@ -5167,6 +5239,7 @@ oj.TimerUtils._TimerImpl = function(timeout) {
    * @ignore
    * @param {string} trigger event trigger (e.g. beforeExpand)
    * @return {string} event type (e.g. ojBeforeExpand)
+   * @private
    */
   oj.__AttributeUtils.eventTriggerToEventType = function(trigger)
   {
@@ -5177,6 +5250,7 @@ oj.TimerUtils._TimerImpl = function(timeout) {
    * @ignore
    * @param {string} type event type (e.g. ojBeforeExpand)
    * @return {string|null} event trigger (e.g. beforeExpand)
+   * @private
    */
   oj.__AttributeUtils.eventTypeToEventTrigger = function(type)
   {
@@ -5196,6 +5270,7 @@ oj.TimerUtils._TimerImpl = function(timeout) {
    * @param {string} value attribute value
    * @param {string} type property type
    * @return {*} coerced value
+   * @private
    */
   oj.__AttributeUtils.coerceValue = function(elem, attr, value, type)
   {
@@ -5265,13 +5340,13 @@ oj.TimerUtils._TimerImpl = function(timeout) {
   // Checks that a string either starts with 'object' or contains '|object'
   var _OBJ_TYPE_EXP = /(^object)|(\|object)/;
   
-  var _ARRAY_VALUE_EXP = /\s*\[[\s\S]*\]\s*/;
-  var _OBJ_VALUE_EXP = /\s*\{[\s\S]*\}\s*/;
+  var _ARRAY_VALUE_EXP = /\s*\[[^]*\]\s*/;
+  var _OBJ_VALUE_EXP = /\s*\{[^]*\}\s*/;
 
   // Check for {{..}} and [[..]] at the beginning of strings to avoid matching
   // any usages mid string
-  var _ATTR_EXP = /^(?:\{\{)(.+)(?:\}\})$/;
-  var _ATTR_EXP_RO = /^(?:\[\[)(.+)(?:\]\])$/;
+  var _ATTR_EXP = /^(?:\{\{)([^]+)(?:\}\})$/;
+  var _ATTR_EXP_RO = /^(?:\[\[)([^]+)(?:\]\])$/;
   
 })();
 

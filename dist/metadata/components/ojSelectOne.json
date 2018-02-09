@@ -1,7 +1,7 @@
 {
-  "name": "ojSelectOne",
-  "version": "4.1.0",
-  "jetVersion": "4.1.0",
+  "name": "oj-select-one",
+  "version": "4.2.0",
+  "jetVersion": "4.2.0",
   "displayName": "Single Select",
   "preview": true,
   "roles": [
@@ -24,48 +24,64 @@
       "description": "Display options for auxilliary content that determines where it should be displayed \nin relation to the component. \n\n\nThe types of messaging content for which display options can be configured include \nmessages, converterHint, \nvalidatorHint and helpInstruction.\nThe display options for each type is specified either as an array of strings or a string. When \nan array is specified the first display option takes precedence over the second and so on. \n\n\nJET editable components set defaults that apply to the entire app/page. \nIt is possible to override the defaults on \na per instance basis as explained in the examples below or change defaults for the entire\napplication using \noj.Components#setDefaultOptions method.\nIt is much easier to change the defaults using setDefaultOptions once rather than putting\nthe displayOptions option on every component instance.\n\n\nWhen display-options changes due to programmatic intervention, the component updates its \ndisplay to reflect the updated choices. For example, if 'help.instruction' property goes from \n'notewindow' to 'none' then it no longer shows in the notewindow.\n\n\nA side note: help.instruction and message detail text can include formatted HTML text, whereas hints and \nmessage summary text cannot. If you use formatted text, it should be accessible \nand make sense to the user if formatting wasn't there.\nTo format the help.instruction, you could do this:\n<html>Enter <b>at least</b> 6 characters</html>\n",
       "type": "Object|undefined",
       "displayName": "Display Options",
-      "value": "{messages: [inline],converterHint: [placeholder,notewindow],validatorHint: [notewindow],helpInstruction: [notewindow]}",
-      "properties": [
-        {
-          "name": "converterHint",
+      "value": {
+        "messages": [
+          "inline"
+        ],
+        "converterHint": [
+          "placeholder",
+          "notewindow"
+        ],
+        "validatorHint": [
+          "notewindow"
+        ],
+        "helpInstruction": [
+          "notewindow"
+        ]
+      },
+      "properties": {
+        "converterHint": {
           "description": "supported values are 'placeholder', \n'notewindow', 'none'. The \ndefault value is ['placeholder', 'notewindow']. When there \nis already a placeholder set on the component, the converter hint falls back to display \ntype of 'notewindow'.\nTo change the default value you can do this - \nE.g. {'displayOptions: {'converterHint': ['none']}}",
           "type": "Array|string"
         },
-        {
-          "name": "validatorHint",
+        "validatorHint": {
           "description": "supported values are 'notewindow', \n'none'.\nTo change the default value you can do this - \n{'displayOptions: {'validatorHint': ['none']}}",
           "type": "Array|string"
         },
-        {
-          "name": "messages",
+        "messages": {
           "description": "supported values are 'notewindow', \n'inline',\n'none'. The default is 'inline'. \nTo change the default value you can do this - \nE.g. {'displayOptions: {'messages': 'none'}}",
           "type": "Array|string"
         },
-        {
-          "name": "helpInstruction",
+        "helpInstruction": {
           "description": "supported values are 'notewindow', \n'none'.\nTo change the default value you can do this - \nE.g. displayOptions='{\"helpInstruction\": \"none\"}'",
           "type": "Array|string"
         }
-      ]
+      }
     },
     "help": {
       "description": "Form component help information.\n\nThe properties supported on the help option are:",
       "type": "Object.<string, string>",
       "displayName": "Help",
-      "value": "{help : {instruction: null}}",
-      "properties": [
-        {
-          "name": "instruction",
+      "value": {
+        "help": {
+          "instruction": null
+        }
+      },
+      "properties": {
+        "instruction": {
           "description": "this represents advisory information for the component\nThe default value is null.",
           "type": "string"
         }
-      ]
+      }
     },
     "helpHints": {
       "description": "Represents hints for oj-form-layout element to render help information on the label of the editable component. \nThis is used only if the editable component is added as a direct child to an oj-form-layout element, and the labelHint property is also specified.\n\n\nThe helpHints object contains a definition property and a source property.\n\n\ndefinition - hint for help definition text.\nsource - hint for help source URL.\n",
       "type": "Object.<string, string>",
       "displayName": "Help Hints",
-      "value": "{definition: , source: }",
+      "value": {
+        "definition": "",
+        "source": ""
+      },
       "properties": {
         "definition": {
           "description": "Hint for help definition text associated with the label. \nIt is what shows up when the user hovers over the help icon, or tabs into the help icon, or press and holds the help icon on a mobile device. No formatted text is available for help definition attribute.\n\nSee the help-hints attribute for usage examples.",
@@ -83,7 +99,7 @@
       "displayName": "Label Hint"
     },
     "messagesCustom": {
-      "description": "List of messages an app would add to the component when it has business/custom validation \nerrors that it wants the component to show. When this option is set the message shows to the \nuser right away. To clear the custom message, set messagesCustom\nback to an empty array.\nEach message in the array is an object that duck types oj.Message. \nSee Message for details.",
+      "description": "List of messages an app would add to the component when it has business/custom validation \nerrors that it wants the component to show. When this option is set the message shows to the \nuser right away. To clear the custom message, set messagesCustom\nback to an empty array.\nEach message in the array is an object that duck types oj.Message. \nSee Message for details.\n\n\nSee the Validation and Messages section\nfor details on when the component clears messagesCustom; \nfor example, when full validation is run.\n",
       "type": "Array.<Object>|undefined",
       "displayName": "Messages Custom",
       "value": "[]",
@@ -94,7 +110,7 @@
       "type": "number",
       "displayName": "Minimum Results For Search",
       "value": 15,
-      "minimum": "0"
+      "minimum": 0
     },
     "optionRenderer": {
       "description": "The renderer function that renders the content of each option.",
@@ -109,14 +125,50 @@
       "value": null
     },
     "optionsKeys": {
-      "deprecated": {
-        "since": "4.1.0",
-        "description": "Please use oj.ListDataProviderView with data mapping for the options attribute instead."
-      },
-      "description": "Specify the key names to use in the options array. Please note that this attribute is not supported if the options attribute is an oj.IteratingDataProvider. This attribute is deprecated to allow better type checking in Typescript. Please see oj.ListDataProviderView with data mapping as a replacement. Depending on options-keys means that the signature of the data does not match what is supported by the options attribute. When using Typescript, this would result in a compilation error.",
+      "description": "Specify the key names to use in the options array. Depending on options-keys means that the signature of the data does not match what is supported by the options attribute. When using Typescript, this would result in a compilation error. Best practice is to use a oj.ListDataProviderView with data mapping as a replacement. However, for the app that must fetch data from a REST endpoint where the data fields do not match those that are supported by the options attribute or the dataProvider doesn't implement oj.FetchByKeys, you may use the options-keys with any dataProvider that implements only oj.IteratingDataProvider interface.",
       "type": "Object",
       "displayName": "Options Keys",
-      "value": null
+      "value": null,
+      "properties": {
+        "childKeys": {
+          "description": "The object for the child keys.",
+          "type": "Object",
+          "value": null,
+          "properties": {
+            "label": {
+              "description": "The key name for the label.",
+              "type": "string"
+            },
+            "value": {
+              "description": "The key name for the value.",
+              "type": "string"
+            },
+            "children": {
+              "description": "The key name for the children.",
+              "type": "string"
+            },
+            "childKeys": {
+              "description": "The object for the child keys.",
+              "type": "Object"
+            }
+          }
+        },
+        "children": {
+          "description": "The key name for the children.",
+          "type": "string",
+          "value": null
+        },
+        "label": {
+          "description": "The key name for the label.",
+          "type": "string",
+          "value": null
+        },
+        "value": {
+          "description": "The key name for the value.",
+          "type": "string",
+          "value": null
+        }
+      }
     },
     "pickerAttributes": {
       "description": "The style attributes for the drop down.",
@@ -192,6 +244,38 @@
         }
       }
     },
+    "valid": {
+      "description": " \nThe current valid state of the component. It is evaluated on initial render.\nIt is re-evaluated after validation is run (full or deferred) when messagesCustom is updated, since messagesCustom can be added by the app developer any time. when showMessages() is called. Since showMessages() moves the hidden messages into messages shown, if the valid state was \"invalidHidden\" then it would become \"invalidShown\". when the required property has changed. If a component is empty and has required set, the valid state may be \"invalidHidden\" (if no invalid messages are being shown as well). If required property is removed, the valid state would change to \"valid\". Note: New valid states may be added to the list of valid values in future releases. Any new values will start with \"invalid\" if it is an invalid state, \"pending\" if it is pending state, and \"valid\" if it is a valid state.\n",
+      "type": "string",
+      "displayName": "Valid",
+      "writeback": true,
+      "readOnly": true,
+      "preview": true,
+      "enumValues": [
+        "invalidHidden",
+        "invalidShown",
+        "pending",
+        "valid"
+      ],
+      "propertyEditorValues": {
+        "invalidHidden": {
+          "description": "The component has invalid messages hidden and no invalid messages showing. An invalid message is one with severity \"error\" or higher.",
+          "displayName": "Invalid Hidden"
+        },
+        "invalidShown": {
+          "description": "The component has invalid messages showing. An invalid message is one with severity \"error\" or higher.",
+          "displayName": "Invalid Shown"
+        },
+        "pending": {
+          "description": "The component is waiting for the validation state to be determined.\nThe \"pending\" state is never set in this release of JET. It will be set in a future release.",
+          "displayName": "Pending"
+        },
+        "valid": {
+          "description": "The component is valid",
+          "displayName": "Valid"
+        }
+      }
+    },
     "value": {
       "description": "The value of the element.",
       "type": "*",
@@ -213,7 +297,15 @@
       "description": "Resets the component by clearing all messages and messages attributes - \nmessagesCustom -\nand updates the component's display value using the attribute value. User entered values will be \nerased when this method is called."
     },
     "showMessages": {
-      "description": "Takes all deferred messages and shows them. \nIf there were no deferred messages this method simply returns. \n\n\nTo view messages user has to set focus on the component. \n"
+      "description": "Takes all deferred messages and shows them. \nIt then updates the valid property; e.g.,\nif the valid state was \"invalidHidden\"\nbefore showMessages(), the valid state will become \"invalidShown\" after showMessages(). \n\nIf there were no deferred messages this method simply returns. \n"
+    },
+    "focus": {
+      "description": "Sets focus on the element that naturally gets focus. For example, this would be the input \nelement for input type components. ",
+      "return": "undefined"
+    },
+    "blur": {
+      "description": "Blurs the element that naturally gets focus. For example, this would be the input \nelement for input type components. ",
+      "return": "undefined"
     },
     "setProperty": {
       "description": "Sets a property or a single subproperty for complex properties and notifies the component\nof the change, triggering a [property]Changed event.",
@@ -253,8 +345,8 @@
     }
   },
   "events": {
-    "animateStart": {
-      "description": "Triggered when a default animation is about to start on an element owned by the component.\n\nThe default animation can be cancelled by calling event.preventDefault, followed by\na call to ui.endCallback. ui.endCallback should be\ncalled immediately after event.preventDefault if the application merely wants to cancel animation, \nor it should be called when the custom animation ends if the application is invoking another animation function. Failure to\ncall ui.endCallback may prevent the component from working properly.\nFor more information on customizing animations, see the documentation of \noj.AnimationUtils.\n\nThe default animations are controlled via the theme (SCSS) :\n\n// default animations for \"notewindow\" display option\n$noteWindowOpenAnimation: (effect: \"zoomIn\", transformOrigin: \"#myPosition\") !default;\n$noteWindowCloseAnimation: (effect: \"none\") !default;\n\n// default animations for \"inline\" display option\n$messageInlineOpenAnimation: (effect: \"expand\", startMaxHeight: \"#oldHeight\") !default;\n$messageInlineCloseAnimation: (effect: \"collapse\", endMaxHeight: \"#newHeight\") !default;\n",
+    "ojAnimateStart": {
+      "description": "Triggered when a default animation is about to start, such as when the component is\nbeing opened/closed or a child item is being added/removed. The default animation can\nbe cancelled by calling event.preventDefault.",
       "bubbles": true,
       "cancelable": true,
       "detail": {
@@ -272,7 +364,7 @@
         }
       }
     },
-    "animateEnd": {
+    "ojAnimateEnd": {
       "description": "Triggered when a default animation has ended.",
       "bubbles": true,
       "cancelable": true,

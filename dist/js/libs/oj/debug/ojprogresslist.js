@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2014, 2017, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
@@ -14,6 +14,7 @@ define(['ojs/ojcore', 'jquery', 'knockout', 'ojs/ojcomponentcore', 'ojs/ojlistvi
 
 /**
  * @ignore
+ * @ojtsignore
  * @ojcomponent oj.ojProgressStatus
  * @since 4.0.0
  * @classdesc Display a progress and status icon when ended. The property data is a <code class="prettyprint">ProgressItem</code>.
@@ -25,12 +26,13 @@ define(['ojs/ojcore', 'jquery', 'knockout', 'ojs/ojcomponentcore', 'ojs/ojlistvi
  * @memberof oj.ojProgressStatus
  * @instance
  * @type {null|oj.ProgressItem}
- * @default <code class="prettyprint">null</code>
- * @desc Data used by the file upload progress status.
+ * @default null
+ * @ojshortdesc Data used by the file upload progress status.
  */
 
 /**
  * @ignore
+ * @ojtsignore
  */
 var progressStatusMetadata =
 {
@@ -94,10 +96,9 @@ oj.ProgressItem = function() {
 /**
  * Attach an event handler
  *
-
  * @method
  * @name addEventListener
- * @memberof! oj.ProgressItem
+ * @memberof oj.ProgressItem
  * @instance
  * @param {string} eventType eventType
  * @param {function(Object)} eventHandler event handler function
@@ -110,7 +111,7 @@ oj.ProgressItem = function() {
  *
  * @method
  * @name removeEventListener
- * @memberof! oj.ProgressItem
+ * @memberof oj.ProgressItem
  * @instance
  * @param {string} eventType eventType
  * @param {function(Object)} eventHandler event handler function
@@ -119,8 +120,9 @@ oj.ProgressItem = function() {
  */
 
 /**
+ * ProgressItem status
+ *
  * @export
- * Status
  * @enum {string}
  */
 oj.ProgressItem.Status = {
@@ -151,8 +153,9 @@ oj.ProgressItem.Status = {
 };
 
 /**
+ * ProgressItem event types
+ *
  * @export
- * Event types
  * @enum {string}
  */
 oj.ProgressItem.EventType = {
@@ -193,7 +196,12 @@ oj.ProgressItem.EventType = {
 
 /**
  * @ojcomponent oj.ojProgressList
+ * @ojtsimport ojcomposite
+ * @ojtsimport ojlistview
+ * @ojtsimport ojprogress
  * @since 4.0.0
+ * @ojdisplayname Progress List
+ * @ojshortdesc Displays a ListView where data rows are ProgressItems.
  * @ojstatus preview
  *
  * @classdesc 
@@ -217,13 +225,14 @@ oj.ProgressItem.EventType = {
  */
 
 /**
+ * Data used by the ProgressList.
  * @member
  * @name data
  * @memberof oj.ojProgressList
  * @instance
+ * @ojshortdesc Data used by the ProgressList.
  * @type {null|oj.TableDataSource}
- * @default <code class="prettyprint">null</code>
- * @desc Data used by the file upload progress list.
+ * @default null
  *
  * @example <caption>Initialize the progress list with the <code class="prettyprint">data</code> attribute specified:</caption>
  * &lt;oj-progress-list data='{{dataSource}}'>&lt;/oj-progress-list>
@@ -326,6 +335,7 @@ oj.Composite.register('oj-progress-list',
 
 /**
  * @ignore
+ * @ojtsignore
  * @ojcomponent oj.ojProgressItem
  * @since 4.0.0
  * @classdesc Display a progress and status icon when ended. The property data is a <code class="prettyprint">ProgressItem</code>.
@@ -337,12 +347,13 @@ oj.Composite.register('oj-progress-list',
  * @memberof oj.ojProgressItem
  * @instance
  * @type {null|oj.ProgressItem}
- * @default <code class="prettyprint">null</code>
- * @desc Data used by the oj.ojProgressList
+ * @default null
+ * @ojshortdesc Data used by the oj.ojProgressList
  */
 
 /**
  * @ignore
+ * @ojtsignore
  */
 var progressItemMetadata =
 {

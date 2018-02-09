@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2014, 2017, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
@@ -2381,10 +2381,11 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
   _isButtonActivated : function(evt)
   {
     // We are using <a role='button'> for the buttons.  They fire click event
-    // on Enter keydown.  We just need to check for Space key here.
+    // on Enter keydown.  We just need to check for Space/Enter key here.
+
     return(!this.options["disabled"] &&
            ((evt.type === 'click') ||
-            (evt.type === 'keydown' && evt.keyCode === 32)));
+            (evt.type === 'keydown' && (evt.keyCode === 32 || evt.keyCode === 13))));
   },
 
   _gotoPrev : function(stepMonths)
@@ -2619,11 +2620,11 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
 
     prevText = this._EscapeXSS(this.getTranslatedString("prevText"));
 
-    prev = (enablePrev ? "<a role='button' href='#' onclick='return false;' class='oj-datepicker-prev-icon oj-enabled oj-default oj-component-icon oj-clickable-icon-nocontext' data-handler='prev' data-event='click keydown'" + " title='" + prevText + "'></a>" : "<a class='oj-datepicker-prev-icon oj-disabled oj-component-icon oj-clickable-icon-nocontext' title='" + prevText + "'></a>");
+    prev = (enablePrev ? "<a role='button' href='#' onclick='return false;' class='oj-datepicker-prev-icon oj-enabled oj-default oj-component-icon oj-clickable-icon-nocontext' data-handler='prev' data-event='click keydown'" + " aria-label='" + prevText + "'></a>" : "<a class='oj-datepicker-prev-icon oj-disabled oj-component-icon oj-clickable-icon-nocontext' title='" + prevText + "'></a>");
 
     nextText = this._EscapeXSS(this.getTranslatedString("nextText"));
 
-    next = (enableNext ? "<a role='button' href='#' onclick='return false;' class='oj-datepicker-next-icon oj-enabled oj-default oj-component-icon oj-clickable-icon-nocontext' data-handler='next' data-event='click keydown'" + " title='" + nextText + "'></a>" : "<a class='oj-datepicker-next-icon oj-disabled oj-component-icon oj-clickable-icon-nocontext' title='" + nextText + "'></a>");
+    next = (enableNext ? "<a role='button' href='#' onclick='return false;' class='oj-datepicker-next-icon oj-enabled oj-default oj-component-icon oj-clickable-icon-nocontext' data-handler='next' data-event='click keydown'" + " aria-label='" + nextText + "'></a>" : "<a class='oj-datepicker-next-icon oj-disabled oj-component-icon oj-clickable-icon-nocontext' title='" + nextText + "'></a>");
 
     header = "<div class='oj-datepicker-header" + (this.options["disabled"] ? " oj-disabled " : " oj-enabled oj-default ") + "'>";
 
@@ -2961,7 +2962,7 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
   {
     var changeMonth = this.options["datePicker"]["changeMonth"], changeYear = this.options["datePicker"]["changeYear"],
         positionOfMonthToYear = oj.LocaleData.isMonthPriorToYear() ? "before" : "after",
-        html = "<div class='oj-datepicker-title' role='header'>", monthHtml = "", converterUtils = oj.IntlConverterUtils,
+        html = "<div class='oj-datepicker-title'>", monthHtml = "", converterUtils = oj.IntlConverterUtils,
         monthNames = this.options["monthWide"],
         wDisabled = this.options["disabled"];
 
@@ -4009,6 +4010,10 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
         "of" : window,
         "collision" : "flipfit flipfit"
       });
+      
+      // if we don't have a large screen, the popup will be modal so
+      // we need to give it the focus
+      this._dpDiv.find(".oj-datepicker-calendar").focus();
     }
     else
     {
@@ -5596,7 +5601,7 @@ oj.__registerWidget("oj.ojInputTime", $['oj']['inputBase'],
         else
         {
           self.show();
-        }
+          self._wheelGroup.children().first().focus();        }
       });
 
       this._AddHoverable(triggerTime);
@@ -6115,10 +6120,10 @@ oj.__registerWidget("oj.ojInputTime", $['oj']['inputBase'],
     var isRTL = this._IsRTL();
 
     var cancelText = this._EscapeXSS(this.getTranslatedString("cancelText"));
-    var cancelButton = "<a role='button' onclick='return false;' href='#' class='oj-enabled oj-default oj-timepicker-cancel-button'" + " title='" + cancelText + "'>" + cancelText + "</a>";
+    var cancelButton = "<a role='button' onclick='return false;' href='#' class='oj-enabled oj-default oj-timepicker-cancel-button'" + " aria-label='" + cancelText + "'>" + cancelText + "</a>";
 
     var okText = this._EscapeXSS(this.getTranslatedString("okText"));
-    var okButton = "<a role='button' onclick='return false;' href='#' class='oj-enabled oj-default oj-timepicker-ok-button'" + " title='" + okText + "'>" + okText + "</a>";
+    var okButton = "<a role='button' onclick='return false;' href='#' class='oj-enabled oj-default oj-timepicker-ok-button'" + " aria-label='" + okText + "'>" + okText + "</a>";
 
     var header = "<div class='oj-timepicker-header" + (this.options["disabled"] ? " oj-disabled " : " oj-enabled oj-default ") + "'>";
 
@@ -6478,6 +6483,10 @@ oj.__registerWidget("oj.ojInputTime", $['oj']['inputBase'],
         "of" : window,
         "collision" : "flipfit flipfit"
       });
+      
+      // if we don't have a large screen, the popup will be modal so
+      // we need to give it the focus
+      this._wheelGroup.children().first().focus();
     }
     else
     {
@@ -9058,6 +9067,13 @@ oj.__registerWidget("oj.ojInputDateTime", $['oj']['ojInputDate'],
     {
       this._superApply(arguments);
       this._updateSwitcherText();
+    }
+    else
+    {
+      // When the picker is inline, we should update the picker when the value changes so that
+      // the selected day has the correct CSS class set.
+      var focusOnCalendar = !(this._isInLine && this._timePicker && this._timePicker[0] === document.activeElement);
+      this._updateDatepicker(focusOnCalendar);
     }
     this._switcherTimeValue = null;
   },

@@ -53,7 +53,7 @@
     //Helper function to avoid repeating code. Lots of arguments in the
     //desire to stay functional and support RequireJS contexts without having
     //to know about the RequireJS contexts.
-    function _addPart(locale, master, needed, toLoad, prefix, suffix) {
+    function _addPart(locale, master, needed, toLoad, prefix, suffix, locale_prefix) {
         
         if (!master[locale]) {
             // Try the same language/region without script for zh
@@ -64,7 +64,8 @@
         if (master[locale]) {
             needed.push(locale);
             if (master[locale] === true || master[locale] === 1) {
-                toLoad.push(prefix + locale + '/' + suffix);
+                var loc = locale_prefix ? (locale_prefix + locale): locale;
+                toLoad.push(prefix + loc + '/' + suffix);
             }
             return true;
         }
@@ -225,6 +226,8 @@
                 noOverlay = masterConfig['noOverlay'];
                 backup = masterConfig['defaultNoOverlayLocale'];
                 
+                var locale_prefix = masterConfig['localePrefix'];
+                
                 // Optional name of the bundle that should be merged with the requested bundle
                 
                 merge = masterConfig['merge'];
@@ -284,17 +287,17 @@
                             var matched = false;
                                             
                             for (var lo = locales.length-1; lo >= 0 && !(matched && noMerge); lo--) {
-                                matched = _addPart(locales[lo], masterBundle, needed, toLoad, pref, suff);
+                                matched = _addPart(locales[lo], masterBundle, needed, toLoad, pref, suff, locale_prefix);
                             }
                             
                             var rootOnly = (locales.length === 1 && "root" === locales[0]);
                             
                             if (noMerge && (rootOnly || !matched) && backupBundle) {
-                                _addPart(backupBundle, masterBundle, needed, toLoad, pref, suff);
+                                _addPart(backupBundle, masterBundle, needed, toLoad, pref, suff, locale_prefix);
                             }
                             
                             if (!rootOnly) {
-                                _addPart("root", masterBundle, needed, toLoad, pref, suff);
+                                _addPart("root", masterBundle, needed, toLoad, pref, suff, locale_prefix);
                             }
                         };
                         
@@ -312,9 +315,10 @@
                             var _mixinBundle = function(bundle, start, end/*exclusive*/, pref, suff) {
                                 for (var i = start; i < end && needed[i]; i++) {
                                     var part = needed[i];
+                                    var prefixed_loc = locale_prefix ? (locale_prefix + part): part;
                                     var partBundle = bundle[part];
                                     if (partBundle === true || partBundle === 1) {
-                                        partBundle = req(pref + part + '/' + suff);
+                                        partBundle = req(pref + prefixed_loc + '/' + suff);
                                     }
                                     _mixin(value, partBundle);
                                 }

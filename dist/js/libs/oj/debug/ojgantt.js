@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2014, 2017, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
@@ -16,6 +16,8 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojtime-base', 'ojs/i
  * @augments oj.dvtTimeComponent
  * @since 2.1.0
  * @ojstatus preview
+ * @ojshortdesc Gantt Element
+ * @ojrole application
  *
  * @classdesc
  * <h3 id="GanttOverview-section">
@@ -108,14 +110,14 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
     viewportChange: null
   },
 
-  // @inheritdoc */
+  // @inheritdoc
   _CreateDvtComponent : function(context, callback, callbackObj) 
   {
     context['styleClasses'] = this._getComponentStyleMap();
     return dvt.Gantt.newInstance(context, callback, callbackObj);
   },
 
-  // @inheritdoc */
+  // @inheritdoc
   _GetComponentStyleClasses : function() 
   {
     var styleClasses = this._super();
@@ -225,7 +227,7 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
     return locator;
   },
 
-  // @inheritdoc */
+  // @inheritdoc
   _GetChildStyleClasses: function()
   {
     var styleClasses = this._super();
@@ -286,7 +288,7 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
     return styleClasses;
   },
 
-  // @inheritdoc */
+  // @inheritdoc
   _GetTranslationMap: function() 
   {
     // The translations are stored on the options object.
@@ -301,7 +303,7 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
     return ret;
   },
 
-  // @inheritdoc */
+  // @inheritdoc
   _LoadResources: function() {
     this._super();
 
@@ -322,7 +324,7 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
     resources['percentConverter'] = converterFactory.createConverter({style: 'percent'})
   },
 
-  //** @inheritdoc */
+  // @inheritdoc
   _ProcessOptions: function() {
     this._super();
 
@@ -337,7 +339,7 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
       this.options['taskDefaults']['labelPosition'] = [labelPosition];
   },
 
-  //** @inheritdoc */
+  // @inheritdoc
   _RenderComponent : function(options, isResize) {
     // rows[].tasks[].labelPosition takes Array<string>|string, and getter
     // should return Array<string> for custom elements. The conversion needs to be done here
@@ -371,7 +373,7 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
     this._super(options, isResize);
   },
 
-  // @inheritdoc */
+  // @inheritdoc
   _HandleEvent: function(event)
   {
     var type = event['type'];
@@ -400,7 +402,7 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
     }
   },
 
-  // @inheritdoc */
+  // @inheritdoc
   _GetComponentNoClonePaths: function() {
     var noClonePaths = this._super();
 
@@ -419,7 +421,7 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
     return noClonePaths;
   },
 
-  // @inheritdoc */
+  // @inheritdoc
   _GetComponentDeferredDataPaths : function() {
     return {'root': ['rows', 'dependencies']};
   },
@@ -645,7 +647,7 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @type {string}
  * @ojvalue {string} "bottom"
  * @ojvalue {string} "top"
- * @default <code class="prettyprint">"top"</code>
+ * @default "top"
  */
 /**
  * Defines the animation that is applied on data changes.
@@ -656,7 +658,7 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @type {string}
  * @ojvalue {string} "auto"
  * @ojvalue {string} "none"
- * @default <code class="prettyprint">"none"</code>
+ * @default "none"
  */
 /**
  * Defines the animation that is shown on initial display.
@@ -667,7 +669,7 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @type {string}
  * @ojvalue {string} "auto"
  * @ojvalue {string} "none"
- * @default <code class="prettyprint">"none"</code>
+ * @default "none"
  */
 /**
  * An array of objects that defines dependencies between tasks. Also accepts a Promise that will resolve with an array for deferred data rendering. No data will be rendered if the Promise is rejected.
@@ -675,8 +677,8 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @name dependencies
  * @memberof oj.ojGantt
  * @instance
- * @type {Array.<object>|Promise}
- * @default <code class="prettyprint">null</code>
+ * @type {?(Array.<object>|Promise)}
+ * @default null
  */
 /**
  * The identifier for the dependency line. This must be unique across all dependency lines in Gantt.
@@ -684,8 +686,8 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @name dependencies[].id
  * @memberof! oj.ojGantt
  * @instance
- * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @type {?string}
+ * @default null
  */
 /**
  * The identifier for the predecessor task. This must reference a task in Gantt.
@@ -693,8 +695,8 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @name dependencies[].predecessorTaskId
  * @memberof! oj.ojGantt
  * @instance
- * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @type {?string}
+ * @default null
  */
 /**
  * The description of the dependency line. This is used for accessibility.
@@ -702,8 +704,9 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @name dependencies[].shortDesc
  * @memberof! oj.ojGantt
  * @instance
- * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @type {?string}
+ * @default null
+ * @ojtranslatable
  */
 /**
  * The identifier for the successor task. This must reference a task in Gantt.
@@ -711,8 +714,8 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @name dependencies[].successorTaskId
  * @memberof! oj.ojGantt
  * @instance
- * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @type {?string}
+ * @default null
  */
 /**
  * A space delimited list of class name set on the dependency line.
@@ -720,8 +723,8 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @name dependencies[].svgClassName
  * @memberof! oj.ojGantt
  * @instance
- * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @type {?string}
+ * @default null
  */
 /**
  * The CSS style defining the style of the dependency line.
@@ -729,11 +732,11 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @name dependencies[].svgStyle
  * @memberof! oj.ojGantt
  * @instance
- * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @type {?object}
+ * @default null
  */
 /**
- *  The type of dependency. The following values are supported: <ul> <li>finishStart: predecessor task must finish before successor task can start.</li> <li>finishFinish: predecessor task must finish before successor task can finish.</li> <li>startStart: predecessor task must start before successor task can start.</li> <li>startFinish: predecessor task must start before successor task can finish.</li> </ul> 
+ * The type of dependency. The following values are supported: <ul> <li>finishStart: predecessor task must finish before successor task can start.</li> <li>finishFinish: predecessor task must finish before successor task can finish.</li> <li>startStart: predecessor task must start before successor task can start.</li> <li>startFinish: predecessor task must start before successor task can finish.</li> </ul> 
  * @expose
  * @name dependencies[].type
  * @memberof! oj.ojGantt
@@ -743,7 +746,7 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @ojvalue {string} "startFinish"
  * @ojvalue {string} "finishFinish"
  * @ojvalue {string} "finishStart"
- * @default <code class="prettyprint">"finishStart"</code>
+ * @default "finishStart"
  */
 /**
  * The end time of the Gantt. This is required in order for the Gantt to properly render. See <a href="oj.ojGantt.html#formats-section">Date and Time Formats</a> for more details on string formats.
@@ -751,20 +754,20 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @name end
  * @memberof oj.ojGantt
  * @instance
- * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @type {?string}
+ * @default null
  */
 /**
- * Display or hide the horizontal or vertical grid lines. The default value is "auto", which means Gantt will decide whether the grid lines should be made visible or hidden.
+ * An object specifying whether to display or hide the horizontal and vertical grid lines.
  * @expose
  * @name gridlines
  * @memberof oj.ojGantt
  * @instance
- * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @type {?object}
+ * @default null
  */
 /**
- * Horizontal gridlines.
+ * Horizontal gridlines. The default value is "auto", which means Gantt will decide whether the grid lines should be made visible or hidden.
  * @expose
  * @name gridlines.horizontal
  * @memberof! oj.ojGantt
@@ -773,10 +776,10 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @ojvalue {string} "hidden"
  * @ojvalue {string} "visible"
  * @ojvalue {string} "auto"
- * @default <code class="prettyprint">"auto"</code>
+ * @default "auto"
  */
 /**
- * Vertical gridlines.
+ * Vertical gridlines. The default value is "auto", which means Gantt will decide whether the grid lines should be made visible or hidden.
  * @expose
  * @name gridlines.vertical
  * @memberof! oj.ojGantt
@@ -785,7 +788,7 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @ojvalue {string} "hidden"
  * @ojvalue {string} "visible"
  * @ojvalue {string} "auto"
- * @default <code class="prettyprint">"auto"</code>
+ * @default "auto"
  */
 /**
  * An object with the following properties, used to define the minor time axis. This is required in order for the Gantt to properly render.
@@ -793,8 +796,8 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @name minorAxis
  * @memberof oj.ojGantt
  * @instance
- * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @type {?object}
+ * @default null
  */
 /**
  * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used to format the labels of the minor axis. If not specified, the default converter is used. If a single converter is specified, it will be used for all 'scale' values. Otherwise, an object whose keys are 'scale' values that map to the converter instances is expected. See <a href="oj.DateTimeConverterFactory.html">oj.DateTimeConverterFactory</a> for details on creating built-in datetime converters.
@@ -802,8 +805,8 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @name minorAxis.converter
  * @memberof! oj.ojGantt
  * @instance
- * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @type {?object}
+ * @default null
  */
 /**
  * The default converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) to use for all 'scale' values that do not otherwise have a converter object provided. See <a href="oj.DateTimeConverterFactory.html">oj.DateTimeConverterFactory</a> for details on creating built-in datetime converters.
@@ -811,8 +814,8 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @name minorAxis.converter.default
  * @memberof! oj.ojGantt
  * @instance
- * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @type {?object}
+ * @default null
  */
 /**
  * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used for the 'seconds' scale. If not specified, the default converter will be used for this scale. See <a href="oj.DateTimeConverterFactory.html">oj.DateTimeConverterFactory</a> for details on creating built-in datetime converters.
@@ -820,8 +823,8 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @name minorAxis.converter.seconds
  * @memberof! oj.ojGantt
  * @instance
- * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @type {?object}
+ * @default null
  */
 /**
  * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used for the 'minutes' scale. If not specified, the default converter will be used for this scale. See <a href="oj.DateTimeConverterFactory.html">oj.DateTimeConverterFactory</a> for details on creating built-in datetime converters.
@@ -829,8 +832,8 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @name minorAxis.converter.minutes
  * @memberof! oj.ojGantt
  * @instance
- * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @type {?object}
+ * @default null
  */
 /**
  * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used for the 'hours' scale. If not specified, the default converter will be used for this scale. See <a href="oj.DateTimeConverterFactory.html">oj.DateTimeConverterFactory</a> for details on creating built-in datetime converters.
@@ -838,8 +841,8 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @name minorAxis.converter.hours
  * @memberof! oj.ojGantt
  * @instance
- * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @type {?object}
+ * @default null
  */
 /**
  * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used for the 'days' scale. If not specified, the default converter will be used for this scale. See <a href="oj.DateTimeConverterFactory.html">oj.DateTimeConverterFactory</a> for details on creating built-in datetime converters.
@@ -847,8 +850,8 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @name minorAxis.converter.days
  * @memberof! oj.ojGantt
  * @instance
- * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @type {?object}
+ * @default null
  */
 /**
  * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used for the 'weeks' scale. If not specified, the default converter will be used for this scale. See <a href="oj.DateTimeConverterFactory.html">oj.DateTimeConverterFactory</a> for details on creating built-in datetime converters.
@@ -856,8 +859,8 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @name minorAxis.converter.weeks
  * @memberof! oj.ojGantt
  * @instance
- * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @type {?object}
+ * @default null
  */
 /**
  * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used for the 'months' scale. If not specified, the default converter will be used for this scale. See <a href="oj.DateTimeConverterFactory.html">oj.DateTimeConverterFactory</a> for details on creating built-in datetime converters.
@@ -865,8 +868,8 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @name minorAxis.converter.months
  * @memberof! oj.ojGantt
  * @instance
- * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @type {?object}
+ * @default null
  */
 /**
  * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used for the 'quarters' scale. If not specified, the default converter will be used for this scale. See <a href="oj.DateTimeConverterFactory.html">oj.DateTimeConverterFactory</a> for details on creating built-in datetime converters.
@@ -874,8 +877,8 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @name minorAxis.converter.quarters
  * @memberof! oj.ojGantt
  * @instance
- * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @type {?object}
+ * @default null
  */
 /**
  * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used for the 'years' scale. If not specified, the default converter will be used for this scale. See <a href="oj.DateTimeConverterFactory.html">oj.DateTimeConverterFactory</a> for details on creating built-in datetime converters.
@@ -883,8 +886,8 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @name minorAxis.converter.years
  * @memberof! oj.ojGantt
  * @instance
- * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @type {?object}
+ * @default null
  */
 /**
  * The time scale used for the minor axis. This is required in order for the Gantt to properly render.
@@ -892,7 +895,7 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @name minorAxis.scale
  * @memberof! oj.ojGantt
  * @instance
- * @type {string}
+ * @type {?string}
  * @ojvalue {string} "seconds"
  * @ojvalue {string} "minutes"
  * @ojvalue {string} "hours"
@@ -901,7 +904,7 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @ojvalue {string} "months"
  * @ojvalue {string} "quarters"
  * @ojvalue {string} "years"
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * An array of strings containing the names of scales used for zooming from longest to shortest. If not specified, the 'scale' specified on the axis will be used at all zoom levels.
@@ -909,8 +912,8 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @name minorAxis.zoomOrder
  * @memberof! oj.ojGantt
  * @instance
- * @type {Array.<string>}
- * @default <code class="prettyprint">null</code>
+ * @type {?Array.<string>}
+ * @default null
  */
 /**
  * An object with the following properties, used to define the major time axis. If not specified, no major time axis is shown.
@@ -918,8 +921,8 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @name majorAxis
  * @memberof oj.ojGantt
  * @instance
- * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @type {?object}
+ * @default null
  */
 /**
  * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used to format the labels of the major axis. If not specified, the default converter is used. If a single converter is specified, it will be used for all 'scale' values. Otherwise, an object whose keys are 'scale' values that map to the converter instances is expected. See <a href="oj.DateTimeConverterFactory.html">oj.DateTimeConverterFactory</a> for details on creating built-in datetime converters.
@@ -927,8 +930,8 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @name majorAxis.converter
  * @memberof! oj.ojGantt
  * @instance
- * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @type {?object}
+ * @default null
  */
 /**
  * The default converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) to use for all 'scale' values that do not otherwise have a converter object provided. See <a href="oj.DateTimeConverterFactory.html">oj.DateTimeConverterFactory</a> for details on creating built-in datetime converters.
@@ -936,8 +939,8 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @name majorAxis.converter.default
  * @memberof! oj.ojGantt
  * @instance
- * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @type {?object}
+ * @default null
  */
 /**
  * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used for the 'seconds' scale. If not specified, the default converter will be used for this scale. See <a href="oj.DateTimeConverterFactory.html">oj.DateTimeConverterFactory</a> for details on creating built-in datetime converters.
@@ -945,8 +948,8 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @name majorAxis.converter.seconds
  * @memberof! oj.ojGantt
  * @instance
- * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @type {?object}
+ * @default null
  */
 /**
  * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used for the 'minutes' scale. If not specified, the default converter will be used for this scale. See <a href="oj.DateTimeConverterFactory.html">oj.DateTimeConverterFactory</a> for details on creating built-in datetime converters.
@@ -954,8 +957,8 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @name majorAxis.converter.minutes
  * @memberof! oj.ojGantt
  * @instance
- * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @type {?object}
+ * @default null
  */
 /**
  * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used for the 'hours' scale. If not specified, the default converter will be used for this scale. See <a href="oj.DateTimeConverterFactory.html">oj.DateTimeConverterFactory</a> for details on creating built-in datetime converters.
@@ -963,8 +966,8 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @name majorAxis.converter.hours
  * @memberof! oj.ojGantt
  * @instance
- * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @type {?object}
+ * @default null
  */
 /**
  * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used for the 'days' scale. If not specified, the default converter will be used for this scale. See <a href="oj.DateTimeConverterFactory.html">oj.DateTimeConverterFactory</a> for details on creating built-in datetime converters.
@@ -972,8 +975,8 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @name majorAxis.converter.days
  * @memberof! oj.ojGantt
  * @instance
- * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @type {?object}
+ * @default null
  */
 /**
  * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used for the 'weeks' scale. If not specified, the default converter will be used for this scale. See <a href="oj.DateTimeConverterFactory.html">oj.DateTimeConverterFactory</a> for details on creating built-in datetime converters.
@@ -981,8 +984,8 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @name majorAxis.converter.weeks
  * @memberof! oj.ojGantt
  * @instance
- * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @type {?object}
+ * @default null
  */
 /**
  * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used for the 'months' scale. If not specified, the default converter will be used for this scale. See <a href="oj.DateTimeConverterFactory.html">oj.DateTimeConverterFactory</a> for details on creating built-in datetime converters.
@@ -990,8 +993,8 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @name majorAxis.converter.months
  * @memberof! oj.ojGantt
  * @instance
- * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @type {?object}
+ * @default null
  */
 /**
  * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used for the 'quarters' scale. If not specified, the default converter will be used for this scale. See <a href="oj.DateTimeConverterFactory.html">oj.DateTimeConverterFactory</a> for details on creating built-in datetime converters.
@@ -999,8 +1002,8 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @name majorAxis.converter.quarters
  * @memberof! oj.ojGantt
  * @instance
- * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @type {?object}
+ * @default null
  */
 /**
  * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used for the 'years' scale. If not specified, the default converter will be used for this scale. See <a href="oj.DateTimeConverterFactory.html">oj.DateTimeConverterFactory</a> for details on creating built-in datetime converters.
@@ -1008,8 +1011,8 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @name majorAxis.converter.years
  * @memberof! oj.ojGantt
  * @instance
- * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @type {?object}
+ * @default null
  */
 /**
  * The time scale used for the major axis.
@@ -1017,7 +1020,7 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @name majorAxis.scale
  * @memberof! oj.ojGantt
  * @instance
- * @type {string}
+ * @type {?string}
  * @ojvalue {string} "seconds"
  * @ojvalue {string} "minutes"
  * @ojvalue {string} "hours"
@@ -1026,7 +1029,7 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @ojvalue {string} "months"
  * @ojvalue {string} "quarters"
  * @ojvalue {string} "years"
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * An array of strings containing the names of scales used for zooming from longest to shortest. If not specified, the 'scale' specified on the axis will be used at all zoom levels.
@@ -1034,8 +1037,8 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @name majorAxis.zoomOrder
  * @memberof! oj.ojGantt
  * @instance
- * @type {Array.<string>}
- * @default <code class="prettyprint">null</code>
+ * @type {?Array.<string>}
+ * @default null
  */
 /**
  * The array of reference objects associated with the gantt. For each reference object, a line is rendered at the specified value. Currently only the first reference object in the array is supported. Any additional objects supplied in the array will be ignored.
@@ -1043,8 +1046,8 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @name referenceObjects
  * @memberof oj.ojGantt
  * @instance
- * @type {Array.<object>}
- * @default <code class="prettyprint">null</code>
+ * @type {?Array.<object>}
+ * @default null
  */
 /**
  * A space delimited list of CSS style classes defining the style of the reference object. Note that only CSS style applicable to SVG elements can be used.
@@ -1052,8 +1055,8 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @name referenceObjects[].svgClassName
  * @memberof! oj.ojGantt
  * @instance
- * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @type {?string}
+ * @default null
  */
 /**
  * The CSS style defining the style of the reference object.
@@ -1061,8 +1064,8 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @name referenceObjects[].svgStyle
  * @memberof! oj.ojGantt
  * @instance
- * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @type {?object}
+ * @default null
  */
 /**
  * The time value of this reference object. If not specified, no reference object will be shown. See <a href="oj.ojGantt.html#formats-section">Date and Time Formats</a> for more details on string formats.
@@ -1070,8 +1073,8 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @name referenceObjects[].value
  * @memberof! oj.ojGantt
  * @instance
- * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @type {?string}
+ * @default null
  */
 /**
  * An object defining properties for the row labels region.
@@ -1079,8 +1082,8 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @name rowAxis
  * @memberof oj.ojGantt
  * @instance
- * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @type {?object}
+ * @default null
  */
 /**
  * Defines whether row labels are rendered.
@@ -1091,7 +1094,7 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @type {string}
  * @ojvalue {string} "on"
  * @ojvalue {string} "off"
- * @default <code class="prettyprint">"off"</code>
+ * @default "off"
  */
 /**
  * Defines the maximum width of the region in pixels (e.g. '50px') or percent (e.g. '15%') of the element width. If 'none' is specified, then the width has no maximum value. Labels will truncate to fit.
@@ -1099,8 +1102,8 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @name rowAxis.maxWidth
  * @memberof! oj.ojGantt
  * @instance
- * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @type {?string}
+ * @default null
  */
 /**
  * An array of objects with the following properties, used to define rows and tasks within rows. Also accepts a Promise that will resolve with an array for deferred data rendering. No data will be rendered if the Promise is rejected.
@@ -1108,8 +1111,8 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @name rows
  * @memberof oj.ojGantt
  * @instance
- * @type {Array.<object>|Promise}
- * @default <code class="prettyprint">null</code>
+ * @type {?(Array.<object>|Promise)}
+ * @default null
  */
 /**
  * The identifier for the row. Optional if the row contains only one task. This must be unique across all rows in Gantt.
@@ -1117,8 +1120,8 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @name rows[].id
  * @memberof! oj.ojGantt
  * @instance
- * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @type {?string}
+ * @default null
  */
 /**
  * The label associated with the row.
@@ -1126,8 +1129,9 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @name rows[].label
  * @memberof! oj.ojGantt
  * @instance
- * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @type {?string}
+ * @default null
+ * @ojtranslatable
  */
 /**
  * The CSS style defining the style of the label. Only CSS style applicable to SVG elements can be used.
@@ -1135,8 +1139,8 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @name rows[].labelStyle
  * @memberof! oj.ojGantt
  * @instance
- * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @type {?object}
+ * @default null
  */
 /**
  * An array of objects with the following properties, used to define a task. If not specified, no data will be shown. When only one of 'start' or 'end' value is specified, or when 'start' and 'end' values are equal, the task is considered a milestone task.
@@ -1144,8 +1148,8 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @name rows[].tasks
  * @memberof! oj.ojGantt
  * @instance
- * @type {Array.<object>}
- * @default <code class="prettyprint">null</code>
+ * @type {?Array.<object>}
+ * @default null
  */
 /**
  * The border radius of the task. Accepts values allowed in CSS border-radius attribute.
@@ -1153,8 +1157,8 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @name rows[].tasks[].borderRadius
  * @memberof! oj.ojGantt
  * @instance
- * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @type {?string}
+ * @default null
  */
 /**
  * The end time of this task. Optional if task is a single date event like Milestone. Either start or end has to be defined in order for the task to properly render. See <a href="oj.ojGantt.html#formats-section">Date and Time Formats</a> for more details on string formats.
@@ -1162,8 +1166,8 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @name rows[].tasks[].end
  * @memberof! oj.ojGantt
  * @instance
- * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @type {?string}
+ * @default null
  */
 /**
  * The height of the task in pixel.
@@ -1171,8 +1175,9 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @name rows[].tasks[].height
  * @memberof! oj.ojGantt
  * @instance
- * @type {number}
- * @default <code class="prettyprint">null</code>
+ * @type {?number}
+ * @default null
+ * @ojunits pixels
  */
 /**
  * The identifier for the task. This must be unique across all tasks in the Gantt, and is required in order for the Gantt to properly render.
@@ -1180,8 +1185,8 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @name rows[].tasks[].id
  * @memberof! oj.ojGantt
  * @instance
- * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @type {?string}
+ * @default null
  */
 /**
  * The label associated with the task.
@@ -1189,8 +1194,9 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @name rows[].tasks[].label
  * @memberof! oj.ojGantt
  * @instance
- * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @type {?string}
+ * @default null
+ * @ojtranslatable
  */
 /**
  * The position of the label relative to the task. An array of values is also supported. If an array is specified, then the values are traversed until a position that can fully display the label is found. If 'max' is specified in the array, then of all the positions evaluated up to that point of the traversal, the one with the largest space is used (label is truncated to fit). Naturally, 'max' is ignored if it's specified as the first value of the array. If the last value of the array is reached, but the label cannot be fully displayed, then the label is placed at that position, truncated to fit. Due to space constraints in the milestone and task with progress cases, the inner positions will exhibit the following behaviors: <ul> <li> For milestones, specifying 'innerStart', 'innerEnd', or 'innerCenter' would be equivalent to specifying 'start', 'end', and 'end' respectively. </li> <li> For tasks with progress, 'innerCenter' means the label will be aligned to the end of the progress bar, either placed inside or outside of the progress, whichever is the larger space. 'innerStart' and 'innerEnd' positions are honored when there is enough space to show the label at those positions. Otherwise, the aforementioned 'innerCenter' behavior is exhibited. </li> </ul>
@@ -1205,7 +1211,7 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @ojvalue {string} "innerEnd"
  * @ojvalue {string} "end"
  * @ojvalue {string} "none"
- * @default <code class="prettyprint">["end", "innerCenter", "start", "max"]</code>
+ * @default ["end", "innerCenter", "start", "max"]
  */
 /**
  * The CSS style defining the style of the label. Only CSS style applicable to SVG elements can be used.
@@ -1213,8 +1219,8 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @name rows[].tasks[].labelStyle
  * @memberof! oj.ojGantt
  * @instance
- * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @type {?object}
+ * @default null
  */
 /**
  * The start time of this task. Optional if task is a single date event like Milestone. Either start or end has to be defined in order for the task to properly render. See <a href="oj.ojGantt.html#formats-section">Date and Time Formats</a> for more details on string formats.
@@ -1222,8 +1228,8 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @name rows[].tasks[].start
  * @memberof! oj.ojGantt
  * @instance
- * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @type {?string}
+ * @default null
  */
 /**
  * The description of the task. This is used for accessibility and for customizing the tooltip text.
@@ -1231,8 +1237,9 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @name rows[].tasks[].shortDesc
  * @memberof! oj.ojGantt
  * @instance
- * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @type {?string}
+ * @default null
+ * @ojtranslatable
  */
 /**
  * A space delimited list of CSS style classes defining the style of the task.
@@ -1240,8 +1247,8 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @name rows[].tasks[].svgClassName
  * @memberof! oj.ojGantt
  * @instance
- * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @type {?string}
+ * @default null
  */
 /**
  * The CSS style defining the style of the task.
@@ -1249,8 +1256,8 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @name rows[].tasks[].svgStyle
  * @memberof! oj.ojGantt
  * @instance
- * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @type {?object}
+ * @default null
  */
 /**
  * Specifies the progress of the task. This property is ignored if the task is a milestone.
@@ -1258,8 +1265,8 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @name rows[].tasks[].progress
  * @memberof! oj.ojGantt
  * @instance
- * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @type {?object}
+ * @default null
  */
 /**
  * The border radius of the progress bar. Accepts values allowed in CSS border-radius attribute.
@@ -1267,8 +1274,8 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @name rows[].tasks[].progress.borderRadius
  * @memberof! oj.ojGantt
  * @instance
- * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @type {?string}
+ * @default null
  */
 /**
  * Specifies the height of the progress bar in pixels (e.g. '50px') or percent of the associated task bar (e.g. '15%').
@@ -1276,8 +1283,8 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @name rows[].tasks[].progress.height
  * @memberof! oj.ojGantt
  * @instance
- * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @type {?string}
+ * @default null
  */
 /**
  * A space delimited list of CSS style classes to apply to the progress bar. Note that only CSS style applicable to SVG elements can be used.
@@ -1285,8 +1292,8 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @name rows[].tasks[].progress.svgClassName
  * @memberof! oj.ojGantt
  * @instance
- * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @type {?string}
+ * @default null
  */
 /**
  * The CSS inline style to apply to the progress bar. Only CSS style applicable to SVG elements can be used.
@@ -1294,8 +1301,8 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @name rows[].tasks[].progress.svgStyle
  * @memberof! oj.ojGantt
  * @instance
- * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @type {?object}
+ * @default null
  */
 /**
  * The value of the progress between 0 and 1 inclusive. If not specified or invalid, no progress will be shown.
@@ -1303,8 +1310,10 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @name rows[].tasks[].progress.value
  * @memberof! oj.ojGantt
  * @instance
- * @type {number}
- * @default <code class="prettyprint">null</code>
+ * @type {?number}
+ * @default null
+ * @ojmax 1.0
+ * @ojmin 0.0
  */
 /**
  * Specifies the baseline of the task. When only one of 'start' or 'end' value is specified, or when 'start' and 'end' values are equal, the baseline is considered a milestone baseline.
@@ -1312,8 +1321,8 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @name rows[].tasks[].baseline
  * @memberof! oj.ojGantt
  * @instance
- * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @type {?object}
+ * @default null
  */
 /**
  * The border radius of the baseline. Accepts values allowed in CSS border-radius attribute.
@@ -1321,8 +1330,8 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @name rows[].tasks[].baseline.borderRadius
  * @memberof! oj.ojGantt
  * @instance
- * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @type {?string}
+ * @default null
  */
 /**
  * The end time of the baseline. Optional if baseline is a milestone. Either start or end has to be defined in order for the baseline to properly render. See <a href="oj.ojGantt.html#formats-section">Date and Time Formats</a> for more details on string formats.
@@ -1330,8 +1339,8 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @name rows[].tasks[].baseline.end
  * @memberof! oj.ojGantt
  * @instance
- * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @type {?string}
+ * @default null
  */
 /**
  * The height of the baseline in pixel.
@@ -1339,8 +1348,9 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @name rows[].tasks[].baseline.height
  * @memberof! oj.ojGantt
  * @instance
- * @type {number}
- * @default <code class="prettyprint">null</code>
+ * @type {?number}
+ * @default null
+ * @ojunits pixels
  */
 /**
  * The start time of the baseline. Optional if baseline is a milestone. Either start or end has to be defined in order for the baseline to properly render. See <a href="oj.ojGantt.html#formats-section">Date and Time Formats</a> for more details on string formats.
@@ -1348,8 +1358,8 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @name rows[].tasks[].baseline.start
  * @memberof! oj.ojGantt
  * @instance
- * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @type {?string}
+ * @default null
  */
 /**
  * A space delimited list of CSS style classes defining the style of the baseline.
@@ -1357,8 +1367,8 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @name rows[].tasks[].baseline.svgClassName
  * @memberof! oj.ojGantt
  * @instance
- * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @type {?string}
+ * @default null
  */
 /**
  * The CSS style defining the style of the baseline.
@@ -1366,8 +1376,8 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @name rows[].tasks[].baseline.svgStyle
  * @memberof! oj.ojGantt
  * @instance
- * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @type {?object}
+ * @default null
  */
 /**
  * An array of strings containing the ids of the initially selected tasks.
@@ -1375,9 +1385,9 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @name selection
  * @memberof oj.ojGantt
  * @instance
- * @type {Array.<string>}
+ * @type {?Array.<string>}
  * @ojwriteback
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The type of selection behavior that is enabled on the Gantt. If 'single' is specified, only a single task can be selected at once. If 'multiple', any number of tasks can be selected at once. Otherwise, selection is disabled.
@@ -1389,7 +1399,7 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @ojvalue {string} "single"
  * @ojvalue {string} "multiple"
  * @ojvalue {string} "none"
- * @default <code class="prettyprint">"none"</code>
+ * @default "none"
  */
 /**
  * The start time of the Gantt. This is required in order for the Gantt to properly render. See <a href="oj.ojGantt.html#formats-section">Date and Time Formats</a> for more details on string formats.
@@ -1397,8 +1407,8 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @name start
  * @memberof oj.ojGantt
  * @instance
- * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @type {?string}
+ * @default null
  */
 /**
  * An object with the following properties, used to define default styling for tasks in the Gantt.
@@ -1406,8 +1416,8 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @name taskDefaults
  * @memberof oj.ojGantt
  * @instance
- * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @type {?object}
+ * @default null
  */
 /**
  * The border radius of the task. Accepts values allowed in CSS border-radius attribute.
@@ -1415,8 +1425,8 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @name taskDefaults.borderRadius
  * @memberof! oj.ojGantt
  * @instance
- * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @type {?string}
+ * @default null
  */
 /**
  * The position of the label relative to the task. An array of values is also supported. If an array is specified, then the values are traversed until a position that can fully display the label is found. If 'max' is specified in the array, then of all the positions evaluated up to that point of the traversal, the one with the largest space is used (label is truncated to fit). Naturally, 'max' is ignored if it's specified as the first value of the array. If the last value of the array is reached, but the label cannot be fully displayed, then the label is placed at that position, truncated to fit. Due to space constraints in the milestone and task with progress cases, the inner positions will exhibit the following behaviors: <ul> <li> For milestones, specifying 'innerStart', 'innerEnd', or 'innerCenter' would be equivalent to specifying 'start', 'end', and 'end' respectively. </li> <li> For tasks with progress, 'innerCenter' means the label will be aligned to the end of the progress bar, either placed inside or outside of the progress, whichever is the larger space. 'innerStart' and 'innerEnd' positions are honored when there is enough space to show the label at those positions. Otherwise, the aforementioned 'innerCenter' behavior is exhibited. </li> </ul>
@@ -1431,7 +1441,7 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @ojvalue {string} "innerEnd"
  * @ojvalue {string} "end"
  * @ojvalue {string} "none"
- * @default <code class="prettyprint">["end", "innerCenter", "start", "max"]</code>
+ * @default ["end", "innerCenter", "start", "max"]
  */
 /**
  * The height of the task in pixel.
@@ -1439,8 +1449,9 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @name taskDefaults.height
  * @memberof! oj.ojGantt
  * @instance
- * @type {number}
- * @default <code class="prettyprint">null</code>
+ * @type {?number}
+ * @default null
+ * @ojunits pixels
  */
 /**
  * A space delimited list of CSS style classes defining the style of the task.
@@ -1448,8 +1459,8 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @name taskDefaults.svgClassName
  * @memberof! oj.ojGantt
  * @instance
- * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @type {?string}
+ * @default null
  */
 /**
  * The CSS style defining the style of the task.
@@ -1457,8 +1468,8 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @name taskDefaults.svgStyle
  * @memberof! oj.ojGantt
  * @instance
- * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @type {?object}
+ * @default null
  */
 /**
  * An object with the following properties, used to define default styling for progress bars on non-milestone tasks.
@@ -1466,8 +1477,8 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @name taskDefaults.progress
  * @memberof! oj.ojGantt
  * @instance
- * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @type {?object}
+ * @default null
  */
 /**
  * The border radius of the progress bar. Accepts values allowed in CSS border-radius attribute.
@@ -1475,8 +1486,8 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @name taskDefaults.progress.borderRadius
  * @memberof! oj.ojGantt
  * @instance
- * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @type {?string}
+ * @default null
  */
 /**
  * Specifies the height of the progress bar in pixels (e.g. '50px') or percent of the associated task bar (e.g. '15%').
@@ -1484,8 +1495,8 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @name taskDefaults.progress.height
  * @memberof! oj.ojGantt
  * @instance
- * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @type {?string}
+ * @default null
  */
 /**
  * A space delimited list of CSS style classes to apply to the progress bar. Note that only CSS style applicable to SVG elements can be used.
@@ -1493,8 +1504,8 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @name taskDefaults.progress.svgClassName
  * @memberof! oj.ojGantt
  * @instance
- * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @type {?string}
+ * @default null
  */
 /**
  * The CSS inline style to apply to the progress bar. Only CSS style applicable to SVG elements can be used.
@@ -1502,8 +1513,8 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @name taskDefaults.progress.svgStyle
  * @memberof! oj.ojGantt
  * @instance
- * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @type {?object}
+ * @default null
  */
 /**
  * An object with the following properties, used to define default styling for task baseline elements.
@@ -1511,8 +1522,8 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @name taskDefaults.baseline
  * @memberof! oj.ojGantt
  * @instance
- * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @type {?object}
+ * @default null
  */
 /**
  * The border radius of the baseline. Accepts values allowed in CSS border-radius attribute.
@@ -1520,8 +1531,8 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @name taskDefaults.baseline.borderRadius
  * @memberof! oj.ojGantt
  * @instance
- * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @type {?string}
+ * @default null
  */
 /**
  * The height of the baseline in pixel.
@@ -1529,8 +1540,9 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @name taskDefaults.baseline.height
  * @memberof! oj.ojGantt
  * @instance
- * @type {number}
- * @default <code class="prettyprint">null</code>
+ * @type {?number}
+ * @default null
+ * @ojunits pixels
  */
 /**
  * A space delimited list of CSS style classes defining the style of the baseline.
@@ -1538,8 +1550,8 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @name taskDefaults.baseline.svgClassName
  * @memberof! oj.ojGantt
  * @instance
- * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @type {?string}
+ * @default null
  */
 /**
  * The CSS style defining the style of the baseline.
@@ -1547,17 +1559,17 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @name taskDefaults.baseline.svgStyle
  * @memberof! oj.ojGantt
  * @instance
- * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @type {?object}
+ * @default null
  */
 /**
- *  An object containing an optional callback function for tooltip customization. 
+ * An object containing an optional callback function for tooltip customization. 
  * @expose
  * @name tooltip
  * @memberof oj.ojGantt
  * @instance
- * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @type {?object}
+ * @default null
  */
 /**
  *  A function that returns a custom tooltip. The function takes a dataContext argument, 
@@ -1578,8 +1590,8 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @name tooltip.renderer
  * @memberof! oj.ojGantt
  * @instance
- * @type {function(object)}
- * @default <code class="prettyprint">null</code>
+ * @type {?function(object)}
+ * @default null
  */
 /**
  * An object specifying value formatting and tooltip behavior, whose keys generally correspond to task properties.
@@ -1587,8 +1599,8 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @name valueFormats
  * @memberof oj.ojGantt
  * @instance
- * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @type {?object}
+ * @default null
  */
 /**
  * Specifies tooltip behavior for the row value.
@@ -1596,8 +1608,8 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @name valueFormats.row
  * @memberof! oj.ojGantt
  * @instance
- * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @type {?object}
+ * @default null
  */
 /**
  * A string representing the label that is displayed before the value in the tooltip.
@@ -1605,8 +1617,9 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @name valueFormats.row.tooltipLabel
  * @memberof! oj.ojGantt
  * @instance
- * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @type {?string}
+ * @default null
+ * @ojtranslatable
  */
 /**
  * Whether the value is displayed in the tooltip.
@@ -1617,7 +1630,7 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @type {string}
  * @ojvalue {string} "off"
  * @ojvalue {string} "auto"
- * @default <code class="prettyprint">"auto"</code>
+ * @default "auto"
  */
 /**
  * Specifies tooltip behavior for the start value.
@@ -1625,8 +1638,8 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @name valueFormats.start
  * @memberof! oj.ojGantt
  * @instance
- * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @type {?object}
+ * @default null
  */
 /**
  * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used to format the label. See <a href="oj.DateTimeConverterFactory.html">oj.DateTimeConverterFactory</a> for details on creating built-in datetime converters.
@@ -1634,8 +1647,8 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @name valueFormats.start.converter
  * @memberof! oj.ojGantt
  * @instance
- * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @type {?object}
+ * @default null
  */
 /**
  * A string representing the label that is displayed before the value in the tooltip.
@@ -1643,8 +1656,9 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @name valueFormats.start.tooltipLabel
  * @memberof! oj.ojGantt
  * @instance
- * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @type {?string}
+ * @default null
+ * @ojtranslatable
  */
 /**
  * Whether the value is displayed in the tooltip.
@@ -1655,7 +1669,7 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @type {string}
  * @ojvalue {string} "off"
  * @ojvalue {string} "auto"
- * @default <code class="prettyprint">"auto"</code>
+ * @default "auto"
  */
 /**
  * Specifies tooltip behavior for the end value.
@@ -1663,8 +1677,8 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @name valueFormats.end
  * @memberof! oj.ojGantt
  * @instance
- * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @type {?object}
+ * @default null
  */
 /**
  * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used to format the label. See <a href="oj.DateTimeConverterFactory.html">oj.DateTimeConverterFactory</a> for details on creating built-in datetime converters.
@@ -1672,8 +1686,8 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @name valueFormats.end.converter
  * @memberof! oj.ojGantt
  * @instance
- * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @type {?object}
+ * @default null
  */
 /**
  * A string representing the label that is displayed before the value in the tooltip.
@@ -1681,8 +1695,9 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @name valueFormats.end.tooltipLabel
  * @memberof! oj.ojGantt
  * @instance
- * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @type {?string}
+ * @default null
+ * @ojtranslatable
  */
 /**
  * Whether the value is displayed in the tooltip.
@@ -1693,7 +1708,7 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @type {string}
  * @ojvalue {string} "off"
  * @ojvalue {string} "auto"
- * @default <code class="prettyprint">"auto"</code>
+ * @default "auto"
  */
 /**
  * Specifies tooltip behavior for the date value of a milestone task.
@@ -1701,8 +1716,8 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @name valueFormats.date
  * @memberof! oj.ojGantt
  * @instance
- * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @type {?object}
+ * @default null
  */
 /**
  * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used to format the label. See <a href="oj.DateTimeConverterFactory.html">oj.DateTimeConverterFactory</a> for details on creating built-in datetime converters.
@@ -1710,8 +1725,8 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @name valueFormats.date.converter
  * @memberof! oj.ojGantt
  * @instance
- * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @type {?object}
+ * @default null
  */
 /**
  * A string representing the label that is displayed before the value in the tooltip.
@@ -1719,8 +1734,9 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @name valueFormats.date.tooltipLabel
  * @memberof! oj.ojGantt
  * @instance
- * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @type {?string}
+ * @default null
+ * @ojtranslatable
  */
 /**
  * Whether the value is displayed in the tooltip.
@@ -1731,7 +1747,7 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @type {string}
  * @ojvalue {string} "off"
  * @ojvalue {string} "auto"
- * @default <code class="prettyprint">"auto"</code>
+ * @default "auto"
  */
 /**
  * Specifies tooltip behavior for the label value.
@@ -1739,8 +1755,8 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @name valueFormats.label
  * @memberof! oj.ojGantt
  * @instance
- * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @type {?object}
+ * @default null
  */
 /**
  * A string representing the label that is displayed before the value in the tooltip.
@@ -1748,8 +1764,9 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @name valueFormats.label.tooltipLabel
  * @memberof! oj.ojGantt
  * @instance
- * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @type {?string}
+ * @default null
+ * @ojtranslatable
  */
 /**
  * Whether the value is displayed in the tooltip.
@@ -1760,7 +1777,7 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @type {string}
  * @ojvalue {string} "off"
  * @ojvalue {string} "auto"
- * @default <code class="prettyprint">"auto"</code>
+ * @default "auto"
  */
 /**
  * Specifies tooltip behavior for the progress value.
@@ -1768,8 +1785,8 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @name valueFormats.progress
  * @memberof! oj.ojGantt
  * @instance
- * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @type {?object}
+ * @default null
  */
 /**
  * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used to format the label. See <a href="oj.NumberConverterFactory.html">oj.NumberConverterFactory</a> for details on creating built-in number converters.
@@ -1777,8 +1794,8 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @name valueFormats.progress.converter
  * @memberof! oj.ojGantt
  * @instance
- * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @type {?object}
+ * @default null
  */
 /**
  * A string representing the label that is displayed before the value in the tooltip.
@@ -1786,8 +1803,9 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @name valueFormats.progress.tooltipLabel
  * @memberof! oj.ojGantt
  * @instance
- * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @type {?string}
+ * @default null
+ * @ojtranslatable
  */
 /**
  * Whether the value is displayed in the tooltip.
@@ -1798,7 +1816,7 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @type {string}
  * @ojvalue {string} "off"
  * @ojvalue {string} "auto"
- * @default <code class="prettyprint">"auto"</code>
+ * @default "auto"
  */
 /**
  * Specifies tooltip behavior for the start value of the baseline.
@@ -1806,8 +1824,8 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @name valueFormats.baselineStart
  * @memberof! oj.ojGantt
  * @instance
- * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @type {?object}
+ * @default null
  */
 /**
  * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used to format the label. See <a href="oj.DateTimeConverterFactory.html">oj.DateTimeConverterFactory</a> for details on creating built-in datetime converters.
@@ -1815,8 +1833,8 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @name valueFormats.baselineStart.converter
  * @memberof! oj.ojGantt
  * @instance
- * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @type {?object}
+ * @default null
  */
 /**
  * A string representing the label that is displayed before the value in the tooltip.
@@ -1824,8 +1842,9 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @name valueFormats.baselineStart.tooltipLabel
  * @memberof! oj.ojGantt
  * @instance
- * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @type {?string}
+ * @default null
+ * @ojtranslatable
  */
 /**
  * Whether the value is displayed in the tooltip.
@@ -1836,7 +1855,7 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @type {string}
  * @ojvalue {string} "off"
  * @ojvalue {string} "auto"
- * @default <code class="prettyprint">"auto"</code>
+ * @default "auto"
  */
 /**
  * Specifies tooltip behavior for the end value of the baseline.
@@ -1844,8 +1863,8 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @name valueFormats.baselineEnd
  * @memberof! oj.ojGantt
  * @instance
- * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @type {?object}
+ * @default null
  */
 /**
  * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used to format the label. See <a href="oj.DateTimeConverterFactory.html">oj.DateTimeConverterFactory</a> for details on creating built-in datetime converters.
@@ -1853,8 +1872,8 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @name valueFormats.baselineEnd.converter
  * @memberof! oj.ojGantt
  * @instance
- * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @type {?object}
+ * @default null
  */
 /**
  * A string representing the label that is displayed before the value in the tooltip.
@@ -1862,8 +1881,9 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @name valueFormats.baselineEnd.tooltipLabel
  * @memberof! oj.ojGantt
  * @instance
- * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @type {?string}
+ * @default null
+ * @ojtranslatable
  */
 /**
  * Whether the value is displayed in the tooltip.
@@ -1874,7 +1894,7 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @type {string}
  * @ojvalue {string} "off"
  * @ojvalue {string} "auto"
- * @default <code class="prettyprint">"auto"</code>
+ * @default "auto"
  */
 /**
  * Specifies tooltip behavior for the date value of the milestone baseline.
@@ -1882,8 +1902,8 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @name valueFormats.baselineDate
  * @memberof! oj.ojGantt
  * @instance
- * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @type {?object}
+ * @default null
  */
 /**
  * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used to format the label. See <a href="oj.DateTimeConverterFactory.html">oj.DateTimeConverterFactory</a> for details on creating built-in datetime converters.
@@ -1891,8 +1911,8 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @name valueFormats.baselineDate.converter
  * @memberof! oj.ojGantt
  * @instance
- * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @type {?object}
+ * @default null
  */
 /**
  * A string representing the label that is displayed before the value in the tooltip.
@@ -1900,8 +1920,9 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @name valueFormats.baselineDate.tooltipLabel
  * @memberof! oj.ojGantt
  * @instance
- * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @type {?string}
+ * @default null
+ * @ojtranslatable
  */
 /**
  * Whether the value is displayed in the tooltip.
@@ -1912,7 +1933,7 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @type {string}
  * @ojvalue {string} "off"
  * @ojvalue {string} "auto"
- * @default <code class="prettyprint">"auto"</code>
+ * @default "auto"
  */
 /**
  * The end time of the Gantt's viewport. If not specified, this will default to a value determined by the initial 'scale' of the minor axis and the width of the Gantt. See <a href="oj.ojGantt.html#formats-section">Date and Time Formats</a> for more details on string formats.
@@ -1920,8 +1941,8 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @name viewportEnd
  * @memberof oj.ojGantt
  * @instance
- * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @type {?string}
+ * @default null
  */
 /**
  * The start time of the Gantt's viewport. If not specified, this will default to a value determined by the initial 'scale' of the minor axis and the width of the Gantt. See <a href="oj.ojGantt.html#formats-section">Date and Time Formats</a> for more details on string formats.
@@ -1929,8 +1950,8 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @name viewportStart
  * @memberof oj.ojGantt
  * @instance
- * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @type {?string}
+ * @default null
  */
 
 // SubId Locators **************************************************************

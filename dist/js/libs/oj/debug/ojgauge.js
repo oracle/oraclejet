@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2014, 2017, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
@@ -303,15 +303,17 @@ oj.__registerWidget('oj.ojRatingGauge', $['oj']['dvtBaseGauge'],
     input : null,
 
     /**
-     * <p>The <code class="prettyprint">rawValue</code> is the read-only property for retrieving
-     * the transient value from the rating gauge.</p>
+     * <p>The <code class="prettyprint">transientValue</code> is the read-only property for retrieving
+     * the transient value from the rating gauge. It is triggered when hovering over the rating gauge.</p>
      *
      * <p>This is a read-only property so page authors cannot set or change it directly.</p>
-     * @ignore
+     * @expose
+     * @alias transientValue
      * @instance
      * @type {?number|undefined}
      * @memberof oj.ojRatingGauge
-     * @since 1.2
+     * @since 4.2.0
+     * @ojstatus preview
      * @readonly
      * @ojwriteback
      */
@@ -568,7 +570,6 @@ oj.__registerWidget('oj.ojRatingGauge', $['oj']['dvtBaseGauge'],
  * @ojvalue {string} "star"
  * @ojvalue {string} "human"
  * @ojvalue {string} "circle"
- * @ojvalue {string} "ellipse"
  * @default "circle"
  */
 /**
@@ -1788,15 +1789,17 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $['oj']['dvtBaseGauge'],
     input : null,
     
     /**
-     * <p>The <code class="prettyprint">rawValue</code> is the read-only property for retrieving
-     * the transient value from the status meter gauge.</p>
+     * <p>The <code class="prettyprint">transientValue</code> is the read-only property for retrieving
+     * the transient value from the status meter gauge. It is triggered when dragging over the status meter gauge.</p>
      *
      * <p>This is a read-only property so page authors cannot set or change it directly.</p>
-     * @ignore
+     * @expose
+     * @alias transientValue
      * @instance
      * @type {?number|undefined}
      * @memberof oj.ojStatusMeterGauge
-     * @since 1.2
+     * @since 4.2.0
+     * @ojstatus preview
      * @readonly
      * @ojwriteback
      */
@@ -3102,11 +3105,11 @@ var ojLedGaugeMeta = {
           "type": "object"
         },
         "text": {
-          "type": "string",
-          "enumValues": ["percent", "number"]
+          "type": "string"
         },
         "textType": {
-          "type": "string"
+          "type": "string",
+          "enumValues": ["percent", "number"]
         }
       }
     },
@@ -3169,7 +3172,6 @@ var _LED_GAUGE_SHAPE_ENUMS = {
   "square": true,
   "rectangle": true,
   "circle": true,
-  "ellipse": true,
   "diamond": true,
   "triangle": true,
   "human": true,
@@ -3279,6 +3281,11 @@ var ojRatingGaugeMeta = {
       "type": "number",
       "enumValues": ["1", ".5"]
     },
+    "transientValue": {
+      "type": "number",
+      "writeback": true,
+      "readOnly": true
+    },
     "thresholds": {
       "type": "Array<object>"
     },
@@ -3322,7 +3329,7 @@ var ojRatingGaugeMeta = {
   },
   "methods": {},
   "extension": {
-    _ALIASED_PROPS: {"readonly": "readOnly"},
+    _ALIASED_PROPS: {"readonly": "readOnly", "transientValue": "rawValue"},
     _WIDGET_NAME: "ojRatingGauge"
   }
 };
@@ -3495,6 +3502,11 @@ var ojStatusMeterGaugeMeta = {
     "svgStyle": {
       "type": "object"
     },
+    "transientValue": {
+      "type": "number",
+      "writeback": true,
+      "readOnly": true
+    },
     "thresholdDisplay": {
       "type": "string",
       "enumValues": ["currentOnly", "all", "onIndicator"]
@@ -3536,7 +3548,7 @@ var ojStatusMeterGaugeMeta = {
     "getMetricLabel": {}
   },
   "extension": {
-    _ALIASED_PROPS: {"readonly": "readOnly"},
+    _ALIASED_PROPS: {"readonly": "readOnly", "transientValue": "rawValue"},
     _WIDGET_NAME: "ojStatusMeterGauge"
   }
 };

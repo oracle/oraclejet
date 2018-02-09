@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2014, 2017, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
@@ -131,6 +131,12 @@ var _queuePromise;
 var _location = window.location;
 
 /**
+* The name of the object containing state parameters.
+* @private
+*/
+var _parametersValue = 'parameters';
+
+/**
  * The instance of the root router.
  * @private
  * @const
@@ -165,6 +171,25 @@ function parseQueryParam(queryString) {
    }
 
    return params;
+}
+
+/**
+ * Takes a path of segment separated by / and returns an array of segments
+ * @param  {string=} path a path of segment separated by /
+ * @return {!Array} an array of segment
+ */
+function _getSegments(path) {
+   var array = path ? path.split('/') : [];
+   return array;
+}
+
+/**
+ * Returns the first segment of a path separated by /
+ * @param  {string=} id
+ * @return {string}
+ */
+function _getShortId(id) {
+   return _getSegments(id)[0];
 }
 
 /**
@@ -273,8 +298,21 @@ function _getChildRouter(router, value) {
    var subRouter;
 
    router._childRouters.every(function(sr) {
-      if (!sr._parentState || sr._parentState === value) {
+      // If child router doesn't have _parentState, then it was created before
+      // the parent router navigated to a state, and so it's used as the default
+      // child router.  There can only be one child router per parent state (even
+      // if the parent state is "undefined"), so we should only ever encounter,
+      // at most, one sub-router whose parent state is undefined.
+      if (!sr._parentState) {
+        subRouter = sr;
+      }
+      // Otherwise, if a specific subrouter matches the queried value, then use
+      // it instead of the default.
+      else if (sr._parentState === value) {
          subRouter = sr;
+         // Once found, exit the loop right away.  There can be only one child
+         // router per parent state, so the first one we find will be the only
+         // one.
          return false;
       }
       return true;
@@ -284,32 +322,31 @@ function _getChildRouter(router, value) {
 }
 
 /**
- * Only keep changes where the value doesn't match the router state
- * @param {!Array.<{router:!oj.Router, value:string}>} states
- * @return {!Array.<{router:!oj.Router, value:string}>}
+ * Only keep changes where the value doesn't match the current router state
+ * @param {!Array.<_StateChange>} changes
+ * @return {!Array.<_StateChange>}
  */
-function _filterNewState(states) {
-   var newStates = states.filter(function(state) {
-      return (state.value !== state.router._stateId());
+function _filterNewState(changes) {
+   var newChanges = changes.filter(function(change) {
+      return (change.value !== change.router._stateId());
    });
 
    if (oj.Logger.option('level') === oj.Logger.LEVEL_INFO) {
       oj.Logger.info('Potential changes are: ');
-      newStates.forEach(function(change) {
+      newChanges.forEach(function(change) {
          oj.Logger.info('   { router: %s, value: %s }',
-                        getRouterFullName(change.router),
-                        change.value);
+                        change.router && getRouterFullName(change.router), change.value);
       });
    }
 
-   return newStates;
+   return newChanges;
 }
 
 /**
  * Update the bookmarkable data
  * @private
  * @this {!Object.<string, Object>}
- * @param {!{router:!oj.Router, value:string}} change
+ * @param {?Object} change
  */
 function _updateBookmarkableData(change) {
    var ex = this[change.router._name];
@@ -460,20 +497,21 @@ function _findRouterForStateId(router, sId, parentStateId) {
 }
 
 /**
- * Traverse the tree of routers and build an array of state made of the router and the current
- * state value.
+ * Traverse the tree of routers and build an array of states made of the router and an
+ * undefined value.
  * The first item of the array is the root and the last is the leaf.
  * @private
  * @param  {oj.Router} router
  */
-function _buildAllCurrentState(router) {
+function _buildAllUndefinedState(router) {
    var states = [];
 
    if (router._currentState()) {
-      states.push({ router: router, stateId: router._stateId() });
+      // Push a state change with undefined value (2nd argument in constructor missing)
+      states.push(new _StateChange(router));
 
       router._childRouters.forEach(function (child) {
-         states = states.concat(_buildAllCurrentState(child));
+         states = states.concat(_buildAllUndefinedState(child));
       });
    }
 
@@ -534,12 +572,48 @@ function dispatchTransitionedToState(param) {
 }
 
 /**
+ * An object use to represent a change in a RouterState
+ * @constructor
+ * @param {!oj.Router} router
+ * @param {string=} value
+ * @private
+ */
+function _StateChange(router, value) {
+   this.router = router;
+   this.value = value;     // the value is also the stateId
+}
+
+/**
+ * Returns the RouterState object for the state id in this change object
+ * @return {oj.RouterState} the RouterState matching the value
+ */
+_StateChange.prototype.getState = function () {
+   if (!this.state) {
+      if (this.value) {
+         this.state = this.router.stateFromIdCallback(_getShortId(this.value));
+      }
+   }
+
+   return this.state;
+};
+
+/**
+ * Store a state parameter value by appending it to the value as a path
+ * @param {string=} value
+ */
+_StateChange.prototype.addParameter = function (value) {
+   if (value) {
+      this.value += '/' + value;
+   }
+};
+
+/**
  * Takes an array of changes from parsing and appends other changes needed to be done.
  * 1) All cascading default state
  * 2) All the state that need to become undefined
  * @private
- * @param {!Array.<{router:!oj.Router, value:string}>} states
- * @return {!Array.<{router:!oj.Router, value:string}>}
+ * @param {!Array.<_StateChange>} states
+ * @return {!Array.<_StateChange>}
  */
 function _appendOtherChanges(states) {
    var lastItem = states[states.length -1];
@@ -548,14 +622,14 @@ function _appendOtherChanges(states) {
    // If there is a state, starts with it
    if (lastItem) {
       router = lastItem.router;
-      value = lastItem.value;
+      value = _getShortId(lastItem.value);
    }
    // Otherwise, starts at the root router
    else {
       router = rootRouter;
       value = rootRouter._defaultStateId;
       if (value) {
-         states.push({ value: value, router: router });
+         states.push(new _StateChange(router, value));
       }
    }
 
@@ -563,16 +637,17 @@ function _appendOtherChanges(states) {
    while (!!(router = _getChildRouter(router, value))) {
       value = router._defaultStateId;
       if (value) {
-         states.push({ value: value, router: router });
+         states.push(new _StateChange(router, value));
       }
    }
 
-   var currentStates = _buildAllCurrentState(rootRouter);
-   var undef = [];
-
    // Build an array of all the state to become undefined due to the parent state changing. The
    // order of execution is leaf first.
-   currentStates.forEach(function (select, i) {
+
+   var undefStates = _buildAllUndefinedState(rootRouter); // First build an array of undefined state
+   var undef = [];
+
+   undefStates.forEach(function (select, i) {
       var change = states[i];
 
       // Only insert change for a different router since the undef change will already happen when
@@ -594,14 +669,14 @@ function _appendOtherChanges(states) {
  * @private
  * @param {!oj.Router} router
  * @param {!string} path
- * @return {!Array.<{router:!oj.Router, value:string}>}
+ * @return {!Array.<_StateChange>}
  */
 function _buildStateFromPath(router, path) {
    var newStates = [],
        routers = [],
        rt = router,
-       parts = path.split('/'),
-       sId, parent, parentStateId;
+       parts = _getSegments(path),
+       sId, parent, parentStateId, state, pName, stateChange, pi = 0;
 
    // Since path is absolute, it always starts with '/', so remove the first
    // element (empty string)
@@ -615,6 +690,22 @@ function _buildStateFromPath(router, path) {
 
    // Traverse path and routers simultaneously.
    while (!!(sId = parts.shift())) {
+
+      if (state) {
+         pName = state._paramOrder[pi];
+
+         // If state has parameters, save the state Id as the parameter value
+         if (pName) {
+            stateChange.addParameter(sId);
+            pi++;
+            continue;
+         }
+         // Otherwise, reset parameter index
+         else {
+            pi = 0;
+         }
+      }
+
       rt = routers.shift();
 
       if (!rt) {
@@ -626,18 +717,16 @@ function _buildStateFromPath(router, path) {
             return newStates;
          }
       }
-      else {
-         if (!rt.stateFromIdCallback(sId)) {
-            throw new Error('Invalid path "' + path +
-                  '". State id "' + sId + '" does not exist on router "' +
-                     rt._name + '".');
-         }
+
+      stateChange = new _StateChange(rt, sId);
+      state = stateChange.getState();
+      if (!state) {
+         throw new Error('Invalid path "' + path +
+               '". State id "' + sId + '" does not exist on router "' +
+                  rt._name + '".');
       }
 
-      newStates.push({
-         router: rt,
-         value: sId
-      });
+      newStates.push(stateChange);
       parent = rt;
       parentStateId = sId;
    }
@@ -764,7 +853,7 @@ function _canExit(router) {
  * Return a promise returning an object with an array of all the changes and the origin if all of
  * the new state in the allChanges array can enter.
  * @private
- * @param {!Array.<{value:string, router:!oj.Router}>} allChanges
+ * @param {!Array.<_StateChange>} allChanges
  * @param {string=} origin a string specifying the origin of the transition ('sync', 'popState')
  * @return {!Promise} a promise returning an object with an array of all the changes and the origin.
  */
@@ -779,7 +868,7 @@ function _canEnter(allChanges, origin) {
 
    // Build a chain of canEnter promise for each state in the array of changes
    allChanges.forEach(function(change) {
-      var newState = change.router.stateFromIdCallback(change.value);
+      var newState = change.getState();
 
       // It is allowed to transition to an undefined state, but no state
       // callback need to be executed.
@@ -813,8 +902,8 @@ function _canEnter(allChanges, origin) {
  * @param {string | undefined} origin
  */
 function _update(change, origin) {
-   var oldState = change.router.stateFromIdCallback(change.router._stateId()),
-       newState = change.value ? change.router.stateFromIdCallback(change.value) : undefined;
+   var oldState = change.router.stateFromIdCallback(_getShortId(change.router._stateId())),
+       newState = change.getState();
 
    return Promise.resolve().
       then(function() {
@@ -850,7 +939,25 @@ function _update(change, origin) {
 
          if (!goingBackward) {
             delete rt._navigationType;
-            rt._navHistory.push(rt._stateId());
+            rt._navHistory.push(_getShortId(rt._stateId()));
+         }
+
+         // Update the parameters
+         if (change.value && newState) {
+
+            var segments = _getSegments(change.value);
+            newState._paramOrder.forEach(function(name, i) {
+               var newValue = segments[i+1];
+               var oldValue = newState._parameters[name];
+
+               // Update the parameter value
+               if (newValue !== oldValue) {
+                  newState._parameters[name] = newValue;
+               }
+            });
+
+            //TODO: Should we execute a callback for case where state doesn't change
+            //      and using a configure with function? or disable for function configure?
          }
 
          // Change the value of the stateId
@@ -1022,6 +1129,11 @@ function _queueTransition(transition) {
 
    _logTransition('Queuing  ', transition);
 
+   var path = transition['path'];
+   var bc = oj.Context.getPageContext().getBusyContext();
+   // Disabling the state due to  - OJ.TESTS.ROUTER.SAMPLEOJMODULETEST FAILS
+   // var removeBusyState = bc.addBusyState({description:'router transitioning to new state "'+path+'"'});
+
    // Push new transition at the end. Current transition is always at index 0
    length = _transitionQueue.push(transition);
 
@@ -1041,6 +1153,13 @@ function _queueTransition(transition) {
    }
 
    return _queuePromise;
+   // .then(function(result) {
+   //     removeBusyState();
+   //     return result;
+   // }, function(error) {
+   //     removeBusyState();
+   //     return _queuePromise;
+   // });
 }
 
 /**
@@ -1126,7 +1245,7 @@ oj.Router = function(key, parentRouter, parentState) {
     * @private
     * @type {!string | undefined}
     */
-   this._parentState = parentState || (parentRouter ? parentRouter._stateId() : undefined);
+   this._parentState = parentState || (parentRouter ? _getShortId(parentRouter._stateId()) : undefined);
 
    /**
     * The parent router. Root router doesn't have one.
@@ -1186,7 +1305,8 @@ oj.Router = function(key, parentRouter, parentState) {
     */
    this._stateIdComp = ko.pureComputed({
       'read': function() {
-         return this._stateId();
+         // Return only the significant part of the id, the part without the state parameters.
+         return _getShortId(this._stateId());
       },
       'write': function(value) {
          this.go(value).then(
@@ -1231,8 +1351,10 @@ oj.Router = function(key, parentRouter, parentState) {
     *    &lt;/div&gt;
     */
    this._currentState = ko.pureComputed(function() {
-         return ko.ignoreDependencies(router.stateFromIdCallback, router, [router._stateId()]);
+         var shortId = _getShortId(router._stateId());
+         return ko.ignoreDependencies(router.stateFromIdCallback, router, [shortId]);
       });
+
 
    /**
     * A Knockout observable on the value property of the current state.<br>
@@ -1246,8 +1368,9 @@ oj.Router = function(key, parentRouter, parentState) {
     * &lt;h2 id="pageContent" data-bind="text: router.currentValue"/&gt;
     */
    this._currentValue = ko.pureComputed(function() {
+         var shortId = _getShortId(router._stateId());
          var retValue;
-         var currentState = ko.ignoreDependencies(router.stateFromIdCallback, router, [router._stateId()]);
+         var currentState = ko.ignoreDependencies(router.stateFromIdCallback, router, [shortId]);
          if (currentState) {
             retValue = currentState.value;
          }
@@ -1273,6 +1396,7 @@ oj.Router = function(key, parentRouter, parentState) {
     * object.
     * @ignore
     * @constructor
+    * @private
     */
    function _RouterParams() {
       Object.defineProperties(this, {
@@ -1382,11 +1506,11 @@ oj.Router = function(key, parentRouter, parentState) {
    this._moduleConfig = Object.create(null, {
       'name': {
          value: ko.pureComputed(function() {
-            var retValue, stateId, currentState;
+            var retValue;
 
             // ojModule name cannot afford to be null
-            stateId = this._stateId() || this._defaultStateId || this._states[0];
-            currentState = this.stateFromIdCallback(stateId);
+            var stateId = _getShortId(this._stateId()) || this._defaultStateId || this._states[0];
+            var currentState = this.stateFromIdCallback(stateId);
             if (currentState) {
                retValue = currentState.value;
                if (!retValue || (typeof retValue !== 'string')) {
@@ -1427,6 +1551,124 @@ oj.Router = function(key, parentRouter, parentState) {
       }
    });
 
+    /**
+     * Similar to {@link oj.Router#moduleConfig}, this object is meant to be used to configure
+     * a module binding which reacts to changes in the router state or its parameters.
+     * This configuration also creates observables around all of the
+     * {@link oj.RouterState#parameters} found in the router state.
+     <p>
+     This observable is dyanmically created only when it's first requested.  To
+     use observableModuleConfig and its observable parameters, first reference
+     the property in your own code, which
+     will setup the observable and add observable state parameters.  To use
+     the observable parameters, retrieve the instance from the parameters passed
+     to your view model.
+     </p>
+     @example <caption>Use observable parameters</caption>
+     var root = oj.Router.rootInstance;
+     root.configure(...);
+     var mc = root.observableModuleConfig;
+     ...
+     function ViewModel(viewParams) {
+        var router = viewParams['ojRouter']['parentRouter'];
+        var currentState = router.currentState();
+        // Retrieve object containing observable parameters
+        var params = viewParams['ojRouter']['parameters'];
+        var employeeId = params['employeeId'];
+        // Get an observable parameter's value
+        var idValue = employeeId();
+
+        // Optionally subscribe to a parameter's value change
+        employeeId.subscribe(function(newId) {
+        });
+     }
+
+     * @name oj.Router#observableModuleConfig
+     * @type {Object} The observable module configuration object.
+     * @readonly
+     * @ojstatus preview
+     */
+    this._getObservableModuleConfig = function() {
+        if (!this._observableModuleConfig) {
+            var currentStateObservable = router['currentState'];
+
+            var currentStateVal = currentStateObservable.peek();
+
+            var config2 = ko.observable(_getConfigObject(currentStateVal, router));
+
+            // Subscribe to the changes and update config2 appropriately
+            currentStateObservable['subscribe'](function (state) {
+                var oldConfig = config2.peek();
+                var oldName = oldConfig['name'];
+                var newName = _getNameFromState(state);
+                if (oldName != newName) {
+                    config2(_getConfigObject(state, router));// all new config value when the name changes
+                }
+                else {
+                    // update parameters only
+                    var params = oldConfig['params']['ojRouter'][_parametersValue];
+                    var value;
+                    for (var key in params) {
+                        value = state[_parametersValue][key];
+                        params[key](value);
+                    }
+                }
+            });
+            this._observableModuleConfig = config2;
+        }
+        return this._observableModuleConfig;
+    }
+    function _getConfigObject(currentState, router) {
+        var obj = {};
+
+        obj['name'] = router['moduleConfig']['name'];
+
+        if (currentState) {
+            var params = {};
+            obj['params'] = params;
+            var paramsFromRouter = params['ojRouter'] = {};
+            paramsFromRouter['parentRouter'] = router;
+
+            Object.defineProperty(paramsFromRouter, 'direction',
+            {
+                get : function () {
+                    return router._navigationType;
+                },
+                enumerable : true
+            });
+            var observableParams = paramsFromRouter[_parametersValue] = {};
+
+            var routerParams = currentState[_parametersValue];
+            var keys = Object.keys(routerParams);
+            var value;
+            keys.forEach(function (key) {
+                value = routerParams[key];
+                observableParams[key] = ko.observable(value);
+            });
+
+            obj['lifecycleListener'] = function (prms) {
+                var state = router.currentState();
+                if (state) {
+                    state.viewModel = prms['viewModel'];
+                }
+            };
+
+        }
+
+        return obj;
+    }
+
+    function _getNameFromState(currentState) {
+        var name = 'oj-blank';// deal with empty state
+        if (currentState) {
+            name = currentState['value'];
+            if (!name || (typeof name !== 'string')) {
+                name = currentState._id;
+            }
+            return name;
+        }
+    }
+
    Object.defineProperties(this, {
       'parent': { value:
          /**
@@ -1452,7 +1694,8 @@ Object.defineProperties(oj.Router.prototype, {
    'defaultStateId': { get: function () { return this._defaultStateId; },
                        set: function(newValue) { this._defaultStateId = newValue; },
                        enumerable: true },
-   'moduleConfig': { get: function () { return this._moduleConfig; }, enumerable: true }
+   'moduleConfig': { get: function () { return this._moduleConfig; }, enumerable: true },
+   'observableModuleConfig': { get: function () { return this._getObservableModuleConfig(); }, enumerable: true }
 });
 
 /**
@@ -1465,7 +1708,7 @@ rootRouter = new oj.Router(_DEFAULT_ROOT_NAME, undefined, undefined);
  */
 function handlePopState() {
    var i, sr;
-   var sId = rootRouter._stateId();
+   var sId = _getShortId(rootRouter._stateId());
    var subRouter = null;
 
    oj.Logger.info('Handling popState event with URL: %s', _location.href);
@@ -1485,7 +1728,8 @@ function handlePopState() {
 }
 
 /**
- * Return a child router by name.
+ * Return a child router by name.  The name is the value given to
+ * {@link oj.Router#createChildRouter|createChildRouter}.
  * @param  {!string} name The name of of the child router to find
  * @return {oj.Router|undefined} The child router
  * @since 1.2.0
@@ -1511,24 +1755,70 @@ oj.Router.prototype.getChildRouter = function(name) {
 };
 
 /**
- * Create a child router with the given name. A router can either have one child router that handle
- * all possible states or one child router per state. In the first scenario, the child router
- * is not attached to a specific state of the parent and needs to be configured dynamically. In the
- * second scenario, a child router is attached to a specific state of the parent. If the id of
- * the parent state is not specified using the parentState argument, the child router is attached
- * to the current state of the router.
- * @param {!string} name The unique name representing the router.
- * @param {string=} parentStateId The id of the state of the parent router for this child router. If
- * not defined, the child router is created for the current state of the router.
+ * Get the child router associated with the parent's current state.  See
+ * {@link oj.Router#createChildRouter|createChildRouter} for details on how child routers are associated
+ * with parent states.
+ * @return {oj.Router|undefined} The child router for the current state, if defined.
+ * @since 5.0.0
+ * @export
+ * @ojstatus preview
+ */
+oj.Router.prototype.getCurrentChildRouter = function() {
+  var sId = _getShortId(this._stateId() || this._defaultStateId);
+  var child = _getChildRouter(this, sId);
+
+  return child;
+}
+
+/**
+ * Create a child router with the given name. A router can either have one child
+ * router that handles all possible states, or one child router per state.
+ * See the examples below.
+ * @param {!string} name The unique name representing the router.  The name is
+ * used by the function {@link oj.Router#getChildRouter|getChildRouter} to retrieve
+ * the child router.
+ * @param {string=} parentStateId The state Id of the parent router for determining
+ * when this child router is used.
+ * If not defined, the child router is created for the current state of the router.
  * @return {oj.Router} the child router
  * @throws An error if a child router exist with the same name or if the current
  * state already has a child router.
  * @export
- * @example <caption>Create a child router of the root:</caption>
+ * @example <caption>
+ * <b>Create a default child router for the parent</b>
+ * In this example, the parent router is assumed to have no current state (it
+ * has not yet navigated to any particular state). Since we are not specifying a
+ * value for parentStateId, the newly created router will be the default child
+ * router.
+ * </caption>
+ * // Parent router has no current state
  * router = oj.Router.rootInstance;
+ * // This child router is the default child router for all parent router states
  * childRouter = router.createChildRouter('chapter');
- * @example <caption>Create a child router for parent state id 'book':</caption>
+ * @example <caption>
+ * <b>Create a child router for the root's current state</b>
+ * In this example, the parent has navigated to a state before the child router
+ * is created.  Even though no value is given for parentStateId, the child router
+ * is only used when the parent is in the particular state.
+ * </caption>
+ * // Parent router navigates to a given state
  * router = oj.Router.rootInstance;
+ * router.go('book').then(function(result) {
+ *   if (result.hasChanged) {
+ *     // Child router is only used when parent router's state is 'book'
+ *     // because parent now has a current state
+ *     var childRouter = router.createChildRouter('chapter');
+ *   }
+ * });
+ * @example <caption>
+ * <b>Create a child router for parent state id 'book'</b>
+ * In this example, the parent router hasn't yet navigated to a particular state
+ * but the child specifies 'book' as its parentStateId, therefore, the child will
+ * only be used when the parent is in that particular state.
+ * </caption>
+ * // Parent router has no current state
+ * router = oj.Router.rootInstance;
+ * // Child router is only used when parent router's state is 'book'
  * childRouter = router.createChildRouter('chapter', 'book');
  */
 oj.Router.prototype.createChildRouter = function(name, parentStateId) {
@@ -1538,7 +1828,7 @@ oj.Router.prototype.createChildRouter = function(name, parentStateId) {
 
    oj.Assert.assertString(name);
 
-   parentStateId = parentStateId||this._stateId();
+   parentStateId = parentStateId||_getShortId(this._stateId());
 
    name = encodeURIComponent(name.trim());
    // Make sure it doesn't already exist.
@@ -1575,8 +1865,10 @@ oj.Router.prototype.stateFromIdCallback = function(stateId) {
  *  <li>By providing a callback returning a {@link oj.RouterState|RouterState}
  *      object given a string state id.</li>
  * </ul>
- * This operation reset any previous configuration.<br>
- * This operation is chainable.
+ * This operation resets any previous configuration, and is chainable.<br>
+ * Configuring {@link oj.RouterState#parameteters router state parameters} should
+ * be done here.  See the example below.
+ *
  * @param {!(Object.<string, {label: string, value, isDefault: boolean}> |
  *         function(string): (oj.RouterState | undefined)) } option
  * Either a callback or a dictionary of states.
@@ -1642,7 +1934,7 @@ oj.Router.prototype.stateFromIdCallback = function(stateId) {
  *    'book':   { label: 'Book',   value: 'bookContent' },
  *    'tables': { label: 'Tables', value: 'tablesContent' }
  * });
- * @example <caption>Define a function to retrieve the state:</caption>
+ * @example <caption>Configure dynamic states via callback function:</caption>
  * router.configure(function(stateId) {
  *    var state;
  *
@@ -1650,6 +1942,11 @@ oj.Router.prototype.stateFromIdCallback = function(stateId) {
  *       state = new oj.RouterState(stateId, { value: data[stateId] }, router);
  *    }
  *    return state;
+ * });
+ * @example <caption>Configuring {@link oj.RouterState#parameters state parameters}:</caption>
+ * router.configure({
+ *    'home':   { label: 'Home',   value: 'homeContent', isDefault: true },
+ *    'book/{chapter}/{paragraph}':   { label: 'Book',   value: 'bookContent' },
  * });
  */
 oj.Router.prototype.configure = function(option) {
@@ -1789,6 +2086,9 @@ function _initialize() {
  * );
  * @example <caption>Transition a router to state id 'stepB' without updating the URL:</caption>
  * wizardRouter.go('stepB', { historyUpdate: 'skip' });
+ *
+ * @example <caption>Configuring
+ * router.go(''
  */
 oj.Router.prototype.go = function(stateIdPath, options) {
    _initialize();
@@ -1834,11 +2134,11 @@ oj.Router.prototype._go = function(transition) {
       stateIdPath = this._defaultStateId;
       if (!stateIdPath) {
          // No default defined, so nowhere to go.
-         if (oj.Logger.option('level') === oj.Logger.LEVEL_INFO) {
-            oj.Logger.info('Undefined state id with no default id on router %s',
-                        getRouterFullName(this));
-         }
-         return Promise.resolve(_NO_CHANGE_OBJECT);
+        oj.Logger.info(function() {
+            return 'Undefined state id with no default id on router '+
+                getRouterFullName(this);
+        });
+        return Promise.resolve(_NO_CHANGE_OBJECT);
       }
    }
 
@@ -1931,11 +2231,12 @@ oj.Router.prototype.store = function(data) {
 
    // and the children routers
    router = this;
-   var nextLevel, i, sr;
+   var nextLevel, i, sr, shortId;
    while (router) {
       for (i = 0; i < router._childRouters.length; i++) {
          sr = router._childRouters[i];
-         if (router._stateId() && router._stateId() === sr._parentState) {
+         shortId = _getShortId(router._stateId());
+         if (shortId && shortId === sr._parentState) {
             if (sr._extra !== undefined) {
                extraState[sr._name] = sr._extra;
             }
@@ -2270,6 +2571,7 @@ oj.Router.sync = function() {
  * @see oj.Router.defaults
  * @constructor
  * @export
+ * @memberof oj.Router
  */
 oj.Router.urlPathAdapter = function () {
 
@@ -2308,7 +2610,7 @@ oj.Router.urlPathAdapter = function () {
     * Construct an array of states where each item is an object made of a router and
     * the new state for it.
     * @ignore
-    * @return {!Array.<{value:string, router:!oj.Router}>}
+    * @return {!Array.<_StateChange>}
     * @throws Error when parsing of router param fails.
     */
    this.parse = function() {
@@ -2316,14 +2618,27 @@ oj.Router.urlPathAdapter = function () {
           // To retrieve the portion of the path representing the routers state,
           // remove the base portion of the path.
           path =  _location.pathname.replace(_basePath, ''),
-          segments = path.split('/'),
+          segments = _getSegments(decodeURIComponent(path)),
           changes = [],
-          stateStr, value;
+          stateStr, value,
+          state,
+          stateChange;
 
       oj.Logger.info('Parsing: %s', path);
 
       while (router && (value = segments.shift())) {
-         changes.push({ value: value, router: router });
+
+         stateChange = new _StateChange(router, value);
+
+         state = stateChange.getState();
+
+         // If this state has parameters, the following segments are parameter values
+         state && state._paramOrder.forEach(function (param) {
+            // Retrieve the next segment and use it for the parameter value
+            stateChange.addParameter(segments.shift());
+         });
+
+         changes.push(stateChange);
          router = _getChildRouter(router, value);
       }
 
@@ -2346,7 +2661,7 @@ oj.Router.urlPathAdapter = function () {
     * the states.
     * Never starts with a '/': "book"  "book/chapter2"
     * @ignore
-    * @param {!Array.<{router:!oj.Router, value:string}>} newStates
+    * @param {!Array.<_StateChange>} newStates
     * @return {!string} the URL representing the states
     */
    this.buildUrlFromStates = function(newStates) {
@@ -2361,12 +2676,7 @@ oj.Router.urlPathAdapter = function () {
       while (!!(ns = newStates.pop())) {
          if (ns.value) {
             if (canDefault || (ns.value !== ns.router._defaultStateId)) {
-               if (pathname === '') {
-                  pathname = ns.value;
-               }
-               else {
-                  pathname = ns.value + '/' + pathname;
-               }
+               pathname = pathname ? ns.value + '/' + pathname : ns.value;
                canDefault = true;
             }
          }
@@ -2408,7 +2718,7 @@ oj.Router.urlParamAdapter = function () {
     * Construct an array of states where each item is an object made of a router and
     * the new state for it.
     * @ignore
-    * @return {!Array.<{value:string, router:!oj.Router}>}
+    * @return {!Array.<_StateChange>}
     * @throws Error when parsing of router param fails.
     */
    this.parse = function() {
@@ -2416,14 +2726,28 @@ oj.Router.urlParamAdapter = function () {
           params = parseQueryParam(search),
           router = rootRouter,
           changes = [],
-          stateStr, value;
+          stateStr, value, segments, state, stateChange;
 
       oj.Logger.info('Parsing: %s', search);
 
       while (router) {
          value = params[router._name] || router._defaultStateId;
+
+         // Retrieve all value separated by '/'
+         segments = _getSegments(value);
+         value = segments.shift();
+
+         stateChange = new _StateChange(router, value);
+
          if (value) {
-            changes.push({ value: value, router: router });
+            state = stateChange.getState();
+
+            // If this state has parameters, retrieve their values from the segments
+            state && state._paramOrder.forEach(function (param) {
+               stateChange.addParameter(segments.shift());
+            });
+
+            changes.push(stateChange);
          }
          router = _getChildRouter(router, value);
       }
@@ -2444,7 +2768,7 @@ oj.Router.urlParamAdapter = function () {
     * the states.
     * Never starts with a '/': "index.html", "book/chapter2"
     * @ignore
-    * @param {!Array.<{router:!oj.Router, value:string}>} newStates
+    * @param {!Array.<_StateChange>} newStates
     * @return {!string} the URL representing the states
     * @throws An error if bookmarkable state is too big.
     */
@@ -2452,6 +2776,7 @@ oj.Router.urlParamAdapter = function () {
       var ns,
           canDefault = false,
           search = '',
+          paramName, paramValue,
           extraState = {}; // Compound object of all extra states
 
       // Build the new URL by walking the array of states backward in order to eliminate
@@ -2459,7 +2784,12 @@ oj.Router.urlParamAdapter = function () {
       while (!!(ns = newStates.pop())) {
          if (ns.value) {
             if (canDefault || (ns.value !== ns.router._defaultStateId)) {
-               search = '&' + ns.router._name + '=' + ns.value + search;
+               // _name is already encoded
+               paramName = '&' + ns.router._name + '=';
+               paramValue = ns.value;
+
+               // Because we are traversing the array backward, insert instead of append
+               search = paramName + encodeURIComponent(paramValue) + search;
                canDefault = true;
             }
          }
@@ -2483,6 +2813,7 @@ oj.Router.urlParamAdapter = function () {
 return rootRouter;
 
 }());
+
 /**
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
@@ -2533,17 +2864,80 @@ return rootRouter;
     * See the {@link oj.RouterState#canExit} property.
     * @param {oj.Router=} router The router this state belongs to. If undefined, the method
     * {@link oj.RouterState#go|go} and {@link oj.RouterState#isCurrent|isCurrent} will not work.
+    * @param {Array | undefined} options.parameters Array of state parameter.
     * @constructor
     * @export
     */
    oj.RouterState = function (id, options, router) {
       options = options || {};
       oj.Assert.assertString(id);
+      id = id.trim();
+
+      // The id is in the form /aaa/{p1}/{p2}
+      var path = id.split('/');
 
       // Encode the id since it will be part of the URL
       // We cannot have duplicate because the format of the object parameter
       // doesn't allow it.
-      this._id = encodeURIComponent(id.trim());
+      this._id = encodeURIComponent(path[0]);
+      path.shift();
+
+      /**
+       * Router parameters allow passing of name/value pairs easily from one state
+       * to another.
+       *
+       * Configure the router with the parameter names embedded in
+       * the key of the router state, enclosed by curly-braces.  The parameter
+       * keys will be used to retrieve their values.
+       * @name oj.RouterState#parameters
+       * @example
+       * <caption>Configure router with a parameterized state</caption>
+       * oj.Router.rootInstance.configure({
+       *    'list': { label: 'List' },
+       *    'detail/{empId}/{edit}'
+       * });
+       * @description Parameter values are passed in the URL, and are position-
+       * dependent.
+       * @example
+       * <caption>Parameter values are passed in the URL, and are position-
+       * dependent.</caption>
+       * /app/detail/e100/true
+       * @description The newly-activated state is passed the 'parameters' Object
+       * alongside the {@link oj.Router#instance} property to the View Model of
+       * the state (if {@link oj.Router#moduleConfig} is used).
+       * To reference the values, use the key name by which the router states
+       * were configured.
+       * @example
+       * <caption>Retrieve parameter values from router</caption>
+       * function ViewModel(config) {
+       *    var router = config['ojRouter']['instance'];
+       *    var params = config['ojRouter']['parameters'];
+       *    var empId = params['empId'];
+       *    var edit = params['edit'];
+       * }
+       * @type {Object}
+       * @ojstatus preview
+       */
+      this._parameters = {};
+
+      /**
+       * Internal array to track the order of configured param names.
+       * @type {Array}
+       * @private
+       */
+      this._paramOrder = new Array(path.length);
+
+      path.forEach(function(token, i) {
+         /*
+          * Match pattern "{token}"
+          */
+         var match = token.match(/^{(\w+)}$/);
+         if (match) {
+            token = match[1];
+            this._parameters[token] = null;
+            this._paramOrder[i] = token;
+         }
+      }.bind(this));
 
       /**
        * A callback that either returns a boolean or the Promise of a boolean.
@@ -2702,6 +3096,10 @@ return rootRouter;
          'exit': {
             get: function () { return this._exit; },
             set: function(newValue) { this._exit = newValue; },
+            enumerable: true
+         },
+         'parameters': {
+            get: function () { return this._parameters; },
             enumerable: true
          }
       });

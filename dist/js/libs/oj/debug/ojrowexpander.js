@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2014, 2017, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
@@ -1126,7 +1126,7 @@ oj.FlattenedTreeDataSource.prototype._fetchFromAncestors = function(parent, dept
 
     fetchSize = this._getFetchSizeToUse(-1);
     current = this._getLastIndex();
-    for (i=current-1; i>=0; i--)
+    for (i=current; i>=0; i--)
     {
         currEntry = this._getEntry(i);
         currDepth = currEntry['depth'];

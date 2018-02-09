@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2014, 2017, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
@@ -23,6 +23,7 @@ oj.CompositeTemplateRenderer.renderTemplate = function(params, element, view)
   ko.virtualElements.setDomNodeChildren(element, view);
 
   oj.CompositeTemplateRenderer.invokeViewModelMethod(params.viewModel, 'attachedMethod', [params.viewModelContext]);
+  oj.CompositeTemplateRenderer.invokeViewModelMethod(params.viewModel, 'connected', [params.viewModelContext]);
   
   var bindingContext = oj.CompositeTemplateRenderer._createKoBindingContext(element);
 
@@ -79,7 +80,10 @@ oj.CompositeTemplateRenderer.invokeViewModelMethod = function(model, key, args)
   {
     return;
   }
-  var name = oj.Composite.defaults[key];
+  // Renaming of lifecycle methods is deprecated, so we don't want to introduce
+  // a new key for the new lifecycle listeners connected/disconnected since we're
+  // removing the defaults lookup in 5.0.0.
+  var name = oj.Composite.defaults[key] || key;
   if (name != null && model)
   {
     var handler = model[name];
@@ -354,7 +358,7 @@ ko.virtualElements.allowedBindings['_ojBindSlot_'] = true;
  *  <li>A slot can also have a slot attribute and be assigned to another slot.</li>
  *  <li>A slot can have fallback content which are its child nodes that will be used in the DOM in its place if it has no assigned nodes.</li>
  *  <li>A slot can also also have an index attribute to allow the slot's assigned nodes
- *    to be individually slotted (e.g. in conjunction with a Knockout foreach binding).</li>
+ *    to be individually slotted (e.g. in conjunction with an oj-bind-for-each element).</li>
  * </ul>
  * 
  * <h3 id="nodeprops-section">
@@ -568,6 +572,31 @@ ko.virtualElements.allowedBindings['_ojBindSlot_'] = true;
  */
 
 /**
+ * An index value allowing the slot children to be individually slotted. This is useful
+ * when the composite needs to add additional DOM around slotted children.
+ * @expose
+ * @name index
+ * @memberof oj.ojBindSlot
+ * @instance
+ * @type {number}
+ * @example <caption>
+ *          Use an oj-bind-for-each element inside the composite View to stamp out
+ *          li wrapped oj-bind-slot elements that correspond to the number of slot children.
+ *          The oj-bind-slot elements should have the value for the name attribute, but different indices.
+ *          </caption>
+ * &lt;!-- Composite View -->
+ * &lt;ul>
+ *   &lt;oj-bind-for-each data="[[new Array($slotNodeCounts.foo)]]">
+ *     &lt;template>
+ *       &lt;li>
+ *         &lt;oj-bind-slot name="foo" index="[[$current.index]]">&lt;/oj-bind-slot>
+ *       &lt;/li>
+ *     &lt;/template>
+ *   &lt;/oj-bind-for-each>
+ * &lt;/ul>
+ */
+
+/**
  * The name of the slot.
  * @expose
  * @name name
@@ -577,7 +606,7 @@ ko.virtualElements.allowedBindings['_ojBindSlot_'] = true;
  * @example <caption>Define a slot within a composite View with the name "foo":</caption>
  * &lt;oj-bind-slot name="foo">
  *   &lt;div>My Contents&lt;/div>
- * &lt;/oj-bind-foo>
+ * &lt;/oj-bind-slot>
  */
 
 });

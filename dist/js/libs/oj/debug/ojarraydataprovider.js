@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2014, 2017, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
@@ -113,42 +113,42 @@ var ArrayDataProvider = (function () {
             return class_7;
         }());
         this.AsyncIterable = (function () {
-            function FetchListResult(_parent, _asyncIterator) {
+            function class_8(_parent, _asyncIterator) {
                 this._parent = _parent;
                 this._asyncIterator = _asyncIterator;
                 this[Symbol.asyncIterator] = function () {
                     return this._asyncIterator;
                 };
             }
-            return FetchListResult;
+            return class_8;
         }());
         this.AsyncIterator = (function () {
-            function FetchListResult(_parent, _nextFunc, _params, _offset) {
+            function class_9(_parent, _nextFunc, _params, _offset) {
                 this._parent = _parent;
                 this._nextFunc = _nextFunc;
                 this._params = _params;
                 this._offset = _offset;
                 this._cachedOffset = _offset;
             }
-            FetchListResult.prototype['next'] = function () {
+            class_9.prototype['next'] = function () {
                 var result = this._nextFunc(this._params, this._cachedOffset);
                 this._cachedOffset = this._cachedOffset + result.value[this._parent._DATA].length;
                 return Promise.resolve(result);
             };
-            return FetchListResult;
+            return class_9;
         }());
         this.AsyncIteratorResult = (function () {
-            function FetchListResult(_parent, value, done) {
+            function class_10(_parent, value, done) {
                 this._parent = _parent;
                 this.value = value;
                 this.done = done;
                 this[_parent._VALUE] = value;
                 this[_parent._DONE] = done;
             }
-            return FetchListResult;
+            return class_10;
         }());
-        this.IteratingDataProviderMutationEventDetail = (function () {
-            function class_8(_parent, add, remove, update) {
+        this.DataProviderMutationEventDetail = (function () {
+            function class_11(_parent, add, remove, update) {
                 this._parent = _parent;
                 this.add = add;
                 this.remove = remove;
@@ -157,10 +157,10 @@ var ArrayDataProvider = (function () {
                 this[_parent._REMOVE] = remove;
                 this[_parent._UPDATE] = update;
             }
-            return class_8;
+            return class_11;
         }());
-        this.IteratingDataProviderOperationEventDetail = (function () {
-            function class_9(_parent, keys, metadata, data, indexes) {
+        this.DataProviderOperationEventDetail = (function () {
+            function class_12(_parent, keys, metadata, data, indexes) {
                 this._parent = _parent;
                 this.keys = keys;
                 this.metadata = metadata;
@@ -171,10 +171,10 @@ var ArrayDataProvider = (function () {
                 this[_parent._DATA] = data;
                 this[_parent._INDEXES] = indexes;
             }
-            return class_9;
+            return class_12;
         }());
-        this.IteratingDataProviderAddOperationEventDetail = (function () {
-            function class_10(_parent, keys, afterKeys, metadata, data, indexes) {
+        this.DataProviderAddOperationEventDetail = (function () {
+            function class_13(_parent, keys, afterKeys, metadata, data, indexes) {
                 this._parent = _parent;
                 this.keys = keys;
                 this.afterKeys = afterKeys;
@@ -187,7 +187,7 @@ var ArrayDataProvider = (function () {
                 this[_parent._DATA] = data;
                 this[_parent._INDEXES] = indexes;
             }
-            return class_10;
+            return class_13;
         }());
         this._cachedIndexMap = [];
         this._sequenceNum = 0;
@@ -245,13 +245,25 @@ var ArrayDataProvider = (function () {
         return new this.AsyncIterable(this, new this.AsyncIterator(this, this._fetchFrom.bind(this), params, offset));
     };
     ArrayDataProvider.prototype.getCapability = function (capabilityName) {
-        if (capabilityName == 'sort' || capabilityName == null) {
-            return { capabilityName: 'sort', attributes: 'multiple', type: 'naturalSort' };
+        return ArrayDataProvider.getCapability(capabilityName);
+    };
+    ArrayDataProvider.getCapability = function (capabilityName) {
+        if (capabilityName == 'sort') {
+            return { attributes: 'multiple' };
+        }
+        else if (capabilityName == 'fetchByKeys') {
+            return { implementation: 'lookup' };
+        }
+        else if (capabilityName == 'fetchByOffset') {
+            return { implementation: 'randomAccess' };
         }
         return null;
     };
     ArrayDataProvider.prototype.getTotalSize = function () {
         return Promise.resolve(this._getRowData().length);
+    };
+    ArrayDataProvider.prototype.isEmpty = function () {
+        return this._getRowData().length > 0 ? 'no' : 'yes';
     };
     ArrayDataProvider.prototype._getRowData = function () {
         if (!(this[this._DATA] instanceof Array)) {
@@ -314,9 +326,9 @@ var ArrayDataProvider = (function () {
                         keyArray.map(function (key) {
                             keySet_1.add(key);
                         });
-                        var operationEventDetail = new self.IteratingDataProviderOperationEventDetail(self, keySet_1, metadataArray, dataArray, indexArray);
-                        var mutationEventDetail = new self.IteratingDataProviderMutationEventDetail(self, null, operationEventDetail, null);
-                        self.dispatchEvent(new oj.IteratingDataProviderMutationEvent(mutationEventDetail));
+                        var operationEventDetail = new self.DataProviderOperationEventDetail(self, keySet_1, metadataArray, dataArray, indexArray);
+                        var mutationEventDetail = new self.DataProviderMutationEventDetail(self, null, operationEventDetail, null);
+                        self.dispatchEvent(new oj.DataProviderMutationEvent(mutationEventDetail));
                     }
                 }
                 if (foundAdd) {
@@ -354,9 +366,9 @@ var ArrayDataProvider = (function () {
                         afterKeyArray.map(function (key) {
                             afterKeySet_1.add(key);
                         });
-                        var operationEventDetail = new self.IteratingDataProviderAddOperationEventDetail(self, keySet_2, afterKeySet_1, metadataArray, dataArray, indexArray);
-                        var mutationEventDetail = new self.IteratingDataProviderMutationEventDetail(self, operationEventDetail, null, null);
-                        self.dispatchEvent(new oj.IteratingDataProviderMutationEvent(mutationEventDetail));
+                        var operationEventDetail = new self.DataProviderAddOperationEventDetail(self, keySet_2, afterKeySet_1, metadataArray, dataArray, indexArray);
+                        var mutationEventDetail = new self.DataProviderMutationEventDetail(self, operationEventDetail, null, null);
+                        self.dispatchEvent(new oj.DataProviderMutationEvent(mutationEventDetail));
                     }
                     if (dispatchRefreshEvent) {
                         self.dispatchEvent(new oj.DataProviderRefreshEvent());
@@ -540,7 +552,8 @@ oj.Object.exportPrototypeSymbol('ArrayDataProvider.prototype.fetchByOffset', { f
 oj.Object.exportPrototypeSymbol('ArrayDataProvider.prototype.fetchFirst', { fetchFirst: ArrayDataProvider.prototype.fetchFirst });
 oj.Object.exportPrototypeSymbol('ArrayDataProvider.prototype.getCapability', { getCapability: ArrayDataProvider.prototype.getCapability });
 oj.Object.exportPrototypeSymbol('ArrayDataProvider.prototype.getTotalSize', { getTotalSize: ArrayDataProvider.prototype.getTotalSize });
-//# sourceMappingURL=ArrayDataProvider.js.map
+oj.Object.exportPrototypeSymbol('ArrayDataProvider.prototype.isEmpty', { isEmpty: ArrayDataProvider.prototype.isEmpty });
+
 /**
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
@@ -556,7 +569,7 @@ oj.Object.exportPrototypeSymbol('ArrayDataProvider.prototype.getTotalSize', { ge
 /**
  * @ojstatus preview
  * @export
- * @interface oj.SortComparator
+ * @interface oj.SortComparators
  */
 
 
@@ -566,7 +579,7 @@ oj.Object.exportPrototypeSymbol('ArrayDataProvider.prototype.getTotalSize', { ge
  * @ojstatus preview
  * @export
  * @expose
- * @memberof oj.SortComparator
+ * @memberof oj.SortComparators
  * @instance
  * @name comparators
  * @type {Map.<string, Function>}
@@ -575,7 +588,7 @@ oj.Object.exportPrototypeSymbol('ArrayDataProvider.prototype.getTotalSize', { ge
 /**
  * End of jsdoc
  */
-//# sourceMappingURL=SortComparator.js.map
+
 /**
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
@@ -592,10 +605,8 @@ oj.Object.exportPrototypeSymbol('ArrayDataProvider.prototype.getTotalSize', { ge
  * @ojstatus preview
  * @export
  * @class oj.ArrayDataProvider
- * @implements oj.IteratingDataProvider
- * @implements oj.FetchByOffset
- * @implements oj.FetchByKeys
- * @classdesc This class implements {@link oj.IteratingDataProvider}, {@link oj.FetchByOffset}, and {@link oj.FetchByKeys}.  
+ * @implements oj.DataProvider
+ * @classdesc This class implements {@link oj.DataProvider}.  
  *            Object representing data available from an array.  This dataprovider can be used by [ListView]{@link oj.ojListView}, [NavigationList]{@link oj.ojNavigationList},
  *            [TabBar]{@link oj.ojTabBar}, and [Table]{@link oj.ojTable}.<br><br>
  *            See the <a href="../jetCookbook.html?component=table&demo=basicTable">Table - Base Table</a> demo for an example.<br><br>
@@ -603,12 +614,12 @@ oj.Object.exportPrototypeSymbol('ArrayDataProvider.prototype.getTotalSize', { ge
  * @param {Array|function():Array} data data supported by the components
  *                                      <p>This can be either an Array, or a Knockout observableArray.</p>
  * @param {Object=} options Options for the ArrayDataProvider
- * @param {oj.SortComparator=} options.sortComparators Array of {@link oj.sortComparator} to use for sort.
- * @param {Array.<oj.SortCriterion>=} options.implicitSort Array of {@link oj.sortCriterion} used to specify sort information when the data loaded into the dataprovider is already sorted.
- * @param {Array|Object|function():Array=} options.keys Keys for the data
- * @param {string | Array.<string>=} options.idAttribute the field name which stores the id in the data. Can be a string denoting a single key attribute or an array
+ * @param {oj.SortComparators=} options.sortComparators Optional {@link oj.sortComparator} to use for sort.
+ * @param {Array.<oj.SortCriterion>=} options.implicitSort Optional array of {@link oj.sortCriterion} used to specify sort information when the data loaded into the dataprovider is already sorted.
+ * @param {(Array|function():Array)=} options.keys Optional keys for the data. If not supplied, then the keys are generated according options.idAttribute. If that is also not supplied then index is used as key. 
+ * @param {(string | Array.<string>)=} options.idAttribute Optionally the field name which stores the id in the data. Can be a string denoting a single key attribute or an array
  *                                                  of strings for multiple key attributes. @index causes ArrayDataProvider to use index as key and @value will cause ArrayDataProvider to
- *                                                  use all attributes as key.
+ *                                                  use all attributes as key. @index is the default.
  * @example
  * // First initialize an array
  * var deptArray = [{DepartmentId: 10, DepartmentName: 'Administration', LocationId: 200},
@@ -647,6 +658,20 @@ oj.Object.exportPrototypeSymbol('ArrayDataProvider.prototype.getTotalSize', { ge
  */
 
 /**
+ * Fetch rows by offset
+ *
+ * @ojstatus preview
+ * @param {oj.FetchByOffsetParameters} params Fetch by offset parameters
+ * @return {Promise.<oj.FetchByOffsetResults>} Promise which resolves to {@link oj.FetchByOffsetResults}
+ * @export
+ * @expose
+ * @memberof oj.ArrayDataProvider
+ * @instance
+ * @method
+ * @name fetchByOffset
+ */
+
+/**
  * Fetch the first block of data.
  * 
  * @ojstatus preview
@@ -665,10 +690,14 @@ oj.Object.exportPrototypeSymbol('ArrayDataProvider.prototype.getTotalSize', { ge
  * Determines whether this DataProvider supports certain feature.
  * 
  * @ojstatus preview
- * @param {string=} capabilityName capability name. If unspecified, 
- *                  returns all supported capabilities. Supported capability names are:
- *                  sort
+ * @param {string} capabilityName capability name. Supported capability names are:
+ *                  "fetchByKeys", "fetchByOffset", and "sort"
  * @return {Object} capability information or null if unsupported
+ * <ul>
+ *   <li>If capabilityName is "fetchByKeys", returns a {@link oj.FetchByKeysCapability} object.</li>
+ *   <li>If capabilityName is "fetchByOffset", returns a {@link oj.FetchByOffsetCapability} object.</li>
+ *   <li>If capabilityName is "sort", returns a {@link oj.SortCapability} object.</li>
+ * </ul>
  * @export
  * @expose
  * @memberof oj.ArrayDataProvider
@@ -688,6 +717,58 @@ oj.Object.exportPrototypeSymbol('ArrayDataProvider.prototype.getTotalSize', { ge
  * @instance
  * @method
  * @name getTotalSize
+ */
+
+/**
+ * Return a string that indicates if this data provider is empty
+ * 
+ * @ojstatus preview
+ * @return {string} a string that indicates if this data provider is empty. Valid values are:
+ *                  "yes": this data provider is empty.
+ *                  "no": this data provider is not empty.
+ *                  "unknown": it is not known if this data provider is empty until a fetch is made.
+ * @export
+ * @expose
+ * @memberof oj.ArrayDataProvider
+ * @instance
+ * @method
+ * @name isEmpty
+ */
+
+/**
+ * @ojstatus preview
+ * @param {string} eventType The event type to add listener to.
+ * @param {EventListener} listener The event listener to add.
+ * @export
+ * @expose
+ * @memberof oj.ArrayDataProvider
+ * @instance
+ * @method
+ * @name addEventListener
+ */
+
+/**
+ * @ojstatus preview
+ * @param {string} eventType The event type to remove listener from.
+ * @param {EventListener} listener The event listener to remove.
+ * @export
+ * @expose
+ * @memberof oj.ArrayDataProvider
+ * @instance
+ * @method
+ * @name removeEventListener
+ */
+
+/**
+ * @ojstatus preview
+ * @param {Event} evt The event to dispatch.
+ * @return {boolean} false if the event has been cancelled and true otherwise.
+ * @export
+ * @expose
+ * @memberof oj.ArrayDataProvider
+ * @instance
+ * @method
+ * @name dispatchEvent
  */
 
 /**

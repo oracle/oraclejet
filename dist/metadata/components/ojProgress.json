@@ -1,8 +1,8 @@
 {
-  "name": "ojProgress",
-  "version": "4.1.0",
-  "jetVersion": "4.1.0",
-  "displayName": " Progress",
+  "name": "oj-progress",
+  "version": "4.2.0",
+  "jetVersion": "4.2.0",
+  "displayName": "Progress",
   "preview": true,
   "styleClasses": [
     {
@@ -24,13 +24,14 @@
       "description": "Optional class that can be set on a div after the oj-progress element. This div contains the end text to display underneath the oj-progress bar."
     }
   ],
-  "description": "ojProgress",
+  "description": "The JET Progress element allows a user to display progress of an operation in a rectangular horizontal or a circular meter.",
   "properties": {
     "max": {
-      "description": "The maximum allowed value. The element's max attribute is used if it is provided, otherwise the default value of 100 is used.",
+      "description": "The maximum allowed value.",
       "type": "number",
       "displayName": "Max",
-      "value": 100
+      "value": 100,
+      "minimum": 0
     },
     "translations": {
       "description": "A collection of translated resources from the translation bundle, or null if this\ncomponent has no resources. Resources may be accessed and overridden individually or collectively, as seen in the examples.\n\nIf this component has translations, their documentation immediately follows this doc entry.",
@@ -56,19 +57,22 @@
       ],
       "propertyEditorValues": {
         "bar": {
+          "description": "displays progress in a rectangular horizontal meter.",
           "displayName": "Bar"
         },
         "circle": {
+          "description": "displays progress in a circular meter",
           "displayName": "Circle"
         }
       }
     },
     "value": {
-      "description": "The value of the Progress. The element's value attribute is used if it is provided, otherwise the default value of 0 is used. For indeterminate Progress, set value to -1.",
+      "description": "The value of the Progress.",
       "type": "number",
       "displayName": "Value",
       "value": 0,
-      "writeback": true
+      "writeback": true,
+      "minimum": -1
     }
   },
   "methods": {

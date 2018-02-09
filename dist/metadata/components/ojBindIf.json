@@ -1,8 +1,8 @@
 {
-  "name": "ojBindIf",
-  "version": "4.1.0",
-  "jetVersion": "4.1.0",
-  "displayName": " Bind If",
+  "name": "oj-bind-if",
+  "version": "4.2.0",
+  "jetVersion": "4.2.0",
+  "displayName": "Bind If",
   "preview": true,
   "description": "ojBindIf",
   "properties": {

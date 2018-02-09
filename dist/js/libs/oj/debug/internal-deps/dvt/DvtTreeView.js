@@ -6425,7 +6425,7 @@ dvt.Sunburst.prototype.__endRotation = function() {
  */
 dvt.Sunburst.prototype.SetOptions = function(options) {
   dvt.Sunburst.superclass.SetOptions.call(this, options);
-  if (this.Options['expanded'] != 'all') {
+  if (this.Options['expanded'] instanceof Array) { // not a KeySet or 'all'
     this.Options['_expandedNodes'] = dvt.ArrayUtils.createBooleanMap(this.Options['expanded']);
   }
 };
@@ -6449,13 +6449,18 @@ dvt.Sunburst.prototype.expandCollapseNode = function(id) {
     expanded = allNodes;
   }
 
-  if (bDisclosed)
-    expanded.push(id);
-  else {
-    var index = expanded.indexOf(id);
-    if (index > -1)
-      expanded.splice(index, 1);
+  if (expanded instanceof Array) {
+    if (bDisclosed)
+      expanded.push(id);
+    else {
+      var index = expanded.indexOf(id);
+      if (index > -1)
+        expanded.splice(index, 1);
+    }
   }
+  else if (expanded['has']) // key set
+    expanded = bDisclosed ? expanded['add']([id]) : expanded['delete']([id]);
+
   this.dispatchEvent(new dvt.EventFactory.newSunburstExpandCollapseEvent(bDisclosed ? 'expand' : 'collapse', id, DvtTreeUtils.findRootAndAncestors(this.getOptions()['_nodes'], id, [])['root'], this.getOptions()['_widgetConstructor'], expanded));
   this.__setNavigableIdToFocus(id);
 };
@@ -6604,9 +6609,7 @@ var DvtSunburstNode = function(sunburst, props)
   var sunburstOptions = this._view.getOptions();
   var nodeDefaults = sunburstOptions['nodeDefaults'];
   this._labelDisplay = props['labelDisplay'] ? props['labelDisplay'] : nodeDefaults['labelDisplay'];
-  var expanded = sunburstOptions['expanded'];
-  if (!props['bArtificialRoot'] && !props['_expanded'] && expanded != 'all' && !dvt.ArrayUtils.hasAnyMapItem(sunburstOptions['_expandedNodes'], [props['id']]))
-    this.setDisclosed(false);
+  this._evaluateExpanded(sunburst, props);
   this._labelHalign = props['labelHalign'] ? props['labelHalign'] : nodeDefaults['labelHalign'];
 
   this._radius = props['radius'];
@@ -7943,6 +7946,25 @@ DvtSunburstNode.prototype._removeRootNodeContentOverlay = function() {
   if (existingOverlay)
     sunburst.getCtx().getContainer().removeChild(existingOverlay);
   sunburst.rootNodeContent = null;
+};
+
+/**
+ * Sets disclosure to false if this node's id is not contained the expanded array/keySet
+ * @param {dvt.Sunburst} sunburst The owning sunburst component.
+ * @param {object} props The properties for the node.
+ * @private
+ */
+DvtSunburstNode.prototype._evaluateExpanded = function(sunburst, props) {
+  var options = sunburst.getOptions();
+  var expanded = options['expanded'];
+  if (!props['bArtificialRoot'] && !props['_expanded']) {
+    if (expanded['has']) { // key set
+      if (!expanded['has'](props['id']))
+        this.setDisclosed(false);
+    }
+    else if (expanded instanceof Array && !dvt.ArrayUtils.hasAnyMapItem(options['_expandedNodes'], [props['id']]))
+      this.setDisclosed(false);
+  }
 };
 /**
  * Layout class for sunbursts.

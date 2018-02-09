@@ -1,4 +1,4 @@
-// Copyright (c) 2014, 2017, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// Copyright (c) 2014, 2018, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
 
 // helpers
 @import "../common/helpers/oj.common.helpers";
@@ -73,6 +73,7 @@
 @import "widgets/oj.alta.android.messaging";
 @import "widgets/oj.alta.android.formcontrol.label";
 @import "widgets/oj.alta.android.formcontrol.common";
+@import "widgets/oj.alta.android.formcontrol.formlayout";
 @import "widgets/oj.alta.android.formcontrol.inputtext";
 @import "widgets/oj.alta.android.formcontrol.inputpassword";
 @import "widgets/oj.alta.android.formcontrol.textarea";
@@ -88,6 +89,7 @@
 @import "widgets/oj.alta.android.formcontrol.slider";
 @import "widgets/oj.alta.android.formcontrol.colorpalette";
 @import "widgets/oj.alta.android.formcontrol.colorspectrum";
+@import "widgets/oj.alta.android.formcontrol.validationgroup";
 // mostly used by form controls
 @import "widgets/oj.alta.android.option";
 

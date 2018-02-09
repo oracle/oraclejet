@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2014, 2017, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
@@ -274,9 +274,28 @@ oj.DefaultNavListHandler.prototype.IsOptionUpdateAllowed = function (key, value,
 oj.DefaultNavListHandler.prototype.OptionUpdated = function(key, value, flags) {
   
 };
-
+/**
+ * Invoked before inserting an item in to nav list
+ * @protected
+ */
 oj.DefaultNavListHandler.prototype.BeforeInsertItem = function () {
 
+};
+
+/**
+ * Invoked when click event fired
+ * @protected
+ */
+oj.DefaultNavListHandler.prototype.HandleClick = function(event) {
+  
+};
+
+/**
+ * Invoked when click event fired
+ * @protected
+ */
+oj.DefaultNavListHandler.prototype.HandleKeydown = function(event) {
+  
 };
 /**
  * Handler for Horizontal Navigation List
@@ -303,7 +322,6 @@ oj.HorizontalNavListHandler.prototype.Destroy = function () {
             .removeClass(this.m_widget.getNavListBottomEdgeStyleClass());
   this.m_root.find('.' + this.m_widget.getDividerStyleClass()).remove();
   
-  this.m_widget.ojContext._off(this.m_widget.ojContext.element, '.overflow');
   this._destroyOverflowMenu();
   
   if(this.m_overflowMenuItem != null) {
@@ -431,25 +449,23 @@ oj.HorizontalNavListHandler.prototype.IsSelectable = function (item) {
 };
 
 oj.HorizontalNavListHandler.prototype.Init = function(opts) {
-  var self = this;
   this.m_root.addClass(this.m_widget.getNavListExpandedStyleClass())
             .addClass(this.m_widget.getHorizontalNavListStyleClass());
-  this.m_widget.ojContext._on(this.m_widget.ojContext.element, {
-    "click" : function(event) {
-      if($(event.target).closest("." + self.m_widget.getOverflowItemStyleClass() + " a." + self.m_widget.getItemContentStyleClass()).length > 0) {
-        self._launchOverflowMenu(event);
-      }
-    },
-    "keydown" : function(event) {
-      if($(event.target).closest("." + self.m_widget.getOverflowItemStyleClass() + " a." + self.m_widget.getItemContentStyleClass()).length > 0) {
-        if (event.keyCode === $.ui.keyCode.SPACE) {
-          self._launchOverflowMenu(event);
-        }  
-      }
-    }
-  });
-
   this.m_overflowMenuItems = [];
+};
+
+oj.HorizontalNavListHandler.prototype.HandleClick = function (event) {
+  if ($(event.target).closest("." + this.m_widget.getOverflowItemStyleClass() + " a." + this.m_widget.getItemContentStyleClass()).length > 0) {
+    this._launchOverflowMenu(event);
+  }
+};
+
+oj.HorizontalNavListHandler.prototype.HandleKeydown = function (event) {
+  if ($(event.target).closest("." + this.m_widget.getOverflowItemStyleClass() + " a." + this.m_widget.getItemContentStyleClass()).length > 0) {
+    if (event.keyCode === $.ui.keyCode.SPACE) {
+      this._launchOverflowMenu(event);
+    }
+  }
 };
 
 oj.HorizontalNavListHandler.prototype.NotifyAttached = function() {
@@ -927,6 +943,7 @@ oj.HorizontalNavListHandler.prototype._getItemLabel = function(item) {
  * Overflow handler for horizontal navigation list
  * @constructor
  * @ignore
+ * @private
  */
 oj._HorizontalNavListOverflowHandler = function (items, overflow, truncation, navlistHandler) {
   this._overflow = overflow;
@@ -979,7 +996,6 @@ oj._HorizontalNavListOverflowHandler.prototype.applyTruncation = function () {
 oj._HorizontalNavListOverflowHandler.prototype.getOverflowThreshold = function () {
   var threshold = -1;
   if (this._overflow === "popup") {
-    this.unApplyTruncation();
     threshold = this._calculateThreshold(this._overflowData);
   }
   return threshold;
@@ -1420,34 +1436,32 @@ oj.SlidingNavListHandler.prototype.BeforeRenderComplete = function () {
 };
 
 oj.SlidingNavListHandler.prototype.Init = function (opts) {
-  var self =  this;
-  this.m_widget.ojContext._on(this.m_widget.ojContext.element, {
-    "click": function(event) {
-      if ($(event.target).closest('.oj-navigationlist-previous-link, .oj-navigationlist-previous-button').length > 0) {
-        self.CollapseCurrentList(event);
-      }
-    },
-    "keydown": function(event) {
-      if ($(event.target).closest('.oj-navigationlist-previous-link, .oj-navigationlist-previous-button').length > 0) {
-        if (event.keyCode === $.ui.keyCode.ENTER) {
-          self.CollapseCurrentList(event);
-        }
-      }
-
-      if ($(event.target).closest('.' + self.m_widget.GetStyleClass()).length > 0) {
-        //check for default prevented as it might have already processed for quiting f2 mode
-        if (event.keyCode === $.ui.keyCode.ESCAPE && !event.isDefaultPrevented()) {
-          self.CollapseCurrentList(event);
-        }
-      }
-    }
-  });
-
   this.m_root.addClass('oj-navigationlist-slider')
               .addClass(this.m_widget.getNavListVerticalStyleClass());
   opts.element.addClass('oj-navigationlist-current');
   this._buildSlidingNavListHeader(opts);
   this._initializeHierarchicalView();
+};
+
+oj.SlidingNavListHandler.prototype.HandleClick = function (event) {
+  if ($(event.target).closest('.oj-navigationlist-previous-link, .oj-navigationlist-previous-button').length > 0) {
+    this.CollapseCurrentList(event);
+  }
+};
+
+oj.SlidingNavListHandler.prototype.HandleKeydown = function (event) {
+  if ($(event.target).closest('.oj-navigationlist-previous-link, .oj-navigationlist-previous-button').length > 0) {
+    if (event.keyCode === $.ui.keyCode.ENTER) {
+      this.CollapseCurrentList(event);
+    }
+  }
+
+  if ($(event.target).closest('.' + this.m_widget.GetStyleClass()).length > 0) {
+    //check for default prevented as it might have already processed for quiting f2 mode
+    if (event.keyCode === $.ui.keyCode.ESCAPE && !event.isDefaultPrevented()) {
+      this.CollapseCurrentList(event);
+    }
+  }
 };
 /**
  * Initialize sliding navigation list header .
@@ -2065,7 +2079,8 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
      * @override
      */
     GetDnDContext: function(){
-      if (typeof oj.NavigationListDndContext != "undefined")
+      if (typeof oj.NavigationListDndContext != "undefined" && 
+              this.ojContext.element[0].tagName.toLowerCase() === this.TAG_NAME_TAB_BAR)
       {
         return new oj.NavigationListDndContext(this);
       }
@@ -2118,11 +2133,6 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
         "focusable": this._focusable
       }, navlistOptions['item']);
 
-      if (navlistOptions.ojContext.element[0].tagName.toLowerCase() === this.TAG_NAME_TAB_BAR
-              && navlistOptions['reorderable'] === 'enabled') {
-        opts["dnd"] = {"reorder": {"items": 'enabled'}};
-      }
-      
       opts.element = this._list;
       return opts;
     },
@@ -2231,10 +2241,20 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
      
       _ojNavigationListView.superclass.init.call(this, opts);
       this.element.removeClass('oj-component-initnode');
-      this.ojContext._on(this.ojContext.element, {
+      this.ojContext._on(this.ojContext.element, 
+      {
+        "click": function (event) {
+          self.m_listHandler.HandleClick(event);
+        },
+        
+        "keydown": function (event) {
+          self.m_listHandler.HandleKeydown(event);
+        },
+        
         "mouseup": function (event) {
           self._clearActiveState(event);
         },
+        
         "mouseover": function (event) {
           if($(event.target).closest("a." + self.getItemContentStyleClass()).length > 0) {
             var $itemLink = $(event.target).closest("a." + self.getItemContentStyleClass());
@@ -2246,6 +2266,7 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
             }
           }
         },
+        
         "mouseout": function (event) {
           if($(event.target).closest("a." + self.getItemContentStyleClass()).length > 0) {
             //Remove title attribute on mouseleave.
@@ -2822,7 +2843,7 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
           if (value && value.length > 0) {
             modifiedValue = value[0];
           }
-          this._fireDeselectEvent(context.originalEvent, value, selectedItem);
+          this._fireDeselectEvent(context.originalEvent, selectedItem, value);
         } else {
           modifiedValue = value;
         }
@@ -2892,16 +2913,17 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
       var newSelectionValue;
       if (options['selection'] !== undefined) {
         newSelectionValue = options['selection'];
-        if (!!newSelectionValue) {
+        if (newSelectionValue) {
           var selection = this.GetOption('selection');
           if (!selection || selection.length === 0 || !this.compareValues(selection[0],newSelectionValue)) {
             var item = this.FindElementByKey(newSelectionValue);
-            if (item && this.IsSelectable(item)) {
-              var shouldSelect = this._fireBeforeSelectEvent(null, $(item));
+            if (!item || this.IsSelectable(item)) {
+              var shouldSelect = this._fireBeforeSelectEvent(null, $(item), newSelectionValue);
               if (shouldSelect) {
-                this._fireDeselectEvent(null, newSelectionValue, item);
+                this._fireDeselectEvent(null, item, newSelectionValue);
                 options['selection'] = [newSelectionValue];
-                this._initiateNavigation($(item));
+                if (item)
+                  this._initiateNavigation($(item));
               } else {
                 delete options['selection'];
               }
@@ -2977,8 +2999,10 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
       return this.ojContext.element[0].tagName.toLowerCase() === this.TAG_NAME_TAB_BAR;
     },
     
-    _fireBeforeDeselectEvent: function (event, item) {
-      var key = this.GetKey(item[0]);
+    _fireBeforeDeselectEvent: function (event, item, key) {
+      if (!key)
+        key = this.GetKey(item[0]);
+      
       var fromKey = this.GetOption('selection');
       var fromItem = this.FindElementByKey(fromKey);
       return this.Trigger("beforeDeselect", event, {
@@ -2989,10 +3013,14 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
       });
     },
     
-    _fireBeforeSelectEvent: function (event, item) {
-      var key = this.GetKey(item[0]), beforeDeselect = true;
-      if(this.isTabBar()){
-        beforeDeselect = this._fireBeforeDeselectEvent(event, item);
+    _fireBeforeSelectEvent: function (event, item, key) {
+      var beforeDeselect = true;
+      
+      if (!key)
+        key = this.GetKey(item[0]);
+      
+      if (this.isTabBar()) {
+        beforeDeselect = this._fireBeforeDeselectEvent(event, item, key);
       }
       return beforeDeselect && this.Trigger("beforeSelect", event, {
         'item': item,
@@ -3012,7 +3040,7 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
       });
     },
     
-    _fireDeselectEvent: function(event, key, item){
+    _fireDeselectEvent: function(event, item, key) {
       var fromKey = this.GetOption('selection');
       var fromItem = this.FindElementByKey(fromKey);
       this.Trigger("deselect", event, {
@@ -3921,7 +3949,7 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
        * @memberof oj.ojNavigationList
        * @instance
        * @type {string}
-       * @ojvalue {string} "popup" popup menu will be shown with overflowed items.
+       * @ojvalue {string} "popup" popup menu will be shown with overflowed items. <p> NOTE: Setting <code class="prettyprint">overflow</code> to <code class="prettyprint">popup</code> can trigger browser reflow, so only set it when it is actually required.
        * @ojvalue {string} "hidden" overflow is clipped, and the rest of the content will be invisible.
        * @default hidden
        * @since 3.0.0
@@ -5244,7 +5272,7 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
    * @name overflow
    * @instance
    * @type {string}
-   * @ojvalue {string} "popup" popup menu will be shown with overflowed items.
+   * @ojvalue {string} "popup" popup menu will be shown with overflowed items. <p> NOTE: Setting <code class="prettyprint">overflow</code> to <code class="prettyprint">popup</code> can trigger browser reflow, so only set it when it is actually required.
    * @ojvalue {string} "hidden" overflow is clipped, and the rest of the content will be invisible.
    * @default hidden
    * @ojshortdesc Gets and sets overflow behaviour for Tab bar.

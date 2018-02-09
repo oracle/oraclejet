@@ -1537,7 +1537,9 @@ DvtAxisRenderer._getGroupAxisPreferredSize = function(axis, axisInfo, size, avai
     if (axisInfo.isAutoRotate()) { // performance optimization
       var labelStrings = [];
       var labelStyles = [];
-      for (var i = 0; i < axisInfo.getGroupCount(); i++) {
+      var increment = axisInfo.getSkipIncrement(); // increase performance by only measuring a subset of labels to begin with, as majority will be skipped.
+
+      for (var i = 0; i < axisInfo.getGroupCount(); i += increment) {
         labelStrings.push(axisInfo.getLabelAt(i, 0));
         var style = axisInfo.getLabelStyleAt(i, 0);
         if (!style)
@@ -3459,16 +3461,8 @@ dvt.GroupAxisInfo.prototype._generateLabels = function(context) {
 
   for (var level = 0; level < this._numLevels; level++) {
     var levels = this._levelsArray[level];
-
     // if autoRotate, increase performance by only generating a subset of labels to begin with, as majority will be skipped.
-    var increment = 1;
-    if (autoRotate) {
-      increment = dvt.GroupAxisInfo._ROTATE_THRESHOLD / (2 * groupWidth);
-      if (this.Options['_duringZoomAndScroll']) {
-        increment *= 4;  // during animation, the labels can be more sparse to increase performance
-      }
-      increment = Math.max(1, Math.floor(increment));
-    }
+    var increment = autoRotate ? this.getSkipIncrement() : 1;
 
     for (var i = 0; i < levels.length; i += increment) {
       if (levels[i]) {
@@ -4154,6 +4148,20 @@ dvt.GroupAxisInfo.prototype.isAutoRotate = function() {
   var groupWidth = this.getGroupWidth();
   var rotationEnabled = this.Options['tickLabel']['rotation'] == 'auto' && isHoriz;
   return !isHierarchical && rotationEnabled && groupWidth < dvt.GroupAxisInfo._ROTATE_THRESHOLD;
+};
+
+/**
+ * Returns the number by which labels can be safely skipped to improve performance.
+ * @return {number}
+ */
+dvt.GroupAxisInfo.prototype.getSkipIncrement = function() {
+  // increase performance by only measuring a subset of labels to begin with, as majority will be skipped.
+  var increment = 1;
+  increment = dvt.GroupAxisInfo._ROTATE_THRESHOLD / (2 * this.getGroupWidth());
+  if (this.Options['_duringZoomAndScroll']) {
+    increment *= 4;  // during animation, the labels can be more sparse to increase performance
+  }
+  return Math.max(1, Math.floor(increment));
 };
 /**
  * Simple logical object for tooltip support.

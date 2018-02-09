@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2014, 2017, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
@@ -558,7 +558,8 @@ oj.__registerWidget("oj.ojRadioset", $['oj']['editableValue'],
    */
   Focus : function ()
   {
-    this._GetContentElement().first().focus();
+    // We need :focusable here so that we don't try to focus on an element that isn't focusable.
+    this._GetContentElement().filter(":focusable").first().focus();
     return true;
   },
   /**
@@ -612,12 +613,21 @@ oj.__registerWidget("oj.ojRadioset", $['oj']['editableValue'],
     if (this._IsCustomElement())
     {
       // set the custom renderer on oj-option
-      var options = this.element.children("oj-option");
-      var renderer = this._customOptionRenderer.bind(this);
       var i, len;
+      var renderer = this._customOptionRenderer.bind(this);
+      var options = this.element.children("oj-option");
       for (i = 0, len = options.length; i < len; i++)
       {
         options[i]["customOptionRenderer"] = renderer;
+      }
+
+      // for oj-option that are inside the wrapper (after refresh)
+      options = this.element.children(".oj-radioset-wrapper").find("oj-option");
+      if (options.length > 0) 
+      {
+        for (i = 0, len = options.length; i < len; i++) {
+          options[i]["customOptionRenderer"] = renderer;
+        }
       }
     }        
   },
@@ -625,10 +635,8 @@ oj.__registerWidget("oj.ojRadioset", $['oj']['editableValue'],
   _customOptionRenderer : function (elem)
   {
     var span;
-    var radio;
     var label;
     var ojoption = elem;
-    var needsDom = (ojoption.parentNode.nodeName == "OJ-RADIOSET");
 
     // let's make sure that each oj-option has an ID so the
     // label element can reference the input element via the 'for' attribute
@@ -636,11 +644,13 @@ oj.__registerWidget("oj.ojRadioset", $['oj']['editableValue'],
     
     var id = ojoption.getAttribute("id");
     var radioId = id+"|rb";
+    var radio = document.getElementById(radioId);;
+    var alreadyProcessed = (radio !== null); // Was the oj-option already rendered
 
-    // check to see if we've already rendered the additional dom or not
+    // check to see if we've already processed the oj-option dom or not
     // in the code below, we use setAttribute() for everything as we want to be
     // setting the initial value for these elements.
-    if (needsDom)
+    if (!alreadyProcessed)
     {
       span = document.createElement("span");
       radio = document.createElement("input");
@@ -654,12 +664,7 @@ oj.__registerWidget("oj.ojRadioset", $['oj']['editableValue'],
       span.appendChild(radio);
       span.appendChild(label);
     }
-    else // we already rendered the dom, just locate the radio
-    {
-      radio = document.getElementById(radioId);
-    }
 
-    var value = ojoption.value;
     var name = this.element[0].id; // Use the id of the ojradioset as the name for the oj-options.
     var ariaLabel = ojoption.getAttribute("aria-label");
     var ariaLabelledBy = ojoption.getAttribute("aria-labelledby")
@@ -690,7 +695,10 @@ oj.__registerWidget("oj.ojRadioset", $['oj']['editableValue'],
     else
       radio.removeAttribute("disabled");
     
-    if (!needsDom)
+    // When an oj-option child is disabled (by setting the disabled attribute to
+    // true) and it re-renders, the component should refresh automatically rather than requiring the
+    // user to call refresh. See .   
+    if (alreadyProcessed)
     {
       $(radio)._ojRadioCheckbox("option", "disabled", ojoption.disabled);
     }

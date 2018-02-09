@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2014, 2017, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
@@ -11,7 +11,8 @@ define(['ojs/ojcore', 'knockout', 'ojs/ojmodel'], function(oj, ko)
  */
 
 /**
- * @class Utility methods for blending Knockout observables with the data model
+ * @class oj.KnockoutUtils
+ * @classdesc Utility methods for blending Knockout observables with the data model
  * @export
  */
 oj.KnockoutUtils = function () {};

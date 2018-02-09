@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2014, 2017, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
@@ -25,8 +25,10 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore', 'ojs/ojanimati
 /**
  * @ojcomponent oj.ojCollapsible
  * @augments oj.baseComponent
+ * @ojtsimport ojanimation
  * @since 0.6
  * @ojstatus preview
+ * @ojshortdesc Displays a header that can be expanded to show its content.
  *
  * @classdesc
  * <h3 id="collapsibleOverview-section">
@@ -86,10 +88,11 @@ The child element of the oj-collapsible in the named <a href="#header">header</a
        * Specifies if the content is expanded.
        *
        * @expose
-       * @memberof! oj.ojCollapsible
+       * @memberof oj.ojCollapsible
        * @instance
+       * @ojshortdesc Specifies if the content is expanded.
        * @type {boolean}
-       * @default <code class="prettyprint">false</code>
+       * @default false
        * @ojwriteback
        *
        * @example <caption>Initialize the collapsible with the <code class="prettyprint">expanded</code> attribute specified:</caption>
@@ -107,10 +110,11 @@ The child element of the oj-collapsible in the named <a href="#header">header</a
       /**
        * Disables the collapsible if set to <code class="prettyprint">true</code>.
        * @name disabled
-       * @memberof! oj.ojCollapsible
+       * @memberof oj.ojCollapsible
        * @instance
+       * @ojshortdesc Disables the collapsible if set to true.
        * @type {boolean}
-       * @default <code class="prettyprint">false</code>
+       * @default false
        * @example <caption>Initialize the collapsible with the <code class="prettyprint">disabled</code> attribute specified:</caption>
        * &lt;oj-collapsible disabled='true'>&lt;/oj-collapsible>
        *
@@ -128,11 +132,12 @@ The child element of the oj-collapsible in the named <a href="#header">header</a
        * To expand the collapsible on hover, use "mouseover".
        *
        * @ignore
+       * @ojtsignore
        * @expose
-       * @memberof! oj.ojCollapsible
+       * @memberof oj.ojCollapsible
        * @instance
        * @type {string}
-       * @default <code class="prettyprint">"click"</code>
+       * @default "click"
        */
       expandOn : "click",
 
@@ -140,12 +145,13 @@ The child element of the oj-collapsible in the named <a href="#header">header</a
        * Where in the header to click to toggle disclosure.
        *
        * @expose
-       * @memberof! oj.ojCollapsible
+       * @memberof oj.ojCollapsible
        * @instance
+       * @ojshortdesc Where in the header to click to toggle disclosure.
        * @type {string}
        * @ojvalue {string} "header" click any where in the header to toggle disclosure
        * @ojvalue {string} "disclosureIcon" click the disclosureIcon to toggle disclosure
-       * @default <code class="prettyprint">"header"</code>
+       * @default "header"
        *
        * @example <caption>Initialize the collapsible with the <code class="prettyprint">expand-area</code> attribute specified:</caption>
        * &lt;oj-collapsible expand-area='disclosureIcon'>&lt;/oj-collapsible>
@@ -168,6 +174,9 @@ The child element of the oj-collapsible in the named <a href="#header">header</a
        * @event
        * @memberof oj.ojCollapsible
        * @instance
+       * @ojshortdesc Triggered immediately before the collapsible is expanded.
+       * @ojcancelable
+       * @ojbubbles
        * @property {Element} header The header that is about to be expanded.
        * @property {Element} content The content that is about to be expanded.
        */
@@ -180,6 +189,8 @@ The child element of the oj-collapsible in the named <a href="#header">header</a
        * @event
        * @memberof oj.ojCollapsible
        * @instance
+       * @ojshortdesc Triggered immediately after the collapsible is expanded.
+       * @ojbubbles
        * @property {Element} header The header that was just expanded.
        * @property {Element} content The content that was just expanded.
        */
@@ -193,6 +204,9 @@ The child element of the oj-collapsible in the named <a href="#header">header</a
        * @event
        * @memberof oj.ojCollapsible
        * @instance
+       * @ojshortdesc Triggered immediately before the collapsible is collapsed.
+       * @ojcancelable
+       * @ojbubbles
        * @property {Element} header The header that is about to be collapsed.
        * @property {Element} content The content that is about to be collapsed.
        */
@@ -205,6 +219,8 @@ The child element of the oj-collapsible in the named <a href="#header">header</a
        * @event
        * @memberof oj.ojCollapsible
        * @instance
+       * @ojshortdesc Triggered immediately after the collapsible is collapsed.
+       * @ojbubbles
        * @property {Element} header The header that was just collapsed.
        * @property {Element} content The content that was just collapsed.
        */
@@ -212,6 +228,12 @@ The child element of the oj-collapsible in the named <a href="#header">header</a
 
     },
 
+    /**
+     * @memberof oj.ojCollapsible
+     * @instance
+     * @protected
+     * @override
+     */
     _ComponentCreate : function ()
     {
       this._super();
@@ -234,6 +256,10 @@ The child element of the oj-collapsible in the named <a href="#header">header</a
 
     },
 
+    /**
+     * @memberof oj.ojCollapsible
+     * @private
+     */
     _createEventObject : function (element, type)
     {
       return {
@@ -244,7 +270,13 @@ The child element of the oj-collapsible in the named <a href="#header">header</a
       };
     },
 
-    // Override to set custom launcher
+    /**
+     * @memberof oj.ojCollapsible
+     * @param {Object} menu The JET Menu to open as a context menu
+     * @param {Event} event What triggered the menu launch
+     * @param {string} eventType "mouse", "touch", "keyboard"
+     * @private
+     */
     _NotifyContextMenuGesture: function(menu, event, eventType)
     {
       // Setting the launcher to the "twisty" icon, since that seems to be the only tabbable thing in the collapsible,
@@ -253,6 +285,10 @@ The child element of the oj-collapsible in the named <a href="#header">header</a
       this._OpenContextMenu(event, eventType, {"launcher": this._getCollapsibleIcon().first()});
     },
 
+    /**
+     * @memberof oj.ojCollapsible
+     * @private
+     */
     _createIcons : function ()
     {
       var options = this.options;
@@ -265,6 +301,10 @@ The child element of the oj-collapsible in the named <a href="#header">header</a
 
     },
 
+    /**
+     * @memberof oj.ojCollapsible
+     * @private
+     */
     _destroyIcons : function ()
     {
       this.header
@@ -272,6 +312,11 @@ The child element of the oj-collapsible in the named <a href="#header">header</a
         .remove();
     },
 
+    /**
+     * @memberof oj.ojCollapsible
+     * @override
+     * @private
+     */
     _destroy : function ()
     {
       // - ojcollapsible should resolve busy state when it's destroyed
@@ -320,6 +365,10 @@ The child element of the oj-collapsible in the named <a href="#header">header</a
         });
     },
 
+    /**
+     * @memberof oj.ojCollapsible
+     * @private
+     */
     _cleanup : function ()
     {
       //remove listeners
@@ -336,11 +385,19 @@ The child element of the oj-collapsible in the named <a href="#header">header</a
 
     },
 
+    /**
+     * @memberof oj.ojCollapsible
+     * @private
+     */
     _isDisabled : function ()
     {
       return this.element.hasClass("oj-disabled");
     },
 
+    /**
+     * @memberof oj.ojCollapsible
+     * @private
+     */
     _getExpandAreaSelector : function ()
     {
       if (this.options.expandArea == "header")
@@ -349,12 +406,20 @@ The child element of the oj-collapsible in the named <a href="#header">header</a
         return "> .oj-collapsible-header > .oj-collapsible-header-icon";
     },
 
+    /**
+     * @memberof oj.ojCollapsible
+     * @private
+     */
     _getCollapsibleIcon : function ()
     {
       return this.header.find(".oj-collapsible-header-icon");
     },
 
-
+    /**
+     * @memberof oj.ojCollapsible
+     * @override
+     * @private
+     */
     _setOption : function (key, value, flags)
     {
       if (key === "expanded")
@@ -395,6 +460,10 @@ The child element of the oj-collapsible in the named <a href="#header">header</a
 
     },
 
+    /**
+     * @memberof oj.ojCollapsible
+     * @private
+     */
     _keydown : function (event)
     {
       if (event.altKey || event.ctrlKey)
@@ -433,8 +502,12 @@ The child element of the oj-collapsible in the named <a href="#header">header</a
       this._refresh();
     },
 
-    // Make sure the header slot is the first child of the root element
-    // If the slot header is not specified, it will create one with empty text
+    /**
+     * Make sure the header slot is the first child of the root element
+     * If the slot header is not specified, it will create one with empty text
+     * @memberof oj.ojCollapsible
+     * @private
+     */
     _processHeaderSlots: function() {
       var self = this;
       var elem = this.element[0];
@@ -475,8 +548,12 @@ The child element of the oj-collapsible in the named <a href="#header">header</a
       return $(header);
     },
 
-    // Make sure the default slots are the last child of the root element
-    // If there are multiple default slots, combine them
+    /**
+     * Make sure the default slots are the last child of the root element
+     * If there are multiple default slots, combine them
+     * @memberof oj.ojCollapsible
+     * @private
+     */
     _processDefaultSlots: function() {
       var self = this;
       var elem = this.element[0];
@@ -503,6 +580,10 @@ The child element of the oj-collapsible in the named <a href="#header">header</a
       return $(content);
     },
 
+    /**
+     * @memberof oj.ojCollapsible
+     * @private
+     */
     _processPanels : function ()
     {
       //process header
@@ -543,6 +624,7 @@ The child element of the oj-collapsible in the named <a href="#header">header</a
     /**
      * Used for explicit cases where the component needs to be refreshed
      * (e.g., when the value option changes or other UI gestures).
+     * @memberof oj.ojCollapsible
      * @private
      */
     _refresh : function ()
@@ -598,6 +680,10 @@ The child element of the oj-collapsible in the named <a href="#header">header</a
       this._setupEvents();
     },
 
+    /**
+     * @memberof oj.ojCollapsible
+     * @private
+     */
     _setupEvents : function ()
     {
       var events =
@@ -648,6 +734,10 @@ The child element of the oj-collapsible in the named <a href="#header">header</a
       }
     },
 
+    /**
+     * @memberof oj.ojCollapsible
+     * @private
+     */
     _tearDownEvents : function ()
     {
       var expandArea = this.element.find(this._getExpandAreaSelector());
@@ -662,6 +752,10 @@ The child element of the oj-collapsible in the named <a href="#header">header</a
       this._off(this.element.add(this.content));
     },
 
+    /**
+     * @memberof oj.ojCollapsible
+     * @private
+     */
     _toggleHandler : function (event)
     {
       if (this._isDisabled() || event.isDefaultPrevented())
@@ -680,6 +774,10 @@ The child element of the oj-collapsible in the named <a href="#header">header</a
 
     },
 
+    /**
+     * @memberof oj.ojCollapsible
+     * @private
+     */
     _calcEffectTime: function(jelem) {
       var propertyStr = jelem.css('transitionProperty');
       var delayStr = jelem.css('transitionDelay');
@@ -708,6 +806,10 @@ The child element of the oj-collapsible in the named <a href="#header">header</a
       return maxTime + 100;  
     },
 
+    /**
+     * @memberof oj.ojCollapsible
+     * @private
+     */
     _resolveTransition : function(wrapper) {
       var self = this;
 
@@ -716,6 +818,10 @@ The child element of the oj-collapsible in the named <a href="#header">header</a
       }, self._calcEffectTime(wrapper));
     },
 
+    /**
+     * @memberof oj.ojCollapsible
+     * @private
+     */
     _expandCollapseHandler : function (event)
     {
       if (this._isDisabled())
@@ -818,6 +924,10 @@ The child element of the oj-collapsible in the named <a href="#header">header</a
       }
     },
 
+    /**
+     * @memberof oj.ojCollapsible
+     * @private
+     */
     _focusHandler : function (event)
     {
       if (this._isDisabled())
@@ -841,11 +951,19 @@ The child element of the oj-collapsible in the named <a href="#header">header</a
       }
     },
 
+    /**
+     * @memberof oj.ojCollapsible
+     * @private
+     */
     _findFirstFocusableInHeader : function ()
     {
       return this._findFocusables(this.header).first();
     },
 
+    /**
+     * @memberof oj.ojCollapsible
+     * @private
+     */
     _findFocusables : function (start)
     {
       //create <span> or <a> depending on if this.isDisabled
@@ -864,7 +982,8 @@ The child element of the oj-collapsible in the named <a href="#header">header</a
      *
      * @expose
      * @ignore
-     * @memberof! oj.ojCollapsible
+     * @ojtsignore
+     * @memberof oj.ojCollapsible
      * @instance
      * @param {boolean} vetoable if event is vetoable
      */
@@ -896,7 +1015,8 @@ The child element of the oj-collapsible in the named <a href="#header">header</a
      *
      * @expose
      * @ignore
-     * @memberof! oj.ojCollapsible
+     * @ojtsignore
+     * @memberof oj.ojCollapsible
      * @instance
      * @param {boolean} vetoable if event is vetoable
      */
@@ -919,6 +1039,10 @@ The child element of the oj-collapsible in the named <a href="#header">header</a
       }
     },
 
+    /**
+     * @memberof oj.ojCollapsible
+     * @private
+     */
     _transitionEndHandler : function (event)
     {
       //ignore event if not for this collapsible
@@ -970,6 +1094,10 @@ The child element of the oj-collapsible in the named <a href="#header">header</a
 
     },
 
+    /**
+     * @memberof oj.ojCollapsible
+     * @private
+     */
     _resolveBusyContext : function ()
     {
       // resolve/remove the component busy state
@@ -979,6 +1107,10 @@ The child element of the oj-collapsible in the named <a href="#header">header</a
       }
     },
 
+    /**
+     * @memberof oj.ojCollapsible
+     * @private
+     */
     _afterExpandCollapse : function (isExpanded, event)
     {
       var element = this.element,
@@ -1038,7 +1170,7 @@ The child element of the oj-collapsible in the named <a href="#header">header</a
 
     /**
      * @param {boolean} value
-     *
+     * @memberof oj.ojCollapsible
      * @private
      */
     _changeExpandedOption: function(value)
@@ -1201,10 +1333,12 @@ var ojCollapsibleMeta = {
     "expand": {}
   },
   "extension": {
-    _WIDGET_NAME: "ojCollapsible"
+    _WIDGET_NAME: "ojCollapsible",
+    _CONTROLS_SUBTREE_HIDDEN: true
   }
 };
 oj.CustomElementBridge.registerMetadata('oj-collapsible', 'baseComponent', ojCollapsibleMeta);
 oj.CustomElementBridge.register('oj-collapsible', {'metadata': oj.CustomElementBridge.getMetadata('oj-collapsible')});
 })();
+
 });

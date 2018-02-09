@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2014, 2017, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
@@ -218,7 +218,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojtime-base', 'ojs/i
  * @type {string}
  * @ojvalue {string} "auto"
  * @ojvalue {string} "none"
- * @default <code class="prettyprint">"none"</code>
+ * @default "none"
  */
 /**
  * Defines the animation that is shown on initial display.
@@ -229,7 +229,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojtime-base', 'ojs/i
  * @type {string}
  * @ojvalue {string} "auto"
  * @ojvalue {string} "none"
- * @default <code class="prettyprint">"none"</code>
+ * @default "none"
  */
 /**
  * The end time of the timeline. This is required in order for the timeline to properly render.
@@ -238,7 +238,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojtime-base', 'ojs/i
  * @memberof oj.ojTimeline
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * An object with the following properties, used to define a timeline axis. This is required in order for the timeline to properly render.
@@ -247,7 +247,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojtime-base', 'ojs/i
  * @memberof oj.ojTimeline
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used to format the labels of the minor axis. If not specified, the default converter is used. If a single converter is specified, it will be used for all 'scale' values. Otherwise, an object whose keys are 'scale' values that map to the converter instances is expected. See <a href="oj.DateTimeConverterFactory.html">oj.DateTimeConverterFactory</a> for details on creating built-in datetime converters.
@@ -256,7 +256,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojtime-base', 'ojs/i
  * @memberof! oj.ojTimeline
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The default converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) to use for all 'scale' values that do not otherwise have a converter object provided. See <a href="oj.DateTimeConverterFactory.html">oj.DateTimeConverterFactory</a> for details on creating built-in datetime converters.
@@ -265,7 +265,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojtime-base', 'ojs/i
  * @memberof! oj.ojTimeline
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used for the 'seconds' scale. If not specified, the default converter will be used for this scale. See <a href="oj.DateTimeConverterFactory.html">oj.DateTimeConverterFactory</a> for details on creating built-in datetime converters.
@@ -274,7 +274,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojtime-base', 'ojs/i
  * @memberof! oj.ojTimeline
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used for the 'minutes' scale. If not specified, the default converter will be used for this scale. See <a href="oj.DateTimeConverterFactory.html">oj.DateTimeConverterFactory</a> for details on creating built-in datetime converters.
@@ -283,7 +283,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojtime-base', 'ojs/i
  * @memberof! oj.ojTimeline
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used for the 'hours' scale. If not specified, the default converter will be used for this scale. See <a href="oj.DateTimeConverterFactory.html">oj.DateTimeConverterFactory</a> for details on creating built-in datetime converters.
@@ -292,7 +292,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojtime-base', 'ojs/i
  * @memberof! oj.ojTimeline
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used for the 'days' scale. If not specified, the default converter will be used for this scale. See <a href="oj.DateTimeConverterFactory.html">oj.DateTimeConverterFactory</a> for details on creating built-in datetime converters.
@@ -301,7 +301,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojtime-base', 'ojs/i
  * @memberof! oj.ojTimeline
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used for the 'weeks' scale. If not specified, the default converter will be used for this scale. See <a href="oj.DateTimeConverterFactory.html">oj.DateTimeConverterFactory</a> for details on creating built-in datetime converters.
@@ -310,7 +310,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojtime-base', 'ojs/i
  * @memberof! oj.ojTimeline
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used for the 'months' scale. If not specified, the default converter will be used for this scale. See <a href="oj.DateTimeConverterFactory.html">oj.DateTimeConverterFactory</a> for details on creating built-in datetime converters.
@@ -319,7 +319,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojtime-base', 'ojs/i
  * @memberof! oj.ojTimeline
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used for the 'quarters' scale. If not specified, the default converter will be used for this scale. See <a href="oj.DateTimeConverterFactory.html">oj.DateTimeConverterFactory</a> for details on creating built-in datetime converters.
@@ -328,7 +328,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojtime-base', 'ojs/i
  * @memberof! oj.ojTimeline
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used for the 'years' scale. If not specified, the default converter will be used for this scale. See <a href="oj.DateTimeConverterFactory.html">oj.DateTimeConverterFactory</a> for details on creating built-in datetime converters.
@@ -337,7 +337,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojtime-base', 'ojs/i
  * @memberof! oj.ojTimeline
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The time scale used for the minor axis. This is required in order for the timeline to properly render.
@@ -354,7 +354,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojtime-base', 'ojs/i
  * @ojvalue {string} "months"
  * @ojvalue {string} "quarters"
  * @ojvalue {string} "years"
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The CSS style defining any additional styling of the axis. If not specified, no additional styling will be applied.
@@ -363,7 +363,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojtime-base', 'ojs/i
  * @memberof! oj.ojTimeline
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * An array of strings containing the names of scales used for zooming from longest to shortest. If not specified, the 'scale' specified on the minor axis will be used at all zoom levels.
@@ -372,7 +372,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojtime-base', 'ojs/i
  * @memberof! oj.ojTimeline
  * @instance
  * @type {Array.<string>}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * An object with the following properties, used to define a timeline axis. If not specified, no axis labels will be shown above the minor axis or in the overview.
@@ -381,7 +381,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojtime-base', 'ojs/i
  * @memberof oj.ojTimeline
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used to format the labels of the major axis. If not specified, the default converter is used. If a single converter is specified, it will be used for all 'scale' values. Otherwise, an object whose keys are 'scale' values that map to the converter instances is expected. See <a href="oj.DateTimeConverterFactory.html">oj.DateTimeConverterFactory</a> for details on creating built-in datetime converters.
@@ -390,7 +390,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojtime-base', 'ojs/i
  * @memberof! oj.ojTimeline
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The default converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) to use for all 'scale' values that do not otherwise have a converter object provided. See <a href="oj.DateTimeConverterFactory.html">oj.DateTimeConverterFactory</a> for details on creating built-in datetime converters.
@@ -399,7 +399,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojtime-base', 'ojs/i
  * @memberof! oj.ojTimeline
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used for the 'seconds' scale. If not specified, the default converter will be used for this scale. See <a href="oj.DateTimeConverterFactory.html">oj.DateTimeConverterFactory</a> for details on creating built-in datetime converters.
@@ -408,7 +408,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojtime-base', 'ojs/i
  * @memberof! oj.ojTimeline
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used for the 'minutes' scale. If not specified, the default converter will be used for this scale. See <a href="oj.DateTimeConverterFactory.html">oj.DateTimeConverterFactory</a> for details on creating built-in datetime converters.
@@ -417,7 +417,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojtime-base', 'ojs/i
  * @memberof! oj.ojTimeline
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used for the 'hours' scale. If not specified, the default converter will be used for this scale. See <a href="oj.DateTimeConverterFactory.html">oj.DateTimeConverterFactory</a> for details on creating built-in datetime converters.
@@ -426,7 +426,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojtime-base', 'ojs/i
  * @memberof! oj.ojTimeline
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used for the 'days' scale. If not specified, the default converter will be used for this scale. See <a href="oj.DateTimeConverterFactory.html">oj.DateTimeConverterFactory</a> for details on creating built-in datetime converters.
@@ -435,7 +435,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojtime-base', 'ojs/i
  * @memberof! oj.ojTimeline
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used for the 'weeks' scale. If not specified, the default converter will be used for this scale. See <a href="oj.DateTimeConverterFactory.html">oj.DateTimeConverterFactory</a> for details on creating built-in datetime converters.
@@ -444,7 +444,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojtime-base', 'ojs/i
  * @memberof! oj.ojTimeline
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used for the 'months' scale. If not specified, the default converter will be used for this scale. See <a href="oj.DateTimeConverterFactory.html">oj.DateTimeConverterFactory</a> for details on creating built-in datetime converters.
@@ -453,7 +453,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojtime-base', 'ojs/i
  * @memberof! oj.ojTimeline
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used for the 'quarters' scale. If not specified, the default converter will be used for this scale. See <a href="oj.DateTimeConverterFactory.html">oj.DateTimeConverterFactory</a> for details on creating built-in datetime converters.
@@ -462,7 +462,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojtime-base', 'ojs/i
  * @memberof! oj.ojTimeline
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used for the 'years' scale. If not specified, the default converter will be used for this scale. See <a href="oj.DateTimeConverterFactory.html">oj.DateTimeConverterFactory</a> for details on creating built-in datetime converters.
@@ -471,7 +471,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojtime-base', 'ojs/i
  * @memberof! oj.ojTimeline
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The time scale used for the major axis. If not specified, no axis labels will be shown above the minor axis or in the overview.
@@ -488,7 +488,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojtime-base', 'ojs/i
  * @ojvalue {string} "months"
  * @ojvalue {string} "quarters"
  * @ojvalue {string} "years"
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The CSS style defining any additional styling of the axis. If not specified, no additional styling will be applied.
@@ -497,7 +497,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojtime-base', 'ojs/i
  * @memberof! oj.ojTimeline
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The orientation of the element.
@@ -508,7 +508,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojtime-base', 'ojs/i
  * @type {string}
  * @ojvalue {string} "vertical"
  * @ojvalue {string} "horizontal"
- * @default <code class="prettyprint">"horizontal"</code>
+ * @default "horizontal"
  */
 /**
  * An object with the following properties, used to define a timeline overview. If not specified, no overview will be shown.
@@ -517,7 +517,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojtime-base', 'ojs/i
  * @memberof oj.ojTimeline
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * Specifies whether the overview scrollbar is rendered.
@@ -528,7 +528,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojtime-base', 'ojs/i
  * @type {string}
  * @ojvalue {string} "on"
  * @ojvalue {string} "off"
- * @default <code class="prettyprint">"off"</code>
+ * @default "off"
  */
 /**
  * The CSS style defining any additional styling of the overview. If not specified, no additional styling will be applied.
@@ -537,7 +537,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojtime-base', 'ojs/i
  * @memberof! oj.ojTimeline
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The array of reference objects associated with the timeline. For each reference object, a line is rendered at the specified value. Currently only the first reference object in the array is supported. Any additional objects supplied in the array will be ignored.
@@ -546,7 +546,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojtime-base', 'ojs/i
  * @memberof oj.ojTimeline
  * @instance
  * @type {Array.<object>}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The value of this reference object. If not specified, no reference object will be shown.
@@ -555,7 +555,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojtime-base', 'ojs/i
  * @memberof! oj.ojTimeline
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * An array of strings containing the ids of the initially selected items.
@@ -564,7 +564,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojtime-base', 'ojs/i
  * @memberof oj.ojTimeline
  * @instance
  * @type {Array.<string>}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The type of selection behavior that is enabled on the timeline. If 'single' is specified, only a single item across all series can be selected at once. If 'multiple', any number of items across all series can be selected at once. Otherwise, selection is disabled.
@@ -576,7 +576,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojtime-base', 'ojs/i
  * @ojvalue {string} "single"
  * @ojvalue {string} "multiple"
  * @ojvalue {string} "none"
- * @default <code class="prettyprint">"none"</code>
+ * @default "none"
  */
 /**
  * An array of objects with the following properties, used to define a timeline series. Also accepts a Promise or callback function for deferred data rendering. The function should return one of the following:    <ul> <li>Promise: A Promise that will resolve with an array of data items. No data will be rendered if the Promise is rejected.</li> <li>Array: An array of data items.</li> </ul>
@@ -585,7 +585,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojtime-base', 'ojs/i
  * @memberof oj.ojTimeline
  * @instance
  * @type {Array.<object>|Promise}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The text of an empty timeline series.
@@ -594,7 +594,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojtime-base', 'ojs/i
  * @memberof! oj.ojTimeline
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The identifier for the timeline series.
@@ -603,7 +603,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojtime-base', 'ojs/i
  * @memberof! oj.ojTimeline
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The direction in which items are laid out when in a horizontal orientation. This attribute is ignored when in a vertical orientation.
@@ -615,7 +615,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojtime-base', 'ojs/i
  * @ojvalue {string} "bottomToTop"
  * @ojvalue {string} "topToBottom"
  * @ojvalue {string} "auto"
- * @default <code class="prettyprint">"auto"</code>
+ * @default "auto"
  */
 /**
  * An array of objects with the following properties, used to define a timeline item. If not specified, no data will be shown in this series.
@@ -624,7 +624,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojtime-base', 'ojs/i
  * @memberof! oj.ojTimeline
  * @instance
  * @type {Array.<object>}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The description text displayed on the timeline item. If not specified, no description will be shown.
@@ -633,7 +633,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojtime-base', 'ojs/i
  * @memberof! oj.ojTimeline
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The end time of this timeline item. If not specified, no duration bar will be shown.
@@ -642,7 +642,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojtime-base', 'ojs/i
  * @memberof! oj.ojTimeline
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The color applied to the duration bar of the timeline item. If not specified, this will be determined by the color ramp of the series.
@@ -651,7 +651,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojtime-base', 'ojs/i
  * @memberof! oj.ojTimeline
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The identifier for the timeline item. This must be unique across all items in the timeline, and is required in order for the timeline to properly render.
@@ -660,7 +660,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojtime-base', 'ojs/i
  * @memberof! oj.ojTimeline
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The start time of this timeline item. This is required in order for the timeline item to properly render.
@@ -669,7 +669,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojtime-base', 'ojs/i
  * @memberof! oj.ojTimeline
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The CSS style defining any additional styling of the item. If not specified, no additional styling will be applied.
@@ -678,7 +678,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojtime-base', 'ojs/i
  * @memberof! oj.ojTimeline
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * An optional URI specifying the location of an image resource to be displayed on the item. The image will be rendered at 32px x 32px in size. If not specified, no thumbnail will be shown.
@@ -687,7 +687,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojtime-base', 'ojs/i
  * @memberof! oj.ojTimeline
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The title text displayed on the timeline item. If not specified, no title will be shown.
@@ -696,7 +696,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojtime-base', 'ojs/i
  * @memberof! oj.ojTimeline
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The label displayed on the timeline series. In not specified, no label will be shown.
@@ -705,7 +705,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojtime-base', 'ojs/i
  * @memberof! oj.ojTimeline
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The CSS style defining any additional styling of the series. If not specified, no additional styling will be applied.
@@ -714,7 +714,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojtime-base', 'ojs/i
  * @memberof! oj.ojTimeline
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The start time of the timeline. This is required in order for the timeline to properly render.
@@ -723,7 +723,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojtime-base', 'ojs/i
  * @memberof oj.ojTimeline
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * An object with the following properties, used to define default styling for the timeline.
@@ -732,7 +732,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojtime-base', 'ojs/i
  * @memberof oj.ojTimeline
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The duration of the animations, in milliseconds. Also accepts CSS strings such as 1s and 1000ms. For data change animations with multiple stages, this attribute defines the duration of each stage. For example, if an animation contains two stages, the total duration will be two times this attribute's value.
@@ -741,7 +741,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojtime-base', 'ojs/i
  * @memberof! oj.ojTimeline
  * @instance
  * @type {number}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The border color of the timeline.
@@ -750,7 +750,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojtime-base', 'ojs/i
  * @memberof! oj.ojTimeline
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * An object with the following properties, used to define the default styling for the timeline item.
@@ -759,7 +759,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojtime-base', 'ojs/i
  * @memberof! oj.ojTimeline
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The background color of the timeline items.
@@ -768,7 +768,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojtime-base', 'ojs/i
  * @memberof! oj.ojTimeline
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The border color of the timeline items.
@@ -777,7 +777,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojtime-base', 'ojs/i
  * @memberof! oj.ojTimeline
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The CSS style defining the style of the timeline item description text.
@@ -786,7 +786,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojtime-base', 'ojs/i
  * @memberof! oj.ojTimeline
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The background color of the highlighted timeline items.
@@ -795,7 +795,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojtime-base', 'ojs/i
  * @memberof! oj.ojTimeline
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The border color of the highlighted timeline items.
@@ -804,7 +804,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojtime-base', 'ojs/i
  * @memberof! oj.ojTimeline
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The background color of the selected timeline items.
@@ -813,7 +813,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojtime-base', 'ojs/i
  * @memberof! oj.ojTimeline
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The border color of the selected timeline items.
@@ -822,7 +822,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojtime-base', 'ojs/i
  * @memberof! oj.ojTimeline
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The CSS style defining the style of the timeline item title text.
@@ -831,7 +831,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojtime-base', 'ojs/i
  * @memberof! oj.ojTimeline
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * An object with the following properties, used to define the default styling for the time axis.
@@ -840,7 +840,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojtime-base', 'ojs/i
  * @memberof! oj.ojTimeline
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The background color of the time axis.
@@ -849,7 +849,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojtime-base', 'ojs/i
  * @memberof! oj.ojTimeline
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The border color of the time axis.
@@ -858,7 +858,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojtime-base', 'ojs/i
  * @memberof! oj.ojTimeline
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The CSS style defining the style of the time axis label text.
@@ -867,7 +867,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojtime-base', 'ojs/i
  * @memberof! oj.ojTimeline
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The color of the time axis separators.
@@ -876,7 +876,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojtime-base', 'ojs/i
  * @memberof! oj.ojTimeline
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * An object with the following properties, used to define the default styling for the major time axis.
@@ -885,7 +885,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojtime-base', 'ojs/i
  * @memberof! oj.ojTimeline
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The CSS style defining the style of the major time axis label text.
@@ -894,7 +894,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojtime-base', 'ojs/i
  * @memberof! oj.ojTimeline
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The color of the major time axis separators.
@@ -903,7 +903,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojtime-base', 'ojs/i
  * @memberof! oj.ojTimeline
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * An object with the following properties, used to define the default styling for the timeline overview.
@@ -912,7 +912,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojtime-base', 'ojs/i
  * @memberof! oj.ojTimeline
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The background color of the timeline overview.
@@ -921,7 +921,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojtime-base', 'ojs/i
  * @memberof! oj.ojTimeline
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The CSS style defining the style of the timeline overview label text.
@@ -930,7 +930,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojtime-base', 'ojs/i
  * @memberof! oj.ojTimeline
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * An object with the following properties, used to define the default styling for the timeline overview window.
@@ -939,7 +939,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojtime-base', 'ojs/i
  * @memberof! oj.ojTimeline
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The background color of the timeline overview window.
@@ -948,7 +948,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojtime-base', 'ojs/i
  * @memberof! oj.ojTimeline
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The border color of the timeline overview window.
@@ -957,7 +957,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojtime-base', 'ojs/i
  * @memberof! oj.ojTimeline
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * An object with the following properties, used to define the default styling for the reference objects.
@@ -966,7 +966,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojtime-base', 'ojs/i
  * @memberof! oj.ojTimeline
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The color of the reference objects.
@@ -975,7 +975,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojtime-base', 'ojs/i
  * @memberof! oj.ojTimeline
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * An object with the following properties, used to define the default styling for the timeline series.
@@ -984,7 +984,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojtime-base', 'ojs/i
  * @memberof! oj.ojTimeline
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The background color of the series.
@@ -993,7 +993,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojtime-base', 'ojs/i
  * @memberof! oj.ojTimeline
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The array defining the default color ramp for the series items.
@@ -1002,7 +1002,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojtime-base', 'ojs/i
  * @memberof! oj.ojTimeline
  * @instance
  * @type {Array.<string>}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The CSS style defining the style of the series empty text.
@@ -1011,7 +1011,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojtime-base', 'ojs/i
  * @memberof! oj.ojTimeline
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The CSS style defining the style of the series label text.
@@ -1020,7 +1020,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojtime-base', 'ojs/i
  * @memberof! oj.ojTimeline
  * @instance
  * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The end time of the timeline's viewport. If not specified, this will default to a value determined by the initial 'scale' of the minor axis and the width of the timeline.
@@ -1029,7 +1029,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojtime-base', 'ojs/i
  * @memberof oj.ojTimeline
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The start time of the timeline's viewport. If not specified, this will default to a value determined by the initial 'scale' of the minor axis and the width of the timeline.
@@ -1038,7 +1038,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojtime-base', 'ojs/i
  * @memberof oj.ojTimeline
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 
 // SubId Locators **************************************************************
@@ -1069,7 +1069,9 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojtime-base', 'ojs/i
  */
 /**
  * @ojcomponent oj.ojTimeline
+ * @ojdisplayname Timeline
  * @augments oj.dvtTimeComponent
+ * @ojrole application
  * @since 1.1.0
  * @ojstatus preview
  *
@@ -1172,7 +1174,7 @@ oj.__registerWidget('oj.ojTimeline', $['oj']['dvtTimeComponent'],
     viewportChange: null
   },
 
-  //** @inheritdoc */
+  //@inheritdoc
   _CreateDvtComponent: function(context, callback, callbackObj)
   {
     return dvt.Timeline.newInstance(context, callback, callbackObj);
@@ -1219,7 +1221,7 @@ oj.__registerWidget('oj.ojTimeline', $['oj']['dvtTimeComponent'],
     return locator;
   },
 
-  //** @inheritdoc */
+  //@inheritdoc
   _ProcessStyles: function()
   {
     this._super();
@@ -1238,7 +1240,7 @@ oj.__registerWidget('oj.ojTimeline', $['oj']['dvtTimeComponent'],
     }
   },
 
-  //** @inheritdoc */
+  //@inheritdoc
   _GetComponentStyleClasses: function()
   {
     var styleClasses = this._super();
@@ -1246,13 +1248,13 @@ oj.__registerWidget('oj.ojTimeline', $['oj']['dvtTimeComponent'],
     return styleClasses;
   },
 
-  //** @inheritdoc */
+  //@inheritdoc
   _GetComponentRendererOptions: function() {
     //the function should be removed if the timeline will support 'tooltip.renderer' attr
     return [];
   },
 
-  //** @inheritdoc */
+  //@inheritdoc
   _GetChildStyleClasses: function()
   {
     var styleClasses = this._super();
@@ -1328,7 +1330,7 @@ oj.__registerWidget('oj.ojTimeline', $['oj']['dvtTimeComponent'],
     return styleClasses;
   },
 
-  //** @inheritdoc */
+  //@inheritdoc
   _GetTranslationMap: function() {
     // The translations are stored on the options object.
     var translations = this.options['translations'];
@@ -1343,7 +1345,7 @@ oj.__registerWidget('oj.ojTimeline', $['oj']['dvtTimeComponent'],
     return ret;
   },
 
-  //** @inheritdoc */
+  //@inheritdoc
   _LoadResources: function() {
     this._super();
 
@@ -1383,7 +1385,7 @@ oj.__registerWidget('oj.ojTimeline', $['oj']['dvtTimeComponent'],
     resources['overviewHandleVert'] = 'oj-timeline-overview-window-handle-vertical';
   },
 
-  //** @inheritdoc */
+  //@inheritdoc
   _GetComponentDeferredDataPaths : function() {
     return {'root': ['series']};
   }

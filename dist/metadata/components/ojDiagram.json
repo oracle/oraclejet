@@ -1,8 +1,8 @@
 {
-  "name": "ojDiagram",
-  "version": "4.1.0",
-  "jetVersion": "4.1.0",
-  "displayName": " Diagram",
+  "name": "oj-diagram",
+  "version": "4.2.0",
+  "jetVersion": "4.2.0",
+  "displayName": "Diagram",
   "preview": true,
   "description": "ojDiagram",
   "properties": {
@@ -267,6 +267,12 @@
         }
       }
     },
+    "expanded": {
+      "description": "Specifies the key set containing the ids of diagram nodes that should be expanded on initial render.",
+      "type": "KeySet",
+      "displayName": "Expanded",
+      "value": "new keySet.ExpandedKeySet()"
+    },
     "focusRenderer": {
       "description": "An optional callback function to update the node in response to changes in keyboard focus state. \nThe function takes a single argument, provided by the component, with the following properties: componentElement: The Diagram element. parentElement: A parent group element that takes a custom SVG fragment as the node content. Modifications of the parentElement are not supported. data: The data object for the node. content: An object that describes child content. The object has the following properties element: an SVG group element that contains child nodes for the container. width: width of the child content. height: height of the child content. state: An object that reflects the current state of the diagram node. The object has the following properties hovered: hovered state, boolean. selected: selected state, boolean. focused: focused state, boolean. zoom: zoom state, number. expanded: expanded state, boolean. previousState: An object that reflects the previous state of the diagram node. The object has the following properties hovered: hovered state, boolean. selected: selected state, boolean. focused: focused state, boolean. zoom: zoom state, number. expanded: expanded state, boolean. id: Node id. type: Object type = node. renderDefaultFocus: Function for rendering default focus effect for the diagram node. renderDefaultHover: Function for rendering default hover effect for the diagram node. renderDefaultSelection: Function for rendering default selection effect for the diagram node. \n\nThe function should return one of the following: An Object with the following property: insert: SVGElement - An SVG element, which will be used as content of a Diagram node. undefined: Indicates that the existing DOM has been directly modified and no further action is required.\n",
       "type": "function",
@@ -358,43 +364,36 @@
       "type": "function",
       "displayName": "Link Properties",
       "value": null,
-      "properties": [
-        {
-          "name": "labelStyle",
+      "properties": {
+        "labelStyle": {
           "description": "The CSS style object defining the style of the link label.",
           "type": "object"
         },
-        {
-          "name": "color",
+        "color": {
           "description": "Link color.",
           "type": "string"
         },
-        {
-          "name": "svgStyle",
+        "svgStyle": {
           "description": "The SVG CSS style object defining link style. The style class and style object will be applied directly on the link and override any other styling specified through the properties.",
           "type": "object"
         },
-        {
-          "name": "svgClassName",
+        "svgClassName": {
           "description": "The SVG CSS style class defining link style. The style class and style object will be applied directly on the link and override any other styling specified through the properties.",
           "type": "string"
         },
-        {
-          "name": "width",
+        "width": {
           "description": "Link width in pixels.",
           "type": "number"
         },
-        {
-          "name": "startConnectorType",
+        "startConnectorType": {
           "description": "Specifies the type of start connector on the link. Supported values are \"arrowOpen\", \"arrow\", \"arrowConcave\", \"circle\", \"rectangle\", \"rectangleRounded\", \"none\". Default value is \"none\".",
           "type": "string"
         },
-        {
-          "name": "endConnectorType",
+        "endConnectorType": {
           "description": "Specifies the type of end connector on the link. Supported values are \"arrowOpen\", \"arrow\", \"arrowConcave\", \"circle\", \"rectangle\", \"rectangleRounded\", \"none\". Default value is \"none\".",
           "type": "string"
         }
-      ]
+      }
     },
     "maxZoom": {
       "description": "Specifies the maximum zoom level for this diagram. This can be any number greater than zero which indicates the maximum point to which Diagram objects can be scaled. A value of 2.0 implies that the Diagram can be zoomed in until Nodes appear at twice their natural size. By default, maxZoom is 1.0.",
@@ -439,100 +438,82 @@
       "type": "function",
       "displayName": "Node Properties",
       "value": null,
-      "properties": [
-        {
-          "name": "showDisclosure",
+      "properties": {
+        "showDisclosure": {
           "description": "Determines when to display the expand/collapse button.Supported values are \"on\", \"off\". Default value is \"on\".",
           "type": "string"
         },
-        {
-          "name": "labelStyle",
+        "labelStyle": {
           "description": "The CSS style object defining the style of the node label.",
           "type": "object"
         },
-        {
-          "name": "icon",
+        "icon": {
           "description": "Specifies an icon to be used as a graphical element for the node",
           "type": "object",
-          "properties": [
-            {
-              "name": "borderColor",
+          "properties": {
+            "borderColor": {
               "description": "The border color of the icon.",
               "type": "string"
             },
-            {
-              "name": "borderRadius",
+            "borderRadius": {
               "description": "The border radius of the icon. CSS border-radius values accepted. Note that non-% values (including unitless) get interpreted as 'px'.",
               "type": "string"
             },
-            {
-              "name": "borderWidth",
+            "borderWidth": {
               "description": "The border width in pixels.",
               "type": "number"
             },
-            {
-              "name": "color",
+            "color": {
               "description": "The fill color of the icon.",
               "type": "string"
             },
-            {
-              "name": "pattern",
+            "pattern": {
               "description": "The fill pattern of the icon.Supported values are \"smallChecker\", \"smallCrosshatch\", \"smallDiagonalLeft\", \"smallDiagonalRight\", \"smallDiamond\", \"smallTriangle\", \"largeChecker\", \"largeCrosshatch\", \"largeDiagonalLeft\", \"largeDiagonalRight\", \"largeDiamond\", \"largeTriangle\", \"none\".Default value is \"none\".",
               "type": "string"
             },
-            {
-              "name": "opacity",
+            "opacity": {
               "description": "The opacity of the icon.",
               "type": "number"
             },
-            {
-              "name": "shape",
+            "shape": {
               "description": "The shape of the icon. Can take the name of a built-in shape or the svg path commands for a custom shape.Supported built-in shapes:\"ellipse\", \"square\", \"plus\", \"diamond\", \"triangleUp\", \"triangleDown\", \"human\", \"rectangle\", \"star\", \"circle\".Default value is \"circle\".",
               "type": "string"
             },
-            {
-              "name": "source",
+            "source": {
               "description": "The URI of the node image.",
               "type": "string"
             },
-            {
-              "name": "sourceHover",
+            "sourceHover": {
               "description": "The optional URI of the node hover image. If not defined, the source image will be used.",
               "type": "string"
             },
-            {
-              "name": "sourceHoverSelected",
+            "sourceHoverSelected": {
               "description": "The optional URI of the selected image on hover. If not defined, the sourceSelected image will be used. If the sourceSelected image is not defined, the source image will be used.",
               "type": "string"
             },
-            {
-              "name": "sourceSelected",
+            "sourceSelected": {
               "description": "The optional URI of the selected image. If not defined, the source image will be used.",
               "type": "string"
             },
-            {
-              "name": "width",
+            "width": {
               "description": "The width of the icon.",
               "type": "number"
             },
-            {
-              "name": "height",
+            "height": {
               "description": "The height of the icon.",
               "type": "number"
             },
-            {
-              "name": "svgStyle",
+            "svgStyle": {
               "description": "The CSS style object defining the style of the icon. The style class and style object will be applied directly on the icon and override any other styling specified through the properties.",
               "type": "object"
             },
-            {
-              "name": "svgClassName",
+            "svgClassName": {
               "description": "The CSS style class defining the style of the icon. The style class and style object will be applied directly on the icon and override any other styling specified through the properties.",
               "type": "object"
             }
-          ]
+          }
         }
-      ]
+      }
     },
     "panDirection": {
       "description": "Specifies if panning allowed in horizontal and vertical directions.",
@@ -1349,7 +1330,7 @@
     }
   },
   "events": {
-    "beforeExpand": {
+    "ojBeforeExpand": {
       "description": "Triggered immediately before any container node in the diagram is expanded.",
       "detail": {
         "nodeId": {
@@ -1358,7 +1339,7 @@
         }
       }
     },
-    "expand": {
+    "ojExpand": {
       "description": "Triggered when a node has been expanded. The ui object contains one property, \"nodeId\", which is the id of the node that has been expanded.",
       "detail": {
         "nodeId": {
@@ -1367,7 +1348,7 @@
         }
       }
     },
-    "beforeCollapse": {
+    "ojBeforeCollapse": {
       "description": "Triggered immediately before any container node in the diagram is collapsed.",
       "detail": {
         "data": {
@@ -1380,7 +1361,7 @@
         }
       }
     },
-    "collapse": {
+    "ojCollapse": {
       "description": "Triggered when a node has been collapsed.",
       "detail": {
         "data": {

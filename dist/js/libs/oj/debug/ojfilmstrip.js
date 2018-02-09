@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2014, 2017, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
@@ -32,6 +32,8 @@ oj.Object.createSubclass(oj.FilmStripPagingModel, oj.EventSource, "oj.FilmStripP
 
 /**
  * Initialize the instance.
+ * @memberof oj.FilmStripPagingModel
+ * @instance
  * @export
  */
 oj.FilmStripPagingModel.prototype.Init = function()
@@ -46,7 +48,7 @@ oj.FilmStripPagingModel.prototype.Init = function()
 /**
  * Set the total size.
  * @param {number} totalSize The total size.
- * @memberof! oj.FilmStripPagingModel
+ * @memberof oj.FilmStripPagingModel
  * @instance
  */
 oj.FilmStripPagingModel.prototype.setTotalSize = function(totalSize)
@@ -57,7 +59,7 @@ oj.FilmStripPagingModel.prototype.setTotalSize = function(totalSize)
 /**
  * Get the page size.
  * @returns {number} The page size.
- * @memberof! oj.FilmStripPagingModel
+ * @memberof oj.FilmStripPagingModel
  * @instance
  */
 oj.FilmStripPagingModel.prototype.getPageSize = function()
@@ -71,7 +73,7 @@ oj.FilmStripPagingModel.prototype.getPageSize = function()
  * Get the current page
  * @returns {number} The current page
  * @export
- * @memberof! oj.FilmStripPagingModel
+ * @memberof oj.FilmStripPagingModel
  * @instance
  */
 oj.FilmStripPagingModel.prototype.getPage = function()
@@ -86,7 +88,7 @@ oj.FilmStripPagingModel.prototype.getPage = function()
  *                  pageSize: The page size.<p>
  * @returns {Promise} promise object triggering done when complete
  * @export
- * @memberof! oj.FilmStripPagingModel
+ * @memberof oj.FilmStripPagingModel
  * @instance
  */
 oj.FilmStripPagingModel.prototype.setPage = function(page, options)
@@ -147,7 +149,7 @@ oj.FilmStripPagingModel.prototype.setPage = function(page, options)
  * Get the current page start index
  * @returns {number} The current page start index
  * @export
- * @memberof! oj.FilmStripPagingModel
+ * @memberof oj.FilmStripPagingModel
  * @instance
  */
 oj.FilmStripPagingModel.prototype.getStartItemIndex = function()
@@ -165,7 +167,7 @@ oj.FilmStripPagingModel.prototype.getStartItemIndex = function()
  * Get the current page end index
  * @returns {number} The current page end index
  * @export
- * @memberof! oj.FilmStripPagingModel
+ * @memberof oj.FilmStripPagingModel
  * @instance
  */
 oj.FilmStripPagingModel.prototype.getEndItemIndex = function()
@@ -177,7 +179,7 @@ oj.FilmStripPagingModel.prototype.getEndItemIndex = function()
  * Get the page count
  * @returns {number} The total number of pages
  * @export
- * @memberof! oj.FilmStripPagingModel
+ * @memberof oj.FilmStripPagingModel
  * @instance
  */
 oj.FilmStripPagingModel.prototype.getPageCount = function()
@@ -189,7 +191,7 @@ oj.FilmStripPagingModel.prototype.getPageCount = function()
  * Return the total number of items. Returns -1 if unknown.
  * @returns {number} total number of items
  * @export
- * @memberof! oj.FilmStripPagingModel
+ * @memberof oj.FilmStripPagingModel
  * @instance
  */
 oj.FilmStripPagingModel.prototype.totalSize = function()
@@ -205,7 +207,7 @@ oj.FilmStripPagingModel.prototype.totalSize = function()
  *                  "unknown" if the totalSize is unknown
  * @export
  * @expose
- * @memberof! oj.FilmStripPagingModel
+ * @memberof oj.FilmStripPagingModel
  * @instance 
  */
 oj.FilmStripPagingModel.prototype.totalSizeConfidence = function()
@@ -225,6 +227,9 @@ oj.FilmStripPagingModel.prototype.totalSizeConfidence = function()
  * @augments oj.baseComponent
  * @since 1.1.0
  * @ojstatus preview
+ * @ojshortdesc Container element that lays out its children in a single row or column across logical pages and allows navigating through them.
+ * @ojrole region
+ * @class oj.ojFilmStrip
  * 
  * @classdesc
  * <h3 id="filmStripOverview-section">
@@ -388,11 +393,14 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
      * show that many items.  
      *
      * @expose 
-     * @memberof! oj.ojFilmStrip
+     * @memberof oj.ojFilmStrip
      * @instance
      * @type {number}
-     * @default <code class="prettyprint">0</code>
+     * @default 0
      * @see #getItemsPerPage
+     * @ojshortdesc Specifies the maximum number of child items shown in a logical page.
+     * @ojmin 0
+     * @ojunits items
      *
      * @example <caption>Initialize the FilmStrip with the 
      * <code class="prettyprint">max-items-per-page</code> attribute specified:</caption>
@@ -413,12 +421,13 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
      * Specify the orientation of the FilmStrip.
      *
      * @expose 
-     * @memberof! oj.ojFilmStrip
+     * @memberof oj.ojFilmStrip
      * @instance
      * @type {string}
      * @ojvalue {string} "horizontal" Orient the FilmStrip horizontally.
      * @ojvalue {string} "vertical" Orient the FilmStrip vertically.
-     * @default <code class="prettyprint">"horizontal"</code>
+     * @default "horizontal"
+     * @ojshortdesc Specifies the orientation of the FilmStrip.
      *
      * @example <caption>Initialize the FilmStrip with the 
      * <code class="prettyprint">orientation</code> attribute specified:</caption>
@@ -452,11 +461,12 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
      * this attribute to show the new logical page on which the item is located.  
      *
      * @expose 
-     * @memberof! oj.ojFilmStrip
+     * @memberof oj.ojFilmStrip
      * @instance
      * @type {Object}
-     * @default <code class="prettyprint">{"index" : 0}</code>
+     * @default {"index" : 0}
      * @ojwriteback
+     * @ojshortdesc Specifies the child item whose logical page should be displayed.
      *
      * @example <caption>Initialize the FilmStrip with the 
      * <code class="prettyprint">current-item</code> attribute specified:</caption>
@@ -490,14 +500,15 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
      * Specify the placement of the navigation arrows.
      *
      * @expose 
-     * @memberof! oj.ojFilmStrip
+     * @memberof oj.ojFilmStrip
      * @instance
      * @type {string}
      * @ojvalue {string} "adjacent" Arrows are outside, adjacent to the filmStrip 
      *          content.  The arrows are still inside the bounds of the filmStrip
      *          element itself.
      * @ojvalue {string} "overlay" Arrows are inside, overlaying the filmStrip content.
-     * @default <code class="prettyprint">"adjacent"</code>
+     * @default "adjacent"
+     * @ojshortdesc Specifies the placement of the navigation arrows.
      *
      * @example <caption>Initialize the FilmStrip with the 
      * <code class="prettyprint">arrow-placement</code> attribute specified:</caption>
@@ -518,7 +529,7 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
      * Specify the visibility of the navigation arrows.
      *
      * @expose 
-     * @memberof! oj.ojFilmStrip
+     * @memberof oj.ojFilmStrip
      * @instance
      * @type {string}
      * @ojvalue {string} "visible" Arrows are visible.
@@ -532,7 +543,8 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
      *          <code class="prettyprint">hover</code> when the 
      *          <code class="prettyprint">arrow-placement</code> 
      *          attribute is set to <code class="prettyprint">overlay</code>.
-     * @default <code class="prettyprint">"auto"</code>
+     * @default "auto"
+     * @ojshortdesc Specifies the visibility of the navigation arrows.
      *
      * @example <caption>Initialize the FilmStrip with the 
      * <code class="prettyprint">arrow-visibility</code> attribute specified:</caption>
@@ -565,7 +577,7 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
      * @memberof oj.ojFilmStrip
      * @instance
      * @type {boolean}
-     * @default <code class="prettyprint">false</code>
+     * @default false
      * @ignore
      */
     // disabled attribute declared in superclass, but we still want the above API doc
@@ -653,6 +665,7 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
    * @expose 
    * @memberof oj.ojFilmStrip
    * @instance
+   * @ojshortdesc Refreshes the visual state of the FilmStrip.
    * 
    * @example <caption>Invoke the <code class="prettyprint">refresh</code> method:</caption>
    * myFilmStrip.refresh();
@@ -674,6 +687,7 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
    * @memberof oj.ojFilmStrip
    * @instance
    * @see #maxItemsPerPage
+   * @ojshortdesc Get the actual number of items shown per logical page.
    * 
    * @example <caption>Invoke the <code class="prettyprint">getItemsPerPage</code> method:</caption>
    * var itemsPerPage = myFilmStrip.getItemsPerPage();
@@ -692,6 +706,7 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
    * @expose 
    * @memberof oj.ojFilmStrip
    * @instance
+   * @ojshortdesc Get the PagingModel created and used by the FilmStrip.
    * 
    * @example <caption>Invoke the <code class="prettyprint">getPagingModel</code> method:</caption>
    * var pagingModel = myFilmStrip.getPagingModel();
@@ -2533,7 +2548,7 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
   /**
    * Add a busy state to the busy context.
    *
-   * @param {String} description Additional information about busy state.
+   * @param {string} description Additional information about busy state.
    * @returns {Function} Resolve function called by the registrant when the busy state completes.
    *          The resultant function will throw an error if the busy state is no longer registered.
    * @memberof oj.ojFilmStrip
@@ -2835,6 +2850,7 @@ var _ADJACENT = "adjacent",
      * Apply a CSS transform to the given object.
      * @param {jQuery} jqObj Object to apply transform to.
      * @param {string} transform The transform to apply.
+     * @memberof oj.ojFilmStrip
      * @private
      */
     _applyTransform = function(jqObj, transform)
@@ -2848,6 +2864,7 @@ var _ADJACENT = "adjacent",
     /**
      * Remove a CSS transform from the given object.
      * @param {jQuery} jqObj Object to apply transform to.
+     * @memberof oj.ojFilmStrip
      * @private
      */
     _removeTransform = function(jqObj)
@@ -2862,6 +2879,7 @@ var _ADJACENT = "adjacent",
      * Escape an html fragment/text.
      * @param {string} text Text to escape.
      * @returns {string} Escaped text.
+     * @memberof oj.ojFilmStrip
      * @private
      */
     _escapeHtml = function(text)

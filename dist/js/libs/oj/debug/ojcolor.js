@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2014, 2017, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
@@ -7,16 +7,16 @@ define(['ojs/ojcore'], function(oj)
 {
 
 /**
-  * Copyright (c) 2016, Oracle and/or its affiliates.
-  * All rights reserved.
-  */
+ * Copyright (c) 2016, Oracle and/or its affiliates.
+ * All rights reserved.
+ */
 
- /*
-  * Portions of this component are based on  
-  * TinyColor v1.3.0
-  * https://github.com/bgrins/TinyColor
-  * Brian Grinstead, MIT License
-  */
+/*
+ * Portions of this component are based on  
+ * TinyColor v1.3.0
+ * https://github.com/bgrins/TinyColor
+ * Brian Grinstead, MIT License
+ */
 
 (function()
 {
@@ -28,69 +28,71 @@ define(['ojs/ojcore'], function(oj)
       mathMax     = Math.max;
 
 /**
-  * @class oj.Color
-  * @classdesc Immutable object representing a color.
-  * @desc Creates an object representing a color. The color may be defined using
-  * the RGB, HSL, and HSV model values as an object, or as a CSS3 color specification string (refer to 
-  * {@link https://developer.mozilla.org/en-US/docs/Web/CSS/color_value}, and also
-  * {@link https://www.w3.org/TR/css3-color/#svg-color} for color visualization.  The
-  * CSS3 named colors are available as oj.Color constants (e.g. oj.Color.ALICEBLUE)
-  *
-  * @example <caption>Typical color definitions</caption>
-  *  oj.Color.RED;
-  *  oj.Color.ALICEBLUE;
-  *  new oj.Color({r:30, g:128, b:201});
-  *  new oj.Color({r:30, g:128, b:201, a:0.8});
-  *  new oj.Color({h:310, s:50, l:80});
-  *  new oj.Color({h:310, s:50, l:80, a:0.8});
-  *  new oj.Color({h:310, s:50, v:80});
-  *  new oj.Color({h:310, s:50, v:80, a:0.8});
-  *  new oj.Color('#4bc');
-  *  new oj.Color('#44ccbb');
-  *  new oj.Color('rgb(27,128,254)');
-  *  new oj.Color('rgba(27,128,254,0.8)');
-  *  new oj.Color('hsl(87, 100%,50%)');
-  *  new oj.Color('hsla(87, 100%,50%, 0.5)');
-  *  new oj.Color('hsv(0, 100%, 100%)') ;
-  *  oj.Color.TRANSPARENT;
-  *
-  * @example <caption>Using a converter to obtain a different color format</caption>
-  * var cf       = oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_COLOR);
-  * var convHsl  = cf.createConverter({"format": "hsl"}) ;
-  *
-  * var c        = new oj.Color('rgb(0, 191, 255)');
-  * var s        = convHsl.format(c) ;            // returns "hsl(197, 71%, 73%)"
+ * @class oj.Color
+ * @since 3.0.0
+ * @classdesc Immutable object representing a color.
+ * @ojshortdesc Object representing a color definition.
+ * @desc Creates an object representing a color. The color may be defined using
+ * the RGB, HSL, and HSV model values as an object, or as a CSS3 color specification string (refer to 
+ * {@link https://developer.mozilla.org/en-US/docs/Web/CSS/color_value}, and also
+ * {@link https://www.w3.org/TR/css3-color/#svg-color} for color visualization.  The
+ * CSS3 named colors are available as oj.Color constants (e.g. oj.Color.ALICEBLUE)
+ *
+ * @example <caption>Typical color definitions</caption>
+ *  oj.Color.RED;
+ *  oj.Color.ALICEBLUE;
+ *  new oj.Color({r:30, g:128, b:201});
+ *  new oj.Color({r:30, g:128, b:201, a:0.8});
+ *  new oj.Color({h:310, s:50, l:80});
+ *  new oj.Color({h:310, s:50, l:80, a:0.8});
+ *  new oj.Color({h:310, s:50, v:80});
+ *  new oj.Color({h:310, s:50, v:80, a:0.8});
+ *  new oj.Color('#4bc');
+ *  new oj.Color('#44ccbb');
+ *  new oj.Color('rgb(27,128,254)');
+ *  new oj.Color('rgba(27,128,254,0.8)');
+ *  new oj.Color('hsl(87, 100%,50%)');
+ *  new oj.Color('hsla(87, 100%,50%, 0.5)');
+ *  new oj.Color('hsv(0, 100%, 100%)') ;
+ *  oj.Color.TRANSPARENT;
+ *
+ * @example <caption>Using a converter to obtain a different color format</caption>
+ * var cf       = oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_COLOR);
+ * var convHsl  = cf.createConverter({"format": "hsl"}) ;
+ *
+ * var c        = new oj.Color('rgb(0, 191, 255)');
+ * var s        = convHsl.format(c) ;            // returns "hsl(197, 71%, 73%)"
 
-  *</p></br>
-  * @param {string | Object} color 
-  *<ul><li> A valid CSS3 color specification string (refer to 
-  * {@link https://developer.mozilla.org/en-US/docs/Web/CSS/color_value} for syntax)</li>
-  *<li>An object containing one of the following groups of fields:
-  * <ul>
-  *  <li>r: &nbsp; the red value</li>
-  *  <li>g: &nbsp; the green value</li>
-  *  <li>b: &nbsp; the blue value</li>
-  *  <li>a: &nbsp; the alpha value (optional)</li>
-  * </ul>
-  *<br>
-  * <ul>
-  *  <li>h: &nbsp; the hue value</li>
-  *  <li>s: &nbsp; the saturation value</li>
-  *  <li>l: &nbsp; the luminosity or lightness value</li>
-  *  <li>a: &nbsp; the alpha value (optional)</li>
-  * </ul>
-  *<br>
-  * <ul>
-  *  <li>h: &nbsp; the hue value</li>
-  *  <li>s: &nbsp; the saturation value</li>
-  *  <li>v: &nbsp; the value</li>
-  *  <li>a: &nbsp; the alpha value (optional)</li>
-  * </ul>
-  *</li></ul>
-  * @constructor
-  * @throws {Error} if the color specification cannot be parsed correctly.
-  * @export
-  */
+ * </p></br>
+ * @param {string | Object} color 
+ * <ul><li> A valid CSS3 color specification string (refer to 
+ *  {@link https://developer.mozilla.org/en-US/docs/Web/CSS/color_value} for syntax)</li>
+ * <li>An object containing one of the following groups of fields:
+ * <ul>
+ *  <li>r: &nbsp; the red value</li>
+ *  <li>g: &nbsp; the green value</li>
+ *  <li>b: &nbsp; the blue value</li>
+ *  <li>a: &nbsp; the alpha value (optional)</li>
+ * </ul>
+ * <br>
+ * <ul>
+ *  <li>h: &nbsp; the hue value</li>
+ *  <li>s: &nbsp; the saturation value</li>
+ *  <li>l: &nbsp; the luminosity or lightness value</li>
+ *  <li>a: &nbsp; the alpha value (optional)</li>
+ * </ul>
+ * <br>
+ * <ul>
+ *  <li>h: &nbsp; the hue value</li>
+ *  <li>s: &nbsp; the saturation value</li>
+ *  <li>v: &nbsp; the value</li>
+ *  <li>a: &nbsp; the alpha value (optional)</li>
+ * </ul>
+ * </li></ul>
+ * @constructor
+ * @throws {Error} if the color specification cannot be parsed correctly.
+ * @export
+ */
 oj.Color = function (color) {
 
     var rgb, t ;
@@ -105,14 +107,16 @@ oj.Color = function (color) {
 };
 
 /**
-  * Returns the red channel value of the color.
-  * @param {boolean=} doNotRound  Omit or set to false to return an integer value.
-  *                               Set to true to return the possible fractional value.
-  *                               (Fractional values for the red, green, or blue channels can
-  *                               arise when a color is defined using the "hsl" format.)
-  * @return {number} The red channel value in the range [0,255].
-  * @export
-  */
+ * Returns the red channel value of the color.
+ * @param {boolean=} doNotRound  Omit or set to false to return an integer value.
+ *                               Set to true to return the possible fractional value.
+ *                               (Fractional values for the red, green, or blue channels can
+ *                               arise when a color is defined using the "hsl" format.)
+ * @return {number} The red channel value in the range [0,255].
+ * @memberof oj.Color
+ * @instance
+ * @export
+ */
 oj.Color.prototype.getRed = function(doNotRound)
 {
    doNotRound = doNotRound || false ;
@@ -121,14 +125,16 @@ oj.Color.prototype.getRed = function(doNotRound)
 
 
 /**
-  * Returns the green channel value of the color.
-  * @param {boolean=} doNotRound  Omit or set to false to return an integer value.
-  *                               Set to true to return the possible fractional value.
-  *                               (Fractional values for the red, green, or blue channels can
-  *                               arise when a color is defined using the "hsl" format.)
-  * @return {number} The green channel value contained in [0,255].
-  * @export
-  */
+ * Returns the green channel value of the color.
+ * @param {boolean=} doNotRound  Omit or set to false to return an integer value.
+ *                               Set to true to return the possible fractional value.
+ *                               (Fractional values for the red, green, or blue channels can
+ *                               arise when a color is defined using the "hsl" format.)
+ * @return {number} The green channel value contained in [0,255].
+ * @memberof oj.Color
+ * @instance
+ * @export
+ */
 oj.Color.prototype.getGreen = function(doNotRound)
 {
    doNotRound = doNotRound || false ;
@@ -137,14 +143,16 @@ oj.Color.prototype.getGreen = function(doNotRound)
 
 
 /**
-  * Returns the blue channel value of the color.
-  * @param {boolean=} doNotRound  Omit or set to false to return an integer value.
-  *                               Set to true to return the possible fractional value.
-  *                               (Fractional values for the red, green, or blue channels can
-  *                               arise when a color is defined using the "hsl" format.)
-  * @return {number} The blue channel value contained in [0,255].
-  * @export
-  */
+ * Returns the blue channel value of the color.
+ * @param {boolean=} doNotRound  Omit or set to false to return an integer value.
+ *                               Set to true to return the possible fractional value.
+ *                               (Fractional values for the red, green, or blue channels can
+ *                               arise when a color is defined using the "hsl" format.)
+ * @return {number} The blue channel value contained in [0,255].
+ * @memberof oj.Color
+ * @instance
+ * @export
+ */
 oj.Color.prototype.getBlue = function(doNotRound)
 {
    doNotRound = doNotRound || false ;
@@ -153,10 +161,12 @@ oj.Color.prototype.getBlue = function(doNotRound)
 
 
 /**
-  *  Returns the alpha channel of the color.
-  *  @return {number} The alpha channel value contained in [0,1].
-  *  @export
-  */
+ * Returns the alpha channel of the color.
+ * @return {number} The alpha channel value contained in [0,1].
+ * @memberof oj.Color
+ * @instance
+ * @export
+ */
 oj.Color.prototype.getAlpha = function()
 {
    return this._a ;
@@ -164,23 +174,27 @@ oj.Color.prototype.getAlpha = function()
 
 
 /**
-  *  Returns the color as an "rgb" or rgba" (if the alpha value is less than 1) CSS3 color
-  *  specification string.
-  *  @return {string} The color as an "rgb" or "rgba" CSS3 color specification string.
-  *  @export
-  */
+ * Returns the color as an "rgb" or rgba" (if the alpha value is less than 1) CSS3 color
+ * specification string.
+ * @return {string} The color as an "rgb" or "rgba" CSS3 color specification string.
+ * @memberof oj.Color
+ * @instance
+ * @export
+ */
 oj.Color.prototype.toString = function()
 {
    return toRgbString(this) ;
 }
 
 /**
-  * Compares this color object with the supplied color specification, and returns true
-  * if they represent the same color, else false.
-  * @param {oj.Color} color   The color to be compared.
-  * @return {boolean} Returns true if the comperand represents the same color.
-  * @export
-  */
+ * Compares this color object with the supplied color specification, and returns true
+ * if they represent the same color, else false.
+ * @param {oj.Color} color   The color to be compared.
+ * @return {boolean} Returns true if the comperand represents the same color.
+ * @memberof oj.Color
+ * @instance
+ * @export
+ */
 oj.Color.prototype.isEqual =  function(color)
 {
    var ret = false ;
@@ -196,1196 +210,1196 @@ oj.Color.prototype.isEqual =  function(color)
 
 
 /** CSS3 color <code class="prettyprint">aliceblue</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:aliceblue;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.ALICEBLUE = null;
 /** CSS3 color <code class="prettyprint">antiquewhite</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:antiquewhite;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.ANTIQUEWHITE = null;
 /** CSS3 color <code class="prettyprint">aqua</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:aqua;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.AQUA = null;
 /** CSS3 color <code class="prettyprint">aquamarine</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:aquamarine;"></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.AQUAMARINE = null;
 /** CSS3 color <code class="prettyprint">azure</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:azure;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.AZURE = null;
 /** CSS3 color <code class="prettyprint">beige</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:beige;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.BEIGE = null;
 /** CSS3 color <code class="prettyprint">bisque</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:bisque;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.BISQUE = null;
 /** CSS3 color <code class="prettyprint">black</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:black;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.BLACK = null;
 /** CSS3 color <code class="prettyprint">blanchedalmond</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:blanchedalmond;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.BLANCHEDALMOND = null;
 /** CSS3 color <code class="prettyprint">blue</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:blue;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.BLUE = null;
 /** CSS3 color <code class="prettyprint">blueviolet</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:blueviolet;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.BLUEVIOLET = null;
 /** CSS3 color <code class="prettyprint">brown</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:brown;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.BROWN = null;     
 /** CSS3 color <code class="prettyprint">burlywood</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:burlywood;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.BURLYWOOD = null; 
 /** CSS3 color <code class="prettyprint">cadetblue</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:cadetblue;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.CADETBLUE = null;
 /** CSS3 color <code class="prettyprint">chartreuse</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:chartreuse;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.CHARTREUSE = null;
 /** CSS3 color <code class="prettyprint">chocolate</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:chocolate;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.CHOCOLATE = null;
 /** CSS3 color <code class="prettyprint">coral</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:coral;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.CORAL = null;
 /** CSS3 color <code class="prettyprint">cornflowerblue</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:cornflowerblue;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.CORNFLOWERBLUE = null;
 /** CSS3 color <code class="prettyprint">cornsilk</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:cornsilk;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.CORNSILK = null;
 /** CSS3 color <code class="prettyprint">crimson</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:crimson;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.CRIMSON = null;
 /** CSS3 color <code class="prettyprint">cyan</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:cyan;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.CYAN = null;
 /** CSS3 color <code class="prettyprint">darkblue</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:darkblue;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.DARKBLUE = null;
 /** CSS3 color <code class="prettyprint">darkcyan</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:darkcyan;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.DARKCYAN = null;
 /** CSS3 color <code class="prettyprint">darkgoldenrod</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:darkgoldenrod;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.DARKGOLDENROD = null;
 /** CSS3 color <code class="prettyprint">darkgray</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:darkgray;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.DARKGRAY = null;
 /** CSS3 color <code class="prettyprint">darkgrey</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:darkgrey;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.DARKGREY = null;
 /** CSS3 color <code class="prettyprint">darkgreen</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:darkgreen;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.DARKGREEN = null;
 /** CSS3 color <code class="prettyprint">darkkhaki</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:darkkhaki;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.DARKKHAKI = null;
 /** CSS3 color <code class="prettyprint">darkmagenta</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:darkmagenta;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.DARKMAGENTA = null;
 /** CSS3 color <code class="prettyprint">darkolivegreen</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:darkolivegreen;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.DARKOLIVEGREEN = null;
 /** CSS3 color <code class="prettyprint">darkorange</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:darkorange;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.DARKORANGE = null;
 /** CSS3 color <code class="prettyprint">darkorchid</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:darkorchid;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.DARKORCHID = null;
 /** CSS3 color <code class="prettyprint">darkred</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:darkred;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.DARKRED = null;
 /** CSS3 color <code class="prettyprint">darksalmon</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:darksalmon;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.DARKSALMON = null;
 /** CSS3 color <code class="prettyprint">darkseagreen</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:darkseagreen;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.DARKSEAGREEN = null;
 /** CSS3 color <code class="prettyprint">darkslateblue</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:darkslateblue;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.DARKSLATEBLUE = null;
 /** CSS3 color <code class="prettyprint">darkslategray</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:darkslategray;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.DARKSLATEGRAY = null;
 /** CSS3 color <code class="prettyprint">darkslategrey</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:darkslategrey;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.DARKSLATEGREY = null;
 /** CSS3 color <code class="prettyprint">darkturquoise</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:darkturquoise;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.DARKTURQUOISE  = null;
 /** CSS3 color <code class="prettyprint">darkviolet</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:darkviolet;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.DARKVIOLET = null;
 /** CSS3 color <code class="prettyprint">deeppink</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:deeppink;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.DEEPPINK = null;
 /** CSS3 color <code class="prettyprint">deepskyblue</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:deepskyblue;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.DEEPSKYBLUE = null;
 /** CSS3 color <code class="prettyprint">dimgray</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:dimgray;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.DIMGRAY = null;
 /** CSS3 color <code class="prettyprint">dimgrey</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:dimgrey;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.DIMGREY = null;
 /** CSS3 color <code class="prettyprint">dodgerblue</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:dodgerblue;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.DODGERBLUE = null;
 /** CSS3 color <code class="prettyprint">firebrick</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:firebrick;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.FIREBRICK = null;
 /** CSS3 color <code class="prettyprint">floralwhite</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:floralwhite;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.FLORALWHITE = null;
 /** CSS3 color <code class="prettyprint">forestgreen</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:forestgreen;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.FORESTGREEN = null;
 /** CSS3 color <code class="prettyprint">fuchsia</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:fuchsia;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.FUCHSIA = null;
 /** CSS3 color <code class="prettyprint">gainsboro</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:gainsboro;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.GAINSBORO = null;
 /** CSS3 color <code class="prettyprint">ghostwhite</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:ghostwhite;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.GHOSTWHITE = null;
 /** CSS3 color <code class="prettyprint">gold</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:gold;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.GOLD = null;
 /** CSS3 color <code class="prettyprint">goldenrod</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:goldenrod;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.GOLDENROD = null;
 /** CSS3 color <code class="prettyprint">gray</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:gray;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.GRAY = null;
 /** CSS3 color <code class="prettyprint">green</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:green;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.GREEN = null;
 /** CSS3 color <code class="prettyprint">greenyellow</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:greenyellow;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.GREENYELLOW = null;
 /** CSS3 color <code class="prettyprint">grey</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:grey;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.GREY = null;
 /** CSS3 color <code class="prettyprint">honeydew</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:honeydew;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.HONEYDEW = null;
 /** CSS3 color <code class="prettyprint">hotpink</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:hotpink;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.HOTPINK = null;
 /** CSS3 color <code class="prettyprint">indianred</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:indianred;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.INDIANRED = null;
 /** CSS3 color <code class="prettyprint">indigo</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:indigo;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.INDIGO = null;
 /** CSS3 color <code class="prettyprint">ivory</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:ivory;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.IVORY = null;
 /** CSS3 color <code class="prettyprint">khaki</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:khaki;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.KHAKI = null;
 /** CSS3 color <code class="prettyprint">lavender</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:lavender;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.LAVENDER = null;
 /** CSS3 color <code class="prettyprint">lavenderblush</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:lavenderblush;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.LAVENDERBLUSH = null;
 /** CSS3 color <code class="prettyprint">lawngreen</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:lawngreen;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.LAWNGREEN = null;
 /** CSS3 color <code class="prettyprint">lemonchiffon</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:lemonchiffon;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.LEMONCHIFFON = null;
 /** CSS3 color <code class="prettyprint">lightblue</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:lightblue;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.LIGHTBLUE = null;
 /** CSS3 color <code class="prettyprint">lightcoral</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:lightcoral;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.LIGHTCORAL = null;
 /** CSS3 color <code class="prettyprint">lightcyan</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:lightcyan;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.LIGHTCYAN = null;
 /** CSS3 color <code class="prettyprint">lightgoldenrodyellow</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:lightgoldenrodyellow;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.LIGHTGOLDENRODYELLOW = null;
 /** CSS3 color <code class="prettyprint">lightgray</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:lightgray;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.LIGHTGRAY = null;
 /** CSS3 color <code class="prettyprint">lightgreen</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:lightgreen;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.LIGHTGREEN = null;
 /** CSS3 color <code class="prettyprint">lightgrey</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:lightgrey;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.LIGHTGREY = null;
 /** CSS3 color <code class="prettyprint">lightpink</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:lightpink;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.LIGHTPINK = null;
 /** CSS3 color <code class="prettyprint">lightsalmon</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:lightsalmon;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.LIGHTSALMON = null;
 /** CSS3 color <code class="prettyprint">lightseagreen</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:lightseagreen;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.LIGHTSEAGREEN = null;
 /** CSS3 color <code class="prettyprint">lightskyblue</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:lightskyblue;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.LIGHTSKYBLUE = null;
 /** CSS3 color <code class="prettyprint">lightslategray</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:lightslategray;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.LIGHTSLATEGRAY = null;
 /** CSS3 color <code class="prettyprint">lightslategrey</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:lightslategrey;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.LIGHTSLATEGREY = null;
 /** CSS3 color <code class="prettyprint">lightsteelblue</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:lightsteelblue;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.LIGHTSTEELBLUE = null;
 /** CSS3 color <code class="prettyprint">lightyellow</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:lightyellow;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.LIGHTYELLOW = null;
 /** CSS3 color <code class="prettyprint">lime</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:lime;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.LIME = null;
 /** CSS3 color <code class="prettyprint">limegreen</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:limegreen;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.LIMEGREEN = null;
 /** CSS3 color <code class="prettyprint">linen</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:linen;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.LINEN = null;
 /** CSS3 color <code class="prettyprint">magenta</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:magenta;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.MAGENTA = null;
 /** CSS3 color <code class="prettyprint">maroon</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:maroon;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.MAROON = null;
 /** CSS3 color <code class="prettyprint">mediumaquamarine</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:mediumaquamarine;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.MEDIUMAQUAMARINE = null;
 /** CSS3 color <code class="prettyprint">mediumblue</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:mediumblue;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.MEDIUMBLUE = null;
 /** CSS3 color <code class="prettyprint">mediumorchid</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:mediumorchid;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.MEDIUMORCHID = null;
 /** CSS3 color <code class="prettyprint">mediumpurple</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:mediumpurple;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.MEDIUMPURPLE = null;
 /** CSS3 color <code class="prettyprint">mediumseagreen</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:mediumseagreen;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.MEDIUMSEAGREEN = null;
 /** CSS3 color <code class="prettyprint">mediumslateblue</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:mediumslateblue;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.MEDIUMSLATEBLUE = null;
 /** CSS3 color <code class="prettyprint">mediumspringgreen</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:mediumspringgreen;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.MEDIUMSPRINGGREEN = null;
 /** CSS3 color <code class="prettyprint">mediumturquoise</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:mediumturquoise;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.MEDIUMTURQUOISE = null;
 /** CSS3 color <code class="prettyprint">mediumvioletred</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:mediumvioletred;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.MEDIUMVIOLETRED = null;
 /** CSS3 color <code class="prettyprint">midnightblue</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:midnightblue;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.MIDNIGHTBLUE = null;
 /** CSS3 color <code class="prettyprint">mintcream</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:mintcream;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.MINTCREAM = null;
 /** CSS3 color <code class="prettyprint">mistyrose</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:mistyrose;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.MISTYROSE = null;
 /** CSS3 color <code class="prettyprint">moccasin</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:moccasin;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.MOCCASIN = null;
 /** CSS3 color <code class="prettyprint">navajowhite</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:navajowhite;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.NAVAJOWHITE = null;
 /** CSS3 color <code class="prettyprint">navy</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:navy;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.NAVY = null;
 /** CSS3 color <code class="prettyprint">oldlace</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:oldlace;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.OLDLACE = null;
 /** CSS3 color <code class="prettyprint">olive</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:olive;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.OLIVE = null;
 /** CSS3 color <code class="prettyprint">olivedrab</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:olivedrab;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.OLIVEDRAB = null;
 /** CSS3 color <code class="prettyprint">orange</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:orange;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.ORANGE = null;
 /** CSS3 color <code class="prettyprint">orangered</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:orangered;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.ORANGERED = null;
 /** CSS3 color <code class="prettyprint">orchid</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:orchid;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.ORCHID = null;
 /** CSS3 color <code class="prettyprint">palegoldenrod</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:palegoldenrod;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.PALEGOLDENROD = null;
 /** CSS3 color <code class="prettyprint">palegreen</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:palegreen;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.PALEGREEN = null;
 /** CSS3 color <code class="prettyprint">paleturquoise</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:paleturquoise;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.PALETURQUOISE = null;
 /** CSS3 color <code class="prettyprint">palevioletred</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:palevioletred;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.PALEVIOLETRED = null;
 /** CSS3 color <code class="prettyprint">papayawhip</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:papayawhip;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.PAPAYAWHIP = null;
 /** CSS3 color <code class="prettyprint">peachpuff</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:peachpuff;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.PEACHPUFF = null;
 /** CSS3 color <code class="prettyprint">peru</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:peru;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.PERU = null;
 /** CSS3 color <code class="prettyprint">pink</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:pink;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.PINK = null;
 /** CSS3 color <code class="prettyprint">plum</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:plum;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.PLUM = null;
 /** CSS3 color <code class="prettyprint">powderblue</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:powderblue;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.POWDERBLUE = null;
 /** CSS3 color <code class="prettyprint">purple</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:purple;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.PURPLE = null;
 /** CSS3 color <code class="prettyprint">rebeccapurple</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:rebeccapurple;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.REBECCAPURPLE = null;
 /** CSS3 color <code class="prettyprint">red</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:red;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.RED = null;
 /** CSS3 color <code class="prettyprint">rosybrown</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:rosybrown;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.ROSYBROWN = null;
 /** CSS3 color <code class="prettyprint">royalblue</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:royalblue;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.ROYALBLUE = null;
 /** CSS3 color <code class="prettyprint">saddlebrown</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:saddlebrown;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.SADDLEBROWN = null;
 /** CSS3 color <code class="prettyprint">salmon</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:salmon;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.SALMON = null;
 /** CSS3 color <code class="prettyprint">sandybrown</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:sandybrown;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.SANDYBROWN = null;
 /** CSS3 color <code class="prettyprint">seagreen</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:seagreen;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.SEAGREEN = null;
 /** CSS3 color <code class="prettyprint">seashell</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:seashell;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.SEASHELL = null;
 /** CSS3 color <code class="prettyprint">sienna</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:sienna;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.SIENNA = null;
 /** CSS3 color <code class="prettyprint">silver</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:silver;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.SILVER = null;
 /** CSS3 color <code class="prettyprint">skyblue</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:skyblue;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.SKYBLUE = null;
 /** CSS3 color <code class="prettyprint">slateblue</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:slateblue;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.SLATEBLUE = null;
 /** CSS3 color <code class="prettyprint">slategray</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:slategray;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.SLATEGRAY = null;
 /** CSS3 color <code class="prettyprint">slategrey</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:slategrey;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.SLATEGREY = null;
 /** CSS3 color <code class="prettyprint">snow</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:snow;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.SNOW = null;
 /** CSS3 color <code class="prettyprint">springgreen</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:springgreen;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.SPRINGGREEN = null;
 /** CSS3 color <code class="prettyprint">steelblue</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:steelblue;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.STEELBLUE = null;
 /** CSS3 color <code class="prettyprint">tan</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:tan;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.TAN = null;
 /** CSS3 color <code class="prettyprint">teal</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:teal;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.TEAL = null;
 /** CSS3 color <code class="prettyprint">thistle</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:thistle;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.THISTLE = null;
 /** CSS3 color <code class="prettyprint">tomato</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:tomato;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.TOMATO = null;
 /** CSS3 color <code class="prettyprint">turquoise</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:turquoise;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.TURQUOISE = null;
 /** CSS3 color <code class="prettyprint">violet</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:violet;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.VIOLET = null;
 /** CSS3 color <code class="prettyprint">wheat</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:wheat;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.WHEAT = null;
 /** CSS3 color <code class="prettyprint">white</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:white;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.WHITE = null;
 /** CSS3 color <code class="prettyprint">whitesmoke</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:whitesmoke;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.WHITESMOKE = null;
 /** CSS3 color <code class="prettyprint">yellow</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:yellow;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.YELLOW = null;
 /** CSS3 color <code class="prettyprint">yellowgreen</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:yellowgreen;"/></div>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.YELLOWGREEN = null;
 /** CSS3 color <code class="prettyprint">transparent</code>
-  * @type {oj.Color}
-  * @expose
-  * @public
-  * @static
-  * @memberof oj.Color
-  */
+ * @type {oj.Color}
+ * @expose
+ * @public
+ * @static
+ * @memberof oj.Color
+ */
 oj.Color.TRANSPARENT = null;
 
 
@@ -1394,7 +1408,7 @@ oj.Color.TRANSPARENT = null;
 /*-----------------------------------------------------------------------*/
 /*     Internal supporting functions below this point                    */
 /*-----------------------------------------------------------------------*/
-/*
+/**
  * Converts a valid CSS3 color specification string (exc. named colors), or
  * an object of the forms {r:, g:, b:}, {h:, s:, l:}, or {h", s:, v:} with
  * optional "a" property, to an object with validated r,g,b properties.
@@ -1414,6 +1428,9 @@ oj.Color.TRANSPARENT = null;
  *  Note: when converting from hsl or hsv, the resulting r,g,b components may be fractional
  *       e.g.  hsla(0, 97%,37%,0.851) will return the following
  *             r = 185.8695, g = 2.8305, b = 2.8305, a = 0.851
+ * @memberof oj.Color
+ * @returns {Object} color object
+ * @private
  */
 function inputToRGB(color)
 {
@@ -1430,7 +1447,7 @@ function inputToRGB(color)
    }
 
    if (typeof color == "object")
-   {
+   {  
        if (isValidCSSUnit(color["r"]) && isValidCSSUnit(color["g"]) && isValidCSSUnit(color["b"]))
        {
          rgb = rgbToRgb(color["r"], color["g"], color["b"]);
@@ -1471,7 +1488,12 @@ function inputToRGB(color)
           };
 };
 
-
+/**
+ * @param {oj.Color} co The color object
+ * @returns {string} rgb string
+ * @memberof oj.Color
+ * @private
+ */
 function  toRgbString(co)
 {
    var b = (co._a < 1);
@@ -1488,16 +1510,18 @@ function  toRgbString(co)
 /*                          color-model-conversion-algorithms-in-javascript> */
 /*---------------------------------------------------------------------------*/
 /**
-  * Converts an RGB color value to RGB.
-  * Handle bounds/percentage checking to conform to CSS color spec, and returns
-  * an object containg the r,g,b values.
-  * <http://www.w3.org/TR/css3-color/>
-  * Assumes:  r, g, b in [0, 255] or [0, 1]
-  * @param {number} r the red value
-  * @param {number} g the green value
-  * @param {number} b the blue value
-  * @returns {Object} Object with properties r, g, and b, in [0, 255].
-  */
+ * Converts an RGB color value to RGB.
+ * Handle bounds/percentage checking to conform to CSS color spec, and returns
+ * an object containg the r,g,b values.
+ * <http://www.w3.org/TR/css3-color/>
+ * Assumes:  r, g, b in [0, 255] or [0, 1]
+ * @param {number} r the red value
+ * @param {number} g the green value
+ * @param {number} b the blue value
+ * @returns {Object} Object with properties r, g, and b, in [0, 255].
+ * @memberof oj.Color
+ * @private
+ */
 function rgbToRgb(r, g, b)
 {
    return {
@@ -1508,16 +1532,18 @@ function rgbToRgb(r, g, b)
 };
 
 /**
-  * Converts an RGB color value to HSL.
-  * Handle bounds/percentage checking to conform to CSS color spec, and returns
-  * an object containg the h,s,l values.
-  * <http://www.w3.org/TR/css3-color/>
-  * Assumes:  r, g, b in [0, 255] or [0, 1]
-  * @param {number} r the red value
-  * @param {number} g the green value
-  * @param {number} b the blue value
-  * @returns {Object} Object with properties h, s, l, in [0, 1].
-  */
+ * Converts an RGB color value to HSL.
+ * Handle bounds/percentage checking to conform to CSS color spec, and returns
+ * an object containg the h,s,l values.
+ * <http://www.w3.org/TR/css3-color/>
+ * Assumes:  r, g, b in [0, 255] or [0, 1]
+ * @param {number} r the red value
+ * @param {number} g the green value
+ * @param {number} b the blue value
+ * @returns {Object} Object with properties h, s, l, in [0, 1].
+ * @memberof oj.Color
+ * @private
+ */
 function rgbToHsl(r, g, b)
 {
    r = bound01(r, 255);
@@ -1549,16 +1575,18 @@ function rgbToHsl(r, g, b)
 };
 
 /**
-  * Converts an HSL color value to RGB.
-  * Handle bounds/percentage checking to conform to CSS color spec, and returns
-  * an object containg the r,g,b values.
-  * <http://www.w3.org/TR/css3-color/>
-  * Assumes:  h is contained in [0,1] or [0,360, and s an l are contained in [0, 1] or [0, 100]
-  * @param {number} h the hue value
-  * @param {number} s the saturation value
-  * @param {number} l the lightness value
-  * @returns {Object} Object with properties r, g, b, in [0, 255].
-  */
+ * Converts an HSL color value to RGB.
+ * Handle bounds/percentage checking to conform to CSS color spec, and returns
+ * an object containg the r,g,b values.
+ * <http://www.w3.org/TR/css3-color/>
+ * Assumes:  h is contained in [0,1] or [0,360, and s an l are contained in [0, 1] or [0, 100]
+ * @param {number} h the hue value
+ * @param {number} s the saturation value
+ * @param {number} l the lightness value
+ * @returns {Object} Object with properties r, g, b, in [0, 255].
+ * @memberof oj.Color
+ * @private
+ */
 function hslToRgb(h, s, l)
 {
    var r, g, b;
@@ -1594,10 +1622,12 @@ function hslToRgb(h, s, l)
 };
 
 /**
-  * Converts an HSV color value to RGB.
-  * Assumes: h is contained in [0, 1] or [0, 360] and s and v are contained in [0, 1] or [0, 100]
-  * @returns {Object} An object with properties  r, g, b  in the set [0,255]
-  */
+ * Converts an HSV color value to RGB.
+ * Assumes: h is contained in [0, 1] or [0, 360] and s and v are contained in [0, 1] or [0, 100]
+ * @returns {Object} An object with properties  r, g, b  in the set [0,255]
+ * @memberof oj.Color
+ * @private
+ */
  function hsvToRgb(h, s, v) {
 
     h = bound01(h, 360) * 6;
@@ -1617,7 +1647,11 @@ function hslToRgb(h, s, l)
     return { r: r * 255, g: g * 255, b: b * 255 };
 }
 
-
+/**
+ * @memberof oj.Color
+ * @private
+ * @return {void}
+ */
 function _initColorConstants()
 {
   Object.defineProperty(oj.Color, "ALICEBLUE", {writable: false, value: new oj.Color("f0f8ff")});
@@ -1774,8 +1808,12 @@ function _initColorConstants()
 };
 
 /**
-  * Returns a valid alpha value [0);1] with all invalid values being set to 1
-  */
+ * Returns a valid alpha value [0);1] with all invalid values being set to 1
+ * @param {number} a alpha value
+ * @returns {number} alpha value
+ * @memberof oj.Color
+ * @private
+ */
 function boundAlpha(a)
 {
   a = parseFloat(a);
@@ -1790,9 +1828,13 @@ function boundAlpha(a)
 
 
 /**
-  * Take input from [0, n] and return it as [0, 1]
-  */
-
+ * Take input from [0, n] and return it as [0, 1]
+ * @param {string|number} n The input value
+ * @param {number} max The max value
+ * @returns {number}
+ * @memberof oj.Color
+ * @private
+ */
 function bound01(n, max)
 {
    if (isOnePointZero(n)) { n = "100%"; }
@@ -1817,48 +1859,70 @@ function bound01(n, max)
 }
 
 /**
-  *  Force a number between 0 and 1
-  */
+ * Force a number between 0 and 1
+ * @param {number} val Number to clamp
+ * @returns {number}
+ * @memberof oj.Color
+ * @private
+ */
 function clamp01(val)
 {
     return mathMin(1, mathMax(0, val));
 };
 
 /**
-  *  Parse a base-16 hex value into a base-10 integer
-  */
+ * Parse a base-16 hex value into a base-10 integer
+ * @param {number} val The input value
+ * @returns {number}
+ * @memberof oj.Color
+ * @private
+ */
 function parseIntFromHex(val)
 {
    return parseInt(val, 16);
 }
 
 /**
-  *  Need to handle 1.0 as 100%, since once it is a number, there is no difference between it and 1
-  *  <http://stackoverflow.com/questions/7422072/javascript-how-to-detect-number-as-a-decimal-including-1-0>
-  */
+ * Need to handle 1.0 as 100%, since once it is a number, there is no difference between it and 1
+ * <http://stackoverflow.com/questions/7422072/javascript-how-to-detect-number-as-a-decimal-including-1-0>
+ * @param {string|number} n The input value
+ * @returns {boolean}
+ * @memberof oj.Color
+ * @private
+ */
 function isOnePointZero(n)
 {
    return typeof n == "string" && n.indexOf('.') != -1 && parseFloat(n) === 1;
 }
 
 /**
-  *  Returns true if supplied string is a percentage
-  */
+ * Returns true if supplied string is a percentage
+ * @param {string|number} n The input value
+ * @returns {boolean} true if supplied string is a percentage
+ * @memberof oj.Color
+ * @private
+ */
 function isPercentage(n)
 {
    return typeof n === "string" && n.indexOf('%') != -1;
 }
 
-/*
- *  Force a hex value to have 2 characters
+/**
+ * Force a hex value to have 2 characters
+ * @param {string} c The hex value
+ * @returns {string} hex value with 2 characters
+ * @memberof oj.Color
+ * @private
  */
 function pad2(c)
 {
    return c.length == 1 ? '0' + c : '' + c;
 }
 
-/*
- *  Replace a decimal with it's percentage value
+/**
+ * Replace a decimal with it's percentage value
+ * @memberof oj.Color
+ * @private
  */
 function convertToPercentage(n)
 {
@@ -1871,16 +1935,22 @@ function convertToPercentage(n)
 }
 
 /**
-  *  Converts a decimal to a hex value
-  */
+ * Converts a decimal to a hex value
+ * @param {number} d The decimal value
+ * @memberof oj.Color
+ * @private
+ */
 function convertDecimalToHex(d)
 {
    return Math.round(parseFloat(d) * 255).toString(16);
 };
 
 /**
-  *  Converts a hex value to a decimal
-  */
+ * Converts a hex value to a decimal
+ * @param {number} h The hex value
+ * @memberof oj.Color
+ * @private
+ */
 function convertHexToDecimal(h)
 {
    return (parseIntFromHex(h) / 255);
@@ -1919,21 +1989,27 @@ var matchers = (function()
 
 
 /**
-  *  Accepts a single string/number and checks to see if it looks like a CSS unit
-  *  (see `matchers` above for definition).
-  */
+ * Accepts a single string/number and checks to see if it looks like a CSS unit
+ * (see `matchers` above for definition).
+ * @param {string|number} color  The value to check.
+ * @returns {boolean} true if valid CSS
+ * @memberof oj.Color
+ * @private
+ */
 function isValidCSSUnit(color)
 {
    return !!matchers.CSS_UNIT.exec(color);
 }
 
 /**
-  *  Permissive color string parsing.  Takes in a number of formats, and outputs an object
-  *  based on detected format.
-  *  @param {string}  color  A CSS color specification string.
-  *  @return {Object | boolean}  Returns an object with properties r, g, b  or  h, s, l  or  h, s, v,
-  *                              or false if parsing failed.
-  */
+ * Permissive color string parsing.  Takes in a number of formats, and outputs an object
+ * based on detected format.
+ * @param {string}  color  A CSS color specification string.
+ * @return {Object | boolean}  Returns an object with properties r, g, b  or  h, s, l  or  h, s, v,
+ *                             or false if parsing failed.
+ * @memberof oj.Color
+ * @private
+ */
 function stringInputToObject(color)
 {
   color = color.replace(trimLeft,'').replace(trimRight, '').toLowerCase();

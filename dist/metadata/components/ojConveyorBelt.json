@@ -1,19 +1,19 @@
 {
-  "name": "ojConveyorBelt",
-  "version": "4.1.0",
-  "jetVersion": "4.1.0",
-  "displayName": " Conveyor Belt",
+  "name": "oj-conveyor-belt",
+  "version": "4.2.0",
+  "jetVersion": "4.2.0",
+  "displayName": "Conveyor Belt",
   "preview": true,
-  "description": "Container element that manages overflow for its child elements and allows scrolling among them",
+  "description": "Container element that manages overflow for its child elements and allows scrolling among them.",
   "properties": {
     "contentParent": {
-      "description": "Specify the selector of the descendant DOM element in the conveyorBelt that directly contains the items to scroll among. This attribute value is null by default, meaning that the items to scroll among are direct children of the oj-conveyor-belt. In some cases, the items to scroll among are not direct children of the oj-conveyor-belt, but are instead nested in a descendant DOM element. In such cases, this attribute should be specified to point to the descendant DOM element whose direct children are the items to scroll among. For example, if the items to scroll among are buttons in a buttonset, the buttons are direct children of the DOM element representing the buttonset. The buttonset would be the direct child of the conveyorBelt. If the id of the buttonset DOM element were 'myContentElem', then content-parent would be specified as '#myContentElem'. WARNING: The selector specified for this attribute should match only a single descendant DOM element. If multiple elements are matched, then only the first one will be used. Applications should not depend on this behavior because we reserve the right to change it in the future in order to allow and use multiple matching elements.",
+      "description": "Specify the selector of the descendant DOM element in the conveyorBelt that directly contains the items to scroll among.",
       "type": "string",
       "displayName": "Content Parent",
       "value": null
     },
     "orientation": {
-      "description": "Specify the orientation of the conveyorBelt.",
+      "description": "Specifies the orientation of the conveyorBelt.",
       "type": "string",
       "displayName": "Orientation",
       "value": "horizontal",
@@ -41,7 +41,7 @@
   },
   "methods": {
     "refresh": {
-      "description": "Refreshes the visual state of the conveyorBelt. JET elements require a refresh() after the DOM is programmatically changed underneath the element. This method does not accept any arguments."
+      "description": "Refreshes the visual state of the conveyorBelt."
     },
     "setProperty": {
       "description": "Sets a property or a single subproperty for complex properties and notifies the component\nof the change, triggering a [property]Changed event.",

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2014, 2017, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
@@ -13,7 +13,8 @@ define(['ojs/ojcore', 'jquery', 'jqueryui-amd/widget', 'jqueryui-amd/unique-id',
 
 
 /**
- * @class JET Component services
+ * @class oj.Components
+ * @classdesc JET Component services
  * @export
  */
 oj.Components = {};
@@ -223,9 +224,12 @@ oj.Components.subtreeShown = function(node, options)
   {
     oj.DomUtils.fixResizeListeners(node);
   }
-  _activateDescendantDeferElements(node);
 
-  _applyToComponents(node,
+  node = $(node)[0]; // Strip possible jQuery wrapper
+
+  unmarkSubtreeHidden(node);
+
+  _applyHideShowToComponents(node,
     function(instance)
     {
       if (isInitialRender)
@@ -236,8 +240,7 @@ oj.Components.subtreeShown = function(node, options)
       {
         instance._NotifyShown();
       }
-    }
-  );
+    }, true);
 };
 
 /**
@@ -251,14 +254,60 @@ oj.Components.subtreeShown = function(node, options)
  */
 oj.Components.subtreeHidden = function(node)
 {
-  _applyToComponents(node,
+  node = $(node)[0]; // Strip possible jQuery wrapper
+
+  _applyHideShowToComponents(node,
     function(instance)
     {
       instance._NotifyHidden();
-    }
-  );
+    }, false);
+
+  markSubtreeHidden(node);
 };
 
+/**
+ * Add a marker class indicating that this subtree is hidden.
+ *
+ * @ignore
+ */
+function markSubtreeHidden(element)
+{
+  element.classList.add(_OJ_SUBTREE_HIDDEN_CLASS);
+}
+
+/**
+ * Remove the marker class indicating that this subtree is hidden.
+ *
+ * @ignore
+ */
+function unmarkSubtreeHidden(element)
+{
+  element.classList.remove(_OJ_SUBTREE_HIDDEN_CLASS);
+}
+
+/**
+ * Called by CCAs and certain custom elements when they are first connected
+ * to indicate that this component is initializing and will control
+ * whether its child subtrees are hidden.
+ *
+ * @ignore
+ */
+oj.Components.markPendingSubtreeHidden = function(element)
+{
+  element.classList.add(_OJ_PENDING_SUBTREE_HIDDEN_CLASS);
+}
+
+
+/**
+ * Called by CCAs and certain custom elements right before they are first rendered.
+ * This component will control whether its child subtrees are hidden.
+ *
+ * @ignore
+ */
+oj.Components.unmarkPendingSubtreeHidden = function(element)
+{
+  element.classList.remove(_OJ_PENDING_SUBTREE_HIDDEN_CLASS);
+}
 
 /**
  * Determines if a component identified by the <code>widgetName</code> has been
@@ -476,7 +525,7 @@ oj.Components.callComponentMethod = function(componentElement, method, methodArg
 /**
  * @private
  */
-function _applyToComponents(subtreeRoot, callback)
+function _applyToComponents(subtreeRoot, jqCallback)
 {
   var processFunc = function()
   {
@@ -489,7 +538,7 @@ function _applyToComponents(subtreeRoot, callback)
         var instance =  jelem.data("oj-" + names[i]);
         if (instance != null)
         {
-          callback(instance);
+          jqCallback(instance);
         }
       }
     }
@@ -506,6 +555,113 @@ function _applyToComponents(subtreeRoot, callback)
   locator.find('.' + _OJ_COMPONENT_NODE_CLASS).each(processFunc);
 }
 
+/**
+ * @private
+ */
+function _applyHideShowToComponents(subtreeRoot, jqCallback, activateDefer)
+{
+  // Detect hidden without forcing a layout.
+  function isHidden(node)
+  {
+    while (node)
+    {
+      if (node.nodeType === Node.DOCUMENT_NODE)
+      {
+        return false; // Walked up to document.  Not hidden
+      }
+      if (node.classList.contains(_OJ_SUBTREE_HIDDEN_CLASS))
+      {
+        return true;
+      }
+      node = node.parentNode;
+    }
+    return true;  // Didn't find document, so it must be detached and therefore hidden.
+  }
+
+  /**
+   * Both node lists must be in document order.
+   * Return new array containing nodes in 'allNodes' that are not in 'hiddenNodes'
+   * @private
+   */
+  function filterHidden(allNodes, hiddenNodes)
+  {
+    var shownNodes = [];
+    var i, j = 0;
+    for (i = 0; i < hiddenNodes.length; i++)
+    {
+      var hidden = hiddenNodes[i];
+      while (j < allNodes.length && allNodes[j] != hidden)
+      {
+        shownNodes.push(allNodes[j++])
+      }
+      j++;
+    }
+    while (j < allNodes.length)
+    {
+      shownNodes.push(allNodes[j++])
+    }
+    return shownNodes;
+  }
+
+  function processFunc(node)
+  {
+    if (jqCallback && node.classList.contains(_OJ_COMPONENT_NODE_CLASS))
+    {
+      var jelem =  $(node);
+      var names = jelem.data(_OJ_WIDGET_NAMES_DATA);
+      if (names != null)
+      {
+        for (var i=0; i < names.length; i++)
+        {
+          var instance =  jelem.data("oj-" + names[i]);
+          if (instance != null)
+          {
+            jqCallback(instance);
+          }
+        }
+      }
+    }
+
+    if (activateDefer && node.tagName.toLowerCase() === 'oj-defer')
+    {
+      node['_activate']();
+    }
+  };
+
+  if (!isHidden(subtreeRoot))
+  {
+    processFunc(subtreeRoot);
+
+    // Create selectors for jquery components and oj-defer as needed.
+    var selectors = ['.' + _OJ_COMPONENT_NODE_CLASS];
+
+    if (activateDefer)
+    {
+      selectors.push('oj-defer');
+    }
+
+    var hiddenSelectors = [];
+    selectors.forEach(function(s) {
+      hiddenSelectors.push('.' + _OJ_SUBTREE_HIDDEN_CLASS + ' ' + s);
+      hiddenSelectors.push('.' + _OJ_PENDING_SUBTREE_HIDDEN_CLASS + ' ' + s);
+    });
+
+    // Create assemble a selector that gets all matches and the subset that are hidden
+    var selector = selectors.join(',');
+    var hiddenSelector = hiddenSelectors.join(',');
+    
+    // Fetch all matching elements and those that are hidden.
+    // Use the second list to filter out hidden elements.
+    var allNodes = subtreeRoot.querySelectorAll(selector);
+    var hiddenNodes = subtreeRoot.querySelectorAll(hiddenSelector);
+    var shownNodes = filterHidden(allNodes, hiddenNodes);
+    
+    for (var i = 0; i < shownNodes.length; i++)
+    {
+      processFunc(shownNodes[i]);
+    }
+  }
+}
 
 /**
  * @constructor
@@ -571,31 +727,6 @@ function _accumulateValues(target, source, valueInArray)
  }
 
 /**
- * @ignore
- */
- function _activateDescendantDeferElements(node)
- {
-    if (node instanceof $)
-    {
-      node = node[0];
-    }
-    
-    if (node instanceof Element)
-    {
-      if (node.tagName != null && 
-        node.tagName.toLowerCase() == 'oj-defer')
-      {
-        node['_activate']();
-      }
-      var descendantDeferredNodes = node.getElementsByTagName('oj-defer'); 
-      for (var i = 0; i < descendantDeferredNodes.length; i++)
-      { 
-        descendantDeferredNodes[i]['_activate']();
-      }
-    }
- }
-
-/**
  * @private
  */
 oj.Components._OJ_CONTAINER_ATTR = "data-oj-container";
@@ -606,9 +737,26 @@ oj.Components._OJ_CONTAINER_ATTR = "data-oj-container";
 var _OJ_WIDGET_NAMES_DATA = "oj-component-names";
 
 /**
+ * Marks the element which is a jQueryUI component
  * @private
  */
 var _OJ_COMPONENT_NODE_CLASS = "oj-component-initnode";
+
+/**
+ * Marks an element as being hidden.
+ *
+ * @private
+ */
+var _OJ_SUBTREE_HIDDEN_CLASS = "oj-subtree-hidden";
+
+/**
+ * Marks an element as a container that will control hidden of its children
+ * once it finishes initializing
+ *
+ * @private
+ */
+var _OJ_PENDING_SUBTREE_HIDDEN_CLASS = "oj-pending-subtree-hidden";
+
 /**
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
@@ -3324,7 +3472,8 @@ $.widget('oj.' + _BASE_COMPONENT,
   {
     if (this._IsCustomElement())
     {
-      var contextCopy =  oj.CollectionUtils.copyInto({}, context, undefined, true);
+      // Do a shallow copy to avoid setter/getters from being lost
+      var contextCopy =  oj.CollectionUtils.copyInto({}, context);
       // remove component or widget constructor references and expose element reference instead
       delete contextCopy['component'];
       contextCopy['componentElement'] = this._getRootElement();
@@ -4258,6 +4407,7 @@ oj.DomUtils._cancelInvokeAfterPaint =  (window['cancelAnimationFrame'] || window
  * to listeners
  * @constructor
  * @ignore
+ * @private
  */
 oj.DomUtils._ResizeTracker = function(div)
 {
@@ -4684,7 +4834,8 @@ oj.DomUtils.isChromeEvent = function(event)
 
   if (oj.AgentUtils.ENGINE.GECKO === agentInfo["engine"])
     return _isChromeEventGecko(event);
-  else if (oj.AgentUtils.ENGINE.WEBKIT === agentInfo["engine"])
+  else if (oj.AgentUtils.ENGINE.WEBKIT === agentInfo["engine"] ||
+           oj.AgentUtils.ENGINE.BLINK === agentInfo["engine"])
     return _isChromeEventWebkit(event);
   if (oj.AgentUtils.BROWSER.IE === agentInfo["browser"])
     return _isChromeEventIE(event);
@@ -4733,6 +4884,66 @@ oj.DomUtils.getReadingDirection = function()
   if (dir)
     dir = dir.toLowerCase();
   return (dir === "rtl") ? "rtl" : "ltr";
+};
+
+/**
+ * Retrieve the bidi independent position of the horizontal scroll position that
+ * is consistent across all browsers.
+ * @param {Element} elem the element to retrieve the scrollLeft from
+ * @return {number} the element's scrollLeft
+ */
+oj.DomUtils.getScrollLeft = function(elem)
+{
+  if (oj.DomUtils.getReadingDirection() === "rtl")
+  {
+    var browser = oj.AgentUtils.getAgentInfo()['browser'];
+    if (browser === oj.AgentUtils.BROWSER.FIREFOX || browser === oj.AgentUtils.BROWSER.IE || browser === oj.AgentUtils.BROWSER.EDGE)
+    {
+      return Math.abs(elem.scrollLeft);
+    }
+    else
+    {
+      // webkit
+      return Math.max(0, elem.scrollWidth - elem.clientWidth - elem.scrollLeft);
+    }
+  }
+  else
+  {
+    return elem.scrollLeft;
+  }
+};
+
+/**
+ * Sets the bidi independent position of the horizontal scroll position that
+ * is consistent across all browsers.
+ * @param {Element} elem the element to set the scrollLeft on
+ * @param {number} scrollLeft the element's new scrollLeft
+ */
+oj.DomUtils.setScrollLeft = function(elem, scrollLeft)
+{
+  if (oj.DomUtils.getReadingDirection() === "rtl")
+  {
+    var browser = oj.AgentUtils.getAgentInfo()['browser'];
+    if (browser === oj.AgentUtils.BROWSER.FIREFOX)
+    {
+      // see mozilla bug 383026, even though it's marked as fixed, they basically
+      // did not change anything.  It still expects a negative value for RTL
+      elem.scrollLeft = -scrollLeft;
+    }
+    else if (browser === oj.AgentUtils.BROWSER.IE || browser === oj.AgentUtils.BROWSER.EDGE)
+    {
+      elem.scrollLeft = scrollLeft;
+    }
+    else
+    {
+      // webkit
+      elem.scrollLeft = Math.max(0, elem.scrollWidth - elem.clientWidth - scrollLeft);
+    }
+  }
+  else
+  {
+    elem.scrollLeft = scrollLeft;
+  }        
 };
 
 /**
@@ -4889,7 +5100,7 @@ oj.DomUtils.validateURL = function(href, whitelist)
   {
     throw protocol + " is not a valid URL protocol";
   }
-}
+};
 
 /**
  * Cancels native context menu events for hybrid mobile applications.
@@ -6346,7 +6557,7 @@ var DataProviderFeatureChecker = (function () {
     return DataProviderFeatureChecker;
 }());
 oj.DataProviderFeatureChecker = DataProviderFeatureChecker;
-//# sourceMappingURL=DataProviderFeatureChecker.js.map
+
 /*jslint browser: true*/
 /*
 ** Copyright (c) 2017, Oracle and/or its affiliates. All rights reserved.
@@ -6772,6 +6983,8 @@ oj.CollectionUtils.copyInto(oj.CustomElementBridge.proto,
       this._copyProperties();
     }
 
+    oj.Components.unmarkPendingSubtreeHidden(element);
+
     // Initialize jQuery object with options and pass element as wrapper if needed
     var locator = $(this._WIDGET_ELEM);
     var widgetConstructor = $(this._WIDGET_ELEM)[this._WIDGET_NAME].bind(locator);
@@ -6827,31 +7040,14 @@ oj.CollectionUtils.copyInto(oj.CustomElementBridge.proto,
       },
       'set': function(value) 
       {       
+        var bridge = oj.BaseCustomElementBridge.getInstance(this);
         if (propertyMeta._eventListener) 
         {
-          var event = oj.__AttributeUtils.eventListenerPropertyToEventType(property);
-          // Remove old event listener
-          if (listener) {
-            this.removeEventListener(event, listener);
-          }
-          listener = undefined;
-          if (value)
-          {
-            if (value instanceof Function) 
-            {
-              // Add new event listener
-              this.addEventListener(event, value);
-              listener = value;
-            }
-            else
-            {
-              oj.BaseCustomElementBridge.__ThrowTypeError(this, property, value, 'function');
-            }
-          }
+          bridge.SetEventListenerProperty(this, property, value);
+          listener = value;
         }
         else if (ext && ext._COPY_TO_INNER_ELEM)
         {
-          var bridge = oj.BaseCustomElementBridge.getInstance(this);
           bridge._validateAndSetCopyProperty(this, property, value, propertyMeta);
         }
         else 
@@ -6894,6 +7090,11 @@ oj.CollectionUtils.copyInto(oj.CustomElementBridge.proto,
     this.PARSE_FUNCTION = descriptor['parseFunction'];
 
     this._EXTENSION = this.METADATA['extension'] || {};
+    if (this._EXTENSION._CONTROLS_SUBTREE_HIDDEN)
+    {
+      oj.Components.markPendingSubtreeHidden(element);
+    }
+
     this._WIDGET_NAME = this._EXTENSION._WIDGET_NAME;
     this._PROPS = (this._EXTENSION._INNER_ELEM || this._INNER_DOM_FUNCTION) ? {'_wrapper': element} : {};
 
@@ -7535,9 +7736,23 @@ oj.Test.compareStackingContexts = function (el1, el2)
   return oj.ZOrderUtils.compareStackingContexts(el1, el2);
 };
 /**
- * A bridge for a definitional element that is not backed by a jQuery widget that maintains
- * element property values including data binding, set/getProperty for complex properties
- * set using dot notation, and property changed event firing.
+ * A bridge for a custom element that renders using a render function or a constructor
+ * function. Note that when a constructor function is provided, the new instance isn't
+ * created until the CreateComponent method so property changes that occur before the
+ * component instance is created will no-op. A render function will be called
+ * on any property changes and during CreateComponent and that the property changes can
+ * occur before CreateComponent is called. 
+ *
+ * Components that provide a constructor function should implement the following methods:
+ * createDOM - Called when the component is instantiated
+ * updateDOM - Called after createDOM and when the component needs to do a full render on 
+ * refresh and property changes if the component is not handling them separately.
+ * handlePropertyChanged - (optional) Called when properties change and should return true if
+ * the component has handled the property change and does not need to do a full render. If 
+ * false is returned, updateDOM will be called to do a full render.
+ * 
+ * Note that components supporting the constructor function approach may eventually
+ * be refactored into composites once composites support non template rendering.
  * 
  * This bridge ensures that JET components with child JET custom elements 
  * can access child properties before the child busy state resolves. 
@@ -7566,8 +7781,7 @@ oj.CollectionUtils.copyInto(oj.DefinitionalElementBridge.proto,
     proto['refresh'] = function() 
     {
       var bridge = oj.BaseCustomElementBridge.getInstance(this);
-      if (bridge._EXTENSION._RENDER_FUNC)
-        bridge._EXTENSION._RENDER_FUNC(this);
+      bridge._fullRender(this);
     };
     proto['setProperty'] = function(prop, value) 
     { 
@@ -7588,17 +7802,16 @@ oj.CollectionUtils.copyInto(oj.DefinitionalElementBridge.proto,
         else
         {
           var previousValue = this['getProperty'](prop);
-          // Property change events for top level properties will be triggered by ValidateAndSetProperty so avoid firing twice
           bridge.ValidateAndSetProperty(bridge.GetAliasForProperty.bind(bridge), this, prop, value, this);
 
-          if (bridge._READY_TO_FIRE)
+          // Property change events for top level properties will be triggered by ValidateAndSetProperty so avoid firing twice
+          // for subproperty changes
+          if (bridge._READY_TO_FIRE && prop.indexOf('.') !== -1)
           {
             // Call the renderer function so the definitional element can refresh its UI
-            if (bridge._EXTENSION._RENDER_FUNC)
-              bridge._EXTENSION._RENDER_FUNC(this);
+            bridge._partialRender(this, prop, value);
 
-            if (prop.indexOf('.') !== -1)
-              oj.DefinitionalElementBridge._firePropertyChangeEvent(this, prop, value, previousValue);
+            oj.BaseCustomElementBridge.__FirePropertyChangeEvent(this, prop, value, previousValue);
           }
         }
       }
@@ -7616,85 +7829,163 @@ oj.CollectionUtils.copyInto(oj.DefinitionalElementBridge.proto,
       else
         return oj.BaseCustomElementBridge.__GetProperty(this, prop);
     };
+
+    // Copied from CompositeElementBridge. We should eventually refactor
+    proto['_propsProto']['setProperty'] = function(prop, value) { 
+      // Check value against any defined enums
+      var meta = oj.BaseCustomElementBridge.__GetPropertyMetadata(prop, oj.BaseCustomElementBridge.getProperties(this._BRIDGE));
+
+      if (!meta) 
+      {
+        this._ELEMENT[prop] = value;
+      }
+      else
+      {
+        var previousValue = this['getProperty'](prop);
+
+        // Skip validation for inner sets so we don't throw an error when updating readOnly writeable properties
+        oj.BaseCustomElementBridge.__SetProperty(this._BRIDGE.GetAliasForProperty.bind(this._BRIDGE), this, prop, value);
+
+        // Property change events for top level properties will be triggered by ValidateAndSetProperty so avoid firing twice
+        if (this._BRIDGE._READY_TO_FIRE && prop.indexOf('.') !== -1)
+          oj.BaseCustomElementBridge.__FirePropertyChangeEvent(this, prop, value, previousValue);
+      }
+    };
+    proto['_propsProto']['getProperty'] = function(prop) {
+      var meta = oj.BaseCustomElementBridge.__GetPropertyMetadata(prop, oj.BaseCustomElementBridge.getProperties(this._BRIDGE));
+
+      // Use the element/props getters for top level properties to handle default values
+      if (!meta || prop.indexOf('.') === -1)
+        return this[prop];
+      else
+        return oj.BaseCustomElementBridge.__GetProperty(this, prop);
+    };
   },
 
   CreateComponent: function(element)
   {
-    // Call the renderer function so the definitional element can initialize its UI
-    if (this._EXTENSION._RENDER_FUNC)
-      this._EXTENSION._RENDER_FUNC(element);
+    oj.Components.unmarkPendingSubtreeHidden(element);
 
-    var bridge = oj.BaseCustomElementBridge.getInstance(element);
+    if (!this._INSTANCE && this._EXTENSION._CONSTRUCTOR)
+    {
+      // We expose a similar set of properties as composites except that props is
+      // not a Promise and we don't expose any slot information.
+      // At the moment some definitional elements have mutation observers so they don't need
+      // to rely on refresh being called to be alerted of new children so any cached slotMap
+      // can become out of sync. We should add this once we build in support to auto detect 
+      // added/removed children to custom elements.
+      this._CONTEXT = {
+        'element': element,
+        'props': this._PROPS_PROXY,
+        'unique': oj.BaseCustomElementBridge.__GetUnique(),
+      };
+      this._CONTEXT['uniqueId'] = element.id ? element.id : this._CONTEXT['unique'];
+      this._INSTANCE = new this._EXTENSION._CONSTRUCTOR(this._CONTEXT);
+      // Let the component initialize any additional DOM and then do a full render
+      this._INSTANCE.createDOM();
+      this._INSTANCE.updateDOM();
+    }
+    else if (this._EXTENSION._RENDER_FUNC)
+    {
+      this._EXTENSION._RENDER_FUNC(element);
+    }
+
     // Set flag when we can fire property change events
-    bridge._READY_TO_FIRE = true;
+    this._READY_TO_FIRE = true;
 
     // Resolve the component busy state 
-    bridge.resolveDelayedReadyPromise();
+    this.resolveDelayedReadyPromise();
 
   },
   
+  DefineMethodCallback: function (proto, method, methodMeta) 
+  {
+    proto[method] = function()
+    {
+      var bridge = oj.BaseCustomElementBridge.getInstance(this);
+      if (bridge._INSTANCE)
+      {
+        var methodName = methodMeta['internalName'] || method;
+        return bridge._INSTANCE[methodName].apply(bridge._INSTANCE, arguments);
+      }
+    };
+  },
+
   DefinePropertyCallback: function (proto, property, propertyMeta) 
   {
-    Object.defineProperty(proto, property, 
+    var set = function(value, bOuterSet)
     {
-      'enumerable': true,
-      'get': function() 
-      { 
-        var bridge = oj.BaseCustomElementBridge.getInstance(this);
-        var value = bridge._PROPS[property];
-        // If the attribute has not been set, return the default value
-        if (value === undefined)
-        {
-          value = propertyMeta['value'];
-          // Make a copy if the default value is an Object or Array to prevent modification
-          // of the metadata copy and store in the propertyTracker so we have a copy
-          // to modify in place for the object case
-          if (typeof value === 'object')
-            value = oj.CollectionUtils.copyInto({}, value, undefined, true);
-          else if (Array.isArray(value))
-            value = value.slice();
-          bridge._PROPS[property] = value;
-        }
-        return value;
-      },
-      'set': function(value) 
-      {
-        var bridge = oj.BaseCustomElementBridge.getInstance(this);
-        var oldValue = bridge._PROPS[property];
+        var oldValue = this._BRIDGE._PROPS[property];
         if (oldValue !== value) 
         {
-          value = bridge.ValidatePropertySet(this, property, value)
-          bridge._PROPS[property] = value;
+          // Skip validation for inner sets so we don't throw an error when updating readOnly writeable properties
+          if (bOuterSet)
+              value = this._BRIDGE.ValidatePropertySet(this._ELEMENT, property, value)
           if (propertyMeta._eventListener)
           {
-            var event = oj.__AttributeUtils.eventListenerPropertyToEventType(property);
-            // Remove old event listener
-            
-            if (oldValue)
-              this.removeEventListener(event, oldValue);
-            // Add new event listener
-            if (value)
-            {
-              if (value instanceof Function)
-                this.addEventListener(event, value);
-              else
-                oj.BaseCustomElementBridge.__ThrowTypeError(this, property, value, 'function');
-            }
-          } 
+            this._BRIDGE.SetEventListenerProperty(this._ELEMENT, property, value);
+            this._BRIDGE._PROPS[property] = value;
+          }
           else 
           {
+            this._BRIDGE._PROPS[property] = value;
             // Call the renderer function so the definitional element can refresh its UI
-            if (bridge._EXTENSION._RENDER_FUNC)
-              bridge._EXTENSION._RENDER_FUNC(this);
+            this._BRIDGE._partialRender(this._ELEMENT, property, value);
           }
 
-          if (!propertyMeta._derived && bridge._READY_TO_FIRE)
-          {
-            oj.DefinitionalElementBridge._firePropertyChangeEvent(this, property, value, oldValue);
-          }
+          // Check that we are done initializing the component before firing property change events
+          if (!propertyMeta._derived && this._BRIDGE._READY_TO_FIRE)
+            oj.BaseCustomElementBridge.__FirePropertyChangeEvent(this._ELEMENT, property, value, oldValue);
         }
+    }
+
+    var innerSet = function(value)
+    {
+      set.bind(this)(value, false);
+    }
+
+    // Called on the custom element
+    var outerSet = function(value)
+    {
+      var bridge = oj.BaseCustomElementBridge.getInstance(this);
+      set.bind(bridge._PROPS_PROXY)(value, true);
+    }
+
+    var get = function()
+    {
+      var value = this._BRIDGE._PROPS[property];
+      // If the attribute has not been set, return the default value
+      if (value === undefined)
+      {
+        value = propertyMeta['value'];
+        // Make a copy if the default value is an Object or Array to prevent modification
+        // of the metadata copy and store in the propertyTracker so we have a copy
+        // to modify in place for the object case
+        if (Array.isArray(value))
+          value = value.slice();
+        else if (typeof value === 'object')
+          value = oj.CollectionUtils.copyInto({}, value, undefined, true);
+        this._BRIDGE._PROPS[property] = value;
       }
-    });
+      return value;
+    }
+
+    var innerGet = function()
+    {
+      return get.bind(this)();
+    }
+
+    // Called on the custom element
+    var outerGet = function()
+    {
+      var bridge = oj.BaseCustomElementBridge.getInstance(this);
+      return get.bind(bridge._PROPS_PROXY)();
+    }
+
+    // Don't add event listener properties for inner props
+    if (!propertyMeta._derived)
+      oj.BaseCustomElementBridge.__DefineDynamicObjectProperty(proto['_propsProto'], property, innerGet, innerSet);
+    oj.BaseCustomElementBridge.__DefineDynamicObjectProperty(proto, property, outerGet, outerSet);
   },
 
   GetMetadata: function(descriptor)
@@ -7708,46 +7999,52 @@ oj.CollectionUtils.copyInto(oj.DefinitionalElementBridge.proto,
     oj.BaseCustomElementBridge.proto.InitializeElement.call(this, element);
     
     this._EXTENSION = this.METADATA['extension'] || {};
-    this._PROPS = {};
+    if (this._EXTENSION._CONTROLS_SUBTREE_HIDDEN)
+    {
+      oj.Components.markPendingSubtreeHidden(element);
+    }
 
-    oj.BaseCustomElementBridge.__InitProperties(element, this._PROPS, null);  
+    this._PROPS = {};
+    if (element['_propsProto'])
+    {
+      this._PROPS_PROXY = Object.create(element['_propsProto']);
+      this._PROPS_PROXY._BRIDGE = this;
+      this._PROPS_PROXY._ELEMENT = element;
+    }
+
+    oj.BaseCustomElementBridge.__InitProperties(element, this._PROPS_PROXY, null);  
     this.GetDelayedPropertiesPromise().resolvePromise();
+  },
+
+  InitializePrototype: function(proto)
+  {
+    Object.defineProperty(proto, '_propsProto', {value: {}});
+  },
+
+  _fullRender: function(element)
+  {
+    if (this._EXTENSION._RENDER_FUNC)
+      this._EXTENSION._RENDER_FUNC(element);
+    else if (this._INSTANCE)
+      this._INSTANCE.updateDOM();
+  },
+
+  _partialRender: function(element, property, value)
+  {
+    if (this._EXTENSION._RENDER_FUNC)
+      this._EXTENSION._RENDER_FUNC(element);
+    else if (this._INSTANCE)
+    {
+      // For partial renders, check to see if the component is handling the property change
+      // or if it should do a full render
+      var handlePropChangedFun = this._INSTANCE.handlePropertyChanged;
+      var fullRender = !handlePropChangedFun || !handlePropChangedFun(property, value);
+      if (fullRender)
+        this._INSTANCE.updateDOM();
+    }
   }
 
 });
-
-/*****************************/
-/* NON PUBLIC STATIC METHODS */
-/*****************************/
-
-/**
- * @private
- */
-oj.DefinitionalElementBridge._firePropertyChangeEvent = function(element, name, value, previousValue)
-{
-  var detail = {}
-  var subpropPath = name.split('.');
-  var eventName = name;
-  var eventValue = value;
-  var eventPrevValue = previousValue;
-  if (subpropPath.length > 1)
-  {
-    var subproperty = {};
-    subproperty['path'] = name;
-    subproperty['value'] = value;
-    subproperty['previousValue'] = previousValue;
-    detail['subproperty'] = subproperty;
-    eventName = subpropPath[0];
-    // We don't make a copy of the top level property so the old and new values will be the same;
-    eventValue = element[eventName];
-    eventPrevValue = eventValue;
-  }
-  detail['value'] = eventValue;
-  detail['previousValue'] = eventPrevValue;
-  element.dispatchEvent(new CustomEvent(eventName + "Changed", {'detail': detail}));
-};
-
-
 
 (function() {
 var baseComponentMeta = {

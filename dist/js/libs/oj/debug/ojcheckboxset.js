@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2014, 2017, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
@@ -573,7 +573,8 @@ oj.__registerWidget("oj.ojCheckboxset", $['oj']['editableValue'],
    */
   Focus : function ()
   {
-    this._GetContentElement().first().focus();
+    // We need :focusable here so that we don't try to focus on an element that isn't focusable.
+    this._GetContentElement().filter(":focusable").first().focus();
     return true;
   },
   /**
@@ -652,20 +653,20 @@ oj.__registerWidget("oj.ojCheckboxset", $['oj']['editableValue'],
   _customOptionRenderer : function (elem)
   {
     var span;
-    var checkbox;
     var label;
     var ojoption = elem;
-    var needsDom = (ojoption.parentNode.nodeName == "OJ-CHECKBOXSET");
 
     $(ojoption).uniqueId(); // let's make sure that each oj-option has an ID so the
                             // label element can reference the input element via the 'for' attribute
     var id = ojoption.getAttribute("id");
     var checkboxId = id+"|cb";
-
-    // check to see if we've already rendered the additional dom or not
+    var checkbox = document.getElementById(checkboxId);
+    var alreadyProcessed = (checkbox !== null); // Was the oj-option already processed
+    
+    // if the oj-option is already processed, we don't need to add the additional dom
     // in the code below, we use setAttribute() for everything as we want to be
     // setting the initial value for these elements.
-    if (needsDom)
+    if (!alreadyProcessed)
     {
       span = document.createElement("span");
       checkbox = document.createElement("input");
@@ -678,10 +679,6 @@ oj.__registerWidget("oj.ojCheckboxset", $['oj']['editableValue'],
       label.appendChild(ojoption); // append the oj-option as a child of label
       span.appendChild(checkbox);
       span.appendChild(label);
-    }
-    else // we already rendered the dom, just locate the checkbox
-    {
-      checkbox = document.getElementById(checkboxId);
     }
 
     var name = this.element[0].id; // Use the id of the ojcheckboxset as the name of the oj-options.
@@ -714,7 +711,10 @@ oj.__registerWidget("oj.ojCheckboxset", $['oj']['editableValue'],
     else
       checkbox.removeAttribute("disabled");
     
-    if (!needsDom)
+    // When an oj-option child is disabled (by setting the disabled attribute to
+    // true) and it re-renders, the component should refresh automatically rather than requiring the
+    // user to call refresh. See .   
+    if (alreadyProcessed)
     {
       $(checkbox)._ojRadioCheckbox("option", "disabled", ojoption.disabled);
     }

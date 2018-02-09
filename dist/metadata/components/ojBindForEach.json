@@ -1,8 +1,8 @@
 {
-  "name": "ojBindForEach",
-  "version": "4.1.0",
-  "jetVersion": "4.1.0",
-  "displayName": " Bind For Each",
+  "name": "oj-bind-for-each",
+  "version": "4.2.0",
+  "jetVersion": "4.2.0",
+  "displayName": "Bind For Each",
   "preview": true,
   "description": "ojBindForEach",
   "properties": {

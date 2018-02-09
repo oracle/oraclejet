@@ -1,8 +1,8 @@
 {
-  "name": "ojNavigationList",
-  "version": "4.1.0",
-  "jetVersion": "4.1.0",
-  "displayName": " Navigation List",
+  "name": "oj-navigation-list",
+  "version": "4.2.0",
+  "jetVersion": "4.2.0",
+  "displayName": "Navigation List",
   "preview": true,
   "styleClasses": [
     {
@@ -196,7 +196,7 @@
           "displayName": "Hidden"
         },
         "popup": {
-          "description": "popup menu will be shown with overflowed items.",
+          "description": "popup menu will be shown with overflowed items. NOTE: Setting overflow to popup can trigger browser reflow, so only set it when it is actually required.",
           "displayName": "Popup"
         }
       }
@@ -291,7 +291,7 @@
     }
   },
   "events": {
-    "animateStart": {
+    "ojAnimateStart": {
       "description": "Event handler for when the default animation of a particular action is about to start.",
       "detail": {
         "action": {
@@ -308,7 +308,7 @@
         }
       }
     },
-    "animateEnd": {
+    "ojAnimateEnd": {
       "description": "Event handler for when the default animation of a particular action has ended.",
       "detail": {
         "action": {
@@ -321,7 +321,7 @@
         }
       }
     },
-    "beforeSelect": {
+    "ojBeforeSelect": {
       "description": "Event handler for when before the selection is changed.",
       "cancelable": true,
       "detail": {
@@ -335,7 +335,7 @@
         }
       }
     },
-    "beforeCollapse": {
+    "ojBeforeCollapse": {
       "description": "Event handler for when an item is about to collapse.",
       "cancelable": true,
       "detail": {
@@ -349,7 +349,7 @@
         }
       }
     },
-    "beforeCurrentItem": {
+    "ojBeforeCurrentItem": {
       "description": "Event handler for when before the current item is changed.",
       "cancelable": true,
       "detail": {
@@ -371,7 +371,7 @@
         }
       }
     },
-    "collapse": {
+    "ojCollapse": {
       "description": "Event handler for after an item has collapsed.",
       "detail": {
         "key": {
@@ -384,7 +384,7 @@
         }
       }
     },
-    "beforeExpand": {
+    "ojBeforeExpand": {
       "description": "Event handler for when an item is about to expand.",
       "cancelable": true,
       "detail": {
@@ -398,7 +398,7 @@
         }
       }
     },
-    "expand": {
+    "ojExpand": {
       "description": "Event handler for after an item has expanded.",
       "detail": {
         "key": {

@@ -1897,7 +1897,7 @@ DvtLedGaugeRenderer._renderShape = function(gauge, container, bounds) {
         // Calculate the dimensions and shift the shape to be centered at 0,0 within its containing rectangle
         var dim = dvt.DisplayableUtils.getDimForced(context, shape);
         var scaleTo100 = 100 / Math.max(dim.w, dim.h);
-        cmds = dvt.PathUtils.transformPath(type, - scaleTo100 * (dim.x + dim.w / 2), - scaleTo100 * (dim.y + dim.h / 2), scaleTo100, scaleTo100);
+        cmds = dvt.PathUtils.transformPath(shape.getCommands(), - scaleTo100 * (dim.x + dim.w / 2), - scaleTo100 * (dim.y + dim.h / 2), scaleTo100, scaleTo100);
         DvtLedGaugeRenderer._cache.put(type, cmds);
       }
     }
@@ -1913,7 +1913,7 @@ DvtLedGaugeRenderer._renderShape = function(gauge, container, bounds) {
     // All others use paths
     else {
       // Translate from center of (0,0)
-      cmds = dvt.PathUtils.transformPath(cmds, bounds.x + bounds.w / 2, bounds.y + bounds.h / 2, scale, scale);
+      cmds = dvt.PathUtils.transformPath(dvt.PathUtils.createPathArray(cmds), bounds.x + bounds.w / 2, bounds.y + bounds.h / 2, scale, scale);
       shape = new dvt.Path(context, cmds);
     }
   }

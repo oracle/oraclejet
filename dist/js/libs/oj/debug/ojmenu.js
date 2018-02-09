@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2014, 2017, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
@@ -21,7 +21,9 @@ define(['ojs/ojcore', 'jquery', "hammerjs", "ojs/ojjquery-hammer", 'promise', 'o
 
 /**
  * @ojcomponent oj.ojMenu
+ * @ojdisplayname Menu
  * @augments oj.baseComponent
+ * @ojrole menu
  * @since 0.6
  * @ojstatus preview
  *
@@ -84,11 +86,9 @@ define(['ojs/ojcore', 'jquery', "hammerjs", "ojs/ojjquery-hammer", 'promise', 'o
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#itemIcons-section"></a>
  * </h3>
  *
- * <p>Menu items currently support showing a single start icon. If more than one child element of an item's <code class="prettyprint">&lt;oj-option></code> tag specifies the
- * <code class="prettyprint">startIcon</code> slot, the first child will be shown, and the additional child elements will be removed from the DOM.
- * 
- * <p>End icons are not currently suuported for menu items. Any child element of an item's <code class="prettyprint">&lt;oj-option></code> tag that specifies
- * the <code class="prettyprint">endIcon</code> slot will be removed from the DOM.
+ * <p>Menu items currently support the rendering of start and end icons. To render start or end icons for a menu item, the
+ * <code class="prettyprint">startIcon</code> or <code class="prettyprint">endIcon</code> slot of the <code class="prettyprint">oj-option</code>
+ * should be specified. See the <code class="prettyprint">oj-option</code> doc for details about accepted children and slots.</p>
  * 
  * 
  * <h3 id="dismissal-section">
@@ -242,7 +242,7 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
          * @memberof oj.ojMenu
          * @instance
          * @type {boolean}
-         * @default <code class="prettyprint">false</code>
+         * @default false
          *
          * @example <caption>Initialize the menu with the <code class="prettyprint">disabled</code> attribute specified:</caption>
          * &lt;oj-menu disabled='true'>&lt;/oj-menu>
@@ -268,8 +268,8 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
          * @instance
          * @ignore
          * @type {string}
-         * @default <code class="prettyprint">"ul"</code>
-         * @deprecated Menus should always be created from an unordered list ( <code class="prettyprint">&lt;ul></code> ).
+         * @default "ul"
+         * @deprecated 2.1.0 Menus should always be created from an unordered list ( <code class="prettyprint">&lt;ul></code> ).
          *   This API will be removed in a future release.
          */
         menuSelector: "ul",
@@ -335,7 +335,7 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
              * @since 2.1.0
              *
              * @type {string}
-             * @default <code class="prettyprint">"auto"</code>
+             * @default "auto"
              * @ojvalue {string} "auto" Displays the menu as a sheet or dropDown, depending on the screen width.
              * @ojvalue {string} "dropDown" Displays the menu as a dropDown.
              * @ojvalue {string} "sheet" Displays the menu as a sheet.
@@ -360,7 +360,7 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
              * @memberof! oj.ojMenu
              * @instance
              * @type {string}
-             * @default <code class="prettyprint">"menu"</code>
+             * @default "menu"
              * @ojvalue {string} "none" Leaves focus where it is, e.g. on the launching component.  The application must verify that the result is accessible.
              * @ojvalue {string} "menu" Focuses the menu itself, with no menu item focused (e.g. typical Context Menu behavior).
              * @ojvalue {string} "firstItem" Focuses the first menu item (e.g. MenuButton <kbd>DownArrow</kbd> behavior).
@@ -389,7 +389,7 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
              * @memberof! oj.ojMenu
              * @instance
              * @type {string|Object}
-             * @default <code class="prettyprint">null</code>
+             * @default null
              *
              * @example <caption>Initialize the menu with the <code class="prettyprint">openOptions.launcher</code> sub-option specified:</caption>
              * &lt;oj-menu open-options.launcher='myLauncher'>&lt;/oj-menu>
@@ -437,7 +437,7 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
              * @memberof! oj.ojMenu
              * @instance
              * @type {Object}
-             * @default <code class="prettyprint">{ "my": "start top", "at": "start bottom", "collision": "flipfit" }</code>
+             * @default { "my": "start top", "at": "start bottom", "collision": "flipfit" }
              *
              * @example <caption>Initialize the menu with the <code class="prettyprint">openOptions.position</code> option specified:</caption>
              * &lt;oj-menu open-options.position.my='start'>&lt;/oj-menu>
@@ -515,7 +515,7 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
              * @instance
              * @ignore
              * @type {Object}
-             * @default <code class="prettyprint">{ "my": "start top", "at": "end top", "collision": "flipfit" }</code>
+             * @default { "my": "start top", "at": "end top", "collision": "flipfit" }
              */
             position: {
                 /** @expose */
@@ -544,6 +544,9 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
          * $menuSheetCloseAnimation: (effect: "slideOut", direction: "bottom", duration: $animationDurationShort) !default;
          *
          * </code></pre>
+         * @ojshortdesc Triggered when a default animation is about to start, such as when the component is
+         * being opened/closed or a child item is being added/removed. The default animation can
+         * be cancelled by calling event.preventDefault.
          *
          * @expose
          * @event
@@ -995,6 +998,11 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
     _processOjOptions: function() {
         var self = this;
         
+        self._maxEndIconCount = 0;
+        self._maxStartIconCount = 0;
+        self._startIconWidth = 0;
+        self._endIconWidth = 0;
+        
         var ojOptions = this.element.find("oj-option");
         $.each(ojOptions, function(i, option) {
             option["customOptionRenderer"] = self._customOptionRenderer.bind(self);
@@ -1004,6 +1012,13 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
     _customOptionRenderer: function(option) {
         // Implement custom rendering here...
         var ojOption = $(option);
+        var self = this;
+        
+        // check for disabled state in case all we need to do is update disabled attribute
+        if (option['disabled'] == true)
+            ojOption.addClass('oj-disabled')
+        else if (option['disabled'] == false)
+            ojOption.removeClass('oj-disabled')
         
         // test to see if this is a divider
         if (ojOption.is(":not(.oj-menu-item)") && !/[^\-\u2014\u2013\s]/.test( ojOption.text() )) // hyphen, em dash, en dash
@@ -1017,46 +1032,93 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
         a.setAttribute('href', '#');
         ojOption.prepend(a); // @HTMLUpdateOK append trusted new DOM to menu item
         
-        var supportedSlots = ["startIcon", ""];
+        var supportedSlots = ["startIcon", "", "endIcon"];
         var slots = oj.CustomElementBridge.getSlotMap(option);
-        
-        // remove unwanted slots - for now this should remove the unsupported "endIcon" slot from the menu items
-        $.each(slots, function(slotName, nodes) {
-            if (supportedSlots.indexOf(slotName) == -1) {
-                $.each(nodes, function(i, node) {
-                    option.removeChild(node);
-                })
-            }
-        })
-        
+
         // reparent the slots, and make sure any necessary styling is applied
         $.each(supportedSlots, function(i, slotName) {
             if (slots[slotName]) {
-                var startIconCount = 0;
-                $.each(slots[slotName], function(i, node) {
-                    if (slotName === "")
-                    {
+                if (slotName === "")
+                {
+                    $.each(slots[slotName], function(j, node) {
                         $(a).append(node); // @HTMLUpdateOK reparent trusted child DOM in menu item
-                    }
-                    else if (slotName === "startIcon")
-                    {
-                        // only 1 startIcon is supported, so remove any extra children if present
-                        if (startIconCount == 0)
-                        {
-                            $(node).addClass('oj-menu-item-icon');
-                            $(a).append(node); // @HTMLUpdateOK reparent trusted child DOM in menu item
-                            startIconCount++;
-                        }
-                        else
-                            option.removeChild(node);
-                    }
-                })
+                    })
+                }
+                else if (slotName === "startIcon")
+                {
+                    var startIconCount = slots[slotName].length;
+                    self._maxStartIconCount = Math.max(self._maxStartIconCount, startIconCount);
+                    
+                    $.each(slots[slotName], function(j, node) {
+                        $(node).addClass('oj-menu-item-icon');
+                        $(a).append(node); // @HTMLUpdateOK reparent trusted child DOM in menu item
+                        
+                        // positioning logic doesn't need to run if there is only 1 start icon
+                        if (startIconCount > 1)
+                            self._positionStartIcon(node, j, startIconCount);
+                    })
+                }
+                else if (slotName === "endIcon")
+                {
+                    var endIconCount = slots[slotName].length;
+                    self._maxEndIconCount = Math.max(self._maxEndIconCount, endIconCount);
+                    
+                    $.each(slots[slotName], function(j, node) {
+                        $(node).addClass('oj-menu-item-end-icon');
+                        $(a).append(node); // @HTMLUpdateOK reparent trusted child DOM in menu item
+                        
+                        // positioning logic doesn't need to run if there is only 1 end icon
+                        if (endIconCount > 1)
+                            self._positionEndIcon(node, j, endIconCount);
+                    })
+                }
             }
         });
+    },
+    
+    // Helper method to position start icons
+    _positionStartIcon: function(node, index, count) {
+        if (this.isRtl)
+            var marginProperty = 'margin-right';
+        else
+            marginProperty = 'margin-left';
         
-        // check for disabled state
-        if (option['disabled'] == true)
-            ojOption.addClass('oj-disabled')
+        var margin = parseInt($(node).css( marginProperty ), 10);
+        // margins are negative for start icons
+        this._startIconWidth = -1 * margin;
+        $(node).css( marginProperty, margin * (count - index) + 'px' );
+    },
+    
+    // Helper method to position end icons
+    _positionEndIcon: function(node, index, count) {
+        if (this.isRtl)
+        {
+            var marginProperty = 'margin-left';
+            var widthProperty = 'margin-right';
+        }
+        else
+        {
+            marginProperty = 'margin-right';
+            widthProperty = 'margin-left';
+        }
+        
+        var margin = parseInt($(node).css( marginProperty ), 10);
+        // margins are negative for end icons
+        this._endIconWidth = -1 * parseInt($(node).css( widthProperty ), 10);
+        $(node).css( marginProperty, (margin + this._endIconWidth * (count - index - 1)) + 'px' );
+    },
+    
+    // Helper method to apply icon padding to menu item anchors
+    _applyAnchorIconPadding: function(anchors, iconWidth, count, isStart) {
+        if ((this.isRtl && isStart) || (!this.isRtl && !isStart))
+            var paddingProperty = 'padding-right';
+        else
+            paddingProperty = 'padding-left';
+        
+        anchors.each(function() {
+            var padding = parseInt($(this).css( paddingProperty ), 10);
+            $(this).css( paddingProperty, (padding + iconWidth * (count - 1)) + 'px' );
+        })
     },
     
    /**
@@ -1150,7 +1212,7 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
             .removeAttr( "aria-activedescendant" )
             .removeClass( "oj-component" )
             .find( ".oj-menu" ).addBack()
-                .removeClass( "oj-menu oj-menu-submenu oj-menu-icons oj-menu-text-only" )
+                .removeClass( "oj-menu oj-menu-submenu oj-menu-icons oj-menu-end-icons oj-menu-text-only" )
                 .removeAttr( "role" )
                 .removeAttr( "tabIndex" )
                 .removeAttr( "aria-labelledby" )
@@ -1347,8 +1409,7 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
      *
      * <ul>
      *   <li>After menu items are added or removed.</li>
-     *   <li>After a change to a menu item's disabled status (which is set by applying or removing the <code class="prettyprint">oj-disabled</code>
-     *       class from the menu item).</li>
+     *   <li>After a change to a menu item's disabled status.
      *   <li>After the reading direction (LTR vs. RTL) changes.</li>
      * </ul>
      *
@@ -1479,13 +1540,20 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
             // We exclude the cancel item's icon from the count, as that icon is always present if the cancel item is, but it's themed to show up iff
             // oj-menu-icons is present, i.e. iff at least one other icon is present.
             var menu = $( this ); // <ul>
-            var iconCount =
-                menu.children() // <li>s
-                    .children() // <a>s
-                    .children(".oj-menu-item-icon:not(.oj-menu-cancel-icon)") // icons other than cancel item's icon
-                    .length;
+            var anchors = menu.children()  // <li>s
+                              .children(); // <a>s
+            var iconCount = anchors.children(".oj-menu-item-icon:not(.oj-menu-cancel-icon)").length; // icons other than cancel item's icon
             menu.toggleClass( "oj-menu-icons", !!iconCount )
                 .toggleClass( "oj-menu-text-only", !iconCount );
+        
+            if (self._maxStartIconCount && self._maxStartIconCount > 1)
+                self._applyAnchorIconPadding(anchors, self._startIconWidth, self._maxStartIconCount, true);
+            
+            var endIconCount = anchors.children(".oj-menu-item-end-icon").length;
+            menu.toggleClass( "oj-menu-end-icons", !!endIconCount );
+            
+            if (self._maxEndIconCount && self._maxEndIconCount > 1)
+                self._applyAnchorIconPadding(anchors, self._endIconWidth, self._maxEndIconCount, false);
         });
 
         // If the active item has been removed, blur the menu

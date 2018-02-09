@@ -12392,7 +12392,7 @@ dvt.ImageLoader.loadImage = function(context, src, onComplete) {
 };
 
 
-// Copyright (c) 2012, 2016, Oracle and/or its affiliates. All rights reserved.
+// Copyright (c) 2012, 2017, Oracle and/or its affiliates. All rights reserved.
 
 
 /**
@@ -12521,10 +12521,13 @@ dvt.JsonUtils._copy = function(a, b) {
  * @private
  */
 dvt.JsonUtils._isDeepClonable = function(obj) {
-  if (typeof obj == 'undefined')
-    return false;
-  else
-    return (obj instanceof Object) && !(obj instanceof Boolean) && !(obj instanceof String) && !(obj instanceof Number) && !(obj instanceof Function) && !(obj.then);
+  if (obj instanceof Object) {
+    if (obj['has']) // key set
+      return false;
+
+    return !(obj instanceof Boolean) && !(obj instanceof String) && !(obj instanceof Number) && !(obj instanceof Function) && !(obj.then);
+  }
+  return false;
 };
 
 /**
@@ -12538,6 +12541,8 @@ dvt.JsonUtils._isClonableObject = function(obj) {
     if (obj.then) // Promise
       return false;
     else if (obj.jquery) // JQuery Object
+      return false;
+    else if (obj['has']) // key set
       return false;
     else if (typeof NodeList != 'undefined' && obj instanceof NodeList) // DOM NodeList
       return false;
@@ -15492,7 +15497,7 @@ dvt.DisplayableUtils.isAncestor = function(ancestor, descendant) {
 };
 
 
-// Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
+// Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
 /*---------------------------------------------------------------------*/
 /*  dvt.PathUtils()       Utility functions for SVG paths               */
 /*---------------------------------------------------------------------*/
@@ -15822,7 +15827,8 @@ dvt.PathUtils.createPathArray = function(sCmds)
     return null;
 
   //  Unpack into an array of commands and coords.
-  var cmds = sCmds.replace(/([mlqhvzca])/gi, ',$1,'); // create array of coords from the string
+  sCmds = sCmds.replace(/([0-9])([\-])/g, '$1 $2'); // must add a space before negative numbers that don't have one
+  var cmds = sCmds.replace(/([mlqhvzcast])/gi, ',$1,'); // create array of coords from the string
   var ar = cmds.split(/[ ,]/g);
   var len = ar.length;
   var i;
@@ -16043,86 +16049,87 @@ dvt.PathUtils.getPathString = function(ar)
 
 
 /**
-  *  Initializes the shape to the specified coordinates.
+  *  Transforms the shape to the specified coordinates.
+  *  @param {array} arCmds The array of commands for a path
+  *  @param {number} x The x translation
+  *  @param {number} y The y translation
+  *  @param {number} sx The x scale factor
+  *  @param {number} sy The y scale factor
+  *  @return {string} The transformed path
   *  @private
   */
-dvt.PathUtils.transformPath = function(sCmds, x, y, sx, sy)
+dvt.PathUtils.transformPath = function(arCmds, x, y, sx, sy)
 {
-  var scaledPath = '';                   // return string
-  if (! sCmds)
+  if (!arCmds)
     return;
 
-  // Split the commands (command is recognized as a single letter followed
-  // by any number of non-letter characters)
-
-  var commands = sCmds.match(/[a-z][^a-z]*/ig);
-
-  for (var i = 0; i < commands.length; i++)
+  var scaledPath = '';  // return string
+  var cmdType = '';
+  var absCmd;
+  for (var i = 0; i < arCmds.length; i++)
   {
-    var command = commands[i];
-    var cmdType = command.charAt(0);
-    var absCmd = cmdType === cmdType.toUpperCase();
+    if (typeof arCmds[i] == 'string') {
+      cmdType = arCmds[i];
+      absCmd = cmdType === cmdType.toUpperCase();
+      scaledPath += (cmdType + ' ');
+    }
 
-    scaledPath += (cmdType + ' ');
-    var strArgs = command.substring(1);
+    var args = [];
+    while (i < arCmds.length - 1 && typeof arCmds[i + 1] == 'number') {
+      i++;
+      args.push(arCmds[i]);
+    }
 
-    strArgs = strArgs.replace(/,/g, ' ');         // replace all commas with spaces
-    strArgs = strArgs.replace(/^\s+|\s+$/g, '');  // trim leading and trailing whitespace
-
-    if (strArgs.length > 0)
+    if (cmdType.toUpperCase() === 'A')
     {
-      var args = strArgs.split(/\s+/g); // split on whitespace
-      if (cmdType.toUpperCase() === 'A')
-      {
-        // (rx ry x-axis-rotation large-arc-flag sweep-flag x y)  only rx, ry, x, y should be scaled
-        // only x,y should be translated for 'A', no translation for 'a'
+      // (rx ry x-axis-rotation large-arc-flag sweep-flag x y)  only rx, ry, x, y should be scaled
+      // only x,y should be translated for 'A', no translation for 'a'
 
-        for (var j = 0; j < args.length; j += 7)            // loop to support multi-arc
-        {
-          scaledPath += (dvt.ToolkitUtils.roundDecimal(parseFloat(args[j]) * sx) + ' ');                      // rx
-          scaledPath += (dvt.ToolkitUtils.roundDecimal(parseFloat(args[j + 1]) * sy) + ' ');                    // ry
-          scaledPath += (dvt.ToolkitUtils.roundDecimal(args[j + 2]) + ' ');                                     // x-axis-rotation
-          scaledPath += (dvt.ToolkitUtils.roundDecimal(args[j + 3]) + ' ');                                     // large-arc-flag
-          scaledPath += (dvt.ToolkitUtils.roundDecimal(args[j + 4]) + ' ');                                     // sweep-flag
-          scaledPath += (dvt.ToolkitUtils.roundDecimal(parseFloat(args[j + 5]) * sx + (absCmd ? x : 0)) + ' ');   // x
-          scaledPath += (dvt.ToolkitUtils.roundDecimal(parseFloat(args[j + 6]) * sy + (absCmd ? y : 0)) + ' ');   // y
-        }
+      for (var j = 0; j < args.length; j += 7)            // loop to support multi-arc
+      {
+        scaledPath += (dvt.ToolkitUtils.roundDecimal(parseFloat(args[j]) * sx) + ' ');                      // rx
+        scaledPath += (dvt.ToolkitUtils.roundDecimal(parseFloat(args[j + 1]) * sy) + ' ');                    // ry
+        scaledPath += (dvt.ToolkitUtils.roundDecimal(args[j + 2]) + ' ');                                     // x-axis-rotation
+        scaledPath += (dvt.ToolkitUtils.roundDecimal(args[j + 3]) + ' ');                                     // large-arc-flag
+        scaledPath += (dvt.ToolkitUtils.roundDecimal(args[j + 4]) + ' ');                                     // sweep-flag
+        scaledPath += (dvt.ToolkitUtils.roundDecimal(parseFloat(args[j + 5]) * sx + (absCmd ? x : 0)) + ' ');   // x
+        scaledPath += (dvt.ToolkitUtils.roundDecimal(parseFloat(args[j + 6]) * sy + (absCmd ? y : 0)) + ' ');   // y
+      }
+    }
+    else
+    {
+      // For all other cmdTypes, all numbers should be scaled
+      // For all absolute cmdTypes, all numbers should be translated
+
+      var scales = [];
+      var translates = [];
+      if (cmdType.toUpperCase() === 'H')
+      {
+        scales.push(sx); // All numbers should be scaled by sx
+        translates.push(absCmd ? x : 0); // All numbers should be translated by x
+      }
+      else if (cmdType.toUpperCase() === 'V')
+      {
+        scales.push(sy); // All numbers should be scaled by sy
+        translates.push(absCmd ? y : 0); // All numbers should be translated by y
       }
       else
       {
-        // For all other cmdTypes, all numbers should be scaled
-        // For all absolute cmdTypes, all numbers should be translated
+        // All other commands take a set of points, so even indices should be scaled
+        //  by sx, odd indices by sy
+        scales.push(sx);
+        scales.push(sy);
+        // For absolute commands, even indices should be translated by x, odd indices by y
+        translates.push(absCmd ? x : 0);
+        translates.push(absCmd ? y : 0);
+      }
 
-        var scales = [];
-        var translates = [];
-        if (cmdType.toUpperCase() === 'H')
-        {
-          scales.push(sx); // All numbers should be scaled by sx
-          translates.push(absCmd ? x : 0); // All numbers should be translated by x
-        }
-        else if (cmdType.toUpperCase() === 'V')
-        {
-          scales.push(sy); // All numbers should be scaled by sy
-          translates.push(absCmd ? y : 0); // All numbers should be translated by y
-        }
-        else
-        {
-          // All other commands take a set of points, so even indices should be scaled
-          //  by sx, odd indices by sy
-          scales.push(sx);
-          scales.push(sy);
-          // For absolute commands, even indices should be translated by x, odd indices by y
-          translates.push(absCmd ? x : 0);
-          translates.push(absCmd ? y : 0);
-        }
+      for (var j = 0; j < args.length; j++)
+      {
+        var s = scales[j % scales.length];
+        var t = translates[j % translates.length];
 
-        for (var j = 0; j < args.length; j++)
-        {
-          var s = scales[j % scales.length];
-          var t = translates[j % translates.length];
-
-          scaledPath += (dvt.ToolkitUtils.roundDecimal(parseFloat(args[j]) * s + t) + ' ');  // scale and translate
-        }
+        scaledPath += (dvt.ToolkitUtils.roundDecimal(parseFloat(args[j]) * s + t) + ' ');  // scale and translate
       }
     }
   }         // end for
@@ -21662,7 +21669,7 @@ dvt.SimpleMarker.prototype._getCmds = function() {
   var dx = this._cx - (dim.x * scalex) - (dim.w * scalex) / 2;
   var dy = this._cy - (dim.y * scaley) - (dim.h * scaley) / 2;
 
-  return dvt.PathUtils.transformPath(this._path.getCmds(), dx, dy, scalex, scaley);
+  return dvt.PathUtils.transformPath(this._path.getCommands(), dx, dy, scalex, scaley);
 };
 
 /**
@@ -22446,7 +22453,7 @@ dvt.Oval.prototype.getDimensionsSelf = function(targetCoordinateSpace) {
   var bounds = new dvt.Rectangle(this.getCx() - this.getRx(), this.getCy() - this.getRy(), this.getRx() * 2, this.getRy() * 2);
   return this.ConvertCoordSpaceRect(bounds, targetCoordinateSpace);
 };
-// Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
+// Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
 /**
  * Path displayable.
  * @param {dvt.Context} context
@@ -22517,7 +22524,7 @@ dvt.Path.prototype.getCommands = function() {
   var arCmds = this.GetProperty('arCmds');
   if (!arCmds) {
     // Otherwise, convert, cache and return.
-    arCmds = this.GetProperty('d') ? dvt.PathUtils.createPathArray(this.GetProperty('d')) : null;
+    arCmds = dvt.PathUtils.createPathArray(this.getCmds());
     this.SetProperty('arCmds', arCmds);
   }
   return arCmds;
@@ -27302,6 +27309,11 @@ dvt.BaseComponent.prototype.Init = function(context, callback, callbackObj) {
    * @private
    */
   this._cache = new dvt.BaseComponentCache();
+  /**
+   * @private
+   * @const
+   */
+  this._SHARED_DEFS_DIV_ID = '_dvtSharedDefs';
 };
 
 
@@ -27512,17 +27524,61 @@ dvt.BaseComponent.prototype.StopAnimation = function(bJumpToEnd) {
 };
 
 /**
+ * Adds the specified element to the shared defs on the page.
+ * @param {Element} elem The element to add.
+ * @return {Element} The appended element.
+ */
+dvt.BaseComponent.prototype.appendSharedDefs = function(elem) {
+  var sharedDefsDiv = document.getElementById(this._SHARED_DEFS_DIV_ID);
+  if (!sharedDefsDiv) {
+    // Add a div outside the component, following how DVT tooltips are added outside the component,
+    // i.e. by setting the appropriate styles to keep it hidden and adding it to the end of body
+    sharedDefsDiv = document.createElement('div');
+    sharedDefsDiv.id = this._SHARED_DEFS_DIV_ID;
+    sharedDefsDiv.style.visibility = 'hidden';
+    sharedDefsDiv.style.width = '0px';
+    sharedDefsDiv.style.height = '0px';
+    sharedDefsDiv.style.left = '0px';
+    sharedDefsDiv.style.top = '0px';
+    sharedDefsDiv.style.position = 'absolute';
+
+    var svg = dvt.ToolkitUtils.createSvgDocument();
+    dvt.ToolkitUtils.setAttrNullNS(svg, 'width', '0px');
+    dvt.ToolkitUtils.setAttrNullNS(svg, 'height', '0px');
+    var defs = dvt.SvgShapeUtils.createElement('defs');
+
+    svg.appendChild(defs);
+    sharedDefsDiv.appendChild(svg);
+
+    // Add the div to the end of body (following what DVT tooltips do).
+    document.body.appendChild(sharedDefsDiv); //@HTMLUpdateOK
+  }
+
+  defs = sharedDefsDiv.childNodes[0].childNodes[0];
+  defs.appendChild(elem);
+  return elem;
+};
+
+/**
  * Component destroy function called to prevent memory leaks when component is no longer referenced.
  * Subclasses should call superclass destroy last if overriding.
  */
 dvt.BaseComponent.prototype.destroy = function() {
-  // Animation should stopped before the event manager is destroyed since it might access the event manager
+  // Animation should be stopped before the event manager is destroyed since it might access the event manager
   this.StopAnimation();
   if (this.EventManager) {
     this.EventManager.removeListeners(this);
     this.EventManager.destroy();
     this.EventManager = null;
   }
+
+  // The last DVT component on the page should remove the shared defs div on destroy
+  // TODO: Employ the solution that will be used to fix 
+  var isLastDVTComponent = document.getElementsByClassName('oj-dvtbase').length === 1;
+  var sharedDefsDiv = document.getElementById(this._SHARED_DEFS_DIV_ID);
+  if (isLastDVTComponent && sharedDefsDiv)
+    document.body.removeChild(sharedDefsDiv);
+
   // Always call superclass last for destroy
   dvt.BaseComponent.superclass.destroy.call(this);
 };

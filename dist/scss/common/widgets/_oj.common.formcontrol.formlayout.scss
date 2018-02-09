@@ -1,0 +1,28 @@
+// Copyright (c) 2014, 2018, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the 
+//          version in your base theme's directory, 
+//          for example alta/widgets/_oj.alta.formcontrol.formlayout.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+@import "../../utilities/oj.utilities";
+
+@import "oj.common.formlayout.mixins"; 
+@import "oj.common.formlayout.utilities";
+
+@if $includeFormLayoutElementClasses != false {
+  @include module-include-once("common.formlayout.element") {
+    // Generate the style classes for oj-form-layout custom element component.
+    // Currently, we only have the common cases, but in the future, we may add
+    // oj-form-layout element specific selectors here.
+    @include oj-form-layout-common($selectorPrefix: "oj-formlayout");
+  }
+  
+  // This is to prevent the flash of unstyled content before the html becomes JET components.
+  @if $initialVisibility == hidden {
+    oj-form-layout:not(.oj-complete) {
+      visibility: hidden;
+    }
+  }
+}
+    

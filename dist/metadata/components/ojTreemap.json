@@ -1,8 +1,8 @@
 {
-  "name": "ojTreemap",
-  "version": "4.1.0",
-  "jetVersion": "4.1.0",
-  "displayName": " Treemap",
+  "name": "oj-treemap",
+  "version": "4.2.0",
+  "jetVersion": "4.2.0",
+  "displayName": "Treemap",
   "preview": true,
   "description": "ojTreemap",
   "properties": {
@@ -1028,7 +1028,7 @@
     }
   },
   "events": {
-    "beforeDrill": {
+    "ojBeforeDrill": {
       "description": "Triggered immediately before any node in the treemap is drilled into. The drill event can be vetoed if the beforeDrill callback returns false.",
       "detail": {
         "id": {
@@ -1041,7 +1041,7 @@
         }
       }
     },
-    "drill": {
+    "ojDrill": {
       "description": "Triggered during a drill gesture (double click if selection is enabled, single click otherwise).",
       "detail": {
         "id": {

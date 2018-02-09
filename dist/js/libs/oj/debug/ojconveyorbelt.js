@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2014, 2017, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
@@ -53,6 +53,8 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
  *  - itemStyleClass: Style class name for the DOM element of an item in the conveyor,
  *  - hiddenStyleClass: Style class name used to hide a DOM element
  * @param {Object} agentInfo Browser user agent information.
+ * @class ConveyorBeltCommon
+ * @memberof ConveyorBeltCommon
  * @protected
  * @constructor
  * @ignore
@@ -157,6 +159,8 @@ function ConveyorBeltCommon(
 /**
  * Setup the conveyor belt.
  * @param {boolean} bInit True for initialization, false for refresh
+ * @memberof ConveyorBeltCommon
+ * @instance
  */
 ConveyorBeltCommon.prototype.setup = function(bInit)
 {
@@ -228,6 +232,8 @@ ConveyorBeltCommon.prototype.setup = function(bInit)
 
 /**
  * Destroy the conveyor belt.
+ * @memberof ConveyorBeltCommon
+ * @instance
  */
 ConveyorBeltCommon.prototype.destroy = function()
 {
@@ -294,6 +300,8 @@ ConveyorBeltCommon.prototype.destroy = function()
 /**
  * Set the id of the item to make first visible.
  * @param {string} id id of the item to make first visible
+ * @memberof ConveyorBeltCommon
+ * @instance
  */
 ConveyorBeltCommon.prototype.setFirstVisibleItem = function(id)
 {
@@ -311,6 +319,8 @@ ConveyorBeltCommon.prototype.setFirstVisibleItem = function(id)
 
 /**
  * Handle a component resize.
+ * @memberof ConveyorBeltCommon
+ * @instance
  */
 ConveyorBeltCommon.prototype.handleResize = function()
 {
@@ -321,6 +331,8 @@ ConveyorBeltCommon.prototype.handleResize = function()
  * Set the scroll position.
  * @param {number} scroll Desired logical scroll position
  * @param {boolean} bImmediate True to make the change immediately, false to animate it
+ * @memberof ConveyorBeltCommon
+ * @instance
  */
 ConveyorBeltCommon.prototype.setScroll = function(scroll, bImmediate)
 {
@@ -330,6 +342,8 @@ ConveyorBeltCommon.prototype.setScroll = function(scroll, bImmediate)
 /**
  * Get the current scroll position.
  * @return {number} Logical scroll position
+ * @memberof ConveyorBeltCommon
+ * @instance
  */
 ConveyorBeltCommon.prototype.getScroll = function()
 {
@@ -341,6 +355,9 @@ ConveyorBeltCommon.prototype.getScroll = function()
  * content container node.
  * @param {Object} fromNode Old parent DOM node
  * @param {Object} toNode New parent DOM node
+ * @memberof ConveyorBeltCommon
+ * @instance
+ * @private
  */
 ConveyorBeltCommon.prototype._reparentChildrenToContentContainer = function(
   fromNode, toNode)
@@ -367,6 +384,9 @@ ConveyorBeltCommon.prototype._reparentChildrenToContentContainer = function(
  * parent node.
  * @param {Object} fromNode Old parent DOM node
  * @param {Object} toNode New parent DOM node
+ * @memberof ConveyorBeltCommon
+ * @instance
+ * @private
  */
 ConveyorBeltCommon.prototype._reparentChildrenFromContentContainer = function(
   fromNode, toNode)
@@ -389,6 +409,8 @@ ConveyorBeltCommon.prototype._reparentChildrenFromContentContainer = function(
  * Get the computed style of the given DOM element.
  * @param {Object} elem DOM element
  * @return {Object} Computed style for the element
+ * @memberof ConveyorBeltCommon
+ * @private
  */
 ConveyorBeltCommon._getComputedStyle = function(elem)
 {
@@ -412,6 +434,8 @@ ConveyorBeltCommon._getComputedStyle = function(elem)
  * Get the inner width of the given DOM element (inside borders and padding).
  * @param {Object} elem DOM element
  * @return {number} Width of element
+ * @memberof ConveyorBeltCommon
+ * @private
  */
 ConveyorBeltCommon._getElemInnerWidth = function(elem)
 {
@@ -425,6 +449,8 @@ ConveyorBeltCommon._getElemInnerWidth = function(elem)
  * Get the inner height of the given DOM element (inside borders and padding).
  * @param {Object} elem DOM element
  * @return {number} Height of element
+ * @memberof ConveyorBeltCommon
+ * @private
  */
 ConveyorBeltCommon._getElemInnerHeight = function(elem)
 {
@@ -436,8 +462,10 @@ ConveyorBeltCommon._getElemInnerHeight = function(elem)
 
 /**
  * Get the int value of a CSS length.
- * @param {string} cssLength cssLength as a String
+ * @param {string} cssLength cssLength as a string
  * @return {number} cssLength as an int
+ * @memberof ConveyorBeltCommon
+ * @private
  */
 ConveyorBeltCommon._getCSSLengthAsInt = function(cssLength)
 {
@@ -458,7 +486,9 @@ ConveyorBeltCommon._getCSSLengthAsInt = function(cssLength)
  * Add a bubble event listener to the given DOM node.
  * @param {Object} node DOM node
  * @param {string} type Event type
- * @param {Function} listener Listener function
+ * @param {function(Event)} listener Listener function
+ * @memberof ConveyorBeltCommon
+ * @private
  */
 ConveyorBeltCommon._addBubbleEventListener = function(node, type, listener)
 {
@@ -476,7 +506,9 @@ ConveyorBeltCommon._addBubbleEventListener = function(node, type, listener)
  * Remove a bubble event listener from the given DOM node.
  * @param {Object} node DOM node
  * @param {string} type Event type
- * @param {Function} listener Listener function
+ * @param {function(Event)} listener Listener function
+ * @memberof ConveyorBeltCommon
+ * @private
  */
 ConveyorBeltCommon._removeBubbleEventListener = function(node, type, listener)
 {
@@ -494,6 +526,8 @@ ConveyorBeltCommon._removeBubbleEventListener = function(node, type, listener)
  * Get the wheel delta from a mousewheel event.
  * @param {Object} event Event object
  * @return {number} Wheel delta
+ * @memberof ConveyorBeltCommon
+ * @private
  */
 ConveyorBeltCommon._getWheelDelta = function(event)
 {
@@ -517,6 +551,8 @@ ConveyorBeltCommon._getWheelDelta = function(event)
 /**
  * Create a div styled like a table.
  * @return {Node} div styled like a table row
+ * @memberof ConveyorBeltCommon
+ * @private
  */
 ConveyorBeltCommon._createTableDiv = function()
 {
@@ -529,6 +565,8 @@ ConveyorBeltCommon._createTableDiv = function()
 /**
  * Create a div styled like a table row.
  * @return {Node} div styled like a table row
+ * @memberof ConveyorBeltCommon
+ * @private
  */
 ConveyorBeltCommon._createTableRowDiv = function()
 {
@@ -541,6 +579,8 @@ ConveyorBeltCommon._createTableRowDiv = function()
 /**
  * Create a div styled like a table cell.
  * @return {Node} div styled like a table cell
+ * @memberof ConveyorBeltCommon
+ * @private
  */
 ConveyorBeltCommon._createTableCellDiv = function()
 {
@@ -560,6 +600,8 @@ ConveyorBeltCommon._createTableCellDiv = function()
  * @param {boolean} bWidth True to restrict the element's width, false otherwise
  * @param {boolean} bHeight True to restrict the element's height, false otherwise
  * @return {Node} The wrapper div element
+ * @memberof ConveyorBeltCommon
+ * @private
  */
 ConveyorBeltCommon._wrapAndRestrictSize = function(
   elem, parentElem, bWidth, bHeight)
@@ -589,6 +631,9 @@ ConveyorBeltCommon._wrapAndRestrictSize = function(
 /**
  * Determine if this conveyor belt is horizontal or vertical.
  * @return {boolean} True if the conveyor belt is horizontal, false if vertical
+ * @memberof ConveyorBeltCommon
+ * @instance
+ * @private
  */
 ConveyorBeltCommon.prototype._isHorizontal = function()
 {
@@ -598,6 +643,9 @@ ConveyorBeltCommon.prototype._isHorizontal = function()
 /**
  * Determine if this conveyor belt is empty.
  * @return {boolean} True if the conveyor belt is empty, false if not
+ * @memberof ConveyorBeltCommon
+ * @instance
+ * @private
  */
 ConveyorBeltCommon.prototype._isEmpty = function()
 {
@@ -607,6 +655,9 @@ ConveyorBeltCommon.prototype._isEmpty = function()
 
 /**
  * Restore inner DOM to its initial state before sizes were calculated.
+ * @memberof ConveyorBeltCommon
+ * @instance
+ * @private
  */
 ConveyorBeltCommon.prototype._reinitializeInnerDom = function()
 {
@@ -623,6 +674,9 @@ ConveyorBeltCommon.prototype._reinitializeInnerDom = function()
 
 /**
  * Clear cached sizes.
+ * @memberof ConveyorBeltCommon
+ * @instance
+ * @private
  */
 ConveyorBeltCommon.prototype._clearCachedSizes = function()
 {
@@ -633,6 +687,9 @@ ConveyorBeltCommon.prototype._clearCachedSizes = function()
 /**
  * Handle a component resize.
  * @param {boolean} bSetup True when called from setup, false otherwise
+ * @memberof ConveyorBeltCommon
+ * @instance
+ * @private
  */
 ConveyorBeltCommon.prototype._handleResize = function(bSetup)
 {
@@ -661,6 +718,9 @@ ConveyorBeltCommon.prototype._handleResize = function(bSetup)
 
 /**
  * Center the overflow buttons orthogonal to the conveyor orientation.
+ * @memberof ConveyorBeltCommon
+ * @instance
+ * @private
  */
 ConveyorBeltCommon.prototype._alignButtons = function()
 {
@@ -691,6 +751,9 @@ ConveyorBeltCommon.prototype._alignButtons = function()
 /**
  * Adjust the overflow size.
  * @param {boolean} bInit True for initialization, false for refresh
+ * @memberof ConveyorBeltCommon
+ * @instance
+ * @private
  */
 ConveyorBeltCommon.prototype._adjustOverflowSize = function(bInit)
 {
@@ -724,6 +787,9 @@ ConveyorBeltCommon.prototype._adjustOverflowSize = function(bInit)
 
 /**
  * Create the inner overflow and content containers.
+ * @memberof ConveyorBeltCommon
+ * @instance
+ * @private
  */
 ConveyorBeltCommon.prototype._createInnerContainers = function()
 {
@@ -760,6 +826,9 @@ ConveyorBeltCommon.prototype._createInnerContainers = function()
 /**
  * Get the content elements of the conveyor.
  * @return {Array} array of content elements
+ * @memberof ConveyorBeltCommon
+ * @instance
+ * @private
  */
 ConveyorBeltCommon.prototype._getContentElements = function()
 {
@@ -807,6 +876,9 @@ ConveyorBeltCommon.prototype._getContentElements = function()
  * @param {string} buttonId Id to use for the button
  * @param {string} buttonStyleClass Style class to use for the button
  * @param {Node} icon Button icon element
+ * @memberof ConveyorBeltCommon
+ * @instance
+ * @private
  */
 ConveyorBeltCommon.prototype._createPrevButton = function(
   buttonId, buttonStyleClass, icon)
@@ -839,6 +911,9 @@ ConveyorBeltCommon.prototype._createPrevButton = function(
  * @param {string} buttonId Id to use for the button
  * @param {string} buttonStyleClass Style class to use for the button
  * @param {Node} icon Button icon element
+ * @memberof ConveyorBeltCommon
+ * @instance
+ * @private
  */
 ConveyorBeltCommon.prototype._createNextButton = function(
   buttonId, buttonStyleClass, icon)
@@ -869,6 +944,9 @@ ConveyorBeltCommon.prototype._createNextButton = function(
 /**
  * Get the content parent.
  * @return {Object} parent DOM element of the content
+ * @memberof ConveyorBeltCommon
+ * @instance
+ * @private
  */
 ConveyorBeltCommon.prototype._getContentParent = function()
 {
@@ -884,6 +962,9 @@ ConveyorBeltCommon.prototype._getContentParent = function()
 /**
  * Measure the contents of the conveyor.
  * @return {Object} Total size of the contents
+ * @memberof ConveyorBeltCommon
+ * @instance
+ * @private
  */
 ConveyorBeltCommon.prototype._measureContents = function()
 {
@@ -1001,6 +1082,9 @@ ConveyorBeltCommon.prototype._measureContents = function()
 /**
  * Get the array of content sizes.
  * @return {Array} Array of content sizes
+ * @memberof ConveyorBeltCommon
+ * @instance
+ * @private
  */
 ConveyorBeltCommon.prototype._getSizes = function()
 {
@@ -1019,6 +1103,9 @@ ConveyorBeltCommon.prototype._getSizes = function()
 
 /**
  * Show the next button.
+ * @memberof ConveyorBeltCommon
+ * @instance
+ * @private
  */
 ConveyorBeltCommon.prototype._showNextButton = function()
 {
@@ -1027,6 +1114,9 @@ ConveyorBeltCommon.prototype._showNextButton = function()
 
 /**
  * Show the prev button.
+ * @memberof ConveyorBeltCommon
+ * @instance
+ * @private
  */
 ConveyorBeltCommon.prototype._showPrevButton = function()
 {
@@ -1035,6 +1125,9 @@ ConveyorBeltCommon.prototype._showPrevButton = function()
 
 /**
  * Hide the next button.
+ * @memberof ConveyorBeltCommon
+ * @instance
+ * @private
  */
 ConveyorBeltCommon.prototype._hideNextButton = function()
 {
@@ -1043,6 +1136,9 @@ ConveyorBeltCommon.prototype._hideNextButton = function()
 
 /**
  * Hide the prev button.
+ * @memberof ConveyorBeltCommon
+ * @instance
+ * @private
  */
 ConveyorBeltCommon.prototype._hidePrevButton = function()
 {
@@ -1052,6 +1148,9 @@ ConveyorBeltCommon.prototype._hidePrevButton = function()
 /**
  * Determine if the next button is shown.
  * @return {boolean} true if shown, false if hidden
+ * @memberof ConveyorBeltCommon
+ * @instance
+ * @private
  */
 ConveyorBeltCommon.prototype._isNextButtonShown = function()
 {
@@ -1061,6 +1160,9 @@ ConveyorBeltCommon.prototype._isNextButtonShown = function()
 /**
  * Determine if the prev button is shown.
  * @return {boolean} True if shown, false if hidden
+ * @memberof ConveyorBeltCommon
+ * @instance
+ * @private
  */
 ConveyorBeltCommon.prototype._isPrevButtonShown = function()
 {
@@ -1070,6 +1172,9 @@ ConveyorBeltCommon.prototype._isPrevButtonShown = function()
 /**
  * Get the size of a next/prev button along the direction of conveyor orientation.
  * @return {number} Size of a button
+ * @memberof ConveyorBeltCommon
+ * @instance
+ * @private
  */
 ConveyorBeltCommon.prototype._getButtonSize = function()
 {
@@ -1079,6 +1184,9 @@ ConveyorBeltCommon.prototype._getButtonSize = function()
 /**
  * Update visibility of the next/prev buttons and adjust scroll position accordingly.
  * @param {number} scroll Desired scroll position
+ * @memberof ConveyorBeltCommon
+ * @instance
+ * @private
  */
 ConveyorBeltCommon.prototype._updateButtonVisibility = function(scroll)
 {
@@ -1132,6 +1240,9 @@ ConveyorBeltCommon.prototype._updateButtonVisibility = function(scroll)
 /**
  * Set the overflow scroll position.
  * @param {number} scroll Overflow logical scroll position
+ * @memberof ConveyorBeltCommon
+ * @instance
+ * @private
  */
 ConveyorBeltCommon.prototype._setOverflowScroll = function(scroll)
 {
@@ -1149,6 +1260,9 @@ ConveyorBeltCommon.prototype._setOverflowScroll = function(scroll)
 /**
  * Get the current overflow viewport size.
  * @return {number} Overflow viewport size
+ * @memberof ConveyorBeltCommon
+ * @instance
+ * @private
  */
 ConveyorBeltCommon.prototype._getCurrViewportSize = function()
 {
@@ -1160,6 +1274,9 @@ ConveyorBeltCommon.prototype._getCurrViewportSize = function()
  * Set the scroll position.
  * @param {number} scroll Desired logical scroll position
  * @param {boolean} bImmediate True to make the change immediately, false to animate it
+ * @memberof ConveyorBeltCommon
+ * @instance
+ * @private
  */
 ConveyorBeltCommon.prototype._setCurrScroll = function(scroll, bImmediate)
 {
@@ -1177,6 +1294,9 @@ ConveyorBeltCommon.prototype._setCurrScroll = function(scroll, bImmediate)
  * Helper function to set scroll position.
  * @param {number} scroll Desired scroll position
  * @param {boolean} bImmediate True to make the change immediately, false to animate it
+ * @memberof ConveyorBeltCommon
+ * @instance
+ * @private
  */
 ConveyorBeltCommon.prototype._setCurrScrollHelper = function(scroll, bImmediate)
 {
@@ -1223,6 +1343,9 @@ ConveyorBeltCommon.prototype._setCurrScrollHelper = function(scroll, bImmediate)
 
 /**
  * Resolve an outstanding busy state.
+ * @memberof ConveyorBeltCommon
+ * @instance
+ * @private
  */
 ConveyorBeltCommon.prototype._resolveBusyState = function()
 {
@@ -1236,6 +1359,9 @@ ConveyorBeltCommon.prototype._resolveBusyState = function()
 /**
  * Get the current scroll position.
  * @return {number} Logical scroll position
+ * @memberof ConveyorBeltCommon
+ * @instance
+ * @private
  */
 ConveyorBeltCommon.prototype._getCurrScroll = function()
 {
@@ -1247,6 +1373,9 @@ ConveyorBeltCommon.prototype._getCurrScroll = function()
 /**
  * Determine if the conveyor needs to show scroll buttons.
  * @return {boolean} True if scrolling is needed, false if not
+ * @memberof ConveyorBeltCommon
+ * @instance
+ * @private
  */
 ConveyorBeltCommon.prototype._needsScroll = function()
 {
@@ -1261,6 +1390,9 @@ ConveyorBeltCommon.prototype._needsScroll = function()
  * Constrain the scroll position.
  * @param {number} scroll Desired scroll position
  * @return {number} Constrained scroll position
+ * @memberof ConveyorBeltCommon
+ * @instance
+ * @private
  */
 ConveyorBeltCommon.prototype._constrainScroll = function(scroll)
 {
@@ -1278,6 +1410,9 @@ ConveyorBeltCommon.prototype._constrainScroll = function(scroll)
 /**
  * Handle a mousewheel event.
  * @param {Object} event Event object
+ * @memberof ConveyorBeltCommon
+ * @instance
+ * @private
  */
 ConveyorBeltCommon.prototype._handleMouseWheel = function(event)
 {
@@ -1308,6 +1443,9 @@ ConveyorBeltCommon.prototype._handleMouseWheel = function(event)
 /**
  * Handle a touchstart event.
  * @param {Object} event Event object
+ * @memberof ConveyorBeltCommon
+ * @instance
+ * @private
  */
 ConveyorBeltCommon.prototype._handleTouchStart = function(event)
 {
@@ -1330,6 +1468,9 @@ ConveyorBeltCommon.prototype._handleTouchStart = function(event)
 /**
  * Handle a touchmove event.
  * @param {Object} event Event object
+ * @memberof ConveyorBeltCommon
+ * @instance
+ * @private
  */
 ConveyorBeltCommon.prototype._handleTouchMove = function(event)
 {
@@ -1393,6 +1534,9 @@ ConveyorBeltCommon.prototype._handleTouchMove = function(event)
 /**
  * Handle a touchend event.
  * @param {Object} event Event object
+ * @memberof ConveyorBeltCommon
+ * @instance
+ * @private
  */
 ConveyorBeltCommon.prototype._handleTouchEnd = function(event)
 {
@@ -1410,6 +1554,9 @@ ConveyorBeltCommon.prototype._handleTouchEnd = function(event)
 /**
  * Handle a DOM scroll event.
  * @param {Object} event Event object
+ * @memberof ConveyorBeltCommon
+ * @instance
+ * @private
  */
 ConveyorBeltCommon.prototype._handleScroll = function(event)
 {
@@ -1425,6 +1572,9 @@ ConveyorBeltCommon.prototype._handleScroll = function(event)
 /**
  * Function called after a scroll finishes.
  * @param {number} scroll Scroll position
+ * @memberof ConveyorBeltCommon
+ * @instance
+ * @private
  */
 ConveyorBeltCommon.prototype._onScrollAnimEnd = function(scroll)
 {
@@ -1459,6 +1609,9 @@ ConveyorBeltCommon.prototype._onScrollAnimEnd = function(scroll)
 
 /**
  * Set a timout to reset the externalScroll flag.
+ * @memberof ConveyorBeltCommon
+ * @instance
+ * @private
  */
 ConveyorBeltCommon.prototype._setExternalScrollTimeout = function()
 {
@@ -1469,6 +1622,9 @@ ConveyorBeltCommon.prototype._setExternalScrollTimeout = function()
 
 /**
  * Scroll to the next set of items.
+ * @memberof ConveyorBeltCommon
+ * @instance
+ * @private
  */
 ConveyorBeltCommon.prototype._scrollNext = function()
 {
@@ -1478,6 +1634,9 @@ ConveyorBeltCommon.prototype._scrollNext = function()
 
 /**
  * Scroll to the previous set of items.
+ * @memberof ConveyorBeltCommon
+ * @instance
+ * @private
  */
 ConveyorBeltCommon.prototype._scrollPrev = function()
 {
@@ -1488,6 +1647,9 @@ ConveyorBeltCommon.prototype._scrollPrev = function()
 /**
  * Calculate the scroll position for the next set of items.
  * @return {number} Next scroll position
+ * @memberof ConveyorBeltCommon
+ * @instance
+ * @private
  */
 ConveyorBeltCommon.prototype._calcNextScroll = function()
 {
@@ -1508,6 +1670,9 @@ ConveyorBeltCommon.prototype._calcNextScroll = function()
 /**
  * Calculate the scroll position for the previous set of items.
  * @return {number} Previous scroll position
+ * @memberof ConveyorBeltCommon
+ * @instance
+ * @private
  */
 ConveyorBeltCommon.prototype._calcPrevScroll = function()
 {
@@ -1541,6 +1706,9 @@ ConveyorBeltCommon.prototype._calcPrevScroll = function()
  * Calculate the scroll position for the start of the specified item.
  * @param {number} index Index of the item to scroll to
  * @return {number} Scroll position
+ * @memberof ConveyorBeltCommon
+ * @instance
+ * @private
  */
 ConveyorBeltCommon.prototype._calcStartScroll = function(index)
 {
@@ -1553,6 +1721,9 @@ ConveyorBeltCommon.prototype._calcStartScroll = function(index)
  * Calculate the scroll position for the end of the specified item.
  * @param {number} index Index of the item to scroll to
  * @return {number} Scroll position
+ * @memberof ConveyorBeltCommon
+ * @instance
+ * @private
  */
 ConveyorBeltCommon.prototype._calcEndScroll = function(index)
 {
@@ -1564,6 +1735,9 @@ ConveyorBeltCommon.prototype._calcEndScroll = function(index)
 /**
  * Calculate the index of the first visible item.
  * @return {number} Index of first visible item
+ * @memberof ConveyorBeltCommon
+ * @instance
+ * @private
  */
 ConveyorBeltCommon.prototype._calcFirstVisibleItemIndex = function()
 {
@@ -1575,6 +1749,9 @@ ConveyorBeltCommon.prototype._calcFirstVisibleItemIndex = function()
 /**
  * Calculate the index of the last visible item.
  * @return {number} Index of last visible item
+ * @memberof ConveyorBeltCommon
+ * @instance
+ * @private
  */
 ConveyorBeltCommon.prototype._calcLastVisibleItemIndex = function()
 {
@@ -1588,6 +1765,9 @@ ConveyorBeltCommon.prototype._calcLastVisibleItemIndex = function()
 /**
  * Calculate the index of the previous visible item.
  * @return {number} Index of previous visible item
+ * @memberof ConveyorBeltCommon
+ * @instance
+ * @private
  */
 ConveyorBeltCommon.prototype._calcPrevVisibleItemIndex = function()
 {
@@ -1599,6 +1779,9 @@ ConveyorBeltCommon.prototype._calcPrevVisibleItemIndex = function()
 /**
  * Calculate the index of the next visible item.
  * @return {number} Index of next visible item
+ * @memberof ConveyorBeltCommon
+ * @instance
+ * @private
  */
 ConveyorBeltCommon.prototype._calcNextVisibleItemIndex = function()
 {
@@ -1613,6 +1796,9 @@ ConveyorBeltCommon.prototype._calcNextVisibleItemIndex = function()
  * Calculate the index of the item at the given scroll position.
  * @param {number} scroll Scroll position
  * @return {number} Index of item at given scroll position
+ * @memberof ConveyorBeltCommon
+ * @instance
+ * @private
  */
 ConveyorBeltCommon.prototype._calcItemIndex = function(scroll)
 {
@@ -1630,6 +1816,9 @@ ConveyorBeltCommon.prototype._calcItemIndex = function(scroll)
  * Convert a logical scroll position to its corresponding browser value.
  * @param {number} scroll logical scroll position
  * @return {number} browser scroll position
+ * @memberof ConveyorBeltCommon
+ * @instance
+ * @private
  */
 ConveyorBeltCommon.prototype._convertScrollLogicalToBrowser = function(scroll)
 {
@@ -1662,6 +1851,9 @@ ConveyorBeltCommon.prototype._convertScrollLogicalToBrowser = function(scroll)
  * Convert a browser scroll position to its corresponding logical value.
  * @param {number} scroll browser scroll position
  * @return {number} logical scroll position
+ * @memberof ConveyorBeltCommon
+ * @instance
+ * @private
  */
 ConveyorBeltCommon.prototype._convertScrollBrowserToLogical = function(scroll)
 {
@@ -1681,10 +1873,14 @@ ConveyorBeltCommon.prototype._convertScrollBrowserToLogical = function(scroll)
 
 /**
  * Scroll animation speed (px/ms).
+ * @memberof ConveyorBeltCommon
+ * @private
  */
 ConveyorBeltCommon._SCROLL_SPEED = 1.1;
 /**
  * Touch swipe threshold (percentage of conveyor size).
+ * @memberof ConveyorBeltCommon
+ * @private
  */
 ConveyorBeltCommon._SWIPE_THRESHOLD = .33;
 /**
@@ -1697,7 +1893,9 @@ ConveyorBeltCommon._SWIPE_THRESHOLD = .33;
  * @augments oj.baseComponent
  * @since 0.6
  * @ojstatus preview
- * 
+ * @ojshortdesc Container element that manages overflow for its child elements and allows scrolling among them.
+ * @class oj.ojConveyorBelt
+ *
  * @classdesc
  * <h3 id="conveyorBeltOverview-section">
  *   JET ConveyorBelt
@@ -1838,12 +2036,13 @@ oj.__registerWidget("oj.ojConveyorBelt", $['oj']['baseComponent'],
      * Specify the orientation of the conveyorBelt.
      *
      * @expose 
-     * @memberof! oj.ojConveyorBelt
+     * @memberof oj.ojConveyorBelt
      * @instance
      * @type {string}
      * @ojvalue {string} "horizontal" Orient the conveyorBelt horizontally.
      * @ojvalue {string} "vertical" Orient the conveyorBelt vertically.
-     * @default <code class="prettyprint">"horizontal"</code>
+     * @default "horizontal"
+     * @ojshortdesc Specifies the orientation of the conveyorBelt.
      *
      * @example <caption>Initialize the conveyorBelt with the 
      * <code class="prettyprint">orientation</code> attribute specified:</caption>
@@ -1884,10 +2083,11 @@ oj.__registerWidget("oj.ojConveyorBelt", $['oj']['baseComponent'],
      * order to allow and use multiple matching elements.  
      *
      * @expose 
-     * @memberof! oj.ojConveyorBelt
+     * @memberof oj.ojConveyorBelt
      * @instance
      * @type {?string}
-     * @default <code class="prettyprint">null</code>
+     * @default null
+     * @ojshortdesc Specify the selector of the descendant DOM element in the conveyorBelt that directly contains the items to scroll among.
      *
      * @example <caption>Initialize the conveyorBelt with the 
      * <code class="prettyprint">content-parent</code> attribute specified:</caption>
@@ -1926,7 +2126,7 @@ oj.__registerWidget("oj.ojConveyorBelt", $['oj']['baseComponent'],
      * @memberof oj.ojConveyorBelt
      * @instance
      * @type {boolean}
-     * @default <code class="prettyprint">false</code>
+     * @default false
      * @ignore
      */
     // disabled attribute declared in superclass, but we still want the above API doc
@@ -1951,7 +2151,7 @@ oj.__registerWidget("oj.ojConveyorBelt", $['oj']['baseComponent'],
    * @override
    * @protected
    * @instance
-   * @memberof! oj.ojConveyorBelt
+   * @memberof oj.ojConveyorBelt
    */
   _ComponentCreate : function () // Override of protected base class method.  
   {
@@ -1981,8 +2181,9 @@ oj.__registerWidget("oj.ojConveyorBelt", $['oj']['baseComponent'],
    * <p>This method does not accept any arguments.
    * 
    * @expose 
-   * @memberof! oj.ojConveyorBelt
+   * @memberof oj.ojConveyorBelt
    * @instance
+   * @ojshortdesc Refreshes the visual state of the conveyorBelt.
    * 
    * @example <caption>Invoke the <code class="prettyprint">refresh</code> method:</caption>
    * myConveyorBelt.refresh();
@@ -2013,7 +2214,7 @@ oj.__registerWidget("oj.ojConveyorBelt", $['oj']['baseComponent'],
   /**
    * Notifies the component that its subtree has been made visible 
    * programmatically after the component has been created.
-   * @memberof! oj.ojConveyorBelt
+   * @memberof oj.ojConveyorBelt
    * @instance
    * @protected 
    * @override
@@ -2039,7 +2240,7 @@ oj.__registerWidget("oj.ojConveyorBelt", $['oj']['baseComponent'],
   /**
    * Notifies the component that its subtree has been connected to the document
    * programmatically after the component has been created.
-   * @memberof! oj.ojConveyorBelt
+   * @memberof oj.ojConveyorBelt
    * @instance
    * @protected 
    * @override
@@ -2067,7 +2268,7 @@ oj.__registerWidget("oj.ojConveyorBelt", $['oj']['baseComponent'],
    * Setup the conveyorBelt.
    * @param {boolean} isInit true if _setup is called from _init(), false
    *        if called from refresh()
-   * @memberof! oj.ojConveyorBelt
+   * @memberof oj.ojConveyorBelt
    * @instance
    * @private
    */
@@ -2186,7 +2387,7 @@ oj.__registerWidget("oj.ojConveyorBelt", $['oj']['baseComponent'],
 
   /** 
    * Destroy the conveyorBelt.
-   * @memberof! oj.ojConveyorBelt
+   * @memberof oj.ojConveyorBelt
    * @instance
    * @override
    * @protected
@@ -2203,7 +2404,7 @@ oj.__registerWidget("oj.ojConveyorBelt", $['oj']['baseComponent'],
 
   /** 
    * Set an option on the conveyorBelt.
-   * @memberof! oj.ojConveyorBelt
+   * @memberof oj.ojConveyorBelt
    * @instance
    * @override
    * @protected
@@ -2243,7 +2444,7 @@ oj.__registerWidget("oj.ojConveyorBelt", $['oj']['baseComponent'],
 
   /** 
    * Destroy the ConveyorBeltCommon.
-   * @memberof! oj.ojConveyorBelt
+   * @memberof oj.ojConveyorBelt
    * @instance
    * @private
    */
@@ -2267,7 +2468,7 @@ oj.__registerWidget("oj.ojConveyorBelt", $['oj']['baseComponent'],
    * Determine whether the conveyorBelt can calculate sizes (when it is 
    * attached to the page DOM and not hidden).
    * @returns {boolean} true if sizes can be calculated, false if not
-   * @memberof! oj.ojConveyorBelt
+   * @memberof oj.ojConveyorBelt
    * @instance
    * @private
    */
@@ -2298,7 +2499,8 @@ oj.__registerWidget("oj.ojConveyorBelt", $['oj']['baseComponent'],
   /** 
    * Setup mouse listeners to change button styles.
    * @param {Object} element jQuery element to affect
-   * @memberof! oj.ojConveyorBelt
+   * @memberof oj.ojConveyorBelt
+   * @instance
    * @private
    */
   _setupButtonMouseStyles: function(element)
@@ -2333,7 +2535,8 @@ oj.__registerWidget("oj.ojConveyorBelt", $['oj']['baseComponent'],
   /** 
    * Create a DOM element for an icon.
    * @param {string} iconStyleClass Style class for the icon
-   * @memberof! oj.ojConveyorBelt
+   * @memberof oj.ojConveyorBelt
+   * @instance
    * @private
    */
   _createIcon: function(iconStyleClass)
@@ -2349,7 +2552,8 @@ oj.__registerWidget("oj.ojConveyorBelt", $['oj']['baseComponent'],
    * @param {number} value Scroll value
    * @param {number} duration Duration of animation, in ms
    * @param {function()} onEndFunc Function to call when the animation ends
-   * @memberof! oj.ojConveyorBelt
+   * @memberof oj.ojConveyorBelt
+   * @instance
    * @private
    */
   _animateScrollLeft: function(elem, value, duration, onEndFunc)
@@ -2367,7 +2571,8 @@ oj.__registerWidget("oj.ojConveyorBelt", $['oj']['baseComponent'],
    * @param {number} value Scroll value
    * @param {number} duration Duration of animation, in ms
    * @param {function()} onEndFunc Function to call when the animation ends
-   * @memberof! oj.ojConveyorBelt
+   * @memberof oj.ojConveyorBelt
+   * @instance
    * @private
    */
   _animateScrollTop: function(elem, value, duration, onEndFunc)
@@ -2383,7 +2588,8 @@ oj.__registerWidget("oj.ojConveyorBelt", $['oj']['baseComponent'],
    * Add a style class name to an element.
    * @param {Object} elem Element to which to add style class.
    * @param {string} styleClass Style class name to add.
-   * @memberof! oj.ojConveyorBelt
+   * @memberof oj.ojConveyorBelt
+   * @instance
    * @private
    */
   _addStyleClassName: function(elem, styleClass)
@@ -2395,7 +2601,8 @@ oj.__registerWidget("oj.ojConveyorBelt", $['oj']['baseComponent'],
    * Remove a style class name from an element.
    * @param {Object} elem Element from which to remove style class.
    * @param {string} styleClass Style class name to remove.
-   * @memberof! oj.ojConveyorBelt
+   * @memberof oj.ojConveyorBelt
+   * @instance
    * @private
    */
   _removeStyleClassName: function(elem, styleClass)
@@ -2409,7 +2616,8 @@ oj.__registerWidget("oj.ojConveyorBelt", $['oj']['baseComponent'],
    * @param {Object} elem Element to check for style class name.
    * @param {string} styleClass Style class name for which to look.
    * @returns {boolean} true if style class name is applied, false if not
-   * @memberof! oj.ojConveyorBelt
+   * @memberof oj.ojConveyorBelt
+   * @instance
    * @private
    */
   _hasStyleClassName: function(elem, styleClass)
@@ -2422,7 +2630,8 @@ oj.__registerWidget("oj.ojConveyorBelt", $['oj']['baseComponent'],
    * divs added by the resize listener.
    * @param {Array} arContentElements Array of conveyor content elements.
    * @returns {Array} filtered array of conveyor content elements
-   * @memberof! oj.ojConveyorBelt
+   * @memberof oj.ojConveyorBelt
+   * @instance
    * @private
    */
   _filterContentElements: function(arContentElements)
@@ -2443,10 +2652,11 @@ oj.__registerWidget("oj.ojConveyorBelt", $['oj']['baseComponent'],
   /**
    * Add a busy state to the busy context.
    *
-   * @param {String} description Additional information about busy state.
+   * @param {string} description Additional information about busy state.
    * @returns {Function} Resolve function called by the registrant when the busy state completes.
    *          The resultant function will throw an error if the busy state is no longer registered.
-   * @memberof! oj.ojConveyorBelt
+   * @memberof oj.ojConveyorBelt
+   * @instance
    * @private
    */
   _addBusyState: function(description)

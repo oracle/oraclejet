@@ -1,8 +1,8 @@
 {
-  "name": "ojTrain",
-  "version": "4.1.0",
-  "jetVersion": "4.1.0",
-  "displayName": " Train",
+  "name": "oj-train",
+  "version": "4.2.0",
+  "jetVersion": "4.2.0",
+  "displayName": "Train",
   "preview": true,
   "styleClasses": [
     {
@@ -12,7 +12,7 @@
       "description": "Optional class that may be added to the train div which will stretch the train to cover the full width of the container specified."
     }
   ],
-  "description": "ojTrain",
+  "description": "The JET Train element is a navigation visual that allows a user to go between different \"steps\".",
   "properties": {
     "selectedStep": {
       "description": "Indicates the id of the current selected step.",
@@ -20,25 +20,29 @@
       "displayName": "Selected Step"
     },
     "steps": {
-      "description": "The array of step objects. Each step must have an 'id' and 'label' property.",
+      "description": "The array of step objects.",
       "type": "Array.<Object>",
       "displayName": "Steps",
+      "required": true,
       "properties": {
         "disabled": {
-          "description": "Indicates if the step is disabled. See the steps attribute for usage examples.",
+          "description": "Indicates if the step is disabled",
           "type": "boolean",
           "value": false
         },
         "id": {
-          "description": "The id for the step object. See the steps attribute for usage examples.",
-          "type": "string"
+          "description": "The id for the step object.",
+          "type": "string",
+          "required": true
         },
         "label": {
-          "description": "The label for the step object. See the steps attribute for usage examples.",
-          "type": "string"
+          "description": "The label for the step object.",
+          "type": "string",
+          "translatable": true,
+          "required": true
         },
         "messageType": {
-          "description": "The messageType icon to display on the step. See the steps attribute for usage examples.",
+          "description": "The type of message icon to display on the step.",
           "type": "string",
           "value": null,
           "enumValues": [
@@ -63,7 +67,7 @@
           }
         },
         "visited": {
-          "description": "Indicates if the step has been visited. See the steps attribute for usage examples.",
+          "description": "Indicates if the step has been visited",
           "type": "boolean",
           "value": false
         }
@@ -78,23 +82,23 @@
   },
   "methods": {
     "getStep": {
-      "description": "Returns the step based on the id passed in. If the step doesn't exist, return null;",
+      "description": "Returns the step based on the id passed in.",
       "params": [
         {
           "name": "id",
           "description": "The id of the step.",
-          "type": "String"
+          "type": "string"
         }
       ],
-      "return": "Object"
+      "return": "Object|null"
     },
     "getNextSelectableStep": {
-      "description": "Returns the id of the next selectable step based on the current selectedStep. If the current step is the last selectable step, the function returns null",
-      "return": "String"
+      "description": "Returns the id of the next selectable step based on the current selectedStep.",
+      "return": "string|null"
     },
     "getPreviousSelectableStep": {
-      "description": "Returns the id of the previous selectable step based on the current selectedStep. If the current step is the first selectable step, the function returns null",
-      "return": "String"
+      "description": "Returns the id of the previous selectable step based on the current selectedStep.",
+      "return": "string|null"
     },
     "updateStep": {
       "description": "Update the step with the specified id with the provided property bag.",
@@ -112,7 +116,7 @@
       ]
     },
     "refresh": {
-      "description": "Refreshes the train. This method does not accept any arguments."
+      "description": "Refreshes the train."
     },
     "setProperty": {
       "description": "Sets a property or a single subproperty for complex properties and notifies the component\nof the change, triggering a [property]Changed event.",
@@ -152,8 +156,9 @@
     }
   },
   "events": {
-    "beforeDeselect": {
-      "description": "Triggered immediately before a step is deselected. The ojBeforeDeselect can be cancelled by calling event.preventDefault().",
+    "ojBeforeDeselect": {
+      "description": "Triggered immediately before a step is deselected.",
+      "cancelable": true,
       "detail": {
         "toStep": {
           "description": "The step that is about to be deselected.",
@@ -165,8 +170,8 @@
         }
       }
     },
-    "deselect": {
-      "description": "Triggered after a step has been deselected. The ojDeselect can be cancelled by calling event.preventDefault().",
+    "ojDeselect": {
+      "description": "Triggered after a step has been deselected.",
       "detail": {
         "toStep": {
           "description": "The step that is about to be deselected.",
@@ -178,8 +183,9 @@
         }
       }
     },
-    "beforeSelect": {
-      "description": "Triggered immediately before a Step is selected. The ojBeforeSelect can be cancelled by calling event.preventDefault().",
+    "ojBeforeSelect": {
+      "description": "Triggered immediately before a step is selected.",
+      "cancelable": true,
       "detail": {
         "toStep": {
           "description": "The step that is about to be deselected.",
@@ -191,7 +197,7 @@
         }
       }
     },
-    "select": {
+    "ojSelect": {
       "description": "Triggered after a step has been selected.",
       "detail": {
         "toStep": {

@@ -1,9 +1,12 @@
 {
-  "name": "ojTimeline",
-  "version": "4.1.0",
-  "jetVersion": "4.1.0",
-  "displayName": " Timeline",
+  "name": "oj-timeline",
+  "version": "4.2.0",
+  "jetVersion": "4.2.0",
+  "displayName": "Timeline",
   "preview": true,
+  "roles": [
+    "application"
+  ],
   "description": "A JET Timeline is a themable, WAI-ARIA compliant element that displays a set of events in chronological order",
   "properties": {
     "animationOnDataChange": {
@@ -850,7 +853,7 @@
     }
   },
   "events": {
-    "viewportChange": {
+    "ojViewportChange": {
       "description": "Triggered after the viewport is changed due to a zoom or scroll operation.",
       "detail": {
         "viewportStart": {

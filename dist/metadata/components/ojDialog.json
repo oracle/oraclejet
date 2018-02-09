@@ -1,7 +1,7 @@
 {
-  "name": "ojDialog",
-  "version": "4.1.0",
-  "jetVersion": "4.1.0",
+  "name": "oj-dialog",
+  "version": "4.2.0",
+  "jetVersion": "4.2.0",
   "displayName": "Dialog",
   "preview": true,
   "roles": [
@@ -89,7 +89,10 @@
         "at": {
           "description": "Defines which position on the target element (\"of\") to align the positioned element against.",
           "type": "Object",
-          "value": "{horizontal:center,vertical:center}",
+          "value": {
+            "horizontal": "center",
+            "vertical": "center"
+          },
           "properties": {
             "horizontal": {
               "description": "",
@@ -153,7 +156,10 @@
         "my": {
           "description": "Defines which edge on the dialog to align with the target (\"of\") element.",
           "type": "Object",
-          "value": "{horizontal:center,vertical:center}",
+          "value": {
+            "horizontal": "center",
+            "vertical": "center"
+          },
           "properties": {
             "horizontal": {
               "description": "",
@@ -311,7 +317,7 @@
     }
   },
   "events": {
-    "beforeClose": {
+    "ojBeforeClose": {
       "description": "Triggered before the dialog is dismissed via the close() method. The close can be cancelled by calling event.preventDefault().",
       "bubbles": true,
       "cancelable": true,
@@ -322,7 +328,7 @@
         }
       }
     },
-    "beforeOpen": {
+    "ojBeforeOpen": {
       "description": "Triggered before the dialog is launched via the open() method. The open can be cancelled by calling event.preventDefault().",
       "bubbles": true,
       "cancelable": true,
@@ -333,7 +339,7 @@
         }
       }
     },
-    "close": {
+    "ojClose": {
       "description": "Triggered after the dialog is dismissed via the close() method.",
       "bubbles": true,
       "detail": {
@@ -343,7 +349,7 @@
         }
       }
     },
-    "focus": {
+    "ojFocus": {
       "description": "Triggered after focus has been transfered to the dialog.",
       "bubbles": true,
       "detail": {
@@ -353,7 +359,7 @@
         }
       }
     },
-    "open": {
+    "ojOpen": {
       "description": "Triggered after the dialog is launched via the open() method.",
       "bubbles": true,
       "cancelable": true,
@@ -364,7 +370,7 @@
         }
       }
     },
-    "resize": {
+    "ojResize": {
       "description": "Triggered when the dialog is being resized.",
       "bubbles": true,
       "detail": {
@@ -374,7 +380,7 @@
         }
       }
     },
-    "resizeStart": {
+    "ojResizeStart": {
       "description": "Triggered when the user starts resizing the dialog.",
       "bubbles": true,
       "cancelable": true,
@@ -385,7 +391,7 @@
         }
       }
     },
-    "resizeStop": {
+    "ojResizeStop": {
       "description": "Triggered when the user stops resizing the dialog.",
       "bubbles": true,
       "cancelable": true,
@@ -396,7 +402,7 @@
         }
       }
     },
-    "animateStart": {
+    "ojAnimateStart": {
       "description": "Triggered when a default animation is about to start, such as when the component is being opened/closed or a child item is being added/removed. The default animation can be cancelled by calling event.preventDefault.",
       "bubbles": true,
       "cancelable": true,
@@ -427,7 +433,7 @@
         }
       }
     },
-    "animateEnd": {
+    "ojAnimateEnd": {
       "description": "Triggered when a default animation has ended, such as when the component is being opened/closed or a child item is being added/removed. This event is not triggered if the application has called preventDefault on the animateStart event.",
       "bubbles": true,
       "cancelable": true,

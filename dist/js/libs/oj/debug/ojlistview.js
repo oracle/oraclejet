@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2014, 2017, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
@@ -922,21 +922,6 @@ oj.IteratingDataProviderContentHandler.prototype._removeDataSourceEventListeners
 };
 
 /**
- * Checks whether loading indicator should be appended to the end of the list
- * @param {Array} keys keys from fetched result set
- * @return {boolean} whether loading indicator should be appended to the end of list
- * @private
- */
-oj.IteratingDataProviderContentHandler.prototype._shouldAppendLoadingIndicator = function(keys)
-{
-    // checks if it's highwatermark scroling and there are results and the total size is either unknown or
-    // more than the size of the result set
-    return this._isLoadMoreOnScroll() && 
-           keys != null && keys.length > 0 &&
-           keys.length >= this._getFetchSize();
-};
-
-/**
  * @param {boolean} forceFetch
  * @override
  */
@@ -990,13 +975,7 @@ oj.IteratingDataProviderContentHandler.prototype.fetchRows = function(forceFetch
                          }
 
                          // append loading indicator at the end as needed
-                         if (self._handleFetchedData(value))
-                         {
-                             self._appendLoadingIndicator();
-
-                             // check scroll position again since loading indicator added space to scroll
-                             self.m_widget.syncScrollPosition();
-                         }
+                         self._handleFetchedData(value);
                      }, 
                      function(reason){ 
                         self._handleFetchError(reason); 
@@ -1048,7 +1027,7 @@ oj.IteratingDataProviderContentHandler.prototype._handleFetchSuccess = function(
  */
 oj.IteratingDataProviderContentHandler.prototype._registerDomScroller = function()
 {
-  var self = this, appendIndicator, options;
+  var self = this, options;
   this.m_domScrollerMaxCountFunc = function (result) 
   {
     if (result != null) 
@@ -1061,14 +1040,7 @@ oj.IteratingDataProviderContentHandler.prototype._registerDomScroller = function
       if (self.IsReady()) {
         self.signalTaskStart("dummy task"); // start a dummy task to be paired with the fetchEnd() call below if no new data were fetched.
       }
-      appendIndicator = self._handleFetchedData(result); // will call fetchEnd(), which signals a task end. Started either in fetchRows() or in a dummy task not involving data fetch.
-
-      // always append the loading indicator at the end except the case when max limit has been reached
-      if (result['maxCountLimit']) {
-        self._handleScrollerMaxRowCount();
-      } else if (appendIndicator) {
-        self._appendLoadingIndicator();
-      }
+      self._handleFetchedData(result); // will call fetchEnd(), which signals a task end. Started either in fetchRows() or in a dummy task not involving data fetch.
 
       self.signalTaskEnd(); // signal domscroller fetch end. Started in this.m_domScroller._handleScrollerScrollTop monkey patched below
       self.signalTaskEnd(); // signal task end
@@ -1537,11 +1509,32 @@ oj.IteratingDataProviderContentHandler.prototype._handleFetchedData = function(d
 
         if (this._isLoadMoreOnScroll())
         {
-            result = this._shouldAppendLoadingIndicator(keys);
-            if (result && this.m_domScroller == null)
+            result = !dataObj['done'] && this._isLoadMoreOnScroll();
+            if (result)
             {
-                this._registerDomScroller();
+                // if number of items returned is zero but result indicates it's not done
+                // log it
+                if (keys != null && keys.length == 0)
+                {
+                    oj.Logger.info("handleFetchedData: zero data returned while done flag is false");
+                }
+
+                if (this.m_domScroller == null)
+                {
+                    this._registerDomScroller();
+                }
+
+                // always append the loading indicator at the end except the case when max limit has been reached
+                if (!dataObj['maxCountLimit']) 
+                {
+                    this._appendLoadingIndicator();
+                }
             }
+
+            if (dataObj['maxCountLimit']) 
+            {
+                this._handleScrollerMaxRowCount();
+            } 
         }
 
         this.fetchEnd();
@@ -1705,12 +1698,19 @@ oj.TreeDataSourceContentHandler.prototype.fetchChildren = function(start, parent
 
     range = {"start": start, "count": this.m_dataSource.getChildCount(parent)};
 
+    this.signalTaskStart("first fetch"); 
+
     this.m_dataSource.fetchChildren(parent, range, {"success": function(nodeSet){
         promise.then(function()
         {
             self._handleFetchSuccess(nodeSet, parent, parentElem, successCallback);
+            self.signalTaskEnd(); // first fetch
         })
-    }, "error": function(status){self._handleFetchError(status);}});
+    }, "error": function(status)
+    {
+        self._handleFetchError(status);
+        self.signalTaskEnd(); // first fetch
+    }});
 
     this.signalTaskEnd(); // signal method task end
 };
@@ -2460,6 +2460,7 @@ var _ListViewUtils = {
  * @classdesc Listview
  * @constructor
  * @ignore
+ * @private
  */ 
 oj._ojListView = _ListViewUtils.clazz(Object, 
 /** @lends oj._ojListView.prototype */
@@ -2488,6 +2489,9 @@ oj._ojListView = _ListViewUtils.clazz(Object,
     /** @protected **/
     FOCUS_MODE_ITEM: 1,
     
+    // minimum height of an item
+    MINIMUM_ITEM_HEIGHT: 20,
+
     /**
      * Initialize the listview at creation
      * Invoked by widget
@@ -2767,6 +2771,7 @@ oj._ojListView = _ListViewUtils.clazz(Object,
         this.m_active = null;
         this.m_isExpandAll = null;
         this.m_disclosing = null;
+        this.m_itemHeight = null;
 
         this.readinessStack = [];
         this.readyPromise = new Promise(function(resolve, reject)
@@ -2974,30 +2979,43 @@ oj._ojListView = _ListViewUtils.clazz(Object,
      * Return the raw data for an item in ListView.
      * Invoked by widget
      *
-     * @param {Object} context the context of the item to retrieve raw data.
-     * @param {Number} context.index the index of the item relative to its parent.
-     * @param {jQuery|Element|string|undefined} context.parent the jQuery wrapped parent node, not required if parent is the root.
-     * @returns {Object | null} item data<p>
+     * @param {Object} context The context of the item to retrieve raw data.
+     * @property {*=} context.key The key of the item.  If both index and key are specified, then key takes precedence.
+     * @property {number=} context.index The index of the item relative to its parent.
+     * @property {Element=} context.parent The parent node, not required if parent is the root.
+     * @returns {*} data for the item.  Returns null if the item is not available locally.  Returns the item element if static HTML is used as data.
      */
     getDataForVisibleItem: function(context)
     {
-        var index, parent, item;
+        var key, index, parent, item;
 
-        index = context['index'];
-        parent = context['parent'];
-
-        if (parent == null)
+        key = context['key'];
+        // key takes precedence
+        if (key != null)
         {
-            // use the root element
-            parent = this.element.get(0);
-        }
-        else
-        {
-            // find the appropriate group element
-            parent = $(parent).children("ul."+this.getGroupStyleClass()).first();
+            item = this.FindElementByKey(key);
         }
 
-        item = $(parent).children("li").get(index);
+        // if we can't find the item with key, try to use index, if specified
+        if (item == null)
+        {
+            index = context['index'];
+            parent = context['parent'];
+
+            if (parent == null)
+            {
+                // use the root element
+                parent = this.element.get(0);
+            }
+            else
+            {
+                // find the appropriate group element
+                parent = $(parent).children("ul."+this.getGroupStyleClass()).first();
+            }
+
+            item = $(parent).children("li").get(index);
+        }
+
         if (item != null && $(item).hasClass(this.getItemStyleClass()))
         {
             return this._getDataForItem(item);
@@ -3236,6 +3254,13 @@ oj._ojListView = _ListViewUtils.clazz(Object,
             }
         }
 
+        if (options['scrollPosition'] != null)
+        {
+            this._setCurrentScrollPosition(options['scrollPosition']);
+            // remove it so it doesn't trigger an option change 
+            delete options['scrollPosition'];
+        }
+
         // if reorder switch to enabled/disabled, we'll need to make sure any reorder styling classes are added/removed from focused item
         if (this._shouldDragSelectedItems() && this.m_active != null && options['dnd'] != null && options['dnd']['reorder'] != null)
         {
@@ -3443,6 +3468,15 @@ oj._ojListView = _ListViewUtils.clazz(Object,
     },
 
     /**
+     * Whether to scrollPosition is supported, NavList for example do not support this
+     * @protected
+     */
+    ShouldUpdateScrollPosition: function()
+    {
+        return this.ShouldUseGridRole() && this.ojContext._IsCustomElement();
+    },
+
+    /**
      * Initialize the content handler based on data type
      * @private
      */
@@ -3577,6 +3611,8 @@ oj._ojListView = _ListViewUtils.clazz(Object,
 
         container = this._getListContainer();
         this.SetAriaProperties();
+
+        this.m_elementOffset = this.element.get(0).offsetTop;
 
         status = this._buildStatus();
         container.append(status); // @HTMLUpdateOK
@@ -4098,12 +4134,16 @@ oj._ojListView = _ListViewUtils.clazz(Object,
      */
     renderComplete: function()
     {
-        var empty, current, elem;
+        var empty, firstItem, current, elem;
 
         this.hideStatusText();
 
         // remove any empty text div
         $(document.getElementById(this._createSubId('empty'))).remove();        
+
+        // clear items cache
+        this.m_items = null;
+        this.m_groupItems = null;
 
         // check if it's empty
         if (this.element[0].childElementCount == 0)
@@ -4116,9 +4156,30 @@ oj._ojListView = _ListViewUtils.clazz(Object,
             
             return;
         }
-
-        // clear items cache
-        this.m_items = null;
+        else
+        {
+            // figure out the average item height, we'll need that in scroll listener
+            if (this.ShouldUpdateScrollPosition() && this.m_itemHeight == null)
+            {
+                if (this.m_contentHandler.IsHierarchical())
+                {
+                    // could be a group
+                    firstItem = this.element.children("li."+this.getItemElementStyleClass()).first();
+                    if (firstItem.length > 0)
+                    {
+                        this.m_itemHeight = firstItem.get(0).firstElementChild.offsetHeight;
+                    }
+                }
+                else
+                {
+                    firstItem = $(this._getRootNodeForItems()).children("li."+this.getItemStyleClass()).first();
+                    if (firstItem.length > 0)
+                    {
+                        this.m_itemHeight = firstItem.get(0).offsetHeight;
+                    }                    
+                }
+            }
+        }
 
         // check if current is specified
         current = this.GetOption("currentItem");
@@ -4147,39 +4208,174 @@ oj._ojListView = _ListViewUtils.clazz(Object,
             this._initFocus();
         }
 
-        // update scroll position if it's not in sync
-        this.syncScrollPosition();
+        // update scroll position if it's not in sync, make sure we are not in the middle of scrolling
+        if (!this.m_ticking || this.m_scrollPosition != null)
+        {
+            this.syncScrollPosition();
+        }
 
         // fire ready event
         this.Trigger("ready", null, {});
     },
 
     /**
+     * @private
+     */
+    _setScrollY: function(scroller, y)
+    {
+        if (!this._skipScrollUpdate)
+        {
+            this.signalTaskStart("waiting for scroll handler");
+        }
+
+        // flag it so that handleScroll won't do anything
+        this._skipScrollUpdate = true;
+        scroller.scrollTop = y;
+
+        // update sticky header as needed
+        this._handlePinGroupHeader();
+    },
+
+    /**
+     * Sets the bidi independent position of the horizontal scroll position that
+     * is consistent across all browsers.
+     * @private
+     */
+    _setScrollX: function(scroller, x)
+    {
+        if (!this._skipScrollUpdate)
+        {
+            this.signalTaskStart("waiting for scroll handler");
+        }
+
+        // flag it so that handleScroll won't do anything
+        this._skipScrollUpdate = true;
+
+        oj.DomUtils.setScrollLeft(scroller, x);
+    },
+
+    /**
+     * Retrieve the bidi independent position of the horizontal scroll position that
+     * is consistent across all browsers.
+     * @private
+     */
+    _getScrollX: function(scroller)
+    {
+        return oj.DomUtils.getScrollLeft(scroller);
+    },
+
+    /**
      * Synchronize the scroll position
      * @protected
      */
-    syncScrollPosition: function()
+    syncScrollPosition: function(position)
     {
-        var top, scroller;
+        var scroller, coord, x, y, scrollTop, scrollPosition, newScrollPosition;
 
-        top = this.GetOption("scrollTop");
-        if (!isNaN(top))
+        scroller = this._getScroller();
+        // check if it's even scrollable
+        if (scroller.scrollHeight == scroller.clientHeight)
         {
-            scroller = this._getScroller();
-            if (top != scroller.scrollTop)
-            {
-                scroller.scrollTop = top;
+            return;
+        }
 
-                // checks if further scrolling is needed
-                if (scroller.scrollTop != top)
+        if (this.ShouldUpdateScrollPosition())
+        {
+            if (this.m_scrollPosition != null)
+            {
+                position = this.m_scrollPosition;
+            }
+            else if (position === undefined)
+            {
+                position = this.GetOption("scrollPosition");
+            }
+
+            // figure out what the final y should be
+            coord = this._getScrollCoordinates(position);
+            x = coord.x;
+            y = coord.y;
+
+            if (isNaN(x) && isNaN(y))
+            {
+                // invalid scroll position
+                if (this.m_scrollPosition != null)
                 {
-                    this._skipScrollUpdate = true;
-                    return;
+                    // we'll still need to report current scroll position, which could have changed because of scroll and fetch
+                    this.SetOption('scrollPosition', this._getCurrentScrollPosition(scrollTop), {'_context': {originalEvent: null, internalSet: true}});
+
+                    // free signalTaskStart from earlier when m_scrollPosition is saved
+                    this.signalTaskEnd(); 
+                    this.m_scrollPosition = null;
                 }
+                return;
             }
         }
 
-        this._skipScrollUpdate = false;
+        if (coord === undefined)
+        {
+            // legacy scrollTop attribute
+            y = this.GetOption("scrollTop");
+        }
+
+        scrollTop = scroller.scrollTop;
+        // check if only x updated
+        if ((!isNaN(x) && isNaN(y)) || (!isNaN(x) && y == scrollTop && x != this._getScrollX(scroller, x)))
+        {
+            this._setScrollX(scroller, x);
+            scrollPosition = this.GetOption("scrollPosition");
+            x = this._getScrollX(scroller);
+            newScrollPosition = {'x': x, 'y': scrollPosition['y'], 'index': scrollPosition['index'], 'key': scrollPosition['key'], 'offsetX': x, 'offsetY': scrollPosition['offsetY']};
+            if (scrollPosition['parent'])
+            {
+                newScrollPosition['parent'] = scrollPosition['parent'];
+            }
+            this.SetOption('scrollPosition', newScrollPosition, {'_context': {originalEvent: null, internalSet: true}});
+        }
+        else if (y != scrollTop)
+        {
+            // flag it so that handleScroll won't do anything
+            this._setScrollY(scroller, y);
+            if (!isNaN(x) && x != this._getScrollX(scroller, x))
+            {
+                this._setScrollX(scroller, x);                
+            }
+
+            // checks if further scrolling is needed
+            scrollTop = scroller.scrollTop;
+            // cannot use scrollTop == y, as browser sub-pixel could be off by < 1px
+            if (Math.abs(scrollTop - y) >= 1 && this.m_contentHandler.hasMoreToFetch && this.m_contentHandler.hasMoreToFetch())
+            {
+                if (this.m_scrollPosition == null)
+                {
+                    // we don't need to signalTaskStart again if we are already in one
+                    this.signalTaskStart("Scroll position needs to resolve further");
+                }
+                // yes, save the scrollPosition to set and bail
+                this.m_scrollPosition = position;
+                return;
+            }
+            else
+            {
+                // ok to update scrollPosition option
+                this.SetOption('scrollPosition', this._getCurrentScrollPosition(scrollTop), {'_context': {originalEvent: null, internalSet: true}});
+            }
+        }
+        else
+        {
+            // if x and y is present, but position value is not complete, get it
+            if (position && (position['key'] == null || isNaN(position['index'])))
+            {
+                // ok to update scrollPosition option
+                this.SetOption('scrollPosition', this._getCurrentScrollPosition(scrollTop), {'_context': {originalEvent: null, internalSet: true}});
+            }
+        }
+
+        if (this.m_scrollPosition != null)
+        {
+            // free signalTaskStart from earlier when m_scrollPosition is saved
+            this.signalTaskEnd(); 
+            this.m_scrollPosition = null;
+        }
     },
 
     /**
@@ -6252,7 +6448,31 @@ oj._ojListView = _ListViewUtils.clazz(Object,
      */
     _setSelectionOption: function(newValue, event, selectedElems)
     {
-        var extra = {'items': this.ojContext._IsCustomElement() ? selectedElems : (selectedElems == null ? $({}) : $(selectedElems))}; 
+        var firstSelectedItem, value = {'key': null, 'data': null}, extra;
+
+        // check if the value has actually changed, based on key
+        // firstSelectedItem should never be null and should always have 'key'
+        firstSelectedItem = this.GetOption("firstSelectedItem");
+
+        // NavList firstSelectedItem would be undefined
+        if (firstSelectedItem != null)
+        {
+            // first condition is if new value is empty (should never be null) and existing item is non null
+            // second condition is if new value is not empty and does not match the existing item
+            if (((newValue == null || newValue.length == 0) && firstSelectedItem['key'] != null) || 
+                 (!(newValue[0] == firstSelectedItem['key'] || oj.Object.compareValues(newValue[0], firstSelectedItem['key']))))
+            {
+                // update firstSelectedItem also
+                if (newValue != null && newValue.length > 0)
+                {
+                    value = {'key': newValue[0], 'data': this.getDataForVisibleItem({'key': newValue[0]})};
+                }
+
+                this.SetOption("firstSelectedItem", value, {'_context': {originalEvent: event, internalSet: true}, 'changed': true});
+            }
+        }
+
+        extra = {'items': this.ojContext._IsCustomElement() ? selectedElems : (selectedElems == null ? $({}) : $(selectedElems))}; 
         this.SetOption("selection", newValue, {'_context': {originalEvent: event, internalSet: true, extraData: extra}, 'changed': true});
     },
 
@@ -7720,6 +7940,378 @@ oj._ojListView = _ListViewUtils.clazz(Object,
     },
 
     /**
+     * Sets the current scrollPosition.  Invoked when programmatically sets
+     * the scrollPosition.
+     * @private
+     */
+    _setCurrentScrollPosition: function(scrollPosition)
+    {
+        var found = true, key, dataProvider, set, self = this;
+
+        key = scrollPosition['key'];
+
+        // if y is not specified.  First search local dom
+        if (key && this.FindElementByKey(key) == null)
+        {
+            // need to verify key if we have a DataProvider that supports FetchByKeys
+            if (this.m_contentHandler instanceof oj.IteratingDataProviderContentHandler)
+            {
+                dataProvider = this.m_contentHandler.getDataSource();
+                if (dataProvider.containsKeys)
+                {
+                    // IE 11 does not support specifying value in constructor
+                    set = new Set();
+                    set.add(key);
+                    dataProvider.containsKeys({'keys': set}).then(function(value)
+                    {
+                        // if not found, try to find by index or y
+                        if (value['results'].size == 0)
+                        {
+                            delete scrollPosition['key'];
+                        }
+                        self.syncScrollPosition(scrollPosition);
+                    })
+
+                    // syncScrollPosition will be done later
+                    found = false;
+                }
+            }
+            // else we can't verify, so just let syncScrollPosition tries to fetch
+            // and find the item
+        }
+
+        if (found)
+        {
+            this.syncScrollPosition(scrollPosition);
+        }
+    },
+
+    /**
+     * Find the element closest to the top of the viewport
+     * @param {Array.<Element>} items an array of item elements to search for
+     * @param {number} index the index relative to the parent to start the search
+     * @param {number} scrollTop the current scrolltop
+     * @private
+     */
+    _findClosestElementToTop: function(items, index, scrollTop)
+    {
+        var elem, offsetTop, diff, firstInGroup, forward, found = false;
+
+        if (items.length == 0 || index >= items.length)
+        {
+            return;
+        }
+
+        elem = items[index];
+        offsetTop = elem.offsetTop;
+        diff = scrollTop - offsetTop;
+        firstInGroup = {'index': index, 'elem': elem, 'offsetTop': offsetTop, 'offset': diff};
+
+        // scroll position perfectly line up with the top of item (take sub-pixels into account), we are done
+        if (Math.abs(diff) < 1)
+        {
+            return firstInGroup;
+        }
+
+        // go forward or backward to find the item, keep that fix to avoid
+        // potentially going back and forth (shouldn't happen)
+        forward = diff > 0;
+
+        forward ? index++ : index--;
+        while (!found && index >= 0 && index < items.length)
+        {
+            elem = items[index];
+            offsetTop = elem.offsetTop;
+            diff = Math.abs(scrollTop - offsetTop);
+
+            found = (diff < 1) || (forward ? scrollTop <= offsetTop : scrollTop >= offsetTop);
+            if (found)
+            {
+                // the one closer to the top wins
+                if (diff < 1 || !forward)
+                {
+                    // the current one is closer
+                    firstInGroup = {'index': index, 'elem': elem, 'offsetTop': offsetTop, 'offset': diff};
+                }
+                break;
+            }
+
+            // for card layout, we want to return the first item among items that have the same scrollTop (same row)
+            // note when scrolling backward, you'll always want the last one encountered
+            if (!forward || firstInGroup['offsetTop'] != offsetTop)
+            {
+                firstInGroup = {'index': index, 'elem': elem, 'offsetTop': offsetTop, 'offset': diff};
+            }
+
+            forward ? index++ : index--;
+        }
+
+        if (!found)
+        {
+            // then it's the first/last item in the group/root
+            index = forward ? items.length-1 : 0;
+            firstInGroup['index'] = index;
+            firstInGroup['elem'] = items[index];
+        }
+
+        return firstInGroup;
+    },
+
+    /**
+     * Returns the element which is the direct parent of all item elements.  Only for non-hier data.
+     * @private
+     */
+    _getRootNodeForItems: function()
+    {
+        return this.isCardLayout() ? this.element.get(0).firstElementChild.firstElementChild : this.element.get(0);
+    },
+
+    /**
+     * Returns the scroll position object containing info about current scroll position.
+     * @private
+     */
+    _getCurrentScrollPosition: function(scrollTop)
+    {
+        var scroller, scrollPosition = {}, isHierData, items, prevScrollPosition, diff, index, result, elem, parent;
+
+        scroller = this._getScroller();
+        if (scrollTop === undefined)
+        {
+            scrollTop = scroller.scrollTop;
+        }
+
+        scrollPosition['x'] = this._getScrollX(scroller);  
+        scrollPosition['y'] = scrollTop;
+
+        isHierData = this.m_contentHandler.IsHierarchical();
+
+        // we used the item height to approximate where to begin the search
+        // for the top most item.  This var should be populated in renderComplete
+        // if there's no data then we should skip
+        if (!isNaN(this.m_itemHeight) && this.m_itemHeight > 0)
+        {
+            // getItemsCache returns a flat view of all expanded items
+            items = isHierData ? this._getItemsCache() : $(this._getRootNodeForItems()).children("li."+this.getItemElementStyleClass());
+
+            // if the previous scroll position is relatively close to the current one
+            // we'll use the previous index as the starting point
+            prevScrollPosition = this.GetOption("scrollPosition");
+            diff = Math.abs(prevScrollPosition['y'] - scrollTop);
+            if (diff < this.MINIMUM_ITEM_HEIGHT && prevScrollPosition['key'] != null && !isNaN(prevScrollPosition['index']))
+            {
+                if (isHierData)
+                {
+                    elem = this.FindElementByKey(prevScrollPosition['key']);
+                    if (elem != null)
+                    {
+                        index = items.index(elem);
+                    }
+                }
+                else
+                {
+                    index = prevScrollPosition['index'];
+                }
+            }
+
+            // we'll need to approximate the index
+            if (isNaN(index))
+            {
+                index = Math.floor(scrollTop / this.m_itemHeight);
+            }
+
+            result = this._findClosestElementToTop(items, index, scrollTop);
+            if (result != null)
+            {
+                elem = result['elem'];
+                if (isHierData)
+                {
+                    parent = elem.parentNode;
+                    if (parent != this.element.get(0))
+                    {
+                        scrollPosition['parent'] = this.GetKey(parent.parentNode);
+                    }
+                    scrollPosition['key'] = this.GetKey(result['elem']);
+                    scrollPosition['index'] = $(parent).children().index(elem);
+                }
+                else
+                {
+                    scrollPosition['index'] = result['index'];
+                    scrollPosition['key'] = this.GetKey(result['elem']);                    
+                }
+                scrollPosition['offsetY'] = result['offset'];
+                // offsetX is the same as x, even when card layout is used
+                // since listview wraps card on space available, there will never be a listview
+                // having 2 or more columns with a horizontal scrollbar
+                scrollPosition['offsetX'] = scrollPosition['x'];
+            }
+        }
+
+        return scrollPosition;      
+    },
+
+    /**
+     * @private
+     */
+    _getOffsetTop: function(elem)
+    {
+        var offsetTop = this.element.get(0).offsetTop;
+        if (!isNaN(this.m_elementOffset) && this.m_elementOffset != offsetTop)
+        {
+            return Math.max(0, elem.offsetTop - offsetTop);
+        }
+        else
+        {
+            return elem.offsetTop;
+        }
+    },
+
+    /**
+     * Retrieve the scroll top value based on item index (optionally with parent key)
+     * @private
+     */
+    _getScrollTopByIndex: function(index, parent)
+    {
+        var parentElem, elem;
+
+        if (parent != null)
+        {
+            parentElem = this.FindElementByKey(parent);
+            if (parentElem != null)
+            {
+                // find the ul element
+                parentElem = $(parentElem).children("ul").first();
+            }
+        }
+        else
+        {
+            parentElem = this.element.get(0);
+            if (this.isCardLayout())
+            {
+                parentElem = parentElem.firstElementChild.firstElementChild;
+            }
+        }
+
+        if (parentElem != null)
+        {
+            elem = $(parentElem).children("."+this.getItemElementStyleClass())[index];
+            if (elem != null)
+            {
+                return this._getOffsetTop(elem);
+            }
+        }
+
+        // we got here because one of the following happened:
+        // 1) item has not been fetched yet
+        // 2) index is large than the number of items, including reaching maxCount
+        // 3) parent key specified does not exists or has not been fetched yet
+        if (this.m_contentHandler.hasMoreToFetch && this.m_contentHandler.hasMoreToFetch())
+        {
+            return this._getScroller().scrollHeight;
+        }
+        return;
+    },
+
+    /**
+     * Retrieve the scroll top value based on item key
+     * @private
+     */
+    _getScrollTopByKey: function(key)
+    {
+        var elem = this.FindElementByKey(key);
+        if (elem != null)
+        {
+            return this._getOffsetTop(elem);
+        }
+
+        // we got here because one of the following happened:
+        // 1) item has not been fetched yet
+        // 2) key does not exists or invalid
+        if (this.m_contentHandler.hasMoreToFetch && this.m_contentHandler.hasMoreToFetch())
+        {
+            return this._getScroller().scrollHeight;
+        }
+        return;
+    },
+
+    /**
+     * Gets the scroll coordinate based on value of scrollPosition.
+     * @return {Object} the coordinate to scroll to, see syncScrollPosition
+     * @private
+     */
+    _getScrollCoordinates: function(scrollPosition)
+    {
+        var scroller, x, y, parent, index, key, offsetX, offsetY;
+
+        scroller = this._getScroller();
+
+        x = scrollPosition['x'];
+        offsetX = scrollPosition['offsetX'];
+        if (!isNaN(x) && !isNaN(offsetX))
+        {
+            x = x + offsetX;
+        }
+
+        // key first
+        key = scrollPosition['key'];
+        if (isNaN(y) && key != null)
+        {
+            y = this._getScrollTopByKey(key);
+        }
+
+        // then index
+        parent = scrollPosition['parent'];
+        index = scrollPosition['index'];
+        if (isNaN(y) && !isNaN(index))
+        {
+            y = this._getScrollTopByIndex(index, parent);
+        }
+
+        offsetY = scrollPosition['offsetY'];
+        if (!isNaN(y) && !isNaN(offsetY))
+        {
+            y = y + offsetY;
+        }
+        
+        // then pixel position last
+        if (isNaN(y) && !isNaN(scrollPosition['y']))
+        {
+            y = scrollPosition['y'];            
+        }
+
+        return {x: x, y: y};
+    },
+
+    /**
+     * Scroll handler
+     * @private
+     */
+    _handleScroll: function(event)
+    {
+        var scrollTop;
+
+        // since we are calling it from requestAnimationFrame, ListView could have been destroyed already
+        if (this.m_contentHandler == null)
+        {
+            return;
+        }
+
+        // update scrollPosition
+        scrollTop = this._getScroller().scrollTop;
+        if (!this.ojContext._IsCustomElement())
+        {
+            this.SetOption('scrollTop', scrollTop, {'_context': {originalEvent: event, internalSet: true}});
+        }
+
+        if (this.ShouldUpdateScrollPosition())
+        {
+            this.SetOption('scrollPosition', this._getCurrentScrollPosition(scrollTop), {'_context': {originalEvent: event, internalSet: true}});
+        }
+
+        // handle pinning group header, does not need if position sticky is supported 
+        this._handlePinGroupHeader();
+    },
+
+    /**
      * Register scroll listener
      * @private
      */
@@ -7734,18 +8326,25 @@ oj._ojListView = _ListViewUtils.clazz(Object,
         this.ojContext._on(scrollElem, {
             "scroll": function(event)
             {
-                // update scrollPosition, don't if scroll isn't complete
-                if (!self._skipScrollUpdate)
+                // throttle the event using requestAnimationFrame for performance reason
+                // don't update if scroll is triggered by listview internally setting scrollLeft/scrollTop
+                if (!self._skipScrollUpdate && !self.m_ticking)
                 {
-                    self.SetOption('scrollTop', self._getScroller().scrollTop, {'_context': {originalEvent: event, internalSet: true}});
-                }
-                self._skipScrollUpdate = false;
+                    window.requestAnimationFrame(function()
+                    {
+                        self._handleScroll(event);
+                        self.m_ticking = false;
+                    });
 
-                // handle pinning group header, does not need if position sticky is supported 
-                if (self._isPinGroupHeader() && !self._isPositionStickySupported())
-                {
-                    self._handlePinGroupHeader();
+                    self.m_ticking = true;
                 }
+
+                if (self._skipScrollUpdate)
+                {
+                    self.signalTaskEnd();
+                }
+
+                self._skipScrollUpdate = false;
             }
         });
 
@@ -7768,7 +8367,7 @@ oj._ojListView = _ListViewUtils.clazz(Object,
      */
     _isPinGroupHeader: function()
     {
-        return (this.GetOption("groupHeaderPosition") != "static");
+        return (this.GetOption("groupHeaderPosition") != "static" && this.m_contentHandler.IsHierarchical());
     },
 
     /**
@@ -7864,6 +8463,12 @@ oj._ojListView = _ListViewUtils.clazz(Object,
     _handlePinGroupHeader: function()
     {
         var scroller, scrollTop, groupItemToPin, groupItems, pinHeaderHeight, i, groupItem, top, bottom, next;
+
+        // if groupHeaderPosition is not sticky or if position:sticky is supported natively in the browser
+        if (!this._isPinGroupHeader() || this._isPositionStickySupported())
+        {
+            return;
+        }
 
         scroller = this._getScroller();
         scrollTop = scroller.scrollTop;
@@ -7982,7 +8587,7 @@ oj._ojListView = _ListViewUtils.clazz(Object,
         scroller.scrollTop = newScrollTop;
 
         // if it wasn't scroll (ex: already at the end), we'll have to explicitly try to see if we need to pin again
-        if (this._isPinGroupHeader() && !this._isPositionStickySupported() && currentScrollTop == scroller.scrollTop)
+        if (currentScrollTop == scroller.scrollTop)
         {
             this._handlePinGroupHeader();
         }
@@ -8040,16 +8645,16 @@ oj._ojListView = _ListViewUtils.clazz(Object,
  *   Data
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#data-section"></a>
  * </h3>
- * <p>The JET ListView gets its data in three different ways.  The first way is from a TableDataSource.  There are several types of TableDataSource that
- * are available out of the box:</p>
+ * <p>The JET ListView gets its data in three different ways.  The first way is from a DataProvider/TableDataSource.  There are several types of DataProvider/TableDataSource 
+ * that are available out of the box:</p>
  * <ul>
- * <li>oj.ArrayTableDataSource</li>
+ * <li>oj.ArrayDataProvider</li>
  * <li>oj.CollectionTableDataSource</li>
  * <li>oj.PagingTableDataSource</li>
  * </ul>
  *
- * <p><b>oj.ArrayTableDataSource</b> - Use this when the underlying data is an array object or an observableArray.  In the observableArray case, ListView will automatically react
- * when items are added or removed from the array.  See the documentation for oj.ArrayTableDataSource for more details on the available options.</p>
+ * <p><b>oj.ArrayDataProvider</b> - Use this when the underlying data is an array object or an observableArray.  In the observableArray case, ListView will automatically react
+ * when items are added or removed from the array.  See the documentation for oj.ArrayDataProvider for more details on the available options.</p>
  *
  * <p><b>oj.CollectionTableDataSource</b> - Use this when oj.Collection is the model for the underlying data.  Note that the ListView will automatically react to model event from
  * the underlying oj.Collection.  See the documentation for oj.CollectionTableDataSource for more details on the available options.</p>
@@ -8327,16 +8932,19 @@ oj.__registerWidget('oj.ojListView', $['oj']['baseComponent'],
                 */
                 currentItem: null,
                 /**
-                 * The data source for ListView.  Must be of type oj.TableDataSource, oj.TreeDataSource, oj.IteratingDataProvider
+                 * The data source for ListView.  Must be of type oj.TableDataSource, oj.TreeDataSource, oj.DataProvider, or oj.IteratingDataProvider
                  * See the data source section in the introduction for out of the box data source types.
                  * If the data attribute is not specified, the child elements are used as content.  If there's no
                  * content specified, then an empty list is rendered.
+                 * <p><b>
+                 * Note: oj.IteratingDataProvider is deprecated.  Please use {@link oj.DataProvider} instead.
+                 * </b></p>
                  *
                  * @ojshortdesc Gets and sets the data provider for this list.
                  * @expose
                  * @memberof! oj.ojListView
                  * @instance
-                 * @type {oj.TableDataSource|oj.TreeDataSource|oj.IteratingDataProvider}
+                 * @type {oj.TableDataSource|oj.TreeDataSource|oj.DataProvider|oj.IteratingDataProvider}
                  * @default null
                  *
                  * @example <caption>Initialize the ListView with the <code class="prettyprint">data</code> attribute specified:</caption>
@@ -8359,7 +8967,7 @@ oj.__registerWidget('oj.ojListView', $['oj']['baseComponent'],
                  * @expose
                  * @memberof! oj.ojListView
                  * @type {Object}
-                 * @default {drag: null, drop: null, reorder: {items :disabled}}
+                 * @default {"drag": null, "drop": null, "reorder": {"items" :"disabled"}}
                  * @instance
                  */
                 dnd: {
@@ -8544,6 +9152,31 @@ oj.__registerWidget('oj.ojListView', $['oj']['baseComponent'],
                  * $( ".selector" ).ojListView({ "expanded": ["group1", "group2"] });
                  */
                 expanded: "auto",
+                /**
+                 * Gets the key and data of the first selected item.  The first selected item is defined as the first
+                 * key returned by the <a href="#selection">selection</a> property.  The value of this property contains:
+                 * <ul>
+                 * <li>key - the key of the first selected item.</li>
+                 * <li>data - the data of the first selected item.  If the selected item is not locally available, this will
+                 *        be null.  If the <a href="#data">data</a> property is not set and that static HTML element is used
+                 *        as data, then this will be the item element.</li>
+                 * </ul>
+                 * If no items are selected then this property will return an object with both key and data properties set to null.
+                 *
+                 * @expose
+                 * @memberof! oj.ojListView
+                 * @instance
+                 * @default {'key': null, 'data': null}
+                 * @type {Object}
+                 *
+                 * @ojwriteback
+                 * @readonly
+                 *
+                 * @example <caption>Get the data of the first selected item:</caption>
+                 * // getter
+                 * var firstSelectedItemValue = myListView.firstSelectedItem;
+                 */
+                firstSelectedItem: {'key': null, 'data': null},
                 /**
                  * Specifies how the group header should be positioned.  If "sticky" is specified, then the group header 
                  * is fixed at the top of the ListView as the user scrolls.
@@ -8748,6 +9381,71 @@ oj.__registerWidget('oj.ojListView', $['oj']['baseComponent'],
                  * myListView.scrollPolicyOptions = {fetchSize: 30, maxCount: 1000};
                  */
                 scrollPolicyOptions: {'fetchSize': 25, 'maxCount': 500},
+                /**
+                 * The current scroll position of ListView. The scroll position is updated when either the vertical or horizontal scroll position
+                 * (or its scroller, as specified in scrollPolicyOptions.scroller) has changed.  The value contains the x and y scroll position, 
+                 * the index and key information of the item closest to the top of the viewport, as well as horizontal and vertical offset from the
+                 * position of the item to the actual scroll position.
+                 * <p>
+                 * The default value contains just the scroll position.  Once data is fetched the 'index' and 'key' sub-properties will be added.
+                 * If there is no data then the 'index' and 'key' sub-properties will not be available.
+                 * </p>
+                 * <p>
+                 * When setting the scrollPosition property, applications can change any combination of the sub-properties.
+                 * If multiple sub-properties are set at once they will be used in key, index, pixel order where the latter serves as hints.  
+                 * If offsetX or offsetY are specified, they will be used to adjust the scroll position from the position where the key or index 
+                 * of the item is located.
+                 * </p>
+                 * <p>
+                 * If a sparse object is set the other sub-properties will be populated and updated once ListView has scrolled to that position.
+                 * </p>
+                 * <p>
+                 * Also, if <a href="#scrollPolicy">scrollPolicy</a> is set to 'loadMoreOnScroll' and the scrollPosition is set to a value outside 
+                 * of the currently rendered region, then ListView will attempt to fetch until the specified scrollPosition is satisfied or the end
+                 * is reached (either at max count or there's no more items to fetch), in which case the scroll position will remain at the end.  
+                 * The only exception to this is when the key specified does not exists and a DataProvider is specified for <a href="data">data</a>,
+                 * then the scroll position will not change (unless other sub-properties like index or x/y are specified as well).
+                 * </p>
+                 *
+                 * @ojshortdesc Gets and sets the scroll position of list view.
+                 * @expose
+                 * @memberof! oj.ojListView
+                 * @instance
+                 * @type {Object}
+                 * @default {x: 0, y:0}
+                 * @property {number=} x the horizontal position in pixel
+                 * @property {number=} y the vertical position in pixel
+                 * @property {number=} index the zero-based index of the item.  If <a href="#scrollPolicy">scrollPolicy</a> is set to 'loadMoreOnScroll' 
+                 * and the index is greater than maxCount set in <a href="#scrollPolicyOptions">scrollPolicyOptions</a>, then it will scroll and fetch
+                 * until the end of the list is reached and there's no more items to fetch.
+                 * @property {*=} parent the key of the parent where the index is relative to.  If not specified, then the root is assumed
+                 * @property {*=} key the key of the item.  If DataProvider is used for <a href="data">data</a> and the key does not exists in the 
+                 * DataProvider, then the value is ignored.  If DataProvider is not used then ListView will fetch and scroll until the item is found
+                 * or the end of the list is reached and there's no more items to fetch.
+                 * @property {number=} offsetX the horizontal offset in pixel relative to the item identified by key/index.
+                 * @property {number=} offsetY the vertical offset in pixel relative to the item identified by key/index.
+                 *
+                 * @example <caption>Initialize the ListView with the <code class="prettyprint">scroll-position</code> attribute specified:</caption>
+                 * &lt;!-- Using dot notation -->
+                 * &lt;oj-list-view scroll-position.index='10'>&lt;/oj-list-view>
+                 *
+                 * &lt;!-- Using JSON notation -->
+                 * &lt;oj-list-view scroll-position='{"index": 10}'>&lt;/oj-list-view>
+                 *
+                 * @example <caption>Get or set the <code class="prettyprint">scrollPosition</code> property after initialization:</caption>
+                 * // Get one
+                 * var scrollPositionValue = myListView.scrollPosition.index;
+                 *
+                 * // Set one, leaving the others intact
+                 * myListView.setProperty('scrollPosition.index', 10);
+                 *
+                 * // Get all
+                 * var scrollPositionValues = myListView.scrollPosition;
+                 *
+                 * // Set all.  Those not listed will be lost until the scroll completes and the remaining fields are populated.
+                 * myListView.scrollPosition = {x: 0, y: 150};
+                 */
+                scrollPosition: {'x': 0, 'y': 0},
                 /**
                  * The vertical scroll position of ListView.
                  *
@@ -9154,6 +9852,11 @@ oj.__registerWidget('oj.ojListView', $['oj']['baseComponent'],
         {
             valid = (value == "static" || value == "sticky");
         }
+        else if (key == "firstSelectedItem")
+        {
+            // read only
+            valid = false;
+        }
 
         // update option if it's valid otherwise throw an error
         if (valid)
@@ -9292,18 +9995,20 @@ oj.__registerWidget('oj.ojListView', $['oj']['baseComponent'],
     },
 
     /**
-     * Return the raw data for an item in ListView.
+     * Return the raw data for an item in ListView.  The item must have been already fetched.
      * @param {Object} context The context of the item to retrieve raw data.
-     * @param {Number} context.index The index of the item relative to its parent.
-     * @param {Element|undefined} context.parent The parent node, not required if parent is the root.
-     * @returns {Object | null} item data<p>
+     * @param {*=} context.key The key of the item.  If both index and key are specified, then key takes precedence.
+     * @param {number=} context.index The index of the item relative to its parent.
+     * @param {Element=} context.parent The parent node, not required if parent is the root.
+     * @returns {*} item data.  If the item is not yet fetched, then null is returned.  Also,
+     * when static HTML is use for data, then the DOM element of the item is returned.
      * @ojshortdesc Gets the raw data of an item.
      * @export
      * @expose
      * @memberof oj.ojListView
      * @instance
      * @example <caption>Invoke the <code class="prettyprint">getDataForVisibleItem</code> method:</caption>
-     * $( ".selector" ).ojListView( "getDataForVisibleItem", {'index': 2} );
+     * var data = myListView.getDataForVisibleItem( {'index': 2} );
      */
     getDataForVisibleItem: function(context)
     {
@@ -9719,6 +10424,11 @@ var ojListViewMeta = {
       "type": "string",
       "enumValues": ["collapsible", "none"]
     },
+    "firstSelectedItem": {
+      "type": "object",
+      "writeback": true,
+      "readOnly": true
+    },
     "groupHeaderPosition": {
       "type": "string",
       "enumValues": ["sticky", "static"]
@@ -9744,6 +10454,33 @@ var ojListViewMeta = {
           "type": "number"
         },
         "scroller": {}
+      }
+    },
+    "scrollPosition": {
+      "type": "object",
+      "writeback": true,
+      "properties": {
+        "x": {
+          "type": "number"
+        },
+        "y": {
+          "type": "number"
+        },
+        "offsetX": {
+          "type": "number"
+        },
+        "offsetY": {
+          "type": "number"
+        },
+        "key": {
+          "type": "any"
+        },
+        "index": {
+          "type": "number"
+        },
+        "parent": {
+          "type": "any"
+        }
       }
     },
     "selection": {

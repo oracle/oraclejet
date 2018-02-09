@@ -1,8 +1,8 @@
 {
-  "name": "ojFormLayout",
-  "version": "4.1.0",
-  "jetVersion": "4.1.0",
-  "displayName": " Form Layout",
+  "name": "oj-form-layout",
+  "version": "4.2.0",
+  "jetVersion": "4.2.0",
+  "displayName": "Form Layout",
   "preview": true,
   "description": "ojFormLayout",
   "properties": {

@@ -1,7 +1,7 @@
 {
-  "name": "ojToolbar",
-  "version": "4.1.0",
-  "jetVersion": "4.1.0",
+  "name": "oj-toolbar",
+  "version": "4.2.0",
+  "jetVersion": "4.2.0",
   "displayName": "Toolbar",
   "preview": true,
   "roles": [

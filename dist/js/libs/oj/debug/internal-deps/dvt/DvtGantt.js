@@ -5055,14 +5055,14 @@ DvtGanttRenderer.renderGantt = function(gantt)
 };
 
 /**
- * Adds the feColorMatrix filters (used for task shape/progress/variance etc fill overlays) to def.
+ * Adds the feColorMatrix filters (used for task shape/progress/variance etc fill overlays)
+ * to the page's shared defs if they don't exist already (so that multiple gantts on a page can share them).
  * @param {dvt.Gantt} gantt The gantt being rendered.
  * @private
  */
 DvtGanttRenderer._prepareTaskFillFilters = function(gantt)
 {
-  var context = gantt.getCtx();
-  if (gantt.taskTintFilter == null)
+  if (!document.getElementById(DvtGanttStyleUtils.getTaskTintFilterId()))
   {
     // overlay fill with rgba(255, 255, 255, tintAlpha);
     var tintAlpha = DvtGanttStyleUtils.getTaskTintAlpha();
@@ -5077,11 +5077,6 @@ DvtGanttRenderer._prepareTaskFillFilters = function(gantt)
         ' 0 0 0 1 0');
     taskTintFilter.appendChild(taskTintColorMatrix);
 
-    gantt.taskTintFilter = taskTintFilter;
-    context.appendDefs(taskTintFilter);
-  }
-  if (gantt.taskShadeFilter == null)
-  {
     // overlay fill with rgba(0, 0, 0, shadeAlpha);
     var shadeAlpha = DvtGanttStyleUtils.getTaskShadeAlpha();
     var taskShadeFilter = dvt.SvgShapeUtils.createElement('filter', DvtGanttStyleUtils.getTaskShadeFilterId());
@@ -5095,8 +5090,9 @@ DvtGanttRenderer._prepareTaskFillFilters = function(gantt)
         ' 0 0 0 1 0');
     taskShadeFilter.appendChild(taskShadeColorMatrix);
 
-    gantt.taskShadeFilter = taskShadeFilter;
-    context.appendDefs(taskShadeFilter);
+    // Add the filters to the shared defs
+    gantt.appendSharedDefs(taskTintFilter);
+    gantt.appendSharedDefs(taskShadeFilter);
   }
 };
 
@@ -9027,7 +9023,7 @@ DvtGanttTaskLabel.prototype._preprocessLabelPosition = function(labelPosition)
 DvtGanttTaskLabel.prototype._evaluatePosition = function(labelPosition)
 {
   var traversalCache = {}, effectivePosition,
-      availableWidth, availableHeight = this._associatedShape.getFinalHeight(),
+      availableWidth,
       labelDimensions = this._labelOutputText.getDimensions(),
       labelWidth = labelDimensions.w, labelHeight = labelDimensions.h,
       labelPosition = this._preprocessLabelPosition(labelPosition);
@@ -9086,9 +9082,9 @@ DvtGanttTaskLabel.prototype._evaluatePosition = function(labelPosition)
   }
 
   // Truncate label if necessary
-  if (labelWidth > availableWidth || labelHeight > availableHeight)
+  if (labelWidth > availableWidth)
   {
-    dvt.TextUtils.fitText(this._labelOutputText, availableWidth, availableHeight, this._container, 1);
+    dvt.TextUtils.fitText(this._labelOutputText, availableWidth, Infinity, this._container, 1);
   }
 
   this._placeLabel(effectivePosition);

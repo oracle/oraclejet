@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2014, 2017, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
@@ -334,7 +334,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
  * @memberof oj.ojChart
  */
-
+  
 /**
  * An array of objects with the following properties, used to define series labels and override series styles. Only a single series is supported for stock charts. Also accepts a Promise for deferred data rendering.
  * @expose
@@ -381,7 +381,9 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @default null
  */
 /**
- * The x value for a scatter or bubble chart or the date on a time axis.
+ * The x value. Mainly used for scatter and bubble chart and to specify the date for mixed-frequency time axis.
+ * For categorical axis, if the x value is not specified, it will default to the item index.
+ * For regular time axis, if the x value is not specified, it will default to the group name of the item.
  * @expose
  * @name series[].items[].x
  * @memberof! oj.ojChart
@@ -3175,7 +3177,9 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @default null
  */
 /**
- * The x-value on a data axis or date on a time axis for this point, not used for categorical axis.
+ * The x value of this point. Mainly used for scatter and bubble chart and to specify the date for mixed-frequency time axis.
+ * For categorical axis, if the x value is not specified, it will default to the item index.
+ * For regular time axis, if the x value is not specified, it will default to the group name of the item.
  * @expose
  * @name yAxis.referenceObjects[].items[].x
  * @memberof! oj.ojChart
@@ -3834,7 +3838,9 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @default null
  */
 /**
- * The x-value on a data axis or date on a time axis for this point, not used for categorical axis.
+ * The x value of this point. Mainly used for scatter and bubble chart and to specify the date for mixed-frequency time axis.
+ * For categorical axis, if the x value is not specified, it will default to the item index.
+ * For regular time axis, if the x value is not specified, it will default to the group name of the item.
  * @expose
  * @name y2Axis.referenceObjects[].items[].x
  * @memberof! oj.ojChart
@@ -6789,6 +6795,170 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @type {function(Event, object)}
  * @default null
  */
+ 
+/**
+ * An object with the following properties, used to define the series and groups when using a DataProvider to provide data to the chart. Also accepts a Promise for deferred data rendering.
+ * @expose
+ * @name data
+ * @memberof oj.ojChart
+ * @instance
+ * @type {object|Promise}
+ * @default null
+ */
+/**
+ * An array of <a href="/jsdocs/oj.ojChart.html#ChartSeries">ChartSeries</a> typed objects. Used when utilizing a DataProvider to provide data to the chart. Only a single series is supported for stock charts. Also accepts a Promise for deferred data rendering.
+ * @expose
+ * @name data.series
+ * @memberof! oj.ojChart
+ * @instance
+ * @type {Array.<oj.ojChart.ChartSeries>|Promise.<Array>}
+ * @default null
+ */  
+/**
+ * An oj.DataProvider that generates rows of <a href="/jsdocs/oj.ojChart.html#ChartGroup">ChartGroup</a> typed objects.
+ * @name data.groups
+ * @memberof! oj.ojChart
+ * @instance
+ * @type {oj.DataProvider.<String, oj.ojChart.ChartGroup>}
+ * @default null
+ */  
+    
+/**
+ * Object type that defines a chart series.
+ * @typedef {Object} ChartSeries
+ * @memberof! oj.ojChart
+ * @property {string} id The id of the series. Defaults to the name or the series index if not specified.
+ * @property {string} name The name of the series, displayed in the legend and tooltips.
+ * @property {"bar"|"line"|"area"|"lineWithArea"|"candlestick"|"boxPlot"|"auto"} type The type of data objects to display for this series. Only applies to bar, line, area, stock, box plot, and combo charts.
+ * @property {string} color The color of the series.
+ * @property {string} borderColor The border color of the series.
+ * @property {number} borderWidth The border width of the series.
+ * @property {string} areaColor The area color of the series. Only applies if series type is area or lineWithArea.
+ * @property {string} areaSvgClassNamer The CSS style class to apply if series type is area or lineWithArea. The style class and inline style will override any other styling specified through the properties. 
+ *            For tooltips and hover interactivity, it's recommended to also pass a representative color to the color attribute.
+ * @property {object} areaSvgStyle The inline style to apply if series type is area or lineWithArea. The style class and inline style will override any other styling specified through the properties. 
+ *            For tooltips and hover interactivity, it's recommended to also pass a representative color to the color attribute.
+ * @property {string} svgClassName The CSS style class to apply to the series. For series of type lineWithArea, this style will only be applied to the line if areaClassName is also specified. 
+ *            The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the color attribute.
+ * @property {object} svgStyle The inline style to apply to the series. For series of type lineWithArea, this style will only be applied to the line if areaStyle is also specified.
+ *            The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the color attribute.
+ * @property {string} markerSvgClassName The CSS style class to apply to the data markers.The style class and inline style will override any other styling specified through the properties. 
+ *            For tooltips and hover interactivity, it's recommended to also pass a representative color to the marker color attribute.
+ * @property {object} markerSvgStyle The inline style to apply to the data markers. The style class and inline style will override any other styling specified through the properties. 
+ *            For tooltips and hover interactivity, it's recommended to also pass a representative color to the marker color attribute.
+ * @property {"smallChecker"|"smallCrosshatch"|"smallDiagonalLeft"|"smallDiagonalRight"|"smallDiamond"|"smallTriangle"|"largeChecker"|"largeCrosshatch"|"largeDiagonalLeft"|"largeDiagonalRight"|"largeDiamond"|"largeTriangle"} pattern
+ *           The pattern used to fill the series. A solid fill is used by default, unless the seriesEffect is 'pattern'.
+ * @property {"square"|"circle"|"diamond"|"plus"|"triangleDown"|"triangleUp"|"human"|"star"|"auto"} markerShape The shape of the data markers. In addition to the built-in shapes, it may also take SVG path commands to specify a custom shape. 
+ *            The chart will style the custom shapes the same way as built-in shapes, supporting properties like color and borderColor and applying hover and selection effects. Only 'auto' is supported for range series. 
+ * @property {string} markerColor The color of the data markers, if different from the series color.
+ * @property {"on"|"off"|"auto"} markerDisplayed Defines whether the data marker is displayed. Only applies to line, area, scatter, and bubble series. If auto, the markers will be displayed whenever the data points are not connected by a line.
+ * @property {number} markerSize The size of the data markers.
+ * @property {number} lineWidth The width of the data line. Only applies to line, lineWithArea, scatter, and bubble series.
+ * @property {"dotted"|"dashed"|"solid"} lineStyle
+ * @property {"straight"|"curved"|"stepped"|"centeredStepped"|"segmented"|"centeredSegmented"|"none"|"auto"} lineType
+ *           The line type of the data line or area. Only applies to line, area, scatter, and bubble series. centeredStepped and centeredSegmented are not supported for polar, scatter, and bubble charts. 
+ * @property {string} source The URI of the custom image. If specified, it takes precedence over shape. 
+ * @property {string} sourceHover The optional URI for the hover state. If not specified, the source image will be used. 
+ * @property {string} sourceSelected The optional URI for the selected state. If not specified, the source image will be used. 
+ * @property {string} sourceHoverSelected The optional URI for the hover selected state. If not specified, the source image will be used. 
+ * @property {number} pieSliceExploded A number from 0 to 1 indicating the amount to explode the pie slice. Only applies to pie charts.
+ * @property {"on"|"off"} assignedToY2 Defines whether the series is associated with the y2 axis. Only applies to Cartesian bar, line, area, and combo charts.
+ * @property {string} stackCategory In stacked charts, groups series together for stacking. All series without a stackCategory will be assigned to the same stack.
+ * @property {"on"|"off"|"auto"} displayInLegend Defines whether the series should be shown in the legend. When set to 'auto', the series will not be displayed in the legend if 
+ *            it has null data or if it is a stock, funnel, or pyramid series.
+ * @property {"on"|"off"|"inherit"} drilling Whether drilling is enabled on the series item. Drillable objects will show a pointer cursor on hover and fire an <code class="prettyprint">ojDrill</code> event on click. 
+ *           To enable drilling for all series items at once, use the drilling attribute in the top level. 
+ * @property {Array.<string>} categories An optional array of category strings corresponding to this series. 
+ *           This allows highlighting and filtering of a series through interactions with legend sections. If not defined, the series id is used.
+ * @property {string} shortDesc The description of this series. This is used for accessibility and for customizing the tooltip text on the corressponding legend item for the series.
+ * @property {oj.ojChart.ChartBoxPlotStyle} boxPlot An object containing the style properties of the box plot series.
+ */    
+
+/**
+ * Object type that defines a chart group.
+ * @typedef {Object} ChartGroup
+ * @memberof! oj.ojChart
+ * @property {string} id The id of the group. Defaults to the name if not specified.
+ * @property {string} name The name of the group
+ * @property {object} labelStyle The CSS style object defining the style of the group label text. Supports color, 
+ *                    fontFamily, fontSize, fontStyle, fontWeight, textDecoration, cursor,
+ *                    backgroundColor, borderColor, borderRadius, and borderWidth properties. 
+ *                    Only applies to a categorical axis.
+ * @property {string} shortDesc The description of the group. This is used for customizing the tooltip text and only applies to a categorical axis.
+ * @property {"on"|"off"|"auto"} drilling Whether drilling is enabled on the group label. Drillable objects will show a pointer cursor on hover and fire an 
+ *                    <code class="prettyprint">ojDrill</code> event on click. To enable drilling for all group labels at once, use the drilling attribute in the top level. 
+ * @property {Array.<oj.ojChart.ChartGroup>} groups An array of nested group obects.
+ * @property {Array.<oj.ojChart.ChartDataItem>} items An array of chart data items.
+ */
+
+/**
+ * Object type that defines a chart data item.
+ * @typedef {Object} ChartDataItem
+ * @memberof! oj.ojChart
+ * @property {Array.<oj.ojChart.ChartDataItem>} items An array of nested data items to be used for defining the markers for outliers or additional data items of a box plot. 
+ * @property {string} id The id of the data item. This id will be provided as part of the context for events on the chart.
+ * @property {number|string} x The x value for a scatter or bubble chart or the date on a time axis.
+ * @property {number} y The y value. Also the primary value for charts without a y-Axis, such as pie charts.
+ * @property {number} z The z value. Defines the bubble radius for a bubble chart, as well as the width of a bar or a box plot item.
+ * @property {number} low The low value for range bar/area, stock candlestick, or box plot item. Define 'low' and 'high' instead of 'value' or 'y' to create a range bar/area chart.
+ * @property {number} high The high value for range bar/area, stock candlestick, or box plot item. Define 'low' and 'high' instead of 'value' or 'y' to create a range bar/area chart.
+ * @property {number} open The open value for stock candlestick.
+ * @property {number} close The close value for stock candlestick. When bar, line, or area series type are used on a stock chart, this value is displayed.
+ * @property {number} volume The value for stock volume bar. When this value is provided, the volume bar is displayed on the y2 axis.
+ * @property {number} q1 The first quartile value for box plot.
+ * @property {number} q2 The second quartile (median) value for box plot.
+ * @property {number} q3 The third quartile value for box plot.
+ * @property {string} shortDesc The description of this object. This is used for accessibility and also for customizing the tooltip text.
+ * @property {string} color The color of the data item.
+ * @property {string} borderColor The border color of the data item. For funnel and pyramid charts, it is used for the slice border.
+ * @property {number} borderWidth The border width of the data item. For funnel and pyramid charts, it is used for the slice border.
+ * @property {"smallChecker"|"smallCrosshatch"|"smallDiagonalLeft"|"smallDiagonalRight"|"smallDiamond"|"smallTriangle"|"largeChecker"|"largeCrosshatch"|"largeDiagonalLeft"|"largeDiagonalRight"|"largeDiamond"|"largeTriangle"} pattern
+ *           The pattern used to fill the data item. A solid fill is used by default, unless the seriesEffect is 'pattern'.
+ * @property {string} className The CSS style class to apply to the data item. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the item color attribute.
+ * @property {object} style The inline style to apply to the data item. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the item color attribute.
+ * @property {string} svgClassName The CSS style class to apply to the data item. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the item color attribute.
+ * @property {object} svgStyle The inline style to apply to the data item. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the item color attribute.
+ * @property {"on"|"off"|"auto"} markerDisplayed Defines whether the data marker is displayed. Only applies to line, area, scatter, and bubble series. If auto, the markers will be displayed whenever the data points are not connected by a line.
+ * @property {"square"|"circle"|"diamond"|"plus"|"triangleDown"|"triangleUp"|"human"|"star"|"auto"} markerShape The shape of the data markers. In addition to the built-in shapes, it may also take SVG path commands to specify a custom shape. 
+ *            The chart will style the custom shapes the same way as built-in shapes, supporting properties like color and borderColor and applying hover and selection effects. Only 'auto' is supported for range series. 
+ * @property {number} markerSize The size of the data markers. Does not apply to bubble charts, which calculate marker size based on the z values.
+ * @property {string} source The URI of the custom image. If specified, it takes precedence over shape. 
+ * @property {string} sourceHover The optional URI for the hover state. If not specified, the source image will be used.
+ * @property {string} sourceSelected The optional URI for the selected state. If not specified, the source image will be used.
+ * @property {string} sourceHoverSelected The optional URI for the hover selected state. If not specified, the source image will be used.
+ * @property {string|Array.<string>} label The label for the data item. For range series, if an array of two values are provided, the first and second value will apply to the low and high point respectively. Not supported for box plot or candlestick.
+ * @property {string|Array.<string>} labelPosition The position of the data label. For range series, if an array of two values are provided, the first and second value will apply to the low and high point respectively. The 'outsideSlice' value only applies to pie charts. 
+ *            The 'aboveMarker', 'belowMarker', 'beforeMarker', and 'afterMarker' values only apply to line, area, scatter, and bubble series. The 'insideBarEdge' and 'outsideBarEdge' values only apply to non-polar bar series. Stacked bars do not support 'outsideBarEdge'. 
+ *            The chart does not currently adjust layout to fit labels within the plot area or deal with any overlaps between labels. 
+ * @property {string|Array.<object>} labelStyle The CSS style object defining the style of the data label. For range series, if an array of two values are provided, the first and second value will apply to the low and high point respectively.
+ * @property {Array.<string>} categories An optional array of category strings corresponding to this data item. This enables highlighting and filtering of individual data items through interactions with the legend or other visualization elements. If not defined, series categories are used.
+ * @property {number} value The value for this data item. Corresponding to the y value for bar, line, area, and combo charts and the slice values for pie, funnel and pyramid charts. Null can be specified to skip a data point.
+ * @property {number} targetValue The target value for a funnel chart. When this is set, the value attribute defines the filled area within the slice and this represents the value of the whole slice.
+ * @property {"on"|"off"|"drilling"} drilling Whether drilling is enabled for the data item. Drillable objects will show a pointer cursor on hover and fire an <code class="prettyprint">ojDrill</code> event on click (double click if selection is enabled). To enable drilling for all data items at once, use the drilling attribute in the top level.  
+ * @property {oj.ojChart.ChartBoxPlotStyle} boxPlot An object containing the style properties of the box plot item.
+ */
+      
+/**
+ * Object type that defines box plot style properties.
+ * @typedef {Object} ChartBoxPlotStyle
+ * @memberof! oj.ojChart
+ * @property {string} q2Color The color of the Q2 segment of the box.
+ * @property {string} q2SvgClassName The CSS style class to apply to the Q2 segment of the box. The style class and inline style will override any other styling specified through the properties. 
+ *            For tooltips and hover interactivity, it's recommended to also pass a representative color to the q2Color attribute. 
+ * @property {object} q2SvgStyle The CSS inline style to apply to the Q2 segment of the box. The style class and inline style will override any other styling specified through the properties. 
+ *            For tooltips and hover interactivity, it's recommended to also pass a representative color to the q2Color attribute. 
+ * @property {string} q3Color The color of the Q3 segment of the box.
+ * @property {string} q3SvgClassName The CSS style class to apply to the Q3 segment of the box. The style class and inline style will override any other styling specified through the properties.            For tooltips and hover interactivity, it's recommended to also pass a representative color to the q3Color attribute. 
+ * @property {string} q3SvgStyle The CSS inline style to apply to the Q3 segment of the box. The style class and inline style will override any other styling specified through the properties. 
+ *            For tooltips and hover interactivity, it's recommended to also pass a representative color to the q3Color attribute. 
+ * @property {string} whiskerSvgClassName The CSS style class to apply to the whisker stems.
+ * @property {string} whiskerSvgStyle The CSS inline style to apply to the whisker stems.
+ * @property {string} whiskerEndSvgClassName The CSS style class to apply to the whisker ends.
+ * @property {string} whiskerEndSvgStyle The CSS inline style to apply to the whisker ends.
+ * @property {string} whiskerEndLength Specifies the length of the whisker ends in pixels (e.g. '9px') or as a percentage of the box width (e.g. '50%'). 
+ * @property {string} medianSvgClassName The CSS style class to apply to the median line.
+ * @property {string} medianSvgStyle The CSS inline style to apply to the median line.
+ */  
 
 // SubId Locators **************************************************************
 
@@ -8026,9 +8196,10 @@ oj.__registerWidget('oj.ojChart', $['oj']['dvtBaseComponent'],
       resources['zoomDown'] = 'oj-chart-zoom-icon oj-active';
       resources['zoomDownHover'] = 'oj-chart-zoom-icon oj-hover oj-active';
     },
-
+     
     /**
      * Returns the chart title.
+     * @ignore
      * @return {String} The chart title
      * @expose
      * @instance
@@ -8264,7 +8435,7 @@ oj.__registerWidget('oj.ojChart', $['oj']['dvtBaseComponent'],
 
     //** @inheritdoc */
     _GetComponentDeferredDataPaths : function() {
-      return {'root': ['groups', 'series']};
+      return {'root': ['groups', 'series'], 'data': ['groups', 'series']};
     },
 
     //** @inheritdoc */
@@ -8295,6 +8466,17 @@ var ojChartMeta = {
     "coordinateSystem": {
       "type": "string",
       "enumValues": ["polar", "cartesian"]
+    },
+    "data": {
+      "type": "object",
+      "properties": {
+        "series": {
+          "type": "Array<any>|Promise"
+        },
+        "groups" : {
+          "type": "DataProvider"
+        }
+      }
     },
     "dataCursor": {
       "type": "string",
@@ -9827,7 +10009,10 @@ var ojSparkChartMeta = {
       "type": "object"
     },
     "tooltip": {
-      "type": "object"
+      "type": "object",
+      "properties": {
+        "renderer": {}
+      }
     },
     "type": {
       "type": "string",

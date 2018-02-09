@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2014, 2017, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
@@ -63,9 +63,9 @@ oj.ListViewDndContext.prototype.reset = function()
  * Retrieve options for drag or drop
  * @param {string} op either drag or drop 
  * @return {Object} options for drag or drop
- * @protected
+ * @private
  */
-oj.ListViewDndContext.prototype.GetDndOptions = function(op)
+oj.ListViewDndContext.prototype._getDndOptions = function(op)
 {
     var dnd = this.listview.GetOption("dnd");
     if (dnd != null && dnd[op])
@@ -83,7 +83,7 @@ oj.ListViewDndContext.prototype.GetDndOptions = function(op)
  */
 oj.ListViewDndContext.prototype._getDragOptions = function()
 {
-    return this.GetDndOptions('drag');
+    return this._getDndOptions('drag');
 };
 
 /**
@@ -93,16 +93,17 @@ oj.ListViewDndContext.prototype._getDragOptions = function()
  */
 oj.ListViewDndContext.prototype._getDropOptions = function()
 {
-    return this.GetDndOptions('drop');
+    return this._getDndOptions('drop');
 };
 
 /**
+ * Return true if reordering enabled.
  * @return {boolean} whether item reordering is enable
- * @private
+ * @protected
  */
-oj.ListViewDndContext.prototype._isItemReordering = function()
+oj.ListViewDndContext.prototype.IsItemReOrdering = function()
 {
-    var option = this.GetDndOptions('reorder');
+    var option = this._getDndOptions('reorder');
     return (option == "enabled");
 };
 
@@ -355,7 +356,7 @@ oj.ListViewDndContext.prototype._setDraggable = function(target)
 {
     var cls, item, dragger, skipped, selectedItems;
 
-    if (this._getDragOptions() != null || this._isItemReordering())
+    if (this._getDragOptions() != null || this.IsItemReOrdering())
     {
         cls = this.GetDragAffordanceClass();
         if (target.hasClass(cls))
@@ -417,7 +418,7 @@ oj.ListViewDndContext.prototype._unsetDraggable = function(target)
 {
     var cls, dragger;
 
-    if (this._getDragOptions() != null || this._isItemReordering())
+    if (this._getDragOptions() != null || this.IsItemReOrdering())
     {
         cls = this.GetDragAffordanceClass();
         if (target.hasClass(cls))
@@ -682,7 +683,7 @@ oj.ListViewDndContext.prototype._handleDragStart = function(event)
     var options, dataTypes, items, ui, ret;
 
     options = this._getDragOptions();
-    if (options != null || this._isItemReordering())
+    if (options != null || this.IsItemReOrdering())
     {
         if (options != null)
         {
@@ -1043,7 +1044,7 @@ oj.ListViewDndContext.prototype._handleDragOver = function(event)
 
         // note drop is allowed in the case where reordering is enabled, but only if there's no dragOver callback
         // to prevent the drop
-        if ((returnValue === -1 && this._isItemReordering()) || returnValue === false || event.isDefaultPrevented())
+        if ((returnValue === -1 && this.IsItemReOrdering()) || returnValue === false || event.isDefaultPrevented())
         {
             dropTarget = this._createDropTarget(item);
 
@@ -1070,7 +1071,7 @@ oj.ListViewDndContext.prototype._handleDragOver = function(event)
 
             // note drop is allowed in the case where reordering is enabled, but only if there's no dragOver callback
             // to prevent the drop
-            if ((returnValue === -1 && this._isItemReordering()) || returnValue === false || event.isDefaultPrevented())
+            if ((returnValue === -1 && this.IsItemReOrdering()) || returnValue === false || event.isDefaultPrevented())
             {
                 // if it is non-group item
                 if (item.hasClass(this.listview.getItemStyleClass()))
@@ -1235,7 +1236,7 @@ oj.ListViewDndContext.prototype._handleDrop = function(event)
     }
 
     // add the reorder param
-    if (this._isItemReordering() && source === this.listview.element.get(0).id)
+    if (this.IsItemReOrdering() && source === this.listview.element.get(0).id)
     {
         ui['reorder'] = true;
     }
@@ -1312,7 +1313,7 @@ oj.ListViewDndContext.prototype.prepareContextMenu = function(contextMenu)
     var self = this, menuContainer, listItems, menuItemsSet;
 
     // only add context menu if item reordering is enabled
-    if (!this._isItemReordering())
+    if (!this.IsItemReOrdering())
     {
         return;
     }
@@ -1725,7 +1726,7 @@ oj.ListViewDndContext.prototype.HandleKeyDown = function(event)
         if (keyCode === oj.ListViewDndContext.X_KEY || keyCode === oj.ListViewDndContext.C_KEY || oj.ListViewDndContext.V_KEY)
         {
             // only if item reordering is enabled
-            if (!this._isItemReordering())
+            if (!this.IsItemReOrdering())
             {
                 return false;
             }

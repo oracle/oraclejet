@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2014, 2017, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
@@ -31,6 +31,8 @@ oj.Events = oj['Events'] =
      * @param {function(String, Object)} callback User's event handler callback function (called with the 
      * eventType and model or collection object as parameters--the context will be the model or collection unless specified by context, below). 
      * @param {Object=} context A context for the event 
+     * @return {undefined}
+     * @memberof oj.Events
      */
     'on': function (eventType, callback, context) {
             return this.OnInternal(eventType, callback, context, false, false);
@@ -44,6 +46,8 @@ oj.Events = oj['Events'] =
      * given callback function. 
      * @param {Object=} context If provided, remove handlers only for eventType events with the given callback 
      * function and context object. 
+     * @return {undefined}
+     * @memberof oj.Events
      */
     'off': function(eventType, callback, context) {
              return this._offInternal(eventType, callback, context, false);
@@ -53,6 +57,8 @@ oj.Events = oj['Events'] =
      * Fire the given event type(s) for all registered handlers.
      * @param {String} eventType Types of event handlers to fire (may be a single event type or a space-delimited 
      * set of event types). 
+     * @return {undefined}
+     * @memberof oj.Events
      */        
     'trigger': function(eventType) {
                  var args = Array.prototype.slice.call(arguments);
@@ -71,6 +77,8 @@ oj.Events = oj['Events'] =
      * eventType and model or collection object as parameters--the context will be the model or collection unless 
      * specified by context, below). 
      * @param {Object=} context A context for the event
+     * @return {undefined}
+     * @memberof oj.Events
      */
     'once': function(eventType, callback, context) {
                 return this._onceInternal(eventType, callback, context, false, null);
@@ -85,6 +93,8 @@ oj.Events = oj['Events'] =
      * @param {function(String, Object)} callback User's event handler callback function (called with the 
      * eventType and model or collection object as parameters--the context will be the model or collection 
      * unless specified by context, below). 
+     * @return {undefined}
+     * @memberof oj.Events
      */
     'listenTo': function(otherObj, eventType, callback) {
                 var eventArray, e, event, attr, eventString, listenerObj, index, prop, eventMap = {};
@@ -135,6 +145,8 @@ oj.Events = oj['Events'] =
      * @param {function(String, Object)} callback User's event handler callback function (called with the 
      * eventType and model or collection object as parameters--the context will be the model or collection unless 
      * specified by context, below). 
+     * @return {undefined}
+     * @memberof oj.Events
      */
     'listenToOnce': function(otherObj, eventType, callback) {
                 var eventArray, e, event, attr, eventString, listenerObj, index, prop, eventMap = {};
@@ -178,6 +190,8 @@ oj.Events = oj['Events'] =
      * model or collection 
      * @param {function(String, Object)=} callback If specified, remove event handlers that call the given user 
      * callback function from this model or collection 
+     * @return {undefined}
+     * @memberof oj.Events
      */
     'stopListening': function(otherObj, eventType, callback) {
                         var eventArray, actualType, eventMap = {}, e, oneEvent, oneAttr, event, objEqual,
@@ -404,6 +418,9 @@ oj.Events.Mixin = function(myClass, source) {
     myClass['_listeningTo'] = [];
 };
 
+/**
+ * @private
+ */
 oj.Events._onceInternal = function(eventType, callback, context, listenTo, otherObj) {
     var eventArray, e, event, attr, eventMap, prop;
     
@@ -431,6 +448,9 @@ oj.Events._onceInternal = function(eventType, callback, context, listenTo, other
    return this;
 };
 
+/**
+ * @private
+ */
 oj.Events._shouldFire = function(handler) {
     if (handler.once) {
         if (!handler.fired) {
@@ -442,10 +462,16 @@ oj.Events._shouldFire = function(handler) {
     return true;
 };
 
+/**
+ * @private
+ */
 oj.Events._getContext = function(obj, handler) {
     return handler.context || handler.otherObj || obj;
 };
 
+/**
+ * @protected
+ */
 oj.Events.TriggerInternal = function(silent, eventType) {
     var eventArray = this._getEvents(eventType), e, event, attr, eventsToFire, handlers, i, args, allHandlers, 
                      callback;
@@ -518,6 +544,9 @@ oj.Events.TriggerInternal = function(silent, eventType) {
     return this;    
 };
 
+/**
+ * @protected
+ */
 oj.Events.OnInternal = function(eventType, callback, context, listenTo, ignoreSilent) {
     var eventMap, prop, eventArray, i, event, attr, eventObj;
 
@@ -549,6 +578,9 @@ oj.Events.OnInternal = function(eventType, callback, context, listenTo, ignoreSi
     return this;
 };
 
+/**
+ * @private
+ */
 oj.Events._offInternal = function(eventType, callback, context, listen) {
     var eventMap, prop;
      if (arguments == null || arguments.length == 0) {
@@ -574,6 +606,9 @@ oj.Events._offInternal = function(eventType, callback, context, listen) {
  
 
 
+/**
+ * @private
+ */
 oj.Events._getEventMap = function(eventType, callback, context) {
     var eventMap = {};
     
@@ -589,6 +624,9 @@ oj.Events._getEventMap = function(eventType, callback, context) {
     return eventMap;
 };
 
+/**
+ * @private
+ */
 oj.Events._removeEvent = function(eventType, callback, context, listen) {
     var eventArray = [], e, i, event, attr, handlers, callbacks, contexts, attrs, listenEq;
     
@@ -630,6 +668,9 @@ oj.Events._removeEvent = function(eventType, callback, context, listen) {
     }   
 };
 
+/**
+ * @private
+ */
 oj.Events._removeHandler = function(handlers, handler) {
     var i, callbacks, contexts, attrs, listenEq, onceEq;
     
@@ -652,6 +693,9 @@ oj.Events._removeHandler = function(handlers, handler) {
     }
 };
 
+/**
+ * @private
+ */
 oj.Events._getEvents = function(eventString) {    
     var eventList = eventString ? eventString.split(" ") : [], retList = [], i, eventWithAttr, name, attr;
     for (i = 0; i < eventList.length; i=i+1) {
@@ -663,17 +707,26 @@ oj.Events._getEvents = function(eventString) {
     return retList;
 };
 
+/**
+ * @private
+ */
 oj.Events._handlersIdentical = function(handler1, handler2) {
    return (handler1.callback === handler2.callback) && (handler1.attribute === handler2.attribute) && 
           (handler1.context === handler2.context) && (handler1.listen === handler2.listen) && 
           (handler1.once === handler2.once);
 };
 
+/**
+ * @private
+ */
 oj.Events._listenersIdentical = function(listener1, listener2) {
    return (listener1.event === listener2.event) && (listener1.attribute === listener2.attribute) && 
           (listener1.context === listener2.context) && (listener1.object === listener2.object);    
 };
 
+/**
+ * @private
+ */
 oj.Events._checkForHandler = function(handlerList, handler, handlerTest) {
     var i;
     if (handlerList === undefined) {
@@ -688,6 +741,9 @@ oj.Events._checkForHandler = function(handlerList, handler, handlerTest) {
     return -1;
 };
 
+/**
+ * @private
+ */
 oj.Events._getHandlers = function(handlers, eventType, original) {
     if (handlers && handlers[eventType] instanceof Array) {
         if (original) {
@@ -726,9 +782,15 @@ oj.Model = function (attributes, options) {
 };
 
 
-// Subclass from oj.Object 
+/**
+ * Subclass from oj.Object 
+ * @private
+ */
 oj.Object.createSubclass(oj.Model, oj.Object, "oj.Model");
   
+/**
+ * @private
+ */
 oj.Model.prototype.Init = function()
 {
     oj.Model.superclass.Init.call(this);
@@ -823,12 +885,17 @@ oj.Model.prototype.validate = null;
 /**
  * @export
  * @desc The last value returned from a validate callback
- * @type {string|Object|null}
  */
 oj.Model.prototype.validationError = null;
 
+/**
+ * @private
+ */
 oj.Model._idCount = 0;
 
+/**
+ * @private
+ */
 oj.Model._init = function(model, attributes, options, properties) {
     var prop = null, parse, attrCopy;
 
@@ -986,9 +1053,15 @@ oj.Model.extend = function (properties, classProperties) {
     return Model;
 };
 
-// Placeholder for event mixins
+/**
+ * Placeholder for event mixins
+ * @private
+ */
 oj.Model.prototype.TriggerInternal = function (silent, event, arg1, arg2, options) {};
 
+/**
+ * @protected
+ */
 oj.Model.prototype.SetCid = function () {
     // Create cid property if necessary
     if (!this.GetCid()) {
@@ -997,41 +1070,65 @@ oj.Model.prototype.SetCid = function () {
     }
 };
 
+/**
+ * @protected
+ */
 oj.Model.prototype.GetCid = function () { 
     return this['cid'];
 };
 
-// Index within collection
+/**
+ * Index within collection
+ * @protected
+ */
 oj.Model.prototype.SetIndex = function(index) {
     this.index = index;
 };
 
+/**
+ * @protected
+ */
 oj.Model.prototype.GetIndex = function() {
     return this.index;
 };
 
-// LRU functions
+/**
+ * LRU functions
+ * @protected
+ */
 oj.Model.prototype.SetNext = function(model) {
     var retVal = this.nextModel;
     this.nextModel = model;
     return retVal;
 };
 
+/**
+ * @protected
+ */
 oj.Model.prototype.GetNext = function() {
     return this.nextModel;
 };
 
+/**
+ * @protected
+ */
 oj.Model.prototype.SetPrevious = function(model) {
     var retVal = this.previousModel;
     this.previousModel = model;
     return retVal;
 };
 
+/**
+ * @protected
+ */
 oj.Model.prototype.GetPrevious = function() {
     return this.previousModel;
 };
 
-// Merge the given model's attributes with this model's attributes
+/**
+ * Merge the given model's attributes with this model's attributes
+ * @protected
+ */
 oj.Model.prototype.Merge = function(model, comparator, silent) {
     var prop, needSort = false, isStringComparator = oj.StringUtils.isString(comparator),
         valueChange, changes = false;
@@ -1070,6 +1167,9 @@ oj.Model.prototype.Merge = function(model, comparator, silent) {
     return needSort;
 };
 
+/**
+ * @private
+ */
 oj.Model._hasProperties = function(object) {
     var prop;
     if (object && object instanceof Object) {
@@ -1082,6 +1182,9 @@ oj.Model._hasProperties = function(object) {
     return false;
 };
 
+/**
+ * @protected
+ */
 oj.Model.prototype.SetCollection = function(coll) {
     if (coll == null) {
         delete this['collection'];
@@ -1092,22 +1195,34 @@ oj.Model.prototype.SetCollection = function(coll) {
     this.SetupId();
 };
 
+/**
+ * @protected
+ */
 oj.Model.prototype.GetCollection = function() {
     return this['collection'];
 };
 
+/**
+ * @private
+ */
 oj.Model.prototype._fireAttrChange = function(prop, value, options, silent) {
     if (prop != null) {
         this.TriggerInternal(silent, oj.Events.EventType['CHANGE'] + ":" + prop, this, value, options);    
     }    
 };
 
+/**
+ * @private
+ */
 oj.Model.prototype._fireChange = function(options, silent) {
     var coll;
     
     this.TriggerInternal(silent, oj.Events.EventType['CHANGE'], this, options, null);        
 };
     
+/**
+ * @protected
+ */
 oj.Model.prototype.SetupId = function() {
     // Replicate id attribute at top level
     var id = null;
@@ -1124,6 +1239,9 @@ oj.Model.prototype.SetupId = function() {
     this['id'] = id;
 };
 
+/**
+ * @private
+ */
 oj.Model.prototype._setPropInternal = function(prop, value, copyRegardless) {
     var equality = oj.Object.__innerEquals(this.attributes[prop], value);
     if (copyRegardless || !equality) {
@@ -1136,16 +1254,23 @@ oj.Model.prototype._setPropInternal = function(prop, value, copyRegardless) {
     return false;
 };
 
+/**
+ * @private
+ */
 oj.Model.prototype._clearChanged = function() {
     this['changed'] = {};
 };
 
+/**
+ * @private
+ */
 oj.Model.prototype._addChange = function(property, value) {
     this['changed'][property] = value;
 };
 
 /**
  * @ignore
+ * @private
  * @param {Object|string} prop
  * @param {Object|null|undefined} value
  * @param {boolean} copyRegardless
@@ -1268,6 +1393,9 @@ oj.Model.prototype.clear = function(options) {
     return this;
 };
 
+/**
+ * @private
+ */
 oj.Model._cloneAttributes = function(oldData, newData) {    
           newData = newData || {};
 
@@ -1336,7 +1464,10 @@ oj.Model.prototype.clone = function() {
     return c;
 };
 
-// Does this model match the given id or cid?
+/**
+ * Does this model match the given id or cid?
+ * @protected
+ */
 oj.Model.prototype.Match = function(id, cid) {
     var modId = this.GetId(), modCid;
     if (modId !== undefined && modId == id) {
@@ -1424,6 +1555,9 @@ oj.Model.prototype.unset = function (property, options) {
 };
 
 
+/**
+ * @private
+ */
 oj.Model.prototype._unsetInternal = function (property, options, clear) {
     options = options || {};
     var silent = options['silent'], attrs = {};
@@ -1452,6 +1586,7 @@ oj.Model.prototype._unsetInternal = function (property, options, clear) {
  * Returns the value of a property from the model.
  * @param {string} property Property to get from model 
  * @return {Object} value of property
+ * @memberof oj.Model
  * @export
  */
 oj.Model.prototype.get = function (property) {
@@ -1545,7 +1680,6 @@ oj.Model.prototype.url = function() {
     }
     
     throw new oj.URLError();
-    //return null;
 };
 
 
@@ -1553,7 +1687,7 @@ oj.Model.prototype.url = function() {
 /**
  * Return all of the model's attributes as an array
  * 
- * @returns {Array} array of all the model's attributes
+ * @returns {Array.<Object>} array of all the model's attributes
  * @export
  */
 oj.Model.prototype.keys = function() {
@@ -1571,7 +1705,7 @@ oj.Model.prototype.keys = function() {
 /**
  * Return all of the model's attributes values as an array
  * 
- * @returns {Array} array of all the model's attributes values
+ * @returns {Array.<Object>} array of all the model's attributes values
  * @export
  */
 oj.Model.prototype.values = function() {
@@ -1607,7 +1741,7 @@ oj.Model.prototype.pairs = function() {
 /**
  * Return attribute/value pairs for the model minus those attributes listed in keys
  * 
- * @param {Array|Object} keys keys to exclude from the returned attribute/value pairs
+ * @param {Array.<Object>|Object} keys keys to exclude from the returned attribute/value pairs
  * 
  * @returns {Object} array of the model's attribute/value pairs except those listed in keys
  * @export
@@ -1636,7 +1770,7 @@ oj.Model.prototype.omit = function(keys) {
 /**
  * Return attribute/value pairs for the model for the keys
  * 
- * @param {Array|Object} keys keys for which to return attribute/value pairs
+ * @param {Array.<Object>|Object} keys keys for which to return attribute/value pairs
  * 
  * @returns {Object} array of the model's attribute/value pairs filtered by keys
  * @export
@@ -1677,10 +1811,16 @@ oj.Model.prototype.invert = function() {
     return retObj;
 };
 
+/**
+ * @private
+ */
 oj.Model._getLastChar = function(str) {
     return str.charAt(str.length-1);
 };
 
+/**
+ * @private
+ */
 oj.Model.prototype._saveUrl = function() {
     var urlRoot = this._getUrlRoot();
     if (urlRoot) {
@@ -1695,10 +1835,17 @@ oj.Model.prototype._saveUrl = function() {
     
 };
 
+/**
+ * @private
+ */
 oj.Model.prototype._getUrlRoot = function() {
     return oj.Model.GetPropValue(this, 'urlRoot');
 };
 
+/**
+ * Callback function when writing a model to the server
+ * @type {function(Object)}
+ */
 oj.Model.prototype['parseSave'] = function (modelData) {
     return modelData;
 };
@@ -1715,6 +1862,9 @@ oj.Model.prototype.isValid = function() {
     return this._checkValid(this.attributes, options, false);
 };
 
+/**
+ * @private
+ */
 oj.Model._isValidateSet = function(options, save) {
     options = options || {};
     if (options['validate'] !== undefined && options['validate'] !== null) {
@@ -1724,6 +1874,9 @@ oj.Model._isValidateSet = function(options, save) {
     return save;
 };
 
+/**
+ * @private
+ */
 oj.Model.prototype._checkValid = function(attributes, options, save) {  
     options = options || {};    
     var validate = this['validate'];
@@ -1738,6 +1891,9 @@ oj.Model.prototype._checkValid = function(attributes, options, save) {
     return true;
 };
 
+/**
+ * @private
+ */
 oj.Model._processArgs = function(args) {
     var ignoreLastArg = false, options = {}, prop, attributes = {}, i;
     
@@ -1778,6 +1934,9 @@ oj.Model._processArgs = function(args) {
     return {attributes:attributes, options:options};
 };
 
+/**
+ * @private
+ */
 oj.Model._copyOptions = function(options) {
     var optReturn = {}, prop;
     options = options || {};
@@ -1790,6 +1949,9 @@ oj.Model._copyOptions = function(options) {
     return optReturn;
 };
 
+/**
+ * @private
+ */
 oj.Model._triggerError = function(self, silent, options, status, err, xhr) {
     options = options || {};
     options['textStatus'] = status;
@@ -1982,6 +2144,9 @@ oj.Model.prototype.save = function (attributes, options) {
     return oj.Model._internalSync("create", this, opts);
 };
 
+/**
+ * @private
+ */
 oj.Model.prototype._attrUnion = function(attrs) {
     var attrReturn = {}, prop;
     
@@ -1998,7 +2163,9 @@ oj.Model.prototype._attrUnion = function(attrs) {
     return attrReturn;
 };
 
-
+/**
+ * @protected
+ */
 oj.Model.GetPropValue = function(obj, property) {
     if (obj) {
         if ($.isFunction(obj[property])) {
@@ -2011,11 +2178,17 @@ oj.Model.GetPropValue = function(obj, property) {
     return $.isFunction(property) ? property() : property;
 };
 
+/**
+ * @protected
+ */
 oj.Model.IsComplexValue = function(val) {
     return val && val.hasOwnProperty("value") && val.hasOwnProperty("comparator");
 };
     
-// Does this model contain all of the given attribute/value pairs?
+/**
+ * Does this model contain all of the given attribute/value pairs?
+ * @private
+ */
 oj.Model.prototype._hasAttrs = function(attrs) {
     var prop;
     for (prop in attrs) {
@@ -2065,7 +2238,10 @@ oj.Model.prototype.matches = function(attrs) {
     }(this);
 };
 
-// See if this model contains any of the given attribute/value pairs 
+/**
+ * See if this model contains any of the given attribute/value pairs 
+ * @protected
+ */
 oj.Model.prototype.Contains = function(attrs) {
     var attrList = (attrs.constructor === Array) ? attrs : [attrs], i;
     
@@ -2077,10 +2253,16 @@ oj.Model.prototype.Contains = function(attrs) {
     return false;
 };
 
+/**
+ * @private
+ */
 oj.Model._getSuccess = function(options) {
     return options != null && options['success'] ? options['success'] : null;
 };
 
+/**
+ * @protected
+ */
 oj.Model.GetContext = function(options, model) { 
     if (options !== undefined && options['context'] !== undefined) {
         return options['context'];
@@ -2098,10 +2280,16 @@ oj.Model.prototype.isNew = function() {
     return this.GetId() == undefined;
 };
 
+/**
+ * @private
+ */
 oj.Model.prototype._getIdAttr = function () {
     return this['idAttribute'] || 'id';
 };
 
+/**
+ * @protected
+ */
 oj.Model.prototype.GetId = function () {
     return this['id'];
 };
@@ -2135,7 +2323,7 @@ oj.Model.prototype.changedAttributes = function(attributes) {
 /**
  * Return true if the Model object has had any changes made to its values, or if any changes have been made to 
  * the optional set of attributes passed in.
- * @param {Array=} attribute One or more attributes to check for changes 
+ * @param {Array.<Object>=} attribute One or more attributes to check for changes 
  * @returns {boolean} true if the Model object has had any changes since retrieval or last update at all (if no 
  * attributes parameter); true if the Model object has had changes to one or more of the passed-in attributes 
  * since retrieval or last update (if attributes parameter present).
@@ -2170,6 +2358,8 @@ oj.Model.prototype.hasChanged = function(attribute) {
  * options<br>
  * <b>error</b>: callback function on failure of the server call, firing an error event and passing the model, 
  * xhr, status, and error values.<br>
+ * @return {boolean}
+ * @memberof oj.Model
  * @export
  */
 oj.Model.prototype.destroy = function (options) {
@@ -2229,17 +2419,26 @@ oj.Model.prototype.destroy = function (options) {
     return false;
 };
 
-// Fire request event
+/**
+ * Fire request event
+ * @private
+ */
 oj.Model.prototype._fireRequest = function(model, xhr, options, silent) {
     this.TriggerInternal(silent, oj.Events.EventType['REQUEST'], model, xhr, options);
 };
-    
-// Fire destroy event to all listeners
+   
+/**
+ * Fire destroy event to all listeners
+ * @private
+ */
 oj.Model.prototype._fireDestroy = function (silent) {
     this.TriggerInternal(silent, oj.Events.EventType['DESTROY'], this, this['collection'], null);
 };
 
-// Fire sync event to all listeners
+/**
+ * Fire sync event to all listeners
+ * @private
+ */
 oj.Model._fireSyncEvent = function(model, resp, options, silent) {
     model.TriggerInternal(silent, oj.Events.EventType['SYNC'], model, resp, options);
 };
@@ -2279,6 +2478,7 @@ oj.Model.prototype.previous = function(attr) {
  * Return a copy of the model's previously set attributes
  * 
  * @returns {Object} a copy of the model's previous attributes
+ * @memberof oj.Model
  * @export
  */
 oj.Model.prototype.previousAttributes = function() {
@@ -2313,7 +2513,10 @@ oj.Model.prototype.sync = function(method, model, options) {
     return oj['sync'](method, model, options);
 };
 
-// Internal processing before sync-- we want this stuff to happen even if user replaces sync
+/**
+ * Internal processing before sync-- we want this stuff to happen even if user replaces sync
+ * @private
+ */
 oj.Model._internalSync = function(method, model, options) {
     options = options || {};
     // If Model/Collection has OAuth object, then create Authorization header (see oj.RestImpl.addOptions)
@@ -2356,7 +2559,10 @@ oj.Model._internalSync = function(method, model, options) {
     return options['xhr'];
 };
 
-// Get all custom URL options
+/**
+ * Get all custom URL options
+ * @protected
+ */
 oj.Model.SetCustomURLOptions = function(recordID, context, opt) {
     var options = context instanceof oj.Collection ? context.ModifyOptionsForCustomURL(opt) : {};
     if (recordID) {
@@ -2436,6 +2642,9 @@ oj.sync = function(method, model, options) {
 };
 
 
+/**
+ * @private
+ */
 oj.Model._urlError = function(ajaxOptions) {
     if (!ajaxOptions['url']) {
         throw new Error('The url property or function must be specified');
@@ -2470,7 +2679,7 @@ oj.ajax = function(settings) {
 /**
  * @constructor
  * @class oj.URLError
- * @desc Constructs a URLError, thrown when API calls are made that require a URL but no URL is defined.
+ * @classdesc Constructs a URLError, thrown when API calls are made that require a URL but no URL is defined.
  * @export
  */
 oj.URLError = function() {
@@ -2848,6 +3057,7 @@ oj.OAuth.prototype.isInitialized = function()
 /**
  * Request for access_token(bearer token) using Client Credential Authorization Grant.
  * Initialize response part of the OAuth object (access_token, e.t.c.)
+ * @return {undefined}
  * @example <caption>Set/Re-set response part of the OAuth object using Client Credentials</caption>
  * myOAuth.clientCredentialGrant();
  *
@@ -2879,6 +3089,7 @@ oj.OAuth.prototype.clientCredentialGrant = function()
 /**
  * Set response part of the OAuth object (access_token, e.t.c.)
  * @param {Object} data current response
+ * @return {undefined}
  * @example <caption>'Initialize' response part of the OAuth object with access_token</caption>
  * myOAuth.setAccessTokenResponse({...Access Token...});
  *
@@ -2902,6 +3113,8 @@ oj.OAuth.prototype.getAccessTokenResponse = function()
 /**
  * Clean response part of the OAuth object (access_token, e.t.c.)
  * Null and remove all data from response part of the OAuth object
+ * @return {undefined}
+ * @memberof oj.OAuth
  * @export
  */
 oj.OAuth.prototype.cleanAccessTokenResponse = function()
@@ -2912,6 +3125,7 @@ oj.OAuth.prototype.cleanAccessTokenResponse = function()
 /**
  * Set request part of the OAuth object (client credentials, uri endpoint)
  * @param {Object} data current client credentials and uri
+ * @return {undefined}
  * @example <caption>'Initialize' request part of the OAuth object with client credentials and calculate 
  * access_token</caption>
  * myOAuth.setAccessTokenRequest({...Client Credentials ...});
@@ -2937,6 +3151,7 @@ oj.OAuth.prototype.getAccessTokenRequest = function()
 /**
  * Clean request part of the OAuth object (client credentials, uri endpoint)
  * Null and remove all data from request part of the OAuth object
+ * @return {undefined}
  * @export
  */
 oj.OAuth.prototype.cleanAccessTokenRequest = function()
@@ -3031,7 +3246,7 @@ oj.OAuth._cleanAccessToken = function(oauthObj) {
  * @class oj.Collection 
  * @classdesc Collection of Model objects 
  * 
- * @param {Array=} models Set of model objects to put into collection at construction time.  If models contain actual
+ * @param {Array.<oj.Model>=} models Set of model objects to put into collection at construction time.  If models contain actual
  *                 oj.Model objects, then any custom parse callback set on the collection must be able to handle
  *                 oj.Model objects as a possible argument
  * @param {Object=} options Passed through to the user's initialize routine, if any, upon construction 
@@ -3048,7 +3263,10 @@ oj.Collection = function(models, options) {
 };
 
 
-// Subclass from oj.Object exte
+/**
+ * Subclass from oj.Object 
+ * @private
+ */
 oj.Object.createSubclass(oj.Collection, oj.Object, "oj.Collection");
 
 /**
@@ -3089,16 +3307,20 @@ oj.Collection.prototype.length = undefined;
  * Note that this property should not be used directly when a collection is virtual, as
  * automatic fetches will not be triggered for undefined elements in the model.  Use at() instead.
  * 
- * @type Array 
+ * @type {Array.<oj.Model>}
  */
 oj.Collection.prototype.models = undefined;
 
-// Tracking indices used
+/**
+ * Tracking indices used
+ * @private
+ */
 oj.Collection.prototype._modelIndices = [];
 
 /**
  * @export
  * @desc The data service's server URL.
+ * @memberof oj.Collection
  * 
  * @type {String|function():string}
  */
@@ -3108,7 +3330,7 @@ oj.Collection.prototype.url = null;
  * @export
  * @desc Changes that have occured due to adds/removes since the last fetch.  This is a list of indicies that have
  * changed (location at which a model was added, deleted, or set).  They do not shift with subsequent operations
- * @type Array
+ * @type {Array.<number>}
  */
 oj.Collection.prototype.changes = [];
 
@@ -3144,7 +3366,7 @@ oj.Collection.prototype.changes = [];
  * <b>(other)</b>: (optional) any other attributes to pass in the ajax call<br>
  * </ul>
  * <p>
- *  @type {function(string,Object,Object):(string|Object|null)|null}
+ * @type {function(string,Object,Object):(string|Object|null)|null}
  * @export
  */
 oj.Collection.prototype.customURL = null;
@@ -3269,6 +3491,9 @@ oj.Collection.prototype.sortDirection = 1;
  */
 oj.Collection.prototype.comparator = null;
 
+/**
+ * @private
+ */
 oj.Collection.prototype.Init = function()
 {
     oj.Collection.superclass.Init.call(this);
@@ -3350,6 +3575,9 @@ oj.Collection.extend = function(properties, classProperties)
 };
 
 
+/**
+ * @private
+ */
 oj.Collection._init = function(collection, models, options, properties) {
     var prop, i, optionlist, modelList;
 
@@ -3411,15 +3639,24 @@ oj.Collection.prototype.on = function (event, callback) {};
 oj.Collection.prototype.OnInternal = function(event, callback, context, listenTo, ignoreSilent) {};
 oj.Collection.prototype.TriggerInternal = function (silent, event, arg1, arg2, options) {};
 
-// Fire request event
+/**
+ * Fire request event
+ * @private
+ */
 oj.Collection.prototype._fireRequest = function(collection, xhr, options, silent) {
     this.TriggerInternal(silent, oj.Events.EventType['REQUEST'], collection, xhr, options);
 };
 
+/**
+ * @private
+ */
 oj.Collection.prototype._resetChanges = function() {
     this['changes'] = [];
 };
 
+/**
+ * @private
+ */
 oj.Collection.prototype._setChangeAt = function(start, count) {
     for (var at = start; at < start+count; at++) {
         if (this['changes'].indexOf(at) === -1) {
@@ -3430,6 +3667,9 @@ oj.Collection.prototype._setChangeAt = function(start, count) {
 };
 
 
+/**
+ * @private
+ */
 oj.Collection.prototype._setModels = function(models, clearing) {
     this['models'] = models;
     if (clearing) {
@@ -3445,20 +3685,25 @@ oj.Collection.prototype._setModels = function(models, clearing) {
     }
 };
 
-/*oj.Collection.prototype._setModel = function(index, model) {
-    this._getModels()[index] = model;
-};*/
-
+/**
+ * @private
+ */
 oj.Collection.prototype._getModels = function() {
     return this['models'];
 };
 
+/**
+ * @private
+ */
 oj.Collection.prototype._getModelsLength = function() {
     return this._getModels().length;
 };
 
-// Designed to check if index exceeds the length of the models.  If we're in a virtual and "no totalResults" case, 
-// we're never over the upper limit
+/**
+ * Designed to check if index exceeds the length of the models.  If we're in a virtual and "no totalResults" case, 
+ * we're never over the upper limit
+ * @private
+ */
 oj.Collection.prototype._overUpperLimit = function(index) {
     if (index < this._getModelsLength()) {
         return false;
@@ -3471,20 +3716,32 @@ oj.Collection.prototype._overUpperLimit = function(index) {
     return true;
 };
 
+/**
+ * @private
+ */
 oj.Collection.prototype._hasTotalResults = function() {
     return oj.Collection._defined(this['totalResults']);
 }
 
+/**
+ * @private
+ */
 oj.Collection._defined = function(value) {
     return value != null;
 }
 
+/**
+ * @private
+ */
 oj.Collection.prototype._pushModel = function(model) {
     this._getModels().push(model);
     this._modelIndices.push(this._getModelsLength()-1);
     this._setChangeAt(this._getModelsLength()-1, 1);
 };
     
+/**
+ * @private
+ */
 oj.Collection.prototype._pushModels = function(model) {
     // Model is being added to the end, it should be made the head
     this._makeModelHead(model);
@@ -3493,6 +3750,9 @@ oj.Collection.prototype._pushModels = function(model) {
     model.SetIndex(this._getModelsLength()-1);
 };
 
+/**
+ * @private
+ */
 oj.Collection.prototype._reduceLRU = function(removed) {
     if (removed) {
         for (var i = 0; i < removed.length; i++) {
@@ -3531,11 +3791,17 @@ oj.Collection.prototype._spliceModels = function(start, count, model) {
     this._realignModelIndices(start);
 };
 
+/**
+ * @private
+ */
 oj.Collection.prototype._getModel = function(index) {
     return this._getModels()[index];
 };
 
-// Realign all the indices of the models (after sort for example)
+/**
+ * Realign all the indices of the models (after sort for example)
+ * @private
+ */
 oj.Collection.prototype._realignModelIndices = function(start) {
     var index;
     for (var i = 0; i < this._modelIndices.length; i++) {
@@ -3546,7 +3812,10 @@ oj.Collection.prototype._realignModelIndices = function(start) {
     }
 };
 
-// Update next/prev pointers as though the given model were being removed
+/**
+ * Update next/prev pointers as though the given model were being removed
+ * @private
+ */
 oj.Collection.prototype._removePrevNext = function(model) {
     if (!model) {
         return;
@@ -3572,6 +3841,9 @@ oj.Collection.prototype._removePrevNext = function(model) {
     }    
 };
 
+/**
+ * @private
+ */
 oj.Collection.prototype._makeModelHead = function(model) {
     // Make this new model the most recently used: the head
     model.SetNext(this.head);
@@ -3586,7 +3858,10 @@ oj.Collection.prototype._makeModelHead = function(model) {
     this.head = model;    
 };
 
-// Mark the model index tracker as having a used slot
+/**
+ * Mark the model index tracker as having a used slot
+ * @private
+ */
 oj.Collection.prototype._setModelIndex = function(index) {
     if (this._modelIndices.indexOf(index) === -1) {
         this._modelIndices.push(index);
@@ -3594,7 +3869,10 @@ oj.Collection.prototype._setModelIndex = function(index) {
 }
 
     
-// Insert the given model at the given index
+/**
+ * Insert the given model at the given index
+ * @private
+ */
 oj.Collection.prototype._insertModelIndex = function(start) {
     // Up all the indices of models with index greater than start
     for (var i = 0; i < this._modelIndices.length; i++) {
@@ -3606,7 +3884,10 @@ oj.Collection.prototype._insertModelIndex = function(start) {
     this._modelIndices.push(start);
 }
 
-// Splice out the given model index
+/**
+ * Splice out the given model index
+ * @private
+ */
 oj.Collection.prototype._spliceModelIndices = function(start, end) {
     if (end === undefined) {
         end = start;
@@ -3622,7 +3903,10 @@ oj.Collection.prototype._spliceModelIndices = function(start, end) {
     }
 }
     
-// Clear the given model index
+/**
+ * Clear the given model index
+ * @private
+ */
 oj.Collection.prototype._clearModelIndices = function(start, end) {
     if (end === undefined) {
         end = start;
@@ -3636,6 +3920,9 @@ oj.Collection.prototype._clearModelIndices = function(start, end) {
     }
 }
     
+/**
+ * @private
+ */
 oj.Collection.prototype._setModel = function(index, model) {
     var oldModel = this._getModel(index);
     this._removePrevNext(oldModel);
@@ -3652,7 +3939,10 @@ oj.Collection.prototype._setModel = function(index, model) {
     }
 };
 
-// Clean off n models from tail (oldest) of prev/next list
+/**
+ * Clean off n models from tail (oldest) of prev/next list
+ * @private
+ */
 oj.Collection.prototype._clearOutModels = function(n) {
     var current = this.tail, index, model;
     var i = 0;
@@ -3696,14 +3986,20 @@ oj.Collection.prototype._clearOutModels = function(n) {
 };
 
 
-// Reset the LRU list
+/**
+ * Reset the LRU list
+ * @private
+ */
 oj.Collection.prototype._resetLRU = function() {
     this.lruCount = 0;
     this.head = null;
     this.tail = null;
 };
 
-// Make sure we have room in the LRU
+/**
+ * Make sure we have room in the LRU
+ * @private
+ */
 oj.Collection.prototype._manageLRU = function(incoming) {
     if (this.IsVirtual()) {
         var limit = this._getModelLimit();
@@ -3726,6 +4022,9 @@ oj.Collection.prototype.clone = function() {
     return this._cloneInternal(true);
 };
 
+/**
+ * @private
+ */
 oj.Collection.prototype._cloneInternal = function(withProperties) {
     var c = new this.constructor(), i;
 
@@ -3762,7 +4061,10 @@ oj.Collection.prototype._cloneInternal = function(withProperties) {
     return c;
 };
 
-// Copy critical properties in clone
+/**
+ * Copy critical properties in clone
+ * @private
+ */
 oj.Collection.prototype._copyProperties = function(collection) {
     var props = ['comparator', 'model', 'modelId'], prop, i;
     for (i = 0; i < props.length; i++) {
@@ -3772,7 +4074,10 @@ oj.Collection.prototype._copyProperties = function(collection) {
     return collection;
 };
 
-// Copy critical fetch properties in clone
+/**
+ * Copy critical fetch properties in clone
+ * @private
+ */
 oj.Collection.prototype._copyFetchProperties = function(collection) {
     var props = ['totalResults', 'hasMore', oj.Collection._FETCH_SIZE_PROP], prop, i;
     for (i = 0; i < props.length; i++) {
@@ -3782,10 +4087,16 @@ oj.Collection.prototype._copyFetchProperties = function(collection) {
     return collection;
 };
 
+/**
+ * @private
+ */
 oj.Collection.prototype._getLength = function() {
     return this['length'];
 };
 
+/**
+ * @private
+ */
 oj.Collection.prototype._setLength = function()
 {
     var modelsLen = this._getModelsLength();
@@ -3811,6 +4122,9 @@ oj.Collection._createModel = function(collection, attrs, options) {
     return null;
 };
 
+/**
+ * @private
+ */
 oj.Collection.prototype._newModel = function(m, parse, options, ignoreDefaults) {
     var newModel = null, validationValue;
     var opt = options || {};
@@ -3857,7 +4171,7 @@ oj.Collection.prototype._newModel = function(m, parse, options, ignoreDefaults) 
  * will be fired as the 
  * collection will already "see" the model as existing.  Note that a warning will be logged if this add is not 
  * a force, not merging, and duplicate IDs are found.
- * @param {Object|Array} m Model object (or array of models) to add. These can be already-created instance of 
+ * @param {oj.Model|Array.<oj.Model>} m Model object (or array of models) to add. These can be already-created instance of 
  * the oj.Model object, or sets of attribute/values, which will be wrapped by add() using the collection's model.
  * @param {Object=} options <b>silent</b>: if set, do not fire events<br>
  *                          <b>at</b>: splice the new model into the collection at the value given (at:index)<br>
@@ -3870,7 +4184,7 @@ oj.Collection.prototype._newModel = function(m, parse, options, ignoreDefaults) 
  *                          <b>deferred</b>: if true, return a promise as though this collection were virtual 
  *                          whether it is or not<br>
  * 
- * @returns {Promise|Array} The model or models added to the collection (or found/merged if appropriate).  If 
+ * @returns {Promise|Array.<oj.Model>} The model or models added to the collection (or found/merged if appropriate).  If 
  * deferred or virtual, return the model or models added in a promise when the set has completed
  * @export
  */
@@ -3880,8 +4194,11 @@ oj.Collection.prototype.add = function(m, options) {
     return this._handlePromise(this._addInternal(m, options, false, opt['deferred']));
 };
 
-// fillIn: true indicates that we're just trying to use add() after a fetch to 
-// insert into a preallocated list of models, not truly do an add/merge from the API
+/**
+ * fillIn: true indicates that we're just trying to use add() after a fetch to 
+ * insert into a preallocated list of models, not truly do an add/merge from the API
+ * @private
+ */
 oj.Collection.prototype._addInternal = function(m, options, fillIn, deferred) {
     // Get options
     options = options || {};
@@ -4112,6 +4429,9 @@ oj.Collection.prototype._addInternal = function(m, options, fillIn, deferred) {
     return oj.Collection._returnModels(modelReturnList);
 };
 
+/**
+ * @private
+ */
 oj.Collection._returnModels = function(modelReturnList) {
     if (modelReturnList.length === 1) {
         return modelReturnList[0];
@@ -4119,6 +4439,9 @@ oj.Collection._returnModels = function(modelReturnList) {
     return modelReturnList;    
 };
     
+/**
+ * @private
+ */
 oj.Collection.prototype._hasComparator = function() {
     return oj.Collection._defined(this['comparator']);
 };
@@ -4190,6 +4513,9 @@ oj.Collection.prototype.sort = function(options) {
     return null;
 };
 
+/**
+ * @private
+ */
 oj.Collection._getKey = function(val, attr) {
     if (val instanceof oj.Model) {
         return val.get(attr);
@@ -4197,6 +4523,9 @@ oj.Collection._getKey = function(val, attr) {
     return oj.Model.GetPropValue(val, attr);
 };
 
+/**
+ * @private
+ */
 oj.Collection.SortFunc = function(a, b, comparator, collection, self) {
     var keyA, keyB, i, retVal;
     
@@ -4288,8 +4617,10 @@ oj.Collection.prototype.sortedIndex = function(model, comparator) {
     return oj.Collection._find(this._getModels(), model, test);
 };
 
-
-// Binary search and return the index at which model would be inserted into sorted modelArray
+/**
+ * Binary search and return the index at which model would be inserted into sorted modelArray
+ * @private
+ */
 oj.Collection._find = function(modelArray, model, comparator) {
     function search(min, max) {
         var cid, id, mid;
@@ -4320,6 +4651,9 @@ oj.Collection._find = function(modelArray, model, comparator) {
     return search(0, modelArray.length-1);
 };
 
+/**
+ * @private
+ */
 oj.Collection._compareKeys = function(keyA, keyB, sortDirection) {
     if (sortDirection === -1) {
         if (keyA < keyB) {        
@@ -4361,6 +4695,9 @@ oj.Collection.prototype.unshift = function(m, options) {
     return this._handlePromise(this._addInternal(m, opt, false, opt['deferred']));
 };
 
+/**
+ * @private
+ */
 oj.Collection.prototype._handlePromise = function(result) {
     if ($.isFunction(result.then)) {
         return this._addPromise(function() {
@@ -4402,7 +4739,7 @@ oj.Collection.prototype.shift = function(options) {
  * @export
  * @desc Return an array of models found in the Collection, excepting the last n.
  * @param {number=} n number of models to leave off the returned array; defaults to 1
- * @return {Array} array of models from 0 to the length of the collection - n - 1
+ * @return {Array.<oj.Model>} array of models from 0 to the length of the collection - n - 1
  * @throws {Error} when called on a virtual collection 
  */
 oj.Collection.prototype.initial = function(n) {    
@@ -4419,6 +4756,9 @@ oj.Collection.prototype.initial = function(n) {
     return array;
 };
 
+/**
+ * @private
+ */
 oj.Collection.prototype._getDeferred = function(options) {
    var opt = options || {};
    return opt['deferred'];
@@ -4481,8 +4821,11 @@ oj.Collection.prototype.last = function(n, options) {
     return array;
 };
 
-// Loop calling at() in a deferred way and return a promise to be resolved when all the elements are sequentially 
-// fetched
+/**
+ * Loop calling at() in a deferred way and return a promise to be resolved when all the elements are sequentially 
+ * fetched
+ * @protected
+ */
 oj.Collection.prototype.IterativeAt = function (start, end) {
     var array = [], i;
     var self = this;
@@ -4510,6 +4853,9 @@ oj.Collection.prototype.IterativeAt = function (start, end) {
     });
 };
 
+/**
+ * @private
+ */
 oj.Collection.prototype._getDefaultFetchSize = function(n) {
     if (n === undefined || n === null) {
         return this[oj.Collection._FETCH_SIZE_PROP];
@@ -4519,6 +4865,9 @@ oj.Collection.prototype._getDefaultFetchSize = function(n) {
     }
 };
 
+/**
+ * @private
+ */
 oj.Collection.prototype._calculateNextStart = function() {
     var lastFetch = this['lastFetchCount'];
     if (lastFetch === undefined || lastFetch === null) {
@@ -4571,6 +4920,9 @@ oj.Collection.prototype.next = function(n, options) {
     return this.fetch(options);
 };
 
+/**
+ * @private
+ */
 oj.Collection.prototype._calculatePrevStart = function(n) {
     if (this['offset'] === undefined || this['offset'] === null) {
         // Assume zero: we can't back up beyond that so if the offset wasn't set there's nothing to do
@@ -4624,6 +4976,8 @@ oj.Collection.prototype.previous = function(n, options) {
  * Set or change the number of models held at any one time
  * 
  * @param {number} n maximum number of models to keep at a time
+ * @return {undefined}
+ * @memberof oj.Collection
  * @export
  */
 oj.Collection.prototype.setModelLimit = function(n) {
@@ -4632,6 +4986,9 @@ oj.Collection.prototype.setModelLimit = function(n) {
     this._manageLRU(0);
 };
 
+/**
+ * @private
+ */
 oj.Collection.prototype._getModelLimit = function() {
     return this['modelLimit'];
 };
@@ -4640,6 +4997,8 @@ oj.Collection.prototype._getModelLimit = function() {
  * Set or change the number of models to fetch with each server request
  * 
  * @param {number} n number of models to fetch with each request
+ * @return {undefined}
+ * @memberof oj.Collection
  * @export
  */
 oj.Collection.prototype.setFetchSize = function(n) {
@@ -4654,8 +5013,8 @@ oj.Collection.prototype.setFetchSize = function(n) {
  * @param {number=} n index at which to start the returned array of models.  Defaults to 1.
  * @param {Object=} options <b>deferred</b>: if true, return a promise as though this collection were virtual 
  * whether it is or not
- * @return {Array|Promise} array of models from the collection.  If this is a virtual collection, or
- *                  if deferred is passed as true, return a promise which resovles passing the array of models.
+ * @return {Array.<Object>|Promise} array of models from the collection.  If this is a virtual collection, or
+ *                  if deferred is passed as true, return a promise which resolves passing the array of models.
  * @export
  */
 oj.Collection.prototype.rest = function(n, options) {    
@@ -4688,9 +5047,9 @@ oj.Collection.prototype.rest = function(n, options) {
  * and options<br>
  * </ul>
  * <p>
- * @param {Object|Array} m model object or array of models to remove. 
+ * @param {oj.Model|Array.<oj.Model>} m model object or array of models to remove. 
  * @param {Object=} options <b>silent</b>: if set, do not fire events 
- * @return {Array|Object} an array of models or single model removed
+ * @return {Array.<oj.Model>|Object} an array of models or single model removed
  * @export
  */
 oj.Collection.prototype.remove = function(m, options)
@@ -4714,6 +5073,9 @@ oj.Collection.prototype.remove = function(m, options)
     return oj.Collection._returnModels(modsRemoved);
 };
 
+/**
+ * @private
+ */
 oj.Collection.prototype._removeInternal = function(model, index, options) {
     options = options || {};
     var modInfo = index == -1 ? this._getInternal(model) : oj.Collection._getModinfo(index, model), 
@@ -4743,17 +5105,26 @@ oj.Collection.prototype._removeInternal = function(model, index, options) {
 };
 
 
+/**
+ * @private
+ */
 oj.Collection.prototype._unlistenToModel = function(m) {
     if (m !== undefined) {
         m.off(null, null, this);
     }
 };
 
+/**
+ * @private
+ */
 oj.Collection.prototype._listenToModel = function(m) {
     m.OnInternal(oj.Events.EventType['ALL'], this._modelEvent, this, false, true);
 };
 
-// Handle model destroyed events via the all listener
+/**
+ * Handle model destroyed events via the all listener
+ * @private
+ */
 oj.Collection.prototype._modelEvent = function(event, model, collection, options) {
     var args;
     
@@ -4832,12 +5203,8 @@ oj.Collection.prototype.refresh = function(options)
                 }
             }
             // Virtual
-            //var totalResults =  self['totalResults'];
             var startIndex = options['startIndex'];
-    /*        if (oj.Collection._defined(totalResults)) {
-                self._setModels(new Array(totalResults), true);
-                self._resetLRU();
-            }*/
+
             self._setModels([], true);
             self._resetLRU();
 
@@ -4880,7 +5247,7 @@ oj.Collection.prototype.refresh = function(options)
  * collection's data. 
  * @param {Object=} options user options, passed to event, unless silent<br>
  *                          <b>silent</b>: if set, do not fire events<p>
- * @returns {Object|Array} The model or models added to the collection, if passed in
+ * @returns {oj.Model|Array.<oj.Model>} The model or models added to the collection, if passed in
  * @export
  */
 oj.Collection.prototype.reset = function(data, options)
@@ -4948,7 +5315,10 @@ oj.Collection.prototype.at = function(index, options)
     return this._atInternal(index, options, false, deferred);
 };
 
-// Local indicates that only what's stored locally should be returned (if true)--no fetching
+/**
+ * Local indicates that only what's stored locally should be returned (if true)--no fetching
+ * @private
+ */
 oj.Collection.prototype._atInternal = function(index, options, local, deferred) {
     if (index < 0) {
         // Normalize it using the length-- another BackboneJS test case
@@ -4988,7 +5358,10 @@ oj.Collection.prototype.whenReady = function() {
         return Promise.resolve();
 };
 
-// Add a task to a chained list of Promises
+/**
+ * Add a task to a chained list of Promises
+ * @private
+ */
 oj.Collection.prototype._addPromise = function(promiseTask) {
     var self = this;
     // Undefined, so set it up initially
@@ -5031,7 +5404,10 @@ oj.Collection.prototype._addPromise = function(promiseTask) {
     return this._promises;
 };
 
-// Add an xhr to a list of active xhrs
+/**
+ * Add an xhr to a list of active xhrs
+ * @private
+ */
 oj.Collection.prototype._addxhr = function(xhr) {
     if (xhr && xhr.abort) {
         if (this._xhrs === undefined) {
@@ -5097,6 +5473,9 @@ oj.Collection.prototype.abort = function() {
     return Promise.resolve();
 };
 
+/**
+ * @private
+ */
 oj.Collection.prototype._deferredAt = function(index, options) {
     var self = this;
     // If it's virtual, we need to see if this item has been fetched or not: if not, we need to fetch it + fetchSize
@@ -5209,6 +5588,9 @@ oj.Collection.prototype.get = function(id, options)
     return null;
 };
 
+/**
+ * @private
+ */
 oj.Collection.prototype._getLocal = function(id) {
     var internalGet = this._getLocalInternal(id);
     if (internalGet) {
@@ -5217,6 +5599,9 @@ oj.Collection.prototype._getLocal = function(id) {
     return null;
 };
 
+/**
+ * @private
+ */
 oj.Collection.prototype._getLocalInternal = function(id) {
     var cid = id;
     if (id instanceof oj.Model) {
@@ -5343,10 +5728,18 @@ oj.Collection.prototype._getInternal = function(id, options, deferred, fillIn) {
     return undefinedModInfo;
 };
     
+/**
+ * @private
+ */
 oj.Collection._getModinfo = function(index, model) {
     return {index: index, 'm': model};
 };
 
+/**
+ * Optional callback to parse responses from the server 
+ * @type {function(Object)}
+ * @memberof oj.Collection
+ */
 oj.Collection.prototype['parse'] = function (response) {
     var prop;
     
@@ -5370,7 +5763,10 @@ oj.Collection.prototype['parse'] = function (response) {
     return response;
 };
 
-// Determine if actual means we are complete
+/**
+ * Determine if actual means we are complete
+ * @private
+ */
 oj.Collection.prototype._checkActual = function(start, count, actual) {
     // Are we at the end with what actually came back?  Then this request should satisfy the setLocalRange
     if (this._hasTotalResults() && (actual.start + actual.count >= this['totalResults'])) {
@@ -5401,6 +5797,9 @@ oj.Collection.prototype.setRangeLocal = function(start, count) {
     });
 };
 
+/**
+ * @private
+ */
 oj.Collection.prototype._setRangeLocalInternal = function(start, count) {
     if (this.IsVirtual()) { 
         // make sure we reconcile the length to what we think the totalresults are--if there have been any non 
@@ -5425,6 +5824,9 @@ oj.Collection.prototype._setRangeLocalInternal = function(start, count) {
     });
 }
   
+/**
+ * @private
+ */
 oj.Collection.prototype._setRangeLocalFetch = function(start, count, placement, original, resolve, reject, fill) {
     var self = this;
     var resp = function () {
@@ -5493,6 +5895,9 @@ oj.Collection.prototype._setRangeLocalFetch = function(start, count, placement, 
     }
 };
 
+/**
+ * @private
+ */
 oj.Collection._createRejectionError = function(xhr, status, error, collection, options, fireError) {
     var silent = false;
     if (options && options['silent']) {
@@ -5510,6 +5915,9 @@ oj.Collection._createRejectionError = function(xhr, status, error, collection, o
     return err;
 };
 
+/**
+ * @private
+ */
 oj.Collection.prototype._getMaxLength = function(start, count) {
     var len = this._getModelsLength();
     if (len === 0) {
@@ -5536,6 +5944,9 @@ oj.Collection.prototype.isRangeLocal = function(start, count) {
     return start === localRange.start && (count === localRange.count || start+count > this._getModelsLength());
 };
 
+/**
+ * @private
+ */
 oj.Collection.prototype._getModelArray = function(start, count) {
     var retArr = [];
     var models = this._getModels();
@@ -5546,7 +5957,10 @@ oj.Collection.prototype._getModelArray = function(start, count) {
     return retArr;
 };
 
-// For a given range of models, return the actual range which are local within that set.  
+/**
+ * For a given range of models, return the actual range which are local within that set.  
+ * @private
+ */
 oj.Collection.prototype._getLocalRange = function(start, count) {
     // Not virtual, local if there are any models
     if (!this.IsVirtual()) {
@@ -5588,7 +6002,10 @@ oj.Collection.prototype._getLocalRange = function(start, count) {
     return {'start':start,'count':count,'models':this._getModelArray(start, count)};
 };
 
-// Return the first model between start and limit that's undefined
+/**
+ * Return the first model between start and limit that's undefined
+ * @private
+ */
 oj.Collection.prototype._getFirstMissingModel = function(start, limit) {
     for (var i = start; i < limit; i++) {
         if (this._getModel(i) === undefined) {
@@ -5645,7 +6062,10 @@ oj.Collection.prototype.fetch = function (options) {
     return xhr;
 };
 
-// fillIn is used to indicate that this fetch is just the result of a get() or part of an add(), etc., when virtual
+/**
+ * fillIn is used to indicate that this fetch is just the result of a get() or part of an add(), etc., when virtual
+ * @private
+ */
 oj.Collection.prototype._fetchInternal = function(options, placement, fillIn) {
     function doReset(collection, opt, fillIn) {
         if (!collection.IsVirtual()) {
@@ -5768,7 +6188,10 @@ oj.Collection.prototype._fetchInternal = function(options, placement, fillIn) {
      return this._fetchCall(opt);
 };
 
-// Puts server data into an empty virtual collection using a "silent add"
+/**
+ * Puts server data into an empty virtual collection using a "silent add"
+ * @private
+ */
 oj.Collection.prototype._putDataIntoCollection = function(data, placement, manageLRU) {
     var dataList;
     
@@ -5801,8 +6224,11 @@ oj.Collection.prototype._putDataIntoCollection = function(data, placement, manag
     return dataList;
 };
 
-// Parse each model returned, if appropriate, and push them into the (empty) collection with appropriate offsets 
-// if virtual
+/**
+ * Parse each model returned, if appropriate, and push them into the (empty) collection with appropriate offsets 
+ * if virtual
+ * @private
+ */
 oj.Collection.prototype._fillInCollectionWithParsedData = function(data, placement, manageLRU, opt) {
     opt = opt || {};
     var parse = opt['parse'];
@@ -5861,15 +6287,21 @@ oj.Collection.prototype._fillInCollectionWithParsedData = function(data, placeme
     return dataList;
 };
 
+/**
+ * @private
+ */
 oj.Collection._reportError = function(collection, e, errorFunc, options) {
     oj.Logger.error(e.toString());
     if (errorFunc) {
         errorFunc.call(oj.Model.GetContext(options, collection), collection, e, options);
     }
 };
-    
-// Used in virtualization to conduct server-based searches: returns list of fetched models via a promise but does 
-// not add them to the collection model list
+
+/**
+ * Used in virtualization to conduct server-based searches: returns list of fetched models via a promise but does 
+ * not add them to the collection model list
+ * @private
+ */
 oj.Collection.prototype._fetchOnly = function(options) {
     var opt = options || {},
         success = opt['success'], 
@@ -5927,6 +6359,9 @@ oj.Collection.prototype._fetchOnly = function(options) {
      return this._fetchCall(opt);
 };
 
+/**
+ * @private
+ */
 oj.Collection.prototype._fetchCall = function(opt) {
      try {
         return oj.Model._internalSync("read", this, opt);
@@ -5938,6 +6373,9 @@ oj.Collection.prototype._fetchCall = function(opt) {
      }
  };
 
+/**
+ * @private
+ */
 oj.Collection.prototype._resetModelsToFullLength = function() {
     var totalResults =  this['totalResults'];
     if (totalResults !== undefined && this._getModelsLength() !== totalResults) {
@@ -5950,16 +6388,25 @@ oj.Collection.prototype._resetModelsToFullLength = function() {
     return false;
 };
 
+/**
+ * @private
+ */
 oj.Collection.prototype._getFetchSize = function(options) {
     options = options || {};
     return options[oj.Collection._FETCH_SIZE_PROP] || this[oj.Collection._FETCH_SIZE_PROP];
 };
 
-// Are we doing virtualization/paging?
+/**
+ * Are we doing virtualization/paging?
+ * @protected
+ */
 oj.Collection.prototype.IsVirtual = function() {
     return this._getFetchSize(null) > -1;
 };
 
+/**
+ * @private
+ */
 oj.Collection.prototype._getReturnProperty = function(customObj, response, property, optionValue, defaultValue) {
     var value = parseInt(oj.Collection._getProp(customObj, response, property), 10);
     if (value === undefined || value === null || isNaN(value)) {
@@ -5969,6 +6416,9 @@ oj.Collection.prototype._getReturnProperty = function(customObj, response, prope
     return value;
 };
 
+/**
+ * @private
+ */
 oj.Collection.prototype._cleanTotalResults = function(totalResults) {
     // In case server (incorrectly) passes back a -1, treat it as undefined
     if (totalResults === -1) {
@@ -5977,7 +6427,10 @@ oj.Collection.prototype._cleanTotalResults = function(totalResults) {
     return totalResults;
 };
 
-// Parse out some of the paging return values we might expect in a virtual response
+/**
+ * Parse out some of the paging return values we might expect in a virtual response
+ * @private
+ */
 oj.Collection.prototype._setPagingReturnValues = function(response, options, data, fillIn) {
     var customObj = {};
     // See if there's a custom call out
@@ -6025,6 +6478,9 @@ oj.Collection.prototype._setPagingReturnValues = function(response, options, dat
     }
 };
 
+/**
+ * @private
+ */
 oj.Collection.prototype._adjustTotalResults = function(totalResultsReturned, hasMore, offset, lastFetchCount, 
   dataLength) {
     // Fix for : if hasMore is false, and totalResults wasn't set by the server, we should set it to 
@@ -6042,6 +6498,9 @@ oj.Collection.prototype._adjustTotalResults = function(totalResultsReturned, has
     return this['totalResults'];
 };
 
+/**
+ * @private
+ */
 oj.Collection.prototype._getHasMore = function(hasMore, offset, lastFetchSize, totalResults) {
     if (oj.Collection._defined(hasMore)) {
         return hasMore;        
@@ -6054,6 +6513,9 @@ oj.Collection.prototype._getHasMore = function(hasMore, offset, lastFetchSize, t
     return (offset + lastFetchSize > totalResults) ? false : true;
 };
 
+/**
+ * @private
+ */
 oj.Collection._getProp = function(custom, response, prop) {
     if (custom.hasOwnProperty(prop)) {
         return custom[prop];
@@ -6061,6 +6523,9 @@ oj.Collection._getProp = function(custom, response, prop) {
     return response ? response[prop] : undefined;
 };
 
+/**
+ * @private
+ */
 oj.Collection.prototype._getOffset = function() {
     return (oj.Collection._defined(this['offset']) ? this['offset'] : 0);
 };
@@ -6201,7 +6666,7 @@ oj.Collection.prototype.create = function (attributes, options) {
  * Return a list of all the values of attr found in the collection
  * 
  * @param {string} attr attribute to return
- * @return {Array} array of values of attr
+ * @return {Array.<Object>} array of values of attr
  * 
  * @throws {Error} when called on a virtual collection
  * @export
@@ -6224,7 +6689,7 @@ oj.Collection.prototype.pluck = function(attr) {
  * be returned.<br>
  * Events: for events, if virtual, see [fetch]{@link oj.Collection#fetch}
  * 
- * @param {Object|Array} attrs attribute/value pairs to find.  The attribute/value pairs are ANDed together.  If 
+ * @param {Object|Array.<Object>} attrs attribute/value pairs to find.  The attribute/value pairs are ANDed together.  If 
  *                             attrs is an array of attribute/value pairs, then these are ORed together
  *                             If the value is an object (or an array of objects, in which case the single 
  *                             attribute must meet all of the value/comparator conditions), then if it has both 
@@ -6264,7 +6729,7 @@ oj.Collection.prototype.pluck = function(attr) {
  * @param {Object=} options <b>deferred</b>: if true, return a promise as though this collection were virtual 
  * whether it is or not<p>
  * 
- * @return {Array|Promise} array of models.  If virtual or deferred, a promise that resolves with the returned 
+ * @return {Array.<oj.Model>|Promise} array of models.  If virtual or deferred, a promise that resolves with the returned 
  * array from the server
  * @export
  */
@@ -6272,6 +6737,9 @@ oj.Collection.prototype.where = function(attrs, options) {
     return this._handlePromise(this._whereInternal(attrs, options));
 };
 
+/**
+ * @private
+ */
 oj.Collection.prototype._whereInternal = function(attrs, options) {
     options = options || {};
     var deferred = this._getDeferred(options);
@@ -6346,6 +6814,9 @@ oj.Collection.prototype.whereToCollection = function(attrs, options) {
     }
 };
     
+/**
+ * @private
+ */
 oj.Collection.prototype._makeNewCollection = function(models) {
     var collection = this._cloneInternal(false);
     collection._setModels(models, false);
@@ -6354,6 +6825,9 @@ oj.Collection.prototype._makeNewCollection = function(models) {
     return collection;
 };
 
+/**
+ * @private
+ */
 oj.Collection.prototype._throwErrIfVirtual = function(func) {
     if (this.IsVirtual()) {
         throw new Error(func + " not valid on a virtual Collection");
@@ -6366,7 +6840,7 @@ oj.Collection.prototype._throwErrIfVirtual = function(func) {
  * 
  * @param {function(Object)} iterator function to determine the mapped value for each model
  * @param {Object=} context context with which to make the calls on iterator
- * @returns {Array} array of values determined by the return value of calls made to iterator for each model
+ * @returns {Array.<Object>} array of values determined by the return value of calls made to iterator for each model
  * 
  * @throws {Error} when called on a virtual Collection
  * @export
@@ -6388,6 +6862,7 @@ oj.Collection.prototype.map = function(iterator, context) {
  * 
  * @param {function(Object)} iterator function to call for each model
  * @param {Object=} context context with which to make the calls on iterator
+ * @return {undefined}
  * 
  * @throws {Error} when called on a virtual collection
  * @export
@@ -6401,6 +6876,7 @@ oj.Collection.prototype.each = function(iterator, context) {
 /**
  * Return the length of the collection
  * @returns {number} length of the collection
+ * @memberof oj.Collection
  * @export
  */
 oj.Collection.prototype.size = function() { 
@@ -6581,7 +7057,7 @@ oj.Collection.prototype.max = function(iterator, context) {
  * @param {function(Object)} iterator function to determine if a model should be included or not.  Should return 
  * true or false
  * @param {Object=} context context with which to make the calls on iterator
- * @returns {Array} array of models that caused iterator to return true
+ * @returns {Array.<oj.Model>} array of models that caused iterator to return true
  * 
  * @throws {Error} when called on a virtual Collection
  */
@@ -6601,7 +7077,7 @@ oj.Collection.prototype.filter = function(iterator, context) {
 /**
  * Return an array of models minus those passed in as arguments
  * @param {...Object} var_args models models to remove from the returned array
- * @returns {Array} array of models from the collection minus those passed in to models
+ * @returns {Array.<oj.Model>} array of models from the collection minus those passed in to models
  * 
  * @throws {Error} when called on a virtual Collection
  * @export
@@ -6638,7 +7114,7 @@ oj.Collection.prototype.without = function(var_args) {
 /**
  * Return an array of models in the collection but not passed in the array arguments
  * @param {...Array} var_args models arrays of models to check against the collection
- * @returns {Array} array of models from the collection not passed in as arguments
+ * @returns {Array.<oj.Model>} array of models from the collection not passed in as arguments
  * 
  * @throws {Error} when called on a virtual Collection
  * @export
@@ -6715,7 +7191,7 @@ oj.Collection.prototype.any = function(iterator, context) {
  * @export
  * @desc A version of where that only returns the first element found<br>
  * Events: for events, if virtual, see [fetch]{@link oj.Collection#fetch}<br>
- * @param {Object|Array} attrs attribute/value pairs to find.  
+ * @param {Object|Array.<Object>} attrs attribute/value pairs to find.  
  * See [where]{@link oj.Collection#where} for more details and examples.
  * @param {Object=} options <b>deferred</b>: if true, return a promise as though this collection were virtual 
  * whether it is or not<p>
@@ -6755,7 +7231,7 @@ oj.Collection.prototype.findWhere = function(attrs, options) {
  * end of the collection
  * @param {Object=} options <b>deferred</b>: if true, return a promise as though this collection were virtual 
  * whether it is or not
- * @return {Array|Promise} array of model objects from start to end, or a promise that resolves specifying the 
+ * @return {Array.<oj.Model>|Promise} array of model objects from start to end, or a promise that resolves specifying the 
  * returned array when done
  * @export
  */
@@ -6824,7 +7300,10 @@ oj.Collection._removeAfterSet = function(collection, models, remove, foundModels
     }           
 };
 
-// Swap two models, and indicate if anything was actually swapped
+/**
+ * Swap two models, and indicate if anything was actually swapped
+ * @private
+ */
 oj.Collection.prototype._swapModels = function(oldIndex, newIndex, remove, add) {
     if (this._hasComparator() || !remove || !add) {
         return {index:oldIndex, swapped:false};
@@ -6847,6 +7326,9 @@ oj.Collection.prototype._swapModels = function(oldIndex, newIndex, remove, add) 
     return {index:newIndex, swapped:(newIndex!==oldIndex)};
 };
 
+/**
+ * @private
+ */
 oj.Collection.prototype._setInternal = function(models, parse, options, deferred) {
     // Determine if any of the options are set
     options = options || {};
@@ -6894,7 +7376,10 @@ oj.Collection.prototype._setInternal = function(models, parse, options, deferred
     oj.Collection._removeAfterSet(this, this._getModels(), remove, foundModels, options);
 };
 
-// Handle the updates/removes on virtual collections
+/**
+ * Handle the updates/removes on virtual collections
+ * @private
+ */
 oj.Collection.prototype._deferredSet = function(modelList, modelsCopy, options, remove, add, merge, parse) {
     var foundModels = [], i;
     
@@ -6926,8 +7411,11 @@ oj.Collection.prototype._deferredSet = function(modelList, modelsCopy, options, 
 };
 
 
-// Return the index of the given model after updating it, if it was found.  Otherwise it is added and a -1 is 
-// returned
+/**
+ * Return the index of the given model after updating it, if it was found.  Otherwise it is added and a -1 is 
+ * returned
+ * @private
+ */
 oj.Collection.prototype._updateModel = function(model, add, merge, deferred) {
     function update(collection, found, deferred) {
         var index = found ? found.index : -1;
@@ -6982,7 +7470,7 @@ oj.Collection.prototype._updateModel = function(model, add, merge, deferred) {
 /**
  * Return a copy of the Collection's list of current attribute/value pairs.
  *
- * @return {Array|Promise} an array containing all the Collection's current sets of attribute/value pairs.  If 
+ * @return {Array.<Object>|Promise} an array containing all the Collection's current sets of attribute/value pairs.  If 
  * virtual, a promise that will resolve with that array
  * 
  * @export
@@ -7010,7 +7498,7 @@ oj.Collection.prototype.toJSON = function() {
  * @param {number=} n Number of model objects to include in the array, starting with the first. 
  * @param {Object=} options deferred: if true, return a promise as though this collection were virtual whether it 
  * is or not
- * @return {Array|null|Promise} An array of n model objects found in the collection, starting with the first. If n 
+ * @return {Array.<oj.Model>|null|Promise} An array of n model objects found in the collection, starting with the first. If n 
  * is not included, returns all of the collection's models as an array.  If deferred or virtual, returns a promise 
  * that resolves with the array or model
  * @export
@@ -7157,7 +7645,7 @@ oj.Collection.prototype.pop = function(options) {
         });        
     }
     
-    var m = this.at(this._getLength()-1);
+    var m = /** @type {oj.Model} */ (this.at(this._getLength()-1));
     this.remove(m, options);
     return m;
 };
@@ -7202,6 +7690,9 @@ oj.Collection.prototype.lastIndexOf = function(model, fromIndex) {
     return -1;
 };
 
+/**
+ * @private
+ */
 oj.Collection.prototype._getSortAttrs = function(sortStr) {
     if (sortStr === undefined) {
         return [];
@@ -7209,7 +7700,10 @@ oj.Collection.prototype._getSortAttrs = function(sortStr) {
     return sortStr.split(",");
 };
 
-// Return a URL query string based on an array of or a single attr/value pair set
+/**
+ * Return a URL query string based on an array of or a single attr/value pair set
+ * @private
+ */
 oj.Collection._getQueryString = function(q) {
     function expression(left, right, compare) {
         return left + compare + right;
@@ -7252,6 +7746,9 @@ oj.Collection._getQueryString = function(q) {
     return str;
 };
 
+/**
+ * @protected
+ */
 oj.Collection.prototype.ModifyOptionsForCustomURL = function(options) {
     var opt = {};
     for (var prop in options) {
@@ -7279,7 +7776,10 @@ oj.Collection.prototype.ModifyOptionsForCustomURL = function(options) {
     return opt;
 };
 
-// Determine if this collection is URL-based
+/**
+ * Determine if this collection is URL-based
+ * @private
+ */
 oj.Collection.prototype.IsUrlBased = function(options) {
     var customURL = this['customURL'];
     if ($.isFunction(customURL)) {
@@ -7289,7 +7789,10 @@ oj.Collection.prototype.IsUrlBased = function(options) {
     return oj.Collection._defined(url);
 };
     
-// Build a URL with parameters for the collection fetch
+/**
+ * Build a URL with parameters for the collection fetch
+ * @protected
+ */
 oj.Collection.prototype.GetCollectionFetchUrl = function(options) {
     var url = oj.Model.GetPropValue(this, 'url');
     
@@ -7358,6 +7861,9 @@ oj.Collection.prototype.GetCollectionFetchUrl = function(options) {
     return url;
 };
 
+/**
+ * @private
+ */
 oj.Collection.prototype._getSortDirStr = function() {
     if (this['sortDirection'] === -1) {
         return "desc";
@@ -7382,7 +7888,10 @@ oj.Collection.prototype.sync = function(method, collection, options) {
     return oj['sync'](method, collection, options);
 };
 
-// Constants
+/**
+ * Constants
+ * @private
+ */
 oj.Collection._FETCH_SIZE_PROP = 'fetchSize';
 
 });

@@ -1,4 +1,4 @@
-// Copyright (c) 2014, 2017, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// Copyright (c) 2014, 2018, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
 
 // helpers
 @import "../common/helpers/oj.common.helpers";
@@ -74,6 +74,7 @@
 @import "widgets/oj.alta.windows.messaging";
 @import "widgets/oj.alta.windows.formcontrol.label";
 @import "widgets/oj.alta.windows.formcontrol.common";
+@import "widgets/oj.alta.windows.formcontrol.formlayout";
 @import "widgets/oj.alta.windows.formcontrol.inputtext";
 @import "widgets/oj.alta.windows.formcontrol.inputpassword";
 @import "widgets/oj.alta.windows.formcontrol.textarea";
@@ -89,6 +90,7 @@
 @import "widgets/oj.alta.windows.formcontrol.slider";
 @import "widgets/oj.alta.windows.formcontrol.colorpalette";
 @import "widgets/oj.alta.windows.formcontrol.colorspectrum";
+@import "widgets/oj.alta.windows.formcontrol.validationgroup";
 // mostly used by form controls
 @import "widgets/oj.alta.windows.option";
 

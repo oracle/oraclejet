@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2014, 2017, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
@@ -15,6 +15,7 @@ define(['ojs/ojcore', 'ojs/ojcomponentcore', 'ojs/ojcomposite'],
  * @ojcomponent oj.ojAvatar
  * @since 4.0.0
  * @ojstatus preview
+ * @ojshortdesc An icon capable of displaying a custom image, initials, or a placeholder image.
  *
  * @classdesc
  * <h3 id="avatarOverview-section">
@@ -100,6 +101,7 @@ define(['ojs/ojcore', 'ojs/ojcomponentcore', 'ojs/ojcomposite'],
  * @expose
  * @name size
  * @memberof oj.ojAvatar
+ * @ojshortdesc Specifies the size of the avatar.
  * @instance
  * @type {string}
  * @ojvalue {string} "xxs" extra, extra small avatar
@@ -109,7 +111,7 @@ define(['ojs/ojcore', 'ojs/ojcomponentcore', 'ojs/ojcomposite'],
  * @ojvalue {string} "lg" large avatar
  * @ojvalue {string} "xl" extra large avatar
  * @ojvalue {string} "xxl" extra, extra large avatar
- * @default <code class="prettyprint">"md"</code>
+ * @default "md"
  * @example <caption>Renders avatar displaying default placeholder image with <code class="prettyprint">size</code>
  * attribute set to large</caption>
  * &lt;oj-avatar size='lg'>&lt;/oj-avatar>
@@ -127,10 +129,12 @@ define(['ojs/ojcore', 'ojs/ojcomponentcore', 'ojs/ojcomposite'],
  * purposes.
  * @expose
  * @name initials
+ * @ojtranslatable
+ * @ojshortdesc Specifies the initials of the avatar.
  * @memberof oj.ojAvatar
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  * @example <caption>Renders a default medium avatar with initials</caption>
  * &lt;oj-avatar initials='AB'>&lt;/oj-avatar>
  * @example <caption>Get or set the <code class="prettyprint">initials</code> property after initialization</caption>
@@ -144,12 +148,13 @@ define(['ojs/ojcore', 'ojs/ojcomponentcore', 'ojs/ojcomposite'],
  * Specifies the src for the image of the avatar.  Image will be rendered as a background image.
  * In high contrast mode, initials will be displayed instead since background images
  * will not be rendered.
+ * @ojshortdesc Specifies the src for the image of the avatar.
  * @expose
  * @name src
  * @memberof oj.ojAvatar
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  * @example <caption>Renders a default medium avatar with a image</caption>
  * &lt;oj-avatar src='image.jpg'>&lt;/oj-avatar>
  * @example <caption>Get or set the <code class="prettyprint">src</code> property after initialization</caption>
@@ -230,41 +235,42 @@ oj.Composite.register('oj-avatar',
 /**
  * Sets a property or a single subproperty for complex properties and notifies the component
  * of the change, triggering a [property]Changed event.
- * 
+ *
  * @function setProperty
  * @param {string} property - The property name to set. Supports dot notation for subproperty access.
  * @param {*} value - The new value to set the property to.
- * 
+ *
  * @expose
  * @memberof oj.ojAvatar
  * @instance
- * 
+ *
  * @example <caption>Set a single subproperty of a complex property:</caption>
  * myComponent.setProperty('complexProperty.subProperty1.subProperty2', "someValue");
- */ 
+ */
 /**
  * Retrieves a value for a property or a single subproperty for complex properties.
  * @function getProperty
  * @param {string} property - The property name to get. Supports dot notation for subproperty access.
  * @return {*}
- * 
+ *
  * @expose
  * @memberof oj.ojAvatar
  * @instance
- * 
+ *
  * @example <caption>Get a single subproperty of a complex property:</caption>
  * var subpropValue = myComponent.getProperty('complexProperty.subProperty1.subProperty2');
- */ 
+ */
 /**
  * Performs a batch set of properties.
  * @function setProperties
  * @param {Object} properties - An object containing the property and value pairs to set.
- * 
+ *
  * @expose
  * @memberof oj.ojAvatar
  * @instance
- * 
+ *
  * @example <caption>Set a batch of properties:</caption>
  * myComponent.setProperties({"prop1": "value1", "prop2.subprop": "value2", "prop3": "value3"});
- */ 
+ */
+
 });

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2014, 2017, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
@@ -38,13 +38,17 @@ oj.DataSource = function(data)
     this.Init();
 };
 
-// Subclass from oj.Object 
+/**
+ * Subclass from oj.Object 
+ * @private
+ */
 oj.Object.createSubclass(oj.DataSource, oj.EventSource, "oj.DataSource");
 
 /**
  * Initializes the instance.
  * @export
  * @memberof oj.DataSource
+ * @return {undefined}
  */
 oj.DataSource.prototype.Init = function()
 {
@@ -112,7 +116,10 @@ oj.TreeDataSource = function(data)
 };
 
 
-// Subclass TreeDataSource to DataSource
+/**
+ * Subclass TreeDataSource to DataSource
+ * @private
+ */
 oj.Object.createSubclass(oj.TreeDataSource, oj.DataSource, "oj.TreeDataSource");
 
 /**
@@ -129,17 +136,18 @@ oj.Object.createSubclass(oj.TreeDataSource, oj.DataSource, "oj.TreeDataSource");
 /**
  * Fetch the children
  * @param {Object} parent the parent key.  Specify null if fetching children from the root.
- * @param {Object} range information about the range, it must contain the following properties: start, count.
- * @param {number} range.start the start index of the range in which the children are fetched.
- * @param {number} range.count the size of the range in which the children are fetched.  
+ * @param {Object} range information about the range, it must contain the following properties: start, count.<p>
+ * start: the start index of the range in which the children are fetched.<br>
+ * count: the size of the range in which the children are fetched.<br>
  * @param {Object} callbacks the callbacks to be invoke when fetch children operation is completed.  The valid callback
- *        types are "success" and "error".
- * @param {function(oj.NodeSet)} callbacks.success the callback to invoke when fetch completed successfully.
- * @param {function({status: Object})} callbacks.error the callback to invoke when fetch children failed.
- * @param {Object=} options optional parameters for this operation.
- * @param {boolean=} options.queueOnly true if this fetch request is to be queued and not execute yet.  The implementation must maintain 
+ *        types are "success" and "error".<p>
+ * success: the callback to invoke when fetch completed successfully.<br>
+ * error: the callback to invoke when fetch children failed.<br>
+ * @param {Object=} options optional parameters for this operation.<p>
+ * queueOnly: true if this fetch request is to be queued and not execute yet.  The implementation must maintain 
  *        the order of the fetch operations.  When queueOnly is false/null/undefined, any queued fetch operations are then
- *        flushed and executed in the order they are queued.  This flag is ignored if the datasource does not support batching.
+ *        flushed and executed in the order they are queued.  This flag is ignored if the datasource does not support batching.<br>
+ * @return {Object} children
  * @method
  * @name fetchChildren
  * @memberof oj.TreeDataSource
@@ -150,13 +158,14 @@ oj.Object.createSubclass(oj.TreeDataSource, oj.DataSource, "oj.TreeDataSource");
  * Fetch all children and their children recursively from a specified parent.
  * @param {Object} parent the parent key.  Specify null to fetch everything from the root (i.e. expand all)
  * @param {Object} callbacks the callbacks to be invoke when fetch children operation is completed.  The valid callback
- *        types are "success" and "error".
- * @param {function(oj.NodeSet)} callbacks.success the callback to invoke when fetch completed successfully.
- * @param {function({status: Object})} callbacks.error the callback to invoke when fetch children failed.
- * @param {Object=} options optional parameters for this operation.
- * @param {number=} options.start the index related to parent in which to begin fetching descendants from.  If this is not specified, then value zero will be used.
- * @param {number=} options.maxCount the maximum number of children to fetch.  If a non-positive number is specified, then the value is ignored and
- *        there is no maximum fetch count.
+ *        types are "success" and "error".<p>
+ * success: the callback to invoke when fetch completed successfully.<br>
+ * error: the callback to invoke when fetch children failed.<br>
+ * @param {Object=} options optional parameters for this operation.<p>
+ * start: the index related to parent in which to begin fetching descendants from.  If this is not specified, then value zero will be used.<br>
+ * maxCount: the maximum number of children to fetch.  If a non-positive number is specified, then the value is ignored and
+ *        there is no maximum fetch count.<br>
+ * @return {Object} descendants
  * @method
  * @name fetchDescendants
  * @memberof oj.TreeDataSource
@@ -165,11 +174,13 @@ oj.Object.createSubclass(oj.TreeDataSource, oj.DataSource, "oj.TreeDataSource");
 
 /**
  * Performs a sort operation on the tree data.
- * @param {Object} criteria the sort criteria.  It must contain the following properties: key, direction.
- * @param {Object} criteria.key the key identifying the attribute (column) to sort on.
- * @param {string} criteria.direction the sort direction, valid values are "ascending", "descending", "none" (default)
- * @param {function()} callbacks.success the callback to invoke when the sort completed successfully.  
- * @param {function({status: Object})} callbacks.error the callback to invoke when sort failed.
+ * @param {Object} criteria the sort criteria.  It must contain the following properties: key, direction.<p>
+ * key: the key identifying the attribute (column) to sort on.<br>
+ * direction: the sort direction, valid values are "ascending", "descending", "none" (default)<br>
+ * @param {Object} callbacks callbacks for the sort operation<p>
+ * success: the callback to invoke when the sort completed successfully.<br>
+ * error: the callback to invoke when sort failed.<br>
+ * @return {undefined}
  * @method
  * @name sort
  * @memberof oj.TreeDataSource
@@ -195,8 +206,10 @@ oj.Object.createSubclass(oj.TreeDataSource, oj.DataSource, "oj.TreeDataSource");
  * @param {number|string} position The position of the moved row relative to the reference row.  
  *        This can be a string: "before", "after", "inside", "first", "last", or the zero based index to position 
  *        the element at a specific point among the reference row's current children.
- * @param {function()} callbacks.success the callback to invoke when the move completed successfully.  
- * @param {function({status: Object})} callbacks.error the callback to invoke when move failed.
+ * @param {Object} callbacks the callbacks for the move function<p>
+ * success: the callback to invoke when the move completed successfully.<br>
+ * error: the callback to invoke when move failed.<br>
+ * @return {undefined}
  * @method
  * @name move
  * @memberof oj.TreeDataSource
@@ -245,6 +258,7 @@ oj.Object.createSubclass(oj.TreeDataSource, oj.DataSource, "oj.TreeDataSource");
  */
 
 /*jslint browser: true,devel:true*/
+
 /**
  * @export
  * @class oj.TableDataSource
@@ -310,7 +324,10 @@ oj.TableDataSource = function(data, options)
   this.Init();
 };
 
-// Subclass from oj.DataSource 
+/**
+ * Subclass from oj.DataSource 
+ * @private
+ */
 oj.Object.createSubclass(oj.TableDataSource, oj.DataSource, "oj.TableDataSource");
 
 /**
@@ -332,7 +349,7 @@ oj.TableDataSource.prototype.Init = function()
  * @desc The sort criteria. Whenever sort() is called with the criteria parameter, that value is copied to this
  * property. If sort() is called with empty sort criteria then the criteria set in this property is used.
  * 
- * @type {Object} criteria the sort criteria.
+ * @type {Object} 
  * @property {Object} criteria.key The key that identifies which field to sort
  * @property {string} criteria.direction the sort direction, valid values are "ascending", "descending", "none" (default)
  */
@@ -530,6 +547,9 @@ oj.TableDataSource.EventType =
     'ERROR': "error"
   };
 
+/**
+ * @private
+ */
 oj.TableDataSource._LOGGER_MSG =
   {
     '_ERR_TABLE_DATASOURCE_INSTANTIATED_SUMMARY': 'oj.TableDataSource constructor called.',
@@ -542,8 +562,9 @@ oj.TableDataSource._LOGGER_MSG =
  * All rights reserved.
  */
  
- /**
- * Base class for Diagram DataSource.  Implementations must implement all of the functions documented here.
+/**
+ * @class oj.DiagramDataSource
+ * @classdesc Base class for Diagram DataSource.  Implementations must implement all of the functions documented here.
  * @param {Object} data data required by the DiagramDataSource implementation
  * @export
  * @extends oj.DataSource
@@ -555,7 +576,10 @@ oj.DiagramDataSource = function(data)
 };
 
 
-// Subclass DiagramDataSource to DataSource
+/**
+ * Subclass DiagramDataSource to DataSource
+ * @private
+ */
 oj.Object.createSubclass(oj.DiagramDataSource, oj.DataSource, "oj.DiagramDataSource");
 
 /**
@@ -709,7 +733,8 @@ oj.DiagramDataSource.EventType =
  */
  
 /**
- * The base class for DataGridDataSource.<br>
+ * @class oj.DataGridDataSource
+ * @classdesc The base class for DataGridDataSource.<br>
  * DataGridDataSource implementations must implement all of the functions documented here.
  * @export
  * @extends oj.DataSource
@@ -721,7 +746,10 @@ oj.DataGridDataSource = function(data)
     oj.DataGridDataSource.superclass.constructor.call(this, data);
 };
 
-// Subclass DataGridDataSource to DataSource
+/**
+ * Subclass DataGridDataSource to DataSource
+ * @private
+ */
 oj.Object.createSubclass(oj.DataGridDataSource, oj.DataSource, "oj.DataGridDataSource");
 
 /**
@@ -756,18 +784,19 @@ oj.Object.createSubclass(oj.DataGridDataSource, oj.DataSource, "oj.DataGridDataS
  * @memberof! oj.DataGridDataSource
  * @instance
  * @param {Object} headerRange information about the header range, it must contain the following properties:
- *        axis, start, count.
- * @param {string} headerRange.axis the axis of the header that are fetched.  Valid values are "row" and "column".
- * @param {number} headerRange.start the start index of the range in which the header data are fetched.
- * @param {number} headerRange.count the size of the range in which the header data are fetched.  
+ *        axis, start, count.<p>
+ *        axis: the axis of the header that are fetched.  Valid values are "row" and "column".<br>
+ *        start: the start index of the range in which the header data are fetched.<br>
+ *        count: count the size of the range in which the header data are fetched.<br>
  * @param {Object} callbacks the callbacks to be invoke when fetch headers operation is completed.  The valid callback
- *        types are "success" and "error".
- * @param {function(HeaderSet, headerRange, endHeaderSet)} callbacks.success the callback to invoke when fetch headers completed successfully.
+ *        types are "success" and "error".<p>
+ *        success: success the callback to invoke when fetch headers completed successfully.<br>
  *        The function takes three paramaters: HeaderSet object representing start headers, headerRange object passed into the original fetchHeaders call,
- *        and a HeaderSet object representing the end headers along the axis.
- * @param {function({status: Object})} callbacks.error the callback to invoke when fetch cells failed.
+ *        and a HeaderSet object representing the end headers along the axis.<br>
+ *        error: error the callback to invoke when fetch cells failed.<br>
  * @param {Object=} callbackObjects the object in which the callback function is invoked on.  This is optional.  
  *        You can specify the callback object for each callbacks using the "success" and "error" keys.
+ * @return {Object} the range of headers
  */
 
 
@@ -778,17 +807,18 @@ oj.Object.createSubclass(oj.DataGridDataSource, oj.DataSource, "oj.DataGridDataS
  * @memberof oj.DataGridDataSource
  * @instance
  * @param {Array.<Object>} cellRange Information about the cell range.  A cell range is defined by an array 
- *        of range info for each axis, where each range contains three properties: axis, start, count.
- * @param {string} cellRange.axis the axis associated with this range where cells are fetched.  Valid 
- *        values are "row" and "column".
- * @param {number} cellRange.start the start index of the range for this axis in which the cells are fetched.
- * @param {number} cellRange.count the size of the range for this axis in which the cells are fetched. 
+ *        of range info for each axis, where each range contains three properties: axis, start, count.<p>
+ *        axis: the axis associated with this range where cells are fetched.  Valid 
+ *        values are "row" and "column".<br>
+ *        start: the start index of the range for this axis in which the cells are fetched.<br>
+ *        count: count the size of the range for this axis in which the cells are fetched. <br>
  * @param {Object} callbacks the callbacks to be invoke when fetch cells operation is completed.  The valid callback
- *        types are "success" and "error".
- * @param {function(oj.CellSet)} callbacks.success the callback to invoke when fetch cells completed successfully.
- * @param {function({status: Object})} callbacks.error the callback to invoke when fetch cells failed.
+ *        types are "success" and "error".<p>
+ * success: the callback to invoke when fetch cells completed successfully.<br>
+ * error: the callback to invoke when fetch cells failed.<br>
  * @param {Object=} callbackObjects the object in which the callback function is invoked on.  This is optional.  
  *        You can specify the callback object for each callbacks using the "success" and "error" keys.
+ * @return {Object} the range of cells
  */
 
 /**
@@ -797,9 +827,9 @@ oj.Object.createSubclass(oj.DataGridDataSource, oj.DataSource, "oj.DataGridDataS
  * @name keys
  * @memberof! oj.DataGridDataSource
  * @instance
- * @param {Object} indexes the index for each axis
- * @param {Object} indexes.row the index for the row axis
- * @param {Object} indexes.column the index for the column axis
+ * @param {Object} indexes the index for each axis<p>
+ * row: the index for the row axis<br>
+ * column: the index for the column axis<br>
  * @return {Object} a Promise object which when resolved returns an object containing the keys for each axis
  */
 
@@ -809,9 +839,9 @@ oj.Object.createSubclass(oj.DataGridDataSource, oj.DataSource, "oj.DataGridDataS
  * @name indexes
  * @memberof! oj.DataGridDataSource
  * @instance
- * @param {Object} keys the key for each axis
- * @param {Object} keys.row the key for the row axis
- * @param {Object} keys.column the key for the column axis
+ * @param {Object} keys the key for each axis<p>
+ * row: row the key for the row axis<br>
+ * column: the key for the column axis<br>
  * @return {Object} a Promise object which when resolved returns an object containing the index for each axis
  */
 
@@ -821,16 +851,17 @@ oj.Object.createSubclass(oj.DataGridDataSource, oj.DataSource, "oj.DataGridDataS
  * @name sort
  * @memberof! oj.DataGridDataSource
  * @instance
- * @param {Object} criteria the sort criteria.  Specifies null to reset sort state.
- * @param {string} criteria.axis The axis in which the sort is performed, valid values are "row", "column"
- * @param {Object} criteria.key The key that identifies which header to sort
- * @param {string} criteria.direction the sort direction, valid values are "ascending", "descending", "none" (default)
+ * @param {Object} criteria the sort criteria.  Specifies null to reset sort state.<p>
+ * axis: The axis in which the sort is performed, valid values are "row", "column"<br>
+ * key: The key that identifies which header to sort<br>
+ * direction: the sort direction, valid values are "ascending", "descending", "none" (default)<br>
  * @param {Object} callbacks the callbacks to be invoke upon completion of the sort operation.  The callback
- *        properties are "success" and "error".
- * @param {function()} callbacks.success the callback to invoke when the sort completed successfully.  
- * @param {function({status: Object})} callbacks.error the callback to invoke when sort failed.
+ *        properties are "success" and "error".<p>
+ * success: the callback to invoke when the sort completed successfully.<br>
+ * error: the callback to invoke when sort failed.<br>
  * @param {Object=} callbackObjects the object in which the callback function is invoked on.  This is optional.  
  *        You can specify the callback object for each callbacks using the "success" and "error" properties.
+ * @return {undefined}
  */
 
 /**
@@ -844,10 +875,12 @@ oj.Object.createSubclass(oj.DataGridDataSource, oj.DataSource, "oj.DataGridDataS
  *        the destination of where the row should moved to.
  * @param {string} position The position of the moved row relative to the reference row.  
  *        Valid values are: "before", "after" 
- * @param {function()} callbacks.success the callback to invoke when the move completed successfully.  
- * @param {function({status: Object})} callbacks.error the callback to invoke when move failed.
+ * @param {Object} callbacks for the move function
+ * success: the callback to invoke when the move completed successfully.<br>
+ * error: the callback to invoke when move failed.<br>
  * @param {Object=} callbackObjects the object in which the callback function is invoked on.  This is optional.  
  *        You can specify the callback object for each callbacks using the "success" and "error" properties.
+ * @return {undefined}
  */ 
 
 /**

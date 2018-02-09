@@ -1,10 +1,13 @@
 {
-  "name": "ojTimeAxis",
-  "version": "4.1.0",
-  "jetVersion": "4.1.0",
-  "displayName": " Time Axis",
+  "name": "oj-time-axis",
+  "version": "4.2.0",
+  "jetVersion": "4.2.0",
+  "displayName": "Time Axis",
   "preview": true,
-  "description": "A JET Time Axis is a themable, WAI-ARIA compliant element that displays a range of dates based on specified start and end date and time scale",
+  "roles": [
+    "application"
+  ],
+  "description": "Time Axis Element",
   "properties": {
     "converter": {
       "description": "The converter (an object literal or instance that duck types oj.Converter) used to format the labels of the time axis. If not specified, the default converter is used. If a single converter is specified, it will be used for all 'scale' values. Otherwise, an object whose keys are 'scale' values that map to the converter instances is expected. See oj.DateTimeConverterFactory for details on creating built-in datetime converters.",
@@ -60,12 +63,8 @@
       }
     },
     "end": {
-      "deprecated": {
-        "since": "3.0.0",
-        "description": "The number type is deprecated in 3.0.0."
-      },
       "description": "The end time of the time axis. This is required in order for the time axis to properly render. See Date and Time Formats for more details on string formats.",
-      "type": "number|string",
+      "type": "string",
       "displayName": "End",
       "value": null
     },
@@ -112,12 +111,8 @@
       }
     },
     "start": {
-      "deprecated": {
-        "since": "3.0.0",
-        "description": "The number type is deprecated in 3.0.0."
-      },
       "description": "The start time of the time axis. This is required in order for the time axis to properly render. See Date and Time Formats for more details on string formats.",
-      "type": "number|string",
+      "type": "string",
       "displayName": "Start",
       "value": null
     },

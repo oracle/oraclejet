@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2014, 2017, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
@@ -23,6 +23,8 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojcollapsible'],
  * @augments oj.baseComponent
  * @since 0.6
  * @ojstatus preview
+ * @ojshortdesc Displays a set of Collapsible child elements.
+ * @ojrole group
  * 
  * @classdesc
  * <h3 id="accordionOverview-section">
@@ -85,11 +87,11 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojcollapsible'],
        * Note: if multiple is true, the beforeCollapse/beforeExpand/collapse/expand events will not be fired by the accordion. They are however fired by the collapsibles.
        *
        * @expose 
-       * @memberof! oj.ojAccordion
+       * @memberof oj.ojAccordion
        * @instance
+       * @ojshortdesc Specifies whether multiple collapsibles can be open at the same time.
        * @type {boolean}
-       * @default <code class="prettyprint">false</code>
-       *
+       * @default false
        * @example <caption>Initialize the accordion with the <code class="prettyprint">multiple</code> attribute specified:</caption>
        * &lt;oj-accordion multiple='true'>&lt;/oj-accordion>
        * 
@@ -108,12 +110,12 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojcollapsible'],
        * Getter value: array of either ids or indices. If an expanded collapsible has a page author provided id, that id is returned, otherwise that collapsible's index will be returned.
        *
        * @expose 
-       * @memberof! oj.ojAccordion
+       * @memberof oj.ojAccordion
        * @instance
+       * @ojshortdesc A list of expanded child collapsibles.
        * @type {Array}
        * @ojwriteback
-       * @default <code class="prettyprint">null</code>
-       *
+       * @default null
        *
        * Note: expanded is default to null<p>
        * which means that accordion doesn't modify the state on the collapsible children.<p>
@@ -143,6 +145,9 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojcollapsible'],
        * @event 
        * @memberof oj.ojAccordion
        * @instance
+       * @ojshortdesc Triggered immediately before any collapsible in the accordion is expanded.
+       * @ojcancelable
+       * @ojbubbles
        * @property {Element} toCollapsible The collapsible being expanded.
        * @property {Element} fromCollapsible The collapsible being collapsed. 
        */
@@ -157,6 +162,8 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojcollapsible'],
        * @event 
        * @memberof oj.ojAccordion
        * @instance
+       * @ojshortdesc Triggered after any collapsible in the accordion is expanded.
+       * @ojbubbles
        * @property {Element} toCollapsible The collapsible being expanded.
        * @property {Element} fromCollapsible The collapsible being collapsed. 
        */
@@ -171,6 +178,9 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojcollapsible'],
        * @event 
        * @memberof oj.ojAccordion
        * @instance
+       * @ojshortdesc Triggered immediately before any collapsible in the accordion is collapsed.
+       * @ojcancelable
+       * @ojbubbles
        * @property {Element} toCollapsible The collapsible being expanded.
        * @property {Element} fromCollapsible The collapsible being collapsed. 
        */
@@ -185,6 +195,8 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojcollapsible'],
        * @event 
        * @memberof oj.ojAccordion
        * @instance
+       * @ojshortdesc Triggered after any collapsible in the accordion has been collapsed.
+       * @ojbubbles
        * @property {Element} toCollapsible The collapsible being expanded.
        * @property {Element} fromCollapsible The collapsible being collapsed. 
        */
@@ -192,6 +204,12 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojcollapsible'],
 
     },
 
+    /**
+     * @memberof oj.ojAccordion
+     * @instance
+     * @protected
+     * @override
+     */
     _ComponentCreate : function ()
     {
       this._super();
@@ -206,7 +224,13 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojcollapsible'],
       this._refresh();
     },
 
-    // Override to set custom launcher
+    /**
+     * @memberof oj.ojAccordion
+     * @param {Object} menu The JET Menu to open as a context menu
+     * @param {Event} event What triggered the menu launch
+     * @param {string} eventType "mouse", "touch", "keyboard"
+     * @private
+     */
     _NotifyContextMenuGesture: function(menu, event, eventType)
     {
       // Setting the launcher to the "twisty" icon of the first collapsible in the accordion, since those twisties seem to be 
@@ -216,6 +240,11 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojcollapsible'],
       this._OpenContextMenu(event, eventType, {"launcher": this.element.find(".oj-collapsible-header-icon").first()});
     },
     
+    /**
+     * @memberof oj.ojAccordion
+     * @override
+     * @private
+     */
     _destroy : function ()
     {
       // clean up main element
@@ -232,6 +261,11 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojcollapsible'],
         .ojCollapsible("destroy");
     },
 
+    /**
+     * @memberof oj.ojAccordion
+     * @override
+     * @private
+     */
     _setOption : function (key, value, flags)
     {
       var self = this;
@@ -276,6 +310,10 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojcollapsible'],
       this._refresh();
     },
 
+    /**
+     * @memberof oj.ojAccordion
+     * @private
+     */
     _refresh : function ()
     {
       this._makeCollapsible();
@@ -291,6 +329,10 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojcollapsible'],
       this._setupEvents();
     },
 
+    /**
+     * @memberof oj.ojAccordion
+     * @private
+     */
     _makeCollapsible : function ()
     {
       this.collapsibles = this.element.children();
@@ -333,6 +375,10 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojcollapsible'],
       this.collapsibles.addClass("oj-accordion-collapsible");
     },
 
+    /**
+     * @memberof oj.ojAccordion
+     * @private
+     */
     _setupEvents : function ()
     {
       var events;
@@ -359,6 +405,10 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojcollapsible'],
       this._on(this.collapsibles, events);
     },
 
+    /**
+     * @memberof oj.ojAccordion
+     * @private
+     */
     _keydown : function (event)
     {
       if (event.altKey || event.ctrlKey)
@@ -409,12 +459,14 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojcollapsible'],
       }
     },
 
-    /* 
+    /**
      * For single expansion
      *   returns a list of expanded collapsible widgets that are sibling 
      *   of the current event target
      * For multiple expansion
      *   returns an empty set.
+     * @memberof oj.ojAccordion
+     * @private
      */
     _findTargetSiblings : function (event)
     {
@@ -432,9 +484,11 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojcollapsible'],
       return $();
     },
 
-    /* 
+    /**
      * Trigger "beforeCollapse" on all expanded siblings in
      * the before expand handler
+     * @memberof oj.ojAccordion
+     * @private
      */
     _beforeExpandHandler : function (event, eventData)
     {
@@ -482,8 +536,10 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojcollapsible'],
       return result;
     },
 
-    /* 
+    /**
      * Collapse all expanded siblings and don't allow cancel
+     * @memberof oj.ojAccordion
+     * @private
      */
     _expandHandler : function (event, eventData)
     {
@@ -519,9 +575,11 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojcollapsible'],
       this._expandTarget = null;
     },
 
-    /* 
+    /** 
      * Trigger "beforecollapse" on all collapsed siblings in
      * the before collapse handler
+     * @memberof oj.ojAccordion
+     * @private
      */
     _beforeCollapseHandler : function (event, eventData)
     {
@@ -538,8 +596,10 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojcollapsible'],
       return true;
     },
 
-    /* 
+    /**
      * Collapse all collapsed siblings and don't allow cancel
+     * @memberof oj.ojAccordion
+     * @private
      */
     _collapseHandler : function (event, eventData)
     {
@@ -560,6 +620,10 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojcollapsible'],
       }
     },
 
+    /**
+     * @memberof oj.ojAccordion
+     * @private
+     */
     _initEventData : function (fromC, toC)
     {
       var eventData =
@@ -573,6 +637,10 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojcollapsible'],
       return eventData;
     },
 
+    /**
+     * @memberof oj.ojAccordion
+     * @private
+     */
     _initCollapseEventData : function (event, eventData)
     {
       var newData;
@@ -591,14 +659,20 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojcollapsible'],
       return newData;
     },
 
-    /*
+    /**
      * To filter out events from the nested accordion
+     * @memberof oj.ojAccordion
+     * @private
      */
     _isTargetMyCollapsible : function (event)
     {
       return $(event.target).is(this.collapsibles);
     },
 
+    /**
+     * @memberof oj.ojAccordion
+     * @private
+     */
     _updateExpanded : function ()
     {
       var cid;
@@ -637,10 +711,14 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojcollapsible'],
         this.option('expanded', result, {'_context': {internalSet: true, writeback: true}});
     },
 
-    // - accordion expanded opt. val doesn't overrides its collaspsible expanded opt.
-    //Return a new sorted expanded array contains IDs if they are available
+    /**
+     * Return a new sorted expanded array contains IDs if they are available
+     * @memberof oj.ojAccordion
+     * @private
+     */
     _expandedIndexToId: function(expanded)
     {
+      // - accordion expanded opt. val doesn't overrides its collaspsible expanded opt.
       if (Array.isArray(expanded))
       {
         var id, newExp = [],
@@ -686,6 +764,10 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojcollapsible'],
       return null;
     },
 
+    /**
+     * @memberof oj.ojAccordion
+     * @private
+     */
     _setExpandedOption: function(expanded)
     {
       //sort expanded array if it's from external setOption

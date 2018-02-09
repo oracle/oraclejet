@@ -1,4 +1,4 @@
-// Copyright (c) 2014, 2017, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// Copyright (c) 2014, 2018, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
 @import "../utilities/oj.utilities.urls";
 @import "../utilities/oj.utilities.math";
 @import "../utilities/oj.utilities.units";
@@ -189,6 +189,9 @@ $includeSwitchClasses:           $includeFormControlClasses !default;
 $includeColorPaletteClasses:     $includeFormControlClasses !default;
 $includeColorSpectrumClasses:    $includeFormControlClasses !default;
 $includeTextAreaClasses:         $includeFormControlClasses !default;
+$includeValidationGroupClasses:  $includeFormControlClasses !default;
+// This is used by oj-form-layout custom element
+$includeFormLayoutElementClasses:$includeFormControlClasses !default;
 // Mostly used by form controls. Need the 'or' to work with
 // both form control and Non form control components
 $includeOptionClasses:           $includeFormControlClasses or $includeAllClasses !default;
@@ -223,6 +226,7 @@ $includeDialogClasses:           $includeAllClasses !default;
 $includeFilePickerClasses:       $includeAllClasses !default;
 $includeFilmStripClasses:        $includeAllClasses !default;
 $includeFlexClasses:             $includeAllClasses !default;
+// This is used by the CSS based form layout approach
 $includeFormLayoutClasses:       $includeAllClasses !default;
 $includeGridClasses:             $includeAllClasses !default;
 $includeIconCircleClasses:       $includeAllClasses !default;
@@ -231,6 +235,7 @@ $includeListViewClasses:         $includeAllClasses !default;
 $includeMasonryLayoutClasses:    $includeAllClasses !default;
 $includeMenuClasses:             $includeAllClasses !default;
 $includeMessagingClasses:        $includeAllClasses !default;
+$includeModuleClasses:           $includeAllClasses !default;
 $includeNavigationListClasses:   $includeAllClasses !default;
 $includeTabBarClasses:           $includeAllClasses !default;
 $includeOffcanvasClasses:        $includeAllClasses !default;

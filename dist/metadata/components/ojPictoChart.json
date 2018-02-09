@@ -1,8 +1,8 @@
 {
-  "name": "ojPictoChart",
-  "version": "4.1.0",
-  "jetVersion": "4.1.0",
-  "displayName": " Picto Chart",
+  "name": "oj-picto-chart",
+  "version": "4.2.0",
+  "jetVersion": "4.2.0",
+  "displayName": "Picto Chart",
   "preview": true,
   "description": "ojPictoChart",
   "properties": {
@@ -586,7 +586,7 @@
     }
   },
   "events": {
-    "drill": {
+    "ojDrill": {
       "description": "Triggered during a drill gesture (double click if selection is enabled, single click otherwise).",
       "detail": {
         "id": {

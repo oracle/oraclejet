@@ -1,20 +1,23 @@
 {
-  "name": "ojAccordion",
-  "version": "4.1.0",
-  "jetVersion": "4.1.0",
-  "displayName": " Accordion",
+  "name": "oj-accordion",
+  "version": "4.2.0",
+  "jetVersion": "4.2.0",
+  "displayName": "Accordion",
   "preview": true,
-  "description": "A JET Accordion contains one or more ojCollapsible child elements",
+  "roles": [
+    "group"
+  ],
+  "description": "Displays a set of Collapsible child elements.",
   "properties": {
     "expanded": {
-      "description": "Array contains either ids or zero-based indices of the collapsibles that should be expanded.\nSetter value: array of either ids or indices.\nGetter value: array of either ids or indices. If an expanded collapsible has a page author provided id, that id is returned, otherwise that collapsible's index will be returned.",
+      "description": "A list of expanded child collapsibles.",
       "type": "Array",
       "displayName": "Expanded",
-      "value": null,
+      "value": "null\n\nNote: expanded is default to null<p>\nwhich means that accordion doesnt modify the state on the collapsible children.<p>\nIf specified, it overrides the children expanded setting.",
       "writeback": true
     },
     "multiple": {
-      "description": "Allow multiple collapsibles to be open at the same time. \nNote: if multiple is true, the beforeCollapse/beforeExpand/collapse/expand events will not be fired by the accordion. They are however fired by the collapsibles.",
+      "description": "Specifies whether multiple collapsibles can be open at the same time.",
       "type": "boolean",
       "displayName": "Multiple",
       "value": false
@@ -68,8 +71,10 @@
     }
   },
   "events": {
-    "beforeExpand": {
-      "description": "Triggered immediately before any collapsible in the accordion is expanded.\nCall event.preventDefault() in the event listener to veto the event, which prevents the content from expanding.\nIf multiple is true, the beforeExpand event will not be fired by the accordion.",
+    "ojBeforeExpand": {
+      "description": "Triggered immediately before any collapsible in the accordion is expanded.",
+      "bubbles": true,
+      "cancelable": true,
       "detail": {
         "toCollapsible": {
           "description": "The collapsible being expanded.",
@@ -81,8 +86,9 @@
         }
       }
     },
-    "expand": {
-      "description": "Triggered after the accordion has been expanded (after animation completes).\nThe expand can be cancelled by calling event.preventDefault().\nIf multiple is true, the expand event will not be fired by the accordion.",
+    "ojExpand": {
+      "description": "Triggered after any collapsible in the accordion is expanded.",
+      "bubbles": true,
       "detail": {
         "toCollapsible": {
           "description": "The collapsible being expanded.",
@@ -94,8 +100,10 @@
         }
       }
     },
-    "beforeCollapse": {
-      "description": "Triggered immediately before any collapsible in the accordion is collapsed.\nCall event.preventDefault() in the event listener to veto the event, which prevents the content from collapsing.\nIf multiple is true, the beforeCollapse event will not be fired by the accordion.",
+    "ojBeforeCollapse": {
+      "description": "Triggered immediately before any collapsible in the accordion is collapsed.",
+      "bubbles": true,
+      "cancelable": true,
       "detail": {
         "toCollapsible": {
           "description": "The collapsible being expanded.",
@@ -107,8 +115,9 @@
         }
       }
     },
-    "collapse": {
-      "description": "Triggered after any collapsible in the accordion has been collapsed (after animation completes).\nThe collapse can be cancelled by calling event.preventDefault().\nIf multiple is true, the collapse event will not be fired by the accordion.",
+    "ojCollapse": {
+      "description": "Triggered after any collapsible in the accordion has been collapsed.",
+      "bubbles": true,
       "detail": {
         "toCollapsible": {
           "description": "The collapsible being expanded.",

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2014, 2017, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
@@ -11,8 +11,8 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/in
  * @name converter
  * @memberof oj.ojTimeAxis
  * @instance
- * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @type {?object}
+ * @default null
  */
 /**
  * The default converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) to use for all 'scale' values that do not otherwise have a converter object provided. See <a href="oj.DateTimeConverterFactory.html">oj.DateTimeConverterFactory</a> for details on creating built-in datetime converters.
@@ -20,8 +20,8 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/in
  * @name converter.default
  * @memberof! oj.ojTimeAxis
  * @instance
- * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @type {?object}
+ * @default null
  */
 /**
  * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used for the 'seconds' scale. If not specified, the default converter will be used for this scale. See <a href="oj.DateTimeConverterFactory.html">oj.DateTimeConverterFactory</a> for details on creating built-in datetime converters.
@@ -29,8 +29,8 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/in
  * @name converter.seconds
  * @memberof! oj.ojTimeAxis
  * @instance
- * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @type {?object}
+ * @default null
  */
 /**
  * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used for the 'minutes' scale. If not specified, the default converter will be used for this scale. See <a href="oj.DateTimeConverterFactory.html">oj.DateTimeConverterFactory</a> for details on creating built-in datetime converters.
@@ -38,8 +38,8 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/in
  * @name converter.minutes
  * @memberof! oj.ojTimeAxis
  * @instance
- * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @type {?object}
+ * @default null
  */
 /**
  * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used for the 'hours' scale. If not specified, the default converter will be used for this scale. See <a href="oj.DateTimeConverterFactory.html">oj.DateTimeConverterFactory</a> for details on creating built-in datetime converters.
@@ -47,8 +47,8 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/in
  * @name converter.hours
  * @memberof! oj.ojTimeAxis
  * @instance
- * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @type {?object}
+ * @default null
  */
 /**
  * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used for the 'days' scale. If not specified, the default converter will be used for this scale. See <a href="oj.DateTimeConverterFactory.html">oj.DateTimeConverterFactory</a> for details on creating built-in datetime converters.
@@ -56,8 +56,8 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/in
  * @name converter.days
  * @memberof! oj.ojTimeAxis
  * @instance
- * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @type {?object}
+ * @default null
  */
 /**
  * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used for the 'weeks' scale. If not specified, the default converter will be used for this scale. See <a href="oj.DateTimeConverterFactory.html">oj.DateTimeConverterFactory</a> for details on creating built-in datetime converters.
@@ -65,8 +65,8 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/in
  * @name converter.weeks
  * @memberof! oj.ojTimeAxis
  * @instance
- * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @type {?object}
+ * @default null
  */
 /**
  * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used for the 'months' scale. If not specified, the default converter will be used for this scale. See <a href="oj.DateTimeConverterFactory.html">oj.DateTimeConverterFactory</a> for details on creating built-in datetime converters.
@@ -74,8 +74,8 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/in
  * @name converter.months
  * @memberof! oj.ojTimeAxis
  * @instance
- * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @type {?object}
+ * @default null
  */
 /**
  * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used for the 'quarters' scale. If not specified, the default converter will be used for this scale. See <a href="oj.DateTimeConverterFactory.html">oj.DateTimeConverterFactory</a> for details on creating built-in datetime converters.
@@ -83,8 +83,8 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/in
  * @name converter.quarters
  * @memberof! oj.ojTimeAxis
  * @instance
- * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @type {?object}
+ * @default null
  */
 /**
  * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used for the 'years' scale. If not specified, the default converter will be used for this scale. See <a href="oj.DateTimeConverterFactory.html">oj.DateTimeConverterFactory</a> for details on creating built-in datetime converters.
@@ -92,8 +92,8 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/in
  * @name converter.years
  * @memberof! oj.ojTimeAxis
  * @instance
- * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @type {?object}
+ * @default null
  */
 /**
  * The start time of the time axis. This is required in order for the time axis to properly render. See <a href="oj.ojTimeAxis.html#formats-section">Date and Time Formats</a> for more details on string formats.
@@ -101,9 +101,8 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/in
  * @name start
  * @memberof oj.ojTimeAxis
  * @instance
- * @type {number|string}
- * @default <code class="prettyprint">null</code>
- * @deprecated The number type is deprecated in 3.0.0.
+ * @type {?string}
+ * @default null
  */
 /**
  * The end time of the time axis. This is required in order for the time axis to properly render. See <a href="oj.ojTimeAxis.html#formats-section">Date and Time Formats</a> for more details on string formats.
@@ -111,9 +110,8 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/in
  * @name end
  * @memberof oj.ojTimeAxis
  * @instance
- * @type {number|string}
- * @default <code class="prettyprint">null</code>
- * @deprecated The number type is deprecated in 3.0.0.
+ * @type {?string}
+ * @default null
  */
 /**
  * The time scale used for the time axis. This is required in order for the time axis to properly render.
@@ -121,7 +119,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/in
  * @name scale
  * @memberof oj.ojTimeAxis
  * @instance
- * @type {string}
+ * @type {?string}
  * @ojvalue {string} "seconds"
  * @ojvalue {string} "minutes"
  * @ojvalue {string} "hours"
@@ -130,7 +128,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/in
  * @ojvalue {string} "months"
  * @ojvalue {string} "quarters"
  * @ojvalue {string} "years"
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 
 /**
@@ -143,6 +141,8 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/in
  * @augments oj.dvtBaseComponent
  * @since 2.1.0
  * @ojstatus preview
+ * @ojshortdesc Time Axis Element
+ * @ojrole application
  *
  * @classdesc
  * <h3 id="TimeAxisOverview-section">
@@ -255,20 +255,20 @@ oj.__registerWidget('oj.ojTimeAxis', $['oj']['dvtBaseComponent'],
 {
   widgetEventPrefix: "oj",
 
-  //** @inheritdoc */
+  // @inheritdoc
   _CreateDvtComponent: function(context, callback, callbackObj)
   {
     return dvt.TimeAxis.newInstance(context, callback, callbackObj);
   },
 
-  //** @inheritdoc */
+  // @inheritdoc
   _GetComponentStyleClasses : function() {
     var styleClasses = this._super();
     styleClasses.push('oj-timeaxis');
     return styleClasses;
   },
 
-  //** @inheritdoc */
+  // @inheritdoc
   _GetChildStyleClasses: function()
   {
     var styleClasses = this._super();
@@ -277,12 +277,12 @@ oj.__registerWidget('oj.ojTimeAxis', $['oj']['dvtBaseComponent'],
     return styleClasses;
   },
 
-  //** @inheritdoc */
+  // @inheritdoc
   _GetEventTypes : function() {
     return ['optionChange'];
   },
 
-  //** @inheritdoc */
+  // @inheritdoc
   _GetTranslationMap: function() {
     // The translations are stored on the options object.
     var translations = this.options['translations'];
@@ -293,13 +293,13 @@ oj.__registerWidget('oj.ojTimeAxis', $['oj']['dvtBaseComponent'],
     return ret;
   },
   
-  //** @inheritdoc */
+  // @inheritdoc
   _GetComponentRendererOptions: function() {
     //the function should be removed if the component will support 'tooltip.renderer' attr
     return [];
   },
 
-  //** @inheritdoc */
+  // @inheritdoc
   _ProcessOptions: function() {
     this._super();
 
@@ -316,7 +316,7 @@ oj.__registerWidget('oj.ojTimeAxis', $['oj']['dvtBaseComponent'],
     processRootDateOptions('end');
   },
 
-  //** @inheritdoc */
+  // @inheritdoc
   _LoadResources: function()
   {
     // Ensure the resources object exists

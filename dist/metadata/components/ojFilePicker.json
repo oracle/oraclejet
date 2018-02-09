@@ -1,8 +1,8 @@
 {
-  "name": "ojFilePicker",
-  "version": "4.1.0",
-  "jetVersion": "4.1.0",
-  "displayName": " File Picker",
+  "name": "oj-file-picker",
+  "version": "4.2.0",
+  "jetVersion": "4.2.0",
+  "displayName": "File Picker",
   "preview": true,
   "styleClasses": [
     {
@@ -24,13 +24,13 @@
       "description": "Apply to the dropzone text of the file picker."
     }
   ],
-  "description": "By default the file picker shows a clickable dropzone for selecting files for upload",
+  "description": "Displays a clickable dropzone for selecting files from the device storage.",
   "properties": {
     "accept": {
-      "description": "An array of strings of allowed MIME types or file extensions that can be uploaded. If not specified, accept all file types \nNote: If accept is specified, files with empty string type will be rejected if no match found in the \"accept\" value.",
-      "type": "Array",
+      "description": "An array of strings of allowed MIME types or file extensions that can be uploaded. If not specified, accept all file types",
+      "type": "Array.<string>",
       "displayName": "Accept",
-      "value": "undefined"
+      "value": null
     },
     "selectOn": {
       "description": "The type of event to select the files.",
@@ -122,7 +122,7 @@
     }
   },
   "events": {
-    "select": {
+    "ojSelect": {
       "description": "Triggered after the files are selected",
       "detail": {
         "files": {

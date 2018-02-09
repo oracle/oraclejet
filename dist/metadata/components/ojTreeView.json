@@ -1,8 +1,8 @@
 {
-  "name": "ojTreeView",
-  "version": "4.1.0",
-  "jetVersion": "4.1.0",
-  "displayName": " Tree View",
+  "name": "oj-tree-view",
+  "version": "4.2.0",
+  "jetVersion": "4.2.0",
+  "displayName": "Tree View",
   "preview": true,
   "description": "ojTreeView",
   "properties": {
@@ -27,74 +27,63 @@
           "description": "",
           "type": "Object",
           "value": null,
-          "properties": [
-            {
-              "name": "items",
+          "properties": {
+            "items": {
               "description": "If this object is specified, TreeView will initiate drag operation when the user drags on an item.",
               "type": "Object",
-              "properties": [
-                {
-                  "name": "dataTypes",
+              "properties": {
+                "dataTypes": {
                   "description": "(optional) The MIME types to use for the dragged data in the dataTransfer object. This can be a string if there is only one\ntype, or an array of strings if multiple types are needed.\nFor example, if selected items of employee data are being dragged, dataTypes could be \"application/employees+json\". Drop targets can examine the data types and decide\nwhether to accept the data. A text input may only accept \"text\" data type, while a chart for displaying employee data may be configured to accept the \"application/employees+json\" type.\nFor each type in the array, dataTransfer.setData will be called with the specified type and the JSON version of the selected item data as the value. The selected item data \nis an array of objects, with each object representing a model object from the underlying data source. For example, if the underlying data is an oj.Collection, then this\nwould be a oj.Model object. Note that when static HTML is used, then the value would be the HTML string of the selected item.\nThis property is required unless the application calls setData itself in a dragStart callback function.",
                   "type": "string|Array.<string>"
                 },
-                {
-                  "name": "dragStart",
+                "dragStart": {
                   "description": "(optional) A callback function that receives the \"dragstart\" event and context information as arguments:\nfunction(event, context)\nAll of the event payloads listed below can be found under the context argument.\nitems: An array of objects, with each object representing the data of one selected item.\nThis function can set its own data and drag image as needed. If dataTypes is specified, event.dataTransfer is already populated with the default data when this function is invoked.\nIf dataTypes is not specified, this function must call event.dataTransfer.setData to set the data or else the drag operation will be cancelled. In either case, the drag image is\nset to an image of the dragged items on the TreeView.",
                   "type": "function"
                 },
-                {
-                  "name": "drag",
+                "drag": {
                   "description": "(optional) A callback function that receives the \"drag\" event as argument:\nfunction(event)",
                   "type": "function"
                 },
-                {
-                  "name": "dragEnd",
+                "dragEnd": {
                   "description": "(optional) A callback function that receives the \"dragend\" event as argument:\nfunction(event)",
                   "type": "function"
                 }
-              ]
+              }
             }
-          ]
+          }
         },
         "drop": {
           "description": "",
           "type": "Object",
           "value": null,
-          "properties": [
-            {
-              "name": "items",
+          "properties": {
+            "items": {
               "description": "An object that specifies callback functions to handle dropping items",
               "type": "Object",
-              "properties": [
-                {
-                  "name": "dataTypes",
+              "properties": {
+                "dataTypes": {
                   "description": "A data type or an array of data types this component can accept.\nThis property is required unless dragEnter, dragOver, and drop callback functions are specified to handle the corresponding events.",
                   "type": "string|Array.<string>"
                 },
-                {
-                  "name": "dragEnter",
+                "dragEnter": {
                   "description": "(optional) A callback function that receives the \"dragenter\" event and context information as arguments:\nfunction(event, context)\nAll of the event payloads listed below can be found under the context argument.\nitem: The item being entered.\nThis function should call event.preventDefault() to indicate the dragged data can be accepted.\nOtherwise, dataTypes will be matched against the drag dataTypes to determine if the data is acceptable. If there is a match, event.preventDefault()\nwill be called to indicate that the data can be accepted.",
                   "type": "function"
                 },
-                {
-                  "name": "dragOver",
+                "dragOver": {
                   "description": "(optional) A callback function that receives the \"dragover\" event and context information as arguments:\nfunction(event, context)\nAll of the event payloads listed below can be found under the context argument.\nitem: The item being dragged over.\nThis function should call event.preventDefault() to indicate the dragged data can be accepted.\nOtherwise, dataTypes will be matched against the drag dataTypes to determine if the data is acceptable. If there is a match, event.preventDefault()\nwill be called to indicate that the data can be accepted.",
                   "type": "function"
                 },
-                {
-                  "name": "dragLeave",
+                "dragLeave": {
                   "description": "(optional) A callback function that receives the \"dragleave\" event and context information as arguments:\nfunction(event, context)\nAll of the event payloads listed below can be found under the context argument.\nitem: The item that was last entered.",
                   "type": "function"
                 },
-                {
-                  "name": "drop",
+                "drop": {
                   "description": "(required) A callback function that receives the \"drop\" event and context information as arguments:\nfunction(event, context)\nAll of the event payloads listed below can be found under the context argument.\nitem: The item being dropped on.\nposition: The drop position relative to the item being dropped on.\nValid values are \"inside\", \"before\", \"after\", and \"first\" (the first child of the item being dropped on).\nThis function should call event.preventDefault() to indicate the dragged data can be accepted.\nIf the application needs to look at the data for the item being dropped on, it can use the getContextByNode method.",
                   "type": "function"
                 }
-              ]
+              }
             }
-          ]
+          }
         }
       }
     },
@@ -217,7 +206,7 @@
     }
   },
   "events": {
-    "animateEnd": {
+    "ojAnimateEnd": {
       "description": "Triggered when the default animation of a particular action has ended.\nNote this event will not be triggered if application cancelled the default animation on animateStart.",
       "detail": {
         "action": {
@@ -230,7 +219,7 @@
         }
       }
     },
-    "animateStart": {
+    "ojAnimateStart": {
       "description": "Triggered when the default animation of a particular action is about to start.\nThe default animation can be cancelled by calling event.preventDefault().",
       "detail": {
         "action": {
@@ -247,7 +236,7 @@
         }
       }
     },
-    "beforeCollapse": {
+    "ojBeforeCollapse": {
       "description": "Triggered before an item is collapsed via the expanded attribute or via the UI.\nCall event.preventDefault() to veto the event, which prevents collapsing the item.",
       "detail": {
         "key": {
@@ -260,7 +249,7 @@
         }
       }
     },
-    "beforeCurrentItem": {
+    "ojBeforeCurrentItem": {
       "description": "Triggered before the current item is changed via the currentItem attribute or via the UI.\nCall event.preventDefault() to veto the event, which prevents changing the current item.",
       "detail": {
         "previousKey": {
@@ -281,7 +270,7 @@
         }
       }
     },
-    "beforeExpand": {
+    "ojBeforeExpand": {
       "description": "Triggered before an item is expanded via the expanded attribute or via the UI.\nCall event.preventDefault() to veto the event, which prevents expanding the item.",
       "detail": {
         "key": {
@@ -294,7 +283,7 @@
         }
       }
     },
-    "collapse": {
+    "ojCollapse": {
       "description": "Triggered after an item has been collapsed.",
       "detail": {
         "key": {
@@ -307,7 +296,7 @@
         }
       }
     },
-    "expand": {
+    "ojExpand": {
       "description": "Triggered after an item has been expanded.",
       "detail": {
         "key": {

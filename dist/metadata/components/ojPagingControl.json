@@ -1,8 +1,8 @@
 {
-  "name": "ojPagingControl",
-  "version": "4.1.0",
-  "jetVersion": "4.1.0",
-  "displayName": " Paging Control",
+  "name": "oj-paging-control",
+  "version": "4.2.0",
+  "jetVersion": "4.2.0",
+  "displayName": "Paging Control",
   "preview": true,
   "roles": [
     "navigation",
@@ -20,13 +20,15 @@
       "description": "Options for loadMore mode.",
       "type": "Object.<string, number>",
       "displayName": "Load More Options",
-      "value": "{maxCount: 500}",
+      "value": {
+        "maxCount": 500
+      },
       "properties": {
         "maxCount": {
           "description": "The maximum number items to display.\nSee the load-more-options attribute for usage examples.",
           "type": "number",
           "value": 500,
-          "minimum": "0"
+          "minimum": 0
         }
       }
     },
@@ -74,7 +76,14 @@
       "description": "Options for page mode.",
       "type": "Object.<string, (Array|number)>",
       "displayName": "Page Options",
-      "value": "{layout: [auto], type: numbers, orientation: horizontal, maxPageLinks: 6}",
+      "value": {
+        "layout": [
+          "auto"
+        ],
+        "type": "numbers",
+        "orientation": "horizontal",
+        "maxPageLinks": 6
+      },
       "properties": {
         "layout": {
           "description": "Array of paging navigation controls to be displayed (only applicable for numbers type).\nThis is an array of one or more supported values.\nSee the page-options attribute for usage examples.",
@@ -119,7 +128,7 @@
           "description": "The maximum number of page links to display (only applicable for numbers type).\nAn ellipsis '...' will be displayed for pages which exceed the maximum.\nmaxPageLinks must be greater than 4.\nSee the page-options attribute for usage examples.",
           "type": "number",
           "value": 6,
-          "minimum": "5"
+          "minimum": 5
         },
         "orientation": {
           "description": "The orientation of the page links.\nSee the page-options attribute for usage examples.",
@@ -164,7 +173,7 @@
       "type": "number",
       "displayName": "Page Size",
       "value": 25,
-      "minimum": "1"
+      "minimum": 1
     },
     "translations": {
       "description": "A collection of translated resources from the translation bundle, or null if this\ncomponent has no resources. Resources may be accessed and overridden individually or collectively, as seen in the examples.\n\nIf this component has translations, their documentation immediately follows this doc entry.",

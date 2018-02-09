@@ -1,9 +1,9 @@
 /**
- * Copyright (c) 2014, 2017, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
-define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/internal-deps/dvt/DvtTreeView'], function(oj, $, comp, base, dvt)
+define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/internal-deps/dvt/DvtTreeView', 'ojs/ojkeyset'], function(oj, $, comp, base, dvt)
 {
 
 /**
@@ -214,6 +214,10 @@ oj.__registerWidget('oj.ojSunburst', $['oj']['dvtBaseComponent'],
     var rootNodeContent = this.options['rootNodeContent'];
     if (rootNodeContent && rootNodeContent['_renderer'])
       rootNodeContent['renderer'] = this._GetTemplateRenderer(rootNodeContent['_renderer'], 'rootNodeContent');
+    
+    // if expanded not declared, pass default expandAll key set to the toolkit  
+    if (!this.options['expanded'])
+      this.options['expanded'] = new oj.ExpandAllKeySet();
   },
 
   //** @inheritdoc */
@@ -571,15 +575,13 @@ oj.__registerWidget('oj.ojSunburst', $['oj']['dvtBaseComponent'],
  * @default <code class="prettyprint">null</code>
  */
 /**
- * Specifies the nodes that should be expanded on initial render. It should contain an array of node ids to expand on initial render. Specify 'all' to expand all nodes.
- * @ignore 
+ * Specifies the key set containing the ids of sunburst nodes that should be expanded on initial render. By default, all sunburst nodes are expanded.
  * @expose
  * @name expanded
  * @memberof oj.ojSunburst
  * @instance
- * @type {Array.<string>|string}
- * @ojvalue {string} "all"
- * @default <code class="prettyprint">"all"</code>
+ * @type {KeySet}
+ * @default <code class="prettyprint">new keySet.ExpandAllKeySet()</code>
  */
 /**
  * An array of category strings used for filtering. Nodes with any category matching an item in this array will be filtered.
@@ -1211,6 +1213,9 @@ var ojSunburstMeta = {
     "drilling": {
       "type": "string",
       "enumValues": ["on", "off"]
+    },
+    "expanded" : {
+      "writeback": true
     },
     "hiddenCategories": {
       "type": "Array<string>",

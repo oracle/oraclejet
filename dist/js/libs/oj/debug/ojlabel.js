@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2014, 2017, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
@@ -768,19 +768,19 @@ define(['ojs/ojcore', 'jquery', 'hammerjs', 'ojs/ojjquery-hammer', 'ojs/ojcompon
         return null;
     },
     /**  
-    * If targetElement's tagName starts with "oj-", return true, else return false.
+    * If targetElement's tagName has a "-", return true, else return false.
     * @param {Element|null} targetElement the HTML element the 'for' attribute is pointing to
     * @private
     * @memberof oj.ojLabel
     * @instance
-    * @return {boolean} return true if targetElement's tagName starts with "oj-". Else return false.
+    * @return {boolean} return true if targetElement's tagName contains "-". Else return false.
     * 
     */
     _isElementCustomElement : function(targetElement)
     {
       if (targetElement)
       {
-        return oj.BaseCustomElementBridge.getRegistered(targetElement.tagName) != null;
+        return (targetElement.tagName).indexOf('-') !== -1;
       }
       return false;
     },

@@ -1,8 +1,8 @@
 {
-  "name": "ojRowExpander",
-  "version": "4.1.0",
-  "jetVersion": "4.1.0",
-  "displayName": " Row Expander",
+  "name": "oj-row-expander",
+  "version": "4.2.0",
+  "jetVersion": "4.2.0",
+  "displayName": "Row Expander",
   "preview": true,
   "description": "A JET RowExpander is primarily used inside the JET Table and JET DataGrid",
   "properties": {
@@ -94,7 +94,7 @@
     }
   },
   "events": {
-    "expand": {
+    "ojExpand": {
       "description": "Triggered when a expand is performed on the RowExpander",
       "detail": {
         "rowKey": {
@@ -103,7 +103,7 @@
         }
       }
     },
-    "collapse": {
+    "ojCollapse": {
       "description": "Triggered when a collapse is performed on the RowExpander",
       "detail": {
         "rowKey": {

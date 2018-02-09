@@ -1,8 +1,8 @@
 {
-  "name": "ojLabel",
-  "version": "4.1.0",
-  "jetVersion": "4.1.0",
-  "displayName": " Label",
+  "name": "oj-label",
+  "version": "4.2.0",
+  "jetVersion": "4.2.0",
+  "displayName": "Label",
   "preview": true,
   "styleClasses": [
     {
@@ -24,7 +24,10 @@
       "description": "The help information that goes on the oj-label. The help attributes are:\n\ndefinition - this is the help definition text. \nIt is what shows up\nwhen the user hovers over the help icon, or tabs into the help icon, or press\nand holds the help icon on a mobile device. No formatted text is available for\nhelp definition attribute.\nsource - this is the help source url.\nIf present, a help icon will\nrender next to the label. For security reasons we only support urls with protocol http: or https:.\nIf the url doesn't comply we ignore it and throw an error.\nPass in an encoded URL since we do not encode the URL.\n",
       "type": "Object.<string, string>|null",
       "displayName": "Help",
-      "value": "{definition :null, source: null}",
+      "value": {
+        "definition": null,
+        "source": null
+      },
       "properties": {
         "definition": {
           "description": "help definition text. See the top-level help option for details.",

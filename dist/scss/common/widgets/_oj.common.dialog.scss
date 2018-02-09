@@ -1,4 +1,4 @@
-// Copyright (c) 2014, 2017, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// Copyright (c) 2014, 2018, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 // WARNING: do not directly import this file, instead import the 
 //          version in your base theme's directory, 
@@ -211,7 +211,8 @@
 
       .oj-dialog-footer > .oj-button,
       .oj-dialog-footer > .oj-button.oj-active,
-      .oj-dialog-footer > .oj-button.oj-active.oj-focus {
+      .oj-dialog-footer > .oj-button.oj-active.oj-focus,
+      .oj-dialog-footer > .oj-button > .oj-button-button {
         margin: 0;
         flex:1;
         @include oj-ltr() {

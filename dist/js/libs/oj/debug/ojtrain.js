@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2014, 2017, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
@@ -25,6 +25,8 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
 /**
  * @ojcomponent oj.ojTrain
  * @augments oj.baseComponent
+ * @ojshortdesc The JET Train element is a navigation visual that allows a user to go between different "steps".
+ * @since 1.0.0
  * @ojstatus preview
  * @classdesc
  * <h3 id="trainOverview-section">
@@ -72,6 +74,8 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
 
       /**
        * The array of step objects. Each step must have an 'id' and 'label' property.
+       * @ojshortdesc The array of step objects.
+       * @ojrequired
        * @expose
        * @public
        * @type {Array.<Object>}
@@ -99,6 +103,8 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
        steps: [],
      /**
        * The id for the step object.  See the <a href="#steps">steps</a> attribute for usage examples.
+       * @ojshortdesc The id for the step object.
+       * @ojrequired
        * @expose
        * @public
        * @type {string}
@@ -108,6 +114,9 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
        */
      /**
        * The label for the step object.  See the <a href="#steps">steps</a> attribute for usage examples.
+       * @ojshortdesc The label for the step object.
+       * @ojrequired
+       * @ojtranslatable
        * @expose
        * @public
        * @type {string}
@@ -117,26 +126,29 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
        */
      /**
        * Indicates if the step is disabled.  See the <a href="#steps">steps</a> attribute for usage examples.
+       * @ojshortdesc Indicates if the step is disabled
        * @expose
        * @public
        * @type {boolean}
        * @name steps[].disabled
        * @instance
        * @memberof! oj.ojTrain
-       * @default <code class="prettyprint">false</code>
+       * @default false
        */
      /**
        * Indicates if the step has been visited.  See the <a href="#steps">steps</a> attribute for usage examples.
+       * @ojshortdesc Indicates if the step has been visited
        * @expose
        * @public
        * @type {boolean}
        * @name steps[].visited
        * @instance
        * @memberof! oj.ojTrain
-       * @default <code class="prettyprint">false</code>
+       * @default false
        */
      /**
-       * The messageType icon to display on the step.  See the <a href="#steps">steps</a> attribute for usage examples.
+       * The type of message icon to display on the step.  See the <a href="#steps">steps</a> attribute for usage examples.
+       * @ojshortdesc The type of message icon to display on the step.
        * @expose
        * @public
        * @type {string}
@@ -147,7 +159,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
        * @ojvalue {string} "error"
        * @ojvalue {string} "fatal"
        * @ojvalue {string} "warning"
-       * @default <code class="prettyprint">null</code>
+       * @default null
        */
 
       /**
@@ -155,7 +167,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
        * @expose
        * @public
        * @type {string}
-       * @deprecated use selectedStep
+       * @deprecated 3.0.0 use selectedStep
        * @ignore
        * @instance
        * @memberof! oj.ojTrain
@@ -163,7 +175,8 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
       selected: "",
 
       /**
-       * Indicates the id of the current selected step.
+       * Indicates the id of the current selected step.  Default is the first step in the steps array.
+       * @ojshortdesc Indicates the id of the current selected step.
        * @expose
        * @public
        * @type {string}
@@ -185,7 +198,8 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
       /**
        * Triggered immediately before a step is deselected.
        * The ojBeforeDeselect can be cancelled by calling <code class="prettyprint">event.preventDefault()</code>.
-       *
+       * @ojshortdesc Triggered immediately before a step is deselected.
+       * @ojcancelable
        * @expose
        * @event
        * @memberof oj.ojTrain
@@ -198,7 +212,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
       /**
        * Triggered after a step has been deselected.
        * The ojDeselect can be cancelled by calling <code class="prettyprint">event.preventDefault()</code>.
-       *
+       * @ojshortdesc Triggered after a step has been deselected.
        * @expose
        * @event
        * @memberof oj.ojTrain
@@ -212,7 +226,8 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
       /**
        * Triggered immediately before a Step is selected.
        * The ojBeforeSelect can be cancelled by calling <code class="prettyprint">event.preventDefault()</code>.
-       *
+       * @ojshortdesc Triggered immediately before a step is selected.
+       * @ojcancelable
        * @expose
        * @event
        * @memberof oj.ojTrain
@@ -225,7 +240,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
 
       /**
        * Triggered after a step has been selected.
-       *
+       * @ojshortdesc Triggered after a step has been selected.
        * @expose
        * @event
        * @memberof oj.ojTrain
@@ -251,6 +266,12 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
      */
     _stepArray: null,
 
+    /**
+     * Create the train
+     * @override
+     * @memberof! ojTrain
+     * @protected
+     */
     _ComponentCreate: function()
     {
       this._super();
@@ -366,7 +387,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
 
     /**
      * Draw the button object for the step based on the index. If a button for that step alread exists remove it and draw the new one.
-     * @param {number} index - The index of the step for which the button is being drawn.
+     * @param {number} index The index of the step for which the button is being drawn.
      *
      * @private
      */
@@ -428,7 +449,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
 
     /**
      * Draw the icon that displays the messageType for the step based on the index. If there already is an icon remove it and draw the new one.
-     * @param {number} index - The index of the step for which the icon is being drawn.
+     * @param {number} index The index of the step for which the icon is being drawn.
      *
      * @private
      */
@@ -493,8 +514,8 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
 
     /**
      * Fire optionChange event
-     * @param {String} previousValue
-     * @param {String} value
+     * @param {string} previousValue
+     * @param {string} value
      * @param {Object} originalEvent
      *
      * @private
@@ -530,7 +551,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
 
     /**
      * Draw the number label that is displayed on the button of each step without a message type. This is only used for native mobile themes.
-     * @param {number} index - The index of the step for which the number label is being drawn.
+     * @param {number} index The index of the step for which the number label is being drawn.
      *
      * @private
      */
@@ -544,7 +565,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
 
     /**
      * Draw the connector line inbetween each step. This is only used for native mobile themes.
-     * @param {number} index - The index of the step for which the icon is being drawn.
+     * @param {number} index The index of the step for which the icon is being drawn.
      *
      * @private
      */
@@ -558,7 +579,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
 
     /**
      * Draw the background circle for the step which is either light or dark base on if the step is before or after the selected step.
-     * @param {number} index - The index of the step for which the icon is being drawn.
+     * @param {number} index The index of the step for which the icon is being drawn.
      *
      * @private
      */
@@ -577,7 +598,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
 
     /**
      * Draw the label for the step.
-     * @param {number} index - The index of the step for which the icon is being drawn.
+     * @param {number} index The index of the step for which the icon is being drawn.
      *
      * @private
      */
@@ -627,7 +648,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
 
     /**
      * Return the index of the step
-     * @param {String} id - The index of the id whose id is being passed in.
+     * @param {string} id The id of the step whose index is returned.
      * @return {number} index of step. -1 for not valid ids.
      * @private
      */
@@ -641,10 +662,11 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
     },
 
     /**
-     * <p>Returns the step based on the id passed in. If the step doesn't exist, return null;</p>
+     * Returns the step based on the id passed in. If the step doesn't exist, return null.
+     * @ojshortdesc Returns the step based on the id passed in.
      * @public
-     * @param {String} id - The id of the step.
-     * @return {Object} step object.
+     * @param {string} id The id of the step.
+     * @return {Object | null} step object.
      * @expose
      * @instance
      * @memberof oj.ojTrain
@@ -662,8 +684,8 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
      * <p>Returns the id of the next selectable step based on the selected id. If the current step is the last selectable step, returns null</p>
      * @public
      * @expose
-     * @return {String} next selectable Id
-     * @deprecated Use getNextSelectableStep
+     * @return {string} next selectable Id
+     * @deprecated 3.0.0 Use getNextSelectableStep
      * @ignore
      * @instance
      * @memberof oj.ojTrain
@@ -677,9 +699,9 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
      * <p>Returns the id of the previous selectable step based on the selected id. If the current step is the first selectable step, returns null</p>
      * @public
      * @expose
-     * @return {String} previous selectable Id
+     * @return {string} previous selectable Id
      * @ignore
-     * @deprecated Use getPreviousSelectableStep
+     * @deprecated 3.0.0 Use getPreviousSelectableStep
      * @instance
      * @memberof oj.ojTrain
      */
@@ -689,9 +711,10 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
     },
 
     /**
-     * <p>Returns the id of the next selectable step based on the current selectedStep. If the current step is the last selectable step, the function returns null</p>
+     * Returns the id of the next selectable step based on the current selectedStep. If the current step is the last selectable step, the function returns null
+     * @ojshortdesc Returns the id of the next selectable step based on the current selectedStep.
      * @public
-     * @return {String} next selectable Id
+     * @return {string | null} next selectable Id
      * @expose
      * @instance
      * @memberof oj.ojTrain
@@ -709,9 +732,10 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
     },
 
     /**
-     * <p>Returns the id of the previous selectable step based on the current selectedStep. If the current step is the first selectable step, the function returns null</p>
+     * Returns the id of the previous selectable step based on the current selectedStep. If the current step is the first selectable step, the function returns null
+     * @ojshortdesc Returns the id of the previous selectable step based on the current selectedStep.
      * @public
-     * @return {String} previous selectable Id
+     * @return {string | null} previous selectable Id
      * @expose
      * @instance
      * @memberof oj.ojTrain
@@ -732,8 +756,8 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
      * <p>Sets the properties for the step. Takes in the object conatining the properties for the step.</p>
      * @public
      * @expose
-     * @deprecated Use updateStep instead
-     * @param {Object} stepProperties - The property bag to overwrite properties on the step.
+     * @deprecated 3.0.0 Use updateStep instead
+     * @param {Object} stepProperties The property bag to overwrite properties on the step.
      * @ignore
      * @instance
      * @memberof oj.ojTrain
@@ -747,10 +771,11 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
     },
 
     /**
-     * <p>Update the step with the specified id with the provided property bag.</p>
+     * Update the step with the specified id with the provided property bag.
+     * @ojshortdesc Update the step with the specified id with the provided property bag.
      * @public
-     * @param {string} id - The id of the step to update
-     * @param {Object} stepProperties - The set of step properties to update. Will overwrite any previously set values.
+     * @param {string} id The id of the step to update
+     * @param {Object} stepProperties The set of step properties to update. Will overwrite any previously set values.
      * @expose
      * @instance
      * @memberof oj.ojTrain
@@ -793,12 +818,26 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
       }
       }
     },
-
+    /**
+     * <p>Sets the options</p>
+     * @protected
+     * @param {Object} options
+     * @override
+     * @memberof oj.ojTrain
+     */
     _setOptions: function(options) {
       this._super(options);
       this.refresh();
     },
-
+    /**
+     * <p>Sets the options</p>
+     * @protected
+     * @param {string} key
+     * @param {Object} value
+     * @param {string} flags
+     * @override
+     * @memberof oj.ojTrain
+     */
     _setOption: function(key, value, flags)
     {
       if ((key == "selectedStep" || key == "selected") && this._stepArray && this._stepArray[this._selectedIndex])
@@ -817,7 +856,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
      * Refreshes the train.
      *
      * <p>This method does not accept any arguments.</p>
-     *
+     * @ojshortdesc Refreshes the train.
      * @expose
      * @memberof oj.ojTrain
      * @instance
@@ -863,7 +902,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
 
     /**
      * Set the focus on the step defined by the id.
-     * @param {string} id - The id of the step to focus
+     * @param {string} id The id of the step to focus
      *
      * @private
      */
@@ -891,8 +930,11 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
 
       switch (subId)
       {
+        //returns the cllickable button
+        //QA automated tests need to click on selected step and button is clickable
+        //while the whole step is not
         case 'oj-train-step':
-          return this._stepList.children().eq(index)[0];
+          return this._stepList.children().eq(index).find('.oj-train-button')[0];
 
           // Deprecated sub-id
         case 'oj-train-button':
@@ -934,7 +976,13 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
       var stepNum = this._stepArray ? this._stepArray.length : 0;
       for (var stepIndex = 0; stepIndex < stepNum; stepIndex++) {
         var stepLocator = {'subId': 'oj-train-step', 'index': stepIndex};
-        if ($(currentNode).closest(this.getNodeBySubId(stepLocator)).length > 0)
+        //subIdNode should be button
+        var subIdNode = this.getNodeBySubId(stepLocator);
+        //Checking whether currentNode is a descendent of the button or label because
+        //those two are only clickable things in the step so we only want to return a
+        //valid subIdNode for those cases(and their children)
+        if ($(currentNode).closest(subIdNode).length > 0
+          || $(currentNode).closest($(subIdNode.parentNode.parentNode).find('.oj-train-label')[0]).length > 0)
           return stepLocator;
       }
       return null;
@@ -1044,7 +1092,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
      *
      * @example <caption>Get the button of the second step:</caption>
      * var node = myTrain.getNodeBySubId({'subId': 'oj-train-button', 'index': 1});
-     * @deprecated This sub-id was deprecated please use oj-train-step instead.
+     * @deprecated 1.2.0 This sub-id was deprecated please use oj-train-step instead.
      * @ignore
      */
 
@@ -1058,7 +1106,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
      *
      * @example <caption>Get the button connector background of the second step:</caption>
      * var node = myTrain.getNodeBySubId({'subId': 'oj-train-button-connector', 'index': 1});
-     * @deprecated This sub-id was deprecated because the returned node is not interactive.
+     * @deprecated 1.2.0 This sub-id was deprecated because the returned node is not interactive.
      * @ignore
      */
 
@@ -1070,7 +1118,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
      *
      * @example <caption>Get the background connector bar of the train:</caption>
      * var node = myTrain.getNodeBySubId({'subId': 'oj-train-connector'});
-     * @deprecated This sub-id was deprecated because the returned node is not interactive.
+     * @deprecated 1.2.0 This sub-id was deprecated because the returned node is not interactive.
      * @ignore
      */
 
@@ -1082,7 +1130,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
      *
      * @example <caption>Get the train background connector bar fill:</caption>
      * var node = myTrain.getNodeBySubId({'subId': 'oj-train-connector-fill'});
-     * @deprecated This sub-id was deprecated because the returned node is not interactive.
+     * @deprecated 1.2.0 This sub-id was deprecated because the returned node is not interactive.
      * @ignore
      */
 
@@ -1096,7 +1144,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
      *
      * @example <caption>Get the icon of the second step:</caption>
      * var node = myTrain.getNodeBySubId({'subId': 'oj-train-icon', 'index': 1});
-     * @deprecated This sub-id was deprecated please use oj-train-step instead.
+     * @deprecated 1.2.0 This sub-id was deprecated please use oj-train-step instead.
      * @ignore
      */
 
@@ -1110,7 +1158,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
      *
      * @example <caption>Get the label of the second step:</caption>
      * var node = myTrain.getNodeBySubId({'subId': 'oj-train-label', 'index': 1});
-     * @deprecated This sub-id was deprecated please use oj-train-step instead.
+     * @deprecated 1.2.0 This sub-id was deprecated please use oj-train-step instead.
      * @ignore
      */
   });

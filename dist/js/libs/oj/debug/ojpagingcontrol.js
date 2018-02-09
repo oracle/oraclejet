@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2014, 2017, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
@@ -236,7 +236,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
            * @instance
            * @memberof! oj.ojPagingControl
            * @type {Object.<string, number>}
-           * @default {maxCount: 500}
+           * @default {"maxCount": 500}
            *
            * @example <caption>Initialize the PagingControl, overriding load-more-options value:</caption>
            * &lt;!-- Using dot notation -->

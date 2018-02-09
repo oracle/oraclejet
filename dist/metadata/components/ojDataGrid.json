@@ -1,8 +1,8 @@
 {
-  "name": "ojDataGrid",
-  "version": "4.1.0",
-  "jetVersion": "4.1.0",
-  "displayName": " Data Grid",
+  "name": "oj-data-grid",
+  "version": "4.2.0",
+  "jetVersion": "4.2.0",
+  "displayName": "Data Grid",
   "preview": true,
   "styleClasses": [
     {
@@ -42,19 +42,20 @@
       "description": "Row banding and column banding intervals within the DataGrid body.",
       "type": "Object.<string, number>",
       "displayName": "Banding Interval",
-      "value": "{row:0, column:0}",
-      "properties": [
-        {
-          "name": "row",
+      "value": {
+        "row": 0,
+        "column": 0
+      },
+      "properties": {
+        "row": {
           "description": "row banding interval",
           "type": "number"
         },
-        {
-          "name": "column",
+        "column": {
           "description": "column banding interval",
           "type": "number"
         }
-      ]
+      }
     },
     "cell": {
       "description": "The cell attribute contains a subset of attributes for databody cells.",
@@ -84,67 +85,56 @@
       "displayName": "Current Cell",
       "value": null,
       "writeback": true,
-      "properties": [
-        {
-          "name": "type",
+      "properties": {
+        "type": {
           "description": "designates whether a header or databody cell is the current cell, valid values are: 'cell', 'header'",
           "type": "string"
         },
-        {
-          "name": "axis",
+        "axis": {
           "description": "header axis, available if type is header, valid values are: 'row', 'column', 'rowEnd', 'columnEnd'",
           "type": "string"
         },
-        {
-          "name": "index",
+        "index": {
           "description": "header index, available if type is header",
           "type": "number"
         },
-        {
-          "name": "level",
+        "level": {
           "description": "header level, available if type is header",
           "type": "number"
         },
-        {
-          "name": "key",
+        "key": {
           "description": "header key, available if type is header",
           "type": "number"
         },
-        {
-          "name": "indexes",
+        "indexes": {
           "description": "cell indexes, available if type is cell",
           "type": "Object",
-          "properties": [
-            {
-              "name": "row",
+          "properties": {
+            "row": {
               "description": "cell row index",
               "type": "number"
             },
-            {
-              "name": "column",
+            "column": {
               "description": "cell column index",
               "type": "number"
             }
-          ]
+          }
         },
-        {
-          "name": "keys",
+        "keys": {
           "description": "cell keys, available if type is cell",
           "type": "Object",
-          "properties": [
-            {
-              "name": "row",
+          "properties": {
+            "row": {
               "description": "cell row key",
               "type": "string"
             },
-            {
-              "name": "column",
+            "column": {
               "description": "cell column key",
               "type": "string"
             }
-          ]
+          }
         }
-      ]
+      }
     },
     "data": {
       "description": "The data source for the DataGrid must be an extension of oj.DataGridDataSource. See the data section in the introduction for data sources provided out of the box. If the data attribute is not specified, an empty DataGrid is displayed.",
@@ -156,39 +146,68 @@
       "description": "Enables or disables reordering the rows within the same DataGrid using drag and drop. Specify an object with a subproperty reorder set to {row:'enable'} to enable reordering. Setting the reorder subproperty to {row:'disable'}, or setting the dnd attribute to null (or omitting it), disables reordering support. There must be move capability support on the data source to enable this feature.",
       "type": "Object",
       "displayName": "Dnd",
-      "value": "{reorder: {row :disable}}",
-      "properties": [
-        {
-          "name": "reorder",
+      "value": {
+        "reorder": {
+          "row": "disable"
+        }
+      },
+      "properties": {
+        "reorder": {
           "description": "an object with property row",
           "type": "Object",
-          "properties": [
-            {
-              "name": "row",
+          "properties": {
+            "row": {
               "description": "row reordering within the DataGrid, valid values are: 'enable', 'disable'",
               "type": "string"
             }
-          ]
+          }
         }
-      ]
+      }
+    },
+    "editMode": {
+      "description": "Determine if the DataGrid is read only or editable. Use none if the DataGrid is strictly read only. The DataGrid editMode is designed to support fast editing and requires that the input controls render fast and near synchronusly to be stamped inside an editable cell. The DataGrid supports overwrite behavior for all of JET's input components. Custom components that render synchronously or components that only render asynchronusly due to Promises that resolve immediately will also be stampable. The modules for the stamped component loaded/required when the DataGrid is loaded/required. Components that must go back to a server to render are not supported. Use cellNavigation to allow editable cells, but the DataGrid is currently read only and a single tab stop on the page. Pressing F2 or double click while in this mode will switch the DataGrid to cellEdit mode. Use cellEdit to allow editable cells, and tab navigates to the next cell behavior. Pressing ESC while in this mode will switch the DataGrid to cellNavigation mode.",
+      "type": "string",
+      "displayName": "Edit Mode",
+      "value": "none",
+      "writeback": true,
+      "enumValues": [
+        "cellEdit",
+        "cellNavigation",
+        "none"
+      ],
+      "propertyEditorValues": {
+        "cellEdit": {
+          "description": "the DataGrid cells are indivdually tabbable and editable",
+          "displayName": "Cell Edit"
+        },
+        "cellNavigation": {
+          "description": "the DataGrid is a single tab stop and editable at the cell level, but currently read only",
+          "displayName": "Cell Navigation"
+        },
+        "none": {
+          "description": "the DataGrid is read only",
+          "displayName": "None"
+        }
+      }
     },
     "gridlines": {
       "description": "Display or hide the horizontal or vertical gridlines in the data body. Gridlines are visible by default and must be set to 'hidden' in order to be hidden.",
       "type": "Object.<string, string>",
       "displayName": "Gridlines",
-      "value": "{horizontal: visible, vertical: visible}",
-      "properties": [
-        {
-          "name": "horizontal",
+      "value": {
+        "horizontal": "visible",
+        "vertical": "visible"
+      },
+      "properties": {
+        "horizontal": {
           "description": "horizontal gridlines, valid values are: 'hidden', 'visible'",
           "type": "string"
         },
-        {
-          "name": "vertical",
+        "vertical": {
           "description": "vertical gridlines, valid values are: 'hidden', 'visible'",
           "type": "string"
         }
-      ]
+      }
     },
     "header": {
       "description": "The header attribute contains a subset of attributes for row and column headers.",
@@ -212,19 +231,20 @@
             "resizable": {
               "description": "Enable or disable width or height resize along the column headers. Note that for column header, a function cannot be used with the height subproperty. If a function is specified it takes a single parameter, headerContext and must return a string of enable or disable.",
               "type": "Object.<string, string>|Object.<string, function(Object)>|null",
-              "value": "{width: disable, height: disable}",
-              "properties": [
-                {
-                  "name": "width",
+              "value": {
+                "width": "disable",
+                "height": "disable"
+              },
+              "properties": {
+                "width": {
                   "description": "column width resizable, valid values are: 'enable', 'disable'",
                   "type": "string"
                 },
-                {
-                  "name": "height",
+                "height": {
                   "description": "column header height resizable, valid values are: 'enable', 'disable'",
                   "type": "string"
                 }
-              ]
+              }
             },
             "sortable": {
               "description": "Enable or disable sorting on the field bounded by this header. The data source associated with the DataGrid must have the sort function defined and the capability supported. If a function is specified it takes a single parameter, headerContext and must return a string of auto, enable, or disable.",
@@ -274,19 +294,20 @@
             "resizable": {
               "description": "Enable or disable width or height resize along the columnEnd headers. Note that for columnEnd header, a function cannot be used with the height subproperty. If a function is specified it takes a single parameter, headerContext and must return a string of enable or disable.",
               "type": "Object.<string, string>|Object.<string, function(Object)>|null",
-              "value": "{width: disable, height: disable}",
-              "properties": [
-                {
-                  "name": "width",
+              "value": {
+                "width": "disable",
+                "height": "disable"
+              },
+              "properties": {
+                "width": {
                   "description": "columnEnd width resizable, valid values are: 'enable', 'disable'",
                   "type": "string"
                 },
-                {
-                  "name": "height",
+                "height": {
                   "description": "columnEnd header height resizable, valid values are: 'enable', 'disable'",
                   "type": "string"
                 }
-              ]
+              }
             },
             "style": {
               "description": "The inline style to apply to columnEnd headers in the DataGrid. If a string is specified the class will be added to all columnEnd header cells. Note that percentage (%) width and height values are not supported. If a function is specified it takes a single parameter, headerContext and must return a string.",
@@ -312,19 +333,20 @@
             "resizable": {
               "description": "Enable or disable width or height resize along the row headers. Note that for row header, a function cannot be used with the width subproperty. If a function is specified it takes a single parameter, headerContext and must return a string of enable or disable.",
               "type": "Object.<string, string>|Object.<string, function(Object)>|null",
-              "value": "{width: disable, height: disable}",
-              "properties": [
-                {
-                  "name": "width",
+              "value": {
+                "width": "disable",
+                "height": "disable"
+              },
+              "properties": {
+                "width": {
                   "description": "row width resizable, valid values are: 'enable', 'disable'",
                   "type": "string"
                 },
-                {
-                  "name": "height",
+                "height": {
                   "description": "row header height resizable, valid values are: 'enable', 'disable'",
                   "type": "string"
                 }
-              ]
+              }
             },
             "sortable": {
               "description": "Enable or disable sorting on the field bounded by this header. The data source associated with the DataGrid must have the sort function defined and the capability supported. If a function is specified it takes a single parameter, headerContext and must return a string of auto, enable, or disable.",
@@ -374,19 +396,20 @@
             "resizable": {
               "description": "Enable or disable width or height resize along the rowEnd headers. Note that for rowEnd header, a function cannot be used with the width subproperty. If a function is specified it takes a single parameter, headerContext and must return a string of enable or disable.",
               "type": "Object.<string, string>|Object.<string, function(Object)>|null",
-              "value": "{width: disable, height: disable}",
-              "properties": [
-                {
-                  "name": "width",
+              "value": {
+                "width": "disable",
+                "height": "disable"
+              },
+              "properties": {
+                "width": {
                   "description": "rowEnd width resizable, valid values are: 'enable', 'disable'",
                   "type": "string"
                 },
-                {
-                  "name": "height",
+                "height": {
                   "description": "rowEnd header height resizable, valid values are: 'enable', 'disable'",
                   "type": "string"
                 }
-              ]
+              }
             },
             "style": {
               "description": "The inline style to apply to rowEnd headers in the DataGrid. If a string is specified the class will be added to all rowEnd header cells. Note that percentage (%) width and height values are not supported. If a function is specified it takes a single parameter, headerContext and must return a string.",
@@ -427,42 +450,36 @@
       "type": "Object.<string, Object>|null",
       "displayName": "Scroll Position",
       "value": null,
-      "properties": [
-        {
-          "name": "index",
+      "properties": {
+        "index": {
           "description": "scroll to a given row and column index of the DataGrid",
           "type": "Object",
-          "properties": [
-            {
-              "name": "row",
+          "properties": {
+            "row": {
               "description": "row index to scroll to",
               "type": "number"
             },
-            {
-              "name": "column",
+            "column": {
               "description": "column index to scroll to",
               "type": "number"
             }
-          ]
+          }
         },
-        {
-          "name": "key",
+        "key": {
           "description": "scroll to a given row and column key of the DataGrid",
           "type": "Object",
-          "properties": [
-            {
-              "name": "row",
+          "properties": {
+            "row": {
               "description": "row key to scroll to",
               "type": "string"
             },
-            {
-              "name": "column",
+            "column": {
               "description": "column key to scroll to",
               "type": "string"
             }
-          ]
+          }
         }
-      ]
+      }
     },
     "selection": {
       "description": "Specifies the current selections in the DataGrid. Returns an array of range objects, or an empty array if there's no selection. The range object contains a startIndex, endIndex, startKey, and endKey. If cell selection is enabled each will contain a row and column property. If row selection is enabled each will contain a row property only.",
@@ -476,18 +493,16 @@
       "type": "Object.<string, string>|null",
       "displayName": "Selection Mode",
       "value": null,
-      "properties": [
-        {
-          "name": "row",
+      "properties": {
+        "row": {
           "description": "set row selection mode, valid values are: 'single', 'multiple'",
           "type": "string"
         },
-        {
-          "name": "cell",
+        "cell": {
           "description": "set cell selection mode, valid values are: 'single', 'multiple'",
           "type": "string"
         }
-      ]
+      }
     },
     "translations": {
       "description": "A collection of translated resources from the translation bundle, or null if this\ncomponent has no resources. Resources may be accessed and overridden individually or collectively, as seen in the examples.\n\nIf this component has translations, their documentation immediately follows this doc entry.",
@@ -735,7 +750,7 @@
     }
   },
   "events": {
-    "resize": {
+    "ojResize": {
       "description": "Triggered when a portion of the DataGrid is resized",
       "detail": {
         "header": {
@@ -772,7 +787,7 @@
         }
       }
     },
-    "sort": {
+    "ojSort": {
       "description": "Triggered when a sort is performed on the DataGrid",
       "detail": {
         "header": {
@@ -785,7 +800,7 @@
         }
       }
     },
-    "scroll": {
+    "ojScroll": {
       "description": "Triggered after the DataGrid has been scrolled via the UI or the scrollTo method.",
       "detail": {
         "scrollX": {
@@ -798,7 +813,7 @@
         }
       }
     },
-    "beforeCurrentCell": {
+    "ojBeforeCurrentCell": {
       "description": "Triggered before the current cell is changed via the currentCell attribute or via the UI.",
       "detail": {
         "currentCell": {
@@ -808,6 +823,28 @@
         "previousCurrentCell": {
           "description": "the previous current cell, see currentCell for the object information",
           "type": "Object"
+        }
+      }
+    },
+    "ojBeforeEdit": {
+      "description": "Triggered before the DataGrid is going to enter edit mode. To prevent editing the cell prevent default on the event.",
+      "detail": {
+        "cellContext": {
+          "description": "the cellContext of the cell that editing is going to be performed on",
+          "type": "Object"
+        }
+      }
+    },
+    "ojBeforeEditEnd": {
+      "description": "Triggered before the DataGrid is going to exit edit mode. To prevent exit editing the prevent default on the event. There is a provided beforeEditEnd function, oj.DataCollectionEditUtils.basicHandleEditEnd, which can be specified. This function will handle canceling edits as well as invoking validation on input elements.",
+      "detail": {
+        "cellContext": {
+          "description": "the cellContext of the cell that editing is going to be performed on",
+          "type": "Object"
+        },
+        "cancelEdit": {
+          "description": "true if the edit should be negated based on actions (i.e. escape key)",
+          "type": "boolean"
         }
       }
     }

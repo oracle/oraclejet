@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2014, 2017, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
@@ -90,6 +90,15 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'ojs/ojvalidation-number'
  * themes are accessible.)  Note that Section 1.4.3 says that text or images of text that are part of an inactive user
  * interface component have no contrast requirement.  Because disabled content may not meet the minimum contrast ratio
  * required of enabled content, it cannot be used to convey meaningful information.<p>
+ * 
+ * <h3 id="styling-section">
+ *   Styling
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#styling-section"></a>
+ * </h3>
+ *
+ * {@ojinclude "name":"stylingDoc"}
+ *
+ *
  * <h3 id="label-section">
  *   Label and InputNumber
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#label-section"></a>
@@ -1713,7 +1722,8 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
       // keep up/down buttons disabled state in sync with the input's val
       this._updateButtons(value);
       // keep rawValue in sync with the input's val
-      this._SetRawValue(value, event);
+      // use this.element.val() because the raw value should always be a string
+      this._SetRawValue(this.element.val(), event);
     }
 
     // now validate and set value and all of that.
@@ -2365,7 +2375,29 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
      * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
      * @memberof oj.ojInputNumber
      */
-
+    /**
+     * {@ojinclude "name":"ojStylingDocIntro"}
+     * 
+     * <table class="generic-table styling-table">
+     *   <thead>
+     *     <tr>
+     *       <th>{@ojinclude "name":"ojStylingDocClassHeader"}</th>
+     *       <th>{@ojinclude "name":"ojStylingDocDescriptionHeader"}</th>
+     *     </tr>
+     *   </thead>
+     *   <tbody>
+     *     <tr>
+     *       <td>oj-form-control-text-align-right</td>
+     *       <td>Aligns the text to the right regardless of the reading direction,
+                 this is normally used for right aligning numbers 
+     *       </td>
+     *     </tr>
+     *   </tbody>
+     * </table>
+     *
+     * @ojfragment stylingDoc - Used in Styling section of classdesc, and standalone Styling doc
+     * @memberof oj.ojInputNumber
+     */
 });
 
 // -----------------------------------------------------------------------------

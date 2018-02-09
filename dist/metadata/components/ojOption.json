@@ -1,8 +1,8 @@
 {
-  "name": "ojOption",
-  "version": "4.1.0",
-  "jetVersion": "4.1.0",
-  "displayName": " Option",
+  "name": "oj-option",
+  "version": "4.2.0",
+  "jetVersion": "4.2.0",
+  "displayName": "Option",
   "preview": true,
   "description": "ojOption",
   "properties": {

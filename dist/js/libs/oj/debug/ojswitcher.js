@@ -1,12 +1,11 @@
 /**
- * Copyright (c) 2014, 2017, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
 define(['ojs/ojcore', 'ojs/ojcomponentcore', 'ojs/ojcustomelement'], 
        function(oj)
 {
-
 
 /**
  * Copyright (c) 2017, Oracle and/or its affiliates.
@@ -98,18 +97,9 @@ define(['ojs/ojcore', 'ojs/ojcomponentcore', 'ojs/ojcustomelement'],
  * mySwitcher.value = 'settings';
  */
 
-function renderer(ele) {
-  var switcher = ele['_ojSwitcher'];
-  var isInitialRender = false;
-  if (!switcher) {
-    isInitialRender = true;
-    switcher = new _ojSwitcher(ele);
-    switcher.init();
-    Object.defineProperty(ele, '_ojSwitcher', {'value': switcher});
-  }
-  switcher.applyValue(isInitialRender);
-};
-
+/**
+ * @ignore
+ */
 var switcherMetadata =
         {
           "properties": {
@@ -119,26 +109,28 @@ var switcherMetadata =
             }
           },
           "extension": {
-            _RENDER_FUNC: renderer
+            _CONSTRUCTOR: ojSwitcher,
+            _CONTROLS_SUBTREE_HIDDEN: true
           }
         };
+
 /**
  * @constructor
  * @private
  */
-function _ojSwitcher(element) {
-  var _ATTR_SWITCHER_SLOT = "slot",
-          _SWITCHER_VALUE_ATTR = "value",
-          _SWITCHER_ORIG_DISPLAY_STYLE = "_ojSwitcher_orig_display_style",
-          _ELEMENT_MUTATIONS_CONFIG,
-          self = this;
-
-  _ELEMENT_MUTATIONS_CONFIG = {
-    "childList": true
-  };
-
-  self._slotMap = null;
-
+function ojSwitcher(context) {
+  var ATTR_SWITCHER_SLOT = "slot";
+  var SWITCHER_VALUE_ATTR = "value";
+  var SWITCHER_ORIG_DISPLAY_STYLE = "_ojSwitcher_orig_display_style";
+  var self = this;
+  var element = context.element;
+  var isInitialRender = true;
+  var _slotMap = null;
+    
+  // Our version of GCC has a bug where the second param of MutationObserver.observe must be of 
+  // type MutationObserverInit which isn't a real class that we can instantiate. Work around is to
+  // create the MutationObserver on an alias of 'this' and call observe in a different function.
+  // TODO Cleanup when we replace GCC with uglify in 5.0.0.
   self._caseElementMutationObserver = new MutationObserver(function (mutations) {
     mutations.forEach(function (mutation) {
       if (mutation.type === "childList") {
@@ -146,10 +138,10 @@ function _ojSwitcher(element) {
           //For each newly added child node, apply the switcher value 
           Array.prototype.forEach.call(mutation.addedNodes, function (item) {
             if (item.nodeType === 1) {
-              var itemSlotAttributeValue = item.getAttribute(_ATTR_SWITCHER_SLOT);
-              self._applyValueToItem(item, itemSlotAttributeValue, false);
+              var itemSlotAttributeValue = item.getAttribute(ATTR_SWITCHER_SLOT);
+              _applyValueToItem(item, itemSlotAttributeValue);
               //force to re calculate slot map nex time
-              self._resetSlotMap();
+              _resetSlotMap();
             }
           });
         }
@@ -157,11 +149,11 @@ function _ojSwitcher(element) {
           //For each removed child node restore original display style property
           Array.prototype.forEach.call(mutation.removedNodes, function (item) {
             if (item.nodeType === 1) {
-              if (item[_SWITCHER_ORIG_DISPLAY_STYLE] !== undefined) {
-                item.style.display = item[_SWITCHER_ORIG_DISPLAY_STYLE];
+              if (item[SWITCHER_ORIG_DISPLAY_STYLE] !== undefined) {
+                item.style.display = item[SWITCHER_ORIG_DISPLAY_STYLE];
               }
               //force to re calculate slot map nex time
-              self._resetSlotMap();
+              _resetSlotMap();
             }
           });
         }
@@ -169,21 +161,16 @@ function _ojSwitcher(element) {
     });
   });
 
-  self._resetSlotMap = function () {
-    self._slotMap = null;
-  };
+  function _resetSlotMap() {
+    _slotMap = null;
+  }
 
-  self._getSlotMap = function () {
-    if (!self._slotMap) {
-      self._slotMap = oj.CustomElementBridge.getSlotMap(element);
+  function _getSlotMap() {
+    if (!_slotMap) {
+      _slotMap = oj.CustomElementBridge.getSlotMap(element);
     }
-    return self._slotMap;
-  };
-
-  self.init = function () {
-    self._caseElementMutationObserver.observe(element, _ELEMENT_MUTATIONS_CONFIG);
-  };
-
+    return _slotMap;
+  }
 
   function _hide(item) {
     var isCurrentlyVisible = !(item.style.display === "none");
@@ -193,7 +180,7 @@ function _ojSwitcher(element) {
     }
   }
 
-  function _show(item, isInitialRender) {
+  function _show(item) {
     var isCurrentlyVisible = !(item.style.display === "none");
     if (!isCurrentlyVisible) {
       item.style.display = "";
@@ -203,28 +190,35 @@ function _ojSwitcher(element) {
     }
   }
 
-  self.applyValue = function (isInitialRender) {
-    var slots = self._getSlotMap();
-    for (var key in slots) {
-      slots[key].forEach(function (item) {
-        self._applyValueToItem(item, key, isInitialRender);
-      });
-    }
+  this.createDOM = function() {
+    self._caseElementMutationObserver.observe(element, {"childList": true});
   };
 
-  self._applyValueToItem = function (item, itemSlotAttributeValue, isInitialRender) {
-    var switcherValue = element[_SWITCHER_VALUE_ATTR];
-    if (item[_SWITCHER_ORIG_DISPLAY_STYLE] === undefined) {
-      Object.defineProperty(item, _SWITCHER_ORIG_DISPLAY_STYLE, {'value': item.style.display});
+  this.updateDOM = function() {
+    var slots = _getSlotMap();
+    for (var key in slots) {
+      slots[key].forEach(function (item) {
+        _applyValueToItem(item, key);
+      });
+    }
+    if (isInitialRender)
+      isInitialRender = false;
+  };
+
+  function _applyValueToItem(item, itemSlotAttributeValue) {
+    var switcherValue = element[SWITCHER_VALUE_ATTR];
+    if (item[SWITCHER_ORIG_DISPLAY_STYLE] === undefined) {
+      Object.defineProperty(item, SWITCHER_ORIG_DISPLAY_STYLE, {'value': item.style.display});
     }
     if (itemSlotAttributeValue === switcherValue) {
-      _show(item, isInitialRender);
+      _show(item);
     } else {
       _hide(item);
     }
   }
-
 }
+
 oj.CustomElementBridge.registerMetadata('oj-switcher', null, switcherMetadata);
 oj.CustomElementBridge.register('oj-switcher', {'metadata': oj.CustomElementBridge.getMetadata('oj-switcher')});
+
 });

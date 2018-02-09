@@ -1,0 +1,330 @@
+// Copyright (c) 2014, 2018, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+
+//------------------------------------------------------------------------------------------------
+// Some mixins for *-label-inline and *-labels-inline
+//------------------------------------------------------------------------------------------------
+
+// This inline label mixin is applied to the odd elements
+@mixin oj-inline-label-support-odd($selectorPrefix, 
+                               $labelInlineMarginTop: $formLayoutLabelInlineMarginTop, 
+                               $labelInlineGutter: $formControlLabelInlineGutter, 
+                               $labelInlineAlign: $formLayoutLabelInlineAlign, 
+                               $fieldInlineAlign: $formLayoutFieldInlineAlign)
+{
+  // we're using width of 100% and so on for the case where 
+  // the label-nowrap classes are used.
+  // See the form layout demo titled "label wrapping" 
+  // before checking the values in here
+  width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  @if $labelInlineAlign != null
+  {
+    @include oj-bidi-property(
+         $property: 'text-align', 
+         $startOrEnd: $labelInlineAlign);
+  }
+}
+
+// This inline label mixin is applied to the all elements
+@mixin oj-inline-label-support-all($selectorPrefix, 
+                               $labelInlineMarginTop: $formLayoutLabelInlineMarginTop, 
+                               $labelInlineGutter: $formControlLabelInlineGutter, 
+                               $labelInlineAlign: $formLayoutLabelInlineAlign, 
+                               $fieldInlineAlign: $formLayoutFieldInlineAlign)
+{
+    display: inline-block;
+    vertical-align: top;
+    margin-top: $labelInlineMarginTop;
+    // box sizing required for firefox or the 
+    // gutter padding  doesn't work
+    box-sizing: border-box;
+
+    @include oj-ltr {
+      padding-right: $labelInlineGutter; 
+    }
+
+    @include oj-rtl(){
+      padding-left: $labelInlineGutter;
+    }
+}
+
+// when we don't float, then the order of the dom is the order of what
+// you see, so we want spacing after the icons, not before.
+@mixin oj-inline-label-support-non-float-spacing()
+{
+  @include oj-ltr {
+    margin-left: 0;
+    margin-right: 6px;
+  }
+  @include oj-rtl(){
+    margin-right: 0;
+    margin-left: 6px;
+  }
+}
+
+@mixin oj-inline-label-support-radio-checkbox()
+{
+  @if (oj-strip-unit($radioCheckboxRowHeight) > 2.6) {
+    // radioset/checkboxset are inline-top aligned, but they need to be
+    // a couple pixels higher than other input components to have the label
+    // line up with the first radio's label
+    margin-top: $radioCheckboxRowHeight/5;
+  } @else {
+    // radioset/checkboxset's inline main label needs slightly different alignment
+    // than the other form controls to line up with the first radio's label.
+    // a couple pixels higher than other input components to have the label
+    // line up with the first radio's label
+    margin-top: $radioCheckboxRowHeight/10;
+  }
+  margin-bottom: 0;
+}
+
+// This is for cases where there are label modifiers (required, etc), in which case
+// the properties below need to be inherited by oj-label-group
+// otherwise the ellipsis doesn't show when the label-nowrap classes are used.
+// See the form layout demo titled "label wrapping" 
+// before checking the values in here
+// line-height is needed so that the label has enough height to show borders.
+// line-height on label itself has no effect.
+@mixin oj-inline-label-support-with-modifiers()
+{
+  width: inherit;
+  overflow: inherit;
+  text-overflow: inherit;
+  line-height: 1.6em;
+}
+
+//-------------------------------------------------------------------------------------------------
+// Create common form layout classes that are used by css and element form layout
+//
+//-------------------------------------------------------------------------------------------------
+@mixin oj-form-layout-common($selectorPrefix, 
+                             $labelInlineMarginTop: $formLayoutLabelInlineMarginTop, 
+                             $labelInlineGutter: $formControlLabelInlineGutter, 
+                             $labelInlineAlign: $formLayoutLabelInlineAlign, 
+                             $fieldInlineAlign: $formLayoutFieldInlineAlign)
+{
+  // nowrap label support
+  .oj-form > .oj-flex > .oj-flex-item:nth-child(odd) > .#{$selectorPrefix}-label-nowrap,
+  .#{$selectorPrefix}-labels-nowrap > .oj-flex > .oj-flex-item:nth-child(odd) > .oj-label,
+  .#{$selectorPrefix}-labels-nowrap > .oj-flex > .oj-flex-item:nth-child(odd) > .oj-label-nocomp {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  // inline label suport
+  .#{$selectorPrefix}-labels-inline > .oj-flex > .oj-flex-item:nth-child(odd) > .oj-label,
+  .#{$selectorPrefix}-labels-inline > .oj-flex > .oj-flex-item:nth-child(odd) > .oj-label-nocomp {
+    @include oj-inline-label-support-odd($selectorPrefix, 
+                                         $labelInlineMarginTop, 
+                                         $labelInlineGutter, 
+                                         $labelInlineAlign, 
+                                         $fieldInlineAlign);
+  }
+
+  // inline field suport
+  .#{$selectorPrefix}-labels-inline > .oj-flex > .oj-flex-item:nth-child(even) {
+    @if $fieldInlineAlign != null
+    {
+      @include oj-bidi-property(
+           $property: 'text-align', 
+           $startOrEnd: $fieldInlineAlign);
+    }
+  }
+
+  // without this, the required icon is chopped off at top in Chrome. 
+  .#{$selectorPrefix}-labels-inline > .oj-flex > .oj-flex-item:nth-child(odd) .oj-label-required-icon {
+     margin-top: 1px;
+  }
+
+  // when labels are inline we don't float. 
+  .#{$selectorPrefix}-labels-inline > .oj-flex > .oj-flex-item:nth-child(odd) .oj-label-required-icon,
+  .#{$selectorPrefix}-labels-inline > .oj-flex > .oj-flex-item:nth-child(odd) .oj-label-help-icon,
+  .#{$selectorPrefix}-labels-inline > .oj-flex > .oj-flex-item:nth-child(odd) label,
+  .#{$selectorPrefix}-labels-inline > .oj-flex > .oj-flex-item:nth-child(odd) .oj-label-help-icon-anchor {
+     float:none; 
+  }
+  
+  // when labels are inline we don't float so we need to add spacing. 
+  .#{$selectorPrefix}-labels-inline > .oj-flex > .oj-flex-item:nth-child(odd) .oj-label-required-icon,
+  .#{$selectorPrefix}-labels-inline > .oj-flex > .oj-flex-item:nth-child(odd) .oj-label-help-icon {
+     @include oj-inline-label-support-non-float-spacing();
+  }
+  
+  .#{$selectorPrefix}-labels-inline > .oj-flex > .oj-flex-item > .oj-label,
+  .#{$selectorPrefix}-labels-inline > .oj-flex > .oj-flex-item > .oj-label-nocomp {
+    @include oj-inline-label-support-all($selectorPrefix, 
+                                         $labelInlineMarginTop, 
+                                         $labelInlineGutter, 
+                                         $labelInlineAlign, 
+                                         $fieldInlineAlign);
+  }
+  
+  // when the label should be top aligned
+  .#{$selectorPrefix}-labels-inline > .oj-flex > .oj-flex-item > .oj-label-inline-top,
+  .#{$selectorPrefix}-labels-inline > .oj-flex > .oj-flex-item > .oj-label-nocomp.oj-label-for-non-control {
+    margin-top: 0;
+  }
+
+  .#{$selectorPrefix}-labels-inline > .oj-flex > .oj-flex-item > .oj-radioset-label,
+  .#{$selectorPrefix}-labels-inline > .oj-flex > .oj-flex-item > .oj-checkboxset-label {
+    @include oj-inline-label-support-radio-checkbox();
+  }
+  
+  // This is for cases where there are label modifiers (required, etc), in which case
+  // the properties below need to be inherited by oj-label-group
+  // otherwise the ellipsis doesn't show when the label-nowrap classes are used.
+  // See the form layout demo titled "label wrapping" 
+  // before checking the values in here
+  // line-height is needed so that the label has enough height to show borders.
+  // line-height on label itself has no effect.
+  .oj-form > .oj-flex > .oj-flex-item:nth-child(odd) > .#{$selectorPrefix}-label-nowrap  .oj-label-group,
+  .#{$selectorPrefix}-labels-nowrap > .oj-flex > .oj-flex-item:nth-child(odd) > .oj-label  .oj-label-group {
+    width: inherit;
+    overflow: inherit;
+    text-overflow: inherit;
+  }
+  
+  .#{$selectorPrefix}-labels-inline > .oj-flex > .oj-flex-item:nth-child(odd) > .oj-label .oj-label-group {
+    @include oj-inline-label-support-with-modifiers();
+  }
+
+  // if it's a no component label and it's for a form control* set the line height so things
+  // match exactly. we put line-height on component labels to line things up and to give room
+  // for the required and help icons.
+  // *(inline label in a oj-flex > .oj-flex-item; we do not float, thus we need line-height
+  // to maintain label's height.
+  .#{$selectorPrefix}-labels-inline > .oj-flex > .oj-flex-item:nth-child(odd) > 
+    .oj-label-nocomp:not(.oj-label-for-non-control) {
+    line-height: 1.6em;
+  }
+}
+
+//-------------------------------------------------------------------------------------------------
+// Create css only form layout classes, example call is 
+//      @include oj-form-responsive("oj-sm");
+// 
+// $selectorPrefix: prefix to use for label classes, for example "oj-sm"
+//-------------------------------------------------------------------------------------------------
+@mixin oj-form-responsive($selectorPrefix, 
+                          $labelInlineMarginTop: $formLayoutLabelInlineMarginTop, 
+                          $labelInlineGutter: $formControlLabelInlineGutter, 
+                          $labelInlineAlign: $formLayoutLabelInlineAlign, 
+                          $fieldInlineAlign: $formLayoutFieldInlineAlign)
+{
+  // include the common mixins that are shared between the css and element approaches
+  @include oj-form-layout-common($selectorPrefix, $labelInlineMarginTop, 
+                                 $labelInlineGutter, $labelInlineAlign,
+                                 $fieldInlineAlign);
+
+  // when there are multiple columns put a gutter between the columns
+  .oj-form-layout:not(.#{$selectorPrefix}-only-flex-direction-column) > .oj-flex-item:not(:first-child) {
+     // todo: temporarily using $labelInlineGutter
+     @include oj-ltr {
+       margin-left: $labelInlineGutter;
+     }
+     @include oj-rtl(){
+       margin-right: $labelInlineGutter;
+     }
+  }
+
+  // declare the *-label-inline selector for inline label support
+  .oj-form > .oj-flex > .oj-flex-item:nth-child(odd) > .#{$selectorPrefix}-label-inline {
+    @include oj-inline-label-support-odd($selectorPrefix, 
+                                         $labelInlineMarginTop, 
+                                         $labelInlineGutter, 
+                                         $labelInlineAlign, 
+                                         $fieldInlineAlign)
+  }
+
+  // without this, the required icon is chopped off at top in Chrome. 
+  .#{$selectorPrefix}-label-inline .oj-label-required-icon {
+     margin-top: 1px;
+  }
+
+  // when labels are inline we don't float. 
+  .#{$selectorPrefix}-label-inline .oj-label-required-icon,
+  .#{$selectorPrefix}-label-inline .oj-label-help-icon,
+  .#{$selectorPrefix}-label-inline.oj-label label,
+  .#{$selectorPrefix}-label-inline .oj-label-help-icon-anchor {
+     float:none; 
+  }
+  
+  // when labels are inline we don't float so we need to add spacing. 
+  .#{$selectorPrefix}-label-inline .oj-label-required-icon,
+  .#{$selectorPrefix}-label-inline .oj-label-help-icon {
+     @include oj-inline-label-support-non-float-spacing();
+  }
+
+  .#{$selectorPrefix}-label-inline.oj-label {
+    @include oj-inline-label-support-all($selectorPrefix, 
+                                         $labelInlineMarginTop, 
+                                         $labelInlineGutter, 
+                                         $labelInlineAlign, 
+                                         $fieldInlineAlign);
+  }
+
+  // when the label should be top aligned
+  .#{$selectorPrefix}-label-inline.oj-label-inline-top,
+  .#{$selectorPrefix}-label-inline.oj-label-nocomp.oj-label-for-non-control {
+    margin-top: 0;
+  }
+
+  .#{$selectorPrefix}-label-inline.oj-radioset-label,
+  .#{$selectorPrefix}-label-inline.oj-checkboxset-label {
+    @include oj-inline-label-support-radio-checkbox();
+  }
+  
+  .oj-form > .oj-flex > .oj-flex-item:nth-child(odd) > .#{$selectorPrefix}-label-inline .oj-label-group {
+    @include oj-inline-label-support-with-modifiers();
+  }
+
+  // when labels are inline we don't float. we need this selector to be more specific than the
+  // .oj-label label selector in common.formcontrol.label.scss which has rtl/ltr, otherwise
+  // we get that float:right if we have .oj-md-labels-inline on the label in rtl mode.
+  .#{$selectorPrefix}-label-inline.oj-label label {
+      @include oj-ltr {
+        float: none;
+      }
+      @include oj-rtl(){
+        float: none;
+      }
+    }  
+
+  // in the 'across' case where you have multiple fields in the same row you need padding between the first field and the second label
+  .#{$selectorPrefix}-form-across > .oj-flex > .oj-flex-item:nth-child(2n+3) {
+     @include oj-ltr {
+       padding-left: $labelInlineGutter;
+     }
+     @include oj-rtl(){
+       padding-right: $labelInlineGutter;
+     }
+  }
+
+  .#{$selectorPrefix}-form-across > .oj-flex > .oj-flex-item:nth-child(even) {
+     @include oj-ltr {
+       padding-right: $labelInlineGutter;
+     }
+     @include oj-rtl(){
+       padding-left: $labelInlineGutter;
+     }
+  }
+}
+
+// changes for when the column drops to one column
+@mixin oj-form-columns($selectorPrefix, 
+                       $labelInlineGutter: $formControlLabelInlineGutter)
+{
+      
+
+  @if $formLayoutDividerColor != null and $formLayoutDividerColor != transparent {
+    // when there is only one column add back the divider except on the last form
+    .oj-form-layout.#{$selectorPrefix}-flex-direction-column > .oj-flex-item:not(:last-child) > .oj-form > .oj-flex:last-child {
+      border-width: 0 0 1px 0;
+    }
+  }
+}

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2014, 2017, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
@@ -121,21 +121,14 @@ if (typeof oj.ListViewDndContext != "undefined")
   };
 
   /**
-   * Override to retrieve dnd options.
-   * @param {string} op either drag or drop 
-   * @return {Object} options for drag or drop
+   * Override to verify whether item reordering enabled or not
    * @protected
    * @override
-   */
-  oj.NavigationListDndContext.prototype.GetDndOptions = function (op)
+   */  
+  oj.NavigationListDndContext.prototype.IsItemReOrdering = function()
   {
-    var dnd = this.listview.options["dnd"];
-    if (dnd != null && dnd[op])
-    {
-      return dnd[op]['items'];
-    }
-
-    return null;
+      var option = this.listview.GetOption('reorderable');
+      return (option == "enabled");
   };
 
   /**

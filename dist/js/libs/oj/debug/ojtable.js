@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2014, 2017, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
@@ -39,7 +39,6 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
  * <pre class="prettyprint">
  * <code>
  * &lt;oj-table
- *   summary="Department List"
  *   aria-label="Departments Table" 
  *   data='{{datasource}}'
  *   columns='[{"headerText": "Department Id", "field": "DepartmentId"},
@@ -69,7 +68,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#a11y-section"></a>
  * </h3>
  *
- * <p>Developers should always either specify the <code class="prettyprint">summary</code> attribute or <code class="prettyprint">caption</code> child tag for the table element to conform to accessibility guidelines.</p>
+ * <p>Developers should always either specify the <code class="prettyprint">aria-label</code> attribute or use other alternatives for the table element to conform to accessibility guidelines.</p>
  *
  * <h3 id="styling-section">
  *   Styling
@@ -102,17 +101,6 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
  * 
  * {@ojinclude "name":"animationDoc"}
  *
- */
- /**
- * <p>Named slot for the Table's bottom panel where applications can add content such as a paging control.</p>
- *
- * @ojslot bottom
- * @memberof oj.ojTable
- *
- * @example <caption>Initialize the Table with the <code class="prettyprint">bottom</code> slot specified:</caption>
- * &lt;oj-table>
- *   &lt;div slot='bottom'>&lt;oj-paging-control>&lt;/oj-paging-control>&lt;/div>
- * &lt;/oj-table>
  */
 (function() {
   oj.__registerWidget("oj.ojTable", $['oj']['baseComponent'],
@@ -205,6 +193,27 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
            */
           animateEnd: null,
           /**
+           * An alias for the current row when referenced inside the row template. This can be especially useful
+           * if oj-bind-for-each element is used inside the row template since it has its own scope of data access.
+           *
+           * @ojshortdesc Gets and sets the alias for the current row when referenced inside the row template.
+           * @ojstatus preview
+           * @expose
+           * @public
+           * @instance
+           * @memberof! oj.ojTable
+           * @type {string}
+           * @default ''
+           *
+           * @example <caption>Initialize the Table with the <code class="prettyprint">as</code> attribute specified:</caption>
+           * &lt;oj-table as='row'>
+           *   &lt;template slot='rowTemplate'>
+           *     &lt;p>&lt;oj-bind-text value='[[row.data.name]]'>&lt;/oj-bind-text>&lt;/p>
+           *   &lt;/template>
+           * &lt;/oj-table>
+           */ 
+           as: '',
+          /**
            * The row that currently have keyboard focus.  Can be an index and/or key value.
            * When both are specified, the index is used as a hint.
            * Returns the current row or null if there is none.
@@ -230,24 +239,28 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
           /**
            * The data to bind to the element.
            * <p>
-           * Must be of type oj.IteratingDataProvider {@link oj.IteratingDataProvider}
-           * or type oj.TableDataSource {@link oj.TableDataSource}
+           * Must be of type {@link oj.DataProvider}, {@link oj.IteratingDataProvider}, 
+           * or {@link oj.TableDataSource}
+           * </p>
+           * <p><b>
+           * Note: oj.IteratingDataProvider is deprecated.  Please use {@link oj.DataProvider} instead.
+           * </b></p>
            * @expose
            * @public
            * @instance
            * @memberof! oj.ojTable
-           * @type {oj.IteratingDataProvider|oj.TableDataSource|null}
+           * @type {oj.DataProvider|oj.IteratingDataProvider|oj.TableDataSource|null}
            * @default null
            *
            * @example <caption>Initialize the Table with the <code class="prettyprint">data</code> attribute specified:</caption>
-           * &lt;oj-table data='{{iteratingDataProvider}}'>&lt;/oj-table>
+           * &lt;oj-table data='{{dataProvider}}'>&lt;/oj-table>
            *
            * @example <caption>Get or set the <code class="prettyprint">data</code> property after initialization:</caption>
            * // getter
-           * var iteratingDataProvider = myTable.data;
+           * var dataProvider = myTable.data;
            *
            * // setter
-           * myTable.data = iteratingDataProvider;
+           * myTable.data = dataProvider;
            */
           data: null,
           /**
@@ -521,7 +534,6 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
            * @default "No data to display."
            * @example <caption>Initialize the table with the <code class="prettyprint">empty-text</code> attribute specified:</caption>
            * &lt;oj-table 
-           *   summary="Department List" 
            *   aria-label="Departments Table" 
            *   data='{{datasource}}' 
            *   empty-text='No data'
@@ -561,10 +573,12 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
            * <p>
            * The renderer function will be passed in an Object which contains the fields:
            * <ul>
-           *   <li>component: A reference to the ojTable widgetConstructor</li>
-           *   <li>row: Key/value pairs of the row</li>
-           *   <li>status: Contains the rowIndex, rowKey, and currentRow</li>
+           *   <li>componentElement: A reference to the Table root element</li>
+           *   <li>data: Key/value pairs of the row</li>
            *   <li>parentElement: Empty rendered TR element</li>
+           *   <li>rowContext.datasource: The "data" attribute of the Table</li>
+           *   <li>rowContext.mode: The mode of the row.  It can be "edit" or "navigation".</li>
+           *   <li>rowContext.status: Contains the rowIndex, rowKey, and currentRow</li>
            * </ul>
            * The function returns  either a String or
            * a DOM element of the content inside the row. If the developer chooses
@@ -676,6 +690,30 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
              */
             'maxCount': 500
           },
+          /**
+           * Gets the key and data of the first selected row.  The first selected row is defined as the first
+           * key returned by the <a href="#selection">selection</a> property.  The value of this property contains:
+           * <ul>
+           * <li>key - the key of the first selected row.</li>
+           * <li>data - the data of the first selected row.  If the selected row is not locally available, this will
+           *        be null.</li>
+           * </ul>
+           * If no rows are selected then this property will return an object with both key and data properties set to null.
+           *
+           * @expose
+           * @memberof! oj.ojTable
+           * @instance
+           * @default {'key': null, 'data': null}
+           * @type {Object}
+           *
+           * @ojwriteback
+           * @readonly
+           *
+           * @example <caption>Get the data of the first selected row:</caption>
+           * // getter
+           * var firstSelectedRowValue = myTable.firstSelectedRow;
+           */
+          firstSelectedRow: {'key': null, 'data': null},
           /**
            * Specifies the current selections in the table. Can be either an index or key value.
            * When both are specified, the index is used as a hint.
@@ -849,13 +887,14 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
                * The function will be passed a context object which contains
                * the following objects:
                * <ul>
-               *   <li>data: The cell data</li>
+               *   <li>cellContext.datasource: The "data" attribute of the Table</li>
+               *   <li>cellContext.mode: The mode of the row.  It can be "edit" or "navigation".</li>
+               *   <li>cellContext.status: Contains the rowIndex, rowKey, and currentRow</li>
                *   <li>columnIndex: The column index</li>
-               *   <li>component: A reference to the ojTable widgetConstructor</li>
-               *   <li>datasource: Instance of the datasource used by the table </li>
-               *   <li>row: Key/value pairs of the row</li>
-               *   <li>status: Contains the rowIndex, rowKey, and currentRow</li>
+               *   <li>componentElement: A reference to the Table root element</li>
+               *   <li>data: The cell data</li>
                *   <li>parentElement: Empty rendered <td> element</li>
+               *   <li>row: Key/value pairs of the row</li>
                * </ul>
                * The function should return one of the following: 
                * <ul>
@@ -925,9 +964,8 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
                * the following objects:
                * <ul>
                *   <li>columnIndex: The column index</li>
-               *   <li>component: A reference to the ojTable widgetConstructor</li>
-               *   <li>datasource: Instance of the datasource used by the table </li>
-               *   <li>status: Contains the rowIndex, rowKey, and currentRow</li>
+               *   <li>componentElement: A reference to the Table root element</li>
+               *   <li>footerContext.datasource: The "data" attribute of the Table</li>
                *   <li>parentElement: Empty rendered <td> element</li>
                * </ul>
                * The function should return one of the following: 
@@ -965,6 +1003,32 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
                */
               footerStyle: null,
               /**
+               * The name of the slot used to specify the template for rendering the footer cell. The slot must be a &lt;template> element.</p>  
+               *
+               * <p>When the template is executed each footer, it will have access to the binding context containing the following properties:</p>
+               * <ul>
+               * <li>$current - an object that contains information for the current footer being rendered
+               *   <ul>
+               *     <li>componentElement - the &lt;oj-table> custom element</li>
+               *   </ul>
+               * </li>
+               * <li>alias - if as attribute was specified, the value will be used to provide an application-named alias for $current.
+               * </li>
+               * </ul>
+               *
+               * <p>The content of the template should not include the &lt;td> element, only what's inside it.</p>
+               * <p>When both footerTemplate and footerRenderer are specified, the footerRenderer takes precedence.</p>
+               *
+               * @expose
+               * @public
+               * @instance
+               * @memberof! oj.ojTable
+               * @alias columns[].footerTemplate
+               * @type {string|null}
+               * @default null
+               */
+              footerTemplate: null,
+              /**
                * The CSS class to apply to the column header text.
                *
                * <p>See the <a href="#columns">columns</a> attribute for usage examples.
@@ -984,8 +1048,6 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
                * the following objects:
                * <ul>
                *   <li>columnIndex: The column index</li>
-               *   <li>component: A reference to the ojTable widgetConstructor</li>
-               *   <li>parentElement: Empty rendered TH element</li>
                *   <li>columnHeaderDefaultRenderer(options, delegateRenderer): If the column
                *   is not sortable then this function will be included in the context.
                *   The options parameter specifies the options (future use) for the renderer while the
@@ -998,6 +1060,10 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
                *   like to be called during rendering of the sortable column header. Calling the
                *   columnHeaderSortableIconRenderer function enables rendering custom header content
                *   while also preserving the sort icons.</li>
+               *   <li>componentElement: A reference to the Table root element</li>
+               *   <li>data: The header text for the column</li>
+               *   <li>headerContext.datasource: The "data" attribute of the Table</li>
+               *   <li>parentElement: Empty rendered TH element</li>
                * </ul>
                * The function should return one of the following: 
                * <ul>
@@ -1033,6 +1099,33 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
                * @default null
                */
               headerStyle: null,
+              /**
+               * The name of the slot used to specify the template for rendering the header cell. The slot must be a &lt;template> element.</p>  
+               *
+               * <p>When the template is executed for the header, it will have access to the binding context containing the following properties:</p>
+               * <ul>
+               * <li>$current - an object that contains information for the current header being rendered
+               *   <ul>
+               *     <li>componentElement - the &lt;oj-table> custom element</li>
+               *     <li>data - the data for the current header being rendered</li>
+               *   </ul>
+               * </li>
+               * <li>alias - if as attribute was specified, the value will be used to provide an application-named alias for $current.
+               * </li>
+               * </ul>
+               *
+               * <p>The content of the template should not include the &lt;th> element, only what's inside it.</p>
+               * <p>When both headerTemplate and headerRenderer are specified, the headerRenderer takes precedence.</p>
+               *
+               * @expose
+               * @public
+               * @instance
+               * @memberof! oj.ojTable
+               * @alias columns[].headerTemplate
+               * @type {string|null}
+               * @default null
+               */
+              headerTemplate: null,
               /**
                * Text to display in the header of the column.
                *
@@ -1131,6 +1224,35 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
                */
               style: null,
               /**
+               * The name of the slot used to specify the template for rendering the cell. The slot must be a &lt;template> element.</p>  
+               *
+               * <p>When the template is executed for the cell, it will have access to the binding context containing the following properties:</p>
+               * <ul>
+               * <li>$current - an object that contains information for the current cell being rendered
+               *   <ul>
+               *     <li>componentElement - the &lt;oj-table> custom element</li>
+               *     <li>data - the data for the current cell being rendered</li>
+               *     <li>index - the zero-based index of the current row being rendered</li>
+               *     <li>key - the key of the current cell being rendered</li>
+               *   </ul>
+               * </li>
+               * <li>alias - if as attribute was specified, the value will be used to provide an application-named alias for $current.
+               * </li>
+               * </ul>
+               *
+               * <p>The content of the template should not include the &lt;td> element, only what's inside it.</p>
+               * <p>When both cell template and cell renderer are specified, the cell renderer takes precedence.</p>
+               *
+               * @expose
+               * @public
+               * @instance
+               * @memberof! oj.ojTable
+               * @alias columns[].template
+               * @type {string|null}
+               * @default null
+               */
+              template: null,
+              /**
                * The width in px of the column
                * @expose
                * @public
@@ -1163,7 +1285,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
                *
                * @example <caption>Specify the column header <code class="prettyprint">template</code> when initializing Table:</caption>
                * // set the template
-               * &lt;oj-table summary="Department List" aria-label="Departments Table" 
+               * &lt;oj-table aria-label="Departments Table" 
                *      data='{{dataProvider}}' 
                *      columns='[{"headerText": "Department Id", "field": "DepartmentId"},
                *                {"headerText": "Department Name", "field": "DepartmentName"},
@@ -1195,7 +1317,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
                *
                * @example <caption>Specify the column footer <code class="prettyprint">template</code> when initializing Table:</caption>
                * // set the template
-               * &lt;oj-table summary="Department List" aria-label="Departments Table" 
+               * &lt;oj-table aria-label="Departments Table" 
                *      data='{{dataProvider}}' 
                *      columns-default='[{"headerText": "Department Id", "field": "DepartmentId"},
                *                       {"headerText": "Department Name", "field": "DepartmentName"},
@@ -1246,13 +1368,14 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
                * The function will be passed a context object which contains
                * the following objects:
                * <ul>
-               *   <li>data: The cell data</li>
+               *   <li>cellContext.datasource: The "data" attribute of the Table</li>
+               *   <li>cellContext.mode: The mode of the row.  It can be "edit" or "navigation".</li>
+               *   <li>cellContext.status: Contains the rowIndex, rowKey, and currentRow</li>
                *   <li>columnIndex: The column index</li>
-               *   <li>component: A reference to the ojTable widgetConstructor</li>
-               *   <li>datasource: Instance of the datasource used by the table </li>
-               *   <li>row: Key/value pairs of the row</li>
-               *   <li>status: Contains the rowIndex, rowKey, and currentRow</li>
+               *   <li>componentElement: A reference to the Table root element</li>
+               *   <li>data: The cell data</li>
                *   <li>parentElement: Empty rendered <td> element</li>
+               *   <li>row: Key/value pairs of the row</li>
                * </ul>
                * The function should return one of the following: 
                * <ul>
@@ -1322,9 +1445,8 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
                * the following objects:
                * <ul>
                *   <li>columnIndex: The column index</li>
-               *   <li>component: A reference to the ojTable widgetConstructor</li>
-               *   <li>datasource: Instance of the datasource used by the table </li>
-               *   <li>status: Contains the rowIndex, rowKey, and currentRow</li>
+               *   <li>componentElement: A reference to the Table root element</li>
+               *   <li>footerContext.datasource: The "data" attribute of the Table</li>
                *   <li>parentElement: Empty rendered <td> element</li>
                * </ul>
                * The function should return one of the following: 
@@ -1362,6 +1484,32 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
                */
               footerStyle: null,
               /**
+               * The name of the slot used to specify the template for rendering the footer cell. The slot must be a &lt;template> element.</p>  
+               *
+               * <p>When the template is executed each footer, it will have access to the binding context containing the following properties:</p>
+               * <ul>
+               * <li>$current - an object that contains information for the current footer being rendered
+               *   <ul>
+               *     <li>componentElement - the &lt;oj-table> custom element</li>
+               *   </ul>
+               * </li>
+               * <li>alias - if as attribute was specified, the value will be used to provide an application-named alias for $current.
+               * </li>
+               * </ul>
+               *
+               * <p>The content of the template should not include the &lt;td> element, only what's inside it.</p>
+               * <p>When both footerTemplate and footerRenderer are specified, the footerRenderer takes precedence.</p>
+               *
+               * @expose
+               * @public
+               * @instance
+               * @memberof! oj.ojTable
+               * @alias columnsDefault.footerTemplate
+               * @type {string|null}
+               * @default null
+               */
+              footerTemplate: null,
+              /**
                * The default CSS class to apply to the column header.
                *
                * <p>See the <a href="#columnsDefault">columns-default</a> attribute for usage examples.
@@ -1381,8 +1529,6 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
                * the following objects:
                * <ul>
                *   <li>columnIndex: The column index</li>
-               *   <li>component: A reference to the ojTable widgetConstructor</li>
-               *   <li>parentElement: Empty rendered TH element</li>
                *   <li>columnHeaderDefaultRenderer(options, delegateRenderer): If the column
                *   is not sortable then this function will be included in the context.
                *   The options parameter specifies the options (future use) for the renderer while the
@@ -1395,6 +1541,10 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
                *   like to be called during rendering of the sortable column header. Calling the
                *   columnHeaderSortableIconRenderer function enables rendering custom header content
                *   while also preserving the sort icons.</li>
+               *   <li>componentElement: A reference to the Table root element</li>
+               *   <li>data: The header text for the column</li>
+               *   <li>headerContext.datasource: The "data" attribute of the Table</li>
+               *   <li>parentElement: Empty rendered TH element</li>
                * </ul>
                * The function should return one of the following: 
                * <ul>
@@ -1430,6 +1580,33 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
                * @default null
                */
               headerStyle: null,
+              /**
+               * The name of the slot used to specify the template for rendering the header cell. The slot must be a &lt;template> element.</p>  
+               *
+               * <p>When the template is executed for the header, it will have access to the binding context containing the following properties:</p>
+               * <ul>
+               * <li>$current - an object that contains information for the current header being rendered
+               *   <ul>
+               *     <li>componentElement - the &lt;oj-table> custom element</li>
+               *     <li>data - the data for the current header being rendered</li>
+               *   </ul>
+               * </li>
+               * <li>alias - if as attribute was specified, the value will be used to provide an application-named alias for $current.
+               * </li>
+               * </ul>
+               *
+               * <p>The content of the template should not include the &lt;th> element, only what's inside it.</p>
+               * <p>When both headerTemplate and headerRenderer are specified, the headerRenderer takes precedence.</p>
+               *
+               * @expose
+               * @public
+               * @instance
+               * @memberof! oj.ojTable
+               * @alias columnsDefault.headerTemplate
+               * @type {string|null}
+               * @default null
+               */
+              headerTemplate: null,
               /**
                * Default text to display in the header of the column.
                *
@@ -1514,6 +1691,35 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
                */
               style: null,
               /**
+               * The name of the slot used to specify the template for rendering the cell. The slot must be a &lt;template> element.</p>  
+               *
+               * <p>When the template is executed for the cell, it will have access to the binding context containing the following properties:</p>
+               * <ul>
+               * <li>$current - an object that contains information for the current cell being rendered
+               *   <ul>
+               *     <li>componentElement - the &lt;oj-table> custom element</li>
+               *     <li>data - the data for the current cell being rendered</li>
+               *     <li>index - the zero-based index of the current row being rendered</li>
+               *     <li>key - the key of the current cell being rendered</li>
+               *   </ul>
+               * </li>
+               * <li>alias - if as attribute was specified, the value will be used to provide an application-named alias for $current.
+               * </li>
+               * </ul>
+               *
+               * <p>The content of the template should not include the &lt;td> element, only what's inside it.</p>
+               * <p>When both cell template and cell renderer are specified, the cell renderer takes precedence.</p>
+               *
+               * @expose
+               * @public
+               * @instance
+               * @memberof! oj.ojTable
+               * @alias columnsDefault.template
+               * @type {string|null}
+               * @default null
+               */
+              template: null,
+              /**
                * Default CSS width to apply to the column
                * @expose
                * @public
@@ -1546,7 +1752,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
                 *
                 * @example <caption>Specify the column header <code class="prettyprint">template</code> when initializing Table:</caption>
                 * // set the template
-                * &lt;oj-table summary="Department List" aria-label="Departments Table" 
+                * &lt;oj-table aria-label="Departments Table" 
                 *      data='{{dataProvider}}'
                 *      columns-default='[{"headerText": "Department Id", "field": "DepartmentId"},
                 *                        {"headerText": "Department Name", "field": "DepartmentName"},
@@ -1578,7 +1784,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
                 *
                 * @example <caption>Specify the column footer <code class="prettyprint">template</code> when initializing Table:</caption>
                 * // set the template
-                * &lt;oj-table summary="Department List" aria-label="Departments Table" 
+                * &lt;oj-table aria-label="Departments Table" 
                 *      data='{{dataProvider}}' 
                 *      columns-default='[{"headerText": "Department Id", "field": "DepartmentId"},
                 *                        {"headerText": "Department Name", "field": "DepartmentName"},
@@ -1678,7 +1884,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
               *
               * @example <caption>Specify the row <code class="prettyprint">template</code> when initializing Table:</caption>
               * // set the template
-              * &lt;oj-table summary="Department List" aria-label="Departments Table" 
+              * &lt;oj-table aria-label="Departments Table" 
               *   data='{{dataProvider}}' row-template='row_tmpl'&gt;&lt;/oj-table&gt;
               *
               * @ignore
@@ -1750,6 +1956,11 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
       /**
        * @private
        * @const
+       * @type {string}
+       */
+      _CONST_INDEX:                                       'index',
+      /**
+       * @private
        * @type {string}
        */
       _CONST_KEY:                                         'key',
@@ -1852,6 +2063,26 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
       /**
        * @private
        * @const
+       * @type {string}
+       */
+      _ROW_TEMPLATE:                                      'rowTemplate',
+      /**
+       * @private
+       * @type {string}
+       */
+      _CELL_TEMPLATE:                                      'template',
+      /**
+       * @private
+       * @type {string}
+       */
+      _HEADER_TEMPLATE:                                    'headerTemplate',
+      /**
+       * @private
+       * @type {string}
+       */
+      _FOOTER_TEMPLATE:                                     'footerTemplate',
+      /**
+       * @private
        * @type {string}
        */
       _OPTION_AUTO:                                       'auto',
@@ -2155,11 +2386,22 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
             {
               return Promise.resolve(false);
             }
-            self._queueTask(function()
+            self._refreshTableBodyRow(rowIdx, {'data': keyResult.results.get(rowKey)['data'], 'index': rowIdx, 'key': rowKey});
+            var tableBodyRow = self._getTableDomUtils().getTableBodyRow(rowIdx);
+            var busyContextArray = self._getAllBusyContextsForElement(tableBodyRow);
+
+            if (busyContextArray != null)
             {
-              self._refreshTableBodyRow(rowIdx, {'data': keyResult.results.get(rowKey)['data'], 'index': rowIdx, 'key': rowKey});
-              self = null;
-            });
+              var i, busyContextPromiseArray = [];
+              for (i = 0; i < busyContextArray.length; i++)
+              {
+                busyContextPromiseArray.push(busyContextArray[i].whenReady());
+              }
+
+              // If there are components busy then wait first
+              return Promise.all(busyContextPromiseArray);
+            }
+            return Promise.resolve();
           });
         });
       },
@@ -2198,6 +2440,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
       _ComponentCreate : function ()
       {
         this._super();
+        this._initTemplateEngine();
         this._draw();
         this._registerCustomEvents();
         this._on(this._events);
@@ -2465,7 +2708,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
           }
           // if loadMoreOnScroll then check if we have underflow and do a
           // fetch if we do
-          if (this._isLoadMoreOnScroll() && !this._dataFetching)
+          if (this._isLoadMoreOnScroll() && !this._dataFetching && this._domScroller)
           {
             this._domScroller.checkViewport().then(this._domScrollerSuccessFunc, null);
           }
@@ -2487,18 +2730,17 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
         // style the initial table structure
         this._getTableDomUtils().styleInitialTable();
 
-        // populate the table header DOM with header content
-        this._refreshTableHeader();
-
-        // populate the table footer DOM with footer content
-        this._refreshTableFooter();
-
-        this._refreshTableBody();
-
-        this._processSlottedChildren();
-
-        // resize the table dimensions to accomodate the completed tableheader
-        this._getTableDomUtils().refreshTableDimensions();
+        var self = this;
+        this._queueTask(function()
+        {
+          // populate the table header DOM with header content
+          self._refreshTableHeader();
+          // populate the table footer DOM with footer content
+          self._refreshTableFooter();
+          self._refreshTableBody();
+          self._processSlottedChildren();
+          self._getTableDomUtils().refreshTableDimensions();
+        });
 
         if (this.options.disabled)
         {
@@ -2605,6 +2847,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
               var focusedHeaderColumnIdx = this._getFocusedHeaderColumnIdx();
  
               if (!this._isNodeEditable(event.target) &&
+                  !this._isNodeClickable(event.target) &&
                   !this._isTableActionableMode() &&
                   !this._hasEditableRow() &&
                   !this._temporaryTableChildElementFocus &&
@@ -3208,7 +3451,17 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
             }
             else if (this._getKeyboardKeys().length == 0)
             {
-              this._clearSelectedHeaderColumns();
+              var selectedColumnIdxs = this._getSelectedHeaderColumnIdxs();
+              
+              if (selectedColumnIdxs != null &&
+                selectedColumnIdxs.length > 0) 
+              {
+                if (selectedColumnIdxs.indexOf(columnIdx) == -1 ||
+                  selectedColumnIdxs.length > 1)
+                {
+                  this._clearSelectedHeaderColumns();
+                }
+              }
               this._setHeaderColumnSelection(columnIdx, !this._getHeaderColumnSelection(columnIdx), eventTarget, event, true);
               this._getTableDndContext().setTableHeaderColumnDraggable(columnIdx, true);
             }
@@ -3494,6 +3747,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
           if (key == 'columns')
           {
             this._clearCachedMetadata();
+            this._refreshTableHeader();
           }
           this._refresh();
         }
@@ -3574,6 +3828,10 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
         // insert the <tr> element in to the table body DOM
         this._getTableDomUtils().insertTableBodyRow(rowIdx, tableBodyRow, row, docFrag);
         tableBodyRow = this._refreshTableBodyRow(rowIdx, row, tableBodyRow, docFrag, docFragStartIdx, true);
+        if (!docFrag) {
+          // call subtreeAttached on individual row if we are not batching in documentFragment
+          oj.Components.subtreeAttached(tableBodyRow);
+        }
         return tableBodyRow;
       },
       /**
@@ -4684,7 +4942,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
         }
         else
         {
-          return null;
+          return [];
         }
 
         var rangeArray = [];
@@ -4785,6 +5043,27 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
         return rangeArray;
       },
       /**
+       * Returns the inline template element inside an oj-table slot
+       * @param {string} slotName slot name
+       * @return {Element|null} the inline template element
+       * @private
+       */
+      _getSlotTemplate: function(slotName)
+      {
+        var slotMap, slot;
+
+        if (this._IsCustomElement() && slotName)
+        {
+          slotMap = oj.CustomElementBridge.getSlotMap(this._getRootElement());        
+          slot = slotMap[slotName];
+          if (slot && slot.length > 0 && slot[0].tagName.toLowerCase() === "template")
+          {
+            return slot[0];
+          }
+        }
+        return null;
+      },
+      /**
        * Return the currnetly sorted column index
        * @return {number|null} column index
        * @private
@@ -4809,12 +5088,22 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
       /**
        * Get tabbable elements within the element
        * @param {Element} element  DOM element
+       * @param {boolean=} ignoreHidden ignore accessibility hidden elements
        * @return {Array|null} Array of DOM elements
        * @private
        */
-      _getTabbableElements: function(element)
+      _getTabbableElements: function(element, ignoreHidden)
       {
-        var tabbableElements = $(element).find(':tabbable').not('.oj-helper-hidden-accessible');
+        var tabbableElements = null;
+        
+        if (ignoreHidden)
+        {
+          tabbableElements = $(element).find(':tabbable');
+        }
+        else
+        {
+          tabbableElements = $(element).find(':tabbable').not('.oj-helper-hidden-accessible');
+        }
 
         if (tabbableElements != null && tabbableElements.length > 0)
         {
@@ -4873,6 +5162,15 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
           this._tableResizeUtils = new oj.TableResizeUtils(this);
         }
         return this._tableResizeUtils;
+      },
+      /**
+       * Return the template engine or null
+       * @return {Object|null} template engine
+       * @private
+       */
+      _getTemplateEngine: function()
+      {
+        return this._templateEngine;
       },
       /**
        * 
@@ -5655,6 +5953,9 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
             {
               // last tabbable element in row so go to the next row
               this._setNextRowEditable(0, event);
+              event.preventDefault();
+              event.stopPropagation();
+              return;
             }
             else if (rowElementTabIndex == 0 
                      && event[this._KEYBOARD_CODES._KEYBOARD_MODIFIER_SHIFT])
@@ -5662,8 +5963,11 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
               // first tabbable element in row and Shift+Tab so go to the previous row
               var tableHeaderColumns = this._getTableDomUtils().getTableHeaderColumns();
               var tableHeaderColumnsCount = tableHeaderColumns.length;
-              this._setPreviousRowEditable(tableHeaderColumnsCount - 1, event);
-            }
+                this._setPreviousRowEditable(tableHeaderColumnsCount - 1, event);
+                event.preventDefault();
+                event.stopPropagation();
+                return;
+              }
             else
             {
               return;
@@ -5810,7 +6114,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
           this._setTableActionableMode(false);
             
           var table = this._getTableDomUtils().getTable();
-          var tabbableElementsInTable = this._getTabbableElements(table);
+          var tabbableElementsInTable = this._getTabbableElements(table, true);
           var tabbableElementsInTableCount = tabbableElementsInTable != null ? tabbableElementsInTable.length : 0;
           
           // Table should not set focus to elements outside of itself because
@@ -6054,12 +6358,12 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
         return this._getEditableRowIdx() !== null;
       },
       /**
-       * Has row or cell renderer
+       * Has row or cell renderer or template
        * @param {number|null} columnIdx  column index
        * @return {boolean} true or false
        * @private
        */
-      _hasRowOrCellRenderer: function(columnIdx)
+      _hasRowOrCellRendererOrTemplate: function(columnIdx)
       {
         var rowRenderer = this._getRowRenderer();
         
@@ -6070,14 +6374,16 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
         else
         {
           var cellRenderer = null;
+          var cellSlotTemplate = null;
+          var columns = this._getColumnDefs();
           
           if (columnIdx != null)
           {
             cellRenderer = this._getColumnRenderer(columnIdx, 'cell');
+            cellSlotTemplate = this._getSlotTemplate(columns[columnIdx][this._CELL_TEMPLATE]);
           }
           else
           {
-            var columns = this._getColumnDefs();
             var i, columnsCount = columns.length;
             
             for (i = 0; i < columnsCount; i++)
@@ -6088,10 +6394,16 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
               {
                 break;
               }
+              
+              cellSlotTemplate = this._getSlotTemplate(columns[i][this._CELL_TEMPLATE]);
+        
+              if (cellSlotTemplate != null)
+              {
+                break;
+              }
             }
           }
-          
-          if (cellRenderer != null)
+          if (cellRenderer != null || cellSlotTemplate != null)
           {
             return true;
           }
@@ -6213,10 +6525,14 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
           {
             // reset the scrollTop when we do an initial fetch
             self._getTableDomUtils().getScroller().scrollTop = 0;
-            if (self._isLoadMoreOnScroll() && 
-              (dataprovider instanceof oj.TableDataSourceAdapter))
+            if (dataprovider instanceof oj.TableDataSourceAdapter)
             {
-              options[self._CONST_OFFSET] = 0;
+              options['fetchType'] = 'init';
+              
+              if (self._isLoadMoreOnScroll())
+              {
+                options[self._CONST_OFFSET] = 0;
+              }
             }
             return self._invokeDataFetchRows(options, true);
           });
@@ -6228,6 +6544,37 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
             return Promise.resolve();
           });
         }
+      },
+      /**
+       * Initialize the template engine
+       * @private
+       */
+      _initTemplateEngine: function()
+      {
+       // initialize the template engine
+        var self = this;
+        this._queueTask(function()
+        {
+          try 
+          {
+            var enginePromise = oj.Config.__getTemplateEngine().then(
+              function(engine)
+              {
+                self._templateEngine = engine;
+              },
+              function(err)
+              {
+                oj.Logger.warn(err);
+              }
+            );
+          } 
+          catch (err) 
+          {
+            oj.Logger.warn(err);
+            enginePromise = Promise.resolve(null);
+          }
+          return enginePromise;
+        });
       },
       /**
        * Fetch rows
@@ -6338,7 +6685,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
           sortCriterion['direction'] = this._COLUMN_SORT_ORDER._DESCENDING;
         }
         sortCriteria.push(sortCriterion);
-        this._trigger('sort', event, {'header': sortCriteria[this._CONST_KEY], 'direction': sortCriteria['direction']});
+        this._trigger('sort', event, {'header': sortCriteria[0][this._CONST_ATTRIBUTE], 'direction': sortCriteria[0]['direction']});
         this._initFetch({'sortCriteria': sortCriteria}, true);
       },
       /**
@@ -6534,12 +6881,18 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
       _isTableFooterless: function()
       {
         var columns = this._getColumnDefs();
-        var i, footerRenderer, columnsCount = columns.length;
+        var i, footerRenderer, footerSlotTemplate, columnsCount = columns.length;
 
         for (i = 0; i < columnsCount; i++)
         {
           footerRenderer = this._getColumnRenderer(i, 'footer');
+          footerSlotTemplate = this._getSlotTemplate(columns[i][this._FOOTER_TEMPLATE]);
+          
           if (footerRenderer != null)
+          {
+            return false
+          }
+          if (footerSlotTemplate != null)
           {
             return false
           }
@@ -6555,15 +6908,18 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
       {
         var columns = this._getColumnDefs();
 
-        var i, j, columnsCount = columns.length;
+        var i, j, headerSlotTemplate, columnsCount = columns.length;
         for (i = 0; i < columnsCount; i++)
         {
+          headerSlotTemplate = this._getSlotTemplate(columns[i][this._HEADER_TEMPLATE]);
+          
           if (columns[i]['headerText'] != null ||
             columns[i]['headerStyle'] != null ||
             (columns[i]['sortable'] != null &&
               columns[i]['sortable'] != this._OPTION_DISABLED) ||
             columns[i]['sortProperty'] != null ||
-            columns[i]['headerRenderer'] != null)
+            columns[i]['headerRenderer'] != null ||
+            headerSlotTemplate != null)
           {
             return false;
           }
@@ -6726,7 +7082,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
               if (clearSelection)
               {
                 this._setSelection(null);
-                this.option('selection', null, {'_context': {writeback: true, internalSet: true}});
+                this.option('selection', [], {'_context': {writeback: true, internalSet: true}});
               }
             }
             // set the current row
@@ -6782,12 +7138,6 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
         {
           if (slotMap.hasOwnProperty(slot) && slot.length > 0) 
           {
-            if (slot != "bottom" && slot != "contextMenu")
-            {
-              // silently remove as per custom component slot behavior
-              $(slotMap[slot]).remove();
-            }
-
             if (slot === "bottom")
             {
               var slotElements = slotMap[slot];
@@ -7024,10 +7374,8 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
           this._getTableDomUtils().clearCachedDomRowData();
           // only bother calling subtree attached if there are potentially
           // components in our rows
-          if (this._hasRowOrCellRenderer())
+          if (this._hasRowOrCellRendererOrTemplate())
           {
-            // Re-size the table before calling subtree attached. subtreeAttached is a
-            // potentially expensive call so we want table to be laid out before it.
             this._getTableDomUtils().refreshTableDimensions(null, null, resetScrollTop, resetScrollLeft);
             oj.Components.subtreeAttached(tableBody);
           }
@@ -7081,7 +7429,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
         var currentRow = this._getCurrentRow();
         currentRow = currentRow || {};
         var rowContext = oj.TableRendererUtils.getRendererContextObject(this, tableBodyRow, 
-                                                                        {'row': row, 'isCurrentRow': currentRow['rowIndex'] == rowIdx});
+                                          {'row': row, 'isCurrentRow': currentRow['rowIndex'] == rowIdx});
         // Copy additional properties to top-level context to work with custom element
         var context = {'rowContext': rowContext,
                        'row': row[this._CONST_DATA],
@@ -7113,9 +7461,16 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
             else
             {
               docFragStartIdx = docFragStartIdx == null ? 0 : docFragStartIdx;
-              // use jquery children() because documentFragments do not have
-              // good browser support for .children
-              tableBodyRow = $(docFrag).children()[rowIdx - docFragStartIdx];
+              if (!docFrag.children) 
+              {
+                // use jquery children() because documentFragments do not have
+                // good browser support for .children
+                tableBodyRow = $(docFrag).children()[rowIdx - docFragStartIdx];
+              }
+              else
+              {
+                tableBodyRow = docFrag.children[rowIdx - docFragStartIdx];
+              }
             }
             this._getTableDomUtils().clearCachedDomRowData();
             this._getTableDomUtils().setTableBodyRowAttributes(row, tableBodyRow);
@@ -7186,7 +7541,6 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
         if (columns && columns.length > 0)
         {
           this._getTableDomUtils().createTableFooterAccSelect(tableFooterRow);
-
           var i, column, footerRenderer, footerCell, footerCellContent, columnsCount = columns.length;
           for (i = 0; i < columnsCount; i++)
           {
@@ -7222,6 +7576,28 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
                 // got removed
                 footerCell = $(tableFooterRow).children(':not(.' + oj.TableDomUtils.CSS_CLASSES._HIDDEN_CONTENT_ACC_CLASS + ')')[i];
                 this._getTableDomUtils().styleTableFooterCell(i, footerCell, this._getColumnSelectionMode());
+              }
+            }
+            else
+            {
+              var footerSlotTemplate = this._getSlotTemplate(column[this._FOOTER_TEMPLATE]);
+              if (footerSlotTemplate)
+              {
+                var componentElement = this._getRootElement();
+                var templateEngine = this._getTemplateEngine();
+                if (templateEngine != null)
+                {
+                  var slotContext = oj.TableRendererUtils.getSlotTemplateContextObject(this);
+                  var footerContent = templateEngine.execute(componentElement, footerSlotTemplate, slotContext);
+                  if (!(footerContent instanceof Array)) 
+                  {
+                    footerContent = [footerContent];
+                  }
+                  footerContent.map(function(content)
+                  {
+                    footerCell.appendChild(content);
+                  });
+                }
               }
             }
           }
@@ -7260,7 +7636,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
         {
           var tableHeaderAccSelectRowColumn = this._getTableDomUtils().createTableHeaderAccSelectRowColumn();
           tableHeaderRow.appendChild(tableHeaderAccSelectRowColumn); //@HTMLUpdateOK
-
+          
           var i, j, column, headerRenderer, headerColumn, headerColumnContent, headerContext, context, columnsCount = columns.length;
           for (i = 0; i < columnsCount; i++)
           {
@@ -7318,7 +7694,33 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
                 this._getTableDomUtils().styleTableHeaderColumn(i, headerColumn, this._getColumnSelectionMode(), false);
               }
             }
-
+            else
+            {
+              var headerSlotTemplate = this._getSlotTemplate(column[this._HEADER_TEMPLATE]);
+              
+              if (headerSlotTemplate)
+              {
+                var componentElement = this._getRootElement();
+                var templateEngine = this._getTemplateEngine();
+                if (templateEngine != null)
+                {
+                  if (headerColumn)
+                  {
+                    $(headerColumn).empty();
+                  }
+                  var slotContext = oj.TableRendererUtils.getHeaderSlotTemplateContextObject(this, column['headerText']);
+                  var headerContent = templateEngine.execute(componentElement, headerSlotTemplate, slotContext);
+                  if (!(headerContent instanceof Array)) 
+                  {
+                    headerContent = [headerContent];
+                  }
+                  headerContent.map(function(content)
+                  {
+                    headerColumn.appendChild(content);
+                  });
+                }
+              }
+            }
             // set the acc column selection checkbox
             this._getTableDomUtils().createTableHeaderColumnAccSelect(i, this._getColumnSelectionMode());
           }
@@ -7441,14 +7843,6 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
               var data = value[self._CONST_DATA];
               var keys = value.metadata.map(function(value) {
                 return value[self._CONST_KEY];
-              });
-              keys = keys.filter(function(value, index) {
-                if (self._getRowIdxForRowKey(value) !== null)
-                {
-                  data.splice(index, 1);
-                  return false;
-                }
-                return true;
               });
               
               if (data != null &&
@@ -8056,8 +8450,12 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
         if (updateSelection)
         {
           var selection = this._getSelection();
-          var existingSelection = this['options']['selection'];
           this.option('selection', selection, {'_context': {writeback: true, internalSet: true}});
+          
+          if (selected)
+          {
+            this.option('firstSelectedRow', {key: null, data: null}, {'_context': {writeback: true, internalSet: true}});
+          }
         }
       },
       /**
@@ -8381,6 +8779,24 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
             {
               var selection = this._getSelection();
               this.option('selection', selection, {'_context': {writeback: true, internalSet: true}});
+              
+              // set firstSelectedRow
+              if (selection != null && selection.length > 0)
+              {
+                var range = selection[0];
+                var startKey = range['startKey'];
+                if (startKey != null && 
+                  startKey[this._CONST_ROW] != null) 
+                {
+                  var row = this['getDataForVisibleRow'](this._getRowIdxForRowKey(startKey[this._CONST_ROW]));
+                  if (row)
+                  {
+                    this.option('firstSelectedRow', {key: row[this._CONST_KEY], data: row[this._CONST_DATA]}, {'_context': {writeback: true, internalSet: true}});
+                    return;
+                  }
+                }
+              }
+              this.option('firstSelectedRow', {key: null, data: null}, {'_context': {writeback: true, internalSet: true}});
             }
           }
         }
@@ -8577,7 +8993,8 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
         }
         
         // don't do anything if actionable mode was not updated
-        if (this._tableActionableMode === value)
+        if (this._tableActionableMode != null && this._tableActionableMode === value ||
+          this._tableActionableMode == null && value === false)
         {
           return;
         }
@@ -8702,30 +9119,8 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
                 var focusRowIdx = rowIdx;
                 var focusColumnIdx = columnIdx;
                 var focusForwardSearch = forwardSearch;
-                var focusTableBodyRow = this._getTableDomUtils().getTableBodyRow(focusRowIdx);
-                
-                var busyContextArray = this._getAllBusyContextsForElement(focusTableBodyRow);
-                
-                if (busyContextArray != null)
-                {
-                  var i, busyContextPromiseArray = [];
-                  for (i = 0; i < busyContextArray.length; i++)
-                  {
-                    busyContextPromiseArray.push(busyContextArray[i].whenReady());
-                  }
-                  
-                  // If there are components busy then wait first
-                  return Promise.all(busyContextPromiseArray).then(function () 
-                  {
-                    // set focus on the column in the row
-                    self._setCellInRowFocus(focusRowIdx, focusColumnIdx, focusForwardSearch);
-                  });
-                }
-                else
-                {
-                  // set focus on the column in the row
-                  self._setCellInRowFocus(focusRowIdx, focusColumnIdx, focusForwardSearch);
-                }
+                // set focus on the column in the row
+                self._setCellInRowFocus(focusRowIdx, focusColumnIdx, focusForwardSearch);
               });
             });
           }
@@ -9233,6 +9628,7 @@ oj.TableDomUtils.prototype.Init = function()
 oj.TableDomUtils.prototype.clearCachedDom = function()
 {
   this.clearCachedDomRowData();
+  this._clearCachedDom(null);
   this._tableDimensions = null;
 }
 
@@ -9502,7 +9898,7 @@ oj.TableDomUtils.prototype.createContextMenuResizePopup = function(initialSize)
           }
         }]});
    $(popup).ojPopup({modality: 'modal', position: {my: 'start top', at: 'start bottom', collision: 'flipfit'}});
-   this._cachedDomContextMenuResizePopup = popup;
+   this._cacheDomElement(this.getTableId() + '_resize_popup', popup);
  } 
  else 
  {
@@ -9550,7 +9946,7 @@ oj.TableDomUtils.prototype.createTableBody = function()
   var table = this.getTable();
   var tableBody = document.createElement(oj.TableDomUtils.DOM_ELEMENT._TBODY);
   table.appendChild(tableBody); //@HTMLUpdateOK
-  this._cachedDomTableBody = tableBody;
+  this._cacheDomElement(oj.TableDomUtils.CSS_CLASSES._TABLE_BODY_CLASS, tableBody);
 
   return tableBody;
 };
@@ -9601,7 +9997,7 @@ oj.TableDomUtils.prototype.createTableBodyCellAccSelect = function(rowIdx, rowKe
   accSelectionCell.style['padding'] = '0';
   accSelectionCell.style['border'] = '0';
   
-  var isTableHeaderless = this.getTableHeader() == null ? true : false;
+  var isTableHeaderless = this.component._isTableHeaderless();
   
   if (!isTableHeaderless)
   {
@@ -9760,7 +10156,7 @@ oj.TableDomUtils.prototype.createTableBottomSlot = function()
   var tableBottomSlot = document.createElement(oj.TableDomUtils.DOM_ELEMENT._DIV);
   tableBottomSlot.classList.add(oj.TableDomUtils.CSS_CLASSES._TABLE_BOTTOM_SLOT_CLASS);
   tableContainer.appendChild(tableBottomSlot); //@HTMLUpdateOK 
-  this._cachedDomTableBottomSlot = tableBottomSlot;
+  this._cacheDomElement(oj.TableDomUtils.CSS_CLASSES._TABLE_BOTTOM_SLOT_CLASS, tableBottomSlot);
 
   return tableBottomSlot;
 };
@@ -9785,7 +10181,7 @@ oj.TableDomUtils.prototype.createTableContainer = function()
     this.element.parentNode.replaceChild(tableContainer, this.element);
     tableContainer.insertBefore(this.element, tableContainer.firstChild); //@HTMLUpdateOK
   }
-  this._cachedDomTableContainer = tableContainer;
+  this._cacheDomElement(oj.TableDomUtils.CSS_CLASSES._TABLE_CONTAINER_CLASS, tableContainer);
 
   return tableContainer;
 };
@@ -9823,7 +10219,8 @@ oj.TableDomUtils.prototype.createTableFooter = function()
       table.appendChild(tableFooter); //@HTMLUpdateOK
     }
   }
-
+  this._cacheDomElement(oj.TableDomUtils.CSS_CLASSES._TABLE_FOOTER_CLASS, tableFooter);
+  
   return tableFooter;
 };
 
@@ -9872,7 +10269,6 @@ oj.TableDomUtils.prototype.createTableHeader = function()
   var table = this.getTable();
   var tableHeader = document.createElement(oj.TableDomUtils.DOM_ELEMENT._THEAD);
   var tableHeaderRow = document.createElement(oj.TableDomUtils.DOM_ELEMENT._TR);
-  this._cachedDomTableHeaderRow = tableHeaderRow;
   tableHeader.appendChild(tableHeaderRow); //@HTMLUpdateOK
   
   // check if tfoot is already there. If so add relative to tfoot.
@@ -9894,7 +10290,8 @@ oj.TableDomUtils.prototype.createTableHeader = function()
       table.appendChild(tableHeader); //@HTMLUpdateOK
     }
   }
-  this._cachedDomTableHeader = tableHeader;
+  this._cacheDomElement(oj.TableDomUtils.CSS_CLASSES._TABLE_HEADER_ROW_CLASS, tableHeaderRow);
+  this._cacheDomElement(oj.TableDomUtils.CSS_CLASSES._TABLE_HEADER_CLASS, tableHeader);
   
   return tableHeader;
 };
@@ -9993,8 +10390,10 @@ oj.TableDomUtils.prototype.createTableHeaderColumnDragImage = function(columnIdx
   headerColumnDragImage.style[oj.TableDomUtils.CSS_PROP._TOP] = '0';
   headerColumnDragImage.style[oj.TableDomUtils.CSS_PROP._LEFT] = '-999em';
   headerColumnDragImage.style[oj.TableDomUtils.CSS_PROP._ZINDEX] = '-999';
-  var tableContainer = this.getTableContainer();
-  tableContainer.appendChild(headerColumnDragImage); //@HTMLUpdateOK
+
+  // The drag image element must be either visible or a child of document.body 
+  // in order to show on Safari.
+  document.body.appendChild(headerColumnDragImage); //@HTMLUpdateOK
   
   return headerColumnDragImage;
 };
@@ -10044,11 +10443,16 @@ oj.TableDomUtils.prototype.createTableHeaderColumnAccSelect = function(columnIdx
  */
 oj.TableDomUtils.prototype.createTableHeaderColumnResizeIndicator = function()
 {
-  var tableContainer = this.getTableContainer();
-  var tableHeaderColumnResizeIndicator = document.createElement(oj.TableDomUtils.DOM_ELEMENT._DIV);
-  tableContainer.appendChild(tableHeaderColumnResizeIndicator);
-  tableHeaderColumnResizeIndicator.classList.add(oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_RESIZE_INDICATOR_CLASS);
-  this._cachedDomTableHeaderColumnResizeIndicator = tableHeaderColumnResizeIndicator;
+  var tableHeaderColumnResizeIndicator = this.getTableHeaderColumnResizeIndicator();
+  
+  if (!tableHeaderColumnResizeIndicator)
+  {
+    var tableContainer = this.getTableContainer();
+    tableHeaderColumnResizeIndicator = document.createElement(oj.TableDomUtils.DOM_ELEMENT._DIV);
+    tableContainer.appendChild(tableHeaderColumnResizeIndicator);
+    tableHeaderColumnResizeIndicator.classList.add(oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_RESIZE_INDICATOR_CLASS);
+    this._cacheDomElement(oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_RESIZE_INDICATOR_CLASS, tableHeaderColumnResizeIndicator);
+  }
   
   return tableHeaderColumnResizeIndicator;
 };
@@ -10065,7 +10469,7 @@ oj.TableDomUtils.prototype.createTableInlineMessage = function()
   inlineMessage.classList.add(oj.TableDomUtils.CSS_CLASSES._TABLE_INLINE_MESSAGE_CLASS);
   inlineMessage.style[oj.TableDomUtils.CSS_PROP._DISPLAY] = oj.TableDomUtils.CSS_VAL._NONE;
   tableContainer.appendChild(inlineMessage); //@HTMLUpdateOK
-  this._cachedDomTableInlineMessage = inlineMessage;
+  this._cacheDomElement(oj.TableDomUtils.CSS_CLASSES._TABLE_INLINE_MESSAGE_CLASS, inlineMessage);
   
   return inlineMessage;
 };
@@ -10083,7 +10487,7 @@ oj.TableDomUtils.prototype.createTableStatusAccNotification = function()
   statusNotification.classList.add(oj.TableDomUtils.CSS_CLASSES._TABLE_STATUS_ACC_NOTIFICATION_CLASS);
   statusNotification.classList.add(oj.TableDomUtils.CSS_CLASSES._HIDDEN_CONTENT_ACC_CLASS);
   tableContainer.appendChild(statusNotification); //@HTMLUpdateOK
-  this._cachedDomTableStatusAccNotification = statusNotification;
+  this._cacheDomElement(oj.TableDomUtils.CSS_CLASSES._TABLE_STATUS_ACC_NOTIFICATION_CLASS, statusNotification);
 
   return statusNotification;
 };
@@ -10106,7 +10510,7 @@ oj.TableDomUtils.prototype.createTableStatusMessage = function()
   statusMessageLoadingIndicator.setAttribute("aria-label", this.component.getTranslatedString(this.component._BUNDLE_KEY._MSG_FETCHING_DATA));
   statusMessage.appendChild(statusMessageLoadingIndicator); //@HTMLUpdateOK
   tableContainer.appendChild(statusMessage); //@HTMLUpdateOK
-  this._cachedDomTableStatusMessage = statusMessage;
+  this._cacheDomElement(oj.TableDomUtils.CSS_CLASSES._TABLE_STATUS_MESSAGE_CLASS, statusMessage);
 
   return statusMessage;
 };
@@ -10217,7 +10621,14 @@ oj.TableDomUtils.prototype.getContextMenu = function()
 
 oj.TableDomUtils.prototype.getContextMenuResizePopup = function()
 {
-  return this._cachedDomContextMenuResizePopup;
+  var popupId = this.getTableId() + '_resize_popup';
+  if (!this._isCachedDomElement(popupId))
+  {
+    var popup = document.getElementById(popupId);
+    this._cacheDomElement(popupId, popup);
+  }
+  
+  return this._getCachedDomElement(popupId);
 };
 
 /**
@@ -10382,21 +10793,7 @@ oj.TableDomUtils.prototype.getTable = function()
  */
 oj.TableDomUtils.prototype.getTableBody = function()
 {
-  if (!this._cachedDomTableBody)
-  {
-    var table = this.getTable();
-    var tableBody = null;
-    if (table)
-    {
-      tableBody = table.getElementsByClassName(oj.TableDomUtils.CSS_CLASSES._TABLE_BODY_CLASS);
-      if (tableBody && tableBody.length > 0)
-      {
-        this._cachedDomTableBody = tableBody[0];
-      }
-    }
-  }
-
-  return this._cachedDomTableBody;
+  return this._getTableElementByClassName(oj.TableDomUtils.CSS_CLASSES._TABLE_BODY_CLASS, true);
 };
 
 /**
@@ -10626,7 +11023,7 @@ oj.TableDomUtils.prototype.getTableBodyRowTouchSelectionAffordanceBottom = funct
  */
 oj.TableDomUtils.prototype.getTableBottomSlot = function()
 {
-  return this._cachedDomTableBottomSlot;
+  return this._getTableElementByClassName(oj.TableDomUtils.CSS_CLASSES._TABLE_BOTTOM_SLOT_CLASS, true);
 };
 
 /**
@@ -10636,12 +11033,12 @@ oj.TableDomUtils.prototype.getTableBottomSlot = function()
  */
 oj.TableDomUtils.prototype.getTableContainer = function()
 {
-  if (!this._cachedDomTableContainer)
+  if (!this._isCachedDomElement(oj.TableDomUtils.CSS_CLASSES._TABLE_CONTAINER_CLASS))
   {
-    this._cachedDomTableContainer = this.element.parentNode;
-    }
+    this._cacheDomElement(oj.TableDomUtils.CSS_CLASSES._TABLE_CONTAINER_CLASS, this.element.parentNode);
+  }
 
-  return this._cachedDomTableContainer;
+  return this._getCachedDomElement(oj.TableDomUtils.CSS_CLASSES._TABLE_CONTAINER_CLASS);
 };
 
 /**
@@ -10651,18 +11048,7 @@ oj.TableDomUtils.prototype.getTableContainer = function()
  */
 oj.TableDomUtils.prototype.getTableFooter = function()
 {
-  var table = this.getTable();
-  var tableFooter = null;
-  if (table)
-  {
-    tableFooter = table.getElementsByClassName(oj.TableDomUtils.CSS_CLASSES._TABLE_FOOTER_CLASS);
-    if (tableFooter && tableFooter.length > 0)
-    {
-      return tableFooter[0];
-    }
-  }
-
-  return null;
+  return this._getTableElementByClassName(oj.TableDomUtils.CSS_CLASSES._TABLE_FOOTER_CLASS, true);
 };
 
 /**
@@ -10724,19 +11110,7 @@ oj.TableDomUtils.prototype.getTableFooterLogicalCells = function()
  */
 oj.TableDomUtils.prototype.getTableFooterRow = function()
 {
-  if (!this._cachedDomTableFooterRow)
-  {
-    var tableFooter = this.getTableFooter();
-
-    if (!tableFooter)
-    {
-      return null;
-    }
-
-    this._cachedDomTableFooterRow = tableFooter.getElementsByClassName(oj.TableDomUtils.CSS_CLASSES._TABLE_FOOTER_ROW_CLASS)[0];
-  }
-
-  return this._cachedDomTableFooterRow;
+  return this._getTableElementByClassName(oj.TableDomUtils.CSS_CLASSES._TABLE_FOOTER_ROW_CLASS);
 };
 
 /**
@@ -10746,21 +11120,7 @@ oj.TableDomUtils.prototype.getTableFooterRow = function()
  */
 oj.TableDomUtils.prototype.getTableHeader = function()
 {
-  if (!this._cachedDomTableHeader)
-  {
-    var table = this.getTable();
-    var tableHeader = null;
-    if (table)
-    {
-      tableHeader = table.getElementsByClassName(oj.TableDomUtils.CSS_CLASSES._TABLE_HEADER_CLASS);
-      if (tableHeader && tableHeader.length > 0)
-      {
-        this._cachedDomTableHeader = tableHeader[0];
-      }
-    }
-  }
-
-  return this._cachedDomTableHeader;
+  return this._getTableElementByClassName(oj.TableDomUtils.CSS_CLASSES._TABLE_HEADER_CLASS, true);
 };
 
 /**
@@ -10815,7 +11175,7 @@ oj.TableDomUtils.prototype.getTableHeaderColumnAccSelect = function(columnIdx)
  */
 oj.TableDomUtils.prototype.getTableHeaderColumnResizeIndicator = function()
 {
-  return this._cachedDomTableHeaderColumnResizeIndicator;
+  return this._getTableElementByClassName(oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_RESIZE_INDICATOR_CLASS, true);
 };
 
 /**
@@ -10863,19 +11223,7 @@ oj.TableDomUtils.prototype.getTableHeaderLogicalColumns = function()
  */
 oj.TableDomUtils.prototype.getTableHeaderRow = function()
 {
-  if (!this._cachedDomTableHeaderRow)
-  {
-    var tableHeader = this.getTableHeader();
-
-    if (!tableHeader)
-    {
-      return null;
-    }
-
-    this._cachedDomTableHeaderRow = tableHeader.getElementsByClassName(oj.TableDomUtils.CSS_CLASSES._TABLE_HEADER_ROW_CLASS)[0];
-  }
-
-  return this._cachedDomTableHeaderRow;
+  return this._getTableElementByClassName(oj.TableDomUtils.CSS_CLASSES._TABLE_HEADER_ROW_CLASS);
 };
 
 /**
@@ -10901,20 +11249,7 @@ oj.TableDomUtils.prototype.getTableId = function()
  */
 oj.TableDomUtils.prototype.getTableInlineMessage = function()
 {
-  if (!this._cachedDomTableInlineMessage)
-  {
-    var tableContainer = this.getTableContainer();
-    if (tableContainer)
-    {
-      var inlineMessage = tableContainer.getElementsByClassName(oj.TableDomUtils.CSS_CLASSES._TABLE_INLINE_MESSAGE_CLASS);
-      if (inlineMessage && inlineMessage.length > 0)
-      {
-        this._cachedDomTableInlineMessage = inlineMessage[0];
-      }
-    }
-  }
-
-  return this._cachedDomTableInlineMessage;
+  return this._getTableElementByClassName(oj.TableDomUtils.CSS_CLASSES._TABLE_INLINE_MESSAGE_CLASS, true);
 };
 
 /**
@@ -10924,20 +11259,7 @@ oj.TableDomUtils.prototype.getTableInlineMessage = function()
  */
 oj.TableDomUtils.prototype.getTableStatusAccNotification = function()
 {
-  if (!this._cachedDomTableStatusAccNotification)
-  {
-    var tableContainer = this.getTableContainer();
-    if (tableContainer)
-    {
-      var statusNotification = tableContainer.getElementsByClassName(oj.TableDomUtils.CSS_CLASSES._TABLE_STATUS_ACC_NOTIFICATION_CLASS);
-      if (statusNotification && statusNotification.length > 0)
-      {
-        this._cachedDomTableStatusAccNotification = statusNotification[0];
-      }
-    }
-  }
-
-  return this._cachedDomTableStatusAccNotification;
+  return this._getTableElementByClassName(oj.TableDomUtils.CSS_CLASSES._TABLE_STATUS_ACC_NOTIFICATION_CLASS, true);
 };
 
 /**
@@ -10947,20 +11269,7 @@ oj.TableDomUtils.prototype.getTableStatusAccNotification = function()
  */
 oj.TableDomUtils.prototype.getTableStatusMessage = function()
 {
-  if (!this._cachedDomTableStatusMessage)
-  {
-    var tableContainer = this.getTableContainer();
-    if (tableContainer)
-    {
-      var statusMessage = tableContainer.getElementsByClassName(oj.TableDomUtils.CSS_CLASSES._TABLE_STATUS_MESSAGE_CLASS);
-      if (statusMessage && statusMessage.length > 0)
-      {
-        this._cachedDomTableStatusMessage = statusMessage[0];
-      }
-    }
-  }
-
-  return this._cachedDomTableStatusMessage;
+  return this._getTableElementByClassName(oj.TableDomUtils.CSS_CLASSES._TABLE_STATUS_MESSAGE_CLASS, true);
 };
 
 /**
@@ -11285,8 +11594,8 @@ oj.TableDomUtils.prototype.moveTableBodyRowTouchSelectionAffordanceTop = functio
     var tableBodyRowRect = tableBodyRow.getBoundingClientRect();
     var tableContainer = this.getTableContainer();
     var tableContainerRect = tableContainer.getBoundingClientRect();
-    topAffordance.style[oj.TableDomUtils.CSS_PROP._TOP] = tableBodyRowRect.top - tableContainerRect.top - $(topAffordance).height() / 2 + oj.TableDomUtils.CSS_VAL._PX;
-    topAffordance.style[oj.TableDomUtils.CSS_PROP._LEFT] = $(tableBody).width() / 2 + oj.TableDomUtils.CSS_VAL._PX;
+    topAffordance.style[oj.TableDomUtils.CSS_PROP._TOP] = tableBodyRowRect.top - tableContainerRect.top - topAffordance.clientHeight / 2 + oj.TableDomUtils.CSS_VAL._PX;
+    topAffordance.style[oj.TableDomUtils.CSS_PROP._LEFT] = tableBody.clientWidth / 2 + oj.TableDomUtils.CSS_VAL._PX;
   }
 };
 
@@ -11308,8 +11617,8 @@ oj.TableDomUtils.prototype.moveTableBodyRowTouchSelectionAffordanceBottom = func
     var tableBodyRowRect = tableBodyRow.getBoundingClientRect();
     var tableContainer = this.getTableContainer();
     var tableContainerRect = tableContainer.getBoundingClientRect();
-    bottomAffordance.style[oj.TableDomUtils.CSS_PROP._TOP] = tableBodyRowRect.top - tableContainerRect.top + tableBodyRowRect.height - $(bottomAffordance).height() / 2 + oj.TableDomUtils.CSS_VAL._PX;
-    bottomAffordance.style[oj.TableDomUtils.CSS_PROP._LEFT] = $(tableBody).width() / 2 + oj.TableDomUtils.CSS_VAL._PX;
+    bottomAffordance.style[oj.TableDomUtils.CSS_PROP._TOP] = tableBodyRowRect.top - tableContainerRect.top + tableBodyRowRect.height - bottomAffordance.clientHeight / 2 + oj.TableDomUtils.CSS_VAL._PX;
+    bottomAffordance.style[oj.TableDomUtils.CSS_PROP._LEFT] = tableBody.clientWidth / 2 + oj.TableDomUtils.CSS_VAL._PX;
   }
 };
 
@@ -11494,9 +11803,7 @@ oj.TableDomUtils.prototype.refreshContextMenu = function()
  oj.TableDomUtils.prototype.refreshTableDimensions = function(width, height, resetScrollTop, resetScrollLeft)
 {
   // remove resize listeners to prevent triggering resize notifications
-  this.component._unregisterResizeListener();
   this._refreshTableDimensions(width, height, resetScrollTop, resetScrollLeft);
-  this.component._registerResizeListener();
   // set the current row
   this.component._setCurrentRow(this.options['currentRow'], null);
 };
@@ -11645,10 +11952,11 @@ oj.TableDomUtils.prototype.removeTableHeaderColumnDragImage = function()
  */
 oj.TableDomUtils.prototype.removeTableHeaderColumnResizeIndicator = function()
 {
-  if (this._cachedDomTableHeaderColumnResizeIndicator)
+  var tableHeaderColumnResizeIndicator = this.getTableHeaderColumnResizeIndicator();
+  if (tableHeaderColumnResizeIndicator)
   {
-    $(this._cachedDomTableHeaderColumnResizeIndicator).remove();
-    this._cachedDomTableHeaderColumnResizeIndicator = null;
+    $(tableHeaderColumnResizeIndicator).remove();
+    this._clearCachedDom(oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_RESIZE_INDICATOR_CLASS);
   }
 };
 
@@ -11700,7 +12008,7 @@ oj.TableDomUtils.prototype.setTableBodyCellAttributes = function(rowIdx, rowKey,
   }
   
   var rowHeaderColumnId = null;
-  var isTableHeaderless = this.getTableHeader() == null ? true : false;
+  var isTableHeaderless = this.component._isTableHeaderless();
 
   if (accessibility != null && accessibility['rowHeader'] != null)
   {
@@ -12240,13 +12548,8 @@ oj.TableDomUtils.prototype._isWebkit = function()
 {
   var options = this.options;
   var table = this.getTable();
-  var tableHeader = this.getTableHeader();
-  var tableFooter = this.getTableFooter();
-  var tableFooterRow = this.getTableFooterRow();
-  var tableHeaderRow = this.getTableHeaderRow();
   var tableContainer = this.getTableContainer();
   var tableBody = this.getTableBody();
-  var tableBottomSlot = this.getTableBottomSlot();
     
   // preserve the scrollTop & scrollLeft
   var scrollTop = null;
@@ -12298,6 +12601,9 @@ oj.TableDomUtils.prototype._isWebkit = function()
    
   if (this._tableHeightConstrained || this._tableWidthConstrained)
   {
+    var tableHeader = this.getTableHeader();
+    var tableFooter = this.getTableFooter();
+    var tableBottomSlot = this.getTableBottomSlot();
     // Add the oj-table-scroll class because some styling only applies
     // to scrollable table.
     tableContainer.classList.add(oj.TableDomUtils.CSS_CLASSES._TABLE_SCROLL_CLASS);
@@ -12339,11 +12645,11 @@ oj.TableDomUtils.prototype._isWebkit = function()
       }
     }
 
-    if (!this._tableBorderWidth)
+    if (this._tableBorderWidth == null)
     {
       this._tableBorderWidth = $(tableContainer).outerWidth() - $(tableContainer).innerWidth();
     }
-    if (!this._tableBorderHeight)
+    if (this._tableBorderHeight == null)
     {
       this._tableBorderHeight = $(tableContainer).outerHeight() - $(tableContainer).innerHeight();
     }
@@ -12390,7 +12696,7 @@ oj.TableDomUtils.prototype._isWebkit = function()
     {
       tableContainer.classList.add(oj.TableDomUtils.CSS_CLASSES._TABLE_SCROLL_HORIZONTAL_CLASS);
     }
-    var tableWidth = $(table).width();
+    var tableWidth = table.clientWidth;
     
     if (tableContainerScrollbarWidth > 0)
     {
@@ -12573,14 +12879,14 @@ oj.TableDomUtils.prototype.refreshTableStatusPosition = function()
   
   var overTableElement = tableContainer;
   
-  if ($(tableBody).height() > 0)
+  if (tableBody.clientHeight > 0)
   {
     overTableElement = tableBody;
   }
 
   // size the messaging background
-  tableStatusMessage.style[oj.TableDomUtils.CSS_PROP._HEIGHT] = $(tableBody).height() + oj.TableDomUtils.CSS_VAL._PX;
-  tableStatusMessage.style[oj.TableDomUtils.CSS_PROP._WIDTH] = $(tableBody).width() + oj.TableDomUtils.CSS_VAL._PX;
+  tableStatusMessage.style[oj.TableDomUtils.CSS_PROP._HEIGHT] = tableBody.clientHeight + oj.TableDomUtils.CSS_VAL._PX;
+  tableStatusMessage.style[oj.TableDomUtils.CSS_PROP._WIDTH] = tableBody.clientWidth + oj.TableDomUtils.CSS_VAL._PX;
   var tableStatusMessageText = tableStatusMessage.children[0];
   // refresh the status message position
   var isRTL = (this.component._GetReadingDirection() === "rtl");
@@ -12591,6 +12897,139 @@ oj.TableDomUtils.prototype.refreshTableStatusPosition = function()
   var msgTextOptions = {'my': 'center', 'at': 'center', 'collision': 'none', 'of': tableStatusMessage};
   msgTextOptions = oj.PositionUtils.normalizeHorizontalAlignment(msgTextOptions, isRTL);
   (/** @type {Object} */ ($(tableStatusMessageText))).position(msgTextOptions);
+};
+
+/**
+  * Cache DOM Element
+  * @param {string} key key for identifying the element
+  * @param {Element} element  DOM element
+  * @private
+  * @memberof oj.TableDomUtils
+  */
+oj.TableDomUtils.prototype._cacheDomElement = function (key, element) 
+{
+  if (!this._domCache)
+  {
+    this._domCache = {};
+  }
+  this._domCache[key] = element;
+};
+
+/**
+  * Clear the DOM cache
+  * @param {string|null} key key for identifying the element
+  * @private
+  * @memberof oj.TableDomUtils
+  */
+oj.TableDomUtils.prototype._clearCachedDom = function (key)
+{
+  if (key && this._domCache) 
+  {
+    delete this._domCache[key];
+  }
+  else
+  {
+    this._domCache = {};
+  }
+};
+
+/**
+  * Get cached DOM Element
+  * @param {string} key key for identifying the element
+  * @return {Element|null} returns the cached DOM element
+  * @private
+  * @memberof oj.TableDomUtils
+  */
+oj.TableDomUtils.prototype._getCachedDomElement = function (key) 
+{
+  if (this._domCache)
+  {
+    return this._domCache[key];
+  }
+  return null;
+};
+
+/**
+  * Check cached DOM Element
+  * @param {string} key key for identifying the element
+  * @return {boolean} returns whether the key is cached
+  * @private
+  * @memberof oj.TableDomUtils
+  */
+oj.TableDomUtils.prototype._isCachedDomElement = function (key) 
+{
+  if (!this._domCache)
+  {
+    this._domCache = {};
+  }
+  return Object.keys(this._domCache).indexOf(key) !== -1;
+};
+
+/**
+  * Get the DOM element contained in table
+  * @param {string} className css class name for the table element
+  * @param {boolean=} onlyChildren check only the direct children if true
+  * @return {Element|null} returns the DOM element
+  * @private
+  * @memberof oj.TableDomUtils
+  */
+oj.TableDomUtils.prototype._getTableElementByClassName = function (className, onlyChildren) 
+{
+  if (!this._isCachedDomElement(className))
+  {
+    var tableContainer = this.getTableContainer();
+    if (tableContainer)
+    {
+      this._cacheDomElement(className, null);
+      
+      if (!onlyChildren)
+      {
+        var domElement = tableContainer.getElementsByClassName(className);
+        if (domElement && domElement.length > 0)
+        {
+          this._cacheDomElement(className, domElement[0]);
+        }
+      }
+      else
+      {
+        this._cacheDomElement(className, this._getChildElementByClassName(tableContainer, className));
+       
+        if (this._getCachedDomElement(className) == null)
+        {
+          var table = this.getTable();
+          this._cacheDomElement(className, this._getChildElementByClassName(table, className));
+        }
+      }
+    }
+  }
+
+  return this._getCachedDomElement(className);
+};
+
+/**
+  * Get the child DOM element by class name
+  * @param {Element} parentElement parent element
+  * @param {string} className css class name for the table element
+  * @return {Element|null} returns the DOM element
+  * @private
+  * @memberof oj.TableDomUtils
+  */
+oj.TableDomUtils.prototype._getChildElementByClassName = function (parentElement, className) 
+{
+  if (parentElement.childNodes != null && parentElement.childNodes.length > 0)
+  {
+    var i;
+
+    for (i = 0; i < parentElement.childNodes.length; i++) 
+    {
+      if (parentElement.childNodes[i].classList != null &&
+        parentElement.childNodes[i].classList.contains(className)) 
+      {
+        return parentElement.childNodes[i];
+      }
+    }
+  }
+  return null;
 };
 
 /**
@@ -12820,7 +13259,7 @@ oj.TableDomUtils.prototype._setColumnWidths = function()
       {
         cellRenderer = this.component._getColumnRenderer(i, 'cell');
       
-        if (this.component._hasRowOrCellRenderer(i))
+        if (this.component._hasRowOrCellRendererOrTemplate(i))
         {
           tableBodyCellStyle = window.getComputedStyle(tableBodyCell);
           tableBodyCellPaddingWidth = (parseInt(tableBodyCellStyle[oj.TableDomUtils.CSS_PROP._PADDING_RIGHT], 10) || 0) + (parseInt(tableBodyCellStyle[oj.TableDomUtils.CSS_PROP._PADDING_LEFT], 10) || 0);
@@ -13013,14 +13452,14 @@ oj.TableDomUtils.prototype._setHeaderColumnOverflowWidths = function()
          sortPlaceHolderDivWidth = 0;
          if (column.sortable == oj.TableDomUtils._OPTION_ENABLED)
          {
-           sortPlaceHolderDivWidth = $(headerColumnCell.querySelectorAll('.' + oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_SORT_PACEHOLDER_CLASS)[0]).width();
+           sortPlaceHolderDivWidth = headerColumnCell.querySelectorAll('.' + oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_SORT_PACEHOLDER_CLASS)[0].clientWidth;
          }
          
-         if (headerColumnDiv.clientWidth > 0 && $(headerColumnTextDiv).width() + sortPlaceHolderDivWidth > headerColumnDiv.clientWidth)
+         if (headerColumnDiv.clientWidth > 0 && headerColumnTextDiv[0].clientWidth + sortPlaceHolderDivWidth > headerColumnDiv.clientWidth)
          {
            headerColumnTextDiv[0].style[oj.TableDomUtils.CSS_PROP._WIDTH] = '';
-           headerColumnTextDivWidth = $(headerColumnTextDiv).width();
-           newHeaderColumnTextDivWidth = $(headerColumnCell).width() - sortPlaceHolderDivWidth;
+           headerColumnTextDivWidth = headerColumnTextDiv[0].clientWidth
+           newHeaderColumnTextDivWidth = headerColumnCell.clientWidth - sortPlaceHolderDivWidth;
            
            // we only want to constrain the width.
            if (headerColumnTextDivWidth > newHeaderColumnTextDivWidth + 1)
@@ -13590,7 +14029,17 @@ oj.TableDomUtils._OPTION_DISPLAY =
  * @ojfragment slotDoc - Used in slot section of classdesc
  * @memberof oj.ojTable
  */
-
+/**
+ * <p>Named slot for the Table's bottom panel where applications can add content such as a paging control.</p>
+ *
+ * @ojslot bottom
+ * @memberof oj.ojTable
+ *
+ * @example <caption>Initialize the Table with the <code class="prettyprint">bottom</code> slot specified:</caption>
+ * &lt;oj-table>
+ *   &lt;div slot='bottom'>&lt;oj-paging-control>&lt;/oj-paging-control>&lt;/div>
+ * &lt;/oj-table>
+ */
 // SubId Locators **************************************************************
 
 /**
@@ -13795,8 +14244,8 @@ oj.TableDndContext.prototype._cloneTableContainer = function(tableContainer)
   tableContainerClone = tableContainer.cloneNode(true);
   var tableBodyClone = tableContainerClone.querySelectorAll(oj.TableDomUtils.DOM_ELEMENT._TBODY)[0];
   
-  // Use fixed positioning with a large top to put it off the screen without
-  // affecting the scrollbar.
+  // Use absolute positioning with a large negative top to put it off the screen without
+  // affecting the scrollbar.  Fixed positioning does not work on Safari.
   // Set both overflow and overflow-x/y because on IE, setting overflow does not
   // affect overflow-x/y that have been explicitly set.
   tableBodyClone.style[oj.TableDomUtils.CSS_PROP._OVERFLOW] = oj.TableDomUtils.CSS_VAL._HIDDEN;
@@ -13805,8 +14254,8 @@ oj.TableDndContext.prototype._cloneTableContainer = function(tableContainer)
   tableBodyClone.style[oj.TableDomUtils.CSS_PROP._BACKGROUND_COLOR] = oj.TableDomUtils.CSS_VAL._TRANSPARENT;
   tableBodyClone.style[oj.TableDomUtils.CSS_PROP._WIDTH] = $(tableBody).width() + oj.TableDomUtils.CSS_VAL._PX;
   tableBodyClone.style[oj.TableDomUtils.CSS_PROP._HEIGHT] = $(tableBody).height() + oj.TableDomUtils.CSS_VAL._PX;
-  tableContainerClone.style[oj.TableDomUtils.CSS_PROP._POSITION] = oj.TableDomUtils.CSS_VAL._FIXED;
-  tableContainerClone.style[oj.TableDomUtils.CSS_PROP._TOP] = 10000 + oj.TableDomUtils.CSS_VAL._PX;
+  tableContainerClone.style[oj.TableDomUtils.CSS_PROP._POSITION] = oj.TableDomUtils.CSS_VAL._ABSOLUTE;
+  tableContainerClone.style[oj.TableDomUtils.CSS_PROP._TOP] = -10000 + oj.TableDomUtils.CSS_VAL._PX;
   $(tableBodyClone).scrollLeft(scrollLeft * 1.0);        
   $(tableBodyClone).scrollTop(scrollTop * 1.0);
   
@@ -14907,8 +15356,31 @@ oj.TableRendererUtils.tableBodyCellDefaultRenderer = function(component, rowIdx,
   }
   else
   {
-    var textValue = data == null ? '' : data;
-    tableBodyCell.appendChild(document.createTextNode(textValue)); //@HTMLUpdateOK
+    var cellSlotTemplate = component._getSlotTemplate(column['template']);
+    
+    if (cellSlotTemplate)
+    {
+      var componentElement = component._getRootElement();
+      var templateEngine = component._getTemplateEngine();
+      if (templateEngine != null)
+      {
+        var slotContext = oj.TableRendererUtils.getCellSlotTemplateContextObject(component, row, data, column.field);
+        var cellContent = templateEngine.execute(componentElement, cellSlotTemplate, slotContext);
+        if (!(cellContent instanceof Array)) 
+        {
+          cellContent = [cellContent];
+        }
+        cellContent.map(function(content)
+        {
+          tableBodyCell.appendChild(content);
+        });
+      }
+    }
+    else
+    {
+      var textValue = data == null ? '' : data;
+      tableBodyCell.appendChild(document.createTextNode(textValue)); //@HTMLUpdateOK
+    }
   }
 };
 
@@ -14958,24 +15430,7 @@ oj.TableRendererUtils.getRendererContextObject = function(component, parentEleme
       context['mode'] = 'navigation';
     }
 
-    
-    if (dataSource instanceof oj.FlattenedTreeTableDataSource)
-    {
-      var rowContext = row['metadata'];
-      if (rowContext == null)
-      {
-        rowContext = dataSource._getMetadata(row['index']);
-      }
-
-      var i;
-      for (i in rowContext)
-      {
-        if (rowContext.hasOwnProperty(i))
-        {
-          context[i] = rowContext[i];
-        }
-      } 
-    }
+    this._copyMetadata(context, row, dataSource);
   }
 
   // Fix up context to work with custom element
@@ -14994,6 +15449,80 @@ oj.TableRendererUtils.getRendererStatusObject = function(component, row)
   return {'rowIndex': row['index'],
     'rowKey': row['key'],
     'currentRow': $.extend({}, component._getCurrentRow())};
+};
+
+/**
+  * Get the context object for inline cell templates
+  * @param {Object} component component
+  * @param {Object} row row
+  * @param {Object} data data
+  * @param {string} field field
+  * @memberof oj.TableRendererUtils
+  */
+oj.TableRendererUtils.getCellSlotTemplateContextObject = function(component, row, data, field)
+{
+  var as = component['options']['as'];
+  var currentName = (as != null && as.length > 0) ? as : '$current';
+  var slotContext = this.getSlotTemplateContextObject(component);
+  slotContext[currentName][component._CONST_DATA] = data;
+  slotContext[currentName]['field'] = field;
+  slotContext[currentName]['row'] = row;
+  slotContext[currentName][component._CONST_INDEX] = row[component._CONST_INDEX];
+  slotContext[currentName][component._CONST_KEY] = row[component._CONST_KEY];
+  
+  return slotContext;
+};
+
+/**
+  * Get the context object for inline header templates
+  * @param {Object} component component
+  * @param {Object} data data
+  * @memberof oj.TableRendererUtils
+  */
+oj.TableRendererUtils.getHeaderSlotTemplateContextObject = function(component, data)
+{
+  var as = component['options']['as'];
+  var currentName = (as != null && as.length > 0) ? as : '$current';
+  var slotContext = this.getSlotTemplateContextObject(component);
+  slotContext[currentName][component._CONST_DATA] = data;
+  
+  return slotContext;
+};
+
+/**
+  * Get the context object for inline templates
+  * @param {Object} component component
+  * @memberof oj.TableRendererUtils
+  */
+oj.TableRendererUtils.getSlotTemplateContextObject = function(component)
+{
+  var componentElement = component._getRootElement();
+  var as = component['options']['as'];
+  var currentName = (as != null && as.length > 0) ? as : '$current';
+  var slotContext = {};
+  slotContext[currentName] = {'componentElement': componentElement};
+  return slotContext;
+};
+
+oj.TableRendererUtils._copyMetadata = function(context, row, dataSource)
+{
+  if (dataSource instanceof oj.FlattenedTreeTableDataSource)
+    {
+      var metadataContext = row['metadata'];
+      if (metadataContext == null)
+      {
+        metadataContext = dataSource._getMetadata(row['index']);
+      }
+
+      var i;
+      for (i in metadataContext)
+      {
+        if (metadataContext.hasOwnProperty(i))
+        {
+          context[i] = metadataContext[i];
+        }
+      } 
+    }
 };
 /**
  * Copyright (c) 2015, Oracle and/or its affiliates.
@@ -15508,6 +16037,9 @@ var ojTableMeta = {
         }
       }
     },
+    "as": {
+      "type": "string"
+    },
     "columns": {
       "type": "Array<Object>",
       "writeback": true
@@ -15528,11 +16060,17 @@ var ojTableMeta = {
         "footerStyle": {
           "type": "string"
         },
+        "footerTemplate": {
+          "type": "string"
+        },
         "headerClassName": {
           "type": "string"
         },
         "headerRenderer": {},
         "headerStyle": {
+          "type": "string"
+        },
+        "headerTemplate": {
           "type": "string"
         },
         "headerText": {
@@ -15550,6 +16088,9 @@ var ojTableMeta = {
           "type": "string"
         },
         "style": {
+          "type": "string"
+        },
+        "template": {
           "type": "string"
         },
         "width": {
@@ -15622,6 +16163,9 @@ var ojTableMeta = {
     "editMode": {
       "type": "string",
       "enumValues": ["none", "rowEdit"]
+    },
+    "firstSelectedRow": {
+      "type": "Object"
     },
     "horizontalGridVisible": {
       "type": "string",

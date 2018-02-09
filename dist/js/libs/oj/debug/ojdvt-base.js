@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2014, 2017, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
@@ -8,7 +8,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojvalidation-number'
 /**
  * Creates an attribute group handler that will generate stylistic attribute values such as colors or shapes based on data set categories.
  * 
- * @param {Object} [matchRules] A map of key value pairs for categories and the matching attribute value e.g. {"soda" : "square", "water" : "circle", "iced tea" : "triangleUp"}.
+ * @param {Object.<string, *>=} [matchRules] A map of key value pairs for categories and the matching attribute value e.g. {"soda" : "square", "water" : "circle", "iced tea" : "triangleUp"}.
  *                            Attribute values listed in the matchRules object will be reserved only for the matching categories when getAttributeValue is called.
  * @export
  * @constructor
@@ -31,7 +31,7 @@ oj.AttributeGroupHandler.prototype.Init = function(matchRules) {
 
 /**
  * Returns the array of possible attribute values for this attribute group handler.
- * @returns {Array} The array of attribute values
+ * @returns {Array.<*>} The array of attribute values
  * @export
  */
 oj.AttributeGroupHandler.prototype.getValueRamp = function() {
@@ -40,8 +40,8 @@ oj.AttributeGroupHandler.prototype.getValueRamp = function() {
 
 /**
  * Assigns the given category an attribute value.  Will consistently return the same attribute value for equal categories.
- * @param {Object} category The category to assign
- * @returns {Object} The attribute value for the category
+ * @param {string} category The category to assign
+ * @returns {*} The attribute value for the category
  * @export
  */
 oj.AttributeGroupHandler.prototype.getValue = function(category) {
@@ -63,9 +63,9 @@ oj.AttributeGroupHandler.prototype.getValue = function(category) {
 };
 
 /**
- * Returns the current map of key value pairs for categories and the assigned attribute values. Note that match rules are not
+ * Returns the current list of assigned categories as an array of objects with "category" and "value" keys. Note that match rules are not
  * reflected in category assignments.
- * @return {Array} The current list of category and value pairing
+ * @return {Array.<Object.<string, *>>} The current list of category and value pairings
  * @export
  */
 oj.AttributeGroupHandler.prototype.getCategoryAssignments  = function() {
@@ -79,7 +79,8 @@ oj.AttributeGroupHandler.prototype.getCategoryAssignments  = function() {
  * Reserves an attribute value for the given category.  All match rules should be added before any category
  * assignments are done with the <a href="#getValue">getValue</a> API.
  * @param {string} category Used for checking inputs to getAttributeValue against when assigning an attribute value
- * @param {string} attributeValue The attribute value to assign for inputs matching the given category e.g. "square" or "circle"
+ * @param {*} attributeValue The attribute value to assign for inputs matching the given category e.g. "square" or "circle"
+ * @return {void}
  * @export
  */
 oj.AttributeGroupHandler.prototype.addMatchRule = function(category, attributeValue) {
@@ -89,7 +90,7 @@ oj.AttributeGroupHandler.prototype.addMatchRule = function(category, attributeVa
 /**
  * Creates a shape attribute group handler that will generate shape attribute values.
  * 
- * @param {Object} [matchRules] A map of key value pairs for categories and the matching attribute value e.g. {"soda" : "square", "water" : "circle", "iced tea" : "triangleUp"}.
+ * @param {Object.<string, string>=} [matchRules] A map of key value pairs for categories and the matching attribute value e.g. {"soda" : "square", "water" : "circle", "iced tea" : "triangleUp"}.
  *                            Attribute values listed in the matchRules object will be reserved only for the matching categories when getAttributeValue is called.
  * @export
  * @constructor
@@ -105,7 +106,7 @@ oj.ShapeAttributeGroupHandler._attributeValues = ['square', 'circle', 'diamond',
 
 /**
  * Returns the array of possible shape values for this attribute group handler.
- * @returns {Array} The array of shape values
+ * @returns {Array.<string>} The array of shape values
  * @export
  */
 oj.ShapeAttributeGroupHandler.prototype.getValueRamp = function() {
@@ -295,7 +296,7 @@ DvtJsonPath.prototype.setValue = function(value, bOverride)
 /**
  * Creates a color attribute group handler that will generate color attribute values.
  * 
- * @param {Object} [matchRules] A map of key value pairs for categories and the
+ * @param {Object.<string, string>=} [matchRules] A map of key value pairs for categories and the
  * matching attribute value e.g. {"soda" : "#336699", "water" : "#CC3300", "iced tea" : "#F7C808"}.
  * Attribute values listed in the matchRules object will be reserved only for the
  * matching categories when getAttributeValue is called.  Note that not all colors
@@ -317,9 +318,9 @@ oj.ColorAttributeGroupHandler = function(matchRules) {
     if(!oj.ColorAttributeGroupHandler._colors) {
       // Process the colors from the CSS.
       // To improve performance, append the divs for each style class first then process the colors for each div.
-      var attrGpsDiv = oj.ColorAttributeGroupHandler.createAttrDiv(); 
+      var attrGpsDiv = oj.ColorAttributeGroupHandler.__createAttrDiv(); 
       if (attrGpsDiv) {
-        oj.ColorAttributeGroupHandler.processAttrDiv(attrGpsDiv);
+        oj.ColorAttributeGroupHandler.__processAttrDiv(attrGpsDiv);
         attrGpsDiv.remove();
       }
     }
@@ -350,7 +351,7 @@ oj.ColorAttributeGroupHandler._colors = null;
 
 /**
  * Returns the array of possible color values for this attribute group handler.
- * @returns {Array} The array of color values
+ * @returns {Array.<string>} The array of color values
  * @export
  */
 oj.ColorAttributeGroupHandler.prototype.getValueRamp = function() {
@@ -359,11 +360,31 @@ oj.ColorAttributeGroupHandler.prototype.getValueRamp = function() {
 
 /**
  * Creates an element and appends a div for each style class
- * @returns {Object} The element containing divs for each style class
- * @static
+ * @returns {jQuery} The jQuery element containing divs for each style class
  * @export
+ * @deprecated since version 4.2.0
  */
 oj.ColorAttributeGroupHandler.createAttrDiv = function() {
+  return oj.ColorAttributeGroupHandler.__createAttrDiv();
+};
+
+/**
+ * Processes the colors for each div on the given element
+ * @param {jQuery} attrGpsDiv The jQuery element containing divs for each style class
+ * @return {void}
+ * @export
+ * @deprecated since version 4.2.0
+ */
+oj.ColorAttributeGroupHandler.processAttrDiv = function(attrGpsDiv) {
+  oj.ColorAttributeGroupHandler.__processAttrDiv(attrGpsDiv);
+};
+
+/**
+ * Creates an element and appends a div for each style class
+ * @returns {jQuery} The jQuery element containing divs for each style class
+ * @ignore
+ */
+oj.ColorAttributeGroupHandler.__createAttrDiv = function() {
   if (oj.ColorAttributeGroupHandler._colors)
     return null;
     
@@ -375,17 +396,17 @@ oj.ColorAttributeGroupHandler.createAttrDiv = function() {
     var childDiv = $(document.createElement("div"));
     childDiv.addClass(oj.ColorAttributeGroupHandler._STYLE_CLASSES[i]);
     attrGpsDiv.append(childDiv); // @HTMLUpdateOK
-  } 
+  }
   return attrGpsDiv;
 };
 
 /**
  * Processes the colors for each div on the given element
- * @param {Object} attrGpsDiv The element containing divs for each style class
- * @static
- * @export
+ * @param {jQuery} attrGpsDiv The jQuery element containing divs for each style class
+ * @return {void}
+ * @ignore
  */
-oj.ColorAttributeGroupHandler.processAttrDiv = function(attrGpsDiv) {
+oj.ColorAttributeGroupHandler.__processAttrDiv = function(attrGpsDiv) {
   oj.ColorAttributeGroupHandler._colors = [];
   
   var childDivs = attrGpsDiv.children();
@@ -396,6 +417,7 @@ oj.ColorAttributeGroupHandler.processAttrDiv = function(attrGpsDiv) {
       oj.ColorAttributeGroupHandler._colors.push(color);
   }
 };
+
 var DvtStyleProcessor = {
   'CSS_TEXT_PROPERTIES':
     function(cssDiv) {
@@ -555,7 +577,7 @@ DvtStyleProcessor.processStyles = function(element, options, componentClasses, c
   }
   
   // Performance: Process color attribute groups for components along with the component styles
-  var attrGpsDiv = oj.ColorAttributeGroupHandler.createAttrDiv(); 
+  var attrGpsDiv = oj.ColorAttributeGroupHandler.__createAttrDiv(); 
   
   for (var styleClass in childClasses) {
     DvtStyleProcessor._processStyle(styleDivs[styleClass], options, styleClass, styleDefinitions[styleClass]);
@@ -563,7 +585,7 @@ DvtStyleProcessor.processStyles = function(element, options, componentClasses, c
   
   // Performance: Process color attribute groups for components along with the component styles
   if (attrGpsDiv) {
-    oj.ColorAttributeGroupHandler.processAttrDiv(attrGpsDiv);
+    oj.ColorAttributeGroupHandler.__processAttrDiv(attrGpsDiv);
     attrGpsDiv.remove();
   }
   
@@ -719,7 +741,7 @@ DvtStyleProcessor._hasUncachedProperty = function(styleClass, definitions)
   }
   return false;
 };
-/**
+ /**
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
  */
@@ -1524,12 +1546,15 @@ oj.__registerWidget('oj.dvtBaseComponent', $['oj']['baseComponent'], {
       subpaths.forEach(function(subpath) {
         if (path === 'root') {
           self._resolveDeferredDataItem.bind(self)(self.options, self._optionsCopy, subpath);
-        } else {
-          // Deal with arrays suboptions that are arrays like legend's options['sections']
+        } else {        
           var suboptions = self.options[path];
-          if (suboptions) {
+          // Deal with arrays suboptions that are arrays like legend's options['sections']
+          if (suboptions && suboptions instanceof Array) {
             for (var i = 0; i < suboptions.length; i++)
               self._resolveDeferredDataItem.bind(self)(suboptions[i], self._optionsCopy[path][i], subpath);
+          }
+          else if (suboptions && suboptions[subpath]) {  // Deal with arrays suboptions that are keys in an object like chart's options['data']['series']
+              self._resolveDeferredDataItem.bind(self)(suboptions, self._optionsCopy[path], subpath);
           }
         }
       });
@@ -1559,6 +1584,16 @@ oj.__registerWidget('oj.dvtBaseComponent', $['oj']['baseComponent'], {
       optionValue = Promise.resolve(optionValue);
       optionPath.setValue(optionValue, true);
     }
+    
+    if (optionValue && oj.DataProviderFeatureChecker.isIteratingDataProvider(optionValue)) {
+      optionValue = new Promise(function(resolve, reject) 
+      {
+        optionValue['fetchFirst']({size: -1})[Symbol.asyncIterator]()['next']()
+        .then(function(finalResult) {
+          resolve(finalResult['value']['data']);
+        });      
+      });     
+    };
     
     if (optionValue instanceof Promise) {
       var renderCount = this._renderCount;
@@ -1606,27 +1641,37 @@ oj.__registerWidget('oj.dvtBaseComponent', $['oj']['baseComponent'], {
    * @memberof oj.dvtBaseComponent
    */
   _RenderComponent : function(options, isResize) {
-    // Cleanup
-    this._CleanAllTemplates();
+    // We do this check in _Render but since our rendering is asynchronous, the DOM state could have changed
+    // in that time, e.g. when used inside an oj-switcher
+    // Fix 18498656: If the component is not attached to a visible subtree of the DOM, rendering will fail because
+    // getBBox calls will not return the correct values.
+    // Note: Checking offsetParent() does not work here since it returns false for position: fixed.
+    if (!this._context.isReadyToRender()) {
+      this._renderNeeded = true;
+      this._MakeReady();
+    } else {
+      // Cleanup
+      this._CleanAllTemplates();
 
-    // If flowing layout is supported, resize may happen during render, but we
-    // don't want the resize listener to be triggered as it causes double render.
-    // Thus we should remove the resize listener temporarily.
-    var bRemoveResizeListener = this._IsFlowingLayoutSupported() && this._resizeListener;
-    if (bRemoveResizeListener)
-      this._removeResizeListener();
+      // If flowing layout is supported, resize may happen during render, but we
+      // don't want the resize listener to be triggered as it causes double render.
+      // Thus we should remove the resize listener temporarily.
+      var bRemoveResizeListener = this._IsFlowingLayoutSupported() && this._resizeListener;
+      if (bRemoveResizeListener)
+        this._removeResizeListener();
 
-    this._component.render(isResize ? null : options, this._width, this._height);
+      this._component.render(isResize ? null : options, this._width, this._height);
 
-    if (bRemoveResizeListener)
-      this._addResizeListener();
+      if (bRemoveResizeListener)
+        this._addResizeListener();
 
-    // Remove the tabindex from the element to disable keyboard handling if the component
-    // does not have a role on the parent element like for non-interactive legends
-    if (!this.element.attr("role"))
-      this.element.attr("tabindex", null);
-    else
-      this.element.attr("tabindex", 0);
+      // Remove the tabindex from the element to disable keyboard handling if the component
+      // does not have a role on the parent element like for non-interactive legends
+      if (!this.element.attr("role"))
+        this.element.attr("tabindex", null);
+      else
+        this.element.attr("tabindex", 0);
+    }
   },
 
   /**

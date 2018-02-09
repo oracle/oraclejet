@@ -1,9 +1,9 @@
 /**
- * Copyright (c) 2014, 2017, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
-define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/internal-deps/dvt/DvtDiagram','ojs/ojdatasource-common'], function(oj, $, comp, base, dvt)
+define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/internal-deps/dvt/DvtDiagram', 'ojs/ojkeyset', 'ojs/ojdatasource-common'], function(oj, $, comp, base, dvt)
 {
 /**
  * <table class="keyboard-table">
@@ -540,14 +540,13 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/in
  * @default <code class="prettyprint">null</code>
  */
 /**
- * Specifies the nodes that should be expanded on initial render. It should contain an array of node ids to expand on initial render. Specify 'all' to expand all nodes.
- * @ignore
+ * Specifies the key set containing the ids of diagram nodes that should be expanded on initial render. 
  * @expose
  * @name expanded
  * @memberof oj.ojDiagram
  * @instance
- * @type {Array.<string>|string}
- * @default <code class="prettyprint">null</code>
+ * @type {KeySet}
+ * @default <code class="prettyprint">new keySet.ExpandedKeySet()</code>
  */
 /**
  * An array containing the ids of the selected nodes and links.
@@ -2988,6 +2987,9 @@ oj.__registerWidget('oj.ojDiagram', $['oj']['dvtBaseComponent'],
           {'nodes': this.options['nodes'],'links': this.options['links']},
           {'childData': this.options['childNodes']});
     }
+    // if expanded not declared, pass default empty expanded key set to the toolkit
+    if (!this.options['expanded'])
+      this.options['expanded'] = new oj.ExpandedKeySet();
   },
   
   //** @inheritdoc */
@@ -3770,6 +3772,9 @@ var ojDiagramMeta = {
           }
         }
       }
+    },
+    "expanded" : {
+      "writeback": true
     },
     "focusRenderer": {},
     "hiddenCategories": {

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2014, 2017, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
@@ -131,7 +131,19 @@ oj.AnimationUtils._getName = function(element, baseName)
     nameMap['transitionend'] = (style['webkitTransition'] !== undefined) ? 'webkitTransitionEnd' : 'transitionend';
   }
   
-  return oj.AnimationUtils._nameMap[baseName];
+  var mappedName = oj.AnimationUtils._nameMap[baseName];
+  
+  return mappedName ? mappedName : baseName;
+};
+
+oj.AnimationUtils._getElementStyle = function(element, baseName)
+{
+  return element.style[oj.AnimationUtils._getName(element, baseName)];
+};
+
+oj.AnimationUtils._setElementStyle = function(element, baseName, value)
+{
+  element.style[oj.AnimationUtils._getName(element, baseName)] = value;
 };
 
 /**
@@ -157,7 +169,12 @@ oj.AnimationUtils._animate = function(element, fromState, toState, options, tran
   var doAnimate = function(resolve, reject)
   {
     var endListener = function(event) {
-      var idx = propArray.indexOf(event.propertyName);
+      // event.propertyName is the hyphenated name.  Entries in propArray is the 
+      // camel-case name without prefix.  So we drop any prefix and convert 
+      // event.propertyName to camel-case before finding it in propArray. 
+      var basePropName = event.propertyName.indexOf('-webkit-') == 0 ? event.propertyName.substr(8) : event.propertyName;
+      basePropName = oj.AnimationUtils._getCamelCasePropName(basePropName);
+      var idx = propArray.indexOf(basePropName);
       if (idx > -1)
       {
         if (propArray.length > 1)
@@ -201,7 +218,7 @@ oj.AnimationUtils._animate = function(element, fromState, toState, options, tran
     {
       toState['css'] = {};
     }
-    toState['css'][oj.AnimationUtils._getName(element, 'transition')] = oj.AnimationUtils._createTransitionValue(transProps, options);
+    toState['css']['transition'] = oj.AnimationUtils._createTransitionValue(element, transProps, options);
 
     // Save the orignal style so that we can restore it later if needed
     var effectCount = oj.AnimationUtils._saveStyle(element, fromState, toState, options, persistProps || transProps);
@@ -291,13 +308,11 @@ oj.AnimationUtils._animate = function(element, fromState, toState, options, tran
 // Save the element style from a property set
 oj.AnimationUtils._saveCssValues = function(element, css, savedStyle, persistProps)
 {
-  var style = element.style;
-
   for (var cssProp in css)
   {
     if (!savedStyle.hasOwnProperty(cssProp) && (!persistProps || persistProps.indexOf(cssProp) == -1))
     {
-      savedStyle[cssProp] = style[cssProp];
+      savedStyle[cssProp] = oj.AnimationUtils._getElementStyle(element, cssProp);
     }
   }
 };
@@ -341,10 +356,9 @@ oj.AnimationUtils._restoreStyle = function(element)
     var savedStyle = element._ojSavedStyle;
     if (savedStyle)
     {
-      var style = element.style;
       for (var prop in savedStyle)
       {
-        style[prop] = savedStyle[prop];
+        oj.AnimationUtils._setElementStyle(element, prop, savedStyle[prop]);
       }
 
       delete element._ojSavedStyle;
@@ -396,18 +410,12 @@ oj.AnimationUtils._getHyphenatedPropName = function(propName)
   return newName;
 };
 
-// Get the corresponding webkit-prefixed property name
-oj.AnimationUtils._getWebkitPropName = function(propName)
-{
-  return 'webkit' + propName.charAt(0).toUpperCase() + propName.slice(1);
-};
-
 // Concatenate value for style property that allows multiple values 
 oj.AnimationUtils._concatMultiValue = function(element, state, propName, defaultPrefix, separator)
 {
   if (state['css'][propName])
   {
-    var currPropValue = element.style[propName];
+    var currPropValue = oj.AnimationUtils._getElementStyle(element, propName);
     if (currPropValue && currPropValue.indexOf(defaultPrefix) != 0)
     {
       state['css'][propName] = currPropValue + separator + state['css'][propName];
@@ -448,7 +456,7 @@ oj.AnimationUtils._getTransformFuncName = function(funcExpr)
 // Apply the transform style
 oj.AnimationUtils._applyTransform = function(element, newTransform)
 {
-  var oldTransform = element.style[oj.AnimationUtils._getName(element, 'transform')];
+  var oldTransform = oj.AnimationUtils._getElementStyle(element, 'transform');
   var oldTransformArray = oj.AnimationUtils._splitTransform(oldTransform);
   var newTransformArray = oj.AnimationUtils._splitTransform(newTransform);
   var extraTransformArray = [];
@@ -493,8 +501,8 @@ oj.AnimationUtils._applyState = function(element, state, isComposite)
   {
     if (state['css'])
     {
-      var transitionPropName = oj.AnimationUtils._getName(element, 'transition');
-      var transformPropName = oj.AnimationUtils._getName(element, 'transform');
+      var transitionPropName = 'transition';
+      var transformPropName = 'transform';
       
       // For composite animation, we need to concatenate certain property values
       // instead of replacing them
@@ -508,11 +516,10 @@ oj.AnimationUtils._applyState = function(element, state, isComposite)
         state['css'][transformPropName] = oj.AnimationUtils._applyTransform(element, state['css'][transformPropName]);
       }
 
-      var style = element.style;
       var newStyle = state['css'];
       for (var prop in newStyle)
       {
-        style[prop] = newStyle[prop];
+        oj.AnimationUtils._setElementStyle(element, prop, newStyle[prop]);
       }
     }
     
@@ -601,6 +608,31 @@ oj.AnimationUtils._fillEmptyOptions = function(targetOptions, sourceOptions)
   targetOptions['persist'] = targetOptions['persist'] || sourceOptions['persist'];
 };
 
+// Trigger oj custom event
+oj.AnimationUtils._triggerEvent = function(element, eventName, ui, component)
+{
+  var defaultPrevented;
+
+  if (component && component._trigger)
+  {
+    // _trigger() returns false if preventDefault has been called
+    defaultPrevented = !component._trigger(eventName, null, ui);
+  }
+  else
+  {
+    var ojEventType = 'oj' + eventName.substr(0,1).toUpperCase() + eventName.substr(1);
+    var customEvent = new CustomEvent(ojEventType, {'detail':ui, 'bubbles':true, 'cancelable':true});
+    var eventTarget = component || element;
+    if (eventTarget.dispatchEvent)
+    {
+      eventTarget.dispatchEvent(customEvent);
+    }
+    defaultPrevented = customEvent.defaultPrevented;
+  }
+  
+  return defaultPrevented;
+}  
+
 /**
  * Internal method for starting an animation.
  * @param {Element} element  the HTML element to animate
@@ -610,12 +642,16 @@ oj.AnimationUtils._fillEmptyOptions = function(targetOptions, sourceOptions)
  *                        in oj.AnimationUtils, or an object that specifies the
  *                        effect method and its options, such as:
  *                        {'effect': 'fadeOut', 'endOpacity': 0.5}, or an array of the above.
- * @param {Object=} component  the component that contains the HTML element
- *                             to animate.  If this is specified, animation events will
+ * @param {Object=} component  the component that owns the HTML element
+ *                             to animate.  If this is specified and it has a
+ *                             _trigger method (jQuery UI widget), animation events will
  *                             be triggered on the component via jQuery UI _trigger(),
  *                             so that listeners specified as event options will work.
+ *                             If this is specified but it doesn't have a _trigger
+ *                             method (HTML element), animation events will be triggered
+ *                             on the component via dispatchEvent.
  *                             If this is not specified, animation events will be triggered
- *                             on the animated HTML element via jQuery trigger().
+ *                             on the animated HTML element via dispatchEvent.
  * @return {Promise} a promise that will be resolved when the animation ends
  * @export
  * @ignore
@@ -642,14 +678,7 @@ oj.AnimationUtils.startAnimation = function(element, action, effects, component)
           resolve(true);
           
           var ui = {'action': action, 'element': element};
-          if (component && component._trigger)
-          {
-            component._trigger('animateEnd', null, ui);
-          }
-          else
-          {
-            jelem.trigger('ojanimateend', ui);
-          }
+          oj.AnimationUtils._triggerEvent(element, 'animateEnd', ui, component);
         }
       };
       var eventCallback = function() {
@@ -668,20 +697,8 @@ oj.AnimationUtils.startAnimation = function(element, action, effects, component)
 
       // Trigger ojanimatestart event so that app can prevent default animation 
       // and define custom effect in JS
-      var event = $.Event('ojanimatestart');
       var ui = {'action': action, 'element': element, 'endCallback': eventCallback};
-      var defaultPrevented;
-
-      if (component && component._trigger)
-      {
-        // _trigger() returns false if preventDefault has been called
-        defaultPrevented = !component._trigger('animateStart', null, ui);
-      }
-      else
-      {
-        jelem.trigger(event, ui);
-        defaultPrevented = event.isDefaultPrevented();
-      }
+      var defaultPrevented = oj.AnimationUtils._triggerEvent(element, 'animateStart', ui, component);
 
       // Continue animation handling if app didn't preventDefault
       if (!defaultPrevented)
@@ -785,7 +802,7 @@ oj.AnimationUtils._mergeOptions = function(effect, options)
                   options);
 };
 
-oj.AnimationUtils._createTransitionValue = function(transProps, options)
+oj.AnimationUtils._createTransitionValue = function(element, transProps, options)
 {
   var transValue = '';
 
@@ -793,7 +810,8 @@ oj.AnimationUtils._createTransitionValue = function(transProps, options)
   {
     for (var i = 0; i < transProps.length; i++)
     {
-      var hyphenatedName = oj.AnimationUtils._getHyphenatedPropName(transProps[i]);
+      var propName = oj.AnimationUtils._getName(element, transProps[i]);
+      var hyphenatedName = oj.AnimationUtils._getHyphenatedPropName(propName);
 
       transValue += (i > 0 ? ', ' : '') + hyphenatedName + ' ' + options['duration'];
       
@@ -1257,8 +1275,8 @@ oj.AnimationUtils._zoom = function(element, options, isIn)
   var scale = axis === "both" ? "scale" : (axis === "x" ? "scaleX" : "scaleY");
   var fromCSS = fromState['css'] = {};
   var toStateCSS = toState['css'] = {};
-  var transformPropName = oj.AnimationUtils._getName(element, 'transform');
-  var transformOriginPropName = oj.AnimationUtils._getName(element, 'transformOrigin');
+  var transformPropName = 'transform';
+  var transformOriginPropName = 'transformOrigin';
 
   fromCSS[transformPropName] = scale + "(" + (isIn ? 0 : 1) + ") translateZ(0)";
   toStateCSS[transformPropName] = scale + "(" + (isIn ? 1 : 0) + ") translateZ(0)";
@@ -1379,7 +1397,7 @@ oj.AnimationUtils._slide = function(element, options, isIn)
     }
   }
   
-  var transformPropName = oj.AnimationUtils._getName(element, 'transform');
+  var transformPropName = 'transform';
   if (isIn)
   {
     fromCSS[transformPropName] = "translate(" + offsetX + "," + offsetY + ") translateZ(0)";
@@ -1454,7 +1472,7 @@ oj.AnimationUtils.ripple = function(element, options)
   
   var fromCSS = fromState['css'] = {};
   var toStateCSS = toState['css'] = {};
-  var transformPropName = oj.AnimationUtils._getName(element, 'transform');
+  var transformPropName = 'transform';
 
   oj.AnimationUtils._setRippleOptions(fromCSS, rippler, container, options);
   
@@ -1658,9 +1676,9 @@ oj.AnimationUtils._flip = function(element, options, effect, startAngle, endAngl
   transform = 'perspective(' + perspective + ') ' + rotateFunc;
 
   // Safari still requires webkit prefix for backfaceVisibility property
-  var backfaceVisPropName = oj.AnimationUtils._getName(element, 'backfaceVisibility');
-  var transformPropName = oj.AnimationUtils._getName(element, 'transform');
-  var transformOriginPropName = oj.AnimationUtils._getName(element, 'transformOrigin');
+  var backfaceVisPropName = 'backfaceVisibility';
+  var transformPropName = 'transform';
+  var transformOriginPropName = 'transformOrigin';
   
   fromCss[transformPropName] = transform + startAngle + ')';
   fromCss[backfaceVisPropName] = backfaceVisibility;

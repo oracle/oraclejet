@@ -1,0 +1,35 @@
+// Copyright (c) 2014, 2018, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+@import "../../utilities/oj.utilities";
+
+@import "../../common/helpers/oj.common.helpers"; 
+
+// implementation currently in common
+@import "../../common/widgets/oj.common.formcontrol.formlayout";
+
+@if $includeFormLayoutElementClasses != false  {
+  @include module-include-once("alta.ios.formlayout.element") {
+
+    .oj-form {
+      @include oj-ltr()
+      {
+        padding-left: $formControlLabelInlineGutter;
+      }
+      @include oj-rtl()
+      {
+        padding-right: $formControlLabelInlineGutter;
+      }
+    }
+
+    .oj-form > .oj-flex {
+      @include oj-ltr()
+      {
+        padding-right: $formControlLabelInlineGutter;
+      }
+      @include oj-rtl()
+      {
+        padding-left: $formControlLabelInlineGutter;
+      }
+    }
+  }
+}
+

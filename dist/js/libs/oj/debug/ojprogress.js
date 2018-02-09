@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2014, 2017, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
@@ -26,13 +26,15 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
 /**
  * @ojcomponent oj.ojProgress
  * @ojstatus preview
+ * @since 1.0.0
  * @augments oj.baseComponent
+ * @ojshortdesc The JET Progress element allows a user to display progress of an operation in a rectangular horizontal or a circular meter.
  * @classdesc
  * <h3 id="progressOverview-section">
  *   JET Progress
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#progressOverview-section"></a>
  * </h3>
- * The JET Progress element allows a user to display progress of an input in a rectangular horizontal meter.
+ * The JET Progress element allows a user to display progress of an operation in a rectangular horizontal or circular meter.
  * If a developer does not wish to display the exact value, a value of '-1' can be passed in to display an indeterminate value.
  *
  * <pre class="prettyprint"><code>&lt;oj-progress value='{{progressValue}}'>&lt;/oj-progress></code></pre>
@@ -89,12 +91,14 @@ oj.__registerWidget("oj.ojProgressbar",  $['oj']['baseComponent'], {
     /**
      * The maximum allowed value. The element's max attribute is used if it
      * is provided, otherwise the default value of 100 is used.
+     * @ojshortdesc The maximum allowed value.
      * @expose
      * @public
      * @type {number}
      * @instance
      * @memberof! oj.ojProgress
-     * @default <code class="prettyprint">100</code>
+     * @default 100
+     * @ojmin 0
      * @example <caption>Initialize the Progress with the <code class="prettyprint">max</code> attribute specified</caption>
      * &lt;oj-progress max='220'>&lt;/oj-progress>
      * @example <caption>Get or set the <code class="prettyprint">max</code> property after initialization</caption>
@@ -108,12 +112,14 @@ oj.__registerWidget("oj.ojProgressbar",  $['oj']['baseComponent'], {
     /**
      * The value of the Progress. The element's value attribute is used if it
      * is provided, otherwise the default value of 0 is used. For indeterminate Progress, set value to -1.
+     * @ojshortdesc The value of the Progress.
      * @expose
      * @public
      * @type {number}
      * @instance
      * @memberof! oj.ojProgress
-     * @default <code class="prettyprint">0</code>
+     * @default 0
+     * @ojmin -1
      * @ojwriteback
      * @example <caption>Initialize the Progress with the <code class="prettyprint">value</code> attribute specified</caption>
      * &lt;oj-progress value='{{progressVal}}'>&lt;/oj-progress>
@@ -127,14 +133,15 @@ oj.__registerWidget("oj.ojProgressbar",  $['oj']['baseComponent'], {
     value: 0,
     /**
      * The shape of the Progress.
+     * @ojshortdesc The shape of the Progress.
      * @expose
      * @instance
      * @type {string}
      * @memberof oj.ojProgress
      * @since 3.0
-     * @ojvalue {string} "bar"
-     * @ojvalue {string} "circle"
-     * @default <code class="prettyprint">bar</code>
+     * @ojvalue {string} "bar" displays progress in a rectangular horizontal meter.
+     * @ojvalue {string} "circle" displays progress in a circular meter
+     * @default "bar"
      * @example <caption>Initialize the Progress with the <code class="prettyprint">type</code> attribute specified</caption>
      * &lt;oj-progress type='circle'>&lt;/oj-progress>
      * @example <caption>Get or set the <code class="prettyprint">type</code> property after initialization</caption>
@@ -148,13 +155,14 @@ oj.__registerWidget("oj.ojProgressbar",  $['oj']['baseComponent'], {
     /**
      * If disabled is set to true, then the Progress will not change if a new value is passed in.
      * By default this parameter is set to false.
+     * @ojshortdesc If disabled is set to true, then the Progress will not change if a new value is passed in.
      * @expose
      * @public
      * @type {boolean}
      * @ignore
      * @instance
      * @memberof! oj.ojProgress
-     * @default <code class="prettyprint">false</code>
+     * @default false
      * @example <caption>Initialize the Progress with the <code class="prettyprint">disabled</code> attribute specified</caption>
      * &lt;oj-progress disabled='true'>&lt;/oj-progress>
      * @example <caption>Get or set the <code class="prettyprint">disabled</code> property after initialization</caption>
@@ -176,7 +184,12 @@ oj.__registerWidget("oj.ojProgressbar",  $['oj']['baseComponent'], {
      * @private
      */
   _indeterminate: false,
-
+  /**
+   * Create the Progress
+   * @override
+   * @memberof! ojProgress
+   * @protected
+   */
   _ComponentCreate: function() {
     this._super();
 
@@ -202,7 +215,14 @@ oj.__registerWidget("oj.ojProgressbar",  $['oj']['baseComponent'], {
     this._refreshValue();
   },
 
-
+  /**
+   * <p>Initialize the options.</p>
+   * @protected
+   * @param {Object} originalDefaults
+   * @param {Object} constructorOptions
+   * @override
+   * @memberof oj.ojProgress
+   */
   _InitOptions : function (originalDefaults, constructorOptions)
   {
     var element = this.element;
@@ -220,7 +240,7 @@ oj.__registerWidget("oj.ojProgressbar",  $['oj']['baseComponent'], {
 
   /**
    * Check that value is valid and within the correct bounds. A value of -1 indicates an indeterminate value.
-   * @param {number} newValue - The new value of the progress being passed in.
+   * @param {number} newValue The new value of the progress being passed in.
    * @override
    * @private
    */
@@ -242,7 +262,7 @@ oj.__registerWidget("oj.ojProgressbar",  $['oj']['baseComponent'], {
   },
   /**
    * Set the value
-   * @param {Object} options - The options being set
+   * @param {Object} options The options being set
    * @override
    * @private
    */
@@ -308,8 +328,8 @@ oj.__registerWidget("oj.ojProgressbar",  $['oj']['baseComponent'], {
 
   /**
    * Check that the max value is not less than the min
-   * @param {string} key - The key for the option being set
-   * @param {string|number} value - The value being set
+   * @param {string} key The key for the option being set
+   * @param {string|number} value The value being set
    * @override
    * @private
    */

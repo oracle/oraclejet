@@ -1,13 +1,16 @@
 {
-  "name": "ojFilmStrip",
-  "version": "4.1.0",
-  "jetVersion": "4.1.0",
-  "displayName": " Film Strip",
+  "name": "oj-film-strip",
+  "version": "4.2.0",
+  "jetVersion": "4.2.0",
+  "displayName": "Film Strip",
   "preview": true,
-  "description": "Container element that lays out its children in a single row or column across logical pages and allows navigating through them",
+  "roles": [
+    "region"
+  ],
+  "description": "Container element that lays out its children in a single row or column across logical pages and allows navigating through them.",
   "properties": {
     "arrowPlacement": {
-      "description": "Specify the placement of the navigation arrows.",
+      "description": "Specifies the placement of the navigation arrows.",
       "type": "string",
       "displayName": "Arrow Placement",
       "value": "adjacent",
@@ -27,7 +30,7 @@
       }
     },
     "arrowVisibility": {
-      "description": "Specify the visibility of the navigation arrows.",
+      "description": "Specifies the visibility of the navigation arrows.",
       "type": "string",
       "displayName": "Arrow Visibility",
       "value": "auto",
@@ -57,20 +60,24 @@
       }
     },
     "currentItem": {
-      "description": "Specify the child item whose logical page should be displayed. The position of the item on the logical page is not guaranteed. This attribute can be set to an object containing either string id of the item or numeric 0-based index of the item or both. If the object contains both string id and numeric index, string id takes precedence. FilmStrip will automatically update the value of this attribute when the logical page is changed to be the first item on the new logical page. When the value is updated automatically, it will be an object containing numeric index and string id, if available. When the element is resized, FilmStrip will preserve the value of this attribute to show the new logical page on which the item is located.",
+      "description": "Specifies the child item whose logical page should be displayed.",
       "type": "Object",
       "displayName": "Current Item",
-      "value": "{index : 0}",
+      "value": {
+        "index": 0
+      },
       "writeback": true
     },
     "maxItemsPerPage": {
-      "description": "Specify the maximum number of child items to show in a logical page. A value of 0 (the default) means that FilmStrip will show as many items per logical page as will fit based on the element and item sizes. FilmStrip may show fewer than the specified number of items when max-items-per-page is set to a value other than 0 if the element size is smaller than what would be required to show that many items.",
+      "description": "Specifies the maximum number of child items shown in a logical page.",
       "type": "number",
       "displayName": "Max Items Per Page",
-      "value": 0
+      "value": 0,
+      "minimum": 0,
+      "units": "items"
     },
     "orientation": {
-      "description": "Specify the orientation of the FilmStrip.",
+      "description": "Specifies the orientation of the FilmStrip.",
       "type": "string",
       "displayName": "Orientation",
       "value": "horizontal",
@@ -120,14 +127,14 @@
   },
   "methods": {
     "refresh": {
-      "description": "Refreshes the visual state of the FilmStrip. JET elements require a refresh() after the DOM is programmatically changed underneath the element. This method does not accept any arguments."
+      "description": "Refreshes the visual state of the FilmStrip."
     },
     "getItemsPerPage": {
-      "description": "Get the actual number of items shown per logical page. The value returned by this method may be different from the value of the maxItemsPerPage property.",
+      "description": "Get the actual number of items shown per logical page.",
       "return": "number"
     },
     "getPagingModel": {
-      "description": "Get the PagingModel created and used by the FilmStrip. The PagingModel provides information about the FilmStrip's logical pages and a way to programmatically change pages.",
+      "description": "Get the PagingModel created and used by the FilmStrip.",
       "return": "Object"
     },
     "setProperty": {

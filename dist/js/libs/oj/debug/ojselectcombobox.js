@@ -1,9 +1,9 @@
 /**
- * Copyright (c) 2014, 2017, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
-define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'ojs/ojoptgroup', 'ojs/ojoption', 'promise'], 
+define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'ojs/ojoptgroup', 'ojs/ojoption', 'promise', 'ojs/ojlistdataproviderview'], 
        function(oj, $, compCore, validation)
 {
 
@@ -80,12 +80,12 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'ojs/ojoptgroup', 'ojs/oj
       }
     },
 
-    /**
+    /*
      * The default fetch size from the data provider
      */
     DEFAULT_FETCH_SIZE: 15,
 
-    /**
+    /*
      * The default delay in milliseconds between when a keystroke occurs
      * and when a search is performed to get the filtered options.
      */
@@ -210,7 +210,13 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'ojs/ojoptgroup', 'ojs/oj
           (keycode > 185 && keycode < 193) || // ;=,-./` (in order)
           (keycode > 218 && keycode < 223))) // [\]' (in order)
       {
-        searchText = String.fromCharCode(event.which);
+        // Numpad keys return different keyCodes for the numbers
+        // String.fromCharCode would return 'a' for '1' and so forth
+        // Need to convert those keyCodes to regular number keyCodes
+        if (keycode >= 96 && keycode <= 105) 
+          keycode -= 48;
+          
+        searchText = String.fromCharCode(keycode);
         //keydown event always return uppercase letter
         if (!event.shiftKey)
           searchText = searchText.toLowerCase();
@@ -518,6 +524,11 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'ojs/ojoptgroup', 'ojs/oj
             node = _ComboUtils.createOptgroupTag(container, label, formatFunc);
             populate(node, ojOption.children(), depth + 1);
           }
+          // the option element created for the placeholder in native mode
+          else if (ojOption.is("option"))
+          {
+            node = ojOption;
+          }
           node.appendTo(container); // @HTMLUpdateOK
         });
       }
@@ -589,14 +600,61 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'ojs/ojoptgroup', 'ojs/oj
         resolveFunc();
     },
 
-    /**
-     * @private
-     */
     isDataProvider: function(data)
     {
       return (data && oj.DataProviderFeatureChecker)?
-        (oj.DataProviderFeatureChecker.isIteratingDataProvider(data) && oj.DataProviderFeatureChecker.isFetchByKeys(data)) :
-        false;
+        oj.DataProviderFeatureChecker.isIteratingDataProvider(data) : false;
+    },
+
+    getDataProvider: function(options)
+    {
+      var dataProvider = options._dataProvider || options.options;
+      return _ComboUtils.isDataProvider(dataProvider)? dataProvider : null;
+    },
+
+    clearDataProviderWrapper: function(widget)
+    {
+      widget.options._dataProvider = null;
+    },
+
+    /*
+     * When dataProvider is used, wrap a ListViewDataProviderView around it
+     * if optionsKeys is specified or the fetchByKeys method is not available
+     * save the new wrapper or the original data provider
+     */
+    wrapDataProviderIfNeeded: function(widget)
+    {
+      var data = widget.options.options;
+
+      if (_ComboUtils.isDataProvider(data)) {
+        var wrapper;
+        var optionsKeys = widget.options.optionsKeys;
+
+        if (optionsKeys && (optionsKeys.label != null || optionsKeys.value != null)) {
+          if (!(data instanceof oj.ListDataProviderView)) {
+            var mapFields = function(item) {
+              var data = item['data'];
+              var mappedItem = {};
+              mappedItem['data'] = {};
+              mappedItem['data']['label'] = data[optionsKeys['label']];
+              mappedItem['data']['value'] = data[optionsKeys['value']];
+              mappedItem['metadata'] = {'key': data[optionsKeys['value']]};
+              
+              return mappedItem;
+            }; 
+            //create ListDataProviderView with dataMapping
+            wrapper = new oj.ListDataProviderView(data, {'dataMapping': {'mapFields': mapFields}});
+          }
+        }
+        else if (! oj.DataProviderFeatureChecker.isFetchByKeys(data)) {
+          if (!(data instanceof oj.ListDataProviderView)) {
+            wrapper = new oj.ListDataProviderView(data);
+          }
+        }
+        //save the data provider or wrapper
+        if (wrapper)
+          widget.options._dataProvider = wrapper;
+      }
     },
 
     /**
@@ -605,7 +663,9 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'ojs/ojoptgroup', 'ojs/oj
      */
     getLabel: function(item)
     {
-      return item['label'] ? item['label'] : String(item['value']);
+      // - number converter with comboboxes fails on zero value entry
+      //if label is null or undefined use value
+      return item['label'] != null ? item['label'] : String(item['value']);
     },
 
     /**
@@ -635,33 +695,30 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'ojs/ojoptgroup', 'ojs/oj
       widget._setOption("options", widget.options.options);
     },
 
-    /**
+    /*
      * Add data provider event listeners
      */
     addDataProviderEventListeners: function(widget)
     {
-      var dataProvider = widget.options.options;
-
-      if (_ComboUtils.isDataProvider(dataProvider)) {
+      var dataProvider = _ComboUtils.getDataProvider(widget.options);
+      if (dataProvider) {
         _ComboUtils.removeDataProviderEventListeners(widget);
 
-        if (dataProvider != null)
-        {
-          var dataProviderEventHandler = _ComboUtils._handleDataProviderEvents.bind(null, widget);
-          widget._saveDataProviderEH = dataProviderEventHandler;
+        var dataProviderEventHandler = _ComboUtils._handleDataProviderEvents.bind(null, widget);
+        widget._saveDataProviderEH = dataProviderEventHandler;
 
-          dataProvider.addEventListener("mutate", dataProviderEventHandler);
-          dataProvider.addEventListener("refresh", dataProviderEventHandler);
-        }
+        dataProvider.addEventListener("mutate", dataProviderEventHandler);
+        dataProvider.addEventListener("refresh", dataProviderEventHandler);
+
       }
     },
 
-    /**
+    /*
      * Remove data provider event listeners
      */
     removeDataProviderEventListeners: function(widget)
     {
-      var dataProvider = widget.options.options;
+      var dataProvider = _ComboUtils.getDataProvider(widget.options);
       var dataProviderEventHandler = widget._saveDataProviderEH;
 
       if (dataProvider != null && dataProviderEventHandler)
@@ -826,7 +883,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'ojs/ojoptgroup', 'ojs/oj
 
       //fetch data from dataProvider
       var fetchPromise = 
-        _ComboUtils.fetchFilteredData(options.options, 
+        _ComboUtils.fetchFilteredData(_ComboUtils.getDataProvider(options),
                                       (fetchSize || options.fetchSize || _ComboUtils.DEFAULT_FETCH_SIZE),
                                       context, query, widget.dropdown
                                      ).then(
@@ -890,6 +947,9 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'ojs/ojoptgroup', 'ojs/oj
     //fetch the data row by its key("value")
     fetchByKeyFromDataProvider : function (container, dataProvider, query)
     {
+      if (! oj.DataProviderFeatureChecker.isFetchByKeys(dataProvider))
+        return;
+
       //add busy context
       var fetchResolveFunc = _ComboUtils._addBusyState(container, "fetching selected data");
 
@@ -1941,11 +2001,18 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'ojs/ojoptgroup', 'ojs/oj
         else if ("options" in opts)
         {
           var dataOptions = opts.options;
-          if (_ComboUtils.isDataProvider(dataOptions))
+          var dataProvider;
+
+          if (_ComboUtils.isDataProvider(dataOptions)) {
+            dataProvider = _ComboUtils.getDataProvider(opts);
+          }
+
+          if (dataProvider)
           {
             opts.query = function(query) {
               if (query.value) {
-                _ComboUtils.fetchByKeyFromDataProvider(self.container, dataOptions, query);
+                _ComboUtils.fetchByKeyFromDataProvider(self.container, 
+                                                       dataProvider, query);
               }
               else {
                 _ComboUtils.fetchFromDataProvider(self, opts, query);
@@ -2755,7 +2822,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'ojs/ojoptgroup', 'ojs/oj
         this._removeHighlight();
         input = this.search.val();
         if (input !== undefined && input !== null
-          && (initial !== true || opts.inputSearch || opts.minLength > 0))
+          && (initial !== true || opts.inputSearch || opts.filterOnOpen === "rawValue" || opts.minLength > 0))
         {
           term = input;
         }
@@ -2969,11 +3036,13 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'ojs/ojoptgroup', 'ojs/oj
         {
           this._highlight(index);
           
+          var previousValue = this.getVal();
           options = options || {};
           options.trigger = _ComboUtils.ValueChangeTriggerTypes.OPTION_SELECTED;
 
           this._onSelect(data, options, event);
           this._triggerUpdateEvent(data, options, event);
+          this._triggerValueUpdatedEvent(data, previousValue);
 
           if (event && event.type === "keydown")
           {
@@ -3079,6 +3148,13 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'ojs/ojoptgroup', 'ojs/oj
       _triggerUpdateEvent: function(val, context, event) {
         // This method is overridden in OjInputSeachContainer to fire the
         // "update" event. As this event is relevant for only ojInputSearch,
+        // there is no default implementation.
+      },
+      
+      //_AbstractOjChoice
+      _triggerValueUpdatedEvent: function(data, previousValue) {
+        // This method is overridden in OjSingleCombobox to fire the
+        // "ojValueUpdated" custom event. As this event is relevant for only oj-combobox-one,
         // there is no default implementation.
       },
 
@@ -3431,6 +3507,9 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'ojs/ojoptgroup', 'ojs/oj
 
         selection.on("mousedown", this._bind(function (e)
           {
+            // if the mousedown target is the end slot, do nothing
+            if (e.target.getAttribute("slot") === "end" || $(this._endSlot).find(e.target).length > 0)
+              return;
             ///prevent user from focusing on disabled select
             if (this.opts.element.prop("disabled"))
               _ComboUtils.killEvent(e);
@@ -3474,17 +3553,17 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'ojs/ojoptgroup', 'ojs/oj
           }
           ));
 		  
-		this.search.on("input", this._bind(function (e) 
-		  {
-		    this.ojContext._SetRawValue(this.search.val(), e);
-		  }
-		  ));
+        this.search.on("input", this._bind(function (e) 
+          {
+            this.ojContext._SetRawValue(this.search.val(), e);
+          }
+          ));
           
         this.search.on("focus", this._bind(function () 
-		  {
-		    this._previousDisplayValue = this.search.val();
-		  }
-		  ));
+          {
+            this._previousDisplayValue = this.search.val();
+          }
+          ));
 
         this.search.on("blur keyup", this._bind(function (e)
           {
@@ -3507,21 +3586,29 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'ojs/ojoptgroup', 'ojs/oj
                 };
 
                 var selectionData = this.selection.data(this._elemNm);
+                var previousValue = this.getVal();
+                
                 if ((!selectionData && value !== "")
                     || (selectionData && (selectionData.label !== value))
-                    || (!this.ojContext.isValid() && value !== this._previousDisplayValue)) {
-                  
+                    || (!this.ojContext.isValid() && value !== this._previousDisplayValue)) 
+                {                  
                   this._onSelect(data, options, e);
 
                   if (e.type !== "blur")
+                  {
                     this._triggerUpdateEvent(data, options, e);
+                    this._triggerValueUpdatedEvent(data, previousValue);
+                  }
 
-                } else if ((this.opts.inputSearch && e.type === 'keyup')) {
+                } else if (e.type === 'keyup') {
+                  // if the value stays the same, we still want to fire valueUpdated event to support search use cases
                   if (selectionData && selectionData.label === value)
                     data = selectionData;
 
                   this._triggerUpdateEvent(data, options, e);
+                  this._triggerValueUpdatedEvent(data, previousValue);
                 }
+                
               } else if (this.opts["manageNewEntry"] == null) {
                 var data = this.selection.data(this._elemNm);
                 if (this.search.val() == "")
@@ -3922,7 +4009,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'ojs/ojoptgroup', 'ojs/oj
       _classNm : "oj-combobox",
 
       _createContainer : function ()
-      {
+      {                                      
         var container = $(document.createElement("div")).attr(
           {
             "class" : "oj-combobox oj-component"
@@ -3940,7 +4027,56 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'ojs/ojoptgroup', 'ojs/oj
               "   <ul class='oj-listbox-results' role='listbox'>",
               "   </ul>",
               "</div>"].join("")); //@HTMLUpdateOK
+        
+        // if end slot is provided, use the slot instead
+        if (this.ojContext._IsCustomElement())
+        {
+          var slotMap = oj.CustomElementBridge.getSlotMap(this.ojContext.OuterWrapper);
+          var endSlot = slotMap['end'];
+          
+          if (endSlot)
+          {
+            // remove the divider
+            container.find(".oj-combobox-divider").remove();
+            // remove the default arrow anchor
+            container.find(".oj-combobox-arrow").remove();
+            // append the slot at the end
+            container.find(".oj-combobox-choice").append(endSlot);
+            
+            this._endSlot = endSlot;
+          }  
+        }
+        
         return container;
+      },
+      
+      _triggerValueUpdatedEvent: function(data, previousValue) 
+      {
+        if (!this.ojContext._IsCustomElement())
+          return;
+      
+        var value = this.id(data);
+        if (value === undefined || value === null)
+        {
+          // If the value is entered by user (not by selecting an option) then 
+          // only 'label' will be present in the data object.
+          value = data['label'] ? data['label'] : '';
+        }
+        
+        // validate the value
+        var parsed = this.ojContext._Validate(value, null, null);
+        if (parsed === undefined || !this.ojContext.isValid())
+          return;
+
+        var detail = {};
+        var element = this.ojContext.OuterWrapper;
+        
+        detail['value'] = value;
+        detail['previousValue'] = previousValue;
+        
+        var eventName = "ojValueUpdated";
+        var valueUpdatedEvent = new CustomEvent(eventName, {'detail': detail});
+        element.dispatchEvent(valueUpdatedEvent);
       },
       
       _enable : function (enabled)
@@ -5931,6 +6067,32 @@ var _OjMultiSelect = _ComboUtils.clazz(_AbstractMultiChoice,
        * @type {Object|undefined}
        */
       converter: undefined,
+      
+      /**
+       * Whether to filter the list with the current display value on opening the drop down. This can be used to support search use cases. 
+       * This only applies to the initial opening of the drop down. When the user starts typing, the dropdown filters as usual.
+       *
+       * @example <caption>Initialize the combobox with the <code class="prettyprint">filter-on-open</code> attribute specified:</caption>
+       * &lt;oj-combobox-one filter-on-open="rawValue">&lt;/oj-combobox-one>
+       *
+       * @example <caption>Get or set the <code class="prettyprint">filter-on-open</code> property after initialization:</caption>
+       * // getter
+       * var filterOnOpenValue = myCombobox.filterOnOpen;
+       *
+       * // setter
+       * myCombobox.filterOnOpen = "rawValue";
+       *
+       * @ojshortdesc Whether to filter the drop down list on open.
+       * @expose
+       * @instance
+       * @memberof oj.ojComboboxOne
+       * @since 4.2.0
+       * @ojstatus preview
+       * @ojvalue {string} "none"  Show all available options without filtering on open.
+       * @ojvalue {string} "rawValue" Filter the drop down list on open with the rawValue (current display value).
+       * @default "none"
+       */
+      filterOnOpen: "none",
 
       /**
        * The placeholder text to set on the element. The placeholder specifies a short hint that can be displayed before user
@@ -6021,10 +6183,10 @@ var _OjMultiSelect = _ComboUtils.clazz(_AbstractMultiChoice,
        *   mappedItem['metadata'] = {'key': data['id']};
        *   return mappedItem;
        * }; 
-       * var dataMapping = {mapFields: mapFields};
+       * var dataMapping = {'mapFields': mapFields};
        *
        * var arrayDataProvider = new oj.ArrayDataProvider(dataArray, {idAttribute: 'id'});
-       * var dataProvider = new oj.ListDataProviderView(arrayDataProvider, {dataMapping: dataMapping});
+       * var dataProvider = new oj.ListDataProviderView(arrayDataProvider, {'dataMapping': dataMapping});
        */
       /**
        * {@ojinclude "name":"comboboxCommonOptions"}
@@ -6066,10 +6228,10 @@ var _OjMultiSelect = _ComboUtils.clazz(_AbstractMultiChoice,
        *   mappedItem['metadata'] = {'key': data['id']};
        *   return mappedItem;
        * }; 
-       * var dataMapping = {mapFields: mapFields};
+       * var dataMapping = {'mapFields': mapFields};
        *
        * var arrayDataProvider = new oj.ArrayDataProvider(dataArray, {idAttribute: 'id'});
-       * var dataProvider = new oj.ListDataProviderView(arrayDataProvider, {dataMapping: dataMapping});
+       * var dataProvider = new oj.ListDataProviderView(arrayDataProvider, {'dataMapping': dataMapping});
        */
       /**
        * The option items for the Combobox. This attribute can be used instead of providing a list of <code class="prettyprint">oj-option</code> or <code class="prettyprint">oj-optgroup</code> child elements of the Combobox element.
@@ -6081,11 +6243,11 @@ var _OjMultiSelect = _ComboUtils.clazz(_AbstractMultiChoice,
        *   <li>Use <code class="prettyprint">oj.Optgroup</code> for a group option.</li>
        *   </ul>
        * </li>
-       * <li>a data provider of <a href="oj.Option.html">oj.Option</a>s. This data provider must implement both <a href="oj.IteratingDataProvider.html">oj.IteratingDataProvider</a> and <a href="oj.FetchByKeys.html">oj.FetchByKeys</a>.
+       * <li>a data provider of <a href="oj.Option.html">oj.Option</a>s. This data provider must implement <a href="oj.IteratingDataProvider.html">oj.IteratingDataProvider</a>.
        *   <ul>
        *   <li><code class="prettyprint">value</code> in <code class="prettyprint">oj.Option</code> must be the row key in the data provider.</li>
-       *   <li><code class="prettyprint">options-keys</code> attribute is not supported, please use <a href="oj.ListDataProviderView.html">oj.ListDataProviderView</a> with data mapping instead.</li>
        *   <li>A maximum of 15 rows will be displayed in the dropdown. If more than 15 results are available then users need to filter further.</li>
+       *   <li>If it doesn't implement <a href="oj.FetchByKeys.html">oj.FetchByKeys</a>, JET Combobox will do brute force fetching.</li>
        *   </ul>
        * </li>
        * </ol>
@@ -6099,50 +6261,78 @@ var _OjMultiSelect = _ComboUtils.clazz(_AbstractMultiChoice,
 
       /**
        * Specify the key names to use in the options array. 
-       * <p>Please note that this attribute is not supported if the <code class="prettyprint">options</code> attribute is an <code class="prettyprint">oj.IteratingDataProvider</code>.</p>
-       * <p>This attribute is deprecated to allow better type checking in Typescript. Please see <a href="oj.ListDataProviderView.html">oj.ListDataProviderView</a> with data mapping as a replacement.</p>
        * <p>Depending on options-keys means that the signature of the data does not match what is supported by the options attribute. When using Typescript, this would result in a compilation error.</p>
+       * <p>Best practice is to use a <a href="oj.ListDataProviderView.html">oj.ListDataProviderView</a> with data mapping as a replacement.</p>
+       * <p>However, for the app that must fetch data from a REST endpoint where the data fields do not match those that are supported by the options attribute or the dataProvider doesn't implement <a href="oj.FetchByKeys.html">oj.FetchByKeys</a>, you may use the options-keys with any dataProvider that implements only <a href="oj.IteratingDataProvider.html">oj.IteratingDataProvider</a> interface.</p>
        *
-       * @name optionsKeys
-       * @deprecated 4.1.0 Please use oj.ListDataProviderView with data mapping for the options attribute instead.
        * @expose
        * @access public
        * @instance
        * @type {?Object}
        * @default null
-       * @memberof! oj.ojComboboxOne
+       * @memberof! oj.ojCombobox
        *
        * @example <caption>Initialize the Combobox with <code class="prettyprint">options-keys</code> specified. This allows the key names to be redefined in the options array.</caption>
-       * &lt;oj-combobox-one options-keys="[[optionsKeys]]">&lt;/oj-combobox-one>
+       * &lt;oj-combobox-xxx options-keys="[[optionsKeys]]">&lt;/oj-combobox-xxx>
        * @example var optionsKeys = {value : "state_abbr", label : "state_name"};
        * @example <caption>Redefine keys for data with subgroups.</caption>
        * var optionsKeys = {label : "regions", children : "states", 
        *                    childKeys : {value : "state_abbr", label : "state_name"}};
        */
-      /**
-       * Specify the key names to use in the options array. 
-       * <p>Please note that this attribute is not supported if the <code class="prettyprint">options</code> attribute is an <code class="prettyprint">oj.IteratingDataProvider</code>.</p>
-       * <p>This attribute is deprecated to allow better type checking in Typescript. Please see <a href="oj.ListDataProviderView.html">oj.ListDataProviderView</a> with data mapping as a replacement.</p>
-       * <p>Depending on options-keys means that the signature of the data does not match what is supported by the options attribute. When using Typescript, this would result in a compilation error.</p>
-       *
-       * @name optionsKeys
-       * @deprecated 4.1.0 Please use oj.ListDataProviderView with data mapping for the options attribute instead.
-       * @expose
-       * @access public
-       * @instance
-       * @type {?Object}
-       * @default null
-       * @memberof! oj.ojComboboxMany
-       *
-       * @example <caption>Initialize the Combobox with <code class="prettyprint">options-keys</code> specified. This allows the key names to be redefined in the options array.</caption>
-       * &lt;oj-combobox-many options-keys="[[optionsKeys]]">&lt;/oj-combobox-many>
-       * @example var optionsKeys = {value : "state_abbr", label : "state_name"};
-       * @example <caption>Redefine keys for data with subgroups.</caption>
-       * var optionsKeys = {label : "regions", children : "states", 
-       *                    childKeys : {value : "state_abbr", label : "state_name"}};
-       */
-      optionsKeys : null,
-
+      optionsKeys : {
+        /**
+         * The key name for the label.
+         *
+         * @expose
+         * @public
+         * @instance
+         * @memberof! oj.ojCombobox
+         * @alias optionsKeys.label
+         * @type {?string}
+         * @default null
+         */
+        label: null,
+        /**
+         * The key name for the value.
+         *
+         * @expose
+         * @public
+         * @instance
+         * @memberof! oj.ojCombobox
+         * @alias optionsKeys.value
+         * @type {?string}
+         * @default null
+         */
+        value: null,
+        /**
+         * The key name for the children.
+         *
+         * @expose
+         * @public
+         * @instance
+         * @memberof! oj.ojCombobox
+         * @alias optionsKeys.children
+         * @type {?string}
+         * @default null
+         */
+        children: null,
+        /**
+         * The object for the child keys.
+         *
+         * @expose
+         * @public
+         * @instance
+         * @memberof! oj.ojCombobox
+         * @alias optionsKeys.childKeys
+         * @type {?Object}
+         * @default null
+         * @property {?string} label The key name for the label.
+         * @property {?string} value The key name for the value.
+         * @property {?string} children The key name for the children.
+         * @property {?Object} childKeys The object for the child keys.
+         */
+         childKeys: null
+      },
       /**
        * <p>Attributes specified here will be set on the picker DOM element when it's launched.
        * <p>The supported attributes are <code class="prettyprint">class</code> and <code class="prettyprint">style</code>, which are appended to the picker's class and style, if any.
@@ -6616,7 +6806,7 @@ var _OjMultiSelect = _ComboUtils.clazz(_AbstractMultiChoice,
        * @memberof oj.ojCombobox
        * @ojfragment comboboxCommonValidators
        */    
-       validators: undefined     
+       validators: undefined,     
 
       /**
        * The value of the element. It supports any type.
@@ -6662,6 +6852,32 @@ var _OjMultiSelect = _ComboUtils.clazz(_AbstractMultiChoice,
        * @memberof! oj.ojComboboxMany
        * @type {Array.<*>}
        */
+       
+      /**
+       * Triggered when the value is submitted by the user through pressing the enter key or selecting from the drop down list.
+       * This is to support search use cases.
+       * The event will be fired even if the value is the same. This will help the application to re-submit the search query for the same value.
+       * The event is not triggered if the submitted value fails validation. The event is not triggered on blur or tab out. 
+       *
+       * @example <caption>Define an event listener.</caption>
+       * var listener = function( event )
+       * {
+       *   // Get the search term
+       *   var term = event['detail']['value'];
+       * 
+       *   // search with the term
+       * };
+       * @ojshortdesc Event handler for when the value is submitted by the user.
+       * @expose
+       * @event
+       * @memberof oj.ojComboboxOne
+       * @since 4.2.0
+       * @ojstatus preview
+       * @instance
+       * @property {*} value the current value
+       * @property {*} previousValue the previous value
+       */
+      valueUpdated: null
     },
 
     /**
@@ -6690,6 +6906,7 @@ var _OjMultiSelect = _ComboUtils.clazz(_AbstractMultiChoice,
     _ComponentCreate : function ()
     {
       this._super();
+      _ComboUtils.wrapDataProviderIfNeeded(this);
       this._setup();
     },
     
@@ -6956,17 +7173,19 @@ var _OjMultiSelect = _ComboUtils.clazz(_AbstractMultiChoice,
       }
 
       //if we have a new data provider, remove the old dataProvider event listeners 
-      if (key === "options" && value !== this.options.options)
+      if (key === "options") {
         _ComboUtils.removeDataProviderEventListeners(this);
-
+        _ComboUtils.clearDataProviderWrapper(this);
+      }
       this._super(key, value, flags);  
 
       if (key === "options") 
       {
         //only add data provider event listeners to new data provider
-        if (value !== this.options.options)
+        if (_ComboUtils.isDataProvider(value)) {
+          _ComboUtils.wrapDataProviderIfNeeded(this);
           _ComboUtils.addDataProviderEventListeners(this);
-
+        }
         this.combobox.opts.options = value;
         this.combobox.opts = this.combobox._prepareOpts(this.combobox.opts);
       }
@@ -7433,6 +7652,7 @@ var _OjMultiSelect = _ComboUtils.clazz(_AbstractMultiChoice,
       
       return subId;      
     }
+     
     
   // Fragments:
   
@@ -7460,6 +7680,23 @@ var _OjMultiSelect = _ComboUtils.clazz(_AbstractMultiChoice,
    * &lt;oj-combobox-many>
    *   &lt;oj-option value="option1">Option1&lt;/oj-option>
    * &lt;/oj-combobox-many>
+   */
+   
+  /**
+   * <p>The <code class="prettyprint">end</code> slot is for replacing combobox one's drop down arrow and the divider. 
+   * For example, a magnifying glass icon for a search field can be provided in this slot.
+   * When the slot is provided with empty content, nothing will be rendered in the slot.
+   * When the slot is not provided, the default drop down arrow icon and the divider will be rendered.</p>
+   *
+   * @ojslot end
+   * @since 4.2.0
+   * @ojstatus preview
+   * @memberof oj.ojComboboxOne
+   *
+   * @example <caption>Initialize the Combobox one with child content specified for the end slot:</caption>
+   * &lt;oj-combobox-one>
+   *   &lt;a slot='end' class='mySearchButtonClass'>&lt;/a>
+   * &lt;/oj-combobox-one>
    */
 
 
@@ -7994,10 +8231,10 @@ var _OjMultiSelect = _ComboUtils.clazz(_AbstractMultiChoice,
        *   mappedItem['metadata'] = {'key': data['id']};
        *   return mappedItem;
        * }; 
-       * var dataMapping = {mapFields: mapFields};
+       * var dataMapping = {'mapFields': mapFields};
        *
        * var arrayDataProvider = new oj.ArrayDataProvider(dataArray, {idAttribute: 'id'});
-       * var dataProvider = new oj.ListDataProviderView(arrayDataProvider, {dataMapping: dataMapping});
+       * var dataProvider = new oj.ListDataProviderView(arrayDataProvider, {'dataMapping': dataMapping});
        */
       /**
        * {@ojinclude "name":"selectCommonOptions"}
@@ -8040,10 +8277,10 @@ var _OjMultiSelect = _ComboUtils.clazz(_AbstractMultiChoice,
        *   mappedItem['metadata'] = {'key': data['id']};
        *   return mappedItem;
        * }; 
-       * var dataMapping = {mapFields: mapFields};
+       * var dataMapping = {'mapFields': mapFields};
        *
        * var arrayDataProvider = new oj.ArrayDataProvider(dataArray, {idAttribute: 'id'});
-       * var dataProvider = new oj.ListDataProviderView(arrayDataProvider, {dataMapping: dataMapping});
+       * var dataProvider = new oj.ListDataProviderView(arrayDataProvider, {'dataMapping': dataMapping});
        */
       /**
        * The option items for the Select. This attribute can be used instead of providing a list of <code class="prettyprint">oj-option</code> or <code class="prettyprint">oj-optgroup</code> child elements of the Select element.
@@ -8055,11 +8292,11 @@ var _OjMultiSelect = _ComboUtils.clazz(_AbstractMultiChoice,
        *   <li>Use <code class="prettyprint">oj.Optgroup</code> for a group option.</li>
        *   </ul>
        * </li>
-       * <li>a data provider of <a href="oj.Option.html">oj.Option</a>s. This data provider must implement both <a href="oj.IteratingDataProvider.html">oj.IteratingDataProvider</a> and <a href="oj.FetchByKeys.html">oj.FetchByKeys</a>.
+       * <li>a data provider of <a href="oj.Option.html">oj.Option</a>s. This data provider must implement <a href="oj.IteratingDataProvider.html">oj.IteratingDataProvider</a>.
        *   <ul>
        *   <li><code class="prettyprint">value</code> in <code class="prettyprint">oj.Option</code> must be the row key in the data provider.</li>
-       *   <li><code class="prettyprint">options-keys</code> attribute is not supported, please use <a href="oj.ListDataProviderView.html">oj.ListDataProviderView</a> with data mapping instead.</li>
        *   <li>A maximum of 15 rows will be displayed in the dropdown. If more than 15 results are available then users need to filter further. Please note that users can't filter further if render-mode is <code class="prettyprint">native</code>.</li>
+       *   <li>If it doesn't implement <a href="oj.FetchByKeys.html">oj.FetchByKeys</a>, JET Select will do brute force fetching.</li>
        *   </ul>
        * </li>
        * </ol>
@@ -8073,50 +8310,79 @@ var _OjMultiSelect = _ComboUtils.clazz(_AbstractMultiChoice,
 
       /**
        * Specify the key names to use in the options array. 
-       * <p>Please note that this attribute is not supported if the <code class="prettyprint">options</code> attribute is an <code class="prettyprint">oj.IteratingDataProvider</code>.</p>
-       * <p>This attribute is deprecated to allow better type checking in Typescript. Please see <a href="oj.ListDataProviderView.html">oj.ListDataProviderView</a> with data mapping as a replacement.</p>
        * <p>Depending on options-keys means that the signature of the data does not match what is supported by the options attribute. When using Typescript, this would result in a compilation error.</p>
-       *
+       * <p>Best practice is to use a <a href="oj.ListDataProviderView.html">oj.ListDataProviderView</a> with data mapping as a replacement.</p>
+       * <p>However, for the app that must fetch data from a REST endpoint where the data fields do not match those that are supported by the options attribute or the dataProvider doesn't implement <a href="oj.FetchByKeys.html">oj.FetchByKeys</a>, you may use the options-keys with any dataProvider that implements only <a href="oj.IteratingDataProvider.html">oj.IteratingDataProvider</a> interface.</p>
+       * 
        * @name optionsKeys
-       * @deprecated 4.1.0 Please use oj.ListDataProviderView with data mapping for the options attribute instead.
        * @expose
        * @access public
        * @instance
        * @type {?Object}
        * @default null
-       * @memberof! oj.ojSelectOne
+       * @memberof! oj.ojSelect
        *
        * @example <caption>Initialize the Select with <code class="prettyprint">options-keys</code> specified. This allows the key names to be redefined in the options array.</caption>
-       * &lt;oj-select-one options-keys="[[optionsKeys]]">&lt;/oj-select-one>
+       * &lt;oj-select-xxx options-keys="[[optionsKeys]]">&lt;/oj-select-xxx>
        * @example var optionsKeys = {value : "state_abbr", label : "state_name"};
        * @example <caption>Redefine keys for data with subgroups.</caption>
        * var optionsKeys = {label : "regions", children : "states", 
        *                    childKeys : {value : "state_abbr", label : "state_name"}};
        */
-      /**
-       * Specify the key names to use in the options array. 
-       * <p>Please note that this attribute is not supported if the <code class="prettyprint">options</code> attribute is an <code class="prettyprint">oj.IteratingDataProvider</code>.</p>
-       * <p>This attribute is deprecated to allow better type checking in Typescript. Please see <a href="oj.ListDataProviderView.html">oj.ListDataProviderView</a> with data mapping as a replacement.</p>
-       * <p>Depending on options-keys means that the signature of the data does not match what is supported by the options attribute. When using Typescript, this would result in a compilation error.</p>
-       *
-       * @name optionsKeys
-       * @deprecated 4.1.0 Please use oj.ListDataProviderView with data mapping for the options attribute instead.
-       * @expose
-       * @access public
-       * @instance
-       * @type {?Object}
-       * @default null
-       * @memberof! oj.ojSelectMany
-       *
-       * @example <caption>Initialize the Select with <code class="prettyprint">options-keys</code> specified. This allows the key names to be redefined in the options array.</caption>
-       * &lt;oj-select-many options-keys="[[optionsKeys]]">&lt;/oj-select-many>
-       * @example var optionsKeys = {value : "state_abbr", label : "state_name"};
-       * @example <caption>Redefine keys for data with subgroups.</caption>
-       * var optionsKeys = {label : "regions", children : "states", 
-       *                    childKeys : {value : "state_abbr", label : "state_name"}};
-       */
-      optionsKeys : null,
-
+      optionsKeys : {
+        /**
+         * The key name for the label.
+         *
+         * @expose
+         * @public
+         * @instance
+         * @memberof! oj.ojSelect
+         * @alias optionsKeys.label
+         * @type {?string}
+         * @default null
+         */
+        label: null,
+        /**
+         * The key name for the value.
+         *
+         * @expose
+         * @public
+         * @instance
+         * @memberof! oj.ojSelect
+         * @alias optionsKeys.value
+         * @type {?string}
+         * @default null
+         */
+        value: null,
+        /**
+         * The key name for the children.
+         *
+         * @expose
+         * @public
+         * @instance
+         * @memberof! oj.ojSelect
+         * @alias optionsKeys.children
+         * @type {?string}
+         * @default null
+         */
+        children: null,
+        /**
+         * The object for the child keys.
+         *
+         * @expose
+         * @public
+         * @instance
+         * @memberof! oj.ojSelect
+         * @alias optionsKeys.childKeys
+         * @type {?Object}
+         * @default null
+         * @property {?string} label The key name for the label.
+         * @property {?string} value The key name for the value.
+         * @property {?string} children The key name for the children.
+         * @property {?Object} childKeys The object for the child keys.
+         */
+        childKeys: null
+      },
       /**
        * <p>Attributes specified here will be set on the picker DOM element when it's launched.
        * <p>The supported attributes are <code class="prettyprint">class</code> and <code class="prettyprint">style</code>, which are appended to the picker's class and style, if any.
@@ -8421,8 +8687,9 @@ var _OjMultiSelect = _ComboUtils.clazz(_AbstractMultiChoice,
      * @memberof! oj.ojSelect
      */
     _ComponentCreate : function ()
-    {
+    { 
       this._super();
+      _ComboUtils.wrapDataProviderIfNeeded(this);
       this._setup();
     },
     
@@ -8558,10 +8825,13 @@ var _OjMultiSelect = _ComboUtils.clazz(_AbstractMultiChoice,
       //populate data in dropdown here
       var element = this.element;
 
-      _ComboUtils.arrayPopulateResults(element, 
-                                       data,
-                                       this._formatValue.bind(this), 
-                                       this.options.optionsKeys);
+      //if options is a dataProvider, it was wrapped with LPDV
+      //don't pass in optionsKeys
+      _ComboUtils.arrayPopulateResults(element, data,
+        this._formatValue.bind(this), 
+        _ComboUtils.isDataProvider(this.options.options) ? 
+          null : this.options.optionsKeys);
+                        
       element.addClass(_ComboUtils.GENERATED_OPTIONS_SELECTOR);
     },
 
@@ -8651,8 +8921,9 @@ var _OjMultiSelect = _ComboUtils.clazz(_AbstractMultiChoice,
       }
       else if (this.options.options)
       {
-        if (_ComboUtils.isDataProvider(this.options.options) ) {
-          this._nativeFetchFromDataProvider(this.options.options);
+        var dataProvider = _ComboUtils.getDataProvider(this.options);
+        if (dataProvider) {
+          this._nativeFetchFromDataProvider(dataProvider);
         }
         else {
           this._nativeQueryCallback(this.options.options);
@@ -8677,8 +8948,9 @@ var _OjMultiSelect = _ComboUtils.clazz(_AbstractMultiChoice,
       });
 
       // - the selected option of the ojselect not reflected in the value variable
+      var dataProvider = _ComboUtils.getDataProvider(this.options);
       if (! this.options.value && ! this._HasPlaceholderSet() &&
-          ! _ComboUtils.isDataProvider(this.options.options)) {
+          ! dataProvider) {
         this._setInitialSelectedValue(this._nativeFindFirstEnabledOptionValue());
       }
 
@@ -9145,15 +9417,19 @@ var _OjMultiSelect = _ComboUtils.clazz(_AbstractMultiChoice,
             this.element.removeClass("oj-select-default");
         }
 
-        if (_ComboUtils.isDataProvider(this.options.options) && value) {
+        var dataProvider = _ComboUtils.getDataProvider(this.options);
+        if (dataProvider && value) {
           var self = this;
           var selfSuper = this._super;
+          this.select.opts.options = dataProvider;
+
           _ComboUtils.validateFromDataProvider(
             this._isNative()? this.element : this.select.container, 
-            this.options.options, value).then(
-              function(results) {
-                //only set value if it is valid
-                if (Array.isArray(results) && results.length) {
+            dataProvider, value).then(
+
+            function(results) {
+              //only set value if it is valid
+              if (Array.isArray(results) && results.length) {
                   selfSuper.call(self, key, self.multiple? results : results[0]);
                 }
               });
@@ -9221,9 +9497,10 @@ var _OjMultiSelect = _ComboUtils.clazz(_AbstractMultiChoice,
       }
 
       //if we have a new data provider, remove the old dataProvider event listeners 
-      if (key === "options" && value !== this.options.options)
+      if (key === "options") {
         _ComboUtils.removeDataProviderEventListeners(this);
-
+        _ComboUtils.clearDataProviderWrapper(this);
+      }
       this._super(key, value, flags);
 
       if (key === "disabled")
@@ -9241,18 +9518,24 @@ var _OjMultiSelect = _ComboUtils.clazz(_AbstractMultiChoice,
       }
       else if (key === "options")
       {
-        //only add data provider event listeners to new data provider
-        if (value !== this.options.options)
+        //if options is a new data provider
+        //wrap it with LVDP if it doesn't implement FetchByKeys
+        //add event listeners
+        if (_ComboUtils.isDataProvider(value)) {
+          _ComboUtils.wrapDataProviderIfNeeded(this);
           _ComboUtils.addDataProviderEventListeners(this);
-
+        }
         if (this.select)
         {
           //make sure the value still valid
           var selected = this.select.getVal();
-          if (_ComboUtils.isDataProvider(value) && selected) {
+          var dataProvider = _ComboUtils.getDataProvider(this.options);
+
+          if (dataProvider && selected) {
             var self = this;
             var selfSuper = this._super;
-            _ComboUtils.validateFromDataProvider(this.select.container, value, this.options.value).then(
+            _ComboUtils.validateFromDataProvider(this.select.container, dataProvider, 
+                                                 this.options.value).then(
               function(results) {
                 //only set value it is valid
                 if (Array.isArray(results) && results.length) {
@@ -9264,7 +9547,8 @@ var _OjMultiSelect = _ComboUtils.clazz(_AbstractMultiChoice,
                 }
                 //the selected value is no longer valid, fetch 1st item from data provider
                 else {
-                  _ComboUtils.fetchFirstBlockFromDataProvider(self.select.container, value, 1).then(
+                  _ComboUtils.fetchFirstBlockFromDataProvider(self.select.container, 
+                                                              dataProvider, 1).then(
                     function(data) {
                       //At this point if we still don't have a selected value then default to the first item
                       if (data && data.length > 0 && selected === self.select.getVal()) {
@@ -11449,6 +11733,10 @@ var ojComboboxOneMeta = {
     "converter": {
       "type": "Object"
     },
+    "filterOnOpen": {
+      "type": "string",
+      "enumValues": ["none", "rawValue"]
+    },
     "minLength": {
       "type": "number"
     },
@@ -11456,7 +11744,32 @@ var ojComboboxOneMeta = {
     "options": {
     },
     "optionsKeys": {
-      "type": "Object"
+      "type": "Object",
+      "properties": {
+        "label": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        },
+        "children": {
+          "type": "string"
+        },
+        "childKeys": {
+          "type": "Object",
+          "properties": {
+            "label": {
+              "type": "string"
+            },
+            "value": {
+              "type": "string"
+            },
+            "children": {
+              "type": "string"
+            }
+          }
+        }
+      }
     },
     "pickerAttributes": {
       "type": "Object"
@@ -11479,6 +11792,9 @@ var ojComboboxOneMeta = {
     "validators": {
       "type": "Array"
     }
+  },
+  "events": {
+    "valueUpdated": {}
   },
   "methods": {
     "validate": {}
@@ -11505,7 +11821,32 @@ var ojComboboxManyMeta = {
     "options": {
     },
     "optionsKeys": {
-      "type": "Object"
+      "type": "Object",
+      "properties": {
+        "label": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        },
+        "children": {
+          "type": "string"
+        },
+        "childKeys": {
+          "type": "Object",
+          "properties": {
+            "label": {
+              "type": "string"
+            },
+            "value": {
+              "type": "string"
+            },
+            "children": {
+              "type": "string"
+            }
+          }
+        }
+      }
     },
     "pickerAttributes": {
       "type": "Object"
@@ -11551,7 +11892,32 @@ var ojSelectOneMeta = {
     "options": {
     },
     "optionsKeys": {
-      "type": "Object"
+      "type": "Object",
+      "properties": {
+        "label": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        },
+        "children": {
+          "type": "string"
+        },
+        "childKeys": {
+          "type": "Object",
+          "properties": {
+            "label": {
+              "type": "string"
+            },
+            "value": {
+              "type": "string"
+            },
+            "children": {
+              "type": "string"
+            }
+          }
+        }
+      }
     },
     "pickerAttributes": {
       "type": "Object"
@@ -11592,7 +11958,32 @@ var ojSelectManyMeta = {
     "options": {
     },
     "optionsKeys": {
-      "type": "Object"
+      "type": "Object",
+      "properties": {
+        "label": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        },
+        "children": {
+          "type": "string"
+        },
+        "childKeys": {
+          "type": "Object",
+          "properties": {
+            "label": {
+              "type": "string"
+            },
+            "value": {
+              "type": "string"
+            },
+            "children": {
+              "type": "string"
+            }
+          }
+        }
+      }
     },
     "pickerAttributes": {
       "type": "Object"

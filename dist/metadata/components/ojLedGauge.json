@@ -1,8 +1,8 @@
 {
-  "name": "ojLedGauge",
-  "version": "4.1.0",
-  "jetVersion": "4.1.0",
-  "displayName": " Led Gauge",
+  "name": "oj-led-gauge",
+  "version": "4.2.0",
+  "jetVersion": "4.2.0",
+  "displayName": "Led Gauge",
   "preview": true,
   "roles": [
     "img",
@@ -26,12 +26,12 @@
       "description": "An object defining the label.",
       "type": "object",
       "displayName": "Label",
-      "value": "{}",
+      "value": {},
       "properties": {
         "style": {
           "description": "The CSS style string defining the style of the label.",
           "type": "object",
-          "value": "{}"
+          "value": {}
         },
         "text": {
           "description": "The text for the label.",
@@ -51,7 +51,7 @@
       "description": "An object defining the value label.",
       "type": "object",
       "displayName": "Metric Label",
-      "value": "{}",
+      "value": {},
       "properties": {
         "converter": {
           "description": "The converter used to format the labels. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.",
@@ -115,7 +115,7 @@
         "style": {
           "description": "The CSS style string defining the style of the label.",
           "type": "object",
-          "value": "{}"
+          "value": {}
         },
         "text": {
           "description": "The text for the label. If specified, text will overwrite the numeric value that is displayed by default. The converter, scaling, and textType attributes are ignored when text is specified.",
@@ -179,8 +179,8 @@
       "type": "number",
       "displayName": "Size",
       "value": 1,
-      "maximum": "1",
-      "minimum": "0"
+      "maximum": 1,
+      "minimum": 0
     },
     "svgClassName": {
       "description": "The CSS style class to apply to the gauge. The style class and inline style will override any other styling specified through the properties. For tooltip interactivity, it's recommended to also pass a representative color to the color attribute.",
@@ -191,7 +191,7 @@
       "description": "The inline style to apply to the gauge. The style class and inline style will override any other styling specified through the properties. For tooltip interactivity, it's recommended to also pass a representative color to the color attribute.",
       "type": "object",
       "displayName": "Svg Style",
-      "value": "{}"
+      "value": {}
     },
     "thresholds": {
       "description": "An array of objects with the following properties defining the thresholds for the gauge.",
@@ -226,7 +226,7 @@
       "description": "An object containing an optional callback function for tooltip customization.",
       "type": "object",
       "displayName": "Tooltip",
-      "value": "{}",
+      "value": {},
       "properties": {
         "renderer": {
           "description": "A function that returns a custom tooltip. The function takes a dataContext argument,\nprovided by the gauge, with the following properties: parentElement: The tooltip element. The function can directly modify or append content to this element. label: The computed metric label. color: The color of the gauge. componentElement: The LED gauge HTML element. The function should return an Object that contains only one of the two properties: insert: HTMLElement | string - An HTML element, which will be appended to the tooltip, or a tooltip string. preventDefault: true - Indicates that the tooltip should not be displayed. It is not necessary to return {preventDefault:false} to display tooltip, since this is a default behavior. ",
@@ -355,7 +355,6 @@
         "arrow",
         "circle",
         "diamond",
-        "ellipse",
         "human",
         "rectangle",
         "square",
@@ -371,9 +370,6 @@
         },
         "diamond": {
           "displayName": "Diamond"
-        },
-        "ellipse": {
-          "displayName": "Ellipse"
         },
         "human": {
           "displayName": "Human"

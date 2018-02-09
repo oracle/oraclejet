@@ -5183,6 +5183,7 @@ dvt.Diagram.prototype.PreRender = function() {
   }
   else if (this._layoutContext) {
     this._layoutContext.setEventData(null);
+    this._layoutContext.setComponentSize(new dvt.DiagramRectangle(0, 0, this.getWidth(), this.getHeight()));
   }
 };
 
@@ -5484,6 +5485,16 @@ dvt.Diagram.prototype._processContent = function(bEmptyDiagram) {
     }
     this._fitContent();
   }
+  // Initialize panZoomCanvas settings on initial update
+  // regardless of whether the component is empty or not.
+  if (!this._bRendered) {
+    var pzc = this.getPanZoomCanvas();
+    pzc.setPanningEnabled(this.IsPanningEnabled());
+    pzc.setPanDirection(this.getPanDirection());
+    pzc.setZoomingEnabled(this.IsZoomingEnabled());
+    pzc.setZoomToFitEnabled(this.IsZoomingEnabled());
+  }
+
   this._oldPanZoomCanvas = null;
 
   // Animation Support
@@ -5546,21 +5557,12 @@ dvt.Diagram.prototype._fitContent = function() {
   var pzc = this.getPanZoomCanvas();
   if (!this._bRendered) {
     this.AdjustMinZoom(this._cachedViewBounds);
-    //if we're rendering null xml, it may be for a maximize/restore,
-    //so don't automatically zoom-to-fit
-    if (!this.IsResize()) {
-      //: don't override a viewport returned from the layout engine
-      var bLayoutViewport = this.IsLayoutViewport();
-      var fitBounds = bLayoutViewport ? this.GetLayoutViewport() : this._cachedViewBounds;
-      if (bLayoutViewport)
-        pzc.setZoomToFitPadding(0);
-      pzc.zoomToFit(null, fitBounds);
-    }
-
-    pzc.setPanningEnabled(this.IsPanningEnabled());
-    pzc.setPanDirection(this.getPanDirection());
-    pzc.setZoomingEnabled(this.IsZoomingEnabled());
-    pzc.setZoomToFitEnabled(this.IsZoomingEnabled());
+    //: don't override a viewport returned from the layout engine
+    var bLayoutViewport = this.IsLayoutViewport();
+    var fitBounds = bLayoutViewport ? this.GetLayoutViewport() : this._cachedViewBounds;
+    if (bLayoutViewport)
+      pzc.setZoomToFitPadding(0);
+    pzc.zoomToFit(null, fitBounds);
   }
   else if (this.IsResize() || this._partialUpdate) {
     // Update the min zoom if it's unspecified
@@ -5667,9 +5669,10 @@ dvt.Diagram.prototype.prepareNodes = function(nodesData) {
     return;
   this._prepareNodes(null, nodesData);
 
-  //update internal array of disclosed nodes if neccessary - initial rendering or option change case
-  if (!this.DisclosedNodes) {
-    var origExpanded = this.getOptions()['expanded'];
+  // on custom elements expanded is as an ojKeySet, on widgets it is an array
+  // if expanded is an array, update internal array of disclosed nodes if neccessary - initial rendering or option change case
+  var origExpanded = this.getOptions()['expanded'];
+  if (!origExpanded || (!(origExpanded['has']) && !this.DisclosedNodes)) {
     this.DisclosedNodes = !origExpanded ? [] :
         origExpanded === 'all' ? this._arNodeIds : origExpanded;
   }
@@ -6386,13 +6389,8 @@ dvt.Diagram.prototype._prepareNodes = function(parent, nodesData) {
  * @param {boolean} disclosed whether the node should be disclosed or not
  */
 dvt.Diagram.prototype.setNodeDisclosed = function(nodeId, disclosed) {
-  var index = -1;
-  if (this.DisclosedNodes) {
-    index = dvt.ArrayUtils.getIndex(this.DisclosedNodes, nodeId);
-  }
-  if ((!disclosed && index > -1) || (disclosed && index < 0)) {
+  if (disclosed != this._isNodeDisclosed(nodeId))
     this.dispatchEvent(new dvt.EventFactory.newEvent(disclosed ? 'beforeExpand' : 'beforeCollapse', nodeId));
-  }
 };
 
 /**
@@ -6400,11 +6398,24 @@ dvt.Diagram.prototype.setNodeDisclosed = function(nodeId, disclosed) {
  * @param {String} nodeId node id
  */
 dvt.Diagram.prototype.expand = function(nodeId) {
-  if (!this.DisclosedNodes)
-    this.DisclosedNodes = [];
-  var index = dvt.ArrayUtils.getIndex(this.DisclosedNodes, nodeId);
-  if (index < 0) {
-    this.DisclosedNodes.push(nodeId);
+  var triggerEvent = false;
+  var expanded = this.getOptions()['expanded'];
+  if (expanded && expanded['has'] && !expanded['has'](nodeId)) { // key set - component created a custom element
+    triggerEvent = true;
+    expanded = expanded['add']([nodeId]);
+    this.applyOptions({'expanded': expanded});
+  }
+  else { // rely internally on this.DisclosedNodes - component created as a widget
+    if (!this.DisclosedNodes)
+      this.DisclosedNodes = [];
+    var index = dvt.ArrayUtils.getIndex(this.DisclosedNodes, nodeId);
+    if (index < 0) {
+      this.DisclosedNodes.push(nodeId);
+      triggerEvent = true;
+    }
+  }
+
+  if (triggerEvent) {
     this.render(this.getOptions(), this.Width, this.Height);
     this.dispatchEvent(new dvt.EventFactory.newEvent('expand', nodeId));
   }
@@ -6415,12 +6426,25 @@ dvt.Diagram.prototype.expand = function(nodeId) {
  * @param {String} nodeId node id
  */
 dvt.Diagram.prototype.collapse = function(nodeId) {
-  var index = -1;
-  if (this.DisclosedNodes) {
-    index = dvt.ArrayUtils.getIndex(this.DisclosedNodes, nodeId);
+  var triggerEvent = false;
+  var expanded = this.getOptions()['expanded'];
+  if (expanded && expanded['has'] && expanded['has'](nodeId)) { // key set - component created a custom element
+    triggerEvent = true;
+    expanded = expanded['delete']([nodeId]);
+    this.applyOptions({'expanded': expanded});
   }
-  if (index > -1) {
-    this.DisclosedNodes.splice(index, 1);
+  else { // rely internally on this.DisclosedNodes - component created as a widget
+    var index = -1;
+    if (this.DisclosedNodes) {
+      index = dvt.ArrayUtils.getIndex(this.DisclosedNodes, nodeId);
+    }
+    if (index > -1) {
+      this.DisclosedNodes.splice(index, 1);
+      triggerEvent = true;
+    }
+  }
+
+  if (triggerEvent) {
     this.render(this.getOptions(), this.Width, this.Height);
     this.dispatchEvent(new dvt.EventFactory.newEvent('collapse', nodeId));
   }
@@ -6502,10 +6526,15 @@ dvt.Diagram.prototype._createLayoutContextForChildNodes = function(lcParentNode,
  * @return {boolean} true if the node is expanded
  */
 dvt.Diagram.prototype._isNodeDisclosed = function(nodeId) {
-  var disclosedNodes = this.DisclosedNodes ? this.DisclosedNodes :
-      this.getOptions()['expanded'];
-  return (disclosedNodes && dvt.ArrayUtils.getIndex(disclosedNodes, nodeId) > -1) ||
-      (disclosedNodes && dvt.ArrayUtils.getIndex(disclosedNodes, 'all') > -1);
+  var expanded = this.getOptions()['expanded'];
+  if (expanded && expanded['has']) // key set - component created a custom element
+    return expanded['has'](nodeId);
+  else { // rely internally on this.DisclosedNodes - component created as a widget
+    var disclosedNodes = this.DisclosedNodes ? this.DisclosedNodes : expanded;
+    return (disclosedNodes && dvt.ArrayUtils.getIndex(disclosedNodes, nodeId) > -1) ||
+        (disclosedNodes && dvt.ArrayUtils.getIndex(disclosedNodes, 'all') > -1);
+  }
+  return false;
 };
 
 /**
@@ -6985,7 +7014,7 @@ dvt.Diagram.prototype._removeNodes = function(parent, nodesData) {
       this.getNodesPane().removeChild(node);
     }
     dvt.ArrayUtils.removeItem(this._arNodeIds, nodeId);
-    this._nodes[nodeId] = null;
+    delete this._nodes[nodeId];
   }
   this._removeLinks(linksToRemove);
 };
@@ -7010,7 +7039,7 @@ dvt.Diagram.prototype._removeLinks = function(linksData) {
       startNode && startNode.removeOutLinkId(linkId);
       endNode && endNode.removeInLinkId(linkId);
       dvt.ArrayUtils.removeItem(this._arLinkIds, linkId);
-      this._links[linkId] = null;
+      delete this._links[linkId];
     }
     else if (this._linkToPromotedMap[linkId]) {
       var promotedLinkId = this._linkToPromotedMap[linkId];
@@ -7025,9 +7054,9 @@ dvt.Diagram.prototype._removeLinks = function(linksData) {
         startNode && startNode.removeOutLinkId(promotedLinkId);
         endNode && endNode.removeInLinkId(promotedLinkId);
         dvt.ArrayUtils.removeItem(this._arLinkIds, promotedLink.getId());
-        this._links[promotedLink.getId()] = null;
-        this._promotedLinksMap[promotedLink.getId()] = null;
-        this._linkToPromotedMap[linkId] = null;
+        delete this._links[promotedLink.getId()];
+        delete this._promotedLinksMap[promotedLink.getId()];
+        delete this._linkToPromotedMap[linkId];
       }
       else if (data) {
         // don't remove the promoted link, but update its links data
@@ -7037,7 +7066,7 @@ dvt.Diagram.prototype._removeLinks = function(linksData) {
             data.splice(i, 1);
           }
         }
-        this._linkToPromotedMap[linkId] = null;
+        delete this._linkToPromotedMap[linkId];
       }
     }
   }
@@ -8287,7 +8316,7 @@ DvtDiagramLink.prototype.Init = function(context, diagram, data, promoted) {
   DvtDiagramLink.superclass.Init.call(this, context, data['id'], diagram);
   this._data = data;
   this.setPromoted(promoted);
-  if (this._diagram.isSelectionSupported()) {
+  if (this.isSelectable()) {
     this.setCursor(dvt.SelectionEffectUtils.getSelectingCursor());
   }
   //sets group id for the link if exists
@@ -9199,7 +9228,7 @@ DvtDiagramNode.newInstance = function(diagram, data) {
 DvtDiagramNode.prototype.Init = function(context, diagram, data) {
   DvtDiagramNode.superclass.Init.call(this, context, data['id'], diagram);
   this._data = data;
-  if (this._diagram.isSelectionSupported()) {
+  if (this.isSelectable()) {
     this.setCursor(dvt.SelectionEffectUtils.getSelectingCursor());
   }
 };
@@ -9320,6 +9349,11 @@ DvtDiagramNode.prototype.render = function() {
         right: nodeBoundingRect.right - childPaneBoundingRect.right,
         top: childPaneBoundingRect.top - nodeBoundingRect.top,
         bottom: nodeBoundingRect.bottom - childPaneBoundingRect.bottom};
+    }
+    //reset default selection shape if it is there
+    if (this._selectionShape) {
+      this.removeChild(this._selectionShape);
+      this._selectionShape = null;
     }
   }
   else {

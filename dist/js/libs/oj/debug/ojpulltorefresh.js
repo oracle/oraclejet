@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2014, 2017, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
@@ -18,7 +18,7 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore'],
  */
 
 /**
- * @class Utility methods for setting up pull to refresh on content inside a container.
+ * @class oj.PullToRefreshUtils
  * @since 1.2.0
  * @export
  * @ojstatus preview

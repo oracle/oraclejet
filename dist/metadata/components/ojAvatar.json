@@ -1,8 +1,8 @@
 {
-  "name": "ojAvatar",
-  "version": "4.1.0",
-  "jetVersion": "4.1.0",
-  "displayName": " Avatar",
+  "name": "oj-avatar",
+  "version": "4.2.0",
+  "jetVersion": "4.2.0",
+  "displayName": "Avatar",
   "preview": true,
   "styleClasses": [
     {
@@ -12,13 +12,14 @@
       "description": "Use to diplay avatar group placeholder image instead of single person placeholder image."
     }
   ],
-  "description": "Themeable, WAI-ARIA-compliant element that often represents a person",
+  "description": "An icon capable of displaying a custom image, initials, or a placeholder image.",
   "properties": {
     "initials": {
-      "description": "Specifies the initials of the avatar. Will only be displayed if the src attribute is null. Required if src attribute is provided for accessibility purposes. Will be displayed if the src attribute is not specified, or in high contrast mode for accessibility purposes.",
+      "description": "Specifies the initials of the avatar.",
       "type": "string",
       "displayName": "Initials",
-      "value": null
+      "value": null,
+      "translatable": true
     },
     "size": {
       "description": "Specifies the size of the avatar.",
@@ -66,7 +67,7 @@
       }
     },
     "src": {
-      "description": "Specifies the src for the image of the avatar. Image will be rendered as a background image. In high contrast mode, initials will be displayed instead since background images will not be rendered.",
+      "description": "Specifies the src for the image of the avatar.",
       "type": "string",
       "displayName": "Src",
       "value": null

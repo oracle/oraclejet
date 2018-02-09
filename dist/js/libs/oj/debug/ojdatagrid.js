@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2014, 2017, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
@@ -788,6 +788,15 @@ DvtDataGrid.prototype.SetOptionCallback = function(callback)
 DvtDataGrid.prototype.SetRemoveCallback = function(callback)
 {
     this.m_removeCallback = callback;
+};
+
+/**
+ * Set the callback for add or remove of id
+ * @param {Function} callback a callback for the unique id function
+ */
+DvtDataGrid.prototype.SetUniqueIdCallback = function(callback)
+{
+    this._uniqueIdCallback = callback;
 };
 
 /**
@@ -5936,6 +5945,15 @@ DvtDataGrid.prototype._createCellId = function(keys)
 };
 
 /**
+ * Creates a unique ID
+ * @private
+ */
+DvtDataGrid.prototype._createUniqueId = function(cell)
+{
+    return this._uniqueIdCallback(cell, false);
+};
+
+/**
  * Creates the header id from the axis and key
  * @param {string} axis row/column
  * @param {string} key the header key
@@ -8475,7 +8493,7 @@ DvtDataGrid.prototype._setCellHover = function(targetCell, addOrRemove)
 
 DvtDataGrid.prototype.handleDatabodyDoubleClick = function(event)
 {
-    var target, cell, currentMode;
+    var target, cell, currentMode, activeCell;
     if (this._isGridEditable())
     {
         target = event.target;
@@ -8483,7 +8501,16 @@ DvtDataGrid.prototype.handleDatabodyDoubleClick = function(event)
         currentMode = this._getCurrentMode();
         if (currentMode == 'edit')
         {
-            this._handleExitEdit(event, cell);
+            activeCell = this._getActiveElement();
+            if (cell == activeCell)
+            {
+                // if the active cell is being edited and it is the target do not eat the double click
+                return;
+            }
+            if (!this._handleExitEdit(event, activeCell))
+            {
+                return;
+            }
         }
         this._handleEditable(event, cell);
         this._handleEdit(event, cell);
@@ -11012,6 +11039,10 @@ DvtDataGrid.prototype._setActive = function(element, cellInfo, event, clearSelec
                 this._manageMoveCursor();
                 if (this._isGridEditable())
                 {
+                    if (active['type'] === 'cell')
+                    {
+                        this._setEditableClone(element);
+                    }
                     this._updateEdgeCellBorders('');
                 }
                 if (!silent)
@@ -12444,8 +12475,9 @@ DvtDataGrid.prototype._exitActionableMode = function()
  * @param {Element|undefined|null} cell
  * @param {string} mode
  * @param {string} classToToggle class to toggle on or off before rerendering
+ * @param {Element|null=} editableClone
  */
-DvtDataGrid.prototype._reRenderCell = function(cell, mode, classToToggle)
+DvtDataGrid.prototype._reRenderCell = function(cell, mode, classToToggle, editableClone)
 {
     var renderer, cellContext;
     renderer = this.m_options.getRenderer('cell');
@@ -12465,7 +12497,38 @@ DvtDataGrid.prototype._reRenderCell = function(cell, mode, classToToggle)
         this.m_utils.addCSSClassName(cell, classToToggle);
     }
 
+    if (editableClone)
+    {
+        while (editableClone.hasChildNodes()) {
+            cell.appendChild(editableClone.firstChild);
+        }
+        delete this.m_editableClone;
+    }
+    else
+    {
     this._renderContent(renderer, cellContext, cell, cellContext['data']);
+    }
+};
+
+/**
+ * Set the editable clone property
+ * @param {Element|undefined|null} element to clone
+ */
+DvtDataGrid.prototype._setEditableClone = function(element)
+{
+    delete this.m_editableClone;
+    if (element != null)
+    {
+        var clone = element.cloneNode(false);
+        this._createUniqueId(clone);
+        clone[this.getResources().getMappedAttribute("context")] = element[this.getResources().getMappedAttribute("context")];
+        clone[this.getResources().getMappedAttribute("context")]['parentElement'] = clone;
+        this.m_root.appendChild(clone);
+        this._reRenderCell(clone, 'edit', this.getMappedStyle('cellEdit'), null);
+        this.m_root.removeChild(clone);
+        clone[this.getResources().getMappedAttribute("context")]['parentElement'] = element;
+        this.m_editableClone = clone;
+    }
 };
 
 /**
@@ -15631,6 +15694,30 @@ DvtDataGrid.prototype._updateSelectionFrontier = function(anchor, index, directi
 };
 
 /**
+ * Get the min or max between two numbers that could either be NaN
+ * @param {number|undefined|null} val1 - val1
+ * @param {number|undefined|null} val2 - val2
+ * @param {Function} mathFunc - math function to apply to two values
+ * @returns {number|undefined|null} 
+ */
+DvtDataGrid.prototype._getMinOrMax = function(val1, val2, mathFunc)
+{
+    if (isNaN(val1))
+    {
+        if (isNaN(val2))
+        {
+            return null;
+        }
+        return val2;
+    }
+    else if (isNaN(val2))
+    {
+        return val1;
+    }
+    return mathFunc(val1, val2);
+};
+
+/**
  * @param {Object} anchor - the current selection.
  * @param {Object} index - the anchor of the extend selection.
  * @param {number} numElems - the number of elements in the range used to break recursion
@@ -15646,8 +15733,8 @@ DvtDataGrid.prototype._getSelectionStartAndEnd = function(anchor, index, numElem
         return {'min': anchor, 'max': index};
     }
     
-    minIndex = {'row': null, 'column': null};
-    maxIndex = {'row': null, 'column': null};
+    minIndex = {'row': this._getMinOrMax(anchor['row'], index['row'], Math.min), 'column': this._getMinOrMax(anchor['column'], index['column'], Math.min)};
+    maxIndex = {'row': this._getMinOrMax(anchor['row'], index['row'], Math.max), 'column': this._getMinOrMax(anchor['column'], index['column'], Math.max)};
     
     for (i = 0; i < cells.length; i++)
     {
@@ -20023,7 +20110,7 @@ oj.__registerWidget('oj.ojDataGrid', $['oj']['baseComponent'],
                  * @memberof oj.ojDataGrid
                  * @instance
                  * @type {Object.<string, number>}
-                 * @default <code class="prettyprint">{row:0, column:0}</code>
+                 * @default <code class="prettyprint">{"row":0, "column":0}</code>
                  * @property {number} row row banding interval
                  * @property {number} column column banding interval
                  *
@@ -20081,7 +20168,7 @@ oj.__registerWidget('oj.ojDataGrid', $['oj']['baseComponent'],
                  * @memberof oj.ojDataGrid
                  * @instance
                  * @type {Object.<string, string>}
-                 * @default <code class="prettyprint">{horizontal: 'visible', vertical: 'visible'}</code>
+                 * @default <code class="prettyprint">{"horizontal": "visible", "vertical": "visible"}</code>
                  * @property {string} horizontal horizontal gridlines, valid values are: 'hidden', 'visible'
                  * @property {string} vertical vertical gridlines, valid values are: 'hidden', 'visible'
                  *
@@ -20201,7 +20288,7 @@ oj.__registerWidget('oj.ojDataGrid', $['oj']['baseComponent'],
                  * @property {Object} reorder an object with property row
                  * @property {string} reorder.row row reordering within the DataGrid, valid values are: 'enable', 'disable'
                  *
-                 * @default <code class="prettyprint">{reorder: {row :'disable'}}</code>
+                 * @default <code class="prettyprint">{"reorder": {"row" :"disable"}}</code>
                  * @expose
                  * @instance
                  * @memberof oj.ojDataGrid
@@ -20347,13 +20434,17 @@ oj.__registerWidget('oj.ojDataGrid', $['oj']['baseComponent'],
                  * <p>Determine if the DataGrid is read only or editable.
                  * <p>Use <code class="prettyprint">none</code> if the DataGrid is strictly read only.
                  *
+                 * <p>The DataGrid <code class="prettyprint">editMode</code> is designed to support fast editing and requires that the input controls render fast and near synchronusly
+                 * to be stamped inside an editable cell. The DataGrid supports overwrite behavior for all of JET's input components. Custom components that render synchronously or
+                 * components that only render asynchronusly due to Promises that resolve immediately will also be stampable. The modules for the stamped component loaded/required when the DataGrid is  
+                 * loaded/required. Components that must go back to a server to render are not supported.
+                 *
                  * <p>Use <code class="prettyprint">cellNavigation</code> to allow editable cells, but the DataGrid is currently read only and a single tab stop on the page.
                  * Pressing F2 or double click while in this mode will switch the DataGrid to <code class="prettyprint">cellEdit</code> mode.
                  *
                  * <p>Use <code class="prettyprint">cellEdit</code> to allow editable cells, and tab navigates to the next cell behavior.
                  * Pressing ESC while in this mode will switch the DataGrid to <code class="prettyprint">cellNavigation</code> mode.
                  *
-                 * @ignore
                  * @expose
                  * @memberof oj.ojDataGrid
                  * @instance
@@ -20503,7 +20594,7 @@ oj.__registerWidget('oj.ojDataGrid', $['oj']['baseComponent'],
                          * @memberof! oj.ojDataGrid
                          * @instance
                          * @type {Object.<string, string>|Object.<string, function(Object)>|null}
-                         * @default <code class="prettyprint">{width: 'disable', height: 'disable'}</code>
+                         * @default <code class="prettyprint">{"width": "disable", "height": "disable"}</code>
                          * @property {string} width row width resizable, valid values are: 'enable', 'disable'
                          * @property {string} height row header height resizable, valid values are: 'enable', 'disable'
                          *
@@ -20681,7 +20772,7 @@ oj.__registerWidget('oj.ojDataGrid', $['oj']['baseComponent'],
                          * @memberof! oj.ojDataGrid
                          * @instance
                          * @type {Object.<string, string>|Object.<string, function(Object)>|null}
-                         * @default <code class="prettyprint">{width: 'disable', height: 'disable'}</code>
+                         * @default <code class="prettyprint">{"width": "disable", "height": "disable"}</code>
                          * @property {string} width column width resizable, valid values are: 'enable', 'disable'
                          * @property {string} height column header height resizable, valid values are: 'enable', 'disable'
                          *
@@ -20859,7 +20950,7 @@ oj.__registerWidget('oj.ojDataGrid', $['oj']['baseComponent'],
                          * @memberof! oj.ojDataGrid
                          * @instance
                          * @type {Object.<string, string>|Object.<string, function(Object)>|null}
-                         * @default <code class="prettyprint">{width: 'disable', height: 'disable'}</code>
+                         * @default <code class="prettyprint">{"width": "disable", "height": "disable"}</code>
                          * @property {string} width columnEnd width resizable, valid values are: 'enable', 'disable'
                          * @property {string} height columnEnd header height resizable, valid values are: 'enable', 'disable'
                          *
@@ -21010,7 +21101,7 @@ oj.__registerWidget('oj.ojDataGrid', $['oj']['baseComponent'],
                          * @memberof! oj.ojDataGrid
                          * @instance
                          * @type {Object.<string, string>|Object.<string, function(Object)>|null}
-                         * @default <code class="prettyprint">{width: 'disable', height: 'disable'}</code>
+                         * @default <code class="prettyprint">{"width": "disable", "height": "disable"}</code>
                          * @property {string} width rowEnd width resizable, valid values are: 'enable', 'disable'
                          * @property {string} height rowEnd header height resizable, valid values are: 'enable', 'disable'
                          *
@@ -21258,7 +21349,6 @@ oj.__registerWidget('oj.ojDataGrid', $['oj']['baseComponent'],
                 /**
                  * Triggered before the DataGrid is going to enter edit mode. To prevent editing the cell prevent default on the event.
                  *
-                 * @ignore
                  * @expose
                  * @event
                  * @memberof oj.ojDataGrid
@@ -21272,7 +21362,6 @@ oj.__registerWidget('oj.ojDataGrid', $['oj']['baseComponent'],
                  * There is a provided beforeEditEnd function, oj.DataCollectionEditUtils.basicHandleEditEnd, which can be specified.
                  * This function will handle canceling edits as well as invoking validation on input elements.
                  *
-                 * @ignore
                  * @expose
                  * @event
                  * @memberof oj.ojDataGrid
@@ -21343,6 +21432,7 @@ oj.__registerWidget('oj.ojDataGrid', $['oj']['baseComponent'],
         this.grid.SetCreateContextCallback(this._modifyContext.bind(self));
         this.grid.SetFixContextCallback(this._FixRendererContext.bind(self));
         this.grid.SetRemoveCallback(this._remove.bind(self));
+        this.grid.SetUniqueIdCallback(this._uniqueId.bind(self));
         this.grid.SetNotReadyCallback(this._NotReady.bind(self));
         this.grid.SetMakeReadyCallback(this._MakeReady.bind(self));
         this.grid.SetOptionCallback(this.option.bind(self));
@@ -22781,6 +22871,24 @@ oj.__registerWidget('oj.ojDataGrid', $['oj']['baseComponent'],
     },
 
     /**
+     * Callback for datagrid to add or remove unique ID
+     * @param {Element} element
+     * @param {boolean} remove should it remove ID otherwise will add
+     * @private
+     */
+    _uniqueId: function (element, remove)
+    {
+        if (remove)
+        {
+            $(element).removeUniqueId();
+        }
+        else
+        {
+            $(element).uniqueId();
+        }
+    },
+    
+    /**
      * <p>Scroll the datagrid to an x,y pixel location.
      * <p>If the x,y point is outside the range of the viewport the grid will scroll to the nearest location.
      * <p>If high-watermark scrolling is used, the grid will scroll within the currently fetched range.
@@ -23531,6 +23639,7 @@ DvtDataGrid.prototype._handleEditable = function(event, element)
         this.m_utils.addCSSClassName(this.m_root, this.getMappedStyle('editable'));
         this._updateEdgeCellBorders('');
         this._setAccInfoText('accessibleEditableMode');
+        this._setEditableClone(element);
     }
     else
     {
@@ -23552,6 +23661,7 @@ DvtDataGrid.prototype._handleExitEditable = function(event, element)
     this.m_utils.removeCSSClassName(this.m_root, this.getMappedStyle('editable'));
     this._updateEdgeCellBorders('none');
     this._setAccInfoText('accessibleNavigationMode');
+    delete this.m_editableClone;
 };
 
 /**
@@ -23567,7 +23677,7 @@ DvtDataGrid.prototype._handleDataEntry = function(event, element)
     rerender = this.fireEvent('beforeEdit', details);
     if (rerender)
     {
-        this._reRenderCell(element, 'edit', this.getMappedStyle('cellEdit'));
+        this._reRenderCell(element, 'edit', this.getMappedStyle('cellEdit'), this.m_editableClone);
         this._enableAllFocusableElements(element);
         // focus on first focusable item in the cell
         this._overwriteFlag = true;
@@ -23610,20 +23720,26 @@ DvtDataGrid.prototype._handleEdit = function(event, element)
     rerender = this.fireEvent('beforeEdit', details);
     if (rerender)
     {
-        this._reRenderCell(element, 'edit', this.getMappedStyle('cellEdit'));
-        // enable all focusable elements
-        this._enableAllFocusableElements(element);
+        this._reRenderCell(element, 'edit', this.getMappedStyle('cellEdit'), this.m_editableClone);
+        
+        var self = this;
+        var busyContext = oj.Context.getContext(element).getBusyContext();
+        busyContext.whenReady().then(function () 
+        {
+            // enable all focusable elements
+            self._enableAllFocusableElements(element);
 
-        // focus on first focusable item in the cell
-        if (this._setFocusToFirstFocusableElement(element))
-        {
-            this.m_currentMode = 'edit';
-        }
-        else
-        {
-            // if there was nothing to edit remove the edit class
-            this.m_utils.removeCSSClassName(element, this.getMappedStyle('cellEdit'));
-        }
+            // focus on first focusable item in the cell
+            if (self._setFocusToFirstFocusableElement(element))
+            {
+                self.m_currentMode = 'edit';
+            }
+            else
+            {
+                // if there was nothing to edit remove the edit class
+                self.m_utils.removeCSSClassName(element, self.getMappedStyle('cellEdit'));
+            }
+        });
     }
     else
     {
@@ -23652,7 +23768,12 @@ DvtDataGrid.prototype._handleExitEdit = function(event, element)
  */
 DvtDataGrid.prototype._handleCancelEdit = function(event, element)
 {
-    return this._leaveEditing(event, element, true);
+    if (this._leaveEditing(event, element, true))
+    {
+        this._setEditableClone(element);
+        return true;
+    }
+    return false;
 };
 
 /**
@@ -23676,7 +23797,7 @@ DvtDataGrid.prototype._leaveEditing = function(event, element, cancel)
         this.m_currentMode = 'navigation';
         this._disableAllFocusableElements(element);
         this._highlightActive();
-        this._reRenderCell(element, 'navigation', this.getMappedStyle('cellEdit'));
+        this._reRenderCell(element, 'navigation', this.getMappedStyle('cellEdit'), this.m_editableClone);
     }
     else
     {
@@ -23721,9 +23842,9 @@ DvtDataGrid.prototype._handleFocusKey = function(event, element, keyCode, isExte
             {
                 oldActive = this.m_active;
                 returnVal = this.handleFocusChange(keyCode, isExtend, event, changeRegions, jumpToHeaders);
-                if (this.m_utils.isTouchDevice() && editing && oldActive != this.m_active)
+                if (this._isGridEditable() && oldActive != this.m_active && editing && this.m_utils.isTouchDevice())
                 {
-                    return this._handleEdit(event, this._getActiveElement());
+                    return this._handleDataEntry(event, this._getActiveElement());
                 }
                 return returnVal;
             }
@@ -24409,6 +24530,10 @@ var ojDataGridMeta = {
         }
       }
     },
+    "editMode": {
+        "type": "string",
+        "enumValues": ["none", "cellNavigation", "cellEdit"]
+    },
     "gridlines": {
       "type": "object",
       "properties": {
@@ -24597,6 +24722,8 @@ var ojDataGridMeta = {
   },
   "events": {
     "beforeCurrentCell": {},
+    "beforeEdit": {},
+    "beforeEditEnd": {},
     "resize": {},
     "scroll": {},
     "sort": {}

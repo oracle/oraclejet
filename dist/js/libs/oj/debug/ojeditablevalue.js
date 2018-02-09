@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2014, 2017, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
@@ -19,7 +19,8 @@ define(['ojs/ojcore', 'jquery', 'hammerjs', 'ojs/ojjquery-hammer', 'promise', 'o
  */
 
 /**
- * @class JET Editable Component Utils
+ * @class oj.EditableValueUtils
+ * @classdesc JET Editable Component Utils
  * @export
  * @since 0.6
  * 
@@ -2737,6 +2738,7 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
      * @public
      * @instance
      * @memberof oj.editableValue
+     * @since 4.0.0
      */
     describedBy : null,
     /** 
@@ -2795,6 +2797,7 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
      * @public
      * @instance
      * @memberof oj.editableValue
+     * @since 0.7
      */
     disabled : false,
     
@@ -2916,6 +2919,7 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
      * @public
      * @type {Object.<string, string>}
      * @default {'help' : {'instruction': null}}
+     * @since 0.7
      */
     help: 
     {
@@ -3065,7 +3069,7 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
      * @instance
      * @alias labelHint
      * @default ""
-     * @memberof! oj.editableValue
+     * @memberof oj.editableValue
      * @type {string}
      * @since 4.1.0
      */  
@@ -3075,8 +3079,14 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
      * errors that it wants the component to show. When this option is set the message shows to the 
      * user right away. To clear the custom message, set <code class="prettyprint">messagesCustom</code>
      * back to an empty array.<br/>
-     * Each message in the array is an object that duck types oj.Message. 
+     * <p>Each message in the array is an object that duck types oj.Message.      
      * See {@link oj.Message} for details.
+     * </p>
+     * <p>
+     * See the <a href="#validation-section">Validation and Messages</a> section
+     * for details on when the component clears <code class="prettyprint">messagesCustom</code>; 
+     * for example, when full validation is run.
+     * </p>
      * 
      * @example <caption>Initialize component with the <code class="prettyprint">messages-custom</code> attribute specified:</caption>
      * &lt;oj-some-element messages-custom='[{"summary":"hello","detail":"detail"}]'>&lt;/oj-some-element>
@@ -3088,6 +3098,26 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
      * // setter
      * myComp.messagesCustom = [{summary:"hello", detail:"detail", severity:oj.Message.SEVERITY_LEVEL.INFO}];
      * 
+     * @example <caption>Set messagesCustom when there are cross-validation errors:</caption>
+     * --- HTML ---
+     * &lt;oj-some-element messages-custom='{{messagesCustom}}'>&lt;/oj-some-element> 
+     * 
+     * --- ViewModel code ---
+     * self.messagesCustom = ko.observableArray([]);
+     * 
+     * // the app's function that gets called when the user presses the submit button
+     * if (!myValidateCrossValidationFields())
+     * {
+     *   // the app adds a custom messages to the component and it is displayed right away
+     *   var msgs = [];
+     *   msgs.push({'summary':'Cross field error', 'detail':'Field 1 needs to be less than Field 2'});
+     *   self.messagesCustom(msgs);
+     * }
+     * else
+     * {
+     *   // submit data to the server
+     * }
+     *
      * @expose 
      * @access public
      * @instance
@@ -3144,7 +3174,7 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
      * 
      * <p>
      * Messages retrieved using the <code class="prettyprint">messagesShown</code> option are by 
-     * default shown in the notewindow, but this can be controlled using the 'messages' property of 
+     * default shown inline, but this can be controlled using the 'messages' property of 
      * the <code class="prettyprint">displayOptions</code> option. 
      * </p>
      * 
@@ -3221,10 +3251,81 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
      * @default null
      * @memberof! oj.editableValue
      * @type {string|undefined}
+     * @since 4.0.0
      */    
     title: "",
     
-
+    /**
+     * <p> 
+     * The current valid state of the component. It is evaluated on initial render.
+     * It is re-evaluated 
+     * <ul>
+     *   <li>after validation is run (full or deferred)</li> 
+     *   <li>when messagesCustom is updated, 
+     *   since messagesCustom can be added by the app developer any time.</li>
+     *   <li>when showMessages() is called. Since showMessages() moves the 
+     *   hidden messages into messages shown,
+     *   if the valid state was "invalidHidden" then it would become "invalidShown".</li>
+     *   <li>when the required property has changed. If a component is empty and has required
+     *   set, the valid state may be "invalidHidden" (if no invalid messages are being shown as well). 
+     *   If required property is removed, the valid state would change to "valid".</li> 
+     * </ul>
+     * </p>
+     * <p>
+     *  Note: New valid states may be added to the list of valid values in future releases.
+     *  Any new values will start with "invalid" 
+     *  if it is an invalid state, "pending" if it is pending state, 
+     *  and "valid" if it is a valid state.
+     * </p>
+     * @example <caption>Get <code class="prettyprint">valid</code> attribute, after initialization:</caption>
+     * // Getter:
+     * var valid = myComp.valid;
+     * @example <caption>Set the <code class="prettyprint">on-valid-changed</code>
+     *  listener so you can do work in the ViewModel based on the 
+     *  <code class="prettyprint">valid</code> property:</caption>
+     * &lt;oj-some-element id='username' on-valid-changed='[[validChangedListener]]'>
+     * &lt;/oj-some-element>
+     * &lt;oj-some-element id='password' on-valid-changed='[[validChangedListener]]'>
+     * &lt;/oj-some-element>
+     * &lt;oj-button disabled='[[componentDisabled]]' on-click='[[submit]]'>Submit&lt;/oj-button>
+     * -- ViewModel --
+     * self.validChangedListener = function (event) {
+     *   var enableButton;
+     *   var usernameValidState;
+     *   var passwordValidState;
+     *   
+     *   // update the button's disabled state.
+     *   usernameValidState = document.getElementById("username").valid;
+     *   passwordValidState = document.getElementById("password").valid;
+     *   
+     *   // this updates the Submit button's disabled property's observable based
+     *   // on the valid state of two components, username and password.
+     *   // It is up to the application how it wants to handle the “pending” state 
+     *   // but we think that in general buttons don’t need to be 
+     *   // enabled / disabled based on the "pending" state.
+     *   enableButton = 
+     *    (usernameValidState !== "invalidShown") &&
+     *    (passwordValidState !== "invalidShown");
+     *   self.componentDisabled(!enableButton);;
+     * };
+     * @expose 
+     * @access public
+     * @instance
+     * @type {string}
+     * @ojvalue {string} "valid" The component is valid
+     * @ojvalue {string} "pending" The component is waiting for the validation state to be determined.
+     * The "pending" state is never set in this release of JET. It will be set in a future release.
+     * @ojvalue {string} "invalidHidden" The component has invalid messages hidden
+     *    and no invalid messages showing. An invalid message is one with severity "error" or higher.
+     * @ojvalue {string} "invalidShown" The component has invalid messages showing.
+     *  An invalid message is one with severity "error" or higher.
+     * @ojwriteback
+     * @readonly
+     * @memberof oj.editableValue
+     * @since 4.2.0 
+     * @ojstatus preview
+     */
+    valid: undefined,
     
     /** 
      * The value of the component. 
@@ -3237,8 +3338,8 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
      * 
      * <h4>Running Validation</h4>
      * <ul>
-     * <li>component always runs deferred validation; if there is a validation error the 
-     * <code class="prettyprint">valid</code> property is updated.</li>
+     * <li>component always runs deferred validation; the 
+     * <code class="prettyprint">valid</code> property is updated with the result.</li>
      * </ul>
      * </p>
      * 
@@ -3256,6 +3357,7 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
      * @default null
      * @ojwriteback
      * @memberof oj.editableValue
+     * @since 0.6
      * @type {Object|undefined}
      */
     value: undefined,
@@ -3283,9 +3385,14 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
      * $messageInlineCloseAnimation: (effect: "collapse", endMaxHeight: "#newHeight") !default;
      * </code></pre>
      *
+     * @ojshortdesc Triggered when a default animation is about to start, such as when the component is
+     * being opened/closed or a child item is being added/removed. The default animation can
+     * be cancelled by calling event.preventDefault.
+     *
      * @expose
      * @event
      * @memberof oj.editableValue
+     * @since 4.0.0
      * @ojbubbles
      * @ojcancelable
      * @instance
@@ -3337,6 +3444,7 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
      * @ojbubbles
      * @ojcancelable
      * @memberof oj.editableValue
+     * @since 4.0.0
      * @instance
      * @property {string} action The action that triggers the animation. Supported values are:
      *                    <ul>
@@ -3427,6 +3535,7 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
   /**
    * whether the component is currently valid.  It is valid if it doesn't have any errors.
    * This method is final; do not override.
+   * Currently this is for the widget components and not custom elements.
    * @example <caption>Check whether the component is valid:</caption>
    * var valid = myInputElement.isValid();
    * @returns {boolean}
@@ -3441,7 +3550,7 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
   {
     if (this._valid === undefined)
     {
-      this._valid = this._getValid(); 
+      this._valid = !this._hasInvalidMessages();
     }
     
     return this._valid;
@@ -3536,10 +3645,11 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
   
   /**
    * Takes all deferred messages and shows them. 
-   * If there were no deferred messages this method simply returns. 
-   * 
+   * It then updates the valid property; e.g.,
+   * if the valid state was "invalidHidden"
+   * before showMessages(), the valid state will become "invalidShown" after showMessages(). 
    * <p>
-   * To view messages user has to set focus on the component. 
+   * If there were no deferred messages this method simply returns. 
    * </p>
    * 
    * 
@@ -3555,30 +3665,51 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
   {
     var clonedMsgs = [];
     var i;
-    var msg;
-    var msgs = this.options['messagesHidden'];
-    var mutated = false;
+    var msgHidden;
+    var msgsHidden = this.options['messagesHidden'];
+    var hasMessagesHidden = msgsHidden.length > 0;
     var clonedMsg;
     
-    for (i = 0; i < msgs.length; i++)
+    // showMessages() copies messagesHidden into clonedMsgs, 
+    // then clears messagesHidden, and updates messagesShown with the clonedMsgs. 
+    // It then updates the valid property; e.g.,
+    // if the valid state was "invalidHidden"
+    // before showMessages(), the valid state will become "invalidShown" after showMessages(). 
+    for (i = 0; i < msgsHidden.length; i++)
     {
-      mutated = true;
-      msg = msgs[i];
-      if (msg instanceof oj.ComponentMessage)
-      {
-        msg._forceDisplayToShown();
-      }
+      msgHidden = msgsHidden[i];
       
-      clonedMsg = new oj.Message(msg['summary'], msg['detail'], msg['severity']);
+      // The oj.Message and oj.ComponentMessage distinction is important in a few places in
+      // the EV code. For example, when messagesCustom property changes, we keep existing
+      // messagesShown only if they are ComponentMessage added by component.
+      // if (msg instanceof oj.ComponentMessage && msg._isMessageAddedByComponent())
+      if (msgHidden instanceof oj.ComponentMessage)
+      {
+        // change oj.ComponentMessage's display state to oj.ComponentMessage.DISPLAY.SHOWN
+        msgHidden._forceDisplayToShown();
+        
+
+        // 
+        // .clone() clones the message and the options that were passed in when the message
+        // was originally created.
+        clonedMsg = msgHidden.clone();
+      }
+      else
+        // NOTE: oj.Message is a public class and oj.ComponentMessage is private.
+        // oj.Message's .clone is deprecated, so we purposely don't call it here.
+        clonedMsg = new oj.Message(msgHidden['summary'], msgHidden['detail'], msgHidden['severity']);
+      
       clonedMsgs.push(clonedMsg);
     }
     
-    if (mutated)
+    if (hasMessagesHidden)
     {
-      // clear hidden messages. push cloned hidden messages into messagesShown option 
+
       this._clearMessages('messagesHidden');
       
       this._updateMessagesOption('messagesShown', clonedMsgs);
+      
+      this._setValidOption(null);
     }
   },
 
@@ -3891,6 +4022,7 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
 
       case "messagesCustom":
         this._messagesCustomOptionChanged(flags);
+        this._setValidOption(null);
         break; 
         
       case "placeholder":
@@ -4058,6 +4190,26 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
    * Sets focus on the element that naturally gets focus. For example, this would be the input 
    * element for input type components. <br/>
    * 
+   * @returns {undefined}
+   * @example  <caption>Calling focus on a custom element will call focus on the appropriate
+   * child element</caption>
+   * var elem = document.getElementById("myId");
+   * elem.focus();
+   * 
+   * @expose
+   * @memberof oj.editableValue
+   * @instance
+   * @public
+   * @since 4.2
+   */
+  focus : function ()
+  {
+    this.Focus();
+  },
+  /**
+   * Sets focus on the element that naturally gets focus. For example, this would be the input 
+   * element for input type components. <br/>
+   * 
    * @returns {*} a truthy value if focus was set to the intended element, a falsey value 
    * otherwise.
    * @expose
@@ -4070,6 +4222,26 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
   {
     this._GetContentElement().focus();
     return true;
+  },
+  
+  /**
+   * Blurs the element that naturally gets focus. For example, this would be the input 
+   * element for input type components. <br/>
+   * 
+   * @returns {undefined}
+   * @example  <caption>Calling blur on a custom element will call blur on the appropriate
+   * child element</caption>
+   * var elem = document.getElementById("myId");
+   * elem.blur();
+   * @expose
+   * @memberof oj.editableValue
+   * @instance
+   * @public
+   * @since 4.2
+   */
+  blur : function ()
+  {
+    this._GetContentElement().blur();
   },
   
   /**
@@ -4701,6 +4873,8 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
     if (!doValueChangeCheck || newValue !== this._getLastDisplayValue()) 
     {
       parsed = this._Validate(newValue, event, options);
+           
+      this._setValidOption(event);
       
       // if validation passed
       if (parsed !== undefined && this.isValid())
@@ -4875,7 +5049,8 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
    *  - the reset method is called, <br/>
    *  - component is destroyed.<br/>
    * 
-   * @param {Event=} event
+   * @param {Event=} event the original event (for user initiated actions that trigger a DOM event,
+   * like blur) or undefined.
    * @param {boolean=} doNotSetOption default value is false; a true value clears the option 
    * directly without using the public option method, causing no events to be fired. 
    * @private
@@ -4941,8 +5116,7 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
   
     
   /**
-   * Sets the messages option with the new value. Updates the new 'valid' state and notifies 
-   * messaging. 
+   * Sets the messages option with the new value.
    * Setting 'changed' flag to true means we want to fire a property changed event
    * without checking that the option value to what you are setting it to. Useful
    * if the option is an array or we have already updated the option directly.
@@ -4953,7 +5127,8 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
    * 
    * @param {string} key
    * @param {Array} value
-   * @param {Event=} event
+   * @param {Event=} event the event like the user blurred to trigger a messages option change
+   * or undefined.
    * @param {Boolean=} changed when this is true, then we set the 'changed' flag to true, and having
    * the changed flag be true will guarantee that the property changed event is fired even if the
    * the property value is equal to what you are setting it to.
@@ -4985,11 +5160,35 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
   },  
   
   /**
+   * Sets the valid option with the new value.
+   * 
+   * This method updates the option directly without invoking setOption() method. This is done by 
+   * setting the following property in flags parameter of the option() method - 
+   * <code class="prettyprint">{'_context': {internalSet: true}}</code>
+   * 
+   * @param {Event=} event the original event (for user initiated actions that trigger a DOM event,
+   * like blur) or undefined. The custom element bridge creates a CustomEvent out of this when 
+   * it sends the property changed event.
+   * @private
+   */
+  _setValidOption : function (event)
+  {
+    var flags = {};
+
+    // 'valid' is read-only
+    flags['_context'] = {originalEvent: event, writeback: true, internalSet: true, readOnly: true};
+
+    this.option("valid", this._determineValid(), flags);
+
+  },  
+  
+  /**
    * Clears the messages and message options - <code class="prettyprint">messagesHidden</code>,
    * <code class="prettyprint">messagesShown</code>, <code class="prettyprint">messagesCustom</code>.
    * 
    * @param {String} option messages option that is being cleared.
-   * @param {Event=} event
+   * @param {Event=} event the original event (for user initiated actions that trigger a DOM event,
+   * like blur) or undefined.
    * 
    * @private
    * @memberof oj.editableValue
@@ -5605,7 +5804,8 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
    * 
    * @param {String} option name of the option
    * @param {Object|Array} newMsgs an Array of one or more oj.Message object. 
-   * @param {Event=} event
+   * @param {Event=} event - the event like the user blurred to trigger a messages option change
+   * or undefined.
    * @private
    * @memberof oj.editableValue
    * @instance
@@ -5615,7 +5815,7 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
     var i;
     var len;
     var msgs;
-    
+
     if (typeof newMsgs === "object" && Array.isArray(newMsgs)) 
     {
       // update this.options[option] directly by pushing any new messages into it.
@@ -5717,28 +5917,36 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
   _resetValid : function ()
   {
     this._valid = undefined;
-  },
-  
+  },  
+
   /**
    * Determines the validity of component based on current value of the messages* options.
+   * This is what the 'valid' property should be set to.
    * 
-   * @return {boolean} true if valid, false otherwise.
+   * Now when we start the lifecycle we clearAllMessages, then we continue with validation, etc.
+   * But we don't want to update the valid property on clearAllMessages and again when validation
+   * has failed. We want to update it only once.
+   * @return {string} "valid", "invalidShown", "invalidHidden"
    * 
    * @private
    * @memberof oj.editableValue
    * @instance
    */
-  _getValid : function ()
+  _determineValid : function ()
   {
-    var hasMessages;
-    var msgs = this._getMessages();
-    var valid = true;
+    var msgsHidden = this.options['messagesHidden'];
+    var msgsShown = this.options['messagesShown'];
+
+    var valid = "valid";
     
-    // When new messages are written update valid
-    hasMessages = msgs && msgs.length !== 0;
-    if (hasMessages)
+    // When new messages are written update the valid property
+    if ( msgsShown && msgsShown.length !== 0 && !oj.Message.isValid(msgsShown))
     {
-      valid = !this._hasInvalidMessages();
+      valid = "invalidShown";
+    }
+    else if(msgsHidden && msgsHidden.length !== 0 && !oj.Message.isValid(msgsHidden))
+    {
+      valid = "invalidHidden";
     }
     
     return valid;
@@ -6222,7 +6430,7 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
         if (newMsgs)
         {
           this._updateMessagesOption('messagesHidden', newMsgs);
-        }
+        }    
       }
     }
     else
@@ -6232,6 +6440,9 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
         oj.Logger.info("Deferred validation skipped as component is readonly or disabled.");
       }
     }
+    // set valid option whether or not we can set a value in the field. It won't trigger
+    // an option changed event if the valid value is the same as it was before.
+    this._setValidOption(null);
   },
     
   /**
@@ -6240,7 +6451,8 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
    * @param {Object} value to parse and/or validate
    * @param {number=} mode determines how validation is run. see _VALIDATION_MODE
    * @param {number=} context determines when validation is being run.
-   * @param {Event=} event the original event or undefined
+   * @param {Event=} event the original event (for user initiated actions that trigger a DOM event,
+   * like blur) or undefined.
    * 
    * @return {Object|string} parsed value
    * @throws {Error} when validation fails.
@@ -6266,11 +6478,13 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
 
       // Step 2: Run validators
       this._validateValue(newValue, mode === this._VALIDATION_MODE.REQUIRED_VALIDATOR_ONLY);
+      
     }
     catch (ve)
     {
       newMsgs = this._processValidationErrors(ve, context);
       this._updateMessagesOption ('messagesShown', newMsgs, event);
+      // update valid option before we throw the error
       throw ve;
     }
     
@@ -6324,9 +6538,14 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
     {
       // run deferred validation if comp is either showing a deferred error or has no errors. 
       // But only when required is true. 
+      // we update the valid option within _runDeferredValidation
       if (this._IsRequired())
       {
         this._runDeferredValidation(validationOptions.validationContext);
+      }
+      else
+      {
+        this._setValidOption(null);
       }
     }
   },
@@ -6386,6 +6605,8 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
     // run full validation using the current display value; 
     // show messages immediately if there are errors otherwise set value to option
     newValue = this._Validate(this._GetDisplayValue(), null, options);
+           
+    this._setValidOption(null);
 
     // if validation was a success and component is valid, or it's invalid with no new component 
     // messages then update value option. 
@@ -6507,7 +6728,7 @@ oj.Components.setDefaultOptions(
  * 
  * @ojsubid oj-label-help-icon
  * @memberof oj.editableValue
- *
+ * @ignore
  * @example <caption>Get the help icon element associated with an editable value component:</caption>
  * var node = myComp.getNodeBySubId("oj-label-help-icon");
  */
@@ -7163,6 +7384,9 @@ oj.InlineMessagingStrategy.prototype._buildMessagesHtml = function (document)
 (function() {
 var editableValueMeta = {
   "properties": {
+    "describedBy": {
+      "type": "string"
+    },
     "disabled": {
       "type": "boolean"
     },
@@ -7209,8 +7433,11 @@ var editableValueMeta = {
       "type": "Array",
       "writeback": true
     },
-    "describedBy": {
-      "type": "string"
+    "valid": {
+      "type": "string",
+      "writeback": true,
+      "readOnly": true,
+      "enumValues": ["valid", "invalidShown", "invalidHidden","pending"]
     },
     "value": {
       "type": "Object",
@@ -7218,6 +7445,8 @@ var editableValueMeta = {
     }
   },
   "methods": {
+    "blur": {},
+    "focus": {},
     "reset": {},
     "showMessages": {}
   },

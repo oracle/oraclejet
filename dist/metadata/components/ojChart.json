@@ -1,8 +1,8 @@
 {
-  "name": "ojChart",
-  "version": "4.1.0",
-  "jetVersion": "4.1.0",
-  "displayName": " Chart",
+  "name": "oj-chart",
+  "version": "4.2.0",
+  "jetVersion": "4.2.0",
+  "displayName": "Chart",
   "preview": true,
   "roles": [
     "application"
@@ -76,6 +76,24 @@
         },
         "polar": {
           "displayName": "Polar"
+        }
+      }
+    },
+    "data": {
+      "description": "An object with the following properties, used to define the series and groups when using a DataProvider to provide data to the chart. Also accepts a Promise for deferred data rendering.",
+      "type": "object|Promise",
+      "displayName": "Data",
+      "value": null,
+      "properties": {
+        "groups": {
+          "description": "An oj.DataProvider that generates rows of ChartGroup typed objects.",
+          "type": "oj.DataProvider.<String, oj.ojChart.ChartGroup>",
+          "value": null
+        },
+        "series": {
+          "description": "An array of ChartSeries typed objects. Used when utilizing a DataProvider to provide data to the chart. Only a single series is supported for stock charts. Also accepts a Promise for deferred data rendering.",
+          "type": "Array.<oj.ojChart.ChartSeries>|Promise.<Array>",
+          "value": null
         }
       }
     },
@@ -157,17 +175,17 @@
       "description": "Provides support for HTML5 Drag and Drop events. Please refer to third party documentation on HTML5 Drag and Drop to learn how to use it.",
       "type": "object",
       "displayName": "Dnd",
-      "value": "{}",
+      "value": {},
       "properties": {
         "drag": {
           "description": "An object that describes drag functionality.",
           "type": "object",
-          "value": "{}",
+          "value": {},
           "properties": {
             "groups": {
               "description": "Allows dragging of chart groups from the categorical axis labels.",
               "type": "object",
-              "value": "{}",
+              "value": {},
               "properties": {
                 "dataTypes": {
                   "description": "The MIME types to use for the dragged data in the dataTransfer object. This can be a string if there is only one type, or an array of strings if multiple types are needed. For example, if selected employee data items are being dragged, dataTypes could be \"application/employees+json\". Drop targets can examine the data types and decide whether to accept the data. For each type in the array, dataTransfer.setData will be called with the specified type and the data. The data is an array of the dataContexts of the selected groups. The dataContext is the JSON version of the dataContext that we use for \"tooltip\" and \"dataLabels\" properties, excluding componentElement and parentElement. This property is required unless the application calls setData itself in a dragStart callback function.",
@@ -194,7 +212,7 @@
             "items": {
               "description": "Allows dragging of chart data items, including bars, line/area/scatter markers, bubbles, and pie/funnel/pyramid slices.",
               "type": "object",
-              "value": "{}",
+              "value": {},
               "properties": {
                 "dataTypes": {
                   "description": "The MIME types to use for the dragged data in the dataTransfer object. This can be a string if there is only one type, or an array of strings if multiple types are needed. For example, if selected employee data items are being dragged, dataTypes could be \"application/employees+json\". Drop targets can examine the data types and decide whether to accept the data. For each type in the array, dataTransfer.setData will be called with the specified type and the data. The data is an array of the dataContexts of the selected data items. The dataContext is the JSON version of the dataContext that we use for \"tooltip\" and \"dataLabels\" properties, excluding componentElement and parentElement. This property is required unless the application calls setData itself in a dragStart callback function.",
@@ -221,7 +239,7 @@
             "series": {
               "description": "Allows dragging of chart series from the legend items.",
               "type": "object",
-              "value": "{}",
+              "value": {},
               "properties": {
                 "dataTypes": {
                   "description": "The MIME types to use for the dragged data in the dataTransfer object. This can be a string if there is only one type, or an array of strings if multiple types are needed. For example, if selected employee data items are being dragged, dataTypes could be \"application/employees+json\". Drop targets can examine the data types and decide whether to accept the data. For each type in the array, dataTransfer.setData will be called with the specified type and the data. The data is an array of the dataContexts of the selected series. The dataContext is the JSON version of the dataContext that we use for \"tooltip\" and \"dataLabels\" properties, excluding componentElement and parentElement. This property is required unless the application calls setData itself in a dragStart callback function.",
@@ -250,12 +268,12 @@
         "drop": {
           "description": "An object that describes drop functionality.",
           "type": "object",
-          "value": "{}",
+          "value": {},
           "properties": {
             "legend": {
               "description": "Allows dropping on the legend.",
               "type": "object",
-              "value": "{}",
+              "value": {},
               "properties": {
                 "dataTypes": {
                   "description": "An array of MIME data types this element can accept. This property is required unless dragEnter, dragOver, and drop callback functions are specified to handle the corresponding events.",
@@ -287,7 +305,7 @@
             "plotArea": {
               "description": "Allows dropping on the plot area.",
               "type": "object",
-              "value": "{}",
+              "value": {},
               "properties": {
                 "dataTypes": {
                   "description": "An array of MIME data types this element can accept. This property is required unless dragEnter, dragOver, and drop callback functions are specified to handle the corresponding events.",
@@ -319,7 +337,7 @@
             "xAxis": {
               "description": "Allows dropping on the X axis.",
               "type": "object",
-              "value": "{}",
+              "value": {},
               "properties": {
                 "dataTypes": {
                   "description": "An array of MIME data types this element can accept. This property is required unless dragEnter, dragOver, and drop callback functions are specified to handle the corresponding events.",
@@ -351,7 +369,7 @@
             "y2Axis": {
               "description": "Allows dropping on the Y2 axis.",
               "type": "object",
-              "value": "{}",
+              "value": {},
               "properties": {
                 "dataTypes": {
                   "description": "An array of MIME data types this element can accept. This property is required unless dragEnter, dragOver, and drop callback functions are specified to handle the corresponding events.",
@@ -383,7 +401,7 @@
             "yAxis": {
               "description": "Allows dropping on the Y axis.",
               "type": "object",
-              "value": "{}",
+              "value": {},
               "properties": {
                 "dataTypes": {
                   "description": "An array of MIME data types this element can accept. This property is required unless dragEnter, dragOver, and drop callback functions are specified to handle the corresponding events.",
@@ -625,7 +643,7 @@
       "description": "An object defining the style, positioning, and behavior of the legend.",
       "type": "object",
       "displayName": "Legend",
-      "value": "{}",
+      "value": {},
       "properties": {
         "backgroundColor": {
           "description": "The color of the legend background.",
@@ -674,7 +692,7 @@
         "referenceObjectSection": {
           "description": "An object with the following properties for the reference object section in the legend.",
           "type": "object",
-          "value": "{}",
+          "value": {},
           "properties": {
             "title": {
               "description": "The title of the reference object section.",
@@ -706,7 +724,7 @@
             "titleStyle": {
               "description": "The CSS style object defining the style of the section title.",
               "type": "object",
-              "value": "{}"
+              "value": {}
             }
           }
         },
@@ -820,7 +838,7 @@
                   "description": "The line width in pixels. Only applies when the symbolType is \"line\" or \"lineWithMarker\".",
                   "type": "number",
                   "value": null,
-                  "minimum": "0",
+                  "minimum": 0,
                   "units": "pixels"
                 },
                 "markerColor": {
@@ -1019,7 +1037,7 @@
         "seriesSection": {
           "description": "An object with the following properties for the series section in the legend.",
           "type": "object",
-          "value": "{}",
+          "value": {},
           "properties": {
             "title": {
               "description": "The title of the series section.",
@@ -1051,7 +1069,7 @@
             "titleStyle": {
               "description": "The CSS style object defining the style of the section title.",
               "type": "object",
-              "value": "{}"
+              "value": {}
             }
           }
         },
@@ -1075,7 +1093,7 @@
         "textStyle": {
           "description": "The CSS style object defining the style of the legend text.",
           "type": "object",
-          "value": "{}"
+          "value": {}
         },
         "title": {
           "description": "The legend title.",
@@ -1107,7 +1125,7 @@
         "titleStyle": {
           "description": "The CSS style object defining the style of the title.",
           "type": "object",
-          "value": "{}"
+          "value": {}
         }
       }
     },
@@ -1134,19 +1152,19 @@
       "type": "number",
       "displayName": "Other Threshold",
       "value": 0,
-      "maximum": "1",
-      "minimum": "0"
+      "maximum": 1,
+      "minimum": 0
     },
     "overview": {
       "description": "An object defining the overview scrollbar. Only applies if zoomAndScroll is not off. Currently only supported for vertical bar, line, area, stock, and combo charts.",
       "type": "object",
       "displayName": "Overview",
-      "value": "{}",
+      "value": {},
       "properties": {
         "content": {
           "description": "An object containing the property override for the overview chart. The API is the same as the chart property API, and the property provided here will be merged on top of the default property of the overview chart. This can be used to customize the style or the type of the overview chart.",
           "type": "object",
-          "value": "{}"
+          "value": {}
         },
         "height": {
           "description": "Specifies the height of the overview scrollbar in pixels (e.g. '50px') or percent (e.g. '15%').",
@@ -1176,7 +1194,7 @@
       "description": "An object defining the center content of a pie chart. Either a label can be displayed at the center of the pie chart or custom HTML content.",
       "type": "object",
       "displayName": "Pie Center",
-      "value": "{}",
+      "value": {},
       "properties": {
         "converter": {
           "description": "The converter (an object literal or instance that duck types oj.Converter) to format the label if it is numeric. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.",
@@ -1192,7 +1210,7 @@
         "labelStyle": {
           "description": "The CSS style object defining the style of the label.",
           "type": "object",
-          "value": "{}"
+          "value": {}
         },
         "renderer": {
           "description": "A function that returns custom center content. The function takes a dataContext argument, \nprovided by the chart, with the following properties: outerBounds: Object containing (x, y, width, height) of the rectangle circumscribing the center area. The x and y coordinates are relative to the top, left corner of the element. innerBounds: Object containing (x, y, width, height) of the rectangle inscribed in the center area. The x and y coordinates are relative to the top, left corner of the element. label: The pieCenter label. componentElement: The chart element. \n\nThe function should return an Object with the following property: insert: HTMLElement - An HTML element, which will be overlaid on top of the pie chart. This HTML element will block interactivity of the chart by default, but the CSS pointer-events property can be set to 'none' on this element if the chart's interactivity is desired. \n",
@@ -1242,7 +1260,7 @@
       "description": "An object defining the style of the plot area.",
       "type": "object",
       "displayName": "Plot Area",
-      "value": "{}",
+      "value": {},
       "properties": {
         "backgroundColor": {
           "description": "The color of the plot area background.",
@@ -1908,7 +1926,7 @@
               "value": null
             },
             "x": {
-              "description": "The x value for a scatter or bubble chart or the date on a time axis.",
+              "description": "The x value. Mainly used for scatter and bubble chart and to specify the date for mixed-frequency time axis.\nFor categorical axis, if the x value is not specified, it will default to the item index.\nFor regular time axis, if the x value is not specified, it will default to the group name of the item.",
               "type": "number|string",
               "value": null
             },
@@ -1990,7 +2008,7 @@
           "description": "The width of the data line. Only applies to line, lineWithArea, scatter, and bubble series.",
           "type": "number",
           "value": null,
-          "minimum": "0",
+          "minimum": 0,
           "units": "pixels"
         },
         "markerColor": {
@@ -2150,8 +2168,8 @@
           "description": "A number from 0 to 1 indicating the amount to explode the pie slice. Only applies to pie charts.",
           "type": "number",
           "value": 0,
-          "maximum": "1",
-          "minimum": "0"
+          "maximum": 1,
+          "minimum": 0
         },
         "shortDesc": {
           "description": "The description of this series. This is used for accessibility and for customizing the tooltip text on the corressponding legend item for the series.",
@@ -2282,8 +2300,8 @@
       "type": "number",
       "displayName": "Splitter Position",
       "value": 0.5,
-      "maximum": "1",
-      "minimum": "0"
+      "maximum": 1,
+      "minimum": 0
     },
     "stack": {
       "description": "Defines whether the data items are stacked. Only applies to bar, line, area, and combo charts. Does not apply to range series.",
@@ -2325,7 +2343,7 @@
       "description": "An object defining the default styles for series colors, marker shapes, and other style attributes. Properties specified on this object may be overridden by specifications on the data object.",
       "type": "object",
       "displayName": "Style Defaults",
-      "value": "{}",
+      "value": {},
       "properties": {
         "animationDownColor": {
           "description": "The color of the indicator shown for a decreasing data change animation.",
@@ -2336,7 +2354,7 @@
           "description": "The duration of the animations, in milliseconds.",
           "type": "number",
           "value": null,
-          "minimum": "0",
+          "minimum": 0,
           "units": "milliseconds"
         },
         "animationIndicators": {
@@ -2365,8 +2383,8 @@
           "description": "Specifies the width of the bar group gap as a ratio of the group width. The valid value is a number from 0 to 1.",
           "type": "number",
           "value": null,
-          "maximum": "1",
-          "minimum": "0"
+          "maximum": 1,
+          "minimum": 0
         },
         "borderColor": {
           "description": "The default border color for the data items. For funnel and pyramid charts, it is used for the slice border.",
@@ -2382,7 +2400,7 @@
         "boxPlot": {
           "description": "An object containing the style properties of the box plot items.",
           "type": "object",
-          "value": "{}",
+          "value": {},
           "properties": {
             "medianSvgClassName": {
               "description": "The CSS style class to apply to the median line.",
@@ -2391,7 +2409,7 @@
             "medianSvgStyle": {
               "description": "The CSS inline style to apply to the median line.",
               "type": "object",
-              "value": "{}"
+              "value": {}
             },
             "whiskerEndLength": {
               "description": "Specifies the length of the whisker ends in pixels (e.g. '9px') or as a percentage of the box width (e.g. '50%').",
@@ -2405,7 +2423,7 @@
             "whiskerEndSvgStyle": {
               "description": "The CSS inline style to apply to the whisker ends.",
               "type": "object",
-              "value": "{}"
+              "value": {}
             },
             "whiskerSvgClassName": {
               "description": "The CSS style class to apply to the whisker stems.",
@@ -2414,7 +2432,7 @@
             "whiskerSvgStyle": {
               "description": "The CSS inline style to apply to the whisker stems.",
               "type": "object",
-              "value": "{}"
+              "value": {}
             }
           }
         },
@@ -2426,7 +2444,7 @@
         "dataCursor": {
           "description": "An object defining the data cursor style.",
           "type": "object",
-          "value": "{}",
+          "value": {},
           "properties": {
             "lineColor": {
               "description": "The color of the data cursor line.",
@@ -2458,7 +2476,7 @@
               "description": "The width of the data cursor line in pixels.",
               "type": "number",
               "value": null,
-              "minimum": "0",
+              "minimum": 0,
               "units": "pixels"
             },
             "markerColor": {
@@ -2558,7 +2576,7 @@
         "groupSeparators": {
           "description": "An object defining the style for hierarchical label separators.",
           "type": "object",
-          "value": "{}",
+          "value": {},
           "properties": {
             "color": {
               "description": "The color of the separators lines.",
@@ -2588,7 +2606,7 @@
           "description": "Specifies initial hover delay in ms for highlighting items in chart.",
           "type": "number",
           "value": null,
-          "minimum": "0",
+          "minimum": 0,
           "units": "milliseconds"
         },
         "lineStyle": {
@@ -2657,7 +2675,7 @@
           "description": "The width of the data line. Only applies to line, lineWithArea, scatter, and bubble series.",
           "type": "number",
           "value": null,
-          "minimum": "0",
+          "minimum": 0,
           "units": "pixels"
         },
         "markerColor": {
@@ -2772,8 +2790,8 @@
           "description": "Specifies the radius of the inner circle that can be used to create a donut chart. Valid values range from 0 (default) to 1. Not supported if 3D effect is on.",
           "type": "number",
           "value": 0,
-          "maximum": "1",
-          "minimum": "0"
+          "maximum": 1,
+          "minimum": 0
         },
         "selectionEffect": {
           "description": "The selection effect that is applied to selected items. The values explode and highlightAndExplode only apply to pie charts.",
@@ -2825,7 +2843,7 @@
         "stackLabelStyle": {
           "description": "The CSS style object defining the style of the stack label. Only applies to stacked bar charts.",
           "type": "object",
-          "value": "{}"
+          "value": {}
         },
         "stockFallingColor": {
           "description": "In stock charts, the color of the candlestick when the 'open' value is greater than the 'close' value.",
@@ -2867,12 +2885,12 @@
         "tooltipLabelStyle": {
           "description": "The CSS style object defining the style of the labels in the tooltip.",
           "type": "object",
-          "value": "{}"
+          "value": {}
         },
         "tooltipValueStyle": {
           "description": "The CSS style object defining the style of the values in the tooltip.",
           "type": "object",
-          "value": "{}"
+          "value": {}
         }
       }
     },
@@ -2910,7 +2928,7 @@
       "description": "An object containing an optional callback function for tooltip customization.",
       "type": "object",
       "displayName": "Tooltip",
-      "value": "{}",
+      "value": {},
       "properties": {
         "renderer": {
           "description": "A function that returns a custom tooltip. The function takes a dataContext argument, provided by the chart, with the following properties: parentElement: The tooltip element. This can be used to change the tooltip border or background color. id: The id of the hovered item. series: The id of the series the hovered item belongs to. group: The ids or an array of ids of the group(s) the hovered item belongs to. For hierarchical groups, it will be an array of outermost to innermost group ids. value, targetValue, x, y, z, low, high, open, close, volume: The values of the hovered item. label: The data label of the hovered item. data: The data object of the hovered item. For nested items, it will be an array containing the parent item data and nested item data. seriesData: The data for the series the hovered item belongs to. groupData: An array of data for the group the hovered item belongs to. For hierarchical groups, it will be an array of outermost to innermost group data related to the hovered item. componentElement: The chart element. color: The color of the hovered item. For reference objects, this tooltip function is only called if the reference object has an id. Note: In future releases, tooltips may be fired for objects other than data items and reference objects. To know whether a hovered object is a data item, please check that the \"series\" and \"group\" properties are not null. The function should return an Object that contains only one of the two properties: insert: HTMLElement | string - An HTML element, which will be appended to the tooltip, or a tooltip string. preventDefault: true - Indicates that the tooltip should not be displayed. It is not necessary to return {preventDefault:false} to display tooltip, since this is a default behavior. ",
@@ -3220,12 +3238,12 @@
       "description": "An object specifying value formatting and tooltip behavior, whose keys generally correspond to the attribute names on the data items.",
       "type": "object",
       "displayName": "Value Formats",
-      "value": "{}",
+      "value": {},
       "properties": {
         "close": {
           "description": "Specifies the value formatting and tooltip behavior for the close values of a stock chart.",
           "type": "object",
-          "value": "{}",
+          "value": {},
           "properties": {
             "converter": {
               "description": "The converter (an object literal or instance that duck types oj.Converter) used to format the label. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.",
@@ -3297,7 +3315,7 @@
         "group": {
           "description": "Specifies tooltip behavior for the groups.",
           "type": "object",
-          "value": "{}",
+          "value": {},
           "properties": {
             "tooltipDisplay": {
               "description": "Whether the value is displayed in the tooltip.",
@@ -3327,7 +3345,7 @@
         "high": {
           "description": "Specifies the value formatting and tooltip behavior for the high values.",
           "type": "object",
-          "value": "{}",
+          "value": {},
           "properties": {
             "converter": {
               "description": "The converter (an object literal or instance that duck types oj.Converter) used to format the label. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.",
@@ -3399,7 +3417,7 @@
         "label": {
           "description": "Specifies the value formatting for the data item labels.",
           "type": "object",
-          "value": "{}",
+          "value": {},
           "properties": {
             "converter": {
               "description": "The converter (an object literal or instance that duck types oj.Converter) used to format the label. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.",
@@ -3448,7 +3466,7 @@
         "low": {
           "description": "Specifies the value formatting and tooltip behavior for the low values.",
           "type": "object",
-          "value": "{}",
+          "value": {},
           "properties": {
             "converter": {
               "description": "The converter (an object literal or instance that duck types oj.Converter) used to format the label. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.",
@@ -3520,7 +3538,7 @@
         "open": {
           "description": "Specifies the value formatting and tooltip behavior for the open values of a stock chart.",
           "type": "object",
-          "value": "{}",
+          "value": {},
           "properties": {
             "converter": {
               "description": "The converter (an object literal or instance that duck types oj.Converter) used to format the label. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.",
@@ -3592,7 +3610,7 @@
         "q1": {
           "description": "Specifies the value formatting and tooltip behavior for the q1 values of a box plot.",
           "type": "object",
-          "value": "{}",
+          "value": {},
           "properties": {
             "converter": {
               "description": "The converter (an object literal or instance that duck types oj.Converter) used to format the label. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.",
@@ -3664,7 +3682,7 @@
         "q2": {
           "description": "Specifies the value formatting and tooltip behavior for the q2 values of a box plot.",
           "type": "object",
-          "value": "{}",
+          "value": {},
           "properties": {
             "converter": {
               "description": "The converter (an object literal or instance that duck types oj.Converter) used to format the label. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.",
@@ -3736,7 +3754,7 @@
         "q3": {
           "description": "Specifies the value formatting and tooltip behavior for the q3 values of a box plot.",
           "type": "object",
-          "value": "{}",
+          "value": {},
           "properties": {
             "converter": {
               "description": "The converter (an object literal or instance that duck types oj.Converter) used to format the label. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.",
@@ -3808,7 +3826,7 @@
         "series": {
           "description": "Specifies tooltip behavior for the series.",
           "type": "object",
-          "value": "{}",
+          "value": {},
           "properties": {
             "tooltipDisplay": {
               "description": "Whether the value is displayed in the tooltip.",
@@ -3838,7 +3856,7 @@
         "targetValue": {
           "description": "Specifies the value formatting and tooltip behavior for the target values of a funnel chart.",
           "type": "object",
-          "value": "{}",
+          "value": {},
           "properties": {
             "converter": {
               "description": "The converter (an object literal or instance that duck types oj.Converter) used to format the label. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.",
@@ -3910,7 +3928,7 @@
         "value": {
           "description": "Specifies the value formatting and tooltip behavior for the values.",
           "type": "object",
-          "value": "{}",
+          "value": {},
           "properties": {
             "converter": {
               "description": "The converter (an object literal or instance that duck types oj.Converter) used to format the label. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.",
@@ -3982,7 +4000,7 @@
         "volume": {
           "description": "Specifies the value formatting and tooltip behavior for the volume values of a stock chart.",
           "type": "object",
-          "value": "{}",
+          "value": {},
           "properties": {
             "converter": {
               "description": "The converter (an object literal or instance that duck types oj.Converter) used to format the label. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.",
@@ -4054,7 +4072,7 @@
         "x": {
           "description": "Specifies the value formatting and tooltip behavior for the x values.",
           "type": "object",
-          "value": "{}",
+          "value": {},
           "properties": {
             "converter": {
               "description": "The converter (an object literal or instance that duck types oj.Converter) used to format the label. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.",
@@ -4126,7 +4144,7 @@
         "y": {
           "description": "Specifies the value formatting and tooltip behavior for the y values.",
           "type": "object",
-          "value": "{}",
+          "value": {},
           "properties": {
             "converter": {
               "description": "The converter (an object literal or instance that duck types oj.Converter) used to format the label. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.",
@@ -4198,7 +4216,7 @@
         "y2": {
           "description": "Specifies the value formatting and tooltip behavior for the y2 values.",
           "type": "object",
-          "value": "{}",
+          "value": {},
           "properties": {
             "converter": {
               "description": "The converter (an object literal or instance that duck types oj.Converter) used to format the label. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.",
@@ -4270,7 +4288,7 @@
         "z": {
           "description": "Specifies the value formatting and tooltip behavior for the z values.",
           "type": "object",
-          "value": "{}",
+          "value": {},
           "properties": {
             "converter": {
               "description": "The converter (an object literal or instance that duck types oj.Converter) used to format the label. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.",
@@ -4345,12 +4363,12 @@
       "description": "An object defining properties for the axis, tick marks, tick labels, and axis titles.",
       "type": "object",
       "displayName": "X Axis",
-      "value": "{}",
+      "value": {},
       "properties": {
         "axisLine": {
           "description": "An object defining properties for the axis line.",
           "type": "object",
-          "value": "{}",
+          "value": {},
           "properties": {
             "lineColor": {
               "description": "The color of the axis line.",
@@ -4361,7 +4379,7 @@
               "description": "The width of the axis line.",
               "type": "number",
               "value": null,
-              "minimum": "0",
+              "minimum": 0,
               "units": "pixels"
             },
             "rendered": {
@@ -4413,7 +4431,7 @@
         "majorTick": {
           "description": "An object defining properties for the major tick marks.",
           "type": "object",
-          "value": "{}",
+          "value": {},
           "properties": {
             "baselineColor": {
               "description": "The color of the major tick mark at the baseline (x = 0). Valid values are auto, inherit, or a custom color. If set to inherit, it will follow the lineColor attribute.",
@@ -4457,7 +4475,7 @@
               "description": "The width of the major tick mark at the baseline (x = 0) If not specified, it will follow the lineWidth attribute.",
               "type": "number",
               "value": null,
-              "minimum": "0",
+              "minimum": 0,
               "units": "pixels"
             },
             "lineColor": {
@@ -4490,7 +4508,7 @@
               "description": "The width of the major tick marks.",
               "type": "number",
               "value": null,
-              "minimum": "0",
+              "minimum": 0,
               "units": "pixels"
             },
             "rendered": {
@@ -4535,18 +4553,18 @@
           "description": "The minimum increment between major tick marks. This is typically used to prevent fractional axis values for discrete measures. Only applies to numerical axes.",
           "type": "number",
           "value": null,
-          "exclusiveMinimum": "0"
+          "exclusiveMinimum": 0
         },
         "minorStep": {
           "description": "The increment between minor tick marks. Defaults to null for automatic calculation based on the data. Only applies to numerical axes. For log axis, the step is a multiplier, so for example, if the minorStep is 2, the minor tick marks will be rendered at 1, 2, 4, 8, and so on.",
           "type": "number",
           "value": null,
-          "exclusiveMinimum": "0"
+          "exclusiveMinimum": 0
         },
         "minorTick": {
           "description": "An object defining properties for the minor tick marks.",
           "type": "object",
-          "value": "{}",
+          "value": {},
           "properties": {
             "lineColor": {
               "description": "The color of the minor tick marks.",
@@ -4578,7 +4596,7 @@
               "description": "The width of the minor tick marks.",
               "type": "number",
               "value": null,
-              "minimum": "0",
+              "minimum": 0,
               "units": "pixels"
             },
             "rendered": {
@@ -4704,7 +4722,7 @@
               "description": "The width of the reference line.",
               "type": "number",
               "value": null,
-              "minimum": "0",
+              "minimum": 0,
               "units": "pixels"
             },
             "location": {
@@ -4817,12 +4835,12 @@
           "description": "The increment between major tick marks. Defaults to null for automatic calculation based on the data. Only applies to time and numerical axes. For log axis, the step is a multiplier, so for example, if the step is 2, the major tick marks will be rendered at 1, 2, 4, 8, and so on.",
           "type": "number",
           "value": null,
-          "exclusiveMinimum": "0"
+          "exclusiveMinimum": 0
         },
         "tickLabel": {
           "description": "An object defining the properties of the tick labels.",
           "type": "object",
-          "value": "{}",
+          "value": {},
           "properties": {
             "converter": {
               "description": "The converter (an object literal or instance that duck types oj.Converter) to format the labels. When using a time axis, this attribute also takes an array of two converters, which apply respectively to the first and second label levels. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.",
@@ -4903,7 +4921,7 @@
             "style": {
               "description": "The CSS style object defining the style of the labels. The CSS white-space property can be defined with value \"nowrap\" to disable default text wrapping of categorical labels.",
               "type": "object",
-              "value": "{}"
+              "value": {}
             }
           }
         },
@@ -4916,7 +4934,7 @@
         "titleStyle": {
           "description": "The CSS style object defining the style of the axis title. The CSS white-space property can be defined with value \"nowrap\" to disable default text wrapping of the title.",
           "type": "object",
-          "value": "{}"
+          "value": {}
         },
         "viewportEndGroup": {
           "description": "Specifies the end group of the current viewport. Only applies to charts with group or time axis. If not specified, the default end group is the last group in the data set.",
@@ -4944,7 +4962,7 @@
       "description": "An object defining properties for the axis, tick marks, tick labels, and axis titles. Y2 axis is only supported for Cartesian bar, line, area, and combo charts.",
       "type": "object",
       "displayName": "Y2 Axis",
-      "value": "{}",
+      "value": {},
       "properties": {
         "alignTickMarks": {
           "description": "Defines whether the tick marks of the y1 and y2 axes are aligned. Not supported for logarithmic axes.",
@@ -4966,7 +4984,7 @@
         "axisLine": {
           "description": "An object defining properties for the axis line.",
           "type": "object",
-          "value": "{}",
+          "value": {},
           "properties": {
             "lineColor": {
               "description": "The color of the axis line.",
@@ -4977,7 +4995,7 @@
               "description": "The width of the axis line.",
               "type": "number",
               "value": null,
-              "minimum": "0",
+              "minimum": 0,
               "units": "pixels"
             },
             "rendered": {
@@ -5033,7 +5051,7 @@
         "majorTick": {
           "description": "An object defining properties for the major tick marks.",
           "type": "object",
-          "value": "{}",
+          "value": {},
           "properties": {
             "baselineColor": {
               "description": "The color of the major tick mark at the baseline (y = 0). Valid values are auto, inherit, or a custom color. If set to inherit, it will follow the lineColor attribute.",
@@ -5077,7 +5095,7 @@
               "description": "The width of the major tick mark at the baseline (y = 0) If not specified, it will follow the lineWidth attribute.",
               "type": "number",
               "value": null,
-              "minimum": "0",
+              "minimum": 0,
               "units": "pixels"
             },
             "lineColor": {
@@ -5110,7 +5128,7 @@
               "description": "The width of the major tick marks.",
               "type": "number",
               "value": null,
-              "minimum": "0",
+              "minimum": 0,
               "units": "pixels"
             },
             "rendered": {
@@ -5155,18 +5173,18 @@
           "description": "The minimum increment between major tick marks. This is typically used to prevent fractional axis values for discrete measures.",
           "type": "number",
           "value": null,
-          "exclusiveMinimum": "0"
+          "exclusiveMinimum": 0
         },
         "minorStep": {
           "description": "The increment between minor tick marks. Defaults to null for automatic calculation based on the data. For log axis, the step is a multiplier, so for example, if the minorStep is 2, the minor tick marks will be rendered at 1, 2, 4, 8, and so on.",
           "type": "number",
           "value": null,
-          "exclusiveMinimum": "0"
+          "exclusiveMinimum": 0
         },
         "minorTick": {
           "description": "An object defining properties for the minor tick marks.",
           "type": "object",
-          "value": "{}",
+          "value": {},
           "properties": {
             "lineColor": {
               "description": "The color of the minor tick marks.",
@@ -5198,7 +5216,7 @@
               "description": "The width of the minor tick marks.",
               "type": "number",
               "value": null,
-              "minimum": "0",
+              "minimum": 0,
               "units": "pixels"
             },
             "rendered": {
@@ -5316,7 +5334,7 @@
                   "value": null
                 },
                 "x": {
-                  "description": "The x-value on a data axis or date on a time axis for this point, not used for categorical axis.",
+                  "description": "The x value of this point. Mainly used for scatter and bubble chart and to specify the date for mixed-frequency time axis.\nFor categorical axis, if the x value is not specified, it will default to the item index.\nFor regular time axis, if the x value is not specified, it will default to the group name of the item.",
                   "type": "number|string",
                   "value": null
                 }
@@ -5380,7 +5398,7 @@
               "description": "The width of the reference line.",
               "type": "number",
               "value": null,
-              "minimum": "0",
+              "minimum": 0,
               "units": "pixels"
             },
             "location": {
@@ -5493,12 +5511,12 @@
           "description": "The increment between major tick marks. Defaults to null for automatic calculation based on the data. For log axis, the step is a multiplier, so for example, if the step is 2, the major tick marks will be rendered at 1, 2, 4, 8, and so on.",
           "type": "number",
           "value": null,
-          "exclusiveMinimum": "0"
+          "exclusiveMinimum": 0
         },
         "tickLabel": {
           "description": "An object defining the properties of the tick labels.",
           "type": "object",
-          "value": "{}",
+          "value": {},
           "properties": {
             "converter": {
               "description": "The converter (an object literal or instance that duck types oj.Converter) to format the labels. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.",
@@ -5579,7 +5597,7 @@
             "style": {
               "description": "The CSS style object defining the style of the labels.",
               "type": "object",
-              "value": "{}"
+              "value": {}
             }
           }
         },
@@ -5592,7 +5610,7 @@
         "titleStyle": {
           "description": "The CSS style object defining the style of the axis title.",
           "type": "object",
-          "value": "{}"
+          "value": {}
         }
       }
     },
@@ -5600,12 +5618,12 @@
       "description": "An object defining properties for the axis, tick marks, tick labels, and axis titles.",
       "type": "object",
       "displayName": "Y Axis",
-      "value": "{}",
+      "value": {},
       "properties": {
         "axisLine": {
           "description": "An object defining properties for the axis line.",
           "type": "object",
-          "value": "{}",
+          "value": {},
           "properties": {
             "lineColor": {
               "description": "The color of the axis line.",
@@ -5616,7 +5634,7 @@
               "description": "The width of the axis line.",
               "type": "number",
               "value": null,
-              "minimum": "0",
+              "minimum": 0,
               "units": "pixels"
             },
             "rendered": {
@@ -5672,7 +5690,7 @@
         "majorTick": {
           "description": "An object defining properties for the major tick marks.",
           "type": "object",
-          "value": "{}",
+          "value": {},
           "properties": {
             "baselineColor": {
               "description": "The color of the major tick mark at the baseline (y = 0). Valid values are auto, inherit, or a custom color. If set to inherit, it will follow the lineColor attribute.",
@@ -5716,7 +5734,7 @@
               "description": "The width of the major tick mark at the baseline (y = 0) If not specified, it will follow the lineWidth attribute.",
               "type": "number",
               "value": null,
-              "minimum": "0",
+              "minimum": 0,
               "units": "pixels"
             },
             "lineColor": {
@@ -5749,7 +5767,7 @@
               "description": "The width of the major tick marks.",
               "type": "number",
               "value": null,
-              "minimum": "0",
+              "minimum": 0,
               "units": "pixels"
             },
             "rendered": {
@@ -5794,18 +5812,18 @@
           "description": "The minimum increment between major tick marks. This is typically used to prevent fractional axis values for discrete measures.",
           "type": "number",
           "value": null,
-          "exclusiveMinimum": "0"
+          "exclusiveMinimum": 0
         },
         "minorStep": {
           "description": "The increment between minor tick marks. Defaults to null for automatic calculation based on the data. For log axis, the step is a multiplier, so for example, if the minorStep is 2, the minor tick marks will be rendered at 1, 2, 4, 8, and so on.",
           "type": "number",
           "value": null,
-          "exclusiveMinimum": "0"
+          "exclusiveMinimum": 0
         },
         "minorTick": {
           "description": "An object defining properties for the minor tick marks.",
           "type": "object",
-          "value": "{}",
+          "value": {},
           "properties": {
             "lineColor": {
               "description": "The color of the minor tick marks.",
@@ -5837,7 +5855,7 @@
               "description": "The width of the minor tick marks.",
               "type": "number",
               "value": null,
-              "minimum": "0",
+              "minimum": 0,
               "units": "pixels"
             },
             "rendered": {
@@ -5955,7 +5973,7 @@
                   "value": null
                 },
                 "x": {
-                  "description": "The x-value on a data axis or date on a time axis for this point, not used for categorical axis.",
+                  "description": "The x value of this point. Mainly used for scatter and bubble chart and to specify the date for mixed-frequency time axis.\nFor categorical axis, if the x value is not specified, it will default to the item index.\nFor regular time axis, if the x value is not specified, it will default to the group name of the item.",
                   "type": "number|string",
                   "value": null
                 }
@@ -6019,7 +6037,7 @@
               "description": "The width of the reference line.",
               "type": "number",
               "value": null,
-              "minimum": "0",
+              "minimum": 0,
               "units": "pixels"
             },
             "location": {
@@ -6132,12 +6150,12 @@
           "description": "The increment between major tick marks. Defaults to null for automatic calculation based on the data. For log axis, the step is a multiplier, so for example, if the step is 2, the major tick marks will be rendered at 1, 2, 4, 8, and so on.",
           "type": "number",
           "value": null,
-          "exclusiveMinimum": "0"
+          "exclusiveMinimum": 0
         },
         "tickLabel": {
           "description": "An object defining the properties of the tick labels.",
           "type": "object",
-          "value": "{}",
+          "value": {},
           "properties": {
             "converter": {
               "description": "The converter (an object literal or instance that duck types oj.Converter) to format the labels. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.",
@@ -6218,7 +6236,7 @@
             "style": {
               "description": "The CSS style object defining the style of the labels.",
               "type": "object",
-              "value": "{}"
+              "value": {}
             }
           }
         },
@@ -6231,7 +6249,7 @@
         "titleStyle": {
           "description": "The CSS style object defining the style of the axis title.",
           "type": "object",
-          "value": "{}"
+          "value": {}
         },
         "viewportMax": {
           "description": "Specifies the maximum y coordinate of the current viewport for zoom and scroll. Only applies to bubble and scatter charts. If not specified, this value will be the axis max.",
@@ -6299,10 +6317,6 @@
     }
   },
   "methods": {
-    "getTitle": {
-      "description": "Returns the chart title.",
-      "return": "String"
-    },
     "getGroup": {
       "description": "Returns the group corresponding to the given index",
       "params": [
@@ -6437,7 +6451,7 @@
     }
   },
   "events": {
-    "selectInput": {
+    "ojSelectInput": {
       "description": "Triggered during a selection gesture, such as a change in the marquee selection rectangle.",
       "bubbles": true,
       "detail": {
@@ -6489,7 +6503,7 @@
         }
       }
     },
-    "viewportChange": {
+    "ojViewportChange": {
       "description": "Triggered after the viewport is changed due to a zoom or scroll operation.",
       "bubbles": true,
       "detail": {
@@ -6519,7 +6533,7 @@
         }
       }
     },
-    "viewportChangeInput": {
+    "ojViewportChangeInput": {
       "description": "Triggered during a viewport change gesture, such as a drag operation on the overview window. Note: There are\nsituations where the chart cannot determine whether the viewport change gesture is still in progress, such\nas with mouse wheel zoom interactions. Standard viewportChange events are fired in these cases.",
       "bubbles": true,
       "detail": {
@@ -6549,7 +6563,7 @@
         }
       }
     },
-    "drill": {
+    "ojDrill": {
       "description": "Triggered during a drill gesture (double click if selection is enabled, single click otherwise).",
       "bubbles": true,
       "detail": {

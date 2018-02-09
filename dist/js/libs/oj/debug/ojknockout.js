@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2014, 2017, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
@@ -544,12 +544,20 @@ oj.ComponentBinding.prototype._initComponent = function(element, ctx)
         {
           var initProps = initFunc(prop, value, element, comp, ctx.valueAccessor, 
                                    ctx.allBindingsAccessor, ctx.bindingContext) || {};
-          oj.CollectionUtils.copyInto(resolvedInitialOptions, initProps);
+                                   
+          var initKeys = Object.keys(initProps);
+          
+          // ensure that the array properties returned by the init function are cloned 
+          for (var ip = 0; ip<initKeys.length; ip++)
+          {
+            var ikey = initKeys[ip];
+            resolvedInitialOptions[ikey] = oj.ComponentBinding.__cloneIfArray(initProps[ikey]);
+          }
         }
       }
       else
       {
-        resolvedInitialOptions[prop] = value;
+        resolvedInitialOptions[prop] = oj.ComponentBinding.__cloneIfArray(value);
       }
     }
     // this is a post-init change
@@ -1869,6 +1877,7 @@ oj.ComponentBinding.getDefaultInstance().setupManagedAttributes({
 
   /**
    * @ignore
+   * @private
    */
   oj.__ExpressionUtils = {};
   
@@ -1981,6 +1990,19 @@ function createSymbolOrString(identifier) {
   return identifier;
 }
 
+// Array.prototype.map doesn't execute the mapping function on indices that don't have assigned values
+// so it would be a NOP for new Array(5).  Call this for loop based version instead
+function arrayMap(array, mapping) {
+  var result;
+  if (array) {
+    result = [];
+    for (var i = 0; i < array.length; i++) {
+      result.push(mapping(array[i], i, array));
+    }
+  }
+  return result;
+}
+
 // store a symbol for caching the pending delete info index in the data item objects
 var PENDING_DELETE_INDEX_KEY = createSymbolOrString("_ko_ffe_pending_delete_index");
 
@@ -2006,9 +2028,7 @@ function OjForEach(spec) {
 
   // Prime content
   var primeData = ko.unwrap(this['data']);
-  if (primeData.map) {
-    this.onArrayChange(primeData.map(valueToChangeAddItem), true);
-  }
+  this.onArrayChange(arrayMap(primeData, valueToChangeAddItem), true);
 
   // Watch for changes
   if (ko.isObservable(this['data'])) {
@@ -2345,8 +2365,9 @@ ko.virtualElements.allowedBindings['_ojBindForEach_'] = true;
 /**
  * @ignore
  * @constructor
+ * @private
  */
-oj.__ExpressionPropertyUpdater = function(element, bindingContext, isComposite)
+oj.__ExpressionPropertyUpdater = function(element, bindingContext, skipThrottling)
 { 
   // This function should be called when the bindings are applied initially and whenever the expression attribute changes
   this.setupExpression = function(attrVal, propName, metadata)
@@ -2377,7 +2398,7 @@ oj.__ExpressionPropertyUpdater = function(element, bindingContext, isComposite)
       var event = oj.__AttributeUtils.eventListenerPropertyToEventType(propName);
       // If the attribute is removed, there won't be a new expression so the remove call
       // below can't be relied upon.  So clean up here as well to handle that case
-      _setDomListener(event, null);
+      _setDomListener(bindingContext, event, null);
     }
 
     var readOnly = metadata['readOnly'];
@@ -2405,7 +2426,7 @@ oj.__ExpressionPropertyUpdater = function(element, bindingContext, isComposite)
 
                 if (metadata._domListener) {
                   var event = oj.__AttributeUtils.eventListenerPropertyToEventType(propName);
-                  _setDomListener(event, unwrappedValue);
+                  _setDomListener(bindingContext, event, unwrappedValue);
                 }
                 else
                 {
@@ -2414,6 +2435,15 @@ oj.__ExpressionPropertyUpdater = function(element, bindingContext, isComposite)
                   if (Array.isArray(unwrappedValue))
                   {
                     unwrappedValue = unwrappedValue.slice();
+                  }
+
+                  if (metadata._eventListener) {
+                    // Need to wrap the function so that it gets called with extra params
+                    // No need to throw an error for the non-function case here because
+                    // the bridge will throw it for us
+                    if (unwrappedValue && unwrappedValue instanceof Function) {
+                      unwrappedValue = _createSimpleEventListenerWrapper(bindingContext, unwrappedValue)
+                    }
                   }
                   
                   if (!initialRead && _throttler)
@@ -2471,7 +2501,7 @@ oj.__ExpressionPropertyUpdater = function(element, bindingContext, isComposite)
     for (i=0; i<names.length; i++)
     {
       var event = names[i];
-      _setDomListener(event, null);
+      element.removeEventListener(event, _domListeners[event]);
     }
     _domListeners = {};
     
@@ -2481,14 +2511,42 @@ oj.__ExpressionPropertyUpdater = function(element, bindingContext, isComposite)
     }
   }
 
-  function _setDomListener(event, listener) {
-    if (_domListeners[event]) {
-      element.removeEventListener(event, _domListeners[event]);
-      _domListeners[event] = null;
+  function _getCurrent(bindingContext) {
+    return bindingContext['$current'] || bindingContext['$data'];
+  }
+
+  function _createSimpleEventListenerWrapper(bindingContext, listener) {
+    var current = _getCurrent(bindingContext);
+    return function(event) {
+      listener(event, current, bindingContext);
+    };
+  }
+
+  function _createMutableEventListenerWrapper(bindingContext) {
+    var current = _getCurrent(bindingContext);
+    var eventListener;
+    var domListener = function(event) {
+      if (eventListener) {
+        eventListener(event, current, bindingContext);
+      }
+    };
+    domListener.setListener = function(listener) {
+      eventListener = listener;
     }
-    if (listener && listener instanceof Function) {
-      _domListeners[event] = listener;
-      element.addEventListener(event, listener);
+    return domListener;    
+  }
+
+  function _setDomListener(bindingContext, event, listener) {
+    var domListener = _domListeners[event];
+    if (!domListener) {
+      // Create the wrapper
+      domListener = _createMutableEventListenerWrapper(bindingContext);
+      _domListeners[event] = domListener;
+      element.addEventListener(event, domListener);
+    }
+    // TODO: throw an Error in 5.0.0 if the listener is not a Function instead of failing silently
+    if (listener == null || listener instanceof Function) {
+      domListener.setListener(listener);
     }
   }
 
@@ -2615,11 +2673,11 @@ oj.__ExpressionPropertyUpdater = function(element, bindingContext, isComposite)
   function _setupComponentChangeTracker()
   {
     
-    //  We are not throttling composite property updates because:
+    //  We are not throttling property updates for JET composites and native HTML elements because:
     //  1) Existing customers may expect that properties be updated immediately
     //  2) KO templates do not have any optimizations for simulteneous property updates
     //  3) Updates to embeddded JET components will still be throttled
-    if (isComposite)
+    if (skipThrottling)
     {
       return null;
     }
@@ -2720,7 +2778,8 @@ oj.__ExpressionPropertyUpdater = function(element, bindingContext, isComposite)
 
 
 /**
- * @class Utilities for creating knockout observables to implement responsive pages. 
+ * @class oj.ResponsiveKnockoutUtils
+ * @classdesc Utilities for creating knockout observables to implement responsive pages. 
  * For example you could use oj.ResponsiveKnockoutUtils.createMediaQueryObservable to 
  * create an observable based on the screen width and then bind the tab bar's 
  * orientation attribute to it. See the method doc below for specific examples.
@@ -3119,16 +3178,15 @@ oj.ComponentBinding.getDefaultInstance().setupManagedAttributes({
       },
       'nodeHasBindings': function (node, wrappedReturn) {
         var bindings = _getBindings(node);
-        return wrappedReturn || bindings._ATTR_BIND != null || bindings._STYLE_BIND != null;
+        return wrappedReturn || bindings._ATTR_BIND != null || bindings._STYLE_BIND != null || bindings._EVENT_BIND != null;
       },
       'getBindingAccessors': function (node, bindingContext, wrappedReturn) 
       {
         if (node.nodeType === 1) 
         {
           wrappedReturn = wrappedReturn || {};
-
-
           var bindings = _getBindings(node);
+
           // Style bindings
           var styleAttrs = bindings._STYLE_BIND;
           if (styleAttrs)
@@ -3169,6 +3227,31 @@ oj.ComponentBinding.getDefaultInstance().setupManagedAttributes({
             }
 
             wrappedReturn['attr'] = _getObjectEvaluator(attrEvaluators);
+          }
+
+          // Event bindings for native HTML elements
+          var eventAttrs = bindings._EVENT_BIND;
+          if (eventAttrs)
+          {
+            // Delegate to ExpressionPropertyUpdater, which is also responsible for
+            // setting up the event bindings for custom elements.
+            var expressionHandler = new oj.__ExpressionPropertyUpdater(node, bindingContext, true);
+
+            for (var i = 0; i < eventAttrs.length; i++)
+            {
+              var attrNode = eventAttrs[i];
+              var propName = oj.__AttributeUtils.attributeToPropertyName(attrNode.nodeName);
+              expressionHandler.setupExpression(attrNode.value, propName, {_domListener: true});
+            }
+
+            ko.utils.domNodeDisposal.addDisposeCallback(node, function()
+            {
+              if (expressionHandler)
+              {
+                expressionHandler.teardown();
+                expressionHandler = null;
+              }
+            });
           }
           
         }
@@ -3313,11 +3396,17 @@ oj.ComponentBinding.getDefaultInstance().setupManagedAttributes({
 
     if (!node[_BINDINGS])
     {
+      // Using the weird notation below instead of:
+      // var isCustomElement = oj.BaseCustomElementBridge && oj.BaseCustomElementBridge.getRegistered(node.nodeName);
+      // because it causes minification error for some reason.
+      var isCustomElement = oj.BaseCustomElementBridge ? !!oj.BaseCustomElementBridge.getRegistered(node.nodeName) : false;
+
       // Iterate through all attributes on the element and find those that are using our
       // data bind attibute syntax
-      var bindings = {}; 
+      var bindings = {};
       var boundAttrs = [];
       var boundStyle = [];
+      var boundEvents = [];
       var attrs = node.attributes; // attrs is a NamedNodeMap
       for (var i = 0; i < attrs.length; i++)
       {
@@ -3334,10 +3423,15 @@ oj.ComponentBinding.getDefaultInstance().setupManagedAttributes({
           else
             boundAttrs.push(unboundAttrName);
         }
+
+        // Handle event binding for native HTML elements.
+        // The event binding for custom elements is handled by the bridge.
+        if (!isCustomElement && attr.name.substring(0,3) === 'on-')
+        {
+          boundEvents.push(attr);
+        }
       }
 
-      // Cache attribute map as a non-enumerable property so we don't have to loop again
-      // in getBindingAccessors
       if (boundStyle.length)
       {
         if (bindings._STYLE_BIND)
@@ -3349,6 +3443,11 @@ oj.ComponentBinding.getDefaultInstance().setupManagedAttributes({
       if (boundAttrs.length)
         bindings._ATTR_BIND = boundAttrs;
 
+      if (boundEvents.length)
+        bindings._EVENT_BIND = boundEvents;
+
+      // Cache attribute map as a non-enumerable property so we don't have to loop again
+      // in getBindingAccessors
       Object.defineProperty(node, _BINDINGS, {'value': bindings});
     }
     return node[_BINDINGS];
@@ -4267,6 +4366,7 @@ oj.ComponentBinding.getDefaultInstance().setupManagedAttributes({
 /**
  * @ignore
  * @constructor
+ * @private
  */
 oj._KnockoutBindingProvider = function()
 {

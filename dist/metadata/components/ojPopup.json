@@ -1,7 +1,7 @@
 {
-  "name": "ojPopup",
-  "version": "4.1.0",
-  "jetVersion": "4.1.0",
+  "name": "oj-popup",
+  "version": "4.2.0",
+  "jetVersion": "4.2.0",
   "displayName": "Popup",
   "preview": true,
   "roles": [
@@ -335,7 +335,8 @@
       "return": "boolean"
     },
     "refresh": {
-      "description": "Refreshes the component."
+      "description": "Causes the popup to reevaluate its position. Call this function after\nthe content of the popup has dynamically changed while the popup is open.\n\nThis method does not accept any arguments.",
+      "return": "void"
     },
     "setProperty": {
       "description": "Sets a property or a single subproperty for complex properties and notifies the component\nof the change, triggering a [property]Changed event.",
@@ -375,7 +376,7 @@
     }
   },
   "events": {
-    "beforeOpen": {
+    "ojBeforeOpen": {
       "description": "Triggered before the popup is launched via the open()\nmethod. The open can be cancelled by calling\nevent.preventDefault().",
       "bubbles": true,
       "cancelable": true,
@@ -386,7 +387,7 @@
         }
       }
     },
-    "open": {
+    "ojOpen": {
       "description": "Triggered after the popup is launched via the open()\nmethod.",
       "bubbles": true,
       "detail": {
@@ -396,7 +397,7 @@
         }
       }
     },
-    "beforeClose": {
+    "ojBeforeClose": {
       "description": "Triggered before the popup is dismissed via the\nclose() method. The close can be cancelled by calling\nevent.preventDefault().",
       "bubbles": true,
       "cancelable": true,
@@ -407,7 +408,7 @@
         }
       }
     },
-    "close": {
+    "ojClose": {
       "description": "Triggered after the popup is dismissed via the\nclose() method.",
       "bubbles": true,
       "detail": {
@@ -417,7 +418,7 @@
         }
       }
     },
-    "focus": {
+    "ojFocus": {
       "description": "Triggered after focus has been transfered to the popup. This will occur after the\nopen() method is called, depending on the value\nof the initialFocus property. It's also triggered\nwhen using the F6 key to toggle focus from the associated launcher element\nto the content of the popup.",
       "bubbles": true,
       "detail": {
@@ -427,7 +428,7 @@
         }
       }
     },
-    "animateStart": {
+    "ojAnimateStart": {
       "description": "Triggered when a default animation is about to start, such as when the component is\nbeing opened/closed or a child item is being added/removed. The default animation can\nbe cancelled by calling event.preventDefault.",
       "bubbles": true,
       "cancelable": true,
@@ -458,7 +459,7 @@
         }
       }
     },
-    "animateEnd": {
+    "ojAnimateEnd": {
       "description": "Triggered when a default animation has ended, such as when the component is being\nopened/closed or a child item is being added/removed. This event is not triggered if\nthe application has called preventDefault on the animateStart\nevent.",
       "bubbles": true,
       "cancelable": true,

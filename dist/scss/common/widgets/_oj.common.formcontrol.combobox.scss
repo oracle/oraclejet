@@ -1,4 +1,4 @@
-// Copyright (c) 2014, 2017, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// Copyright (c) 2014, 2018, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 // WARNING: do not directly import this file, instead import the 
 //          version in your base theme's directory, 
@@ -309,6 +309,11 @@
     /* clear entry icon for combobox */
     .oj-combobox-clear-entry-icon {
       @extend .oj-fwk-icon-cross;
+    }
+    
+    // .oj-button adds margin-bottom, we need to remove it if it's used in the end slot
+    .oj-combobox .oj-button {
+      margin-bottom: 0;
     }
     
     // The oj-form-control-inherit selector on an ancestor indicates that the form control should

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2014, 2017, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
@@ -1968,6 +1968,13 @@ oj.__registerWidget("oj.ojTextArea", $['oj']['inputBase'],
  *   Accessibility
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#a11y-section"></a>
  * </h3>
+ * <h3 id="styling-section">
+ *   Styling
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#styling-section"></a>
+ * </h3>
+ *
+ * {@ojinclude "name":"stylingDoc"}
+ *
  * <h3 id="label-section">
  *   Label and InputText
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#label-section"></a>
@@ -2246,6 +2253,29 @@ oj.__registerWidget("oj.ojInputText", $['oj']['inputBase'],
    *
    *
    * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
+   * @memberof oj.ojInputText
+   */
+  /**
+   * {@ojinclude "name":"ojStylingDocIntro"}
+   * 
+   * <table class="generic-table styling-table">
+   *   <thead>
+   *     <tr>
+   *       <th>{@ojinclude "name":"ojStylingDocClassHeader"}</th>
+   *       <th>{@ojinclude "name":"ojStylingDocDescriptionHeader"}</th>
+   *     </tr>
+   *   </thead>
+   *   <tbody>
+   *     <tr>
+   *       <td>oj-form-control-text-align-right</td>
+   *       <td>Aligns the text to the right regardless of the reading direction,
+               this is normally used for right aligning numbers 
+   *     </td>
+   *     </tr>
+   *   </tbody>
+   * </table>
+   *
+   * @ojfragment stylingDoc - Used in Styling section of classdesc, and standalone Styling doc
    * @memberof oj.ojInputText
    */
 

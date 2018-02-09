@@ -1,8 +1,8 @@
 {
-  "name": "ojButton",
-  "version": "4.1.0",
-  "jetVersion": "4.1.0",
-  "displayName": " Button",
+  "name": "oj-button",
+  "version": "4.2.0",
+  "jetVersion": "4.2.0",
+  "displayName": "Button",
   "preview": true,
   "roles": [
     "button"

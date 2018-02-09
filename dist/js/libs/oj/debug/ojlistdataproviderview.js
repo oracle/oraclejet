@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2014, 2017, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
@@ -41,39 +41,39 @@ var ListDataProviderView = (function () {
         this._FETCHFIRST = 'fetchFirst';
         this._ADDEVENTLISTENER = 'addEventListener';
         this.AsyncIterable = (function () {
-            function FetchListResult(_parent, _asyncIterator) {
+            function class_1(_parent, _asyncIterator) {
                 this._parent = _parent;
                 this._asyncIterator = _asyncIterator;
                 this[Symbol.asyncIterator] = function () {
                     return this._asyncIterator;
                 };
             }
-            return FetchListResult;
+            return class_1;
         }());
         this.AsyncIterator = (function () {
-            function FetchListResult(_parent, _nextFunc, _params) {
+            function class_2(_parent, _nextFunc, _params) {
                 this._parent = _parent;
                 this._nextFunc = _nextFunc;
                 this._params = _params;
             }
-            FetchListResult.prototype['next'] = function () {
+            class_2.prototype['next'] = function () {
                 var result = this._nextFunc(this._params);
                 return Promise.resolve(result);
             };
-            return FetchListResult;
+            return class_2;
         }());
         this.AsyncIteratorResult = (function () {
-            function FetchListResult(_parent, value, done) {
+            function class_3(_parent, value, done) {
                 this._parent = _parent;
                 this.value = value;
                 this.done = done;
                 this[_parent._VALUE] = value;
                 this[_parent._DONE] = done;
             }
-            return FetchListResult;
+            return class_3;
         }());
         this.FetchListResult = (function () {
-            function class_1(_parent, fetchParameters, data, metadata) {
+            function class_4(_parent, fetchParameters, data, metadata) {
                 this._parent = _parent;
                 this.fetchParameters = fetchParameters;
                 this.data = data;
@@ -82,38 +82,38 @@ var ListDataProviderView = (function () {
                 this[_parent._DATA] = data;
                 this[_parent._METADATA] = metadata;
             }
-            return class_1;
+            return class_4;
         }());
         this.Item = (function () {
-            function class_2(_parent, metadata, data) {
+            function class_5(_parent, metadata, data) {
                 this._parent = _parent;
                 this.metadata = metadata;
                 this.data = data;
                 this[_parent._METADATA] = metadata;
                 this[_parent._DATA] = data;
             }
-            return class_2;
+            return class_5;
         }());
         this.ItemMetadata = (function () {
-            function class_3(_parent, key) {
+            function class_6(_parent, key) {
                 this._parent = _parent;
                 this.key = key;
                 this[_parent._KEY] = key;
             }
-            return class_3;
+            return class_6;
         }());
         this.FetchListParameters = (function () {
-            function class_4(_parent, size, sortCriteria) {
+            function class_7(_parent, size, sortCriteria) {
                 this._parent = _parent;
                 this.size = size;
                 this.sortCriteria = sortCriteria;
                 this[_parent._SIZE] = size;
                 this[_parent._SORTCRITERIA] = sortCriteria;
             }
-            return class_4;
+            return class_7;
         }());
         this.FetchByOffsetParameters = (function () {
-            function class_5(_parent, offset, size, sortCriteria) {
+            function class_8(_parent, offset, size, sortCriteria) {
                 this._parent = _parent;
                 this.offset = offset;
                 this.size = size;
@@ -122,27 +122,27 @@ var ListDataProviderView = (function () {
                 this[_parent._SORTCRITERIA] = sortCriteria;
                 this[_parent._OFFSET] = offset;
             }
-            return class_5;
+            return class_8;
         }());
         this.FetchByKeysResults = (function () {
-            function class_6(_parent, fetchParameters, results) {
+            function class_9(_parent, fetchParameters, results) {
                 this._parent = _parent;
                 this.fetchParameters = fetchParameters;
                 this.results = results;
                 this[_parent._FETCHPARAMETERS] = fetchParameters;
                 this[_parent._RESULTS] = results;
             }
-            return class_6;
+            return class_9;
         }());
         this.ContainsKeysResults = (function () {
-            function class_7(_parent, containsParameters, results) {
+            function class_10(_parent, containsParameters, results) {
                 this._parent = _parent;
                 this.containsParameters = containsParameters;
                 this.results = results;
                 this[_parent._CONTAINSPARAMETERS] = containsParameters;
                 this[_parent._RESULTS] = results;
             }
-            return class_7;
+            return class_10;
         }());
         this[this._FROM] = this.options == null ? null : this.options[this._FROM];
         this[this._OFFSET] = this.options == null ? 0 : this.options[this._OFFSET] > 0 ? this.options[this._OFFSET] : 0;
@@ -234,7 +234,7 @@ var ListDataProviderView = (function () {
                     var resultParams = new self.FetchByOffsetParameters(self, self[self._OFFSET], size, mappedResultSortCriteria);
                     return Promise.resolve(new self.AsyncIteratorResult(self, new self.FetchListResult(self, resultParams, mappedResult[self._DATA], mappedResult[self._METADATA]), self._cachedDone));
                 });
-            }));
+            }, params));
         }
         else {
             var updatedParams = new this.FetchListParameters(this, size, mappedSortCriteria);
@@ -270,6 +270,9 @@ var ListDataProviderView = (function () {
     };
     ListDataProviderView.prototype.getTotalSize = function () {
         return this.dataProvider.getTotalSize();
+    };
+    ListDataProviderView.prototype.isEmpty = function () {
+        return this.dataProvider.isEmpty();
     };
     ListDataProviderView.prototype._fetchNextSet = function (params, dataProviderAsyncIterator, resultMap) {
         var self = this;
@@ -447,11 +450,15 @@ var ListDataProviderView = (function () {
 oj['ListDataProviderView'] = ListDataProviderView;
 oj.ListDataProviderView = ListDataProviderView;
 oj.EventTargetMixin.applyMixin(ListDataProviderView);
+oj['FetchByOffsetMixin'].applyMixin(ListDataProviderView);
 oj.Object.exportPrototypeSymbol('ListDataProviderView.prototype.fetchFirst', { fetchFirst: ListDataProviderView.prototype.fetchFirst });
 oj.Object.exportPrototypeSymbol('ListDataProviderView.prototype.getCapability', { getCapability: ListDataProviderView.prototype.getCapability });
 oj.Object.exportPrototypeSymbol('ListDataProviderView.prototype.fetchByKeys', { fetchByKeys: ListDataProviderView.prototype.fetchByKeys });
 oj.Object.exportPrototypeSymbol('ListDataProviderView.prototype.containsKeys', { containsKeys: ListDataProviderView.prototype.containsKeys });
-//# sourceMappingURL=ListDataProviderView.js.map
+oj.Object.exportPrototypeSymbol('ListDataProviderView.prototype.fetchByOffset', { fetchByOffset: ListDataProviderView.prototype.fetchByOffset });
+oj.Object.exportPrototypeSymbol('ListDataProviderView.prototype.getTotalSize', { getTotalSize: ListDataProviderView.prototype.getTotalSize });
+oj.Object.exportPrototypeSymbol('ListDataProviderView.prototype.isEmpty', { isEmpty: ListDataProviderView.prototype.isEmpty });
+
 /**
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
@@ -468,11 +475,10 @@ oj.Object.exportPrototypeSymbol('ListDataProviderView.prototype.containsKeys', {
  * @ojstatus preview
  * @export
  * @class oj.ListDataProviderView
- * @implements oj.IteratingDataProvider
- * @implements oj.FetchByKeys
- * @classdesc Provides list based optimizations for oj.IteratingDataProvider. Supports fetchFirst starting at arbitrary key or index offset, sortCriteria,
+ * @implements oj.DataProvider
+ * @classdesc Provides list based optimizations for oj.DataProvider. Supports fetchFirst starting at arbitrary key or index offset, sortCriteria,
  * and field mapping. Please see the select demos for examples of DataMapping [Select]{@link oj.ojSelect}
- * @param {oj.IteratingDataProvider} dataProvider the IteratingDataProvider.
+ * @param {oj.DataProvider} dataProvider the DataProvider.
  * @param {Object=} options Options for the ListDataProviderView
  * @param {Object=} options.from key to start fetching from. This will be applied first before offset is applied.
  * @param {number=} options.offset offset to start fetching from.
@@ -509,6 +515,20 @@ oj.Object.exportPrototypeSymbol('ListDataProviderView.prototype.containsKeys', {
  */
 
 /**
+ * Fetch rows by offset
+ *
+ * @ojstatus preview
+ * @param {oj.FetchByOffsetParameters} params Fetch by offset parameters
+ * @return {Promise.<oj.FetchByOffsetResults>} Promise which resolves to {@link oj.FetchByOffsetResults}
+ * @export
+ * @expose
+ * @memberof oj.ListDataProviderView
+ * @instance
+ * @method
+ * @name fetchByOffset
+ */
+
+/**
  * Fetch the first block of data.
  * 
  * @ojstatus preview
@@ -527,8 +547,7 @@ oj.Object.exportPrototypeSymbol('ListDataProviderView.prototype.containsKeys', {
  * Determines whether this DataProvider supports certain feature.
  * 
  * @ojstatus preview
- * @param {string=} capabilityName capability name. If unspecified, 
- *                  returns all supported capabilities. Supported capability names
+ * @param {string} capabilityName capability name. Supported capability names
  *                  are determined by the underlying dataprovider.
  * @return {Object} capability information or null if unsupported
  * @export
@@ -537,6 +556,35 @@ oj.Object.exportPrototypeSymbol('ListDataProviderView.prototype.containsKeys', {
  * @instance
  * @method
  * @name getCapability
+ */
+
+/**
+ * Return the total number of rows in this dataprovider
+ * 
+ * @ojstatus preview
+ * @return {Promise.<number>} Returns a Promise which resolves to the total number of rows. -1 is unknown row count.
+ * @export
+ * @expose
+ * @memberof oj.ListDataProviderView
+ * @instance
+ * @method
+ * @name getTotalSize
+ */
+
+/**
+ * Return a string that indicates if this data provider is empty
+ * 
+ * @ojstatus preview
+ * @return {string} a string that indicates if this data provider is empty. Valid values are:
+ *                  "yes": this data provider is empty.
+ *                  "no": this data provider is not empty.
+ *                  "unknown": it is not known if this data provider is empty until a fetch is made.
+ * @export
+ * @expose
+ * @memberof oj.ListDataProviderView
+ * @instance
+ * @method
+ * @name isEmpty
  */
 
 /**
@@ -585,6 +633,42 @@ oj.Object.exportPrototypeSymbol('ListDataProviderView.prototype.containsKeys', {
  * @instance
  * @name dataMapping
  * @type {oj.DataMapping}
+ */
+
+/**
+ * @ojstatus preview
+ * @param {string} eventType The event type to add listener to.
+ * @param {EventListener} listener The event listener to add.
+ * @export
+ * @expose
+ * @memberof oj.ArrayDataProvider
+ * @instance
+ * @method
+ * @name addEventListener
+ */
+
+/**
+ * @ojstatus preview
+ * @param {string} eventType The event type to remove listener from.
+ * @param {EventListener} listener The event listener to remove.
+ * @export
+ * @expose
+ * @memberof oj.ArrayDataProvider
+ * @instance
+ * @method
+ * @name removeEventListener
+ */
+
+/**
+ * @ojstatus preview
+ * @param {Event} evt The event to dispatch.
+ * @return {boolean} false if the event has been cancelled and true otherwise.
+ * @export
+ * @expose
+ * @memberof oj.ArrayDataProvider
+ * @instance
+ * @method
+ * @name dispatchEvent
  */
 
 /**

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2014, 2017, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
@@ -74,9 +74,11 @@ oj.CollectionUtils.copyInto(oj.CompositeElementBridge.proto,
       else
       {
         var previousValue = this['getProperty'](prop);
-        // Property change events for top level properties will be triggered by ValidateAndSetProperty so avoid firing twice
-        this._BRIDGE.ValidateAndSetProperty(this._BRIDGE.GetAliasForProperty.bind(this._BRIDGE), this, prop, value, this._ELEMENT);
 
+        // Skip validation for inner sets so we don't throw an error when updating readOnly writeable properties
+        oj.BaseCustomElementBridge.__SetProperty(this._BRIDGE.GetAliasForProperty.bind(this._BRIDGE), this, prop, value);
+
+        // Property change events for top level properties will be triggered by ValidateAndSetProperty so avoid firing twice
         if (prop.indexOf('.') !== -1)
           oj.CompositeElementBridge._firePropertyChangeEvent(this._ELEMENT, prop, value, previousValue, 'internal');
       }
@@ -138,7 +140,7 @@ oj.CollectionUtils.copyInto(oj.CompositeElementBridge.proto,
       var view = values[0];
       if (!view)
       {
-        this.resolveDelayedReadyPromise();
+        bridge.resolveDelayedReadyPromise();
         throw "ojComposite is missing a View";
       }
 
@@ -157,6 +159,11 @@ oj.CollectionUtils.copyInto(oj.CompositeElementBridge.proto,
       // to insert the view. This will allow custom elements within the view to look
       // up the binding provider used by the composite (currently only KO).
       Object.defineProperty(element, oj.Composite.__BINDING_PROVIDER, {value: 'knockout'});
+
+      if (oj.Components)
+      {
+        oj.Components.unmarkPendingSubtreeHidden(element);
+      }
 
       oj.CompositeTemplateRenderer.renderTemplate(params, element, view);
 
@@ -191,26 +198,15 @@ oj.CollectionUtils.copyInto(oj.CompositeElementBridge.proto,
       var old = propertyTracker.peek();
       if (old !== val) // We should consider supporting custom comparators
       {
-        // Skip validation for inner sets
+        // Skip validation for inner sets so we don't throw an error when updating readOnly writeable properties
         if (bOuterSet)
           val = this._BRIDGE.ValidatePropertySet(this._ELEMENT, property, val)
 
-        propertyTracker(val);
         if (propertyMeta._eventListener)
         {
-          var event = oj.__AttributeUtils.eventListenerPropertyToEventType(property);
-          // Remove old event listener
-          if (old)
-            this._ELEMENT.removeEventListener(event, old);
-          // Add new event listener
-          if (val)
-          {
-            if (val instanceof Function)
-              this._ELEMENT.addEventListener(event, val);
-            else
-              oj.BaseCustomElementBridge.__ThrowTypeError(this, property, val, 'function');
-          }
+          this._BRIDGE.SetEventListenerProperty(this._ELEMENT, property, val);
         }
+        propertyTracker(val);
 
         if (!propertyMeta._derived && (!bOuterSet || (bOuterSet && this._BRIDGE._READY_TO_FIRE)))
         {
@@ -230,11 +226,6 @@ oj.CollectionUtils.copyInto(oj.CompositeElementBridge.proto,
     var outerSet = function(val)
     {
       var bridge = oj.BaseCustomElementBridge.getInstance(this);
-      if (propertyMeta['readOnly'])
-      {
-        bridge.resolveDelayedReadyPromise();
-        throw "Read-only property " + property + " cannot be set on "+ this.tagName;
-      }
       set.bind(bridge._PROPS)(val, true);
     }
 
@@ -250,10 +241,10 @@ oj.CollectionUtils.copyInto(oj.CompositeElementBridge.proto,
         // Make a copy if the default value is an Object or Array to prevent modification
         // of the metadata copy and store in the propertyTracker so we have a copy
         // to modify in place for the object case
-        if (typeof value === 'object')
-          value = oj.CollectionUtils.copyInto({}, value, undefined, true);
-        else if (Array.isArray(value))
+        if (Array.isArray(value))
           value = value.slice();
+        else if (typeof value === 'object')
+          value = oj.CollectionUtils.copyInto({}, value, undefined, true);
         propertyTracker(value);
       }
       return value;
@@ -274,8 +265,8 @@ oj.CollectionUtils.copyInto(oj.CompositeElementBridge.proto,
 
     // Don't add event listener properties for inner props
     if (!propertyMeta._derived)
-      oj.CompositeElementBridge._defineDynamicObjectProperty(proto['_propsProto'], property, innerGet, innerSet);
-    oj.CompositeElementBridge._defineDynamicObjectProperty(proto, property, outerGet, outerSet);
+      oj.BaseCustomElementBridge.__DefineDynamicObjectProperty(proto['_propsProto'], property, innerGet, innerSet);
+    oj.BaseCustomElementBridge.__DefineDynamicObjectProperty(proto, property, outerGet, outerSet);
   },
 
   GetMetadata: function(descriptor)
@@ -304,6 +295,21 @@ oj.CollectionUtils.copyInto(oj.CompositeElementBridge.proto,
       this._MODEL_PROMISE.then(function(model)
       {
         oj.CompositeTemplateRenderer.invokeViewModelMethod(model, 'detachedMethod', [element]);
+        oj.CompositeTemplateRenderer.invokeViewModelMethod(model, 'disconnected', [element]);
+      });
+    }
+  },  
+
+  HandleReattached: function(element) {
+    // Invoke callback on the superclass
+    oj.BaseCustomElementBridge.proto.HandleReattached.call(this, element);
+
+    if (this._MODEL_PROMISE)
+    {
+      var bridge = this;
+      this._MODEL_PROMISE.then(function(model)
+      {
+        oj.CompositeTemplateRenderer.invokeViewModelMethod(model, 'connected', [bridge._VM_CONTEXT]);
       });
     }
   },
@@ -317,6 +323,12 @@ oj.CollectionUtils.copyInto(oj.CompositeElementBridge.proto,
     oj.CompositeElementBridge._fireEvent('pending', element);
 
     var descriptor = oj.BaseCustomElementBridge.__GetDescriptor(element.tagName);
+
+    if (oj.Components)
+    {
+      oj.Components.markPendingSubtreeHidden(element);
+    }
+
     this.PARSE_FUNCTION = descriptor['parseFunction'];
     if (element['_propsProto'])
     {
@@ -331,7 +343,7 @@ oj.CollectionUtils.copyInto(oj.CompositeElementBridge.proto,
       'element': element,
       'props': this._PROPS_DELAYED_PROMISE.getPromise(),
       'slotNodeCounts': this._SLOTS_DELAYED_PROMISE.getPromise(),
-      'unique': oj.CompositeElementBridge._getUnique()
+      'unique': oj.BaseCustomElementBridge.__GetUnique()
     };
     vmContext['uniqueId'] = element.id ? element.id : vmContext['unique'];
     this._VM_CONTEXT = vmContext;
@@ -362,21 +374,29 @@ oj.CollectionUtils.copyInto(oj.CompositeElementBridge.proto,
       {
         this._VIEW_PROMISE = viewPromise.then(function(view) 
         {
-          if (typeof(view) === 'string')
+          // when multiple instances of the same CCA are on the same page, because of the async
+          // nature, we could end up with multiple promises created on the same view. The first
+          // resolved promise will set up cache.view, all others should just use the cached
+          // view instead of parsing it again. So here we check existence of cache in the resolve
+          // callback to avoid parsing the view multiple times.
+          if (!cache.view)
           {
-            view = oj.CompositeElementBridge._getDomNodes(view);
+            if (typeof(view) === 'string')
+            {
+              view = oj.CompositeElementBridge._getDomNodes(view, element);
+            }
+            cache.view = view;
           }
-          cache.view = view;
 
           // Need to clone nodes
-          return oj.CompositeElementBridge._getDomNodes(cache.view);
+          return oj.CompositeElementBridge._getDomNodes(cache.view, element);
         });
       }
     }
     else
     {
       // Need to clone nodes
-      this._VIEW_PROMISE = Promise.resolve(oj.CompositeElementBridge._getDomNodes(cache.view));
+      this._VIEW_PROMISE = Promise.resolve(oj.CompositeElementBridge._getDomNodes(cache.view, element));
     }
     
     if (!cache.css)
@@ -387,13 +407,17 @@ oj.CollectionUtils.copyInto(oj.CompositeElementBridge.proto,
       {
         cache.css = cssPromise.then(function(css)
         {
-          var style = document.createElement('style');
-          style.type = 'text/css';
-          if (style.styleSheet) // for IE
-            style.styleSheet.cssText = css;
-          else
-            style.appendChild(document.createTextNode(css)); // @HTMLUpdateOK
-          document.head.appendChild(style); // @HTMLUpdateOK
+          // create and append style element only when we do have css content.
+          if (css)
+          {
+            var style = document.createElement('style');
+            style.type = 'text/css';
+            if (style.styleSheet) // for IE
+              style.styleSheet.cssText = css;
+            else
+              style.appendChild(document.createTextNode(css)); // @HTMLUpdateOK
+            document.head.appendChild(style); // @HTMLUpdateOK
+          }
         });
       }
     }
@@ -637,25 +661,19 @@ oj.CompositeElementBridge.getMetadata = function(tagName)
 /**
  * @ignore
  */
-oj.CompositeElementBridge._defineDynamicObjectProperty = function(obj, property, getter, setter)
-{
-  Object.defineProperty(obj, property, { 'enumerable': true, 'get': getter, 'set': setter });
-};
-
-/**
- * @ignore
- */
 oj.CompositeElementBridge._fireEvent = function(type, element)
 {
   element.dispatchEvent(new CustomEvent(type, {bubbles: true}));
 };
 
 /**
+ * This differs from the one in BaseCustomElementBridge because of the extra 
+ * updatedFrom field on the event's detail property.
  * @ignore
  */
 oj.CompositeElementBridge._firePropertyChangeEvent = function(element, name, value, previousValue, updatedFrom)
 {
-  var detail = {}
+  var detail = {};
   var subpropPath = name.split('.');
   var eventName = name;
   var eventValue = value;
@@ -682,7 +700,7 @@ oj.CompositeElementBridge._firePropertyChangeEvent = function(element, name, val
 /**
  * @ignore
  */
-oj.CompositeElementBridge._getDomNodes = function(content)
+oj.CompositeElementBridge._getDomNodes = function(content, element)
 {
   if (typeof content === 'string')
   {
@@ -710,7 +728,7 @@ oj.CompositeElementBridge._getDomNodes = function(content)
   }
   else
   {
-    var bridge = oj.BaseCustomElementBridge.getInstance(this);
+    var bridge = oj.BaseCustomElementBridge.getInstance(element);
     bridge.resolveDelayedReadyPromise();
     throw "The View (" + content + ") has an unsupported type";
   }
@@ -866,14 +884,6 @@ oj.CompositeElementBridge._getResourcePromise = function(descriptor, resourceTyp
 /**
  * @ignore
  */
-oj.CompositeElementBridge._getUnique = function()
-{
-  return _UNIQUE + _UNIQUE_INCR++;
-};
-
-/**
- * @ignore
- */
 oj.CompositeElementBridge._isDocumentFragment = function(content)
 {
   if (window['DocumentFragment'])
@@ -885,10 +895,6 @@ oj.CompositeElementBridge._isDocumentFragment = function(content)
     return content && content.nodeType === 11;
   }
 };
-
-var _UNIQUE_INCR = 0;
-var _UNIQUE = '_ojcomposite';
-
 
 /**
  * <p>
@@ -1026,6 +1032,7 @@ var _UNIQUE = '_ojcomposite';
  *   <thead>
  *     <tr>
  *       <th>Key</th>
+ *       <th>Used at Runtime</th>
  *       <th>Required</th>
  *       <th>Type</th>
  *       <th>Description</th>
@@ -1033,20 +1040,43 @@ var _UNIQUE = '_ojcomposite';
  *   </thead>
  *   <tbody>
  *     <tr>
- *       <td class="name"><code>name</code></td>
+ *       <td class="rt">name</td>
+ *       <td>yes</td>
  *       <td>yes</td>
  *       <td>{string}</td>
- *       <td>The component tag name.</td>
+ *       <td>The component tag name.
+ *           The component name must meet the following requirements (based upon the <a href="https://www.w3.org/TR/custom-elements/#custom-elements-core-concepts">W3C Custom Element spec</a>):
+ *           <ul>
+ *             <li>The name can include only letters, digits, '-', and '_'.</li>
+ *             <li>The letters in the name should be all lowercase.
+ *             <li>At least one hyphen is required.
+ *             <li>The first segment (up to the first hyphen) is supposed to be a namespace prefix. The prefix 'oj' is reserved for native JET components.
+ *             <li>The first hyphen must be followed by at least one character.
+ *             <li>The name cannot be one of the following reserved names:
+ *             <ul>
+ *               <li>annotation-xml
+ *               <li>color-profile
+ *               <li>font-face
+ *               <li>font-face-src
+ *               <li>font-face-uri
+ *               <li>font-face-format
+ *               <li>font-face-name
+ *               <li>missing-glyph
+ *             <ul>
+ *           <ul> 
+ *       </td>
  *     </tr>
  *     <tr>
- *       <td class="name"><code>version</code></td>
+ *       <td class="rt">version</td>
+ *       <td>yes</td>
  *       <td>yes</td>
  *       <td>{string}</td>
  *       <td>The component version. Note that changes to the metadata even for minor updates like updating the
  *         jetVersion should result in at least a minor composite version change, e.g. 1.0.0 -> 1.0.1.</td>
  *     </tr>
  *     <tr>
- *       <td class="name"><code>jetVersion</code></td>
+ *       <td class="rt">jetVersion</td>
+ *       <td>yes</td>
  *       <td>yes</td>
  *       <td>{string}</td>
  *       <td>The <a href="http://semver.org/">semantic version</a> of the supported JET version(s). 
@@ -1056,27 +1086,86 @@ var _UNIQUE = '_ojcomposite';
  *         release changes.</td>
  *     </tr>
  *     <tr>
+ *       <td class="rt">properties</td>
+ *       <td>yes</td> 
+ *       <td>no</td>
+ *       <td>{Object<string,<string>}</td>
+ *       <td>See Properties table below for details.</td>
+ *     </tr> 
+*     <tr>
+ *       <td class="rt">methods</td>
+ *       <td>yes</td>
+ *       <td>no</td>
+ *       <td>{Object<string,<string>}</td>
+ *       <td>See Methods table below for details.</td>
+ *     </tr>
+ *     <tr>
+ *       <td class="rt">events</td>
+ *       <td>yes</td> 
+ *       <td>no</td>
+ *       <td>{Object<string,<string>}</td>
+ *       <td>See Events table below for details.</td>
+ *     </tr>
+ *     <tr>
+ *       <td class="rt">slots</td>
+ *       <td>yes</td>
+ *       <td>no</td>
+ *       <td>{Object<string,<string>}</td>
+ *       <td>See Slots table below for details.</td>
+ *     </tr> 
+ *     <tr>
  *       <td class="name"><code>compositeDependencies</code></td>
+ *       <td>no</td>
  *       <td>no</td>
  *       <td>{Object<string, string>}</td>
  *       <td>Dependency to semantic version mapping for composite dependencies. 
- *         3rd party libraries should not be included in this mapping. Not used at run time.
+ *         3rd party libraries should not be included in this mapping.
  *         <code>{"composite1": "1.2.0", "composite2": ">=2.1.0"}</code></td> 
- *     </tr>
+ *     </tr> 
  *     <tr>
  *       <td class="name"><code>description</code></td>
  *       <td>no</td>
+ *       <td>no</td>
  *       <td>{string}</td>
- *       <td>A high-level description for the component. Not used at run time.</td> 
+ *       <td>A high-level description for the component.</td> 
  *     </tr> 
  *     <tr>
  *       <td class="name"><code>displayName</code></td>
  *       <td>no</td>
+ *       <td>no</td>
  *       <td>{string}</td>
- *       <td>A user friendly, translatable name of the component. Not used at run time.</td> 
+ *       <td>A user friendly, translatable name of the component.</td> 
+ *     </tr> 
+ *     <tr>
+ *       <td class="name"><code>extension</code></td>
+ *       <td>no</td>
+ *       <td>no</td>
+ *       <td>{Object}</td>
+ *       <td>Placeholder for Extension metadata.  Each section is identified by a key that specifies the downstream tool that will process this metadata.
+ *         <h6>For example:</h6> 
+ *         <table class="params">
+ *           <thead>
+ *             <tr>
+ *               <th>Name</th>
+ *               <th>Type</th>
+ *               <th>Description</th>
+ *             </tr>
+ *           </thead>
+ *           <tbody>
+ *             <tr>
+ *               <td class="name"><code>vbcs</code></td>
+ *               <td>{string}</td>
+ *               <td>Indentifies an object with VBCS-specific metadata</td>
+ *             </tr> 
+ *           </tbody>
+ *         </table>
+ *         </br>
+ *         Please consult the documentation for the downstream tool to determine what (if any) extension metadata is supported.
+ *      </td>
  *     </tr> 
  *     <tr>
  *       <td class="name"><code>icon</code></td>
+ *       <td>no</td>
  *       <td>no</td>
  *       <td>{Object}</td>
  *       <td>One or more optional images for representing the component within a design time environment's component palette. The object has the following properties:
@@ -1106,35 +1195,39 @@ var _UNIQUE = '_ojcomposite';
  *               <td>A relative path to the icon that represents the hover state of the component.</td>
  *             </tr>
  *           </tbody>
- *         </table>
- *         </br>
- *         Not used at runtime. 
+ *         </table> 
  *      </td>
- *     </tr>
+ *     </tr> 
  *     <tr>
- *       <td class="name"><code>properties</code></td>
+ *       <td class="name"><code>styleClasses</code></td>
  *       <td>no</td>
- *       <td>{Object<string,<string>}</td>
- *       <td>See Properties table below for details.</td>
- *     </tr>
- *     <tr>
- *       <td class="name"><code>methods</code></td>
  *       <td>no</td>
- *       <td>{Object<string,<string>}</td>
- *       <td>See Methods table below for details.</td>
- *     </tr>
- *     <tr>
- *       <td class="name"><code>events</code></td>
- *       <td>no</td>
- *       <td>{Object<string,<string>}</td>
- *       <td>See Events table below for details.</td>
- *     </tr>
- *     <tr>
- *       <td class="name"><code>slots</code></td>
- *       <td>no</td>
- *       <td>{Object<string,<string>}</td>
- *       <td>See Slots table below for details. Not used at run time.</td>
- *     </tr>
+ *       <td>{Array.<{Object}>}</td>
+ *       <td>Optional array of groupings of style class names that are applicable to this component.  Each grouping object has the following properties:
+ *         <h6>Properties</h6>
+ *         <table class="params">
+ *           <thead>
+ *             <tr>
+ *               <th>Name</th>
+ *               <th>Type</th>
+ *               <th>Description</th>
+ *             </tr>
+ *           </thead>
+ *           <tbody>
+ *             <tr>
+ *               <td class="name"><code>styleGroup</code></td>
+ *               <td>{Array.<{string}>}</td>
+ *               <td>Array of mutually exclusive style class names that belong to this group.</td>
+ *             </tr>
+ *             <tr>
+ *               <td class="name"><code>description</code></td>
+ *               <td>{string}</td>
+ *               <td>A translatable high-level description for this group of styleClasses.</td>
+ *             </tr> 
+ *           </tbody>
+ *         </table>
+ *      </td>
+ *     </tr> 
  *   </tbody>
  * </table>
  *
@@ -1155,44 +1248,136 @@ var _UNIQUE = '_ojcomposite';
  *           <thead>
  *             <tr>
  *               <th>Name</th>
+ *               <th>Used at Runtime</th>
  *               <th>Type</th>
  *               <th>Description</th>
  *             </tr>
  *           </thead>
- *           <tbody>
+ *           <tbody> 
  *             <tr>
- *               <td class="name"><code>description</code></td>
- *               <td>{string}</td>
- *               <td>A description for the property. Not used at run time.</td>
- *             </tr>
- *             <tr>
- *               <td class="name"><code>displayName</code></td>
- *               <td>{string}</td>
- *               <td>A user friendly, translatable name of the property. Not used at run time.</td>
- *             </tr>
- *             <tr>
- *               <td class="name"><code>editable</code></td>
- *               <td>{boolean}</td>
- *               <td>Specifies whether the property can be changed within a design time environment. True by default. Not used at run time.</td>
- *             </tr>
- *             <tr>
- *               <td class="name"><code>enumValues</code></td>
+ *               <td class="rt">enumValues</td>
+ *               <td>yes</td>
  *               <td>{Array<string>}</td>
  *               <td>An optional list of valid enum values for a string property. An error is thrown if a property value does not
  *                 match one of the provided enumValues.</td>
+ *             </tr> 
+ *             <tr>
+ *               <td class="rt">properties</td>
+ *               <td>yes</td>
+ *               <td>{Object}</td>
+ *               <td>A nested properties object for complex properties. Subproperties exposed using nested properties objects in the metadata can
+ *                 be set using dot notation in the attribute. See the <a href="#subproperties">Subproperties</a> section for more details on 
+ *                 working with subproperties.</td>
  *             </tr>
  *             <tr>
- *               <td class="name"><code>max</code></td>
- *               <td>{number}</td>
- *               <td>Validation metadata for number type properties. Specifies the high end of a possible range of values. Not used at run time.</td>
+ *               <td class="rt">readOnly</td>
+ *               <td>yes</td>
+ *               <td>{boolean}</td>
+ *               <td>Determines whether a property can be updated outside of the ViewModel.
+ *                 False by default. If readOnly is true, the property can only be updated by the ViewModel or by the
+ *                 components within the composite. This property only needs to be defined for the top level property, 
+ *                 with subproperties inheriting that value.</td>
+ *             </tr> 
+ *             <tr>
+ *               <td class="rt">type</td>
+ *               <td>yes</td>
+ *               <td>{string}</td>
+ *               <td>The type of the property, following 
+ *                 <a href="https://developers.google.com/closure/compiler/docs/js-for-compiler#types">Google's Closure Compiler</a> syntax.
+ *                 We will parse string, number, boolean, array and object types for non data-bound attributes, but will not provide 
+ *                 type checking for array and object elements. However, for documentation purposes, it may still be beneficial to provide
+ *                 array and object element details using the Closure Compiler syntax.</td>
+ *             </tr>  
+ *             <tr>
+ *               <td class="rt">value</td>
+ *               <td>yes</td>
+ *               <td>{object}</td>
+ *               <td>An optional default value for a property. Only supported on the top level property and will not be evaluated if set on nested subproperties.</td>
  *             </tr>
  *             <tr>
- *               <td class="name"><code>min</code></td>
- *               <td>{number}</td>
- *               <td>Validation metadata for number type properties. Specifies the low end of a possible range of values. Not used at run time.</td>
+ *               <td class="rt">writeback</td>
+ *               <td>yes</td>
+ *               <td>{boolean}</td>
+ *               <td>Determines whether an expression bound to this property should be written back to. False by default.
+ *                 If writeback is true, any updates to the property will result in an update to the expression. This property only needs to be defined
+ *                 for the top level property, with subproperties inheriting that value.</td>
+ *             </tr> 
+ *             <tr>
+ *               <td class="name"><code>description</code></td>
+ *               <td>no</td>
+ *               <td>{string}</td>
+ *               <td>A description for the property.</td>
  *             </tr>
+ *             <tr>
+ *               <td class="name"><code>displayName</code></td>
+ *               <td>no</td>
+ *               <td>{string}</td>
+ *               <td>A user friendly, translatable name of the property.</td>
+ *             </tr> 
+ 
+ *             <tr>
+ *               <td class="name"><code>exclusiveMaximum</code></td>
+ *               <td>no</td>
+ *               <td>{number}|{string}</td>
+ *               <td>Validation metadata - specifies the <i>exclusive</i> high end of a possible range of values (e.g., "exclusiveMaximum": 1.0 → valid property value is <1.0). If the value is a string, then it is assumed to represent a dateTime value in the ISO 8601 extended date/time format.</td>
+ *             </tr>
+ *             <tr>
+ *               <td class="name"><code>exclusiveMinimum</code></td>
+ *               <td>no</td>
+ *               <td>{number}|{string}</td>
+ *               <td>Validation metadata - specifies the <i>exclusive</i> low end of a possible range of values (e.g., "exclusiveMinimum": 0.0 → valid property value is >0.0). If the value is a string, then it is assumed to represent a dateTime value in the ISO 8601 extended date/time format.</td>
+ *             </tr>
+ *             <tr>
+ *               <td class="name"><code>extension</code></td> 
+ *               <td>no</td>
+ *               <td>{Object}</td>
+ *               <td>Placeholder for Extension metadata.  Each section is identified by a key that specifies the downstream tool that will process this metadata.
+ *                 <h6>For example:</h6> 
+ *                 <table class="params">
+ *                   <thead>
+ *                     <tr>
+ *                       <th>Name</th>
+ *                       <th>Type</th>
+ *                       <th>Description</th>
+ *                     </tr>
+ *                   </thead>
+ *                   <tbody>
+ *                     <tr>
+ *                       <td class="name"><code>vbcs</code></td>
+ *                       <td>{string}</td>
+ *                       <td>Indentifies an object with VBCS-specific metadata</td>
+ *                     </tr> 
+ *                   </tbody>
+ *                 </table>
+ *                 </br>
+ *                 Please consult the documentation for the downstream tool to determine what (if any) extension metadata is supported.
+ *               </td>
+ *             </tr>
+ *             <tr>
+ *               <td class="name"><code>maximum</code></td>
+ *               <td>no</td>
+ *               <td>{number}|{string}</td>
+ *               <td>Validation metadata - specifies the <i>inclusive</i> high end of a possible range of values (e.g., "maximum": 1.0 → valid property value is <=1.0). 
+ *               If the value is a string, then it is assumed to represent a dateTime value in the ISO 8601 extended date/time format.
+ *               NOTE:  Use this in place of the deprecated max metadata property</td>
+ *             </tr>
+ *             <tr>
+ *               <td class="name"><code>minimum</code></td>
+ *               <td>no</td>
+ *               <td>{number}|{string}</td>
+ *               <td>Validation metadata - specifies the <i>inclusive</i> low end of a possible range of values (e.g., "minimum": 0.0 → valid property value is >=0.0). 
+ *               If the value is a string, then it is assumed to represent a dateTime value in the ISO 8601 extended date/time format.
+ *               NOTE:  Use this in place of the deprecated min metadata property</td>
+ *             </tr>
+ *             <tr>
+ *               <td class="name"><code>placeholder</code></td>
+ *               <td>no</td>
+ *               <td>{string}</td>
+ *               <td>User-friendly, translatable hint text that appears in an empty input field at design time.</td>
+ *             </tr> 
  *             <tr>
  *               <td class="name"><code>propertyEditorValues</code></td>
+ *               <td>no</td>
  *               <td>{Object}</td>
  *               <td>Additional design time metadata that enhances the <code>enumValues</code> run time metadata. 
  *                   The value is an Object with properties matching the values in the <code>enumValues</code> array. 
@@ -1207,6 +1392,11 @@ var _UNIQUE = '_ojcomposite';
  *                       </tr>
  *                     </thead>
  *                     <tbody>
+ *                       <tr>
+ *                         <td class="name"><code>description</code></td>
+ *                         <td>{string}</td>
+ *                         <td>A translatable description for the value.</td>
+ *                       </tr>
  *                       <tr>
  *                         <td class="name"><code>displayName</code></td>
  *                         <td>{string}</td>
@@ -1247,59 +1437,31 @@ var _UNIQUE = '_ojcomposite';
  *                       </tr>
  *                     </tbody>
  *                   </table>
- *                   </br>
- *                   Not used at run time.
- *             <tr>
- *               <td class="name"><code>properties</code></td>
- *               <td>{Object}</td>
- *               <td>A nested properties object for complex properties. Subproperties exposed using nested properties objects in the metadata can
- *                 be set using dot notation in the attribute. See the <a href="#subproperties">Subproperties</a> section for more details on 
- *                 working with subproperties.</td>
- *             </tr>
- *             <tr>
- *               <td class="name"><code>readOnly</code></td>
- *               <td>{boolean}</td>
- *               <td>Determines whether a property can be updated outside of the ViewModel.
- *                 False by default. If readOnly is true, the property can only be updated by the ViewModel or by the
- *                 components within the composite. This property only needs to be defined for the top level property, 
- *                 with subproperties inheriting that value.</td>
  *             </tr>
  *             <tr>
  *               <td class="name"><code>required</code></td>
+ *               <td>no</td>
  *               <td>{boolean}</td>
- *               <td>Specifies whether the property must have a valid value at run time. False by default. Not used at run time.</td>
+ *               <td>Specifies whether the property must have a valid value at run time. False by default.</td>
  *             </tr>
  *             <tr>
  *               <td class="name"><code>translatable</code></td>
+ *               <td>no</td>
  *               <td>{boolean}</td>
- *               <td>True if the <em>value</em> of this property is eligible to be included when application resources are translated for Internationalization. False by default. Not used at run time.</td>
+ *               <td>True if the <em>value</em> of this property is eligible to be included when application resources are translated for Internationalization. False by default.</td>
  *             </tr> 
  *             <tr>
- *               <td class="name"><code>type</code></td>
+ *               <td class="name"><code>units</code></td>
+ *               <td>no</td>
  *               <td>{string}</td>
- *               <td>The type of the property, following 
- *                 <a href="https://developers.google.com/closure/compiler/docs/js-for-compiler#types">Google's Closure Compiler</a> syntax.
- *                 We will parse string, number, boolean, array and object types for non data-bound attributes, but will not provide 
- *                 type checking for array and object elements. However, for documentation purposes, it may still be beneficial to provide
- *                 array and object element details using the Closure Compiler syntax.</td>
- *             </tr>
- *             <tr>
- *               <td class="name"><code>value</code></td>
- *               <td>{object}</td>
- *               <td>An optional default value for a property. Only supported on the top level property and will not be evaluated if set on nested subproperties.</td>
+ *               <td>User-friendly, translatable text string specifying what units are represented by a property value -- e.g., "pixels".</td>
  *             </tr>
  *             <tr>
  *               <td class="name"><code>visible</code></td>
+ *               <td>no</td>
  *               <td>{boolean}</td>
- *               <td>Specifies whether the property should be visible at design time. True by default. Not used at run time.</td>
- *             </tr>
- *             <tr>
- *               <td class="name"><code>writeback</code></td>
- *               <td>{boolean}</td>
- *               <td>Determines whether an expression bound to this property should be written back to. False by default.
- *                 If writeback is true, any updates to the property will result in an update to the expression. This property only needs to be defined
- *                 for the top level property, with subproperties inheriting that value.</td>
- *             </tr>
+ *               <td>Specifies whether the property should be visible at design time. True by default.</td>
+ *             </tr> 
  *           </tbody>
  *         </table>
  *       </td>
@@ -1324,41 +1486,102 @@ var _UNIQUE = '_ojcomposite';
  *           <thead>
  *             <tr>
  *               <th>Name</th>
+ *               <th>Used at Runtime</th>
  *               <th>Type</th>
  *               <th>Description</th>
  *             </tr>
  *           </thead>
- *           <tbody>
+ *           <tbody> 
  *             <tr>
- *               <td class="name"><code>description</code></td>
- *               <td>{string}</td>
- *               <td>A description for the method. Not used at run time.</td>
- *             </tr>
- *             <tr>
- *               <td class="name"><code>displayName</code></td>
- *               <td>{string}</td>
- *               <td>A user friendly, translatable name of the method. Not used at run time.</td>
- *             </tr>
- *             <tr>
- *               <td class="name"><code>internalName</code></td>
+ *               <td class="rt">internalName</td>
+ *               <td>yes</td>
  *               <td>{string}</td>
  *               <td>An optional ViewModel method name that is different from, but maps to this method.</td>
  *             </tr>
  *             <tr>
- *               <td class="name"><code>params</code></td>
- *               <td>{Array<{description: string, name: string, type: string}>}</td>
- *               <td>An array of objects describing the method parameter. Not used at run time.</td>
+ *               <td class="name"><code>description</code></td>
+ *               <td>no</td>
+ *               <td>{string}</td>
+ *               <td>A description for the method.</td>
  *             </tr>
  *             <tr>
- *               <td class="name"><code>return</code></td>
+ *               <td class="name"><code>displayName</code></td>
+ *               <td>no</td>
  *               <td>{string}</td>
- *               <td>The return type of the method, following Closure Compiler syntax. Not used at run time.</td>
+ *               <td>A user friendly, translatable name of the method.</td>
+ *             </tr>
+ *             <tr>
+ *               <td class="name"><code>extension</code></td>
+ *               <td>no</td> 
+ *               <td>{Object}</td>
+ *               <td>Placeholder for Extension metadata.  Each section is identified by a key that specifies the downstream tool that will process this metadata.
+ *                 <h6>For example:</h6> 
+ *                 <table class="params">
+ *                   <thead>
+ *                     <tr>
+ *                       <th>Name</th>
+ *                       <th>Type</th>
+ *                       <th>Description</th>
+ *                     </tr>
+ *                   </thead>
+ *                   <tbody>
+ *                     <tr>
+ *                       <td class="name"><code>vbcs</code></td>
+ *                       <td>{string}</td>
+ *                       <td>Indentifies an object with VBCS-specific metadata</td>
+ *                     </tr> 
+ *                   </tbody>
+ *                 </table>
+ *                 </br>
+ *                 Please consult the documentation for the downstream tool to determine what (if any) extension metadata is supported.
+ *               </td>
+ *             </tr> 
+ *             <tr>
+ *               <td class="name"><code>params</code></td>
+ *               <td>no</td>
+ *               <td>{Array<{Object}>}</td>
+ *               <td>An array of objects describing the method parameter.  Each parameter object has the following properties:
+ *                 <h6>Properties</h6>
+ *                 <table class="params">
+ *                  <thead>
+ *                   <tr>
+ *                    <th>Name</th>
+ *                    <th>Type</th>
+ *                    <th>Description</th>
+ *                   </tr>
+ *                  </thead>
+ *                  <tbody>
+ *                   <tr>
+ *                    <td class="name"><code>description</code></td>
+ *                    <td>{string}</td>
+ *                    <td>A translatable description of the parameter</td>
+ *                   </tr>
+ *                   <tr>
+ *                    <td class="name"><code>name</code></td>
+ *                    <td>{string}</td>
+ *                    <td>The name of the parameter.</td>
+ *                   </tr> 
+ *                   <tr>
+ *                    <td class="name"><code>type</code></td>
+ *                    <td>{string}</td>
+ *                    <td>The type of the property, typically following <a href="https://github.com/google/closure-compiler/wiki/Annotating-JavaScript-for-the-Closure-Compiler">Google's Closure Compiler</a> syntax. The metadata also supports Typescript data types.</td>
+ *                   </tr> 
+ *                 </tbody>
+ *                </table>
+ *              </td>
+ *             </tr> 
+ *             <tr>
+ *               <td class="name"><code>return</code></td>
+ *               <td>no</td>
+ *               <td>{string}</td>
+ *               <td>The return type of the method, following Closure Compiler syntax.</td>
  *             </tr>
  *             <tr>
  *               <td class="name"><code>visible</code></td>
+ *               <td>no</td>
  *               <td>{boolean}</td>
- *               <td>Specifies whether the method should be visible at design time. True by default. Not used at run time.</td>
- *             </tr>
+ *               <td>Specifies whether the method should be visible at design time. True by default.</td>
+ *             </tr> 
  *           </tbody>
  *         </table>
  *       </td>
@@ -1383,6 +1606,7 @@ var _UNIQUE = '_ojcomposite';
  *           <thead>
  *             <tr>
  *               <th>Name</th>
+ *               <th>Used at Runtime</th>
  *               <th>Type</th>
  *               <th>Description</th>
  *             </tr>
@@ -1390,28 +1614,33 @@ var _UNIQUE = '_ojcomposite';
  *           <tbody>
  *             <tr>
  *               <td class="name"><code>bubbles</code></td>
+ *               <td>no</td>
  *               <td>{boolean}</td>
- *               <td>Indicates whether the event bubbles up through the DOM or not. Defaults to false. Not used at run time.</td>
+ *               <td>Indicates whether the event bubbles up through the DOM or not. Defaults to false.</td>
  *             </tr>
  *             <tr>
  *               <td class="name"><code>cancelable</code></td>
+ *               <td>no</td>
  *               <td>{boolean}</td>
- *               <td>Indicates whether the event is cancelable or not. Defaults to false. Not used at run time.</td>
- *             </tr>
+ *               <td>Indicates whether the event is cancelable or not. Defaults to false.</td>
+ *             </tr> 
  *             <tr>
  *               <td class="name"><code>description</code></td>
+ *               <td>no</td>
  *               <td>{string}</td>
- *               <td>A description for the event. Not used at run time.</td>
+ *               <td>A description for the event.</td>
  *             </tr>
  *             <tr>
  *               <td class="name"><code>displayName</code></td>
+ *               <td>no</td>
  *               <td>{string}</td>
- *               <td>A user friendly, translatable name of the event. Not used at run time.</td>
+ *               <td>A user friendly, translatable name of the event.</td>
  *             </tr>
  *             <tr>
  *               <td class="name"><code>detail</code></td>
+ *               <td>no</td>
  *               <td>{object}</td>
- *               <td>Describes the properties available on the event's detail property which contains data passed when initializing the event. Not used at run time.</p>
+ *               <td>Describes the properties available on the event's detail property which contains data passed when initializing the event.</p>
  *                 <h6>Properties</h6>
  *                 <table class="params">
  *                   <thead>
@@ -1428,12 +1657,39 @@ var _UNIQUE = '_ojcomposite';
  *                   </tbody>
  *                 </table>
  *               </td>
- *             </tr>
+ *             </tr> 
+ *             <tr>
+ *               <td class="name"><code>extension</code></td>
+ *               <td>no</td>
+ *               <td>{Object}</td>
+ *               <td>Placeholder for Extension metadata.  Each section is identified by a key that specifies the downstream tool that will process this metadata.
+ *                 <h6>For example:</h6> 
+ *                 <table class="params">
+ *                   <thead>
+ *                     <tr>
+ *                       <th>Name</th>
+ *                       <th>Type</th>
+ *                       <th>Description</th>
+ *                     </tr>
+ *                   </thead>
+ *                   <tbody>
+ *                     <tr>
+ *                       <td class="name"><code>vbcs</code></td>
+ *                       <td>{string}</td>
+ *                       <td>Indentifies an object with VBCS-specific metadata</td>
+ *                     </tr> 
+ *                   </tbody>
+ *                 </table>
+ *                 </br>
+ *                 Please consult the documentation for the downstream tool to determine what (if any) extension metadata is supported. 
+ *               </td>
+ *             </tr> 
  *             <tr>
  *               <td class="name"><code>visible</code></td>
+ *               <td>no</td>
  *               <td>{boolean}</td>
- *               <td>Specifies whether the event should be visible at design time. True by default. Not used at run time.</td>
- *             </tr>
+ *               <td>Specifies whether the event should be visible at design time. True by default.</td>
+ *             </tr> 
  *           </tbody>
  *         </table>
  *       </td>
@@ -1458,26 +1714,56 @@ var _UNIQUE = '_ojcomposite';
  *           <thead>
  *             <tr>
  *               <th>Name</th>
+ *               <th>Used at Runtime</th>
  *               <th>Type</th>
  *               <th>Description</th>
  *             </tr>
  *           </thead>
- *           <tbody>
+ *           <tbody>  
  *             <tr>
  *               <td class="name"><code>description</code></td>
+ *               <td>no</td>
  *               <td>{string}</td>
- *               <td>A description for the slot. Not used at run time.</td>
+ *               <td>A description for the slot.</td>
  *             </tr>
  *             <tr>
  *               <td class="name"><code>displayName</code></td>
+ *               <td>no</td>
  *               <td>{string}</td>
- *               <td>A user friendly, translatable name of the slot. Not used at run time.</td>
- *             </tr>
-*             <tr>
- *               <td class="name"><code>visible</code></td>
- *               <td>{boolean}</td>
- *               <td>Specifies whether the slot should be visible at design time. True by default. Not used at run time.</td>
+ *               <td>A user friendly, translatable name of the slot.</td>
  *             </tr> 
+ *             <tr>
+ *               <td class="name"><code>extension</code></td>
+ *               <td>no</td>
+ *               <td>{Object}</td>
+ *               <td>Placeholder for Extension metadata.  Each section is identified by a key that specifies the downstream tool that will process this metadata.
+ *                 <h6>For example:</h6> 
+ *                 <table class="params">
+ *                   <thead>
+ *                     <tr>
+ *                       <th>Name</th>
+ *                       <th>Type</th>
+ *                       <th>Description</th>
+ *                     </tr>
+ *                   </thead>
+ *                   <tbody>
+ *                     <tr>
+ *                       <td class="name"><code>vbcs</code></td>
+ *                       <td>{string}</td>
+ *                       <td>Indentifies an object with VBCS-specific metadata</td>
+ *                     </tr> 
+ *                   </tbody>
+ *                 </table>
+ *                 </br>
+ *                 Please consult the documentation for the downstream tool to determine what (if any) extension metadata is supported.
+ *               </td>
+ *             </tr> 
+ *             <tr>
+ *               <td class="name"><code>visible</code></td>
+ *               <td>no</td>
+ *               <td>{boolean}</td>
+ *               <td>Specifies whether the slot should be visible at design time. True by default.</td>
+ *             </tr>
  *           </tbody>
  *         </table>
  *       </td>
@@ -1583,7 +1869,8 @@ var _UNIQUE = '_ojcomposite';
  *
  * <p>
  * Composite CSS will not be scoped to the composite component and selectors will need to be appropriately selective. We recommend scoping CSS classes 
- * and prefixing class names with the composite name as seen in the example below.
+ * and prefixing class names with the composite name as seen in the example below. <b>Note that we do not recommend overriding JET component CSS.
+ * Composites should only update JET component styling via SASS variables.</b>
  * <pre class="prettyprint">
  * <code>
  * my-chart .my-chart-text {
@@ -1664,13 +1951,13 @@ var _UNIQUE = '_ojcomposite';
  * be treated as a singleton instance.
  *
  * <h4 class="name">initialize<span class="signature">(context)</span></h4>
- * <div class="description">
+ * <p>
  * This optional method may be implemented on the ViewModel to perform initialization tasks.
  * This method will be invoked only if the ViewModel specified during registration is an object instance as opposed to a constructor function.
  * If the registered ViewModel is a constructor function, the same context object will be passed to the constructor function instead.
  * This method can return 1) nothing in which case the original model instance will be used, 2) a new model instance which will replace the original, 
  * or 3) a Promise which resolves to a new model instance which will replace the original and delay additional lifecycle phases until it is resolved.
- * </div>
+ * </p>
  * <h5>Parameters:</h5>
  * <table class="params">
  *   <thead>
@@ -1728,11 +2015,11 @@ var _UNIQUE = '_ojcomposite';
  * </table>
  *
  * <h4 class="name">activated<span class="signature">(context)</span></h4>
- * <div class="description">
+ * <p>
  * This optional method may be implemented on the ViewModel and will be invoked after the ViewModel is initialized.
  * This method can return a Promise which will delay additional lifecycle phases until it is resolved and can be used 
  * as a hook for data fetching.
- * </div>
+ * </p>
  * <h5>Parameters:</h5>
  * <table class="params">
  *   <thead>
@@ -1790,9 +2077,73 @@ var _UNIQUE = '_ojcomposite';
  * </table>
  *
  * <h4 class="name">attached<span class="signature">(context)</span></h4>
- * <div class="description">
- * This optional method may be implemented on the ViewModel and will be invoked after the View is inserted into the document DOM.
- * </div>
+ * <p>
+ * This optional method is deprecated in 4.2.0 in favor of the connected method. This method is invoked after the
+ * View is inserted into the DOM and will only be called once. Note that if the composite needs to add/remove event listeners,
+ * we recommend using the connected/disconnected methods.
+ * </p>
+ * <h5>Parameters:</h5>
+ * <table class="params">
+ *   <thead>
+ *     <tr>
+ *       <th>Name</th>
+ *       <th>Type</th>
+ *       <th>Description</th>
+ *     </tr>
+ *   </thead>
+ *   <tbody>
+ *     <tr>
+ *       <td class="name"><code>context</code></td>
+ *       <td>Object</td>
+ *       <td>An object with the following key-value pairs:
+ *          <h6>Properties:</h6>
+ *          <table class="params">
+ *            <thead>
+ *              <tr>
+ *                <th>Name</th>
+ *                <th>Type</th>
+ *                <th>Description</th>
+ *              </tr>
+ *            </thead>
+ *            <tbody>
+ *              <tr>
+ *                <td class="name"><code>element</code></td>
+ *                <td>Node</td>
+ *                <td>DOM element where the View is attached.</td>
+ *              </tr>
+ *              <tr>
+ *                <td class="name"><code>props</code></td>
+ *                <td>Promise</td>
+ *                <td>A Promise evaluating to the composite component's properties.</td>
+ *              </tr>
+ *              <tr>
+ *                <td class="name"><code>slotNodeCounts</code></td>
+ *                <td>Promise</td>
+ *                <td>A Promise evaluating to a map of slot name to assigned nodes count for the View.</td>
+ *              </tr>
+ *              <tr>
+ *                <td class="name"><code>unique</code></td>
+ *                <td>string</td>
+ *                <td>A unique string that can be used for unique id generation.</td>
+ *              </tr>
+ *              <tr>
+ *                <td class="name"><code>uniqueId</code></td>
+ *                <td>string</td>
+ *                <td>The ID of the composite component if specified. Otherwise, it is the same as <code>unique</code>.</td>
+ *              </tr>
+ *            </tbody>
+ *          </table>
+ *        </td>
+ *     </tr>
+ *   </tbody>
+ * </table>
+ * 
+ * <h4 class="name">connected<span class="signature">(context)</span></h4>
+ * <p>
+ * This optional method may be implemented on the ViewModel and will be invoked after the View is first inserted into the DOM and then
+ * each time the composite is reconnected to the DOM after being disconnected. Note that if the composite needs to add/remove event listeners,
+ * we recommend using this and the disconnected methods.
+ * </p>
  * <h5>Parameters:</h5>
  * <table class="params">
  *   <thead>
@@ -1850,9 +2201,9 @@ var _UNIQUE = '_ojcomposite';
  * </table>
  *
  * <h4 class="name">bindingsApplied<span class="signature">(context)</span></h4>
- * <div class="description">
+ * <p>
  * This optional method may be implemented on the ViewModel and will be invoked after the bindings are applied on this View.
- * </div>
+ * </p>
  * <h5>Parameters:</h5>
  * <table class="params">
  *   <thead>
@@ -1910,9 +2261,10 @@ var _UNIQUE = '_ojcomposite';
  * </table>
  * 
  * <h4 class="name">detached<span class="signature">(element)</span></h4>
- * <div class="description">
+ * <p>
+ * This method is deprecated in 4.2.0 to the renamed disconnected method with the same behavior.
  * This optional method may be implemented on the ViewModel and will be invoked when this composite component is detached from the DOM.
- * </div>
+ * </p>
  * <h5>Parameters:</h5>
  * <table class="params">
  *   <thead>
@@ -1931,11 +2283,34 @@ var _UNIQUE = '_ojcomposite';
  *   </tbody>
  * </table>
  *
- * <h4 class="name">dispose<span class="signature">(element)</span></h4>
+* <h4 class="name">dispose<span class="signature">(element)</span></h4>
  * <div class="description">
  * <b>Deprecated</b>: use the detached method instead.
  * This optional method may be implemented on the ViewModel and will be invoked when this composite component is being disposed.
  * </div>
+ * <h5>Parameters:</h5>
+ * <table class="params">
+ *   <thead>
+ *     <tr>
+ *       <th>Name</th>
+ *       <th>Type</th>
+ *       <th>Description</th>
+ *     </tr>
+ *   </thead>
+ *   <tbody>
+ *     <tr>
+ *       <td class="name"><code>element</code></td>
+ *       <td>Node</td>
+ *       <td>The composite component DOM element.</td>
+ *     </tr>
+ *   </tbody>
+ * </table> 
+ * 
+ *
+ * <h4 class="name">disconnected<span class="signature">(element)</span></h4>
+ * <p>
+ * This optional method may be implemented on the ViewModel and will be invoked when this composite component is disconnected from the DOM.
+ * </p>
  * <h5>Parameters:</h5>
  * <table class="params">
  *   <thead>

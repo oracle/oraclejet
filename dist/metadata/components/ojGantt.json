@@ -1,10 +1,13 @@
 {
-  "name": "ojGantt",
-  "version": "4.1.0",
-  "jetVersion": "4.1.0",
-  "displayName": " Gantt",
+  "name": "oj-gantt",
+  "version": "4.2.0",
+  "jetVersion": "4.2.0",
+  "displayName": "Gantt",
   "preview": true,
-  "description": "A JET Gantt is a themable, WAI-ARIA compliant element that illustrates the start and finish dates of tasks",
+  "roles": [
+    "application"
+  ],
+  "description": "Gantt Element",
   "properties": {
     "animationOnDataChange": {
       "description": "Defines the animation that is applied on data changes.",
@@ -79,7 +82,8 @@
         "shortDesc": {
           "description": "The description of the dependency line. This is used for accessibility.",
           "type": "string",
-          "value": null
+          "value": null,
+          "translatable": true
         },
         "successorTaskId": {
           "description": "The identifier for the successor task. This must reference a task in Gantt.",
@@ -130,13 +134,13 @@
       "value": null
     },
     "gridlines": {
-      "description": "Display or hide the horizontal or vertical grid lines. The default value is \"auto\", which means Gantt will decide whether the grid lines should be made visible or hidden.",
+      "description": "An object specifying whether to display or hide the horizontal and vertical grid lines.",
       "type": "object",
       "displayName": "Gridlines",
       "value": null,
       "properties": {
         "horizontal": {
-          "description": "Horizontal gridlines.",
+          "description": "Horizontal gridlines. The default value is \"auto\", which means Gantt will decide whether the grid lines should be made visible or hidden.",
           "type": "string",
           "value": "auto",
           "enumValues": [
@@ -157,7 +161,7 @@
           }
         },
         "vertical": {
-          "description": "Vertical gridlines.",
+          "description": "Vertical gridlines. The default value is \"auto\", which means Gantt will decide whether the grid lines should be made visible or hidden.",
           "type": "string",
           "value": "auto",
           "enumValues": [
@@ -458,7 +462,8 @@
         "label": {
           "description": "The label associated with the row.",
           "type": "string",
-          "value": null
+          "value": null,
+          "translatable": true
         },
         "labelStyle": {
           "description": "The CSS style defining the style of the label. Only CSS style applicable to SVG elements can be used.",
@@ -488,7 +493,8 @@
                 "height": {
                   "description": "The height of the baseline in pixel.",
                   "type": "number",
-                  "value": null
+                  "value": null,
+                  "units": "pixels"
                 },
                 "start": {
                   "description": "The start time of the baseline. Optional if baseline is a milestone. Either start or end has to be defined in order for the baseline to properly render. See Date and Time Formats for more details on string formats.",
@@ -520,7 +526,8 @@
             "height": {
               "description": "The height of the task in pixel.",
               "type": "number",
-              "value": null
+              "value": null,
+              "units": "pixels"
             },
             "id": {
               "description": "The identifier for the task. This must be unique across all tasks in the Gantt, and is required in order for the Gantt to properly render.",
@@ -530,7 +537,8 @@
             "label": {
               "description": "The label associated with the task.",
               "type": "string",
-              "value": null
+              "value": null,
+              "translatable": true
             },
             "labelPosition": {
               "description": "The position of the label relative to the task. An array of values is also supported. If an array is specified, then the values are traversed until a position that can fully display the label is found. If 'max' is specified in the array, then of all the positions evaluated up to that point of the traversal, the one with the largest space is used (label is truncated to fit). Naturally, 'max' is ignored if it's specified as the first value of the array. If the last value of the array is reached, but the label cannot be fully displayed, then the label is placed at that position, truncated to fit. Due to space constraints in the milestone and task with progress cases, the inner positions will exhibit the following behaviors: For milestones, specifying 'innerStart', 'innerEnd', or 'innerCenter' would be equivalent to specifying 'start', 'end', and 'end' respectively. For tasks with progress, 'innerCenter' means the label will be aligned to the end of the progress bar, either placed inside or outside of the progress, whichever is the larger space. 'innerStart' and 'innerEnd' positions are honored when there is enough space to show the label at those positions. Otherwise, the aforementioned 'innerCenter' behavior is exhibited. ",
@@ -598,14 +606,17 @@
                 "value": {
                   "description": "The value of the progress between 0 and 1 inclusive. If not specified or invalid, no progress will be shown.",
                   "type": "number",
-                  "value": null
+                  "value": null,
+                  "maximum": 1,
+                  "minimum": 0
                 }
               }
             },
             "shortDesc": {
               "description": "The description of the task. This is used for accessibility and for customizing the tooltip text.",
               "type": "string",
-              "value": null
+              "value": null,
+              "translatable": true
             },
             "start": {
               "description": "The start time of this task. Optional if task is a single date event like Milestone. Either start or end has to be defined in order for the task to properly render. See Date and Time Formats for more details on string formats.",
@@ -680,7 +691,8 @@
             "height": {
               "description": "The height of the baseline in pixel.",
               "type": "number",
-              "value": null
+              "value": null,
+              "units": "pixels"
             },
             "svgClassName": {
               "description": "A space delimited list of CSS style classes defining the style of the baseline.",
@@ -702,7 +714,8 @@
         "height": {
           "description": "The height of the task in pixel.",
           "type": "number",
-          "value": null
+          "value": null,
+          "units": "pixels"
         },
         "labelPosition": {
           "description": "The position of the label relative to the task. An array of values is also supported. If an array is specified, then the values are traversed until a position that can fully display the label is found. If 'max' is specified in the array, then of all the positions evaluated up to that point of the traversal, the one with the largest space is used (label is truncated to fit). Naturally, 'max' is ignored if it's specified as the first value of the array. If the last value of the array is reached, but the label cannot be fully displayed, then the label is placed at that position, truncated to fit. Due to space constraints in the milestone and task with progress cases, the inner positions will exhibit the following behaviors: For milestones, specifying 'innerStart', 'innerEnd', or 'innerCenter' would be equivalent to specifying 'start', 'end', and 'end' respectively. For tasks with progress, 'innerCenter' means the label will be aligned to the end of the progress bar, either placed inside or outside of the progress, whichever is the larger space. 'innerStart' and 'innerEnd' positions are honored when there is enough space to show the label at those positions. Otherwise, the aforementioned 'innerCenter' behavior is exhibited. ",
@@ -1026,7 +1039,8 @@
             "tooltipLabel": {
               "description": "A string representing the label that is displayed before the value in the tooltip.",
               "type": "string",
-              "value": null
+              "value": null,
+              "translatable": true
             }
           }
         },
@@ -1060,7 +1074,8 @@
             "tooltipLabel": {
               "description": "A string representing the label that is displayed before the value in the tooltip.",
               "type": "string",
-              "value": null
+              "value": null,
+              "translatable": true
             }
           }
         },
@@ -1094,7 +1109,8 @@
             "tooltipLabel": {
               "description": "A string representing the label that is displayed before the value in the tooltip.",
               "type": "string",
-              "value": null
+              "value": null,
+              "translatable": true
             }
           }
         },
@@ -1128,7 +1144,8 @@
             "tooltipLabel": {
               "description": "A string representing the label that is displayed before the value in the tooltip.",
               "type": "string",
-              "value": null
+              "value": null,
+              "translatable": true
             }
           }
         },
@@ -1162,7 +1179,8 @@
             "tooltipLabel": {
               "description": "A string representing the label that is displayed before the value in the tooltip.",
               "type": "string",
-              "value": null
+              "value": null,
+              "translatable": true
             }
           }
         },
@@ -1191,7 +1209,8 @@
             "tooltipLabel": {
               "description": "A string representing the label that is displayed before the value in the tooltip.",
               "type": "string",
-              "value": null
+              "value": null,
+              "translatable": true
             }
           }
         },
@@ -1225,7 +1244,8 @@
             "tooltipLabel": {
               "description": "A string representing the label that is displayed before the value in the tooltip.",
               "type": "string",
-              "value": null
+              "value": null,
+              "translatable": true
             }
           }
         },
@@ -1254,7 +1274,8 @@
             "tooltipLabel": {
               "description": "A string representing the label that is displayed before the value in the tooltip.",
               "type": "string",
-              "value": null
+              "value": null,
+              "translatable": true
             }
           }
         },
@@ -1288,7 +1309,8 @@
             "tooltipLabel": {
               "description": "A string representing the label that is displayed before the value in the tooltip.",
               "type": "string",
-              "value": null
+              "value": null,
+              "translatable": true
             }
           }
         }
@@ -1360,7 +1382,7 @@
     }
   },
   "events": {
-    "viewportChange": {
+    "ojViewportChange": {
       "description": "Triggered after the viewport is changed due to a zoom or scroll operation.",
       "detail": {
         "viewportStart": {

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2014, 2017, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
@@ -157,6 +157,7 @@ oj.BaseCustomElementBridge.proto =
   InitializeElement: function(element) {
     var descriptor = oj.BaseCustomElementBridge.__GetDescriptor(element.tagName);
     this.METADATA = this.GetMetadata(descriptor);
+    this._eventListeners = {};
   },
 
   InitializePrototype: function(proto) {},
@@ -177,6 +178,24 @@ oj.BaseCustomElementBridge.proto =
     // TODO: Remove method post 4.0.0 after metadata is generated from jsDoc.
     // Temporary fix for JET component translation subproperties that are not specified in metadata.
     return false;
+  },
+
+  SetEventListenerProperty: function(element, property, value) {
+    var event = oj.__AttributeUtils.eventListenerPropertyToEventType(property);
+    // Get event listener
+    var eventListener = this._eventListeners[event];
+    if (!eventListener) {
+      // Create the wrapper
+      eventListener = this._createEventListenerWrapper();      
+      this._eventListeners[event] = eventListener;
+      element.addEventListener(event, eventListener);
+    }
+    if (value == null || value instanceof Function) {
+      eventListener.setListener(value);
+    }
+    else {
+      oj.BaseCustomElementBridge.__ThrowTypeError(element, property, value, 'function');
+    }
   },
 
   ValidateAndSetProperty: function(propNameFun, componentProps, property, value, element)
@@ -206,7 +225,7 @@ oj.BaseCustomElementBridge.proto =
       if (propsMeta[propAr[0]]['readOnly'])
       {
         this.resolveDelayedReadyPromise();
-        throw "Read-only property " + property + " cannot be set on "+ this.tagName;
+        throw "Read-only property " + property + " cannot be set on "+ element.tagName;
       }
 
       oj.BaseCustomElementBridge.__CheckEnumValues(element, property, value, propMeta);
@@ -290,7 +309,7 @@ oj.BaseCustomElementBridge.proto =
       {
         this._registerBusyState(element);
       }
-      this.HandleReattached();
+      this.HandleReattached(element);
     }
   },
 
@@ -304,6 +323,21 @@ oj.BaseCustomElementBridge.proto =
   {
     var bridge = oj.BaseCustomElementBridge.getInstance(this);
     bridge.HandleDetached(this);
+  },
+
+  // This wrapper does not provide any additional functionality to event listener functions
+  // It exists solely to preserve event listener order
+  _createEventListenerWrapper: function() {
+    var eventListener;
+    var domListener = function(event) {
+      if (eventListener) {
+        eventListener(event);
+      }
+    };
+    domListener.setListener = function(listener) {
+      eventListener = listener;
+    }
+    return domListener;    
   },
 
   _monitorReadyPromise: function(element)
@@ -956,6 +990,56 @@ oj.BaseCustomElementBridge.__Register = function(tagName, descriptor, bridgeProt
 
 /**
  * @ignore
+ * @param {Element} element
+ * @param {string} name
+ * @param {Object} value
+ * @param {Object} previousValue
+ */
+oj.BaseCustomElementBridge.__FirePropertyChangeEvent = function(element, name, value, previousValue)
+{
+  var detail = {};
+  var subpropPath = name.split('.');
+  var eventName = name;
+  var eventValue = value;
+  var eventPrevValue = previousValue;
+  if (subpropPath.length > 1)
+  {
+    var subproperty = {};
+    subproperty['path'] = name;
+    subproperty['value'] = value;
+    subproperty['previousValue'] = previousValue;
+    detail['subproperty'] = subproperty;
+    eventName = subpropPath[0];
+    // We don't make a copy of the top level property so the old and new values will be the same;
+    eventValue = element[eventName];
+    eventPrevValue = eventValue;
+  }
+  detail['value'] = eventValue;
+  detail['previousValue'] = eventPrevValue;
+  element.dispatchEvent(new CustomEvent(eventName + "Changed", {'detail': detail}));
+};
+
+/**
+ * @ignore
+ */
+oj.BaseCustomElementBridge.__DefineDynamicObjectProperty = function(obj, property, getter, setter)
+{
+  Object.defineProperty(obj, property, { 'enumerable': true, 'get': getter, 'set': setter });
+};
+
+/**
+ * @ignore
+ */
+oj.BaseCustomElementBridge.__GetUnique = function()
+{
+  return _UNIQUE + _UNIQUE_INCR++;
+};
+
+var _UNIQUE_INCR = 0;
+var _UNIQUE = '_ojcustomelem';
+
+/**
+ * @ignore
  */
 oj.BaseCustomElementBridge._registry = {};
 
@@ -1128,9 +1212,12 @@ oj.BaseCustomElementBridge.__DelayedPromise = function()
  *            section below to see the syntax difference between setting attributes and properties. 
  *            Note that some properties are read only and updates to those properties using the property 
  *            setter will be ignored. The undefined value is treated as unsetting of a property when passed to the
- *            property setter and will result in the component using the default value if one exists.
- *            Property sets will not result in DOM attribute updates and after the custom element is upgraded, the
- *            application should use the custom element properties, not attributes to check the current value.
+ *            property setter and will result in the component using the default value if one exists. Unsetting of
+ *            subproperties using the element's <code>setProperty</code> is not supported. Subproperties can only
+ *            only be unset when the top level property is unset. 
+ *            Property sets will not result in DOM attribute updates and after the custom 
+ *            element is upgraded, the application should use the custom element properties, not attributes to check 
+ *            the current value.
  *        </p>
  *        <p>
  *            When a property or attribute value changes, a [property]Changed <code>CustomEvent</code> 
@@ -1293,16 +1380,30 @@ oj.BaseCustomElementBridge.__DelayedPromise = function()
  *        </h4>
  *        <p>
  *          By default, JET components will fire [property]Changed (e.g. valueChanged) <code>CustomEvents</code>
- *          whenever a property is updated. See the <a href="#ce-properties-section">properties section</a> above
+ *          whenever a property is updated. These events, unlike other component events, are non bubbling.
+ *          See the <a href="#ce-properties-section">properties section</a> above
  *          for details on the event payload.
  *        </p>
  *        <p>
- *          In addition to supporting event listeners via the standard addEventListener
- *          mechanism, JET custom elements support declarative specification of event
- *          listeners via <code>on-[event-name]</code> attributes (e.g. on-click, on-value-
- *          changed or on-oj-expand).  These attributes only support data bound expressions
- *          that evaluate to functions; arbitrary JavaScript will not be accepted.  Sample
- *          usages can be seen in the attribute API doc. Please note that there is a
+ *          In addition to supporting event listeners via the standard <code>addEventListener</code>
+ *          mechanism, both JET custom elements and native HTML elements support declarative specification of event
+ *          listeners via <code>on-[event-name]</code> attributes (e.g. <code>on-click</code>,
+ *          <code>on-value-changed</code> or <code>on-oj-expand</code>). The attributes ultimately delegate to the standard
+ *          <code>addEventListener</code> mechanism and only support data bound expressions
+ *          that evaluate to functions; arbitrary JavaScript will not be accepted.
+ *          Sample usages can be seen in the attribute API doc.
+ *        </p>
+ *        <p>
+ *          In addition to the event parameter, event listeners specified via <code>on-[event-name]</code>
+ *          attributes will receive two additional parameters when they are invoked: <code>data</code> and <code>bindingContext</code>.
+ *          The <code>bindingContext</code> parameter provides the listener with the entire data binding context that
+ *          was applied to the element while the data parameter provides convenient access to relevant data.
+ *          When in an iteration context (e.g. inside an <code>oj-bind-for-each</code>), the <code>data</code> parameter
+ *          is equal to <code>bindingContext['$current']</code>; otherwise, it is equal to <code>bindingContext['$data']</code>.
+ *          These event listeners should be written with signatures of <code>function(event, data, bindingContext)</code>.
+ *        </p>
+ *        <p>
+ *          Please note that there is a
  *          current limitation where event listeners specified using this syntax can only be
  *          set during component initialization. Subsequent setAttribute calls for the
  *          event listener attributes will be ignored.
@@ -1313,7 +1414,9 @@ oj.BaseCustomElementBridge.__DelayedPromise = function()
  *          assignment of an on[EventName] property on the element (e.g. onClick or
  *          onOjExpand).  Note however that when these events bubble up through the DOM,
  *          they can only be listened to via addEventListener calls or on-[event-name]
- *          attributes on parent elements.
+ *          attributes on parent elements.  Event listeners that are specified via addEventListener
+ *          or direct property assignment will not receive the additional parameters described above;
+ *          they will be invoked with the single event parameter only.
  *        </p>
  * @ojfragment customElementOverviewDoc - General description doc fragment that shows up in every component's page via a link.
  * @memberof CustomElementOverview

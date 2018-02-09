@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2014, 2017, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
@@ -140,6 +140,19 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
    * The popup also adds the <code class="prettyprint">aria-describedby="popup-id"</code> attribute
    * to the assocaited launcher while the popup is open.
    * </p>
+   *
+   * On platforms that support voice over mode (VO), the popup injects anchor tags "skip links"
+   * into the document for navigation. Skip links are not visible but read in VO mode.
+   * Two skip links are injected into the document when a popup is disclosed:
+   *  <ul>
+   *    <li>A close link is injected as a sibling to the popup's content. Activation of this link
+   *        will close the popup.</li>
+   *    <li>For cases where the popup doesn't steal focus when it's open, a content navigation
+   *        skip link is injected as a sibling to the launcher (first required argument of the open
+   *        method). If the launcher selector targets a sub-element of the launcher,
+   *        the skip link could be injected under the launcher, which can be problematic for
+   *        oj-button as skip link activation will also activate the associated launcher.</li>
+   *  </ul>
    *
    * <p>One point often overlooked is making the gestures that launch a popup accessible.
    *   There are no constraints to what events a page developer might choose to trigger opening a
@@ -801,7 +814,6 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
           closeDelayTimer();
         }
 
-        this._destroyVoiceOverAssist();
         this._super();
       },
       /**
@@ -926,11 +938,11 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
         var element = psOptions[oj.PopupService.OPTION.POPUP];
         var launcher = psOptions[oj.PopupService.OPTION.LAUNCHER];
 
+        this._initVoiceOverAssist();
+
         this._trigger("open");
 
         this._intialFocus();
-
-        this._initVoiceOverAssist();
 
         this._on(element, {'keydown' : this._keyHandler, 'keyup' : this._keyHandler});
         if (launcher && launcher.length > 0)
@@ -1082,7 +1094,7 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
        * @name oj.ojPopup#refresh
        * @memberof oj.ojPopup
        * @instance
-       * @override
+       * @return {void}
        *
        * @example <caption>Invoke the <code class="prettyprint">refresh</code> method:</caption>
        * myPopup.refresh();
@@ -1617,7 +1629,18 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
         {
           var element = this.element;
           element.attr("tabindex", "-1");
-          element.focus();
+
+          var closeSkipLink = this._closeSkipLink;
+          if (closeSkipLink)
+          {
+            var linkElement = closeSkipLink.getLink();
+            linkElement.focus();
+          }
+          else
+          {
+            element.focus();
+          }
+
           this._trigger("focus");
         }
       },
@@ -1953,44 +1976,37 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
        */
       _initVoiceOverAssist : function ()
       {
-        var isIOSVOSupported = (oj.AgentUtils.getAgentInfo()['os'] === oj.AgentUtils.OS.IOS);
+        var isVOSupported = (oj.AgentUtils.getAgentInfo()['os'] === oj.AgentUtils.OS.IOS ||
+                             oj.AgentUtils.getAgentInfo()['os'] === oj.AgentUtils.OS.ANDROID);
         var liveRegion = this._liveRegion;
         if (!liveRegion)
           liveRegion = this._liveRegion = new oj.PopupLiveRegion();
 
         var message;
-        if (isIOSVOSupported)
-          message = this.getTranslatedString("none" === this.options["initialFocus"] ?
+        var initialFocus = this._deriveInitialFocus();
+        if (isVOSupported)
+          message = this.getTranslatedString("none" === initialFocus ?
             "ariaLiveRegionInitialFocusNoneTouch" :
             "ariaLiveRegionInitialFocusFirstFocusableTouch");
         else
-          message = this.getTranslatedString("none" === this.options["initialFocus"] ?
+          message = this.getTranslatedString("none" === initialFocus ?
             "ariaLiveRegionInitialFocusNone" :
             "ariaLiveRegionInitialFocusFirstFocusable");
         liveRegion.announce(message);
 
-        if (isIOSVOSupported)
+        if (isVOSupported)
         {
-          var focusSkipLink = this._focusSkipLink;
-          if (!focusSkipLink)
-          {
-            var focusSkipLinkId = this._getSubId("focusSkipLink");
-            var launcher = this._launcher;
-            var callback = this._intialFocus.bind(this, true);
-            message = this.getTranslatedString("ariaFocusSkipLink");
-            this._focusSkipLink = new oj.PopupSkipLink(launcher, message, callback,
-              focusSkipLinkId);
-          }
+          var focusSkipLinkId = this._getSubId("focusSkipLink");
+          var launcher = this._launcher;
+          var callback = this._intialFocus.bind(this, true);
+          message = this.getTranslatedString("ariaFocusSkipLink");
+          this._focusSkipLink = new oj.PopupSkipLink(launcher, message, callback, focusSkipLinkId);
 
-          var closeSkipLink = this._closeSkipLink;
-          if (!closeSkipLink)
-          {
-            var closeSkipLinkId = this._getSubId("closeSkipLink");
-            var content = this._content;
-            var callback = this._closeImplicitly.bind(this);
-            message = this.getTranslatedString("ariaCloseSkipLink");
-            this._closeSkipLink = new oj.PopupSkipLink(content, message, callback, closeSkipLinkId);
-          }
+          var content = this._content;
+          var closeSkipLinkId = this._getSubId("closeSkipLink");
+          callback = this._closeImplicitly.bind(this);
+          message = this.getTranslatedString("ariaCloseSkipLink");
+          this._closeSkipLink = new oj.PopupSkipLink(content, message, callback, closeSkipLinkId);
         }
       },
       /**
@@ -2000,18 +2016,18 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
        */
       _destroyVoiceOverAssist : function ()
       {
+
         var liveRegion = this._liveRegion;
-        if (liveRegion)
-        {
-          liveRegion.destroy();
-          delete this._liveRegion;
-        }
+        liveRegion.destroy();
+        delete this._liveRegion;
+
         var focusSkipLink = this._focusSkipLink;
         if (focusSkipLink)
         {
           focusSkipLink.destroy();
           delete this._focusSkipLink;
         }
+
         var closeSkipLink = this._closeSkipLink;
         if (closeSkipLink)
         {
