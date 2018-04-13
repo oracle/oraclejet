@@ -1,13 +1,13 @@
 {
   "name": "oj-gantt",
-  "version": "4.2.0",
-  "jetVersion": "4.2.0",
+  "version": "5.0.0",
+  "jetVersion": "5.0.0",
   "displayName": "Gantt",
   "preview": true,
   "roles": [
     "application"
   ],
-  "description": "Gantt Element",
+  "description": "Displays scheduling information graphically, making it easier to plan, coordinate, and track various tasks and resources.",
   "properties": {
     "animationOnDataChange": {
       "description": "Defines the animation that is applied on data changes.",
@@ -65,82 +65,27 @@
     },
     "dependencies": {
       "description": "An array of objects that defines dependencies between tasks. Also accepts a Promise that will resolve with an array for deferred data rendering. No data will be rendered if the Promise is rejected.",
-      "type": "Array.<object>|Promise",
+      "type": "Array<Object>|Promise",
       "displayName": "Dependencies",
-      "value": null,
-      "properties": {
-        "id": {
-          "description": "The identifier for the dependency line. This must be unique across all dependency lines in Gantt.",
-          "type": "string",
-          "value": null
-        },
-        "predecessorTaskId": {
-          "description": "The identifier for the predecessor task. This must reference a task in Gantt.",
-          "type": "string",
-          "value": null
-        },
-        "shortDesc": {
-          "description": "The description of the dependency line. This is used for accessibility.",
-          "type": "string",
-          "value": null,
-          "translatable": true
-        },
-        "successorTaskId": {
-          "description": "The identifier for the successor task. This must reference a task in Gantt.",
-          "type": "string",
-          "value": null
-        },
-        "svgClassName": {
-          "description": "A space delimited list of class name set on the dependency line.",
-          "type": "string",
-          "value": null
-        },
-        "svgStyle": {
-          "description": "The CSS style defining the style of the dependency line.",
-          "type": "object",
-          "value": null
-        },
-        "type": {
-          "description": "The type of dependency. The following values are supported: finishStart: predecessor task must finish before successor task can start. finishFinish: predecessor task must finish before successor task can finish. startStart: predecessor task must start before successor task can start. startFinish: predecessor task must start before successor task can finish. ",
-          "type": "string",
-          "value": "finishStart",
-          "enumValues": [
-            "finishFinish",
-            "finishStart",
-            "startFinish",
-            "startStart"
-          ],
-          "propertyEditorValues": {
-            "finishFinish": {
-              "displayName": "Finish Finish"
-            },
-            "finishStart": {
-              "displayName": "Finish Start"
-            },
-            "startFinish": {
-              "displayName": "Start Finish"
-            },
-            "startStart": {
-              "displayName": "Start Start"
-            }
-          }
-        }
-      }
+      "value": null
     },
     "end": {
-      "description": "The end time of the Gantt. This is required in order for the Gantt to properly render. See Date and Time Formats for more details on string formats.",
+      "description": "The end time of the Gantt. A valid value is required in order for the Gantt to properly render. See Date and Time Formats for more details on the required string formats.",
       "type": "string",
       "displayName": "End",
-      "value": null
+      "value": ""
     },
     "gridlines": {
       "description": "An object specifying whether to display or hide the horizontal and vertical grid lines.",
-      "type": "object",
+      "type": "Object",
       "displayName": "Gridlines",
-      "value": null,
+      "value": {
+        "horizontal": "auto",
+        "vertical": "auto"
+      },
       "properties": {
         "horizontal": {
-          "description": "Horizontal gridlines. The default value is \"auto\", which means Gantt will decide whether the grid lines should be made visible or hidden.",
+          "description": "Horizontal gridlines. The default value is \"auto\", which means Gantt will decide whether the grid lines should be made visible or hidden. See the gridlines attribute for usage examples.",
           "type": "string",
           "value": "auto",
           "enumValues": [
@@ -161,7 +106,7 @@
           }
         },
         "vertical": {
-          "description": "Vertical gridlines. The default value is \"auto\", which means Gantt will decide whether the grid lines should be made visible or hidden.",
+          "description": "Vertical gridlines. The default value is \"auto\", which means Gantt will decide whether the grid lines should be made visible or hidden. See the gridlines attribute for usage examples.",
           "type": "string",
           "value": "auto",
           "enumValues": [
@@ -185,64 +130,17 @@
     },
     "majorAxis": {
       "description": "An object with the following properties, used to define the major time axis. If not specified, no major time axis is shown.",
-      "type": "object",
+      "type": "Object",
       "displayName": "Major Axis",
-      "value": null,
+      "value": "{\"converter\": {\"default\": null, \"seconds\": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'hour': 'numeric', 'minute': '2-digit', 'second': '2-digit'}), \"minutes\": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'hour': 'numeric', 'minute': '2-digit'}), \"hours\": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'hour': 'numeric'}), \"days\": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'numeric', 'day': '2-digit'}), \"weeks\": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'numeric', 'day': '2-digit'}), \"months\": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'long'}), \"quarters\": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'long'}), \"years\": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'year': 'numeric'})}}",
       "properties": {
         "converter": {
-          "description": "The converter (an object literal or instance that duck types oj.Converter) used to format the labels of the major axis. If not specified, the default converter is used. If a single converter is specified, it will be used for all 'scale' values. Otherwise, an object whose keys are 'scale' values that map to the converter instances is expected. See oj.DateTimeConverterFactory for details on creating built-in datetime converters.",
-          "type": "object",
-          "value": null,
-          "properties": {
-            "days": {
-              "description": "The converter (an object literal or instance that duck types oj.Converter) used for the 'days' scale. If not specified, the default converter will be used for this scale. See oj.DateTimeConverterFactory for details on creating built-in datetime converters.",
-              "type": "object",
-              "value": null
-            },
-            "default": {
-              "description": "The default converter (an object literal or instance that duck types oj.Converter) to use for all 'scale' values that do not otherwise have a converter object provided. See oj.DateTimeConverterFactory for details on creating built-in datetime converters.",
-              "type": "object",
-              "value": null
-            },
-            "hours": {
-              "description": "The converter (an object literal or instance that duck types oj.Converter) used for the 'hours' scale. If not specified, the default converter will be used for this scale. See oj.DateTimeConverterFactory for details on creating built-in datetime converters.",
-              "type": "object",
-              "value": null
-            },
-            "minutes": {
-              "description": "The converter (an object literal or instance that duck types oj.Converter) used for the 'minutes' scale. If not specified, the default converter will be used for this scale. See oj.DateTimeConverterFactory for details on creating built-in datetime converters.",
-              "type": "object",
-              "value": null
-            },
-            "months": {
-              "description": "The converter (an object literal or instance that duck types oj.Converter) used for the 'months' scale. If not specified, the default converter will be used for this scale. See oj.DateTimeConverterFactory for details on creating built-in datetime converters.",
-              "type": "object",
-              "value": null
-            },
-            "quarters": {
-              "description": "The converter (an object literal or instance that duck types oj.Converter) used for the 'quarters' scale. If not specified, the default converter will be used for this scale. See oj.DateTimeConverterFactory for details on creating built-in datetime converters.",
-              "type": "object",
-              "value": null
-            },
-            "seconds": {
-              "description": "The converter (an object literal or instance that duck types oj.Converter) used for the 'seconds' scale. If not specified, the default converter will be used for this scale. See oj.DateTimeConverterFactory for details on creating built-in datetime converters.",
-              "type": "object",
-              "value": null
-            },
-            "weeks": {
-              "description": "The converter (an object literal or instance that duck types oj.Converter) used for the 'weeks' scale. If not specified, the default converter will be used for this scale. See oj.DateTimeConverterFactory for details on creating built-in datetime converters.",
-              "type": "object",
-              "value": null
-            },
-            "years": {
-              "description": "The converter (an object literal or instance that duck types oj.Converter) used for the 'years' scale. If not specified, the default converter will be used for this scale. See oj.DateTimeConverterFactory for details on creating built-in datetime converters.",
-              "type": "object",
-              "value": null
-            }
-          }
+          "description": "A converter (an object literal or instance that duck types Converter) used to format the labels of the major axis for all 'scale' values, or an object literal whose keys are 'scale' values that map specific converters for scale specific formatting (see ojTimeAxis.Converter). See DateTimeConverterFactory for details on creating built-in datetime converters. See the major-axis attribute for usage examples.",
+          "type": "Object",
+          "value": "{\"default\": null, \"seconds\": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'hour': 'numeric', 'minute': '2-digit', 'second': '2-digit'}), \"minutes\": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'hour': 'numeric', 'minute': '2-digit'}), \"hours\": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'hour': 'numeric'}), \"days\": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'numeric', 'day': '2-digit'}), \"weeks\": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'numeric', 'day': '2-digit'}), \"months\": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'long'}), \"quarters\": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'long'}), \"years\": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'year': 'numeric'})}"
         },
         "scale": {
-          "description": "The time scale used for the major axis.",
+          "description": "The time scale used for the major axis. See the major-axis attribute for usage examples.",
           "type": "string",
           "value": null,
           "enumValues": [
@@ -283,72 +181,25 @@
           }
         },
         "zoomOrder": {
-          "description": "An array of strings containing the names of scales used for zooming from longest to shortest. If not specified, the 'scale' specified on the axis will be used at all zoom levels.",
-          "type": "Array.<string>",
+          "description": "An array of strings containing the names of scales used for zooming from longest to shortest. If not specified, the 'scale' specified on the axis will be used at all zoom levels. See the major-axis attribute for usage examples.",
+          "type": "Array<string>",
           "value": null
         }
       }
     },
     "minorAxis": {
       "description": "An object with the following properties, used to define the minor time axis. This is required in order for the Gantt to properly render.",
-      "type": "object",
+      "type": "Object",
       "displayName": "Minor Axis",
-      "value": null,
+      "value": "{\"converter\": {\"default\": null, \"seconds\": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'hour': 'numeric', 'minute': '2-digit', 'second': '2-digit'}), \"minutes\": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'hour': 'numeric', 'minute': '2-digit'}), \"hours\": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'hour': 'numeric'}), \"days\": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'numeric', 'day': '2-digit'}), \"weeks\": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'numeric', 'day': '2-digit'}), \"months\": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'long'}), \"quarters\": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'long'}), \"years\": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'year': 'numeric'})}}",
       "properties": {
         "converter": {
-          "description": "The converter (an object literal or instance that duck types oj.Converter) used to format the labels of the minor axis. If not specified, the default converter is used. If a single converter is specified, it will be used for all 'scale' values. Otherwise, an object whose keys are 'scale' values that map to the converter instances is expected. See oj.DateTimeConverterFactory for details on creating built-in datetime converters.",
-          "type": "object",
-          "value": null,
-          "properties": {
-            "days": {
-              "description": "The converter (an object literal or instance that duck types oj.Converter) used for the 'days' scale. If not specified, the default converter will be used for this scale. See oj.DateTimeConverterFactory for details on creating built-in datetime converters.",
-              "type": "object",
-              "value": null
-            },
-            "default": {
-              "description": "The default converter (an object literal or instance that duck types oj.Converter) to use for all 'scale' values that do not otherwise have a converter object provided. See oj.DateTimeConverterFactory for details on creating built-in datetime converters.",
-              "type": "object",
-              "value": null
-            },
-            "hours": {
-              "description": "The converter (an object literal or instance that duck types oj.Converter) used for the 'hours' scale. If not specified, the default converter will be used for this scale. See oj.DateTimeConverterFactory for details on creating built-in datetime converters.",
-              "type": "object",
-              "value": null
-            },
-            "minutes": {
-              "description": "The converter (an object literal or instance that duck types oj.Converter) used for the 'minutes' scale. If not specified, the default converter will be used for this scale. See oj.DateTimeConverterFactory for details on creating built-in datetime converters.",
-              "type": "object",
-              "value": null
-            },
-            "months": {
-              "description": "The converter (an object literal or instance that duck types oj.Converter) used for the 'months' scale. If not specified, the default converter will be used for this scale. See oj.DateTimeConverterFactory for details on creating built-in datetime converters.",
-              "type": "object",
-              "value": null
-            },
-            "quarters": {
-              "description": "The converter (an object literal or instance that duck types oj.Converter) used for the 'quarters' scale. If not specified, the default converter will be used for this scale. See oj.DateTimeConverterFactory for details on creating built-in datetime converters.",
-              "type": "object",
-              "value": null
-            },
-            "seconds": {
-              "description": "The converter (an object literal or instance that duck types oj.Converter) used for the 'seconds' scale. If not specified, the default converter will be used for this scale. See oj.DateTimeConverterFactory for details on creating built-in datetime converters.",
-              "type": "object",
-              "value": null
-            },
-            "weeks": {
-              "description": "The converter (an object literal or instance that duck types oj.Converter) used for the 'weeks' scale. If not specified, the default converter will be used for this scale. See oj.DateTimeConverterFactory for details on creating built-in datetime converters.",
-              "type": "object",
-              "value": null
-            },
-            "years": {
-              "description": "The converter (an object literal or instance that duck types oj.Converter) used for the 'years' scale. If not specified, the default converter will be used for this scale. See oj.DateTimeConverterFactory for details on creating built-in datetime converters.",
-              "type": "object",
-              "value": null
-            }
-          }
+          "description": "A converter (an object literal or instance that duck types Converter) used to format the labels of the minor axis for all 'scale' values, or an object literal whose keys are 'scale' values that map specific converters for scale specific formatting (see ojTimeAxis.Converter). See DateTimeConverterFactory for details on creating built-in datetime converters. See the minor-axis attribute for usage examples.",
+          "type": "Object",
+          "value": "{\"default\": null, \"seconds\": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'hour': 'numeric', 'minute': '2-digit', 'second': '2-digit'}), \"minutes\": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'hour': 'numeric', 'minute': '2-digit'}), \"hours\": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'hour': 'numeric'}), \"days\": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'numeric', 'day': '2-digit'}), \"weeks\": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'numeric', 'day': '2-digit'}), \"months\": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'long'}), \"quarters\": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'long'}), \"years\": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'year': 'numeric'})}"
         },
         "scale": {
-          "description": "The time scale used for the minor axis. This is required in order for the Gantt to properly render.",
+          "description": "The time scale used for the minor axis. This is required in order for the Gantt to properly render. See the minor-axis attribute for usage examples.",
           "type": "string",
           "value": null,
           "enumValues": [
@@ -389,48 +240,34 @@
           }
         },
         "zoomOrder": {
-          "description": "An array of strings containing the names of scales used for zooming from longest to shortest. If not specified, the 'scale' specified on the axis will be used at all zoom levels.",
-          "type": "Array.<string>",
+          "description": "An array of strings containing the names of scales used for zooming from longest to shortest. If not specified, the 'scale' specified on the axis will be used at all zoom levels. See the minor-axis attribute for usage examples.",
+          "type": "Array<string>",
           "value": null
         }
       }
     },
     "referenceObjects": {
       "description": "The array of reference objects associated with the gantt. For each reference object, a line is rendered at the specified value. Currently only the first reference object in the array is supported. Any additional objects supplied in the array will be ignored.",
-      "type": "Array.<object>",
+      "type": "Array<Object>",
       "displayName": "Reference Objects",
-      "value": null,
-      "properties": {
-        "svgClassName": {
-          "description": "A space delimited list of CSS style classes defining the style of the reference object. Note that only CSS style applicable to SVG elements can be used.",
-          "type": "string",
-          "value": null
-        },
-        "svgStyle": {
-          "description": "The CSS style defining the style of the reference object.",
-          "type": "object",
-          "value": null
-        },
-        "value": {
-          "description": "The time value of this reference object. If not specified, no reference object will be shown. See Date and Time Formats for more details on string formats.",
-          "type": "string",
-          "value": null
-        }
-      }
+      "value": []
     },
     "rowAxis": {
       "description": "An object defining properties for the row labels region.",
-      "type": "object",
+      "type": "Object",
       "displayName": "Row Axis",
-      "value": null,
+      "value": {
+        "rendered": "off",
+        "maxWidth": "none"
+      },
       "properties": {
         "maxWidth": {
-          "description": "Defines the maximum width of the region in pixels (e.g. '50px') or percent (e.g. '15%') of the element width. If 'none' is specified, then the width has no maximum value. Labels will truncate to fit.",
+          "description": "Defines the maximum width of the region in pixels (e.g. '50px') or percent (e.g. '15%') of the element width. If 'none' is specified, then the width has no maximum value. Labels will truncate to fit. See the row-axis attribute for usage examples.",
           "type": "string",
-          "value": null
+          "value": "none"
         },
         "rendered": {
-          "description": "Defines whether row labels are rendered.",
+          "description": "Defines whether row labels are rendered. See the row-axis attribute for usage examples.",
           "type": "string",
           "value": "off",
           "enumValues": [
@@ -450,198 +287,15 @@
     },
     "rows": {
       "description": "An array of objects with the following properties, used to define rows and tasks within rows. Also accepts a Promise that will resolve with an array for deferred data rendering. No data will be rendered if the Promise is rejected.",
-      "type": "Array.<object>|Promise",
+      "type": "Array<Object>|Promise",
       "displayName": "Rows",
-      "value": null,
-      "properties": {
-        "id": {
-          "description": "The identifier for the row. Optional if the row contains only one task. This must be unique across all rows in Gantt.",
-          "type": "string",
-          "value": null
-        },
-        "label": {
-          "description": "The label associated with the row.",
-          "type": "string",
-          "value": null,
-          "translatable": true
-        },
-        "labelStyle": {
-          "description": "The CSS style defining the style of the label. Only CSS style applicable to SVG elements can be used.",
-          "type": "object",
-          "value": null
-        },
-        "tasks": {
-          "description": "An array of objects with the following properties, used to define a task. If not specified, no data will be shown. When only one of 'start' or 'end' value is specified, or when 'start' and 'end' values are equal, the task is considered a milestone task.",
-          "type": "Array.<object>",
-          "value": null,
-          "properties": {
-            "baseline": {
-              "description": "Specifies the baseline of the task. When only one of 'start' or 'end' value is specified, or when 'start' and 'end' values are equal, the baseline is considered a milestone baseline.",
-              "type": "object",
-              "value": null,
-              "properties": {
-                "borderRadius": {
-                  "description": "The border radius of the baseline. Accepts values allowed in CSS border-radius attribute.",
-                  "type": "string",
-                  "value": null
-                },
-                "end": {
-                  "description": "The end time of the baseline. Optional if baseline is a milestone. Either start or end has to be defined in order for the baseline to properly render. See Date and Time Formats for more details on string formats.",
-                  "type": "string",
-                  "value": null
-                },
-                "height": {
-                  "description": "The height of the baseline in pixel.",
-                  "type": "number",
-                  "value": null,
-                  "units": "pixels"
-                },
-                "start": {
-                  "description": "The start time of the baseline. Optional if baseline is a milestone. Either start or end has to be defined in order for the baseline to properly render. See Date and Time Formats for more details on string formats.",
-                  "type": "string",
-                  "value": null
-                },
-                "svgClassName": {
-                  "description": "A space delimited list of CSS style classes defining the style of the baseline.",
-                  "type": "string",
-                  "value": null
-                },
-                "svgStyle": {
-                  "description": "The CSS style defining the style of the baseline.",
-                  "type": "object",
-                  "value": null
-                }
-              }
-            },
-            "borderRadius": {
-              "description": "The border radius of the task. Accepts values allowed in CSS border-radius attribute.",
-              "type": "string",
-              "value": null
-            },
-            "end": {
-              "description": "The end time of this task. Optional if task is a single date event like Milestone. Either start or end has to be defined in order for the task to properly render. See Date and Time Formats for more details on string formats.",
-              "type": "string",
-              "value": null
-            },
-            "height": {
-              "description": "The height of the task in pixel.",
-              "type": "number",
-              "value": null,
-              "units": "pixels"
-            },
-            "id": {
-              "description": "The identifier for the task. This must be unique across all tasks in the Gantt, and is required in order for the Gantt to properly render.",
-              "type": "string",
-              "value": null
-            },
-            "label": {
-              "description": "The label associated with the task.",
-              "type": "string",
-              "value": null,
-              "translatable": true
-            },
-            "labelPosition": {
-              "description": "The position of the label relative to the task. An array of values is also supported. If an array is specified, then the values are traversed until a position that can fully display the label is found. If 'max' is specified in the array, then of all the positions evaluated up to that point of the traversal, the one with the largest space is used (label is truncated to fit). Naturally, 'max' is ignored if it's specified as the first value of the array. If the last value of the array is reached, but the label cannot be fully displayed, then the label is placed at that position, truncated to fit. Due to space constraints in the milestone and task with progress cases, the inner positions will exhibit the following behaviors: For milestones, specifying 'innerStart', 'innerEnd', or 'innerCenter' would be equivalent to specifying 'start', 'end', and 'end' respectively. For tasks with progress, 'innerCenter' means the label will be aligned to the end of the progress bar, either placed inside or outside of the progress, whichever is the larger space. 'innerStart' and 'innerEnd' positions are honored when there is enough space to show the label at those positions. Otherwise, the aforementioned 'innerCenter' behavior is exhibited. ",
-              "type": "string|Array.<string>",
-              "value": "[end, innerCenter, start, max]",
-              "enumValues": [
-                "end",
-                "innerCenter",
-                "innerEnd",
-                "innerStart",
-                "none",
-                "start"
-              ],
-              "propertyEditorValues": {
-                "end": {
-                  "displayName": "End"
-                },
-                "innerCenter": {
-                  "displayName": "Inner Center"
-                },
-                "innerEnd": {
-                  "displayName": "Inner End"
-                },
-                "innerStart": {
-                  "displayName": "Inner Start"
-                },
-                "none": {
-                  "displayName": "None"
-                },
-                "start": {
-                  "displayName": "Start"
-                }
-              }
-            },
-            "labelStyle": {
-              "description": "The CSS style defining the style of the label. Only CSS style applicable to SVG elements can be used.",
-              "type": "object",
-              "value": null
-            },
-            "progress": {
-              "description": "Specifies the progress of the task. This property is ignored if the task is a milestone.",
-              "type": "object",
-              "value": null,
-              "properties": {
-                "borderRadius": {
-                  "description": "The border radius of the progress bar. Accepts values allowed in CSS border-radius attribute.",
-                  "type": "string",
-                  "value": null
-                },
-                "height": {
-                  "description": "Specifies the height of the progress bar in pixels (e.g. '50px') or percent of the associated task bar (e.g. '15%').",
-                  "type": "string",
-                  "value": null
-                },
-                "svgClassName": {
-                  "description": "A space delimited list of CSS style classes to apply to the progress bar. Note that only CSS style applicable to SVG elements can be used.",
-                  "type": "string",
-                  "value": null
-                },
-                "svgStyle": {
-                  "description": "The CSS inline style to apply to the progress bar. Only CSS style applicable to SVG elements can be used.",
-                  "type": "object",
-                  "value": null
-                },
-                "value": {
-                  "description": "The value of the progress between 0 and 1 inclusive. If not specified or invalid, no progress will be shown.",
-                  "type": "number",
-                  "value": null,
-                  "maximum": 1,
-                  "minimum": 0
-                }
-              }
-            },
-            "shortDesc": {
-              "description": "The description of the task. This is used for accessibility and for customizing the tooltip text.",
-              "type": "string",
-              "value": null,
-              "translatable": true
-            },
-            "start": {
-              "description": "The start time of this task. Optional if task is a single date event like Milestone. Either start or end has to be defined in order for the task to properly render. See Date and Time Formats for more details on string formats.",
-              "type": "string",
-              "value": null
-            },
-            "svgClassName": {
-              "description": "A space delimited list of CSS style classes defining the style of the task.",
-              "type": "string",
-              "value": null
-            },
-            "svgStyle": {
-              "description": "The CSS style defining the style of the task.",
-              "type": "object",
-              "value": null
-            }
-          }
-        }
-      }
+      "value": null
     },
     "selection": {
       "description": "An array of strings containing the ids of the initially selected tasks.",
-      "type": "Array.<string>",
+      "type": "Array<string>",
       "displayName": "Selection",
-      "value": null,
+      "value": [],
       "writeback": true
     },
     "selectionMode": {
@@ -667,59 +321,87 @@
       }
     },
     "start": {
-      "description": "The start time of the Gantt. This is required in order for the Gantt to properly render. See Date and Time Formats for more details on string formats.",
+      "description": "The start time of the Gantt. A valid value is required in order for the Gantt to properly render. See Date and Time Formats for more details on the required string formats.",
       "type": "string",
       "displayName": "Start",
-      "value": null
+      "value": ""
     },
     "taskDefaults": {
-      "description": "An object with the following properties, used to define default styling for tasks in the Gantt.",
-      "type": "object",
+      "description": "An object with the following properties, used to define default styling for tasks in the Gantt. Properties specified on this object may be overridden by specifications on individual tasks.",
+      "type": "Object",
       "displayName": "Task Defaults",
-      "value": null,
+      "value": {
+        "borderRadius": "0",
+        "labelPosition": [
+          "end",
+          "innerCenter",
+          "start",
+          "max"
+        ],
+        "height": null,
+        "svgClassName": "",
+        "svgStyle": {},
+        "type": "auto",
+        "progress": {
+          "borderRadius": "0",
+          "height": "100%",
+          "svgClassName": "",
+          "svgStyle": {}
+        },
+        "baseline": {
+          "borderRadius": 0,
+          "height": null,
+          "svgClassName": "",
+          "svgStyle": {}
+        }
+      },
       "properties": {
         "baseline": {
-          "description": "An object with the following properties, used to define default styling for task baseline elements.",
-          "type": "object",
-          "value": null,
+          "description": "An object with the following properties, used to define default styling for task baseline elements. See the task-defaults attribute for usage examples.",
+          "type": "Object",
+          "value": {
+            "borderRadius": 0,
+            "svgClassName": "",
+            "svgStyle": {}
+          },
           "properties": {
             "borderRadius": {
-              "description": "The border radius of the baseline. Accepts values allowed in CSS border-radius attribute.",
+              "description": "The border radius of the baseline. Accepts values allowed in CSS border-radius attribute. See the task-defaults attribute for usage examples.",
               "type": "string",
-              "value": null
+              "value": "0"
             },
             "height": {
-              "description": "The height of the baseline in pixel.",
+              "description": "The height of the baseline in pixel. If not specified, a default height is used depending on the baseline type. See the task-defaults attribute for usage examples.",
               "type": "number",
               "value": null,
               "units": "pixels"
             },
             "svgClassName": {
-              "description": "A space delimited list of CSS style classes defining the style of the baseline.",
+              "description": "A space delimited list of CSS style classes defining the style of the baseline. See the task-defaults attribute for usage examples.",
               "type": "string",
-              "value": null
+              "value": ""
             },
             "svgStyle": {
-              "description": "The CSS style defining the style of the baseline.",
-              "type": "object",
-              "value": null
+              "description": "The CSS style defining the style of the baseline. See the task-defaults attribute for usage examples.",
+              "type": "Object",
+              "value": {}
             }
           }
         },
         "borderRadius": {
-          "description": "The border radius of the task. Accepts values allowed in CSS border-radius attribute.",
+          "description": "The border radius of the task. Accepts values allowed in CSS border-radius attribute. See the task-defaults attribute for usage examples.",
           "type": "string",
-          "value": null
+          "value": "0"
         },
         "height": {
-          "description": "The height of the task in pixel.",
+          "description": "The height of the task in pixel. If not specified, a default height is used depending on the task type, and whether the baseline is specified. See the task-defaults attribute for usage examples.",
           "type": "number",
           "value": null,
           "units": "pixels"
         },
         "labelPosition": {
-          "description": "The position of the label relative to the task. An array of values is also supported. If an array is specified, then the values are traversed until a position that can fully display the label is found. If 'max' is specified in the array, then of all the positions evaluated up to that point of the traversal, the one with the largest space is used (label is truncated to fit). Naturally, 'max' is ignored if it's specified as the first value of the array. If the last value of the array is reached, but the label cannot be fully displayed, then the label is placed at that position, truncated to fit. Due to space constraints in the milestone and task with progress cases, the inner positions will exhibit the following behaviors: For milestones, specifying 'innerStart', 'innerEnd', or 'innerCenter' would be equivalent to specifying 'start', 'end', and 'end' respectively. For tasks with progress, 'innerCenter' means the label will be aligned to the end of the progress bar, either placed inside or outside of the progress, whichever is the larger space. 'innerStart' and 'innerEnd' positions are honored when there is enough space to show the label at those positions. Otherwise, the aforementioned 'innerCenter' behavior is exhibited. ",
-          "type": "string|Array.<string>",
+          "description": "The position of the label relative to the task, or a priority order of label positions for the component to automatically choose from.",
+          "type": "string|Array<string>",
           "value": "[end, innerCenter, start, max]",
           "enumValues": [
             "end",
@@ -751,59 +433,91 @@
           }
         },
         "progress": {
-          "description": "An object with the following properties, used to define default styling for progress bars on non-milestone tasks.",
-          "type": "object",
-          "value": null,
+          "description": "An object with the following properties, used to define default styling for progress bars on non-milestone tasks. See the task-defaults attribute for usage examples.",
+          "type": "Object",
+          "value": {
+            "borderRadius": "0",
+            "height": "100%",
+            "svgClassName": "",
+            "svgStyle": {}
+          },
           "properties": {
             "borderRadius": {
-              "description": "The border radius of the progress bar. Accepts values allowed in CSS border-radius attribute.",
+              "description": "The border radius of the progress bar. Accepts values allowed in CSS border-radius attribute. See the task-defaults attribute for usage examples.",
               "type": "string",
-              "value": null
+              "value": "0"
             },
             "height": {
-              "description": "Specifies the height of the progress bar in pixels (e.g. '50px') or percent of the associated task bar (e.g. '15%').",
+              "description": "Specifies the height of the progress bar in pixels (e.g. '50px') or percent of the associated task bar (e.g. '15%'). See the task-defaults attribute for usage examples.",
               "type": "string",
-              "value": null
+              "value": "100%"
             },
             "svgClassName": {
-              "description": "A space delimited list of CSS style classes to apply to the progress bar. Note that only CSS style applicable to SVG elements can be used.",
+              "description": "A space delimited list of CSS style classes to apply to the progress bar. Note that only CSS style applicable to SVG elements can be used. See the task-defaults attribute for usage examples.",
               "type": "string",
-              "value": null
+              "value": ""
             },
             "svgStyle": {
-              "description": "The CSS inline style to apply to the progress bar. Only CSS style applicable to SVG elements can be used.",
-              "type": "object",
-              "value": null
+              "description": "The CSS inline style to apply to the progress bar. Only CSS style applicable to SVG elements can be used. See the task-defaults attribute for usage examples.",
+              "type": "Object",
+              "value": {}
             }
           }
         },
         "svgClassName": {
-          "description": "A space delimited list of CSS style classes defining the style of the task.",
+          "description": "A space delimited list of CSS style classes defining the style of the task. See the task-defaults attribute for usage examples.",
           "type": "string",
-          "value": null
+          "value": ""
         },
         "svgStyle": {
-          "description": "The CSS style defining the style of the task.",
-          "type": "object",
-          "value": null
+          "description": "The CSS style defining the style of the task. See the task-defaults attribute for usage examples.",
+          "type": "Object",
+          "value": {}
+        },
+        "type": {
+          "description": "The type of task to be rendered.",
+          "type": "string",
+          "value": "auto",
+          "enumValues": [
+            "auto",
+            "milestone",
+            "normal",
+            "summary"
+          ],
+          "propertyEditorValues": {
+            "auto": {
+              "displayName": "Auto"
+            },
+            "milestone": {
+              "displayName": "Milestone"
+            },
+            "normal": {
+              "displayName": "Normal"
+            },
+            "summary": {
+              "displayName": "Summary"
+            }
+          }
         }
       }
     },
     "tooltip": {
       "description": "An object containing an optional callback function for tooltip customization.",
-      "type": "object",
+      "type": "Object",
       "displayName": "Tooltip",
-      "value": null,
+      "value": {
+        "renderer": null
+      },
       "properties": {
         "renderer": {
-          "description": "A function that returns a custom tooltip. The function takes a dataContext argument, provided by the gantt, with the following properties: parentElement: The tooltip element. This can be used to change the tooltip border or background color. data: The data object of the hovered task. rowData: The data for the row the hovered task belongs to. componentElement: The gantt element. color: The color of the hovered task. The function should return an Object that contains only one of the two properties: insert: HTMLElement | string - An HTML element, which will be appended to the tooltip, or a tooltip string. preventDefault: true - Indicates that the tooltip should not be displayed. It is not necessary to return {preventDefault:false} to display tooltip, since this is a default behavior. ",
+          "description": "A function that returns a custom tooltip. Note that the default is for a tooltip to be displayed. See the tooltip attribute for usage examples.",
           "type": "function",
           "value": null
         }
       }
     },
     "trackResize": {
-      "description": "Defines whether the element will automatically render in response to\nchanges in size. If set to off, then the\napplication is responsible for calling refresh\nto render the element at the new size.",
+      "description": "Defines whether the element will automatically render in response to changes in size. If set to off, then the application is responsible for calling refresh to render the element at the new size.",
       "type": "string",
       "displayName": "Track Resize",
       "value": "on",
@@ -821,38 +535,48 @@
       }
     },
     "translations": {
-      "description": "A collection of translated resources from the translation bundle, or null if this\ncomponent has no resources. Resources may be accessed and overridden individually or collectively, as seen in the examples.\n\nIf this component has translations, their documentation immediately follows this doc entry.",
-      "type": "Object",
+      "description": "A collection of translated resources from the translation bundle, or null if this\ncomponent has no resources. Resources may be accessed and overridden individually or collectively, as seen in the examples. If the component does not contain any translatable resource, the default value of this attribute will be \nnull. If not, an object containing all resources relevant to the component.\n\nIf this component has translations, their documentation immediately follows this doc entry.",
+      "type": "Object|null",
       "displayName": "Translations",
-      "value": null,
+      "translatable": true,
       "properties": {
         "accessibleDependencyInfo": {
-          "description": "Provides properties to customize the screen reader text describing a specific dependency.\n\nSee the translations property for usage examples.",
+          "description": "Provides properties to customize the screen reader text describing a specific dependency.\n\nSee the translations attribute for usage examples.",
           "type": "string",
           "value": "Dependency type {0}, connects {1} to {2}"
         },
         "accessiblePredecessorInfo": {
-          "description": "Provides properties to customize the screen reader text describing predecessors of a task.\n\nSee the translations property for usage examples.",
+          "description": "Provides properties to customize the screen reader text describing predecessors of a task.\n\nSee the translations attribute for usage examples.",
           "type": "string",
           "value": "{0} predecessors"
         },
         "accessibleSuccessorInfo": {
-          "description": "Provides properties to customize the screen reader text describing successors of a task.\n\nSee the translations property for usage examples.",
+          "description": "Provides properties to customize the screen reader text describing successors of a task.\n\nSee the translations attribute for usage examples.",
           "type": "string",
           "value": "{0} successors"
         },
+        "accessibleTaskTypeMilestone": {
+          "description": "Used to describe milestone task type for accessibility.\n\nSee the translations property for usage examples.",
+          "type": "string",
+          "value": "Milestone"
+        },
+        "accessibleTaskTypeSummary": {
+          "description": "Used to describe summary task type for accessibility.\n\nSee the translations property for usage examples.",
+          "type": "string",
+          "value": "Summary"
+        },
         "componentName": {
-          "description": "Used to describe the data visualization type for accessibility.\n\nSee the translations property for usage examples.",
+          "description": "Used to describe the data visualization type for accessibility.\n\nSee the translations attribute for usage examples.",
           "type": "string",
           "value": "Gantt"
         },
         "finishFinishDependencyAriaDesc": {
-          "description": "Used to describe finish to finish dependency type for accessibility.\n\nSee the translations property for usage examples.",
+          "description": "Used to describe finish to finish dependency type for accessibility.\n\nSee the translations attribute for usage examples.",
           "type": "string",
           "value": "finish to finish"
         },
         "finishStartDependencyAriaDesc": {
-          "description": "Used to describe finish to start dependency type for accessibility.\n\nSee the translations property for usage examples.",
+          "description": "Used to describe finish to start dependency type for accessibility.\n\nSee the translations attribute for usage examples.",
           "type": "string",
           "value": "finish to start"
         },
@@ -862,17 +586,17 @@
           "value": "{0}: {1}"
         },
         "labelBaselineDate": {
-          "description": "Used for the default tooltip label for baseline milestone information.\n\nSee the translations property for usage examples.",
+          "description": "Used for the default tooltip label for baseline milestone information.\n\nSee the translations attribute for usage examples.",
           "type": "string",
           "value": "Baseline Date"
         },
         "labelBaselineEnd": {
-          "description": "Used for the default tooltip label for baseline end time information.\n\nSee the translations property for usage examples.",
+          "description": "Used for the default tooltip label for baseline end time information.\n\nSee the translations attribute for usage examples.",
           "type": "string",
           "value": "Baseline End"
         },
         "labelBaselineStart": {
-          "description": "Used for the default tooltip label for baseline start time information.\n\nSee the translations property for usage examples.",
+          "description": "Used for the default tooltip label for baseline start time information.\n\nSee the translations attribute for usage examples.",
           "type": "string",
           "value": "Baseline Start"
         },
@@ -892,12 +616,12 @@
           "value": "Data Visualization"
         },
         "labelDate": {
-          "description": "Used for the default tooltip label for milestone information.\n\nSee the translations property for usage examples.",
+          "description": "Used for the default tooltip label for milestone information.\n\nSee the translations attribute for usage examples.",
           "type": "string",
           "value": "Date"
         },
         "labelEnd": {
-          "description": "Used for the default tooltip label for end time information.\n\nSee the translations property for usage examples.",
+          "description": "Used for the default tooltip label for end time information.\n\nSee the translations attribute for usage examples.",
           "type": "string",
           "value": "End"
         },
@@ -907,7 +631,7 @@
           "value": "Invalid data"
         },
         "labelLabel": {
-          "description": "Used for the default tooltip label for task label information.\n\nSee the translations property for usage examples.",
+          "description": "Used for the default tooltip label for task label information.\n\nSee the translations attribute for usage examples.",
           "type": "string",
           "value": "Label"
         },
@@ -917,27 +641,27 @@
           "value": "No data to display"
         },
         "labelProgress": {
-          "description": "Used for the default tooltip label for task progress information.\n\nSee the translations property for usage examples.",
+          "description": "Used for the default tooltip label for task progress information.\n\nSee the translations attribute for usage examples.",
           "type": "string",
           "value": "Progress"
         },
         "labelRow": {
-          "description": "Used for the default tooltip label for row information.\n\nSee the translations property for usage examples.",
+          "description": "Used for the default tooltip label for row information.\n\nSee the translations attribute for usage examples.",
           "type": "string",
           "value": "Row"
         },
         "labelStart": {
-          "description": "Used for the default tooltip label for start time information.\n\nSee the translations property for usage examples.",
+          "description": "Used for the default tooltip label for start time information.\n\nSee the translations attribute for usage examples.",
           "type": "string",
           "value": "Start"
         },
         "startFinishDependencyAriaDesc": {
-          "description": "Used to describe start to finish dependency type for accessibility.\n\nSee the translations property for usage examples.",
+          "description": "Used to describe start to finish dependency type for accessibility.\n\nSee the translations attribute for usage examples.",
           "type": "string",
           "value": "start to finish"
         },
         "startStartDependencyAriaDesc": {
-          "description": "Used to describe start to start dependency type for accessibility.\n\nSee the translations property for usage examples.",
+          "description": "Used to describe start to start dependency type for accessibility.\n\nSee the translations attribute for usage examples.",
           "type": "string",
           "value": "start to start"
         },
@@ -992,12 +716,12 @@
           "value": "Visible"
         },
         "tooltipZoomIn": {
-          "description": "Used for the zoom in tooltip.\n\nSee the translations property for usage examples.",
+          "description": "Used for the zoom in tooltip.\n\nSee the translations attribute for usage examples.",
           "type": "string",
           "value": "Zoom In"
         },
         "tooltipZoomOut": {
-          "description": "Used for the zoom out tooltip.\n\nSee the translations property for usage examples.",
+          "description": "Used for the zoom out tooltip.\n\nSee the translations attribute for usage examples.",
           "type": "string",
           "value": "Zoom Out"
         }
@@ -1005,22 +729,25 @@
     },
     "valueFormats": {
       "description": "An object specifying value formatting and tooltip behavior, whose keys generally correspond to task properties.",
-      "type": "object",
+      "type": "Object",
       "displayName": "Value Formats",
-      "value": null,
+      "value": "{\"rows\": {\"tooltipDisplay\": \"auto\"}, \"start\": {\"converter\": null, \"tooltipDisplay\": \"auto\"}, \"end\": {\"converter\": null, \"tooltipDisplay\": \"auto\"}, \"date\": {\"converter\": null, \"tooltipDisplay\": \"auto\"}, \"label\": {\"tooltipDisplay\": \"auto\"}, \"progress\": {\"converter\": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_NUMBER).createConverter({style: 'percent'}), \"tooltipDisplay\": \"auto\"}, \"baselineStart\": {\"converter\": null, \"tooltipDisplay\": \"auto\"}, \"baselineEnd\": {\"converter\": null, \"tooltipDisplay\": \"auto\"}, \"baselineDate\": {\"converter\": null, \"tooltipDisplay\": \"auto\"}}",
       "properties": {
         "baselineDate": {
-          "description": "Specifies tooltip behavior for the date value of the milestone baseline.",
-          "type": "object",
-          "value": null,
+          "description": "Specifies tooltip behavior for the date value of the milestone baseline. See the value-formats attribute for usage examples.",
+          "type": "Object",
+          "value": {
+            "converter": null,
+            "tooltipDisplay": "auto"
+          },
           "properties": {
             "converter": {
-              "description": "The converter (an object literal or instance that duck types oj.Converter) used to format the label. See oj.DateTimeConverterFactory for details on creating built-in datetime converters.",
-              "type": "object",
+              "description": "A converter (an object literal or instance that duck types Converter) used to format the label. If not specified, a default converter depending on the axes scale is used. See DateTimeConverterFactory for details on creating built-in datetime converters. See the value-formats attribute for usage examples.",
+              "type": "Object",
               "value": null
             },
             "tooltipDisplay": {
-              "description": "Whether the value is displayed in the tooltip.",
+              "description": "Whether the value is displayed in the tooltip. See the value-formats attribute for usage examples.",
               "type": "string",
               "value": "auto",
               "enumValues": [
@@ -1037,25 +764,27 @@
               }
             },
             "tooltipLabel": {
-              "description": "A string representing the label that is displayed before the value in the tooltip.",
+              "description": "A string representing the label that is displayed before the value in the tooltip. The default value comes from ojGantt.translations.labelBaselineDate. See the value-formats attribute for usage examples.",
               "type": "string",
-              "value": null,
               "translatable": true
             }
           }
         },
         "baselineEnd": {
-          "description": "Specifies tooltip behavior for the end value of the baseline.",
-          "type": "object",
-          "value": null,
+          "description": "Specifies tooltip behavior for the end value of the baseline. See the value-formats attribute for usage examples.",
+          "type": "Object",
+          "value": {
+            "converter": null,
+            "tooltipDisplay": "auto"
+          },
           "properties": {
             "converter": {
-              "description": "The converter (an object literal or instance that duck types oj.Converter) used to format the label. See oj.DateTimeConverterFactory for details on creating built-in datetime converters.",
-              "type": "object",
+              "description": "A converter (an object literal or instance that duck types Converter) used to format the label. If not specified, a default converter depending on the axes scale is used. See DateTimeConverterFactory for details on creating built-in datetime converters. See the value-formats attribute for usage examples.",
+              "type": "Object",
               "value": null
             },
             "tooltipDisplay": {
-              "description": "Whether the value is displayed in the tooltip.",
+              "description": "Whether the value is displayed in the tooltip. See the value-formats attribute for usage examples.",
               "type": "string",
               "value": "auto",
               "enumValues": [
@@ -1072,25 +801,27 @@
               }
             },
             "tooltipLabel": {
-              "description": "A string representing the label that is displayed before the value in the tooltip.",
+              "description": "A string representing the label that is displayed before the value in the tooltip. The default value comes from ojGantt.translations.labelBaselineEnd. See the value-formats attribute for usage examples.",
               "type": "string",
-              "value": null,
               "translatable": true
             }
           }
         },
         "baselineStart": {
-          "description": "Specifies tooltip behavior for the start value of the baseline.",
-          "type": "object",
-          "value": null,
+          "description": "Specifies tooltip behavior for the start value of the baseline. See the value-formats attribute for usage examples.",
+          "type": "Object",
+          "value": {
+            "converter": null,
+            "tooltipDisplay": "auto"
+          },
           "properties": {
             "converter": {
-              "description": "The converter (an object literal or instance that duck types oj.Converter) used to format the label. See oj.DateTimeConverterFactory for details on creating built-in datetime converters.",
-              "type": "object",
+              "description": "A converter (an object literal or instance that duck types Converter) used to format the label. If not specified, a default converter depending on the axes scale is used. See DateTimeConverterFactory for details on creating built-in datetime converters. See the value-formats attribute for usage examples.",
+              "type": "Object",
               "value": null
             },
             "tooltipDisplay": {
-              "description": "Whether the value is displayed in the tooltip.",
+              "description": "Whether the value is displayed in the tooltip. See the value-formats attribute for usage examples.",
               "type": "string",
               "value": "auto",
               "enumValues": [
@@ -1107,25 +838,27 @@
               }
             },
             "tooltipLabel": {
-              "description": "A string representing the label that is displayed before the value in the tooltip.",
+              "description": "A string representing the label that is displayed before the value in the tooltip. The default value comes from ojGantt.translations.labelBaselineStart. See the value-formats attribute for usage examples.",
               "type": "string",
-              "value": null,
               "translatable": true
             }
           }
         },
         "date": {
-          "description": "Specifies tooltip behavior for the date value of a milestone task.",
-          "type": "object",
-          "value": null,
+          "description": "Specifies tooltip behavior for the date value of a milestone task. See the value-formats attribute for usage examples.",
+          "type": "Object",
+          "value": {
+            "converter": null,
+            "tooltipDisplay": "auto"
+          },
           "properties": {
             "converter": {
-              "description": "The converter (an object literal or instance that duck types oj.Converter) used to format the label. See oj.DateTimeConverterFactory for details on creating built-in datetime converters.",
-              "type": "object",
+              "description": "A converter (an object literal or instance that duck types Converter) used to format the label. If not specified, a default converter depending on the axes scale is used. See DateTimeConverterFactory for details on creating built-in datetime converters. See the value-formats attribute for usage examples.",
+              "type": "Object",
               "value": null
             },
             "tooltipDisplay": {
-              "description": "Whether the value is displayed in the tooltip.",
+              "description": "Whether the value is displayed in the tooltip. See the value-formats attribute for usage examples.",
               "type": "string",
               "value": "auto",
               "enumValues": [
@@ -1142,25 +875,27 @@
               }
             },
             "tooltipLabel": {
-              "description": "A string representing the label that is displayed before the value in the tooltip.",
+              "description": "A string representing the label that is displayed before the value in the tooltip. The default value comes from ojGantt.translations.labelDate. See the value-formats attribute for usage examples.",
               "type": "string",
-              "value": null,
               "translatable": true
             }
           }
         },
         "end": {
-          "description": "Specifies tooltip behavior for the end value.",
-          "type": "object",
-          "value": null,
+          "description": "Specifies tooltip behavior for the end value. See the value-formats attribute for usage examples.",
+          "type": "Object",
+          "value": {
+            "converter": null,
+            "tooltipDisplay": "auto"
+          },
           "properties": {
             "converter": {
-              "description": "The converter (an object literal or instance that duck types oj.Converter) used to format the label. See oj.DateTimeConverterFactory for details on creating built-in datetime converters.",
-              "type": "object",
+              "description": "A converter (an object literal or instance that duck types Converter) used to format the label. If not specified, a default converter depending on the axes scale is used. See DateTimeConverterFactory for details on creating built-in datetime converters. See the value-formats attribute for usage examples.",
+              "type": "Object",
               "value": null
             },
             "tooltipDisplay": {
-              "description": "Whether the value is displayed in the tooltip.",
+              "description": "Whether the value is displayed in the tooltip. See the value-formats attribute for usage examples.",
               "type": "string",
               "value": "auto",
               "enumValues": [
@@ -1177,20 +912,21 @@
               }
             },
             "tooltipLabel": {
-              "description": "A string representing the label that is displayed before the value in the tooltip.",
+              "description": "A string representing the label that is displayed before the value in the tooltip. The default value comes from ojGantt.translations.labelEnd. See the value-formats attribute for usage examples.",
               "type": "string",
-              "value": null,
               "translatable": true
             }
           }
         },
         "label": {
-          "description": "Specifies tooltip behavior for the label value.",
-          "type": "object",
-          "value": null,
+          "description": "Specifies tooltip behavior for the label value. See the value-formats attribute for usage examples.",
+          "type": "Object",
+          "value": {
+            "tooltipDisplay": "auto"
+          },
           "properties": {
             "tooltipDisplay": {
-              "description": "Whether the value is displayed in the tooltip.",
+              "description": "Whether the value is displayed in the tooltip. See the value-formats attribute for usage examples.",
               "type": "string",
               "value": "auto",
               "enumValues": [
@@ -1207,25 +943,24 @@
               }
             },
             "tooltipLabel": {
-              "description": "A string representing the label that is displayed before the value in the tooltip.",
+              "description": "A string representing the label that is displayed before the value in the tooltip. The default value comes from ojGantt.translations.labelLabel. See the value-formats attribute for usage examples.",
               "type": "string",
-              "value": null,
               "translatable": true
             }
           }
         },
         "progress": {
-          "description": "Specifies tooltip behavior for the progress value.",
-          "type": "object",
-          "value": null,
+          "description": "Specifies tooltip behavior for the progress value. See the value-formats attribute for usage examples.",
+          "type": "Object",
+          "value": "{\"converter\": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_NUMBER).createConverter({style: 'percent'}), \"tooltipDisplay\": \"auto\"}",
           "properties": {
             "converter": {
-              "description": "The converter (an object literal or instance that duck types oj.Converter) used to format the label. See oj.NumberConverterFactory for details on creating built-in number converters.",
-              "type": "object",
-              "value": null
+              "description": "A converter (an object literal or instance that duck types Converter) used to format the label. See NumberConverterFactory for details on creating built-in number converters. See the value-formats attribute for usage examples.",
+              "type": "Object",
+              "value": "oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_NUMBER).createConverter({style: 'percent'})"
             },
             "tooltipDisplay": {
-              "description": "Whether the value is displayed in the tooltip.",
+              "description": "Whether the value is displayed in the tooltip. See the value-formats attribute for usage examples.",
               "type": "string",
               "value": "auto",
               "enumValues": [
@@ -1242,20 +977,21 @@
               }
             },
             "tooltipLabel": {
-              "description": "A string representing the label that is displayed before the value in the tooltip.",
+              "description": "A string representing the label that is displayed before the value in the tooltip. The default value comes from ojGantt.translations.labelProgress. See the value-formats attribute for usage examples.",
               "type": "string",
-              "value": null,
               "translatable": true
             }
           }
         },
         "row": {
-          "description": "Specifies tooltip behavior for the row value.",
-          "type": "object",
-          "value": null,
+          "description": "Specifies tooltip behavior for the row value. See the value-formats attribute for usage examples.",
+          "type": "Object",
+          "value": {
+            "tooltipDisplay": "auto"
+          },
           "properties": {
             "tooltipDisplay": {
-              "description": "Whether the value is displayed in the tooltip.",
+              "description": "Whether the value is displayed in the tooltip. See the value-formats attribute for usage examples.",
               "type": "string",
               "value": "auto",
               "enumValues": [
@@ -1272,25 +1008,27 @@
               }
             },
             "tooltipLabel": {
-              "description": "A string representing the label that is displayed before the value in the tooltip.",
+              "description": "A string representing the label that is displayed before the value in the tooltip. The default value comes from ojGantt.translations.labelRow. See the value-formats attribute for usage examples.",
               "type": "string",
-              "value": null,
               "translatable": true
             }
           }
         },
         "start": {
-          "description": "Specifies tooltip behavior for the start value.",
-          "type": "object",
-          "value": null,
+          "description": "Specifies tooltip behavior for the start value. See the value-formats attribute for usage examples.",
+          "type": "Object",
+          "value": {
+            "converter": null,
+            "tooltipDisplay": "auto"
+          },
           "properties": {
             "converter": {
-              "description": "The converter (an object literal or instance that duck types oj.Converter) used to format the label. See oj.DateTimeConverterFactory for details on creating built-in datetime converters.",
-              "type": "object",
+              "description": "A converter (an object literal or instance that duck types Converter) used to format the label. If not specified, a default converter depending on the axes scale is used. See DateTimeConverterFactory for details on creating built-in datetime converters. See the value-formats attribute for usage examples.",
+              "type": "Object",
               "value": null
             },
             "tooltipDisplay": {
-              "description": "Whether the value is displayed in the tooltip.",
+              "description": "Whether the value is displayed in the tooltip. See the value-formats attribute for usage examples.",
               "type": "string",
               "value": "auto",
               "enumValues": [
@@ -1307,9 +1045,8 @@
               }
             },
             "tooltipLabel": {
-              "description": "A string representing the label that is displayed before the value in the tooltip.",
+              "description": "A string representing the label that is displayed before the value in the tooltip. The default value comes from ojGantt.translations.labelStart. See the value-formats attribute for usage examples.",
               "type": "string",
-              "value": null,
               "translatable": true
             }
           }
@@ -1317,16 +1054,16 @@
       }
     },
     "viewportEnd": {
-      "description": "The end time of the Gantt's viewport. If not specified, this will default to a value determined by the initial 'scale' of the minor axis and the width of the Gantt. See Date and Time Formats for more details on string formats.",
+      "description": "The end time of the Gantt's viewport. If not specified or invalid, this will default to a value determined by the initial 'scale' of the minor axis and the width of the Gantt. See Date and Time Formats for more details on the required string formats.",
       "type": "string",
       "displayName": "Viewport End",
-      "value": null
+      "value": ""
     },
     "viewportStart": {
-      "description": "The start time of the Gantt's viewport. If not specified, this will default to a value determined by the initial 'scale' of the minor axis and the width of the Gantt. See Date and Time Formats for more details on string formats.",
+      "description": "The start time of the Gantt's viewport. If not specified or invalid, this will default to a value determined by the initial 'scale' of the minor axis and the width of the Gantt. See Date and Time Formats for more details on the required string formats.",
       "type": "string",
       "displayName": "Viewport Start",
-      "value": null
+      "value": ""
     }
   },
   "methods": {
@@ -1342,7 +1079,8 @@
       "return": "Object|null"
     },
     "refresh": {
-      "description": "Refreshes the component."
+      "description": "Refreshes the component.",
+      "return": "void"
     },
     "setProperty": {
       "description": "Sets a property or a single subproperty for complex properties and notifies the component\nof the change, triggering a [property]Changed event.",
@@ -1357,7 +1095,8 @@
           "description": "The new value to set the property to.",
           "type": "*"
         }
-      ]
+      ],
+      "return": "void"
     },
     "getProperty": {
       "description": "Retrieves a value for a property or a single subproperty for complex properties.",
@@ -1378,12 +1117,14 @@
           "description": "An object containing the property and value pairs to set.",
           "type": "Object"
         }
-      ]
+      ],
+      "return": "void"
     }
   },
   "events": {
     "ojViewportChange": {
       "description": "Triggered after the viewport is changed due to a zoom or scroll operation.",
+      "bubbles": true,
       "detail": {
         "viewportStart": {
           "description": "the start of the new viewport on a gantt chart",

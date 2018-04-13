@@ -1,0 +1,219 @@
+{
+  "name": "oj-message",
+  "version": "5.0.0",
+  "jetVersion": "5.0.0",
+  "displayName": "Message",
+  "preview": true,
+  "description": "Displays a message",
+  "properties": {
+    "message": {
+      "description": "Structured data specifying essential information to display a message on the UI.",
+      "type": "Object",
+      "displayName": "Message",
+      "value": {
+        "icon": "",
+        "category": "",
+        "severity": "none",
+        "summary": "",
+        "detail": "",
+        "autoTimeout": -1,
+        "closeAffordance": "defaults",
+        "sound": "none"
+      },
+      "properties": {
+        "autoTimeout": {
+          "description": "Specifies the number of milliseconds for which duration the message will be shown before it is \nclosed automatically.\nThis attribute can take the number of millisecond or special number values -1 and 0. If the \nvalue is set to \"-1\", auto-close will be turned off. If the value is set to \"0\", application wide \nvalue for autoTimeout as specified in a theming variable will be used.",
+          "type": "number",
+          "value": -1
+        },
+        "category": {
+          "description": "Specifies text representing the message category which is shown next to the message icon\nIf this attribute is not specified, a translated text corresponding to value of\nmessage.severity attribute will be rendered.",
+          "type": "string",
+          "value": ""
+        },
+        "closeAffordance": {
+          "description": "Specifies the UI affordance provided to end users to be able to close the message.",
+          "type": "string",
+          "value": "defaults",
+          "enumValues": [
+            "defaults",
+            "none"
+          ],
+          "propertyEditorValues": {
+            "defaults": {
+              "description": "use implicit affordance to best suit the native theme and screen\ntouch capabilities. See keyboard and touch end user information sections in this document.",
+              "displayName": "Defaults"
+            },
+            "none": {
+              "description": "no UI affordance is provided to close the message. Application has to \ncall the close() method to dismiss the message",
+              "displayName": "None"
+            }
+          }
+        },
+        "detail": {
+          "description": "Specifies detail text for the message.",
+          "type": "string",
+          "value": ""
+        },
+        "icon": {
+          "description": "Specifies the URL for the custom image to be used as an icon representing the message.\nThe icon will be rendered as background image inside a container that is set to size of 16px*16px\nin alta-web theme and 10px*20px for all other themes, therefore, the icon chosen must fit this\ndimensions.\nIf this attribute is not specified, a suitable icon corresponding to value of\nmessage.severity will be rendered.",
+          "type": "string",
+          "value": ""
+        },
+        "severity": {
+          "description": "Specifies the severity of message.",
+          "type": "string",
+          "value": "none",
+          "enumValues": [
+            "confirmation",
+            "error",
+            "info",
+            "none",
+            "warning"
+          ],
+          "propertyEditorValues": {
+            "confirmation": {
+              "description": "confirmation message",
+              "displayName": "Confirmation"
+            },
+            "error": {
+              "description": "error level message",
+              "displayName": "Error"
+            },
+            "info": {
+              "description": "informational message",
+              "displayName": "Info"
+            },
+            "none": {
+              "description": "message status level not applicable",
+              "displayName": "None"
+            },
+            "warning": {
+              "description": "warning level message",
+              "displayName": "Warning"
+            }
+          }
+        },
+        "sound": {
+          "description": "Specifies the sound to be played when a message is opened. Sound is an accessibility feature \nrequired for low vision users who view a zoomed section of the UI. Because messages may be shown \noutside of the zoomed section, such users require sound to be played to notify of new messages.\n\nThis attribute can take a URL of the audio file for the custom sound to be played. The \nsupported formats are mp3, wav and ogg. Browser support should also be considered while choosing \nthe format of the audio file. Literal string values \n\"defaults\" and \"none\" can also \nbe used for this attribute. If the value is set to \"none\", then the sound will be disabled. If \nthe value is set to \"defaults\", then a default sound is played.\n\nThe default sound uses Web Audio APIs, which is not yet supported by some browsers, default \nsound will not be played in such browsers. Sound will not be played in browsers where auto play \nis not enabled. Some of the browsers do not allow auto play, while other browsers may provide a \nuser preference to enable it.",
+          "type": "string",
+          "value": "none"
+        },
+        "summary": {
+          "description": "Specifies summary text for the message.",
+          "type": "string",
+          "value": ""
+        },
+        "timestamp": {
+          "description": "Specifies timestamp for the message to be displayed in the message header. timestamp could represent the date and time at which the message was created, or otherwise\ncould pertain to the event for which the message was created. For example, a timestamp for an\nupcoming meeting could be set in the future, whereas a timestamp for a missed message could be set\nin the past. This specified value must be an ISOString. A default converter is used to convert and format\nthe value suitable for displaying in the message. This default convertor used such will be an\nimplementation detail and could change in future.",
+          "type": "string",
+          "value": ""
+        }
+      }
+    },
+    "translations": {
+      "description": "A collection of translated resources from the translation bundle, or\nnull if this component has no resources. Resources may be\naccessed and overridden individually or collectively, as seen in the examples.\n\nIf this component has translations, their documentation immediately follows this doc entry.",
+      "type": "Object",
+      "displayName": "Translations",
+      "translatable": true,
+      "properties": {
+        "labelCloseIcon": {
+          "description": "Label for the message close button.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Close"
+        }
+      }
+    }
+  },
+  "methods": {
+    "close": {
+      "description": "Closes the message.",
+      "return": "void"
+    },
+    "setProperty": {
+      "description": "Sets a property or a single subproperty for complex properties and notifies the component\nof the change, triggering a [property]Changed event.",
+      "params": [
+        {
+          "name": "property",
+          "description": "The property name to set. Supports dot notation for subproperty access.",
+          "type": "string"
+        },
+        {
+          "name": "value",
+          "description": "The new value to set the property to.",
+          "type": "*"
+        }
+      ],
+      "return": "void"
+    },
+    "getProperty": {
+      "description": "Retrieves a value for a property or a single subproperty for complex properties.",
+      "params": [
+        {
+          "name": "property",
+          "description": "The property name to get. Supports dot notation for subproperty access.",
+          "type": "string"
+        }
+      ],
+      "return": "*"
+    },
+    "setProperties": {
+      "description": "Performs a batch set of properties.",
+      "params": [
+        {
+          "name": "properties",
+          "description": "An object containing the property and value pairs to set.",
+          "type": "Object"
+        }
+      ],
+      "return": "void"
+    }
+  },
+  "events": {
+    "ojClose": {
+      "description": "Triggered after the message is closed through user interaction or due to calling\nclose() method.",
+      "bubbles": true,
+      "cancelable": true,
+      "detail": {
+        "message": {
+          "description": "instance of type ojMessage#message corresponding to the message that was closed",
+          "type": "Object"
+        }
+      }
+    },
+    "ojAnimateStart": {
+      "description": "Triggered when the default animation is about to start for the open or close actions of the message .\nThe default animation can be cancelled by calling\nevent.preventDefault.\n\nIn order to override open animation, the ojAnimateStart event listener needs to be\nregistered before the component is created. This means that onOjAnimateStart\ncannot be used to register listener for 'open' action because it doesn't exist\nuntil the component is upgraded or created at which time it is open. For the 'open' action, use \nthe addEventListener method on the associated oj-message elements or\non-oj-animate-start attribute to register a listener instead.",
+      "bubbles": true,
+      "cancelable": true,
+      "detail": {
+        "element": {
+          "description": "target of animation",
+          "type": "Element"
+        },
+        "action": {
+          "description": "The action that is starting the animation. Suggested values are: \"open\" - when a message is opened \"close\" - when a message is closed ",
+          "type": "\"open\"|\"close\""
+        },
+        "endCallback": {
+          "description": "If the event listener calls event.preventDefault to cancel the default animation, it must call the endCallback function when it finishes its own animation handling and any custom animation has ended.",
+          "type": "function"
+        }
+      }
+    },
+    "ojAnimateEnd": {
+      "description": "Triggered when the default animation is about to end for the open or close actions of the message.\nThe default animation can be cancelled by calling\nevent.preventDefault.",
+      "bubbles": true,
+      "cancelable": true,
+      "detail": {
+        "element": {
+          "description": "target of animation",
+          "type": "Element"
+        },
+        "action": {
+          "description": "The action that is ending the animation. The number of actions can vary from component to component. Suggested values are: \"open\" - when a message is opened \"close\" - when a message is closed ",
+          "type": "\"open\"|\"close\""
+        }
+      }
+    }
+  }
+}

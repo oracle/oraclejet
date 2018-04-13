@@ -4,12 +4,14 @@
 //          version in your theme's directory, 
 //          for example alta/widgets/_oj.common.formlayout.scss
 // !!!
+@import "../../utilities/oj.utilities";
 
 @import "oj.common.formlayout.mixins"; 
-@import "oj.common.formlayout.utilities";
 
 @if $includeFormLayoutClasses != false {
   @include module-include-once("common.formlayout") {
+    @include common-formlayout-selectors();
+    
     @if $responsiveQuerySmallUp and $responsiveQuerySmallUp != none {
       @media #{$responsiveQuerySmallUp} 
       {

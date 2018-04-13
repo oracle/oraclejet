@@ -48,7 +48,12 @@
       min-width: 100%;
     }
 
-
+    // suppress the native clear icons in IE
+    .oj-form-control input::-ms-clear {
+      display: none; 
+      width : 0; 
+      height: 0;
+    }
   }
 }
 

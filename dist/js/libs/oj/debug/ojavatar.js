@@ -1,4 +1,5 @@
 /**
+ * @license
  * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
@@ -13,6 +14,7 @@ define(['ojs/ojcore', 'ojs/ojcomponentcore', 'ojs/ojcomposite'],
  */
  /**
  * @ojcomponent oj.ojAvatar
+ * @ojsignature {target: "Type", value: "class ojAvatar extends JetElement<ojAvatarSettableProperties>"}
  * @since 4.0.0
  * @ojstatus preview
  * @ojshortdesc An icon capable of displaying a custom image, initials, or a placeholder image.
@@ -186,19 +188,19 @@ define(['ojs/ojcore', 'ojs/ojcomponentcore', 'ojs/ojcomposite'],
   * @memberof oj.ojAvatar
   */
 var view =
-  "<div class=\"oj-avatar-outer\" data-bind=\"css: !$props.initials || $props.src ? 'oj-avatar-'" +
-  "  + $props.size : 'oj-avatar-has-initials oj-avatar-'+ $props.size\"aria-hidden=\"true\">" +
+  "<div class=\"oj-avatar-outer\" data-bind=\"css: !$properties.initials || $properties.src ? 'oj-avatar-'" +
+  "  + $properties.size : 'oj-avatar-has-initials oj-avatar-'+ $properties.size\"aria-hidden=\"true\">" +
   "  <div class=\"oj-avatar-inner\">" +
-  "    <!-- ko if: $props.src -->" +
+  "    <!-- ko if: $properties.src -->" +
   "    <div class=\"oj-avatar-background-image\"" +
-  "         data-bind=\"style:{'background-image':'url(' + $props.src + ')'}\">" +
-  "      <div class=\"oj-avatar-initials\" data-bind=\"text: $props.initials\"></div>" +
+  "         data-bind=\"style:{'background-image':'url(' + $properties.src + ')'}\">" +
+  "      <div class=\"oj-avatar-initials\" data-bind=\"text: $properties.initials\"></div>" +
   "    </div>" +
   "    <!-- /ko -->" +
-  "    <!-- ko if: $props.initials && !$props.src -->" +
-  "    <div class=\"oj-avatar-initials\" data-bind=\"text: $props.initials\"></div>" +
+  "    <!-- ko if: $properties.initials && !$properties.src -->" +
+  "    <div class=\"oj-avatar-initials\" data-bind=\"text: $properties.initials\"></div>" +
   "    <!-- /ko -->" +
-  "    <!-- ko if: !$props.initials && !$props.src -->" +
+  "    <!-- ko if: !$properties.initials && !$properties.src -->" +
   "    <div class=\"oj-avatar-placeholder\"></div>" +
   "    <!-- /ko -->" +
   "  </div>" +
@@ -228,8 +230,8 @@ var metadata =
 
 oj.Composite.register('oj-avatar',
 {
-  "view": {"inline": view},
-  "metadata": {"inline": metadata}
+  "view": view,
+  "metadata": metadata
 });
 
 /**
@@ -243,6 +245,7 @@ oj.Composite.register('oj-avatar',
  * @expose
  * @memberof oj.ojAvatar
  * @instance
+ * @return {void}
  *
  * @example <caption>Set a single subproperty of a complex property:</caption>
  * myComponent.setProperty('complexProperty.subProperty1.subProperty2', "someValue");
@@ -264,6 +267,7 @@ oj.Composite.register('oj-avatar',
  * Performs a batch set of properties.
  * @function setProperties
  * @param {Object} properties - An object containing the property and value pairs to set.
+ * @return {void}
  *
  * @expose
  * @memberof oj.ojAvatar

@@ -1,0 +1,217 @@
+// Copyright (c) 2014, 2018, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the 
+//          version in your base theme's directory, 
+//          for example alta/widgets/_oj.alta.messages.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+@import "../../utilities/oj.utilities";
+
+@if $includeMessagesClasses != false {
+  @include module-include-once("common.messages") {
+    
+    .oj-messages-layer {
+      @extend .oj-component-layer;
+      z-index: $messagesZindex;
+    }
+    
+    .oj-messages-layer.oj-focus-within {
+      z-index: $messagesZindex + 1;
+    }
+    
+    oj-messages:not(.oj-complete) {
+      visibility: hidden;
+    }
+    
+    // Hide the composite initially, in JS we unhide only when there is atleast one message shown
+    //  and hide when all messages close
+    oj-messages {
+      display: none;
+    }
+    
+    .oj-messages-layer oj-messages  {
+      @extend .oj-component-popup;
+    }
+    
+    .oj-messages-general {
+      width: $messagesGeneralOverlayWidth;
+      max-width: $messagesGeneralOverlayMaxWidth;
+      min-width: $messagesGeneralOverlayMinWidth;
+    }
+    
+    .oj-messages-notification {
+      width: $messagesNotificationOverlayWidth;
+      max-width: $messagesNotificationOverlayMaxWidth;
+      min-width: $messagesNotificationOverlayMinWidth;
+    }
+    
+    .oj-messages-general .oj-messages-container {
+      border-width: $messagesGeneralOverlayBorderWidth;
+      border-color: $messagesGeneralOverlayBorderColor;
+      border-style: $messagesGeneralOverlayBorderStyle;
+      @include oj-border-radius($messagesGeneralOverlayBorderRadius);
+      @include oj-box-shadow($messagesGeneralOverlayBoxShadow);
+    }
+    
+    .oj-messages-notification .oj-messages-container {
+      border-width: $messagesNotificationOverlayBorderWidth;
+      border-color: $messagesNotificationOverlayBorderColor;
+      border-style: $messagesNotificationOverlayBorderStyle;
+      @include oj-border-radius($messagesNotificationOverlayBorderRadius);
+      @include oj-box-shadow($messagesNotificationOverlayBoxShadow);
+    }
+    
+    // Add a margin for non-inline case so that the messages do not collapse to viewport edge
+    oj-messages:not(.oj-messages-inline) .oj-messages-container {
+      margin: 10px;
+    }
+    
+    //INDIVIDUAL MESSAGE OVERRIDES
+    //////////////////////////////
+    
+    .oj-messages-general .oj-message-header {
+      background-color: $messageGeneralOverlayHeaderBgColor;
+    }
+    
+    .oj-messages-general .oj-message-body {
+      background-color: $messageGeneralOverlayBodyBgColor;
+    }
+    
+    .oj-messages-notification .oj-message-header {
+      background-color: $messageNotificationOverlayHeaderBgColor;
+    }
+    
+    .oj-messages-notification .oj-message-body {
+      background-color: $messageNotificationOverlayBodyBgColor;
+    }
+    
+    // Apply border to the last oj-message child only if page author did not opt out of it
+    .oj-messages-inline oj-message:not(:last-child) .oj-message-container,
+    .oj-messages-inline:not(.oj-messages-inline-remove-bottom-border) 
+      oj-message:last-child .oj-message-container {
+      border-width: $messageGeneralInlineBorderWidth;
+      border-color: $messageGeneralInlineBorderColor;
+      border-style: $messageGeneralInlineBorderStyle;
+    }
+    
+    .oj-messages-general .oj-message-container {
+      border-width: $messageGeneralOverlayBorderWidth;
+      border-color: $messageGeneralOverlayBorderColor;
+      border-style: $messageGeneralOverlayBorderStyle;
+      @include oj-border-radius($messageGeneralOverlayBorderRadius);
+      @include oj-box-shadow($messageGeneralOverlayBoxShadow);
+    }
+    
+    .oj-messages-notification .oj-message-container {
+      border-width: $messageNotificationOverlayBorderWidth;
+      border-color: $messageNotificationOverlayBorderColor;
+      border-style: $messageNotificationOverlayBorderStyle;
+      @include oj-border-radius($messageNotificationOverlayBorderRadius);
+      @include oj-box-shadow($messageNotificationOverlayBoxShadow);
+    }
+    
+    // Need to set radius on header and body additionally, else the background color bleeds through  
+    //  the container, which is very prominent at larger border radius (eg. 12px in iOS)
+    .oj-messages-general .oj-message-header {
+      @include oj-border-top-left-radius($messageGeneralOverlayBorderRadius);
+      @include oj-border-top-right-radius($messageGeneralOverlayBorderRadius);
+    }
+    
+    .oj-messages-general .oj-message-body {
+      @include oj-border-bottom-left-radius($messageGeneralOverlayBorderRadius);
+      @include oj-border-bottom-right-radius($messageGeneralOverlayBorderRadius);
+    }
+    .oj-messages-notification .oj-message-header {
+      @include oj-border-top-left-radius($messageNotificationOverlayBorderRadius);
+      @include oj-border-top-right-radius($messageNotificationOverlayBorderRadius);
+    }
+    
+    .oj-messages-notification .oj-message-body {
+      @include oj-border-bottom-left-radius($messageNotificationOverlayBorderRadius);
+      @include oj-border-bottom-right-radius($messageNotificationOverlayBorderRadius);
+    }
+    
+    .oj-messages-general oj-message:not(:last-child) .oj-message-container {
+      margin-bottom: $messageGeneralOverlaySeparatorMargin;
+    }
+    
+    .oj-messages-notification oj-message:not(:last-child) .oj-message-container {
+      margin-bottom: $messageNotificationOverlaySeparatorMargin;
+    }
+
+    // Small screen responsive overrides
+    @if $responsiveQuerySmallOnly and $responsiveQuerySmallOnly != none {
+      @media  #{$responsiveQuerySmallOnly} {
+        
+        // For mobile and tablet portrait, overlays and notification take almost full screen width
+        //  Set it at 100% and consider a 10px margin either side.
+        .oj-messages-container:not(.oj-messages-inline) {
+          width: calc(100% - 20px);
+          max-width: initial;
+          min-width: initial;
+        }
+      }
+    }
+    
+    // oj-messages overrides for oj-message general animation defaults
+    //----------------------------------
+    $messagesGeneralDefaults: ();
+    $messagesGeneralAnimationDefaults: ();
+    
+    @if ($messageGeneralOverlayOpenAnimation) {
+      $messagesGeneralAnimationDefaults: map-merge($messagesGeneralAnimationDefaults, 
+                                                   (open: $messageGeneralOverlayOpenAnimation));
+    }
+    
+    @if ($messageGeneralOverlayCloseAnimation) {
+      $messagesGeneralAnimationDefaults: map-merge($messagesGeneralAnimationDefaults, 
+                                                   (close: $messageGeneralOverlayCloseAnimation));
+    }
+ 
+    $messagesGeneralDefaults: map-merge($messagesGeneralDefaults, 
+                                        (animation: $messagesGeneralAnimationDefaults));
+    
+    @if ($messagesGeneralOverlayPositionOptionDefault) {
+      $messagesGeneralDefaults: map-merge($messagesGeneralDefaults, 
+                                          (position: $messagesGeneralOverlayPositionOptionDefault));
+    }
+
+    // oj-messages overrides for oj-message notification animation defaults
+    //----------------------------------
+    $messagesNotificationDefaults: ();
+    $messagesNotificationAnimationDefaults: ();
+    
+    @if ($messageNotificationOverlayOpenAnimation) {
+      $messagesNotificationAnimationDefaults: 
+        map-merge($messagesNotificationAnimationDefaults, 
+                  (open: $messageNotificationOverlayOpenAnimation));
+    }
+    
+    @if ($messageNotificationOverlayCloseAnimation) {
+      $messagesNotificationAnimationDefaults: 
+        map-merge($messagesNotificationAnimationDefaults, 
+                  (close: $messageNotificationOverlayCloseAnimation));
+    }
+ 
+    $messagesNotificationDefaults: 
+      map-merge($messagesNotificationDefaults, 
+                (animation: $messagesNotificationAnimationDefaults));
+    
+    @if ($messagesNotificationOverlayPositionOptionDefault) {
+      $messagesNotificationDefaults: 
+        map-merge($messagesNotificationDefaults, 
+                  (position: $messagesNotificationOverlayPositionOptionDefault));
+    }
+
+    // option defaults (future "component" display options will be added here)
+    //----------------------------------
+    $messagesDefaultOptions: 
+      (general: $messagesGeneralDefaults, notification: $messagesNotificationDefaults);
+
+    // component default options selector 
+    .oj-messages-option-defaults {
+      font-family: oj-json-from-map($messagesDefaultOptions);
+    }
+
+  }
+}

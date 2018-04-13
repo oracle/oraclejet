@@ -1,4 +1,5 @@
 /**
+ * @license
  * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
@@ -10,8 +11,10 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojvalidation-number'
  * 
  * @param {Object.<string, *>=} [matchRules] A map of key value pairs for categories and the matching attribute value e.g. {"soda" : "square", "water" : "circle", "iced tea" : "triangleUp"}.
  *                            Attribute values listed in the matchRules object will be reserved only for the matching categories when getAttributeValue is called.
+ * @ojsignature {target: "Type", value: "{[propName: string]: any}", for: "matchRules"}
  * @export
  * @constructor
+ * @since 1.0
  */
 oj.AttributeGroupHandler = function(matchRules) {
   this.Init(matchRules);
@@ -66,6 +69,7 @@ oj.AttributeGroupHandler.prototype.getValue = function(category) {
  * Returns the current list of assigned categories as an array of objects with "category" and "value" keys. Note that match rules are not
  * reflected in category assignments.
  * @return {Array.<Object.<string, *>>} The current list of category and value pairings
+ * @ojsignature {target: "Type", value: "Array<{[propName: string]: any}>", for: "returns"}
  * @export
  */
 oj.AttributeGroupHandler.prototype.getCategoryAssignments  = function() {
@@ -88,123 +92,172 @@ oj.AttributeGroupHandler.prototype.addMatchRule = function(category, attributeVa
 };
 
 /**
- * Creates a shape attribute group handler that will generate shape attribute values.
+ * Creates a color attribute group handler that will generate color attribute values.
  * 
- * @param {Object.<string, string>=} [matchRules] A map of key value pairs for categories and the matching attribute value e.g. {"soda" : "square", "water" : "circle", "iced tea" : "triangleUp"}.
- *                            Attribute values listed in the matchRules object will be reserved only for the matching categories when getAttributeValue is called.
+ * @param {Object.<string, string>=} [matchRules] A map of key value pairs for categories and the
+ * matching attribute value e.g. {"soda" : "#336699", "water" : "#CC3300", "iced tea" : "#F7C808"}.
+ * Attribute values listed in the matchRules object will be reserved only for the
+ * matching categories when getAttributeValue is called.  Note that not all colors
+ * in the default color ramp will meet minimum contrast requirements for text.
+ * @ojsignature {target: "Type", value: "{[propName: string]: any}", for: "matchRules"}
  * @export
  * @constructor
+ * @since 1.2
  * @extends {oj.AttributeGroupHandler}
  */
-oj.ShapeAttributeGroupHandler = function(matchRules) {
+oj.ColorAttributeGroupHandler = function(matchRules) {
+  // Create the array of colors for this instance.
+  this._attributeValues = [];
+
+  if ($(document.body).hasClass('oj-hicontrast'))  {
+    // High Contrast: CSS colors get overridden to all white or all black. Use the default colors instead.
+    this._attributeValues = oj.ColorAttributeGroupHandler._DEFAULT_COLORS.slice();
+  }
+  else {
+    // Process the colors from the skin if not done already.
+    // To improve performance, append the divs for each style class first then process the colors for each div.
+    var attrGpsDiv = oj.ColorAttributeGroupHandler.__createAttrDiv();
+    if (attrGpsDiv) {
+      oj.ColorAttributeGroupHandler.__processAttrDiv(attrGpsDiv);
+      attrGpsDiv.remove();
+    }
+
+    // Clone and use the processed colors.
+    if (oj.ColorAttributeGroupHandler._colors.length > 0)
+      this._attributeValues = oj.ColorAttributeGroupHandler._colors.slice();
+    else
+      this._attributeValues = oj.ColorAttributeGroupHandler._DEFAULT_COLORS.slice();
+  }
+
   this.Init(matchRules);
 };
 
-oj.Object.createSubclass(oj.ShapeAttributeGroupHandler, oj.AttributeGroupHandler, "oj.ShapeAttributeGroupHandler");
+oj.Object.createSubclass(oj.ColorAttributeGroupHandler, oj.AttributeGroupHandler, "oj.ColorAttributeGroupHandler");
 
-oj.ShapeAttributeGroupHandler._attributeValues = ['square', 'circle', 'diamond', 'plus', 'triangleDown', 'triangleUp', 'human'];
+/** @private */
+oj.ColorAttributeGroupHandler._DEFAULT_COLORS = ['#237bb1', '#68c182', '#fad55c', '#ed6647', 
+  '#8561c8', '#6ddbdb', '#ffb54d', '#e371b2', '#47bdef', '#a2bf39', '#a75dba', '#f7f37b'];
+
+/** @private */
+oj.ColorAttributeGroupHandler._STYLE_CLASSES = ['oj-dvt-category1', 'oj-dvt-category2', 'oj-dvt-category3', 
+  'oj-dvt-category4', 'oj-dvt-category5', 'oj-dvt-category6', 'oj-dvt-category7', 'oj-dvt-category8', 
+  'oj-dvt-category9', 'oj-dvt-category10', 'oj-dvt-category11', 'oj-dvt-category12'];
+
+/** @private */
+oj.ColorAttributeGroupHandler._colors = null;
 
 /**
- * Returns the array of possible shape values for this attribute group handler.
- * @returns {Array.<string>} The array of shape values
+ * Returns the array of possible color values for this attribute group handler.
+ * @returns {Array.<string>} The array of color values
  * @export
  */
-oj.ShapeAttributeGroupHandler.prototype.getValueRamp = function() {
-  return oj.ShapeAttributeGroupHandler._attributeValues;
+oj.ColorAttributeGroupHandler.prototype.getValueRamp = function() {
+  return this._attributeValues;
+};
+
+/**
+ * Creates an element and appends a div for each style class
+ * @returns {jQuery} The jQuery element containing divs for each style class
+ * @export
+ * @deprecated since version 4.2.0
+ */
+oj.ColorAttributeGroupHandler.createAttrDiv = function() {
+  return oj.ColorAttributeGroupHandler.__createAttrDiv();
+};
+
+/**
+ * Processes the colors for each div on the given element
+ * @param {jQuery} attrGpsDiv The jQuery element containing divs for each style class
+ * @return {void}
+ * @export
+ * @deprecated since version 4.2.0
+ */
+oj.ColorAttributeGroupHandler.processAttrDiv = function(attrGpsDiv) {
+  oj.ColorAttributeGroupHandler.__processAttrDiv(attrGpsDiv);
+};
+
+/**
+ * Creates an element and appends a div for each style class
+ * @returns {jQuery} The jQuery element containing divs for each style class
+ * @ignore
+ */
+oj.ColorAttributeGroupHandler.__createAttrDiv = function() {
+  if (oj.ColorAttributeGroupHandler._colors)
+    return null;
+
+  var attrGpsDiv = $(document.createElement("div"));
+  attrGpsDiv.attr("style", "display:none;");
+  attrGpsDiv.attr("id", "attrGps");
+  $(document.body).append(attrGpsDiv); // @HTMLUpdateOK
+  for (var i = 0; i < oj.ColorAttributeGroupHandler._STYLE_CLASSES.length; i++) {
+    var childDiv = $(document.createElement("div"));
+    childDiv.addClass(oj.ColorAttributeGroupHandler._STYLE_CLASSES[i]);
+    attrGpsDiv.append(childDiv); // @HTMLUpdateOK
+  }
+  return attrGpsDiv;
+};
+
+/**
+ * Processes the colors for each div on the given element
+ * @param {jQuery} attrGpsDiv The jQuery element containing divs for each style class
+ * @return {void}
+ * @ignore
+ */
+oj.ColorAttributeGroupHandler.__processAttrDiv = function(attrGpsDiv) {
+  oj.ColorAttributeGroupHandler._colors = [];
+  
+  var childDivs = attrGpsDiv.children();
+  for (var i = 0; i < childDivs.length; i++) {
+    var childDiv = $(childDivs[i]);
+    var color = childDiv.css('color');
+    if (color)
+      oj.ColorAttributeGroupHandler._colors.push(color);
+  }
+};
+
+/**
+ * Utility class with functions for parsing common DVT attributes.
+ * Currently the following DVT components are using it: ojchart, ojdiagram, ojgauge, ojnbox, ojthematicmap.
+ * @ignore
+ * @memberof oj.dvtBaseComponent
+ * @private
+ */
+var DvtAttributeUtils = {};
+// Consider a string with at least one digit a valid SVG path
+DvtAttributeUtils._SHAPE_REGEXP = /\d/;
+// Default shape types supported by DvtSimpleMarker
+DvtAttributeUtils._SHAPE_ENUMS = {
+  "circle": true,
+  "ellipse": true,
+  "square": true,
+  "rectangle": true,
+  "diamond": true,
+  "triangleUp": true,
+  "triangleDown": true,
+  "plus": true,
+  "human": true,
+  "star": true
 };
 /**
- * Defines whether the element will automatically render in response to
- * changes in size. If set to <code class="prettyprint">off</code>, then the
- * application is responsible for calling <code class="prettyprint">refresh</code>
- * to render the element at the new size.
- * @expose
- * @name trackResize
- * @memberof oj.dvtBaseComponent
- * @instance
- * @type {string}
- * @ojvalue {string} "on"
- * @ojvalue {string} "off"
- * @default <code class="prettyprint">"on"</code>
- * 
- * @example <caption>Initialize the data visualization element with the 
- * <code class="prettyprint">track-resize</code> attribute specified:</caption>
- * &lt;oj-some-dvt track-resize='off'>&lt;/oj-some-dvt>
- * 
- * @example <caption>Get or set the <code class="prettyprint">trackResize</code> 
- * property after initialization:</caption>
- * // getter
- * var value = myComponent.trackResize;
- * 
- * // setter
- * myComponent.trackResize="off";
+ * @ignore
+ * @param {Object} shapeAttrs A map containing the shape attribute name which should be full path using dot notation.
+ * @param {Array.<string>} shapeEnums The array of allowed enumerated values for the shape property of this component.
+ * @return {function(string, string, Object, Function):string}
  */
-
-/**
- * <p>The SVG DOM that this component generates should be treated as a black box, as it is subject to change.</p>
- *
- * @ojfragment warning
- * @memberof oj.dvtBaseComponent
- */
-
-/**
- * <h3 id="a11y-section">
- *   Accessibility
- *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#a11y-section"></a>
- * </h3>
- *
- * <p>The application is responsible for populating the shortDesc value in the
- * component properties object with meaningful descriptors when the component does
- * not provide a default descriptor.</p>
- *
- * @ojfragment a11y
- * @memberof oj.dvtBaseComponent
- */
-
-/**
- * <h3 id="a11y-section">
- *   Accessibility
- *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#a11y-section"></a>
- * </h3>
- *
- * <p>The application is responsible for populating the shortDesc value in the
- * component properties object with meaningful descriptors when the component does
- * not provide a default descriptor.  Since component terminology for keyboard
- * and touch shortcuts can conflict with those of the application, it is the
- * application's responsibility to provide these shortcuts, possibly via a help
- * popup.</p>
- *
- * @ojfragment a11yKeyboard
- * @memberof oj.dvtBaseComponent
- */
-
-/**
- * <h3 id="rtl-section">
- *   Reading direction
- *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#rtl-section"></a>
- * </h3>
- *
- * <p>
- *   As with any JET component, in the unusual case that the directionality (LTR or RTL) changes post-init, the
- *   component must be <code class="prettyprint">refresh()</code>ed.
- * </p>
- *
- * @ojfragment rtl
- * @memberof oj.dvtBaseComponent
- */
-
-/**
- * <h4>Tracking Resize</h4>
- * <p>By default, the element will track resizes and render at the new size. This functionality adds a small
- * overhead to the initial render for simple elements like gauges or spark charts, which become noticable when
- * using large numbers of these simple elements. To disable resize tracking, set <code class="prettyprint">trackResize</code>
- * to <code class="prettyprint">off</code>. The application can manually request a re-render at any time by calling
- * the <code class="prettyprint">refresh</code> function.
- * </p>
- *
- * @ojfragment trackResize
- * @memberof oj.dvtBaseComponent
- */
-
+DvtAttributeUtils.shapeParseFunction = function(shapeAttrs, shapeEnums) {
+  var shapes = shapeEnums || DvtAttributeUtils._SHAPE_ENUMS;
+  return function(value, name, meta, defaultParseFunction) {
+    if (shapeAttrs[name]) {
+      if (DvtAttributeUtils._SHAPE_REGEXP.test(value))
+        return value;
+      else if (!shapes[value])
+        throw new Error("Found: '" + value + "'. Expected one of the following: " + Object.keys(shapeEnums).toString());
+      else
+        return value;
+    }
+    return defaultParseFunction(value);
+  };
+};
 /**
  * Class to help set css properties on the component root options object
  * @param {Object} object The root options object from which this path should be resolved
@@ -293,156 +346,36 @@ DvtJsonPath.prototype.setValue = function(value, bOverride)
   }
 };
 
-/**
- * Creates a color attribute group handler that will generate color attribute values.
- * 
- * @param {Object.<string, string>=} [matchRules] A map of key value pairs for categories and the
- * matching attribute value e.g. {"soda" : "#336699", "water" : "#CC3300", "iced tea" : "#F7C808"}.
- * Attribute values listed in the matchRules object will be reserved only for the
- * matching categories when getAttributeValue is called.  Note that not all colors
- * in the default color ramp will meet minimum contrast requirements for text.
- * @export
- * @constructor
- * @extends {oj.AttributeGroupHandler}
- */
-oj.ColorAttributeGroupHandler = function(matchRules) {
-  // Create the array of colors for this instance.
-  this._attributeValues = [];
-
-  if ($(document.body).hasClass('oj-hicontrast'))  {
-    // High Contrast: CSS colors get overridden to all white or all black. Use the default colors instead.
-    this._attributeValues = oj.ColorAttributeGroupHandler._DEFAULT_COLORS.slice();
-  }
-  else {
-    // Process the colors from the skin if not done already.
-    if(!oj.ColorAttributeGroupHandler._colors) {
-      // Process the colors from the CSS.
-      // To improve performance, append the divs for each style class first then process the colors for each div.
-      var attrGpsDiv = oj.ColorAttributeGroupHandler.__createAttrDiv(); 
-      if (attrGpsDiv) {
-        oj.ColorAttributeGroupHandler.__processAttrDiv(attrGpsDiv);
-        attrGpsDiv.remove();
-      }
-    }
-
-    // Clone and use the processed colors.
-    if (oj.ColorAttributeGroupHandler._colors.length > 0)
-      this._attributeValues = oj.ColorAttributeGroupHandler._colors.slice();
-    else
-      this._attributeValues = oj.ColorAttributeGroupHandler._DEFAULT_COLORS.slice();
-  }
-
-  this.Init(matchRules);
-};
-
-oj.Object.createSubclass(oj.ColorAttributeGroupHandler, oj.AttributeGroupHandler, "oj.ColorAttributeGroupHandler");
-
-/** @private */
-oj.ColorAttributeGroupHandler._DEFAULT_COLORS = ['#237bb1', '#68c182', '#fad55c', '#ed6647', 
-  '#8561c8', '#6ddbdb', '#ffb54d', '#e371b2', '#47bdef', '#a2bf39', '#a75dba', '#f7f37b'];
-
-/** @private */
-oj.ColorAttributeGroupHandler._STYLE_CLASSES = ['oj-dvt-category1', 'oj-dvt-category2', 'oj-dvt-category3', 
-  'oj-dvt-category4', 'oj-dvt-category5', 'oj-dvt-category6', 'oj-dvt-category7', 'oj-dvt-category8', 
-  'oj-dvt-category9', 'oj-dvt-category10', 'oj-dvt-category11', 'oj-dvt-category12'];
-
-/** @private */
-oj.ColorAttributeGroupHandler._colors = null;
-
-/**
- * Returns the array of possible color values for this attribute group handler.
- * @returns {Array.<string>} The array of color values
- * @export
- */
-oj.ColorAttributeGroupHandler.prototype.getValueRamp = function() {
-  return this._attributeValues;
-};
-
-/**
- * Creates an element and appends a div for each style class
- * @returns {jQuery} The jQuery element containing divs for each style class
- * @export
- * @deprecated since version 4.2.0
- */
-oj.ColorAttributeGroupHandler.createAttrDiv = function() {
-  return oj.ColorAttributeGroupHandler.__createAttrDiv();
-};
-
-/**
- * Processes the colors for each div on the given element
- * @param {jQuery} attrGpsDiv The jQuery element containing divs for each style class
- * @return {void}
- * @export
- * @deprecated since version 4.2.0
- */
-oj.ColorAttributeGroupHandler.processAttrDiv = function(attrGpsDiv) {
-  oj.ColorAttributeGroupHandler.__processAttrDiv(attrGpsDiv);
-};
-
-/**
- * Creates an element and appends a div for each style class
- * @returns {jQuery} The jQuery element containing divs for each style class
- * @ignore
- */
-oj.ColorAttributeGroupHandler.__createAttrDiv = function() {
-  if (oj.ColorAttributeGroupHandler._colors)
-    return null;
-    
-  var attrGpsDiv = $(document.createElement("div"));
-  attrGpsDiv.attr("style", "display:none;");
-  attrGpsDiv.attr("id", "attrGps");
-  $(document.body).append(attrGpsDiv); // @HTMLUpdateOK
-  for (var i = 0; i < oj.ColorAttributeGroupHandler._STYLE_CLASSES.length; i++) {
-    var childDiv = $(document.createElement("div"));
-    childDiv.addClass(oj.ColorAttributeGroupHandler._STYLE_CLASSES[i]);
-    attrGpsDiv.append(childDiv); // @HTMLUpdateOK
-  }
-  return attrGpsDiv;
-};
-
-/**
- * Processes the colors for each div on the given element
- * @param {jQuery} attrGpsDiv The jQuery element containing divs for each style class
- * @return {void}
- * @ignore
- */
-oj.ColorAttributeGroupHandler.__processAttrDiv = function(attrGpsDiv) {
-  oj.ColorAttributeGroupHandler._colors = [];
-  
-  var childDivs = attrGpsDiv.children();
-  for (var i = 0; i < childDivs.length; i++) {
-    var childDiv = $(childDivs[i]);
-    var color = childDiv.css('color');
-    if (color)
-      oj.ColorAttributeGroupHandler._colors.push(color);
-  }
-};
-
 var DvtStyleProcessor = {
-  'CSS_TEXT_PROPERTIES':
-    function(cssDiv) {
-      var ignoreProperties = {};
-      if (cssDiv) {
-        if (cssDiv.hasClass("oj-gauge-metric-label")) {
-          // Ignored because the size and color are fit to shape and based on background color.
-          ignoreProperties['font-size'] = true;
-          ignoreProperties['color'] = true;
-        }
-        else if (cssDiv.hasClass(cssDiv, "oj-chart-slice-label")) {
-          // Ignored because the color is automatically determined based on slice color.
-          ignoreProperties['color'] = true;
-        }
-        else if (cssDiv.hasClass("oj-treemap-node-header")) {
-          // Ignored because the weight is automatically determined based on the layer of the header.
-          ignoreProperties['font-weight'] = true;
-        }
+  'TEXT': function(cssDiv) {
+    var ignoreProperties = {};
+    if (cssDiv) {
+      if (cssDiv.hasClass("oj-gauge-metric-label")) {
+        // Ignored because the size and color are fit to shape and based on background color.
+        ignoreProperties['font-size'] = true;
+        ignoreProperties['color'] = true;
       }
-      return DvtStyleProcessor._buildTextCssPropertiesObject(cssDiv, ignoreProperties);
-    },
-  'CSS_BACKGROUND_PROPERTIES':
-    function(cssDiv, styleClass, property, path) {
-      return DvtStyleProcessor._buildCssBackgroundPropertiesObject(cssDiv);
+      else if (cssDiv.hasClass("oj-treemap-node-header")) {
+        // Ignored because the weight is automatically determined based on the layer of the header.
+        ignoreProperties['font-weight'] = true;
+      }
     }
+    return DvtStyleProcessor._buildTextCssPropertiesObject(cssDiv, ignoreProperties);
+  },
+  'BACKGROUND': function(cssDiv, styleClass, property, path) {
+    return DvtStyleProcessor._buildCssBackgroundPropertiesObject(cssDiv);
+  },
+  'ANIM_DUR': function(cssDiv) {
+    var animDur = cssDiv.css('animation-duration');
+    if (animDur) {
+      // Convert to milliseconds
+      if (animDur.slice(-2) == 'ms')
+        animDur = parseInt((animDur.slice(0, -2)), 10);
+      else if (animDur.slice(-1) == 's')
+        animDur = parseFloat(animDur.slice(0, -1)) * 1000;
+      return animDur;
+    }
+  }
 };
 
 DvtStyleProcessor._INHERITED_FONT_COLOR = "rgb(254, 0, 254)";
@@ -475,14 +408,14 @@ DvtStyleProcessor.defaultStyleProcessor = function(cssDiv, property) {
 DvtStyleProcessor._buildCssBackgroundPropertiesObject = function(cssDiv) {
   var cssObj = {};
   if (cssDiv.css('border-top-color')) {
-    cssObj["border-color"] = cssDiv.css('border-top-color');
+    cssObj["borderColor"] = cssDiv.css('border-top-color');
   }
   if (cssDiv.css('border-width') && cssDiv.css('border-style') &&
       cssDiv.css('border-style') != 'none') {
-    cssObj["border-width"] = cssDiv.css('border-width');
+    cssObj["borderWidth"] = cssDiv.css('border-width');
   }
   if (cssDiv.css('background-color')) {
-    cssObj["background-color"] = cssDiv.css('background-color');
+    cssObj["backgroundColor"] = cssDiv.css('background-color');
   }
   return cssObj;
 };
@@ -499,18 +432,18 @@ DvtStyleProcessor._buildTextCssPropertiesObject = function(cssDiv, ignorePropert
   var cssObj = {};
   var value = cssDiv.css('font-family');
   if (value && value !== DvtStyleProcessor._INHERITED_FONT_FAMILY) {
-    cssObj["font-family"] = value.replace(/"/g,"'");
+    cssObj["fontFamily"] = value.replace(/"/g,"'");
   }
   value = cssDiv.css('font-size');
   if (value && !(value.indexOf("px") > -1 &&
       parseFloat(value) < DvtStyleProcessor._FONT_SIZE_BUFFER) &&
       !ignoreProperties ['font-size']) {
-    cssObj["font-size"] = value;
+    cssObj["fontSize"] = value;
   }
   value = cssDiv.css('font-weight');
   if (value && value !== DvtStyleProcessor._INHERITED_FONT_WEIGHT &&
       !ignoreProperties['font-weight']) {
-    cssObj["font-weight"] = value;
+    cssObj["fontWeight"] = value;
   }
   value = cssDiv.css('color');
   if (value && value !== DvtStyleProcessor._INHERITED_FONT_COLOR &&
@@ -519,7 +452,7 @@ DvtStyleProcessor._buildTextCssPropertiesObject = function(cssDiv, ignorePropert
   }
   value = cssDiv.css('font-style');
   if (value && value !== DvtStyleProcessor._INHERITED_FONT_STYLE) {
-    cssObj["font-style"] = value;
+    cssObj["fontStyle"] = value;
   }
   return cssObj;
 };
@@ -639,7 +572,7 @@ DvtStyleProcessor._createStyleDivs= function(parentElement, styleClass, definiti
  */
 DvtStyleProcessor._processStyle = function(cssDiv, options, styleClass, definitions)
 {
-  for (var i=0;i<definitions.length; i++) {
+  for (var i = 0; i < definitions.length; i++) {
     var definition = definitions[i];
     var property = definition['property'];
     if(property) {
@@ -653,53 +586,27 @@ DvtStyleProcessor._processStyle = function(cssDiv, options, styleClass, definiti
       }
 
       // If a value exists, apply to the JSON.
-      if(value != null) {
+      if (value != null) {
         var path = new DvtJsonPath(options, definition['path']);
-        // If a handler was used, combine the value from the options with the value from the skin.
-        var handler = DvtStyleProcessor[property];
-        if(handler != null) {
-          var optionsValue = path.getValue();
-          var strValue = '';
-          if (optionsValue != null) {
-            var strOptionsValue = DvtStyleProcessor._getStyleString(optionsValue);
-            for (var attr in value) {
-              if (strOptionsValue.indexOf(attr) === -1)
-                strValue += attr + ':' + value[attr] + ';';
-            }
-            strValue += strOptionsValue;
-          } else { // still need to convert cached value which is an object to a string
-            for (var attr in value)
-              strValue += attr + ':' + value[attr] + ';';
+        // If the value is an object, combine the value from the options with the value from the CSS.
+        var optionsValue = path.getValue()
+        var isObj = typeof optionsValue === 'object';
+        if (isObj && optionsValue) {
+          var mergedValue = {};
+          var keys = Object.keys(value);
+          for (var i = 0; i < keys.length; i++) {
+            var key = keys[i];
+            if (optionsValue[key] === undefined)
+              optionsValue[key] = value[key];
           }
-          value = strValue;
+        } else {
+          // If we have already merged the original value with the new value, such as for
+          // text or background styles, we do not need to update the path value.
+          path.setValue(value, isObj);
         }
-
-        // Override original value only if we have already merged the original value with the new value, such as for
-        // text or background styles.
-        path.setValue(value, handler != null);
       }
     }
   }
-};
-
-/**
- * Helper function to get the style string for the given style options
- * @param {Object | string} styleOptions The style options value
- * @return {string} The style string
- * @private
- */
-DvtStyleProcessor._getStyleString = function(styleOptions) {
-  if (styleOptions instanceof Object) {
-    var styleString = '';
-    //The camel case version of object attributes will be converted to hyphenated(-) string attributes
-    for (var attr in styleOptions) {
-      var stringAttr = attr.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
-      styleString += stringAttr + ':' + styleOptions[attr] + ';';
-    }
-    return styleString;
-  } 
-  //Ensure the returned style is a string and not null
-  return (styleOptions != null && typeof styleOptions == 'string') ? styleOptions : '';
 };
 
 /**
@@ -741,6 +648,33 @@ DvtStyleProcessor._hasUncachedProperty = function(styleClass, definitions)
   }
   return false;
 };
+/**
+ * Creates a shape attribute group handler that will generate shape attribute values.
+ * 
+ * @param {Object.<string, string>=} [matchRules] A map of key value pairs for categories and the matching attribute value e.g. {"soda" : "square", "water" : "circle", "iced tea" : "triangleUp"}.
+ *                            Attribute values listed in the matchRules object will be reserved only for the matching categories when getAttributeValue is called.
+ * @ojsignature {target: "Type", value: "{[propName: string]: any}", for: "matchRules"}
+ * @export
+ * @constructor
+ * @since 1.0
+ * @extends {oj.AttributeGroupHandler}
+ */
+oj.ShapeAttributeGroupHandler = function(matchRules) {
+  this.Init(matchRules);
+};
+
+oj.Object.createSubclass(oj.ShapeAttributeGroupHandler, oj.AttributeGroupHandler, "oj.ShapeAttributeGroupHandler");
+
+oj.ShapeAttributeGroupHandler._attributeValues = ['square', 'circle', 'diamond', 'plus', 'triangleDown', 'triangleUp', 'human'];
+
+/**
+ * Returns the array of possible shape values for this attribute group handler.
+ * @returns {Array.<string>} The array of shape values
+ * @export
+ */
+oj.ShapeAttributeGroupHandler.prototype.getValueRamp = function() {
+  return oj.ShapeAttributeGroupHandler._attributeValues;
+};
  /**
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
@@ -751,8 +685,39 @@ DvtStyleProcessor._hasUncachedProperty = function(styleClass, definitions)
  * @augments oj.baseComponent
  * @since 0.7
  * @abstract
+ * @hideconstructor
  */
 oj.__registerWidget('oj.dvtBaseComponent', $['oj']['baseComponent'], {
+  options: {
+    /**
+     * Defines whether the element will automatically render in response to
+     * changes in size. If set to <code class="prettyprint">off</code>, then the
+     * application is responsible for calling <code class="prettyprint">refresh</code>
+     * to render the element at the new size.
+     * @expose
+     * @name trackResize
+     * @memberof oj.dvtBaseComponent
+     * @instance
+     * @type {string}
+     * @ojvalue {string} "on"
+     * @ojvalue {string} "off"
+     * @default "on"
+     * 
+     * @example <caption>Initialize the data visualization element with the 
+     * <code class="prettyprint">track-resize</code> attribute specified:</caption>
+     * &lt;oj-some-dvt track-resize='off'>&lt;/oj-some-dvt>
+     * 
+     * @example <caption>Get or set the <code class="prettyprint">trackResize</code> 
+     * property after initialization:</caption>
+     * // getter
+     * var value = myComponent.trackResize;
+     * 
+     * // setter
+     * myComponent.trackResize="off";
+     */
+    trackResize: "on"
+  },
+
   //** @inheritdoc */
   _ComponentCreate : function() {
     this._super();
@@ -817,6 +782,9 @@ oj.__registerWidget('oj.dvtBaseComponent', $['oj']['baseComponent'], {
 
     // Load component resources
     this._LoadResources();
+    
+    // Initialize array to store data provider listeners
+    this._dataProviderEventListeners = [];
 
     // Pass the environment and widget constructor through the options for JET specific behavior
     this.options['_environment'] = 'jet';
@@ -936,7 +904,7 @@ oj.__registerWidget('oj.dvtBaseComponent', $['oj']['baseComponent'], {
    */
   _GetChildStyleClasses : function() {
     var styleClasses = {};
-    styleClasses['oj-dvt-no-data-message'] = {'path': '_statusMessageStyle', 'property': 'CSS_TEXT_PROPERTIES'};
+    styleClasses['oj-dvt-no-data-message'] = {'path': '_statusMessageStyle', 'property': 'TEXT'};
     return styleClasses;
   },
 
@@ -1010,6 +978,34 @@ oj.__registerWidget('oj.dvtBaseComponent', $['oj']['baseComponent'], {
   },
 
   /**
+   * Sets up resources needed by the component
+   * @instance
+   * @override
+   * @protected
+   * @memberof oj.dvtBaseComponent
+   */
+  _SetupResources: function() {
+    this._super();
+    /* DataProvider Uptake : Commented out for code coverage. Uncomment for supporting DVTs
+    this._addDataProviderEventListeners();
+    */
+  },
+  
+  /**
+   * Release resources held by the component
+   * @instance
+   * @override
+   * @protected
+   * @memberof oj.dvtBaseComponent
+   */
+  _ReleaseResources: function() {
+    this._super();
+    /* DataProvider Uptake : Commented out for code coverage. Uncomment for supporting DVTs
+    this._removeDataProviderEventListeners();
+    */
+  },
+  
+  /**
    * Called to process the translated strings for this widget.
    * @private
    */
@@ -1031,11 +1027,6 @@ oj.__registerWidget('oj.dvtBaseComponent', $['oj']['baseComponent'], {
 
     // Number converter factory for use in formatting default strings
     helpers['numberConverterFactory'] = oj.Validation.getDefaultConverterFactory('number');
-
-    // Date to iso converter to be called before passing to the date time converter
-    helpers['dateToIsoConverter'] = function(input) {
-      return (input instanceof Date) ? oj.IntlConverterUtils.dateToLocalIso(input) : input;
-    }
 
     // Iso to date converter to be called for JS that requires Dates
     helpers['isoToDateConverter'] = function(input) {
@@ -1285,7 +1276,7 @@ oj.__registerWidget('oj.dvtBaseComponent', $['oj']['baseComponent'], {
       this.options['_locale'] = oj.Config.getLocale();
 
       // Add draggable attribute if DnD is supported
-      if (this.options['dnd'])
+      if (this._IsDraggable())
         this.element.attr('draggable', true);
 
       // Merge css styles with with json options object
@@ -1310,6 +1301,17 @@ oj.__registerWidget('oj.dvtBaseComponent', $['oj']['baseComponent'], {
 
       this._renderNeeded = false;
     }
+  },
+  
+  /**
+   * Check needed for setting draggable attribute on the component.
+   * @protected
+   * @instance
+   * @memberof oj.dvtBaseComponent
+   */
+  _IsDraggable: function()
+  {
+    return !!this.options['dnd'];
   },
 
   //** @inheritdoc */
@@ -1553,9 +1555,11 @@ oj.__registerWidget('oj.dvtBaseComponent', $['oj']['baseComponent'], {
             for (var i = 0; i < suboptions.length; i++)
               self._resolveDeferredDataItem.bind(self)(suboptions[i], self._optionsCopy[path][i], subpath);
           }
+          /* DataProvider Uptake : Commented out for code coverage. Uncomment for chart/nbox support
           else if (suboptions && suboptions[subpath]) {  // Deal with arrays suboptions that are keys in an object like chart's options['data']['series']
               self._resolveDeferredDataItem.bind(self)(suboptions, self._optionsCopy[path], subpath);
           }
+          */
         }
       });
     }
@@ -1585,6 +1589,7 @@ oj.__registerWidget('oj.dvtBaseComponent', $['oj']['baseComponent'], {
       optionPath.setValue(optionValue, true);
     }
     
+    /* DataProvider Uptake : Commented out for code coverage. Uncomment for supporting DVTs
     if (optionValue && oj.DataProviderFeatureChecker.isIteratingDataProvider(optionValue)) {
       optionValue = new Promise(function(resolve, reject) 
       {
@@ -1594,6 +1599,7 @@ oj.__registerWidget('oj.dvtBaseComponent', $['oj']['baseComponent'], {
         });      
       });     
     };
+    */
     
     if (optionValue instanceof Promise) {
       var renderCount = this._renderCount;
@@ -1673,7 +1679,90 @@ oj.__registerWidget('oj.dvtBaseComponent', $['oj']['baseComponent'], {
         this.element.attr("tabindex", 0);
     }
   },
+  
+  /**
+   * Returns a function that will handle events triggered on the component's 
+   * dataProvider(s) and update the component
+   * @protected
+   * @instance
+   * @memberof oj.dvtBaseComponent
+   * @return {function(Event):void} A function that takes an event and updates a component
+   * using the data from the data provider it is binded to.
+   */
+  /* DataProvider Uptake : Commented out for code coverage. Uncomment for supporting DVTs
+  _GetDataProviderEventHandler : function(component, optionPath) {
+    // subclasses may override
+    return function(event) {
+      if (event.type === "refresh" || event.type === "mutate") {
+        var dataProvider = this;      
+        // create a Promise that will resolve to the newly modified data
+        var dataPromise = new Promise(function(resolve, reject) {
+          dataProvider['fetchFirst']({size: -1})[Symbol.asyncIterator]()['next']()
+          .then(function(finalResult) {
+            resolve(finalResult['value']['data']);
+          });      
+        });     
+        
+        var newOptions = optionPath[0] == "root" ? {} : component.options[optionPath[0]];
+        newOptions[optionPath[1]] = dataPromise;
+        
+        component._setOptions(newOptions);
+      }
+    };  
+  },
+  */
+  
+  /**
+   * Checks for all potential dataProviders on the component and attaches event listeners
+   * @private
+   * @instance
+   * @memberof oj.dvtBaseComponent
+   */
+  /* DataProvider Uptake : Commented out for code coverage. Uncomment for supporting DVTs
+  _addDataProviderEventListeners: function()
+  {
+    var component = this;
+    var paths = this._GetComponentDeferredDataPaths();
+    var pathKeys = Object.keys(paths)
 
+    for (var i = 0; i < pathKeys.length; i++) {
+      var path = pathKeys[i]
+      var subpathArray = paths[path];
+      for (var j = 0; j < subpathArray.length; j++) {
+        var subpath = subpathArray[j];
+        var optionValue = (path === 'root') ? component.options[subpath] : (component.options[path] ? component.options[path][subpath] : null);
+        if (optionValue && oj.DataProviderFeatureChecker.isIteratingDataProvider(optionValue)) {
+          var dataProviderEventHandler = component._GetDataProviderEventHandler(component, [path, subpath]);
+          optionValue.addEventListener("mutate", dataProviderEventHandler);
+          optionValue.addEventListener("refresh", dataProviderEventHandler);
+          
+          component._dataProviderEventListeners.push({dataProvider: optionValue, listener:  dataProviderEventHandler});
+        }
+      };
+    }
+  },
+  */
+  
+  /**
+   * Checks for all potential dataProviders on the component and removes event listeners 
+   * @private
+   * @instance
+   * @memberof oj.dvtBaseComponent
+   */
+  /* DataProvider Uptake : Commented out for code coverage. Uncomment for supporting DVTs 
+  _removeDataProviderEventListeners: function()
+  {
+    for (var i = 0; i < this._dataProviderEventListeners.length; i++) {
+      var info = this._dataProviderEventListeners[i];
+      var dataProvider = info.dataProvider;
+      var dataProviderEventHandler = info.listener;
+      dataProvider.removeEventListener("mutate", dataProviderEventHandler);
+      dataProvider.removeEventListener("refresh", dataProviderEventHandler);
+    }
+    this._dataProviderEventListeners = [];
+  },
+  */
+  
   /**
    * Returns the data context passed to data function callbacks.
    * @param {Object} options The options to retrieve the data context for
@@ -1778,10 +1867,7 @@ oj.__registerWidget('oj.dvtBaseComponent', $['oj']['baseComponent'], {
   _ProcessOptions: function() {
     // Convert the tooltip to an object if the deprecated API structure is passed in
     var tooltip = this.options['tooltip'];
-    if (typeof tooltip === 'function') {
-      this.options['tooltip'] = {'renderer' : tooltip};
-    }
-    else if (tooltip && tooltip['_renderer']) {
+    if (tooltip && tooltip['_renderer']) {
       this.options['tooltip'] = {'renderer' : this._GetTemplateRenderer(tooltip['_renderer'], 'tooltip')};
     }
   },
@@ -1990,38 +2076,73 @@ oj.__registerWidget('oj.dvtBaseComponent', $['oj']['baseComponent'], {
 
 }, true);
 
+/**
+ * <p>The SVG DOM that this component generates should be treated as a black box, as it is subject to change.</p>
+ *
+ * @ojfragment warning
+ * @memberof oj.dvtBaseComponent
+ */
+
+/**
+ * <h3 id="a11y-section">
+ *   Accessibility
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#a11y-section"></a>
+ * </h3>
+ *
+ * <p>The application is responsible for populating the shortDesc value in the
+ * component properties object with meaningful descriptors when the component does
+ * not provide a default descriptor.</p>
+ *
+ * @ojfragment a11y
+ * @memberof oj.dvtBaseComponent
+ */
+
+/**
+ * <h3 id="a11y-section">
+ *   Accessibility
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#a11y-section"></a>
+ * </h3>
+ *
+ * <p>The application is responsible for populating the shortDesc value in the
+ * component properties object with meaningful descriptors when the component does
+ * not provide a default descriptor.  Since component terminology for keyboard
+ * and touch shortcuts can conflict with those of the application, it is the
+ * application's responsibility to provide these shortcuts, possibly via a help
+ * popup.</p>
+ *
+ * @ojfragment a11yKeyboard
+ * @memberof oj.dvtBaseComponent
+ */
+
+/**
+ * <h3 id="rtl-section">
+ *   Reading direction
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#rtl-section"></a>
+ * </h3>
+ *
+ * <p>
+ *   As with any JET component, in the unusual case that the directionality (LTR or RTL) changes post-init, the
+ *   component must be <code class="prettyprint">refresh()</code>ed.
+ * </p>
+ *
+ * @ojfragment rtl
+ * @memberof oj.dvtBaseComponent
+ */
+
+/**
+ * <h4>Tracking Resize</h4>
+ * <p>By default, the element will track resizes and render at the new size. This functionality adds a small
+ * overhead to the initial render for simple elements like gauges or spark charts, which become noticable when
+ * using large numbers of these simple elements. To disable resize tracking, set <code class="prettyprint">trackResize</code>
+ * to <code class="prettyprint">off</code>. The application can manually request a re-render at any time by calling
+ * the <code class="prettyprint">refresh</code> function.
+ * </p>
+ *
+ * @ojfragment fragment_trackResize
+ * @memberof oj.dvtBaseComponent
+ */
+
 (function() {
-
-// Consider a string with at least one digit a valid SVG path
-var _SHAPE_REGEXP = /\d/;
-// Default shape types supported by DvtSimpleMarker
-var _SHAPE_ENUMS = {
-  "circle": true,
-  "ellipse": true,
-  "square": true,
-  "rectangle": true,
-  "diamond": true,
-  "triangleUp": true,
-  "triangleDown": true,
-  "plus": true,
-  "human": true,
-  "star": true
-};
-
-function shapeParseFunction(shapeAttrs, shapeEnums) {
-  var shapes = shapeEnums || _SHAPE_ENUMS;
-  return function(value, name, meta, defaultParseFunction) {
-    if (shapeAttrs[name]) {
-      if (_SHAPE_REGEXP.test(value))
-        return value;
-      else if (!shapes[value])
-        throw new Error("Found: '" + value + "'. Expected one of the following: " + Object.keys(shapeEnums).toString());
-      else
-        return value;
-    }
-    return defaultParseFunction(value);
-  };
-};
 
 var dvtBaseComponentMeta = {
   "properties": {
@@ -2084,7 +2205,7 @@ var dvtBaseComponentMeta = {
   "methods": {},
   "extension": {
     _WIDGET_NAME: "dvtBaseComponent",
-    _DVT_PARSE_FUNC: shapeParseFunction
+    _DVT_PARSE_FUNC: DvtAttributeUtils.shapeParseFunction
   }
 };
 oj.CustomElementBridge.registerMetadata('dvtBaseComponent', 'baseComponent', dvtBaseComponentMeta);

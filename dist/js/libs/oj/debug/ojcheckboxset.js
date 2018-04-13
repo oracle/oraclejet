@@ -1,4 +1,5 @@
 /**
+ * @license
  * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
@@ -24,12 +25,23 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'ojs/ojradiocheckbox', 'o
  * @ojcomponent oj.ojCheckboxset
  * @augments oj.editableValue
  * @since 0.6
- * @ojshortdesc Checkbox Set Element
+ * @ojshortdesc A grouping of related checkboxes where any number of boxes may be checked.
  * @ojrole checkbox
  * @ojrole checkboxgroup
  * @ojrole option
  * @ojdisplayname Checkbox Set
  * @ojstatus preview
+ * @ojsignature [{
+ *                target: "Type",
+ *                value: "class ojCheckboxset extends editableValue<Array<any>, ojCheckboxsetSettableProperties>"
+ *               },
+ *               {
+ *                target: "Type",
+ *                value: "ojCheckboxsetSettableProperties extends editableValueSettableProperties<Array<any>>",
+ *                for: "SettableProperties"
+ *               }
+ *              ]
+ *
  * @classdesc
  * <h3 id="checkboxsetOverview-section">
  *   JET Checkboxset
@@ -162,7 +174,7 @@ oj.__registerWidget("oj.ojCheckboxset", $['oj']['editableValue'],
      * myComp.disabled = false;
      *
      * @expose
-     * @type {boolean|undefined}
+     * @type {boolean}
      * @default false
      * @public
      * @instance
@@ -318,9 +330,9 @@ oj.__registerWidget("oj.ojCheckboxset", $['oj']['editableValue'],
      * @access public
      * @instance
      * @memberof oj.ojCheckboxset
-     * @type {Array.<*>|undefined}
+     * @type {Array.<*>}
      */
-    value: undefined
+    value: []
   },
   /**** start Public APIs ****/
 
@@ -337,6 +349,7 @@ oj.__registerWidget("oj.ojCheckboxset", $['oj']['editableValue'],
    * 
    * @expose
    * @public
+   * @return {void}
    * @memberof oj.ojCheckboxset
    * @instance
    */
@@ -386,7 +399,7 @@ oj.__registerWidget("oj.ojCheckboxset", $['oj']['editableValue'],
    *      submitForm();
    *    }
    *  });
-   * @return {Promise} Promise resolves to "valid" if 
+   * @return {Promise.<string>} Promise resolves to "valid" if 
    * the component passed all validations. 
    * The Promise resolves to "invalid" if there were validation errors.
    * 
@@ -561,21 +574,16 @@ oj.__registerWidget("oj.ojCheckboxset", $['oj']['editableValue'],
   },
 
   /**
-   * Sets focus on the element that naturally gets focus. For checkboxset, this is the first checkbox <br/>
-   *
-   * @returns {*} a truthy value if focus was set to the intended element, a falsey value
-   * otherwise.
    * @override
    * @memberof oj.ojCheckboxset
    * @instance
    * @protected
-   * @since 0.7
+   * @since 5.0.0
    */
-  Focus : function ()
+  GetFocusElement : function ()
   {
     // We need :focusable here so that we don't try to focus on an element that isn't focusable.
-    this._GetContentElement().filter(":focusable").first().focus();
-    return true;
+    return this._GetContentElement().filter(":focusable").first()[0];
   },
   /**
    * Sets the disabled option onto the dom.
@@ -623,7 +631,19 @@ oj.__registerWidget("oj.ojCheckboxset", $['oj']['editableValue'],
    */
   _ValidateReturnBoolean: oj.EditableValueUtils._ValidateReturnBoolean,
 
-  // This function processes the oj-option children, setting the custem renderer.
+  /** 
+   * This function processes the oj-option children, sets the custom renderer, and 
+   * creates input type=checkbox and label dom from them.
+   * 
+   * We don't want to rely on the framework calling the customOptionRenderer 
+   * as a result of setting options[i]["customOptionRenderer"] = renderer; in this function. 
+   * This could lead to timing bugs when data-oj-binding-provider="none". (when not "none",
+   * we know the oj-options are created before the oj-checkboxset gets created, so no timing issue)
+   * Therefore we create the input/label not in the customOptionRenderer, 
+   * but in a separate function that we call.
+   * @private
+   * @instance
+   */
   _processOjOptions : function ()
   {
     if (this._IsCustomElement())
@@ -636,6 +656,7 @@ oj.__registerWidget("oj.ojCheckboxset", $['oj']['editableValue'],
       {
         for (i = 0, len = options.length; i < len; i++) {
           options[i]["customOptionRenderer"] = renderer;
+          this._initInputLabelFromOjOption(options[i]);
         }
       }
 
@@ -645,19 +666,33 @@ oj.__registerWidget("oj.ojCheckboxset", $['oj']['editableValue'],
       {
         for (i = 0, len = options.length; i < len; i++) {
           options[i]["customOptionRenderer"] = renderer;
+          this._initInputLabelFromOjOption(options[i]);
         }
       }
     }        
   },
-  // custom oj-option renderer
-  _customOptionRenderer : function (elem)
+  
+   /**
+   * Create the input type='checkbox'/label dom from attributes on oj-option element.
+   * oj-checkboxset is made up of input/labels.
+   * This gets called during the oj-checkboxset _CreateComponent and refresh
+   * @param {Element} elem the oj-option element
+   * @private
+   * @instance
+   */
+  _initInputLabelFromOjOption : function (elem)
   {
     var span;
     var label;
     var ojoption = elem;
 
-    $(ojoption).uniqueId(); // let's make sure that each oj-option has an ID so the
-                            // label element can reference the input element via the 'for' attribute
+    // let's make sure that each oj-option has an ID so the
+    // label element can reference the input element via the 'for' attribute
+    // we have tests in place where oj-option doesn't have id and where it does
+    // both for the databound case and non-databound case. In the databound case, the 
+    // bindings are resolved before we get here, so we will be fine.
+    $(ojoption).uniqueId();
+    
     var id = ojoption.getAttribute("id");
     var checkboxId = id+"|cb";
     var checkbox = document.getElementById(checkboxId);
@@ -675,15 +710,43 @@ oj.__registerWidget("oj.ojCheckboxset", $['oj']['editableValue'],
       checkbox.setAttribute("type", "checkbox");
       checkbox.setAttribute("id", checkboxId);
       label.setAttribute("for", checkboxId);
+      
+      // if the ojoption doesn't have any textContent, hide the label element.  The use case for
+      // this is the case where you have an oj-checkboxset with one checkbox with no label (i.e. you 
+      // specify one oj-option with no textContent).  We want to hide the generated label element so
+      // that the checkbox is easier to center in the parent container (such as a table cell).
+      // Note: this is not an issue for oj-radioset, as there is no use case that uses a single
+      // radio button in an oj-radioset.
+      if (!ojoption.textContent || ojoption.textContent === "")
+        label.classList.add("oj-helper-hidden");
+      
       ojoption.parentElement.insertBefore(span, ojoption);//@HTMLUpdateOK
       label.appendChild(ojoption); // append the oj-option as a child of label
       span.appendChild(checkbox);
       span.appendChild(label);
     }
+    else
+    {
+      // find the parent label element.  This is the element we need to hide if there is no text
+      // content in the oj-option
+      label = ojoption;
+      
+      while ((label= label.parentElement) && !(label.tagName === "LABEL"));
+      // if the ojoption doesn't have any textContent, hide the label element by adding the
+      // class oj-helper-hidden
+      // if for some reason, a label element is not found, don't do anything
+      if (label)
+      {
+        if (!ojoption.textContent || ojoption.textContent === "")
+          label.classList.add("oj-helper-hidden");
+        else
+          label.classList.remove("oj-helper-hidden");
+      }
+    }
 
     var name = this.element[0].id; // Use the id of the ojcheckboxset as the name of the oj-options.
     var ariaLabel = ojoption.getAttribute("aria-label");
-    var ariaLabelledBy = ojoption.getAttribute("aria-labelledby")
+    var ariaLabelledBy = ojoption.getAttribute("aria-labelledby");
 
     // The value attribute of the checkbox only supports text, so we need to be
     // able to access the oj-option's value property instead.  This attribute
@@ -710,11 +773,31 @@ oj.__registerWidget("oj.ojCheckboxset", $['oj']['editableValue'],
       checkbox.setAttribute("disabled", true);
     else
       checkbox.removeAttribute("disabled");
+  },  
+  
+  // custom oj-option renderer
+  // Because we can't rely on this being called when we set the customOptionRenderer property
+  // in _processOjOptions we shouldn't do the input.label creation from the oj-option 
+  // in this function. (If we did, the _ComponentCreate code that relies on the
+  // inputs/labels being created already would not work.)
+  // The correct thing to do is to create the input/label in _initInputLabelFromOjOption
+  // Then rely on this function being called after the oj-option has been created and we are
+  // changing properties on it.
+  _customOptionRenderer : function (elem)
+  {
+    var ojoption = elem;
+    var id = ojoption.getAttribute("id");
+    var checkboxId = id+"|cb";
+    var checkbox = document.getElementById(checkboxId);
+    // Was the oj-option already rendered into an _ojRadioCheckbox() in _CreateComponent?
+    var checkboxExists = (checkbox !== null); 
+    var hasOjCheckboxClass = checkboxExists && checkbox.classList.contains('oj-checkbox');
+
     
     // When an oj-option child is disabled (by setting the disabled attribute to
     // true) and it re-renders, the component should refresh automatically rather than requiring the
     // user to call refresh. See .   
-    if (alreadyProcessed)
+    if (hasOjCheckboxClass)
     {
       $(checkbox)._ojRadioCheckbox("option", "disabled", ojoption.disabled);
     }
@@ -1235,7 +1318,7 @@ oj.__registerWidget("oj.ojCheckboxset", $['oj']['editableValue'],
       
       switch (subId)
       {
-        case 'oj-checkboxset-inputs': // TODO: depricated for a while now, remove this in 4.0.0
+        case 'oj-checkboxset-inputs': // TODO: deprecated for a while now, remove this in 4.0.0
           node = checkboxes;
           break;
 
@@ -1472,6 +1555,8 @@ oj.__registerWidget("oj.ojCheckboxset", $['oj']['editableValue'],
  * <p>Sub-ID for the checkboxset's checkboxes.
  *
  * @ojsubid oj-checkboxset-inputs
+ * @deprecated 3.0.0 Since the application supplies the input elements, it can supply a unique ID by which the input elements can be accessed.
+ * @ignore
  * @memberof oj.ojCheckboxset
  * @example <caption>Get the nodes for the checkboxes:</caption>
  * var nodes = myComp.getNodeBySubId('oj-checkboxset-inputs');
@@ -1500,7 +1585,26 @@ var ojCheckboxsetMeta = {
     },  
     "value": {
       "type": "Array"
-    }
+    },
+    "translations": {
+      "type": "Object",
+      "properties": {
+        "required": {
+          "type": "Object",
+          "properties": {
+            "hint": {
+              "type": "string"
+            },
+            "messageDetail": {
+              "type": "string"
+            },
+            "messageSummary": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
   },
   "methods": {
     "validate": {}

@@ -1,10 +1,10 @@
 {
   "name": "oj-bind-for-each",
-  "version": "4.2.0",
-  "jetVersion": "4.2.0",
+  "version": "5.0.0",
+  "jetVersion": "5.0.0",
   "displayName": "Bind For Each",
   "preview": true,
-  "description": "ojBindForEach",
+  "description": "Binds items of an array to the specified markup section. The markup section is duplicated for each array item when element is rendered.",
   "properties": {
     "as": {
       "description": "An alias for the array item. This can be especially useful \nif multiple oj-bind-for-each elements are nested to provide access to the data \nfor each level of iteration.",
@@ -12,7 +12,7 @@
       "displayName": "As"
     },
     "data": {
-      "description": "The array that you wish to iterate over. Required property.",
+      "description": "The array that you wish to iterate over. Required property. Note that the <oj-bind-for-each&gt; will \ndynamically update the generated DOM in response to changes if the value is an observableArray.",
       "type": "array",
       "displayName": "Data"
     }

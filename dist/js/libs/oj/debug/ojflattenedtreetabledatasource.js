@@ -1,4 +1,5 @@
 /**
+ * @license
  * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
@@ -29,6 +30,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojdatasource-common'],
  * @export
  * @class oj.FlattenedTreeTableDataSource
  * @extends oj.TableDataSource
+ * @ojtsignore
  * @classdesc Object representing data used by Table with RowExpander.<br><br>
  *            See the <a href="../jetCookbook.html?component=rowExpander&demo=tableRowExpander">Row Expander - Table</a> demo for an example.<br><br>
  *            Refer to {@link oj.TableDataSource} for other data sources that represent tabular data.
@@ -39,6 +41,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojdatasource-common'],
  *                                    <b>"disabled"</b> - Do not start initial fetch automatically.  Application will call the <a href="#fetch">fetch()</a> method to
  *                                                        start the first fetch.
  * @constructor
+ * @since 1.0
  */
 oj.FlattenedTreeTableDataSource = function(data, options)
 {

@@ -278,6 +278,7 @@ dvt.Axis.prototype.__getBounds = function() {
 dvt.Axis.prototype.getAutomation = function() {
   return new DvtAxisAutomation(this);
 };
+
 /**
  * Axis Constants
  * @class
@@ -295,6 +296,7 @@ DvtAxisConstants.TICK_LABEL = 'tickLabel';
  * @const
  */
 DvtAxisConstants.TITLE = 'title';
+
 /**
  *  Provides automation services for a DVT component.
  *  @class DvtAxisAutomation
@@ -399,6 +401,7 @@ DvtAxisAutomation.prototype.getDomElementForSubId = function(subId) {
   return null;
 };
 
+
 /**
  * Default values and utility functions for component versioning.
  * @class
@@ -470,6 +473,7 @@ DvtAxisDefaults.getGapSize = function(context, options, defaultSize) {
   var scalingFactor = Math.min(dvt.TextUtils.getTextStringHeight(context, options['tickLabel']['style']) / 14, 1);
   return Math.ceil(defaultSize * scalingFactor);
 };
+
 /**
  * Event Manager for dvt.Axis.
  * @param {dvt.Axis} axis
@@ -585,6 +589,7 @@ DvtAxisEventManager.prototype.GetDragDataContexts = function() {
   }
   return [];
 };
+
 /**
   *  @param {dvt.EventManager} manager The owning dvt.EventManager
   *  @param {dvt.Axis} axis
@@ -641,6 +646,7 @@ DvtAxisKeyboardHandler.prototype.processKeyDown = function(event) {
 
   return nextNavigable;
 };
+
 /**
  * Renderer for dvt.Axis.
  * @class
@@ -1300,12 +1306,14 @@ DvtAxisRenderer._createText = function(eventManager, container, textString, cssS
   if (bMultiLine) {
     text = new dvt.MultilineText(container.getCtx(), textString, x, y);
     text.setMaxLines(DvtAxisRenderer._MAX_TITLE_LINE_WRAP);
+    text.setCSSStyle(cssStyle);
     text.wrapText(width, height, 1);
   }
-  else
+  else {
     text = new dvt.OutputText(container.getCtx(), textString, x, y);
+    text.setCSSStyle(cssStyle);
+  }
 
-  text.setCSSStyle(cssStyle);
   if (dvt.TextUtils.fitText(text, width, height, container)) {
     // Associate with logical object to support automation and truncation
     eventManager.associate(text, new dvt.SimpleObjPeer(text.getUntruncatedTextString(), null, null, params));
@@ -1537,7 +1545,8 @@ DvtAxisRenderer._getGroupAxisPreferredSize = function(axis, axisInfo, size, avai
     if (axisInfo.isAutoRotate()) { // performance optimization
       var labelStrings = [];
       var labelStyles = [];
-      var increment = axisInfo.getSkipIncrement(); // increase performance by only measuring a subset of labels to begin with, as majority will be skipped.
+      // increase performance by only measuring a subset of labels to begin with, as majority will be skipped.
+      var increment = axisInfo.getSkipIncrement(); 
 
       for (var i = 0; i < axisInfo.getGroupCount(); i += increment) {
         labelStrings.push(axisInfo.getLabelAt(i, 0));
@@ -1611,6 +1620,7 @@ DvtAxisRenderer.isWrapEnabled = function(cssStyle) {
     return false;
   return true;
 };
+
 /**
  * Calculated axis information and drawable creation.  This class should
  * not be instantiated directly.
@@ -2402,6 +2412,7 @@ dvt.AxisInfo.prototype.alignLogScaleToTickCount = function(scaleUnit, tickCount)
 dvt.AxisInfo.prototype.getLogScaleUnit = function() {
   return null;
 };
+
 /**
  * Calculated axis information and drawable creation for a data axis.
  * @param {dvt.Context} context
@@ -3037,6 +3048,7 @@ dvt.DataAxisInfo.prototype.alignLogScaleToTickCount = function(scaleUnit, tickCo
 dvt.DataAxisInfo.prototype.getLogScaleUnit = function() {
   return this._logScaleUnit;
 };
+
 /**
  * Calculated axis information and drawable creation for a group axis.
  * @param {dvt.Context} context
@@ -3462,7 +3474,7 @@ dvt.GroupAxisInfo.prototype._generateLabels = function(context) {
   for (var level = 0; level < this._numLevels; level++) {
     var levels = this._levelsArray[level];
     // if autoRotate, increase performance by only generating a subset of labels to begin with, as majority will be skipped.
-    var increment = autoRotate ? this.getSkipIncrement() : 1;
+    var increment = autoRotate ? this.getSkipIncrement() : 1; 
 
     for (var i = 0; i < levels.length; i += increment) {
       if (levels[i]) {
@@ -3974,9 +3986,14 @@ dvt.GroupAxisInfo.prototype._generateLevelsArray = function(groupsArray, level, 
 
     if (groupsArray[i] && groupsArray[i]['groups']) {
       var lastIndex = levelsArray[level].length - 1;
-      var numChildren = this._generateLevelsArray(groupsArray[i]['groups'], level + 1, levelsArray, levelsArray[level][lastIndex]['start']);
-      levelsArray[level][lastIndex]['end'] = numChildren - 1; // start and end index used for centering group labels
-      groupIndex = numChildren;
+      // Find the index of the last innermost group nested within this group item
+      var currentLeafIndex = this._generateLevelsArray(groupsArray[i]['groups'], level + 1, levelsArray, levelsArray[level][lastIndex]['start']);
+      if (groupIndex != currentLeafIndex) {
+        levelsArray[level][lastIndex]['end'] = currentLeafIndex - 1; // start and end index used for centering group labels
+        groupIndex = currentLeafIndex;
+      }
+      else
+        groupIndex++;
     }
     else
       groupIndex++;
@@ -4163,6 +4180,7 @@ dvt.GroupAxisInfo.prototype.getSkipIncrement = function() {
   }
   return Math.max(1, Math.floor(increment));
 };
+
 /**
  * Simple logical object for tooltip support.
  * @param {dvt.Axis} axis The axis.
@@ -4382,6 +4400,7 @@ DvtAxisObjPeer.prototype.getDragTransferable = function(mouseX, mouseY) {
 DvtAxisObjPeer.prototype.getDragFeedback = function(mouseX, mouseY) {
   return [this.getDisplayable()];
 };
+
 /**
  * Formatter for an axis with a linear scale.
  * Following cases can occur:
@@ -4740,6 +4759,7 @@ dvt.LinearScaleAxisValueFormatter.prototype._getPowerOfTen = function(value) {
   }
   return power;
 };
+
 /**
  * Calculated axis information and drawable creation for a time axis.
  * @param {dvt.Context} context
@@ -5971,7 +5991,7 @@ dvt.TimeAxisInfo.prototype.getEndOverflow = function() {
   else
     return this.EndOverflow;
 };
-})(dvt);
 
+})(dvt);
   return dvt;
 });

@@ -1,72 +1,25 @@
 {
   "name": "oj-time-axis",
-  "version": "4.2.0",
-  "jetVersion": "4.2.0",
+  "version": "5.0.0",
+  "jetVersion": "5.0.0",
   "displayName": "Time Axis",
   "preview": true,
   "roles": [
     "application"
   ],
-  "description": "Time Axis Element",
+  "description": "Displays a range of dates based on specified start and end dates and a time scale.",
   "properties": {
     "converter": {
-      "description": "The converter (an object literal or instance that duck types oj.Converter) used to format the labels of the time axis. If not specified, the default converter is used. If a single converter is specified, it will be used for all 'scale' values. Otherwise, an object whose keys are 'scale' values that map to the converter instances is expected. See oj.DateTimeConverterFactory for details on creating built-in datetime converters.",
-      "type": "object",
+      "description": "A converter (an object literal or instance that duck types Converter) used to format the labels of the time axis for all 'scale' values, or an object literal whose keys are 'scale' values that map specific converters for scale specific formatting. See DateTimeConverterFactory for details on creating built-in datetime converters.",
+      "type": "Object",
       "displayName": "Converter",
-      "value": null,
-      "properties": {
-        "days": {
-          "description": "The converter (an object literal or instance that duck types oj.Converter) used for the 'days' scale. If not specified, the default converter will be used for this scale. See oj.DateTimeConverterFactory for details on creating built-in datetime converters.",
-          "type": "object",
-          "value": null
-        },
-        "default": {
-          "description": "The default converter (an object literal or instance that duck types oj.Converter) to use for all 'scale' values that do not otherwise have a converter object provided. See oj.DateTimeConverterFactory for details on creating built-in datetime converters.",
-          "type": "object",
-          "value": null
-        },
-        "hours": {
-          "description": "The converter (an object literal or instance that duck types oj.Converter) used for the 'hours' scale. If not specified, the default converter will be used for this scale. See oj.DateTimeConverterFactory for details on creating built-in datetime converters.",
-          "type": "object",
-          "value": null
-        },
-        "minutes": {
-          "description": "The converter (an object literal or instance that duck types oj.Converter) used for the 'minutes' scale. If not specified, the default converter will be used for this scale. See oj.DateTimeConverterFactory for details on creating built-in datetime converters.",
-          "type": "object",
-          "value": null
-        },
-        "months": {
-          "description": "The converter (an object literal or instance that duck types oj.Converter) used for the 'months' scale. If not specified, the default converter will be used for this scale. See oj.DateTimeConverterFactory for details on creating built-in datetime converters.",
-          "type": "object",
-          "value": null
-        },
-        "quarters": {
-          "description": "The converter (an object literal or instance that duck types oj.Converter) used for the 'quarters' scale. If not specified, the default converter will be used for this scale. See oj.DateTimeConverterFactory for details on creating built-in datetime converters.",
-          "type": "object",
-          "value": null
-        },
-        "seconds": {
-          "description": "The converter (an object literal or instance that duck types oj.Converter) used for the 'seconds' scale. If not specified, the default converter will be used for this scale. See oj.DateTimeConverterFactory for details on creating built-in datetime converters.",
-          "type": "object",
-          "value": null
-        },
-        "weeks": {
-          "description": "The converter (an object literal or instance that duck types oj.Converter) used for the 'weeks' scale. If not specified, the default converter will be used for this scale. See oj.DateTimeConverterFactory for details on creating built-in datetime converters.",
-          "type": "object",
-          "value": null
-        },
-        "years": {
-          "description": "The converter (an object literal or instance that duck types oj.Converter) used for the 'years' scale. If not specified, the default converter will be used for this scale. See oj.DateTimeConverterFactory for details on creating built-in datetime converters.",
-          "type": "object",
-          "value": null
-        }
-      }
+      "value": "{\r           \"default\": null,\r           \"seconds\": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'hour': 'numeric', 'minute': '2-digit', 'second': '2-digit'}),\r           \"minutes\": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'hour': 'numeric', 'minute': '2-digit'}),\r           \"hours\": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'hour': 'numeric'}),\r           \"days\": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'numeric', 'day': '2-digit'}),\r           \"weeks\": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'numeric', 'day': '2-digit'}),\r           \"months\": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'long'}),\r           \"quarters\": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'long'}),\r           \"years\": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'year': 'numeric'})\r         }"
     },
     "end": {
-      "description": "The end time of the time axis. This is required in order for the time axis to properly render. See Date and Time Formats for more details on string formats.",
+      "description": "The end time of the time axis. A valid value is required in order for the time axis to properly render. See Date and Time Formats for more details on the required string formats.",
       "type": "string",
       "displayName": "End",
-      "value": null
+      "value": ""
     },
     "scale": {
       "description": "The time scale used for the time axis. This is required in order for the time axis to properly render.",
@@ -111,13 +64,13 @@
       }
     },
     "start": {
-      "description": "The start time of the time axis. This is required in order for the time axis to properly render. See Date and Time Formats for more details on string formats.",
+      "description": "The start time of the time axis. A valid value is required in order for the time axis to properly render. See Date and Time Formats for more details on the required string formats.",
       "type": "string",
       "displayName": "Start",
-      "value": null
+      "value": ""
     },
     "trackResize": {
-      "description": "Defines whether the element will automatically render in response to\nchanges in size. If set to off, then the\napplication is responsible for calling refresh\nto render the element at the new size.",
+      "description": "Defines whether the element will automatically render in response to changes in size. If set to off, then the application is responsible for calling refresh to render the element at the new size.",
       "type": "string",
       "displayName": "Track Resize",
       "value": "on",
@@ -135,10 +88,10 @@
       }
     },
     "translations": {
-      "description": "A collection of translated resources from the translation bundle, or null if this\ncomponent has no resources. Resources may be accessed and overridden individually or collectively, as seen in the examples.\n\nIf this component has translations, their documentation immediately follows this doc entry.",
-      "type": "Object",
+      "description": "A collection of translated resources from the translation bundle, or null if this\ncomponent has no resources. Resources may be accessed and overridden individually or collectively, as seen in the examples. If the component does not contain any translatable resource, the default value of this attribute will be \nnull. If not, an object containing all resources relevant to the component.\n\nIf this component has translations, their documentation immediately follows this doc entry.",
+      "type": "Object|null",
       "displayName": "Translations",
-      "value": null,
+      "translatable": true,
       "properties": {
         "componentName": {
           "description": "Used to describe the data visualization type for accessibility.\n\nSee the translations attribute for usage examples.",
@@ -230,7 +183,8 @@
   },
   "methods": {
     "refresh": {
-      "description": "Refreshes the component."
+      "description": "Refreshes the component.",
+      "return": "void"
     },
     "setProperty": {
       "description": "Sets a property or a single subproperty for complex properties and notifies the component\nof the change, triggering a [property]Changed event.",
@@ -245,7 +199,8 @@
           "description": "The new value to set the property to.",
           "type": "*"
         }
-      ]
+      ],
+      "return": "void"
     },
     "getProperty": {
       "description": "Retrieves a value for a property or a single subproperty for complex properties.",
@@ -266,7 +221,8 @@
           "description": "An object containing the property and value pairs to set.",
           "type": "Object"
         }
-      ]
+      ],
+      "return": "void"
     }
   },
   "slots": {

@@ -463,6 +463,7 @@ dvt.Legend.getSectionItemsCount = function(section) {
   }
   return itemsCount;
 };
+
 /**
  *  Provides automation services for a DVT component.
  *  @class DvtLegendAutomation
@@ -710,6 +711,7 @@ DvtLegendAutomation.prototype._generateSectionObjects = function(sections) {
 
   return sectionDataArray;
 };
+
 /**
  * Default values and utility functions for component versioning.
  * @class
@@ -769,7 +771,14 @@ DvtLegendDefaults.VERSION_1 = {
   'halign': 'start',
   'valign': 'top',
   'drilling': 'off',
-
+  'dnd': {
+    'drag': {
+      'series': {}
+    },
+    'drop': {
+      'legend': {}
+    }
+  },
   // default color, marker shape, and line width, for internal use
   '_color': '#a6acb1',
   '_markerShape': 'square',
@@ -806,6 +815,7 @@ DvtLegendDefaults.getGapSize = function(legend, defaultSize) {
 DvtLegendDefaults.prototype.getNoCloneObject = function(legend) {
   return {'sections': {'items': {'_dataContext': true}} };
 };
+
 /**
  * Event Manager for dvt.Legend.
  * @param {dvt.Legend} legend
@@ -1148,6 +1158,7 @@ DvtLegendEventManager.prototype.ShowRejectedDropEffect = function(event) {
       background.setClassName('oj-invalid-drop');
   }
 };
+
 /**
   *  @param {dvt.EventManager} manager The owning dvt.EventManager
   *  @param {dvt.Legend} legend
@@ -1219,6 +1230,7 @@ DvtLegendKeyboardHandler.prototype.processKeyDown = function(event) {
     this._legend.container.scrollIntoView(nextNavigable.getDisplayables()[0]);
   return nextNavigable;
 };
+
 /**
  * Logical object for legend data object displayables.
  * @param {dvt.Legend} legend The owning legend instance.
@@ -1540,6 +1552,7 @@ DvtLegendObjPeer.prototype.getDragTransferable = function(mouseX, mouseY) {
 DvtLegendObjPeer.prototype.getDragFeedback = function(mouseX, mouseY) {
   return this.getDisplayables();
 };
+
 /**
  * Renderer for dvt.Legend.
  * @class
@@ -1775,14 +1788,15 @@ DvtLegendRenderer._renderSections = function(legend, container, sections, availS
   var options = legend.getOptions();
 
   // Apply default symbol dimensions. If only one dimension is defined, the other will copy its value.
-  if (options['symbolWidth'] == null && options['symbolHeight'] == null) {
+  // Note that zero width/height should be treated the same as null or undefined.
+  if (!options['symbolWidth'] && !options['symbolHeight']) {
     options['symbolWidth'] = DvtLegendRenderer._DEFAULT_SYMBOL_SIZE;
     options['symbolHeight'] = DvtLegendRenderer._DEFAULT_SYMBOL_SIZE;
   }
   else {
-    if (options['symbolWidth'] == null)
+    if (!options['symbolWidth'])
       options['symbolWidth'] = options['symbolHeight'];
-    else if (options['symbolHeight'] == null)
+    else if (!options['symbolHeight'])
       options['symbolHeight'] = options['symbolWidth'];
 
     //  - Courtesy fix if values passed in as "x" vs. x
@@ -2494,6 +2508,7 @@ DvtLegendRenderer.isCategoryHidden = function(category, legend) {
 
   return dvt.ArrayUtils.getIndex(hiddenCategories, category) !== -1;
 };
+
 dvt.exportProperty(dvt, 'Legend', dvt.Legend);
 dvt.exportProperty(dvt.Legend, 'newInstance', dvt.Legend.newInstance);
 dvt.exportProperty(dvt.Legend.prototype, 'destroy', dvt.Legend.prototype.destroy);
@@ -2506,7 +2521,7 @@ dvt.exportProperty(DvtLegendAutomation.prototype, 'getDomElementForSubId', DvtLe
 dvt.exportProperty(DvtLegendAutomation.prototype, 'getItem', DvtLegendAutomation.prototype.getItem);
 dvt.exportProperty(DvtLegendAutomation.prototype, 'getSection', DvtLegendAutomation.prototype.getSection);
 dvt.exportProperty(DvtLegendAutomation.prototype, 'getTitle', DvtLegendAutomation.prototype.getTitle);
-})(dvt);
 
+})(dvt);
   return dvt;
 });

@@ -1,4 +1,5 @@
 /**
+ * @license
  * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
@@ -35,7 +36,18 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue'],
    * @ojcomponent oj.ojSwitch
    * @ojdisplayname Switch
    * @augments oj.editableValue
+   * @ojsignature [{
+   *                target: "Type",
+   *                value: "class ojSwitch extends editableValue<boolean, ojSwitchSettableProperties>"
+   *               },
+   *               {
+   *                target: "Type",
+   *                value: "ojSwitchSettableProperties extends editableValueSettableProperties<boolean>",
+   *                for: "SettableProperties"
+   *               }
+   *              ]
    * @since 0.7
+   * @ojshortdesc Provides basic support for toggling a boolean value.
    * @ojstatus preview
    *
    * @classdesc
@@ -134,7 +146,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue'],
        * myComponent.disabled = true;
        * 
        * @expose
-       * @type {?boolean}
+       * @type {boolean}
        * @default false
        * @public
        * @instance
@@ -162,7 +174,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue'],
        * 
        *
        * @expose
-       * @type {?boolean}
+       * @type {boolean}
        * @alias readonly
        * @default false
        * @instance
@@ -184,7 +196,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue'],
        * myComponent.value = true;
        * 
        * @expose
-       * @type {?boolean}
+       * @type {boolean}
        * @default false
        * @ojwriteback
        * @public
@@ -205,6 +217,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue'],
      * @memberof oj.ojSwitch
      * @instance
      * @return {jQuery} the switch
+     * @ignore
      */
     widget: function () {
       return this._element2;

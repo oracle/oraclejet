@@ -1,4 +1,5 @@
 /**
+ * @license
  * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
@@ -25,9 +26,9 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
 /**
  * @ojcomponent oj.ojTrain
  * @augments oj.baseComponent
- * @ojshortdesc The JET Train element is a navigation visual that allows a user to go between different "steps".
- * @since 1.0.0
  * @ojstatus preview
+ * @ojshortdesc Displays a navigation visual element that allows an application user to go between different steps of a process.
+ * @since 1.0.0
  * @classdesc
  * <h3 id="trainOverview-section">
  *   JET Train
@@ -73,12 +74,24 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
     options: {
 
       /**
-       * The array of step objects. Each step must have an 'id' and 'label' property.
+       * @typedef {Object} oj.ojTrain.Step
+       * @property {string} id string id of the step
+       * @property {string} label string label of the step
+       * @property {boolean} [disabled] boolean indicates whether the step is disabled
+       * @property {boolean} [visited] boolean indicates whether the step has been visited
+       * @property {"info"|"error"|"fatal"|"warning"} [messageType] string the type of message icon displayed on the step
+       *
+       */
+
+      /**
+       * The array of step objects. Each <a href="#Step">oj.ojTrain.Step</a> must have an 'id' and 'label' property.
+       *
        * @ojshortdesc The array of step objects.
        * @ojrequired
        * @expose
        * @public
        * @type {Array.<Object>}
+       * @ojsignature {target: "Type", value:"Array<oj.ojTrain.Step>", jsdocOverride: true}
        * @instance
        * @memberof! oj.ojTrain
        * @example <caption>Initialize the Train with the <code class="prettyprint">steps</code> attribute specified</caption>
@@ -101,66 +114,6 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
        *      "messageType":"info"}];
        */
        steps: [],
-     /**
-       * The id for the step object.  See the <a href="#steps">steps</a> attribute for usage examples.
-       * @ojshortdesc The id for the step object.
-       * @ojrequired
-       * @expose
-       * @public
-       * @type {string}
-       * @name steps[].id
-       * @instance
-       * @memberof! oj.ojTrain
-       */
-     /**
-       * The label for the step object.  See the <a href="#steps">steps</a> attribute for usage examples.
-       * @ojshortdesc The label for the step object.
-       * @ojrequired
-       * @ojtranslatable
-       * @expose
-       * @public
-       * @type {string}
-       * @name steps[].label
-       * @instance
-       * @memberof! oj.ojTrain
-       */
-     /**
-       * Indicates if the step is disabled.  See the <a href="#steps">steps</a> attribute for usage examples.
-       * @ojshortdesc Indicates if the step is disabled
-       * @expose
-       * @public
-       * @type {boolean}
-       * @name steps[].disabled
-       * @instance
-       * @memberof! oj.ojTrain
-       * @default false
-       */
-     /**
-       * Indicates if the step has been visited.  See the <a href="#steps">steps</a> attribute for usage examples.
-       * @ojshortdesc Indicates if the step has been visited
-       * @expose
-       * @public
-       * @type {boolean}
-       * @name steps[].visited
-       * @instance
-       * @memberof! oj.ojTrain
-       * @default false
-       */
-     /**
-       * The type of message icon to display on the step.  See the <a href="#steps">steps</a> attribute for usage examples.
-       * @ojshortdesc The type of message icon to display on the step.
-       * @expose
-       * @public
-       * @type {string}
-       * @name steps[].messageType
-       * @instance
-       * @memberof! oj.ojTrain
-       * @ojvalue {string} "info"
-       * @ojvalue {string} "error"
-       * @ojvalue {string} "fatal"
-       * @ojvalue {string} "warning"
-       * @default null
-       */
 
       /**
        * The selected variable indicates the id of the current selected step.
@@ -226,7 +179,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
       /**
        * Triggered immediately before a Step is selected.
        * The ojBeforeSelect can be cancelled by calling <code class="prettyprint">event.preventDefault()</code>.
-       * @ojshortdesc Triggered immediately before a step is selected.
+       * @ojshortdesc Triggered immediately before a Step is selected.
        * @ojcancelable
        * @expose
        * @event
@@ -269,7 +222,8 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
     /**
      * Create the train
      * @override
-     * @memberof! ojTrain
+     * @memberof oj.ojTrain
+     * @return {void}
      * @protected
      */
     _ComponentCreate: function()
@@ -281,6 +235,8 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
     /**
      * Set up the train component.
      *
+     * @memberof oj.ojTrain
+     * @return {void}
      * @private
      */
     _setupTrain: function() {
@@ -348,13 +304,13 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
 
         this._drawLabel(i);
         this._drawStepFill(i);
-        this._drawConnectorLine(i);
+        this._drawIndividualConnectorLine(i);
         this._drawButton(i);
         this._drawStepNumberLabel(i);
         this._drawMessageType(i);
         if (this._stretch)
           stepTag.css("width", 100 / (this._stepNum) + "%");
-      }
+            }
 
       // Update background progress bar width to show the progress.
       var connectorFillWidth = this._stepNum - 1 === this._selectedIndex ? 100 : (100 / (2 * (this._stepNum - 1)) + this._selectedIndex / (this._stepNum - 1) * 100)
@@ -369,6 +325,8 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
      * Set up the _stepArray(). The first dimension indicates the step index and the second dimension indicates the step variables.
      * The order of the step variables are: label, id, selection, visited, messageType
      *
+     * @memberof oj.ojTrain
+     * @return {void}
      * @private
      */
     _setupArray: function() {
@@ -389,6 +347,8 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
      * Draw the button object for the step based on the index. If a button for that step alread exists remove it and draw the new one.
      * @param {number} index The index of the step for which the button is being drawn.
      *
+     * @memberof oj.ojTrain
+     * @return {void}
      * @private
      */
     _drawButton: function(index)
@@ -427,6 +387,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
           button.on("click" + this.eventNamespace, function(event) {
             self._fireSelectedStepOptionChange(this.parentNode.parentNode.id, event);
             self.refresh();
+            self._setFocus(this.parentNode.parentNode.id);
           });
         }
         ;
@@ -451,6 +412,8 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
      * Draw the icon that displays the messageType for the step based on the index. If there already is an icon remove it and draw the new one.
      * @param {number} index The index of the step for which the icon is being drawn.
      *
+     * @memberof oj.ojTrain
+     * @return {void}
      * @private
      */
     _drawMessageType: function(index)
@@ -496,6 +459,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
           icon.on("click" + this.eventNamespace, function(event) {
             self._fireSelectedStepOptionChange(this.parentNode.parentNode.parentNode.id, event);
             self.refresh();
+            self._setFocus(this.parentNode.parentNode.parentNode.id);
           });
         }
         // Add new message
@@ -518,6 +482,8 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
      * @param {string} value
      * @param {Object} originalEvent
      *
+     * @memberof oj.ojTrain
+     * @return {void}
      * @private
      */
     _fireOptionChange: function(previousValue, value, originalEvent)
@@ -553,6 +519,8 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
      * Draw the number label that is displayed on the button of each step without a message type. This is only used for native mobile themes.
      * @param {number} index The index of the step for which the number label is being drawn.
      *
+     * @memberof oj.ojTrain
+     * @return {void}
      * @private
      */
     _drawStepNumberLabel: function(index) {
@@ -564,15 +532,20 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
     },
 
     /**
-     * Draw the connector line inbetween each step. This is only used for native mobile themes.
+     * Draws the individual connector line between each step.
      * @param {number} index The index of the step for which the icon is being drawn.
      *
+     * @memberof oj.ojTrain
+     * @return {void}
      * @private
      */
-    _drawConnectorLine: function(index) {
+    _drawIndividualConnectorLine: function(index) {
       if(index != this._stepNum - 1) {
         var stepConnector = $("<div/>")
                  .addClass("oj-train-step-individual-connector");
+        if(index < this._selectedIndex) {
+          stepConnector.addClass("oj-train-connector-before-selected-step");
+        }
         this._stepList.children().eq(index).prepend(stepConnector);// @HTMLUpdateOK
       }
     },
@@ -581,6 +554,8 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
      * Draw the background circle for the step which is either light or dark base on if the step is before or after the selected step.
      * @param {number} index The index of the step for which the icon is being drawn.
      *
+     * @memberof oj.ojTrain
+     * @return {void}
      * @private
      */
     _drawStepFill: function(index)
@@ -600,6 +575,8 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
      * Draw the label for the step.
      * @param {number} index The index of the step for which the icon is being drawn.
      *
+     * @memberof oj.ojTrain
+     * @return {void}
      * @private
      */
     _drawLabel: function(index)
@@ -612,7 +589,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
         var label = $("<a>");
         label.text(this._stepArray[index][0]);
         var disabled = this._stepArray[index][2];
-        labelWrapper.append(label);// @HTMLUpdateReview
+        labelWrapper.append(label);// @HTMLUpdateOK
         label.addClass("oj-train-label");
         if (index === this._selectedIndex)
           label.addClass("oj-selected");
@@ -622,6 +599,10 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
           label.addClass("oj-disabled");
         if (!disabled) {
           label.attr("href", "#");
+          this._focusable({
+            'element': label,
+            'applyHighlight': true
+          });
           this._AddHoverable(label);
           this._AddActiveable(label);
 
@@ -634,9 +615,8 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
                 event.preventDefault();
                 self._fireSelectedStepOptionChange(this.parentNode.parentNode.id, event);
                 self.refresh();
-                if (event.keyCode === $.ui.keyCode.ENTER)
-                  self._setFocus(this.parentNode.parentNode.id);
-              }
+                self._setFocus(this.parentNode.parentNode.id);
+        }
             });
                 }
         var stepLi = this._stepList.children().eq(index).children();
@@ -650,6 +630,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
      * Return the index of the step
      * @param {string} id The id of the step whose index is returned.
      * @return {number} index of step. -1 for not valid ids.
+     * @memberof oj.ojTrain
      * @private
      */
     _getStepIndex: function(id)
@@ -667,6 +648,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
      * @public
      * @param {string} id The id of the step.
      * @return {Object | null} step object.
+     * @ojsignature { target: "Type",value: "oj.ojTrain.Step|null",for: "returns", jsdocOverride:true}
      * @expose
      * @instance
      * @memberof oj.ojTrain
@@ -760,6 +742,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
      * @param {Object} stepProperties The property bag to overwrite properties on the step.
      * @ignore
      * @instance
+     * @return {void}
      * @memberof oj.ojTrain
      */
     setStep: function(stepProperties)
@@ -777,8 +760,14 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
      * @param {string} id The id of the step to update
      * @param {Object} stepProperties The set of step properties to update. Will overwrite any previously set values.
      * @expose
+     * @param {string} [stepProperties.id] id of step
+     * @param {string} [stepProperties.label] label of step
+     * @param {boolean} [stepProperties.disabled] whether step is disabled
+     * @param {boolean} [stepProperties.visited] whether step has been visited
+     * @param {"info"|"error"|"fatal"|"warning"} [stepProperties.messageType] type of message displayed
      * @instance
      * @memberof oj.ojTrain
+     * @return {void}
      */
     updateStep: function(id, stepProperties)
     {
@@ -824,6 +813,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
      * @param {Object} options
      * @override
      * @memberof oj.ojTrain
+     * @return {void}
      */
     _setOptions: function(options) {
       this._super(options);
@@ -837,6 +827,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
      * @param {string} flags
      * @override
      * @memberof oj.ojTrain
+     * @return {void}
      */
     _setOption: function(key, value, flags)
     {
@@ -859,6 +850,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
      * @ojshortdesc Refreshes the train.
      * @expose
      * @memberof oj.ojTrain
+     * @return {void}
      * @instance
      */
     refresh: function()
@@ -871,6 +863,8 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
 
     /**
      * @override
+     * @memberof oj.ojTrain
+     * @return {void}
      * @private
      */
     _destroy: function()
@@ -891,6 +885,8 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
     /**
      * Fire option change event for selectedStep on click or keyboard action
      * @param {string} event
+     * @memberof oj.ojTrain
+     * @return {void}
      * @private
      */
     _fireSelectedStepOptionChange: function(newSelectedStep, event)
@@ -904,6 +900,8 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
      * Set the focus on the step defined by the id.
      * @param {string} id The id of the step to focus
      *
+     * @memberof oj.ojTrain
+     * @return {void}
      * @private
      */
     _setFocus: function(id)
@@ -930,7 +928,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
 
       switch (subId)
       {
-        //returns the cllickable button
+        //returns the clickable button
         //QA automated tests need to click on selected step and button is clickable
         //while the whole step is not
         case 'oj-train-step':
@@ -978,11 +976,11 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
         var stepLocator = {'subId': 'oj-train-step', 'index': stepIndex};
         //subIdNode should be button
         var subIdNode = this.getNodeBySubId(stepLocator);
-        //Checking whether currentNode is a descendent of the button or label because
-        //those two are only clickable things in the step so we only want to return a
-        //valid subIdNode for those cases(and their children)
+        //Checking whether currentNode is a descendant of the button or label because
+        //those two are only clickable things in the step so we only want to return a valid subIdNode
+        //for those cases(and their children)
         if ($(currentNode).closest(subIdNode).length > 0
-          || $(currentNode).closest($(subIdNode.parentNode.parentNode).find('.oj-train-label')[0]).length > 0)
+            || $(currentNode).closest($(subIdNode.parentNode.parentNode).find('.oj-train-label')[0]).length > 0)
           return stepLocator;
       }
       return null;

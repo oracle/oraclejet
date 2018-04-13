@@ -1,4 +1,5 @@
 /**
+ * @license
  * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
@@ -15,6 +16,7 @@ define(['ojs/ojcore', 'jquery', 'jqueryui-amd/widget', 'jqueryui-amd/unique-id',
 /**
  * @class oj.Components
  * @classdesc JET Component services
+ * @since 1.0
  * @export
  */
 oj.Components = {};
@@ -46,6 +48,7 @@ oj.Components = {};
  * To specify a dynamic getter for the property, pass your callback to oj.Components.createDynamicPropertyGetter(). Note
  * that dynamic getters nested within a complex property value are not supported
  * @see oj.Components.createDynamicPropertyGetter
+ * @return {void}
  * @export
  */
 oj.Components.setDefaultOptions = function(options)
@@ -71,6 +74,7 @@ oj.Components.setDefaultOptions = function(options)
 /**
  * Retrieves default option values for JET components. This method should only be used internally by JET.
  * @deprecated since version 2.2
+ * @ignore
  * @return {Object} default option values
  * @see oj.Components.setDefaultOptions
  * @export
@@ -111,14 +115,14 @@ oj.Components.createDynamicPropertyGetter = function(callback)
  * </pre>
  * If widgetName is not specified, and if more than one widget is associated with the element,
  * the method will a return the widget that was created first.
- * @param {?Element|?Node} element - HTML element
+ * @param {?(Element|Node)} element - HTML element
  * @param {string=} widgetName - optional widget name
  * @return {Function|null} widget constructor
  * @export
  */
 oj.Components.getWidgetConstructor = function(element, widgetName)
 {
-  if (!oj.BaseCustomElementBridge.getRegistered(element.tagName))
+  if (element && !oj.BaseCustomElementBridge.getRegistered(element.tagName))
     return oj.Components.__GetWidgetConstructor(element, widgetName);
   return null;
 };
@@ -126,7 +130,7 @@ oj.Components.getWidgetConstructor = function(element, widgetName)
 /**
  * Internal version for components to call which won't return null for 
  * custom elements. See public method for jsDoc.
- * @param {?Element|?Node} element - HTML element
+ * @param {?(Element|Node)} element - HTML element
  * @param {string=} widgetName - optional widget name
  * @return {Function|null} widget constructor
  * @ignore
@@ -167,6 +171,7 @@ oj.Components.__GetWidgetConstructor = function(element, widgetName)
  * in Knockout.js
  * @param {!Element} node - the root of the subtree
  * @see oj.Components.subtreeDetached
+ * @return {void}
  * @export
  */
 oj.Components.subtreeAttached = function(node)
@@ -189,6 +194,7 @@ oj.Components.subtreeAttached = function(node)
  * Knockout.js
  * @param {!Element} node - the root of the subtree
  * @see oj.Components.subtreeAttached
+ * @return {void}
  * @export
  */
 oj.Components.subtreeDetached = function(node)
@@ -214,6 +220,7 @@ oj.Components.subtreeDetached = function(node)
  * @param {Object=} options Options to control subtreeShown
  * @param {boolean} options.initialRender The index at which to start fetching records.
  * @see oj.Components.subtreeHidden
+ * @return {void}
  * @export
  */
 oj.Components.subtreeShown = function(node, options)
@@ -250,6 +257,7 @@ oj.Components.subtreeShown = function(node, options)
  *
  * @param {!Element} node - the root of the subtree
  * @see oj.Components.subtreeShown
+ * @return {void}
  * @export
  */
 oj.Components.subtreeHidden = function(node)
@@ -352,8 +360,8 @@ oj.Components.__getDefaultOptions = function(hierarchyNames)
 /**
  * Retrieves the JET component element that
  * the node is in.
- * @param {?Element|?Node} node - DOM node
- * @return {?Element|?Node} componentElement - JET component element
+ * @param {?(Element|Node)} node - DOM node
+ * @return {?(Element|Node)} componentElement - JET component element
  * A component element is the DOM element on which the JET component is
  * initialized.
  * @export
@@ -385,29 +393,37 @@ function _getComponentElementByNode(node, mtAccessCompositeInternals){
   {
     return null;
   }
+  // node can be a Node or Element but we call some Element only APIs
+  // so we need to do an additional isElement check first
+  var isElement = node.nodeType === 1;
+
   var containingComposite = (oj.Composite && !mtAccessCompositeInternals ? oj.Composite.getContainingComposite(node) : null);
   if (containingComposite)
   { // node is in or is a composite, return composite
     return containingComposite;
-  } else if (node.hasAttribute('data-oj-internal'))
+  } 
+  else if (isElement && node.hasAttribute('data-oj-internal'))
   {// node is an internal component
-    if (node.parentNode.hasAttribute('data-oj-surrogate-id'))
+    if (node.parentNode instanceof Element && node.parentNode.hasAttribute('data-oj-surrogate-id'))
     { // internal component is a popup
       node = document.querySelector('[data-oj-popup-' + node.id + '-parent]'); // retrieves popups parent element
       return _getComponentElementByNode(node, mtAccessCompositeInternals);
     }
     return _getComponentElementByNode(node.parentNode, mtAccessCompositeInternals);
-  } else if (_isComponentElement(node))
+  } 
+  else if (_isComponentElement(node))
   { // node is a component element
     return node;
-  } else if (node.classList.contains('oj-component'))
+  } 
+  else if (isElement && node.classList.contains('oj-component'))
   { // node is component wrapper
     node = node.querySelector('.oj-component-initnode:not([data-oj-internal])') || node;
     if (_isJQueryUI(node))
     {
       return node;
     }
-  } else if (node.hasAttribute('data-oj-containerid'))
+  } 
+  else if (isElement && node.hasAttribute('data-oj-containerid'))
   { // node is non-internal component popup e.g listbox
       node = document.getElementById(node.getAttribute('data-oj-containerid'));
       return _getComponentElementByNode(node, mtAccessCompositeInternals);
@@ -477,6 +493,7 @@ oj.Components.getComponentOption = function(componentElement, option)
  * @param {?Element} componentElement - JET component element
  * @param {string} option - option to set
  * @param {*} value - value to set option to
+ * @return {void}
  * @export
 */
 oj.Components.setComponentOption = function(componentElement, option, value)
@@ -895,14 +912,18 @@ $.widget('oj.' + _BASE_COMPONENT,
      * <p>A collection of translated resources from the translation bundle, or <code class="prettyprint">null</code> if this
      * component has no resources.  Resources may be accessed and overridden individually or collectively, as seen in the examples.
      *
+     * <p> If the component does not contain any translatable resource, the default value of this attribute will be 
+     * <code class="prettyprint">null</code>. If not, an object containing all resources relevant to the component.
+     * 
      * <p>If this component has translations, their documentation immediately follows this doc entry.
      *
      * @member
      * @name translations
      * @memberof oj.baseComponent
      * @instance
-     * @type {Object}
-     * @default an object containing all resources relevant to the component, or <code class="prettyprint">null</code> if none
+     * @ojtranslatable
+     * @type {Object|null}
+     * 
      *
      * @example <caption>Initialize the component, overriding some translated resources and leaving the others intact:</caption>
      * &lt;!-- Using dot notation -->
@@ -1009,8 +1030,8 @@ $.widget('oj.' + _BASE_COMPONENT,
 
   // TODO: flesh out JSDoc verbiage, re: call after dom changes underneath component...
   /**
-   * <p>Refreshes the component.
-   *
+   * Refreshes the component.
+   * @return {void}
    * @expose
    * @memberof oj.baseComponent
    * @instance
@@ -1714,6 +1735,9 @@ $.widget('oj.' + _BASE_COMPONENT,
   // TODO: Move JSDoc from subclasses to here.  Don't include above internal comment.  Make at-final.
   destroy: function()
   {
+    if (this._IsCustomElement())
+      throw new Error("destroy cannot be called on a custom element");
+
     // Fire 'destroy' event
     this._trigger('destroy');
     
@@ -2034,6 +2058,7 @@ $.widget('oj.' + _BASE_COMPONENT,
     var writeback = false;
     var readOnly = false;
     var originalEvent = null;
+    var updatedFrom = 'external';
 
     var optionMetadata = null;
 
@@ -2050,6 +2075,8 @@ $.widget('oj.' + _BASE_COMPONENT,
         readOnly = context.readOnly;
         optionMetadata = context.optionMetadata;
         extraData = context.extraData;
+        if (context.internalSet)
+          updatedFrom = 'internal';
       }
     }
 
@@ -2066,7 +2093,8 @@ $.widget('oj.' + _BASE_COMPONENT,
       "option" : key,
       "previousValue" : originalValue,
       "value" : value,
-      "optionMetadata" : optionMetadata
+      "optionMetadata" : optionMetadata,
+      "updatedFrom": updatedFrom
     };
 
     var subkey = (flags == null) ? null : flags['subkey'];
@@ -2416,7 +2444,7 @@ $.widget('oj.' + _BASE_COMPONENT,
   {
     if (this._IsCustomElement())
     {
-      var slotMap = oj.CustomElementBridge.getSlotMap(this._getRootElement());        
+      var slotMap = oj.BaseCustomElementBridge.getSlotMap(this._getRootElement());        
       var slot = slotMap['contextMenu'];
       if (slot && slot.length > 0)
         return slot[0];
@@ -3108,23 +3136,6 @@ $.widget('oj.' + _BASE_COMPONENT,
   },
 
   /**
-   * <p>Retrieves a translated resource for a given key.
-   *
-   * @param {string} key
-   * @return {Object} resource associated with the key or null if none was found
-
-   * @memberof oj.baseComponent
-   * @instance
-   * @private
-   */
-  // TODO: non-public methods need to start with "_".  Pinged architect, who thinks this
-  // method should become protected post-V1, which would imply a capital _GetResource
-  getResource : function (key)
-  {
-    return this.option(_OJ_TRANSLATIONS_PREFIX + key);
-  },
-
-  /**
    * <p>Determines whether the component is LTR or RTL.
    *
    * <p>Component responsibilities:
@@ -3327,6 +3338,7 @@ $.widget('oj.' + _BASE_COMPONENT,
       var element = this.element[0];
       c['containers'] = _getSpecialContainerNames(element);
       c['element'] = element;
+      c['isCustomElement'] = this._IsCustomElement();
     }
     return this._propertyContext;
   },
@@ -3505,25 +3517,6 @@ $.widget('oj.' + _BASE_COMPONENT,
   },
 
   /**
-   * Given an event, returns the appropriate event for the component syntax.
-   * For custom elements, if the event is a JQuery event, this method will return the
-   * unwrapped original event. 
-   * @param  {Object} event [description]
-   * @return {Object}
-   * @memberof oj.baseComponent
-   * @instance
-   * @protected
-   */
-  _GetEventForSyntax: function (event)
-  {
-    if (this._IsCustomElement())
-    {
-      return event instanceof $.Event ? event.originalEvent : event;
-    }
-    return event;
-  },
-
-  /**
    * Stores a map of writeback options that we reference during option comparison.
    * Package private method called from the CustomElementBridge.
    * @param  {Object} options The writeback options map
@@ -3600,7 +3593,33 @@ $.widget('oj.' + _BASE_COMPONENT,
   __handleDisconnected: function() {
     this._ReleaseResources();
     this._NotifyDetached();
-  }
+  },
+
+  /**
+   * Method called by the CustomElementBridge to get the element to call focus on for this custom element
+   * which can be the root custom element or an HTML element like an input or select.
+   * @return {Element}
+   * @memberof oj.baseComponent
+   * @instance
+   * @private
+   */
+  __getFocusElement: function()
+  {
+    return this.GetFocusElement();
+  },
+
+  /**
+   * Returns the current focusable element for this component which can be the root custom element 
+   * or an HTML element like an input or select.
+   * @return {Element}
+   * @memberof oj.baseComponent
+   * @instance
+   * @protected
+   */
+  GetFocusElement: function()
+  {
+    return this.element[0];
+  },
   
   /**
    * <p>The following CSS classes can be applied by the page author as needed.
@@ -4079,8 +4098,10 @@ function _mergeObjectsWithExclusions(target, input, ignoreSubkeys, basePath)
  * of the change, triggering a [property]Changed event.
  * 
  * @function setProperty
+ * @since 4.0.0
  * @param {string} property - The property name to set. Supports dot notation for subproperty access.
  * @param {*} value - The new value to set the property to.
+ * @return {void}
  * 
  * @expose
  * @memberof oj.baseComponent
@@ -4092,6 +4113,7 @@ function _mergeObjectsWithExclusions(target, input, ignoreSubkeys, basePath)
 /**
  * Retrieves a value for a property or a single subproperty for complex properties.
  * @function getProperty
+ * @since 4.0.0
  * @param {string} property - The property name to get. Supports dot notation for subproperty access.
  * @return {*}
  * 
@@ -4105,7 +4127,9 @@ function _mergeObjectsWithExclusions(target, input, ignoreSubkeys, basePath)
 /**
  * Performs a batch set of properties.
  * @function setProperties
+ * @since 4.0.0
  * @param {Object} properties - An object containing the property and value pairs to set.
+ * @return {void}
  * 
  * @expose
  * @memberof oj.baseComponent
@@ -4115,1348 +4139,6 @@ function _mergeObjectsWithExclusions(target, input, ignoreSubkeys, basePath)
  * myComponent.setProperties({"prop1": "value1", "prop2.subprop": "value2", "prop3": "value3"});
  */ 
 
-/*jslint browser: true*/
-/**
- * in some OS/browser combinations you can attempt to detect high contrast mode
- * in javascript, go to the url below and look for "High Contrast"
- * http://www.w3.org/TR/wai-aria-practices/
- * 
- * This function uses a variation of the code in the "High Contrast" section of  
- * the site above to try and detect high contrast mode
- * by script, but it by no means definitively tells you whether or not you
- * are actually in high contrast mode. As discussed at the url above you 
- * may need to have a user preference setting for high contrast.
- * 
- * If the script is able to detect high contrast mode it sets the class 
- * "oj-hicontrast" on the body tag. When "oj-high-contrast" is present 
- * JET provides alternate informational images that are specially designed 
- * for high contrast users. 
- * @private
- */
-function _ojHighContrast()
-{
-  // using a data uri, I googled for shortest uri to get this one since 
-  // I don't care about the actual image, but I do want a legit image
-  // otherwise I see an error in chrome and I don't want users to be
-  // confused by seeing any error.
-
-  var div = $("<div style='border: 1px solid;border-color:red green;position: absolute;top: -999px;background-image: url(data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACwAAAAAAQABAAACAkQBADs=);'></div>"), bki;
-  div.appendTo("body");     // @HTMLUpdateOK safe manipulation
-
-  bki = div.css("backgroundImage");
-  //console.log("background-image:" + bki);
-  //console.log("borderTopColor == borderRightColor: ", div.css("borderTopColor") == div.css("borderRightColor"));
-  if (div.css("borderTopColor") == div.css("borderRightColor") ||
-      (bki != null && (bki == 'none' || bki == 'url (invalid-url:)')))
-  {
-    $('body').addClass("oj-hicontrast");
-  }
-
-  div.remove();
-}
-
-$(document).ready(function() {
-  _ojHighContrast();
-});
-/*jslint browser: true*/
-/*
-** Copyright (c) 2004, 2012, Oracle and/or its affiliates. All rights reserved.
-*/
-/**
- * DOM utilities.
- * @ignore
- */
-oj.DomUtils = {};
-
-oj.DomUtils._HTML_START_TAG = "\x3chtml\x3e";
-oj.DomUtils._HTML_END_TAG = "\x3c/html\x3e";
-oj.DomUtils._LEGAL_ELEMENTS = {"SPAN":1, "B":1, "I":1, "EM":1, "BR":1, "HR":1, "LI":1, "OL":1, "UL":1, "P":1, "TT":1, "BIG":1, "SMALL":1, "PRE":1};
-oj.DomUtils._LEGAL_ATTRIBUTES = {"class":1, "style":1};
-
-/**
- * Returns true if the value is null or if the trimmed value is of zero length.
- *
- * @param {string|null} content
- * @return {boolean} true if the string is wrapped in <html> tag.
- */
-oj.DomUtils.isHTMLContent = function(content)
-{
-  if (content.indexOf(oj.DomUtils._HTML_START_TAG) === 0 &&
-      content.lastIndexOf(oj.DomUtils._HTML_END_TAG) === content.length - 7)
-  {
-    return true;
-  }
-
-  return false;
-};
-
-oj.DomUtils.cleanHtml = function (value)
-{
-  var offSpan = $(document.createElement("span")).get(0);
-  offSpan.innerHTML = value;  // @HTMLUpdateOK safe manipulation
-  if (value && value.indexOf("\x3c") >= 0)
-  {
-    oj.DomUtils._cleanElementHtml(offSpan);
-  }
-  return offSpan;
-};
-
-oj.DomUtils._cleanElementHtml = function(node)
-{
-  var children = node.childNodes, child, attrs, attr, childHasAttr, i;
-  var count = children.length - 1;
-  while (count >= 0)
-  {
-    child = children.item(count);
-    if (child && child.nodeType === 1)
-    {
-      if (oj.DomUtils._LEGAL_ELEMENTS[child.nodeName])
-      {
-        attrs = child.attributes;
-        for (i = attrs.length - 1;i >= 0;i--)
-        {
-          attr = attrs[i];
-          // jquery - the .attr() method returns undefined for attributes that have not been set.
-          childHasAttr = $(child).attr(attr.name) !== undefined;
-          if (childHasAttr)
-          {
-            if (!oj.DomUtils._LEGAL_ATTRIBUTES[attr.name])
-            {
-              child.removeAttribute(attr.nodeName);
-            }
-          }
-        }
-        oj.DomUtils._cleanElementHtml(child);
-      }
-      else
-      {
-        if (child)
-        {
-          node.removeChild(child);
-        }
-      }
-    }
-
-    count--;
-  }
-};
-
-/**
- * Checks to see if the "ancestorNode" is a ancestor of "node".
- *
- * @param {!Element} ancestorNode dom subtree to check to see if the target node exists
- * @param {!Element} node target node to check to see if it exists within a subtree rooted at the ancestorNode
- * @return {boolean} <code>true</code> if the "ancestorNode" is a ancestor of "node".
- */
-oj.DomUtils.isAncestor = function (ancestorNode, node)
-{
-  // These can cause problems in IE11: sometimes the node is just an "empty" object
-  //oj.Assert.assertDomElement(ancestorNode);
-  //oj.Assert.assertDomElement(node);
-
-  var parentNode = node.parentNode;
-
-  while (parentNode)
-  {
-    if (parentNode == ancestorNode)
-      return true;
-
-    parentNode = parentNode.parentNode;
-  }
-
-  return false;
-}
-
-/**
- * Checks to see if the "ancestorNode" is a ancestor of "node" or if they are the same.
- *
- * @param {!Element} ancestorNode dom subtree to check to see if the target node exists
- * @param {!Element} node target node to check to see if it exists within a subtree rooted at the ancestorNode
- * @return {boolean} <code>true</code> if the "ancestorNode" is a ancestor of "node" or if they are the same
- */
-oj.DomUtils.isAncestorOrSelf = function (ancestorNode, node)
-{
-  // These can cause problems in IE11: sometimes the node is just an "empty" object
-  //oj.Assert.assertDomElement(ancestorNode);
-  //oj.Assert.assertDomElement(node);
-
-  return (node == ancestorNode) ?
-          true :
-          oj.DomUtils.isAncestor(ancestorNode, node);
-};
-
-
-/**
- * Adds a resize listener for a block or inline-block element
- * @param {!Element} elem - node where the listener should be added
- * @param {!Function} listener - listener to be added. The listener will receive
- * two parameters: 1) the new width in pixels; 2) the new height in pixels
- * @param {number=} collapseEventTimeout - timeout in milliseconds for collapsing
- * multiple resize events into one
- * @export
- */
-oj.DomUtils.addResizeListener = function(elem, listener, collapseEventTimeout)
-{
-  var jelem = $(elem);
-  var tracker = jelem.data(oj.DomUtils._RESIZE_TRACKER_KEY);
-  if (tracker == null)
-  {
-    tracker = new oj.DomUtils._ResizeTracker(elem);
-    jelem.data(oj.DomUtils._RESIZE_TRACKER_KEY, tracker);
-    tracker.start();
-  }
-  tracker.addListener(listener, collapseEventTimeout);
-}
-
-/**
- * Removes a resize listener
- * @param {!Element} elem - node whose listener should be removed
- * @param {!Function} listener - listener to be removed
- * @export
- */
-oj.DomUtils.removeResizeListener = function(elem, listener)
-{
-  var jelem = $(elem);
-  var tracker = jelem.data(oj.DomUtils._RESIZE_TRACKER_KEY);
-  if (tracker != null)
-  {
-    tracker.removeListener(listener);
-    if (tracker.isEmpty())
-    {
-      tracker.stop();
-      jelem.removeData(oj.DomUtils._RESIZE_TRACKER_KEY);
-    }
-  }
-};
-
-
-/**
- * Fixes resize listeners after a subtree has been connected to the DOM or after
- * its display:none stayle has been removed
- * @param {!Element} subtreeRoot - subtree root
- */
-oj.DomUtils.fixResizeListeners = function(subtreeRoot)
-{
-  $(subtreeRoot).find(".oj-helper-detect-expansion").parent().each(
-    function(index, div)
-    {
-      var tracker = $(div).data(oj.DomUtils._RESIZE_TRACKER_KEY);
-      if (tracker != null)
-      {
-        tracker.init(true);
-      }
-    }
-  );
-};
-
-/**
- * Determines whether a special 'meta' key was pressed when the event was fired.
- * For Mac OS, the 'meta' key is mapped to the 'Command' key, for all other platforms it is mapped
- * to the 'Control' key.
- * Note that this method will only work for the events that support .ctrlKey and .metaKey fields.
- * @param {!Object} evt - the event
- * @return true if the meta key is pressed, false otherwise
- */
-oj.DomUtils.isMetaKeyPressed = function(evt)
-{
-  var agentInfo = oj.AgentUtils.getAgentInfo();
-  return (oj.AgentUtils.OS.MAC === agentInfo["os"] ? evt.metaKey : evt.ctrlKey);
-};
-
-/**
- * Dispatches an event on the element
- * @param {!Element} element
- * @param {!Event} evt event object
- */
-oj.DomUtils.dispatchEvent = function(element, evt)
-{
-  // Workaround for Mozilla issue #329509 - dispatchEvent() throws an error if
-  // the element is disabled and disconnected
-  // Also, IE simply ignores the .dispatchEvent() call for disabled elements
-  var dis = 'disabled';
-  var oldDisabled = element[dis];
-  try
-  {
-    element[dis] = false;
-    element.dispatchEvent(evt);
-  }
-  finally
-  {
-    element[dis] = oldDisabled;
-  }
-};
-
-/**
- * @private
- */
-oj.DomUtils._invokeAfterPaint =  (window['requestAnimationFrame'] || window['mozRequestAnimationFrame'] ||
-                                  window['webkitRequestAnimationFrame'] ||
-                                  function(fn){ return window.setTimeout(fn, 0); }
-                                  ).bind(window);
-
-/**
- * @private
- */
-oj.DomUtils._cancelInvokeAfterPaint =  (window['cancelAnimationFrame'] || window['mozCancelAnimationFrame'] ||
-                                  window['webkitCancelAnimationFrame'] ||
-                                  function(id){ return window.clearTimeout(id); }
-                                  ).bind(window);
-
-/**
- * Utility class for tracking resize events for a given element and  sispatching them
- * to listeners
- * @constructor
- * @ignore
- * @private
- */
-oj.DomUtils._ResizeTracker = function(div)
-{
-  var _listeners = $.Callbacks();
-  var _collapsingManagers = [];
-  var _collapsingListeners = [];
-
-  var _RETRY_MAX_COUNT = 2;
-  var _retrySetScroll = 0;
-  var _invokeId = null;
-  var _oldWidth  = null;
-  var _oldHeight = null;
-  var _detectExpansion = null;
-  var _detectContraction = null;
-  var _resizeListener = null;
-  var _scrollListener = null;
-
-  this.addListener = function(listener, collapseEventTimeout)
-  {
-    if (collapseEventTimeout === undefined || collapseEventTimeout === 0)
-    {
-      _listeners.add(listener);
-    }
-    else
-    {
-      _collapsingManagers.push(
-              new oj.DomUtils._collapsingListenerManager(listener, collapseEventTimeout));
-      _collapsingListeners.push(listener);
-    }
-  };
-
-  this.removeListener = function(listener)
-  {
-    var index = _collapsingListeners.indexOf(listener);
-    if (index >=0 )
-    {
-      _collapsingListeners.splice(index, 1);
-      var removed = _collapsingManagers.splice(index, 1);
-      removed[0].stop();
-    }
-    else
-    {
-      _listeners.remove(listener);
-    }
-  };
-
-  this.isEmpty = function()
-  {
-    return !_listeners.has() && _collapsingListeners.length == 0;
-  };
-
-  this.start = function()
-  {
-    _scrollListener = _handleScroll.bind(this);
-
-    // : Use native onresize support on teh DIV in IE9/10 and  since no scroll events are fired on the
-    // contraction/expansion DIVs in IE9
-    if (div.attachEvent)
-    {
-      _resizeListener = _handleResize.bind(this);
-      div.attachEvent('onresize', _resizeListener);
-    }
-
-    else
-    {
-      var firstChild = div.childNodes[0];
-
-      // This child DIV will track expansion events. It is meant to be 1px taller and wider than the DIV
-      // whose resize events we are tracking. After we set its scrollTop and scrollLeft to 1, any increate in size
-      // will fire a scroll event
-      _detectExpansion = document.createElement("div");
-      _detectExpansion.className = "oj-helper-detect-expansion";
-      var expansionChild = document.createElement("div");
-      _detectExpansion.appendChild(expansionChild); //@HTMLUpdateOK; expansionChild constructed by the code above
-      if (firstChild != null)
-      {
-        div.insertBefore(_detectExpansion, firstChild);//@HTMLUpdateOK; _detectExpansion constructed by the code above
-      }
-      else
-      {
-        div.appendChild(_detectExpansion);//@HTMLUpdateOK; _detectExpansion constructed by the code above
-      }
-
-      _detectExpansion.addEventListener("scroll", _scrollListener, false);
-
-      // This child DIV will track contraction events. Its height and width are set to 200%. After we set its scrollTop and
-      // scrollLeft to the current height and width of its parent, any decrease in size will fire a scroll event
-      _detectContraction = document.createElement("div");
-      _detectContraction.className = "oj-helper-detect-contraction";
-
-      var contractionChild = document.createElement("div");
-      contractionChild.style.width = "200%";
-      contractionChild.style.height = "200%";
-      _detectContraction.appendChild(contractionChild); //@HTMLUpdateOK; contractionChild constructed by the code above
-      div.insertBefore(_detectContraction, _detectExpansion); //@HTMLUpdateOK; _detectContraction constructed by the code above
-
-      _detectContraction.addEventListener("scroll", _scrollListener, false);
-
-      this.init(false);
-      }
-  };
-
-  this.stop = function()
-  {
-    if (_invokeId != null)
-    {
-      oj.DomUtils._cancelInvokeAfterPaint(_invokeId);
-      _invokeId = null;
-    }
-    if (_detectExpansion != null)
-    {
-      _detectExpansion.removeEventListener("scroll", _scrollListener);
-      _detectContraction.removeEventListener("scroll", _scrollListener);
-      // Check before removing to prevent CustomElement polyfill from throwing
-      // a NotFoundError when removeChild is called with an element not in the DOM
-      if (_detectExpansion.parentNode)
-        div.removeChild(_detectExpansion);
-      if (_detectContraction.parentNode)
-        div.removeChild(_detectContraction);
-    }
-    else
-    {
-      // assume IE9/10
-      div.detachEvent('onresize', _resizeListener);
-    }
-  };
-
-  this.init = function(isFixup)
-  {
-    var adjusted = _checkSize(isFixup);
-    if (isFixup && !adjusted && _detectExpansion.offsetParent != null)
-    {
-      _adjust(_oldWidth, _oldHeight);
-    }
-  };
-
-
-  function _checkSize(fireEvent)
-    {
-    var adjusted = false;
-    if (_detectExpansion.offsetParent != null)
-    {
-      var newWidth = _detectExpansion.offsetWidth;
-      var newHeight = _detectExpansion.offsetHeight;
-
-      if (_oldWidth !== newWidth || _oldHeight !== newHeight)
-    {
-        _retrySetScroll = _RETRY_MAX_COUNT;
-        _adjust(newWidth, newHeight);
-        adjusted = true;
-
-        if (fireEvent)
-      {
-          _notifyListeners(true);
-      }
-      }
-    }
-
-    return adjusted;
-  };
-
-  function _notifyListeners(useAfterPaint)
-  {
-    var newWidth = div.offsetWidth;
-    var newHeight = div.offsetHeight;
-    if (_listeners.has())
-    {
-      if (!useAfterPaint)
-      {
-        _listeners.fire(newWidth, newHeight);
-    }
-      else
-    {
-        if (_invokeId !== null)
-      {
-          oj.DomUtils._cancelInvokeAfterPaint(_invokeId);
-      }
-
-        _invokeId = oj.DomUtils._invokeAfterPaint(
-        function()
-        {
-            _invokeId = null;
-            _listeners.fire(newWidth, newHeight);
-        }
-      );
-    }
-    }
-
-    for (var i=0; i < _collapsingManagers.length; i++)
-    {
-      _collapsingManagers[i].getCallback()(newWidth, newHeight);
-    }
-  };
-
-  function _handleScroll(evt)
-  {
-    evt.stopPropagation();
-    if (!_checkSize(true))
-    {
-      // Workaround for the WebKit issue where scrollLeft gets reset to 0 without the DIV being expanded
-      // We will retry to the set the scrollTop only twice to avoid infinite loops
-      if (_retrySetScroll > 0 && _detectExpansion.offsetParent != null &&
-            (_detectExpansion.scrollLeft == 0 || _detectExpansion.scrollTop == 0))
-      {
-        _retrySetScroll--;
-        _adjust(_oldWidth, _oldHeight);
-      }
-    }
-  };
-
-  function _handleResize()
-  {
-     _notifyListeners(false);
-  };
-
-  function _adjust(width, height)
-  {
-    _oldWidth = width;
-    _oldHeight = height;
-
-    var expansionChildStyle = _detectExpansion.firstChild.style;
-
-    var delta = 1;
-
-    // The following loop is a workaround for the WebKit issue with zoom < 100% -
-    // the scrollTop/Left gets reset to 0 because it gets computed to a value less than 1px.
-    // We will try up to the delta of 5 to support scaling down to 20% of the original size
-    do
-    {
-      expansionChildStyle.width = width + delta + 'px';
-      expansionChildStyle.height = height + delta + 'px';
-      _detectExpansion.scrollLeft = _detectExpansion.scrollTop = delta;
-      delta++;
-    } while ((_detectExpansion.scrollTop == 0 || _detectExpansion.scrollLeft == 0) && delta <= 5);
-
-
-    _detectContraction.scrollLeft = width;
-    _detectContraction.scrollTop = height;
-  };
-}
-
-oj.DomUtils._RESIZE_TRACKER_KEY = "_ojResizeTracker";
-
-
-/**
- * Returns true if the name is a valid identifier
- *
- * @param {string} name
- * @return {boolean} true if the name is a valid identifier
- */
-oj.DomUtils.isValidIdentifier = function (name)
-{
-  return /^[A-Za-z][0-9A-Z_a-z-]*$/.test(name);
-};
-
-
-/**
- * @constructor
- * @ignore
- */
-
-oj.DomUtils._collapsingListenerManager = function(originalCallback, timeout)
-{
-  var _lastArgs = null;
-  var _timerId = null;
-
-  var _timerCallback = function()
-  {
-    originalCallback.apply(null, _lastArgs);
-    _timerId = null;
-  };
-
-  var _callback = function()
-  {
-    _lastArgs = Array.prototype.slice.call(arguments);
-    if (_timerId == null)
-    {
-      _timerId = window.setTimeout(_timerCallback, timeout);
-    }
-  };
-
-  this.getCallback = function()
-  {
-    return _callback;
-  };
-
-  this.stop = function()
-  {
-    if (_timerId != null)
-    {
-      window.clearTimeout(_timerId);
-      _timerId = null;
-    }
-  }
-
-};
-
-/**
- * @return {boolean} true if touch is supported
- */
-oj.DomUtils.isTouchSupported = function ()
-{
-  return ('ontouchstart' in window) // C, FF, Safari, Edge
-    || (navigator.msMaxTouchPoints > 0) // IE10
-    || (navigator.maxTouchPoints > 0);  // IE11
-};
-
-/**
- * @ignore
- */
-oj.DomUtils.setInKoRemoveNode = function(node)
-{
-  oj.DomUtils._koRemoveNode = node;
-};
-
-/**
- * Delegates to JQuery's unwrap() if the component's node is not currently
- * being removed by Knockout
- * @param {Object} locator
- * @param {Object=} replaceLocator - locator to be replaced. I fthis parameter is ommitted,
- * the parent node will be replaced
- * @ignore
- */
-oj.DomUtils.unwrap = function(locator, replaceLocator)
-{
-  var koRemoveNode = oj.DomUtils._koRemoveNode;
-  if (!(koRemoveNode && koRemoveNode == locator.parent().get(0)))
-  {
-    if (arguments.length > 1)
-    {
-      replaceLocator.replaceWith(locator); // @HtmlUpdateOk
-    }
-    else
-    {
-      locator.unwrap();
-    }
-  }
-};
-
-/**
- * Determines if the mouse event target is on browser chrome - i.e. "scrollbar".
- * If the event is not a mouse event with a clientX and clientY, the resultant will
- * be false.
- *
- * @param {Event} event native dom event
- * @returns {boolean} <code>true</code> if the target of the mouse event is browser
- *          chrome such as scrollbars.
- * @public
- */
-oj.DomUtils.isChromeEvent = function(event)
-{
-
-  /**
-   * @param {Event} event
-   * @return {boolean}
-   */
-  function _isChromeEventGecko(event) {
-    // assume that if we can't access the original target of the event, then it's because
-    // the target was implemented in XUL and is part of the chrome;
-    try
-    {
-      return event.originalTarget.localName ? false : true;
-    }
-    catch (e)
-    {
-      return true;
-    }
-  };
-
-  /**
-   * @param {Event} event
-   * @return {boolean}
-   */
-  function _isChromeEventIE(event)
-  {
-    /*
-      //IE has a specific API for this but doesn't seem to want to work in automation.
-      //The webkit method works in IE too.  Using that over componentFromPoint but leaving
-      //the code for future reference.
-      //
-      var target = event.target;
-      var chromePart = target.componentFromPoint(event.clientX, event.clientY);
-      if (oj.StringUtils.isEmpty(chromePart))
-        return false;
-      else
-        return true;
-    */
-    return _isChromeEventWebkit(event);
-  };
-
-  /**
-   * @param {Event} event
-   * @return {boolean}
-   */
-  function _isChromeEventWebkit(event)
-  {
-    var domTarget = event.target;
-    var target = $(domTarget);
-
-
-    var pos = domTarget.getBoundingClientRect();
-    var sbw = oj.DomUtils.getScrollBarWidth();
-    var isLTR = oj.DomUtils.getReadingDirection() === "ltr";
-    if (isLTR && (("HTML" === domTarget.nodeName || "visible" !== target.css("overflow-x")) && event.clientX > (pos["right"] - sbw)))
-      return true; // ltr scrollbar is always on the right
-    else if (!isLTR && "HTML" === domTarget.nodeName  && event.clientX > (pos["left"] - sbw))
-      return true; // RTL scrollbar on the document is still on the right
-    else if (!isLTR && "visible" !== target.css("overflow-x") && event.clientX < (pos["left"] + sbw))
-      return true; // RTL scrollbar not on the document is on the left
-    else if (("HTML" === domTarget.nodeName || "visible" !== target.css("overflow-y")) && event.clientY > (pos["bottom"] - sbw))
-      return true; // below the scrollbar
-    else
-      return false;
-  };
-
-  // verify event is a mouse event
-  if (!('clientX' in event) || !("clientY" in event))
-    return false;
-
-  var agentInfo = oj.AgentUtils.getAgentInfo();
-
-  if (oj.AgentUtils.OS.ANDROID === agentInfo["os"] || oj.AgentUtils.OS.IOS === agentInfo["os"])
-    return false;
-
-  if (oj.AgentUtils.ENGINE.GECKO === agentInfo["engine"])
-    return _isChromeEventGecko(event);
-  else if (oj.AgentUtils.ENGINE.WEBKIT === agentInfo["engine"] ||
-           oj.AgentUtils.ENGINE.BLINK === agentInfo["engine"])
-    return _isChromeEventWebkit(event);
-  if (oj.AgentUtils.BROWSER.IE === agentInfo["browser"])
-    return _isChromeEventIE(event);
-  else
-    return false;
-};
-
-/**
- * @returns {number} width of the browser scrollbar
- */
-oj.DomUtils.getScrollBarWidth = function()
-{
-  var scrollBarWidth = oj.DomUtils._scrollBarWidth;
-  if ($.isNumeric(scrollBarWidth))
-    return scrollBarWidth;
-
-  /** @type {jQuery} **/
-  var scrollBarMeasure = $("<div />");
-  $(document.body).append(scrollBarMeasure); //@HTMLUpdateOK; scrollBarMeasure constructed by the code above
-  scrollBarMeasure.width(50).height(50)
-    .css({
-            'overflow': 'scroll',
-            'visibility': 'hidden',
-            'position': 'absolute'
-        });
-
-  /** @type {jQuery} **/
-  var scrollBarMeasureContent = $("<div />");
-  scrollBarMeasureContent.height(1);
-  scrollBarMeasure.append(scrollBarMeasureContent);  //@HTMLUpdateOK; scrollBarMeasureContent constructed by the code above
-
-  var insideWidth = scrollBarMeasureContent.width();
-  var outsideWitdh = scrollBarMeasure.width();
-  scrollBarMeasure.remove();
-
-  scrollBarWidth = oj.DomUtils._scrollBarWidth = outsideWitdh - insideWidth;
-  return scrollBarWidth;
-};
-
-/**
- * @returns {string!} "rtl" or "ltr"
- */
-oj.DomUtils.getReadingDirection = function()
-{
-  var dir = document.documentElement.getAttribute("dir");
-  if (dir)
-    dir = dir.toLowerCase();
-  return (dir === "rtl") ? "rtl" : "ltr";
-};
-
-/**
- * Retrieve the bidi independent position of the horizontal scroll position that
- * is consistent across all browsers.
- * @param {Element} elem the element to retrieve the scrollLeft from
- * @return {number} the element's scrollLeft
- */
-oj.DomUtils.getScrollLeft = function(elem)
-{
-  if (oj.DomUtils.getReadingDirection() === "rtl")
-  {
-    var browser = oj.AgentUtils.getAgentInfo()['browser'];
-    if (browser === oj.AgentUtils.BROWSER.FIREFOX || browser === oj.AgentUtils.BROWSER.IE || browser === oj.AgentUtils.BROWSER.EDGE)
-    {
-      return Math.abs(elem.scrollLeft);
-    }
-    else
-    {
-      // webkit
-      return Math.max(0, elem.scrollWidth - elem.clientWidth - elem.scrollLeft);
-    }
-  }
-  else
-  {
-    return elem.scrollLeft;
-  }
-};
-
-/**
- * Sets the bidi independent position of the horizontal scroll position that
- * is consistent across all browsers.
- * @param {Element} elem the element to set the scrollLeft on
- * @param {number} scrollLeft the element's new scrollLeft
- */
-oj.DomUtils.setScrollLeft = function(elem, scrollLeft)
-{
-  if (oj.DomUtils.getReadingDirection() === "rtl")
-  {
-    var browser = oj.AgentUtils.getAgentInfo()['browser'];
-    if (browser === oj.AgentUtils.BROWSER.FIREFOX)
-    {
-      // see mozilla bug 383026, even though it's marked as fixed, they basically
-      // did not change anything.  It still expects a negative value for RTL
-      elem.scrollLeft = -scrollLeft;
-    }
-    else if (browser === oj.AgentUtils.BROWSER.IE || browser === oj.AgentUtils.BROWSER.EDGE)
-    {
-      elem.scrollLeft = scrollLeft;
-    }
-    else
-    {
-      // webkit
-      elem.scrollLeft = Math.max(0, elem.scrollWidth - elem.clientWidth - scrollLeft);
-    }
-  }
-  else
-  {
-    elem.scrollLeft = scrollLeft;
-  }        
-};
-
-/**
- * Converts a CSS length attribute into a integer value.
- * Conversion errors or non-number will result in a zero
- * resultant.
- *
- * @param {?} cssLength style attribute
- * @return {number} value as integer
- */
-oj.DomUtils.getCSSLengthAsInt = function(cssLength)
-{
-  if (!isNaN(cssLength))
-    return parseInt(cssLength, 10);
-
-  if (cssLength && cssLength.length > 0 && cssLength != "auto")
-  {
-    var intLength = parseInt(cssLength, 10);
-
-    if (isNaN(intLength))
-      intLength = 0;
-
-    return intLength;
-  }
-  else
-  {
-    return 0;
-  }
-};
-
-/**
- * Converts a CSS attribute into a float value.
- * Conversion errors or non-number will result in a zero
- * resultant.
- *
- * @param {?} cssLength style attribute
- * @return {number} value as integer
- */
-oj.DomUtils.getCSSLengthAsFloat = function(cssLength)
-{
-  if (!isNaN(cssLength))
-    return parseFloat(cssLength);
-
-  if (cssLength && cssLength.length > 0)
-  {
-    var floatLength = parseFloat(cssLength);
-
-    if (isNaN(floatLength))
-      floatLength = 0;
-
-    return floatLength;
-  }
-  else
-  {
-    return 0;
-  }
-};
-
-/**
- * Key used to store the logical parent of the popup element
- * as a jQuery data property. The logical parent refers the launcher of a popup.
- * @const
- * @private
- * @type {string}
- */
-oj.DomUtils._LOGICAL_PARENT_DATA = "oj-logical-parent";
-
-/**
- * This method returns the launcher of a popup when it's open.
- * Returns undefined otherwise.
- *
- * @param {jQuery} element jquery element
- * @returns {*}
- * @see #setLogicalParent
- */
-oj.DomUtils.getLogicalParent = function(element)
-{
-  if (element)
-    return element.data(oj.DomUtils._LOGICAL_PARENT_DATA);
-
-  return undefined;
-};
-
-/**
- * Set the logical parent as a jQuery data property
- *
- * @param {jQuery} element jquery element
- * @param {jQuery | null} parent jquery element
- * @see #getLogicalParent
- */
-oj.DomUtils.setLogicalParent = function(element, parent)
-{
-  if (! element)
-    return;
-
-  if (parent === null)
-    element.removeData(oj.DomUtils._LOGICAL_PARENT_DATA);
-  else
-    element.data(oj.DomUtils._LOGICAL_PARENT_DATA, parent);
-};
-
-/**
- * Checks to see if the "ancestorNode" is a logical ancestor of "node"
- *
- * @param {!Element} ancestorNode dom subtree to check to see if the target node exists
- * @param {!Element} node target node to check to see if it exists within a subtree rooted at the ancestorNode
- * @return {boolean} <code>true</code> if the "ancestorNode" is a logical ancestor of "node" or if they are the same
- */
-oj.DomUtils.isLogicalAncestorOrSelf = function (ancestorNode, node)
-{
-  oj.Assert.assertDomElement(ancestorNode);
-  oj.Assert.assertDomElement(node);
-
-  var parentNode = node;
-  while (parentNode)
-  {
-    if (parentNode == ancestorNode)
-      return true;
-
-    var logicalParent = oj.DomUtils.getLogicalParent($(parentNode));
-    if (logicalParent)
-      parentNode = logicalParent[0];
-    else
-      parentNode = parentNode.parentNode;
-  }
-
-  return false;
-
-};
-
-
-/**
- * Checks whether the href represents a safe URL
- * @param {!string} href - HREF to test
- * @param {Array=} whitelist - optional list of the allowed protocols. Protocol name has to use lowercase latters and
- * be followed by a ':'. If the parameter is ommitted, ['http:', 'https:'] will be used
- * @throws {Exception} an error if the HREF represents an invalid URL
- * @ignore
- */
-oj.DomUtils.validateURL = function(href, whitelist)
-{
-  var allowed = whitelist || ['http:', 'https:'];
-
-  var link = document.createElement('a');
-  link.href = href;
-
-  var protocol = link.protocol;
-  if (protocol != null)
-  {
-    protocol = protocol.toLowerCase();
-  }
-
-  if (allowed.indexOf(protocol) < 0)
-  {
-    throw protocol + " is not a valid URL protocol";
-  }
-};
-
-/**
- * Cancels native context menu events for hybrid mobile applications.
- * @private
- */
-oj.DomUtils._supressNativeContextMenu = function()
-{
-  if ($(document.body).hasClass("oj-hybrid")) {
-    document.body.addEventListener('contextmenu',
-      function(event) {
-        event.preventDefault();
-      }, true);
-  }
-}
-oj.DomUtils._supressNativeContextMenu();
-
-// standard duration of a pressHold gesture.  Point of reference: default
-// JQ Mobile threshold to be a press-and-hold is 750ms.
-oj.DomUtils.PRESS_HOLD_THRESHOLD = 750;
-
-
-// ------------------------------------------------------------------------------------------------
-// Recent touch end
-// ------------------------------------------------------------------------------------------------
-
-/**
- * Returns true if a touchend or touchcancel has been detected anywhere in the document in the last 500 ms.
- * Note: This function adds event listeners only once per document load.
- *
- * @return {boolean} boolean indicating whether a touch has recently been detected
- */
-oj.DomUtils.recentTouchEnd = (function()
-{
-  // This function is immediately executed and returns the recentTouchEnd function
-  // and therefore only execute once per document load.
-
-  var touchTimestamp = 0;
-  var TOUCH_THRESHOLD = 500;
-
-  function _touchEndHandler() {
-    touchTimestamp = Date.now();
-  };
-
-  // --- Document listeners ---
-  document.addEventListener("touchend", _touchEndHandler, true);
-  document.addEventListener("touchcancel", _touchEndHandler, true);
-
-  // --- The function assigned to oj.DomUtils.recentTouchEnd ---
-
-  return function()
-  {
-    // must be at least 300 for the "300ms" delay
-    return (Date.now() - touchTimestamp) < TOUCH_THRESHOLD;
-  };
-})();
-
-/**
- * Returns true if a touchstart has been detected anywhere in the document in the last 800 ms.
- * Note: This function adds event listeners only once per document load.
- *
- * @return {boolean} boolean indicating whether a touch has recently been detected
- */
-oj.DomUtils.recentTouchStart = (function()
-{
-  // This function is immediately executed and returns the recentTouchStart function
-  // and therefore only execute once per document load.
-
-  var touchTimestamp = 0;
-  // 800 because this is used to ignore mouseenter and focusin on 'press', and a 'press'
-  // is usually detected after 750ms.
-  var TOUCH_THRESHOLD = oj.DomUtils.PRESS_HOLD_THRESHOLD + 50;
-
-  function _touchStartHandler() {
-    touchTimestamp = Date.now();
-  };
-
-  // --- Document listeners ---
-  document.addEventListener("touchstart", _touchStartHandler, true);
-
-  // --- The function assigned to oj.DomUtils.recentTouchStart ---
-
-  return function()
-  {
-    // must be at least TOUCH_THRESHOLD for the  delay
-    return (Date.now() - touchTimestamp) < TOUCH_THRESHOLD;
-  };
-})();
-
-// ------------------------------------------------------------------------------------------------
-// Recent pointer
-// ------------------------------------------------------------------------------------------------
-
-/**
- * Returns true if a touchstart, touchend, mousedown, or mouseup has been detected anywhere in the
- * document in the last n ms, where n is calibrated across a variety of platforms to make this API
- * a maximally reliable indicator of whether the code now running was likely "caused by" the
- * specified touch and mouse interaction, vs. some other thing (e.g. mousemove, keyboard, or page
- * load).  E.g. the makeFocusable() / _focusable() mechanism uses this API to vary the focus theming
- * depending on whether the element was focused via keyboard or pointer.
- *
- * @return {boolean} boolean indicating whether a mouse button or finger has recently been down or up
- */
-oj.DomUtils.recentPointer = (function()
-{
-  // The comments in this function are tailored to the makeFocusable() usage.
-
-  // - Let "pointer down" mean mousedown or touchstart, and "pointer up" likewise.  (Not MS pointer events.)
-  // - Event order can be 1) mousedown>focus>mouseup (like push buttons) or 2) mousedown>mouseup>focus (like toggle buttons).
-  // - For 2, semantics for "focus caused by pointer" must be "if pointer interaction in last n ms," rather than "if pointer is currently down".
-  // - Those "last n ms" semantics are preferred for 1 as well, rather than relying on pointer up to cancel a state set by pointer down,
-  //   since if the pointer up is never received, we'd get stuck in an inaccessible state.
-  // - So both pointer down and pointer up set a timestamp, and recentPointer() returns true if Date.now() is within n ms of that timestamp,
-  //   where n is higher for touchstart per below.
-
-  // Timestamp of last mousedown/up or touchstart/end. Initial value of 0 (1/1/1970) guarantees that if element is focused before any
-  // mouse/touch interaction, then recentPointer() is false, so focus ring appears as desired.
-  var pointerTimestamp = 0;
-
-  var pointerTimestampIsTouchStart; // whether the latest timestamp is for touchstart vs. touchend/mouse
-
-  // On Edge (Surface Win10), the lag from the up event to resulting programmatic focus is routinely ~350ms, even when the 300ms "tap delay" has
-  // been prevented and confirmed to be absent.  (In Chrome on same device the same lag is ~10 ms.)  So use 600ms to be safe.  Even on Chrome,
-  // the lag from the down/up event to natively induced focus can routinely be well into the 1xx ms range. Can exceed 600 if needed. There is no
-  // need for a tight bound; if there was pointer interaction in the last second or so, it's perfectly reasonable to suppress the focus ring.
-  var POINTER_THRESHOLD_CUSHION = 600;
-
-  // If the number of millis since the last pointer down or up is < this threshold, then recentPointer() considers it recent and returns true.
-  // See also TOUCHSTART_THRESHOLD.
-  var POINTER_THRESHOLD = POINTER_THRESHOLD_CUSHION;
-
-  // For touchstart only, use 750+600ms so that focus set by a 750ms pressHold gesture (e.g. context menu) is recognized as touch-related.  Same
-  // 600ms padding as for POINTER_THRESHOLD.  A high threshold is OK, as it is used only for actual pressHolds (and the unusual case where the
-  // pointer up is never received), since for normal clicks and taps, the pointerUp replaces the "1350ms after touchstart" policy with a "600ms
-  // after pointerUp" policy. On Edge and desktop FF (desktop version runs on hybrid devices like Surface), which lack touchstart, context menus
-  // are launched by the contextmenu event, which happen after the pointer up in both browsers, so the fact that we're using the higher
-  // threshold only for touchstart should not be a problem there.
-  var TOUCHSTART_THRESHOLD = oj.DomUtils.PRESS_HOLD_THRESHOLD + POINTER_THRESHOLD_CUSHION;
-
-
-  // --- Document listeners ---
-
-  // Use capture phase to make sure we hear the events before someone cancels them
-  document.addEventListener("mousedown", function() {
-    // If the mousedown immediately follows a touchstart, i.e. if it seems to be the compatibility mousedown
-    // corresponding to the touchstart, then we want to consider it a "recent pointer activity" until the end time
-    // that is max(touchstartTime + TOUCHSTART_THRESHOLD, now + POINTER_THRESHOLD), where now is mousedownTime in this
-    // case.  (I.e. it would defeat the purpose if the inevitable mousedown replaced the longer touchstart threshold with
-    // a shorter one.)  We don't do this in the touchend/mouseup listeners, as those obviously happen after the pressHold
-    // is over, in which case the following analysis applies:
-    // - If the pressHold was < PRESS_HOLD_THRESHOLD ms,
-    // - then the higher TOUCHSTART_THRESHOLD is not needed or relevant, since anything focused on pressHold
-    //   (like a context menu) never happened,
-    // - else the touchend/mouseup happened > PRESS_HOLD_THRESHOLD ms after the touchstart, so in the max() above,
-    //   the 2nd quantity is always bigger (later).
-    var now = Date.now();
-    if ((!pointerTimestampIsTouchStart) || (now > pointerTimestamp + oj.DomUtils.PRESS_HOLD_THRESHOLD)) {
-      pointerTimestamp = now;
-      pointerTimestampIsTouchStart = false;
-    }
-  }, true);
-
-  document.addEventListener("touchstart", function() {
-    pointerTimestamp = Date.now();
-    pointerTimestampIsTouchStart = true;
-  }, true);
-
-  document.addEventListener("mouseup", function() {
-    pointerTimestamp = Date.now();
-    pointerTimestampIsTouchStart = false;
-  }, true);
-
-  document.addEventListener("touchend", function() {
-    pointerTimestamp = Date.now();
-    pointerTimestampIsTouchStart = false;
-  }, true);
-
-
-  // --- The function assigned to oj.DomUtils.recentPointer ---
-
-  return function()
-  {
-    var millisSincePointer = Date.now() - pointerTimestamp;
-    var threshold = pointerTimestampIsTouchStart ? TOUCHSTART_THRESHOLD : POINTER_THRESHOLD;
-    var isRecent = millisSincePointer < threshold;
-    return isRecent;
-  };
-})();
-
-
-// ------------------------------------------------------------------------------------------------
-// Utility for suppressing focus ring for mouse/touch interaction, but not KB or other interaction:
-// ------------------------------------------------------------------------------------------------
-
-/**
- * This API works like baseComponent's _focusable() API (see its detailed JSDoc), with the
- * similarities and differences listed below.  This API is intended for non-component callers;
- * components should typically call the baseComponent API via this._focusable().
- *
- * Comparison to baseComponent._focusable() :
- *
- * - This function's "options" param must be an object.  Only baseComponent._focusable()
- *   supports the backward-compatibility syntax where the options param can be the element.
- * - Same usage of oj-focus, oj-focus-highlight, and $focusHighlightPolicy.
- * - Same required invariant that oj-focus-highlight must not be set if oj-focus is not set.
- * - Same parameters with same semantics, plus the additional "component" and "remove" params
- *   discussed below.
- * - New options.component param, which takes a JET component instance.  (When a component is
- *   involved, typically that component should call this._focusable() rather than calling this
- *   version of the method directly.)
- *
- * If options.component is specified, then the following things work like the baseComponent
- * version of this API:
- *
- * - If the specified element is in the component subtree,
- *   then the classes will automatically be removed when the component is
- *   destroyed/disabled/detached, as detailed in the baseComponent JSDoc,
- *   else the caller has the same responsibility to remove the classes at those times.
- * - Same rules as to whether listeners are automatically cleaned up, or suppressed when the
- *   component is disabled, vs. being the caller's responsibility to handle those things.
- *
- * If options.component is NOT specified (for non-component callers), then those things are
- * the caller's responsibility.  Specifically:
- *
- * - Class removal can be done directly, as needed.
- * - To remove the listeners, see the following.
- *
- * Listener removal:
- *
- * - If options.component was specified, see above.
- * - Else if options.setupHandlers was specified, then only the caller knows what listeners were
- *   registered and how, so it is the caller's responsibility to remove them directly when needed.
- * - The remaining case is that options.component and options.setupHandlers were not specified.
- *   To remove from element e both the 2 classes and all listeners applied to e by all previous
- *   invocations of makeFocusable() where these options were not specified,
- *   call makeFocusable( {'element': e, 'remove': true} ).
- */
-// If this is named focusable(), Closure Compiler generates a warning, and fails to rename the function in minified code,
-// which suggests that focusable (not just _focusable) is apparently externed somewhere (although not in
-// 3rdparty\jquery\externs\jquery-1.8.js, main\javascript\externs.js, or build\tools\closure\compiler.jar\externs.zip\),
-// perhaps for JQUI's :focusable selector.  So name it makeFocusable().
-oj.DomUtils.makeFocusable = (function()
-{
-  var nextId = 0; // used for unique namespace, for "remove" functionality
-
-  // This private var is shared by all callers that use makeFocusable() and don't supply their own focus highlight policy.
-  // If the oj-focus-config SASS object ever acquires a 2nd field, should continue to call pJFFF() only once, statically.
-  var FOCUS_HIGHLIGHT_POLICY = (oj.ThemeUtils.parseJSONFromFontFamily('oj-focus-config') || {})['focusHighlightPolicy'];
-
-  /**
-   * @param {function()} focusPolicyCallback Optional getter passed to makeFocusable() by callers wishing to get use a caller-
-   *   specific focus policy mechanism instead of the built-in mechanism.
-   * @param {function()} recentPointerCallback Optional function passed to makeFocusable() by callers wishing to use a caller-
-   *   specific mechanism in addition to the built-in mechanism.
-   * @return {boolean} boolean indicating whether it is appropriate to apply the <code class="prettyprint">oj-focus-highlight</code>
-   *   CSS class for a focus happening at the time of this method call.
-   */
-  var shouldApplyFocusHighlight = function(focusPolicyCallback, recentPointerCallback)
-  {
-    var focusHighlightPolicy = focusPolicyCallback ? focusPolicyCallback() : FOCUS_HIGHLIGHT_POLICY;
-    switch (focusHighlightPolicy)
-    {
-      case "all":
-        return true;
-      case "none":
-        return false;
-      default: // "nonPointer" or no value provided (e.g. SASS var missing)
-        return !( oj.DomUtils.recentPointer() || (recentPointerCallback && recentPointerCallback()) );
-    }
-  };
-
-  // the function assigned to oj.DomUtils.makeFocusable
-  var makeFocusable = function( options )
-  {
-    var element = options['element'];
-
-    var dataKey = "ojFocusable";
-    var namespacePrefix = "." + dataKey;
-    var namespaceSeparator = " " + namespacePrefix;
-
-    if (options['remove']) {
-      element.removeClass("oj-focus oj-focus-highlight");
-
-      // id's of listeners needing removal
-      var ids = element.data(dataKey);
-      if (ids == undefined)
-          return;
-
-      // map ids to namespaces.  "2" -> ".ojFocusable2".  "2,7" -> ".ojFocusable2 .ojFocusable7"
-      var namespaces = namespacePrefix + (""+ids).split(",").join(namespaceSeparator);
-      element.off(namespaces) // remove the listeners
-             .removeData(dataKey); // clear list of listener id's needing removal
-      return;
-    }
-
-    var afterToggle = options['afterToggle'] || $.noop;
-
-    var applyOnlyFocus = function( element ) {
-      element.addClass( "oj-focus" );
-      afterToggle("focusin");
-    };
-
-    var applyBothClasses = function( element ) {
-      element.addClass( "oj-focus" );
-      if (shouldApplyFocusHighlight(options['getFocusHighlightPolicy'], options['recentPointer'])) {
-        element.addClass( "oj-focus-highlight" );
-      }
-      afterToggle("focusin");
-    };
-
-    var addClasses = options['applyHighlight'] ? applyBothClasses : applyOnlyFocus;
-
-    var removeClasses = function( element ) {
-      element.removeClass( "oj-focus oj-focus-highlight" );
-      afterToggle("focusout");
-    };
-
-    var setupHandlers = options['setupHandlers'] || function( focusInHandler, focusOutHandler) {
-      var component = options['component'];
-      var focusInListener = function( event ) {
-        focusInHandler($( event.currentTarget ));
-      };
-      var focusOutListener = function( event ) {
-        focusOutHandler($( event.currentTarget ));
-      }
-
-      if (component) {
-        component._on( element, {
-          focusin: focusInListener,
-          focusout: focusOutListener
-        });
-      } else {
-        // neither options.component nor options.setupHandlers were passed, so we must provide a
-        // way for the caller to remove the listeners.  That's done via the "remove" param, which
-        // uses the namespaces that we stash via data().
-        var id = nextId++;
-
-        // list of id's of existing listeners needing removal
-        var ids = element.data(dataKey);
-
-        // append id to that list, or start new list if first one
-        element.data(dataKey, ids == undefined ? id : ids + "," + id);
-
-        // add listeners namespaced by that id
-        var handlers = {};
-        var namespace = namespacePrefix + id;
-        handlers["focusin" + namespace] = focusInListener;
-        handlers["focusout" + namespace] = focusOutListener;
-        element.on(handlers);
-      }
-    };
-
-    setupHandlers(addClasses, removeClasses);
-  };
-
-  return makeFocusable;
-})();
 /**
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
@@ -6459,16 +5141,6 @@ oj.ComponentValidity.prototype.isInvalid = function ()
 };
 
 /**
- * Returns a boolean true if has messages to show; false if no messages to show
- * @returns {boolean}
- * @private
- */
-oj.ComponentValidity.prototype.hasMessages = function () 
-{
-  return this._messages.length > 0;
-};
-
-/**
  * Returns an Array or messages that we are marked for immediate display or an empty array.
  * @private
  * @returns {Array}
@@ -6533,7 +5205,774 @@ oj.ComponentValidity.prototype._getImmediateMessages = function ()
   return immediateMsgs;
 };
 
-var DataProviderFeatureChecker = (function () {
+/**
+ * JET component custom element bridge.
+ * 
+ * This bridge ensures that JET components with child JET custom elements 
+ * can access child properties before the child busy state resolves. 
+ * This bridge does not guarantee that all properties for the child 
+ * will be available to the application before its busy states resolves, 
+ * e.g data bound attribute values. 
+ * 
+ * Applications should still wait on the element or page level 
+ * busy context before accessing properties or methods.
+ * 
+ * @class
+ * @ignore
+ */
+oj.CustomElementBridge = {};
+
+/**
+ * Prototype for the JET component custom element bridge instance
+ */
+oj.CustomElementBridge.proto = Object.create(oj.BaseCustomElementBridge.proto);
+
+oj.CollectionUtils.copyInto(oj.CustomElementBridge.proto,
+{
+  AddComponentMethods: function(proto) 
+  {
+    // Add subproperty getter/setter
+    proto['setProperty'] = function(prop, value) 
+    {
+      var bridge = oj.BaseCustomElementBridge.getInstance(this);
+      if (!bridge.SaveEarlyPropertySet(prop, value))
+      {
+        if (!bridge._setEventProperty(this, prop, value) && 
+            !bridge._validateAndSetCopyProperty(this, prop, value, null)) 
+        {
+          // If not an event or copy property, check to see if it's a component specific property
+          var meta = oj.BaseCustomElementBridge.__GetPropertyMetadata(prop, oj.BaseCustomElementBridge.getProperties(bridge, this));
+          // This check is currently used for translation subproperties which don't all have metadata. We will eventually
+          // remove this check once our metadata is generated from our jsDoc, but need this for now in 4.0 so component owners
+          // don't need to all update their translations metadata.
+          var canSkipTypeCheck = bridge.CanSkipTypeCheck(prop.split('.'));
+          
+          // For non component specific properties, just set directly on the element instead.
+          if (!meta && !canSkipTypeCheck)
+            this[prop] = value;
+          else
+            oj.CustomElementBridge._getPropertyAccessor(this, prop)(value); 
+        }
+      }
+    };
+    proto['getProperty'] = function(prop) 
+    { 
+      var bridge = oj.BaseCustomElementBridge.getInstance(this);
+      var meta = oj.BaseCustomElementBridge.__GetPropertyMetadata(prop, oj.BaseCustomElementBridge.getProperties(bridge, this));
+      var canSkipTypeCheck = bridge.CanSkipTypeCheck(prop.split('.'));
+      var event = oj.__AttributeUtils.eventListenerPropertyToEventType(prop);
+
+      // For event listeners and non component specific properties, return the property from the element.
+      // Otherwise, return the widget property and let the widget handle dot notation for subproperties.
+      if (event || (!meta && !canSkipTypeCheck))
+        return this[prop];
+      else
+      {
+        var ext = meta ? meta["extension"] : null;
+
+        if (ext && ext._COPY_TO_INNER_ELEM)
+          return bridge._getCopyProperty(this, prop, meta);
+        else
+          return oj.CustomElementBridge._getPropertyAccessor(this, prop)();
+      }
+    };
+    // Override HTMLELement's focus/blur methods so we can call focus/blur on an inner element if needed.
+    proto['focus'] = function()
+    {
+      var bridge = oj.BaseCustomElementBridge.getInstance(this);
+      // If focus is called before the component has been created there
+      // will be no saved widget instance yet so call the HTMLElement
+      // focus instead.
+      if (bridge._WIDGET_INSTANCE)
+      {
+        var focusElem = bridge._WIDGET_INSTANCE.__getFocusElement();
+        if (focusElem !== this)
+          focusElem.focus();
+        else
+          HTMLElement.prototype.focus.call(this);
+      }
+      else
+      {
+        HTMLElement.prototype.focus.call(this);
+      }
+    };
+    proto['blur'] = function()
+    {
+      var bridge = oj.BaseCustomElementBridge.getInstance(this);
+      if (bridge._WIDGET_INSTANCE)
+      {
+        var focusElem = bridge._WIDGET_INSTANCE.__getFocusElement();
+        if (focusElem !== this)
+          focusElem.blur();
+        else
+          HTMLElement.prototype.blur.call(this);
+      }
+      else
+      {
+        HTMLElement.prototype.focus.call(this);
+      }
+    };
+  },
+  
+  BatchedPropertySet: function(elem, props)
+  {
+    var keys = Object.keys(props);
+    var processedMap  = {};
+    
+    for (var i=0; i<keys.length; i++)
+    {
+      var property = keys[i];
+      var value = props[property];
+      
+      // exclude event proprties and transfer attributes from batch updates
+      if (!this._setEventProperty(elem, property, value) && 
+          !this._validateAndSetCopyProperty(elem, property, value, null))
+      {
+        value = this.ValidatePropertySet(elem, property, value);
+        
+        property = this.GetAliasForProperty(property);
+        processedMap[property] = value;
+      }
+    }
+    // Skip batched property sets if widget constructor isn't available meaning
+    // the widget wasn't instantiated due to an error on creation or destroyed.
+    var widgetConstructor = oj.Components.__GetWidgetConstructor(this._WIDGET_ELEM);
+    if (widgetConstructor)
+      widgetConstructor('option', processedMap);
+    else
+    {
+      for (var i=0; i<keys.length; i++)
+      {
+        var key = keys[i];
+        elem['setProperty'](key, props[key]);
+      }
+    } 
+  },
+
+  CanSkipTypeCheck: function(propAr)
+  {
+    // TODO: Remove method post 4.0.0 after metadata is generated from jsDoc.
+    // Temporary fix for JET component translation subproperties that are not specified in metadata.
+    return propAr.length > 1 && propAr[0] === 'translations';
+  },
+
+  CreateComponent: function(element)
+  {
+    var innerDomFun = this._INNER_DOM_FUNCTION;
+    this._WIDGET_ELEM = oj.CustomElementBridge._getWidgetElement(element, innerDomFun ? innerDomFun(element) : this._EXTENSION._INNER_ELEM);
+
+    // Transfer global attributes and copy tagged properties to child element if one exists
+    if (this._WIDGET_ELEM !== element) 
+    {
+      var transferAttrs = this._EXTENSION._GLOBAL_TRANSFER_ATTRS || [];
+      for (var i = 0; i < transferAttrs.length; i++)
+      {
+        var attr = transferAttrs[i];
+        if (element.hasAttribute(attr))
+        {
+          this._WIDGET_ELEM.setAttribute(attr, element.getAttribute(attr));
+          // Remove attribute from custom element after transfering value to inner element
+          // Set a flag so we know that we're removing the attribute, not app so
+          // that on attribute changed we don't remove it again
+          this._removingTransfer = true;
+          element.removeAttribute(attr);
+        }
+      }
+
+      this._copyProperties();
+
+      // Setup blur/focus listeners on inner element so we can trigger on the root custom element for 
+      var getFocusEventPropagator = function(type) {
+        return function() {
+          // Ensure that the target is the custom element, not the inner element, so create
+          // a new event and dispatch on the custom element.
+          var focusEvent = document.createEvent('UIEvent');
+          focusEvent.initEvent(type, false, false);
+          element.dispatchEvent(focusEvent);
+        };
+      }
+      this._WIDGET_ELEM.addEventListener("focus", getFocusEventPropagator("focus"));
+      this._WIDGET_ELEM.addEventListener("blur", getFocusEventPropagator("blur"));
+    }
+
+    oj.Components.unmarkPendingSubtreeHidden(element);
+
+    // Initialize jQuery object with options and pass element as wrapper if needed
+    var locator = $(this._WIDGET_ELEM);
+    var widgetConstructor = $(this._WIDGET_ELEM)[this._EXTENSION._WIDGET_NAME].bind(locator);
+    widgetConstructor(this._PROPS);
+    this._WIDGET = widgetConstructor;
+    this._WIDGET_INSTANCE = widgetConstructor('instance');
+
+    if (this._WRITEBACK_PROPS)
+      this._WIDGET_INSTANCE.__saveWritebackOptions(this._WRITEBACK_PROPS);
+
+
+    // After parsing the DOM attribute values and initializing properties, remove the disabled
+    // property if it exists due to 
+    if (element.hasAttribute('disabled') && !this._disabledProcessed)
+      oj.CustomElementBridge._removeDisabledAttribute(element);
+
+    // Set flag when we can fire property change events
+    this.__READY_TO_FIRE = true;
+
+    // Resolve the component busy state 
+    this.resolveDelayedReadyPromise();
+  },
+
+  DefineMethodCallback: function (proto, method, methodMeta) 
+  {
+    proto[method] = function()
+    {
+      var bridge = oj.BaseCustomElementBridge.getInstance(this);
+      var methodName = methodMeta['internalName'] || method;
+      // Pass in null as thisArg to apply since the widget constructor is prebound to the jQuery element
+      return bridge._WIDGET.apply(null, [methodName].concat([].slice.call(arguments)));
+    };
+  },
+  
+  DefinePropertyCallback: function (proto, property, propertyMeta) 
+  {
+    var listener;
+    var ext = propertyMeta["extension"];
+    Object.defineProperty(proto, property, 
+    {
+      'enumerable': true,
+      'get': function() 
+      { 
+        if (propertyMeta._eventListener)
+        {
+          return listener;
+        }
+        else if (ext && ext._COPY_TO_INNER_ELEM)
+        {
+          var bridge = oj.BaseCustomElementBridge.getInstance(this);
+          return bridge._getCopyProperty(this, property, propertyMeta);
+        }
+        else
+        {
+          return oj.CustomElementBridge._getPropertyAccessor(this, property)();
+        }
+      },
+      'set': function(value) 
+      {       
+        var bridge = oj.BaseCustomElementBridge.getInstance(this);
+        // Properties can be set before the component is created. These early
+        // sets are actually saved until after component creation and played back.
+        if (!bridge.SaveEarlyPropertySet(property, value))
+        {
+          if (propertyMeta._eventListener) 
+          {
+            bridge.SetEventListenerProperty(this, property, value);
+            listener = value;
+          }
+          else
+          {
+            if (!bridge._validateAndSetCopyProperty(this, property, value, propertyMeta))
+              oj.CustomElementBridge._getPropertyAccessor(this, property)(value);
+          }
+        }
+      }
+    });
+  },
+
+  GetAttributes: function(metadata)
+  {
+    var attrs = oj.BaseCustomElementBridge.getAttributes(metadata['properties']);
+    if (metadata['extension']._GLOBAL_TRANSFER_ATTRS)
+      return attrs.concat(metadata['extension']._GLOBAL_TRANSFER_ATTRS);
+    return attrs;
+  },
+
+  GetAliasForProperty: function(property)
+  {
+    // Aliasing only supported for top level properties
+    var alias = this._EXTENSION._ALIASED_PROPS;
+    if (alias && alias[property])
+      return alias[property];
+    return property;
+  },
+
+  InitializeElement: function(element)
+  {  
+    // Invoke callback on the superclass
+    oj.BaseCustomElementBridge.proto.InitializeElement.call(this, element);
+
+    if (this._EXTENSION._CONTROLS_SUBTREE_HIDDEN)
+      oj.Components.markPendingSubtreeHidden(element);
+
+    oj.BaseCustomElementBridge.__InitProperties(element, this._PROPS);
+  },
+
+  HandleAttributeChanged: function(element, attr, oldValue, newValue) 
+  {
+    var transferAttrs = this._EXTENSION._GLOBAL_TRANSFER_ATTRS;
+    var transfer = transferAttrs && transferAttrs.indexOf(attr) !== -1;
+    if (!this._removingTransfer && transfer && this._WIDGET_ELEM)
+    {
+      if (newValue == null || newValue === false)
+        this._WIDGET_ELEM.removeAttribute(attr);
+      else
+        this._WIDGET_ELEM.setAttribute(attr, newValue);
+      // Remove attribute from custom element after transfering value to inner element
+      // Set a flag so we know that we're removing the attribute, not app so
+      // that on attribute changed we don't remove it again
+      this._removingTransfer = true;
+      element.removeAttribute(attr);
+    }
+    else if (this._removingTransfer && transfer)
+    {
+      this._removingTransfer = false;
+    }
+  },
+
+  HandleDetached: function(element) 
+  {
+    // Invoke callback on the superclass
+    oj.BaseCustomElementBridge.proto.HandleDetached.call(this, element);
+
+    // Only call __handleDisconnected if the component hasn't previously
+    // been destroyed which we can check by seeing if the widget constructor is null
+    if (oj.Components.__GetWidgetConstructor(this._WIDGET_ELEM) && this._WIDGET_INSTANCE)
+      this._WIDGET_INSTANCE.__handleDisconnected();
+  },
+
+  HandleReattached: function(element) {
+    // Invoke callback on the superclass
+    oj.BaseCustomElementBridge.proto.HandleReattached.call(this, element);
+
+    if (this._WIDGET_INSTANCE)
+      this._WIDGET_INSTANCE.__handleConnected();
+  },
+
+  InitializeBridge: function(element)
+  {
+    // Invoke callback on the superclass
+    oj.BaseCustomElementBridge.proto.InitializeBridge.call(this, element);
+    
+    var descriptor = oj.BaseCustomElementBridge.__GetDescriptor(element.tagName);
+    this._INNER_DOM_FUNCTION = descriptor['innerDomFunction'];
+
+    this._EXTENSION = this.METADATA['extension'] || {};
+
+    this._PROPS = (this._EXTENSION._INNER_ELEM || this._INNER_DOM_FUNCTION) ? {'_wrapper': element} : {};
+    this._setupPropertyAccumulator(element, this._PROPS);
+
+    // Checks metadata for copy and writeback properties
+    this._processProperties(element);
+  },
+
+  _attributeChangedCallback: function(attr, oldValue, newValue) 
+  {
+    var bridge = oj.BaseCustomElementBridge.getInstance(this);
+
+    // Due to  where IE11 disables child inputs for a parent with the disabled attribute,
+    // we will remove the disabled attribute after we save the value and will ignore all disabled 
+    // attribute sets after component initialization when the application can just as easily use the property
+    // setter instead. Expressions will be handled in the CustomElementBinding.
+    if (attr === "disabled" && bridge._disabledProcessed)
+    {
+      // Always remove the disabled attribute even after component initialization and log warning.
+      // A null value indicates that the value was removed already.
+      if (newValue != null)
+      {
+        oj.Logger.warn("Ignoring 'disabled' attribute change after component initialization. Use element property setter instead.");
+        oj.CustomElementBridge._removeDisabledAttribute(this);
+      }
+      return;
+    }
+
+    // Invoke callback on the superclass
+    oj.BaseCustomElementBridge.proto._attributeChangedCallback.call(this, attr, oldValue, newValue);
+  },
+
+  _copyProperties: function()
+  {
+    // Copies properties from the bridge _PROPS before the widget is instantiated
+    // removing copied props from the object
+    if (this._COPY_ATTRS)
+    {
+      for (var i = 0; i < this._COPY_ATTRS.length; i++) {
+        var attr = this._COPY_ATTRS[i];
+        var propName = oj.__AttributeUtils.attributeToPropertyName(attr);
+        if (this._PROPS.hasOwnProperty(propName))
+        {
+
+          this._WIDGET_ELEM.setAttribute(attr, this._PROPS[propName]);
+          // Delete the attribute we just copied from the options that we 
+          // instantiate the widget with
+          delete this._PROPS[propName];
+        }
+      }
+    }
+  },
+
+  _getCopyProperty: function(elem, prop, propMeta)
+  {
+    var attrName = oj.__AttributeUtils.propertyNameToAttribute(prop);
+    var ext = propMeta["extension"];
+    if (ext._ATTRIBUTE_ONLY)
+    {
+      if (this._WIDGET_ELEM.hasAttribute(attrName))
+      {
+        var value = this._WIDGET_ELEM.getAttribute(attrName);
+        var coercedValue;
+        try 
+        {
+          coercedValue = oj.__AttributeUtils.coerceValue(elem, attrName, value, propMeta["type"]);
+        }
+        catch (ex)
+        {
+          this._throwError(elem, ex);
+        }
+        return coercedValue;
+      }
+      return null;
+    } else {
+      return this._WIDGET_ELEM[prop];
+    }
+  },
+
+  _processProperties: function(elem)
+  {
+    var props = oj.BaseCustomElementBridge.getProperties(this, elem);
+    if (props)
+    {
+      var propKeys = Object.keys(props);
+      for (var i = 0; i < propKeys.length; i++)
+      {
+        var propName = propKeys[i];
+        var propMeta = props[propName];
+        // Store writeback properties on the bridge and set on widget when we instantiate it later
+        if (propMeta['writeback'])
+        {
+          if (!this._WRITEBACK_PROPS)
+            this._WRITEBACK_PROPS = {};
+          this._WRITEBACK_PROPS[propName] = true;
+        }
+        // Store properties to copy to inner element for easy lookup
+        var ext = propMeta['extension'];
+        if (ext && ext._COPY_TO_INNER_ELEM)
+        {
+          if (!this._COPY_ATTRS)
+            this._COPY_ATTRS = [];
+          this._COPY_ATTRS.push(propName);
+        }
+      }
+    }
+  },
+
+  _setupPropertyAccumulator: function(element, widgetOptions)
+  {
+    // Add an element function that will track property values until expressions are all evaluated.
+    // This object will be replaced with the actual widget constructor.
+    this._WIDGET = function(method, prop, value)
+    {
+      // Allow property access before widget is created for element binding and dynamic element creation
+      if (method === 'option') 
+      {
+        if (!prop && !value)
+        {
+          return widgetOptions;
+        }
+        else
+        {
+          oj.BaseCustomElementBridge.__SetProperty(this.GetAliasForProperty.bind(this), widgetOptions, prop, value);
+          return widgetOptions[prop];
+        }
+      }
+      else
+      {
+        this._throwError(element, "Cannot access methods before element is upgraded.");
+      }
+    }
+  },
+
+  _validateAndSetCopyProperty: function(elem, prop, value, propMeta)
+  {
+    // propMeta is could be null so we should retrieve it if not passed in
+
+    var attrName = oj.__AttributeUtils.propertyNameToAttribute(prop);
+    var isCopy = this._COPY_ATTRS && this._COPY_ATTRS.indexOf(attrName) !== -1;
+    // If widget hasn't been instantiated skip setting until CreateComponent
+    if (isCopy) 
+    {
+      // We need to validate the value so that we don't copy an invalid value. 
+      value = this.ValidatePropertySet(elem, prop, value);
+
+      if (this._WIDGET_ELEM)
+      {
+        if (!propMeta)
+          propMeta = oj.BaseCustomElementBridge.__GetPropertyMetadata(prop, oj.BaseCustomElementBridge.getProperties(this, elem));
+
+        var previousValue = this._getCopyProperty(elem, prop, propMeta);
+        if (value == null || value === false)
+          this._WIDGET_ELEM.removeAttribute(attrName);
+        else if (value === true)
+          this._WIDGET_ELEM.setAttribute(attrName, '');
+        else
+          this._WIDGET_ELEM.setAttribute(attrName, value);
+
+        // Fire a property change event for the copy properties since we don't actually pass
+        // these to the widget. The widget will never update these properties themselves so 
+        // all updates are external.
+        oj.BaseCustomElementBridge.__FirePropertyChangeEvent(elem, prop, this._getCopyProperty(elem, prop, propMeta), previousValue, 'external');
+      }
+      else
+      {
+        // Save the value until inner widget is created and we can copy them over
+        this._PROPS[attrName] = value;
+      }
+    }
+    return isCopy;
+  },
+
+  _setEventProperty: function(elem, prop, value)
+  {
+    var isEvent = false;
+    var event = oj.__AttributeUtils.eventListenerPropertyToEventType(prop);
+    if (event) 
+    {
+      elem[prop] = value;
+      isEvent = true;
+    }
+    return isEvent;
+  },
+
+
+
+});
+
+/*************************/
+/* PUBLIC STATIC METHODS */
+/*************************/
+
+/**
+ * Returns the metadata object for the given component.
+ * @param  {string} tagName        The component tag name
+ * @return {Object}                The component metadata object
+ * @ignore
+ */
+oj.CustomElementBridge.getMetadata = function(tagName) 
+{
+  return oj.CustomElementBridge._METADATA_MAP[tagName.toLowerCase()];
+};
+
+/**
+ * Checks whether the specified event type was declared in the metadata for this custom element
+ * @param {Element} element the custom element
+ * @param {string} type the event type (e.g. "beforeExpand")
+ * @return {boolean} true if the event type was declared in the metadata, false otherwise
+ * @ignore
+ */
+oj.CustomElementBridge.isKnownEvent = function(element, type) 
+{
+  var bridge = oj.BaseCustomElementBridge.getInstance(element);
+  if (bridge)
+    return (bridge.METADATA['events'] && bridge.METADATA['events'][type]) != null;
+  return false;
+};
+
+/**
+ * Checks whether the specified property was declared in the metadata for this custom element
+ * @param {Element} element the custom element
+ * @param {string} prop the property name (e.g. "selection")
+ * @return {boolean} true if the property was declared in the metadata, false otherwise
+ * @ignore
+ */
+oj.CustomElementBridge.isKnownProperty = function(element, prop) 
+{
+  var bridge = oj.BaseCustomElementBridge.getInstance(element);
+  if (bridge)
+    return (bridge.METADATA['properties'] && bridge.METADATA['properties'][prop]) != null;
+  return false;
+};
+
+/**
+ * Returns the custom element property for a given aliased component property which can be used
+ * for converting an internal optionChange event, e.g. returning readonly for oj-switch's readOnly
+ * property so we can fire a readonly-changed event instead of readOnly-changed.
+ * Will return the original property if there is no aliasing.
+ * @param {Element} element The custom element
+ * @param {string} property The component property
+ * @return {string}
+ * @ignore
+ */
+oj.CustomElementBridge.getPropertyForAlias = function(element, property) 
+{
+  // Aliasing only supported for top level properties
+  var bridge = oj.BaseCustomElementBridge.getInstance(element);
+  var alias = bridge._EXTENSION._COMPONENT_TO_ELEMENT_ALIASES;
+  if (alias && alias[property])
+    return alias[property];
+  return property;
+};
+
+/**
+ * Registers a component as a custom element.
+ * @param {string} tagName The component tag name (all lower case), which should contain a dash '-' and not be a reserved tag name.     
+ * @param {Object} descriptor The registration descriptor. The descriptor will contain keys for metadata and other component overrides.
+ * @param {Object} descriptor.metadata The JSON object containing info like the widget name, whether component has an inner element, an outer wrapper, and the component metadata.
+ * @param {function(string, string, Object, function(string))} descriptor.parseFunction The function that will be called to parse attribute values.
+ * Note that this function is only called for non bound attributes. The parseFunction will take the following parameters:
+ * <ul>
+ *  <li>{string} value: The value to parse.</li>
+ *  <li>{string} name: The name of the attribute.</li>
+ *  <li>{Object} meta: The metadata object for the property which can include its type, default value, 
+ *      and any extensions that the composite has provided on top of the required metadata.</li>
+ *  <li>{function(string)} defaultParseFunction: The default parse function for the given attribute 
+ *      type which is used when a custom parse function isn't provided and takes as its parameters 
+ *      the value to parse.</li>
+ * </ul>
+ * @param {Element} descriptor.innerDomFunction The function that will be called to return the tag name of the inner DOM element, e.g. 'button' or 'a' 
+ * The innerDomFunction will take the following parameters:
+ * <ul>
+ *  <li>{Element} element: The component custom element.</li>
+ * </ul>
+ * @ignore
+ */
+oj.CustomElementBridge.register = function(tagName, descriptor)
+{
+  // Use the simple definitional element prototype if no real widget is associated with this custom element
+  var ext = descriptor[oj.BaseCustomElementBridge.DESC_KEY_META]['extension'];
+  var proto = ext && ext._WIDGET_NAME ? oj.CustomElementBridge.proto : oj.DefinitionalElementBridge.proto;
+
+  // Create component to element property alias mapping for easy optionChange lookup and stash it in the extension object
+  var aliasMap = ext._ALIASED_PROPS;
+  if (aliasMap)
+  {
+    ext._COMPONENT_TO_ELEMENT_ALIASES = {};
+    var aliases = Object.keys(aliasMap);
+    aliases.forEach(function(alias) {
+      ext._COMPONENT_TO_ELEMENT_ALIASES[aliasMap[alias]] = alias;
+    });
+  }
+
+  if (oj.BaseCustomElementBridge.__Register(tagName, descriptor, proto))
+  {
+    customElements.define(tagName.toLowerCase(), proto.getClass(descriptor));
+  }
+};
+
+/**
+ * Registers component metadata merging it with the metadata from its superclass hierarchy as needed.
+ * @param  {string} tagName       The component tag name
+ * @param  {string?} superclassName The component's superclass name
+ * @param  {Object} metadata        The component metadata object
+ * @ignore
+ */
+oj.CustomElementBridge.registerMetadata = function(tagName, superclassName, metadata) 
+{
+  metadata = oj.BaseCustomElementBridge.__ProcessEventListeners(metadata, true);
+  if (superclassName) 
+  {
+    var superMeta = oj.CollectionUtils.copyInto({}, oj.CustomElementBridge.getMetadata(superclassName), undefined, true);
+    oj.CustomElementBridge._METADATA_MAP[tagName.toLowerCase()] = oj.CollectionUtils.copyInto(superMeta, metadata, undefined, true);
+  } 
+  else 
+  {
+    oj.CustomElementBridge._METADATA_MAP[tagName.toLowerCase()] = metadata;
+  }
+};
+
+/*****************************/
+/* NON PUBLIC STATIC METHODS */
+/*****************************/
+
+/**
+ * Returns a property accessor for setting/getting options
+ * @private
+ */
+oj.CustomElementBridge._getPropertyAccessor = function(element, property) 
+{
+  var optionAccessor = function(value)
+  {
+    var bridge = oj.BaseCustomElementBridge.getInstance(element);
+
+    if (arguments.length === 1)
+    {
+      value = bridge.ValidatePropertySet(element, property, value);
+      property = bridge.GetAliasForProperty(property);
+      bridge._WIDGET('option', property, value);
+    }
+    else
+    {
+      property = bridge.GetAliasForProperty(property);
+      return bridge._WIDGET('option', property);
+    }
+  };
+  return optionAccessor.bind(element);
+};
+
+/**
+ * Returns the element that the widget constructor will be instantiated on which can be the custom element or a child element.
+ * @private
+ */
+oj.CustomElementBridge._getWidgetElement = function(element, innerTagName) 
+{
+  // If component widget is bound to an inner child element like <ul> for <oj-list-view>, 
+  // create one only if the application does not provide it.
+  var widgetElem = element;
+  if (innerTagName)
+  {
+    var firstChild = element.firstElementChild;
+    if (firstChild && firstChild.tagName.toLowerCase() === innerTagName)
+    {
+      widgetElem = firstChild;
+    }
+    else
+    {
+      widgetElem = document.createElement(innerTagName);
+      // Make a copy of the custom element children before appending the inner element
+      var children = [];
+      var nodeList = element.childNodes;
+      for (var i = 0; i < nodeList.length; i++)
+        children.push(nodeList[i]);
+      
+      element.appendChild(widgetElem); // @HtmlUpdateOk
+      // If we create the inner child element, check to see if there are any children
+      // to move like for <oj-button> which can have a child elements that should be moved to
+      // the newly created inner <button> element.
+      while (children.length)
+      { 
+        var child = children.shift();
+        // do not move slot children to inner child element
+        // component should decide whether they should be moved to its inner child element
+        // for example, it does not make sense for <oj-list-view> to move contextMenu slot to its inner <ul> element.
+        if (!child.hasAttribute || !child.hasAttribute("slot"))
+          widgetElem.appendChild(child);
+      }
+    }
+    // add data-oj-internal attribute for automation tests
+    widgetElem.setAttribute('data-oj-internal', '');
+  }
+  return widgetElem;
+};
+
+/**
+ * Removes the disabled attribute from an element and marks the bridge as having
+ * processed the value to prevent evaluation of additional attribute sets.
+ * @param  {Element} element The custom element
+ * @private
+ */
+oj.CustomElementBridge._removeDisabledAttribute = function(element)
+{
+  var bridge = oj.BaseCustomElementBridge.getInstance(element);
+  bridge._disabledProcessed = true;
+  element.removeAttribute('disabled');
+};
+
+/**
+ * Map of registered custom element names
+ * @private
+ */
+oj.CustomElementBridge._METADATA_MAP = {};
+
+/**
+ * Copyright (c) 2014, Oracle and/or its affiliates.
+ * All rights reserved.
+ */
+var DataProviderFeatureChecker = /** @class */ (function () {
     function DataProviderFeatureChecker() {
     }
     DataProviderFeatureChecker.isIteratingDataProvider = function (dataprovider) {
@@ -6558,6 +5997,1676 @@ var DataProviderFeatureChecker = (function () {
 }());
 oj.DataProviderFeatureChecker = DataProviderFeatureChecker;
 
+/**
+ * A bridge for a custom element that renders using a constructor
+ * function. Note that when a constructor function is provided, the new instance isn't
+ * created until the CreateComponent method so property changes that occur before the
+ * component instance is created will no-op.
+ *
+ * Components that provide a constructor function should implement the following methods:
+ * createDOM - Called when the component is instantiated
+ * updateDOM - Called after createDOM and when the component needs to do a full render on 
+ * refresh and property changes if the component is not handling them separately.
+ * handlePropertyChanged - (optional) Called when properties change and should return true if
+ * the component has handled the property change and does not need to do a full render. If 
+ * false is returned, updateDOM will be called to do a full render.
+ *
+ * When the constructor function is called, the bridge will pass a context object
+ * with the following keys:
+ * element - The custom element
+ * props - A proxy for the element properties with setter/getter and setProperty APIs allowing the
+ *         component to control writeback.
+ * unique - A unique ID that the component can append to the custom element ID to generate unique IDs
+ * 
+ * Note that components supporting the constructor function approach may eventually
+ * be refactored into composites once composites support non template rendering.
+ * 
+ * This bridge ensures that JET components with child JET custom elements 
+ * can access child properties before the child busy state resolves. 
+ * This bridge does not guarantee that all properties for the child 
+ * will be available to the application before its busy states resolves, 
+ * e.g data bound attribute values. 
+ * 
+ * Applications should still wait on the element or page level 
+ * busy context before accessing properties or methods.
+ * 
+ * @class
+ * @ignore
+ */
+oj.DefinitionalElementBridge = {};
+
+/**
+ * Prototype for the JET component definitional bridge instance
+ */
+oj.DefinitionalElementBridge.proto = Object.create(oj.BaseCustomElementBridge.proto);
+
+oj.CollectionUtils.copyInto(oj.DefinitionalElementBridge.proto,
+{
+  beforePropertyChangedEvent: function(element, property, detail)
+  {
+    // Call the renderer function so the definitional element can refresh its UI
+    var changedProp = property;
+    var value = detail.value;
+    if (detail.subproperty)
+    {
+      changedProp = detail.subproperty.path;
+      value = detail.subproperty.value;
+    }
+    this._partialRender(element, changedProp, value);
+  },
+
+  AddComponentMethods: function(proto) 
+  {
+    // Add refresh and subproperty getter/setter methods for all definitional elements
+    proto['refresh'] = function() 
+    {
+      var bridge = oj.BaseCustomElementBridge.getInstance(this);
+      bridge._fullRender(this);
+    };
+    proto['setProperty'] = function(prop, value) {
+      var bridge = oj.BaseCustomElementBridge.getInstance(this);
+      if (!bridge.SaveEarlyPropertySet(prop, value))
+        bridge.SetProperty(this, prop, value, this, true);
+    };
+    proto['getProperty'] = function(prop) {
+      // 'this' is the property object we pass to the definitional element contructor to track internal property changes
+      var bridge = oj.BaseCustomElementBridge.getInstance(this);
+      return bridge.GetProperty(this, prop, this);
+    };
+    proto['_propsProto']['setProperty'] =  function(prop, value) {
+      // 'this' is the property object we pass to the definitional element contructor to track internal property changes
+      this._BRIDGE.SetProperty(this._ELEMENT, prop, value, this, false);
+    };
+    proto['_propsProto']['getProperty'] = function(prop) {
+      return this._BRIDGE.GetProperty(this, prop, this);
+    };
+  },
+
+  CreateComponent: function(element)
+  {
+    oj.Components.unmarkPendingSubtreeHidden(element);
+
+    if (!this._INSTANCE && this._EXTENSION._CONSTRUCTOR)
+    {
+      // We expose a similar set of properties as composites except that props is
+      // not a Promise and we don't expose any slot information.
+      // At the moment some definitional elements have mutation observers so they don't need
+      // to rely on refresh being called to be alerted of new children so any cached slotMap
+      // can become out of sync. We should add this once we build in support to auto detect 
+      // added/removed children to custom elements.
+      this._CONTEXT = {
+        'element': element,
+        'props': this._PROPS_PROXY,
+        'unique': oj.BaseCustomElementBridge.__GetUnique(),
+      };
+      this._CONTEXT['uniqueId'] = element.id ? element.id : this._CONTEXT['unique'];
+      this._INSTANCE = new this._EXTENSION._CONSTRUCTOR(this._CONTEXT);
+      // Let the component initialize any additional DOM and then do a full render
+      if (this._INSTANCE.createDOM)
+        this._INSTANCE.createDOM();
+      if (this._INSTANCE.updateDOM)
+        this._INSTANCE.updateDOM();
+    }
+
+    // Set flag when we can fire property change events
+    this.__READY_TO_FIRE = true;
+
+    // Resolve the component busy state 
+    this.resolveDelayedReadyPromise();
+
+  },
+  
+  DefineMethodCallback: function (proto, method, methodMeta) 
+  {
+    proto[method] = function()
+    {
+      var bridge = oj.BaseCustomElementBridge.getInstance(this);
+      if (bridge._INSTANCE)
+      {
+        var methodName = methodMeta['internalName'] || method;
+        return bridge._INSTANCE[methodName].apply(bridge._INSTANCE, arguments);
+      }
+    };
+  },
+
+  DefinePropertyCallback: function (proto, property, propertyMeta) 
+  {
+    var set = function(value, bOuterSet)
+    {
+      // Properties can be set before the component is created. These early
+      // sets are actually saved until after component creation and played back.
+      if (!this._BRIDGE.SaveEarlyPropertySet(property, value))
+      {
+        var previousValue = this._BRIDGE._PROPS[property];
+        if (!oj.BaseCustomElementBridge.__CompareOptionValues(property, propertyMeta, value, previousValue)) 
+        {
+          // Skip validation for inner sets so we don't throw an error when updating readOnly writeable properties
+          if (bOuterSet)
+              value = this._BRIDGE.ValidatePropertySet(this._ELEMENT, property, value)
+          if (propertyMeta._eventListener)
+          {
+            this._BRIDGE.SetEventListenerProperty(this._ELEMENT, property, value);
+            this._BRIDGE._PROPS[property] = value;
+          }
+          else 
+          {
+            this._BRIDGE._PROPS[property] = value;
+            oj.BaseCustomElementBridge.__FirePropertyChangeEvent(this._ELEMENT, property, value, previousValue, bOuterSet ? 'external' : 'internal');
+          }
+        }
+      }
+    }
+
+    var innerSet = function(value)
+    {
+      set.bind(this)(value, false);
+    }
+
+    // Called on the custom element
+    var outerSet = function(value)
+    {
+      var bridge = oj.BaseCustomElementBridge.getInstance(this);
+      set.bind(bridge._PROPS_PROXY)(value, true);
+    }
+
+    var get = function()
+    {
+      var value = this._BRIDGE._PROPS[property];
+      // If the attribute has not been set, return the default value
+      if (value === undefined)
+      {
+        value = propertyMeta['value'];
+        // Make a copy if the default value is an Object or Array to prevent modification
+        // of the metadata copy and store in the propertyTracker so we have a copy
+        // to modify in place for the object case
+        if (Array.isArray(value))
+          value = value.slice();
+        else if (typeof value === 'object')
+          value = oj.CollectionUtils.copyInto({}, value, undefined, true);
+        this._BRIDGE._PROPS[property] = value;
+      }
+      return value;
+    }
+
+    var innerGet = function()
+    {
+      return get.bind(this)();
+    }
+
+    // Called on the custom element
+    var outerGet = function()
+    {
+      var bridge = oj.BaseCustomElementBridge.getInstance(this);
+      return get.bind(bridge._PROPS_PROXY)();
+    }
+
+    // Don't add event listener properties for inner props
+    if (!propertyMeta._derived)
+      oj.BaseCustomElementBridge.__DefineDynamicObjectProperty(proto['_propsProto'], property, innerGet, innerSet);
+    oj.BaseCustomElementBridge.__DefineDynamicObjectProperty(proto, property, outerGet, outerSet);
+  },
+
+  InitializeElement: function(element)
+  {
+    // Invoke callback on the superclass
+    oj.BaseCustomElementBridge.proto.InitializeElement.call(this, element);
+
+    if (this._EXTENSION._CONTROLS_SUBTREE_HIDDEN)
+      oj.Components.markPendingSubtreeHidden(element);
+
+    oj.BaseCustomElementBridge.__InitProperties(element, this._PROPS_PROXY);  
+  },
+
+  InitializePrototype: function(proto)
+  {
+    // Invoke callback on the superclass
+    oj.BaseCustomElementBridge.proto.InitializePrototype.call(this, proto);
+    
+    Object.defineProperty(proto, '_propsProto', {value: {}});
+  },
+
+  InitializeBridge: function(element)
+  {
+    // Invoke callback on the superclass
+    oj.BaseCustomElementBridge.proto.InitializeBridge.call(this, element);
+
+    this._EXTENSION = this.METADATA['extension'] || {};
+
+    // For tracking outer property sets
+    this._PROPS = {};
+
+    /// For tracking inner property sets
+    if (element['_propsProto'])
+    {
+      this._PROPS_PROXY = Object.create(element['_propsProto']);
+      this._PROPS_PROXY._BRIDGE = this;
+      this._PROPS_PROXY._ELEMENT = element;
+    }
+  },
+
+  _fullRender: function(element)
+  {
+    if (this._INSTANCE && this._INSTANCE.updateDOM)
+      this._INSTANCE.updateDOM();
+  },
+
+  _partialRender: function(element, property, value)
+  {
+    if (this._INSTANCE)
+    {
+      // For partial renders, check to see if the component is handling the property change
+      // or if it should do a full render
+      var handlePropChangedFun = this._INSTANCE.handlePropertyChanged;
+      var fullRender = !handlePropChangedFun || !handlePropChangedFun(property, value);
+      if (fullRender && this._INSTANCE.updateDOM)
+        this._INSTANCE.updateDOM();
+    }
+  }
+
+});
+
+/*jslint browser: true*/
+/*
+** Copyright (c) 2004, 2012, Oracle and/or its affiliates. All rights reserved.
+*/
+/**
+ * DOM utilities.
+ * @ignore
+ */
+oj.DomUtils = {};
+
+oj.DomUtils._HTML_START_TAG = "\x3chtml\x3e";
+oj.DomUtils._HTML_END_TAG = "\x3c/html\x3e";
+oj.DomUtils._LEGAL_ELEMENTS = {"SPAN":1, "B":1, "I":1, "EM":1, "BR":1, "HR":1, "LI":1, "OL":1, "UL":1, "P":1, "TT":1, "BIG":1, "SMALL":1, "PRE":1};
+oj.DomUtils._LEGAL_ATTRIBUTES = {"class":1, "style":1};
+
+/**
+ * Returns true if the value is null or if the trimmed value is of zero length.
+ *
+ * @param {string|null} content
+ * @return {boolean} true if the string is wrapped in <html> tag.
+ */
+oj.DomUtils.isHTMLContent = function(content)
+{
+  if (content.indexOf(oj.DomUtils._HTML_START_TAG) === 0 &&
+      content.lastIndexOf(oj.DomUtils._HTML_END_TAG) === content.length - 7)
+  {
+    return true;
+  }
+
+  return false;
+};
+
+oj.DomUtils.cleanHtml = function (value)
+{
+  var offSpan = $(document.createElement("span")).get(0);
+  offSpan.innerHTML = value;  // @HTMLUpdateOK safe manipulation
+  if (value && value.indexOf("\x3c") >= 0)
+  {
+    oj.DomUtils._cleanElementHtml(offSpan);
+  }
+  return offSpan;
+};
+
+oj.DomUtils._cleanElementHtml = function(node)
+{
+  var children = node.childNodes, child, attrs, attr, childHasAttr, i;
+  var count = children.length - 1;
+  while (count >= 0)
+  {
+    child = children.item(count);
+    if (child && child.nodeType === 1)
+    {
+      if (oj.DomUtils._LEGAL_ELEMENTS[child.nodeName])
+      {
+        attrs = child.attributes;
+        for (i = attrs.length - 1;i >= 0;i--)
+        {
+          attr = attrs[i];
+          // jquery - the .attr() method returns undefined for attributes that have not been set.
+          childHasAttr = $(child).attr(attr.name) !== undefined;
+          if (childHasAttr)
+          {
+            if (!oj.DomUtils._LEGAL_ATTRIBUTES[attr.name])
+            {
+              child.removeAttribute(attr.nodeName);
+            }
+          }
+        }
+        oj.DomUtils._cleanElementHtml(child);
+      }
+      else
+      {
+        if (child)
+        {
+          node.removeChild(child);
+        }
+      }
+    }
+
+    count--;
+  }
+};
+
+/**
+ * Checks to see if the "ancestorNode" is a ancestor of "node".
+ *
+ * @param {!Element} ancestorNode dom subtree to check to see if the target node exists
+ * @param {!Element} node target node to check to see if it exists within a subtree rooted at the ancestorNode
+ * @return {boolean} <code>true</code> if the "ancestorNode" is a ancestor of "node".
+ */
+oj.DomUtils.isAncestor = function (ancestorNode, node)
+{
+  // These can cause problems in IE11: sometimes the node is just an "empty" object
+  //oj.Assert.assertDomElement(ancestorNode);
+  //oj.Assert.assertDomElement(node);
+
+  var parentNode = node.parentNode;
+
+  while (parentNode)
+  {
+    if (parentNode == ancestorNode)
+      return true;
+
+    parentNode = parentNode.parentNode;
+  }
+
+  return false;
+}
+
+/**
+ * Checks to see if the "ancestorNode" is a ancestor of "node" or if they are the same.
+ *
+ * @param {!Element} ancestorNode dom subtree to check to see if the target node exists
+ * @param {!Element} node target node to check to see if it exists within a subtree rooted at the ancestorNode
+ * @return {boolean} <code>true</code> if the "ancestorNode" is a ancestor of "node" or if they are the same
+ */
+oj.DomUtils.isAncestorOrSelf = function (ancestorNode, node)
+{
+  // These can cause problems in IE11: sometimes the node is just an "empty" object
+  //oj.Assert.assertDomElement(ancestorNode);
+  //oj.Assert.assertDomElement(node);
+
+  return (node == ancestorNode) ?
+          true :
+          oj.DomUtils.isAncestor(ancestorNode, node);
+};
+
+
+/**
+ * Adds a resize listener for a block or inline-block element
+ * @param {!Element} elem - node where the listener should be added
+ * @param {!Function} listener - listener to be added. The listener will receive
+ * two parameters: 1) the new width in pixels; 2) the new height in pixels
+ * @param {number=} collapseEventTimeout - timeout in milliseconds for collapsing
+ * multiple resize events into one
+ * @export
+ */
+oj.DomUtils.addResizeListener = function(elem, listener, collapseEventTimeout)
+{
+  var jelem = $(elem);
+  var tracker = jelem.data(oj.DomUtils._RESIZE_TRACKER_KEY);
+  if (tracker == null)
+  {
+    tracker = new oj.DomUtils._ResizeTracker(elem);
+    jelem.data(oj.DomUtils._RESIZE_TRACKER_KEY, tracker);
+    tracker.start();
+  }
+  tracker.addListener(listener, collapseEventTimeout);
+}
+
+/**
+ * Removes a resize listener
+ * @param {!Element} elem - node whose listener should be removed
+ * @param {!Function} listener - listener to be removed
+ * @export
+ */
+oj.DomUtils.removeResizeListener = function(elem, listener)
+{
+  var jelem = $(elem);
+  var tracker = jelem.data(oj.DomUtils._RESIZE_TRACKER_KEY);
+  if (tracker != null)
+  {
+    tracker.removeListener(listener);
+    if (tracker.isEmpty())
+    {
+      tracker.stop();
+      jelem.removeData(oj.DomUtils._RESIZE_TRACKER_KEY);
+    }
+  }
+};
+
+
+/**
+ * Fixes resize listeners after a subtree has been connected to the DOM or after
+ * its display:none stayle has been removed
+ * @param {!Element} subtreeRoot - subtree root
+ */
+oj.DomUtils.fixResizeListeners = function(subtreeRoot)
+{
+  $(subtreeRoot).find(".oj-helper-detect-expansion").parent().each(
+    function(index, div)
+    {
+      var tracker = $(div).data(oj.DomUtils._RESIZE_TRACKER_KEY);
+      if (tracker != null)
+      {
+        tracker.init(true);
+      }
+    }
+  );
+};
+
+/**
+ * Determines whether a special 'meta' key was pressed when the event was fired.
+ * For Mac OS, the 'meta' key is mapped to the 'Command' key, for all other platforms it is mapped
+ * to the 'Control' key.
+ * Note that this method will only work for the events that support .ctrlKey and .metaKey fields.
+ * @param {!Object} evt - the event
+ * @return true if the meta key is pressed, false otherwise
+ */
+oj.DomUtils.isMetaKeyPressed = function(evt)
+{
+  var agentInfo = oj.AgentUtils.getAgentInfo();
+  return (oj.AgentUtils.OS.MAC === agentInfo["os"] ? evt.metaKey : evt.ctrlKey);
+};
+
+/**
+ * Dispatches an event on the element
+ * @param {!Element} element
+ * @param {!Event} evt event object
+ */
+oj.DomUtils.dispatchEvent = function(element, evt)
+{
+  // Workaround for Mozilla issue #329509 - dispatchEvent() throws an error if
+  // the element is disabled and disconnected
+  // Also, IE simply ignores the .dispatchEvent() call for disabled elements
+  var dis = 'disabled';
+  var oldDisabled = element[dis];
+  try
+  {
+    element[dis] = false;
+    element.dispatchEvent(evt);
+  }
+  finally
+  {
+    element[dis] = oldDisabled;
+  }
+};
+
+/**
+ * @private
+ */
+oj.DomUtils._invokeAfterPaint =  (window['requestAnimationFrame'] || window['mozRequestAnimationFrame'] ||
+                                  window['webkitRequestAnimationFrame'] ||
+                                  function(fn){ return window.setTimeout(fn, 0); }
+                                  ).bind(window);
+
+/**
+ * @private
+ */
+oj.DomUtils._cancelInvokeAfterPaint =  (window['cancelAnimationFrame'] || window['mozCancelAnimationFrame'] ||
+                                  window['webkitCancelAnimationFrame'] ||
+                                  function(id){ return window.clearTimeout(id); }
+                                  ).bind(window);
+
+/**
+ * Utility class for tracking resize events for a given element and  sispatching them
+ * to listeners
+ * @constructor
+ * @ignore
+ * @private
+ */
+oj.DomUtils._ResizeTracker = function(div)
+{
+  var _listeners = $.Callbacks();
+  var _collapsingManagers = [];
+  var _collapsingListeners = [];
+
+  var _RETRY_MAX_COUNT = 2;
+  var _retrySetScroll = 0;
+  var _invokeId = null;
+  var _oldWidth  = null;
+  var _oldHeight = null;
+  var _detectExpansion = null;
+  var _detectContraction = null;
+  var _resizeListener = null;
+  var _scrollListener = null;
+
+  this.addListener = function(listener, collapseEventTimeout)
+  {
+    if (collapseEventTimeout === undefined || collapseEventTimeout === 0)
+    {
+      _listeners.add(listener);
+    }
+    else
+    {
+      _collapsingManagers.push(
+              new oj.DomUtils._collapsingListenerManager(listener, collapseEventTimeout));
+      _collapsingListeners.push(listener);
+    }
+  };
+
+  this.removeListener = function(listener)
+  {
+    var index = _collapsingListeners.indexOf(listener);
+    if (index >=0 )
+    {
+      _collapsingListeners.splice(index, 1);
+      var removed = _collapsingManagers.splice(index, 1);
+      removed[0].stop();
+    }
+    else
+    {
+      _listeners.remove(listener);
+    }
+  };
+
+  this.isEmpty = function()
+  {
+    return !_listeners.has() && _collapsingListeners.length == 0;
+  };
+
+  this.start = function()
+  {
+    _scrollListener = _handleScroll.bind(this);
+
+    // : Use native onresize support on teh DIV in IE9/10 and  since no scroll events are fired on the
+    // contraction/expansion DIVs in IE9
+    if (div.attachEvent)
+    {
+      _resizeListener = _handleResize.bind(this);
+      div.attachEvent('onresize', _resizeListener);
+    }
+
+    else
+    {
+      var firstChild = div.childNodes[0];
+
+      // This child DIV will track expansion events. It is meant to be 1px taller and wider than the DIV
+      // whose resize events we are tracking. After we set its scrollTop and scrollLeft to 1, any increate in size
+      // will fire a scroll event
+      _detectExpansion = document.createElement("div");
+      _detectExpansion.className = "oj-helper-detect-expansion";
+      var expansionChild = document.createElement("div");
+      _detectExpansion.appendChild(expansionChild); //@HTMLUpdateOK; expansionChild constructed by the code above
+      if (firstChild != null)
+      {
+        div.insertBefore(_detectExpansion, firstChild);//@HTMLUpdateOK; _detectExpansion constructed by the code above
+      }
+      else
+      {
+        div.appendChild(_detectExpansion);//@HTMLUpdateOK; _detectExpansion constructed by the code above
+      }
+
+      _detectExpansion.addEventListener("scroll", _scrollListener, false);
+
+      // This child DIV will track contraction events. Its height and width are set to 200%. After we set its scrollTop and
+      // scrollLeft to the current height and width of its parent, any decrease in size will fire a scroll event
+      _detectContraction = document.createElement("div");
+      _detectContraction.className = "oj-helper-detect-contraction";
+
+      var contractionChild = document.createElement("div");
+      contractionChild.style.width = "200%";
+      contractionChild.style.height = "200%";
+      _detectContraction.appendChild(contractionChild); //@HTMLUpdateOK; contractionChild constructed by the code above
+      div.insertBefore(_detectContraction, _detectExpansion); //@HTMLUpdateOK; _detectContraction constructed by the code above
+
+      _detectContraction.addEventListener("scroll", _scrollListener, false);
+
+      this.init(false);
+      }
+  };
+
+  this.stop = function()
+  {
+    if (_invokeId != null)
+    {
+      oj.DomUtils._cancelInvokeAfterPaint(_invokeId);
+      _invokeId = null;
+    }
+    if (_detectExpansion != null)
+    {
+      _detectExpansion.removeEventListener("scroll", _scrollListener);
+      _detectContraction.removeEventListener("scroll", _scrollListener);
+      // Check before removing to prevent CustomElement polyfill from throwing
+      // a NotFoundError when removeChild is called with an element not in the DOM
+      if (_detectExpansion.parentNode)
+        div.removeChild(_detectExpansion);
+      if (_detectContraction.parentNode)
+        div.removeChild(_detectContraction);
+    }
+    else
+    {
+      // assume IE9/10
+      div.detachEvent('onresize', _resizeListener);
+    }
+  };
+
+  this.init = function(isFixup)
+  {
+    var adjusted = _checkSize(isFixup);
+    if (isFixup && !adjusted && _detectExpansion.offsetParent != null)
+    {
+      _adjust(_oldWidth, _oldHeight);
+    }
+  };
+
+
+  function _checkSize(fireEvent)
+    {
+    var adjusted = false;
+    if (_detectExpansion.offsetParent != null)
+    {
+      var newWidth = _detectExpansion.offsetWidth;
+      var newHeight = _detectExpansion.offsetHeight;
+
+      if (_oldWidth !== newWidth || _oldHeight !== newHeight)
+    {
+        _retrySetScroll = _RETRY_MAX_COUNT;
+        _adjust(newWidth, newHeight);
+        adjusted = true;
+
+        if (fireEvent)
+      {
+          _notifyListeners(true);
+      }
+      }
+    }
+
+    return adjusted;
+  };
+
+  function _notifyListeners(useAfterPaint)
+  {
+    var newWidth = div.offsetWidth;
+    var newHeight = div.offsetHeight;
+    if (_listeners.has())
+    {
+      if (!useAfterPaint)
+      {
+        _listeners.fire(newWidth, newHeight);
+    }
+      else
+    {
+        if (_invokeId !== null)
+      {
+          oj.DomUtils._cancelInvokeAfterPaint(_invokeId);
+      }
+
+        _invokeId = oj.DomUtils._invokeAfterPaint(
+        function()
+        {
+            _invokeId = null;
+            _listeners.fire(newWidth, newHeight);
+        }
+      );
+    }
+    }
+
+    for (var i=0; i < _collapsingManagers.length; i++)
+    {
+      _collapsingManagers[i].getCallback()(newWidth, newHeight);
+    }
+  };
+
+  function _handleScroll(evt)
+  {
+    evt.stopPropagation();
+    if (!_checkSize(true))
+    {
+      // Workaround for the WebKit issue where scrollLeft gets reset to 0 without the DIV being expanded
+      // We will retry to the set the scrollTop only twice to avoid infinite loops
+      if (_retrySetScroll > 0 && _detectExpansion.offsetParent != null &&
+            (_detectExpansion.scrollLeft == 0 || _detectExpansion.scrollTop == 0))
+      {
+        _retrySetScroll--;
+        _adjust(_oldWidth, _oldHeight);
+      }
+    }
+  };
+
+  function _handleResize()
+  {
+     _notifyListeners(false);
+  };
+
+  function _adjust(width, height)
+  {
+    _oldWidth = width;
+    _oldHeight = height;
+
+    var expansionChildStyle = _detectExpansion.firstChild.style;
+
+    var delta = 1;
+
+    // The following loop is a workaround for the WebKit issue with zoom < 100% -
+    // the scrollTop/Left gets reset to 0 because it gets computed to a value less than 1px.
+    // We will try up to the delta of 5 to support scaling down to 20% of the original size
+    do
+    {
+      expansionChildStyle.width = width + delta + 'px';
+      expansionChildStyle.height = height + delta + 'px';
+      _detectExpansion.scrollLeft = _detectExpansion.scrollTop = delta;
+      delta++;
+    } while ((_detectExpansion.scrollTop == 0 || _detectExpansion.scrollLeft == 0) && delta <= 5);
+
+
+    _detectContraction.scrollLeft = width;
+    _detectContraction.scrollTop = height;
+  };
+}
+
+oj.DomUtils._RESIZE_TRACKER_KEY = "_ojResizeTracker";
+
+
+/**
+ * Returns true if the name is a valid identifier
+ *
+ * @param {string} name
+ * @return {boolean} true if the name is a valid identifier
+ */
+oj.DomUtils.isValidIdentifier = function (name)
+{
+  return /^[A-Za-z][0-9A-Z_a-z-]*$/.test(name);
+};
+
+
+/**
+ * @constructor
+ * @ignore
+ */
+
+oj.DomUtils._collapsingListenerManager = function(originalCallback, timeout)
+{
+  var _lastArgs = null;
+  var _timerId = null;
+
+  var _timerCallback = function()
+  {
+    originalCallback.apply(null, _lastArgs);
+    _timerId = null;
+  };
+
+  var _callback = function()
+  {
+    _lastArgs = Array.prototype.slice.call(arguments);
+    if (_timerId == null)
+    {
+      _timerId = window.setTimeout(_timerCallback, timeout);
+    }
+  };
+
+  this.getCallback = function()
+  {
+    return _callback;
+  };
+
+  this.stop = function()
+  {
+    if (_timerId != null)
+    {
+      window.clearTimeout(_timerId);
+      _timerId = null;
+    }
+  }
+
+};
+
+/**
+ * @return {boolean} true if touch is supported
+ */
+oj.DomUtils.isTouchSupported = function ()
+{
+  return ('ontouchstart' in window) // C, FF, Safari, Edge
+    || (navigator.msMaxTouchPoints > 0) // IE10
+    || (navigator.maxTouchPoints > 0);  // IE11
+};
+
+/**
+ * @ignore
+ */
+oj.DomUtils.setInKoCleanExternal = function(node)
+{
+  oj.DomUtils._koCleanNode = node;
+};
+
+/**
+ * Delegates to JQuery's unwrap() if the component's node is not currently
+ * being removed by Knockout
+ * @param {Object} locator
+ * @param {Object=} replaceLocator - locator to be replaced. I fthis parameter is ommitted,
+ * the parent node will be replaced
+ * @ignore
+ */
+oj.DomUtils.unwrap = function(locator, replaceLocator)
+{
+  var koCleanNode = oj.DomUtils._koCleanNode;
+  
+  
+  if (koCleanNode)
+  {
+    if (locator.get(0) === koCleanNode) // skip unwrap
+    {
+      return;
+    }
+  }
+  
+  if (replaceLocator)
+  {
+    replaceLocator.replaceWith(locator); // @HtmlUpdateOk
+  }
+  else
+  {
+    locator.unwrap();
+  }
+  
+};
+
+/**
+ * Determines if the mouse event target is on browser chrome - i.e. "scrollbar".
+ * If the event is not a mouse event with a clientX and clientY, the resultant will
+ * be false.
+ *
+ * @param {Event} event native dom event
+ * @returns {boolean} <code>true</code> if the target of the mouse event is browser
+ *          chrome such as scrollbars.
+ * @public
+ */
+oj.DomUtils.isChromeEvent = function(event)
+{
+
+  /**
+   * @param {Event} event
+   * @return {boolean}
+   */
+  function _isChromeEventGecko(event) {
+    // assume that if we can't access the original target of the event, then it's because
+    // the target was implemented in XUL and is part of the chrome;
+    try
+    {
+      return event.originalTarget.localName ? false : true;
+    }
+    catch (e)
+    {
+      return true;
+    }
+  };
+
+  /**
+   * @param {Event} event
+   * @return {boolean}
+   */
+  function _isChromeEventIE(event)
+  {
+    /*
+      //IE has a specific API for this but doesn't seem to want to work in automation.
+      //The webkit method works in IE too.  Using that over componentFromPoint but leaving
+      //the code for future reference.
+      //
+      var target = event.target;
+      var chromePart = target.componentFromPoint(event.clientX, event.clientY);
+      if (oj.StringUtils.isEmpty(chromePart))
+        return false;
+      else
+        return true;
+    */
+    return _isChromeEventWebkit(event);
+  };
+
+  /**
+   * @param {Event} event
+   * @return {boolean}
+   */
+  function _isChromeEventWebkit(event)
+  {
+    var domTarget = event.target;
+    var target = $(domTarget);
+
+
+    var pos = domTarget.getBoundingClientRect();
+    var sbw = oj.DomUtils.getScrollBarWidth();
+    var isLTR = oj.DomUtils.getReadingDirection() === "ltr";
+    if (isLTR && (("HTML" === domTarget.nodeName || "visible" !== target.css("overflow-x")) && event.clientX > (pos["right"] - sbw)))
+      return true; // ltr scrollbar is always on the right
+    else if (!isLTR && "HTML" === domTarget.nodeName  && event.clientX > (pos["left"] - sbw))
+      return true; // RTL scrollbar on the document is still on the right
+    else if (!isLTR && "visible" !== target.css("overflow-x") && event.clientX < (pos["left"] + sbw))
+      return true; // RTL scrollbar not on the document is on the left
+    else if (("HTML" === domTarget.nodeName || "visible" !== target.css("overflow-y")) && event.clientY > (pos["bottom"] - sbw))
+      return true; // below the scrollbar
+    else
+      return false;
+  };
+
+  // verify event is a mouse event
+  if (!('clientX' in event) || !("clientY" in event))
+    return false;
+
+  var agentInfo = oj.AgentUtils.getAgentInfo();
+
+  if (oj.AgentUtils.OS.ANDROID === agentInfo["os"] || oj.AgentUtils.OS.IOS === agentInfo["os"])
+    return false;
+
+  if (oj.AgentUtils.ENGINE.GECKO === agentInfo["engine"])
+    return _isChromeEventGecko(event);
+  else if (oj.AgentUtils.ENGINE.WEBKIT === agentInfo["engine"] ||
+           oj.AgentUtils.ENGINE.BLINK === agentInfo["engine"])
+    return _isChromeEventWebkit(event);
+  if (oj.AgentUtils.BROWSER.IE === agentInfo["browser"])
+    return _isChromeEventIE(event);
+  else
+    return false;
+};
+
+/**
+ * @returns {number} width of the browser scrollbar
+ */
+oj.DomUtils.getScrollBarWidth = function()
+{
+  var scrollBarWidth = oj.DomUtils._scrollBarWidth;
+  if ($.isNumeric(scrollBarWidth))
+    return scrollBarWidth;
+
+  /** @type {jQuery} **/
+  var scrollBarMeasure = $("<div />");
+  $(document.body).append(scrollBarMeasure); //@HTMLUpdateOK; scrollBarMeasure constructed by the code above
+  scrollBarMeasure.width(50).height(50)
+    .css({
+            'overflow': 'scroll',
+            'visibility': 'hidden',
+            'position': 'absolute'
+        });
+
+  /** @type {jQuery} **/
+  var scrollBarMeasureContent = $("<div />");
+  scrollBarMeasureContent.height(1);
+  scrollBarMeasure.append(scrollBarMeasureContent);  //@HTMLUpdateOK; scrollBarMeasureContent constructed by the code above
+
+  var insideWidth = scrollBarMeasureContent.width();
+  var outsideWitdh = scrollBarMeasure.width();
+  scrollBarMeasure.remove();
+
+  scrollBarWidth = oj.DomUtils._scrollBarWidth = outsideWitdh - insideWidth;
+  return scrollBarWidth;
+};
+
+/**
+ * @returns {string!} "rtl" or "ltr"
+ */
+oj.DomUtils.getReadingDirection = function()
+{
+  var dir = document.documentElement.getAttribute("dir");
+  if (dir)
+    dir = dir.toLowerCase();
+  return (dir === "rtl") ? "rtl" : "ltr";
+};
+
+/**
+ * Retrieve the bidi independent position of the horizontal scroll position that
+ * is consistent across all browsers.
+ * @param {Element} elem the element to retrieve the scrollLeft from
+ * @return {number} the element's scrollLeft
+ */
+oj.DomUtils.getScrollLeft = function(elem)
+{
+  if (oj.DomUtils.getReadingDirection() === "rtl")
+  {
+    var browser = oj.AgentUtils.getAgentInfo()['browser'];
+    if (browser === oj.AgentUtils.BROWSER.FIREFOX || browser === oj.AgentUtils.BROWSER.IE || browser === oj.AgentUtils.BROWSER.EDGE)
+    {
+      return Math.abs(elem.scrollLeft);
+    }
+    else
+    {
+      // webkit
+      return Math.max(0, elem.scrollWidth - elem.clientWidth - elem.scrollLeft);
+    }
+  }
+  else
+  {
+    return elem.scrollLeft;
+  }
+};
+
+/**
+ * Sets the bidi independent position of the horizontal scroll position that
+ * is consistent across all browsers.
+ * @param {Element} elem the element to set the scrollLeft on
+ * @param {number} scrollLeft the element's new scrollLeft
+ */
+oj.DomUtils.setScrollLeft = function(elem, scrollLeft)
+{
+  if (oj.DomUtils.getReadingDirection() === "rtl")
+  {
+    var browser = oj.AgentUtils.getAgentInfo()['browser'];
+    if (browser === oj.AgentUtils.BROWSER.FIREFOX)
+    {
+      // see mozilla bug 383026, even though it's marked as fixed, they basically
+      // did not change anything.  It still expects a negative value for RTL
+      elem.scrollLeft = -scrollLeft;
+    }
+    else if (browser === oj.AgentUtils.BROWSER.IE || browser === oj.AgentUtils.BROWSER.EDGE)
+    {
+      elem.scrollLeft = scrollLeft;
+    }
+    else
+    {
+      // webkit
+      elem.scrollLeft = Math.max(0, elem.scrollWidth - elem.clientWidth - scrollLeft);
+    }
+  }
+  else
+  {
+    elem.scrollLeft = scrollLeft;
+  }        
+};
+
+/**
+ * Converts a CSS length attribute into a integer value.
+ * Conversion errors or non-number will result in a zero
+ * resultant.
+ *
+ * @param {?} cssLength style attribute
+ * @return {number} value as integer
+ */
+oj.DomUtils.getCSSLengthAsInt = function(cssLength)
+{
+  if (!isNaN(cssLength))
+    return parseInt(cssLength, 10);
+
+  if (cssLength && cssLength.length > 0 && cssLength != "auto")
+  {
+    var intLength = parseInt(cssLength, 10);
+
+    if (isNaN(intLength))
+      intLength = 0;
+
+    return intLength;
+  }
+  else
+  {
+    return 0;
+  }
+};
+
+/**
+ * Converts a CSS attribute into a float value.
+ * Conversion errors or non-number will result in a zero
+ * resultant.
+ *
+ * @param {?} cssLength style attribute
+ * @return {number} value as integer
+ */
+oj.DomUtils.getCSSLengthAsFloat = function(cssLength)
+{
+  if (!isNaN(cssLength))
+    return parseFloat(cssLength);
+
+  if (cssLength && cssLength.length > 0)
+  {
+    var floatLength = parseFloat(cssLength);
+
+    if (isNaN(floatLength))
+      floatLength = 0;
+
+    return floatLength;
+  }
+  else
+  {
+    return 0;
+  }
+};
+
+/**
+ * Key used to store the logical parent of the popup element
+ * as a jQuery data property. The logical parent refers the launcher of a popup.
+ * @const
+ * @private
+ * @type {string}
+ */
+oj.DomUtils._LOGICAL_PARENT_DATA = "oj-logical-parent";
+
+/**
+ * This method returns the launcher of a popup when it's open.
+ * Returns undefined otherwise.
+ *
+ * @param {jQuery} element jquery element
+ * @returns {*}
+ * @see #setLogicalParent
+ */
+oj.DomUtils.getLogicalParent = function(element)
+{
+  if (element)
+    return element.data(oj.DomUtils._LOGICAL_PARENT_DATA);
+
+  return undefined;
+};
+
+/**
+ * Set the logical parent as a jQuery data property
+ *
+ * @param {jQuery} element jquery element
+ * @param {jQuery | null} parent jquery element
+ * @see #getLogicalParent
+ */
+oj.DomUtils.setLogicalParent = function(element, parent)
+{
+  if (! element)
+    return;
+
+  if (parent === null)
+    element.removeData(oj.DomUtils._LOGICAL_PARENT_DATA);
+  else
+    element.data(oj.DomUtils._LOGICAL_PARENT_DATA, parent);
+};
+
+/**
+ * Checks to see if the "ancestorNode" is a logical ancestor of "node"
+ *
+ * @param {!Element} ancestorNode dom subtree to check to see if the target node exists
+ * @param {!Element} node target node to check to see if it exists within a subtree rooted at the ancestorNode
+ * @return {boolean} <code>true</code> if the "ancestorNode" is a logical ancestor of "node" or if they are the same
+ */
+oj.DomUtils.isLogicalAncestorOrSelf = function (ancestorNode, node)
+{
+  oj.Assert.assertDomElement(ancestorNode);
+  oj.Assert.assertDomElement(node);
+
+  var parentNode = node;
+  while (parentNode)
+  {
+    if (parentNode == ancestorNode)
+      return true;
+
+    var logicalParent = oj.DomUtils.getLogicalParent($(parentNode));
+    if (logicalParent)
+      parentNode = logicalParent[0];
+    else
+      parentNode = parentNode.parentNode;
+  }
+
+  return false;
+
+};
+
+
+/**
+ * Checks whether the href represents a safe URL
+ * @param {!string} href - HREF to test
+ * @param {Array=} whitelist - optional list of the allowed protocols. Protocol name has to use lowercase latters and
+ * be followed by a ':'. If the parameter is ommitted, ['http:', 'https:'] will be used
+ * @throws {Exception} an error if the HREF represents an invalid URL
+ * @ignore
+ */
+oj.DomUtils.validateURL = function(href, whitelist)
+{
+  var allowed = whitelist || ['http:', 'https:'];
+
+  var link = document.createElement('a');
+  link.href = href;
+
+  var protocol = link.protocol;
+  if (protocol != null)
+  {
+    protocol = protocol.toLowerCase();
+  }
+
+  if (allowed.indexOf(protocol) < 0)
+  {
+    throw protocol + " is not a valid URL protocol";
+  }
+};
+
+/**
+ * Cancels native context menu events for hybrid mobile applications.
+ * @private
+ */
+oj.DomUtils._supressNativeContextMenu = function()
+{
+  if ($(document.body).hasClass("oj-hybrid")) {
+    document.body.addEventListener('contextmenu',
+      function(event) {
+        event.preventDefault();
+      }, true);
+  }
+}
+oj.DomUtils._supressNativeContextMenu();
+
+// standard duration of a pressHold gesture.  Point of reference: default
+// JQ Mobile threshold to be a press-and-hold is 750ms.
+oj.DomUtils.PRESS_HOLD_THRESHOLD = 750;
+
+
+// ------------------------------------------------------------------------------------------------
+// Recent touch end
+// ------------------------------------------------------------------------------------------------
+
+/**
+ * Returns true if a touchend or touchcancel has been detected anywhere in the document in the last 500 ms.
+ * Note: This function adds event listeners only once per document load.
+ *
+ * @return {boolean} boolean indicating whether a touch has recently been detected
+ */
+oj.DomUtils.recentTouchEnd = (function()
+{
+  // This function is immediately executed and returns the recentTouchEnd function
+  // and therefore only execute once per document load.
+
+  var touchTimestamp = 0;
+  var TOUCH_THRESHOLD = 500;
+
+  function _touchEndHandler() {
+    touchTimestamp = Date.now();
+  };
+
+  // --- Document listeners ---
+  document.addEventListener("touchend", _touchEndHandler, true);
+  document.addEventListener("touchcancel", _touchEndHandler, true);
+
+  // --- The function assigned to oj.DomUtils.recentTouchEnd ---
+
+  return function()
+  {
+    // must be at least 300 for the "300ms" delay
+    return (Date.now() - touchTimestamp) < TOUCH_THRESHOLD;
+  };
+})();
+
+/**
+ * Returns true if a touchstart has been detected anywhere in the document in the last 800 ms.
+ * Note: This function adds event listeners only once per document load.
+ *
+ * @return {boolean} boolean indicating whether a touch has recently been detected
+ */
+oj.DomUtils.recentTouchStart = (function()
+{
+  // This function is immediately executed and returns the recentTouchStart function
+  // and therefore only execute once per document load.
+
+  var touchTimestamp = 0;
+  // 800 because this is used to ignore mouseenter and focusin on 'press', and a 'press'
+  // is usually detected after 750ms.
+  var TOUCH_THRESHOLD = oj.DomUtils.PRESS_HOLD_THRESHOLD + 50;
+
+  function _touchStartHandler() {
+    touchTimestamp = Date.now();
+  };
+
+  // --- Document listeners ---
+  document.addEventListener("touchstart", _touchStartHandler, true);
+
+  // --- The function assigned to oj.DomUtils.recentTouchStart ---
+
+  return function()
+  {
+    // must be at least TOUCH_THRESHOLD for the  delay
+    return (Date.now() - touchTimestamp) < TOUCH_THRESHOLD;
+  };
+})();
+
+// ------------------------------------------------------------------------------------------------
+// Recent pointer
+// ------------------------------------------------------------------------------------------------
+
+/**
+ * Returns true if a touchstart, touchend, mousedown, or mouseup has been detected anywhere in the
+ * document in the last n ms, where n is calibrated across a variety of platforms to make this API
+ * a maximally reliable indicator of whether the code now running was likely "caused by" the
+ * specified touch and mouse interaction, vs. some other thing (e.g. mousemove, keyboard, or page
+ * load).  E.g. the makeFocusable() / _focusable() mechanism uses this API to vary the focus theming
+ * depending on whether the element was focused via keyboard or pointer.
+ *
+ * @return {boolean} boolean indicating whether a mouse button or finger has recently been down or up
+ */
+oj.DomUtils.recentPointer = (function()
+{
+  // The comments in this function are tailored to the makeFocusable() usage.
+
+  // - Let "pointer down" mean mousedown or touchstart, and "pointer up" likewise.  (Not MS pointer events.)
+  // - Event order can be 1) mousedown>focus>mouseup (like push buttons) or 2) mousedown>mouseup>focus (like toggle buttons).
+  // - For 2, semantics for "focus caused by pointer" must be "if pointer interaction in last n ms," rather than "if pointer is currently down".
+  // - Those "last n ms" semantics are preferred for 1 as well, rather than relying on pointer up to cancel a state set by pointer down,
+  //   since if the pointer up is never received, we'd get stuck in an inaccessible state.
+  // - So both pointer down and pointer up set a timestamp, and recentPointer() returns true if Date.now() is within n ms of that timestamp,
+  //   where n is higher for touchstart per below.
+
+  // Timestamp of last mousedown/up or touchstart/end. Initial value of 0 (1/1/1970) guarantees that if element is focused before any
+  // mouse/touch interaction, then recentPointer() is false, so focus ring appears as desired.
+  var pointerTimestamp = 0;
+
+  var pointerTimestampIsTouchStart; // whether the latest timestamp is for touchstart vs. touchend/mouse
+
+  // On Edge (Surface Win10), the lag from the up event to resulting programmatic focus is routinely ~350ms, even when the 300ms "tap delay" has
+  // been prevented and confirmed to be absent.  (In Chrome on same device the same lag is ~10 ms.)  So use 600ms to be safe.  Even on Chrome,
+  // the lag from the down/up event to natively induced focus can routinely be well into the 1xx ms range. Can exceed 600 if needed. There is no
+  // need for a tight bound; if there was pointer interaction in the last second or so, it's perfectly reasonable to suppress the focus ring.
+  var POINTER_THRESHOLD_CUSHION = 600;
+
+  // If the number of millis since the last pointer down or up is < this threshold, then recentPointer() considers it recent and returns true.
+  // See also TOUCHSTART_THRESHOLD.
+  var POINTER_THRESHOLD = POINTER_THRESHOLD_CUSHION;
+
+  // For touchstart only, use 750+600ms so that focus set by a 750ms pressHold gesture (e.g. context menu) is recognized as touch-related.  Same
+  // 600ms padding as for POINTER_THRESHOLD.  A high threshold is OK, as it is used only for actual pressHolds (and the unusual case where the
+  // pointer up is never received), since for normal clicks and taps, the pointerUp replaces the "1350ms after touchstart" policy with a "600ms
+  // after pointerUp" policy. On Edge and desktop FF (desktop version runs on hybrid devices like Surface), which lack touchstart, context menus
+  // are launched by the contextmenu event, which happen after the pointer up in both browsers, so the fact that we're using the higher
+  // threshold only for touchstart should not be a problem there.
+  var TOUCHSTART_THRESHOLD = oj.DomUtils.PRESS_HOLD_THRESHOLD + POINTER_THRESHOLD_CUSHION;
+
+
+  // --- Document listeners ---
+
+  // Use capture phase to make sure we hear the events before someone cancels them
+  document.addEventListener("mousedown", function() {
+    // If the mousedown immediately follows a touchstart, i.e. if it seems to be the compatibility mousedown
+    // corresponding to the touchstart, then we want to consider it a "recent pointer activity" until the end time
+    // that is max(touchstartTime + TOUCHSTART_THRESHOLD, now + POINTER_THRESHOLD), where now is mousedownTime in this
+    // case.  (I.e. it would defeat the purpose if the inevitable mousedown replaced the longer touchstart threshold with
+    // a shorter one.)  We don't do this in the touchend/mouseup listeners, as those obviously happen after the pressHold
+    // is over, in which case the following analysis applies:
+    // - If the pressHold was < PRESS_HOLD_THRESHOLD ms,
+    // - then the higher TOUCHSTART_THRESHOLD is not needed or relevant, since anything focused on pressHold
+    //   (like a context menu) never happened,
+    // - else the touchend/mouseup happened > PRESS_HOLD_THRESHOLD ms after the touchstart, so in the max() above,
+    //   the 2nd quantity is always bigger (later).
+    var now = Date.now();
+    if ((!pointerTimestampIsTouchStart) || (now > pointerTimestamp + oj.DomUtils.PRESS_HOLD_THRESHOLD)) {
+      pointerTimestamp = now;
+      pointerTimestampIsTouchStart = false;
+    }
+  }, true);
+
+  document.addEventListener("touchstart", function() {
+    pointerTimestamp = Date.now();
+    pointerTimestampIsTouchStart = true;
+  }, true);
+
+  document.addEventListener("mouseup", function() {
+    pointerTimestamp = Date.now();
+    pointerTimestampIsTouchStart = false;
+  }, true);
+
+  document.addEventListener("touchend", function() {
+    pointerTimestamp = Date.now();
+    pointerTimestampIsTouchStart = false;
+  }, true);
+
+
+  // --- The function assigned to oj.DomUtils.recentPointer ---
+
+  return function()
+  {
+    var millisSincePointer = Date.now() - pointerTimestamp;
+    var threshold = pointerTimestampIsTouchStart ? TOUCHSTART_THRESHOLD : POINTER_THRESHOLD;
+    var isRecent = millisSincePointer < threshold;
+    return isRecent;
+  };
+})();
+
+
+// ------------------------------------------------------------------------------------------------
+// Utility for suppressing focus ring for mouse/touch interaction, but not KB or other interaction:
+// ------------------------------------------------------------------------------------------------
+
+/**
+ * This API works like baseComponent's _focusable() API (see its detailed JSDoc), with the
+ * similarities and differences listed below.  This API is intended for non-component callers;
+ * components should typically call the baseComponent API via this._focusable().
+ *
+ * Comparison to baseComponent._focusable() :
+ *
+ * - This function's "options" param must be an object.  Only baseComponent._focusable()
+ *   supports the backward-compatibility syntax where the options param can be the element.
+ * - Same usage of oj-focus, oj-focus-highlight, and $focusHighlightPolicy.
+ * - Same required invariant that oj-focus-highlight must not be set if oj-focus is not set.
+ * - Same parameters with same semantics, plus the additional "component" and "remove" params
+ *   discussed below.
+ * - New options.component param, which takes a JET component instance.  (When a component is
+ *   involved, typically that component should call this._focusable() rather than calling this
+ *   version of the method directly.)
+ *
+ * If options.component is specified, then the following things work like the baseComponent
+ * version of this API:
+ *
+ * - If the specified element is in the component subtree,
+ *   then the classes will automatically be removed when the component is
+ *   destroyed/disabled/detached, as detailed in the baseComponent JSDoc,
+ *   else the caller has the same responsibility to remove the classes at those times.
+ * - Same rules as to whether listeners are automatically cleaned up, or suppressed when the
+ *   component is disabled, vs. being the caller's responsibility to handle those things.
+ *
+ * If options.component is NOT specified (for non-component callers), then those things are
+ * the caller's responsibility.  Specifically:
+ *
+ * - Class removal can be done directly, as needed.
+ * - To remove the listeners, see the following.
+ *
+ * Listener removal:
+ *
+ * - If options.component was specified, see above.
+ * - Else if options.setupHandlers was specified, then only the caller knows what listeners were
+ *   registered and how, so it is the caller's responsibility to remove them directly when needed.
+ * - The remaining case is that options.component and options.setupHandlers were not specified.
+ *   To remove from element e both the 2 classes and all listeners applied to e by all previous
+ *   invocations of makeFocusable() where these options were not specified,
+ *   call makeFocusable( {'element': e, 'remove': true} ).
+ */
+// If this is named focusable(), Closure Compiler generates a warning, and fails to rename the function in minified code,
+// which suggests that focusable (not just _focusable) is apparently externed somewhere (although not in
+// 3rdparty\jquery\externs\jquery-1.8.js, main\javascript\externs.js, or build\tools\closure\compiler.jar\externs.zip\),
+// perhaps for JQUI's :focusable selector.  So name it makeFocusable().
+oj.DomUtils.makeFocusable = (function()
+{
+  var nextId = 0; // used for unique namespace, for "remove" functionality
+
+  // This private var is shared by all callers that use makeFocusable() and don't supply their own focus highlight policy.
+  // If the oj-focus-config SASS object ever acquires a 2nd field, should continue to call pJFFF() only once, statically.
+  var FOCUS_HIGHLIGHT_POLICY = (oj.ThemeUtils.parseJSONFromFontFamily('oj-focus-config') || {})['focusHighlightPolicy'];
+
+  /**
+   * @param {function()} focusPolicyCallback Optional getter passed to makeFocusable() by callers wishing to get use a caller-
+   *   specific focus policy mechanism instead of the built-in mechanism.
+   * @param {function()} recentPointerCallback Optional function passed to makeFocusable() by callers wishing to use a caller-
+   *   specific mechanism in addition to the built-in mechanism.
+   * @return {boolean} boolean indicating whether it is appropriate to apply the <code class="prettyprint">oj-focus-highlight</code>
+   *   CSS class for a focus happening at the time of this method call.
+   */
+  var shouldApplyFocusHighlight = function(focusPolicyCallback, recentPointerCallback)
+  {
+    var focusHighlightPolicy = focusPolicyCallback ? focusPolicyCallback() : FOCUS_HIGHLIGHT_POLICY;
+    switch (focusHighlightPolicy)
+    {
+      case "all":
+        return true;
+      case "none":
+        return false;
+      default: // "nonPointer" or no value provided (e.g. SASS var missing)
+        return !( oj.DomUtils.recentPointer() || (recentPointerCallback && recentPointerCallback()) );
+    }
+  };
+
+  // the function assigned to oj.DomUtils.makeFocusable
+  var makeFocusable = function( options )
+  {
+    var element = options['element'];
+
+    var dataKey = "ojFocusable";
+    var namespacePrefix = "." + dataKey;
+    var namespaceSeparator = " " + namespacePrefix;
+
+    if (options['remove']) {
+      element.removeClass("oj-focus oj-focus-highlight");
+
+      // id's of listeners needing removal
+      var ids = element.data(dataKey);
+      if (ids == undefined)
+          return;
+
+      // map ids to namespaces.  "2" -> ".ojFocusable2".  "2,7" -> ".ojFocusable2 .ojFocusable7"
+      var namespaces = namespacePrefix + (""+ids).split(",").join(namespaceSeparator);
+      element.off(namespaces) // remove the listeners
+             .removeData(dataKey); // clear list of listener id's needing removal
+      return;
+    }
+
+    var afterToggle = options['afterToggle'] || $.noop;
+
+    var applyOnlyFocus = function( element ) {
+      element.addClass( "oj-focus" );
+      afterToggle("focusin");
+    };
+
+    var applyBothClasses = function( element ) {
+      element.addClass( "oj-focus" );
+      if (shouldApplyFocusHighlight(options['getFocusHighlightPolicy'], options['recentPointer'])) {
+        element.addClass( "oj-focus-highlight" );
+      }
+      afterToggle("focusin");
+    };
+
+    var addClasses = options['applyHighlight'] ? applyBothClasses : applyOnlyFocus;
+
+    var removeClasses = function( element ) {
+      element.removeClass( "oj-focus oj-focus-highlight" );
+      afterToggle("focusout");
+    };
+
+    var setupHandlers = options['setupHandlers'] || function( focusInHandler, focusOutHandler) {
+      var component = options['component'];
+      var focusInListener = function( event ) {
+        focusInHandler($( event.currentTarget ));
+      };
+      var focusOutListener = function( event ) {
+        focusOutHandler($( event.currentTarget ));
+      }
+
+      if (component) {
+        component._on( element, {
+          focusin: focusInListener,
+          focusout: focusOutListener
+        });
+      } else {
+        // neither options.component nor options.setupHandlers were passed, so we must provide a
+        // way for the caller to remove the listeners.  That's done via the "remove" param, which
+        // uses the namespaces that we stash via data().
+        var id = nextId++;
+
+        // list of id's of existing listeners needing removal
+        var ids = element.data(dataKey);
+
+        // append id to that list, or start new list if first one
+        element.data(dataKey, ids == undefined ? id : ids + "," + id);
+
+        // add listeners namespaced by that id
+        var handlers = {};
+        var namespace = namespacePrefix + id;
+        handlers["focusin" + namespace] = focusInListener;
+        handlers["focusout" + namespace] = focusOutListener;
+        element.on(handlers);
+      }
+    };
+
+    setupHandlers(addClasses, removeClasses);
+  };
+
+  return makeFocusable;
+})();
+/*jslint browser: true*/
+/*
+** Copyright (c) 2015, Oracle and/or its affiliates. All rights reserved.
+*/
+/**
+ * Focus utilities.
+ * @ignore
+ */
+oj.FocusUtils = {};
+
+oj.FocusUtils._TABBABLE = ":tabbable";
+
+//These functions inspired by AdfFocusUtils
+
+/**
+ * Tests whether the specified element contains the keyboard focus.
+ * @param {!Element} element Element for which to check if it contains focus.
+ * @returns {boolean} True if the element contains focus, false otherwise.
+ */
+oj.FocusUtils.containsFocus = function(element)
+{
+  var activeElem = document.activeElement;
+  //FIX : if either elem is undefined, just return false
+  if (!element || !activeElem)
+    return false;
+  
+  return oj.DomUtils.isAncestorOrSelf(element, activeElem);
+};
+
+/**
+ * Sets focus to the specified element.
+ * @param {!Element} element Element to focus.
+ */
+oj.FocusUtils.focusElement = function(element)
+{
+  element.focus();
+};
+
+/**
+ * Sets focus to the first tabbable element inside the given element, which
+ * may be the given element itself.
+ * @param {!Element} element Element to start searching for a tabbable element in.
+ * @returns {Element} The DOM element that was focused, if any.
+ */
+oj.FocusUtils.focusFirstTabStop = function(element)
+{
+  var focusElement = oj.FocusUtils.getFirstTabStop(element);
+
+  if (focusElement)
+    oj.FocusUtils.focusElement(focusElement);
+
+  return focusElement;
+};
+
+/**
+ * Get the first tabbable element inside the given element, which may be the
+ * given element itself.
+ * @param {!Element} element Element to start searching for a tabbable element in.
+ * @returns {Element} The first tabbable element inside the given element.
+ */
+oj.FocusUtils.getFirstTabStop = function(element)
+{
+  var jqElem = $(element);
+  if (jqElem.is(oj.FocusUtils._TABBABLE))
+    return element;
+  
+  var jqFocusables = jqElem.find(oj.FocusUtils._TABBABLE);
+  if (jqFocusables && jqFocusables.length > 0)
+    return jqFocusables[0];
+
+  return null;
+};
+
+/**
+ * Extends the jquery ":focusable" pseudo selector check for a Safari browser specific
+ * exception - an anchor element not having a tabindex attribute.
+ *
+ * @param {Element} element target dom element to test if it will take focus
+ * @returns {boolean} <code>true</code> if the target element is focusable
+ */
+oj.FocusUtils.isFocusable = function (element)
+{
+  if ($(element).is(":focusable"))
+  {
+    // An anchor element in safari will not take focus unless it has a tabindex.
+    // http://developer.mozilla.org/en-US/docs/Web/HTML/Element/a#Clicking_and_focus
+    if (element.nodeName === "A" && !element.hasAttribute("tabindex") &&
+      oj.AgentUtils.getAgentInfo()["browser"] === oj.AgentUtils.BROWSER.SAFARI)
+      return false;
+    else
+      return true;
+  }
+
+  return false;
+};
 /*jslint browser: true*/
 /*
 ** Copyright (c) 2017, Oracle and/or its affiliates. All rights reserved.
@@ -6792,859 +7901,48 @@ oj.GestureUtils.startDetectContextMenuGesture = function(rootNode, callback)
         $(rootNode).addClass("oj-menu-context-menu-launcher");
 };
 /*jslint browser: true*/
-/*
-** Copyright (c) 2015, Oracle and/or its affiliates. All rights reserved.
-*/
 /**
- * Focus utilities.
- * @ignore
+ * in some OS/browser combinations you can attempt to detect high contrast mode
+ * in javascript, go to the url below and look for "High Contrast"
+ * http://www.w3.org/TR/wai-aria-practices/
+ * 
+ * This function uses a variation of the code in the "High Contrast" section of  
+ * the site above to try and detect high contrast mode
+ * by script, but it by no means definitively tells you whether or not you
+ * are actually in high contrast mode. As discussed at the url above you 
+ * may need to have a user preference setting for high contrast.
+ * 
+ * If the script is able to detect high contrast mode it sets the class 
+ * "oj-hicontrast" on the body tag. When "oj-high-contrast" is present 
+ * JET provides alternate informational images that are specially designed 
+ * for high contrast users. 
+ * @private
  */
-oj.FocusUtils = {};
-
-oj.FocusUtils._TABBABLE = ":tabbable";
-
-//These functions inspired by AdfFocusUtils
-
-/**
- * Tests whether the specified element contains the keyboard focus.
- * @param {!Element} element Element for which to check if it contains focus.
- * @returns {boolean} True if the element contains focus, false otherwise.
- */
-oj.FocusUtils.containsFocus = function(element)
+function _ojHighContrast()
 {
-  var activeElem = document.activeElement;
-  //FIX : if either elem is undefined, just return false
-  if (!element || !activeElem)
-    return false;
-  
-  return oj.DomUtils.isAncestorOrSelf(element, activeElem);
-};
+  // using a data uri, I googled for shortest uri to get this one since 
+  // I don't care about the actual image, but I do want a legit image
+  // otherwise I see an error in chrome and I don't want users to be
+  // confused by seeing any error.
 
-/**
- * Sets focus to the specified element.
- * @param {!Element} element Element to focus.
- */
-oj.FocusUtils.focusElement = function(element)
-{
-  element.focus();
-};
+  var div = $("<div style='border: 1px solid;border-color:red green;position: absolute;top: -999px;background-image: url(data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACwAAAAAAQABAAACAkQBADs=);'></div>"), bki;
+  div.appendTo("body");     // @HTMLUpdateOK safe manipulation
 
-/**
- * Sets focus to the first tabbable element inside the given element, which
- * may be the given element itself.
- * @param {!Element} element Element to start searching for a tabbable element in.
- * @returns {Element} The DOM element that was focused, if any.
- */
-oj.FocusUtils.focusFirstTabStop = function(element)
-{
-  var focusElement = oj.FocusUtils.getFirstTabStop(element);
-
-  if (focusElement)
-    oj.FocusUtils.focusElement(focusElement);
-
-  return focusElement;
-};
-
-/**
- * Get the first tabbable element inside the given element, which may be the
- * given element itself.
- * @param {!Element} element Element to start searching for a tabbable element in.
- * @returns {Element} The first tabbable element inside the given element.
- */
-oj.FocusUtils.getFirstTabStop = function(element)
-{
-  var jqElem = $(element);
-  if (jqElem.is(oj.FocusUtils._TABBABLE))
-    return element;
-  
-  var jqFocusables = jqElem.find(oj.FocusUtils._TABBABLE);
-  if (jqFocusables && jqFocusables.length > 0)
-    return jqFocusables[0];
-
-  return null;
-};
-
-/**
- * Extends the jquery ":focusable" pseudo selector check for a Safari browser specific
- * exception - an anchor element not having a tabindex attribute.
- *
- * @param {Element} element target dom element to test if it will take focus
- * @returns {boolean} <code>true</code> if the target element is focusable
- */
-oj.FocusUtils.isFocusable = function (element)
-{
-  if ($(element).is(":focusable"))
+  bki = div.css("backgroundImage");
+  //console.log("background-image:" + bki);
+  //console.log("borderTopColor == borderRightColor: ", div.css("borderTopColor") == div.css("borderRightColor"));
+  if (div.css("borderTopColor") == div.css("borderRightColor") ||
+      (bki != null && (bki == 'none' || bki == 'url (invalid-url:)')))
   {
-    // An anchor element in safari will not take focus unless it has a tabindex.
-    // http://developer.mozilla.org/en-US/docs/Web/HTML/Element/a#Clicking_and_focus
-    if (element.nodeName === "A" && !element.hasAttribute("tabindex") &&
-      oj.AgentUtils.getAgentInfo()["browser"] === oj.AgentUtils.BROWSER.SAFARI)
-      return false;
-    else
-      return true;
+    $('body').addClass("oj-hicontrast");
   }
 
-  return false;
-};
-/**
- * JET component custom element bridge.
- * 
- * This bridge ensures that JET components with child JET custom elements 
- * can access child properties before the child busy state resolves. 
- * This bridge does not guarantee that all properties for the child 
- * will be available to the application before its busy states resolves, 
- * e.g data bound attribute values. 
- * 
- * Applications should still wait on the element or page level 
- * busy context before accessing properties or methods.
- * 
- * @class
- * @ignore
- */
-oj.CustomElementBridge = {};
+  div.remove();
+}
 
-/**
- * Prototype for the JET component custom element bridge instance
- */
-oj.CustomElementBridge.proto = Object.create(oj.BaseCustomElementBridge.proto);
-
-oj.CollectionUtils.copyInto(oj.CustomElementBridge.proto,
-{
-  AddComponentMethods: function(proto) 
-  {
-    // Add subproperty getter/setter
-    proto['setProperty'] = function(prop, value) 
-    {
-      var bridge = oj.BaseCustomElementBridge.getInstance(this); 
-      // Prevent overriding of properties set after intial DOM values since
-      // expression evaluation occurs asynchronously after.
-      // The _initializingExpressions flag is set in the CustomElementBinding
-      // when we do our initial pass through the DOM attributes for expressions.
-      if (!bridge._initializingExpressions ||
-          (bridge._initializingExpressions && !bridge._PROPS.hasOwnProperty(prop)))
-      {
-        if (!bridge._setEventProperty(this, prop, value) && 
-            !bridge._validateAndSetCopyProperty(this, prop, value, null)) 
-        {
-          // If not an event or copy property, check to see if it's a component specific property
-          var meta = oj.BaseCustomElementBridge.__GetPropertyMetadata(prop, oj.BaseCustomElementBridge.getProperties(bridge));
-          // This check is currently used for translation subproperties which don't all have metadata. We will eventually
-          // remove this check once our metadata is generated from our jsDoc, but need this for now in 4.0 so component owners
-          // don't need to all update their translations metadata.
-          var canSkipTypeCheck = bridge.CanSkipTypeCheck(prop.split('.'));
-          
-          // For non component specific properties, just set directly on the element instead.
-          if (!meta && !canSkipTypeCheck)
-            this[prop] = value;
-          else
-            oj.CustomElementBridge._getPropertyAccessor(this, prop)(value); 
-        }
-      }
-    };
-    proto['getProperty'] = function(prop) 
-    { 
-      var bridge = oj.BaseCustomElementBridge.getInstance(this);
-      var meta = oj.BaseCustomElementBridge.__GetPropertyMetadata(prop, oj.BaseCustomElementBridge.getProperties(bridge));
-      var canSkipTypeCheck = bridge.CanSkipTypeCheck(prop.split('.'));
-      var event = oj.__AttributeUtils.eventListenerPropertyToEventType(prop);
-
-      // For event listeners and non component specific properties, return the property from the element.
-      // Otherwise, return the widget property and let the widget handle dot notation for subproperties.
-      if (event || (!meta && !canSkipTypeCheck))
-        return this[prop];
-      else
-        return bridge._getProperty(this, prop);
-    };
-  },
-
-  CreateComponent: function(element)
-  {
-    var innerDomFun = this._INNER_DOM_FUNCTION;
-    this._WIDGET_ELEM = oj.CustomElementBridge._getWidgetElement(element, innerDomFun ? innerDomFun(element) : this._EXTENSION._INNER_ELEM);
-
-    // Transfer global attributes and copy tagged properties to child element if one exists
-    if (this._WIDGET_ELEM !== element) 
-    {
-      var transferAttrs = this._EXTENSION._GLOBAL_TRANSFER_ATTRS || [];
-      for (var i = 0; i < transferAttrs.length; i++)
-      {
-        var attr = transferAttrs[i];
-        if (element.hasAttribute(attr))
-        {
-          this._WIDGET_ELEM.setAttribute(attr, element.getAttribute(attr));
-          // Remove attribute from custom element after transfering value to inner element
-          // Set a flag so we know that we're removing the attribute, not app so
-          // that on attribute changed we don't remove it again
-          this._removingTransfer = true;
-          element.removeAttribute(attr);
-        }
-      }
-
-      this._copyProperties();
-    }
-
-    oj.Components.unmarkPendingSubtreeHidden(element);
-
-    // Initialize jQuery object with options and pass element as wrapper if needed
-    var locator = $(this._WIDGET_ELEM);
-    var widgetConstructor = $(this._WIDGET_ELEM)[this._WIDGET_NAME].bind(locator);
-    widgetConstructor(this._PROPS);
-    this._WIDGET = widgetConstructor;
-    this._WIDGET_INSTANCE = widgetConstructor('instance');
-
-    if (this._WRITEBACK_PROPS)
-      this._WIDGET_INSTANCE.__saveWritebackOptions(this._WRITEBACK_PROPS);
-
-
-    // After parsing the DOM attribute values and initializing properties, remove the disabled
-    // property if it exists due to 
-    if (element.hasAttribute('disabled') && !this._disabledProcessed)
-      oj.CustomElementBridge._removeDisabledAttribute(element);
-
-    // Resolve the component busy state 
-    this.resolveDelayedReadyPromise();
-  },
-
-  DefineMethodCallback: function (proto, method, methodMeta) 
-  {
-    proto[method] = function()
-    {
-      var bridge = oj.BaseCustomElementBridge.getInstance(this);
-      // Pass in null as thisArg to apply since the widget constructor is prebound to the jQuery element
-      return bridge._WIDGET.apply(null, [method].concat([].slice.call(arguments)));
-    };
-  },
-  
-  DefinePropertyCallback: function (proto, property, propertyMeta) 
-  {
-    var listener;
-    var ext = propertyMeta["extension"];
-    Object.defineProperty(proto, property, 
-    {
-      'enumerable': true,
-      'get': function() 
-      { 
-        if (propertyMeta._eventListener)
-        {
-          return listener;
-        }
-        else if (ext && ext._COPY_TO_INNER_ELEM)
-        {
-          var bridge = oj.BaseCustomElementBridge.getInstance(this);
-          return bridge._getCopyProperty(this, property, propertyMeta);
-        }
-        else
-        {
-          return oj.CustomElementBridge._getPropertyAccessor(this, property)();
-        }
-      },
-      'set': function(value) 
-      {       
-        var bridge = oj.BaseCustomElementBridge.getInstance(this);
-        if (propertyMeta._eventListener) 
-        {
-          bridge.SetEventListenerProperty(this, property, value);
-          listener = value;
-        }
-        else if (ext && ext._COPY_TO_INNER_ELEM)
-        {
-          bridge._validateAndSetCopyProperty(this, property, value, propertyMeta);
-        }
-        else 
-        {
-          oj.CustomElementBridge._getPropertyAccessor(this, property)(value);
-        }
-      }
-    });
-  },
-
-  GetAttributes: function(metadata)
-  {
-    var attrs = oj.BaseCustomElementBridge.getAttributes(metadata['properties']);
-    if (metadata['extension']._GLOBAL_TRANSFER_ATTRS)
-      return attrs.concat(metadata['extension']._GLOBAL_TRANSFER_ATTRS);
-    return attrs;
-  },
-
-  GetMetadata: function(descriptor)
-  {
-    return descriptor['metadata'];
-  },
-
-  GetAliasForProperty: function(property)
-  {
-    // Aliasing only supported for top level properties
-    var alias = this._EXTENSION._ALIASED_PROPS;
-    if (alias && alias[property])
-      return alias[property];
-    return property;
-  },
-
-  InitializeElement: function(element)
-  {  
-    // Invoke callback on the superclass
-    oj.BaseCustomElementBridge.proto.InitializeElement.call(this, element);
-
-    var descriptor = oj.BaseCustomElementBridge.__GetDescriptor(element.tagName);
-    this._INNER_DOM_FUNCTION = descriptor['innerDomFunction'];
-    this.PARSE_FUNCTION = descriptor['parseFunction'];
-
-    this._EXTENSION = this.METADATA['extension'] || {};
-    if (this._EXTENSION._CONTROLS_SUBTREE_HIDDEN)
-    {
-      oj.Components.markPendingSubtreeHidden(element);
-    }
-
-    this._WIDGET_NAME = this._EXTENSION._WIDGET_NAME;
-    this._PROPS = (this._EXTENSION._INNER_ELEM || this._INNER_DOM_FUNCTION) ? {'_wrapper': element} : {};
-
-    // Create component to element property alias mapping for easy optionChange lookup
-    var aliasMap = this._EXTENSION._ALIASED_PROPS;
-    if (aliasMap)
-    {
-      this._COMPONENT_TO_ELEMENT_ALIASES = {};
-      var aliases = Object.keys(aliasMap);
-      var bridge = this;
-      aliases.forEach(function(alias) {
-        bridge._COMPONENT_TO_ELEMENT_ALIASES[aliasMap[alias]] = alias;
-      });
-    }
-    oj.CustomElementBridge._setupPropertyAccumulator(element, this._PROPS);
-
-    this._processProperties();
-    var parseFun = this.PARSE_FUNCTION; 
-    oj.BaseCustomElementBridge.__InitProperties(element, this._PROPS, parseFun);  
-    this.GetDelayedPropertiesPromise().resolvePromise();
-  },
-
-  HandleAttributeChanged: function(element, attr, oldValue, newValue) 
-  {
-    var transferAttrs = this._EXTENSION._GLOBAL_TRANSFER_ATTRS;
-    var transfer = transferAttrs && transferAttrs.indexOf(attr) !== -1;
-    if (!this._removingTransfer && transfer && this._WIDGET_ELEM)
-    {
-      if (newValue == null || newValue === false)
-        this._WIDGET_ELEM.removeAttribute(attr);
-      else
-        this._WIDGET_ELEM.setAttribute(attr, newValue);
-      // Remove attribute from custom element after transfering value to inner element
-      // Set a flag so we know that we're removing the attribute, not app so
-      // that on attribute changed we don't remove it again
-      this._removingTransfer = true;
-      element.removeAttribute(attr);
-    }
-    else if (this._removingTransfer && transfer)
-    {
-      this._removingTransfer = false;
-    }
-  },
-
-  HandleDetached: function(element) 
-  {
-    // Invoke callback on the superclass
-    oj.BaseCustomElementBridge.proto.HandleDetached.call(this, element);
-
-    // Only call __handleDisconnected if the component hasn't previously
-    // been destroyed which we can check by seeing if the widget constructor is null
-    if (oj.Components.__GetWidgetConstructor(this._WIDGET_ELEM) && this._WIDGET_INSTANCE)
-      this._WIDGET_INSTANCE.__handleDisconnected();
-  },
-
-  HandleReattached: function(element) {
-    // Invoke callback on the superclass
-    oj.BaseCustomElementBridge.proto.HandleReattached.call(this, element);
-
-    if (this._WIDGET_INSTANCE)
-      this._WIDGET_INSTANCE.__handleConnected();
-  },
-  
-  BatchedPropertySet: function(elem, props)
-  {
-    var keys = Object.keys(props);
-    var processedMap  = {};
-    
-    for (var i=0; i<keys.length; i++)
-    {
-      var property = keys[i];
-      var value = props[property];
-      
-      // exclude event proprties and transfer attributes from batch updates
-      if (!this._setEventProperty(elem, property, value) && 
-          !this._validateAndSetCopyProperty(elem, property, value, null))
-      {
-        value = this.ValidatePropertySet(elem, property, value);
-        
-        property = this.GetAliasForProperty(property);
-        processedMap[property] = value;
-      }
-    }
-    // Skip batched property sets if widget constructor isn't available meaning
-    // the widget wasn't instantiated due to an error on creation or destroyed.
-    var widgetConstructor = oj.Components.__GetWidgetConstructor(this._WIDGET_ELEM);
-    if (widgetConstructor)
-      widgetConstructor('option', processedMap);
-    else
-      oj.Logger.warn("Skipping batched property set. " + elem.tagName + " with id " + elem.id + " has not been initialized.");
-  },
-
-  CanSkipTypeCheck: function(propAr)
-  {
-    // TODO: Remove method post 4.0.0 after metadata is generated from jsDoc.
-    // Temporary fix for JET component translation subproperties that are not specified in metadata.
-    return propAr.length > 1 && propAr[0] === 'translations';
-  },
-
-  _attributeChangedCallback: function(attr, oldValue, newValue) 
-  {
-    var bridge = oj.BaseCustomElementBridge.getInstance(this);
-
-    // Due to  where IE11 disables child inputs for a parent with the disabled attribute,
-    // we will remove the disabled attribute after we save the value and will ignore all disabled 
-    // attribute sets after component initialization when the application can just as easily use the property
-    // setter instead. Expressions will be handled in the CustomElementBinding.
-    if (attr === "disabled" && bridge._disabledProcessed)
-    {
-      // Always remove the disabled attribute even after component initialization and log warning.
-      // A null value indicates that the value was removed already.
-      if (newValue != null)
-      {
-        oj.Logger.warn("Ignoring 'disabled' attribute change after component initialization. Use element property setter instead.");
-        oj.CustomElementBridge._removeDisabledAttribute(this);
-      }
-      return;
-    }
-
-    // Invoke callback on the superclass
-    oj.BaseCustomElementBridge.proto._attributeChangedCallback.call(this, attr, oldValue, newValue);
-  },
-
-  _copyProperties: function()
-  {
-    // Copies properties from the bridge _PROPS before the widget is instantiated
-    // removing copied props from the object
-    if (this._COPY_ATTRS)
-    {
-      for (var i = 0; i < this._COPY_ATTRS.length; i++) {
-        var attr = this._COPY_ATTRS[i];
-        var propName = oj.__AttributeUtils.attributeToPropertyName(attr);
-        if (this._PROPS.hasOwnProperty(propName))
-        {
-          this._WIDGET_ELEM.setAttribute(attr, this._PROPS[propName]);
-          // Delete the attribute we just copied from the options that we 
-          // instantiate the widget with
-          delete this._PROPS[propName];
-        }
-      }
-    }
-  },
-
-  _getCopyProperty: function(elem, prop, propMeta)
-  {
-    var attrName = oj.__AttributeUtils.propertyNameToAttribute(prop);
-    var ext = propMeta["extension"];
-    if (ext._ATTRIBUTE_ONLY)
-    {
-      if (this._WIDGET_ELEM.hasAttribute(attrName))
-      {
-        var value = this._WIDGET_ELEM.getAttribute(attrName);
-        var coercedValue;
-        try 
-        {
-          coercedValue = oj.__AttributeUtils.coerceValue(elem, attrName, value, propMeta["type"]);
-        }
-        catch (ex)
-        {
-          this.resolveDelayedReadyPromise();
-          throw ex;
-        }
-        return coercedValue;
-      }
-      return null;
-    } else {
-      return this._WIDGET_ELEM[prop];
-    }
-  },
-
-  _getProperty: function(elem, prop)
-  {
-    var propMeta = oj.BaseCustomElementBridge.__GetPropertyMetadata(prop, oj.BaseCustomElementBridge.getProperties(this));
-    var ext;
-    if (propMeta)
-      ext = propMeta["extension"];
-
-    if (ext && ext._COPY_TO_INNER_ELEM)
-      return this._getCopyProperty(elem, prop, propMeta);
-    else
-      return oj.CustomElementBridge._getPropertyAccessor(elem, prop)();
-  },
-
-  _processProperties: function()
-  {
-    var props = oj.BaseCustomElementBridge.getProperties(this);
-    if (props)
-    {
-      var propKeys = Object.keys(props);
-      for (var i = 0; i < propKeys.length; i++)
-      {
-        var propName = propKeys[i];
-        var propMeta = props[propName];
-        // Store writeback properties on the bridge and set on widget when we instantiate it later
-        if (propMeta['writeback'])
-        {
-          if (!this._WRITEBACK_PROPS)
-            this._WRITEBACK_PROPS = {};
-          this._WRITEBACK_PROPS[propName] = true;
-        }
-        // Store properties to copy to inner element for easy lookup
-        var ext = propMeta['extension'];
-        if (ext && ext._COPY_TO_INNER_ELEM)
-        {
-          if (!this._COPY_ATTRS)
-            this._COPY_ATTRS = [];
-          this._COPY_ATTRS.push(propName);
-        }
-      }
-    }
-  },
-
-  _validateAndSetCopyProperty: function(elem, prop, value, propMeta)
-  {
-    var isTransfer = false;
-    // propMeta is could be null so we should retrieve it if not passed in
-    var meta = propMeta;
-    
-    if (!meta)
-      meta = oj.BaseCustomElementBridge.__GetPropertyMetadata(prop, oj.BaseCustomElementBridge.getProperties(this));
-    
-    if (!meta)
-      return isTransfer;
-
-    // We need to validate the value so that we don't copy an invalid value. 
-    value = this.ValidatePropertySet(elem, prop, value);
-    // If widget hasn't been instantiated skip setting until ComponentCreate
-    var ext = meta["extension"];
-    if (ext && ext._COPY_TO_INNER_ELEM) 
-    {
-      isTransfer = true;
-      var attrName = oj.__AttributeUtils.propertyNameToAttribute(prop);
-      if (this._WIDGET_ELEM)
-      {
-        if (value == null || value === false)
-          this._WIDGET_ELEM.removeAttribute(attrName);
-        else if (value === true)
-          this._WIDGET_ELEM.setAttribute(attrName, '');
-        else
-          this._WIDGET_ELEM.setAttribute(attrName, value);
-      }
-      else
-      {
-        // Save the value until inner widget is created and we can copy them over
-        this._PROPS[attrName] = value;
-      }
-    }
-    return isTransfer;
-  },
-
-  _setEventProperty: function(elem, prop, value)
-  {
-    var isEvent = false;
-    var event = oj.__AttributeUtils.eventListenerPropertyToEventType(prop);
-    if (event) 
-    {
-      elem[prop] = value;
-      isEvent = true;
-    }
-    return isEvent;
-  },
-
-
-
+$(document).ready(function() {
+  _ojHighContrast();
 });
-
-/*************************/
-/* PUBLIC STATIC METHODS */
-/*************************/
-
-/**
- * Returns the metadata object for the given component.
- * @param  {string} tagName        The component tag name
- * @return {Object}                The component metadata object
- * @ignore
- */
-oj.CustomElementBridge.getMetadata = function(tagName) 
-{
-  return oj.CustomElementBridge._METADATA_MAP[tagName.toLowerCase()];
-};
-
-/**
- * Checks whether the specified event type was declared in the metadata for this custom element
- * @param {Element} element the custom element
- * @param {string} type the event type (e.g. "beforeExpand")
- * @return {boolean} true if the event type was declared in the metadata, false otherwise
- * @ignore
- */
-oj.CustomElementBridge.isKnownEvent = function(element, type) 
-{
-  var bridge = oj.BaseCustomElementBridge.getInstance(element);
-  if (bridge)
-    return (bridge.METADATA['events'] && bridge.METADATA['events'][type]) != null;
-  return false;
-};
-
-/**
- * Checks whether the specified property was declared in the metadata for this custom element
- * @param {Element} element the custom element
- * @param {string} prop the property name (e.g. "selection")
- * @return {boolean} true if the property was declared in the metadata, false otherwise
- * @ignore
- */
-oj.CustomElementBridge.isKnownProperty = function(element, prop) 
-{
-  var bridge = oj.BaseCustomElementBridge.getInstance(element);
-  if (bridge)
-    return (bridge.METADATA['properties'] && bridge.METADATA['properties'][prop]) != null;
-  return false;
-};
-
-/**
- * Returns the custom element property for a given aliased component property which can be used
- * for converting an internal optionChange event, e.g. returning readonly for oj-switch's readOnly
- * property so we can fire a readonly-changed event instead of readOnly-changed.
- * Will return the original property if there is no aliasing.
- * @param {Element} element The custom element
- * @param {string} property The component property
- * @return {string}
- * @ignore
- */
-oj.CustomElementBridge.getPropertyForAlias = function(element, property) 
-{
-  // Aliasing only supported for top level properties
-  var bridge = oj.BaseCustomElementBridge.getInstance(element);
-  var alias = bridge._COMPONENT_TO_ELEMENT_ALIASES;
-  if (alias && alias[property])
-    return alias[property];
-  return property;
-};
-
-/**
- * Returns the slot map of slot name to slotted child elements for a given custom element.
- * If the given element has no children, this method returns an empty object.
- * Note that the default slot name is mapped to the empty string.
- * @param  {Element} element The custom element
- * @return {Object} A map of the child elements for a given custom element.
- * @ignore
- */
-oj.CustomElementBridge.getSlotMap = function(element) 
-{
-  var slotMap = {};
-  var childNodeList = element.childNodes;
-  for (var i = 0; i < childNodeList.length; i++)
-  {
-    var child = childNodeList[i];
-    // Only assign Text and Element nodes to a slot
-    if (oj.BaseCustomElementBridge.isSlotAssignable(child))
-    {
-      // Ignore text nodes that only contain whitespace
-      if (child.nodeType === 3 && !child.nodeValue.trim())
-      {
-        continue;
-      }
-
-      // Text nodes and elements with no slot attribute map to the default slot
-      var slot = child.getAttribute && child.getAttribute('slot');
-      if (!slot)
-        slot = '';
-
-      if (!slotMap[slot])
-      {
-        slotMap[slot] = [];
-      }
-      slotMap[slot].push(child);
-    }
-  }
-  return slotMap;
-};
-
-/**
- * Registers a component as a custom element.
- * @param {string} tagName The component tag name (all lower case), which should contain a dash '-' and not be a reserved tag name.     
- * @param {Object} descriptor The registration descriptor. The descriptor will contain keys for metadata and other component overrides.
- * @param {Object} descriptor.metadata The JSON object containing info like the widget name, whether component has an inner element, an outer wrapper, and the component metadata.
- * @param {function(string, string, Object, function(string))} descriptor.parseFunction The function that will be called to parse attribute values.
- * Note that this function is only called for non bound attributes. The parseFunction will take the following parameters:
- * <ul>
- *  <li>{string} value: The value to parse.</li>
- *  <li>{string} name: The name of the attribute.</li>
- *  <li>{Object} meta: The metadata object for the property which can include its type, default value, 
- *      and any extensions that the composite has provided on top of the required metadata.</li>
- *  <li>{function(string)} defaultParseFunction: The default parse function for the given attribute 
- *      type which is used when a custom parse function isn't provided and takes as its parameters 
- *      the value to parse.</li>
- * </ul>
- * @param {Element} descriptor.innerDomFunction The function that will be called to return the tag name of the inner DOM element, e.g. 'button' or 'a' 
- * The innerDomFunction will take the following parameters:
- * <ul>
- *  <li>{Element} element: The component custom element.</li>
- * </ul>
- * @ignore
- */
-oj.CustomElementBridge.register = function(tagName, descriptor)
-{
-  // Use the simple definitional element prototype if no real widget is associated with this custom element
-  var ext = descriptor['metadata']['extension'];
-  var proto = ext && ext._WIDGET_NAME ? oj.CustomElementBridge.proto : oj.DefinitionalElementBridge.proto;
-  if (oj.BaseCustomElementBridge.__Register(tagName, descriptor, proto))
-  {
-    customElements.define(tagName.toLowerCase(), proto.getClass(descriptor));
-  }
-};
-
-/**
- * Registers component metadata merging it with the metadata from its superclass hierarchy as needed.
- * @param  {string} tagName       The component tag name
- * @param  {string?} superclassName The component's superclass name
- * @param  {Object} metadata        The component metadata object
- * @ignore
- */
-oj.CustomElementBridge.registerMetadata = function(tagName, superclassName, metadata) 
-{
-  metadata = oj.BaseCustomElementBridge.__ProcessEventListeners(metadata, true);
-  if (superclassName) 
-  {
-    var superMeta = oj.CollectionUtils.copyInto({}, oj.CustomElementBridge.getMetadata(superclassName), undefined, true);
-    oj.CustomElementBridge._METADATA_MAP[tagName.toLowerCase()] = oj.CollectionUtils.copyInto(superMeta, metadata, undefined, true);
-  } 
-  else 
-  {
-    oj.CustomElementBridge._METADATA_MAP[tagName.toLowerCase()] = metadata;
-  }
-};
-
-/*****************************/
-/* NON PUBLIC STATIC METHODS */
-/*****************************/
-
-/**
- * Returns a property accessor for setting/getting options
- * @private
- */
-oj.CustomElementBridge._getPropertyAccessor = function(element, property) 
-{
-  var optionAccessor = function(value)
-  {
-    var bridge = oj.BaseCustomElementBridge.getInstance(element);
-
-    if (arguments.length === 1)
-    {
-      value = bridge.ValidatePropertySet(element, property, value);
-      property = bridge.GetAliasForProperty(property);
-      bridge._WIDGET('option', property, value);
-    }
-    else
-    {
-      property = bridge.GetAliasForProperty(property);
-      return bridge._WIDGET('option', property);
-    }
-  };
-  return optionAccessor.bind(element);
-};
-
-/**
- * Returns the element that the widget constructor will be instantiated on which can be the custom element or a child element.
- * @private
- */
-oj.CustomElementBridge._getWidgetElement = function(element, innerTagName) 
-{
-  // If component widget is bound to an inner child element like <ul> for <oj-list-view>, 
-  // create one only if the application does not provide it.
-  var widgetElem = element;
-  if (innerTagName)
-  {
-    var firstChild = element.firstElementChild;
-    if (firstChild && firstChild.tagName.toLowerCase() === innerTagName)
-    {
-      widgetElem = firstChild;
-    }
-    else
-    {
-      widgetElem = document.createElement(innerTagName);
-      // Make a copy of the custom element children before appending the inner element
-      var children = [];
-      var nodeList = element.childNodes;
-      for (var i = 0; i < nodeList.length; i++)
-        children.push(nodeList[i]);
-      
-      element.appendChild(widgetElem); // @HtmlUpdateOk
-      // If we create the inner child element, check to see if there are any children
-      // to move like for <oj-button> which can have a child elements that should be moved to
-      // the newly created inner <button> element.
-      while (children.length)
-      { 
-        var child = children.shift();
-        // do not move slot children to inner child element
-        // component should decide whether they should be moved to its inner child element
-        // for example, it does not make sense for <oj-list-view> to move contextMenu slot to its inner <ul> element.
-        if (!child.hasAttribute || !child.hasAttribute("slot"))
-          widgetElem.appendChild(child);
-      }
-    }
-    // add data-oj-internal attribute for automation tests
-    widgetElem.setAttribute('data-oj-internal', '');
-  }
-  return widgetElem;
-};
-
-/**
- * Removes the disabled attribute from an element and marks the bridge as having
- * processed the value to prevent evaluation of additional attribute sets.
- * @param  {Element} element The custom element
- * @private
- */
-oj.CustomElementBridge._removeDisabledAttribute = function(element)
-{
-  var bridge = oj.BaseCustomElementBridge.getInstance(element);
-  bridge._disabledProcessed = true;
-  element.removeAttribute('disabled');
-};
-
-/**
- * Setup a property accumaltor for tracking evaluated expressions
- * @private
- */
-oj.CustomElementBridge._setupPropertyAccumulator = function(element, widgetOptions) 
-{
-  // Add an element function that will track property values until expressions are all evaluated.
-  // This object will be replaced with the actual widget constructor.
-  var bridge = oj.BaseCustomElementBridge.getInstance(element);
-  bridge._WIDGET = function(method, prop, value)
-  {
-    // Allow property access before widget is created for element binding and dynamic element creation
-    if (method === 'option') 
-    {
-      if (!prop && !value)
-      {
-        return widgetOptions;
-      }
-      else
-      {
-        oj.BaseCustomElementBridge.__SetProperty(bridge.GetAliasForProperty.bind(bridge), widgetOptions, prop, value);
-        return widgetOptions[prop];
-      }
-    }
-    else
-    {
-      bridge.resolveDelayedReadyPromise();
-      throw "Cannot access methods before " + element.tagName + " is attached to the DOM.";
-    }
-  }
-};
-
-/**
- * Map of registered custom element names
- * @private
- */
-oj.CustomElementBridge._METADATA_MAP = {};
-
 // Copyright (c) 2013, Oracle and/or its affiliates.
 // All rights reserved.
 
@@ -7653,16 +7951,17 @@ oj.CustomElementBridge._METADATA_MAP = {};
 /**
  * @export
  * @class
- * Common test support in JavaScript
+ * @since 1.0
+ * @classdesc Common test support in JavaScript
  */
 oj.Test = {};
 
 
 /**
- * @export
- * @type {boolean}
  * A global application flag that can be set by a test to indicate that all page startup processing is done
  * and an external automated test can begin
+ * @export
+ * @type {boolean}
  */
 oj.Test.ready = false;
 
@@ -7735,317 +8034,34 @@ oj.Test.compareStackingContexts = function (el1, el2)
 {
   return oj.ZOrderUtils.compareStackingContexts(el1, el2);
 };
-/**
- * A bridge for a custom element that renders using a render function or a constructor
- * function. Note that when a constructor function is provided, the new instance isn't
- * created until the CreateComponent method so property changes that occur before the
- * component instance is created will no-op. A render function will be called
- * on any property changes and during CreateComponent and that the property changes can
- * occur before CreateComponent is called. 
- *
- * Components that provide a constructor function should implement the following methods:
- * createDOM - Called when the component is instantiated
- * updateDOM - Called after createDOM and when the component needs to do a full render on 
- * refresh and property changes if the component is not handling them separately.
- * handlePropertyChanged - (optional) Called when properties change and should return true if
- * the component has handled the property change and does not need to do a full render. If 
- * false is returned, updateDOM will be called to do a full render.
- * 
- * Note that components supporting the constructor function approach may eventually
- * be refactored into composites once composites support non template rendering.
- * 
- * This bridge ensures that JET components with child JET custom elements 
- * can access child properties before the child busy state resolves. 
- * This bridge does not guarantee that all properties for the child 
- * will be available to the application before its busy states resolves, 
- * e.g data bound attribute values. 
- * 
- * Applications should still wait on the element or page level 
- * busy context before accessing properties or methods.
- * 
- * @class
- * @ignore
- */
-oj.DefinitionalElementBridge = {};
-
-/**
- * Prototype for the JET component definitional bridge instance
- */
-oj.DefinitionalElementBridge.proto = Object.create(oj.BaseCustomElementBridge.proto);
-
-oj.CollectionUtils.copyInto(oj.DefinitionalElementBridge.proto,
+// override jQuery's cleanData method to bypass cleanup of custom elements and composites
+$['cleanData'] = (function(orig) 
 {
-  AddComponentMethods: function(proto) 
+  return function(elems) 
   {
-    // Add refresh and subproperty getter/setter methods for all definitional elements
-    proto['refresh'] = function() 
+    var nonCustomElements = [];
+    var i, elem
+    for (i = 0; (elem = elems[i]) != null; i++ ) 
     {
-      var bridge = oj.BaseCustomElementBridge.getInstance(this);
-      bridge._fullRender(this);
-    };
-    proto['setProperty'] = function(prop, value) 
-    { 
-      // Prevent overriding of properties set after intial DOM values since
-      // expression evaluation occurs asynchronously after
-      var bridge = oj.BaseCustomElementBridge.getInstance(this);
-      if (!bridge._initializingExpressions ||
-          (bridge._initializingExpressions && !this.hasOwnProperty(prop)))
+      // Skip cleaning any elements that are custom elements or are created by a custom element
+      var bSkip = false;
+      var constr = oj.Components.__GetWidgetConstructor(elem);
+      if (constr) 
       {
-        var event = oj.__AttributeUtils.eventListenerPropertyToEventType(prop);
-        var meta = oj.BaseCustomElementBridge.__GetPropertyMetadata(prop, oj.BaseCustomElementBridge.getProperties(bridge));
-
-        // If event listener or non component specific property, set directly on the element
-        if (event || !meta)
+        bSkip = constr('instance')._IsCustomElement();
+        if (!bSkip)
         {
-          this[prop] = value;
-        }
-        else
-        {
-          var previousValue = this['getProperty'](prop);
-          bridge.ValidateAndSetProperty(bridge.GetAliasForProperty.bind(bridge), this, prop, value, this);
-
-          // Property change events for top level properties will be triggered by ValidateAndSetProperty so avoid firing twice
-          // for subproperty changes
-          if (bridge._READY_TO_FIRE && prop.indexOf('.') !== -1)
-          {
-            // Call the renderer function so the definitional element can refresh its UI
-            bridge._partialRender(this, prop, value);
-
-            oj.BaseCustomElementBridge.__FirePropertyChangeEvent(this, prop, value, previousValue);
-          }
+          var parent = oj.Components.getComponentElementByNode(elem);
+          bSkip = parent && oj.BaseCustomElementBridge.getRegistered(parent.tagName);
         }
       }
-    };
-    proto['getProperty'] = function(prop) 
-    { 
-      var event = oj.__AttributeUtils.eventListenerPropertyToEventType(prop);
-      var bridge = oj.BaseCustomElementBridge.getInstance(this);
-      var meta = oj.BaseCustomElementBridge.__GetPropertyMetadata(prop, oj.BaseCustomElementBridge.getProperties(bridge));
-
-      // For event listener and non component properties, retrieve the value directly stored on the element.
-      // For top level properties, this will delegate to our 'set' methods so we can handle default values.
-      if (event || !meta || prop.indexOf('.') === -1)
-        return this[prop];
-      else
-        return oj.BaseCustomElementBridge.__GetProperty(this, prop);
-    };
-
-    // Copied from CompositeElementBridge. We should eventually refactor
-    proto['_propsProto']['setProperty'] = function(prop, value) { 
-      // Check value against any defined enums
-      var meta = oj.BaseCustomElementBridge.__GetPropertyMetadata(prop, oj.BaseCustomElementBridge.getProperties(this._BRIDGE));
-
-      if (!meta) 
-      {
-        this._ELEMENT[prop] = value;
-      }
-      else
-      {
-        var previousValue = this['getProperty'](prop);
-
-        // Skip validation for inner sets so we don't throw an error when updating readOnly writeable properties
-        oj.BaseCustomElementBridge.__SetProperty(this._BRIDGE.GetAliasForProperty.bind(this._BRIDGE), this, prop, value);
-
-        // Property change events for top level properties will be triggered by ValidateAndSetProperty so avoid firing twice
-        if (this._BRIDGE._READY_TO_FIRE && prop.indexOf('.') !== -1)
-          oj.BaseCustomElementBridge.__FirePropertyChangeEvent(this, prop, value, previousValue);
-      }
-    };
-    proto['_propsProto']['getProperty'] = function(prop) {
-      var meta = oj.BaseCustomElementBridge.__GetPropertyMetadata(prop, oj.BaseCustomElementBridge.getProperties(this._BRIDGE));
-
-      // Use the element/props getters for top level properties to handle default values
-      if (!meta || prop.indexOf('.') === -1)
-        return this[prop];
-      else
-        return oj.BaseCustomElementBridge.__GetProperty(this, prop);
-    };
-  },
-
-  CreateComponent: function(element)
-  {
-    oj.Components.unmarkPendingSubtreeHidden(element);
-
-    if (!this._INSTANCE && this._EXTENSION._CONSTRUCTOR)
-    {
-      // We expose a similar set of properties as composites except that props is
-      // not a Promise and we don't expose any slot information.
-      // At the moment some definitional elements have mutation observers so they don't need
-      // to rely on refresh being called to be alerted of new children so any cached slotMap
-      // can become out of sync. We should add this once we build in support to auto detect 
-      // added/removed children to custom elements.
-      this._CONTEXT = {
-        'element': element,
-        'props': this._PROPS_PROXY,
-        'unique': oj.BaseCustomElementBridge.__GetUnique(),
-      };
-      this._CONTEXT['uniqueId'] = element.id ? element.id : this._CONTEXT['unique'];
-      this._INSTANCE = new this._EXTENSION._CONSTRUCTOR(this._CONTEXT);
-      // Let the component initialize any additional DOM and then do a full render
-      this._INSTANCE.createDOM();
-      this._INSTANCE.updateDOM();
+      if (!bSkip)
+        nonCustomElements.push(elem);
     }
-    else if (this._EXTENSION._RENDER_FUNC)
-    {
-      this._EXTENSION._RENDER_FUNC(element);
-    }
-
-    // Set flag when we can fire property change events
-    this._READY_TO_FIRE = true;
-
-    // Resolve the component busy state 
-    this.resolveDelayedReadyPromise();
-
-  },
-  
-  DefineMethodCallback: function (proto, method, methodMeta) 
-  {
-    proto[method] = function()
-    {
-      var bridge = oj.BaseCustomElementBridge.getInstance(this);
-      if (bridge._INSTANCE)
-      {
-        var methodName = methodMeta['internalName'] || method;
-        return bridge._INSTANCE[methodName].apply(bridge._INSTANCE, arguments);
-      }
-    };
-  },
-
-  DefinePropertyCallback: function (proto, property, propertyMeta) 
-  {
-    var set = function(value, bOuterSet)
-    {
-        var oldValue = this._BRIDGE._PROPS[property];
-        if (oldValue !== value) 
-        {
-          // Skip validation for inner sets so we don't throw an error when updating readOnly writeable properties
-          if (bOuterSet)
-              value = this._BRIDGE.ValidatePropertySet(this._ELEMENT, property, value)
-          if (propertyMeta._eventListener)
-          {
-            this._BRIDGE.SetEventListenerProperty(this._ELEMENT, property, value);
-            this._BRIDGE._PROPS[property] = value;
-          }
-          else 
-          {
-            this._BRIDGE._PROPS[property] = value;
-            // Call the renderer function so the definitional element can refresh its UI
-            this._BRIDGE._partialRender(this._ELEMENT, property, value);
-          }
-
-          // Check that we are done initializing the component before firing property change events
-          if (!propertyMeta._derived && this._BRIDGE._READY_TO_FIRE)
-            oj.BaseCustomElementBridge.__FirePropertyChangeEvent(this._ELEMENT, property, value, oldValue);
-        }
-    }
-
-    var innerSet = function(value)
-    {
-      set.bind(this)(value, false);
-    }
-
-    // Called on the custom element
-    var outerSet = function(value)
-    {
-      var bridge = oj.BaseCustomElementBridge.getInstance(this);
-      set.bind(bridge._PROPS_PROXY)(value, true);
-    }
-
-    var get = function()
-    {
-      var value = this._BRIDGE._PROPS[property];
-      // If the attribute has not been set, return the default value
-      if (value === undefined)
-      {
-        value = propertyMeta['value'];
-        // Make a copy if the default value is an Object or Array to prevent modification
-        // of the metadata copy and store in the propertyTracker so we have a copy
-        // to modify in place for the object case
-        if (Array.isArray(value))
-          value = value.slice();
-        else if (typeof value === 'object')
-          value = oj.CollectionUtils.copyInto({}, value, undefined, true);
-        this._BRIDGE._PROPS[property] = value;
-      }
-      return value;
-    }
-
-    var innerGet = function()
-    {
-      return get.bind(this)();
-    }
-
-    // Called on the custom element
-    var outerGet = function()
-    {
-      var bridge = oj.BaseCustomElementBridge.getInstance(this);
-      return get.bind(bridge._PROPS_PROXY)();
-    }
-
-    // Don't add event listener properties for inner props
-    if (!propertyMeta._derived)
-      oj.BaseCustomElementBridge.__DefineDynamicObjectProperty(proto['_propsProto'], property, innerGet, innerSet);
-    oj.BaseCustomElementBridge.__DefineDynamicObjectProperty(proto, property, outerGet, outerSet);
-  },
-
-  GetMetadata: function(descriptor)
-  {
-    return descriptor['metadata'];
-  },
-
-  InitializeElement: function(element)
-  {
-    // Invoke callback on the superclass
-    oj.BaseCustomElementBridge.proto.InitializeElement.call(this, element);
-    
-    this._EXTENSION = this.METADATA['extension'] || {};
-    if (this._EXTENSION._CONTROLS_SUBTREE_HIDDEN)
-    {
-      oj.Components.markPendingSubtreeHidden(element);
-    }
-
-    this._PROPS = {};
-    if (element['_propsProto'])
-    {
-      this._PROPS_PROXY = Object.create(element['_propsProto']);
-      this._PROPS_PROXY._BRIDGE = this;
-      this._PROPS_PROXY._ELEMENT = element;
-    }
-
-    oj.BaseCustomElementBridge.__InitProperties(element, this._PROPS_PROXY, null);  
-    this.GetDelayedPropertiesPromise().resolvePromise();
-  },
-
-  InitializePrototype: function(proto)
-  {
-    Object.defineProperty(proto, '_propsProto', {value: {}});
-  },
-
-  _fullRender: function(element)
-  {
-    if (this._EXTENSION._RENDER_FUNC)
-      this._EXTENSION._RENDER_FUNC(element);
-    else if (this._INSTANCE)
-      this._INSTANCE.updateDOM();
-  },
-
-  _partialRender: function(element, property, value)
-  {
-    if (this._EXTENSION._RENDER_FUNC)
-      this._EXTENSION._RENDER_FUNC(element);
-    else if (this._INSTANCE)
-    {
-      // For partial renders, check to see if the component is handling the property change
-      // or if it should do a full render
-      var handlePropChangedFun = this._INSTANCE.handlePropertyChanged;
-      var fullRender = !handlePropChangedFun || !handlePropChangedFun(property, value);
-      if (fullRender)
-        this._INSTANCE.updateDOM();
-    }
-  }
-
-});
-
+    if (nonCustomElements.length > 0)
+      orig(nonCustomElements);
+  };
+})($['cleanData']);
 (function() {
 var baseComponentMeta = {
   "properties": {

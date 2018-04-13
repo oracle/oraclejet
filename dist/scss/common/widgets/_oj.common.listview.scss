@@ -22,12 +22,12 @@
             display: block;
             position: relative;
             border-width: 1px 0;
-            border-color: $dataGridBorderColor;
+            border-color: $collectionBorderColor;
             border-style: solid;
             @include oj-user-select-property (none);
             box-sizing: border-box;
             // min-height is 1 row to leave space for the no data message.
-            min-height: $dataGridRowHeight;
+            min-height: $collectionRowHeight;
         }
 
         /* styling for the listview root element and group element */
@@ -79,7 +79,7 @@
            using linear-gradient allows us to customize the color of the border */
         .oj-listview-item {
             padding: $panelPadding;
-            background-image: linear-gradient($dataGridCellBorderColor, $dataGridCellBorderColor);
+            background-image: linear-gradient($collectionCellBorderColor, $collectionCellBorderColor);
             background-size: 100% 1px;
             background-position: 0 0;
             background-repeat: no-repeat;
@@ -99,45 +99,45 @@
 
         /* Styling on list item hover */
         .oj-listview-item.oj-hover {
-            background-color: $dataGridCellBgColorHover;
-            border-top: 1px solid $dataGridCellBorderColorHover;
+            background-color: $collectionCellBgColorHover;
+            border-top: 1px solid $collectionCellBorderColorHover;
             background-size: 0;
         }
 
         .oj-listview-group-item.oj-hover {
-            background-color: $dataGridCellBgColorHover;
+            background-color: $collectionCellBgColorHover;
         }
 
         ul.oj-listview-element:not(.oj-listview-card-layout) .oj-listview-item.oj-hover + li.oj-listview-item {
-            border-top: 1px solid $dataGridCellBorderColorHover;
+            border-top: 1px solid $collectionCellBorderColorHover;
             background-size: 0;
         }
 
         /* Styling on list item selection */
         .oj-listview.oj-focus-ancestor .oj-listview-item.oj-selected {
-            background-color: $dataGridCellBgColorSelected;
-            border-top: 1px solid $dataGridCellBorderColorSelected;
+            background-color: $collectionCellBgColorSelected;
+            border-top: 1px solid $collectionCellBorderColorSelected;
             background-size: 0;
         }
 
         .oj-listview.oj-focus-ancestor .oj-listview-group-item.oj-selected {
-            background-color: $dataGridCellBgColorSelected;
+            background-color: $collectionCellBgColorSelected;
         }
 
         .oj-listview.oj-focus-ancestor ul.oj-listview-element:not(.oj-listview-card-layout) .oj-listview-item.oj-selected + li.oj-listview-item {
-            border-top: 1px solid $dataGridCellBorderColorSelected;
+            border-top: 1px solid $collectionCellBorderColorSelected;
             background-size: 0;
         }
 
         /* Styling on list item inactive selection (when the root is not focus) */
         .oj-listview-item.oj-selected {
-            background-color: $dataGridCellBgColorSelectedInactive;
-            border-top: 1px solid $dataGridCellBorderColorSelectedInactive;
+            background-color: $collectionCellBgColorSelectedInactive;
+            border-top: 1px solid $collectionCellBorderColorSelectedInactive;
             background-size: 0;
         }
 
         .oj-listview-group-item.oj-selected {
-            background-color: $dataGridCellBgColorSelectedInactive;
+            background-color: $collectionCellBgColorSelectedInactive;
         }
 
         /* Styling on focused list or group item */
@@ -173,7 +173,7 @@
         /* Styling on focused list item */
         .oj-listview.oj-focus-ancestor ul.oj-listview-element:not(.oj-listview-card-layout) .oj-listview-item.oj-focus,
         .oj-listview.oj-focus-ancestor ul.oj-listview-element:not(.oj-listview-card-layout) .oj-listview-item.oj-focus + li.oj-listview-item {
-            border-top: 1px solid $dataGridCellBorderColorFocus;
+            border-top: 1px solid $collectionCellBorderColorFocus;
             background-size: 0;
         }
 
@@ -255,7 +255,7 @@
         /* Styling for the empty list text */
         .oj-listview-no-data-message {
             padding: $panelPadding;
-            background-color: $dataGridCellBgColor;
+            background-color: $collectionCellBgColor;
             min-height: $fontSize;
         }
 
@@ -387,8 +387,8 @@
         /* Styling for the drag image */
         .oj-listview-drag-image {
             background-color: transparent;
-            position: fixed;
-            top: 10000px;
+            position: absolute;
+            top: -10000px;
             border: 1px solid transparent;
         }
 
@@ -405,8 +405,8 @@
         /* Styling for the item that is being moved using drag */
         .oj-listview-item.oj-drag {
             box-shadow: $largeBoxShadow;
-            border-top: 1px solid $dataGridCellDragImageBorderColor;
-            border-bottom: 1px solid $dataGridCellDragImageBorderColor;
+            border-top: 1px solid $collectionCellDragImageBorderColor;
+            border-bottom: 1px solid $collectionCellDragImageBorderColor;
         }
 
         /* Styling all drop targets in the list */

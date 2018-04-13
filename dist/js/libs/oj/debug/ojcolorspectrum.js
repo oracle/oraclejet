@@ -1,4 +1,5 @@
 /**
+ * @license
  * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
@@ -97,11 +98,20 @@ function _rgbToHsl(r, g, b)
  /**
   * @ojcomponent oj.ojColorSpectrum
   * @augments oj.editableValue
+  * @ojsignature [{
+  *                target: "Type",
+  *                value: "class ojColorSpectrum extends editableValue<oj.Color, ojColorSpectrumSettableProperties>"
+  *               },
+  *               {
+  *                target: "Type",
+  *                value: "ojColorSpectrumSettableProperties extends editableValueSettableProperties<oj.Color>",
+  *                for: "SettableProperties"
+  *               }
+  *              ]
   * @since 3.0.0
   * @ojstatus preview
   * @class oj.ojColorSpectrum
-  * @ojshortdesc Color Spectrum element allows a custom color value to be retrieved from a display
-  * containing a saturation/luminosity spectrum, and hue and opacity sliders.
+  * @ojshortdesc Enables a custom color value to be specified from a display containing a saturation/luminosity spectrum, plus hue and opacity sliders.
   * @classdesc
 
   * <h3 id="colorSpectrumOverview-section">
@@ -1139,6 +1149,7 @@ function _rgbToHsl(r, g, b)
       * @param {number} hue  the hue value
       * @param {number} sat  the saturation value
       * @param {number} lum  the luminosity value
+      * @param {number} alpha  the alpha value
       * @returns {string} hsl string
       * @memberof oj.ojColorSpectrum
       * @instance
@@ -1265,9 +1276,11 @@ $(".oj-colorspectrum-alpha").uniqueId();
         this._$spectrumThumb.attr("aria-describedby",
         this._$boundElem.find(".oj-colorspectrum-thumb-description").uniqueId().attr("id"));
 
-        this._alphaBgUrl = "url('" +
-                           oj.Config.getResourceUrl('common/images/spectrum-opacity-slider-bg.png') + "')";
-        this._alphaBgUrl =  this._alphaBgUrl.replace("js", "css") ;
+        var fakeDiv = document.createElement("div");
+        fakeDiv.className = "oj-colorspectrum-alpha-bg";
+        this._$boundElem[0].appendChild(fakeDiv);//HTMLUpdateOk
+        this._alphaBgUrl =  window.getComputedStyle(fakeDiv,null).getPropertyValue("background-image");
+        this._$boundElem[0].removeChild(fakeDiv);
 
         // Prep and create hue and alpha sliders
         var disabled   = this._disabled? true : false ;
@@ -1939,7 +1952,28 @@ var ojColorSpectrumMeta = {
     },
     "value": {
       "writeback": true
-    }
+    },
+    "translations": {
+      "type": "Object",
+      "properties": {
+        "labelHue": {
+          "type": "string",
+          "value": "Hue"
+        },
+        "labelOpacity": {
+          "type": "string",
+          "value": "Opacity"
+        },
+        "labelSatLum": {
+          "type": "string",
+          "value": "Saturation/Luminance"
+        },
+        "labelThumbDesc": {
+          "type": "string",
+          "value": "color spectrum four way slider"
+        }
+      }
+    },
   },
   "methods": {},
   "extension": {

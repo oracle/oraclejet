@@ -1,4 +1,5 @@
 /**
+ * @license
  * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
@@ -21,6 +22,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise'],
  * @implements oj.PagingModel
  * @constructor
  * @ignore
+ * @ojtsignore
  */
 oj.FilmStripPagingModel = function()
 {
@@ -32,6 +34,7 @@ oj.Object.createSubclass(oj.FilmStripPagingModel, oj.EventSource, "oj.FilmStripP
 
 /**
  * Initialize the instance.
+ * @return {void}
  * @memberof oj.FilmStripPagingModel
  * @instance
  * @export
@@ -48,6 +51,7 @@ oj.FilmStripPagingModel.prototype.Init = function()
 /**
  * Set the total size.
  * @param {number} totalSize The total size.
+ * @return {void}
  * @memberof oj.FilmStripPagingModel
  * @instance
  */
@@ -230,6 +234,7 @@ oj.FilmStripPagingModel.prototype.totalSizeConfidence = function()
  * @ojshortdesc Container element that lays out its children in a single row or column across logical pages and allows navigating through them.
  * @ojrole region
  * @class oj.ojFilmStrip
+ * @ojtsimport ojpagingtabledatasource
  * 
  * @classdesc
  * <h3 id="filmStripOverview-section">
@@ -460,10 +465,14 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
      * <p>When the element is resized, FilmStrip will preserve the value of 
      * this attribute to show the new logical page on which the item is located.  
      *
+     * @property {string} [id] string id of the item 
+     * @property {number} [index] numeric 0-based index of the item
+     *
      * @expose 
      * @memberof oj.ojFilmStrip
      * @instance
      * @type {Object}
+     * @ojsignature {target: "Type", value: "{id?: string, index?: number}", jsdocOverride: true}
      * @default {"index" : 0}
      * @ojwriteback
      * @ojshortdesc Specifies the child item whose logical page should be displayed.
@@ -599,6 +608,7 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
   /**
    * After _ComponentCreate and _AfterCreate, 
    * the widget should be 100% set up. this._super should be called first.
+   * @return {void}
    * @override
    * @protected
    * @instance
@@ -661,6 +671,7 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
    * programmatically changed underneath the element.
    * 
    * <p>This method does not accept any arguments.
+   * @return {void}
    * 
    * @expose 
    * @memberof oj.ojFilmStrip
@@ -702,6 +713,10 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
    * provides information about the FilmStrip's logical pages and a way to
    * programmatically change pages.  
    * @returns {Object} The instance of the PagingModel created and used by the FilmStrip.
+   * @ojtsignore
+   * @ojsignature {target: "Type", 
+   *               value: "oj.PagingModel",
+   *               for: "returns"}
    * 
    * @expose 
    * @memberof oj.ojFilmStrip
@@ -719,6 +734,7 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
   /**
    * Notifies the component that its subtree has been made visible 
    * programmatically after the component has been created.
+   * @return {void}
    * @memberof oj.ojFilmStrip
    * @instance
    * @protected 
@@ -740,6 +756,7 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
   /**
    * Notifies the component that its subtree has been connected to the document
    * programmatically after the component has been created.
+   * @return {void}
    * @memberof oj.ojFilmStrip
    * @instance
    * @protected 
@@ -763,6 +780,7 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
    * Setup the filmStrip.
    * @param {boolean} isInit True if _setup is called from _init(), false
    *        if called from refresh().
+   * @return {void}
    * @memberof oj.ojFilmStrip
    * @instance
    * @private
@@ -873,6 +891,7 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
 
   /** 
    * Destroy the filmStrip.
+   * @return {void}
    * @memberof oj.ojFilmStrip
    * @instance
    * @override
@@ -916,6 +935,7 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
   /** 
    * Destroy the internal structure of the filmStrip that will be recreated
    * during a refresh.
+   * @return {void}
    * @memberof oj.ojFilmStrip
    * @instance
    * @private
@@ -959,6 +979,7 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
 
   /** 
    * Set an option on the filmStrip.
+   * @return {void}
    * @memberof oj.ojFilmStrip
    * @instance
    * @override
@@ -1032,6 +1053,7 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
   
   /** 
    * Handle a component resize.
+   * @return {void}
    * @memberof oj.ojFilmStrip
    * @instance
    * @private
@@ -1135,6 +1157,7 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
   
   /** 
    * Wrap the original child items of the filmStrip in internal layout structure.
+   * @return {void}
    * @memberof oj.ojFilmStrip
    * @instance
    * @private
@@ -1188,6 +1211,7 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
   /** 
    * Unwrap the internal layout structure around the original child items of the 
    * filmStrip.
+   * @return {void}
    * @memberof oj.ojFilmStrip
    * @instance
    * @private
@@ -1235,6 +1259,7 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
   /** 
    * Setup events to only show the navigation arrows when the mouse hovers over
    * the filmStrip.
+   * @return {void}
    * @memberof oj.ojFilmStrip
    * @instance
    * @private
@@ -1260,6 +1285,7 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
   /** 
    * Tear down events to only show the navigation arrows when the mouse hovers 
    * over the filmStrip.
+   * @return {void}
    * @memberof oj.ojFilmStrip
    * @instance
    * @private
@@ -1314,6 +1340,7 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
   
   /** 
    * Go to the previous logical page.
+   * @return {void}
    * @memberof oj.ojFilmStrip
    * @instance
    * @private
@@ -1329,6 +1356,7 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
   
   /** 
    * Go to the next logical page.
+   * @return {void}
    * @memberof oj.ojFilmStrip
    * @instance
    * @private
@@ -1346,6 +1374,7 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
    * Determine whether there is a next logical page.
    * @param {boolean} bShow True to show the navigation arrow, false to hide it.
    * @param {jQuery} jqNavArrow Navigation arrow jQuery object.
+   * @return {void}
    * @memberof oj.ojFilmStrip
    * @instance
    * @private
@@ -1362,6 +1391,7 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
   
   /** 
    * Update whether the navigation arrows are shown.
+   * @return {void}
    * @memberof oj.ojFilmStrip
    * @instance
    * @private
@@ -1550,6 +1580,7 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
   
   /** 
    * Clear the calculated sizes set on the internal layout DOM structure.
+   * @return {void}
    * @memberof oj.ojFilmStrip
    * @instance
    * @private
@@ -1573,6 +1604,7 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
    * @param {boolean} bNotifyAttach True to notify children when they're 
    *        attached to/detached from the DOM, false to not notify them (when 
    *        the notification will happen outside of this method).
+   * @return {void}
    * @memberof oj.ojFilmStrip
    * @instance
    * @private
@@ -1713,6 +1745,7 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
   /** 
    * Handle a 'page' event from the PagingModel.
    * @param {Object} event Event object.
+   * @return {void}
    * @memberof oj.ojFilmStrip
    * @instance
    * @private
@@ -1810,6 +1843,7 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
    *        transition, false to transition them over time.
    * @param {boolean} bDragInit True if we're currently drag scrolling, false
    *        otherwise.
+   * @return {void}
    * @memberof oj.ojFilmStrip
    * @instance
    * @private
@@ -1871,6 +1905,7 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
   
   /** 
    * Handle the end of a page change transition.
+   * @return {void}
    * @memberof oj.ojFilmStrip
    * @instance
    * @private
@@ -2011,6 +2046,7 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
    /** 
    * Populates the item object with valid id and index
    * @param {Object} item The item object to populate.
+   * @return {void}
    * @memberof oj.ojFilmStrip
    * @instance
    * @private
@@ -2085,6 +2121,7 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
   /** 
    * Hide the logical page.
    * @param {jQuery} page Page to hide.
+   * @return {void}
    * @memberof oj.ojFilmStrip
    * @instance
    * @private
@@ -2107,6 +2144,7 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
   /** 
    * Unhide the logical page.
    * @param {jQuery} page Page to unhide.
+   * @return {void}
    * @memberof oj.ojFilmStrip
    * @instance
    * @private
@@ -2127,6 +2165,7 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
   
   /** 
    * Add key listeners on the filmStrip.
+   * @return {void}
    * @memberof oj.ojFilmStrip
    * @instance
    * @private
@@ -2139,6 +2178,7 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
   
   /** 
    * Remove key listeners from the filmStrip.
+   * @return {void}
    * @memberof oj.ojFilmStrip
    * @instance
    * @private
@@ -2151,6 +2191,7 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
   
   /** 
    * Add mouse listeners on the filmStrip.
+   * @return {void}
    * @memberof oj.ojFilmStrip
    * @instance
    * @private
@@ -2166,6 +2207,7 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
   
   /** 
    * Remove mouse listeners from the filmStrip.
+   * @return {void}
    * @memberof oj.ojFilmStrip
    * @instance
    * @private
@@ -2178,6 +2220,7 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
   
   /** 
    * Add touch listeners on the filmStrip.
+   * @return {void}
    * @memberof oj.ojFilmStrip
    * @instance
    * @private
@@ -2194,6 +2237,7 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
   
   /** 
    * Remove touch listeners from the filmStrip.
+   * @return {void}
    * @memberof oj.ojFilmStrip
    * @instance
    * @private
@@ -2207,6 +2251,7 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
   /** 
    * Handle a keydown event.
    * @param {Event} event <code class="prettyprint">jQuery</code> event object.
+   * @return {void}
    * @memberof oj.ojFilmStrip
    * @instance
    * @private
@@ -2254,7 +2299,8 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
   
   /** 
    * Handle a mousedown event.
-   * @param {Object} event <code class="prettyprint">jQuery</code> event object.
+   * @param {Event} event <code class="prettyprint">jQuery</code> event object.
+   * @return {void}
    * @memberof oj.ojFilmStrip
    * @instance
    * @private
@@ -2267,7 +2313,8 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
   
   /** 
    * Handle a mousemove event.
-   * @param {Object} event <code class="prettyprint">jQuery</code> event object.
+   * @param {Event} event <code class="prettyprint">jQuery</code> event object.
+   * @return {void}
    * @memberof oj.ojFilmStrip
    * @instance
    * @private
@@ -2281,6 +2328,7 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
   /** 
    * Handle a mouseup event.
    * @param {Event} event <code class="prettyprint">jQuery</code> event object.
+   * @return {void}
    * @memberof oj.ojFilmStrip
    * @instance
    * @private
@@ -2292,7 +2340,8 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
   
   /** 
    * Handle a touchstart event.
-   * @param {Object} event <code class="prettyprint">jQuery</code> event object.
+   * @param {Event} event <code class="prettyprint">jQuery</code> event object.
+   * @return {void}
    * @memberof oj.ojFilmStrip
    * @instance
    * @private
@@ -2310,7 +2359,8 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
   
   /** 
    * Handle a touchmove event.
-   * @param {Object} event <code class="prettyprint">jQuery</code> event object.
+   * @param {Event} event <code class="prettyprint">jQuery</code> event object.
+   * @return {void}
    * @memberof oj.ojFilmStrip
    * @instance
    * @private
@@ -2334,6 +2384,7 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
   /** 
    * Handle a touchend event.
    * @param {Event} event <code class="prettyprint">jQuery</code> event object.
+   * @return {void}
    * @memberof oj.ojFilmStrip
    * @instance
    * @private
@@ -2345,7 +2396,8 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
   
   /** 
    * Start a drag scroll.
-   * @param {Object} coordsObj Object that has pageX and pageY properties.
+   * @param {Event} coordsObj Object that has pageX and pageY properties.
+   * @return {void}
    * @memberof oj.ojFilmStrip
    * @instance
    * @private
@@ -2369,6 +2421,7 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
    * Called after a drag scroll has started if the drag has passed an initial
    * threshold.
    * @param {Object} coordsObj Object that has pageX and pageY properties.
+   * @return {void}
    * @memberof oj.ojFilmStrip
    * @instance
    * @private
@@ -2417,6 +2470,7 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
    * Process a move during drag scrolling.
    * @param {Event} event <code class="prettyprint">jQuery</code> event object.
    * @param {Object} coordsObj Object that has pageX and pageY properties.
+   * @return {void}
    * @memberof oj.ojFilmStrip
    * @instance
    * @private
@@ -2526,6 +2580,7 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
 
   /** 
    * Process the end of a drag scroll.
+   * @return {void}
    * @memberof oj.ojFilmStrip
    * @instance
    * @private
@@ -2572,7 +2627,7 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
   
   /**
    * Resolve an outstanding busy state.
-   * 
+   * @return {void}
    * @memberof oj.ojFilmStrip
    * @instance
    * @private
@@ -2922,6 +2977,27 @@ var ojFilmStripMeta = {
     "orientation": {
       "type": "string",
       "enumValues": ["horizontal", "vertical"]
+    },
+    "translations": {
+      "type": "Object",
+      "properties": {
+        "labelAccArrowNextPage": {
+          "type": "string",
+          "value": "Next Page"
+        },
+        "labelAccArrowPreviousPage": {
+          "type": "string",
+          "value": "Previous Page"
+        },
+        "tipArrowNextPage": {
+          "type": "string",
+          "value": "Next"
+        },
+        "tipArrowPreviousPage": {
+          "type": "string",
+          "value": "Previous"
+        }
+      }
     }
   },
   "methods": {

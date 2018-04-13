@@ -1,4 +1,5 @@
 /**
+ * @license
  * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
@@ -18,11 +19,14 @@ define(['ojs/ojcore', 'jquery', 'hammerjs', 'ojs/ojjquery-hammer', 'promise', 'o
  * All rights reserved.
  */
 
+
 /**
  * @class oj.EditableValueUtils
  * @classdesc JET Editable Component Utils
  * @export
  * @since 0.6
+ * @hideconstructor
+ * @ignore
  * 
  */
 oj.EditableValueUtils = {};
@@ -282,7 +286,7 @@ oj.EditableValueUtils.getAttributeValue = function (element, attribute)
  * @param {Object} comp component instance.
  * @param {Function=} postprocessCallback - optional callback that will receive a map of initialized
  * options for post-processing
- *  
+ * @ignore
  * @public
  */
 oj.EditableValueUtils.initializeOptionsFromDom = function (props, constructorOptions, comp, postprocessCallback)
@@ -369,6 +373,7 @@ oj.EditableValueUtils.initializeOptionsFromDom = function (props, constructorOpt
    * 
    * @throws {Error} if option value is invalid
    * @public
+   * @ignore
    */
   oj.EditableValueUtils.validateValueForOption = function (option, value)
   {
@@ -408,6 +413,7 @@ oj.EditableValueUtils.initializeOptionsFromDom = function (props, constructorOpt
    * option value
    * @throws {Error} if domValue cannot be coerced appropriately
    * @public
+   * @ignore
    */
   oj.EditableValueUtils.coerceDomValueForOption = function(option, domValue) 
   { 
@@ -1009,1599 +1015,49 @@ oj.EditableValueUtils._AfterSetOptionRequired = function (option)
         $(this).removeAttr("aria-labelledby");
      });
   };
-/**
- * Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
- */
-
-/*jslint browser: true*/
-
-/**
- * A messaging strategy that uses an instance of ojPopup component to show and hide messaging content.
- *
- * @param {Array.<string>} displayOptions an array of messaging artifacts displayed in the popup. e.g,
- * 'messages', 'converterHints', 'validationHints', 'title'.
- * @constructor
- * @extends {oj.MessagingStrategy}
- * @private
- */
-oj.PopupMessagingStrategy = function (displayOptions)
-{
-  this.Init(displayOptions); 
-};
-
-/**
- * Registers the PopupMessagingStrategy constructor function with oj.ComponentMessaging.
- *
- * @private
- */
-oj.ComponentMessaging.registerMessagingStrategy(oj.ComponentMessaging._DISPLAY_TYPE.NOTEWINDOW,
-oj.PopupMessagingStrategy);
-
-// Subclass from oj.MessagingStrategy
-oj.Object.createSubclass(oj.PopupMessagingStrategy, oj.MessagingStrategy, "oj.PopupMessagingStrategy");
-
-/**
- * Messaging popup defaults for components, by component type. A special 'default' type defines the
- * defaults for most editableValue components.
- * The following properties are available -
- * 'events' - these specify the on handlers for events that are setup to open and close popups
- * 'position' - specifies the type of element the popup is positioned against.
- * @private
- */
-oj.PopupMessagingStrategy._DEFAULTS_BY_COMPONENT =
-{
-  // mouseenter and mouseleave is what you want instead of mouseover/mouseout when the launcher
-  // isn't a simple input. In the case of radioset and checkboxset, the launcher is the widget
-  // which is the div that contains all the rows, inputs and labels. If we use mouseover/mouseout
-  // in this case we are constantly opening and closing the popup (not really visible to the user,
-  // but still not good for performance I'm sure) if the user moves the mouse around the different
-  // dom elements within the widget.
-  //
-  // on touch devices: the "press" event name maps to Hammer's press event, so a touch and hold
-  // will open the popup.
-  "ojRadioset":
+  /**
+   * Set the type of the input element based on virtualKeyboard option.
+   * 
+   * @param {Array.<string>} allowedTypes an array of allowed types
+   * 
+   * @protected
+   * @ignore
+   */
+  oj.EditableValueUtils._SetInputType = function (allowedTypes)
   {
-    position: 'launcher',
-    // when press opens popup, the user taps elsewhere to dismiss popup
-    events: {open: "focusin mouseenter press", close: "mouseleave"}
-  },
-  "ojCheckboxset":
-  {
-    position: 'launcher',
-    // when press opens popup, the user taps elsewhere to dismiss popup
-    events: {open: "focusin mouseenter press", close: "mouseleave"}
-  },
-  // Since we now add extra dom on the input components for inline messages, we don't want to
-  // position on the tip of the component root. Instead we want to position on the main part of the
-  // component, which is in a lot of cases the launcher. In the case of inputDate/Time/Number,
-  // it's the launcher's parent (inputDate/Time/Number wrap input and buttons with a parent).
-  "ojInputText":
-  {
-    position: 'launcher',
-    events: {open: "focusin"}
-  },
-  "ojTextArea":
-  {
-    position: 'launcher',
-    events: {open: "focusin"}
-  },
-  "ojInputPassword":
-  {
-    position: 'launcher',
-    events: {open: "focusin"}
-  },
-  "ojSwitch":
-  {
-    position: 'launcher',
-    events: {open: "focusin mouseenter", close: "mouseleave"}
-  },
-  "ojSlider":
-  {
-    position: 'launcher',
-    events: {open: "focusin mouseenter", close: "mouseleave"}
-  },
-  "ojColorSpectrum":
-  {
-    position: 'launcher',
-    events: {open: "focusin mouseenter", close: "mouseleave"}
-  },
-  "ojColorPalette":
-  {
-    position: 'launcher',
-    events: {open: "focusin mouseenter", close: "mouseleave"}
-  },
-  "default":
-  {
-    position: 'launcher-wrapper',
-    events: {open: "focusin"}
-  }
-};
+    // Default input type is text
+    var inputType = 'text';
+    var agentInfo = oj.AgentUtils.getAgentInfo();
 
-/**
- * @private
- * @const
- * @type {string}
- */
-oj.PopupMessagingStrategy._SELECTOR_FORMCONTROL_HINT = "oj-form-control-hint";
-
-/**
- * @private
- * @const
- * @type {string}
- */
-oj.PopupMessagingStrategy._SELECTOR_FORMCONTROL_HINT_CONVERTER = "oj-form-control-hint-converter";
-
-/**
- * @private
- * @const
- * @type {string}
- */
-oj.PopupMessagingStrategy._SELECTOR_FORMCONTROL_HINT_VALIDATOR = "oj-form-control-hint-validator";
-
-/**
- * @private
- * @const
- * @type {string}
- */
-oj.PopupMessagingStrategy._SELECTOR_FORMCONTROL_HINT_TITLE = "oj-form-control-hint-title";
-
-/**
- * @private
- * @const
- * @type {string}
- */
-oj.PopupMessagingStrategy._OPEN_NAMESPACE = ".ojPopupMessagingOpen";
-
-/**
- * @private
- * @const
- * @type {string}
- */
-oj.PopupMessagingStrategy._CLOSE_NAMESPACE = ".ojPopupMessagingClose";
-
-/**
- * Sets up a tooltip for the component instance using the messaging content provided.
- *
- * @param {Object} cm a reference to an instance of oj.ComponentMessaging that provides access to
- * the latest messaging content.
- * @private
- * @memberof oj.PopupMessagingStrategy
- * @override
- * @instance
- */
-oj.PopupMessagingStrategy.prototype.activate = function (cm)
-{
-  oj.PopupMessagingStrategy.superclass.activate.call(this, cm);
-  this._initMessagingPopup();
-};
-
-/**
- * Reinitializes with the new display options and updates component messaging using the new content.
- *
- * @param {Array.<string>} newDisplayOptions
- * @private
- * @memberof oj.PopupMessagingStrategy
- * @instance
- * @override
- */
-oj.PopupMessagingStrategy.prototype.reactivate = function (newDisplayOptions)
-{
-  oj.PopupMessagingStrategy.superclass.reactivate.call(this, newDisplayOptions);
-  this._updatePopupIfOpen();
-};
-
-oj.PopupMessagingStrategy.prototype.update = function ()
-{
-  oj.PopupMessagingStrategy.superclass.update.call(this);
-  this._updatePopupIfOpen();
-};
-
-/**
- * Cleans up messages on the component and destroys any widgets it created.
- *
- * @private
- * @memberof oj.PopupMessagingStrategy
- * @instance
- * @override
- */
-oj.PopupMessagingStrategy.prototype.deactivate = function ()
-{
-  this._unregisterLauncherEvents();
-  this._destroyTooltip();
-  oj.PopupMessagingStrategy.superclass.deactivate.call(this);
-};
-/**
- * Close the popup if it is open. EditableValue calls this from _NotifyHidden and _NotifyDetached
- * so that we don't have an open popup if the app dev hides a subtree the component is within.
- * @private
- * @memberof oj.PopupMessagingStrategy
- * @instance
- */
-oj.PopupMessagingStrategy.prototype.close = function ()
-{
-  this._closePopup();
-};
-/**
- * Closes the associated notewindow popup
- * @private
- * @memberof oj.PopupMessagingStrategy
- * @instance
- */
-oj.PopupMessagingStrategy.prototype._closePopup = function ()
-{
-  function doClose(resolve)
-  {
-    if (this._isPopupInitialized())
+    // Only change the type on mobile browsers    
+    if (agentInfo['os'] === oj.AgentUtils.OS.ANDROID ||
+        agentInfo['os'] === oj.AgentUtils.OS.IOS ||
+        agentInfo['os'] === oj.AgentUtils.OS.WINDOWSPHONE)
     {
-      if (resolve)
+      // Get input type from component's virtualKeyboard option
+      if (allowedTypes.indexOf(this.options['virtualKeyboard']) >= 0)
       {
-        // Add an event listener to resolve the promise
-        this._setActionResolver(this.$messagingContentRoot, "close", resolve);
+        inputType = this.options['virtualKeyboard'];
       }
-          
-      this.$messagingContentRoot.ojPopup("close");
-
-      // Just return if we call ojPopup close.  The promise will be resolved
-      // by the ojclose event listener.
-      return;
-    }
-    
-    if (resolve)
-    {
-      // Resolve the promise immediately if we didn't call ojPopup close
-      resolve(true);
-    }
-  }
-  
-  this._queueAction(doClose.bind(this));
-};
-
-/**
- * @private
- * @memberof oj.PopupMessagingStrategy
- * @instance
- */
-oj.PopupMessagingStrategy.prototype._initMessagingPopup = function ()
-{
-  if (!this._openPopupCallback)
-    this._registerLauncherEvents();
-};
-
-/**
- * Add listeners for animation events.
- * We use this to delegate animation events to the editableValue component since
- * the original events are triggered on the popup, which is created internally 
- * and the application cannot bind listeners to it.  By delegating the events, 
- * application can bind the listeners to the component.
- * 
- * @param {jQuery} messagingContentRoot - The jQuery object for the messaging root node
- * @private
- * @memberof oj.PopupMessagingStrategy
- * @instance
- */
-oj.PopupMessagingStrategy.prototype._addAnimateEventListeners = function(messagingContentRoot)
-{
-  var delegateEvent = function(newEventType, event, ui) {
-    var component = this.GetComponent();
-    if (component && component._trigger)
-    {
-      // always stop propagation if we have a component to delegate to
-      event.stopPropagation();
-
-      // prevent default only if the component handler says so, as indicated by
-      // a return value of false.
-      if (!component._trigger(newEventType, null, ui))
-      {
-        event.preventDefault();
-      }
-    }
-  };
-
-  // Add animation event listeners to delegate the events to the component
-  messagingContentRoot.on('ojanimatestart.notewindow', delegateEvent.bind(this, 'animateStart'));
-  messagingContentRoot.on('ojanimateend.notewindow', delegateEvent.bind(this, 'animateEnd'));
-};
-
-/**
- * Remove listeners for animation events.
- * 
- * @private
- * @memberof oj.PopupMessagingStrategy
- * @instance
- */
-oj.PopupMessagingStrategy.prototype._removeAnimateEventListeners = function(messagingContentRoot)
-{
-  messagingContentRoot.off('ojanimatestart.notewindow');
-  messagingContentRoot.off('ojanimateend.notewindow');
-};
-
-/**
- * Set busy state on the component that invokes the notewindow.
- * 
- * @private
- * @memberof oj.PopupMessagingStrategy
- * @instance
- */
-oj.PopupMessagingStrategy.prototype._setBusyState = function(eventType)
-{
-  var component = this.GetComponent();
-  var jElem = component ? component.element : null;
-  var domElem = jElem ? jElem[0] : null;
-  var busyContext = oj.Context.getContext(domElem).getBusyContext();
-  var description = 'The page is waiting for note window ';
-  
-  if (domElem && domElem.id)
-  {
-    description += 'for "' + domElem.id + '" ';
-  }
-  description += 'to ' + eventType;
-
-  return busyContext.addBusyState({'description': description});
-};
-
-/**
- * Set an event listener to resolve promise when popup open/close action ends.
- * 
- * @private
- * @memberof oj.PopupMessagingStrategy
- * @instance
- */
-oj.PopupMessagingStrategy.prototype._setActionResolver = function(messagingContentRoot, eventType, resolvePromise)
-{
-  var animationOption;
-
-  // Disable animation if there are other queued actions.  Otherwise we will end
-  // up with too many animation since the messaging framework keeps clearing and
-  // updating the message display during validation, etc.
-  if (this._actionCount > 1)
-  {
-    // Remember the original animation so that we can restore it later
-    animationOption = messagingContentRoot.ojPopup("option", "animation");
-    messagingContentRoot.ojPopup("option", "animation", null);
-  }
-
-  // Add a busy state for the component.  Even though ojpopup add busy state,
-  // it is in the scope of the popup element.
-  var resolveBusyState = this._setBusyState(eventType);
-
-  // Add an one-time listener to resolve the promise
-  messagingContentRoot.one('oj' + eventType, function() {
-    // Restore any saved animation option
-    if (animationOption)
-    {
-      messagingContentRoot.ojPopup("option", "animation", animationOption);
-    }
-    
-    resolveBusyState();
-    resolvePromise(true);
-  });
-};
-
-/**
- * Queue up popup open and close actions so that they are executed in the
- * correct order.
- *
- * @private
- * @memberof oj.PopupMessagingStrategy
- * @instance
- */
-oj.PopupMessagingStrategy.prototype._queueAction = function(task)
-{
-  if (this.GetComponent()._IsCustomElement())
-  {
-    // Queue up the action for custom elements to avoid animation overlapping each other
-    var self = this;
-
-    var createActionPromise = function(task)
-    {
-      var promise = new Promise(task);
-      promise.then(function() {
-        --self._actionCount;
-      });
-      return promise;
-    };
-    
-    if (!this._actionCount)
-    {
-      // If there is no action in progress, create a new promise directly instead
-      // of chaining to any resolved promise to avoid an extra wait state.
-      this._actionCount = 1;
-      this._actionPromise = createActionPromise(task);
-    }
-    else
-    {
-      ++this._actionCount;
-      this._actionPromise = this._actionPromise.then(function() {
-        return createActionPromise(task);
-      });
-    }
-  }
-  else
-  {
-    // Invoke the action immediately for legacy components since there is no animation
-    task(null);
-  }
-};
-
-/**
- * Opens a popup. This handler is called in the context of the launcher usually the this.element or
- * some relevant node the messaging popup is associated to.
- *
- * @private
- * @memberof oj.PopupMessagingStrategy
- * @instance
- */
-oj.PopupMessagingStrategy.prototype._openPopup = function (event)
-{
-  function doOpen(resolve)
-  {
-    var domNode;
-    var latestContent;
-    var $launcher;
-
-    
-    if (this._canOpenPopup())
-    {
-
-      latestContent = this._buildPopupHtml();
-      if (!oj.StringUtils.isEmptyOrUndefined(latestContent))
-      {
-        var messagingContentRoot = this._getPopupElement();
-        var isPopupOpen = messagingContentRoot.ojPopup("isOpen");
-
-        // replace popup messaging content with new content
-        domNode = oj.PopupMessagingStrategyPoolUtils.getPopupContentNode(messagingContentRoot);
-
-        // latestContent is includes content that may come from app. It is scrubbed for illegal tags
-        // before setting to innerHTML
-        domNode.innerHTML = ""; // @HTMLUpdateOK
-        domNode.innerHTML = latestContent; // @HTMLUpdateOK
-
-        if (!isPopupOpen)
-        {
-          $launcher = this.GetLauncher();
-          if (event.type === "press")
-          {
-            this._openPopupOnPressEvent($launcher);
-          }
-
-          if (resolve)
-          {
-            // Add an event listener to resolve the promise
-            this._setActionResolver(messagingContentRoot, "open", resolve);
-          }
-          
-          messagingContentRoot.ojPopup("open", $launcher);
-          
-          // Just return if we call ojPopup open.  The promise will be resolved
-          // by the ojopen event listener.
-          return;
-        }
-        else if (isPopupOpen)
-        {
-          messagingContentRoot.ojPopup("refresh");
-        }
-      }
-    }
-    
-    if (resolve)
-    {
-      // Resolve the promise immediately if we didn't call ojPopup open
-      resolve(true);
-    }
-  }
-  
-  this._queueAction(doOpen.bind(this));
-};
-
-/**
- * This is called to open the popup on the 'press' event. E.g., ojCheckboxset and ojRadioset
- * use press to open the popup.
- * @param {Object|null} jqLauncher
- */
-oj.PopupMessagingStrategy.prototype._openPopupOnPressEvent = function (jqLauncher)
-{
-  this._inPressEvent = true;
-
-  // We add these event listeners when we open the popup as a result of the 'press' event
-  // and we are going to remove them when we close the popup, as well as when we unregister
-  // launcher events to make doubly sure they aren't lying around.
-  /// Use capture phase to make sure we cancel it before any regular bubble listeners hear it.
-  jqLauncher[0].addEventListener("click", this._eatChangeAndClickOnPress, true);
-  // need to eat 'change' as well. Otherwise the dialog will close on press up, and the input
-  // stays unchecked.
-  // This is because when the input  gets the 'change' event, it calls validate,
-  // which then updates messages, and if there is no message,
-  // then calls _updatePopupIfOpen, contentToShow = "", then it closes the popup.
-  jqLauncher[0].addEventListener("change", this._eatChangeAndClickOnPress, true);
-
-  // touchend/mousedown/change/click happen in fast succession on tap or press.
-  // Android never fires a click event on press up, so after 50ms we clear the inPressEvent flag
-  // since the _eatChangeAndClickOnPress callback never gets called for Android.
-  jqLauncher.one("touchend", function (event)
-  {
-    // 50ms.  Make as small as possible to prevent unwanted side effects.
-    setTimeout(function ()
-    {
-      this._inPressEvent = false;
-    }, 50);
-  });
-};
-
-/**
- * The pressHold gesture fires a click and change event on ios after touchend.  Prevent that here.
- * @private
- */
-oj.PopupMessagingStrategy.prototype._eatChangeAndClickOnPress = function (event)
-{
-      // on ios:
-      // if I tap quickly on an input, I get on div: touchstart/touchend/mousedown/change/click
-      // if I tap and hold on an input, I get: touchstart
-      // when I let up, I get: touchend/mousedown/change/click
-      // on android:
-      // if I tap quickly on an input, I get touchstart touchend mousedown click change
-      // if I tap and hold on an input, I get touchstart/mousedown
-      // when I let up, I get touchend. (no change or click like I do for ios)
-
-      // After 'press' release of a radio or checkbox if we do not eat the the click and change events,
-      // the dialog closes.
-      if (this._inPressEvent)
-      {
-        // For Mobile Safari capture phase at least,
-        // returning false doesn't work; must use pD() and sP() explicitly.
-        event.preventDefault();
-        event.stopPropagation();
-        // the event order is first change, then click.
-        // so when we get the click, clear the inPressEvent flag.
-        if (event.type === "click")
-          this._inPressEvent = false;
-      }
-};
-    
-/**
- * Determines whether the messaging popup can be opened.
- * @return {boolean}
- * @private
- * @memberof oj.PopupMessagingStrategy
- * @instance
- */
-oj.PopupMessagingStrategy.prototype._canOpenPopup = function ()
-{
-  var options = this.GetComponent().options;
-  var isDisabled = options['disabled'] || false;
-  var isReadOnly = options['readOnly'] || false;
-
-  return !(isDisabled || isReadOnly);
-};
-
-/**
- * If the popup is already open its contents need to updated when update() or reactivate() is called.
- * @private
- * @memberof oj.PopupMessagingStrategy
- * @instance
- */
-oj.PopupMessagingStrategy.prototype._updatePopupIfOpen = function ()
-{
-  var contentToShow;
-  var domNode;
-  var isLauncherActiveElement;
-  var isPopupOpen = false;
-  var launcher;
-  var messagingContentRoot;
-
-  if (this._isPopupInitialized())
-  {
-    messagingContentRoot = this._getPopupElement();
-    isPopupOpen = messagingContentRoot.ojPopup("isOpen");
-    contentToShow = this._buildPopupHtml();
-    launcher = this.GetLauncher();
-    if (launcher == null)
-      return;
-    isLauncherActiveElement = document.activeElement === this.GetLauncher()[0] ? true : false;
-    if (isPopupOpen)
-    {
-      if (contentToShow)
-      {
-        // push new content into popup
-        domNode = oj.PopupMessagingStrategyPoolUtils.getPopupContentNode(messagingContentRoot);
-
-        // contentToShow is includes content that may come from app. It is scrubbed for illegal tags
-        // before setting to innerHTML
-        domNode.innerHTML = ""; // @HTMLUpdateOK
-        domNode.innerHTML = contentToShow; // @HTMLUpdateOK
-        messagingContentRoot.ojPopup("refresh");
-      }
+/* For future support
       else
       {
-        // if there is no content to show and popup is currently open, close it.
-        messagingContentRoot.ojPopup("close");
+        // Get input type from converter's virtualKeyboardHint option
+        var converter = this._GetConverter();
+        if (converter && converter['resolvedOptions'])
+        {
+          var resOptions = converter['resolvedOptions']();
+          if (allowedTypes.indexOf(resOptions['virtualKeyboardHint']) >= 0)
+          {
+            inputType = resOptions['virtualKeyboardHint'];
+          }
+        }
       }
+*/
     }
-    else if (isLauncherActiveElement && contentToShow)
-    {
-      // if popup is closed but focus is on activeElement re-open it
-      this._openPopup(undefined);
-    }
-  }
-};
-
-/**
- * @private
- * @memberof oj.PopupMessagingStrategy
- * @instance
- */
-oj.PopupMessagingStrategy.prototype._unregisterLauncherEvents = function ()
-{
-  var compDefaults;
-  var events;
-  var jqLauncher = this.GetLauncher();
-
-  compDefaults = oj.PopupMessagingStrategy._DEFAULTS_BY_COMPONENT[this.GetComponent().widgetName];
-  events = compDefaults ?
-  compDefaults.events : oj.PopupMessagingStrategy._DEFAULTS_BY_COMPONENT["default"].events;
-
-  // Remove event handlers setup on launcher
-  jqLauncher.off(oj.PopupMessagingStrategy._OPEN_NAMESPACE);
-  jqLauncher.off(oj.PopupMessagingStrategy._CLOSE_NAMESPACE);
-  jqLauncher[0].removeEventListener("click", this._eatChangeAndClickOnPress, true);
-  jqLauncher[0].removeEventListener("change", this._eatChangeAndClickOnPress, true);
-
-  if (oj.DomUtils.isTouchSupported())
-  {
-    jqLauncher.ojHammer().off("press");
-    jqLauncher.ojHammer("destroy");
-    jqLauncher.off("contextmenu", this._eatContextMenuOnOpenPopupListener);
-    this._eatContextMenuOnOpenPopupListener = null;
-    this._inPressEvent = null;
-  }
-  this._openPopupCallback = null;
-  this._closePopupCallback = null;
-};
-
-/**
- * @private
- * @memberof oj.PopupMessagingStrategy
- * @instance
- */
-oj.PopupMessagingStrategy.prototype._registerLauncherEvents = function ()
-{
-  var closeEvents;
-  var closePopupCallback;
-  var compDefaults;
-  var events;
-  var hammerOptions;
-  var jqLauncher = this.GetLauncher();
-  var nonPressOpenEvents;
-  var openPopupCallback;
-  var pressEventIndex;
-
-  compDefaults = oj.PopupMessagingStrategy._DEFAULTS_BY_COMPONENT[this.GetComponent().widgetName];
-  events = compDefaults ? compDefaults.events :
-           oj.PopupMessagingStrategy._DEFAULTS_BY_COMPONENT["default"].events;
-
-  // 1. associate the ojPopup component to wrapper <div> for popup content
-  // 2. wire up on() event handlers for registered events that open and close popup. E.g., focusin.
-  // 3. autoDismissal happens automatically when focus leaves component. For other events like
-  // mouseover it's required to call off()
-  if (events['open'])
-  {
-    openPopupCallback = this._openPopupCallback;
-    if (!openPopupCallback)
-      openPopupCallback = this._openPopupCallback = this._openPopup.bind(this);
     
-    // separate out press event, namespace the events string, and attach event handler
-    pressEventIndex = events['open'].indexOf("press");
-    nonPressOpenEvents = 
-    this._getNamespacedEvents(events['open'].replace("press", ''), 
-                              oj.PopupMessagingStrategy._OPEN_NAMESPACE);
-    jqLauncher.on(nonPressOpenEvents, openPopupCallback);
-    
-    // The pressHold gesture also fires a contextmenu event on Windows 10 touch.  
-    // Prevent that here.
-    if (oj.DomUtils.isTouchSupported())
-    {
-      this._eatContextMenuOnOpenPopupListener = function (event)
-      {
-        return false;
-      };
-
-      jqLauncher.on("contextmenu", this._eatContextMenuOnOpenPopupListener);
-
-      // for radios and checkboxes, on ios, press hold brings up popup, but release closes it
-      // and checks it, so in this case we have to eat the click/change events. this happens
-      // in the openPopupCallback
-      if (pressEventIndex !== -1)
-      {
-        hammerOptions = {
-          "recognizers": [
-            [Hammer.Press, {time: 750}]
-          ]};
-        jqLauncher.ojHammer(hammerOptions).on("press", openPopupCallback);
-      }
-    }
-  }
-
-  if (events['close'])
-  {
-    closePopupCallback = this._closePopupCallback;
-    if (!closePopupCallback)
-      closePopupCallback = this._closePopupCallback = this._closePopup.bind(this);
-
-    closeEvents = this._getNamespacedEvents(events['close'], 
-      oj.PopupMessagingStrategy._CLOSE_NAMESPACE);
-    jqLauncher.on(closeEvents, closePopupCallback);
-  }
-};
-
-/**
- * Turn the events string into an array, add namespace, and turn it back into a string.
- * @param {string} events e.g., "focusin mousedown"
- * @param {string} namespace the namespace that starts with a dot
- * @return {string|null} the events string that is namespaced. 
- * e.g., "focusin.ojPopupMessagingOpen mousedown.ojPopupMessagingOpen"
- * @private
- */
-oj.PopupMessagingStrategy.prototype._getNamespacedEvents = function(events, namespace)
-{
-  var eventsArray;
-  var namespacedEventsArray;
-  var length;
-      
-  if (events === "" || namespace === "")
-    return events;
-
-  eventsArray = events.split(" ");
-  length = eventsArray.length;
-  namespacedEventsArray = [];
-  
-  for (var i=0; i < length; i++)
-  {
-    // ignore ""
-    if (eventsArray[i])
-      namespacedEventsArray.push(eventsArray[i] + namespace);
-  }
-  
-  return namespacedEventsArray.join(" ");
-};
-
-/**
- * Returns the popup position options.
- * Components like radio and checkboxset use the launcher, which is the inputs.
- * Since we now add extra dom for inline messages, we don't want to position
- * on the tip of the component root. Instead we want to position on the main part of the component,
- * which is in a lot of cases the launcher. In the case of inputDate/Time/Number, it's the launcher's
- * parent.
- * @private
- * @memberof oj.PopupMessagingStrategy
- * @instance
- */
-oj.PopupMessagingStrategy.prototype._getPopupPosition = function ()
-{
-  var compDefaultPosition;
-  var compDefaults;
-  var launcher;
-  var popupPositionOptions;
-
-  compDefaults =
-  oj.PopupMessagingStrategy._DEFAULTS_BY_COMPONENT[this.GetComponent().widgetName];
-  compDefaultPosition = compDefaults ? compDefaults.position :
-  oj.PopupMessagingStrategy._DEFAULTS_BY_COMPONENT["default"].position;
-
-  if (compDefaultPosition)
-  {
-    if (compDefaultPosition === "launcher")
-    {
-      launcher = this.GetLauncher();
-    }
-    else if (compDefaultPosition === "launcher-wrapper")
-    {
-      launcher = this.GetLauncher().parent();
-    }
-  }
-  // should never get here since the _DEFAULTS_BY_COMPONENTS["default"] should cover it.
-  if (!launcher)
-    launcher = this.GetComponent().widget();
-
-  popupPositionOptions = {
-    'my': 'start bottom',
-    'at': 'end top',
-    'collision': 'flipcenter',
-    'of': launcher
+    this.element.attr('type', inputType);
   };
-  return popupPositionOptions;
-
-};
-
-/**
- * Returns a jquery element that a messaging popup is bound to.
- *
- * @return {jQuery!} messaging popup pool container
- * @private
- * @memberof oj.PopupMessagingStrategy
- * @instance
- */
-oj.PopupMessagingStrategy.prototype._getPopupElement = function ()
-{
-  var popup;
-  var position;
-
-  if (this.$messagingContentRoot)
-    return this.$messagingContentRoot;
-
-  popup = oj.PopupMessagingStrategyPoolUtils.getNextFreePopup();
-  position = this._getPopupPosition();
-  popup.ojPopup("option", "position", position);
-  popup.ojPopup("option", "beforeClose", this._popupBeforeCloseCallback.bind(this));
-  popup.ojPopup("option", "close", this._popupCloseCallback.bind(this));
-  popup.ojPopup("option", "open", this._popupOpenCallback.bind(this));
-  
-  // Use default animation only for custom elements
-  if (this.GetComponent()._IsCustomElement())
-  {
-    // Get the default animation
-    var defaultAnimations = (oj.ThemeUtils.parseJSONFromFontFamily('oj-messaging-popup-option-defaults') || {})["animation"];
-    defaultAnimations["actionPrefix"] = "notewindow";
-    popup.ojPopup("option", "animation", defaultAnimations);
-  
-    this._addAnimateEventListeners(popup);
-  }
-  else
-  {
-    popup.ojPopup("option", "animation", null);
-  }
-
-  this.$messagingContentRoot = popup;
-  return this.$messagingContentRoot;
-};
-
-/**
- * Popup open event listener that changes the popups autoDismiss to focusLoss
- * in a timeout of 10ms.  This timeout period gives the browser time to fire
- * events that might follow a click such as a focus event.  This is to allow
- * validation by a button versus a component instance.
- *
- * @param {jQuery.event=} event
- * @memberof! oj.PopupMessagingStrategy
- * @private
- */
-oj.PopupMessagingStrategy.prototype._popupOpenCallback = function (event)
-{
-  var target = $(event.target);
-  var self = this;
-  window.setTimeout(function ()
-  {
-    if (oj.Components.isComponentInitialized(target, "ojPopup"))
-      target.ojPopup("option", "autoDismiss", "focusLoss");
-    else
-      delete self.$messagingContentRoot;
-  }, 10);
-};
-
-/**
- * Popup beforeClose event listener that will add busy state to the component
- * @param {jQuery.event=} event
- * @memberof! oj.PopupMessagingStrategy
- * @private
- */
-oj.PopupMessagingStrategy.prototype._popupBeforeCloseCallback = function (event)
-{
-  this._resolveBusyState = this._setBusyState('close');
-};
-
-/**
- * Popup closed event listener that will reset the popups state and free it into the
- * pool of available messaging popups.
- * @param {jQuery.event=} event
- * @memberof! oj.PopupMessagingStrategy
- * @private
- */
-oj.PopupMessagingStrategy.prototype._popupCloseCallback = function (event)
-{
-  var jqLauncher, popupContent, target;
-  jqLauncher = this.GetLauncher();
-
-  target = $(event.target);
-  
-  this._removeAnimateEventListeners(target);
-
-  if (oj.Components.isComponentInitialized(target, "ojPopup"))
-  {
-    target.ojPopup("option", "autoDismiss", "none");
-    target.ojPopup("option", "open", null);
-    target.ojPopup("option", "close", null);
-    target.ojPopup("option", "beforeClose", null);
-  }
-
-  // Check that the launcher is still there when removing listeners  
-  if (jqLauncher && jqLauncher[0])
-  {
-    jqLauncher[0].removeEventListener("click", this._eatChangeAndClickOnPress, true);
-    jqLauncher[0].removeEventListener("change", this._eatChangeAndClickOnPress, true);
-  }
-    
-  this.$messagingContentRoot = null;
-  this._inPressEvent = null;
-
-  popupContent = $(oj.PopupMessagingStrategyPoolUtils.getPopupContentNode(target));
-  popupContent.empty();
-  
-  if (this._resolveBusyState)
-  {
-    this._resolveBusyState();
-    this._resolveBusyState = null;
-  }
-};
-
-/**
- * @memberof! oj.PopupMessagingStrategy
- * @private
- * @instance
- */
-oj.PopupMessagingStrategy.prototype._destroyTooltip = function ()
-{
-  this._closePopup();
-  oj.PopupMessagingStrategyPoolUtils.destroyFreePopup();
-};
-
-/**
- * Returns the content to show inside popup.
- * @private
- * @return {String|string} content
- * @memberof oj.PopupMessagingStrategy
- * @instance
- */
-oj.PopupMessagingStrategy.prototype._buildPopupHtml = function ()
-{
-  var addSeparator = false;
-  var document = this.GetComponent().document[0];
-  var nwContent = [];
-  var nwHtml = "";
-
-  if (this.ShowMessages())
-  {
-    nwContent.push(this._buildMessagesHtml(document));
-  }
-
-  if (this.ShowConverterHint() || this.ShowValidatorHint() || this.ShowTitle())
-  {
-    nwContent.push(this._buildHintsHtml(document));
-  }
-
-  $.each(nwContent, function (i, content)
-  {
-    if (content)
-    {
-      if (addSeparator)
-      {
-        nwHtml = nwHtml.concat(oj.PopupMessagingStrategyUtils.getSeparatorHtml(document));
-      }
-      else
-      {
-        addSeparator = true;
-      }
-
-      nwHtml = nwHtml.concat(content);
-    }
-  });
-
-  return nwHtml;
-};
-
-/**
- * Returns the messages html (e.g., error messages, confirmation messages), not hints
- * @param {Document} document
- * @return {string} content
- * @private
- * @memberof oj.PopupMessagingStrategy
- * @instance
- */
-oj.PopupMessagingStrategy.prototype._buildMessagesHtml = function (document)
-{
-  var content = "";
-  var maxSeverity = this.GetMaxSeverity();
-  var messages;
-  var renderSeveritySelectors = false;
-
-  if (this.HasMessages())
-  {
-    messages = this.GetMessages();
-    content =
-    oj.PopupMessagingStrategyUtils.buildMessagesHtml(
-    document, messages, maxSeverity, renderSeveritySelectors);
-  }
-  return content;
-};
-
-/**
- * All hints including title
- * @param {Document} document
- * @return {string} html content for all hints.
- * @private
- * @memberof oj.PopupMessagingStrategy
- * @instance
- */
-oj.PopupMessagingStrategy.prototype._buildHintsHtml = function (document)
-{
-  var hint;
-  var hints = [];
-  var hintsHtml = "";
-  var i;
-
-  if (this.ShowConverterHint())
-  {
-    hints = this.GetConverterHint();
-    hint = hints.length ? hints[0] : "";
-    hintsHtml += oj.PopupMessagingStrategyUtils.buildHintHtml(document,
-    oj.PopupMessagingStrategy._SELECTOR_FORMCONTROL_HINT_CONVERTER,
-    hint, false,
-    oj.PopupMessagingStrategy._SELECTOR_FORMCONTROL_HINT);
-  }
-
-  if (this.ShowValidatorHint())
-  {
-    hints = this.GetValidatorHints();
-    for (i = 0; i < hints.length; i++)
-    {
-      hintsHtml += oj.PopupMessagingStrategyUtils.buildHintHtml(document,
-      oj.PopupMessagingStrategy._SELECTOR_FORMCONTROL_HINT_VALIDATOR,
-      hints[i], false, oj.PopupMessagingStrategy._SELECTOR_FORMCONTROL_HINT);
-    }
-  }
-
-  if (this.ShowTitle())
-  {
-    hintsHtml += oj.PopupMessagingStrategyUtils.buildHintHtml(document,
-    oj.PopupMessagingStrategy._SELECTOR_FORMCONTROL_HINT_TITLE,
-    this.GetTitle(), true, oj.PopupMessagingStrategy._SELECTOR_FORMCONTROL_HINT);
-  }
-
-  return hintsHtml ? "<div class='oj-form-control-hints'>" + hintsHtml + "</div>" : "";
-};
-
-/**
- * Determines if there is a message popup currently associated with the component
- * strategy.
- * @return {boolean}
- * @private
- * @memberof oj.PopupMessagingStrategy
- * @instance
- */
-oj.PopupMessagingStrategy.prototype._isPopupInitialized = function ()
-{
-  // is(":oj-popup") finds the popup component if it exists
-  return (this.$messagingContentRoot) ?
-  oj.Components.isComponentInitialized(this.$messagingContentRoot, "ojPopup") : false;
-};
-
-/**
- * @ignore
- */
-oj.PopupMessagingStrategyUtils = {};
-
-/**
- * Renders the html content for a single hint.
- * @param {Document} document
- * @param {string} selector
- * @param {string} hintText
- * @param {boolean} htmlAllowed
- * @param {string} formControlSelectors
- *
- * @return {string} html content for a single hint.
- * @public
- */
-oj.PopupMessagingStrategyUtils.buildHintHtml = function (document, selector, hintText, htmlAllowed, formControlSelectors)
-{
-  var jTitleDom;
-  if (hintText)
-  {
-    jTitleDom = $(document.createElement("div"));
-    formControlSelectors += " " + selector;
-    jTitleDom.addClass(formControlSelectors);
-
-    jTitleDom.append(oj.PopupMessagingStrategyUtils._getTextDom(document, hintText, htmlAllowed)); // @HTMLUpdateOK
-  }
-
-  return jTitleDom ? jTitleDom.get(0).outerHTML : "";// @HTMLUpdateOK
-};
-
-/**
- * @param {number} severity
- * @returns (string} translated string for the severity
- * @public
- */
-oj.PopupMessagingStrategyUtils.getSeverityTranslatedString = function (severity)
-{
-  var sevTypeStr;
-  // get the translated string for the severity
-  switch (severity)
-  {
-    case oj.Message.SEVERITY_LEVEL['FATAL']:
-      sevTypeStr = oj.Translations.getTranslatedString('oj-message.fatal');
-      break;
-    case oj.Message.SEVERITY_LEVEL['ERROR']:
-      sevTypeStr = oj.Translations.getTranslatedString('oj-message.error');
-      break;
-    case oj.Message.SEVERITY_LEVEL['WARNING']:
-      sevTypeStr = oj.Translations.getTranslatedString('oj-message.warning');
-      break;
-    case oj.Message.SEVERITY_LEVEL['INFO']:
-      sevTypeStr = oj.Translations.getTranslatedString('oj-message.info');
-      break;
-    case oj.Message.SEVERITY_LEVEL['CONFIRMATION']:
-      sevTypeStr = oj.Translations.getTranslatedString('oj-message.confirmation');
-      break;
-  }
-
-  return sevTypeStr;
-};
-
-/**
- * @param {Document} document
- * @returns {string}
- * @public
- */
-oj.PopupMessagingStrategyUtils.getSeparatorHtml = function (document)
-{
-  var jSeparatorDom;
-  jSeparatorDom = $(document.createElement("hr"));
-
-  return jSeparatorDom ? jSeparatorDom.get(0).outerHTML : "";// @HTMLUpdateOK
-};
-
-/**
- * Returns the messages html (e.g., error messages, confirmation messages), not hints
- * @param {Document} document
- * @param {Array} messages
- * @param {number} maxSeverity
- * @param {boolean} renderSeveritySelectors
- * @return {string} content
- * @private
- * @memberof oj.PopupMessagingStrategyUtils
- * @instance
- */
-oj.PopupMessagingStrategyUtils.buildMessagesHtml =
-function (document, messages, maxSeverity, renderSeveritySelectors)
-{
-  var content = "";
-  var detail;
-  var i;
-  var j;
-  var message;
-  var messagesByType = [];
-  var messagesByTypes = {};
-  var messageObj;
-  var severityLevel;
-  var severityStr;
-  var summary;
-
-
-  // Step1: build an indexed array of messages by severity level.
-  for (i = 0; i < messages.length; i++)
-  {
-    message = messages[i];
-
-    if (!(message instanceof oj.Message))
-    {
-      messageObj = new oj.Message(message['summary'], message['detail'], message['severity']);
-    }
-    else
-    {
-      messageObj = message;
-    }
-
-    severityLevel = oj.Message.getSeverityLevel(messageObj['severity']);
-    if (!messagesByTypes[severityLevel])
-    {
-      messagesByTypes[severityLevel] = [];
-    }
-
-    messagesByTypes[severityLevel].push(messageObj);
-  }
-
-  // Step 2: starting with maxSeverity level build messages with decreasing severity
-  for (i = maxSeverity; i >= oj.Message.SEVERITY_LEVEL['CONFIRMATION']; i--)
-  {
-    messagesByType = messagesByTypes[i] || [];
-
-    for (j = 0; j < messagesByType.length; j++)
-    {
-      message = messagesByType[j];
-
-      severityLevel = oj.Message.getSeverityLevel(message['severity']);
-      severityStr = oj.PopupMessagingStrategyUtils.getSeverityTranslatedString(severityLevel);
-      summary = message['summary'] || severityStr;
-
-      // if detail is empty we don't care to duplicate summary. also detail if present can be
-      // formatted html content (ADF feature)
-      detail = message['detail'] || "";
-      content = content.concat(
-      oj.PopupMessagingStrategyUtils.buildMessageHtml(
-      document, summary, detail, severityLevel, renderSeveritySelectors));
-    }
-  }
-  return content;
-
-};
-
-/**
- * Builds the HTML content for a single message
- * @param {Document} document
- * @param {string} summary
- * @param {string} detail
- * @param {number} severityLevel
- * @returns {string}
- * @public
- */
-oj.PopupMessagingStrategyUtils.buildMessageHtml =
-function (document, summary, detail, severityLevel, addSeverityClass)
-{
-  var $msgContent;
-  var $msgDetail;
-  var $msgDom;
-  var $msgIcon;
-  var $msgSummary;
-  var severityStr = oj.PopupMessagingStrategyUtils.getSeverityTranslatedString(severityLevel);
-
-  // build message
-  // (x) <Summary Text>
-  // <Detail Text>
-  $msgDom = $(document.createElement("div"));
-  $msgDom.addClass(oj.PopupMessagingStrategyUtils._SELECTOR_MESSAGE);
-
-  if (addSeverityClass)
-    $msgDom.addClass(oj.PopupMessagingStrategyUtils._getSeveritySelector(severityLevel));
-
-  // build msg icon
-  $msgIcon = $(document.createElement("span"));
-  $msgIcon.addClass(oj.PopupMessagingStrategyUtils._getSeverityIconSelector(severityLevel))
-  .attr("title", severityStr)
-  .attr("role", 'img');
-
-  $msgDom.append($msgIcon); // @HTMLUpdateOK
-
-  // build msg content which includes summary and detail
-  $msgContent = $(document.createElement("span"));
-  $msgContent.addClass(oj.PopupMessagingStrategyUtils._SELECTOR_MESSAGE_CONTENT);
-
-  $msgSummary = $(document.createElement("div"));
-  $msgSummary.addClass(oj.PopupMessagingStrategyUtils._SELECTOR_MESSAGE_SUMMARY).text(summary);
-
-  $msgContent.append($msgSummary); // @HTMLUpdateOK
-
-  if (detail)
-  {
-    // detail text allows html content. So scrub it before setting it.
-    var detailDom = oj.PopupMessagingStrategyUtils._getTextDom(document, detail, true);
-    $msgDetail = $(document.createElement("div"));
-
-    $msgDetail.addClass(oj.PopupMessagingStrategyUtils._SELECTOR_MESSAGE_DETAIL).append(detailDom); // @HTMLUpdateOK
-    $msgContent.append($msgDetail);// @HTMLUpdateOK
-  }
-
-  $msgDom.append($msgContent); // @HTMLUpdateOK
-
-  return $msgDom ? $msgDom.get(0).outerHTML : "";// @HTMLUpdateOK
-};
-
-/**
- * @param {number} severity
- * @return {string} the icon selector for the severity
- * @private
- */
-oj.PopupMessagingStrategyUtils._getSeverityIconSelector = function (severity)
-{
-  var sevIconStr;
-  // get the icon selector for the severity
-  switch (severity)
-  {
-    case oj.Message.SEVERITY_LEVEL['FATAL']:
-      sevIconStr = oj.PopupMessagingStrategyUtils._SELECTOR_MESSAGE_ERROR_ICON;
-      break;
-    case oj.Message.SEVERITY_LEVEL['ERROR']:
-      sevIconStr = oj.PopupMessagingStrategyUtils._SELECTOR_MESSAGE_ERROR_ICON;
-      break;
-    case oj.Message.SEVERITY_LEVEL['WARNING']:
-      sevIconStr = oj.PopupMessagingStrategyUtils._SELECTOR_MESSAGE_WARNING_ICON;
-      break;
-    case oj.Message.SEVERITY_LEVEL['INFO']:
-      sevIconStr = oj.PopupMessagingStrategyUtils._SELECTOR_MESSAGE_INFO_ICON;
-      break;
-    case oj.Message.SEVERITY_LEVEL['CONFIRMATION']:
-      sevIconStr = oj.PopupMessagingStrategyUtils._SELECTOR_MESSAGE_CONFIRMATION_ICON;
-      break;
-  }
-
-  return oj.PopupMessagingStrategyUtils._DEFAULT_STATUS_ICON_SELECTORS + sevIconStr;
-};
-
-/**
- * @param {number} severity
- * @return {string} the style selector for the severity
- * @private
- */
-oj.PopupMessagingStrategyUtils._getSeveritySelector = function (severity)
-{
-  var sevSelectorStr;
-  // get the icon selector for the severity
-  switch (severity)
-  {
-    case oj.Message.SEVERITY_LEVEL['FATAL']:
-      sevSelectorStr = oj.PopupMessagingStrategyUtils._SELECTOR_MESSAGE_ERROR;
-      break;
-    case oj.Message.SEVERITY_LEVEL['ERROR']:
-      sevSelectorStr = oj.PopupMessagingStrategyUtils._SELECTOR_MESSAGE_ERROR;
-      break;
-    case oj.Message.SEVERITY_LEVEL['WARNING']:
-      sevSelectorStr = oj.PopupMessagingStrategyUtils._SELECTOR_MESSAGE_WARNING;
-      break;
-    case oj.Message.SEVERITY_LEVEL['INFO']:
-      sevSelectorStr = oj.PopupMessagingStrategyUtils._SELECTOR_MESSAGE_INFO;
-      break;
-    case oj.Message.SEVERITY_LEVEL['CONFIRMATION']:
-    default:
-      sevSelectorStr = oj.PopupMessagingStrategyUtils._SELECTOR_MESSAGE_CONFIRMATION;
-      break;
-  }
-
-  return sevSelectorStr;
-};
-
-
-/**
- *  if content is html clean html by allowing only legal tags before returning, to safeguard from
- *  script injection errors.
- *
- * @param {Document} document
- * @param {string} value
- * @param {boolean=} htmlAllowed if value can have html content
- *
- * @return {Element} dom node containing the scrubbed hint
- * @private
- */
-oj.PopupMessagingStrategyUtils._getTextDom = function (document, value, htmlAllowed)
-{
-  var textDom = null;
-
-  if (oj.StringUtils.isString(value))
-  {
-    if (htmlAllowed && oj.DomUtils.isHTMLContent(value))
-    {
-      // strip out html start/end tags
-      textDom = oj.DomUtils.cleanHtml(value.substring(6, value.length - 7));
-    }
-    else
-    {
-      textDom = document.createElement("span");
-      textDom.textContent = value;
-    }
-  }
-
-  return textDom;
-};
-
-/**
- * @private
- * @const
- * @type {string}
- */
-oj.PopupMessagingStrategyUtils._DEFAULT_STATUS_ICON_SELECTORS = "oj-component-icon oj-message-status-icon ";
-
-/**
- * @private
- * @const
- * @type {string}
- */
-oj.PopupMessagingStrategyUtils._SELECTOR_MESSAGE = "oj-message";
-
-/**
- * @private
- * @const
- * @type {string}
- */
-oj.PopupMessagingStrategyUtils._SELECTOR_MESSAGE_SUMMARY = "oj-message-summary";
-
-/**
- * @private
- * @const
- * @type {string}
- */
-oj.PopupMessagingStrategyUtils._SELECTOR_MESSAGE_DETAIL = "oj-message-detail";
-
-/**
- * @private
- * @const
- * @type {string}
- */
-oj.PopupMessagingStrategyUtils._SELECTOR_MESSAGE_CONTENT = "oj-message-content";
-
-/**
- * @private
- * @const
- * @type {string}
- */
-oj.PopupMessagingStrategyUtils._SELECTOR_MESSAGE_ERROR_ICON = "oj-message-error-icon";
-
-/**
- * @private
- * @const
- * @type {string}
- */
-oj.PopupMessagingStrategyUtils._SELECTOR_MESSAGE_WARNING_ICON = "oj-message-warning-icon";
-
-/**
- * @private
- * @const
- * @type {string}
- */
-oj.PopupMessagingStrategyUtils._SELECTOR_MESSAGE_INFO_ICON = "oj-message-info-icon";
-
-/**
- * @private
- * @const
- * @type {string}
- */
-oj.PopupMessagingStrategyUtils._SELECTOR_MESSAGE_CONFIRMATION_ICON = "oj-message-confirmation-icon";
-
-// new theming keys so that we can style the different types of messages differently. Like,
-// the background-color can be light red for error. This style will go on the same dom node
-// as the oj-message selector.
-/**
- * @private
- * @const
- * @type {string}
- */
-oj.PopupMessagingStrategyUtils._SELECTOR_MESSAGE_ERROR = "oj-message-error";
-
-/**
- * @private
- * @const
- * @type {string}
- */
-oj.PopupMessagingStrategyUtils._SELECTOR_MESSAGE_WARNING = "oj-message-warning";
-
-/**
- * @private
- * @const
- * @type {string}
- */
-oj.PopupMessagingStrategyUtils._SELECTOR_MESSAGE_INFO = "oj-message-info";
-
-/**
- * @private
- * @const
- * @type {string}
- */
-oj.PopupMessagingStrategyUtils._SELECTOR_MESSAGE_CONFIRMATION = "oj-message-confirmation";
-
-/**
- * @ignore
- */
-oj.PopupMessagingStrategyPoolUtils = {};
-
-/**
- * @public
- * @returns {jQuery} popup taken or created from the free pool
- */
-oj.PopupMessagingStrategyPoolUtils.getNextFreePopup = function ()
-{
-  var pool = oj.PopupMessagingStrategyPoolUtils._getPool();
-  var popups = pool.find("." + oj.PopupMessagingStrategyPoolUtils._SELECTOR_MESSAGING);
-  var popup;
-
-  if (popups.length === 0)
-  {
-    popup = $(oj.PopupMessagingStrategyPoolUtils._getPopupContentHtml()).hide();
-    // popup is an empty div
-    popup.appendTo(pool); // @HTMLUpdateOk    
-    var popupOptions =
-    {
-      'initialFocus': 'none',
-      'tail': 'simple',
-      'autoDismiss': 'none',
-      'modality': 'modeless',
-      'animation': {'open': null, 'close': null}
-    };
-    popup.ojPopup(popupOptions);
-  }
-  else
-    popup = $(popups[0]);
-
-  return popup;
-};
-
-/**
- * Passed in the root dom element of the message popup and returns the content element.
- *
- * @param {jQuery} popup root element
- * @returns {Element} content element of message popup
- */
-oj.PopupMessagingStrategyPoolUtils.getPopupContentNode = function (popup)
-{
-  return popup.find("." + oj.PopupMessagingStrategyPoolUtils._SELECTOR_MESSAGING_CONTAINER)[0];
-};
-
-/**
- * @public
- */
-oj.PopupMessagingStrategyPoolUtils.destroyFreePopup = function ()
-{
-  var popup;
-  if (oj.PopupMessagingStrategyPoolUtils._getFreePoolCount() > 0)
-  {
-    // if the message popup is open, remove it.
-    // if there is at least one popup in the pool, remove it.
-    popup = oj.PopupMessagingStrategyPoolUtils.getNextFreePopup();
-    popup.ojPopup("destroy");
-    popup.remove();
-  }
-};
-
-/**
- * Returns a div appended to the body that is a common pool of notewindow popups
- * used internally by editable value holders.
- *
- * @return {jQuery!} messaging popup pool container
- * @private
- */
-oj.PopupMessagingStrategyPoolUtils._getPool = function ()
-{
-  /** @type {jQuery!} */
-  var pool = $("#" + oj.PopupMessagingStrategyPoolUtils._MESSAGING_POPUP_POOL_ID);
-  if (pool.length > 0)
-    return pool;
-
-  pool = $("<div>");
-  pool.attr("id", oj.PopupMessagingStrategyPoolUtils._MESSAGING_POPUP_POOL_ID);
-  pool.attr("role", "presentation");
-  pool.appendTo($(document.body)); // @HTMLUpdateOk
-
-  return pool;
-};
-
-/**
- * @return {number} number of unused popup in the pool
- * @private
- */
-oj.PopupMessagingStrategyPoolUtils._getFreePoolCount = function ()
-{
-  var pool = oj.PopupMessagingStrategyPoolUtils._getPool();
-  var popups = pool.find("." + oj.PopupMessagingStrategyPoolUtils._SELECTOR_MESSAGING);
-  return popups.length;
-};
-
-/**
- * @return {string} messaging popup html
- * @private
- */
-oj.PopupMessagingStrategyPoolUtils._getPopupContentHtml = function ()
-{
-  return '<div class="' + oj.PopupMessagingStrategyPoolUtils._SELECTOR_MESSAGING + '">' +
-    '<div class="' + oj.PopupMessagingStrategyPoolUtils._SELECTOR_MESSAGING_CONTAINER + '"></div>' +
-    '</div>';
-};
-
-/**
- * @const
- * @private
- * @type {string}
- */
-oj.PopupMessagingStrategyPoolUtils._SELECTOR_MESSAGING_CONTAINER = "oj-messaging-popup-container";
-
-/**
- * @const
- * @private
- * @type {string}
- */
-oj.PopupMessagingStrategyPoolUtils._SELECTOR_MESSAGING = "oj-messaging-popup";
-
-/**
- * @const
- * @private
- * @type {string}
- */
-oj.PopupMessagingStrategyPoolUtils._MESSAGING_POPUP_POOL_ID = "__oj_messaging_popup_pool";
-
 /**
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
@@ -2640,6 +1096,17 @@ var _CUSTOM_LABEL_ELEMENT_ID = "|label";
 /**
  * @ojcomponent oj.editableValue
  * @augments oj.baseComponent
+ * @ojsignature [{
+ *                target: "Type",
+ *                value: "abstract class editableValue<V, SP extends editableValueSettableProperties<V, SV, RV>, SV= V, RV= V> extends baseComponent<SP>"
+ *               },
+ *               {
+ *                target: "Type",
+ *                value: "editableValueSettableProperties<V, SV=V, RV=V> extends baseComponentSettableProperties",
+ *                for: "SettableProperties"
+ *               }
+ *              ]
+ * @ojtsimport ojmessaging
  * @abstract
  * @since 0.6
  * @ojshortdesc Abstract EditableValue element
@@ -2733,6 +1200,7 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
      * // setter
      * myComp.describedBy = "someId";
      *
+     * @ojshortdesc described the relationship between this component and another element.
      * @expose 
      * @type {?string}
      * @public
@@ -2791,6 +1259,7 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
      * // setter
      * myComp.disabled = false;
      *
+     * @ojshortdesc Whether the component is disabled. The default is false.
      * @expose 
      * @type {boolean}
      * @default false
@@ -2800,7 +1269,6 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
      * @since 0.7
      */
     disabled : false,
-    
     /**
      * Display options for auxilliary content that determines where it should be displayed 
      * in relation to the component. 
@@ -2834,23 +1302,23 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
      * <pre class="prettyprint"><code>&lt;html>Enter &lt;b>at least&lt;/b> 6 characters&lt;/html></code></pre>
      * </p>
      *  
-     * @property {Array|string=} converterHint - supported values are <code class="prettyprint">'placeholder'</code>, 
+     * @property {(Array.<'placeholder'|'notewindow'|'none'>|'placeholder'|'notewindow'|'none')=} converterHint - supported values are <code class="prettyprint">'placeholder'</code>, 
      * <code class="prettyprint">'notewindow'</code>, <code class="prettyprint">'none'</code>. The 
      * default value is <code class="prettyprint">['placeholder', 'notewindow']</code>. When there 
      * is already a placeholder set on the component, the converter hint falls back to display 
      * type of 'notewindow'.
      * To change the default value you can do this - <br/> 
      * E.g. <code class="prettyprint">{'displayOptions: {'converterHint': ['none']}}</code>
-     * @property {Array|string=} validatorHint - supported values are <code class="prettyprint">'notewindow'</code>, 
+     * @property {(Array.<'notewindow'|'none'>|'notewindow'|'none')=} validatorHint - supported values are <code class="prettyprint">'notewindow'</code>, 
      * <code class="prettyprint">'none'</code>.
      * To change the default value you can do this - <br/>
      * <code class="prettyprint">{'displayOptions: {'validatorHint': ['none']}}</code>
-     * @property {Array|string=} messages - supported values are <code class="prettyprint">'notewindow'</code>, 
+     * @property {(Array.<'inline'|'notewindow'|'none'>|'inline'|'notewindow'|'none')=} messages - supported values are <code class="prettyprint">'notewindow'</code>, 
      * <code class="prettyprint">'inline'</code>,
      * <code class="prettyprint">'none'</code>. The default is 'inline'. 
      * To change the default value you can do this - <br/>
      * E.g. <code class="prettyprint">{'displayOptions: {'messages': 'none'}}</code>
-     * @property {Array|string=} helpInstruction - supported values are <code class="prettyprint">'notewindow'</code>, 
+     * @property {(Array.<'notewindow'|'none'>|'notewindow'|'none')=} helpInstruction - supported values are <code class="prettyprint">'notewindow'</code>, 
      * <code class="prettyprint">'none'</code>.
      * To change the default value you can do this - <br/>
      * E.g. <code class="prettyprint">displayOptions='{"helpInstruction": "none"}'</code>
@@ -2895,6 +1363,8 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
      * // set all.  Must list every resource key, as those not listed are lost.
      * myComp.displayOptions = {converterHint: "none", validatorHint: "none", helpInstruction: "none"};
      *
+     * @ojshortdesc Customize how to display to the user the
+     *  form field's messages, converter and validator hints and help instruction text.
      * @expose 
      * @access public
      * @instance
@@ -2904,7 +1374,6 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
      * @since 0.7
      */
     displayOptions : undefined,    
-    
     /**
      * Form component help information.
      * <p>
@@ -2921,8 +1390,7 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
      * @default {'help' : {'instruction': null}}
      * @since 0.7
      */
-    help: 
-    {
+    help: undefined,
     /**
      * <p>help definition text.  See the top-level <code class="prettyprint">help</code> option for details.
      * 
@@ -2941,7 +1409,6 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
      * // setter:
      * $( ".selector" ).ojFoo( "option", "help.definition", "Enter your name" );
      */     
-      definition: null, 
     /**
      * <p>help source url.  See the top-level <code class="prettyprint">help</code> option for details.
      * 
@@ -2959,9 +1426,7 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
      * 
      * // setter:
      * $( ".selector" ).ojFoo( "option", "help.source", "www.abc.com" );
-     */      
-      source: null
-    },
+     */
     /**
      * Represents hints for oj-form-layout element to render help information on the label of the editable component. 
      * <p>This is used only if the editable component is added as a direct child to an oj-form-layout element, and the labelHint property is also specified.</p>
@@ -3000,16 +1465,19 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
      *     source: 'some-new-url'
      * };
      *
+     * @ojshortdesc Represents hints for oj-form-layout element to 
+     * render help information on the label of the editable component.
      * @expose
      * @access public
      * @memberof oj.editableValue
+     * @ojtranslatable
      * @instance
      * @type {Object.<string, string>}
      * @default {'definition': "", 'source': ""}
      * @since 4.1.0
      */
-    helpHints:
-    {
+     helpHints:
+     {
     /**
      * Hint for help definition text associated with the label. 
      * <p>It is what shows up when the user hovers over the help icon, or tabs into the help icon, or press and holds the help icon on a mobile device. No formatted text is available for help definition attribute.</p>
@@ -3021,6 +1489,7 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
      * @memberof! oj.editableValue
      * @instance
      * @type {string}
+     * @ojsignature {target:"Type", value: "?"}
      * @default ""
      * @since 4.1.0
      */
@@ -3037,6 +1506,7 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
      * @memberof! oj.editableValue
      * @instance
      * @type {string}
+     * @ojsignature {target:"Type", value: "?"}
      * @default ""
      * @since 4.1.0
      */
@@ -3064,10 +1534,12 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
      * // setter
      * myComponent.labelHint = 'some new value'
      * 
+     * @ojshortdesc Represents a hint for oj-form-layout element to render a label on the editable component.
      * @expose 
      * @access public
      * @instance
      * @alias labelHint
+     * @ojtranslatable
      * @default ""
      * @memberof oj.editableValue
      * @type {string}
@@ -3076,7 +1548,8 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
     labelHint: "",
     /**
      * List of messages an app would add to the component when it has business/custom validation 
-     * errors that it wants the component to show. When this option is set the message shows to the 
+     * errors that it wants the component to show. This allows the app to perform further validation 
+     * before sending data to the server. When this option is set the message shows to the 
      * user right away. To clear the custom message, set <code class="prettyprint">messagesCustom</code>
      * back to an empty array.<br/>
      * <p>Each message in the array is an object that duck types oj.Message.      
@@ -3088,8 +1561,6 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
      * for example, when full validation is run.
      * </p>
      * 
-     * @example <caption>Initialize component with the <code class="prettyprint">messages-custom</code> attribute specified:</caption>
-     * &lt;oj-some-element messages-custom='[{"summary":"hello","detail":"detail"}]'>&lt;/oj-some-element>
      *
      * @example <caption>Get or set the <code class="prettyprint">messagesCustom</code> property after initialization:</caption>
      * // getter
@@ -3117,17 +1588,19 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
      * {
      *   // submit data to the server
      * }
-     *
+     * 
+     * @ojshortdesc List of messages an app would add to the component
      * @expose 
      * @access public
      * @instance
      * @memberof oj.editableValue
      * @default []
-     * @type {Array.<Object>|undefined}
+     * @type {Array.<Object>}
+     * @ojsignature {target: "Type", value: "Array<oj.Message>"}
      * @since 0.7
      * @ojwriteback
      */    
-    messagesCustom : undefined,
+    messagesCustom : [],
     
     /**
      * List of messages currently hidden on component, these are added by component when it runs 
@@ -3221,7 +1694,7 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
      * To include formatted text in the help.instruction, format the string using html tags. 
      * For example the 
      * help.instruction might look like: 
-     * <pre class="prettyprint"><code>&lt;oj-some-element help.intruction="&lt;html>Enter &lt;b>at least&lt;/b> 6 characters&lt;/html>">&lt;/oj-some-element></code></pre>
+     * <pre class="prettyprint"><code>&lt;oj-some-element help.instruction="&lt;html>Enter &lt;b>at least&lt;/b> 6 characters&lt;/html>">&lt;/oj-some-element></code></pre>
      * If you use formatted text, it should be accessible 
      * and make sense to the user if formatting wasn't there.
      * 
@@ -3244,13 +1717,16 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
      *   instruction: 'some new value'
      * };
      * 
+     * @ojshortdesc Represents advisory information for the component
      * @expose 
      * @access public
      * @instance
      * @alias help.instruction
-     * @default null
+     * @ojtranslatable
+     * @default ""
      * @memberof! oj.editableValue
-     * @type {string|undefined}
+     * @ojtsignore
+     * @type {string}
      * @since 4.0.0
      */    
     title: "",
@@ -3308,6 +1784,8 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
      *    (passwordValidState !== "invalidShown");
      *   self.componentDisabled(!enableButton);;
      * };
+     * 
+     * @ojshortdesc The validity state of the component
      * @expose 
      * @access public
      * @instance
@@ -3351,6 +1829,7 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
      * // Setter: sets '20'
      * myComp.value = '20';
      * 
+     * @ojshortdesc The value of the editablevalue component
      * @expose 
      * @access public
      * @instance
@@ -3359,6 +1838,12 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
      * @memberof oj.editableValue
      * @since 0.6
      * @type {Object|undefined}
+     * @ojsignature {
+     *                 target: "Accessor",
+     *                 value: {
+     *                          GetterType: "V",
+     *                          SetterType: "SV"}
+     *              }
      */
     value: undefined,
 
@@ -3367,10 +1852,10 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
      * Triggered when a default animation is about to start on an element owned by the component.
      *
      * <p>The default animation can be cancelled by calling <code class="prettyprint">event.preventDefault</code>, followed by
-     * a call to <code class="prettyprint">ui.endCallback</code>.  <code class="prettyprint">ui.endCallback</code> should be
+     * a call to <code class="prettyprint">event.detail.endCallback</code>.  <code class="prettyprint">event.detail.endCallback</code> should be
      * called immediately after <code class="prettyprint">event.preventDefault</code> if the application merely wants to cancel animation, 
      * or it should be called when the custom animation ends if the application is invoking another animation function.  Failure to
-     * call <code class="prettyprint">ui.endCallback</code> may prevent the component from working properly.</p>
+     * call <code class="prettyprint">event.detail.endCallback</code> may prevent the component from working properly.</p>
      * <p>For more information on customizing animations, see the documentation of 
      * <a href="oj.AnimationUtils.html">oj.AnimationUtils</a>.</p>
      *
@@ -3381,8 +1866,8 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
      * $noteWindowCloseAnimation: (effect: "none") !default;
      *
      * // default animations for "inline" display option
-     * $messageInlineOpenAnimation: (effect: "expand", startMaxHeight: "#oldHeight") !default;
-     * $messageInlineCloseAnimation: (effect: "collapse", endMaxHeight: "#newHeight") !default;
+     * $messageComponentInlineOpenAnimation: (effect: "expand", startMaxHeight: "#oldHeight") !default;
+     * $messageComponentInlineCloseAnimation: (effect: "collapse", endMaxHeight: "#newHeight") !default;
      * </code></pre>
      *
      * @ojshortdesc Triggered when a default animation is about to start, such as when the component is
@@ -3404,7 +1889,7 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
      *                      <li>"notewindow-close" - when a note window closes</li>
      *                    </ul>
      * @property {Element} element The element being animated.
-     * @property {function} endCallback If the event listener calls event.preventDefault to
+     * @property {function():void} endCallback If the event listener calls event.preventDefault to
      *            cancel the default animation, it must call the endCallback function when it
      *            finishes its own animation handling and any custom animation has ended.
      *
@@ -3610,6 +2095,7 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
    * @access public
    * @instance
    * @expose
+   * @return {void}
    * @memberof oj.editableValue
    * @since 0.7
    */
@@ -3631,6 +2117,7 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
    * @access public
    * @instance
    * @expose
+   * @return {void}
    * @memberof oj.editableValue
    * @since 0.7
    */
@@ -3657,6 +2144,7 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
    * myComp.showMessages();
    * @access public
    * @instance
+   * @return {void}
    * @expose
    * @memberof oj.editableValue
    * @since 0.7
@@ -4187,61 +2675,15 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
   },
 
   /**
-   * Sets focus on the element that naturally gets focus. For example, this would be the input 
-   * element for input type components. <br/>
-   * 
-   * @returns {undefined}
-   * @example  <caption>Calling focus on a custom element will call focus on the appropriate
-   * child element</caption>
-   * var elem = document.getElementById("myId");
-   * elem.focus();
-   * 
-   * @expose
    * @memberof oj.editableValue
    * @instance
-   * @public
-   * @since 4.2
-   */
-  focus : function ()
-  {
-    this.Focus();
-  },
-  /**
-   * Sets focus on the element that naturally gets focus. For example, this would be the input 
-   * element for input type components. <br/>
-   * 
-   * @returns {*} a truthy value if focus was set to the intended element, a falsey value 
-   * otherwise.
-   * @expose
-   * @memberof oj.editableValue
-   * @instance
+   * @override
    * @protected
-   * @since 0.7
+   * @since 5.0.0
    */
-  Focus : function ()
+  GetFocusElement : function ()
   {
-    this._GetContentElement().focus();
-    return true;
-  },
-  
-  /**
-   * Blurs the element that naturally gets focus. For example, this would be the input 
-   * element for input type components. <br/>
-   * 
-   * @returns {undefined}
-   * @example  <caption>Calling blur on a custom element will call blur on the appropriate
-   * child element</caption>
-   * var elem = document.getElementById("myId");
-   * elem.blur();
-   * @expose
-   * @memberof oj.editableValue
-   * @instance
-   * @public
-   * @since 4.2
-   */
-  blur : function ()
-  {
-    this._GetContentElement().blur();
+    return this._GetContentElement()[0];
   },
   
   /**
@@ -6708,15 +5150,23 @@ oj.Components.setDefaultOptions(
     'editableValue': // properties for all editableValue components 
     {
       'displayOptions': oj.Components.createDynamicPropertyGetter(function(context){
-        return {
+        var displayOptions = {
           'messages': context['containers'].indexOf('ojDataGrid') >= 0 || 
                       context['containers'].indexOf('ojTable') >= 0 ? ['notewindow'] : ['inline'],
           'converterHint': ['placeholder', 'notewindow'], 
-          'validatorHint': ['notewindow'], 
-          'helpInstruction': ['notewindow'], 
-          'title': ['notewindow']
+          'validatorHint': ['notewindow']
         };
-      })
+        displayOptions[context['isCustomElement'] ? 'helpInstruction' : 'title'] = ['notewindow'];
+        return displayOptions;
+      }),
+      'help': oj.Components.createDynamicPropertyGetter(function(context) {
+        // Conditionally set the defaults for custom element vs widget syntax since we expose different APIs
+        if (context['isCustomElement']) {
+          return {'instruction': ''};
+        } else {
+          return {'definition': null, 'source': null};
+        }
+      }),
     }
   }
  
@@ -6729,6 +5179,7 @@ oj.Components.setDefaultOptions(
  * @ojsubid oj-label-help-icon
  * @memberof oj.editableValue
  * @ignore
+ *
  * @example <caption>Get the help icon element associated with an editable value component:</caption>
  * var node = myComp.getNodeBySubId("oj-label-help-icon");
  */
@@ -6847,6 +5298,7 @@ oj.Components.setDefaultOptions(
  * @ojfragment validationAndMessagingDoc - Used in the general section of classdesc
  * @memberof oj.editableValue
  */
+
 /**
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
@@ -7381,6 +5833,1599 @@ oj.InlineMessagingStrategy.prototype._buildMessagesHtml = function (document)
   }
   return content;
 };
+/**
+ * Copyright (c) 2014, Oracle and/or its affiliates.
+ * All rights reserved.
+ */
+
+/*jslint browser: true*/
+
+/**
+ * A messaging strategy that uses an instance of ojPopup component to show and hide messaging content.
+ *
+ * @param {Array.<string>} displayOptions an array of messaging artifacts displayed in the popup. e.g,
+ * 'messages', 'converterHints', 'validationHints', 'title'.
+ * @constructor
+ * @extends {oj.MessagingStrategy}
+ * @private
+ */
+oj.PopupMessagingStrategy = function (displayOptions)
+{
+  this.Init(displayOptions); 
+};
+
+/**
+ * Registers the PopupMessagingStrategy constructor function with oj.ComponentMessaging.
+ *
+ * @private
+ */
+oj.ComponentMessaging.registerMessagingStrategy(oj.ComponentMessaging._DISPLAY_TYPE.NOTEWINDOW,
+oj.PopupMessagingStrategy);
+
+// Subclass from oj.MessagingStrategy
+oj.Object.createSubclass(oj.PopupMessagingStrategy, oj.MessagingStrategy, "oj.PopupMessagingStrategy");
+
+/**
+ * Messaging popup defaults for components, by component type. A special 'default' type defines the
+ * defaults for most editableValue components.
+ * The following properties are available -
+ * 'events' - these specify the on handlers for events that are setup to open and close popups
+ * 'position' - specifies the type of element the popup is positioned against.
+ * @private
+ */
+oj.PopupMessagingStrategy._DEFAULTS_BY_COMPONENT =
+{
+  // mouseenter and mouseleave is what you want instead of mouseover/mouseout when the launcher
+  // isn't a simple input. In the case of radioset and checkboxset, the launcher is the widget
+  // which is the div that contains all the rows, inputs and labels. If we use mouseover/mouseout
+  // in this case we are constantly opening and closing the popup (not really visible to the user,
+  // but still not good for performance I'm sure) if the user moves the mouse around the different
+  // dom elements within the widget.
+  //
+  // on touch devices: the "press" event name maps to Hammer's press event, so a touch and hold
+  // will open the popup.
+  "ojRadioset":
+  {
+    position: 'launcher',
+    // when press opens popup, the user taps elsewhere to dismiss popup
+    events: {open: "focusin mouseenter press", close: "mouseleave"}
+  },
+  "ojCheckboxset":
+  {
+    position: 'launcher',
+    // when press opens popup, the user taps elsewhere to dismiss popup
+    events: {open: "focusin mouseenter press", close: "mouseleave"}
+  },
+  // Since we now add extra dom on the input components for inline messages, we don't want to
+  // position on the tip of the component root. Instead we want to position on the main part of the
+  // component, which is in a lot of cases the launcher. In the case of inputDate/Time/Number,
+  // it's the launcher's parent (inputDate/Time/Number wrap input and buttons with a parent).
+  "ojInputText":
+  {
+    position: 'launcher',
+    events: {open: "focusin"}
+  },
+  "ojTextArea":
+  {
+    position: 'launcher',
+    events: {open: "focusin"}
+  },
+  "ojInputPassword":
+  {
+    position: 'launcher',
+    events: {open: "focusin"}
+  },
+  "ojSwitch":
+  {
+    position: 'launcher',
+    events: {open: "focusin mouseenter", close: "mouseleave"}
+  },
+  "ojSlider":
+  {
+    position: 'launcher',
+    events: {open: "focusin mouseenter", close: "mouseleave"}
+  },
+  "ojColorSpectrum":
+  {
+    position: 'launcher',
+    events: {open: "focusin mouseenter", close: "mouseleave"}
+  },
+  "ojColorPalette":
+  {
+    position: 'launcher',
+    events: {open: "focusin mouseenter", close: "mouseleave"}
+  },
+  "default":
+  {
+    position: 'launcher-wrapper',
+    events: {open: "focusin"}
+  }
+};
+
+/**
+ * @private
+ * @const
+ * @type {string}
+ */
+oj.PopupMessagingStrategy._SELECTOR_FORMCONTROL_HINT = "oj-form-control-hint";
+
+/**
+ * @private
+ * @const
+ * @type {string}
+ */
+oj.PopupMessagingStrategy._SELECTOR_FORMCONTROL_HINT_CONVERTER = "oj-form-control-hint-converter";
+
+/**
+ * @private
+ * @const
+ * @type {string}
+ */
+oj.PopupMessagingStrategy._SELECTOR_FORMCONTROL_HINT_VALIDATOR = "oj-form-control-hint-validator";
+
+/**
+ * @private
+ * @const
+ * @type {string}
+ */
+oj.PopupMessagingStrategy._SELECTOR_FORMCONTROL_HINT_TITLE = "oj-form-control-hint-title";
+
+/**
+ * @private
+ * @const
+ * @type {string}
+ */
+oj.PopupMessagingStrategy._OPEN_NAMESPACE = ".ojPopupMessagingOpen";
+
+/**
+ * @private
+ * @const
+ * @type {string}
+ */
+oj.PopupMessagingStrategy._CLOSE_NAMESPACE = ".ojPopupMessagingClose";
+
+/**
+ * Sets up a tooltip for the component instance using the messaging content provided.
+ *
+ * @param {Object} cm a reference to an instance of oj.ComponentMessaging that provides access to
+ * the latest messaging content.
+ * @private
+ * @memberof oj.PopupMessagingStrategy
+ * @override
+ * @instance
+ */
+oj.PopupMessagingStrategy.prototype.activate = function (cm)
+{
+  oj.PopupMessagingStrategy.superclass.activate.call(this, cm);
+  this._initMessagingPopup();
+};
+
+/**
+ * Reinitializes with the new display options and updates component messaging using the new content.
+ *
+ * @param {Array.<string>} newDisplayOptions
+ * @private
+ * @memberof oj.PopupMessagingStrategy
+ * @instance
+ * @override
+ */
+oj.PopupMessagingStrategy.prototype.reactivate = function (newDisplayOptions)
+{
+  oj.PopupMessagingStrategy.superclass.reactivate.call(this, newDisplayOptions);
+  this._updatePopupIfOpen();
+};
+
+oj.PopupMessagingStrategy.prototype.update = function ()
+{
+  oj.PopupMessagingStrategy.superclass.update.call(this);
+  this._updatePopupIfOpen();
+};
+
+/**
+ * Cleans up messages on the component and destroys any widgets it created.
+ *
+ * @private
+ * @memberof oj.PopupMessagingStrategy
+ * @instance
+ * @override
+ */
+oj.PopupMessagingStrategy.prototype.deactivate = function ()
+{
+  this._unregisterLauncherEvents();
+  this._destroyTooltip();
+  oj.PopupMessagingStrategy.superclass.deactivate.call(this);
+};
+/**
+ * Close the popup if it is open. EditableValue calls this from _NotifyHidden and _NotifyDetached
+ * so that we don't have an open popup if the app dev hides a subtree the component is within.
+ * @private
+ * @memberof oj.PopupMessagingStrategy
+ * @instance
+ */
+oj.PopupMessagingStrategy.prototype.close = function ()
+{
+  this._closePopup();
+};
+/**
+ * Closes the associated notewindow popup
+ * @private
+ * @memberof oj.PopupMessagingStrategy
+ * @instance
+ */
+oj.PopupMessagingStrategy.prototype._closePopup = function ()
+{
+  function doClose(resolve)
+  {
+    if (this._isPopupInitialized())
+    {
+      if (resolve)
+      {
+        // Add an event listener to resolve the promise
+        this._setActionResolver(this.$messagingContentRoot, "close", resolve);
+      }
+          
+      this.$messagingContentRoot.ojPopup("close");
+
+      // Just return if we call ojPopup close.  The promise will be resolved
+      // by the ojclose event listener.
+      return;
+    }
+    
+    if (resolve)
+    {
+      // Resolve the promise immediately if we didn't call ojPopup close
+      resolve(true);
+    }
+  }
+  
+  this._queueAction(doClose.bind(this));
+};
+
+/**
+ * @private
+ * @memberof oj.PopupMessagingStrategy
+ * @instance
+ */
+oj.PopupMessagingStrategy.prototype._initMessagingPopup = function ()
+{
+  if (!this._openPopupCallback)
+    this._registerLauncherEvents();
+};
+
+/**
+ * Add listeners for animation events.
+ * We use this to delegate animation events to the editableValue component since
+ * the original events are triggered on the popup, which is created internally 
+ * and the application cannot bind listeners to it.  By delegating the events, 
+ * application can bind the listeners to the component.
+ * 
+ * @param {jQuery} messagingContentRoot - The jQuery object for the messaging root node
+ * @private
+ * @memberof oj.PopupMessagingStrategy
+ * @instance
+ */
+oj.PopupMessagingStrategy.prototype._addAnimateEventListeners = function(messagingContentRoot)
+{
+  var delegateEvent = function(newEventType, event, ui) {
+    var component = this.GetComponent();
+    if (component && component._trigger)
+    {
+      // always stop propagation if we have a component to delegate to
+      event.stopPropagation();
+
+      // prevent default only if the component handler says so, as indicated by
+      // a return value of false.
+      if (!component._trigger(newEventType, null, ui))
+      {
+        event.preventDefault();
+      }
+    }
+  };
+
+  // Add animation event listeners to delegate the events to the component
+  messagingContentRoot.on('ojanimatestart.notewindow', delegateEvent.bind(this, 'animateStart'));
+  messagingContentRoot.on('ojanimateend.notewindow', delegateEvent.bind(this, 'animateEnd'));
+};
+
+/**
+ * Remove listeners for animation events.
+ * 
+ * @private
+ * @memberof oj.PopupMessagingStrategy
+ * @instance
+ */
+oj.PopupMessagingStrategy.prototype._removeAnimateEventListeners = function(messagingContentRoot)
+{
+  messagingContentRoot.off('ojanimatestart.notewindow');
+  messagingContentRoot.off('ojanimateend.notewindow');
+};
+
+/**
+ * Set busy state on the component that invokes the notewindow.
+ * 
+ * @private
+ * @memberof oj.PopupMessagingStrategy
+ * @instance
+ */
+oj.PopupMessagingStrategy.prototype._setBusyState = function(eventType)
+{
+  var component = this.GetComponent();
+  var jElem = component ? component.element : null;
+  var domElem = jElem ? jElem[0] : null;
+  var busyContext = oj.Context.getContext(domElem).getBusyContext();
+  var description = 'The page is waiting for note window ';
+  
+  if (domElem && domElem.id)
+  {
+    description += 'for "' + domElem.id + '" ';
+  }
+  description += 'to ' + eventType;
+
+  return busyContext.addBusyState({'description': description});
+};
+
+/**
+ * Set an event listener to resolve promise when popup open/close action ends.
+ * 
+ * @private
+ * @memberof oj.PopupMessagingStrategy
+ * @instance
+ */
+oj.PopupMessagingStrategy.prototype._setActionResolver = function(messagingContentRoot, eventType, resolvePromise)
+{
+  var animationOption;
+
+  // Disable animation if there are other queued actions.  Otherwise we will end
+  // up with too many animation since the messaging framework keeps clearing and
+  // updating the message display during validation, etc.
+  if (this._actionCount > 1)
+  {
+    // Remember the original animation so that we can restore it later
+    animationOption = messagingContentRoot.ojPopup("option", "animation");
+    messagingContentRoot.ojPopup("option", "animation", null);
+  }
+
+  // Add a busy state for the component.  Even though ojpopup add busy state,
+  // it is in the scope of the popup element.
+  var resolveBusyState = this._setBusyState(eventType);
+
+  // Add an one-time listener to resolve the promise
+  messagingContentRoot.one('oj' + eventType, function() {
+    // Restore any saved animation option
+    if (animationOption)
+    {
+      messagingContentRoot.ojPopup("option", "animation", animationOption);
+    }
+    
+    resolveBusyState();
+    resolvePromise(true);
+  });
+};
+
+/**
+ * Queue up popup open and close actions so that they are executed in the
+ * correct order.
+ *
+ * @private
+ * @memberof oj.PopupMessagingStrategy
+ * @instance
+ */
+oj.PopupMessagingStrategy.prototype._queueAction = function(task)
+{
+  if (this.GetComponent()._IsCustomElement())
+  {
+    // Queue up the action for custom elements to avoid animation overlapping each other
+    var self = this;
+
+    var createActionPromise = function(task)
+    {
+      var promise = new Promise(task);
+      promise.then(function() {
+        --self._actionCount;
+      });
+      return promise;
+    };
+    
+    if (!this._actionCount)
+    {
+      // If there is no action in progress, create a new promise directly instead
+      // of chaining to any resolved promise to avoid an extra wait state.
+      this._actionCount = 1;
+      this._actionPromise = createActionPromise(task);
+    }
+    else
+    {
+      ++this._actionCount;
+      this._actionPromise = this._actionPromise.then(function() {
+        return createActionPromise(task);
+      });
+    }
+  }
+  else
+  {
+    // Invoke the action immediately for legacy components since there is no animation
+    task(null);
+  }
+};
+
+/**
+ * Opens a popup. This handler is called in the context of the launcher usually the this.element or
+ * some relevant node the messaging popup is associated to.
+ *
+ * @private
+ * @memberof oj.PopupMessagingStrategy
+ * @instance
+ */
+oj.PopupMessagingStrategy.prototype._openPopup = function (event)
+{
+  function doOpen(resolve)
+  {
+    var domNode;
+    var latestContent;
+    var $launcher;
+
+    
+    if (this._canOpenPopup())
+    {
+
+      latestContent = this._buildPopupHtml();
+      if (!oj.StringUtils.isEmptyOrUndefined(latestContent))
+      {
+        var messagingContentRoot = this._getPopupElement();
+        var isPopupOpen = messagingContentRoot.ojPopup("isOpen");
+
+        // replace popup messaging content with new content
+        domNode = oj.PopupMessagingStrategyPoolUtils.getPopupContentNode(messagingContentRoot);
+
+        // latestContent is includes content that may come from app. It is scrubbed for illegal tags
+        // before setting to innerHTML
+        domNode.innerHTML = ""; // @HTMLUpdateOK
+        domNode.innerHTML = latestContent; // @HTMLUpdateOK
+
+        if (!isPopupOpen)
+        {
+          $launcher = this.GetLauncher();
+          if (event.type === "press")
+          {
+            this._openPopupOnPressEvent($launcher);
+          }
+
+          if (resolve)
+          {
+            // Add an event listener to resolve the promise
+            this._setActionResolver(messagingContentRoot, "open", resolve);
+          }
+          
+          messagingContentRoot.ojPopup("open", $launcher);
+          
+          // Just return if we call ojPopup open.  The promise will be resolved
+          // by the ojopen event listener.
+          return;
+        }
+        else if (isPopupOpen)
+        {
+          messagingContentRoot.ojPopup("refresh");
+        }
+      }
+    }
+    
+    if (resolve)
+    {
+      // Resolve the promise immediately if we didn't call ojPopup open
+      resolve(true);
+    }
+  }
+  
+  this._queueAction(doOpen.bind(this));
+};
+
+/**
+ * This is called to open the popup on the 'press' event. E.g., ojCheckboxset and ojRadioset
+ * use press to open the popup.
+ * @param {Object|null} jqLauncher
+ */
+oj.PopupMessagingStrategy.prototype._openPopupOnPressEvent = function (jqLauncher)
+{
+  this._inPressEvent = true;
+
+  // We add these event listeners when we open the popup as a result of the 'press' event
+  // and we are going to remove them when we close the popup, as well as when we unregister
+  // launcher events to make doubly sure they aren't lying around.
+  /// Use capture phase to make sure we cancel it before any regular bubble listeners hear it.
+  jqLauncher[0].addEventListener("click", this._eatChangeAndClickOnPress, true);
+  // need to eat 'change' as well. Otherwise the dialog will close on press up, and the input
+  // stays unchecked.
+  // This is because when the input  gets the 'change' event, it calls validate,
+  // which then updates messages, and if there is no message,
+  // then calls _updatePopupIfOpen, contentToShow = "", then it closes the popup.
+  jqLauncher[0].addEventListener("change", this._eatChangeAndClickOnPress, true);
+
+  // touchend/mousedown/change/click happen in fast succession on tap or press.
+  // Android never fires a click event on press up, so after 50ms we clear the inPressEvent flag
+  // since the _eatChangeAndClickOnPress callback never gets called for Android.
+  jqLauncher.one("touchend", function (event)
+  {
+    // 50ms.  Make as small as possible to prevent unwanted side effects.
+    setTimeout(function ()
+    {
+      this._inPressEvent = false;
+    }, 50);
+  });
+};
+
+/**
+ * The pressHold gesture fires a click and change event on ios after touchend.  Prevent that here.
+ * @private
+ */
+oj.PopupMessagingStrategy.prototype._eatChangeAndClickOnPress = function (event)
+{
+      // on ios:
+      // if I tap quickly on an input, I get on div: touchstart/touchend/mousedown/change/click
+      // if I tap and hold on an input, I get: touchstart
+      // when I let up, I get: touchend/mousedown/change/click
+      // on android:
+      // if I tap quickly on an input, I get touchstart touchend mousedown click change
+      // if I tap and hold on an input, I get touchstart/mousedown
+      // when I let up, I get touchend. (no change or click like I do for ios)
+
+      // After 'press' release of a radio or checkbox if we do not eat the the click and change events,
+      // the dialog closes.
+      if (this._inPressEvent)
+      {
+        // For Mobile Safari capture phase at least,
+        // returning false doesn't work; must use pD() and sP() explicitly.
+        event.preventDefault();
+        event.stopPropagation();
+        // the event order is first change, then click.
+        // so when we get the click, clear the inPressEvent flag.
+        if (event.type === "click")
+          this._inPressEvent = false;
+      }
+};
+    
+/**
+ * Determines whether the messaging popup can be opened.
+ * @return {boolean}
+ * @private
+ * @memberof oj.PopupMessagingStrategy
+ * @instance
+ */
+oj.PopupMessagingStrategy.prototype._canOpenPopup = function ()
+{
+  var options = this.GetComponent().options;
+  var isDisabled = options['disabled'] || false;
+  var isReadOnly = options['readOnly'] || false;
+
+  return !(isDisabled || isReadOnly);
+};
+
+/**
+ * If the popup is already open its contents need to updated when update() or reactivate() is called.
+ * @private
+ * @memberof oj.PopupMessagingStrategy
+ * @instance
+ */
+oj.PopupMessagingStrategy.prototype._updatePopupIfOpen = function ()
+{
+  var contentToShow;
+  var domNode;
+  var isLauncherActiveElement;
+  var isPopupOpen = false;
+  var launcher;
+  var messagingContentRoot;
+
+  if (this._isPopupInitialized())
+  {
+    messagingContentRoot = this._getPopupElement();
+    isPopupOpen = messagingContentRoot.ojPopup("isOpen");
+    contentToShow = this._buildPopupHtml();
+    launcher = this.GetLauncher();
+    if (launcher == null)
+      return;
+    isLauncherActiveElement = document.activeElement === this.GetLauncher()[0] ? true : false;
+    if (isPopupOpen)
+    {
+      if (contentToShow)
+      {
+        // push new content into popup
+        domNode = oj.PopupMessagingStrategyPoolUtils.getPopupContentNode(messagingContentRoot);
+
+        // contentToShow is includes content that may come from app. It is scrubbed for illegal tags
+        // before setting to innerHTML
+        domNode.innerHTML = ""; // @HTMLUpdateOK
+        domNode.innerHTML = contentToShow; // @HTMLUpdateOK
+        messagingContentRoot.ojPopup("refresh");
+      }
+      else
+      {
+        // if there is no content to show and popup is currently open, close it.
+        messagingContentRoot.ojPopup("close");
+      }
+    }
+    else if (isLauncherActiveElement && contentToShow)
+    {
+      // if popup is closed but focus is on activeElement re-open it
+      this._openPopup(undefined);
+    }
+  }
+};
+
+/**
+ * @private
+ * @memberof oj.PopupMessagingStrategy
+ * @instance
+ */
+oj.PopupMessagingStrategy.prototype._unregisterLauncherEvents = function ()
+{
+  var compDefaults;
+  var events;
+  var jqLauncher = this.GetLauncher();
+
+  compDefaults = oj.PopupMessagingStrategy._DEFAULTS_BY_COMPONENT[this.GetComponent().widgetName];
+  events = compDefaults ?
+  compDefaults.events : oj.PopupMessagingStrategy._DEFAULTS_BY_COMPONENT["default"].events;
+
+  // Remove event handlers setup on launcher
+  jqLauncher.off(oj.PopupMessagingStrategy._OPEN_NAMESPACE);
+  jqLauncher.off(oj.PopupMessagingStrategy._CLOSE_NAMESPACE);
+  jqLauncher[0].removeEventListener("click", this._eatChangeAndClickOnPress, true);
+  jqLauncher[0].removeEventListener("change", this._eatChangeAndClickOnPress, true);
+
+  if (oj.DomUtils.isTouchSupported())
+  {
+    jqLauncher.ojHammer().off("press");
+    jqLauncher.ojHammer("destroy");
+    jqLauncher.off("contextmenu", this._eatContextMenuOnOpenPopupListener);
+    this._eatContextMenuOnOpenPopupListener = null;
+    this._inPressEvent = null;
+  }
+  this._openPopupCallback = null;
+  this._closePopupCallback = null;
+};
+
+/**
+ * @private
+ * @memberof oj.PopupMessagingStrategy
+ * @instance
+ */
+oj.PopupMessagingStrategy.prototype._registerLauncherEvents = function ()
+{
+  var closeEvents;
+  var closePopupCallback;
+  var compDefaults;
+  var events;
+  var hammerOptions;
+  var jqLauncher = this.GetLauncher();
+  var nonPressOpenEvents;
+  var openPopupCallback;
+  var pressEventIndex;
+
+  compDefaults = oj.PopupMessagingStrategy._DEFAULTS_BY_COMPONENT[this.GetComponent().widgetName];
+  events = compDefaults ? compDefaults.events :
+           oj.PopupMessagingStrategy._DEFAULTS_BY_COMPONENT["default"].events;
+
+  // 1. associate the ojPopup component to wrapper <div> for popup content
+  // 2. wire up on() event handlers for registered events that open and close popup. E.g., focusin.
+  // 3. autoDismissal happens automatically when focus leaves component. For other events like
+  // mouseover it's required to call off()
+  if (events['open'])
+  {
+    openPopupCallback = this._openPopupCallback;
+    if (!openPopupCallback)
+      openPopupCallback = this._openPopupCallback = this._openPopup.bind(this);
+    
+    // separate out press event, namespace the events string, and attach event handler
+    pressEventIndex = events['open'].indexOf("press");
+    nonPressOpenEvents = 
+    this._getNamespacedEvents(events['open'].replace("press", ''), 
+                              oj.PopupMessagingStrategy._OPEN_NAMESPACE);
+    jqLauncher.on(nonPressOpenEvents, openPopupCallback);
+    
+    // The pressHold gesture also fires a contextmenu event on Windows 10 touch.  
+    // Prevent that here.
+    if (oj.DomUtils.isTouchSupported())
+    {
+      this._eatContextMenuOnOpenPopupListener = function (event)
+      {
+        return false;
+      };
+
+      jqLauncher.on("contextmenu", this._eatContextMenuOnOpenPopupListener);
+
+      // for radios and checkboxes, on ios, press hold brings up popup, but release closes it
+      // and checks it, so in this case we have to eat the click/change events. this happens
+      // in the openPopupCallback
+      if (pressEventIndex !== -1)
+      {
+        hammerOptions = {
+          "recognizers": [
+            [Hammer.Press, {time: 750}]
+          ]};
+        jqLauncher.ojHammer(hammerOptions).on("press", openPopupCallback);
+      }
+    }
+  }
+
+  if (events['close'])
+  {
+    closePopupCallback = this._closePopupCallback;
+    if (!closePopupCallback)
+      closePopupCallback = this._closePopupCallback = this._closePopup.bind(this);
+
+    closeEvents = this._getNamespacedEvents(events['close'], 
+      oj.PopupMessagingStrategy._CLOSE_NAMESPACE);
+    jqLauncher.on(closeEvents, closePopupCallback);
+  }
+};
+
+/**
+ * Turn the events string into an array, add namespace, and turn it back into a string.
+ * @param {string} events e.g., "focusin mousedown"
+ * @param {string} namespace the namespace that starts with a dot
+ * @return {string|null} the events string that is namespaced. 
+ * e.g., "focusin.ojPopupMessagingOpen mousedown.ojPopupMessagingOpen"
+ * @private
+ */
+oj.PopupMessagingStrategy.prototype._getNamespacedEvents = function(events, namespace)
+{
+  var eventsArray;
+  var namespacedEventsArray;
+  var length;
+      
+  if (events === "" || namespace === "")
+    return events;
+
+  eventsArray = events.split(" ");
+  length = eventsArray.length;
+  namespacedEventsArray = [];
+  
+  for (var i=0; i < length; i++)
+  {
+    // ignore ""
+    if (eventsArray[i])
+      namespacedEventsArray.push(eventsArray[i] + namespace);
+  }
+  
+  return namespacedEventsArray.join(" ");
+};
+
+/**
+ * Returns the popup position options.
+ * Components like radio and checkboxset use the launcher, which is the inputs.
+ * Since we now add extra dom for inline messages, we don't want to position
+ * on the tip of the component root. Instead we want to position on the main part of the component,
+ * which is in a lot of cases the launcher. In the case of inputDate/Time/Number, it's the launcher's
+ * parent.
+ * @private
+ * @memberof oj.PopupMessagingStrategy
+ * @instance
+ */
+oj.PopupMessagingStrategy.prototype._getPopupPosition = function ()
+{
+  var compDefaultPosition;
+  var compDefaults;
+  var launcher;
+  var popupPositionOptions;
+
+  compDefaults =
+  oj.PopupMessagingStrategy._DEFAULTS_BY_COMPONENT[this.GetComponent().widgetName];
+  compDefaultPosition = compDefaults ? compDefaults.position :
+  oj.PopupMessagingStrategy._DEFAULTS_BY_COMPONENT["default"].position;
+
+  if (compDefaultPosition)
+  {
+    if (compDefaultPosition === "launcher")
+    {
+      launcher = this.GetLauncher();
+    }
+    else if (compDefaultPosition === "launcher-wrapper")
+    {
+      launcher = this.GetLauncher().parent();
+    }
+  }
+  // should never get here since the _DEFAULTS_BY_COMPONENTS["default"] should cover it.
+  if (!launcher)
+    launcher = this.GetComponent().widget();
+
+  popupPositionOptions = {
+    'my': 'start bottom',
+    'at': 'end top',
+    'collision': 'flipcenter',
+    'of': launcher
+  };
+  return popupPositionOptions;
+
+};
+
+/**
+ * Returns a jquery element that a messaging popup is bound to.
+ *
+ * @return {jQuery!} messaging popup pool container
+ * @private
+ * @memberof oj.PopupMessagingStrategy
+ * @instance
+ */
+oj.PopupMessagingStrategy.prototype._getPopupElement = function ()
+{
+  var popup;
+  var position;
+
+  if (this.$messagingContentRoot)
+    return this.$messagingContentRoot;
+
+  popup = oj.PopupMessagingStrategyPoolUtils.getNextFreePopup();
+  position = this._getPopupPosition();
+  popup.ojPopup("option", "position", position);
+  popup.ojPopup("option", "beforeClose", this._popupBeforeCloseCallback.bind(this));
+  popup.ojPopup("option", "close", this._popupCloseCallback.bind(this));
+  popup.ojPopup("option", "open", this._popupOpenCallback.bind(this));
+  
+  // Use default animation only for custom elements
+  if (this.GetComponent()._IsCustomElement())
+  {
+    // Get the default animation
+    var defaultAnimations = (oj.ThemeUtils.parseJSONFromFontFamily('oj-messaging-popup-option-defaults') || {})["animation"];
+    defaultAnimations["actionPrefix"] = "notewindow";
+    popup.ojPopup("option", "animation", defaultAnimations);
+  
+    this._addAnimateEventListeners(popup);
+  }
+  else
+  {
+    popup.ojPopup("option", "animation", null);
+  }
+
+  this.$messagingContentRoot = popup;
+  return this.$messagingContentRoot;
+};
+
+/**
+ * Popup open event listener that changes the popups autoDismiss to focusLoss
+ * in a timeout of 10ms.  This timeout period gives the browser time to fire
+ * events that might follow a click such as a focus event.  This is to allow
+ * validation by a button versus a component instance.
+ *
+ * @param {jQuery.event=} event
+ * @memberof! oj.PopupMessagingStrategy
+ * @private
+ */
+oj.PopupMessagingStrategy.prototype._popupOpenCallback = function (event)
+{
+  var target = $(event.target);
+  var self = this;
+  window.setTimeout(function ()
+  {
+    if (oj.Components.isComponentInitialized(target, "ojPopup"))
+      target.ojPopup("option", "autoDismiss", "focusLoss");
+    else
+      delete self.$messagingContentRoot;
+  }, 10);
+};
+
+/**
+ * Popup beforeClose event listener that will add busy state to the component
+ * @param {jQuery.event=} event
+ * @memberof! oj.PopupMessagingStrategy
+ * @private
+ */
+oj.PopupMessagingStrategy.prototype._popupBeforeCloseCallback = function (event)
+{
+  this._resolveBusyState = this._setBusyState('close');
+};
+
+/**
+ * Popup closed event listener that will reset the popups state and free it into the
+ * pool of available messaging popups.
+ * @param {jQuery.event=} event
+ * @memberof! oj.PopupMessagingStrategy
+ * @private
+ */
+oj.PopupMessagingStrategy.prototype._popupCloseCallback = function (event)
+{
+  var jqLauncher, popupContent, target;
+  jqLauncher = this.GetLauncher();
+
+  target = $(event.target);
+  
+  this._removeAnimateEventListeners(target);
+
+  if (oj.Components.isComponentInitialized(target, "ojPopup"))
+  {
+    target.ojPopup("option", "autoDismiss", "none");
+    target.ojPopup("option", "open", null);
+    target.ojPopup("option", "close", null);
+    target.ojPopup("option", "beforeClose", null);
+  }
+
+  // Check that the launcher is still there when removing listeners  
+  if (jqLauncher && jqLauncher[0])
+  {
+    jqLauncher[0].removeEventListener("click", this._eatChangeAndClickOnPress, true);
+    jqLauncher[0].removeEventListener("change", this._eatChangeAndClickOnPress, true);
+  }
+    
+  this.$messagingContentRoot = null;
+  this._inPressEvent = null;
+
+  popupContent = $(oj.PopupMessagingStrategyPoolUtils.getPopupContentNode(target));
+  popupContent.empty();
+  
+  if (this._resolveBusyState)
+  {
+    this._resolveBusyState();
+    this._resolveBusyState = null;
+  }
+};
+
+/**
+ * @memberof! oj.PopupMessagingStrategy
+ * @private
+ * @instance
+ */
+oj.PopupMessagingStrategy.prototype._destroyTooltip = function ()
+{
+  this._closePopup();
+  oj.PopupMessagingStrategyPoolUtils.destroyFreePopup();
+};
+
+/**
+ * Returns the content to show inside popup.
+ * @private
+ * @return {String|string} content
+ * @memberof oj.PopupMessagingStrategy
+ * @instance
+ */
+oj.PopupMessagingStrategy.prototype._buildPopupHtml = function ()
+{
+  var addSeparator = false;
+  var document = this.GetComponent().document[0];
+  var nwContent = [];
+  var nwHtml = "";
+
+  if (this.ShowMessages())
+  {
+    nwContent.push(this._buildMessagesHtml(document));
+  }
+
+  if (this.ShowConverterHint() || this.ShowValidatorHint() || this.ShowTitle())
+  {
+    nwContent.push(this._buildHintsHtml(document));
+  }
+
+  $.each(nwContent, function (i, content)
+  {
+    if (content)
+    {
+      if (addSeparator)
+      {
+        nwHtml = nwHtml.concat(oj.PopupMessagingStrategyUtils.getSeparatorHtml(document));
+      }
+      else
+      {
+        addSeparator = true;
+      }
+
+      nwHtml = nwHtml.concat(content);
+    }
+  });
+
+  return nwHtml;
+};
+
+/**
+ * Returns the messages html (e.g., error messages, confirmation messages), not hints
+ * @param {Document} document
+ * @return {string} content
+ * @private
+ * @memberof oj.PopupMessagingStrategy
+ * @instance
+ */
+oj.PopupMessagingStrategy.prototype._buildMessagesHtml = function (document)
+{
+  var content = "";
+  var maxSeverity = this.GetMaxSeverity();
+  var messages;
+  var renderSeveritySelectors = false;
+
+  if (this.HasMessages())
+  {
+    messages = this.GetMessages();
+    content =
+    oj.PopupMessagingStrategyUtils.buildMessagesHtml(
+    document, messages, maxSeverity, renderSeveritySelectors);
+  }
+  return content;
+};
+
+/**
+ * All hints including title
+ * @param {Document} document
+ * @return {string} html content for all hints.
+ * @private
+ * @memberof oj.PopupMessagingStrategy
+ * @instance
+ */
+oj.PopupMessagingStrategy.prototype._buildHintsHtml = function (document)
+{
+  var hint;
+  var hints = [];
+  var hintsHtml = "";
+  var i;
+
+  if (this.ShowConverterHint())
+  {
+    hints = this.GetConverterHint();
+    hint = hints.length ? hints[0] : "";
+    hintsHtml += oj.PopupMessagingStrategyUtils.buildHintHtml(document,
+    oj.PopupMessagingStrategy._SELECTOR_FORMCONTROL_HINT_CONVERTER,
+    hint, false,
+    oj.PopupMessagingStrategy._SELECTOR_FORMCONTROL_HINT);
+  }
+
+  if (this.ShowValidatorHint())
+  {
+    hints = this.GetValidatorHints();
+    for (i = 0; i < hints.length; i++)
+    {
+      hintsHtml += oj.PopupMessagingStrategyUtils.buildHintHtml(document,
+      oj.PopupMessagingStrategy._SELECTOR_FORMCONTROL_HINT_VALIDATOR,
+      hints[i], false, oj.PopupMessagingStrategy._SELECTOR_FORMCONTROL_HINT);
+    }
+  }
+
+  if (this.ShowTitle())
+  {
+    hintsHtml += oj.PopupMessagingStrategyUtils.buildHintHtml(document,
+    oj.PopupMessagingStrategy._SELECTOR_FORMCONTROL_HINT_TITLE,
+    this.GetTitle(), true, oj.PopupMessagingStrategy._SELECTOR_FORMCONTROL_HINT);
+  }
+
+  return hintsHtml ? "<div class='oj-form-control-hints'>" + hintsHtml + "</div>" : "";
+};
+
+/**
+ * Determines if there is a message popup currently associated with the component
+ * strategy.
+ * @return {boolean}
+ * @private
+ * @memberof oj.PopupMessagingStrategy
+ * @instance
+ */
+oj.PopupMessagingStrategy.prototype._isPopupInitialized = function ()
+{
+  // is(":oj-popup") finds the popup component if it exists
+  return (this.$messagingContentRoot) ?
+  oj.Components.isComponentInitialized(this.$messagingContentRoot, "ojPopup") : false;
+};
+
+/**
+ * @ignore
+ */
+oj.PopupMessagingStrategyUtils = {};
+
+/**
+ * Renders the html content for a single hint.
+ * @param {Document} document
+ * @param {string} selector
+ * @param {string} hintText
+ * @param {boolean} htmlAllowed
+ * @param {string} formControlSelectors
+ *
+ * @return {string} html content for a single hint.
+ * @public
+ */
+oj.PopupMessagingStrategyUtils.buildHintHtml = function (document, selector, hintText, htmlAllowed, formControlSelectors)
+{
+  var jTitleDom;
+  if (hintText)
+  {
+    jTitleDom = $(document.createElement("div"));
+    formControlSelectors += " " + selector;
+    jTitleDom.addClass(formControlSelectors);
+
+    jTitleDom.append(oj.PopupMessagingStrategyUtils._getTextDom(document, hintText, htmlAllowed)); // @HTMLUpdateOK
+  }
+
+  return jTitleDom ? jTitleDom.get(0).outerHTML : "";// @HTMLUpdateOK
+};
+
+/**
+ * @param {number} severity
+ * @returns (string} translated string for the severity
+ * @public
+ */
+oj.PopupMessagingStrategyUtils.getSeverityTranslatedString = function (severity)
+{
+  var sevTypeStr;
+  // get the translated string for the severity
+  switch (severity)
+  {
+    case oj.Message.SEVERITY_LEVEL['FATAL']:
+      sevTypeStr = oj.Translations.getTranslatedString('oj-message.fatal');
+      break;
+    case oj.Message.SEVERITY_LEVEL['ERROR']:
+      sevTypeStr = oj.Translations.getTranslatedString('oj-message.error');
+      break;
+    case oj.Message.SEVERITY_LEVEL['WARNING']:
+      sevTypeStr = oj.Translations.getTranslatedString('oj-message.warning');
+      break;
+    case oj.Message.SEVERITY_LEVEL['INFO']:
+      sevTypeStr = oj.Translations.getTranslatedString('oj-message.info');
+      break;
+    case oj.Message.SEVERITY_LEVEL['CONFIRMATION']:
+      sevTypeStr = oj.Translations.getTranslatedString('oj-message.confirmation');
+      break;
+  }
+
+  return sevTypeStr;
+};
+
+/**
+ * @param {Document} document
+ * @returns {string}
+ * @public
+ */
+oj.PopupMessagingStrategyUtils.getSeparatorHtml = function (document)
+{
+  var jSeparatorDom;
+  jSeparatorDom = $(document.createElement("hr"));
+
+  return jSeparatorDom ? jSeparatorDom.get(0).outerHTML : "";// @HTMLUpdateOK
+};
+
+/**
+ * Returns the messages html (e.g., error messages, confirmation messages), not hints
+ * @param {Document} document
+ * @param {Array} messages
+ * @param {number} maxSeverity
+ * @param {boolean} renderSeveritySelectors
+ * @return {string} content
+ * @private
+ * @memberof oj.PopupMessagingStrategyUtils
+ * @instance
+ */
+oj.PopupMessagingStrategyUtils.buildMessagesHtml =
+function (document, messages, maxSeverity, renderSeveritySelectors)
+{
+  var content = "";
+  var detail;
+  var i;
+  var j;
+  var message;
+  var messagesByType = [];
+  var messagesByTypes = {};
+  var messageObj;
+  var severityLevel;
+  var severityStr;
+  var summary;
+
+
+  // Step1: build an indexed array of messages by severity level.
+  for (i = 0; i < messages.length; i++)
+  {
+    message = messages[i];
+
+    if (!(message instanceof oj.Message))
+    {
+      messageObj = new oj.Message(message['summary'], message['detail'], message['severity']);
+    }
+    else
+    {
+      messageObj = message;
+    }
+
+    severityLevel = oj.Message.getSeverityLevel(messageObj['severity']);
+    if (!messagesByTypes[severityLevel])
+    {
+      messagesByTypes[severityLevel] = [];
+    }
+
+    messagesByTypes[severityLevel].push(messageObj);
+  }
+
+  // Step 2: starting with maxSeverity level build messages with decreasing severity
+  for (i = maxSeverity; i >= oj.Message.SEVERITY_LEVEL['CONFIRMATION']; i--)
+  {
+    messagesByType = messagesByTypes[i] || [];
+
+    for (j = 0; j < messagesByType.length; j++)
+    {
+      message = messagesByType[j];
+
+      severityLevel = oj.Message.getSeverityLevel(message['severity']);
+      severityStr = oj.PopupMessagingStrategyUtils.getSeverityTranslatedString(severityLevel);
+      summary = message['summary'] || severityStr;
+
+      // if detail is empty we don't care to duplicate summary. also detail if present can be
+      // formatted html content (ADF feature)
+      detail = message['detail'] || "";
+      content = content.concat(
+      oj.PopupMessagingStrategyUtils.buildMessageHtml(
+      document, summary, detail, severityLevel, renderSeveritySelectors));
+    }
+  }
+  return content;
+
+};
+
+/**
+ * Builds the HTML content for a single message
+ * @param {Document} document
+ * @param {string} summary
+ * @param {string} detail
+ * @param {number} severityLevel
+ * @returns {string}
+ * @public
+ */
+oj.PopupMessagingStrategyUtils.buildMessageHtml =
+function (document, summary, detail, severityLevel, addSeverityClass)
+{
+  var $msgContent;
+  var $msgDetail;
+  var $msgDom;
+  var $msgIcon;
+  var $msgSummary;
+  var severityStr = oj.PopupMessagingStrategyUtils.getSeverityTranslatedString(severityLevel);
+
+  // build message
+  // (x) <Summary Text>
+  // <Detail Text>
+  $msgDom = $(document.createElement("div"));
+  $msgDom.addClass(oj.PopupMessagingStrategyUtils._SELECTOR_MESSAGE);
+
+  if (addSeverityClass)
+    $msgDom.addClass(oj.PopupMessagingStrategyUtils._getSeveritySelector(severityLevel));
+
+  // build msg icon
+  $msgIcon = $(document.createElement("span"));
+  $msgIcon.addClass(oj.PopupMessagingStrategyUtils._getSeverityIconSelector(severityLevel))
+  .attr("title", severityStr)
+  .attr("role", 'img');
+
+  $msgDom.append($msgIcon); // @HTMLUpdateOK
+
+  // build msg content which includes summary and detail
+  $msgContent = $(document.createElement("span"));
+  $msgContent.addClass(oj.PopupMessagingStrategyUtils._SELECTOR_MESSAGE_CONTENT);
+
+  $msgSummary = $(document.createElement("div"));
+  $msgSummary.addClass(oj.PopupMessagingStrategyUtils._SELECTOR_MESSAGE_SUMMARY).text(summary);
+
+  $msgContent.append($msgSummary); // @HTMLUpdateOK
+
+  if (detail)
+  {
+    // detail text allows html content. So scrub it before setting it.
+    var detailDom = oj.PopupMessagingStrategyUtils._getTextDom(document, detail, true);
+    $msgDetail = $(document.createElement("div"));
+
+    $msgDetail.addClass(oj.PopupMessagingStrategyUtils._SELECTOR_MESSAGE_DETAIL).append(detailDom); // @HTMLUpdateOK
+    $msgContent.append($msgDetail);// @HTMLUpdateOK
+  }
+
+  $msgDom.append($msgContent); // @HTMLUpdateOK
+
+  return $msgDom ? $msgDom.get(0).outerHTML : "";// @HTMLUpdateOK
+};
+
+/**
+ * @param {number} severity
+ * @return {string} the icon selector for the severity
+ * @private
+ */
+oj.PopupMessagingStrategyUtils._getSeverityIconSelector = function (severity)
+{
+  var sevIconStr;
+  // get the icon selector for the severity
+  switch (severity)
+  {
+    case oj.Message.SEVERITY_LEVEL['FATAL']:
+      sevIconStr = oj.PopupMessagingStrategyUtils._SELECTOR_MESSAGE_ERROR_ICON;
+      break;
+    case oj.Message.SEVERITY_LEVEL['ERROR']:
+      sevIconStr = oj.PopupMessagingStrategyUtils._SELECTOR_MESSAGE_ERROR_ICON;
+      break;
+    case oj.Message.SEVERITY_LEVEL['WARNING']:
+      sevIconStr = oj.PopupMessagingStrategyUtils._SELECTOR_MESSAGE_WARNING_ICON;
+      break;
+    case oj.Message.SEVERITY_LEVEL['INFO']:
+      sevIconStr = oj.PopupMessagingStrategyUtils._SELECTOR_MESSAGE_INFO_ICON;
+      break;
+    case oj.Message.SEVERITY_LEVEL['CONFIRMATION']:
+      sevIconStr = oj.PopupMessagingStrategyUtils._SELECTOR_MESSAGE_CONFIRMATION_ICON;
+      break;
+  }
+
+  return oj.PopupMessagingStrategyUtils._DEFAULT_STATUS_ICON_SELECTORS + sevIconStr;
+};
+
+/**
+ * @param {number} severity
+ * @return {string} the style selector for the severity
+ * @private
+ */
+oj.PopupMessagingStrategyUtils._getSeveritySelector = function (severity)
+{
+  var sevSelectorStr;
+  // get the icon selector for the severity
+  switch (severity)
+  {
+    case oj.Message.SEVERITY_LEVEL['FATAL']:
+      sevSelectorStr = oj.PopupMessagingStrategyUtils._SELECTOR_MESSAGE_ERROR;
+      break;
+    case oj.Message.SEVERITY_LEVEL['ERROR']:
+      sevSelectorStr = oj.PopupMessagingStrategyUtils._SELECTOR_MESSAGE_ERROR;
+      break;
+    case oj.Message.SEVERITY_LEVEL['WARNING']:
+      sevSelectorStr = oj.PopupMessagingStrategyUtils._SELECTOR_MESSAGE_WARNING;
+      break;
+    case oj.Message.SEVERITY_LEVEL['INFO']:
+      sevSelectorStr = oj.PopupMessagingStrategyUtils._SELECTOR_MESSAGE_INFO;
+      break;
+    case oj.Message.SEVERITY_LEVEL['CONFIRMATION']:
+    default:
+      sevSelectorStr = oj.PopupMessagingStrategyUtils._SELECTOR_MESSAGE_CONFIRMATION;
+      break;
+  }
+
+  return sevSelectorStr;
+};
+
+
+/**
+ *  if content is html clean html by allowing only legal tags before returning, to safeguard from
+ *  script injection errors.
+ *
+ * @param {Document} document
+ * @param {string} value
+ * @param {boolean=} htmlAllowed if value can have html content
+ *
+ * @return {Element} dom node containing the scrubbed hint
+ * @private
+ */
+oj.PopupMessagingStrategyUtils._getTextDom = function (document, value, htmlAllowed)
+{
+  var textDom = null;
+
+  if (oj.StringUtils.isString(value))
+  {
+    if (htmlAllowed && oj.DomUtils.isHTMLContent(value))
+    {
+      // strip out html start/end tags
+      textDom = oj.DomUtils.cleanHtml(value.substring(6, value.length - 7));
+    }
+    else
+    {
+      textDom = document.createElement("span");
+      textDom.textContent = value;
+    }
+  }
+
+  return textDom;
+};
+
+/**
+ * @private
+ * @const
+ * @type {string}
+ */
+oj.PopupMessagingStrategyUtils._DEFAULT_STATUS_ICON_SELECTORS = "oj-component-icon oj-message-status-icon ";
+
+/**
+ * @private
+ * @const
+ * @type {string}
+ */
+oj.PopupMessagingStrategyUtils._SELECTOR_MESSAGE = "oj-message";
+
+/**
+ * @private
+ * @const
+ * @type {string}
+ */
+oj.PopupMessagingStrategyUtils._SELECTOR_MESSAGE_SUMMARY = "oj-message-summary";
+
+/**
+ * @private
+ * @const
+ * @type {string}
+ */
+oj.PopupMessagingStrategyUtils._SELECTOR_MESSAGE_DETAIL = "oj-message-detail";
+
+/**
+ * @private
+ * @const
+ * @type {string}
+ */
+oj.PopupMessagingStrategyUtils._SELECTOR_MESSAGE_CONTENT = "oj-message-content";
+
+/**
+ * @private
+ * @const
+ * @type {string}
+ */
+oj.PopupMessagingStrategyUtils._SELECTOR_MESSAGE_ERROR_ICON = "oj-message-error-icon";
+
+/**
+ * @private
+ * @const
+ * @type {string}
+ */
+oj.PopupMessagingStrategyUtils._SELECTOR_MESSAGE_WARNING_ICON = "oj-message-warning-icon";
+
+/**
+ * @private
+ * @const
+ * @type {string}
+ */
+oj.PopupMessagingStrategyUtils._SELECTOR_MESSAGE_INFO_ICON = "oj-message-info-icon";
+
+/**
+ * @private
+ * @const
+ * @type {string}
+ */
+oj.PopupMessagingStrategyUtils._SELECTOR_MESSAGE_CONFIRMATION_ICON = "oj-message-confirmation-icon";
+
+// new theming keys so that we can style the different types of messages differently. Like,
+// the background-color can be light red for error. This style will go on the same dom node
+// as the oj-message selector.
+/**
+ * @private
+ * @const
+ * @type {string}
+ */
+oj.PopupMessagingStrategyUtils._SELECTOR_MESSAGE_ERROR = "oj-message-error";
+
+/**
+ * @private
+ * @const
+ * @type {string}
+ */
+oj.PopupMessagingStrategyUtils._SELECTOR_MESSAGE_WARNING = "oj-message-warning";
+
+/**
+ * @private
+ * @const
+ * @type {string}
+ */
+oj.PopupMessagingStrategyUtils._SELECTOR_MESSAGE_INFO = "oj-message-info";
+
+/**
+ * @private
+ * @const
+ * @type {string}
+ */
+oj.PopupMessagingStrategyUtils._SELECTOR_MESSAGE_CONFIRMATION = "oj-message-confirmation";
+
+/**
+ * @ignore
+ */
+oj.PopupMessagingStrategyPoolUtils = {};
+
+/**
+ * @public
+ * @returns {jQuery} popup taken or created from the free pool
+ */
+oj.PopupMessagingStrategyPoolUtils.getNextFreePopup = function ()
+{
+  var pool = oj.PopupMessagingStrategyPoolUtils._getPool();
+  var popups = pool.find("." + oj.PopupMessagingStrategyPoolUtils._SELECTOR_MESSAGING);
+  var popup;
+
+  if (popups.length === 0)
+  {
+    popup = $(oj.PopupMessagingStrategyPoolUtils._getPopupContentHtml()).hide();
+    // popup is an empty div
+    popup.appendTo(pool); // @HTMLUpdateOk    
+    var popupOptions =
+    {
+      'initialFocus': 'none',
+      'tail': 'simple',
+      'autoDismiss': 'none',
+      'modality': 'modeless',
+      'animation': {'open': null, 'close': null}
+    };
+    popup.ojPopup(popupOptions);
+  }
+  else
+    popup = $(popups[0]);
+
+  return popup;
+};
+
+/**
+ * Passed in the root dom element of the message popup and returns the content element.
+ *
+ * @param {jQuery} popup root element
+ * @returns {Element} content element of message popup
+ */
+oj.PopupMessagingStrategyPoolUtils.getPopupContentNode = function (popup)
+{
+  return popup.find("." + oj.PopupMessagingStrategyPoolUtils._SELECTOR_MESSAGING_CONTAINER)[0];
+};
+
+/**
+ * @public
+ */
+oj.PopupMessagingStrategyPoolUtils.destroyFreePopup = function ()
+{
+  var popup;
+  if (oj.PopupMessagingStrategyPoolUtils._getFreePoolCount() > 0)
+  {
+    // if the message popup is open, remove it.
+    // if there is at least one popup in the pool, remove it.
+    popup = oj.PopupMessagingStrategyPoolUtils.getNextFreePopup();
+    popup.ojPopup("destroy");
+    popup.remove();
+  }
+};
+
+/**
+ * Returns a div appended to the body that is a common pool of notewindow popups
+ * used internally by editable value holders.
+ *
+ * @return {jQuery!} messaging popup pool container
+ * @private
+ */
+oj.PopupMessagingStrategyPoolUtils._getPool = function ()
+{
+  /** @type {jQuery!} */
+  var pool = $("#" + oj.PopupMessagingStrategyPoolUtils._MESSAGING_POPUP_POOL_ID);
+  if (pool.length > 0)
+    return pool;
+
+  pool = $("<div>");
+  pool.attr("id", oj.PopupMessagingStrategyPoolUtils._MESSAGING_POPUP_POOL_ID);
+  pool.attr("role", "presentation");
+  pool.appendTo($(document.body)); // @HTMLUpdateOk
+
+  return pool;
+};
+
+/**
+ * @return {number} number of unused popup in the pool
+ * @private
+ */
+oj.PopupMessagingStrategyPoolUtils._getFreePoolCount = function ()
+{
+  var pool = oj.PopupMessagingStrategyPoolUtils._getPool();
+  var popups = pool.find("." + oj.PopupMessagingStrategyPoolUtils._SELECTOR_MESSAGING);
+  return popups.length;
+};
+
+/**
+ * @return {string} messaging popup html
+ * @private
+ */
+oj.PopupMessagingStrategyPoolUtils._getPopupContentHtml = function ()
+{
+  return '<div class="' + oj.PopupMessagingStrategyPoolUtils._SELECTOR_MESSAGING + '">' +
+    '<div class="' + oj.PopupMessagingStrategyPoolUtils._SELECTOR_MESSAGING_CONTAINER + '"></div>' +
+    '</div>';
+};
+
+/**
+ * @const
+ * @private
+ * @type {string}
+ */
+oj.PopupMessagingStrategyPoolUtils._SELECTOR_MESSAGING_CONTAINER = "oj-messaging-popup-container";
+
+/**
+ * @const
+ * @private
+ * @type {string}
+ */
+oj.PopupMessagingStrategyPoolUtils._SELECTOR_MESSAGING = "oj-messaging-popup";
+
+/**
+ * @const
+ * @private
+ * @type {string}
+ */
+oj.PopupMessagingStrategyPoolUtils._MESSAGING_POPUP_POOL_ID = "__oj_messaging_popup_pool";
+
 (function() {
 var editableValueMeta = {
   "properties": {
@@ -7445,8 +7490,6 @@ var editableValueMeta = {
     }
   },
   "methods": {
-    "blur": {},
-    "focus": {},
     "reset": {},
     "showMessages": {}
   },

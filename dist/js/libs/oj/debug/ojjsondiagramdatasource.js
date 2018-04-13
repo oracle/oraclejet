@@ -1,4 +1,5 @@
 /**
+ * @license
  * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
@@ -21,6 +22,7 @@ define(['ojs/ojcore', 'ojs/ojdatasource-common'], function(oj)
  * @export
  * @class oj.JsonDiagramDataSource
  * @extends oj.DiagramDataSource
+ * @ojtsignore
  * @classdesc JSON implementation of the oj.DiagramDataSource
  * @param {Object} data JSON data object with following properties:
  * <table>
@@ -41,6 +43,7 @@ define(['ojs/ojcore', 'ojs/ojdatasource-common'], function(oj)
  * </tbody>
  * </table>
  * @constructor
+ * @since 3.0
  */
 oj.JsonDiagramDataSource = function(data, options) {
     this.childDataCallback = options ? options['childData'] : null;

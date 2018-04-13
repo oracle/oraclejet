@@ -1,4 +1,5 @@
 /**
+ * @license
  * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
@@ -16,8 +17,9 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojtime-base', 'ojs/i
  * @augments oj.dvtTimeComponent
  * @since 2.1.0
  * @ojstatus preview
- * @ojshortdesc Gantt Element
+ * @ojshortdesc Displays scheduling information graphically, making it easier to plan, coordinate, and track various tasks and resources.
  * @ojrole application
+ * @ojtsignore
  *
  * @classdesc
  * <h3 id="GanttOverview-section">
@@ -32,11 +34,11 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojtime-base', 'ojs/i
  * <pre class="prettyprint">
  * <code>
  * &lt;oj-gantt
- *   start='{{oj.IntlConverterUtils.dateToLocalIso(new Date("Jan 1, 2016"))}}'
- *   end='{{oj.IntlConverterUtils.dateToLocalIso(new Date("Dec 31, 2016"))}}'
+ *   start='2017-01-01T05:00:00.000Z'
+ *   end='2017-12-31T05:00:00.000Z'
  *   major-axis='{"scale": "months"}'
  *   minor-axis='{"scale": "weeks"}'
- *   rows='{{data}}'>
+ *   rows='[[data]]'>
  * &lt;/oj-gantt>
  * </code>
  * </pre>
@@ -85,7 +87,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojtime-base', 'ojs/i
  *    can cause severe performance degradation when interacting with the element
  *    (scrolling and zooming) regardless of the number of task bars present.
  *
- * {@ojinclude "name":"trackResize"}
+ * {@ojinclude "name":"fragment_trackResize"}
  *
  * {@ojinclude "name":"rtl"}
  */
@@ -94,6 +96,1377 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
   widgetEventPrefix : "oj",
   options: 
   {
+    /**
+     * The position of the major and minor axis.
+     * @expose
+     * @name axisPosition
+     * @memberof oj.ojGantt
+     * @instance
+     * @type {string}
+     * @ojvalue {string} "bottom"
+     * @ojvalue {string} "top"
+     * @default "top"
+     * 
+     * @example <caption>Initialize the Gantt with the <code class="prettyprint">axis-position</code> attribute specified:</caption>
+     * &lt;oj-gantt axis-position='bottom'>&lt;/oj-gantt>
+     *
+     * @example <caption>Get or set the <code class="prettyprint">axisPosition</code> property after initialization:</caption>
+     * // getter
+     * var value = myGantt.axisPosition;
+     *
+     * // setter
+     * myGantt.axisPosition = 'bottom';
+     */
+    axisPosition: "top",
+    /**
+     * Defines the animation that is applied on data changes.
+     * @expose
+     * @name animationOnDataChange
+     * @memberof oj.ojGantt
+     * @instance
+     * @type {string}
+     * @ojvalue {string} "auto"
+     * @ojvalue {string} "none"
+     * @default "none"
+     * 
+     * @example <caption>Initialize the Gantt with the <code class="prettyprint">animation-on-data-change</code> attribute specified:</caption>
+     * &lt;oj-gantt animation-on-data-change='auto'>&lt;/oj-gantt>
+     *
+     * @example <caption>Get or set the <code class="prettyprint">animationOnDataChange</code> property after initialization:</caption>
+     * // getter
+     * var value = myGantt.animationOnDataChange;
+     *
+     * // setter
+     * myGantt.animationOnDataChange = 'auto';
+     */
+    animationOnDataChange: "none",
+    /**
+     * Defines the animation that is shown on initial display.
+     * @expose
+     * @name animationOnDisplay
+     * @memberof oj.ojGantt
+     * @instance
+     * @type {string}
+     * @ojvalue {string} "auto"
+     * @ojvalue {string} "none"
+     * @default "none"
+     * 
+     * @example <caption>Initialize the Gantt with the <code class="prettyprint">animation-on-display</code> attribute specified:</caption>
+     * &lt;oj-gantt animation-on-display='auto'>&lt;/oj-gantt>
+     *
+     * @example <caption>Get or set the <code class="prettyprint">animationOnDisplay</code> property after initialization:</caption>
+     * // getter
+     * var value = myGantt.animationOnDisplay;
+     *
+     * // setter
+     * myGantt.animationOnDisplay = 'auto';
+     */
+    animationOnDisplay: "none",
+    /**
+     * An array of objects that defines dependencies between tasks. Also accepts a Promise that will resolve with an array for deferred data rendering. No data will be rendered if the Promise is rejected.
+     * @expose
+     * @name dependencies
+     * @memberof oj.ojGantt
+     * @instance
+     * @type {?(Array.<Object>|Promise)}
+     * @ojsignature {target: "Accessor", value: {GetterType: "Promise<Array<oj.ojGantt.Dependency>>|null", SetterType: "Array<oj.ojGantt.Dependency>|Promise<Array<oj.ojGantt.Dependency>>|null"}, jsdocOverride: true}
+     * @default null
+     * 
+     * @example <caption>Initialize the Gantt with the <code class="prettyprint">dependencies</code> attribute specified:</caption>
+     * &lt;oj-gantt dependencies='[[myDependencies]]'>&lt;/oj-gantt>
+     *
+     * @example <caption>Get or set the <code class="prettyprint">dependencies</code> property after initialization:</caption>
+     * // Get all (The dependencies getter always returns a Promise so there is no "get one" syntax)
+     * var values = myGantt.dependencies;
+     *
+     * // Set all (There is no permissible "set one" syntax.)
+     * myGantt.dependencies = [
+     *     {
+     *         "id": "d1",
+     *         "predecessorTaskId": "task1",
+     *         "successorTaskId": "task2",
+     *         "svgStyle": {"stroke": "red"},
+     *         "type": "startFinish"
+     *     },
+     *     {
+     *         "id": "d2",
+     *         "predecessorTaskId": "task2",
+     *         "successorTaskId": "task3"
+     *     }
+     * ];
+     */
+    dependencies: null,
+    /**
+     * The end time of the Gantt. A valid value is required in order for the Gantt to properly render. See <a href="#formats-section">Date and Time Formats</a> for more details on the required string formats.
+     * @expose
+     * @name end
+     * @memberof oj.ojGantt
+     * @instance
+     * @type {string}
+     * @default ""
+     * 
+     * @example <caption>Initialize the Gantt with the <code class="prettyprint">end</code> attribute specified:</caption>
+     * &lt;oj-gantt end='2017-12-31T05:00:00.000Z'>&lt;/oj-gantt>
+     *
+     * @example <caption>Get or set the <code class="prettyprint">end</code> property after initialization:</caption>
+     * // getter
+     * var value = myGantt.end;
+     *
+     * // setter
+     * myGantt.end = '2017-12-31T05:00:00.000Z';
+     */
+    end: "",
+    /**
+     * An object specifying whether to display or hide the horizontal and vertical grid lines.
+     * @expose
+     * @name gridlines
+     * @memberof oj.ojGantt
+     * @instance
+     * @type {Object}
+     * @default {"horizontal": "auto", "vertical": "auto"}
+     * 
+     * @example <caption>Initialize the Gantt with the <code class="prettyprint">gridlines</code> attribute specified:</caption>
+     * &lt;!-- Using dot notation -->
+     * &lt;oj-gantt gridlines.horizontal='auto' gridlines.vertical='auto'>&lt;/oj-gantt>
+     *
+     * &lt;!-- Using JSON notation -->
+     * &lt;oj-gantt gridlines='{"horizontal": "auto", "vertical": "auto"}'>&lt;/oj-gantt>
+     *
+     * @example <caption>Get or set the <code class="prettyprint">gridlines</code> property after initialization:</caption>
+     * // Get one
+     * var value = myGantt.gridlines.horizontal;
+     * 
+     * // Set one, leaving the others intact.
+     * myGantt.setProperty('gridlines.horizontal', 'auto');
+     * 
+     * // Get all
+     * var values = myGantt.gridlines;
+     *
+     * // Set all. Must list every resource key, as those not listed are lost.
+     * myGantt.gridlines = {
+     *     "horizontal": "auto",
+     *     "vertical": "auto"
+     * };
+     */
+    gridlines: {
+      /**
+       * Horizontal gridlines. The default value is "auto", which means Gantt will decide whether the grid lines should be made visible or hidden.
+       * <br></br>See the <a href="#gridlines">gridlines</a> attribute for usage examples.
+       * @expose
+       * @name gridlines.horizontal
+       * @memberof! oj.ojGantt
+       * @instance
+       * @type {string}
+       * @ojsignature {target: "Type", value: "?"}
+       * @ojvalue {string} "hidden"
+       * @ojvalue {string} "visible"
+       * @ojvalue {string} "auto"
+       * @default "auto"
+       */
+      horizontal: "auto",
+      /**
+       * Vertical gridlines. The default value is "auto", which means Gantt will decide whether the grid lines should be made visible or hidden.
+       * <br></br>See the <a href="#gridlines">gridlines</a> attribute for usage examples.
+       * @expose
+       * @name gridlines.vertical
+       * @memberof! oj.ojGantt
+       * @instance
+       * @type {string}
+       * @ojsignature {target: "Type", value: "?"}
+       * @ojvalue {string} "hidden"
+       * @ojvalue {string} "visible"
+       * @ojvalue {string} "auto"
+       * @default "auto"
+       */
+       vertical: "auto"
+    },
+    /**
+     * An object with the following properties, used to define the minor time axis. This is required in order for the Gantt to properly render.
+     * @expose
+     * @name minorAxis
+     * @memberof oj.ojGantt
+     * @instance
+     * @type {Object}
+     * @default {"converter": {"default": null, "seconds": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'hour': 'numeric', 'minute': '2-digit', 'second': '2-digit'}), "minutes": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'hour': 'numeric', 'minute': '2-digit'}), "hours": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'hour': 'numeric'}), "days": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'numeric', 'day': '2-digit'}), "weeks": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'numeric', 'day': '2-digit'}), "months": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'long'}), "quarters": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'long'}), "years": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'year': 'numeric'})}}
+     *
+     * @example <caption>Initialize the Gantt with the <code class="prettyprint">minor-axis</code> attribute specified:</caption>
+     * &lt;!-- Using dot notation -->
+     * &lt;oj-gantt minor-axis.converter="[[myConverterObject]]" minor-axis.scale="weeks" minor-axis.zoom-order='["quarters", "months", "weeks", "days"]'>&lt;/oj-gantt>
+     *
+     * &lt;!-- Using JSON notation -->
+     * &lt;oj-gantt minor-axis='{"scale": "weeks", "zoomOrder": ["quarters", "months", "weeks", "days"]}'>&lt;/oj-gantt>
+     *
+     * @example <caption>Get or set the <code class="prettyprint">minorAxis</code> property after initialization:</caption>
+     * // Get one
+     * var value = myGantt.minorAxis.scale;
+     *
+     * // Set one, leaving the others intact.
+     * myGantt.setProperty('minorAxis.scale', 'weeks');
+     *
+     * // Get all
+     * var values = myGantt.minorAxis;
+     * 
+     * // Set all. Must list every resource key, as those not listed are lost.
+     * myGantt.minorAxis = {
+     *     "converter": myConverterObject,
+     *     "scale": "weeks",
+     *     "zoomOrder": ["quarters", "months", "weeks", "days"]
+     * };
+     */
+    minorAxis: {
+      /**
+       * A converter (an object literal or instance that duck types {@link oj.Converter}) used to format the labels of the minor axis for all 'scale' values, or 
+       * an object literal whose keys are 'scale' values that map specific converters for scale specific formatting (see {@link oj.ojTimeAxis.Converter}). 
+       * See {@link oj.DateTimeConverterFactory} for details on creating built-in datetime converters.
+       * <br></br>See the <a href="#minorAxis">minor-axis</a> attribute for usage examples.
+       * @expose
+       * @name minorAxis.converter
+       * @memberof! oj.ojGantt
+       * @instance
+       * @type {Object}
+       * @ojsignature {target: "Type", value: "?(oj.ojTimeAxis.Converter|oj.Converter<string>)", jsdocOverride: true}  
+       * @default {"default": null, "seconds": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'hour': 'numeric', 'minute': '2-digit', 'second': '2-digit'}), "minutes": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'hour': 'numeric', 'minute': '2-digit'}), "hours": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'hour': 'numeric'}), "days": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'numeric', 'day': '2-digit'}), "weeks": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'numeric', 'day': '2-digit'}), "months": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'long'}), "quarters": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'long'}), "years": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'year': 'numeric'})}
+       */
+      converter: {
+        "default": null,
+        "seconds": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'hour': 'numeric', 'minute': '2-digit', 'second': '2-digit'}),
+        "minutes": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'hour': 'numeric', 'minute': '2-digit'}),
+        "hours": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'hour': 'numeric'}),
+        "days": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'numeric', 'day': '2-digit'}),
+        "weeks": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'numeric', 'day': '2-digit'}),
+        "months": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'long'}),
+        "quarters": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'long'}),
+        "years": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'year': 'numeric'})
+      },
+      /**
+       * The time scale used for the minor axis. This is required in order for the Gantt to properly render.
+       * <br></br>See the <a href="#minorAxis">minor-axis</a> attribute for usage examples.
+       * @expose
+       * @name minorAxis.scale
+       * @memberof! oj.ojGantt
+       * @instance
+       * @type {?string}
+       * @ojvalue {string} "seconds"
+       * @ojvalue {string} "minutes"
+       * @ojvalue {string} "hours"
+       * @ojvalue {string} "days"
+       * @ojvalue {string} "weeks"
+       * @ojvalue {string} "months"
+       * @ojvalue {string} "quarters"
+       * @ojvalue {string} "years"
+       * @default null
+       */
+      scale: null,
+      /**
+       * An array of strings containing the names of scales used for zooming from longest to shortest. If not specified, the 'scale' specified on the axis will be used at all zoom levels.
+       * <br></br>See the <a href="#minorAxis">minor-axis</a> attribute for usage examples.
+       * @expose
+       * @name minorAxis.zoomOrder
+       * @memberof! oj.ojGantt
+       * @instance
+       * @type {?Array.<string>}
+       * @ojsignature {target: "Type", value: "?"}
+       * @default null
+       */
+      zoomOrder: null
+    },
+    /**
+     * An object with the following properties, used to define the major time axis. If not specified, no major time axis is shown.
+     * @expose
+     * @name majorAxis
+     * @memberof oj.ojGantt
+     * @instance
+     * @type {?Object}
+     * @default {"converter": {"default": null, "seconds": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'hour': 'numeric', 'minute': '2-digit', 'second': '2-digit'}), "minutes": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'hour': 'numeric', 'minute': '2-digit'}), "hours": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'hour': 'numeric'}), "days": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'numeric', 'day': '2-digit'}), "weeks": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'numeric', 'day': '2-digit'}), "months": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'long'}), "quarters": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'long'}), "years": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'year': 'numeric'})}}
+     *
+     * @example <caption>Initialize the Gantt with the <code class="prettyprint">major-axis</code> attribute specified:</caption>
+     * &lt;!-- Using dot notation -->
+     * &lt;oj-gantt major-axis.converter="[[myConverterObject]]" major-axis.scale="months" major-axis.zoom-order='["quarters", "months", "weeks", "days"]'>&lt;/oj-gantt>
+     *
+     * &lt;!-- Using JSON notation -->
+     * &lt;oj-gantt major-axis='{"scale": "months", "zoomOrder": ["quarters", "months", "weeks", "days"]}'>&lt;/oj-gantt>
+     *
+     * @example <caption>Get or set the <code class="prettyprint">majorAxis</code> property after initialization:</caption>
+     * // Get one
+     * var value = myGantt.majorAxis.scale;
+     *
+     * // Set one, leaving the others intact.
+     * myGantt.setProperty('majorAxis.scale', 'months');
+     *
+     * // Get all
+     * var values = myGantt.majorAxis;
+     * 
+     * // Set all. Must list every resource key, as those not listed are lost.
+     * myGantt.majorAxis = {
+     *     "converter": myConverterObject,
+     *     "scale": "months",
+     *     "zoomOrder": ["quarters", "months", "weeks", "days"]
+     * };
+     */
+    majorAxis: {
+      /**
+       * A converter (an object literal or instance that duck types {@link oj.Converter}) used to format the labels of the major axis for all 'scale' values, or 
+       * an object literal whose keys are 'scale' values that map specific converters for scale specific formatting (see {@link oj.ojTimeAxis.Converter}). 
+       * See {@link oj.DateTimeConverterFactory} for details on creating built-in datetime converters.
+       * <br></br>See the <a href="#majorAxis">major-axis</a> attribute for usage examples.
+       * @expose
+       * @name majorAxis.converter
+       * @memberof! oj.ojGantt
+       * @instance
+       * @type {Object}
+       * @ojsignature {target: "Type", value: "?(oj.ojTimeAxis.Converter|oj.Converter<string>)", jsdocOverride: true}
+       * @default {"default": null, "seconds": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'hour': 'numeric', 'minute': '2-digit', 'second': '2-digit'}), "minutes": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'hour': 'numeric', 'minute': '2-digit'}), "hours": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'hour': 'numeric'}), "days": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'numeric', 'day': '2-digit'}), "weeks": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'numeric', 'day': '2-digit'}), "months": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'long'}), "quarters": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'long'}), "years": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'year': 'numeric'})}
+       */
+      converter: {
+        "default": null,
+        "seconds": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'hour': 'numeric', 'minute': '2-digit', 'second': '2-digit'}),
+        "minutes": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'hour': 'numeric', 'minute': '2-digit'}),
+        "hours": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'hour': 'numeric'}),
+        "days": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'numeric', 'day': '2-digit'}),
+        "weeks": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'numeric', 'day': '2-digit'}),
+        "months": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'long'}),
+        "quarters": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'long'}),
+        "years": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'year': 'numeric'})
+      },
+      /**
+       * The time scale used for the major axis.
+       * <br></br>See the <a href="#majorAxis">major-axis</a> attribute for usage examples.
+       * @expose
+       * @name majorAxis.scale
+       * @memberof! oj.ojGantt
+       * @instance
+       * @type {?string}
+       * @ojvalue {string} "seconds"
+       * @ojvalue {string} "minutes"
+       * @ojvalue {string} "hours"
+       * @ojvalue {string} "days"
+       * @ojvalue {string} "weeks"
+       * @ojvalue {string} "months"
+       * @ojvalue {string} "quarters"
+       * @ojvalue {string} "years"
+       * @default null
+       */
+      scale: null,
+      /**
+       * An array of strings containing the names of scales used for zooming from longest to shortest. If not specified, the 'scale' specified on the axis will be used at all zoom levels.
+       * <br></br>See the <a href="#majorAxis">major-axis</a> attribute for usage examples.
+       * @expose
+       * @name majorAxis.zoomOrder
+       * @memberof! oj.ojGantt
+       * @instance
+       * @type {?Array.<string>}
+       * @ojsignature {target: "Type", value: "?"}
+       * @default null
+       */
+      zoomOrder: null
+    },
+    /**
+     * The array of reference objects associated with the gantt. For each reference object, a line is rendered at the specified value. Currently only the first reference object in the array is supported. Any additional objects supplied in the array will be ignored.
+     * @expose
+     * @name referenceObjects
+     * @memberof oj.ojGantt
+     * @instance
+     * @type {Array.<Object>}
+     * @ojsignature {target: "Type", value: "Array<oj.ojGantt.ReferenceObject>", jsdocOverride: true}
+     * @default []
+     * 
+     * @example <caption>Initialize the Gantt with the <code class="prettyprint">reference-objects</code> attribute specified:</caption>
+     * &lt;oj-gantt reference-objects='[{"value": "2017-04-15T04:00:00.000Z"}]'>&lt;/oj-gantt>
+     *
+     * @example <caption>Get or set the <code class="prettyprint">referenceObjects</code> property after initialization:</caption>
+     * // Get one
+     * var value = myGantt.referenceObjects[0];
+     * 
+     * // Get all
+     * var values = myGantt.referenceObjects;
+     *
+     * // Set all (There is no permissible "set one" syntax.)
+     * myGantt.referenceObjects = [{
+     *     "value": "2017-04-15T00:00:00.000Z",
+     *     "svgStyle": {"stroke": "red"}
+     * }];
+     */
+    referenceObjects: [],
+    /**
+     * An object defining properties for the row labels region.
+     * @expose
+     * @name rowAxis
+     * @memberof oj.ojGantt
+     * @instance
+     * @type {Object}
+     * @default {"rendered": "off", "maxWidth": "none"}
+     * 
+     * @example <caption>Initialize the Gantt with the <code class="prettyprint">row-axis</code> attribute specified:</caption>
+     * &lt;!-- Using dot notation -->
+     * &lt;oj-gantt row-axis.rendered='on' row-axis.max-width='50px'>&lt;/oj-gantt>
+     *
+     * &lt;!-- Using JSON notation -->
+     * &lt;oj-gantt row-axis='{"rendered": "on", "maxWidth": "50px"}'>&lt;/oj-gantt>
+     *
+     * @example <caption>Get or set the <code class="prettyprint">rowAxis</code> property after initialization:</caption>
+     * // Get one
+     * var value = myGantt.rowAxis.rendered;
+     *
+     * // Set one, leaving the others intact
+     * myGantt.setProperty('rowAxis.rendered', 'on');
+     * 
+     * // Get all
+     * var values = myGantt.rowAxis;
+     *
+     * // Set all (any value not set will be ignored)
+     * myGantt.rowAxis = {
+     *     rendered: "on",
+     *     maxWidth: "50px"
+     * };
+     */
+    rowAxis: {
+      /**
+       * Defines whether row labels are rendered.
+       * <br></br>See the <a href="#rowAxis">row-axis</a> attribute for usage examples.
+       * @expose
+       * @name rowAxis.rendered
+       * @memberof! oj.ojGantt
+       * @instance
+       * @type {string}
+       * @ojsignature {target: "Type", value: "?"}
+       * @ojvalue {string} "on"
+       * @ojvalue {string} "off"
+       * @default "off"
+       */
+      rendered: "off",
+      /**
+       * Defines the maximum width of the region in pixels (e.g. '50px') or percent (e.g. '15%') of the element width. If 'none' is specified, then the width has no maximum value. Labels will truncate to fit.
+       * <br></br>See the <a href="#rowAxis">row-axis</a> attribute for usage examples.
+       * @expose
+       * @name rowAxis.maxWidth
+       * @memberof! oj.ojGantt
+       * @instance
+       * @type {string}
+       * @ojsignature {target: "Type", value: "?"}
+       * @default "none"
+       */
+      maxWidth: "none"
+    },
+    /**
+     * An array of objects with the following properties, used to define rows and tasks within rows. Also accepts a Promise that will resolve with an array for deferred data rendering. No data will be rendered if the Promise is rejected.
+     * @expose
+     * @name rows
+     * @memberof oj.ojGantt
+     * @instance
+     * @type {?(Array.<Object>|Promise)}
+     * @ojsignature {target: "Accessor", value: {GetterType: "Promise<Array<oj.ojGantt.Row>>|null", SetterType: "Array<oj.ojGantt.Row>|Promise<Array<oj.ojGantt.Row>>|null"}, jsdocOverride: true}
+     * @default null
+     * 
+     * @example <caption>Initialize the Gantt with the <code class="prettyprint">rows</code> attribute specified:</caption>
+     * &lt;oj-gantt rows='[[myRows]]'>&lt;/oj-gantt>
+     *
+     * @example <caption>Get or set the <code class="prettyprint">rows</code> property after initialization:</caption>
+     * // Get all (The rows getter always returns a Promise so there is no "get one" syntax)
+     * var values = myGantt.rows;
+     *
+     * // Set all (There is no permissible "set one" syntax.)
+     * myGantt.rows = [
+     *     {
+     *         "id": "r1",
+     *         "label": "Row 1",
+     *         "tasks": [
+     *             {
+     *                 "id": "task1_1",
+     *                 "start": "2017-01-04T17:00:00.000Z",
+     *                 "end": "2017-01-10T17:00:00.000Z",
+     *                 "label":"Label 1-1"
+     *             },
+     *             {
+     *                 "id": "task1_2",
+     *                 "start": "2017-02-04T17:00:00.000Z",
+     *                 "end": "2017-02-10T17:00:00.000Z",
+     *                 "label":"Label 1-2"
+     *             }
+     *         ]
+     *     },
+     *     {
+     *         "id": "r2",
+     *         "label": "Row 2",
+     *         "tasks": [
+     *             {
+     *                 "id": "task2_1",
+     *                 "start": "2017-01-10T17:00:00.000Z",
+     *                 "end": "2017-01-24T17:00:00.000Z",
+     *                 "label":"Label 2-1"
+     *             },
+     *             {
+     *                 "id": "task2_2",
+     *                 "start": "2017-02-10T17:00:00.000Z",
+     *                 "end": "2017-02-27T17:00:00.000Z",
+     *                 "label":"Label 2-2"
+     *             }
+     *         ]
+     *     }
+     * ];
+     */
+    rows: null,
+    /**
+     * An array of strings containing the ids of the initially selected tasks.
+     * @expose
+     * @name selection
+     * @memberof oj.ojGantt
+     * @instance
+     * @type {Array.<string>}
+     * @ojwriteback
+     * @default []
+     * 
+     * @example <caption>Initialize the Gantt with the <code class="prettyprint">selection</code> attribute specified:</caption>
+     * &lt;oj-gantt selection='["taskID1", "taskID2", "taskID3"]'>&lt;/oj-gantt>
+     *
+     * @example <caption>Get or set the <code class="prettyprint">selection</code> property after initialization:</caption>
+     * // Get one
+     * var value = myGantt.selection[0];
+     * 
+     * // Get all
+     * var values = myGantt.selection;
+     *
+     * // Set all (There is no permissible "set one" syntax.)
+     * myGantt.selection = ["taskID1", "taskID2", "taskID3"];
+     */
+    selection: [],
+    /**
+     * The type of selection behavior that is enabled on the Gantt. If 'single' is specified, only a single task can be selected at once. If 'multiple', any number of tasks can be selected at once. Otherwise, selection is disabled.
+     * @expose
+     * @name selectionMode
+     * @memberof oj.ojGantt
+     * @instance
+     * @type {string}
+     * @ojvalue {string} "single"
+     * @ojvalue {string} "multiple"
+     * @ojvalue {string} "none"
+     * @default "none"
+     * 
+     * @example <caption>Initialize the Gantt with the <code class="prettyprint">selection-mode</code> attribute specified:</caption>
+     * &lt;oj-gantt selection-mode='multiple'>&lt;/oj-gantt>
+     *
+     * @example <caption>Get or set the <code class="prettyprint">selectionMode</code> property after initialization:</caption>
+     * // getter
+     * var value = myGantt.selectionMode;
+     * 
+     * // setter
+     * myGantt.selectionMode = 'multiple';
+     */
+    selectionMode: "none",
+    /**
+     * The start time of the Gantt. A valid value is required in order for the Gantt to properly render. See <a href="#formats-section">Date and Time Formats</a> for more details on the required string formats.
+     * @expose
+     * @name start
+     * @memberof oj.ojGantt
+     * @instance
+     * @type {string}
+     * @default ""
+     * 
+     * @example <caption>Initialize the Gantt with the <code class="prettyprint">start</code> attribute specified:</caption>
+     * &lt;oj-gantt start='2017-01-01T05:00:00.000Z'>&lt;/oj-gantt>
+     *
+     * @example <caption>Get or set the <code class="prettyprint">start</code> property after initialization:</caption>
+     * // getter
+     * var value = myGantt.start;
+     *
+     * // setter
+     * myGantt.start = "2017-01-01T05:00:00.000Z";
+     */
+    start: "",
+    /**
+     * An object with the following properties, used to define default styling for tasks in the Gantt. Properties specified on this object may 
+     * be overridden by specifications on individual tasks.
+     * @expose
+     * @name taskDefaults
+     * @memberof oj.ojGantt
+     * @instance
+     * @type {Object}
+     * @default {"borderRadius": "0", "labelPosition": ["end", "innerCenter", "start", "max"], "height": null, "svgClassName": "", "svgStyle": {}, "type": "auto", "progress": {"borderRadius": "0", "height": "100%", "svgClassName": "", "svgStyle": {}}, "baseline": {"borderRadius": 0, "height": null, "svgClassName": "", "svgStyle": {}}}
+     * 
+     * @example <caption>Initialize the Gantt with the <code class="prettyprint">task-defaults</code> attribute specified:</caption>
+     * &lt;!-- Using dot notation -->
+     * &lt;oj-gantt task-defaults.border-radius='5px' task-defaults.label-position='["end"]' task-defaults.progress.height="50%">&lt;/oj-gantt>
+     *
+     * &lt;!-- Using JSON notation -->
+     * &lt;oj-gantt task-defaults='{"borderRadius": "5px", "labelPosition": ["end"], "progress": {"height": "50%"}}'>&lt;/oj-gantt>
+     *
+     * @example <caption>Get or set the <code class="prettyprint">taskDefaults</code> property after initialization:</caption>
+     * // Get one
+     * var value = myGantt.taskDefaults.height;
+     *
+     * // Get all
+     * var values = myGantt.taskDefaults;
+     *
+     * // Set one, leaving the others intact.
+     * myGantt.setProperty('taskDefaults.height', 30);
+     *
+     * // Set all. Must list every resource key, as those not listed are lost.
+     * myGantt.taskDefaults = {
+     *     "borderRadius": "5px",
+     *     "labelPosition": ["end"],
+     *     "height": 30,
+     *     "progress": {"height": "50%"}
+     * };
+     */
+    taskDefaults: {
+      /**
+       * The border radius of the task. Accepts values allowed in CSS border-radius attribute.
+       * <br></br>See the <a href="#taskDefaults">task-defaults</a> attribute for usage examples.
+       * @expose
+       * @name taskDefaults.borderRadius
+       * @memberof! oj.ojGantt
+       * @instance
+       * @type {string}
+       * @ojsignature {target: "Type", value: "?"}
+       * @default "0"
+       */
+      borderRadius: "0",
+      /**
+       * The position of the label relative to the task. An array of values is also supported. If an array is specified, then the values are traversed until a position that can fully display the label is found. If 'max' is specified in the array, then of all the positions evaluated up to that point of the traversal, the one with the largest space is used (label is truncated to fit). Naturally, 'max' is ignored if it's specified as the first value of the array. If the last value of the array is reached, but the label cannot be fully displayed, then the label is placed at that position, truncated to fit. Due to space constraints in the milestone and task with progress cases, the inner positions will exhibit the following behaviors: <ul> <li> For milestones, specifying 'innerStart', 'innerEnd', or 'innerCenter' would be equivalent to specifying 'start', 'end', and 'end' respectively. </li> <li> For tasks with progress, 'innerCenter' means the label will be aligned to the end of the progress bar, either placed inside or outside of the progress, whichever is the larger space. 'innerStart' and 'innerEnd' positions are honored when there is enough space to show the label at those positions. Otherwise, the aforementioned 'innerCenter' behavior is exhibited. </li> </ul>
+       * <br></br>See the <a href="#taskDefaults">task-defaults</a> attribute for usage examples.
+       * @ojshortdesc The position of the label relative to the task, or a priority order of label positions for the component to automatically choose from.
+       * @expose
+       * @name taskDefaults.labelPosition
+       * @memberof! oj.ojGantt
+       * @instance
+       * @type {string|Array.<string>}
+       * @ojsignature {target: "Type", value: "?(string|Array<string>)"}
+       * @ojvalue {string} "start"
+       * @ojvalue {string} "innerCenter"
+       * @ojvalue {string} "innerStart"
+       * @ojvalue {string} "innerEnd"
+       * @ojvalue {string} "end"
+       * @ojvalue {string} "none"
+       * @default ["end", "innerCenter", "start", "max"]
+       */
+      labelPosition: ["end", "innerCenter", "start", "max"],
+      /**
+       * The height of the task in pixel. If not specified, a default height is used depending on the task type, and whether the baseline is specified.
+       * <br></br>See the <a href="#taskDefaults">task-defaults</a> attribute for usage examples.
+       * @expose
+       * @name taskDefaults.height
+       * @memberof! oj.ojGantt
+       * @instance
+       * @type {number}
+       * @ojsignature {target: "Type", value: "?"}
+       * @ojunits pixels
+       * @default null
+       */
+      height: null,
+      /**
+       * A space delimited list of CSS style classes defining the style of the task.
+       * <br></br>See the <a href="#taskDefaults">task-defaults</a> attribute for usage examples.
+       * @expose
+       * @name taskDefaults.svgClassName
+       * @memberof! oj.ojGantt
+       * @instance
+       * @type {string}
+       * @ojsignature {target: "Type", value: "?"}
+       * @default ""
+       */
+      svgClassName: "",
+      /**
+       * The CSS style defining the style of the task.
+       * <br></br>See the <a href="#taskDefaults">task-defaults</a> attribute for usage examples.
+       * @expose
+       * @name taskDefaults.svgStyle
+       * @memberof! oj.ojGantt
+       * @instance
+       * @type {Object}
+       * @ojsignature {target: "Type", value: "?"}
+       * @default {}
+       */
+      svgStyle: {},
+      /**
+       * Defines the task type to be rendered.<br></br>If "milestone", and if <a href="#rows[].tasks[].start">start</a> and <a href="#rows[].tasks[].end">end</a> values are specified and unequal, the <a href="#rows[].tasks[].start">start</a> value is used to evaluate position.<br></br>If "auto", the type is inferred from the data:<ul> <li>If <a href="#rows[].tasks[].start">start</a> and <a href="#rows[].tasks[].end">end</a> values are specified and unequal, "normal" type is assumed.</li> <li>Otherwise, "milestone" type is assumed.</li></ul>
+       * See the <a href="#taskDefaults">task-defaults</a> attribute for usage examples.
+       * @ojshortdesc The type of task to be rendered.
+       * @expose
+       * @name taskDefaults.type
+       * @memberof! oj.ojGantt
+       * @instance
+       * @type {string}
+       * @ojsignature {target: "Type", value: "?"}
+       * @ojvalue {string} "normal"
+       * @ojvalue {string} "milestone"
+       * @ojvalue {string} "summary"
+       * @ojvalue {string} "auto"
+       * @default "auto"
+       */
+      type: "auto",
+      /**
+       * An object with the following properties, used to define default styling for progress bars on non-milestone tasks.
+       * <br></br>See the <a href="#taskDefaults">task-defaults</a> attribute for usage examples.
+       * @expose
+       * @name taskDefaults.progress
+       * @memberof! oj.ojGantt
+       * @instance
+       * @type {Object}
+       * @ojsignature {target: "Type", value: "?"}
+       * @default {"borderRadius": "0", "height": "100%", "svgClassName": "", "svgStyle": {}}
+       */
+      progress: {
+        /**
+         * The border radius of the progress bar. Accepts values allowed in CSS border-radius attribute.
+         * <br></br>See the <a href="#taskDefaults">task-defaults</a> attribute for usage examples.
+         * @expose
+         * @name taskDefaults.progress.borderRadius
+         * @memberof! oj.ojGantt
+         * @instance
+         * @type {string}
+         * @ojsignature {target: "Type", value: "?"}
+         * @default "0"
+         */
+        borderRadius: "0",
+        /**
+         * Specifies the height of the progress bar in pixels (e.g. '50px') or percent of the associated task bar (e.g. '15%').
+         * <br></br>See the <a href="#taskDefaults">task-defaults</a> attribute for usage examples.
+         * @expose
+         * @name taskDefaults.progress.height
+         * @memberof! oj.ojGantt
+         * @instance
+         * @type {string}
+         * @ojsignature {target: "Type", value: "?"}
+         * @default "100%"
+         */
+        height: "100%",
+        /**
+         * A space delimited list of CSS style classes to apply to the progress bar. Note that only CSS style applicable to SVG elements can be used.
+         * <br></br>See the <a href="#taskDefaults">task-defaults</a> attribute for usage examples.
+         * @expose
+         * @name taskDefaults.progress.svgClassName
+         * @memberof! oj.ojGantt
+         * @instance
+         * @type {?string}
+         * @ojsignature {target: "Type", value: "?"}
+         * @default ""
+         */
+        svgClassName: "",
+        /**
+         * The CSS inline style to apply to the progress bar. Only CSS style applicable to SVG elements can be used.
+         * <br></br>See the <a href="#taskDefaults">task-defaults</a> attribute for usage examples.
+         * @expose
+         * @name taskDefaults.progress.svgStyle
+         * @memberof! oj.ojGantt
+         * @instance
+         * @type {Object}
+         * @ojsignature {target: "Type", value: "?"}
+         * @default {}
+         */
+        svgStyle: {}
+      },
+      /**
+       * An object with the following properties, used to define default styling for task baseline elements.
+       * <br></br>See the <a href="#taskDefaults">task-defaults</a> attribute for usage examples.
+       * @expose
+       * @name taskDefaults.baseline
+       * @memberof! oj.ojGantt
+       * @instance
+       * @type {Object}
+       * @ojsignature {target: "Type", value: "?"}
+       * @default {"borderRadius": 0, "svgClassName": "", "svgStyle": {}}
+       */
+      baseline: {
+        /**
+         * The border radius of the baseline. Accepts values allowed in CSS border-radius attribute.
+         * <br></br>See the <a href="#taskDefaults">task-defaults</a> attribute for usage examples.
+         * @expose
+         * @name taskDefaults.baseline.borderRadius
+         * @memberof! oj.ojGantt
+         * @instance
+         * @type {string}
+         * @ojsignature {target: "Type", value: "?"}
+         * @default "0"
+         */
+        borderRadius: "0",
+        /**
+         * The height of the baseline in pixel. If not specified, a default height is used depending on the baseline type.
+         * <br></br>See the <a href="#taskDefaults">task-defaults</a> attribute for usage examples.
+         * @expose
+         * @name taskDefaults.baseline.height
+         * @memberof! oj.ojGantt
+         * @instance
+         * @type {number}
+         * @ojsignature {target: "Type", value: "?"}
+         * @ojunits pixels
+         * @default null
+         */
+        height: null,
+        /**
+         * A space delimited list of CSS style classes defining the style of the baseline.
+         * <br></br>See the <a href="#taskDefaults">task-defaults</a> attribute for usage examples.
+         * @expose
+         * @name taskDefaults.baseline.svgClassName
+         * @memberof! oj.ojGantt
+         * @instance
+         * @type {string}
+         * @ojsignature {target: "Type", value: "?"}
+         * @default ""
+         */
+        svgClassName: "",
+        /**
+         * The CSS style defining the style of the baseline.
+         * <br></br>See the <a href="#taskDefaults">task-defaults</a> attribute for usage examples.
+         * @expose
+         * @name taskDefaults.baseline.svgStyle
+         * @memberof! oj.ojGantt
+         * @instance
+         * @type {Object}
+         * @ojsignature {target: "Type", value: "?"}
+         * @default {}
+         */
+        svgStyle: {}
+      }
+    },
+    /**
+     * An object containing an optional callback function for tooltip customization. 
+     * @expose
+     * @name tooltip
+     * @memberof oj.ojGantt
+     * @instance
+     * @type {Object}
+     * @default {"renderer": null}
+     * 
+     * @example <caption>Initialize the Gantt with the <code class="prettyprint">tooltip</code> attribute specified:</caption>
+     * &lt;oj-gantt tooltip.renderer='[[tooltipFun]]'>&lt;/oj-gantt>
+     *
+     * &lt;oj-gantt tooltip='[[{"renderer": tooltipFun}]]'>&lt;/oj-gantt>
+     *
+     * @example <caption>Get or set the <code class="prettyprint">tooltip</code> property after initialization:</caption>
+     * // Get one
+     * var value = myGantt.tooltip.renderer;
+     * 
+     * // Set one, leaving the others intact.
+     * myGantt.setProperty('tooltip.renderer', tooltipFun);
+     *
+     * // Get all
+     * var values = myGantt.tooltip;
+     * 
+     * // Set all. Must list every resource key, as those not listed are lost.
+     * myGantt.tooltip = {'renderer': tooltipFun};
+     */
+    tooltip: {
+      /**
+       * A function that returns a custom tooltip. Note that the default is for a tooltip to be displayed.
+       * <br></br>See the <a href="#tooltip">tooltip</a> attribute for usage examples.
+       * @expose
+       * @name tooltip.renderer
+       * @memberof! oj.ojGantt
+       * @instance
+       * @type {?(function(Object):Object)}
+       * @ojsignature {target: "Type", value: "((context: oj.ojGantt.TooltipContext) => ({insert: Element|string}|{preventDefault: boolean}))", jsdocOverride: true}
+       * @default null
+       */
+      renderer: null
+    },
+    /**
+     * An object specifying value formatting and tooltip behavior, whose keys generally correspond to task properties.
+     * @expose
+     * @name valueFormats
+     * @memberof oj.ojGantt
+     * @instance
+     * @type {Object}
+     * @default {"rows": {"tooltipDisplay": "auto"}, "start": {"converter": null, "tooltipDisplay": "auto"}, "end": {"converter": null, "tooltipDisplay": "auto"}, "date": {"converter": null, "tooltipDisplay": "auto"}, "label": {"tooltipDisplay": "auto"}, "progress": {"converter": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_NUMBER).createConverter({style: 'percent'}), "tooltipDisplay": "auto"}, "baselineStart": {"converter": null, "tooltipDisplay": "auto"}, "baselineEnd": {"converter": null, "tooltipDisplay": "auto"}, "baselineDate": {"converter": null, "tooltipDisplay": "auto"}}
+     * 
+     * @example <caption>Initialize the Gantt with the <code class="prettyprint">value-formats</code> attribute specified:</caption>
+     * &lt;!-- Using dot notation -->
+     * &lt;oj-gantt value-formats.row.tooltip-label="Employee" value-formats.label.tooltip-display="off">&lt;/oj-gantt>
+     *
+     * &lt;!-- Using JSON notation -->
+     * &lt;oj-gantt value-formats='{"row": {"tooltipLabel": "Employee"}, "label": {"tooltipDisplay": "off"}}'>&lt;/oj-gantt>
+     *
+     * @example <caption>Get or set the <code class="prettyprint">valueFormats</code> property after initialization:</caption>
+     * // Get one
+     * var value = myGantt.valueFormats.row.tooltipLabel;
+     *
+     * // Set one, leaving the others intact
+     * myGantt.setProperty('valueFormats.row.tooltipLabel', 'Employee');
+     * 
+     * // Get all
+     * var values = myGantt.valueFormats;
+     *
+     * // Set all. Must list every resource key, as those not listed are lost.
+     * myGantt.valueFormats = {
+     *     "row": {"tooltipLabel": "Employee"},
+     *     "label": {"tooltipDisplay": "off"}
+     * };
+     */
+    valueFormats: {
+      /**
+       * Specifies tooltip behavior for the row value.
+       * <br></br>See the <a href="#valueFormats">value-formats</a> attribute for usage examples.
+       * @expose
+       * @name valueFormats.row
+       * @memberof! oj.ojGantt
+       * @instance
+       * @type {Object}
+       * @ojsignature {target: "Type", value: "?"}
+       * @default {"tooltipDisplay": "auto"}
+       */
+      row: {
+        /**
+         * A string representing the label that is displayed before the value in the tooltip. The default value comes from {@link oj.ojGantt.translations.labelRow}.
+         * <br></br>See the <a href="#valueFormats">value-formats</a> attribute for usage examples.
+         * @expose
+         * @name valueFormats.row.tooltipLabel
+         * @memberof! oj.ojGantt
+         * @instance
+         * @type {string}
+         * @ojsignature {target: "Type", value: "?"}
+         * @ojtranslatable
+         */
+        tooltipLabel: undefined,
+        /**
+         * Whether the value is displayed in the tooltip.
+         * <br></br>See the <a href="#valueFormats">value-formats</a> attribute for usage examples.
+         * @expose
+         * @name valueFormats.row.tooltipDisplay
+         * @memberof! oj.ojGantt
+         * @instance
+         * @type {string}
+         * @ojsignature {target: "Type", value: "?"}
+         * @ojvalue {string} "off"
+         * @ojvalue {string} "auto"
+         * @default "auto"
+         */
+        tooltipDisplay: "auto"
+      },
+      /**
+       * Specifies tooltip behavior for the start value.
+       * <br></br>See the <a href="#valueFormats">value-formats</a> attribute for usage examples.
+       * @expose
+       * @name valueFormats.start
+       * @memberof! oj.ojGantt
+       * @instance
+       * @type {Object}
+       * @ojsignature {target: "Type", value: "?"}
+       * @default {"converter": null, "tooltipDisplay": "auto"}
+       */
+      start: {
+        /**
+         * A converter (an object literal or instance that duck types {@link oj.Converter}) used to format the label. If not specified, a default converter depending on the axes scale is used. See {@link oj.DateTimeConverterFactory} for details on creating built-in datetime converters.
+         * <br></br>See the <a href="#valueFormats">value-formats</a> attribute for usage examples.
+         * @expose
+         * @name valueFormats.start.converter
+         * @memberof! oj.ojGantt
+         * @instance
+         * @type {?Object}
+         * @ojsignature {target: "Type", value: "?(oj.Converter<string>)", jsdocOverride: true}
+         * @default null
+         */
+        converter: null,
+        /**
+         * A string representing the label that is displayed before the value in the tooltip. The default value comes from {@link oj.ojGantt.translations.labelStart}.
+         * <br></br>See the <a href="#valueFormats">value-formats</a> attribute for usage examples.
+         * @expose
+         * @name valueFormats.start.tooltipLabel
+         * @memberof! oj.ojGantt
+         * @instance
+         * @type {string}
+         * @ojsignature {target: "Type", value: "?"}
+         * @ojtranslatable
+         */
+        tooltipLabel: undefined,
+        /**
+         * Whether the value is displayed in the tooltip.
+         * <br></br>See the <a href="#valueFormats">value-formats</a> attribute for usage examples.
+         * @expose
+         * @name valueFormats.start.tooltipDisplay
+         * @memberof! oj.ojGantt
+         * @instance
+         * @type {string}
+         * @ojsignature {target: "Type", value: "?"}
+         * @ojvalue {string} "off"
+         * @ojvalue {string} "auto"
+         * @default "auto"
+         */
+        tooltipDisplay: "auto"
+      },
+      /**
+       * Specifies tooltip behavior for the end value.
+       * <br></br>See the <a href="#valueFormats">value-formats</a> attribute for usage examples.
+       * @expose
+       * @name valueFormats.end
+       * @memberof! oj.ojGantt
+       * @instance
+       * @type {Object}
+       * @ojsignature {target: "Type", value: "?"}
+       * @default {"converter": null, "tooltipDisplay": "auto"}
+       */
+      end: {
+        /**
+         * A converter (an object literal or instance that duck types {@link oj.Converter}) used to format the label. If not specified, a default converter depending on the axes scale is used. See {@link oj.DateTimeConverterFactory} for details on creating built-in datetime converters.
+         * <br></br>See the <a href="#valueFormats">value-formats</a> attribute for usage examples.
+         * @expose
+         * @name valueFormats.end.converter
+         * @memberof! oj.ojGantt
+         * @instance
+         * @type {?Object}
+         * @ojsignature {target: "Type", value: "?(oj.Converter<string>)", jsdocOverride: true}
+         * @default null
+         */
+        converter: null,
+        /**
+         * A string representing the label that is displayed before the value in the tooltip. The default value comes from {@link oj.ojGantt.translations.labelEnd}.
+         * <br></br>See the <a href="#valueFormats">value-formats</a> attribute for usage examples.
+         * @expose
+         * @name valueFormats.end.tooltipLabel
+         * @memberof! oj.ojGantt
+         * @instance
+         * @type {string}
+         * @ojsignature {target: "Type", value: "?"}
+         * @ojtranslatable
+         */
+        tooltipLabel: undefined,
+        /**
+         * Whether the value is displayed in the tooltip.
+         * <br></br>See the <a href="#valueFormats">value-formats</a> attribute for usage examples.
+         * @expose
+         * @name valueFormats.end.tooltipDisplay
+         * @memberof! oj.ojGantt
+         * @instance
+         * @type {string}
+         * @ojsignature {target: "Type", value: "?"}
+         * @ojvalue {string} "off"
+         * @ojvalue {string} "auto"
+         * @default "auto"
+         */
+        tooltipDisplay: "auto"
+      },
+      /**
+       * Specifies tooltip behavior for the date value of a milestone task.
+       * <br></br>See the <a href="#valueFormats">value-formats</a> attribute for usage examples.
+       * @expose
+       * @name valueFormats.date
+       * @memberof! oj.ojGantt
+       * @instance
+       * @type {Object}
+       * @ojsignature {target: "Type", value: "?"}
+       * @default {"converter": null, "tooltipDisplay": "auto"}
+       */
+      date: {
+        /**
+         * A converter (an object literal or instance that duck types {@link oj.Converter}) used to format the label. If not specified, a default converter depending on the axes scale is used. See {@link oj.DateTimeConverterFactory} for details on creating built-in datetime converters.
+         * <br></br>See the <a href="#valueFormats">value-formats</a> attribute for usage examples.
+         * @expose
+         * @name valueFormats.date.converter
+         * @memberof! oj.ojGantt
+         * @instance
+         * @type {?Object}
+         * @ojsignature {target: "Type", value: "?(oj.Converter<string>)", jsdocOverride: true}
+         * @default null
+         */
+        converter: null,
+        /**
+         * A string representing the label that is displayed before the value in the tooltip. The default value comes from {@link oj.ojGantt.translations.labelDate}.
+         * <br></br>See the <a href="#valueFormats">value-formats</a> attribute for usage examples.
+         * @expose
+         * @name valueFormats.date.tooltipLabel
+         * @memberof! oj.ojGantt
+         * @instance
+         * @type {string}
+         * @ojsignature {target: "Type", value: "?"}
+         * @ojtranslatable
+         */
+        tooltipLabel: undefined,
+        /**
+         * Whether the value is displayed in the tooltip.
+         * <br></br>See the <a href="#valueFormats">value-formats</a> attribute for usage examples.
+         * @expose
+         * @name valueFormats.date.tooltipDisplay
+         * @memberof! oj.ojGantt
+         * @instance
+         * @type {string}
+         * @ojsignature {target: "Type", value: "?"}
+         * @ojvalue {string} "off"
+         * @ojvalue {string} "auto"
+         * @default "auto"
+         */
+        tooltipDisplay: "auto"
+      },
+      /**
+       * Specifies tooltip behavior for the label value.
+       * <br></br>See the <a href="#valueFormats">value-formats</a> attribute for usage examples.
+       * @expose
+       * @name valueFormats.label
+       * @memberof! oj.ojGantt
+       * @instance
+       * @type {Object}
+       * @ojsignature {target: "Type", value: "?"}
+       * @default {"tooltipDisplay": "auto"}
+       */
+      label: {
+        /**
+         * A string representing the label that is displayed before the value in the tooltip. The default value comes from {@link oj.ojGantt.translations.labelLabel}.
+         * <br></br>See the <a href="#valueFormats">value-formats</a> attribute for usage examples.
+         * @expose
+         * @name valueFormats.label.tooltipLabel
+         * @memberof! oj.ojGantt
+         * @instance
+         * @type {string}
+         * @ojsignature {target: "Type", value: "?"}
+         * @ojtranslatable
+         */
+        tooltipLabel: undefined,
+        /**
+         * Whether the value is displayed in the tooltip.
+         * <br></br>See the <a href="#valueFormats">value-formats</a> attribute for usage examples.
+         * @expose
+         * @name valueFormats.label.tooltipDisplay
+         * @memberof! oj.ojGantt
+         * @instance
+         * @type {string}
+         * @ojsignature {target: "Type", value: "?"}
+         * @ojvalue {string} "off"
+         * @ojvalue {string} "auto"
+         * @default "auto"
+         */
+        tooltipDisplay: "auto"
+      },
+      /**
+       * Specifies tooltip behavior for the progress value.
+       * <br></br>See the <a href="#valueFormats">value-formats</a> attribute for usage examples.
+       * @expose
+       * @name valueFormats.progress
+       * @memberof! oj.ojGantt
+       * @instance
+       * @type {Object}
+       * @ojsignature {target: "Type", value: "?"}
+       * @default {"converter": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_NUMBER).createConverter({style: 'percent'}), "tooltipDisplay": "auto"}
+       */
+      progress: {
+        /**
+         * A converter (an object literal or instance that duck types {@link oj.Converter}) used to format the label. See {@link oj.NumberConverterFactory} for details on creating built-in number converters.
+         * <br></br>See the <a href="#valueFormats">value-formats</a> attribute for usage examples.
+         * @expose
+         * @name valueFormats.progress.converter
+         * @memberof! oj.ojGantt
+         * @instance
+         * @type {?Object}
+         * @ojsignature {target: "Type", value: "?(oj.Converter<number>)", jsdocOverride: true}
+         * @default oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_NUMBER).createConverter({style: 'percent'})
+         */
+        converter: oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_NUMBER).createConverter({style: 'percent'}),
+        /**
+         * A string representing the label that is displayed before the value in the tooltip. The default value comes from {@link oj.ojGantt.translations.labelProgress}.
+         * <br></br>See the <a href="#valueFormats">value-formats</a> attribute for usage examples.
+         * @expose
+         * @name valueFormats.progress.tooltipLabel
+         * @memberof! oj.ojGantt
+         * @instance
+         * @type {string}
+         * @ojsignature {target: "Type", value: "?"}
+         * @ojtranslatable
+         */
+        tooltipLabel: undefined,
+        /**
+         * Whether the value is displayed in the tooltip.
+         * <br></br>See the <a href="#valueFormats">value-formats</a> attribute for usage examples.
+         * @expose
+         * @name valueFormats.progress.tooltipDisplay
+         * @memberof! oj.ojGantt
+         * @instance
+         * @type {string}
+         * @ojsignature {target: "Type", value: "?"}
+         * @ojvalue {string} "off"
+         * @ojvalue {string} "auto"
+         * @default "auto"
+         */
+        tooltipDisplay: "auto"
+      },
+      /**
+       * Specifies tooltip behavior for the start value of the baseline.
+       * <br></br>See the <a href="#valueFormats">value-formats</a> attribute for usage examples.
+       * @expose
+       * @name valueFormats.baselineStart
+       * @memberof! oj.ojGantt
+       * @instance
+       * @type {Object}
+       * @ojsignature {target: "Type", value: "?"}
+       * @default {"converter": null, "tooltipDisplay": "auto"}
+       */
+      baselineStart: {
+        /**
+         * A converter (an object literal or instance that duck types {@link oj.Converter}) used to format the label. If not specified, a default converter depending on the axes scale is used. See {@link oj.DateTimeConverterFactory} for details on creating built-in datetime converters.
+         * <br></br>See the <a href="#valueFormats">value-formats</a> attribute for usage examples.
+         * @expose
+         * @name valueFormats.baselineStart.converter
+         * @memberof! oj.ojGantt
+         * @instance
+         * @type {?Object}
+         * @ojsignature {target: "Type", value: "?(oj.Converter<string>)", jsdocOverride: true}
+         * @default null
+         */
+        converter: null,
+        /**
+         * A string representing the label that is displayed before the value in the tooltip. The default value comes from {@link oj.ojGantt.translations.labelBaselineStart}.
+         * <br></br>See the <a href="#valueFormats">value-formats</a> attribute for usage examples.
+         * @expose
+         * @name valueFormats.baselineStart.tooltipLabel
+         * @memberof! oj.ojGantt
+         * @instance
+         * @type {string}
+         * @ojsignature {target: "Type", value: "?"}
+         * @ojtranslatable
+         */
+        tooltipLabel: undefined,
+        /**
+         * Whether the value is displayed in the tooltip.
+         * <br></br>See the <a href="#valueFormats">value-formats</a> attribute for usage examples.
+         * @expose
+         * @name valueFormats.baselineStart.tooltipDisplay
+         * @memberof! oj.ojGantt
+         * @instance
+         * @type {string}
+         * @ojsignature {target: "Type", value: "?"}
+         * @ojvalue {string} "off"
+         * @ojvalue {string} "auto"
+         * @default "auto"
+         */
+        tooltipDisplay: "auto"
+      },
+      /**
+       * Specifies tooltip behavior for the end value of the baseline.
+       * <br></br>See the <a href="#valueFormats">value-formats</a> attribute for usage examples.
+       * @expose
+       * @name valueFormats.baselineEnd
+       * @memberof! oj.ojGantt
+       * @instance
+       * @type {Object}
+       * @ojsignature {target: "Type", value: "?"}
+       * @default {"converter": null, "tooltipDisplay": "auto"}
+       */
+      baselineEnd: {
+        /**
+         * A converter (an object literal or instance that duck types {@link oj.Converter}) used to format the label. If not specified, a default converter depending on the axes scale is used. See {@link oj.DateTimeConverterFactory} for details on creating built-in datetime converters.
+         * <br></br>See the <a href="#valueFormats">value-formats</a> attribute for usage examples.
+         * @expose
+         * @name valueFormats.baselineEnd.converter
+         * @memberof! oj.ojGantt
+         * @instance
+         * @type {?Object}
+         * @ojsignature {target: "Type", value: "?(oj.Converter<string>)", jsdocOverride: true}
+         * @default null
+         */
+        converter: null,
+        /**
+         * A string representing the label that is displayed before the value in the tooltip. The default value comes from {@link oj.ojGantt.translations.labelBaselineEnd}.
+         * <br></br>See the <a href="#valueFormats">value-formats</a> attribute for usage examples.
+         * @expose
+         * @name valueFormats.baselineEnd.tooltipLabel
+         * @memberof! oj.ojGantt
+         * @instance
+         * @type {string}
+         * @ojsignature {target: "Type", value: "?"}
+         * @ojtranslatable
+         */
+        tooltipLabel: undefined,
+        /**
+         * Whether the value is displayed in the tooltip.
+         * <br></br>See the <a href="#valueFormats">value-formats</a> attribute for usage examples.
+         * @expose
+         * @name valueFormats.baselineEnd.tooltipDisplay
+         * @memberof! oj.ojGantt
+         * @instance
+         * @type {string}
+         * @ojsignature {target: "Type", value: "?"}
+         * @ojvalue {string} "off"
+         * @ojvalue {string} "auto"
+         * @default "auto"
+         */
+        tooltipDisplay: "auto"
+      },
+      /**
+       * Specifies tooltip behavior for the date value of the milestone baseline.
+       * <br></br>See the <a href="#valueFormats">value-formats</a> attribute for usage examples.
+       * @expose
+       * @name valueFormats.baselineDate
+       * @memberof! oj.ojGantt
+       * @instance
+       * @type {Object}
+       * @ojsignature {target: "Type", value: "?"}
+       * @default {"converter": null, "tooltipDisplay": "auto"}
+       */
+      baselineDate: {
+        /**
+         * A converter (an object literal or instance that duck types {@link oj.Converter}) used to format the label. If not specified, a default converter depending on the axes scale is used. See {@link oj.DateTimeConverterFactory} for details on creating built-in datetime converters.
+         * <br></br>See the <a href="#valueFormats">value-formats</a> attribute for usage examples.
+         * @expose
+         * @name valueFormats.baselineDate.converter
+         * @memberof! oj.ojGantt
+         * @instance
+         * @type {?Object}
+         * @ojsignature {target: "Type", value: "?(oj.Converter<string>)", jsdocOverride: true}
+         * @default null
+         */
+        converter: null,
+        /**
+         * A string representing the label that is displayed before the value in the tooltip. The default value comes from {@link oj.ojGantt.translations.labelBaselineDate}.
+         * <br></br>See the <a href="#valueFormats">value-formats</a> attribute for usage examples.
+         * @expose
+         * @name valueFormats.baselineDate.tooltipLabel
+         * @memberof! oj.ojGantt
+         * @instance
+         * @type {string}
+         * @ojsignature {target: "Type", value: "?"}
+         * @ojtranslatable
+         */
+        tooltipLabel: undefined,
+        /**
+         * Whether the value is displayed in the tooltip.
+         * <br></br>See the <a href="#valueFormats">value-formats</a> attribute for usage examples.
+         * @expose
+         * @name valueFormats.baselineDate.tooltipDisplay
+         * @memberof! oj.ojGantt
+         * @instance
+         * @type {string}
+         * @ojsignature {target: "Type", value: "?"}
+         * @ojvalue {string} "off"
+         * @ojvalue {string} "auto"
+         * @default "auto"
+         */
+        tooltipDisplay: "auto"
+      }
+    },
+    /**
+     * The end time of the Gantt's viewport. If not specified or invalid, this will default to a value determined by the initial 'scale' of the minor axis and the width of the Gantt. See <a href="#formats-section">Date and Time Formats</a> for more details on the required string formats.
+     * @expose
+     * @name viewportEnd
+     * @memberof oj.ojGantt
+     * @instance
+     * @type {string}
+     * @default ""
+     * 
+     * @example <caption>Initialize the Gantt with the <code class="prettyprint">viewport-end</code> attribute specified:</caption>
+     * &lt;oj-gantt viewport-end='2017-12-31T05:00:00.000Z'>&lt;/oj-gantt>
+     *
+     * @example <caption>Get or set the <code class="prettyprint">viewportEnd</code> property after initialization:</caption>
+     * // getter
+     * var value = myGantt.viewportEnd;
+     *
+     * // setter
+     * myGantt.viewportEnd = '2017-12-31T05:00:00.000Z';
+     */
+    viewportEnd: "",
+    /**
+     * The start time of the Gantt's viewport. If not specified or invalid, this will default to a value determined by the initial 'scale' of the minor axis and the width of the Gantt. See <a href="#formats-section">Date and Time Formats</a> for more details on the required string formats.
+     * @expose
+     * @name viewportStart
+     * @memberof oj.ojGantt
+     * @instance
+     * @type {string}
+     * @default ""
+     * 
+     * @example <caption>Initialize the Gantt with the <code class="prettyprint">viewport-start</code> attribute specified:</caption>
+     * &lt;oj-gantt viewport-start='2017-01-01T05:00:00.000Z'>&lt;/oj-gantt>
+     *
+     * @example <caption>Get or set the <code class="prettyprint">viewportStart</code> property after initialization:</caption>
+     * // getter
+     * var value = myGantt.viewportStart;
+     *
+     * // setter
+     * myGantt.viewportStart = '2017-01-01T05:00:00.000Z';
+     */
+    viewportStart: "",
     /**
      * Triggered after the viewport is changed due to a zoom or scroll operation.
      *
@@ -106,6 +1479,7 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
      * @event
      * @memberof oj.ojGantt
      * @instance
+     * @ojbubbles
      */
     viewportChange: null
   },
@@ -148,6 +1522,7 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
     map['task'] = "oj-gantt-task";
     map['taskBar'] = "oj-gantt-task-bar";
     map['taskMilestone'] = "oj-gantt-task-milestone";
+    map['taskSummary'] = "oj-gantt-task-summary";
     map['baseline'] = "oj-gantt-baseline";
     map['baselineBar'] = "oj-gantt-baseline-bar"
     map['baselineMilestone'] = "oj-gantt-baseline-milestone";
@@ -233,7 +1608,7 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
     var styleClasses = this._super();
 
     // animation duration
-    styleClasses['oj-gantt'] = {'path': '_resources/animationDuration', 'property': 'animation-duration'};
+    styleClasses['oj-gantt'] = {'path': '_resources/animationDuration', 'property': 'ANIM_DUR'};
 
     // Zoom Control Icons
     styleClasses['oj-gantt-zoomin-icon'] = [
@@ -270,8 +1645,8 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
     ];
 
     // Axes labels
-    styleClasses['oj-gantt-major-axis-label'] = {'path': '_resources/majorAxisLabelFontProp', 'property': 'CSS_TEXT_PROPERTIES'};
-    styleClasses['oj-gantt-minor-axis-label'] = {'path': '_resources/minorAxisLabelFontProp', 'property': 'CSS_TEXT_PROPERTIES'};
+    styleClasses['oj-gantt-major-axis-label'] = {'path': '_resources/majorAxisLabelFontProp', 'property': 'TEXT'};
+    styleClasses['oj-gantt-minor-axis-label'] = {'path': '_resources/minorAxisLabelFontProp', 'property': 'TEXT'};
 
     // chart border
     styleClasses['oj-gantt-container'] = {'path': '_resources/chartArea/strokeWidth', 'property': 'stroke-width'};
@@ -280,10 +1655,10 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
     styleClasses['oj-gantt-horizontal-gridline'] = {'path': '_resources/horizontalGridlineWidth', 'property': 'stroke-width'};
 
     // task label properties
-    styleClasses['oj-gantt-task-label'] = {'path': '_resources/taskLabelFontProp', 'property': 'CSS_TEXT_PROPERTIES'};
+    styleClasses['oj-gantt-task-label'] = {'path': '_resources/taskLabelFontProp', 'property': 'TEXT'};
 
     // row label properties
-    styleClasses['oj-gantt-row-label'] = {'path': '_resources/rowLabelFontProp', 'property': 'CSS_TEXT_PROPERTIES'};
+    styleClasses['oj-gantt-row-label'] = {'path': '_resources/rowLabelFontProp', 'property': 'TEXT'};
 
     return styleClasses;
   },
@@ -322,55 +1697,6 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
     // progress value converter for task tooltip
     var converterFactory = oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_NUMBER);
     resources['percentConverter'] = converterFactory.createConverter({style: 'percent'})
-  },
-
-  // @inheritdoc
-  _ProcessOptions: function() {
-    this._super();
-
-    // taskDefaults.labelPosition takes in Array<string>|string, and for custom elements
-    // we want the getter to always return Array<string>, so perform the conversion here.
-    // NOTE: rows[].tasks[].labelPosition also takes Array<string>|string, and getter
-    // should return Array<string> for custom elements. The conversion is done in 
-    // _RenderComponent; see comments there for reasons for doing it there.
-    var taskDefaults = this.options['taskDefaults'];
-    var labelPosition = taskDefaults ? taskDefaults['labelPosition'] : null;
-    if (this._IsCustomElement() && labelPosition && typeof labelPosition === 'string')
-      this.options['taskDefaults']['labelPosition'] = [labelPosition];
-  },
-
-  // @inheritdoc
-  _RenderComponent : function(options, isResize) {
-    // rows[].tasks[].labelPosition takes Array<string>|string, and getter
-    // should return Array<string> for custom elements. The conversion needs to be done here
-    // instead of in _ProcessOptions because:
-    // 1. rows may be a Promise, in which case we need to be able to access the array it resolves to.
-    //    The Promise is definitely resolved at this point.
-    // 2. rows is not copied (see _GetComponentDeferredDataPaths, _GetComponentNoClonePaths), and so 
-    //    the array reference in options here is the same as that of this.options['rows']
-    // 3. Since we're gauranteed to have the reference to the correct array right before component render,
-    //    we can do the conversion here.
-    var rows = options ? options['rows'] : null;
-    if (this._IsCustomElement() && rows)
-    {
-      for (var i = 0; i < rows.length; i++)
-      {
-        var tasks = rows[i]['tasks'];
-        if (tasks)
-        {
-          for (var j = 0; j < tasks.length; j++)
-          {
-            var labelPosition = tasks[j]['labelPosition'];
-            if (labelPosition && typeof labelPosition === 'string')
-            {
-              options['rows'][i]['tasks'][j]['labelPosition'] = [labelPosition];
-            }
-          }
-        }
-      }
-    }
-    
-    this._super(options, isResize);
   },
 
   // @inheritdoc
@@ -430,6 +1756,7 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
    * {@ojinclude "name":"nodeContextDoc"}
    * @param {!Element} node - {@ojinclude "name":"nodeContextParam"}
    * @returns {Object|null} {@ojinclude "name":"nodeContextReturn"}
+   * @ojsignature {target:"Type", value:"{subId: 'oj-gantt-row-label', index: number} | {subId: 'oj-gantt-taskbar', rowIndex: number, index: number} | null", jsdocOverride: true, for:"returns"}
    *
    * @example {@ojinclude "name":"nodeContextExample"}
    *
@@ -440,11 +1767,11 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
   getContextByNode: function(node)
   {
     // context objects are documented with @ojnodecontext
-      var context = this.getSubIdByNode(node);
-      if (context && context['subId'] !== 'oj-gantt-tooltip')
-        return context;
+    var context = this.getSubIdByNode(node);
+    if (context && context['subId'] !== 'oj-gantt-tooltip')
+      return context;
 
-      return null;
+    return null;
   }
 });
 
@@ -638,1321 +1965,69 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @memberof oj.ojGantt
  */
 
-/**
- * The position of the major and minor axis.
- * @expose
- * @name axisPosition
- * @memberof oj.ojGantt
- * @instance
- * @type {string}
- * @ojvalue {string} "bottom"
- * @ojvalue {string} "top"
- * @default "top"
- */
-/**
- * Defines the animation that is applied on data changes.
- * @expose
- * @name animationOnDataChange
- * @memberof oj.ojGantt
- * @instance
- * @type {string}
- * @ojvalue {string} "auto"
- * @ojvalue {string} "none"
- * @default "none"
- */
-/**
- * Defines the animation that is shown on initial display.
- * @expose
- * @name animationOnDisplay
- * @memberof oj.ojGantt
- * @instance
- * @type {string}
- * @ojvalue {string} "auto"
- * @ojvalue {string} "none"
- * @default "none"
- */
-/**
- * An array of objects that defines dependencies between tasks. Also accepts a Promise that will resolve with an array for deferred data rendering. No data will be rendered if the Promise is rejected.
- * @expose
- * @name dependencies
- * @memberof oj.ojGantt
- * @instance
- * @type {?(Array.<object>|Promise)}
- * @default null
- */
-/**
- * The identifier for the dependency line. This must be unique across all dependency lines in Gantt.
- * @expose
- * @name dependencies[].id
- * @memberof! oj.ojGantt
- * @instance
- * @type {?string}
- * @default null
- */
-/**
- * The identifier for the predecessor task. This must reference a task in Gantt.
- * @expose
- * @name dependencies[].predecessorTaskId
- * @memberof! oj.ojGantt
- * @instance
- * @type {?string}
- * @default null
- */
-/**
- * The description of the dependency line. This is used for accessibility.
- * @expose
- * @name dependencies[].shortDesc
- * @memberof! oj.ojGantt
- * @instance
- * @type {?string}
- * @default null
- * @ojtranslatable
- */
-/**
- * The identifier for the successor task. This must reference a task in Gantt.
- * @expose
- * @name dependencies[].successorTaskId
- * @memberof! oj.ojGantt
- * @instance
- * @type {?string}
- * @default null
- */
-/**
- * A space delimited list of class name set on the dependency line.
- * @expose
- * @name dependencies[].svgClassName
- * @memberof! oj.ojGantt
- * @instance
- * @type {?string}
- * @default null
- */
-/**
- * The CSS style defining the style of the dependency line.
- * @expose
- * @name dependencies[].svgStyle
- * @memberof! oj.ojGantt
- * @instance
- * @type {?object}
- * @default null
- */
-/**
- * The type of dependency. The following values are supported: <ul> <li>finishStart: predecessor task must finish before successor task can start.</li> <li>finishFinish: predecessor task must finish before successor task can finish.</li> <li>startStart: predecessor task must start before successor task can start.</li> <li>startFinish: predecessor task must start before successor task can finish.</li> </ul> 
- * @expose
- * @name dependencies[].type
- * @memberof! oj.ojGantt
- * @instance
- * @type {string}
- * @ojvalue {string} "startStart"
- * @ojvalue {string} "startFinish"
- * @ojvalue {string} "finishFinish"
- * @ojvalue {string} "finishStart"
- * @default "finishStart"
- */
-/**
- * The end time of the Gantt. This is required in order for the Gantt to properly render. See <a href="oj.ojGantt.html#formats-section">Date and Time Formats</a> for more details on string formats.
- * @expose
- * @name end
- * @memberof oj.ojGantt
- * @instance
- * @type {?string}
- * @default null
- */
-/**
- * An object specifying whether to display or hide the horizontal and vertical grid lines.
- * @expose
- * @name gridlines
- * @memberof oj.ojGantt
- * @instance
- * @type {?object}
- * @default null
- */
-/**
- * Horizontal gridlines. The default value is "auto", which means Gantt will decide whether the grid lines should be made visible or hidden.
- * @expose
- * @name gridlines.horizontal
- * @memberof! oj.ojGantt
- * @instance
- * @type {string}
- * @ojvalue {string} "hidden"
- * @ojvalue {string} "visible"
- * @ojvalue {string} "auto"
- * @default "auto"
- */
-/**
- * Vertical gridlines. The default value is "auto", which means Gantt will decide whether the grid lines should be made visible or hidden.
- * @expose
- * @name gridlines.vertical
- * @memberof! oj.ojGantt
- * @instance
- * @type {string}
- * @ojvalue {string} "hidden"
- * @ojvalue {string} "visible"
- * @ojvalue {string} "auto"
- * @default "auto"
- */
-/**
- * An object with the following properties, used to define the minor time axis. This is required in order for the Gantt to properly render.
- * @expose
- * @name minorAxis
- * @memberof oj.ojGantt
- * @instance
- * @type {?object}
- * @default null
- */
-/**
- * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used to format the labels of the minor axis. If not specified, the default converter is used. If a single converter is specified, it will be used for all 'scale' values. Otherwise, an object whose keys are 'scale' values that map to the converter instances is expected. See <a href="oj.DateTimeConverterFactory.html">oj.DateTimeConverterFactory</a> for details on creating built-in datetime converters.
- * @expose
- * @name minorAxis.converter
- * @memberof! oj.ojGantt
- * @instance
- * @type {?object}
- * @default null
- */
-/**
- * The default converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) to use for all 'scale' values that do not otherwise have a converter object provided. See <a href="oj.DateTimeConverterFactory.html">oj.DateTimeConverterFactory</a> for details on creating built-in datetime converters.
- * @expose
- * @name minorAxis.converter.default
- * @memberof! oj.ojGantt
- * @instance
- * @type {?object}
- * @default null
- */
-/**
- * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used for the 'seconds' scale. If not specified, the default converter will be used for this scale. See <a href="oj.DateTimeConverterFactory.html">oj.DateTimeConverterFactory</a> for details on creating built-in datetime converters.
- * @expose
- * @name minorAxis.converter.seconds
- * @memberof! oj.ojGantt
- * @instance
- * @type {?object}
- * @default null
- */
-/**
- * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used for the 'minutes' scale. If not specified, the default converter will be used for this scale. See <a href="oj.DateTimeConverterFactory.html">oj.DateTimeConverterFactory</a> for details on creating built-in datetime converters.
- * @expose
- * @name minorAxis.converter.minutes
- * @memberof! oj.ojGantt
- * @instance
- * @type {?object}
- * @default null
- */
-/**
- * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used for the 'hours' scale. If not specified, the default converter will be used for this scale. See <a href="oj.DateTimeConverterFactory.html">oj.DateTimeConverterFactory</a> for details on creating built-in datetime converters.
- * @expose
- * @name minorAxis.converter.hours
- * @memberof! oj.ojGantt
- * @instance
- * @type {?object}
- * @default null
- */
-/**
- * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used for the 'days' scale. If not specified, the default converter will be used for this scale. See <a href="oj.DateTimeConverterFactory.html">oj.DateTimeConverterFactory</a> for details on creating built-in datetime converters.
- * @expose
- * @name minorAxis.converter.days
- * @memberof! oj.ojGantt
- * @instance
- * @type {?object}
- * @default null
- */
-/**
- * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used for the 'weeks' scale. If not specified, the default converter will be used for this scale. See <a href="oj.DateTimeConverterFactory.html">oj.DateTimeConverterFactory</a> for details on creating built-in datetime converters.
- * @expose
- * @name minorAxis.converter.weeks
- * @memberof! oj.ojGantt
- * @instance
- * @type {?object}
- * @default null
- */
-/**
- * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used for the 'months' scale. If not specified, the default converter will be used for this scale. See <a href="oj.DateTimeConverterFactory.html">oj.DateTimeConverterFactory</a> for details on creating built-in datetime converters.
- * @expose
- * @name minorAxis.converter.months
- * @memberof! oj.ojGantt
- * @instance
- * @type {?object}
- * @default null
- */
-/**
- * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used for the 'quarters' scale. If not specified, the default converter will be used for this scale. See <a href="oj.DateTimeConverterFactory.html">oj.DateTimeConverterFactory</a> for details on creating built-in datetime converters.
- * @expose
- * @name minorAxis.converter.quarters
- * @memberof! oj.ojGantt
- * @instance
- * @type {?object}
- * @default null
- */
-/**
- * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used for the 'years' scale. If not specified, the default converter will be used for this scale. See <a href="oj.DateTimeConverterFactory.html">oj.DateTimeConverterFactory</a> for details on creating built-in datetime converters.
- * @expose
- * @name minorAxis.converter.years
- * @memberof! oj.ojGantt
- * @instance
- * @type {?object}
- * @default null
- */
-/**
- * The time scale used for the minor axis. This is required in order for the Gantt to properly render.
- * @expose
- * @name minorAxis.scale
- * @memberof! oj.ojGantt
- * @instance
- * @type {?string}
- * @ojvalue {string} "seconds"
- * @ojvalue {string} "minutes"
- * @ojvalue {string} "hours"
- * @ojvalue {string} "days"
- * @ojvalue {string} "weeks"
- * @ojvalue {string} "months"
- * @ojvalue {string} "quarters"
- * @ojvalue {string} "years"
- * @default null
- */
-/**
- * An array of strings containing the names of scales used for zooming from longest to shortest. If not specified, the 'scale' specified on the axis will be used at all zoom levels.
- * @expose
- * @name minorAxis.zoomOrder
- * @memberof! oj.ojGantt
- * @instance
- * @type {?Array.<string>}
- * @default null
- */
-/**
- * An object with the following properties, used to define the major time axis. If not specified, no major time axis is shown.
- * @expose
- * @name majorAxis
- * @memberof oj.ojGantt
- * @instance
- * @type {?object}
- * @default null
- */
-/**
- * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used to format the labels of the major axis. If not specified, the default converter is used. If a single converter is specified, it will be used for all 'scale' values. Otherwise, an object whose keys are 'scale' values that map to the converter instances is expected. See <a href="oj.DateTimeConverterFactory.html">oj.DateTimeConverterFactory</a> for details on creating built-in datetime converters.
- * @expose
- * @name majorAxis.converter
- * @memberof! oj.ojGantt
- * @instance
- * @type {?object}
- * @default null
- */
-/**
- * The default converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) to use for all 'scale' values that do not otherwise have a converter object provided. See <a href="oj.DateTimeConverterFactory.html">oj.DateTimeConverterFactory</a> for details on creating built-in datetime converters.
- * @expose
- * @name majorAxis.converter.default
- * @memberof! oj.ojGantt
- * @instance
- * @type {?object}
- * @default null
- */
-/**
- * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used for the 'seconds' scale. If not specified, the default converter will be used for this scale. See <a href="oj.DateTimeConverterFactory.html">oj.DateTimeConverterFactory</a> for details on creating built-in datetime converters.
- * @expose
- * @name majorAxis.converter.seconds
- * @memberof! oj.ojGantt
- * @instance
- * @type {?object}
- * @default null
- */
-/**
- * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used for the 'minutes' scale. If not specified, the default converter will be used for this scale. See <a href="oj.DateTimeConverterFactory.html">oj.DateTimeConverterFactory</a> for details on creating built-in datetime converters.
- * @expose
- * @name majorAxis.converter.minutes
- * @memberof! oj.ojGantt
- * @instance
- * @type {?object}
- * @default null
- */
-/**
- * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used for the 'hours' scale. If not specified, the default converter will be used for this scale. See <a href="oj.DateTimeConverterFactory.html">oj.DateTimeConverterFactory</a> for details on creating built-in datetime converters.
- * @expose
- * @name majorAxis.converter.hours
- * @memberof! oj.ojGantt
- * @instance
- * @type {?object}
- * @default null
- */
-/**
- * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used for the 'days' scale. If not specified, the default converter will be used for this scale. See <a href="oj.DateTimeConverterFactory.html">oj.DateTimeConverterFactory</a> for details on creating built-in datetime converters.
- * @expose
- * @name majorAxis.converter.days
- * @memberof! oj.ojGantt
- * @instance
- * @type {?object}
- * @default null
- */
-/**
- * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used for the 'weeks' scale. If not specified, the default converter will be used for this scale. See <a href="oj.DateTimeConverterFactory.html">oj.DateTimeConverterFactory</a> for details on creating built-in datetime converters.
- * @expose
- * @name majorAxis.converter.weeks
- * @memberof! oj.ojGantt
- * @instance
- * @type {?object}
- * @default null
- */
-/**
- * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used for the 'months' scale. If not specified, the default converter will be used for this scale. See <a href="oj.DateTimeConverterFactory.html">oj.DateTimeConverterFactory</a> for details on creating built-in datetime converters.
- * @expose
- * @name majorAxis.converter.months
- * @memberof! oj.ojGantt
- * @instance
- * @type {?object}
- * @default null
- */
-/**
- * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used for the 'quarters' scale. If not specified, the default converter will be used for this scale. See <a href="oj.DateTimeConverterFactory.html">oj.DateTimeConverterFactory</a> for details on creating built-in datetime converters.
- * @expose
- * @name majorAxis.converter.quarters
- * @memberof! oj.ojGantt
- * @instance
- * @type {?object}
- * @default null
- */
-/**
- * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used for the 'years' scale. If not specified, the default converter will be used for this scale. See <a href="oj.DateTimeConverterFactory.html">oj.DateTimeConverterFactory</a> for details on creating built-in datetime converters.
- * @expose
- * @name majorAxis.converter.years
- * @memberof! oj.ojGantt
- * @instance
- * @type {?object}
- * @default null
- */
-/**
- * The time scale used for the major axis.
- * @expose
- * @name majorAxis.scale
- * @memberof! oj.ojGantt
- * @instance
- * @type {?string}
- * @ojvalue {string} "seconds"
- * @ojvalue {string} "minutes"
- * @ojvalue {string} "hours"
- * @ojvalue {string} "days"
- * @ojvalue {string} "weeks"
- * @ojvalue {string} "months"
- * @ojvalue {string} "quarters"
- * @ojvalue {string} "years"
- * @default null
- */
-/**
- * An array of strings containing the names of scales used for zooming from longest to shortest. If not specified, the 'scale' specified on the axis will be used at all zoom levels.
- * @expose
- * @name majorAxis.zoomOrder
- * @memberof! oj.ojGantt
- * @instance
- * @type {?Array.<string>}
- * @default null
- */
-/**
- * The array of reference objects associated with the gantt. For each reference object, a line is rendered at the specified value. Currently only the first reference object in the array is supported. Any additional objects supplied in the array will be ignored.
- * @expose
- * @name referenceObjects
- * @memberof oj.ojGantt
- * @instance
- * @type {?Array.<object>}
- * @default null
- */
-/**
- * A space delimited list of CSS style classes defining the style of the reference object. Note that only CSS style applicable to SVG elements can be used.
- * @expose
- * @name referenceObjects[].svgClassName
- * @memberof! oj.ojGantt
- * @instance
- * @type {?string}
- * @default null
- */
-/**
- * The CSS style defining the style of the reference object.
- * @expose
- * @name referenceObjects[].svgStyle
- * @memberof! oj.ojGantt
- * @instance
- * @type {?object}
- * @default null
- */
-/**
- * The time value of this reference object. If not specified, no reference object will be shown. See <a href="oj.ojGantt.html#formats-section">Date and Time Formats</a> for more details on string formats.
- * @expose
- * @name referenceObjects[].value
- * @memberof! oj.ojGantt
- * @instance
- * @type {?string}
- * @default null
- */
-/**
- * An object defining properties for the row labels region.
- * @expose
- * @name rowAxis
- * @memberof oj.ojGantt
- * @instance
- * @type {?object}
- * @default null
- */
-/**
- * Defines whether row labels are rendered.
- * @expose
- * @name rowAxis.rendered
- * @memberof! oj.ojGantt
- * @instance
- * @type {string}
- * @ojvalue {string} "on"
- * @ojvalue {string} "off"
- * @default "off"
- */
-/**
- * Defines the maximum width of the region in pixels (e.g. '50px') or percent (e.g. '15%') of the element width. If 'none' is specified, then the width has no maximum value. Labels will truncate to fit.
- * @expose
- * @name rowAxis.maxWidth
- * @memberof! oj.ojGantt
- * @instance
- * @type {?string}
- * @default null
- */
-/**
- * An array of objects with the following properties, used to define rows and tasks within rows. Also accepts a Promise that will resolve with an array for deferred data rendering. No data will be rendered if the Promise is rejected.
- * @expose
- * @name rows
- * @memberof oj.ojGantt
- * @instance
- * @type {?(Array.<object>|Promise)}
- * @default null
- */
-/**
- * The identifier for the row. Optional if the row contains only one task. This must be unique across all rows in Gantt.
- * @expose
- * @name rows[].id
- * @memberof! oj.ojGantt
- * @instance
- * @type {?string}
- * @default null
- */
-/**
- * The label associated with the row.
- * @expose
- * @name rows[].label
- * @memberof! oj.ojGantt
- * @instance
- * @type {?string}
- * @default null
- * @ojtranslatable
- */
-/**
- * The CSS style defining the style of the label. Only CSS style applicable to SVG elements can be used.
- * @expose
- * @name rows[].labelStyle
- * @memberof! oj.ojGantt
- * @instance
- * @type {?object}
- * @default null
- */
-/**
- * An array of objects with the following properties, used to define a task. If not specified, no data will be shown. When only one of 'start' or 'end' value is specified, or when 'start' and 'end' values are equal, the task is considered a milestone task.
- * @expose
- * @name rows[].tasks
- * @memberof! oj.ojGantt
- * @instance
- * @type {?Array.<object>}
- * @default null
- */
-/**
- * The border radius of the task. Accepts values allowed in CSS border-radius attribute.
- * @expose
- * @name rows[].tasks[].borderRadius
- * @memberof! oj.ojGantt
- * @instance
- * @type {?string}
- * @default null
- */
-/**
- * The end time of this task. Optional if task is a single date event like Milestone. Either start or end has to be defined in order for the task to properly render. See <a href="oj.ojGantt.html#formats-section">Date and Time Formats</a> for more details on string formats.
- * @expose
- * @name rows[].tasks[].end
- * @memberof! oj.ojGantt
- * @instance
- * @type {?string}
- * @default null
- */
-/**
- * The height of the task in pixel.
- * @expose
- * @name rows[].tasks[].height
- * @memberof! oj.ojGantt
- * @instance
- * @type {?number}
- * @default null
- * @ojunits pixels
- */
-/**
- * The identifier for the task. This must be unique across all tasks in the Gantt, and is required in order for the Gantt to properly render.
- * @expose
- * @name rows[].tasks[].id
- * @memberof! oj.ojGantt
- * @instance
- * @type {?string}
- * @default null
- */
-/**
- * The label associated with the task.
- * @expose
- * @name rows[].tasks[].label
- * @memberof! oj.ojGantt
- * @instance
- * @type {?string}
- * @default null
- * @ojtranslatable
- */
-/**
- * The position of the label relative to the task. An array of values is also supported. If an array is specified, then the values are traversed until a position that can fully display the label is found. If 'max' is specified in the array, then of all the positions evaluated up to that point of the traversal, the one with the largest space is used (label is truncated to fit). Naturally, 'max' is ignored if it's specified as the first value of the array. If the last value of the array is reached, but the label cannot be fully displayed, then the label is placed at that position, truncated to fit. Due to space constraints in the milestone and task with progress cases, the inner positions will exhibit the following behaviors: <ul> <li> For milestones, specifying 'innerStart', 'innerEnd', or 'innerCenter' would be equivalent to specifying 'start', 'end', and 'end' respectively. </li> <li> For tasks with progress, 'innerCenter' means the label will be aligned to the end of the progress bar, either placed inside or outside of the progress, whichever is the larger space. 'innerStart' and 'innerEnd' positions are honored when there is enough space to show the label at those positions. Otherwise, the aforementioned 'innerCenter' behavior is exhibited. </li> </ul>
- * @expose
- * @name rows[].tasks[].labelPosition
- * @memberof! oj.ojGantt
- * @instance
- * @type {string|Array.<string>}
- * @ojvalue {string} "start"
- * @ojvalue {string} "innerCenter"
- * @ojvalue {string} "innerStart"
- * @ojvalue {string} "innerEnd"
- * @ojvalue {string} "end"
- * @ojvalue {string} "none"
- * @default ["end", "innerCenter", "start", "max"]
- */
-/**
- * The CSS style defining the style of the label. Only CSS style applicable to SVG elements can be used.
- * @expose
- * @name rows[].tasks[].labelStyle
- * @memberof! oj.ojGantt
- * @instance
- * @type {?object}
- * @default null
- */
-/**
- * The start time of this task. Optional if task is a single date event like Milestone. Either start or end has to be defined in order for the task to properly render. See <a href="oj.ojGantt.html#formats-section">Date and Time Formats</a> for more details on string formats.
- * @expose
- * @name rows[].tasks[].start
- * @memberof! oj.ojGantt
- * @instance
- * @type {?string}
- * @default null
- */
-/**
- * The description of the task. This is used for accessibility and for customizing the tooltip text.
- * @expose
- * @name rows[].tasks[].shortDesc
- * @memberof! oj.ojGantt
- * @instance
- * @type {?string}
- * @default null
- * @ojtranslatable
- */
-/**
- * A space delimited list of CSS style classes defining the style of the task.
- * @expose
- * @name rows[].tasks[].svgClassName
- * @memberof! oj.ojGantt
- * @instance
- * @type {?string}
- * @default null
- */
-/**
- * The CSS style defining the style of the task.
- * @expose
- * @name rows[].tasks[].svgStyle
- * @memberof! oj.ojGantt
- * @instance
- * @type {?object}
- * @default null
- */
-/**
- * Specifies the progress of the task. This property is ignored if the task is a milestone.
- * @expose
- * @name rows[].tasks[].progress
- * @memberof! oj.ojGantt
- * @instance
- * @type {?object}
- * @default null
- */
-/**
- * The border radius of the progress bar. Accepts values allowed in CSS border-radius attribute.
- * @expose
- * @name rows[].tasks[].progress.borderRadius
- * @memberof! oj.ojGantt
- * @instance
- * @type {?string}
- * @default null
- */
-/**
- * Specifies the height of the progress bar in pixels (e.g. '50px') or percent of the associated task bar (e.g. '15%').
- * @expose
- * @name rows[].tasks[].progress.height
- * @memberof! oj.ojGantt
- * @instance
- * @type {?string}
- * @default null
- */
-/**
- * A space delimited list of CSS style classes to apply to the progress bar. Note that only CSS style applicable to SVG elements can be used.
- * @expose
- * @name rows[].tasks[].progress.svgClassName
- * @memberof! oj.ojGantt
- * @instance
- * @type {?string}
- * @default null
- */
-/**
- * The CSS inline style to apply to the progress bar. Only CSS style applicable to SVG elements can be used.
- * @expose
- * @name rows[].tasks[].progress.svgStyle
- * @memberof! oj.ojGantt
- * @instance
- * @type {?object}
- * @default null
- */
-/**
- * The value of the progress between 0 and 1 inclusive. If not specified or invalid, no progress will be shown.
- * @expose
- * @name rows[].tasks[].progress.value
- * @memberof! oj.ojGantt
- * @instance
- * @type {?number}
- * @default null
- * @ojmax 1.0
- * @ojmin 0.0
- */
-/**
- * Specifies the baseline of the task. When only one of 'start' or 'end' value is specified, or when 'start' and 'end' values are equal, the baseline is considered a milestone baseline.
- * @expose
- * @name rows[].tasks[].baseline
- * @memberof! oj.ojGantt
- * @instance
- * @type {?object}
- * @default null
- */
-/**
- * The border radius of the baseline. Accepts values allowed in CSS border-radius attribute.
- * @expose
- * @name rows[].tasks[].baseline.borderRadius
- * @memberof! oj.ojGantt
- * @instance
- * @type {?string}
- * @default null
- */
-/**
- * The end time of the baseline. Optional if baseline is a milestone. Either start or end has to be defined in order for the baseline to properly render. See <a href="oj.ojGantt.html#formats-section">Date and Time Formats</a> for more details on string formats.
- * @expose
- * @name rows[].tasks[].baseline.end
- * @memberof! oj.ojGantt
- * @instance
- * @type {?string}
- * @default null
- */
-/**
- * The height of the baseline in pixel.
- * @expose
- * @name rows[].tasks[].baseline.height
- * @memberof! oj.ojGantt
- * @instance
- * @type {?number}
- * @default null
- * @ojunits pixels
- */
-/**
- * The start time of the baseline. Optional if baseline is a milestone. Either start or end has to be defined in order for the baseline to properly render. See <a href="oj.ojGantt.html#formats-section">Date and Time Formats</a> for more details on string formats.
- * @expose
- * @name rows[].tasks[].baseline.start
- * @memberof! oj.ojGantt
- * @instance
- * @type {?string}
- * @default null
- */
-/**
- * A space delimited list of CSS style classes defining the style of the baseline.
- * @expose
- * @name rows[].tasks[].baseline.svgClassName
- * @memberof! oj.ojGantt
- * @instance
- * @type {?string}
- * @default null
- */
-/**
- * The CSS style defining the style of the baseline.
- * @expose
- * @name rows[].tasks[].baseline.svgStyle
- * @memberof! oj.ojGantt
- * @instance
- * @type {?object}
- * @default null
- */
-/**
- * An array of strings containing the ids of the initially selected tasks.
- * @expose
- * @name selection
- * @memberof oj.ojGantt
- * @instance
- * @type {?Array.<string>}
- * @ojwriteback
- * @default null
- */
-/**
- * The type of selection behavior that is enabled on the Gantt. If 'single' is specified, only a single task can be selected at once. If 'multiple', any number of tasks can be selected at once. Otherwise, selection is disabled.
- * @expose
- * @name selectionMode
- * @memberof oj.ojGantt
- * @instance
- * @type {string}
- * @ojvalue {string} "single"
- * @ojvalue {string} "multiple"
- * @ojvalue {string} "none"
- * @default "none"
- */
-/**
- * The start time of the Gantt. This is required in order for the Gantt to properly render. See <a href="oj.ojGantt.html#formats-section">Date and Time Formats</a> for more details on string formats.
- * @expose
- * @name start
- * @memberof oj.ojGantt
- * @instance
- * @type {?string}
- * @default null
- */
-/**
- * An object with the following properties, used to define default styling for tasks in the Gantt.
- * @expose
- * @name taskDefaults
- * @memberof oj.ojGantt
- * @instance
- * @type {?object}
- * @default null
- */
-/**
- * The border radius of the task. Accepts values allowed in CSS border-radius attribute.
- * @expose
- * @name taskDefaults.borderRadius
- * @memberof! oj.ojGantt
- * @instance
- * @type {?string}
- * @default null
- */
-/**
- * The position of the label relative to the task. An array of values is also supported. If an array is specified, then the values are traversed until a position that can fully display the label is found. If 'max' is specified in the array, then of all the positions evaluated up to that point of the traversal, the one with the largest space is used (label is truncated to fit). Naturally, 'max' is ignored if it's specified as the first value of the array. If the last value of the array is reached, but the label cannot be fully displayed, then the label is placed at that position, truncated to fit. Due to space constraints in the milestone and task with progress cases, the inner positions will exhibit the following behaviors: <ul> <li> For milestones, specifying 'innerStart', 'innerEnd', or 'innerCenter' would be equivalent to specifying 'start', 'end', and 'end' respectively. </li> <li> For tasks with progress, 'innerCenter' means the label will be aligned to the end of the progress bar, either placed inside or outside of the progress, whichever is the larger space. 'innerStart' and 'innerEnd' positions are honored when there is enough space to show the label at those positions. Otherwise, the aforementioned 'innerCenter' behavior is exhibited. </li> </ul>
- * @expose
- * @name taskDefaults.labelPosition
- * @memberof! oj.ojGantt
- * @instance
- * @type {string|Array.<string>}
- * @ojvalue {string} "start"
- * @ojvalue {string} "innerCenter"
- * @ojvalue {string} "innerStart"
- * @ojvalue {string} "innerEnd"
- * @ojvalue {string} "end"
- * @ojvalue {string} "none"
- * @default ["end", "innerCenter", "start", "max"]
- */
-/**
- * The height of the task in pixel.
- * @expose
- * @name taskDefaults.height
- * @memberof! oj.ojGantt
- * @instance
- * @type {?number}
- * @default null
- * @ojunits pixels
- */
-/**
- * A space delimited list of CSS style classes defining the style of the task.
- * @expose
- * @name taskDefaults.svgClassName
- * @memberof! oj.ojGantt
- * @instance
- * @type {?string}
- * @default null
- */
-/**
- * The CSS style defining the style of the task.
- * @expose
- * @name taskDefaults.svgStyle
- * @memberof! oj.ojGantt
- * @instance
- * @type {?object}
- * @default null
- */
-/**
- * An object with the following properties, used to define default styling for progress bars on non-milestone tasks.
- * @expose
- * @name taskDefaults.progress
- * @memberof! oj.ojGantt
- * @instance
- * @type {?object}
- * @default null
- */
-/**
- * The border radius of the progress bar. Accepts values allowed in CSS border-radius attribute.
- * @expose
- * @name taskDefaults.progress.borderRadius
- * @memberof! oj.ojGantt
- * @instance
- * @type {?string}
- * @default null
- */
-/**
- * Specifies the height of the progress bar in pixels (e.g. '50px') or percent of the associated task bar (e.g. '15%').
- * @expose
- * @name taskDefaults.progress.height
- * @memberof! oj.ojGantt
- * @instance
- * @type {?string}
- * @default null
- */
-/**
- * A space delimited list of CSS style classes to apply to the progress bar. Note that only CSS style applicable to SVG elements can be used.
- * @expose
- * @name taskDefaults.progress.svgClassName
- * @memberof! oj.ojGantt
- * @instance
- * @type {?string}
- * @default null
- */
-/**
- * The CSS inline style to apply to the progress bar. Only CSS style applicable to SVG elements can be used.
- * @expose
- * @name taskDefaults.progress.svgStyle
- * @memberof! oj.ojGantt
- * @instance
- * @type {?object}
- * @default null
- */
-/**
- * An object with the following properties, used to define default styling for task baseline elements.
- * @expose
- * @name taskDefaults.baseline
- * @memberof! oj.ojGantt
- * @instance
- * @type {?object}
- * @default null
- */
-/**
- * The border radius of the baseline. Accepts values allowed in CSS border-radius attribute.
- * @expose
- * @name taskDefaults.baseline.borderRadius
- * @memberof! oj.ojGantt
- * @instance
- * @type {?string}
- * @default null
- */
-/**
- * The height of the baseline in pixel.
- * @expose
- * @name taskDefaults.baseline.height
- * @memberof! oj.ojGantt
- * @instance
- * @type {?number}
- * @default null
- * @ojunits pixels
- */
-/**
- * A space delimited list of CSS style classes defining the style of the baseline.
- * @expose
- * @name taskDefaults.baseline.svgClassName
- * @memberof! oj.ojGantt
- * @instance
- * @type {?string}
- * @default null
- */
-/**
- * The CSS style defining the style of the baseline.
- * @expose
- * @name taskDefaults.baseline.svgStyle
- * @memberof! oj.ojGantt
- * @instance
- * @type {?object}
- * @default null
- */
-/**
- * An object containing an optional callback function for tooltip customization. 
- * @expose
- * @name tooltip
- * @memberof oj.ojGantt
- * @instance
- * @type {?object}
- * @default null
- */
-/**
- *  A function that returns a custom tooltip. The function takes a dataContext argument, 
- *  provided by the gantt, with the following properties: 
- *  <ul>
- *     <li>parentElement: The tooltip element. This can be used to change the tooltip border or background color.</li>
- *     <li>data: The data object of the hovered task.</li>
- *     <li>rowData: The data for the row the hovered task belongs to.</li>
- *     <li>componentElement: The gantt element.</li>
- *     <li>color: The color of the hovered task.</li>
- *   </ul>
- *  The function should return an Object that contains only one of the two properties:
- *  <ul>
- *    <li>insert: HTMLElement | string - An HTML element, which will be appended to the tooltip, or a tooltip string.</li> 
- *    <li>preventDefault: <code>true</code> - Indicates that the tooltip should not be displayed. It is not necessary to return {preventDefault:false} to display tooltip, since this is a default behavior.</li> 
- *  </ul>
- * @expose
- * @name tooltip.renderer
- * @memberof! oj.ojGantt
- * @instance
- * @type {?function(object)}
- * @default null
- */
-/**
- * An object specifying value formatting and tooltip behavior, whose keys generally correspond to task properties.
- * @expose
- * @name valueFormats
- * @memberof oj.ojGantt
- * @instance
- * @type {?object}
- * @default null
- */
-/**
- * Specifies tooltip behavior for the row value.
- * @expose
- * @name valueFormats.row
- * @memberof! oj.ojGantt
- * @instance
- * @type {?object}
- * @default null
- */
-/**
- * A string representing the label that is displayed before the value in the tooltip.
- * @expose
- * @name valueFormats.row.tooltipLabel
- * @memberof! oj.ojGantt
- * @instance
- * @type {?string}
- * @default null
- * @ojtranslatable
- */
-/**
- * Whether the value is displayed in the tooltip.
- * @expose
- * @name valueFormats.row.tooltipDisplay
- * @memberof! oj.ojGantt
- * @instance
- * @type {string}
- * @ojvalue {string} "off"
- * @ojvalue {string} "auto"
- * @default "auto"
- */
-/**
- * Specifies tooltip behavior for the start value.
- * @expose
- * @name valueFormats.start
- * @memberof! oj.ojGantt
- * @instance
- * @type {?object}
- * @default null
- */
-/**
- * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used to format the label. See <a href="oj.DateTimeConverterFactory.html">oj.DateTimeConverterFactory</a> for details on creating built-in datetime converters.
- * @expose
- * @name valueFormats.start.converter
- * @memberof! oj.ojGantt
- * @instance
- * @type {?object}
- * @default null
- */
-/**
- * A string representing the label that is displayed before the value in the tooltip.
- * @expose
- * @name valueFormats.start.tooltipLabel
- * @memberof! oj.ojGantt
- * @instance
- * @type {?string}
- * @default null
- * @ojtranslatable
- */
-/**
- * Whether the value is displayed in the tooltip.
- * @expose
- * @name valueFormats.start.tooltipDisplay
- * @memberof! oj.ojGantt
- * @instance
- * @type {string}
- * @ojvalue {string} "off"
- * @ojvalue {string} "auto"
- * @default "auto"
- */
-/**
- * Specifies tooltip behavior for the end value.
- * @expose
- * @name valueFormats.end
- * @memberof! oj.ojGantt
- * @instance
- * @type {?object}
- * @default null
- */
-/**
- * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used to format the label. See <a href="oj.DateTimeConverterFactory.html">oj.DateTimeConverterFactory</a> for details on creating built-in datetime converters.
- * @expose
- * @name valueFormats.end.converter
- * @memberof! oj.ojGantt
- * @instance
- * @type {?object}
- * @default null
- */
-/**
- * A string representing the label that is displayed before the value in the tooltip.
- * @expose
- * @name valueFormats.end.tooltipLabel
- * @memberof! oj.ojGantt
- * @instance
- * @type {?string}
- * @default null
- * @ojtranslatable
- */
-/**
- * Whether the value is displayed in the tooltip.
- * @expose
- * @name valueFormats.end.tooltipDisplay
- * @memberof! oj.ojGantt
- * @instance
- * @type {string}
- * @ojvalue {string} "off"
- * @ojvalue {string} "auto"
- * @default "auto"
- */
-/**
- * Specifies tooltip behavior for the date value of a milestone task.
- * @expose
- * @name valueFormats.date
- * @memberof! oj.ojGantt
- * @instance
- * @type {?object}
- * @default null
- */
-/**
- * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used to format the label. See <a href="oj.DateTimeConverterFactory.html">oj.DateTimeConverterFactory</a> for details on creating built-in datetime converters.
- * @expose
- * @name valueFormats.date.converter
- * @memberof! oj.ojGantt
- * @instance
- * @type {?object}
- * @default null
- */
-/**
- * A string representing the label that is displayed before the value in the tooltip.
- * @expose
- * @name valueFormats.date.tooltipLabel
- * @memberof! oj.ojGantt
- * @instance
- * @type {?string}
- * @default null
- * @ojtranslatable
- */
-/**
- * Whether the value is displayed in the tooltip.
- * @expose
- * @name valueFormats.date.tooltipDisplay
- * @memberof! oj.ojGantt
- * @instance
- * @type {string}
- * @ojvalue {string} "off"
- * @ojvalue {string} "auto"
- * @default "auto"
- */
-/**
- * Specifies tooltip behavior for the label value.
- * @expose
- * @name valueFormats.label
- * @memberof! oj.ojGantt
- * @instance
- * @type {?object}
- * @default null
- */
-/**
- * A string representing the label that is displayed before the value in the tooltip.
- * @expose
- * @name valueFormats.label.tooltipLabel
- * @memberof! oj.ojGantt
- * @instance
- * @type {?string}
- * @default null
- * @ojtranslatable
- */
-/**
- * Whether the value is displayed in the tooltip.
- * @expose
- * @name valueFormats.label.tooltipDisplay
- * @memberof! oj.ojGantt
- * @instance
- * @type {string}
- * @ojvalue {string} "off"
- * @ojvalue {string} "auto"
- * @default "auto"
- */
-/**
- * Specifies tooltip behavior for the progress value.
- * @expose
- * @name valueFormats.progress
- * @memberof! oj.ojGantt
- * @instance
- * @type {?object}
- * @default null
- */
-/**
- * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used to format the label. See <a href="oj.NumberConverterFactory.html">oj.NumberConverterFactory</a> for details on creating built-in number converters.
- * @expose
- * @name valueFormats.progress.converter
- * @memberof! oj.ojGantt
- * @instance
- * @type {?object}
- * @default null
- */
-/**
- * A string representing the label that is displayed before the value in the tooltip.
- * @expose
- * @name valueFormats.progress.tooltipLabel
- * @memberof! oj.ojGantt
- * @instance
- * @type {?string}
- * @default null
- * @ojtranslatable
- */
-/**
- * Whether the value is displayed in the tooltip.
- * @expose
- * @name valueFormats.progress.tooltipDisplay
- * @memberof! oj.ojGantt
- * @instance
- * @type {string}
- * @ojvalue {string} "off"
- * @ojvalue {string} "auto"
- * @default "auto"
- */
-/**
- * Specifies tooltip behavior for the start value of the baseline.
- * @expose
- * @name valueFormats.baselineStart
- * @memberof! oj.ojGantt
- * @instance
- * @type {?object}
- * @default null
- */
-/**
- * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used to format the label. See <a href="oj.DateTimeConverterFactory.html">oj.DateTimeConverterFactory</a> for details on creating built-in datetime converters.
- * @expose
- * @name valueFormats.baselineStart.converter
- * @memberof! oj.ojGantt
- * @instance
- * @type {?object}
- * @default null
- */
-/**
- * A string representing the label that is displayed before the value in the tooltip.
- * @expose
- * @name valueFormats.baselineStart.tooltipLabel
- * @memberof! oj.ojGantt
- * @instance
- * @type {?string}
- * @default null
- * @ojtranslatable
- */
-/**
- * Whether the value is displayed in the tooltip.
- * @expose
- * @name valueFormats.baselineStart.tooltipDisplay
- * @memberof! oj.ojGantt
- * @instance
- * @type {string}
- * @ojvalue {string} "off"
- * @ojvalue {string} "auto"
- * @default "auto"
- */
-/**
- * Specifies tooltip behavior for the end value of the baseline.
- * @expose
- * @name valueFormats.baselineEnd
- * @memberof! oj.ojGantt
- * @instance
- * @type {?object}
- * @default null
- */
-/**
- * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used to format the label. See <a href="oj.DateTimeConverterFactory.html">oj.DateTimeConverterFactory</a> for details on creating built-in datetime converters.
- * @expose
- * @name valueFormats.baselineEnd.converter
- * @memberof! oj.ojGantt
- * @instance
- * @type {?object}
- * @default null
- */
-/**
- * A string representing the label that is displayed before the value in the tooltip.
- * @expose
- * @name valueFormats.baselineEnd.tooltipLabel
- * @memberof! oj.ojGantt
- * @instance
- * @type {?string}
- * @default null
- * @ojtranslatable
- */
-/**
- * Whether the value is displayed in the tooltip.
- * @expose
- * @name valueFormats.baselineEnd.tooltipDisplay
- * @memberof! oj.ojGantt
- * @instance
- * @type {string}
- * @ojvalue {string} "off"
- * @ojvalue {string} "auto"
- * @default "auto"
- */
-/**
- * Specifies tooltip behavior for the date value of the milestone baseline.
- * @expose
- * @name valueFormats.baselineDate
- * @memberof! oj.ojGantt
- * @instance
- * @type {?object}
- * @default null
- */
-/**
- * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used to format the label. See <a href="oj.DateTimeConverterFactory.html">oj.DateTimeConverterFactory</a> for details on creating built-in datetime converters.
- * @expose
- * @name valueFormats.baselineDate.converter
- * @memberof! oj.ojGantt
- * @instance
- * @type {?object}
- * @default null
- */
-/**
- * A string representing the label that is displayed before the value in the tooltip.
- * @expose
- * @name valueFormats.baselineDate.tooltipLabel
- * @memberof! oj.ojGantt
- * @instance
- * @type {?string}
- * @default null
- * @ojtranslatable
- */
-/**
- * Whether the value is displayed in the tooltip.
- * @expose
- * @name valueFormats.baselineDate.tooltipDisplay
- * @memberof! oj.ojGantt
- * @instance
- * @type {string}
- * @ojvalue {string} "off"
- * @ojvalue {string} "auto"
- * @default "auto"
- */
-/**
- * The end time of the Gantt's viewport. If not specified, this will default to a value determined by the initial 'scale' of the minor axis and the width of the Gantt. See <a href="oj.ojGantt.html#formats-section">Date and Time Formats</a> for more details on string formats.
- * @expose
- * @name viewportEnd
- * @memberof oj.ojGantt
- * @instance
- * @type {?string}
- * @default null
- */
-/**
- * The start time of the Gantt's viewport. If not specified, this will default to a value determined by the initial 'scale' of the minor axis and the width of the Gantt. See <a href="oj.ojGantt.html#formats-section">Date and Time Formats</a> for more details on string formats.
- * @expose
- * @name viewportStart
- * @memberof oj.ojGantt
- * @instance
- * @type {?string}
- * @default null
- */
+// PROPERTY TYPEDEFS
+
+/**
+ * @typedef {Object} oj.ojGantt.Dependency
+ * @property {string} id The identifier for the dependency line. This must be unique across all dependency lines in Gantt.
+ * @property {string} predecessorTaskId The identifier for the predecessor task. This must reference a task in Gantt.
+ * @property {string=} shortDesc The description of the dependency line. This is used for accessibility.
+ * @property {string} successorTaskId The identifier for the successor task. This must reference a task in Gantt.
+ * @property {string=} svgClassName A space delimited list of class name set on the dependency line.
+ * @property {Object=} svgStyle The CSS style defining the style of the dependency line.
+ * @property {"startStart"|"startFinish"|"finishFinish"|"finishStart"} [type="finishStart"] The type of dependency. The following values are supported: <ul> <li>finishStart: predecessor task must finish before successor task can start.</li> <li>finishFinish: predecessor task must finish before successor task can finish.</li> <li>startStart: predecessor task must start before successor task can start.</li> <li>startFinish: predecessor task must start before successor task can finish.</li> </ul>
+ */
+/**
+ * @typedef {Object} oj.ojGantt.ReferenceObject
+ * @property {string=} svgClassName A space delimited list of CSS style classes defining the style of the reference object. Note that only CSS style applicable to SVG elements can be used.
+ * @property {Object=} svgStyle The CSS style defining the style of the reference object.
+ * @property {string=} value The time value of this reference object. If not specified, no reference object will be shown. See <a href="#formats-section">Date and Time Formats</a> for more details on required string formats.
+ */
+/**
+ * @typedef {Object} oj.ojGantt.Row
+ * @property {string=} id The identifier for the row. Optional if the row contains only one task. This must be unique across all rows in Gantt.
+ * @property {string=} label The label associated with the row.
+ * @property {Object=} labelStyle The CSS style defining the style of the label. Only CSS style applicable to SVG elements can be used.
+ * @property {Array.<oj.ojGantt.RowTask>} [tasks] An array of tasks. If not specified, no data will be shown. When only one of 'start' or 'end' value is specified, or when 'start' and 'end' values are equal, the task is considered a milestone task. Note that values of analogous properties from <a href="#taskDefaults">task-defaults</a> are used for any unspecified properties on the task, and values of any specified properties would override those from <a href="#taskDefaults">task-defaults</a>.
+ */
+/**
+ * @typedef {Object} oj.ojGantt.RowTask
+ * @property {string=} borderRadius The border radius of the task. Accepts values allowed in CSS border-radius attribute. The default value comes from <a href="#taskDefaults.borderRadius">task-defaults.border-radius</a>.
+ * @property {string=} end The end time of this task. Optional if task is a single date event like Milestone. Either start or end has to be defined in order for the task to properly render. See <a href="#formats-section">Date and Time Formats</a> for more details on the required string formats.
+ * @property {number=} height The height of the task in pixel. The default value comes from <a href="#taskDefaults.height">task-defaults.height</a>.
+ * @property {string} id The identifier for the task. This must be unique across all tasks in the Gantt, and is required in order for the Gantt to properly render.
+ * @property {string=} label The label associated with the task.
+ * @property {(string|Array.<string>)=} labelPosition The position of the label relative to the task. An array of values is also supported. If an array is specified, then the values are traversed until a position that can fully display the label is found. If 'max' is specified in the array, then of all the positions evaluated up to that point of the traversal, the one with the largest space is used (label is truncated to fit). Naturally, 'max' is ignored if it's specified as the first value of the array. If the last value of the array is reached, but the label cannot be fully displayed, then the label is placed at that position, truncated to fit. Due to space constraints in the milestone and task with progress cases, the inner positions will exhibit the following behaviors: <ul> <li> For milestones, specifying 'innerStart', 'innerEnd', or 'innerCenter' would be equivalent to specifying 'start', 'end', and 'end' respectively. </li> <li> For tasks with progress, 'innerCenter' means the label will be aligned to the end of the progress bar, either placed inside or outside of the progress, whichever is the larger space. 'innerStart' and 'innerEnd' positions are honored when there is enough space to show the label at those positions. Otherwise, the aforementioned 'innerCenter' behavior is exhibited. </li> </ul> The default value comes from <a href="#taskDefaults.labelPosition">task-defaults.label-position</a>.
+ * @property {Object=} labelStyle The CSS style defining the style of the label. Only CSS style applicable to SVG elements can be used.
+ * @property {string=} start The start time of this task. Optional if task is a single date event like Milestone. Either start or end has to be defined in order for the task to properly render. See <a href="#formats-section">Date and Time Formats</a> for more details on the required string formats.
+ * @property {string=} shortDesc The description of the task. This is used for accessibility and for customizing the tooltip text.
+ * @property {string=} svgClassName A space delimited list of CSS style classes defining the style of the task. The default value comes from <a href="#taskDefaults.svgClassName">task-defaults.svg-class-name</a>.
+ * @property {Object=} svgStyle The CSS style defining the style of the task. The default value comes from <a href="#taskDefaults.svgStyle">task-defaults.svg-style</a>.
+ * @property {("normal"|"milestone"|"summary"|"auto")=} type Defines the task type to be rendered.<br></br>If "milestone", and if 'start' and 'end' values are specified and unequal, the 'start' value is used to evaluate position.<br></br>If "auto", the type is inferred from the data:<ul> <li>If 'start' and 'end' values are specified and unequal, "normal" type is assumed.</li> <li>Otherwise, "milestone" type is assumed.</li></ul> The default value comes from <a href="#taskDefaults.type">task-defaults.type</a>.
+ * @property {Object=} progress Specifies the progress of the task. This property is ignored if the task is a milestone. The default value comes from <a href="#taskDefaults.progress">task-defaults.progress</a>.
+ * @property {string=} progress.borderRadius The border radius of the progress bar. Accepts values allowed in CSS border-radius attribute. The default value comes from <a href="#taskDefaults.progress.borderRadius">task-defaults.progress.border-radius</a>.
+ * @property {number=} progress.height Specifies the height of the progress bar in pixels (e.g. '50px') or percent of the associated task bar (e.g. '15%'). The default value comes from <a href="#taskDefaults.progress.height">task-defaults.progress.height</a>.
+ * @property {string=} progress.svgClassName A space delimited list of CSS style classes to apply to the progress bar. Note that only CSS style applicable to SVG elements can be used. The default value comes from <a href="#taskDefaults.progress.svgClassName">task-defaults.progress.svg-class-name</a>.
+ * @property {Object=} progress.svgStyle The CSS inline style to apply to the progress bar. Only CSS style applicable to SVG elements can be used. The default value comes from <a href="#taskDefaults.progress.svgStyle">task-defaults.progress.svg-style</a>.
+ * @property {number=} progress.value The value of the progress between 0 and 1 inclusive. If not specified or invalid, no progress will be shown.
+ * @property {Object=} baseline Specifies the baseline of the task. When only one of 'start' or 'end' value is specified, or when 'start' and 'end' values are equal, the baseline is considered a milestone baseline. The default value comes from <a href="#taskDefaults.baseline">task-defaults.baseline</a>.
+ * @property {string=} baseline.borderRadius The border radius of the baseline. Accepts values allowed in CSS border-radius attribute. The default value comes from <a href="#taskDefaults.baseline.borderRadius">task-defaults.baseline.border-radius</a>.
+ * @property {string=} baseline.end The end time of the baseline. Optional if baseline is a milestone. Either start or end has to be defined in order for the baseline to properly render. See <a href="#formats-section">Date and Time Formats</a> for more details on the required string formats.
+ * @property {number=} baseline.height The height of the baseline in pixel. The default value comes from <a href="#taskDefaults.baseline.height">task-defaults.baseline.height</a>.
+ * @property {string=} baseline.start The start time of the baseline. Optional if baseline is a milestone. Either start or end has to be defined in order for the baseline to properly render. See <a href="#formats-section">Date and Time Formats</a> for more details on the required string formats.
+ * @property {string=} baseline.svgClassName A space delimited list of CSS style classes defining the style of the baseline. The default value comes from <a href="#taskDefaults.baseline.svgClassName">task-defaults.baseline.svg-class-name</a>.
+ * @property {Object=} baseline.svgStyle The CSS style defining the style of the baseline. The default value comes from <a href="#taskDefaults.baseline.svgStyle">task-defaults.baseline.svg-style</a>.
+ */
+/**
+ * @typedef {Object} oj.ojGantt.TooltipContext
+ * @property {Element} parentElement The tooltip element. This can be used to change the tooltip border or background color.
+ * @property {Object} data The data object of the hovered task.
+ * @property {Object} rowData The data for the row the hovered task belongs to.
+ * @property {Element} componentElement The gantt element.
+ * @property {string} color The color of the hovered task.
+ */
+
+// KEEP FOR WIDGET SYNTAX
 
 // SubId Locators **************************************************************
 
@@ -2182,6 +2257,10 @@ var ojGanttMeta = {
               "type": "object"
             }
           }
+        },
+        "type": {
+          "type": "string",
+          "enumValues": ["normal", "milestone", "summary", "auto"]
         }
       }
     },
@@ -2192,79 +2271,155 @@ var ojGanttMeta = {
       }
     },
     "translations": {
-      "type": "object",
+      "type": "Object",
       "properties": {
         "accessibleDependencyInfo": {
-          "type": "string"
-        },
-        "accessibleDurationDays": {
-          "type": "string"
-        },
-        "accessibleDurationHours": {
-          "type": "string"
-        },
-        "accessibleMilestoneInfo": {
-          "type": "string"
+          "type": "string",
+          "value": "Dependency type {0}, connects {1} to {2}"
         },
         "accessiblePredecessorInfo": {
-          "type": "string"
-        },
-        "accessibleRowInfo": {
-          "type": "string"
+          "type": "string",
+          "value": "{0} predecessors"
         },
         "accessibleSuccessorInfo": {
-          "type": "string"
+          "type": "string",
+          "value": "{0} successors"
         },
-        "accessibleTaskInfo": {
-          "type": "string"
+        "accessibleTaskTypeMilestone": {
+          "type": "string",
+          "value": "Milestone"
+        },
+        "accessibleTaskTypeSummary": {
+          "type": "string",
+          "value": "Summary"
         },
         "componentName": {
-          "type": "string"
+          "type": "string",
+          "value": "Gantt"
         },
         "finishFinishDependencyAriaDesc": {
-          "type": "string"
+          "type": "string",
+          "value": "finish to finish"
         },
         "finishStartDependencyAriaDesc": {
-          "type": "string"
+          "type": "string",
+          "value": "finish to start"
+        },
+        "labelAndValue": {
+          "type": "string",
+          "value": "{0}: {1}"
         },
         "labelBaselineDate": {
-          "type": "string"
+          "type": "string",
+          "value": "Baseline Date"
         },
         "labelBaselineEnd": {
-          "type": "string"
+          "type": "string",
+          "value": "Baseline End"
         },
         "labelBaselineStart": {
-          "type": "string"
+          "type": "string",
+          "value": "Baseline Start"
+        },
+        "labelClearSelection": {
+          "type": "string",
+          "value": "Clear Selection"
+        },
+        "labelCountWithTotal": {
+          "type": "string",
+          "value": "{0} of {1}"
+        },
+        "labelDataVisualization": {
+          "type": "string",
+          "value": "Data Visualization"
         },
         "labelDate": {
-          "type": "string"
+          "type": "string",
+          "value": "Date"
         },
         "labelEnd": {
-          "type": "string"
+          "type": "string",
+          "value": "End"
+        },
+        "labelInvalidData": {
+          "type": "string",
+          "value": "Invalid data"
         },
         "labelLabel": {
-          "type": "string"
+          "type": "string",
+          "value": "Label"
+        },
+        "labelNoData": {
+          "type": "string",
+          "value": "No data to display"
         },
         "labelProgress": {
-          "type": "string"
+          "type": "string",
+          "value": "Progress"
         },
         "labelRow": {
-          "type": "string"
+          "type": "string",
+          "value": "Row"
         },
         "labelStart": {
-          "type": "string"
+          "type": "string",
+          "value": "Start"
         },
         "startFinishDependencyAriaDesc": {
-          "type": "string"
+          "type": "string",
+          "value": "start to finish"
         },
         "startStartDependencyAriaDesc": {
-          "type": "string"
+          "type": "string",
+          "value": "start to start"
+        },
+        "stateCollapsed": {
+          "type": "string",
+          "value": "Collapsed"
+        },
+        "stateDrillable": {
+          "type": "string",
+          "value": "Drillable"
+        },
+        "stateExpanded": {
+          "type": "string",
+          "value": "Expanded"
+        },
+        "stateHidden": {
+          "type": "string",
+          "value": "Hidden"
+        },
+        "stateIsolated": {
+          "type": "string",
+          "value": "Isolated"
+        },
+        "stateMaximized": {
+          "type": "string",
+          "value": "Maximized"
+        },
+        "stateMinimized": {
+          "type": "string",
+          "value": "Minimized"
+        },
+        "stateSelected": {
+          "type": "string",
+          "value": "Selected"
+        },
+        "stateUnselected": {
+          "type": "string",
+          "value": "Unselected"
+        },
+        "stateVisible": {
+          "type": "string",
+          "value": "Visible"
         },
         "tooltipZoomIn": {
-          "type": "string"
+          "type": "string",
+          "value": "Zoom In"
         },
         "tooltipZoomOut": {
-          "type": "string"
+          "type": "string",
+          "value": "Zoom Out"
         }
       }
     },

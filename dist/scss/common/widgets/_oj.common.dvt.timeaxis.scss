@@ -41,7 +41,7 @@
     }
 
     .oj-datagrid-column-header-cell .oj-timeaxis-separator {
-      stroke: $dataGridHeaderBorderColor;
+      stroke: $collectionHeaderBorderColor;
     }
 
     /* Styling border for stamping onto ojTable header case:
@@ -58,7 +58,7 @@
     }
 
     .oj-datagrid-column-header-cell .oj-timeaxis ~ .oj-timeaxis {
-      border-top: 1px solid $dataGridHeaderBorderColor;
+      border-top: 1px solid $collectionHeaderBorderColor;
     }
   }
 }

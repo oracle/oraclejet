@@ -1,0 +1,63 @@
+// Copyright (c) 2014, 2018, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+@import "../../utilities/oj.utilities";
+@import "../../common/helpers/oj.common.helpers";
+
+// ----- start dependencies ---------
+
+// set up include variables before importing dependencies
+@if $includeMessagesClasses != false {
+  $includeIconClasses: true !global;
+  $includePopupClasses: true !global;
+  $includeMessageClasses: true !global;
+}
+
+// import dependencies
+@import "oj.alta.android.icons";
+@import "oj.alta.android.popup";
+@import "oj.alta.android.message";
+
+// ----- end dependencies ---------
+
+// import classes defined in the common directory
+@import "../../common/widgets/oj.common.messages";
+
+@if $includeMessagesClasses != false {
+  @include module-include-once("alta.android.messages") {
+    
+    //INDIVIDUAL MESSAGE OVERRIDES
+    //////////////////////////////
+    
+    .oj-messages-inline .oj-message-header {
+      padding: 17px 24px 11px 24px;
+    }
+    
+    .oj-messages-inline .oj-message-body {
+      padding: 0px 24px 17px 24px;
+    }
+    
+    oj-messages:not(.oj-messages-inline) .oj-message-header {
+      padding: 15px 16px 10px 16px;
+    }
+    
+    oj-messages:not(.oj-messages-inline) .oj-message-body {
+      padding: 0px 16px 15px 16px;
+    }
+    
+    // Small screen responsive overrides
+    @if $responsiveQuerySmallOnly and $responsiveQuerySmallOnly != none {
+      @media  #{$responsiveQuerySmallOnly} {
+        
+        //INDIVIDUAL MESSAGE OVERRIDES
+        //////////////////////////////
+        
+        .oj-messages-inline .oj-message-header {
+          padding: 15px 16px 10px 16px;
+        }
+        
+        .oj-messages-inline .oj-message-body {
+          padding: 0px 16px 15px 16px;
+        }
+      }
+    }
+  }
+}

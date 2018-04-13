@@ -1,8 +1,8 @@
 {
   "name": "oj-defer",
-  "version": "4.2.0",
-  "jetVersion": "4.2.0",
+  "version": "5.0.0",
+  "jetVersion": "5.0.0",
   "displayName": "Defer",
   "preview": true,
-  "description": "Defer Element"
+  "description": "Used to delay applying bindings to its children until it is activated. Child elements are disconnected from the DOM tree until the parent component activates its subtree."
 }

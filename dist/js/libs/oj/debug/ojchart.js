@@ -1,4 +1,5 @@
 /**
+ * @license
  * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
@@ -6,31 +7,42 @@
 define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/internal-deps/dvt/DvtChart'], function(oj, $, comp, base, dvt)
 {
 /**
- * @ojcomponent oj.ojSparkChart
+ * Copyright (c) 2014, Oracle and/or its affiliates.
+ * All rights reserved.
+ */
+
+/**
+ * @ojcomponent oj.ojChart
  * @augments oj.dvtBaseComponent
  * @since 0.7
  * @ojstatus preview
+ * @ojtsignore
+ * @ojshortdesc Displays information graphically, making relationships among the data easier to understand.
+ * @ojrole application
  *
  * @classdesc
- * <h3 id="sparkChartOverview-section">
- *   JET Spark Chart
- *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#sparkChartOverview-section"></a>
+ * <h3 id="chartOverview-section">
+ *   JET Chart
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#chartOverview-section"></a>
  * </h3>
  *
- * <p>Spark Chart component for JET with support for bar, line, area, and floating bar subtypes.  Spark Charts are
- * designed to visualize the trend of a data set in a compact form factor.</p>
+ * <p>JET Chart with support for bar, line, area, combination, pie, scatter, bubble, funnel, box plot, and stock
+ * chart types.</p>
  *
  * {@ojinclude "name":"warning"}
  *
  * <pre class="prettyprint">
  * <code>
- * &lt;oj-spark-chart
- *   type='line'
- *   items='[5, 8, 2, 7, 0, 9]'
+ * &lt;oj-chart
+ *   type='bar'
+ *   series='[{"name": "Q1 Sales", "items": [50, 60, 20]}]'
+ *   groups='["Phone", "Tablets", "Laptops"]'
  * >
- * &lt;/oj-spark-chart>
+ * &lt;/oj-chart>
  * </code>
  * </pre>
+ *
+ * {@ojinclude "name":"a11yKeyboard"}
  *
  * <h3 id="touch-section">
  *   Touch End User Information
@@ -51,122 +63,700 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/in
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#perf-section"></a>
  * </h3>
  *
- * {@ojinclude "name":"trackResize"}
+ * <h4>Animation</h4>
+ * <p>Animation should only be enabled for visualizations of small to medium data sets. When animating changes to larger
+ *    data sets or when animating between data sets, it's recommended to turn off the
+ *    <code class="prettyprint">styleDefaults.animationIndicators</code>, since they effectively double the amount of
+ *    work required for the animation.
+ * </p>
  *
- * {@ojinclude "name":"a11y"}
+ * <h4>Data Set Size</h4>
+ * <p>As a rule of thumb, it's recommended that applications only set usable data densities on the chart. For example,
+ *    it's not recommended to show more than 500 bars on a 500 pixel wide chart, since the  bars will be unusably thin.
+ *    While there are several optimizations within the chart to deal with large data sets, it's always more efficient to
+ *    reduce the data set size as early as possible. Future optimizations will focus on improving end user experience as
+ *    well as developer productivity for common use cases.
+ * </p>
+ *
+ * <h4>Styling</h4>
+ * <p>Use the highest level property available. For example, consider setting styling properties on
+ *    <code class="prettyprint">styleDefaults</code> or <code class="prettyprint">series</code>, instead of styling properties
+ *    on the individual data items. The chart can take advantage of these higher level properties to apply the style properties on
+ *    containers, saving expensive DOM calls.
+ * </p>
+ *
+ * {@ojinclude "name":"fragment_trackResize"}
  *
  * {@ojinclude "name":"rtl"}
  */
-oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
-{
-  widgetEventPrefix : "oj",
-  options: {},
+oj.__registerWidget('oj.ojChart', $['oj']['dvtBaseComponent'],
+  {
+    widgetEventPrefix: "oj",
+    options: {
+      /**
+       * An object with the following properties, used to define the series and groups when using a DataProvider to provide data to the chart. Also accepts a Promise for deferred data rendering.
+       * @ignore
+       * @name data
+       * @memberof oj.ojChart
+       * @instance
+       * @type {Object|Promise|null}
+       * @ojsignature {target: "Accessor", value: {GetterType: "Promise<oj.ojChart.Data>|null", SetterType: "oj.ojChart.Data|Promise<oj.ojChart.Data>|null"}, jsdocOverride: true}
+       * @default null
+       */
+       data: null,
+       
+      /**
+       * Triggered during a selection gesture, such as a change in the marquee selection rectangle.
+       *
+       * @property {Array} items an array containing the string ids of the selected data items
+       * @property {Array} selectionData an array containing objects describing the selected data items
+       * @property {object} selectionData.data the data of the item, if one was specified
+       * @property {Array} selectionData.groupData the group data of the item
+       * @property {object} selectionData.seriesData the series data of the item
+       * @property {string} endGroup the end group of a marquee selection on a chart with categorical axis
+       * @property {string} startGroup the start group of a marquee selection on a chart with categorical axis
+       * @property {number} xMax the maximum x value of a marquee selection
+       * @property {number} xMin the minimum x value of a marquee selection
+       * @property {number} yMax the maximum y value of a marquee selection
+       * @property {number} yMin the minimum y value of a marquee selection
+       *
+       * @expose
+       * @event
+       * @memberof oj.ojChart
+       * @instance
+       * @ojbubbles
+       */
+      selectInput: null,
 
-  //** @inheritdoc */
-  _CreateDvtComponent : function(context, callback, callbackObj) {
-    this._focusable({'element': this.element, 'applyHighlight': true});
-    return dvt.SparkChart.newInstance(context, callback, callbackObj);
-  },
+      /**
+       * Triggered after the viewport is changed due to a zoom or scroll operation.
+       *
+       * @property {string} endGroup the end group of the new viewport on a chart with categorical axis
+       * @property {string} startGroup the start group of the new viewport on a chart with categorical axis
+       * @property {number} xMax the maximum x value of the new viewport
+       * @property {number} xMin the minimum x value of the new viewport
+       * @property {number} yMax the maximum y value of the new viewport
+       * @property {number} yMin the minimum y value of the new viewport
+       *
+       * @expose
+       * @event
+       * @memberof oj.ojChart
+       * @instance
+       * @ojbubbles
+       */
+      viewportChange: null,
 
-  //** @inheritdoc */
-  _GetComponentStyleClasses : function() {
-    var styleClasses = this._super();
-    styleClasses.push('oj-sparkchart');
-    return styleClasses;
-  },
+      /**
+       * Triggered during a viewport change gesture, such as a drag operation on the overview window. Note: There are
+       * situations where the chart cannot determine whether the viewport change gesture is still in progress, such
+       * as with mouse wheel zoom interactions. Standard viewportChange events are fired in these cases.
+       *
+       * @property {string} endGroup the end group of the new viewport on a chart with categorical axis
+       * @property {string} startGroup the start group of the new viewport on a chart with categorical axis
+       * @property {number} xMax the maximum x value of the new viewport
+       * @property {number} xMin the minimum x value of the new viewport
+       * @property {number} yMax the maximum y value of the new viewport
+       * @property {number} yMin the minimum y value of the new viewport
+       *
+       * @expose
+       * @event
+       * @memberof oj.ojChart
+       * @instance
+       * @ojbubbles
+       */
+      viewportChangeInput: null,
 
-  //** @inheritdoc */
-  _GetTranslationMap: function() {
-    // The translations are stored on the options object.
-    var translations = this.options['translations'];
+      /**
+       * Triggered during a drill gesture (double click if selection is enabled, single click otherwise).
+       *
+       * @property {string} id the id of the drilled object
+       * @property {string} series the series id of the drilled object, if applicable
+       * @property {string} group the group id of the drilled object, if applicable
+       * @property {Object} data  the data object of the drilled item
+       * @property {Object} seriesData the data for the series of the drilled object
+       * @property {Array} groupData an array of data for the group the drilled object belongs to. For hierarchical groups, it will be an array of outermost to innermost group data related to the drilled object
+       *
+       * @expose
+       * @event
+       * @memberof oj.ojChart
+       * @instance
+       * @ojbubbles
+       */
+      drill: null
+    },
 
-    // Safe to modify super's map because function guarentees a new map is returned
-    var ret = this._super();
-    ret['DvtUtilBundle.CHART'] = translations['componentName'];
-    return ret;
-  },
+    //** @inheritdoc */
+    _CreateDvtComponent: function(context, callback, callbackObj) {
+      return dvt.Chart.newInstance(context, callback, callbackObj);
+    },
 
-  //** @inheritdoc */
-  _Render : function() {
-    // Display the title of the surrounding div as the tooltip. Remove title from div to avoid browser default tooltip.
-    if(this.element.attr('title'))
+    //** @inheritdoc */
+    _ConvertLocatorToSubId : function(locator) {
+      var subId = locator['subId'];
+
+      // Convert the supported locators
+      if(subId == 'oj-chart-item') {
+        // dataItem[seriesIndex][itemIndex]
+        subId = 'dataItem[' + locator['seriesIndex'] + '][' + locator['itemIndex'] + ']';
+      }
+      else if(subId == 'oj-chart-group') {
+        // group[index1][index2]...[indexN]
+        subId = 'group' + this._GetStringFromIndexPath(locator['indexPath']);
+      }
+      else if(subId == 'oj-chart-series') {
+        // series[index]
+        subId = 'series[' + locator['index'] + ']';
+      }
+      else if(subId == 'oj-chart-axis-title') {
+        // xAxis/yAxis/y2Axis:title
+        subId = locator['axis'] + ':title';
+      }
+      else if(subId == 'oj-chart-reference-object') {
+        // xAxis/yAxis/y2Axis:referenceObject[index]
+        subId = locator['axis'] + ':referenceObject[' + locator['index'] + ']';
+      }
+      else if(subId == 'oj-legend-item') {
+        // legend:section[sectionIndex0][sectionIndex1]...[sectionIndexN]:item[itemIndex]
+        subId = 'legend:section' + this._GetStringFromIndexPath(locator['sectionIndexPath']);
+        subId += ':item[' + locator['itemIndex'] + ']';
+      }
+      else if(subId == 'oj-chart-tooltip') {
+        subId = 'tooltip';
+      }
+      else if(subId == 'oj-chart-pie-center-label') {
+        subId = 'pieCenterLabel';
+      }
+
+      // Return the converted result or the original subId if a supported locator wasn't recognized. We will remove
+      // support for the old subId syntax in 1.2.0.
+      return subId;
+    },
+
+
+    //** @inheritdoc */
+    _ProcessOptions: function() {
+      this._super();
+      var center = this.options['pieCenter'];
+      if (center && center['_renderer'])
+        center['renderer'] = this._GetTemplateRenderer(center['_renderer'], 'center');
+      
+      var selection = this.options['selection'];
+      // The array<object> type is deprecated since 2.1.0 so for custom elements 
+      // we are breaking selection in order to push developers to use the correct syntax
+      if(this._IsCustomElement() && selection && typeof selection[0] == 'object')
+        this.options['selection'] = null;
+    },
+
+    //** @inheritdoc */
+    _ConvertSubIdToLocator : function(subId) {
+      var locator = {};
+
+      if(subId.indexOf('dataItem') == 0) {
+        // dataItem[seriesIndex][itemIndex]
+        var indexPath = this._GetIndexPath(subId);
+
+        locator['subId'] = 'oj-chart-item';
+        locator['seriesIndex'] = indexPath[0];
+        locator['itemIndex'] = indexPath[1];
+      }
+      else if(subId.indexOf('group') == 0) {
+        // group[index1][index2]...[indexN]
+        locator['subId'] = 'oj-chart-group';
+        locator['indexPath'] = this._GetIndexPath(subId);
+      }
+      else if(subId.indexOf('series') == 0) {
+        // series[index]
+        locator['subId'] = 'oj-chart-series';
+        locator['index'] = this._GetFirstIndex(subId);
+      }
+      else if(subId.indexOf('Axis:title') > 0) {
+        // xAxis/yAxis/y2Axis:title
+        locator['subId'] = 'oj-chart-axis-title';
+        locator['axis'] = subId.substring(0, subId.indexOf(':'));
+      }
+      else if(subId.indexOf('Axis:referenceObject') > 0) {
+        // xAxis/yAxis/y2Axis:referenceObject[index]
+        locator['subId'] = 'oj-chart-reference-object';
+        locator['axis'] = subId.substring(0, subId.indexOf(':'));
+        locator['index'] = this._GetFirstIndex(subId);
+      }
+      else if(subId.indexOf('legend') == 0) {
+        if(subId.indexOf(':item') > 0) {
+          // legend:section[sectionIndex0][sectionIndex1]...[sectionIndexN]:item[itemIndex]
+          var itemStartIndex = subId.indexOf(':item');
+          var sectionSubstr = subId.substring(0, itemStartIndex);
+          var itemSubstr = subId.substring(itemStartIndex);
+
+          locator['subId'] = 'oj-legend-item';
+          locator['sectionIndexPath'] = this._GetIndexPath(sectionSubstr);
+          locator['itemIndex'] = this._GetFirstIndex(itemSubstr);
+        }
+      }
+      else if(subId == 'tooltip') {
+        locator['subId'] = 'oj-chart-tooltip';
+      }
+      else if(subId == 'pieCenterLabel') {
+        locator['subId'] = 'oj-chart-pie-center-label';
+      }
+
+      return locator;
+    },
+
+    //** @inheritdoc */
+    _ProcessStyles: function() {
+      this._super();
+      if (!this.options['styleDefaults'])
+        this.options['styleDefaults'] = {};
+      if (!this.options['styleDefaults']['colors']) {
+        var handler = new oj.ColorAttributeGroupHandler();
+        // override default colors with css attribute group colors
+        this.options['styleDefaults']['colors'] = handler.getValueRamp();
+      }
+    },
+    
+    //** @inheritdoc */
+    _GetComponentRendererOptions: function() {
+      return ['tooltip/renderer', 'pieCenter/renderer'];
+    },
+    
+    //** @inheritdoc */
+    _GetComponentStyleClasses: function() {
+      var styleClasses = this._super();
+      styleClasses.push('oj-chart');
+      return styleClasses;
+    },
+
+    //** @inheritdoc */
+    _GetChildStyleClasses: function() {
+      var styleClasses = this._super();
+      styleClasses['oj-chart-data-label'] = {'path': 'styleDefaults/dataLabelStyle', 'property': 'TEXT'};
+      styleClasses['oj-chart-data-cursor-line'] = {'path': 'styleDefaults/dataCursor/lineColor', 'property': 'color'};
+      styleClasses['oj-chart-stack-label'] = {'path': 'styleDefaults/stackLabelStyle', 'property': 'TEXT'};
+      styleClasses['oj-chart-pie-center-label'] = {'path': 'pieCenter/labelStyle', 'property': 'TEXT'};
+      styleClasses['oj-chart-slice-label'] = {'path': 'styleDefaults/sliceLabelStyle', 'property': 'TEXT'};
+      styleClasses['oj-chart-stock-falling'] = {'path': 'styleDefaults/stockFallingColor', 'property': 'background-color'};
+      styleClasses['oj-chart-stock-range'] = {'path': 'styleDefaults/stockRangeColor', 'property': 'background-color'};
+      styleClasses['oj-chart-stock-rising'] = {'path': 'styleDefaults/stockRisingColor', 'property': 'background-color'};
+      styleClasses['oj-chart-tooltip-label'] = {'path': 'styleDefaults/tooltipLabelStyle', 'property': 'TEXT'};
+      styleClasses['oj-chart-xaxis-tick-label'] = {'path': 'xAxis/tickLabel/style', 'property': 'TEXT'};
+      styleClasses['oj-chart-xaxis-title'] = {'path': 'xAxis/titleStyle', 'property': 'TEXT'};
+      styleClasses['oj-chart-yaxis-tick-label'] = {'path': 'yAxis/tickLabel/style', 'property': 'TEXT'};
+      styleClasses['oj-chart-yaxis-title'] = {'path': 'yAxis/titleStyle', 'property': 'TEXT'};
+      styleClasses['oj-chart-y2axis-tick-label'] = {'path': 'y2Axis/tickLabel/style', 'property': 'TEXT'};
+      styleClasses['oj-chart-y2axis-title'] = {'path': 'y2Axis/titleStyle', 'property': 'TEXT'};
+
+      // Legend
+      styleClasses['oj-legend'] = {'path': 'legend/textStyle', 'property': 'TEXT'};
+      styleClasses['oj-legend-title'] = {'path': 'legend/titleStyle', 'property': 'TEXT'};
+
+      return styleClasses;
+    },
+
+    //** @inheritdoc */
+    _GetEventTypes : function() {
+      return ['drill', 'optionChange', 'selectInput', 'viewportChange', 'viewportChangeInput'];
+    },
+
+    //** @inheritdoc */
+    _GetTranslationMap: function() {
+      // The translations are stored on the options object.
+      var translations = this.options['translations'];
+
+      // Safe to modify super's map because function guarentees a new map is returned
+      var ret = this._super();
+      ret['DvtChartBundle.DEFAULT_GROUP_NAME'] = translations['labelDefaultGroupName'];
+      ret['DvtChartBundle.LABEL_SERIES'] = translations['labelSeries'];
+      ret['DvtChartBundle.LABEL_GROUP'] = translations['labelGroup'];
+      ret['DvtChartBundle.LABEL_VALUE'] = translations['labelValue'];
+      ret['DvtChartBundle.LABEL_TARGET_VALUE'] = translations['labelTargetValue'];
+      ret['DvtChartBundle.LABEL_X'] = translations['labelX'];
+      ret['DvtChartBundle.LABEL_Y'] = translations['labelY'];
+      ret['DvtChartBundle.LABEL_Z'] = translations['labelZ'];
+      ret['DvtChartBundle.LABEL_PERCENTAGE'] = translations['labelPercentage'];
+      ret['DvtChartBundle.LABEL_LOW'] = translations['labelLow'];
+      ret['DvtChartBundle.LABEL_HIGH'] = translations['labelHigh'];
+      ret['DvtChartBundle.LABEL_OPEN'] = translations['labelOpen'];
+      ret['DvtChartBundle.LABEL_CLOSE'] = translations['labelClose'];
+      ret['DvtChartBundle.LABEL_VOLUME'] = translations['labelVolume'];
+      ret['DvtChartBundle.LABEL_Q1'] = translations['labelQ1'];
+      ret['DvtChartBundle.LABEL_Q2'] = translations['labelQ2'];
+      ret['DvtChartBundle.LABEL_Q3'] = translations['labelQ3'];
+      ret['DvtChartBundle.LABEL_MIN'] = translations['labelMin'];
+      ret['DvtChartBundle.LABEL_MAX'] = translations['labelMax'];
+      ret['DvtChartBundle.LABEL_OTHER'] = translations['labelOther'];
+      ret['DvtChartBundle.PAN'] = translations['tooltipPan'];
+      ret['DvtChartBundle.MARQUEE_SELECT'] = translations['tooltipSelect'];
+      ret['DvtChartBundle.MARQUEE_ZOOM'] = translations['tooltipZoom'];
+      ret['DvtUtilBundle.CHART'] = translations['componentName'];
+      return ret;
+    },
+
+    //** @inheritdoc */
+    _HandleEvent: function(event) {
+      var type = event['type'];
+      if (type === 'selection') {
+        var selection = event['selection'];
+        if (selection) {
+          // Convert the graph selection context into the JET context
+          var selectedItems = [];
+          var selectionData = [];
+          for (var i = 0; i < selection.length; i++) {
+            var selectedItem;
+            if (this._IsCustomElement())
+              selectedItem = selection[i]['id'];
+            else {
+              selectedItem = {'id': selection[i]['id'],
+                'series': selection[i]['series'],
+                'group': selection[i]['group']};
+            }
+            var selectedItemData = {'data': selection[i]['data'],
+              'seriesData': selection[i]['seriesData'],
+              'groupData': selection[i]['groupData']};
+            selectedItems.push(selectedItem);
+            selectionData.push(selectedItemData);
+          }
+
+          var selectPayload = {
+            'endGroup': event['endGroup'], 'startGroup': event['startGroup'],
+            'xMax': event['xMax'], 'xMin': event['xMin'],
+            'yMax': event['yMax'], 'yMin': event['yMin'],
+            'y2Max': event['y2Max'], 'y2Min': event['y2Min'],
+            'selectionData': selectionData
+          };
+
+          if (!this._IsCustomElement())
+            selectPayload['component'] = event['component'];
+
+          // Update the options selection state if the user interaction is complete
+          if(event['complete'])
+            this._UserOptionChange('selection', selectedItems, selectPayload);
+          else {
+            selectPayload['items'] = selectedItems;
+            this._trigger('selectInput', null, selectPayload);
+          }
+        }
+      }
+      else if (type === 'viewportChange') {
+        var viewportChangePayload = {'endGroup': event['endGroup'], 'startGroup': event['startGroup'],
+                                     'xMax': event['xMax'], 'xMin': event['xMin'],
+                                     'yMax': event['yMax'], 'yMin': event['yMin']};
+
+        // Maintain the viewport state
+        // TODO we should be firing option change event for this, but it doesn't support nested props yet.
+        if(event['complete']) {
+          // Ensure the axis options both exist
+          if(!this.options['xAxis'])
+            this.options['xAxis'] = {};
+
+          if(!this.options['yAxis'])
+            this.options['yAxis'] = {};
+
+          // X-Axis: Clear the start and end group because min/max more accurate.
+          this.options['xAxis']['viewportStartGroup'] = null;
+          this.options['xAxis']['viewportEndGroup'] = null;
+          if(event['xMin'] != null && event['xMax'] != null) {
+            this.options['xAxis']['viewportMin'] = event['xMin'];
+            this.options['xAxis']['viewportMax'] = event['xMax'];
+          }
+
+          // Y-Axis
+          if(event['yMin'] != null && event['yMax'] != null) {
+            this.options['yAxis']['viewportMin'] = event['yMin'];
+            this.options['yAxis']['viewportMax'] = event['yMax'];
+          }
+        }
+
+        this._trigger(event['complete'] ? 'viewportChange' : 'viewportChangeInput', null, viewportChangePayload);
+      }
+      else if (type === 'drill') {
+        this._trigger('drill', null, {'id': event['id'], 'series': event['series'], 'group': event['group'], 'data': event['data'], 'seriesData': event['seriesData'],'groupData': event['groupData'],'component': event['component']});
+      }
+      else {
+        this._super(event);
+      }
+    },
+
+    //** @inheritdoc */
+    _LoadResources: function() {
+      // Ensure the resources object exists
+      if (this.options['_resources'] == null)
+        this.options['_resources'] = {};
+
+      var resources = this.options['_resources'];
+
+      // Add images
+      // TODO these should be defined in the skin instead
+      resources['overviewGrippy'] = oj.Config.getResourceUrl('resources/internal-deps/dvt/chart/drag_horizontal.png');
+
+      // Add cursors
+      resources['panCursorDown'] = oj.Config.getResourceUrl('resources/internal-deps/dvt/chart/hand-closed.cur');
+      resources['panCursorUp'] = oj.Config.getResourceUrl('resources/internal-deps/dvt/chart/hand-open.cur');
+
+      // Drag button images
+      resources['panUp'] = 'oj-chart-pan-icon';
+      resources['panUpHover'] = 'oj-chart-pan-icon oj-hover';
+      resources['panDown'] = 'oj-chart-pan-icon oj-active';
+      resources['panDownHover'] = 'oj-chart-pan-icon oj-hover oj-active';
+      resources['selectUp'] = 'oj-chart-select-icon';
+      resources['selectUpHover'] = 'oj-chart-select-icon oj-hover';
+      resources['selectDown'] = 'oj-chart-select-icon oj-active';
+      resources['selectDownHover'] = 'oj-chart-select-icon oj-hover oj-active';
+      resources['zoomUp'] = 'oj-chart-zoom-icon';
+      resources['zoomUpHover'] = 'oj-chart-zoom-icon oj-hover';
+      resources['zoomDown'] = 'oj-chart-zoom-icon oj-active';
+      resources['zoomDownHover'] = 'oj-chart-zoom-icon oj-hover oj-active';
+    },
+     
+    /**
+     * Returns the chart title.
+     * @ignore
+     * @return {string} The chart title
+     * @expose
+     * @instance
+     * @memberof oj.ojChart
+     */
+    getTitle: function() {
+      var auto = this._component.getAutomation();
+      return auto.getTitle();
+    },
+
+    /**
+     * Returns the group corresponding to the given index
+     * @param {string} groupIndex the group index
+     * @return {string} The group name corresponding to the given group index
+     * @expose
+     * @instance
+     * @memberof oj.ojChart
+     */
+    getGroup: function(groupIndex) {
+      var auto = this._component.getAutomation();
+      return auto.getGroup(groupIndex);
+    },
+
+    /**
+     * Returns the series corresponding to the given index
+     * @param {string} seriesIndex the series index
+     * @return {string} The series name corresponding to the given series index
+     * @expose
+     * @instance
+     * @memberof oj.ojChart
+     */
+    getSeries: function(seriesIndex) {
+      var auto = this._component.getAutomation();
+      return auto.getSeries(seriesIndex);
+    },
+
+    /**
+     * Returns number of groups in the chart data
+     * @return {number} The number of groups
+     * @expose
+     * @instance
+     * @memberof oj.ojChart
+     */
+    getGroupCount: function() {
+      var auto = this._component.getAutomation();
+      return auto.getGroupCount();
+    },
+
+    /**
+     * Returns number of series in the chart data
+     * @return {number} The number of series
+     * @expose
+     * @instance
+     * @memberof oj.ojChart
+     */
+    getSeriesCount: function() {
+      var auto = this._component.getAutomation();
+      return auto.getSeriesCount();
+    },
+
+    /**
+     * Returns an object with the following properties for automation testing verification of the data item with
+     * the specified series and group indices.
+     *
+     * @param {number} seriesIndex
+     * @param {number} groupIndex
+     * @property {string} borderColor
+     * @property {string} color
+     * @property {number} close The closing value for a stock item
+     * @property {string} group The group id.
+     * @property {number} high The high value for a range or stock item
+     * @property {string} label
+     * @property {number} low  The low value for a range or stock item
+     * @property {number} open The opening value for a stock item
+     * @property {boolean} selected
+     * @property {string} series The series id.
+     * @property {number} targetValue The target value for a funnel slice.
+     * @property {string} tooltip
+     * @property {number} value
+     * @property {number} volume  The volume of a stock item
+     * @property {number} x
+     * @property {number} y
+     * @property {number} z
+     * @return {Object|null} An object containing properties for the data item, or null if none exists.
+     * @expose
+     * @instance
+     * @memberof oj.ojChart
+     */
+    getDataItem: function(seriesIndex, groupIndex) {
+      return this._component.getAutomation().getDataItem(seriesIndex, groupIndex);
+    },
+
+    /**
+     * Returns an object with the following properties for automation testing verification of the chart legend.
+     *
+     * @property {Object} bounds An object containing the bounds of the legend.
+     * @property {number} bounds.x
+     * @property {number} bounds.y
+     * @property {number} bounds.width
+     * @property {number} bounds.height
+     * @property {string} title
+     * @return {Object} An object containing properties for the chart legend.
+     * @expose
+     * @instance
+     * @memberof oj.ojChart
+     */
+    getLegend: function() {
+      return this._component.getAutomation().getLegend();
+    },
+
+    /**
+     * Returns an object with the following properties for automation testing verification of the chart plot area.
+     *
+     * @property {Object} bounds An object containing the bounds of the plot area.
+     * @property {number} bounds.x
+     * @property {number} bounds.y
+     * @property {number} bounds.width
+     * @property {number} bounds.height
+     * @return {Object} An object containing properties for the chart plot area.
+     * @expose
+     * @instance
+     * @memberof oj.ojChart
+     */
+    getPlotArea: function() {
+      return this._component.getAutomation().getPlotArea();
+    },
+
+    /**
+     * Returns an object with the following properties for automation testing verification of the x axis.
+     *
+     * @property {Object} bounds An object containing the bounds of the legend.
+     * @property {number} bounds.x
+     * @property {number} bounds.y
+     * @property {number} bounds.width
+     * @property {number} bounds.height
+     * @property {string} title
+     * @property {Function(number, number)} getPreferredSize Returns the preferred size of the axis, given the available
+     *   width and height. This value can be passed into the <code class="prettyprint">size</code> and
+     *   <code class="prettyprint">maxSize</code> options of the axis. A re-render must be triggered by calling
+     *   <code class="prettyprint">refresh</code> after invoking this function.
+     * @property {number} getPreferredSize.width
+     * @property {number} getPreferredSize.height
+     * @return {Object} An object containing properties for the x axis.
+     * @expose
+     * @instance
+     * @memberof oj.ojChart
+     */
+    getXAxis: function() {
+      return this._component.getAutomation().getXAxis();
+    },
+
+    /**
+     * Returns an object with the following properties for automation testing verification of the y axis.
+     *
+     * @property {Object} bounds An object containing the bounds of the legend.
+     * @property {number} bounds.x
+     * @property {number} bounds.y
+     * @property {number} bounds.width
+     * @property {number} bounds.height
+     * @property {string} title
+     * @property {Function(number, number)} getPreferredSize Returns the preferred size of the axis, given the available
+     *   width and height. This value can be passed into the <code class="prettyprint">size</code> and
+     *   <code class="prettyprint">maxSize</code> options of the axis. A re-render must be triggered by calling
+     *   <code class="prettyprint">refresh</code> after invoking this function.
+     * @property {number} getPreferredSize.width
+     * @property {number} getPreferredSize.height
+     * @return {Object} An object containing properties for the y axis.
+     * @expose
+     * @instance
+     * @memberof oj.ojChart
+     */
+    getYAxis: function() {
+      return this._component.getAutomation().getYAxis();
+    },
+
+    /**
+     * Returns an object with the following properties for automation testing verification of the y2 axis.
+     *
+     * @property {Object} bounds An object containing the bounds of the legend.
+     * @property {number} bounds.x
+     * @property {number} bounds.y
+     * @property {number} bounds.width
+     * @property {number} bounds.height
+     * @property {string} title
+     * @property {Function(number, number)} getPreferredSize Returns the preferred size of the axis, given the available
+     *   width and height. This value can be passed into the <code class="prettyprint">size</code> and
+     *   <code class="prettyprint">maxSize</code> options of the axis. A re-render must be triggered by calling
+     *   <code class="prettyprint">refresh</code> after invoking this function.
+     * @property {number} getPreferredSize.width
+     * @property {number} getPreferredSize.height
+     * @return {Object} An object containing properties for the y2 axis.
+     * @expose
+     * @instance
+     * @memberof oj.ojChart
+     */
+    getY2Axis: function() {
+      return this._component.getAutomation().getY2Axis();
+    },
+
+    /**
+     * Returns the x, y, and y2 axis values at the specified X and Y coordinate.
+     * @param {number} x The X coordinate relative to the component.
+     * @param {number} y The Y coordinate relative to the component.
+     * @return {Object} An object containing the "x", "y", and "y2" axis values.
+     * @expose
+     * @instance
+     * @memberof oj.ojChart
+     */
+    getValuesAt: function(x, y) {
+      return this._component.getValuesAt(x, y);
+    },
+
+    /**
+     * {@ojinclude "name":"nodeContextDoc"}
+     * @param {!Element} node - {@ojinclude "name":"nodeContextParam"}
+     * @returns {Object|null} {@ojinclude "name":"nodeContextReturn"}
+     *
+     * @example {@ojinclude "name":"nodeContextExample"}
+     *
+     * @expose
+     * @instance
+     * @memberof oj.ojChart
+     */
+    getContextByNode: function(node)
     {
-      this.options['shortDesc'] =  this.element.attr('title');
-      this.element.data( this.element,'title', this.element.attr('title'));
-      this.element.removeAttr('title');
+      // context objects are documented with @ojnodecontext
+      var context = this.getSubIdByNode(node);
+      if (context && context['subId'] !== 'oj-chart-tooltip')
+        return context;
+
+      return null;
+    },
+
+    //** @inheritdoc */
+    _GetComponentDeferredDataPaths : function() {
+      return {'root': ['groups', 'series'], 'data': ['groups', 'series']};
+    },
+
+    //** @inheritdoc */
+    _CompareOptionValues: function(option, value1, value2)
+    {
+      if (option == 'dataCursorPosition')
+        return oj.Object.compareValues(value1, value2);
+       else
+        return this._super(option, value1, value2);
     }
-    else if (this.element.data('title'))
-      this.options['shortDesc'] =  this.element.data('title');
-
-    // Call the super to render
-    this._super();
-  },
-
-  /**
-   * Returns an object with the following properties for automation testing verification of the data item with
-   * the specified item index.
-   * @param {number} itemIndex The item index
-   * @property {string} borderColor The border color of the item
-   * @property {string} color The color of the item
-   * @property {Date} date The date (x value) of the item
-   * @property {number} high The high value for a range item
-   * @property {number} low  The low value for a range item
-   * @property {number} value The value of the item
-   * @return {Object|null} An object containing properties for the data item, or null if none exists.
-   * @expose
-   * @instance
-   * @memberof oj.ojSparkChart
-   */
-  getDataItem: function(itemIndex) {
-    var ret = this._component.getAutomation().getDataItem(itemIndex);
-
-    // : Provide backwards compatibility for getters until 1.2.0.
-    this._AddAutomationGetters(ret);
-    if (ret)
-      ret['getFloatValue'] = ret['getLow'];
-
-    return ret;
-  },
-
-  //** @inheritdoc */
-  _GetComponentDeferredDataPaths : function() {
-    return {'root': ['items']};
-  },
-
-  /**
-   * Adds getters for the properties on the specified map. 
-   * @param {Object|null} map
-   * @memberof oj.ojSparkChart
-   * @instance
-   * @protected
-   */
-  _AddAutomationGetters: function(map) {
-    if(!map)
-      return;
-
-    // These getters are deprecated in 3.0.0
-    var props = {};
-    for (var key in map) {
-      this._addGetter(map, key, props);
-    }
-    Object.defineProperties(map, props);
-  },
-
-  /**
-   * Adds getter for the specified property on the specified properties map.
-   * @param {Object} map
-   * @param {string} key
-   * @param {Object} props The properties map onto which the getter will be added.
-   * @memberof oj.ojSparkChart
-   * @instance
-   * @private
-   */
-  _addGetter: function(map, key, props) {
-    var prefix = (key == 'selected') ? 'is' : 'get';
-    var getterName = prefix + key.charAt(0).toUpperCase() + key.slice(1);
-    props[getterName] = {'value': function() { return map[key] }};
-  },
-});
+  });
 
 /**
  * <table class="keyboard-table">
@@ -338,15 +928,17 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
 /**
  * An array of objects with the following properties, used to define series labels and override series styles. Only a single series is supported for stock charts. Also accepts a Promise for deferred data rendering.
  * @expose
+ * @ojtsignore
  * @name series
  * @memberof oj.ojChart
  * @instance
- * @type {Array.<object>|Promise}
+ * @type {Array.<Object>|Promise}
  * @default null
  */
 /**
  * The name of the series, displayed in the legend and tooltips.
  * @expose
+ * @ojtsignore
  * @name series[].name
  * @memberof! oj.ojChart
  * @instance
@@ -356,24 +948,27 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
 /**
  * An array of values or an array of objects with the following properties that defines the data items for the series.
  * @expose
+ * @ojtsignore
  * @name series[].items
  * @memberof! oj.ojChart
  * @instance
- * @type {Array.<object>|Array.<number>}
+ * @type {Array.<Object>|Array.<number>}
  * @default null
  */
 /**
  * An array of nested data items to be used for defining the markers for outliers or additional data items of a box plot. 
  * @expose
+ * @ojtsignore
  * @name series[].items[].items
  * @memberof! oj.ojChart
  * @instance
- * @type {Array.<object>|Array.<number>}
+ * @type {Array.<Object>|Array.<number>}
  * @default null
  */
 /**
  * (Optional) The id of the data item. This id will be provided as part of the context for events on the chart.
  * @expose
+ * @ojtsignore
  * @name series[].items[].id
  * @memberof! oj.ojChart
  * @instance
@@ -385,6 +980,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * For categorical axis, if the x value is not specified, it will default to the item index.
  * For regular time axis, if the x value is not specified, it will default to the group name of the item.
  * @expose
+ * @ojtsignore
  * @name series[].items[].x
  * @memberof! oj.ojChart
  * @instance
@@ -394,6 +990,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
 /**
  * The y value. Also the primary value for charts without a y-Axis, such as pie charts.
  * @expose
+ * @ojtsignore
  * @name series[].items[].y
  * @memberof! oj.ojChart
  * @instance
@@ -403,6 +1000,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
 /**
  * The z value. Defines the bubble radius for a bubble chart, as well as the width of a bar or a box plot item.
  * @expose
+ * @ojtsignore
  * @name series[].items[].z
  * @memberof! oj.ojChart
  * @instance
@@ -412,6 +1010,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
 /**
  * The low value for range bar/area, stock candlestick, or box plot item. Define 'low' and 'high' instead of 'value' or 'y' to create a range bar/area chart.
  * @expose
+ * @ojtsignore
  * @name series[].items[].low
  * @memberof! oj.ojChart
  * @instance
@@ -421,6 +1020,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
 /**
  * The high value for range bar/area, stock candlestick, or box plot item. Define 'low' and 'high' instead of 'value' or 'y' to create a range bar/area chart.
  * @expose
+ * @ojtsignore
  * @name series[].items[].high
  * @memberof! oj.ojChart
  * @instance
@@ -430,6 +1030,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
 /**
  * The open value for stock candlestick.
  * @expose
+ * @ojtsignore
  * @name series[].items[].open
  * @memberof! oj.ojChart
  * @instance
@@ -439,6 +1040,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
 /**
  * The close value for stock candlestick. When bar, line, or area series type are used on a stock chart, this value is displayed.
  * @expose
+ * @ojtsignore
  * @name series[].items[].close
  * @memberof! oj.ojChart
  * @instance
@@ -448,6 +1050,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
 /**
  * The value for stock volume bar. When this value is provided, the volume bar is displayed on the y2 axis.
  * @expose
+ * @ojtsignore
  * @name series[].items[].volume
  * @memberof! oj.ojChart
  * @instance
@@ -457,6 +1060,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
 /**
  * The first quartile value for box plot.
  * @expose
+ * @ojtsignore
  * @name series[].items[].q1
  * @memberof! oj.ojChart
  * @instance
@@ -466,6 +1070,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
 /**
  * The second quartile (median) value for box plot.
  * @expose
+ * @ojtsignore
  * @name series[].items[].q2
  * @memberof! oj.ojChart
  * @instance
@@ -475,6 +1080,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
 /**
  * The third quartile value for box plot.
  * @expose
+ * @ojtsignore
  * @name series[].items[].q3
  * @memberof! oj.ojChart
  * @instance
@@ -484,6 +1090,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
 /**
  * The description of this object. This is used for accessibility and also for customizing the tooltip text.
  * @expose
+ * @ojtsignore
  * @name series[].items[].shortDesc
  * @memberof! oj.ojChart
  * @instance
@@ -494,6 +1101,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
 /**
  * The color of the data item.
  * @expose
+ * @ojtsignore
  * @name series[].items[].color
  * @memberof! oj.ojChart
  * @instance
@@ -503,6 +1111,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
 /**
  * The border color of the data item. For funnel and pyramid charts, it is used for the slice border.
  * @expose
+ * @ojtsignore
  * @name series[].items[].borderColor
  * @memberof! oj.ojChart
  * @instance
@@ -512,6 +1121,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
 /**
  * The border width of the data item. For funnel and pyramid charts, it is used for the slice border.
  * @expose
+ * @ojtsignore
  * @name series[].items[].borderWidth
  * @memberof! oj.ojChart
  * @instance
@@ -522,6 +1132,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
 /**
  * The pattern used to fill the data item. A solid fill is used by default, unless the seriesEffect is 'pattern'.
  * @expose
+ * @ojtsignore
  * @name series[].items[].pattern
  * @memberof! oj.ojChart
  * @instance
@@ -543,27 +1154,8 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  */
 /**
  * The CSS style class to apply to the data item. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the item color attribute.
- * @ignore
- * @name series[].items[].className
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @default null
- * @deprecated This attribute is deprecated, use the svgClassName attribute instead.
- */
-/**
- * The inline style to apply to the data item. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the item color attribute.
- * @ignore
- * @name series[].items[].style
- * @memberof! oj.ojChart
- * @instance
- * @type {object}
- * @default null
- * @deprecated This attribute is deprecated, use the svgStyle attribute instead.
- */
-/**
- * The CSS style class to apply to the data item. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the item color attribute.
  * @expose
+ * @ojtsignore
  * @name series[].items[].svgClassName
  * @memberof! oj.ojChart
  * @instance
@@ -573,15 +1165,17 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
 /**
  * The inline style to apply to the data item. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the item color attribute.
  * @expose
+ * @ojtsignore
  * @name series[].items[].svgStyle
  * @memberof! oj.ojChart
  * @instance
- * @type {object}
+ * @type {Object}
  * @default null
  */
 /**
  * Defines whether the data marker is displayed. Only applies to line, area, scatter, and bubble series. If auto, the markers will be displayed whenever the data points are not connected by a line.
  * @expose
+ * @ojtsignore
  * @name series[].items[].markerDisplayed
  * @memberof! oj.ojChart
  * @instance
@@ -594,6 +1188,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
 /**
  * The shape of the data markers. In addition to the built-in shapes, it may also take SVG path commands to specify a custom shape. The chart will style the custom shapes the same way as built-in shapes, supporting properties like color and borderColor and applying hover and selection effects. Only 'auto' is supported for range series. 
  * @expose
+ * @ojtsignore
  * @name series[].items[].markerShape
  * @memberof! oj.ojChart
  * @instance
@@ -612,6 +1207,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
 /**
  * The size of the data markers. Does not apply to bubble charts, which calculate marker size based on the z values.
  * @expose
+ * @ojtsignore
  * @name series[].items[].markerSize
  * @memberof! oj.ojChart
  * @instance
@@ -622,6 +1218,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
 /**
  *  The URI of the custom image. If specified, it takes precedence over shape. 
  * @expose
+ * @ojtsignore
  * @name series[].items[].source
  * @memberof! oj.ojChart
  * @instance
@@ -631,6 +1228,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
 /**
  *  The optional URI for the hover state. If not specified, the source image will be used. 
  * @expose
+ * @ojtsignore
  * @name series[].items[].sourceHover
  * @memberof! oj.ojChart
  * @instance
@@ -638,8 +1236,9 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @default null
  */
 /**
- *  The optional URI for the selected state. If not specified, the source image will be used. 
+ * The optional URI for the selected state. If not specified, the source image will be used. 
  * @expose
+ * @ojtsignore
  * @name series[].items[].sourceSelected
  * @memberof! oj.ojChart
  * @instance
@@ -649,6 +1248,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
 /**
  *  The optional URI for the hover selected state. If not specified, the source image will be used. 
  * @expose
+ * @ojtsignore
  * @name series[].items[].sourceHoverSelected
  * @memberof! oj.ojChart
  * @instance
@@ -658,6 +1258,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
 /**
  * The label for the data item. For range series, if an array of two values are provided, the first and second value will apply to the low and high point respectively. Not supported for box plot or candlestick.
  * @expose
+ * @ojtsignore
  * @name series[].items[].label
  * @memberof! oj.ojChart
  * @instance
@@ -668,6 +1269,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
 /**
  * The position of the data label. For range series, if an array of two values are provided, the first and second value will apply to the low and high point respectively. The 'outsideSlice' value only applies to pie charts. The 'aboveMarker', 'belowMarker', 'beforeMarker', and 'afterMarker' values only apply to line, area, scatter, and bubble series. The 'insideBarEdge' and 'outsideBarEdge' values only apply to non-polar bar series. Stacked bars do not support 'outsideBarEdge'. The chart does not currently adjust layout to fit labels within the plot area or deal with any overlaps between labels. 
  * @expose
+ * @ojtsignore
  * @name series[].items[].labelPosition
  * @memberof! oj.ojChart
  * @instance
@@ -687,15 +1289,17 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
 /**
  * The CSS style object defining the style of the data label. For range series, if an array of two values are provided, the first and second value will apply to the low and high point respectively.
  * @expose
+ * @ojtsignore
  * @name series[].items[].labelStyle
  * @memberof! oj.ojChart
  * @instance
- * @type {object|Array.<object>}
+ * @type {object|Array.<Object>}
  * @default null
  */
 /**
  * An optional array of category strings corresponding to this data item. This enables highlighting and filtering of individual data items through interactions with the legend or other visualization elements. If not defined, series categories are used.
  * @expose
+ * @ojtsignore
  * @name series[].items[].categories
  * @memberof! oj.ojChart
  * @instance
@@ -703,8 +1307,9 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @default null
  */
 /**
- * The value for this data item. Corresponding to the y value for bar, line, area, and combo charts and the slice values for pie, funnel and pyramid charts.
+ * The value for this data item. Corresponding to the y value for bar, line, area, and combo charts and the slice values for pie, funnel and pyramid charts. Null can be specified to skip a data point.
  * @expose
+ * @ojtsignore
  * @name series[].items[].value
  * @memberof! oj.ojChart
  * @instance
@@ -714,6 +1319,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
 /**
  * The target value for a funnel chart. When this is set, the value attribute defines the filled area within the slice and this represents the value of the whole slice.
  * @expose
+ * @ojtsignore
  * @name series[].items[].targetValue
  * @memberof! oj.ojChart
  * @instance
@@ -723,6 +1329,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
 /**
  *  Whether drilling is enabled for the data item. Drillable objects will show a pointer cursor on hover and fire an <code class="prettyprint">ojDrill</code> event on click (double click if selection is enabled). To enable drilling for all data items at once, use the drilling attribute in the top level. 
  * @expose
+ * @ojtsignore
  * @name series[].items[].drilling
  * @memberof! oj.ojChart
  * @instance
@@ -735,15 +1342,17 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
 /**
  * An object containing the style properties of the box plot item.
  * @expose
+ * @ojtsignore
  * @name series[].items[].boxPlot
  * @memberof! oj.ojChart
  * @instance
- * @type {object}
+ * @type {Object}
  * @default null
  */
 /**
  *  The color of the Q2 segment of the box.
  * @expose
+ * @ojtsignore
  * @name series[].items[].boxPlot.q2Color
  * @memberof! oj.ojChart
  * @instance
@@ -752,27 +1361,8 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  */
 /**
  *  The CSS style class to apply to the Q2 segment of the box. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the q2Color attribute. 
- * @ignore
- * @name series[].items[].boxPlot.q2ClassName
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @default null
- * @deprecated This attribute is deprecated, use the q2SvgClassName attribute instead.
- */
-/**
- *  The CSS inline style to apply to the Q2 segment of the box. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the q2Color attribute. 
- * @ignore
- * @name series[].items[].boxPlot.q2Style
- * @memberof! oj.ojChart
- * @instance
- * @type {object}
- * @default null
- * @deprecated This attribute is deprecated, use the q2SvgStyle attribute instead.
- */
-/**
- *  The CSS style class to apply to the Q2 segment of the box. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the q2Color attribute. 
  * @expose
+ * @ojtsignore
  * @name series[].items[].boxPlot.q2SvgClassName
  * @memberof! oj.ojChart
  * @instance
@@ -782,44 +1372,27 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
 /**
  *  The CSS inline style to apply to the Q2 segment of the box. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the q2Color attribute. 
  * @expose
+ * @ojtsignore
  * @name series[].items[].boxPlot.q2SvgStyle
  * @memberof! oj.ojChart
  * @instance
- * @type {object}
+ * @type {Object}
  * @default null
- */
-/**
- *  The CSS inline style to apply to the Q3 segment of the box. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the q3Color attribute. 
- * @ignore
- * @name series[].items[].boxPlot.q3Style
- * @memberof! oj.ojChart
- * @instance
- * @type {object}
- * @default null
- * @deprecated This attribute is deprecated, use the q3SvgStyle attribute instead.
- */
-/**
- *  The CSS style class to apply to the Q3 segment of the box. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the q3Color attribute. 
- * @ignore
- * @name series[].items[].boxPlot.q3ClassName
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @default null
- * @deprecated This attribute is deprecated, use the q3SvgClassName attribute instead.
  */
 /**
  *  The CSS inline style to apply to the Q3 segment of the box. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the q3Color attribute. 
  * @expose
+ * @ojtsignore
  * @name series[].items[].boxPlot.q3SvgStyle
  * @memberof! oj.ojChart
  * @instance
- * @type {object}
+ * @type {Object}
  * @default null
  */
 /**
  *  The CSS style class to apply to the Q3 segment of the box. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the q3Color attribute. 
  * @expose
+ * @ojtsignore
  * @name series[].items[].boxPlot.q3SvgClassName
  * @memberof! oj.ojChart
  * @instance
@@ -828,47 +1401,8 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  */
 /**
  * The CSS style class to apply to the whisker stems.
- * @ignore
- * @name series[].items[].boxPlot.whiskerClassName
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @default null
- * @deprecated This attribute is deprecated, use the whiskerSvgClassName attribute instead.
- */
-/**
- * The CSS inline style to apply to the whisker stems.
- * @ignore
- * @name series[].items[].boxPlot.whiskerStyle
- * @memberof! oj.ojChart
- * @instance
- * @type {object}
- * @default null
- * @deprecated This attribute is deprecated, use the whiskerSvgStyle attribute instead.
- */
-/**
- * The CSS style class to apply to the whisker ends.
- * @ignore
- * @name series[].items[].boxPlot.whiskerEndClassName
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @default null
- * @deprecated This attribute is deprecated, use the whiskerEndSvgClassName attribute instead.
- */
-/**
- * The CSS inline style to apply to the whisker ends.
- * @ignore
- * @name series[].items[].boxPlot.whiskerEndStyle
- * @memberof! oj.ojChart
- * @instance
- * @type {object}
- * @default null
- * @deprecated This attribute is deprecated, use the whiskerEndSvgStyle attribute instead.
- */
-/**
- * The CSS style class to apply to the whisker stems.
  * @expose
+ * @ojtsignore
  * @name series[].items[].boxPlot.whiskerSvgClassName
  * @memberof! oj.ojChart
  * @instance
@@ -878,15 +1412,17 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
 /**
  * The CSS inline style to apply to the whisker stems.
  * @expose
+ * @ojtsignore
  * @name series[].items[].boxPlot.whiskerSvgStyle
  * @memberof! oj.ojChart
  * @instance
- * @type {object}
+ * @type {Object}
  * @default null
  */
 /**
  * The CSS style class to apply to the whisker ends.
  * @expose
+ * @ojtsignore
  * @name series[].items[].boxPlot.whiskerEndSvgClassName
  * @memberof! oj.ojChart
  * @instance
@@ -896,15 +1432,17 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
 /**
  * The CSS inline style to apply to the whisker ends.
  * @expose
+ * @ojtsignore
  * @name series[].items[].boxPlot.whiskerEndSvgStyle
  * @memberof! oj.ojChart
  * @instance
- * @type {object}
+ * @type {Object}
  * @default null
  */
 /**
  *  Specifies the length of the whisker ends in pixels (e.g. '9px') or as a percentage of the box width (e.g. '50%'). The specified length will be rounded down to an odd number of pixels to ensure symmetry. 
  * @expose
+ * @ojtsignore
  * @name series[].items[].boxPlot.whiskerEndLength
  * @memberof! oj.ojChart
  * @instance
@@ -913,27 +1451,8 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  */
 /**
  * The CSS style class to apply to the median line.
- * @ignore
- * @name series[].items[].boxPlot.medianClassName
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @default null
- * @deprecated This attribute is deprecated, use the medianSvgClassName attribute instead.
- */
-/**
- * The CSS inline style to apply to the median line.
- * @ignore
- * @name series[].items[].boxPlot.medianStyle
- * @memberof! oj.ojChart
- * @instance
- * @type {object}
- * @default null
- * @deprecated This attribute is deprecated, use the medianSvgStyle attribute instead.
- */
-/**
- * The CSS style class to apply to the median line.
  * @expose
+ * @ojtsignore
  * @name series[].items[].boxPlot.medianSvgClassName
  * @memberof! oj.ojChart
  * @instance
@@ -943,15 +1462,17 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
 /**
  * The CSS inline style to apply to the median line.
  * @expose
+ * @ojtsignore
  * @name series[].items[].boxPlot.medianSvgStyle
  * @memberof! oj.ojChart
  * @instance
- * @type {object}
+ * @type {Object}
  * @default null
  */
 /**
  * The id of the series. Defaults to the name or the series index if not specified.
  * @expose
+ * @ojtsignore
  * @name series[].id
  * @memberof! oj.ojChart
  * @instance
@@ -961,6 +1482,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
 /**
  * The type of data objects to display for this series. Only applies to bar, line, area, stock, box plot, and combo charts.
  * @expose
+ * @ojtsignore
  * @name series[].type
  * @memberof! oj.ojChart
  * @instance
@@ -977,6 +1499,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
 /**
  * The color of the series.
  * @expose
+ * @ojtsignore
  * @name series[].color
  * @memberof! oj.ojChart
  * @instance
@@ -986,6 +1509,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
 /**
  * The border color of the series.
  * @expose
+ * @ojtsignore
  * @name series[].borderColor
  * @memberof! oj.ojChart
  * @instance
@@ -995,6 +1519,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
 /**
  * The border width of the series.
  * @expose
+ * @ojtsignore
  * @name series[].borderWidth
  * @memberof! oj.ojChart
  * @instance
@@ -1005,6 +1530,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
 /**
  * The area color of the series. Only applies if series type is area or lineWithArea.
  * @expose
+ * @ojtsignore
  * @name series[].areaColor
  * @memberof! oj.ojChart
  * @instance
@@ -1013,27 +1539,8 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  */
 /**
  * The CSS style class to apply if series type is area or lineWithArea. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the color attribute.
- * @ignore
- * @name series[].areaClassName
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @default null
- * @deprecated This attribute is deprecated, use the areaSvgClassName attribute instead.
- */
-/**
- * The inline style to apply if series type is area or lineWithArea. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the color attribute.
- * @ignore
- * @name series[].areaStyle
- * @memberof! oj.ojChart
- * @instance
- * @type {object}
- * @default null
- * @deprecated This attribute is deprecated, use the areaSvgStyle attribute instead.
- */
-/**
- * The CSS style class to apply if series type is area or lineWithArea. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the color attribute.
  * @expose
+ * @ojtsignore
  * @name series[].areaSvgClassName
  * @memberof! oj.ojChart
  * @instance
@@ -1043,35 +1550,17 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
 /**
  * The inline style to apply if series type is area or lineWithArea. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the color attribute.
  * @expose
+ * @ojtsignore
  * @name series[].areaSvgStyle
  * @memberof! oj.ojChart
  * @instance
- * @type {object}
+ * @type {Object}
  * @default null
- */
-/**
- * The CSS style class to apply to the series. For series of type lineWithArea, this style will only be applied to the line if areaClassName is also specified. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the color attribute.
- * @ignore
- * @name series[].className
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @default null
- * @deprecated This attribute is deprecated, use the svgClassName attribute instead.
- */
-/**
- * The inline style to apply to the series. For series of type lineWithArea, this style will only be applied to the line if areaStyle is also specified.The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the color attribute.
- * @ignore
- * @name series[].style
- * @memberof! oj.ojChart
- * @instance
- * @type {object}
- * @default null
- * @deprecated This attribute is deprecated, use the svgStyle attribute instead.
  */
 /**
  * The CSS style class to apply to the series. For series of type lineWithArea, this style will only be applied to the line if areaClassName is also specified. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the color attribute.
  * @expose
+ * @ojtsignore
  * @name series[].svgClassName
  * @memberof! oj.ojChart
  * @instance
@@ -1081,35 +1570,17 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
 /**
  * The inline style to apply to the series. For series of type lineWithArea, this style will only be applied to the line if areaStyle is also specified.The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the color attribute.
  * @expose
+ * @ojtsignore
  * @name series[].svgStyle
  * @memberof! oj.ojChart
  * @instance
- * @type {object}
+ * @type {Object}
  * @default null
- */
-/**
- * The CSS style class to apply to the data markers.The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the marker color attribute.
- * @ignore
- * @name series[].markerClassName
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @default null
- * @deprecated This attribute is deprecated, use the markerSvgClassName attribute instead.
- */
-/**
- * The inline style to apply to the data markers. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the marker color attribute.
- * @ignore
- * @name series[].markerStyle
- * @memberof! oj.ojChart
- * @instance
- * @type {object}
- * @default null
- * @deprecated This attribute is deprecated, use the markerSvgStyle attribute instead.
  */
 /**
  * The CSS style class to apply to the data markers.The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the marker color attribute.
  * @expose
+ * @ojtsignore
  * @name series[].markerSvgClassName
  * @memberof! oj.ojChart
  * @instance
@@ -1119,15 +1590,17 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
 /**
  * The inline style to apply to the data markers. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the marker color attribute.
  * @expose
+ * @ojtsignore
  * @name series[].markerSvgStyle
  * @memberof! oj.ojChart
  * @instance
- * @type {object}
+ * @type {Object}
  * @default null
  */
 /**
  * The pattern used to fill the series. A solid fill is used by default, unless the seriesEffect is 'pattern'.
  * @expose
+ * @ojtsignore
  * @name series[].pattern
  * @memberof! oj.ojChart
  * @instance
@@ -1150,6 +1623,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
 /**
  * The shape of the data markers. In addition to the built-in shapes, it may also take SVG path commands to specify a custom shape. The chart will style the custom shapes the same way as built-in shapes, supporting properties like color and borderColor and applying hover and selection effects. Only 'auto' is supported for range series. 
  * @expose
+ * @ojtsignore
  * @name series[].markerShape
  * @memberof! oj.ojChart
  * @instance
@@ -1168,6 +1642,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
 /**
  * The color of the data markers, if different from the series color.
  * @expose
+ * @ojtsignore
  * @name series[].markerColor
  * @memberof! oj.ojChart
  * @instance
@@ -1177,6 +1652,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
 /**
  * Defines whether the data markers should be displayed. Only applies to line, area, scatter, and bubble series. If auto, the markers will be displayed whenever the data points are not connected by a line.
  * @expose
+ * @ojtsignore
  * @name series[].markerDisplayed
  * @memberof! oj.ojChart
  * @instance
@@ -1189,6 +1665,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
 /**
  * The size of the data markers.
  * @expose
+ * @ojtsignore
  * @name series[].markerSize
  * @memberof! oj.ojChart
  * @instance
@@ -1199,6 +1676,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
 /**
  * The width of the data line. Only applies to line, lineWithArea, scatter, and bubble series.
  * @expose
+ * @ojtsignore
  * @name series[].lineWidth
  * @memberof! oj.ojChart
  * @instance
@@ -1210,6 +1688,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
 /**
  * The line style of the data line. Only applies to line, lineWithArea, scatter, and bubble series.
  * @expose
+ * @ojtsignore
  * @name series[].lineStyle
  * @memberof! oj.ojChart
  * @instance
@@ -1222,6 +1701,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
 /**
  * The line type of the data line or area. Only applies to line, area, scatter, and bubble series. centeredStepped and centeredSegmented are not supported for polar, scatter, and bubble charts. 
  * @expose
+ * @ojtsignore
  * @name series[].lineType
  * @memberof! oj.ojChart
  * @instance
@@ -1239,6 +1719,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
 /**
  *  The URI of the custom image. If specified, it takes precedence over shape. 
  * @expose
+ * @ojtsignore
  * @name series[].source
  * @memberof! oj.ojChart
  * @instance
@@ -1248,6 +1729,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
 /**
  *  The optional URI for the hover state. If not specified, the source image will be used. 
  * @expose
+ * @ojtsignore
  * @name series[].sourceHover
  * @memberof! oj.ojChart
  * @instance
@@ -1257,6 +1739,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
 /**
  *  The optional URI for the selected state. If not specified, the source image will be used. 
  * @expose
+ * @ojtsignore
  * @name series[].sourceSelected
  * @memberof! oj.ojChart
  * @instance
@@ -1266,6 +1749,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
 /**
  *  The optional URI for the hover selected state. If not specified, the source image will be used. 
  * @expose
+ * @ojtsignore
  * @name series[].sourceHoverSelected
  * @memberof! oj.ojChart
  * @instance
@@ -1275,6 +1759,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
 /**
  * A number from 0 to 1 indicating the amount to explode the pie slice. Only applies to pie charts.
  * @expose
+ * @ojtsignore
  * @name series[].pieSliceExplode
  * @memberof! oj.ojChart
  * @instance
@@ -1286,6 +1771,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
 /**
  * Defines whether the series is associated with the y2 axis. Only applies to Cartesian bar, line, area, and combo charts.
  * @expose
+ * @ojtsignore
  * @name series[].assignedToY2
  * @memberof! oj.ojChart
  * @instance
@@ -1297,6 +1783,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
 /**
  * In stacked charts, groups series together for stacking. All series without a stackCategory will be assigned to the same stack.
  * @expose
+ * @ojtsignore
  * @name series[].stackCategory
  * @memberof! oj.ojChart
  * @instance
@@ -1304,20 +1791,9 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @default null
  */
 /**
- * Defines whether the series should be displayed.
- * @ignore
- * @name series[].visibility
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "hidden"
- * @ojvalue {string} "visible"
- * @default "visible"
- * @deprecated Use hiddenCategories instead
- */
-/**
  * Defines whether the series should be shown in the legend. When set to 'auto', the series will not be displayed in the legend if it has null data or if it is a stock, funnel, or pyramid series.
  * @expose
+ * @ojtsignore
  * @name series[].displayInLegend
  * @memberof! oj.ojChart
  * @instance
@@ -1330,6 +1806,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
 /**
  *  Whether drilling is enabled on the series item. Drillable objects will show a pointer cursor on hover and fire an <code class="prettyprint">ojDrill</code> event on click. To enable drilling for all series items at once, use the drilling attribute in the top level. 
  * @expose
+ * @ojtsignore
  * @name series[].drilling
  * @memberof! oj.ojChart
  * @instance
@@ -1342,6 +1819,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
 /**
  * An optional array of category strings corresponding to this series. This allows highlighting and filtering of a series through interactions with legend sections. If not defined, the series id is used.
  * @expose
+ * @ojtsignore
  * @name series[].categories
  * @memberof! oj.ojChart
  * @instance
@@ -1351,6 +1829,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
 /**
  * The description of this series. This is used for accessibility and for customizing the tooltip text on the corressponding legend item for the series.
  * @expose
+ * @ojtsignore
  * @name series[].shortDesc
  * @memberof! oj.ojChart
  * @instance
@@ -1361,15 +1840,17 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
 /**
  * An object containing the style properties of the box plot series.
  * @expose
+ * @ojtsignore
  * @name series[].boxPlot
  * @memberof! oj.ojChart
  * @instance
- * @type {object}
+ * @type {Object}
  * @default null
  */
 /**
  *  The color of the Q2 segment of the box.
  * @expose
+ * @ojtsignore
  * @name series[].boxPlot.q2Color
  * @memberof! oj.ojChart
  * @instance
@@ -1378,27 +1859,8 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  */
 /**
  *  The CSS style class to apply to the Q2 segment of the box. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the q2Color attribute. 
- * @ignore
- * @name series[].boxPlot.q2ClassName
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @default null
- * @deprecated This attribute is deprecated, use the q2SvgClassName attribute instead.
- */
-/**
- *  The CSS inline style to apply to the Q2 segment of the box. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the q2Color attribute. 
- * @ignore
- * @name series[].boxPlot.q2Style
- * @memberof! oj.ojChart
- * @instance
- * @type {object}
- * @default null
- * @deprecated This attribute is deprecated, use the q2SvgStyle attribute instead.
- */
-/**
- *  The CSS style class to apply to the Q2 segment of the box. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the q2Color attribute. 
  * @expose
+ * @ojtsignore
  * @name series[].boxPlot.q2SvgClassName
  * @memberof! oj.ojChart
  * @instance
@@ -1408,15 +1870,17 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
 /**
  *  The CSS inline style to apply to the Q2 segment of the box. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the q2Color attribute. 
  * @expose
+ * @ojtsignore
  * @name series[].boxPlot.q2SvgStyle
  * @memberof! oj.ojChart
  * @instance
- * @type {object}
+ * @type {Object}
  * @default null
  */
 /**
  *  The color of the Q3 segment of the box.
  * @expose
+ * @ojtsignore
  * @name series[].boxPlot.q3Color
  * @memberof! oj.ojChart
  * @instance
@@ -1425,27 +1889,8 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  */
 /**
  *  The CSS style class to apply to the Q3 segment of the box. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the q3Color attribute. 
- * @ignore
- * @name series[].boxPlot.q3ClassName
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @default null
- * @deprecated This attribute is deprecated, use the q3SvgClassName attribute instead.
- */
-/**
- *  The CSS inline style to apply to the Q3 segment of the box. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the q3Color attribute. 
- * @ignore
- * @name series[].boxPlot.q3Style
- * @memberof! oj.ojChart
- * @instance
- * @type {object}
- * @default null
- * @deprecated This attribute is deprecated, use the q3SvgStyle attribute instead.
- */
-/**
- *  The CSS style class to apply to the Q3 segment of the box. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the q3Color attribute. 
  * @expose
+ * @ojtsignore
  * @name series[].boxPlot.q3SvgClassName
  * @memberof! oj.ojChart
  * @instance
@@ -1455,55 +1900,17 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
 /**
  *  The CSS inline style to apply to the Q3 segment of the box. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the q3Color attribute. 
  * @expose
+ * @ojtsignore
  * @name series[].boxPlot.q3SvgStyle
  * @memberof! oj.ojChart
  * @instance
- * @type {object}
+ * @type {Object}
  * @default null
- */
-/**
- * The CSS style class to apply to the whisker stems.
- * @ignore
- * @name series[].boxPlot.whiskerClassName
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @default null
- * @deprecated This attribute is deprecated, use the whiskerSvgClassName attribute instead.
- */
-/**
- * The CSS inline style to apply to the whisker stems.
- * @ignore
- * @name series[].boxPlot.whiskerStyle
- * @memberof! oj.ojChart
- * @instance
- * @type {object}
- * @default null
- * @deprecated This attribute is deprecated, use the whiskerSvgStyle attribute instead.
- */
-/**
- * The CSS style class to apply to the whisker ends.
- * @ignore
- * @name series[].boxPlot.whiskerEndClassName
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @default null
- * @deprecated This attribute is deprecated, use the whiskerEndSvgClassName attribute instead.
- */
-/**
- * The CSS inline style to apply to the whisker ends.
- * @ignore
- * @name series[].boxPlot.whiskerEndStyle
- * @memberof! oj.ojChart
- * @instance
- * @type {object}
- * @default null
- * @deprecated This attribute is deprecated, use the whiskerEndSvgStyle attribute instead.
  */
 /**
  * The CSS style class to apply to the whisker stems.
  * @expose
+ * @ojtsignore
  * @name series[].boxPlot.whiskerSvgClassName
  * @memberof! oj.ojChart
  * @instance
@@ -1513,15 +1920,17 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
 /**
  * The CSS inline style to apply to the whisker stems.
  * @expose
+ * @ojtsignore
  * @name series[].boxPlot.whiskerSvgStyle
  * @memberof! oj.ojChart
  * @instance
- * @type {object}
+ * @type {Object}
  * @default null
  */
 /**
  * The CSS style class to apply to the whisker ends.
  * @expose
+ * @ojtsignore
  * @name series[].boxPlot.whiskerEndSvgClassName
  * @memberof! oj.ojChart
  * @instance
@@ -1531,15 +1940,17 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
 /**
  * The CSS inline style to apply to the whisker ends.
  * @expose
+ * @ojtsignore
  * @name series[].boxPlot.whiskerEndSvgStyle
  * @memberof! oj.ojChart
  * @instance
- * @type {object}
+ * @type {Object}
  * @default null
  */
 /**
  *  Specifies the length of the whisker ends in pixels (e.g. '9px') or as a percentage of the box width (e.g. '50%'). 
  * @expose
+ * @ojtsignore
  * @name series[].boxPlot.whiskerEndLength
  * @memberof! oj.ojChart
  * @instance
@@ -1548,27 +1959,8 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  */
 /**
  * The CSS style class to apply to the median line.
- * @ignore
- * @name series[].boxPlot.medianClassName
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @default null
- * @deprecated This attribute is deprecated, use the medianSvgClassName attribute instead.
- */
-/**
- * The CSS inline style to apply to the median line.
- * @ignore
- * @name series[].boxPlot.medianStyle
- * @memberof! oj.ojChart
- * @instance
- * @type {object}
- * @default null
- * @deprecated This attribute is deprecated, use the medianSvgStyle attribute instead.
- */
-/**
- * The CSS style class to apply to the median line.
  * @expose
+ * @ojtsignore
  * @name series[].boxPlot.medianSvgClassName
  * @memberof! oj.ojChart
  * @instance
@@ -1578,10 +1970,11 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
 /**
  * The CSS inline style to apply to the median line.
  * @expose
+ * @ojtsignore
  * @name series[].boxPlot.medianSvgStyle
  * @memberof! oj.ojChart
  * @instance
- * @type {object}
+ * @type {Object}
  * @default null
  */
 /**
@@ -1590,7 +1983,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @name groups
  * @memberof oj.ojChart
  * @instance
- * @type {Array.<object>|Array.<string>|Promise}
+ * @type {Array.<Object>|Array.<string>|Promise}
  * @default null
  */
 /**
@@ -1612,11 +2005,14 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @default null
  */
 /**
- * The CSS style object defining the style of the group label text and only applies to a categorical axis.
+ * The CSS style object defining the style of the group label text. Supports color, 
+ * fontFamily, fontSize, fontStyle, fontWeight, textDecoration, cursor,
+ * backgroundColor, borderColor, borderRadius, and borderWidth properties. 
+ * Only applies to a categorical axis.
  * @name groups[].labelStyle
  * @memberof! oj.ojChart
  * @instance
- * @type {object}
+ * @type {Object}
  * @default null
  */
 /**
@@ -1647,7 +2043,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @name groups[].groups
  * @memberof! oj.ojChart
  * @instance
- * @type {Array.<string>|Array.<object>}
+ * @type {Array.<string>|Array.<Object>}
  * @default null
  */
 /**
@@ -1984,7 +2380,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @name dataCursorPosition
  * @memberof oj.ojChart
  * @instance
- * @type {object}
+ * @type {Object}
  * @default null
  * @ojwriteback
  */
@@ -2039,164 +2435,12 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @ojmax 1
  */
 /**
- * An object defining the style and positioning of the chart title.
- * @ignore
- * @name title
- * @memberof oj.ojChart
- * @instance
- * @type {object}
- * @default null
- * @deprecated This attribute is deprecated as titles should be rendered outside the element for consistency with other text on the page.
- */
-/**
- * The text for the title.
- * @ignore
- * @name title.text
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @default null
- * @deprecated 
- */
-/**
- * The CSS style string defining the style of the text.
- * @ignore
- * @name title.style
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @default null
- * @deprecated 
- */
-/**
- * The horizontal alignment of the text. If the value is plotAreaStart, plotAreaCenter, or plotAreaEnd, the text is aligned relative to the plot area instead of the entire chart container.
- * @ignore
- * @name title.halign
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "center"
- * @ojvalue {string} "end"
- * @ojvalue {string} "plotAreaStart"
- * @ojvalue {string} "plotAreaCenter"
- * @ojvalue {string} "plotAreaEnd"
- * @ojvalue {string} "start"
- * @default "start"
- * @deprecated 
- */
-/**
- * An object defining the style and positioning of the chart subtitle. A subtitle is displayed only in the case of a valid title.
- * @ignore
- * @name subtitle
- * @memberof oj.ojChart
- * @instance
- * @type {object}
- * @default null
- * @deprecated This attribute is deprecated as subtitles should be rendered outside the element for consistency with other text on the page.
- */
-/**
- * The text for the subtitle.
- * @ignore
- * @name subtitle.text
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @default null
- * @deprecated 
- */
-/**
- * The CSS style string defining the style of the text.
- * @ignore
- * @name subtitle.style
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @default null
- * @deprecated 
- */
-/**
- * An object defining the style and positioning of the chart footnote.
- * @ignore
- * @name footnote
- * @memberof oj.ojChart
- * @instance
- * @type {object}
- * @default null
- * @deprecated This attribute is deprecated as footnotes should be rendered outside the element for consistency with other text on the page.
- */
-/**
- * The text for the footnote.
- * @ignore
- * @name footnote.text
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @default null
- * @deprecated 
- */
-/**
- * The CSS style string defining the style of the text.
- * @ignore
- * @name footnote.style
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @default null
- * @deprecated 
- */
-/**
- * The horizontal alignment of the text. If the value is plotAreaStart, plotAreaCenter, or plotAreaEnd, the text is aligned relative to the plot area instead of the entire chart container.
- * @ignore
- * @name footnote.halign
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "center"
- * @ojvalue {string} "end"
- * @ojvalue {string} "plotAreaStart"
- * @ojvalue {string} "plotAreaCenter"
- * @ojvalue {string} "plotAreaEnd"
- * @ojvalue {string} "start"
- * @default "start"
- * @deprecated 
- */
-/**
- * An object defining the style and text for the label to be displayed at the center of the pie chart. When a innerRadius is specified, the label will automatically be scaled to fit within the inner circle. If the innerRadius is 0, the default font size will be used.
- * @ignore
- * @name pieCenterLabel
- * @memberof oj.ojChart
- * @instance
- * @type {object}
- * @default null
- * @deprecated Use pieCenter instead
- */
-/**
- * Specifies the text for the label.
- * @ignore
- * @name pieCenterLabel.text
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @default null
- * @deprecated 
- */
-/**
- * The CSS style object defining the style of the label.
- * @ignore
- * @name pieCenterLabel.style
- * @memberof! oj.ojChart
- * @instance
- * @type {object}
- * @default null
- * @deprecated
- */
-/**
  * An object defining the center content of a pie chart. Either a label can be displayed at the center of the pie chart or custom HTML content. 
  * @expose
  * @name pieCenter
  * @memberof oj.ojChart
  * @instance
- * @type {object}
+ * @type {Object}
  * @default {}
  */
 /**
@@ -2205,7 +2449,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @name pieCenter.converter
  * @memberof! oj.ojChart
  * @instance
- * @type {object}
+ * @type {Object}
  * @default null
  */
 /**
@@ -2240,7 +2484,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @name pieCenter.labelStyle
  * @memberof! oj.ojChart
  * @instance
- * @type {object}
+ * @type {Object}
  * @default {}
  */
 /**
@@ -2267,7 +2511,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @name pieCenter.renderer
  * @memberof! oj.ojChart
  * @instance
- * @type {function(object)}
+ * @type {function(Object)}
  * @default null
  */
 /**
@@ -2276,7 +2520,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @name xAxis
  * @memberof oj.ojChart
  * @instance
- * @type {object}
+ * @type {Object}
  * @default {}
  */
 /**
@@ -2324,7 +2568,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @name xAxis.referenceObjects
  * @memberof! oj.ojChart
  * @instance
- * @type {Array.<object>}
+ * @type {Array.<Object>}
  * @default []
  */
 /**
@@ -2426,26 +2670,6 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  */
 /**
  * The CSS style class to apply to the reference object. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the reference object color attribute.
- * @ignore
- * @name xAxis.referenceObjects[].className
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @default null
- * @deprecated This attribute is deprecated, use the svgClassName attribute instead.
- */
-/**
- * The inline style to apply to the reference object. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the reference object color attribute.
- * @ignore
- * @name xAxis.referenceObjects[].style
- * @memberof! oj.ojChart
- * @instance
- * @type {object}
- * @default null
- * @deprecated This attribute is deprecated, use the svgStyle attribute instead.
- */
-/**
- * The CSS style class to apply to the reference object. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the reference object color attribute.
  * @expose
  * @name xAxis.referenceObjects[].svgClassName
  * @memberof! oj.ojChart
@@ -2459,7 +2683,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @name xAxis.referenceObjects[].svgStyle
  * @memberof! oj.ojChart
  * @instance
- * @type {object}
+ * @type {Object}
  * @default null
  */
 /**
@@ -2592,7 +2816,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @name xAxis.titleStyle
  * @memberof! oj.ojChart
  * @instance
- * @type {object}
+ * @type {Object}
  * @default {}
  */
 /**
@@ -2601,7 +2825,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @name xAxis.tickLabel
  * @memberof! oj.ojChart
  * @instance
- * @type {object}
+ * @type {Object}
  * @default {}
  */
 /**
@@ -2621,7 +2845,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @name xAxis.tickLabel.style
  * @memberof! oj.ojChart
  * @instance
- * @type {object}
+ * @type {Object}
  * @default {}
  */
 /**
@@ -2657,7 +2881,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @name xAxis.tickLabel.converter
  * @memberof! oj.ojChart
  * @instance
- * @type {object}
+ * @type {Object}
  * @default null
  */
 /**
@@ -2666,7 +2890,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @name xAxis.axisLine
  * @memberof! oj.ojChart
  * @instance
- * @type {object}
+ * @type {Object}
  * @default {}
  */
 /**
@@ -2706,7 +2930,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @name xAxis.majorTick
  * @memberof! oj.ojChart
  * @instance
- * @type {object}
+ * @type {Object}
  * @default {}
  */
 /**
@@ -2793,7 +3017,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @name xAxis.minorTick
  * @memberof! oj.ojChart
  * @instance
- * @type {object}
+ * @type {Object}
  * @default {}
  */
 /**
@@ -2893,7 +3117,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @name yAxis
  * @memberof oj.ojChart
  * @instance
- * @type {object}
+ * @type {Object}
  * @default {}
  */
 /**
@@ -2955,7 +3179,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @name yAxis.referenceObjects
  * @memberof! oj.ojChart
  * @instance
- * @type {Array.<object>}
+ * @type {Array.<Object>}
  * @default []
  */
 /**
@@ -3057,26 +3281,6 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  */
 /**
  * The CSS style class to apply to the reference object. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the reference object color attribute.
- * @ignore
- * @name yAxis.referenceObjects[].className
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @default null
- * @deprecated This attribute is deprecated, use the svgClassName attribute instead.
- */
-/**
- * The inline style to apply to the reference object. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the reference object color attribute.
- * @ignore
- * @name yAxis.referenceObjects[].style
- * @memberof! oj.ojChart
- * @instance
- * @type {object}
- * @default null
- * @deprecated This attribute is deprecated, use the svgStyle attribute instead.
- */
-/**
- * The CSS style class to apply to the reference object. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the reference object color attribute.
  * @expose
  * @name yAxis.referenceObjects[].svgClassName
  * @memberof! oj.ojChart
@@ -3090,7 +3294,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @name yAxis.referenceObjects[].svgStyle
  * @memberof! oj.ojChart
  * @instance
- * @type {object}
+ * @type {Object}
  * @default null
  */
 /**
@@ -3146,7 +3350,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @name yAxis.referenceObjects[].items
  * @memberof! oj.ojChart
  * @instance
- * @type {Array.<object>|Array.<number>}
+ * @type {Array.<Object>|Array.<number>}
  * @default null
  */
 /**
@@ -3168,7 +3372,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @default null
  */
 /**
- * The value of this point of a line object.
+ * The value of this point of a line object. Null can be specified to skip a data point.
  * @expose
  * @name yAxis.referenceObjects[].items[].value
  * @memberof! oj.ojChart
@@ -3270,7 +3474,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @name yAxis.titleStyle
  * @memberof! oj.ojChart
  * @instance
- * @type {object}
+ * @type {Object}
  * @default {}
  */
 /**
@@ -3279,7 +3483,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @name yAxis.tickLabel
  * @memberof! oj.ojChart
  * @instance
- * @type {object}
+ * @type {Object}
  * @default {}
  */
 /**
@@ -3310,7 +3514,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @name yAxis.tickLabel.style
  * @memberof! oj.ojChart
  * @instance
- * @type {object}
+ * @type {Object}
  * @default {}
  */
 /**
@@ -3335,7 +3539,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @name yAxis.tickLabel.converter
  * @memberof! oj.ojChart
  * @instance
- * @type {object}
+ * @type {Object}
  * @default null
  */
 /**
@@ -3344,7 +3548,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @name yAxis.axisLine
  * @memberof! oj.ojChart
  * @instance
- * @type {object}
+ * @type {Object}
  * @default {}
  */
 /**
@@ -3385,7 +3589,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @name yAxis.majorTick
  * @memberof! oj.ojChart
  * @instance
- * @type {object}
+ * @type {Object}
  * @default {}
  */
 /**
@@ -3472,7 +3676,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @name yAxis.minorTick
  * @memberof! oj.ojChart
  * @instance
- * @type {object}
+ * @type {Object}
  * @default {}
  */
 /**
@@ -3554,7 +3758,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @name y2Axis
  * @memberof oj.ojChart
  * @instance
- * @type {object}
+ * @type {Object}
  * @default {}
  */
 /**
@@ -3616,7 +3820,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @name y2Axis.referenceObjects
  * @memberof! oj.ojChart
  * @instance
- * @type {Array.<object>}
+ * @type {Array.<Object>}
  * @default []
  */
 /**
@@ -3718,26 +3922,6 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  */
 /**
  * The CSS style class to apply to the reference object. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the reference object color attribute.
- * @ignore
- * @name y2Axis.referenceObjects[].className
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @default null
- * @deprecated This attribute is deprecated, use the svgClassName attribute instead.
- */
-/**
- * The inline style to apply to the reference object. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the reference object color attribute.
- * @ignore
- * @name y2Axis.referenceObjects[].style
- * @memberof! oj.ojChart
- * @instance
- * @type {object}
- * @default null
- * @deprecated This attribute is deprecated, use the svgStyle attribute instead.
- */
-/**
- * The CSS style class to apply to the reference object. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the reference object color attribute.
  * @expose
  * @name y2Axis.referenceObjects[].svgClassName
  * @memberof! oj.ojChart
@@ -3751,7 +3935,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @name y2Axis.referenceObjects[].svgStyle
  * @memberof! oj.ojChart
  * @instance
- * @type {object}
+ * @type {Object}
  * @default null
  */
 /**
@@ -3807,7 +3991,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @name y2Axis.referenceObjects[].items
  * @memberof! oj.ojChart
  * @instance
- * @type {Array.<object>|Array.<number>}
+ * @type {Array.<Object>|Array.<number>}
  * @default null
  */
 /**
@@ -3829,7 +4013,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @default null
  */
 /**
- * The value of this point of a line object.
+ * The value of this point of a line object. Null can be specified to skip a data point.
  * @expose
  * @name y2Axis.referenceObjects[].items[].value
  * @memberof! oj.ojChart
@@ -3931,7 +4115,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @name y2Axis.titleStyle
  * @memberof! oj.ojChart
  * @instance
- * @type {object}
+ * @type {Object}
  * @default {}
  */
 /**
@@ -3940,7 +4124,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @name y2Axis.tickLabel
  * @memberof! oj.ojChart
  * @instance
- * @type {object}
+ * @type {Object}
  * @default {}
  */
 /**
@@ -3971,7 +4155,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @name y2Axis.tickLabel.style
  * @memberof! oj.ojChart
  * @instance
- * @type {object}
+ * @type {Object}
  * @default {}
  */
 /**
@@ -3996,7 +4180,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @name y2Axis.tickLabel.converter
  * @memberof! oj.ojChart
  * @instance
- * @type {object}
+ * @type {Object}
  * @default null
  */
 /**
@@ -4005,7 +4189,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @name y2Axis.axisLine
  * @memberof! oj.ojChart
  * @instance
- * @type {object}
+ * @type {Object}
  * @default {}
  */
 /**
@@ -4046,7 +4230,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @name y2Axis.majorTick
  * @memberof! oj.ojChart
  * @instance
- * @type {object}
+ * @type {Object}
  * @default {}
  */
 /**
@@ -4133,7 +4317,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @name y2Axis.minorTick
  * @memberof! oj.ojChart
  * @instance
- * @type {object}
+ * @type {Object}
  * @default {}
  */
 /**
@@ -4208,7 +4392,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @name overview
  * @memberof oj.ojChart
  * @instance
- * @type {object}
+ * @type {Object}
  * @default {}
  */
 /**
@@ -4237,7 +4421,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @name overview.content
  * @memberof! oj.ojChart
  * @instance
- * @type {object}
+ * @type {Object}
  * @default {}
  */
 /**
@@ -4246,7 +4430,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @name plotArea
  * @memberof oj.ojChart
  * @instance
- * @type {object}
+ * @type {Object}
  * @default {}
  */
 /**
@@ -4294,7 +4478,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @name legend
  * @memberof oj.ojChart
  * @instance
- * @type {object}
+ * @type {Object}
  * @default {}
  */
 /**
@@ -4313,7 +4497,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @name legend.sections
  * @memberof! oj.ojChart
  * @instance
- * @type {Array.<object>}
+ * @type {Array.<Object>}
  * @default []
  */
 /**
@@ -4344,7 +4528,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @name legend.sections[].titleStyle
  * @memberof! oj.ojChart
  * @instance
- * @type {object}
+ * @type {Object}
  * @default null
  */
 /**
@@ -4353,7 +4537,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @name legend.sections[].sections
  * @memberof! oj.ojChart
  * @instance
- * @type {Array.<object>}
+ * @type {Array.<Object>}
  * @default null
  */
 /**
@@ -4362,7 +4546,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @name legend.sections[].items
  * @memberof! oj.ojChart
  * @instance
- * @type {Array.<object>|Promise}
+ * @type {Array.<Object>|Promise}
  * @default null
  */
 /**
@@ -4531,7 +4715,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @name legend.seriesSection
  * @memberof! oj.ojChart
  * @instance
- * @type {object}
+ * @type {Object}
  * @default {}
  */
 /**
@@ -4562,7 +4746,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @name legend.seriesSection.titleStyle
  * @memberof! oj.ojChart
  * @instance
- * @type {object}
+ * @type {Object}
  * @default {}
  */
 /**
@@ -4571,7 +4755,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @name legend.referenceObjectSection
  * @memberof! oj.ojChart
  * @instance
- * @type {object}
+ * @type {Object}
  * @default {}
  */
 /**
@@ -4602,7 +4786,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @name legend.referenceObjectSection.titleStyle
  * @memberof! oj.ojChart
  * @instance
- * @type {object}
+ * @type {Object}
  * @default {}
  */
 /**
@@ -4620,7 +4804,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @default "auto"
  */
 /**
- * Defines whether the legend is displayed. If set to auto, the legend will be hidden for charts with a large number of series. To turn on legend for stock, funnel and pyramid charts, set the displayInLegend property for the series items to 'on'.
+ * Defines whether the legend is displayed. If set to auto, the legend will be hidden for charts with a large number of series. To ensure that the legend is always displayed, set this attribute to 'on'. To turn on legend for stock, funnel and pyramid charts, set the displayInLegend property for the series items to 'on'.
  * @expose
  * @name legend.rendered
  * @memberof! oj.ojChart
@@ -4673,7 +4857,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @name legend.textStyle
  * @memberof! oj.ojChart
  * @instance
- * @type {object}
+ * @type {Object}
  * @default {}
  */
 /**
@@ -4714,7 +4898,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @name legend.titleStyle
  * @memberof! oj.ojChart
  * @instance
- * @type {object}
+ * @type {Object}
  * @default {}
  */
 /**
@@ -4734,7 +4918,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @name styleDefaults
  * @memberof oj.ojChart
  * @instance
- * @type {object}
+ * @type {Object}
  * @default {}
  */
 /**
@@ -4803,16 +4987,6 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @type {number}
  * @default null
  * @ojunits pixels
- */
-/**
- * The default background color of the data items. Currently applies only for funnel charts with actual/target values.
- * @ignore
- * @name styleDefaults.backgroundColor
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @default null
- * @deprecated Use funnelBackgroundColor instead.
  */
 /**
  * The default background color of funnel slices that show actual/target values.
@@ -5083,7 +5257,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @name styleDefaults.dataLabelStyle
  * @memberof! oj.ojChart
  * @instance
- * @type {object|Array.<object>}
+ * @type {object|Array.<Object>}
  * @default null
  */
 /**
@@ -5092,7 +5266,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @name styleDefaults.stackLabelStyle
  * @memberof! oj.ojChart
  * @instance
- * @type {object}
+ * @type {Object}
  * @default {}
  */
 /**
@@ -5133,7 +5307,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @name styleDefaults.tooltipLabelStyle
  * @memberof! oj.ojChart
  * @instance
- * @type {object}
+ * @type {Object}
  * @default {}
  */
 /**
@@ -5142,7 +5316,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @name styleDefaults.tooltipValueStyle
  * @memberof! oj.ojChart
  * @instance
- * @type {object}
+ * @type {Object}
  * @default {}
  */
 /**
@@ -5151,7 +5325,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @name styleDefaults.dataCursor
  * @memberof! oj.ojChart
  * @instance
- * @type {object}
+ * @type {Object}
  * @default {}
  */
 /**
@@ -5222,7 +5396,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @name styleDefaults.groupSeparators
  * @memberof! oj.ojChart
  * @instance
- * @type {object}
+ * @type {Object}
  * @default {}
  */
 /**
@@ -5251,48 +5425,8 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @name styleDefaults.boxPlot
  * @memberof! oj.ojChart
  * @instance
- * @type {object}
+ * @type {Object}
  * @default {}
- */
-/**
- * The CSS style class to apply to the whisker stems.
- * @ignore
- * @name styleDefaults.boxPlot.whiskerClassName
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @default null
- * @deprecated This attribute is deprecated, use the whiskerSvgClassName attribute instead.
- */
-/**
- * The CSS inline style to apply to the whisker stems.
- * @ignore
- * @name styleDefaults.boxPlot.whiskerStyle
- * @memberof! oj.ojChart
- * @instance
- * @type {object}
- * @default null
- * @deprecated This attribute is deprecated, use the whiskerSvgStyle attribute instead.
- */
-/**
- * The CSS style class to apply to the whisker ends.
- * @ignore
- * @name styleDefaults.boxPlot.whiskerEndClassName
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @default null
- * @deprecated This attribute is deprecated, use the whiskerEndSvgClassName attribute instead.
- */
-/**
- * The CSS inline style to apply to the whisker ends.
- * @ignore
- * @name styleDefaults.boxPlot.whiskerEndStyle
- * @memberof! oj.ojChart
- * @instance
- * @type {object}
- * @default null
- * @deprecated This attribute is deprecated, use the whiskerEndSvgStyle attribute instead.
  */
 /**
  * The CSS style class to apply to the whisker stems.
@@ -5309,7 +5443,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @name styleDefaults.boxPlot.whiskerSvgStyle
  * @memberof! oj.ojChart
  * @instance
- * @type {object}
+ * @type {Object}
  * @default {}
  */
 /**
@@ -5327,7 +5461,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @name styleDefaults.boxPlot.whiskerEndSvgStyle
  * @memberof! oj.ojChart
  * @instance
- * @type {object}
+ * @type {Object}
  * @default {}
  */
 /**
@@ -5338,26 +5472,6 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @instance
  * @type {string}
  * @default null
- */
-/**
- * The CSS style class to apply to the median line.
- * @ignore
- * @name styleDefaults.boxPlot.medianClassName
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @default ""
- * @deprecated This attribute is deprecated, use the medianSvgClassName attribute instead.
- */
-/**
- * The CSS inline style to apply to the median line.
- * @ignore
- * @name styleDefaults.boxPlot.medianStyle
- * @memberof! oj.ojChart
- * @instance
- * @type {object}
- * @default {}
- * @deprecated This attribute is deprecated, use the medianSvgStyle attribute instead.
  */
 /**
  * The CSS style class to apply to the median line.
@@ -5374,7 +5488,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @name styleDefaults.boxPlot.medianSvgStyle
  * @memberof! oj.ojChart
  * @instance
- * @type {object}
+ * @type {Object}
  * @default {}
  */
 /**
@@ -5382,7 +5496,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @name valueFormats
  * @memberof oj.ojChart
  * @instance
- * @type {object}
+ * @type {Object}
  * @default {}
  */
 /**
@@ -5391,7 +5505,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @name valueFormats.series
  * @memberof! oj.ojChart
  * @instance
- * @type {object}
+ * @type {Object}
  * @default {}
  */
 /**
@@ -5421,7 +5535,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @name valueFormats.group
  * @memberof! oj.ojChart
  * @instance
- * @type {object}
+ * @type {Object}
  * @default {}
  */
 /**
@@ -5451,7 +5565,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @name valueFormats.x
  * @memberof! oj.ojChart
  * @instance
- * @type {object}
+ * @type {Object}
  * @default {}
  */
 /**
@@ -5460,7 +5574,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @name valueFormats.x.converter
  * @memberof! oj.ojChart
  * @instance
- * @type {object}
+ * @type {Object}
  * @default null
  */
 /**
@@ -5506,7 +5620,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @name valueFormats.y
  * @memberof! oj.ojChart
  * @instance
- * @type {object}
+ * @type {Object}
  * @default {}
  */
 /**
@@ -5515,7 +5629,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @name valueFormats.y.converter
  * @memberof! oj.ojChart
  * @instance
- * @type {object}
+ * @type {Object}
  * @default null
  */
 /**
@@ -5561,7 +5675,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @name valueFormats.y2
  * @memberof! oj.ojChart
  * @instance
- * @type {object}
+ * @type {Object}
  * @default {}
  */
 /**
@@ -5570,7 +5684,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @name valueFormats.y2.converter
  * @memberof! oj.ojChart
  * @instance
- * @type {object}
+ * @type {Object}
  * @default null
  */
 /**
@@ -5616,7 +5730,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @name valueFormats.z
  * @memberof! oj.ojChart
  * @instance
- * @type {object}
+ * @type {Object}
  * @default {}
  */
 /**
@@ -5625,7 +5739,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @name valueFormats.z.converter
  * @memberof! oj.ojChart
  * @instance
- * @type {object}
+ * @type {Object}
  * @default null
  */
 /**
@@ -5671,7 +5785,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @name valueFormats.value
  * @memberof! oj.ojChart
  * @instance
- * @type {object}
+ * @type {Object}
  * @default {}
  */
 /**
@@ -5680,7 +5794,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @name valueFormats.value.converter
  * @memberof! oj.ojChart
  * @instance
- * @type {object}
+ * @type {Object}
  * @default null
  */
 /**
@@ -5726,7 +5840,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @name valueFormats.targetValue
  * @memberof! oj.ojChart
  * @instance
- * @type {object}
+ * @type {Object}
  * @default {}
  */
 /**
@@ -5735,7 +5849,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @name valueFormats.targetValue.converter
  * @memberof! oj.ojChart
  * @instance
- * @type {object}
+ * @type {Object}
  * @default null
  */
 /**
@@ -5781,7 +5895,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @name valueFormats.low
  * @memberof! oj.ojChart
  * @instance
- * @type {object}
+ * @type {Object}
  * @default {}
  */
 /**
@@ -5790,7 +5904,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @name valueFormats.low.converter
  * @memberof! oj.ojChart
  * @instance
- * @type {object}
+ * @type {Object}
  * @default null
  */
 /**
@@ -5836,7 +5950,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @name valueFormats.high
  * @memberof! oj.ojChart
  * @instance
- * @type {object}
+ * @type {Object}
  * @default {}
  */
 /**
@@ -5845,7 +5959,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @name valueFormats.high.converter
  * @memberof! oj.ojChart
  * @instance
- * @type {object}
+ * @type {Object}
  * @default null
  */
 /**
@@ -5891,7 +6005,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @name valueFormats.open
  * @memberof! oj.ojChart
  * @instance
- * @type {object}
+ * @type {Object}
  * @default {}
  */
 /**
@@ -5900,7 +6014,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @name valueFormats.open.converter
  * @memberof! oj.ojChart
  * @instance
- * @type {object}
+ * @type {Object}
  * @default null
  */
 /**
@@ -5946,7 +6060,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @name valueFormats.close
  * @memberof! oj.ojChart
  * @instance
- * @type {object}
+ * @type {Object}
  * @default {}
  */
 /**
@@ -5955,7 +6069,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @name valueFormats.close.converter
  * @memberof! oj.ojChart
  * @instance
- * @type {object}
+ * @type {Object}
  * @default null
  */
 /**
@@ -6001,7 +6115,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @name valueFormats.volume
  * @memberof! oj.ojChart
  * @instance
- * @type {object}
+ * @type {Object}
  * @default {}
  */
 /**
@@ -6010,7 +6124,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @name valueFormats.volume.converter
  * @memberof! oj.ojChart
  * @instance
- * @type {object}
+ * @type {Object}
  * @default null
  */
 /**
@@ -6056,7 +6170,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @name valueFormats.q1
  * @memberof! oj.ojChart
  * @instance
- * @type {object}
+ * @type {Object}
  * @default {}
  */
 /**
@@ -6065,7 +6179,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @name valueFormats.q1.converter
  * @memberof! oj.ojChart
  * @instance
- * @type {object}
+ * @type {Object}
  * @default null
  */
 /**
@@ -6111,7 +6225,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @name valueFormats.q2
  * @memberof! oj.ojChart
  * @instance
- * @type {object}
+ * @type {Object}
  * @default {}
  */
 /**
@@ -6120,7 +6234,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @name valueFormats.q2.converter
  * @memberof! oj.ojChart
  * @instance
- * @type {object}
+ * @type {Object}
  * @default null
  */
 /**
@@ -6166,7 +6280,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @name valueFormats.q3
  * @memberof! oj.ojChart
  * @instance
- * @type {object}
+ * @type {Object}
  * @default {}
  */
 /**
@@ -6175,7 +6289,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @name valueFormats.q3.converter
  * @memberof! oj.ojChart
  * @instance
- * @type {object}
+ * @type {Object}
  * @default null
  */
 /**
@@ -6221,7 +6335,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @name valueFormats.label
  * @memberof! oj.ojChart
  * @instance
- * @type {object}
+ * @type {Object}
  * @default {}
  */
 /**
@@ -6230,7 +6344,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @name valueFormats.label.converter
  * @memberof! oj.ojChart
  * @instance
- * @type {object}
+ * @type {Object}
  * @default null
  */
 /**
@@ -6306,7 +6420,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @name tooltip
  * @memberof oj.ojChart
  * @instance
- * @type {object}
+ * @type {Object}
  * @default {}
  */
 /**
@@ -6340,7 +6454,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @name tooltip.renderer
  * @memberof! oj.ojChart
  * @instance
- * @type {function(object)}
+ * @type {function(Object)}
  * @default null
  */
 /**
@@ -6360,7 +6474,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @name dataLabel
  * @memberof oj.ojChart
  * @instance
- * @type {function(object)}
+ * @type {function(Object)}
  * @default null
  */
 /**
@@ -6369,7 +6483,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @name dnd
  * @memberof oj.ojChart
  * @instance
- * @type {object}
+ * @type {Object}
  * @default {}
  */
 /**
@@ -6378,7 +6492,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @name dnd.drag
  * @memberof! oj.ojChart
  * @instance
- * @type {object}
+ * @type {Object}
  * @default {}
  */
 /**
@@ -6387,7 +6501,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @name dnd.drag.items
  * @memberof! oj.ojChart
  * @instance
- * @type {object}
+ * @type {Object}
  * @default {}
  */
 /**
@@ -6432,7 +6546,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @name dnd.drag.series
  * @memberof! oj.ojChart
  * @instance
- * @type {object}
+ * @type {Object}
  * @default {}
  */
 /**
@@ -6477,7 +6591,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @name dnd.drag.groups
  * @memberof! oj.ojChart
  * @instance
- * @type {object}
+ * @type {Object}
  * @default {}
  */
 /**
@@ -6522,7 +6636,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @name dnd.drop
  * @memberof! oj.ojChart
  * @instance
- * @type {object}
+ * @type {Object}
  * @default {}
  */
 /**
@@ -6531,7 +6645,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @name dnd.drop.plotArea
  * @memberof! oj.ojChart
  * @instance
- * @type {object}
+ * @type {Object}
  * @default {}
  */
 /**
@@ -6585,7 +6699,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @name dnd.drop.xAxis
  * @memberof! oj.ojChart
  * @instance
- * @type {object}
+ * @type {Object}
  * @default {}
  */
 /**
@@ -6639,7 +6753,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @name dnd.drop.yAxis
  * @memberof! oj.ojChart
  * @instance
- * @type {object}
+ * @type {Object}
  * @default {}
  */
 /**
@@ -6693,7 +6807,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @name dnd.drop.y2Axis
  * @memberof! oj.ojChart
  * @instance
- * @type {object}
+ * @type {Object}
  * @default {}
  */
 /**
@@ -6747,7 +6861,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @name dnd.drop.legend
  * @memberof! oj.ojChart
  * @instance
- * @type {object}
+ * @type {Object}
  * @default {}
  */
 /**
@@ -6795,38 +6909,11 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @type {function(Event, object)}
  * @default null
  */
- 
-/**
- * An object with the following properties, used to define the series and groups when using a DataProvider to provide data to the chart. Also accepts a Promise for deferred data rendering.
- * @expose
- * @name data
- * @memberof oj.ojChart
- * @instance
- * @type {object|Promise}
- * @default null
- */
-/**
- * An array of <a href="/jsdocs/oj.ojChart.html#ChartSeries">ChartSeries</a> typed objects. Used when utilizing a DataProvider to provide data to the chart. Only a single series is supported for stock charts. Also accepts a Promise for deferred data rendering.
- * @expose
- * @name data.series
- * @memberof! oj.ojChart
- * @instance
- * @type {Array.<oj.ojChart.ChartSeries>|Promise.<Array>}
- * @default null
- */  
-/**
- * An oj.DataProvider that generates rows of <a href="/jsdocs/oj.ojChart.html#ChartGroup">ChartGroup</a> typed objects.
- * @name data.groups
- * @memberof! oj.ojChart
- * @instance
- * @type {oj.DataProvider.<String, oj.ojChart.ChartGroup>}
- * @default null
- */  
-    
+      
 /**
  * Object type that defines a chart series.
- * @typedef {Object} ChartSeries
- * @memberof! oj.ojChart
+ * @ignore
+ * @typedef {Object} oj.ojChart.Series
  * @property {string} id The id of the series. Defaults to the name or the series index if not specified.
  * @property {string} name The name of the series, displayed in the legend and tooltips.
  * @property {"bar"|"line"|"area"|"lineWithArea"|"candlestick"|"boxPlot"|"auto"} type The type of data objects to display for this series. Only applies to bar, line, area, stock, box plot, and combo charts.
@@ -6871,13 +6958,13 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @property {Array.<string>} categories An optional array of category strings corresponding to this series. 
  *           This allows highlighting and filtering of a series through interactions with legend sections. If not defined, the series id is used.
  * @property {string} shortDesc The description of this series. This is used for accessibility and for customizing the tooltip text on the corressponding legend item for the series.
- * @property {oj.ojChart.ChartBoxPlotStyle} boxPlot An object containing the style properties of the box plot series.
+ * @property {oj.ojChart.BoxPlotStyle} boxPlot An object containing the style properties of the box plot series.
  */    
 
 /**
  * Object type that defines a chart group.
- * @typedef {Object} ChartGroup
- * @memberof! oj.ojChart
+ * @ignore
+ * @typedef {Object} oj.ojChart.Group 
  * @property {string} id The id of the group. Defaults to the name if not specified.
  * @property {string} name The name of the group
  * @property {object} labelStyle The CSS style object defining the style of the group label text. Supports color, 
@@ -6887,15 +6974,15 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @property {string} shortDesc The description of the group. This is used for customizing the tooltip text and only applies to a categorical axis.
  * @property {"on"|"off"|"auto"} drilling Whether drilling is enabled on the group label. Drillable objects will show a pointer cursor on hover and fire an 
  *                    <code class="prettyprint">ojDrill</code> event on click. To enable drilling for all group labels at once, use the drilling attribute in the top level. 
- * @property {Array.<oj.ojChart.ChartGroup>} groups An array of nested group obects.
- * @property {Array.<oj.ojChart.ChartDataItem>} items An array of chart data items.
+ * @property {Array.<oj.ojChart.Group>} groups An array of nested group obects.
+ * @property {Array.<oj.ojChart.DataItem>} items An array of chart data items.
  */
 
 /**
  * Object type that defines a chart data item.
- * @typedef {Object} ChartDataItem
- * @memberof! oj.ojChart
- * @property {Array.<oj.ojChart.ChartDataItem>} items An array of nested data items to be used for defining the markers for outliers or additional data items of a box plot. 
+ * @ignore
+ * @typedef {Object} oj.ojChart.DataItem
+ * @property {Array.<oj.ojChart.DataItem>} items An array of nested data items to be used for defining the markers for outliers or additional data items of a box plot. 
  * @property {string} id The id of the data item. This id will be provided as part of the context for events on the chart.
  * @property {number|string} x The x value for a scatter or bubble chart or the date on a time axis.
  * @property {number} y The y value. Also the primary value for charts without a y-Axis, such as pie charts.
@@ -6914,8 +7001,6 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @property {number} borderWidth The border width of the data item. For funnel and pyramid charts, it is used for the slice border.
  * @property {"smallChecker"|"smallCrosshatch"|"smallDiagonalLeft"|"smallDiagonalRight"|"smallDiamond"|"smallTriangle"|"largeChecker"|"largeCrosshatch"|"largeDiagonalLeft"|"largeDiagonalRight"|"largeDiamond"|"largeTriangle"} pattern
  *           The pattern used to fill the data item. A solid fill is used by default, unless the seriesEffect is 'pattern'.
- * @property {string} className The CSS style class to apply to the data item. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the item color attribute.
- * @property {object} style The inline style to apply to the data item. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the item color attribute.
  * @property {string} svgClassName The CSS style class to apply to the data item. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the item color attribute.
  * @property {object} svgStyle The inline style to apply to the data item. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the item color attribute.
  * @property {"on"|"off"|"auto"} markerDisplayed Defines whether the data marker is displayed. Only applies to line, area, scatter, and bubble series. If auto, the markers will be displayed whenever the data points are not connected by a line.
@@ -6935,13 +7020,13 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  * @property {number} value The value for this data item. Corresponding to the y value for bar, line, area, and combo charts and the slice values for pie, funnel and pyramid charts. Null can be specified to skip a data point.
  * @property {number} targetValue The target value for a funnel chart. When this is set, the value attribute defines the filled area within the slice and this represents the value of the whole slice.
  * @property {"on"|"off"|"drilling"} drilling Whether drilling is enabled for the data item. Drillable objects will show a pointer cursor on hover and fire an <code class="prettyprint">ojDrill</code> event on click (double click if selection is enabled). To enable drilling for all data items at once, use the drilling attribute in the top level.  
- * @property {oj.ojChart.ChartBoxPlotStyle} boxPlot An object containing the style properties of the box plot item.
+ * @property {oj.ojChart.BoxPlotStyle} boxPlot An object containing the style properties of the box plot item.
  */
       
 /**
  * Object type that defines box plot style properties.
- * @typedef {Object} ChartBoxPlotStyle
- * @memberof! oj.ojChart
+ * @ignore
+ * @typedef {Object} oj.ojChart.BoxPlotStyle
  * @property {string} q2Color The color of the Q2 segment of the box.
  * @property {string} q2SvgClassName The CSS style class to apply to the Q2 segment of the box. The style class and inline style will override any other styling specified through the properties. 
  *            For tooltips and hover interactivity, it's recommended to also pass a representative color to the q2Color attribute. 
@@ -7121,618 +7206,34 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  */
 
 /**
- * <p>This element has no touch interaction.  </p>
- *
- *
- * @ojfragment touchDoc - Used in touch gesture section of classdesc, and standalone gesture doc
- * @memberof oj.ojSparkChart
- */
-
-/**
- * <p>This element has no keyboard interaction.  </p>
- *
- * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
- * @memberof oj.ojSparkChart
- */
-/**
- * An array of objects with the following properties that defines the data for the spark chart. Also accepts a Promise for deferred data rendering.</ul> 
- * @expose
- * @name items
- * @memberof oj.ojSparkChart
- * @instance
- * @type {Array.<object>|Array.<number>|Promise}
- * @default <code class="prettyprint">null</code>
- */
-/**
- * The value of the data item.
- * @expose
- * @name items[].value
- * @memberof! oj.ojSparkChart
- * @instance
- * @type {number}
- * @default <code class="prettyprint">null</code>
- */
-/**
- * The low value for range bar/area. Define 'low' and 'high' instead of 'value' to create a range bar/area spark chart.
- * @expose
- * @name items[].low
- * @memberof! oj.ojSparkChart
- * @instance
- * @type {number}
- * @default <code class="prettyprint">null</code>
- */
-/**
- * The high value for range bar/area. Define 'low' and 'high' instead of 'value' to create a range bar/area spark chart.
- * @expose
- * @name items[].high
- * @memberof! oj.ojSparkChart
- * @instance
- * @type {number}
- * @default <code class="prettyprint">null</code>
- */
-/**
- * The date for the data item. The date should only be specified if the interval between data items is irregular.
- * @expose
- * @name items[].date
- * @memberof! oj.ojSparkChart
- * @instance
- * @type {string}
- * @default <code class="prettyprint">null</code>
- */
-/**
- * The color of the bar or marker for the data item. This override can be used to highlight important values or thresholds.
- * @expose
- * @name items[].color
- * @memberof! oj.ojSparkChart
- * @instance
- * @type {string}
- * @default <code class="prettyprint">null</code>
- */
-/**
- * The CSS style class to apply to the data item. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the item color attribute.
- * @ignore
- * @name items[].className
- * @memberof! oj.ojSparkChart
- * @instance
- * @type {string}
- * @default <code class="prettyprint">null</code>
- * @deprecated This attribute is deprecated, use the svgClassName attribute instead.
- */
-/**
- * The inline style to apply to the data item. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the item color attribute.
- * @ignore
- * @name items[].style
- * @memberof! oj.ojSparkChart
- * @instance
- * @type {object}
- * @default <code class="prettyprint">null</code>
- * @deprecated This attribute is deprecated, use the svgStyle attribute instead.
- */
-/**
- * The CSS style class to apply to the data item. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the item color attribute.
- * @expose
- * @name items[].svgClassName
- * @memberof! oj.ojSparkChart
- * @instance
- * @type {string}
- * @default <code class="prettyprint">null</code>
- */
-/**
- * The inline style to apply to the data item. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the item color attribute.
- * @expose
- * @name items[].svgStyle
- * @memberof! oj.ojSparkChart
- * @instance
- * @type {object}
- * @default <code class="prettyprint">null</code>
- */
-/**
- * Defines whether a marker should be displayed for the data item. Only applies to line and area spark charts.
- * @expose
- * @name items[].markerDisplayed
- * @memberof! oj.ojSparkChart
- * @instance
- * @type {string}
- * @ojvalue {string} "on"
- * @ojvalue {string} "off"
- * @default <code class="prettyprint">"off"</code>
- */
-/**
- * The default border color for the data items.
- * @expose
- * @name items[].borderColor
- * @memberof! oj.ojSparkChart
- * @instance
- * @type {string}
- * @default <code class="prettyprint">null</code>
- */
-/**
- * The shape of the data markers. Can take the name of a built-in shape or the svg path commands for a custom shape. Only applies to line and area spark charts.
- * @expose
- * @name items[].markerShape
- * @memberof! oj.ojSparkChart
- * @instance
- * @type {string}
- * @ojvalue {string} "square"
- * @ojvalue {string} "circle"
- * @ojvalue {string} "diamond"
- * @ojvalue {string} "plus"
- * @ojvalue {string} "triangleDown"
- * @ojvalue {string} "triangleUp"
- * @ojvalue {string} "human"
- * @ojvalue {string} "star"
- * @ojvalue {string} "auto"
- * @default <code class="prettyprint">"auto"</code>
- */
-/**
- * The size of the data markers in pixels. Only applies to line and area spark charts.
- * @expose
- * @name items[].markerSize
- * @memberof! oj.ojSparkChart
- * @instance
- * @type {number}
- * @default <code class="prettyprint">null</code>
- */
-/**
- * An array of objects with the following properties defining the reference objects associated with the y axis of the spark chart.
- * @expose
- * @name referenceObjects
- * @memberof oj.ojSparkChart
- * @instance
- * @type {Array.<object>}
- * @default <code class="prettyprint">null</code>
- */
-/**
- * The type of reference object being shown.
- * @expose
- * @name referenceObjects[].type
- * @memberof! oj.ojSparkChart
- * @instance
- * @type {string}
- * @ojvalue {string} "area"
- * @ojvalue {string} "line"
- * @default <code class="prettyprint">"line"</code>
- */
-/**
- * The location of the reference object relative to the data items.
- * @expose
- * @name referenceObjects[].location
- * @memberof! oj.ojSparkChart
- * @instance
- * @type {string}
- * @ojvalue {string} "front"
- * @ojvalue {string} "back"
- * @default <code class="prettyprint">"back"</code>
- */
-/**
- * The color of the reference object.
- * @expose
- * @name referenceObjects[].color
- * @memberof! oj.ojSparkChart
- * @instance
- * @type {string}
- * @default <code class="prettyprint">null</code>
- */
-/**
- * The width of a reference line.
- * @expose
- * @name referenceObjects[].lineWidth
- * @memberof! oj.ojSparkChart
- * @instance
- * @type {number}
- * @default <code class="prettyprint">null</code>
- */
-/**
- * The line style of a reference line.
- * @expose
- * @name referenceObjects[].lineStyle
- * @memberof! oj.ojSparkChart
- * @instance
- * @type {string}
- * @ojvalue {string} "dotted"
- * @ojvalue {string} "dashed"
- * @default <code class="prettyprint">null</code>
- */
-/**
- * The CSS style class to apply to the reference object. The style class and inline style will override any other styling specified through the properties.
- * @ignore
- * @name referenceObjects[].className
- * @memberof! oj.ojSparkChart
- * @instance
- * @type {string}
- * @default <code class="prettyprint">null</code>
- * @deprecated This attribute is deprecated, use the svgClassName attribute instead.
- */
-/**
- * The inline style to apply to the reference object. The style class and inline style will override any other styling specified through the properties.
- * @ignore
- * @name referenceObjects[].style
- * @memberof! oj.ojSparkChart
- * @instance
- * @type {object}
- * @default <code class="prettyprint">null</code>
- * @deprecated This attribute is deprecated, use the svgStyle attribute instead.
- */
-/**
- * The CSS style class to apply to the reference object. The style class and inline style will override any other styling specified through the properties.
- * @expose
- * @name referenceObjects[].svgClassName
- * @memberof! oj.ojSparkChart
- * @instance
- * @type {string}
- * @default <code class="prettyprint">null</code>
- */
-/**
- * The inline style to apply to the reference object. The style class and inline style will override any other styling specified through the properties.
- * @expose
- * @name referenceObjects[].svgStyle
- * @memberof! oj.ojSparkChart
- * @instance
- * @type {object}
- * @default <code class="prettyprint">null</code>
- */
-/**
- * The value of a reference line.
- * @expose
- * @name referenceObjects[].value
- * @memberof! oj.ojSparkChart
- * @instance
- * @type {number}
- * @default <code class="prettyprint">null</code>
- */
-/**
- * The low value of a reference area.
- * @expose
- * @name referenceObjects[].low
- * @memberof! oj.ojSparkChart
- * @instance
- * @type {number}
- * @default <code class="prettyprint">null</code>
- */
-/**
- * The high value of a reference area.
- * @expose
- * @name referenceObjects[].high
- * @memberof! oj.ojSparkChart
- * @instance
- * @type {number}
- * @default <code class="prettyprint">null</code>
- */
-/**
- *  An object containing an optional callback function for tooltip customization. 
- * @expose
- * @name tooltip
- * @memberof oj.ojSparkChart
- * @instance
- * @type {object}
- * @default <code class="prettyprint">null</code>
- */
-/**
- *  A function that returns a custom tooltip. The function takes a dataContext argument, 
- *  provided by the chart, with the following properties: 
- *  <ul>
- *   <li>parentElement: The tooltip element. The function can directly modify or append content to this element.</li>
- *   <li>color: The color of the chart.</li>
- *   <li>componentElement: The spark chart element.</li>
- *  </ul>
- *  The function should return an Object that contains only one of the two properties:
- *  <ul>
- *    <li>insert: HTMLElement | string - An HTML element, which will be appended to the tooltip, or a tooltip string.</li> 
- *    <li>preventDefault: <code>true</code> - Indicates that the tooltip should not be displayed. It is not necessary to return {preventDefault:false} to display tooltip, since this is a default behavior.</li> 
- *  </ul>
- * @expose
- * @name tooltip.renderer
- * @memberof! oj.ojSparkChart
- * @instance
- * @type {function(object)}
- * @default <code class="prettyprint">null</code>
- */
-/**
- * The chart type.
- * @expose
- * @name type
- * @memberof oj.ojSparkChart
- * @instance
- * @type {string}
- * @ojvalue {string} "area"
- * @ojvalue {string} "lineWithArea"
- * @ojvalue {string} "bar"
- * @ojvalue {string} "line"
- * @default <code class="prettyprint">"line"</code>
- */
-/**
- * The color of the data items.
- * @expose
- * @name color
- * @memberof oj.ojSparkChart
- * @instance
- * @type {string}
- * @default <code class="prettyprint">null</code>
- */
-/**
- * The color of the area in area or lineWithArea spark chart.
- * @expose
- * @name areaColor
- * @memberof oj.ojSparkChart
- * @instance
- * @type {string}
- * @default <code class="prettyprint">null</code>
- */
-/**
- * The CSS style class to apply if the type is area or lineWithArea. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the color attribute.
- * @ignore
- * @name areaClassName
- * @memberof oj.ojSparkChart
- * @instance
- * @type {string}
- * @default <code class="prettyprint">null</code>
- * @deprecated This attribute is deprecated, use the areaSvgClassName attribute instead.
- */
-/**
- * The inline style to apply if the type is area or lineWithArea. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the color attribute.
- * @ignore
- * @name areaStyle
- * @memberof oj.ojSparkChart
- * @instance
- * @type {object}
- * @default <code class="prettyprint">null</code>
- * @deprecated This attribute is deprecated, use the areaSvgStyle attribute instead.
- */
-/**
- * The CSS style class to apply if the type is area or lineWithArea. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the color attribute.
- * @expose
- * @name areaSvgClassName
- * @memberof oj.ojSparkChart
- * @instance
- * @type {string}
- * @default <code class="prettyprint">null</code>
- */
-/**
- * The inline style to apply if the type is area or lineWithArea. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the color attribute.
- * @expose
- * @name areaSvgStyle
- * @memberof oj.ojSparkChart
- * @instance
- * @type {object}
- * @default <code class="prettyprint">null</code>
- */
-/**
- * The CSS style class to apply to the data items. For type lineWithArea, this style will only be applied to the line if areaClassName is also specified. The style class and inline style will override any other styling specified through the properties. For tooltips, it's recommended to also pass a representative color to the color attribute.
- * @ignore
- * @name className
- * @memberof oj.ojSparkChart
- * @instance
- * @type {string}
- * @default <code class="prettyprint">null</code>
- * @deprecated
- */
-/**
- * The CSS style class to apply to the data items. For type lineWithArea, this style will only be applied to the line if areaClassName is also specified. The style class and inline style will override any other styling specified through the properties. For tooltips, it's recommended to also pass a representative color to the color attribute.
- * @expose
- * @name svgClassName
- * @memberof oj.ojSparkChart
- * @instance
- * @type {string}
- * @default <code class="prettyprint">null</code>
- */
-/**
- * The inline style to apply to the data items. For type lineWithArea, this style will only be applied to the line if areaStyle is also specified. The style class and inline style will override any other styling specified through the properties. For tooltips, it's recommended to also pass a representative color to the color attribute.
- * @ignore
- * @name style
- * @memberof oj.ojSparkChart
- * @instance
- * @type {object}
- * @default <code class="prettyprint">null</code>
- * @deprecated
- */
-/**
- * The inline style to apply to the data items. For type lineWithArea, this style will only be applied to the line if areaStyle is also specified. The style class and inline style will override any other styling specified through the properties. For tooltips, it's recommended to also pass a representative color to the color attribute.
- * @expose
- * @name svgStyle
- * @memberof oj.ojSparkChart
- * @instance
- * @type {object}
- * @default <code class="prettyprint">null</code>
- */
-/**
- * The color of the first data item.
- * @expose
- * @name firstColor
- * @memberof oj.ojSparkChart
- * @instance
- * @type {string}
- * @default <code class="prettyprint">null</code>
- */
-/**
- * The color of the last data item.
- * @expose
- * @name lastColor
- * @memberof oj.ojSparkChart
- * @instance
- * @type {string}
- * @default <code class="prettyprint">null</code>
- */
-/**
- * The color of the data item with the greatest value.
- * @expose
- * @name highColor
- * @memberof oj.ojSparkChart
- * @instance
- * @type {string}
- * @default <code class="prettyprint">null</code>
- */
-/**
- * The color of the data item with the lowest value.
- * @expose
- * @name lowColor
- * @memberof oj.ojSparkChart
- * @instance
- * @type {string}
- * @default <code class="prettyprint">null</code>
- */
-/**
- * The duration of the animations, in milliseconds.
- * @expose
- * @name animationDuration
- * @memberof oj.ojSparkChart
- * @instance
- * @type {number}
- * @default <code class="prettyprint">null</code>
- */
-/**
- * Defines the animation that is applied on data changes.
- * @expose
- * @name animationOnDataChange
- * @memberof oj.ojSparkChart
- * @instance
- * @type {string}
- * @ojvalue {string} "auto"
- * @ojvalue {string} "none"
- * @default <code class="prettyprint">"none"</code>
- */
-/**
- * Defines the animation that is shown on initial display.
- * @expose
- * @name animationOnDisplay
- * @memberof oj.ojSparkChart
- * @instance
- * @type {string}
- * @ojvalue {string} "auto"
- * @ojvalue {string} "none"
- * @default <code class="prettyprint">"none"</code>
- */
-/**
- * Defines whether visual effects such as overlays are applied to the spark chart.
- * @expose
- * @name visualEffects
- * @memberof oj.ojSparkChart
- * @instance
- * @type {string}
- * @ojvalue {string} "none"
- * @ojvalue {string} "auto"
- * @default <code class="prettyprint">"auto"</code>
- */
-/**
- * Defines whether the axis baseline starts at the minimum value of the data or at zero.
- * @expose
- * @name baselineScaling
- * @memberof oj.ojSparkChart
- * @instance
- * @type {string}
- * @ojvalue {string} "zero"
- * @ojvalue {string} "min"
- * @default <code class="prettyprint">"min"</code>
- */
-/**
- * The width of the data line. Only applies to line spark charts.
- * @expose
- * @name lineWidth
- * @memberof oj.ojSparkChart
- * @instance
- * @type {number}
- * @default <code class="prettyprint">null</code>
- */
-/**
- * The line style of the data line. Only applies to line spark charts.
- * @expose
- * @name lineStyle
- * @memberof oj.ojSparkChart
- * @instance
- * @type {string}
- * @ojvalue {string} "dotted"
- * @ojvalue {string} "dashed"
- * @ojvalue {string} "solid"
- * @default <code class="prettyprint">"solid"</code>
- */
-/**
- * The line type of the data line or area. Only applies to line and area spark charts.
- * @expose
- * @name lineType
- * @memberof oj.ojSparkChart
- * @instance
- * @type {string}
- * @ojvalue {string} "curved"
- * @ojvalue {string} "stepped"
- * @ojvalue {string} "centeredStepped"
- * @ojvalue {string} "segmented"
- * @ojvalue {string} "centeredSegmented"
- * @ojvalue {string} "none"
- * @ojvalue {string} "straight"
- * @default <code class="prettyprint">"straight"</code>
- */
-/**
- * The shape of the data markers. Can take the name of a built-in shape or the svg path commands for a custom shape. Only applies to line and area spark charts.
- * @expose
- * @name markerShape
- * @memberof oj.ojSparkChart
- * @instance
- * @type {string}
- * @ojvalue {string} "square"
- * @ojvalue {string} "circle"
- * @ojvalue {string} "diamond"
- * @ojvalue {string} "plus"
- * @ojvalue {string} "triangleDown"
- * @ojvalue {string} "triangleUp"
- * @ojvalue {string} "human"
- * @ojvalue {string} "star"
- * @ojvalue {string} "auto"
- * @default <code class="prettyprint">"auto"</code>
- */
-/**
- * The size of the data markers in pixels. Only applies to line and area spark charts.
- * @expose
- * @name markerSize
- * @memberof oj.ojSparkChart
- * @instance
- * @type {number}
- * @default <code class="prettyprint">null</code>
- */
-/**
- * Specifies the width of the bar gap as a ratio of the item width. The valid value is a number from 0 to 1.
- * @expose
- * @name barGapRatio
- * @memberof oj.ojSparkChart
- * @instance
- * @type {number}
- * @default <code class="prettyprint">null</code>
- */
-
-/**
- * Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
- */
-
-/**
- * @ojcomponent oj.ojChart
+ * @ojcomponent oj.ojSparkChart
  * @augments oj.dvtBaseComponent
+ * @ojtsignore
  * @since 0.7
+ * @ojshortdesc Displays information graphically, typically highlighting the trend of a data set in a compact form factor.
  * @ojstatus preview
- * @ojshortdesc Chart Element
  * @ojrole application
  *
  * @classdesc
- * <h3 id="chartOverview-section">
- *   JET Chart
- *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#chartOverview-section"></a>
+ * <h3 id="sparkChartOverview-section">
+ *   JET Spark Chart
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#sparkChartOverview-section"></a>
  * </h3>
  *
- * <p>JET Chart with support for bar, line, area, combination, pie, scatter, bubble, funnel, box plot, and stock
- * chart types.</p>
+ * <p>Spark Chart component for JET with support for bar, line, area, and floating bar subtypes.  Spark Charts are
+ * designed to visualize the trend of a data set in a compact form factor.</p>
  *
  * {@ojinclude "name":"warning"}
  *
  * <pre class="prettyprint">
  * <code>
- * &lt;oj-chart
- *   type='bar'
- *   series='[{"name": "Q1 Sales", "items": [50, 60, 20]}]'
- *   groups='["Phone", "Tablets", "Laptops"]'
+ * &lt;oj-spark-chart
+ *   type='line'
+ *   items='[5, 8, 2, 7, 0, 9]'
  * >
- * &lt;/oj-chart>
+ * &lt;/oj-spark-chart>
  * </code>
  * </pre>
- *
- * {@ojinclude "name":"a11yKeyboard"}
  *
  * <h3 id="touch-section">
  *   Touch End User Information
@@ -7753,701 +7254,1057 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#perf-section"></a>
  * </h3>
  *
- * <h4>Animation</h4>
- * <p>Animation should only be enabled for visualizations of small to medium data sets. When animating changes to larger
- *    data sets or when animating between data sets, it's recommended to turn off the
- *    <code class="prettyprint">styleDefaults.animationIndicators</code>, since they effectively double the amount of
- *    work required for the animation.
- * </p>
+ * {@ojinclude "name":"fragment_trackResize"}
  *
- * <h4>Data Set Size</h4>
- * <p>As a rule of thumb, it's recommended that applications only set usable data densities on the chart. For example,
- *    it's not recommended to show more than 500 bars on a 500 pixel wide chart, since the  bars will be unusably thin.
- *    While there are several optimizations within the chart to deal with large data sets, it's always more efficient to
- *    reduce the data set size as early as possible. Future optimizations will focus on improving end user experience as
- *    well as developer productivity for common use cases.
- * </p>
- *
- * <h4>Styling</h4>
- * <p>Use the highest level property available. For example, consider setting styling properties on
- *    <code class="prettyprint">styleDefaults</code> or <code class="prettyprint">series</code>, instead of styling properties
- *    on the individual data items. The chart can take advantage of these higher level properties to apply the style properties on
- *    containers, saving expensive DOM calls.
- * </p>
- *
- * {@ojinclude "name":"trackResize"}
+ * {@ojinclude "name":"a11y"}
  *
  * {@ojinclude "name":"rtl"}
  */
-oj.__registerWidget('oj.ojChart', $['oj']['dvtBaseComponent'],
-  {
-    widgetEventPrefix: "oj",
-    options: {
-      /**
-       * Triggered during a selection gesture, such as a change in the marquee selection rectangle.
-       *
-       * @property {Array} items an array containing the string ids of the selected data items
-       * @property {Array} selectionData an array containing objects describing the selected data items
-       * @property {object} selectionData.data the data of the item, if one was specified
-       * @property {Array} selectionData.groupData the group data of the item
-       * @property {object} selectionData.seriesData the series data of the item
-       * @property {string} endGroup the end group of a marquee selection on a chart with categorical axis
-       * @property {string} startGroup the start group of a marquee selection on a chart with categorical axis
-       * @property {number} xMax the maximum x value of a marquee selection
-       * @property {number} xMin the minimum x value of a marquee selection
-       * @property {number} yMax the maximum y value of a marquee selection
-       * @property {number} yMin the minimum y value of a marquee selection
-       *
-       * @expose
-       * @event
-       * @memberof oj.ojChart
-       * @instance
-       * @ojbubbles
-       */
-      selectInput: null,
-
-      /**
-       * Triggered after the viewport is changed due to a zoom or scroll operation.
-       *
-       * @property {string} endGroup the end group of the new viewport on a chart with categorical axis
-       * @property {string} startGroup the start group of the new viewport on a chart with categorical axis
-       * @property {number} xMax the maximum x value of the new viewport
-       * @property {number} xMin the minimum x value of the new viewport
-       * @property {number} yMax the maximum y value of the new viewport
-       * @property {number} yMin the minimum y value of the new viewport
-       *
-       * @expose
-       * @event
-       * @memberof oj.ojChart
-       * @instance
-       * @ojbubbles
-       */
-      viewportChange: null,
-
-      /**
-       * Triggered during a viewport change gesture, such as a drag operation on the overview window. Note: There are
-       * situations where the chart cannot determine whether the viewport change gesture is still in progress, such
-       * as with mouse wheel zoom interactions. Standard viewportChange events are fired in these cases.
-       *
-       * @property {string} endGroup the end group of the new viewport on a chart with categorical axis
-       * @property {string} startGroup the start group of the new viewport on a chart with categorical axis
-       * @property {number} xMax the maximum x value of the new viewport
-       * @property {number} xMin the minimum x value of the new viewport
-       * @property {number} yMax the maximum y value of the new viewport
-       * @property {number} yMin the minimum y value of the new viewport
-       *
-       * @expose
-       * @event
-       * @memberof oj.ojChart
-       * @instance
-       * @ojbubbles
-       */
-      viewportChangeInput: null,
-
-      /**
-       * Triggered during a drill gesture (double click if selection is enabled, single click otherwise).
-       *
-       * @property {string} id the id of the drilled object
-       * @property {string} series the series id of the drilled object, if applicable
-       * @property {string} group the group id of the drilled object, if applicable
-       * @property {Object} data  the data object of the drilled item
-       * @property {Object} seriesData the data for the series of the drilled object
-       * @property {Array} groupData an array of data for the group the drilled object belongs to. For hierarchical groups, it will be an array of outermost to innermost group data related to the drilled object
-       *
-       * @expose
-       * @event
-       * @memberof oj.ojChart
-       * @instance
-       * @ojbubbles
-       */
-      drill: null
-    },
-
-    //** @inheritdoc */
-    _CreateDvtComponent: function(context, callback, callbackObj) {
-      return dvt.Chart.newInstance(context, callback, callbackObj);
-    },
-
-    //** @inheritdoc */
-    _ConvertLocatorToSubId : function(locator) {
-      var subId = locator['subId'];
-
-      // Convert the supported locators
-      if(subId == 'oj-chart-item') {
-        // dataItem[seriesIndex][itemIndex]
-        subId = 'dataItem[' + locator['seriesIndex'] + '][' + locator['itemIndex'] + ']';
-      }
-      else if(subId == 'oj-chart-group') {
-        // group[index1][index2]...[indexN]
-        subId = 'group' + this._GetStringFromIndexPath(locator['indexPath']);
-      }
-      else if(subId == 'oj-chart-series') {
-        // series[index]
-        subId = 'series[' + locator['index'] + ']';
-      }
-      else if(subId == 'oj-chart-axis-title') {
-        // xAxis/yAxis/y2Axis:title
-        subId = locator['axis'] + ':title';
-      }
-      else if(subId == 'oj-chart-reference-object') {
-        // xAxis/yAxis/y2Axis:referenceObject[index]
-        subId = locator['axis'] + ':referenceObject[' + locator['index'] + ']';
-      }
-      else if(subId == 'oj-legend-section') {
-        // legend:section[sectionIndex0][sectionIndex1]...[sectionIndexN]
-        subId = 'legend:section' + this._GetStringFromIndexPath(locator['indexPath']);
-      }
-      else if(subId == 'oj-legend-item') {
-        // legend:section[sectionIndex0][sectionIndex1]...[sectionIndexN]:item[itemIndex]
-        subId = 'legend:section' + this._GetStringFromIndexPath(locator['sectionIndexPath']);
-        subId += ':item[' + locator['itemIndex'] + ']';
-      }
-      else if(subId == 'oj-chart-tooltip') {
-        subId = 'tooltip';
-      }
-      else if(subId == 'oj-chart-pie-center-label') {
-        subId = 'pieCenterLabel';
-      }
-
-      // Return the converted result or the original subId if a supported locator wasn't recognized. We will remove
-      // support for the old subId syntax in 1.2.0.
-      return subId;
-    },
-
-
-    //** @inheritdoc */
-    _ProcessOptions: function() {
-      this._super();
-      var center = this.options['pieCenter'];
-      if (center && center['_renderer'])
-        center['renderer'] = this._GetTemplateRenderer(center['_renderer'], 'center');
-      
-      var selection = this.options['selection'];
-      // The array<object> type is deprecated since 2.1.0 so for custom elements 
-      // we are breaking selection in order to push developers to use the correct syntax
-      if(this._IsCustomElement() && selection && typeof selection[0] == 'object')
-        this.options['selection'] = null;
-    },
-
-    //** @inheritdoc */
-    _ConvertSubIdToLocator : function(subId) {
-      var locator = {};
-
-      if(subId.indexOf('dataItem') == 0) {
-        // dataItem[seriesIndex][itemIndex]
-        var indexPath = this._GetIndexPath(subId);
-
-        locator['subId'] = 'oj-chart-item';
-        locator['seriesIndex'] = indexPath[0];
-        locator['itemIndex'] = indexPath[1];
-      }
-      else if(subId.indexOf('group') == 0) {
-        // group[index1][index2]...[indexN]
-        locator['subId'] = 'oj-chart-group';
-        locator['indexPath'] = this._GetIndexPath(subId);
-      }
-      else if(subId.indexOf('series') == 0) {
-        // series[index]
-        locator['subId'] = 'oj-chart-series';
-        locator['index'] = this._GetFirstIndex(subId);
-      }
-      else if(subId.indexOf('Axis:title') > 0) {
-        // xAxis/yAxis/y2Axis:title
-        locator['subId'] = 'oj-chart-axis-title';
-        locator['axis'] = subId.substring(0, subId.indexOf(':'));
-      }
-      else if(subId.indexOf('Axis:referenceObject') > 0) {
-        // xAxis/yAxis/y2Axis:referenceObject[index]
-        locator['subId'] = 'oj-chart-reference-object';
-        locator['axis'] = subId.substring(0, subId.indexOf(':'));
-        locator['index'] = this._GetFirstIndex(subId);
-      }
-      else if(subId.indexOf('legend') == 0) {
-        if(subId.indexOf(':item') > 0) {
-          // legend:section[sectionIndex0][sectionIndex1]...[sectionIndexN]:item[itemIndex]
-          var itemStartIndex = subId.indexOf(':item');
-          var sectionSubstr = subId.substring(0, itemStartIndex);
-          var itemSubstr = subId.substring(itemStartIndex);
-
-          locator['subId'] = 'oj-legend-item';
-          locator['sectionIndexPath'] = this._GetIndexPath(sectionSubstr);
-          locator['itemIndex'] = this._GetFirstIndex(itemSubstr);
-        }
-        else if(subId.indexOf('section') == 0) {
-          // legend:section[sectionIndex0][sectionIndex1]...[sectionIndexN]
-          locator['subId'] = 'oj-legend-section';
-          locator['indexPath'] = this._GetIndexPath(subId);
-        }
-      }
-      else if(subId == 'tooltip') {
-        locator['subId'] = 'oj-chart-tooltip';
-      }
-      else if(subId == 'pieCenterLabel') {
-        locator['subId'] = 'oj-chart-pie-center-label';
-      }
-
-      return locator;
-    },
-
-    //** @inheritdoc */
-    _ProcessStyles: function() {
-      this._super();
-      if (!this.options['styleDefaults'])
-        this.options['styleDefaults'] = {};
-      if (!this.options['styleDefaults']['colors']) {
-        var handler = new oj.ColorAttributeGroupHandler();
-        // override default colors with css attribute group colors
-        this.options['styleDefaults']['colors'] = handler.getValueRamp();
-      }
-    },
-    
-    //** @inheritdoc */
-    _GetComponentRendererOptions: function() {
-      return ['tooltip/renderer', 'pieCenter/renderer'];
-    },
-    
-    //** @inheritdoc */
-    _GetComponentStyleClasses: function() {
-      var styleClasses = this._super();
-      styleClasses.push('oj-chart');
-      return styleClasses;
-    },
-
-    //** @inheritdoc */
-    _GetChildStyleClasses: function() {
-      var styleClasses = this._super();
-      styleClasses['oj-chart-data-label'] = {'path': 'styleDefaults/dataLabelStyle', 'property': 'CSS_TEXT_PROPERTIES'};
-      styleClasses['oj-chart-data-cursor-line'] = {'path': 'styleDefaults/dataCursor/lineColor', 'property': 'color'};
-      styleClasses['oj-chart-stack-label'] = {'path': 'styleDefaults/stackLabelStyle', 'property': 'CSS_TEXT_PROPERTIES'};
-      styleClasses['oj-chart-footnote'] = {'path': 'footnote/style', 'property': 'CSS_TEXT_PROPERTIES'};
-      styleClasses['oj-chart-pie-center-label'] = {'path': 'pieCenter/labelStyle', 'property': 'CSS_TEXT_PROPERTIES'};
-      styleClasses['oj-chart-slice-label'] = {'path': 'styleDefaults/sliceLabelStyle', 'property': 'CSS_TEXT_PROPERTIES'};
-      styleClasses['oj-chart-subtitle'] = {'path': 'subtitle/style', 'property': 'CSS_TEXT_PROPERTIES'};
-      styleClasses['oj-chart-stock-falling'] = {'path': 'styleDefaults/stockFallingColor', 'property': 'background-color'};
-      styleClasses['oj-chart-stock-range'] = {'path': 'styleDefaults/stockRangeColor', 'property': 'background-color'};
-      styleClasses['oj-chart-stock-rising'] = {'path': 'styleDefaults/stockRisingColor', 'property': 'background-color'};
-      styleClasses['oj-chart-tooltip-label'] = {'path': 'styleDefaults/tooltipLabelStyle', 'property': 'CSS_TEXT_PROPERTIES'};
-      styleClasses['oj-chart-title'] = {'path': 'title/style', 'property': 'CSS_TEXT_PROPERTIES'};
-      styleClasses['oj-chart-xaxis-tick-label'] = {'path': 'xAxis/tickLabel/style', 'property': 'CSS_TEXT_PROPERTIES'};
-      styleClasses['oj-chart-xaxis-title'] = {'path': 'xAxis/titleStyle', 'property': 'CSS_TEXT_PROPERTIES'};
-      styleClasses['oj-chart-yaxis-tick-label'] = {'path': 'yAxis/tickLabel/style', 'property': 'CSS_TEXT_PROPERTIES'};
-      styleClasses['oj-chart-yaxis-title'] = {'path': 'yAxis/titleStyle', 'property': 'CSS_TEXT_PROPERTIES'};
-      styleClasses['oj-chart-y2axis-tick-label'] = {'path': 'y2Axis/tickLabel/style', 'property': 'CSS_TEXT_PROPERTIES'};
-      styleClasses['oj-chart-y2axis-title'] = {'path': 'y2Axis/titleStyle', 'property': 'CSS_TEXT_PROPERTIES'};
-
-      // Legend
-      styleClasses['oj-legend'] = {'path': 'legend/textStyle', 'property': 'CSS_TEXT_PROPERTIES'};
-      styleClasses['oj-legend-title'] = {'path': 'legend/titleStyle', 'property': 'CSS_TEXT_PROPERTIES'};
-
-      return styleClasses;
-    },
-
-    //** @inheritdoc */
-    _GetEventTypes : function() {
-      return ['drill', 'optionChange', 'selectInput', 'viewportChange', 'viewportChangeInput'];
-    },
-
-    //** @inheritdoc */
-    _GetTranslationMap: function() {
-      // The translations are stored on the options object.
-      var translations = this.options['translations'];
-
-      // Safe to modify super's map because function guarentees a new map is returned
-      var ret = this._super();
-      ret['DvtChartBundle.DEFAULT_GROUP_NAME'] = translations['labelDefaultGroupName'];
-      ret['DvtChartBundle.LABEL_SERIES'] = translations['labelSeries'];
-      ret['DvtChartBundle.LABEL_GROUP'] = translations['labelGroup'];
-      ret['DvtChartBundle.LABEL_VALUE'] = translations['labelValue'];
-      ret['DvtChartBundle.LABEL_TARGET_VALUE'] = translations['labelTargetValue'];
-      ret['DvtChartBundle.LABEL_X'] = translations['labelX'];
-      ret['DvtChartBundle.LABEL_Y'] = translations['labelY'];
-      ret['DvtChartBundle.LABEL_Z'] = translations['labelZ'];
-      ret['DvtChartBundle.LABEL_PERCENTAGE'] = translations['labelPercentage'];
-      ret['DvtChartBundle.LABEL_LOW'] = translations['labelLow'];
-      ret['DvtChartBundle.LABEL_HIGH'] = translations['labelHigh'];
-      ret['DvtChartBundle.LABEL_OPEN'] = translations['labelOpen'];
-      ret['DvtChartBundle.LABEL_CLOSE'] = translations['labelClose'];
-      ret['DvtChartBundle.LABEL_VOLUME'] = translations['labelVolume'];
-      ret['DvtChartBundle.LABEL_Q1'] = translations['labelQ1'];
-      ret['DvtChartBundle.LABEL_Q2'] = translations['labelQ2'];
-      ret['DvtChartBundle.LABEL_Q3'] = translations['labelQ3'];
-      ret['DvtChartBundle.LABEL_MIN'] = translations['labelMin'];
-      ret['DvtChartBundle.LABEL_MAX'] = translations['labelMax'];
-      ret['DvtChartBundle.LABEL_OTHER'] = translations['labelOther'];
-      ret['DvtChartBundle.PAN'] = translations['tooltipPan'];
-      ret['DvtChartBundle.MARQUEE_SELECT'] = translations['tooltipSelect'];
-      ret['DvtChartBundle.MARQUEE_ZOOM'] = translations['tooltipZoom'];
-      ret['DvtUtilBundle.CHART'] = translations['componentName'];
-      return ret;
-    },
-
-    //** @inheritdoc */
-    _HandleEvent: function(event) {
-      var type = event['type'];
-      if (type === 'selection') {
-        var selection = event['selection'];
-        if (selection) {
-          // Convert the graph selection context into the JET context
-          var selectedItems = [];
-          var selectionData = [];
-          for (var i = 0; i < selection.length; i++) {
-            var selectedItem;
-            if (this._IsCustomElement())
-              selectedItem = selection[i]['id'];
-            else {
-              selectedItem = {'id': selection[i]['id'],
-                'series': selection[i]['series'],
-                'group': selection[i]['group']};
-            }
-            var selectedItemData = {'data': selection[i]['data'],
-              'seriesData': selection[i]['seriesData'],
-              'groupData': selection[i]['groupData']};
-            selectedItems.push(selectedItem);
-            selectionData.push(selectedItemData);
-          }
-
-          var selectPayload = {
-            'endGroup': event['endGroup'], 'startGroup': event['startGroup'],
-            'xMax': event['xMax'], 'xMin': event['xMin'],
-            'yMax': event['yMax'], 'yMin': event['yMin'],
-            'y2Max': event['y2Max'], 'y2Min': event['y2Min'],
-            'selectionData': selectionData
-          };
-
-          if (!this._IsCustomElement())
-            selectPayload['component'] = event['component'];
-
-          // Update the options selection state if the user interaction is complete
-          if(event['complete'])
-            this._UserOptionChange('selection', selectedItems, selectPayload);
-          else {
-            selectPayload['items'] = selectedItems;
-            this._trigger('selectInput', null, selectPayload);
-          }
-        }
-      }
-      else if (type === 'viewportChange') {
-        var viewportChangePayload = {'endGroup': event['endGroup'], 'startGroup': event['startGroup'],
-                                     'xMax': event['xMax'], 'xMin': event['xMin'],
-                                     'yMax': event['yMax'], 'yMin': event['yMin']};
-
-        // Maintain the viewport state
-        // TODO we should be firing option change event for this, but it doesn't support nested props yet.
-        if(event['complete']) {
-          // Ensure the axis options both exist
-          if(!this.options['xAxis'])
-            this.options['xAxis'] = {};
-
-          if(!this.options['yAxis'])
-            this.options['yAxis'] = {};
-
-          // X-Axis: Clear the start and end group because min/max more accurate.
-          this.options['xAxis']['viewportStartGroup'] = null;
-          this.options['xAxis']['viewportEndGroup'] = null;
-          if(event['xMin'] != null && event['xMax'] != null) {
-            this.options['xAxis']['viewportMin'] = event['xMin'];
-            this.options['xAxis']['viewportMax'] = event['xMax'];
-          }
-
-          // Y-Axis
-          if(event['yMin'] != null && event['yMax'] != null) {
-            this.options['yAxis']['viewportMin'] = event['yMin'];
-            this.options['yAxis']['viewportMax'] = event['yMax'];
-          }
-        }
-
-        this._trigger(event['complete'] ? 'viewportChange' : 'viewportChangeInput', null, viewportChangePayload);
-      }
-      else if (type === 'drill') {
-        this._trigger('drill', null, {'id': event['id'], 'series': event['series'], 'group': event['group'], 'data': event['data'], 'seriesData': event['seriesData'],'groupData': event['groupData'],'component': event['component']});
-      }
-      else {
-        this._super(event);
-      }
-    },
-
-    //** @inheritdoc */
-    _LoadResources: function() {
-      // Ensure the resources object exists
-      if (this.options['_resources'] == null)
-        this.options['_resources'] = {};
-
-      var resources = this.options['_resources'];
-
-      // Add images
-      // TODO these should be defined in the skin instead
-      resources['overviewGrippy'] = oj.Config.getResourceUrl('resources/internal-deps/dvt/chart/drag_horizontal.png');
-
-      // Add cursors
-      resources['panCursorDown'] = oj.Config.getResourceUrl('resources/internal-deps/dvt/chart/hand-closed.cur');
-      resources['panCursorUp'] = oj.Config.getResourceUrl('resources/internal-deps/dvt/chart/hand-open.cur');
-
-      // Drag button images
-      resources['panUp'] = 'oj-chart-pan-icon';
-      resources['panUpHover'] = 'oj-chart-pan-icon oj-hover';
-      resources['panDown'] = 'oj-chart-pan-icon oj-active';
-      resources['panDownHover'] = 'oj-chart-pan-icon oj-hover oj-active';
-      resources['selectUp'] = 'oj-chart-select-icon';
-      resources['selectUpHover'] = 'oj-chart-select-icon oj-hover';
-      resources['selectDown'] = 'oj-chart-select-icon oj-active';
-      resources['selectDownHover'] = 'oj-chart-select-icon oj-hover oj-active';
-      resources['zoomUp'] = 'oj-chart-zoom-icon';
-      resources['zoomUpHover'] = 'oj-chart-zoom-icon oj-hover';
-      resources['zoomDown'] = 'oj-chart-zoom-icon oj-active';
-      resources['zoomDownHover'] = 'oj-chart-zoom-icon oj-hover oj-active';
-    },
+oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
+{
+  widgetEventPrefix : "oj",
+  options: {
+    /**
+     * An array of <a href="/jsdocs/oj.ojSparkChart.html#Item">oj.ojSparkChart.Item</a> typed objects. Also accepts a Promise for deferred data rendering.
+     * @ignore
+     * @name data
+     * @memberof oj.ojSparkChart
+     * @instance
+     * @type {Array.<Object>|Promise|null}
+     * @ojsignature {target: "Accessor", value: {GetterType: "oj.DataProvider.<oj.ojSparkChart.Item>|null", SetterType: "oj.DataProvider.<oj.ojSparkChart.Item>|null"}, jsdocOverride: true}
+     * @default null
+     */  
+     data: null,
      
     /**
-     * Returns the chart title.
-     * @ignore
-     * @return {String} The chart title
-     * @expose
+     * An array of objects with the following properties that defines the data for the spark chart. Also accepts a Promise for deferred data rendering.</ul>
+     * @name items
+     * @memberof oj.ojSparkChart
      * @instance
-     * @memberof oj.ojChart
+     * @type {Array.<Object>|Array.<number>|Promise|null}
+     * @default null
+     * 
+     * @example <caption>Initialize the spark chart with the 
+     * <code class="prettyprint">items</code> attribute specified:</caption>
+     * &lt;oj-spark-chart type="bar" items='[{"low": 4, "high": 20, "color": "red"}, 
+     *                                    {"low": 9, "high": 20, "color": "yellow"}, 
+     *                                    {"low": 0, "high": 7, "color": "green"}]'>
+     * &lt;/oj-spark-chart>
+     * 
+     * &lt;oj-spark-chart items='[[itemsPromise]]'>&lt;/oj-spark-chart>
+     * 
+     * @example <caption>Get or set the <code class="prettyprint">items</code> 
+     * property after initialization:</caption>
+     * // Get one
+     * var value = mySparkChart.items[0];
+     * 
+     * // Get all (The items getter always returns a Promise so there is no "get one" syntax)
+     * var values = mySparkChart.items;
+     * 
+     * // Set all (There is no permissible "set one" syntax.)
+     * mySparkChart.items = [{"low": 4, "high": 20, "color": "red"}, 
+     *                       {"low": 9, "high": 20, "color": "yellow"}, 
+     *                       {"low": 0, "high": 7, "color": "green"}];
      */
-    getTitle: function() {
-      var auto = this._component.getAutomation();
-      return auto.getTitle();
-    },
-
+    items: null,
+    
     /**
-     * Returns the group corresponding to the given index
-     * @param {String} groupIndex the group index
-     * @return {String} The group name corresponding to the given group index
+     * An array of objects with the following properties defining the reference objects associated with the y axis of the spark chart.
      * @expose
+     * @name referenceObjects
+     * @memberof oj.ojSparkChart
      * @instance
-     * @memberof oj.ojChart
-     */
-    getGroup: function(groupIndex) {
-      var auto = this._component.getAutomation();
-      return auto.getGroup(groupIndex);
-    },
-
-    /**
-     * Returns the series corresponding to the given index
-     * @param {String} seriesIndex the series index
-     * @return {String} The series name corresponding to the given series index
-     * @expose
-     * @instance
-     * @memberof oj.ojChart
-     */
-    getSeries: function(seriesIndex) {
-      var auto = this._component.getAutomation();
-      return auto.getSeries(seriesIndex);
-    },
-
-    /**
-     * Returns number of groups in the chart data
-     * @return {Number} The number of groups
-     * @expose
-     * @instance
-     * @memberof oj.ojChart
-     */
-    getGroupCount: function() {
-      var auto = this._component.getAutomation();
-      return auto.getGroupCount();
-    },
-
-    /**
-     * Returns number of series in the chart data
-     * @return {Number} The number of series
-     * @expose
-     * @instance
-     * @memberof oj.ojChart
-     */
-    getSeriesCount: function() {
-      var auto = this._component.getAutomation();
-      return auto.getSeriesCount();
-    },
-
-    /**
-     * Returns an object with the following properties for automation testing verification of the data item with
-     * the specified series and group indices.
+     * @type {Array.<Object>}
+     * @ojsignature {target: "Accessor", value: {GetterType: "Array<oj.ojSparkChart.ReferenceObject>", SetterType: "Array<oj.ojSparkChart.ReferenceObject>"}, jsdocOverride: true}
+     * @default []
+     * 
+     * @example <caption>Initialize the spark chart with the 
+     * <code class="prettyprint">reference-objects</code> attribute specified:</caption>
+     * &lt;oj-spark-chart reference-objects='[{"type": "area", "high": 10, "low": 2, "location": "front", "color": "red"},
+     *                                     {"type": "line", "value": 9, "location": "front", "color": "yellow"}, 
+     *                                     {"type": "area", "high": 10, "low": 0, "location": "back", "color": "green"}]'>&lt;/oj-spark-chart>
      *
-     * @param {number} seriesIndex
-     * @param {number} groupIndex
-     * @property {string} borderColor
-     * @property {string} color
-     * @property {number} close The closing value for a stock item
-     * @property {string} group The group id.
-     * @property {number} high The high value for a range or stock item
-     * @property {string} label
-     * @property {number} low  The low value for a range or stock item
-     * @property {number} open The opening value for a stock item
-     * @property {boolean} selected
-     * @property {string} series The series id.
-     * @property {number} targetValue The target value for a funnel slice.
-     * @property {string} tooltip
-     * @property {number} value
-     * @property {number} volume  The volume of a stock item
-     * @property {number} x
-     * @property {number} y
-     * @property {number} z
-     * @return {Object|null} An object containing properties for the data item, or null if none exists.
-     * @expose
-     * @instance
-     * @memberof oj.ojChart
+     * 
+     * &lt;oj-spark-chart reference-objects='[[referencePromise]]'>&lt;/oj-spark-chart>
+     * 
+     * @example <caption>Get or set the <code class="prettyprint">referenceObjects</code>
+     * property after initialization:</caption>
+     * // Get one
+     * var value = mySparkChart.referenceObjects[0];
+     *
+     * // Get all (The items getter always returns a Promise so there is no "get one" syntax)
+     * var values = mySparkChart.referenceObjects;
+     * 
+     * // Set all (There is no permissible "set one" syntax.)
+     * mySparkChart.referenceObjects=[{"type": "area", "high": 10, "low": 2, "location": "front", "color": "red"}, 
+     *                                {"type": "line", "value": 9, "location": "front", "color": "yellow"}, 
+     *                                {"type": "area", "high": 10, "low": 0, "location": "back", "color": "green"}];
      */
-    getDataItem: function(seriesIndex, groupIndex) {
-      return this._component.getAutomation().getDataItem(seriesIndex, groupIndex);
-    },
+    referenceObjects: [],
 
     /**
-     * Returns an object with the following properties for automation testing verification of the chart legend.
-     *
-     * @property {Object} bounds An object containing the bounds of the legend.
-     * @property {number} bounds.x
-     * @property {number} bounds.y
-     * @property {number} bounds.width
-     * @property {number} bounds.height
-     * @property {string} title
-     * @return {Object} An object containing properties for the chart legend.
+     * An object containing an optional callback function for tooltip customization. 
      * @expose
+     * @name tooltip
+     * @memberof oj.ojSparkChart
      * @instance
-     * @memberof oj.ojChart
+     * @type {Object}
+     * @default {"renderer": null}
+     * 
+     * @example <caption>Initialize the spark chart with the 
+     * <code class="prettyprint">tooltip</code> attribute specified:</caption>
+     * <!-- Using dot notation -->
+     * &lt;oj-spark-chart tooltip.renderer='[[tooltipFun]]'>&lt;/oj-spark-chart>
+     * 
+     * &lt;oj-spark-chart tooltip='[[{"renderer": tooltipFun}]]'>&lt;/oj-spark-chart>
+     * 
+     * @example <caption>Get or set the <code class="prettyprint">tooltip</code> 
+     * property after initialization:</caption>
+     * // Get one
+     * var value = mySparkChart.tooltip.renderer;
+     * 
+     * // Get all
+     * var values = mySparkChart.tooltip;
+     *
+     * // Set one, leaving the others intact. Always use the setProperty API for 
+     * // subproperties rather than setting a subproperty directly.
+     * mySparkChart.setProperty('tooltip.renderer', tooltipFun);
+     * 
+     * // Set all. Must list every resource key, as those not listed are lost.
+     * mySparkChart.tooltip={'renderer': tooltipFun};
      */
-    getLegend: function() {
-      return this._component.getAutomation().getLegend();
+    tooltip: {
+      /**
+       *  A function that returns a custom tooltip. The function takes a dataContext argument, 
+       *  provided by the chart, with the following properties: 
+       *  <ul>
+       *   <li>parentElement: The tooltip element. The function can directly modify or append content to this element.</li>
+       *   <li>color: The color of the chart.</li>
+       *   <li>componentElement: The spark chart element.</li>
+       *  </ul>
+       *  The function should return an Object that contains only one of the two properties:
+       *  <ul>
+       *    <li>insert: HTMLElement | string - An HTML element, which will be appended to the tooltip, or a tooltip string.</li> 
+       *    <li>preventDefault: <code>true</code> - Indicates that the tooltip should not be displayed. It is not necessary to return {preventDefault:false} to display tooltip, since this is a default behavior.</li> 
+       *  </ul>
+       * @expose
+       * @name tooltip.renderer
+       * @memberof! oj.ojSparkChart
+       * @instance
+       * @type {function(Object):Object|null}
+       * @ojsignature {target: "Type", value: "((context: oj.ojSparkChart.TooltipContext) => ({insert: Element|string}|{preventDefault: boolean}))|null", jsdocOverride: true}
+       * @example <caption>See the <a href="#tooltip">tooltip</a> attribute for usage examples.</caption>
+       */
+      renderer: null
     },
+  
+    /**
+     * The chart type.
+     * @expose
+     * @name type
+     * @memberof oj.ojSparkChart
+     * @instance
+     * @type {string}
+     * @ojvalue {string} "area"
+     * @ojvalue {string} "lineWithArea"
+     * @ojvalue {string} "bar"
+     * @ojvalue {string} "line"
+     * @default "line"
+     * 
+     * @example <caption>Initialize the spark chart with the <code class="prettyprint">type</code> attribute specified:</caption>
+     * &lt;oj-spark-chart type='area'>&lt;/oj-spark-chart>
+     * 
+     * @example <caption>Get or set the <code class="prettyprint">type</code> 
+     * property after initialization:</caption>
+     * // getter
+     * var value = mySparkChart.type;
+     * 
+     * // setter
+     * mySparkChart.type="area";
+     */
+    type: "line",
+    
+    /**
+     * The color of the data items. The default value varies based on theme.
+     * @expose
+     * @name color
+     * @memberof oj.ojSparkChart
+     * @instance
+     * @type {string}
+     * 
+     * @example <caption>Initialize the spark chart with the <code class="prettyprint">color</code> attribute specified:</caption>
+     * &lt;oj-spark-chart color='rgb(35, 123, 177)'>&lt;/oj-spark-chart>
+     * 
+     * @example <caption>Get or set the <code class="prettyprint">color</code> 
+     * property after initialization:</caption>
+     * // getter
+     * var value = mySparkChart.color;
+     * 
+     * // setter
+     * mySparkChart.color="rgb(35, 123, 177)";
+     */
+    color: "#267DB3",
+    
+    /**
+     * The color of the area in area or lineWithArea spark chart.
+     * @expose
+     * @name areaColor
+     * @memberof oj.ojSparkChart
+     * @instance
+     * @type {string}
+     * @default ""
+     * 
+     * @example <caption>Initialize the spark chart with the <code class="prettyprint">area-color</code> attribute specified:</caption>
+     * &lt;oj-spark-chart type='area' area-color='red'>&lt;/oj-spark-chart>
+     * 
+     * @example <caption>Get or set the <code class="prettyprint">areaColor</code> 
+     * property after initialization:</caption>
+     * // getter
+     * var value = mySparkChart.areaColor;
+     * 
+     * // setter
+     * mySparkChart.areaColor="red";
+     */
+    areaColor: "", 
+  
+    /**
+     * The CSS style class to apply if the type is area or lineWithArea. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the color attribute.
+     * @expose
+     * @name areaSvgClassName
+     * @memberof oj.ojSparkChart
+     * @instance
+     * @type {string}
+     * @default ""
+     * 
+     * @example <caption>Initialize the spark chart with the <code class="prettyprint">area-svg-class-name</code> attribute specified:</caption>
+     * &lt;oj-spark-chart type='lineWithArea' area-svg-class-name='svgClassName'>&lt;/oj-spark-chart>
+     * 
+     * @example <caption>Get or set the <code class="prettyprint">areaSvgClassName</code> 
+     * property after initialization:</caption>
+     * // getter
+     * var value = mySparkChart.areaSvgClassName;
+     * 
+     * // setter
+     * mySparkChart.areaSvgClassName = "svgClassName";
+     */
+    areaSvgClassName: "",
+    
+    /**
+     * The inline style to apply if the type is area or lineWithArea. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the color attribute.
+     * @expose
+     * @name areaSvgStyle
+     * @memberof oj.ojSparkChart
+     * @instance
+     * @type {Object}
+     * @default {}
+     * 
+     * @example <caption>Initialize the spark chart with the <code class="prettyprint">area-svg-style</code> attribute specified:</caption>
+     * &lt;oj-spark-chart type='lineWithArea' area-svg-style='{"fill":"url(someURL#filterId)"}'>&lt;/oj-spark-chart>
+     * 
+     * @example <caption>Get or set the <code class="prettyprint">areaSvgStyle</code> 
+     * property after initialization:</caption>
+     * // getter
+     * var value = mySparkChart.areaSvgStyle;
+     * 
+     * // setter
+     * mySparkChart.areaSvgStyle = {"fill":"url(someURL#filterId)"};
+     */
+    areaSvgStyle: {},
 
     /**
-     * Returns an object with the following properties for automation testing verification of the chart plot area.
-     *
-     * @property {Object} bounds An object containing the bounds of the plot area.
-     * @property {number} bounds.x
-     * @property {number} bounds.y
-     * @property {number} bounds.width
-     * @property {number} bounds.height
-     * @return {Object} An object containing properties for the chart plot area.
+     * The CSS style class to apply to the data items. For type lineWithArea, this style will only be applied to the line if areaClassName is also specified. The style class and inline style will override any other styling specified through the properties. For tooltips, it's recommended to also pass a representative color to the color attribute.
      * @expose
+     * @name svgClassName
+     * @memberof oj.ojSparkChart
      * @instance
-     * @memberof oj.ojChart
+     * @type {string}
+     * @default ""
+     * 
+     * @example <caption>Initialize the spark chart with the <code class="prettyprint">svg-class-name</code> attribute specified:</caption>
+     * &lt;oj-spark-chart svg-class-name='className'>&lt;/oj-spark-chart>
+     * 
+     * @example <caption>Get or set the <code class="prettyprint">svgClassName</code> 
+     * property after initialization:</caption>
+     * // getter
+     * var value = mySparkChart.svgClassName;
+     * 
+     * // setter
+     * mySparkChart.svgClassName = "className";
      */
-    getPlotArea: function() {
-      return this._component.getAutomation().getPlotArea();
-    },
-
+    svgClassName: "",
+    
     /**
-     * Returns an object with the following properties for automation testing verification of the x axis.
-     *
-     * @property {Object} bounds An object containing the bounds of the legend.
-     * @property {number} bounds.x
-     * @property {number} bounds.y
-     * @property {number} bounds.width
-     * @property {number} bounds.height
-     * @property {string} title
-     * @property {Function(number, number)} getPreferredSize Returns the preferred size of the axis, given the available
-     *   width and height. This value can be passed into the <code class="prettyprint">size</code> and
-     *   <code class="prettyprint">maxSize</code> options of the axis. A re-render must be triggered by calling
-     *   <code class="prettyprint">refresh</code> after invoking this function.
-     * @property {number} getPreferredSize.width
-     * @property {number} getPreferredSize.height
-     * @return {Object} An object containing properties for the x axis.
+     * The inline style to apply to the data items. For type lineWithArea, this style will only be applied to the line if areaStyle is also specified. The style class and inline style will override any other styling specified through the properties. For tooltips, it's recommended to also pass a representative color to the color attribute.
      * @expose
+     * @name svgStyle
+     * @memberof oj.ojSparkChart
      * @instance
-     * @memberof oj.ojChart
+     * @type {Object}
+     * @default {}
+     * 
+     * @example <caption>Initialize the spark chart with the <code class="prettyprint">svg-style</code> attribute specified:</caption>
+     * &lt;oj-spark-chart svg-style='{"fill":"url(someURL#filterId)"}'>&lt;/oj-spark-chart>
+     * 
+     * @example <caption>Get or set the <code class="prettyprint">svgStyle</code> 
+     * property after initialization:</caption>
+     * // getter
+     * var value = mySparkChart.svgStyle;
+     * 
+     * // setter
+     * mySparkChart.svgStyle = {"fill":"url(someURL#filterId)"};
      */
-    getXAxis: function() {
-      return this._component.getAutomation().getXAxis();
-    },
-
+    svgStyle: {},
+    
     /**
-     * Returns an object with the following properties for automation testing verification of the y axis.
-     *
-     * @property {Object} bounds An object containing the bounds of the legend.
-     * @property {number} bounds.x
-     * @property {number} bounds.y
-     * @property {number} bounds.width
-     * @property {number} bounds.height
-     * @property {string} title
-     * @property {Function(number, number)} getPreferredSize Returns the preferred size of the axis, given the available
-     *   width and height. This value can be passed into the <code class="prettyprint">size</code> and
-     *   <code class="prettyprint">maxSize</code> options of the axis. A re-render must be triggered by calling
-     *   <code class="prettyprint">refresh</code> after invoking this function.
-     * @property {number} getPreferredSize.width
-     * @property {number} getPreferredSize.height
-     * @return {Object} An object containing properties for the y axis.
+     * The color of the first data item.
      * @expose
+     * @name firstColor
+     * @memberof oj.ojSparkChart
      * @instance
-     * @memberof oj.ojChart
+     * @type {string}
+     * @default ""
+     * 
+     * @example <caption>Initialize the spark chart with the <code class="prettyprint">first-color</code> attribute specified:</caption>
+     * &lt;oj-spark-chart first-color='yellow'>&lt;/oj-spark-chart>
+     * 
+     * @example <caption>Get or set the <code class="prettyprint">firstColor</code> 
+     * property after initialization:</caption>
+     * // getter
+     * var value = mySparkChart.firstColor;
+     * 
+     * // setter
+     * mySparkChart.firstColor = "yellow";
      */
-    getYAxis: function() {
-      return this._component.getAutomation().getYAxis();
-    },
-
+    firstColor: "",
+    
     /**
-     * Returns an object with the following properties for automation testing verification of the y2 axis.
-     *
-     * @property {Object} bounds An object containing the bounds of the legend.
-     * @property {number} bounds.x
-     * @property {number} bounds.y
-     * @property {number} bounds.width
-     * @property {number} bounds.height
-     * @property {string} title
-     * @property {Function(number, number)} getPreferredSize Returns the preferred size of the axis, given the available
-     *   width and height. This value can be passed into the <code class="prettyprint">size</code> and
-     *   <code class="prettyprint">maxSize</code> options of the axis. A re-render must be triggered by calling
-     *   <code class="prettyprint">refresh</code> after invoking this function.
-     * @property {number} getPreferredSize.width
-     * @property {number} getPreferredSize.height
-     * @return {Object} An object containing properties for the y2 axis.
+     * The color of the last data item.
      * @expose
+     * @name lastColor
+     * @memberof oj.ojSparkChart
      * @instance
-     * @memberof oj.ojChart
+     * @type {string}
+     * @default ""
+     * 
+     * @example <caption>Initialize the spark chart with the <code class="prettyprint">last-color</code> attribute specified:</caption>
+     * &lt;oj-spark-chart last-color='red'>&lt;/oj-spark-chart>
+     * 
+     * @example <caption>Get or set the <code class="prettyprint">lastColor</code> 
+     * property after initialization:</caption>
+     * // getter
+     * var value = mySparkChart.lastColor;
+     * 
+     * // setter
+     * mySparkChart.lastColor = "red";
      */
-    getY2Axis: function() {
-      return this._component.getAutomation().getY2Axis();
-    },
-
+    lastColor: "",  
+    
     /**
-     * Returns the x, y, and y2 axis values at the specified X and Y coordinate.
-     * @param {Number} x The X coordinate relative to the component.
-     * @param {Number} y The Y coordinate relative to the component.
-     * @return {Object} An object containing the "x", "y", and "y2" axis values.
+     * The color of the data item with the greatest value.
      * @expose
+     * @name highColor
+     * @memberof oj.ojSparkChart
      * @instance
-     * @memberof oj.ojChart
+     * @type {string}
+     * @default ""
+     * 
+     * @example <caption>Initialize the spark chart with the <code class="prettyprint">high-color</code> attribute specified:</caption>
+     * &lt;oj-spark-chart high-color='blue'>&lt;/oj-spark-chart>
+     * 
+     * @example <caption>Get or set the <code class="prettyprint">highColor</code> 
+     * property after initialization:</caption>
+     * // getter
+     * var value = mySparkChart.highColor;
+     * 
+     * // setter
+     * mySparkChart.highColor = "blue";
      */
-    getValuesAt: function(x, y) {
-      return this._component.getValuesAt(x, y);
-    },
-
+    highColor: "",
+    
     /**
-     * {@ojinclude "name":"nodeContextDoc"}
-     * @param {!Element} node - {@ojinclude "name":"nodeContextParam"}
-     * @returns {Object|null} {@ojinclude "name":"nodeContextReturn"}
-     *
-     * @example {@ojinclude "name":"nodeContextExample"}
-     *
+     * The color of the data item with the lowest value.
      * @expose
+     * @name lowColor
+     * @memberof oj.ojSparkChart
      * @instance
-     * @memberof oj.ojChart
+     * @type {string}
+     * @default ""
+     * 
+     * @example <caption>Initialize the spark chart with the <code class="prettyprint">low-color</code> attribute specified:</caption>
+     * &lt;oj-spark-chart low-color='blue'>&lt;/oj-spark-chart>
+     * 
+     * @example <caption>Get or set the <code class="prettyprint">lowColor</code> 
+     * property after initialization:</caption>
+     * // getter
+     * var value = mySparkChart.lowColor;
+     * 
+     * // setter
+     * mySparkChart.lowColor = "blue";
      */
-    getContextByNode: function(node)
+    lowColor: "",
+    
+    /**
+     * The duration of the animations in milliseconds. The default value comes from the CSS and varies based on theme.
+     * @expose
+     * @name animationDuration
+     * @memberof oj.ojSparkChart
+     * @instance
+     * @type {?number}
+     * @ojunits milliseconds
+     * 
+     * @example <caption>Initialize the spark chart with the <code class="prettyprint">animation-duration</code> attribute specified:</caption>
+     * &lt;oj-spark-chart animation-duration='50'>&lt;/oj-spark-chart>
+     * 
+     * @example <caption>Get or set the <code class="prettyprint">animationDuration</code> 
+     * property after initialization:</caption>
+     * // getter
+     * var value = mySparkChart.animationDuration;
+     * 
+     * // setter
+     * mySparkChart.animationDuration = 50;
+     */
+    animationDuration: undefined,
+     
+    /**
+     * Defines the animation that is applied on data changes.
+     * @expose
+     * @name animationOnDataChange
+     * @memberof oj.ojSparkChart
+     * @instance
+     * @type {string}
+     * @ojvalue {string} "auto"
+     * @ojvalue {string} "none"
+     * @default "none"
+     * 
+     * @example <caption>Initialize the spark chart with the <code class="prettyprint">animation-on-data-change</code> attribute specified:</caption>
+     * &lt;oj-spark-chart animation-on-data-change='auto'>&lt;/oj-spark-chart>
+     * 
+     * @example <caption>Get or set the <code class="prettyprint">animationOnDataChange</code> 
+     * property after initialization:</caption>
+     * // getter
+     * var value = mySparkChart.animationOnDataChange;
+     * 
+     * // setter
+     * mySparkChart.animationOnDataChange = "auto";
+     */
+    animationOnDataChange: "none",
+    
+    /**
+     * Defines the animation that is shown on initial display.
+     * @expose
+     * @name animationOnDisplay
+     * @memberof oj.ojSparkChart
+     * @instance
+     * @type {string}
+     * @ojvalue {string} "auto"
+     * @ojvalue {string} "none"
+     * @default "none"
+     * 
+     * @example <caption>Initialize the spark chart with the <code class="prettyprint">animation-on-display</code> attribute specified:</caption>
+     * &lt;oj-spark-chart animation-on-display='auto'>&lt;/oj-spark-chart>
+     * 
+     * @example <caption>Get or set the <code class="prettyprint">animationOnDisplay</code> 
+     * property after initialization:</caption>
+     * // getter
+     * var value = mySparkChart.animationOnDisplay;
+     * 
+     * // setter
+     * mySparkChart.animationOnDisplay = "auto";
+     */
+    animationOnDisplay: "none",
+     
+    /**
+     * Defines whether visual effects such as overlays are applied to the spark chart.
+     * @expose
+     * @name visualEffects
+     * @memberof oj.ojSparkChart
+     * @instance
+     * @type {string}
+     * @ojvalue {string} "none"
+     * @ojvalue {string} "auto"
+     * @default "auto"
+     * 
+     * @example <caption>Initialize the spark chart with the <code class="prettyprint">visual-effects</code> attribute specified:</caption>
+     * &lt;oj-spark-chart visual-effects='none'>&lt;/oj-spark-chart>
+     * 
+     * @example <caption>Get or set the <code class="prettyprint">visualEffects</code> 
+     * property after initialization:</caption>
+     * // getter
+     * var value = mySparkChart.visualEffects;
+     * 
+     * // setter
+     * mySparkChart.visualEffects = "none";
+     */
+    visualEffects: "auto",
+    
+    /**
+     * Defines whether the axis baseline starts at the minimum value of the data or at zero.
+     * @expose
+     * @name baselineScaling
+     * @memberof oj.ojSparkChart
+     * @instance
+     * @type {string}
+     * @ojvalue {string} "zero"
+     * @ojvalue {string} "min"
+     * @default "min"
+     * 
+     * @example <caption>Initialize the spark chart with the <code class="prettyprint">baseline-scaling</code> attribute specified:</caption>
+     * &lt;oj-spark-chart baseline-scaling='zero'>&lt;/oj-spark-chart>
+     * 
+     * @example <caption>Get or set the <code class="prettyprint">baselineScaling</code> 
+     * property after initialization:</caption>
+     * // getter
+     * var value = mySparkChart.baselineScaling;
+     * 
+     * // setter
+     * mySparkChart.baselineScaling = "zero";
+     */
+    baselineScaling: "min",
+     
+    /**
+     * The width of the data line. Only applies to line spark charts.
+     * @expose
+     * @name lineWidth
+     * @memberof oj.ojSparkChart
+     * @instance
+     * @type {number}
+     * @default 1
+     * @ojunits pixels
+     * 
+     * @example <caption>Initialize the spark chart with the <code class="prettyprint">line-width</code> attribute specified:</caption>
+     * &lt;oj-spark-chart line-width='4'>&lt;/oj-spark-chart>
+     * 
+     * @example <caption>Get or set the <code class="prettyprint">lineWidth</code> 
+     * property after initialization:</caption>
+     * // getter
+     * var value = mySparkChart.lineWidth;
+     * 
+     * // setter
+     * mySparkChart.lineWidth = 4;
+     */
+    lineWidth: 1,
+     
+    /**
+     * The line style of the data line. Only applies to line spark charts.
+     * @expose
+     * @name lineStyle
+     * @memberof oj.ojSparkChart
+     * @instance
+     * @type {string}
+     * @ojvalue {string} "dotted"
+     * @ojvalue {string} "dashed"
+     * @ojvalue {string} "solid"
+     * @default "solid"
+     * 
+     * @example <caption>Initialize the spark chart with the <code class="prettyprint">line-style</code> attribute specified:</caption>
+     * &lt;oj-spark-chart type="line" line-style='dotted'>&lt;/oj-spark-chart>
+     * 
+     * @example <caption>Get or set the <code class="prettyprint">lineStyle</code> 
+     * property after initialization:</caption>
+     * // getter
+     * var value = mySparkChart.lineStyle;
+     * 
+     * // setter
+     * mySparkChart.lineStyle = "dotted";
+     */
+    lineStyle: "solid",
+    
+    /**
+     * The line type of the data line or area. Only applies to line and area spark charts.
+     * @expose
+     * @name lineType
+     * @memberof oj.ojSparkChart
+     * @instance
+     * @type {string}
+     * @ojvalue {string} "curved"
+     * @ojvalue {string} "stepped"
+     * @ojvalue {string} "centeredStepped"
+     * @ojvalue {string} "segmented"
+     * @ojvalue {string} "centeredSegmented"
+     * @ojvalue {string} "none"
+     * @ojvalue {string} "straight"
+     * @default "straight"
+     * 
+     * @example <caption>Initialize the spark chart with the <code class="prettyprint">line-type</code> attribute specified:</caption>
+     * &lt;oj-spark-chart type="line" line-type='curved'>&lt;/oj-spark-chart>
+     * 
+     * @example <caption>Get or set the <code class="prettyprint">lineType</code> 
+     * property after initialization:</caption>
+     * // getter
+     * var value = mySparkChart.lineType;
+     * 
+     * // setter
+     * mySparkChart.lineType = "curved";
+     */
+    lineType: "straight",
+     
+    /**
+     * The shape of the data markers. Can take the name of a built-in shape or the svg path commands for a custom shape. Only applies to line and area spark charts.
+     * @expose
+     * @name markerShape
+     * @memberof oj.ojSparkChart
+     * @instance
+     * @type {string}
+     * @ojvalue {string} "square"
+     * @ojvalue {string} "circle"
+     * @ojvalue {string} "diamond"
+     * @ojvalue {string} "plus"
+     * @ojvalue {string} "triangleDown"
+     * @ojvalue {string} "triangleUp"
+     * @ojvalue {string} "human"
+     * @ojvalue {string} "star"
+     * @ojvalue {string} "auto"
+     * @default "auto"
+     * 
+     * @example <caption>Initialize the spark chart with the <code class="prettyprint">marker-shape</code> attribute specified:</caption>
+     * &lt;oj-spark-chart type="area" marker-shape="triangleUp">&lt;/oj-spark-chart>
+     * 
+     * @example <caption>Get or set the <code class="prettyprint">markerShape</code> 
+     * property after initialization:</caption>
+     * // getter
+     * var value = mySparkChart.markerShape;
+     * 
+     * // setter
+     * mySparkChart.markerShape = "triangleUp";
+     */
+    markerShape: "auto",
+     
+    /**
+     * The size of the data markers in pixels. Only applies to line and area spark charts.
+     * @expose
+     * @name markerSize
+     * @memberof oj.ojSparkChart
+     * @instance
+     * @type {number}
+     * @default 5
+     * @ojunits pixels
+     * 
+     * @example <caption>Initialize the spark chart with the <code class="prettyprint">marker-size</code> attribute specified:</caption>
+     * &lt;oj-spark-chart type="area" marker-size='15'>&lt;/oj-spark-chart>
+     * 
+     * @example <caption>Get or set the <code class="prettyprint">markerSize</code> 
+     * property after initialization:</caption>
+     * // getter
+     * var value = mySparkChart.markerSize;
+     * 
+     * // setter
+     * mySparkChart.markerSize = 15;
+     */
+    markerSize: 5,
+     
+    /**
+     * Specifies the width of the bar gap as a ratio of the item width. The valid value is a number from 0 to 1.
+     * @expose
+     * @name barGapRatio
+     * @memberof oj.ojSparkChart
+     * @instance
+     * @type {number}
+     * @default 0.25
+     * 
+     * @example <caption>Initialize the spark chart with the <code class="prettyprint">bar-gap-ratio</code> attribute specified:</caption>
+     * &lt;oj-spark-chart type="bar" bar-gap-ratio='0.12'>&lt;/oj-spark-chart>
+     * 
+     * @example <caption>Get or set the <code class="prettyprint">barGapRatio</code> 
+     * property after initialization:</caption>
+     * // getter
+     * var value = mySparkChart.barGapRatio;
+     * 
+     * // setter
+     * mySparkChart.barGapRatio = 0.12;
+     */
+    barGapRatio: 0.25
+  },
+
+  //** @inheritdoc */
+  _CreateDvtComponent : function(context, callback, callbackObj) {
+    this._focusable({'element': this.element, 'applyHighlight': true});
+    return dvt.SparkChart.newInstance(context, callback, callbackObj);
+  },
+
+  //** @inheritdoc */
+  _GetComponentStyleClasses : function() {
+    var styleClasses = this._super();
+    styleClasses.push('oj-sparkchart');
+    return styleClasses;
+  },
+  
+  //** @inheritdoc */
+  _GetChildStyleClasses: function() {
+    var styleClasses = this._super();
+    styleClasses['oj-dvtbase oj-sparkchart'] = {'path': 'animationDuration', 'property': 'ANIM_DUR'};
+    return styleClasses;
+  },
+
+  //** @inheritdoc */
+  _GetTranslationMap: function() {
+    // The translations are stored on the options object.
+    var translations = this.options['translations'];
+
+    // Safe to modify super's map because function guarentees a new map is returned
+    var ret = this._super();
+    ret['DvtUtilBundle.CHART'] = translations['componentName'];
+    return ret;
+  },
+
+  //** @inheritdoc */
+  _Render : function() {
+    // Display the title of the surrounding div as the tooltip. Remove title from div to avoid browser default tooltip.
+    if(this.element.attr('title'))
     {
-      // context objects are documented with @ojnodecontext
-      var context = this.getSubIdByNode(node);
-      if (context && context['subId'] !== 'oj-chart-tooltip')
-        return context;
-
-      return null;
-    },
-
-    //** @inheritdoc */
-    _GetComponentDeferredDataPaths : function() {
-      return {'root': ['groups', 'series'], 'data': ['groups', 'series']};
-    },
-
-    //** @inheritdoc */
-    _CompareOptionValues: function(option, value1, value2)
-    {
-      if (option == 'dataCursorPosition')
-        return oj.Object.compareValues(value1, value2);
-       else
-        return this._super(option, value1, value2);
+      this.options['shortDesc'] =  this.element.attr('title');
+      this.element.data( this.element,'title', this.element.attr('title'));
+      this.element.removeAttr('title');
     }
-  });
+    else if (this.element.data('title'))
+      this.options['shortDesc'] =  this.element.data('title');
 
+    // Call the super to render
+    this._super();
+  },
+
+  /**
+   * Returns an object with the following properties for automation testing verification of the data item with
+   * the specified item index.
+   * @param {number} itemIndex The item index
+   * @property {string} borderColor The border color of the item	
+   * @property {string} color The color of the item	
+   * @property {Date} date The date (x value) of the item	
+   * @property {number} high The high value for a range item	
+   * @property {number} low  The low value for a range item	
+   * @property {number} value The value of the item
+   * @return {Object|null} An object containing properties for the data item, or null if none exists.
+   * @ojsignature {target: "Type", value: "oj.ojSparkChart.ItemContext|null", jsdocOverride: true, for: "returns"}
+   * @expose
+   * @instance
+   * @memberof oj.ojSparkChart
+   */
+  getDataItem: function(itemIndex) {
+    var ret = this._component.getAutomation().getDataItem(itemIndex);
+
+    // : Provide backwards compatibility for getters until 1.2.0.
+    this._AddAutomationGetters(ret);
+    if (ret)
+      ret['getFloatValue'] = ret['getLow'];
+
+    return ret;
+  },
+
+  //** @inheritdoc */
+  _GetComponentDeferredDataPaths : function() {
+    return {'root': ['items', 'data']};
+  },
+
+  /**
+   * Adds getters for the properties on the specified map. 
+   * @param {Object|null} map
+   * @memberof oj.ojSparkChart
+   * @instance
+   * @protected
+   */
+  _AddAutomationGetters: function(map) {
+    if(!map)
+      return;
+
+    // These getters are deprecated in 3.0.0
+    var props = {};
+    for (var key in map) {
+      this._addGetter(map, key, props);
+    }
+    Object.defineProperties(map, props);
+  },
+
+  /**
+   * Adds getter for the specified property on the specified properties map.
+   * @param {Object} map
+   * @param {string} key
+   * @param {Object} props The properties map onto which the getter will be added.
+   * @memberof oj.ojSparkChart
+   * @instance
+   * @private
+   */
+  _addGetter: function(map, key, props) {
+    var prefix = (key == 'selected') ? 'is' : 'get';
+    var getterName = prefix + key.charAt(0).toUpperCase() + key.slice(1);
+    props[getterName] = {'value': function() { return map[key] }};
+  },
+});
+
+/**
+ * <p>This element has no touch interaction.  </p>
+ *
+ *
+ * @ojfragment touchDoc - Used in touch gesture section of classdesc, and standalone gesture doc
+ * @memberof oj.ojSparkChart
+ */
+
+/**
+ * <p>This element has no keyboard interaction.  </p>
+ *
+ * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
+ * @memberof oj.ojSparkChart
+ */
+ 
+/**
+ * The value of the data item.
+ * @expose
+ * @name items[].value
+ * @memberof! oj.ojSparkChart
+ * @instance
+ * @type {number}
+ * @default null
+ */
+/**
+ * The low value for range bar/area. Define 'low' and 'high' instead of 'value' to create a range bar/area spark chart.
+ * @expose
+ * @name items[].low
+ * @memberof! oj.ojSparkChart
+ * @instance
+ * @type {number}
+ * @default null
+ */
+/**
+ * The high value for range bar/area. Define 'low' and 'high' instead of 'value' to create a range bar/area spark chart.
+ * @expose
+ * @name items[].high
+ * @memberof! oj.ojSparkChart
+ * @instance
+ * @type {number}
+ * @default null
+ */
+/**
+ * The date for the data item. The date should only be specified if the interval between data items is irregular.
+ * @expose
+ * @name items[].date
+ * @memberof! oj.ojSparkChart
+ * @instance
+ * @type {string}
+ * @default null
+ */
+/**
+ * The color of the bar or marker for the data item. This override can be used to highlight important values or thresholds.
+ * @expose
+ * @name items[].color
+ * @memberof! oj.ojSparkChart
+ * @instance
+ * @type {string}
+ * @default null
+ */
+/**
+ * The CSS style class to apply to the data item. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the item color attribute.
+ * @expose
+ * @name items[].svgClassName
+ * @memberof! oj.ojSparkChart
+ * @instance
+ * @type {string}
+ * @default null
+ */
+/**
+ * The inline style to apply to the data item. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the item color attribute.
+ * @expose
+ * @name items[].svgStyle
+ * @memberof! oj.ojSparkChart
+ * @instance
+ * @type {object}
+ * @default null
+ */
+/**
+ * Defines whether a marker should be displayed for the data item. Only applies to line and area spark charts.
+ * @expose
+ * @name items[].markerDisplayed
+ * @memberof! oj.ojSparkChart
+ * @instance
+ * @type {string}
+ * @ojvalue {string} "on"
+ * @ojvalue {string} "off"
+ * @default "off"
+ */
+/**
+ * The default border color for the data items.
+ * @expose
+ * @name items[].borderColor
+ * @memberof! oj.ojSparkChart
+ * @instance
+ * @type {string}
+ * @default null
+ */
+/**
+ * The shape of the data markers. Can take the name of a built-in shape or the svg path commands for a custom shape. Only applies to line and area spark charts.
+ * @expose
+ * @name items[].markerShape
+ * @memberof! oj.ojSparkChart
+ * @instance
+ * @type {string}
+ * @ojvalue {string} "square"
+ * @ojvalue {string} "circle"
+ * @ojvalue {string} "diamond"
+ * @ojvalue {string} "plus"
+ * @ojvalue {string} "triangleDown"
+ * @ojvalue {string} "triangleUp"
+ * @ojvalue {string} "human"
+ * @ojvalue {string} "star"
+ * @ojvalue {string} "auto"
+ * @default "auto"
+ */
+/**
+ * The size of the data markers in pixels. Only applies to line and area spark charts.
+ * @expose
+ * @name items[].markerSize
+ * @memberof! oj.ojSparkChart
+ * @instance
+ * @type {number}
+ * @default null
+ */
+ /**
+  * The type of reference object being shown.
+  * @expose
+  * @name referenceObjects[].type
+  * @memberof! oj.ojSparkChart
+  * @instance
+  * @type {string}
+  * @ojvalue {string} "area"
+  * @ojvalue {string} "line"
+  * @default "line"
+  */
+ /**
+  * The location of the reference object relative to the data items.
+  * @expose
+  * @name referenceObjects[].location
+  * @memberof! oj.ojSparkChart
+  * @instance
+  * @type {string}
+  * @ojvalue {string} "front"
+  * @ojvalue {string} "back"
+  * @default "back"
+  */
+ /**
+  * The color of the reference object.
+  * @expose
+  * @name referenceObjects[].color
+  * @memberof! oj.ojSparkChart
+  * @instance
+  * @type {string}
+  * @default null
+  */
+ /**
+  * The width of a reference line.
+  * @expose
+  * @name referenceObjects[].lineWidth
+  * @memberof! oj.ojSparkChart
+  * @instance
+  * @type {number}
+  * @default null
+  */
+ /**
+  * The line style of a reference line.
+  * @expose
+  * @name referenceObjects[].lineStyle
+  * @memberof! oj.ojSparkChart
+  * @instance
+  * @type {string}
+  * @ojvalue {string} "dotted"
+  * @ojvalue {string} "dashed"
+  * @default null
+  */
+ /**
+  * The CSS style class to apply to the reference object. The style class and inline style will override any other styling specified through the properties.
+  * @expose
+  * @name referenceObjects[].svgClassName
+  * @memberof! oj.ojSparkChart
+  * @instance
+  * @type {string}
+  * @default null
+  */
+ /**
+  * The inline style to apply to the reference object. The style class and inline style will override any other styling specified through the properties.
+  * @expose
+  * @name referenceObjects[].svgStyle
+  * @memberof! oj.ojSparkChart
+  * @instance
+  * @type {object}
+  * @default null
+  */
+ /**
+  * The value of a reference line.
+  * @expose
+  * @name referenceObjects[].value
+  * @memberof! oj.ojSparkChart
+  * @instance
+  * @type {number}
+  * @default null
+  */
+ /**
+  * The low value of a reference area.
+  * @expose
+  * @name referenceObjects[].low
+  * @memberof! oj.ojSparkChart
+  * @instance
+  * @type {number}
+  * @default null
+  */
+ /**
+  * The high value of a reference area.
+  * @expose
+  * @name referenceObjects[].high
+  * @memberof! oj.ojSparkChart
+  * @instance
+  * @type {number}
+  * @default null
+  */
+
+// PROPERTY TYPEDEFS
+
+/**
+ * @typedef {Object} oj.ojSparkChart.Item
+ * @ignore
+ * @property {string} [borderColor] The default border color for the data items.
+ * @property {string} [color] The color of the bar or marker for the data item. This override can be used to highlight important values or thresholds.
+ * @property {Date} [date] The date for the data item. The date should only be specified if the interval between data items is irregular.
+ * @property {number} [high] The high value for range bar/area. Define 'low' and 'high' instead of 'value' to create a range bar/area spark chart.
+ * @property {number} [low] The low value for range bar/area. Define 'low' and 'high' instead of 'value' to create a range bar/area spark chart.
+ * @property {"on"|"off"} [markerDisplayed="off"] Defines whether a marker should be displayed for the data item. Only applies to line and area spark charts.
+ * @property {"square"|"circle"|"diamond"|"plus"|"triangleDown"|"triangleUp"|"human"|"star"|"auto"|string} [markerShape="auto"] The shape of the data markers. Can take the name of a built-in shape or the svg path commands for a custom shape. Only applies to line and area spark charts.
+ * @property {number} [markerSize] The size of the data markers in pixels. Only applies to line and area spark charts.
+ * @property {string} [svgClassName] The CSS style class to apply to the data item. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the item color attribute.
+ * @property {Object} [svgStyle] The inline style to apply to the data item. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the item color attribute.
+ * @property {number} [value] The value of the data item.
+ */
+ 
+/**
+ * @typedef {Object} oj.ojSparkChart.ReferenceObject
+ * @ignore
+ * @property {string} [color] The color of the reference object.
+ * @property {number} [high] The high value of a reference area.
+ * @property {number} [lineWidth] The width of a reference line.
+ * @property {"dotted"|"dashed"|"solid"} [lineStyle="solid"] The line style of a reference line.
+ * @property {"front"|"back"} [location="back"]  The location of the reference object relative to the data items.
+ * @property {number} [low] The low value of a reference area.
+ * @property {string} [svgClassName] The CSS style class to apply to the reference object. The style class and inline style will override any other styling specified through the properties.
+ * @property {Object} [svgStyle] The inline style to apply to the reference object. The style class and inline style will override any other styling specified through the properties.
+ * @property {"area"|"line"} [type="line"] The type of reference object being shown.
+ * @property {number} [value] The value of a reference line.
+ */
+
+/**
+ * @typedef {Object} oj.ojSparkChart.TooltipContext
+ * @ignore
+ * @property {string} color The color of the chart.
+ * @property {Element} componentElement The spark chart element.
+ * @property {Element} parentElement The tooltip element. The function can directly modify or append content to this element.
+ */
+ 
+// METHOD TYPEDEFS
+
+/**
+ * @typedef {Object} oj.ojSparkChart.ItemContext
+ * @ignore
+ * @property {string} borderColor The border color of the item
+ * @property {string} color The color of the item
+ * @property {Date} date The date (x value) of the item
+ * @property {number} high The high value for a range item
+ * @property {number} low  The low value for a range item
+ * @property {number} value The value of the item
+ */
+ 
 /**
  * Ignore tag only needed for DVTs that have jsDoc in separate _doc.js files.
  * @ignore
@@ -8466,17 +8323,6 @@ var ojChartMeta = {
     "coordinateSystem": {
       "type": "string",
       "enumValues": ["polar", "cartesian"]
-    },
-    "data": {
-      "type": "object",
-      "properties": {
-        "series": {
-          "type": "Array<any>|Promise"
-        },
-        "groups" : {
-          "type": "DataProvider"
-        }
-      }
     },
     "dataCursor": {
       "type": "string",
@@ -9034,75 +8880,163 @@ var ojChartMeta = {
       "type": "string"
     },
     "translations": {
+      "type": "Object",
       "properties": {
         "componentName": {
-          "type": "string"
+          "type": "string",
+          "value": "Chart"
+        },
+        "labelAndValue": {
+          "type": "string",
+          "value": "{0}: {1}"
+        },
+        "labelClearSelection": {
+          "type": "string",
+          "value": "Clear Selection"
         },
         "labelClose": {
-          "type": "string"
+          "type": "string",
+          "value": "Close"
+        },
+        "labelCountWithTotal": {
+          "type": "string",
+          "value": "{0} of {1}"
+        },
+        "labelDataVisualization": {
+          "type": "string",
+          "value": "Data Visualization"
         },
         "labelDate": {
-          "type": "string"
+          "type": "string",
+          "value": "Value"
         },
         "labelDefaultGroupName": {
-          "type": "string"
+          "type": "string",
+          "value": "Group {0}"
         },
         "labelGroup": {
-          "type": "string"
+          "type": "string",
+          "value": "Group"
         },
         "labelHigh": {
-          "type": "string"
+          "type": "string",
+          "value": "High"
+        },
+        "labelInvalidData": {
+          "type": "string",
+          "value": "Invalid data"
         },
         "labelLow": {
-          "type": "string"
+          "type": "string",
+          "value": "Low"
+        },
+        "labelNoData": {
+          "type": "string",
+          "value": "No data to display"
         },
         "labelOpen": {
-          "type": "string"
+          "type": "string",
+          "value": "Open"
         },
         "labelOther": {
-          "type": "string"
+          "type": "string",
+          "value": "Other"
         },
         "labelPercentage": {
-          "type": "string"
+          "type": "string",
+          "value": "Percentage"
         },
         "labelQ1": {
-          "type": "string"
+          "type": "string",
+          "value": "Q1"
         },
         "labelQ2": {
-          "type": "string"
+          "type": "string",
+          "value": "Q2"
         },
         "labelQ3": {
-          "type": "string"
+          "type": "string",
+          "value": "Q3"
         },
         "labelSeries": {
-          "type": "string"
+          "type": "string",
+          "value": "Series"
         },
         "labelTargetValue": {
-          "type": "string"
+          "type": "string",
+          "value": "Target"
         },
         "labelValue": {
-          "type": "string"
+          "type": "string",
+          "value": "Value"
         },
         "labelVolume": {
-          "type": "string"
+          "type": "string",
+          "value": "Volume"
         },
         "labelX": {
-          "type": "string"
+          "type": "string",
+          "value": "X"
         },
         "labelY": {
-          "type": "string"
+          "type": "string",
+          "value": "Y"
         },
         "labelZ": {
-          "type": "string"
+          "type": "string",
+          "value": "Z"
+        },
+        "stateCollapsed": {
+          "type": "string",
+          "value": "Collapsed"
+        },
+        "stateDrillable": {
+          "type": "string",
+          "value": "Drillable"
+        },
+        "stateExpanded": {
+          "type": "string",
+          "value": "Expanded"
+        },
+        "stateHidden": {
+          "type": "string",
+          "value": "Hidden"
+        },
+        "stateIsolated": {
+          "type": "string",
+          "value": "Isolated"
+        },
+        "stateMaximized": {
+          "type": "string",
+          "value": "Maximized"
+        },
+        "stateMinimized": {
+          "type": "string",
+          "value": "Minimized"
+        },
+        "stateSelected": {
+          "type": "string",
+          "value": "Selected"
+        },
+        "stateUnselected": {
+          "type": "string",
+          "value": "Unselected"
+        },
+        "stateVisible": {
+          "type": "string",
+          "value": "Visible"
         },
         "tooltipPan": {
-          "type": "string"
+          "type": "string",
+          "value": "Pan"
         },
         "tooltipSelect": {
-          "type": "string"
+          "type": "string",
+          "value": "Marquee select"
         },
         "tooltipZoom": {
-          "type": "string"
+          "type": "string",
+          "value": "Marquee zoom"
         }
       }
     },
@@ -10012,6 +9946,79 @@ var ojSparkChartMeta = {
       "type": "object",
       "properties": {
         "renderer": {}
+      }
+    },
+    "translations": {
+      "type": "Object",
+      "properties": {
+        "componentName": {
+          "type": "string",
+          "value": "Chart"
+        },
+        "labelAndValue": {
+          "type": "string",
+          "value": "{0}: {1}"
+        },
+        "labelClearSelection": {
+          "type": "string",
+          "value": "Clear Selection"
+        },
+        "labelCountWithTotal": {
+          "type": "string",
+          "value": "{0} of {1}"
+        },
+        "labelDataVisualization": {
+          "type": "string",
+          "value": "Data Visualization"
+        },
+        "labelInvalidData": {
+          "type": "string",
+          "value": "Invalid data"
+        },
+        "labelNoData": {
+          "type": "string",
+          "value": "No data to display"
+        },
+        "stateCollapsed": {
+          "type": "string",
+          "value": "Collapsed"
+        },
+        "stateDrillable": {
+          "type": "string",
+          "value": "Drillable"
+        },
+        "stateExpanded": {
+          "type": "string",
+          "value": "Expanded"
+        },
+        "stateHidden": {
+          "type": "string",
+          "value": "Hidden"
+        },
+        "stateIsolated": {
+          "type": "string",
+          "value": "Isolated"
+        },
+        "stateMaximized": {
+          "type": "string",
+          "value": "Maximized"
+        },
+        "stateMinimized": {
+          "type": "string",
+          "value": "Minimized"
+        },
+        "stateSelected": {
+          "type": "string",
+          "value": "Selected"
+        },
+        "stateUnselected": {
+          "type": "string",
+          "value": "Unselected"
+        },
+        "stateVisible": {
+          "type": "string",
+          "value": "Visible"
+        }
       }
     },
     "type": {

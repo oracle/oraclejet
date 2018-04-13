@@ -1068,6 +1068,7 @@ dvt.ThematicMap.prototype._getAreaFromDataLayer = function(areaName, dataLayer) 
   }
   return null;
 };
+
 /**
  * Default values and utility functions for thematic map component versioning.
  * @class
@@ -1112,7 +1113,7 @@ DvtThematicMapDefaults.DEFAULT = {
       'borderWidth' : 0.5,
       'color' : '#000000',
       'height' : 8,
-      'labelStyle' : 'font-family:Tahoma;font-size:13pt;color:#000000',
+      'labelStyle' : new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_SKYROS + dvt.BaseComponentDefaults.FONT_SIZE_13 + 'color:#000000'),
       'opacity' : 0.4,
       'scaleX' : 1,
       'scaleY' : 1,
@@ -1125,7 +1126,7 @@ DvtThematicMapDefaults.DEFAULT = {
       '_selectedColor' : '#000000',
       'width' : 2
     },
-    'labelStyle' : 'font-family:Tahoma;font-size:11pt;'
+    'labelStyle' : new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_SKYROS + dvt.BaseComponentDefaults.FONT_SIZE_11)
   },
   'resources' : {
     'images' : {},
@@ -1139,10 +1140,10 @@ DvtThematicMapDefaults.SKIN_ALTA = {
     '_areaStyle' : {'backgroundColor': '#DDDDDD', 'borderColor': '#FFFFFF'},
     'dataMarkerDefaults' : {
       'color' : 'rgb(51,51,51)',
-      'labelStyle' : dvt.BaseComponentDefaults.FONT_FAMILY_ALTA_12 + 'color:#333333',
+      'labelStyle' : new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_ALTA_12 + 'color:#333333'),
       'opacity' : 1
     },
-    'labelStyle' : dvt.BaseComponentDefaults.FONT_FAMILY_ALTA_12
+    'labelStyle' : new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_ALTA_12)
   }
 };
 
@@ -1212,6 +1213,15 @@ DvtThematicMapDefaults.prototype.getNoCloneObject = function() {
     'links': true
   };
 };
+
+/**
+ * @override
+ */
+DvtThematicMapDefaults.prototype.getAnimationDuration = function(options)
+{ 
+  return options['animationDuration'];
+};
+
 // APIs called by the ADF Faces drag source for dvt.ThematicMap
 
 /**
@@ -1388,6 +1398,7 @@ dvt.ThematicMap.prototype._stopDragDropTimer = function() {
     this._dragDropTimer = null;
   }
 };
+
 // APIs called by the ADF Faces drop target for dvt.ThematicMap
 
 /**
@@ -1459,6 +1470,7 @@ dvt.ThematicMap.prototype.getDropSite = function(mouseX, mouseY) {
   else
     return null;
 };
+
 /**
  * Drop Target event handler for dvt.ThematicMap
  * @param {DvtMapAreaLayer} areaLayer The area layer this drop target belongs to
@@ -1516,6 +1528,7 @@ DvtThematicMapDropTarget.prototype.getDropSite = function(mouseX, mouseY) {
     return null;
   }
 };
+
 /**
  * Provides automation services for a DVT component.
  * @class  DvtThematicMapAutomation
@@ -1698,6 +1711,7 @@ DvtThematicMapAutomation.prototype._getDataLayerId = function(dataLayerId) {
     return dataLayerId.substring(colonIdx + 1);
   return dataLayerId;
 };
+
 // Copyright (c) 2011, 2017, Oracle and/or its affiliates. All rights reserved.
 /**
  * Creates a selectable map area.
@@ -1897,6 +1911,7 @@ DvtSelectablePath.prototype.handleZoomEvent = function(pzcMatrix) {
     this._updateStrokeZoomWidth(this, 1);
   }
 };
+
 // Copyright (c) 2015, 2017, Oracle and/or its affiliates. All rights reserved.
 /**
   *  Creates a custom data item that supports interaction and accessibility.
@@ -2080,6 +2095,7 @@ DvtCustomDataItem.prototype.fireKeyboardListener = function(event) {
   if (this._dataItem instanceof dvt.BaseComponent)
     this._dataItem.fireKeyboardListener(event);
 };
+
 // For MAF this != window and we want to use this
 // For JET this isn't available in use strict mode so we want to use window
 /**
@@ -2509,6 +2525,7 @@ DvtBaseMapManager.getLayerIds = function(baseMapName, layerName) {
   }
   return map;
 };
+
 /**
  * Associates a displayable with a category
  * @constructor
@@ -2548,6 +2565,7 @@ DvtThematicMapCategoryWrapper.prototype.getCategories = function() {
 DvtThematicMapCategoryWrapper.prototype.getDisplayables = function() {
   return [this._displayable];
 };
+
 /**
  * Map label class
  * @constructor
@@ -2632,27 +2650,15 @@ DvtMapLabel.prototype.hasBounds = function() {
 DvtMapLabel.prototype.update = function(pzcMatrix) {
   var zoom = pzcMatrix.getA();
   var state = -1;
-  var estimatedDims = this.getDimensions();
-  var remove = false;
+  var dimensions = this.getDimensions();
   for (var i = 0; i < this._boundRectangle.length; i++) {
     var zoomW = this._boundRectangle[i].w * zoom;
     var zoomH = this._boundRectangle[i].h * zoom;
-    // estimatedDims is accurate for text height
-    if (estimatedDims.h <= zoomH) {
-      if (estimatedDims.w <= zoomW) {
+    if (dimensions.h <= zoomH) {
+      if (dimensions.w <= zoomW) {
         state = i;
         break;
-      } else {
-        // estimatedDims is a conservative guess so if it doesn't fit we need to check the real dimensions
-        if (!this.getParent()) {
-          remove = true;
-          this._parentContainer.addChild(this);
-        }
-        if (this.getDimensions().w <= zoomW) {
-          state = i;
-          break;
-        }
-      }
+      } 
     }
   }
 
@@ -2718,9 +2724,6 @@ DvtMapLabel.prototype.update = function(pzcMatrix) {
     }
     this._currentState = state;
   }
-  else if (state == -1 && remove) { // remove label if we added it to call getDimensions and it wasn't already removed
-    this._parentContainer.removeChild(this);
-  }
 
   if (this._currentState != -1) {
     var mat = new dvt.Matrix();
@@ -2785,6 +2788,7 @@ DvtMapLabel.prototype.reset = function() {
     this._leaderLine = null;
   }
 };
+
 /**
  * Logical object for a map data object
  * @param {object} data The options for this data object
@@ -3117,6 +3121,8 @@ DvtMapObjPeer.prototype.setSelected = function(selected) {
  * @override
  */
 DvtMapObjPeer.prototype.showHoverEffect = function() {
+  if (this.IsHoverEffectShown())
+    return;
   var prevState = this._getState();
   this._isShowingHoverEffect = true;
   if (this._dataLayer.getOptions()['hoverRenderer'])
@@ -3130,12 +3136,14 @@ DvtMapObjPeer.prototype.showHoverEffect = function() {
  * @override
  */
 DvtMapObjPeer.prototype.hideHoverEffect = function() {
-  var prevState = this._getState();
-  this._isShowingHoverEffect = false;
-  if (this._dataLayer.getOptions()['hoverRenderer'])
-    this._callCustomRenderer(this._dataLayer.getOptions()['hoverRenderer'], this._getState(), prevState);
-  else
-    this.processDefaultHoverEffect(false);
+  if (this.IsHoverEffectShown()) {
+    var prevState = this._getState();
+    this._isShowingHoverEffect = false;
+    if (this._dataLayer.getOptions()['hoverRenderer'])
+      this._callCustomRenderer(this._dataLayer.getOptions()['hoverRenderer'], this._getState(), prevState);
+    else
+      this.processDefaultHoverEffect(false);
+  }
 };
 
 /**
@@ -3241,6 +3249,8 @@ DvtMapObjPeer.prototype.getTargetElem = function() {
  * @override
  */
 DvtMapObjPeer.prototype.showKeyboardFocusEffect = function() {
+  if (this.isShowingKeyboardFocusEffect())
+    return;
   var prevState = this._getState();
   this._isShowingKeyboardFocusEffect = true;
   if (this._dataLayer.getOptions()['focusRenderer'])
@@ -3546,6 +3556,7 @@ DvtMapObjPeer.prototype._getState = function() {
     'focused': this.isShowingKeyboardFocusEffect()
   };
 };
+
 /**
  * Logical object for a map data area
  * @param {object} data The options for this data object
@@ -3656,6 +3667,7 @@ DvtMapAreaPeer.prototype.animateUpdate = function(handler, oldObj) {
 DvtMapAreaPeer.prototype.__recenter = function() {
   // no-op
 };
+
 /**
  * Logical object for a map data area
  * @param {object} data The options for this data object
@@ -3831,6 +3843,7 @@ DvtMapLinkPeer.prototype.animateUpdate = function(handler, oldObj) {
 
   handler.add(anim, DvtMapObjPeer.ANIMATION_UPDATE_PRIORITY);
 };
+
 /**
  * Displayable representing a non data map area
  * @extends {dvt.Container}
@@ -4028,6 +4041,7 @@ DvtMapArea.prototype.HandleZoomEvent = function(pzcMatrix) {
     this._shape.setStroke(zoomStroke);
   }
 };
+
 /**
  * Thematic Map map layer
  * @param {dvt.ThematicMap} tmap The thematic map this map layer belongs to
@@ -4280,6 +4294,7 @@ DvtMapLayer.prototype.destroy = function() {
   for (var layer in dataLayers)
     dataLayers[layer].destroy();
 };
+
 /**
  * Thematic Map area layer
  * @param {dvt.ThematicMap} tmap The thematic map this map layer belongs to
@@ -4400,12 +4415,20 @@ DvtMapAreaLayer.prototype.setDropSiteCSSStyle = function(style) {
   this._dropSiteCSSStyle = style;
 };
 
+/**
+ * Sets the CSSStyle for this area layer.
+ * @param {dvt.CSSStyle} style The style object for this area layer.
+ */
 DvtMapAreaLayer.prototype.setLayerCSSStyle = function(style) {
   this._layerCSSStyle = style;
 };
 
+/**
+ * Retruns the CSSStyle for this area layer.
+ * @return {dvt.CSSStyle}
+ */
 DvtMapAreaLayer.prototype.getLayerCSSStyle = function() {
-  return new dvt.CSSStyle(this._layerCSSStyle);
+  return this._layerCSSStyle;
 };
 
 /**
@@ -4702,6 +4725,7 @@ DvtMapAreaLayer.prototype.HandleZoomEvent = function(event, pzcMatrix) {
     }
   }
 };
+
 var DvtMapDataLayer = function(tmap, parentLayer, clientId, eventHandler, options) {
   this.Init(tmap, parentLayer, clientId, eventHandler, options);
 };
@@ -5227,6 +5251,7 @@ DvtMapDataLayer.prototype.getNavigableLinksForNodeId = function(markerId) {
   }
   return links;
 };
+
 /**
  * @param {dvt.ThematicMap} tmap The owning component
  * @param {dvt.EventManager} manager The owning dvt.EventManager
@@ -5398,6 +5423,7 @@ DvtThematicMapKeyboardHandler.getFirstNavigableLink = function(marker, event, li
   }
   return link;
 };
+
 // Copyright (c) 2011, 2017, Oracle and/or its affiliates. All rights reserved.
 
 /**
@@ -5661,6 +5687,7 @@ DvtThematicMapEventManager.prototype.ShowFocusEffect = function(event, obj) {
   if (!this._tmap.isPanning())
     DvtThematicMapEventManager.superclass.ShowFocusEffect.call(this, event, obj);
 };
+
 // Copyright (c) 2011, 2018, Oracle and/or its affiliates. All rights reserved.
 /**
  * Thematic Map JSON parser
@@ -5762,8 +5789,15 @@ DvtThematicMapJsonParser.prototype._parseAreaLayer = function(areaLayers) {
     this._areaLayerStyleObject = dvt.JsonUtils.merge(areaStyle, this._areaLayerStyleObject);
     this._areaLayerStyle.merge(areaCSSStyle);
   }
-  if (areaLayer['labelStyle'])
-    this._areaLayerStyle.parseInlineStyle(areaLayer['labelStyle']);
+
+  // styleDefaults.labelStyle is a dvt.CSSStyle
+  var areaLabelStyle = this._tmap.getStyleDefaults()['labelStyle'];
+  if (areaLabelStyle)
+    this._areaLayerStyle.merge(areaLabelStyle);
+  // areaLayers.labelStyle is a string or object
+  areaLabelStyle = areaLayer['labelStyle'];
+  if (areaLabelStyle)
+    this._areaLayerStyle.parseInlineStyle(areaLabelStyle);
 
   mapLayer = new DvtMapAreaLayer(this._tmap, layer, areaLayer['labelDisplay'], areaLayer['labelType'],
       this._tmap.getEventManager());
@@ -5866,8 +5900,10 @@ DvtThematicMapJsonParser.prototype.ParseDataLayers = function(dataLayers, parent
 
     var renderer = dataLayerOptions['renderer'];
     var markers = dataLayerOptions['markers'];
-    if (markers && !renderer) {
-      DvtThematicMapJsonParser._calcBubbleSizes(this._tmap, markers);
+    if (markers) {
+      if (!renderer)
+        DvtThematicMapJsonParser._calcBubbleSizes(this._tmap, markers);
+
       for (var j = 0; j < markers.length; j++) {
         if (hiddenCategories && dvt.ArrayUtils.hasAnyItem(hiddenCategories, markers[j]['categories'])) {
           // placeholder null object for automation
@@ -5884,7 +5920,16 @@ DvtThematicMapJsonParser.prototype.ParseDataLayers = function(dataLayers, parent
             isolatedAreaId = areaId;
         }
 
-        var dataObj = this._createMarker(parentLayer, dataLayer, markers[j], isAreaDataLayer);
+        var dataObj;
+        if (renderer) {
+          var initState = {'hovered': false, 'selected': false, 'focused': false};
+          var context = this._tmap.getOptions()['_contextHandler'](this._tmap.getElem(), null, markers[j], initState, null);
+          var svgElem = renderer(context);
+          dataObj = this._createCustomDataItem(parentLayer, dataLayer, markers[j], svgElem, isAreaDataLayer);
+        } else {
+          dataObj = this._createMarker(parentLayer, dataLayer, markers[j], isAreaDataLayer);
+        }
+
         if (dataObj) {
           dataLayer.addMarkerObject(dataObj);
         }
@@ -5924,28 +5969,6 @@ DvtThematicMapJsonParser.prototype.ParseDataLayers = function(dataLayers, parent
           dataLayer.addLinkObject(dataObj);
         }
 
-      }
-    }
-
-    if (renderer && markers) {
-      // custom renderer data is kept in markers option
-      for (var j = 0; j < markers.length; j++) {
-        var areaId = markers[j]['location'];
-
-        if (isolatedRowKey) {
-          if (isolatedRowKey != markers[j]['id'])
-            continue;
-          else
-            isolatedAreaId = areaId;
-        }
-
-        var initState = {'hovered': false, 'selected': false, 'focused': false};
-        var context = this._tmap.getOptions()['_contextHandler'](this._tmap.getElem(), null, markers[j], initState, null);
-        var svgElem = renderer(context);
-        var dataObj = this._createCustomDataItem(parentLayer, dataLayer, markers[j], svgElem, isAreaDataLayer);
-        if (dataObj) {
-          dataLayer.addMarkerObject(dataObj);
-        }
       }
     }
 
@@ -6109,10 +6132,10 @@ DvtThematicMapJsonParser.prototype._createMarker = function(layer, dataLayer, da
 
   // merge data marker default styles, need to handle label style differently because we want to merge the two css strings
   var markerDefaults = this._tmap.getStyleDefaults()['dataMarkerDefaults'];
-  var markerLabelStyle = new dvt.CSSStyle(markerDefaults['labelStyle']);
+  var markerLabelStyle = markerDefaults['labelStyle'];
   markerLabelStyle.parseInlineStyle(data['labelStyle']);
   data = dvt.JsonUtils.merge(data, markerDefaults);
-  data['labelStyle'] = markerLabelStyle.toString();
+  data['labelStyle'] = markerLabelStyle;
 
   // Parse data object scales. Save original scale to maintain size despite zoom.
   var width;
@@ -6403,12 +6426,10 @@ DvtThematicMapJsonParser.prototype._createLabel = function(layer, dataLayer, dat
       label = new dvt.OutputText(context, labelText, 0, 0);
 
     // Label styling
-    var labelStyle = new dvt.CSSStyle();
+    var labelStyle = isArea ? layer.getLayerCSSStyle() : new dvt.CSSStyle();
     // add label style by merging styles sent from skin and tag
-    if (isArea)
-      labelStyle.merge(layer.getLayerCSSStyle());
     if (data['labelStyle']) {
-      labelStyle.parseInlineStyle(data['labelStyle']);
+      labelStyle.merge(data['labelStyle']);
     }
     var fillColor = labelStyle.getStyle(dvt.CSSStyle.COLOR);
     labelStyle.setStyle(dvt.CSSStyle.COLOR, null);
@@ -6674,6 +6695,7 @@ DvtThematicMapJsonParser._getLocationName = function(basemap, dataLayer, data) {
   }
   return null;
 };
+
 /**
  * Utility class for built-in map projections
  * @constructor
@@ -7314,6 +7336,7 @@ DvtThematicMapProjections._getInverseRobinsonProjection = function(x, y) {
 
   return new dvt.Point(originalX, originalY);
 };
+
 dvt.exportProperty(DvtBaseMapManager, 'getLayerIds', DvtBaseMapManager.getLayerIds);
 
 dvt.exportProperty(dvt, 'ThematicMap', dvt.ThematicMap);
@@ -7328,6 +7351,7 @@ dvt.exportProperty(dvt.ThematicMap.prototype, 'processDefaultFocusEffect', dvt.T
 
 dvt.exportProperty(DvtThematicMapAutomation.prototype, 'getDomElementForSubId', DvtThematicMapAutomation.prototype.getDomElementForSubId);
 dvt.exportProperty(DvtThematicMapAutomation.prototype, 'getData', DvtThematicMapAutomation.prototype.getData);
+
 /**
  * Thematic Map MapProvider utility class for converting a GeoJSON object into a basemap.
  */
@@ -7390,7 +7414,7 @@ DvtMapProviderUtils.parseMapInfo = function(context, mapProvider) {
   var geoJson = mapProvider['geo'];
   var keys = mapProvider['propertiesKeys'] || {};
   if (!keys[DvtMapProviderUtils._ID])
-    throw new Error('Missing required mapProvider.propertyKeys.id property.');
+    throw new Error('Missing required mapProvider.propertiesKeys.id property.');
 
   // Determine the GeoJSON top-level type
   var type = geoJson[DvtMapProviderUtils._TYPE];
@@ -7650,8 +7674,8 @@ DvtMapProviderUtils._pathToPolygon = function(path) {
   }
   return coords;
 };
-})(dvt);
 
+})(dvt);
 // To avoid changing the basemaps, which each call the basemap manager, we will
 // put the basemap manager onto the returned object. We'll only do this if it's
 // not defined, since in min/min-debug mode, the non-exported version is on the window.

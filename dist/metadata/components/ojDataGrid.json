@@ -1,9 +1,13 @@
 {
   "name": "oj-data-grid",
-  "version": "4.2.0",
-  "jetVersion": "4.2.0",
+  "version": "5.0.0",
+  "jetVersion": "5.0.0",
   "displayName": "Data Grid",
   "preview": true,
+  "roles": [
+    "application",
+    "grid"
+  ],
   "styleClasses": [
     {
       "styleGroup": [
@@ -15,7 +19,7 @@
       "styleGroup": [
         "oj-helper-align-items-[direction]"
       ],
-      "description": "Use this class on cells' and headers' className prperty to align your content vertically. By default the alignment is center on cells and headers, see other possibilities in the flex layout align section."
+      "description": "Use this class on cells' and headers' className property to align your content vertically. By default the alignment is center on cells and headers, see other possibilities in the flex layout align section."
     },
     {
       "styleGroup": [
@@ -36,10 +40,10 @@
       "description": "Used to style the default header widths and heights. By default the datagrid supports up to depth 7. If you have headers width depth greater than 7 specify the defaults using the class name description or use apply custom style rules to the headers."
     }
   ],
-  "description": "A JET DataGrid is a themable, WAI-ARIA compliant element that displays data in a cell oriented grid",
+  "description": "Displays data in a cell oriented grid.",
   "properties": {
     "bandingInterval": {
-      "description": "Row banding and column banding intervals within the DataGrid body.",
+      "description": "Specifies the data body row and column banding intervals.",
       "type": "Object.<string, number>",
       "displayName": "Banding Interval",
       "value": {
@@ -58,29 +62,29 @@
       }
     },
     "cell": {
-      "description": "The cell attribute contains a subset of attributes for databody cells.",
+      "description": "Specifies attributes on the cells.",
       "type": "Object",
       "displayName": "Cell",
       "properties": {
         "className": {
-          "description": "The CSS style class to apply to data body in the DataGrid. If a string is specified the class will be added to all data body cells. If a function is specified it takes a single parameter, cellContext and must return a string to be set as a className.",
+          "description": "CSS class names to apply to cells.",
           "type": "function|string|null",
           "value": null
         },
         "renderer": {
-          "description": "The renderer function that renders the content of the data body. See cellContext for information on the object passed into the cell renderer function. The function should return one of the following: An Object with the following property: insert: HTMLElement | string - A string or a DOM element of the content inside the data body. undefined: If the developer chooses to append to the data body element directly, the function should return undefined. If no renderer is specified, the DataGrid will treat the cell data as a string.",
+          "description": "Specifies what renders is the cell.",
           "type": "function|null",
           "value": null
         },
         "style": {
-          "description": "The inline style to apply to directly to cells in the data body. If a string is specified the class will be added to all data body cells. If a function is specified it takes a single parameter, cellContext and must return a string.",
+          "description": "Inline style to add to the cells.",
           "type": "function|string|null",
           "value": null
         }
       }
     },
     "currentCell": {
-      "description": "The cell that currently have keyboard focus. Note that if the current cell is set to an item that is currently not available (not fetched in highwatermark scrolling case or inside a collapsed parent node) or invalid, then the value is not applied. If the currentCell is a databody cell the object will contain the following information: {type: 'cell', indexes: {row: rowIndexValue, column: columnIndexValue}, keys: {row: 'rowKeyValue', column: 'columnKeyValue'}} If the currentCell is a header cell the object will contain the following information: {type: 'header', axis:'axisValue', index: indexValue, key: 'keyValue', level: levelValue} If setting the property to a databody cell, either indexes or keys must be specified, if both are specified indexes will be used as a hint. If setting the property to a header cell, axis and either \"index and level\" or \"key\" must be specified, if both are specified \"index and level\" will be used as a hint. If level is not specified it will default to 0.",
+      "description": "Specifies the grid's currently focused cell.",
       "type": "Object",
       "displayName": "Current Cell",
       "value": null,
@@ -137,13 +141,13 @@
       }
     },
     "data": {
-      "description": "The data source for the DataGrid must be an extension of oj.DataGridDataSource. See the data section in the introduction for data sources provided out of the box. If the data attribute is not specified, an empty DataGrid is displayed.",
+      "description": "Specifies the grid data source.",
       "type": "oj.DataGridDataSource",
       "displayName": "Data",
       "value": null
     },
     "dnd": {
-      "description": "Enables or disables reordering the rows within the same DataGrid using drag and drop. Specify an object with a subproperty reorder set to {row:'enable'} to enable reordering. Setting the reorder subproperty to {row:'disable'}, or setting the dnd attribute to null (or omitting it), disables reordering support. There must be move capability support on the data source to enable this feature.",
+      "description": "Specifies the drag and drop row reordering.",
       "type": "Object",
       "displayName": "Dnd",
       "value": {
@@ -165,7 +169,7 @@
       }
     },
     "editMode": {
-      "description": "Determine if the DataGrid is read only or editable. Use none if the DataGrid is strictly read only. The DataGrid editMode is designed to support fast editing and requires that the input controls render fast and near synchronusly to be stamped inside an editable cell. The DataGrid supports overwrite behavior for all of JET's input components. Custom components that render synchronously or components that only render asynchronusly due to Promises that resolve immediately will also be stampable. The modules for the stamped component loaded/required when the DataGrid is loaded/required. Components that must go back to a server to render are not supported. Use cellNavigation to allow editable cells, but the DataGrid is currently read only and a single tab stop on the page. Pressing F2 or double click while in this mode will switch the DataGrid to cellEdit mode. Use cellEdit to allow editable cells, and tab navigates to the next cell behavior. Pressing ESC while in this mode will switch the DataGrid to cellNavigation mode.",
+      "description": "Specifies if the grid is read-only or editable.",
       "type": "string",
       "displayName": "Edit Mode",
       "value": "none",
@@ -177,7 +181,7 @@
       ],
       "propertyEditorValues": {
         "cellEdit": {
-          "description": "the DataGrid cells are indivdually tabbable and editable",
+          "description": "the DataGrid cells are individually tabbable and editable",
           "displayName": "Cell Edit"
         },
         "cellNavigation": {
@@ -191,7 +195,7 @@
       }
     },
     "gridlines": {
-      "description": "Display or hide the horizontal or vertical gridlines in the data body. Gridlines are visible by default and must be set to 'hidden' in order to be hidden.",
+      "description": "Specifies the visibility of the grid body vertical and horizontal gridlines.",
       "type": "Object.<string, string>",
       "displayName": "Gridlines",
       "value": {
@@ -210,26 +214,26 @@
       }
     },
     "header": {
-      "description": "The header attribute contains a subset of attributes for row and column headers.",
+      "description": "Specifies attributes on the headers.",
       "type": "",
       "displayName": "Header",
       "properties": {
         "column": {
-          "description": "The header column attribute contains a subset of attributes for column headers.",
+          "description": "Specifies attributes on the column headers.",
           "type": "",
           "properties": {
             "className": {
-              "description": "The CSS style class to apply to column headers in the DataGrid. If a string is specified the class will be added to all column header cells. If a function is specified it takes a single parameter, headerContext and must return a string to be set as a className.",
+              "description": "CSS class names to apply to column headers.",
               "type": "function|string|null",
               "value": null
             },
             "renderer": {
-              "description": "The renderer function that renders the content of the column header. See headerContext for information on the object passed into the column header renderer function. The function should return one of the following: An Object with the following property: insert: HTMLElement | string - A string or a DOM element of the content inside the column header. undefined: If the developer chooses to append to the column header element directly, the function should return undefined. If no renderer is specified, the DataGrid will treat the header data as a string.",
+              "description": "Specifies what renders is the column headers.",
               "type": "function|null",
               "value": null
             },
             "resizable": {
-              "description": "Enable or disable width or height resize along the column headers. Note that for column header, a function cannot be used with the height subproperty. If a function is specified it takes a single parameter, headerContext and must return a string of enable or disable.",
+              "description": "Specifies resizing width or height on the column headers.",
               "type": "Object.<string, string>|Object.<string, function(Object)>|null",
               "value": {
                 "width": "disable",
@@ -247,7 +251,7 @@
               }
             },
             "sortable": {
-              "description": "Enable or disable sorting on the field bounded by this header. The data source associated with the DataGrid must have the sort function defined and the capability supported. If a function is specified it takes a single parameter, headerContext and must return a string of auto, enable, or disable.",
+              "description": "Specifies whether sorting is enabled on the column headers.",
               "type": "function|string",
               "value": "auto",
               "enumValues": [
@@ -271,28 +275,28 @@
               }
             },
             "style": {
-              "description": "The inline style to apply to column headers in the DataGrid. If a string is specified the class will be added to all column header cells. Note that percentage (%) width and height values are not supported. If a function is specified it takes a single parameter, headerContext and must return a string.",
+              "description": "Inline style to add to the column headers.",
               "type": "function|string|null",
               "value": null
             }
           }
         },
         "columnEnd": {
-          "description": "The header columnEnd attribute contains a subset of attributes for column end headers.",
+          "description": "Specifies attributes on the column end headers.",
           "type": "",
           "properties": {
             "className": {
-              "description": "The CSS style class to apply to columnEnd headers in the DataGrid. If a string is specified the class will be added to all columnEnd header cells. If a function is specified it takes a single parameter, headerContext and must return a string to be set as a className.",
+              "description": "CSS class names to apply to column end headers.",
               "type": "function|string|null",
               "value": null
             },
             "renderer": {
-              "description": "The renderer function that renders the content of the columnEnd header. See headerContext for information on the object passed into the columnEnd header renderer function. The function should return one of the following: An Object with the following property: insert: HTMLElement | string - A string or a DOM element of the content inside the columnEnd header. undefined: If the developer chooses to append to the columnEnd header element directly, the function should return undefined. If no renderer is specified, the DataGrid will treat the header data as a string.",
+              "description": "Specifies what renders is the column end headers.",
               "type": "function|null",
               "value": null
             },
             "resizable": {
-              "description": "Enable or disable width or height resize along the columnEnd headers. Note that for columnEnd header, a function cannot be used with the height subproperty. If a function is specified it takes a single parameter, headerContext and must return a string of enable or disable.",
+              "description": "Specifies resizing width or height on the column end headers.",
               "type": "Object.<string, string>|Object.<string, function(Object)>|null",
               "value": {
                 "width": "disable",
@@ -310,28 +314,28 @@
               }
             },
             "style": {
-              "description": "The inline style to apply to columnEnd headers in the DataGrid. If a string is specified the class will be added to all columnEnd header cells. Note that percentage (%) width and height values are not supported. If a function is specified it takes a single parameter, headerContext and must return a string.",
+              "description": "Inline style to add to the column end headers.",
               "type": "function|string|null",
               "value": null
             }
           }
         },
         "row": {
-          "description": "The header row attribute contains a subset of attributes for row headers.",
+          "description": "Specifies attributes on the row headers.",
           "type": "",
           "properties": {
             "className": {
-              "description": "The CSS style class to apply to row headers in the DataGrid. If a string is specified the class will be added to all row header cells. If a function is specified it takes a single parameter, headerContext and must return a string to be set as a className.",
+              "description": "CSS class names to apply to row headers.",
               "type": "function|string|null",
               "value": null
             },
             "renderer": {
-              "description": "The renderer function that renders the content of the row header. See headerContext for information on the object passed into the row header renderer function. The function should return one of the following: An Object with the following property: insert: HTMLElement | string - A string or a DOM element of the content inside the row header. undefined: If the developer chooses to append to the row header element directly, the function should return undefined. If no renderer is specified, the DataGrid will treat the header data as a string.",
+              "description": "Specifies what renders is the row headers.",
               "type": "function|null",
               "value": null
             },
             "resizable": {
-              "description": "Enable or disable width or height resize along the row headers. Note that for row header, a function cannot be used with the width subproperty. If a function is specified it takes a single parameter, headerContext and must return a string of enable or disable.",
+              "description": "Specifies resizing width or height on the row headers.",
               "type": "Object.<string, string>|Object.<string, function(Object)>|null",
               "value": {
                 "width": "disable",
@@ -349,7 +353,7 @@
               }
             },
             "sortable": {
-              "description": "Enable or disable sorting on the field bounded by this header. The data source associated with the DataGrid must have the sort function defined and the capability supported. If a function is specified it takes a single parameter, headerContext and must return a string of auto, enable, or disable.",
+              "description": "Specifies whether sorting is enabled on the row headers.",
               "type": "function|string",
               "value": "auto",
               "enumValues": [
@@ -373,28 +377,28 @@
               }
             },
             "style": {
-              "description": "The inline style to apply to row headers in the DataGrid. If a string is specified the class will be added to all row header cells. Note that percentage (%) width and height values are not supported. If a function is specified it takes a single parameter, headerContext and must return a string.",
+              "description": "Inline style to add to the row headers.",
               "type": "function|string|null",
               "value": null
             }
           }
         },
         "rowEnd": {
-          "description": "The header rowEnd attribute contains a subset of attributes for row end headers.",
+          "description": "Specifies attributes on the row end headers.",
           "type": "",
           "properties": {
             "className": {
-              "description": "The CSS style class to apply to rowEnd headers in the DataGrid. If a string is specified the class will be added to all rowEnd header cells. If a function is specified it takes a single parameter, headerContext and must return a string to be set as a className.",
+              "description": "CSS class names to apply to row end headers.",
               "type": "function|string|null",
               "value": null
             },
             "renderer": {
-              "description": "The renderer function that renders the content of the rowEnd header. See headerContext for information on the object passed into the rowEnd header renderer function. The function should return one of the following: An Object with the following property: insert: HTMLElement | string - A string or a DOM element of the content inside the rowEnd header. undefined: If the developer chooses to append to the rowEnd header element directly, the function should return undefined. If no renderer is specified, the DataGrid will treat the header data as a string.",
+              "description": "Specifies what renders is the row end headers.",
               "type": "function|null",
               "value": null
             },
             "resizable": {
-              "description": "Enable or disable width or height resize along the rowEnd headers. Note that for rowEnd header, a function cannot be used with the width subproperty. If a function is specified it takes a single parameter, headerContext and must return a string of enable or disable.",
+              "description": "Specifies resizing width or height on the row end headers.",
               "type": "Object.<string, string>|Object.<string, function(Object)>|null",
               "value": {
                 "width": "disable",
@@ -412,7 +416,7 @@
               }
             },
             "style": {
-              "description": "The inline style to apply to rowEnd headers in the DataGrid. If a string is specified the class will be added to all rowEnd header cells. Note that percentage (%) width and height values are not supported. If a function is specified it takes a single parameter, headerContext and must return a string.",
+              "description": "Inline style to add to the row end headers.",
               "type": "function|string|null",
               "value": null
             }
@@ -421,7 +425,7 @@
       }
     },
     "scrollPolicy": {
-      "description": "Specifies the mechanism used to scroll the data inside the DataGrid.",
+      "description": "Specifies the grid scroll mechanism.",
       "type": "string|null",
       "displayName": "Scroll Policy",
       "value": "auto",
@@ -440,266 +444,295 @@
           "displayName": "Load More On Scroll"
         },
         "scroll": {
-          "description": "virtual scrolling is used meaning only rows/columns visibile in the viewport are fetched and kept in the DOM",
+          "description": "virtual scrolling is used meaning only rows/columns visible in the viewport are fetched and kept in the DOM",
           "displayName": "Scroll"
         }
       }
     },
-    "scrollPosition": {
-      "description": "The index or key of the row and/or column to display initially in the DataGrid. Only key or index should be specified, if they both are the grid will scroll initially to the key values.",
-      "type": "Object.<string, Object>|null",
-      "displayName": "Scroll Position",
-      "value": null,
+    "scrollPolicyOptions": {
+      "description": "Gets and sets the fetch options for scrolling behaviors that triggers data fetches.",
+      "type": "Object.<number>|null",
+      "displayName": "Scroll Policy Options",
+      "value": {
+        "maxRowCount": 500,
+        "maxColumnCount": 500
+      },
       "properties": {
-        "index": {
-          "description": "scroll to a given row and column index of the DataGrid",
-          "type": "Object",
-          "properties": {
-            "row": {
-              "description": "row index to scroll to",
-              "type": "number"
-            },
-            "column": {
-              "description": "column index to scroll to",
-              "type": "number"
-            }
-          }
+        "maxRowCount": {
+          "description": "The maximum total number of rows to fetch, -1 is unbounded",
+          "type": "number"
         },
-        "key": {
-          "description": "scroll to a given row and column key of the DataGrid",
-          "type": "Object",
-          "properties": {
-            "row": {
-              "description": "row key to scroll to",
-              "type": "string"
-            },
-            "column": {
-              "description": "column key to scroll to",
-              "type": "string"
-            }
-          }
+        "maxColumnCount": {
+          "description": "The maximum total number of columns to fetch, -1 is unbounded",
+          "type": "number"
+        }
+      }
+    },
+    "scrollPosition": {
+      "description": "Gets and sets the scroll position of the data grid.",
+      "type": "Object",
+      "displayName": "Scroll Position",
+      "value": {
+        "x": 0,
+        "y": 0
+      },
+      "properties": {
+        "x": {
+          "description": "the horizontal position in pixel",
+          "type": "number"
+        },
+        "y": {
+          "description": "the vertical position in pixel",
+          "type": "number"
+        },
+        "rowIndex": {
+          "description": "the zero-based row index of the cell at the origin of the grid. If scrollPolicy is set to 'loadMoreOnScroll' and the index is greater than maxCount set in scrollPolicyOptions, then it will scroll and fetch until the end of the list is reached and there's no more items to fetch.",
+          "type": "number"
+        },
+        "columnIndex": {
+          "description": "the zero-based column index of the cell at the origin of the grid. If scrollPolicy is set to 'loadMoreOnScroll' and the index is greater than maxCount set in scrollPolicyOptions, then it will scroll and fetch until the end of the list is reached and there's no more items to fetch.",
+          "type": "number"
+        },
+        "rowKey": {
+          "description": "the row key of the cell at the origin of the grid. If DataGridDataSource is used for data and the key does not exist in the DataGridDataSource, then the value is ignored. If it is unknown in the data source then the grid will fetch and scroll until the item is found or the end of the axis is reached and there's no more items to fetch.",
+          "type": "*"
+        },
+        "columnKey": {
+          "description": "the column key of the cell at the origin of the grid. If DataGridDataSource is used for data and the key does not exist in the DataGridDataSource, then the value is ignored. If it is unknown in the data source then the grid will fetch and scroll until the item is found or the end of the axis is reached and there's no more items to fetch.",
+          "type": "*"
+        },
+        "offsetX": {
+          "description": "the horizontal offset in pixel relative to the cell identified by key/index.",
+          "type": "number"
+        },
+        "offsetY": {
+          "description": "the vertical offset in pixel relative to the cell identified by key/index.",
+          "type": "number"
         }
       }
     },
     "selection": {
-      "description": "Specifies the current selections in the DataGrid. Returns an array of range objects, or an empty array if there's no selection. The range object contains a startIndex, endIndex, startKey, and endKey. If cell selection is enabled each will contain a row and column property. If row selection is enabled each will contain a row property only.",
-      "type": "Array.<Object>",
+      "description": "Specifies the grid's current selection.",
+      "type": "Array<Object>",
       "displayName": "Selection",
-      "value": "[]",
+      "value": [],
       "writeback": true
     },
     "selectionMode": {
-      "description": "Specifies whether row/cell selection can be made and the cardinality of each (single/multiple/none) selection in the DataGrid. Only one of the attributes, row or column, should be set at at time. Selection is initially disabled, but setting the value to null will disable selection.",
-      "type": "Object.<string, string>|null",
+      "description": "Specifies row or cell selection.",
+      "type": "Object.<string, string>",
       "displayName": "Selection Mode",
-      "value": null,
+      "value": {
+        "cell": "none",
+        "row": "none"
+      },
       "properties": {
         "row": {
-          "description": "set row selection mode, valid values are: 'single', 'multiple'",
+          "description": "set row selection mode, valid values are: 'none', 'single', 'multiple'",
           "type": "string"
         },
         "cell": {
-          "description": "set cell selection mode, valid values are: 'single', 'multiple'",
+          "description": "set cell selection mode, valid values are: 'none', 'single', 'multiple'",
           "type": "string"
         }
       }
     },
     "translations": {
-      "description": "A collection of translated resources from the translation bundle, or null if this\ncomponent has no resources. Resources may be accessed and overridden individually or collectively, as seen in the examples.\n\nIf this component has translations, their documentation immediately follows this doc entry.",
-      "type": "Object",
+      "description": "A collection of translated resources from the translation bundle, or null if this\ncomponent has no resources. Resources may be accessed and overridden individually or collectively, as seen in the examples. If the component does not contain any translatable resource, the default value of this attribute will be \nnull. If not, an object containing all resources relevant to the component.\n\nIf this component has translations, their documentation immediately follows this doc entry.",
+      "type": "Object|null",
       "displayName": "Translations",
-      "value": null,
+      "translatable": true,
       "properties": {
         "accessibleActionableMode": {
           "description": "Provides properties to customize the accesible context to enter actionable mode.\n\nSee the translations attribute for usage examples.",
-          "type": "Object"
+          "type": "string"
         },
         "accessibleColumnContext": {
           "description": "Provides properties to customize the accesible context for the column index.\n\nSee the translations attribute for usage examples.",
-          "type": "Object"
+          "type": "string"
         },
         "accessibleColumnEndHeaderContext": {
           "description": "Provides properties to customize the accesible context for the column end header index.\n\nSee the translations attribute for usage examples.",
-          "type": "Object"
+          "type": "string"
         },
         "accessibleColumnHeaderContext": {
           "description": "Provides properties to customize the accesible context for the column header index.\n\nSee the translations attribute for usage examples.",
-          "type": "Object"
+          "type": "string"
         },
         "accessibleColumnSelected": {
           "description": "Provides properties to customize the accesible context when a column is selected.\n\nSee the translations attribute for usage examples.",
-          "type": "Object"
+          "type": "string"
         },
         "accessibleColumnSpanContext": {
           "description": "Provides properties to customize the accesible context for the cell column extent/span.\n\nSee the translations option for usage examples.",
-          "type": "Object"
+          "type": "string"
         },
         "accessibleFirstColumn": {
           "description": "Provides properties to customize the accesible context when the first column is reached.\n\nSee the translations attribute for usage examples.",
-          "type": "Object"
+          "type": "string"
         },
         "accessibleFirstRow": {
           "description": "Provides properties to customize the accesible context when the first row is reached.\n\nSee the translations attribute for usage examples.",
-          "type": "Object"
+          "type": "string"
         },
         "accessibleLastColumn": {
           "description": "Provides properties to customize the accesible context when the last column is reached.\n\nSee the translations attribute for usage examples.",
-          "type": "Object"
+          "type": "string"
         },
         "accessibleLastRow": {
           "description": "Provides properties to customize the accesible context when the last row is reached.\n\nSee the translations attribute for usage examples.",
-          "type": "Object"
+          "type": "string"
         },
         "accessibleLevelContext": {
           "description": "Provides properties to customize the accesible context for the header level.\n\nSee the translations attribute for usage examples.",
-          "type": "Object"
+          "type": "string"
         },
         "accessibleMultiCellSelected": {
           "description": "Provides properties to customize the accesible context when mulitple cells are selected.\n\nSee the translations attribute for usage examples.",
-          "type": "Object"
+          "type": "string"
         },
         "accessibleNavigationMode": {
           "description": "Provides properties to customize the accesible context to enter navigation mode.\n\nSee the translations attribute for usage examples.",
-          "type": "Object"
+          "type": "string"
         },
         "accessibleRangeSelectModeOff": {
           "description": "Provides properties to customize the accesible context for discontinuous selection off.\n\nSee the translations attribute for usage examples.",
-          "type": "Object"
+          "type": "string"
         },
         "accessibleRangeSelectModeOn": {
           "description": "Provides properties to customize the accesible context for discontinuous selection on.\n\nSee the translations attribute for usage examples.",
-          "type": "Object"
+          "type": "string"
         },
         "accessibleRowCollapsed": {
           "description": "Provides properties to customize the accesible context when a row is collapsed.\n\nSee the translations attribute for usage examples.",
-          "type": "Object"
+          "type": "string"
         },
         "accessibleRowContext": {
           "description": "Provides properties to customize the accesible context for the row index.\n\nSee the translations attribute for usage examples.",
-          "type": "Object"
+          "type": "string"
         },
         "accessibleRowEndHeaderContext": {
           "description": "Provides properties to customize the accesible context for the row end header index.\n\nSee the translations attribute for usage examples.",
-          "type": "Object"
+          "type": "string"
         },
         "accessibleRowExpanded": {
           "description": "Provides properties to customize the accesible context when a row is expanded.\n\nSee the translations attribute for usage examples.",
-          "type": "Object"
+          "type": "string"
         },
         "accessibleRowHeaderContext": {
           "description": "Provides properties to customize the accesible context for the row header index.\n\nSee the translations attribute for usage examples.",
-          "type": "Object"
+          "type": "string"
         },
         "accessibleRowSelected": {
           "description": "Provides properties to customize the accesible context when a row is selected.\n\nSee the translations attribute for usage examples.",
-          "type": "Object"
+          "type": "string"
         },
         "accessibleRowSpanContext": {
           "description": "Provides properties to customize the accesible context for the cell extent/span.\n\nSee the translations option for usage examples.",
-          "type": "Object"
+          "type": "string"
         },
         "accessibleSelectionAffordanceBottom": {
           "description": "Provides properties to customize the accesible context for the bottom selection affordance on touch device.\n\nSee the translations attribute for usage examples.",
-          "type": "Object"
+          "type": "string"
         },
         "accessibleSelectionAffordanceTop": {
           "description": "Provides properties to customize the accesible context for the top selection affordance on touch devices.\n\nSee the translations attribute for usage examples.",
-          "type": "Object"
+          "type": "string"
         },
         "accessibleSortAscending": {
           "description": "Provides properties to customize the accesible text when a header is sorted ascending.\n\nSee the translations attribute for usage examples.",
-          "type": "Object"
+          "type": "string"
         },
         "accessibleSortDescending": {
           "description": "Provides properties to customize the accesible text when a header is sorted descending.\n\nSee the translations attribute for usage examples.",
-          "type": "Object"
+          "type": "string"
         },
         "accessibleStateSelected": {
           "description": "Provides properties to customize the accesible context when an item has been selected.\n\nSee the translations attribute for usage examples.",
-          "type": "Object"
+          "type": "string"
         },
         "accessibleSummaryEstimate": {
           "description": "Provides properties to customize the accesible context read when the exact row and column count are unknown.\n\nSee the translations attribute for usage examples.",
-          "type": "Object"
+          "type": "string"
         },
         "accessibleSummaryExact": {
           "description": "Provides properties to customize the accesible context read when the exact row and column count are known.\n\nSee the translations attribute for usage examples.",
-          "type": "Object"
+          "type": "string"
         },
         "accessibleSummaryExpanded": {
           "description": "Provides properties to customize the accesible context reading out the total number\nof rows expanded inside the data grid.\n\nSee the translations attribute for usage examples.",
-          "type": "Object"
+          "type": "string"
         },
         "labelCut": {
           "description": "Provides properties to customize the context menu cut label for row reordering.\n\nSee the translations attribute for usage examples.",
-          "type": "Object"
+          "type": "string"
         },
         "labelDisableNonContiguous": {
           "description": "Provides properties to customize the context menu label for exiting non-contigous selection.\n\nSee the translations attribute for usage examples.",
-          "type": "Object"
+          "type": "string"
         },
         "labelEnableNonContiguous": {
           "description": "Provides properties to customize the context menu label for entering non-contigous selection.\n\nSee the translations attribute for usage examples.",
-          "type": "Object"
+          "type": "string"
         },
         "labelPaste": {
           "description": "Provides properties to customize the context menu paste label for row reordering.\n\nSee the translations attribute for usage examples.",
-          "type": "Object"
+          "type": "string"
         },
         "labelResize": {
           "description": "Provides properties to customize the context menu resize label.\n\nSee the translations attribute for usage examples.",
-          "type": "Object"
+          "type": "string"
         },
         "labelResizeDialogSubmit": {
           "description": "Provides properties to customize the resize dialog submit button.\n\nSee the translations attribute for usage examples.",
-          "type": "Object"
+          "type": "string"
         },
         "labelResizeHeight": {
           "description": "Provides properties to customize the context menu resize height label.\n\nSee the translations attribute for usage examples.",
-          "type": "Object"
+          "type": "string"
         },
         "labelResizeWidth": {
           "description": "Provides properties to customize the context menu resize width label.\n\nSee the translations attribute for usage examples.",
-          "type": "Object"
+          "type": "string"
         },
         "labelSortCol": {
           "description": "Provides properties to customize the context menu sort column label.\n\nSee the translations attribute for usage examples.",
-          "type": "Object"
+          "type": "string"
         },
         "labelSortColAsc": {
           "description": "Provides properties to customize the context menu sort column ascending label.\n\nSee the translations attribute for usage examples.",
-          "type": "Object"
+          "type": "string"
         },
         "labelSortColDsc": {
           "description": "Provides properties to customize the context menu sort column descending label.\n\nSee the translations attribute for usage examples.",
-          "type": "Object"
+          "type": "string"
         },
         "labelSortRow": {
           "description": "Provides properties to customize the context menu sort row label.\n\nSee the translations attribute for usage examples.",
-          "type": "Object"
+          "type": "string"
         },
         "labelSortRowAsc": {
           "description": "Provides properties to customize the context menu sort row ascending label.\n\nSee the translations attribute for usage examples.",
-          "type": "Object"
+          "type": "string"
         },
         "labelSortRowDsc": {
           "description": "Provides properties to customize the context menu sort row descending label.\n\nSee the translations attribute for usage examples.",
-          "type": "Object"
+          "type": "string"
         },
         "msgFetchingData": {
           "description": "Provides properties to customize the text when fetching data.\n\nSee the translations attribute for usage examples.",
-          "type": "Object"
+          "type": "string"
         },
         "msgNoData": {
           "description": "Provides properties to customize the empty data grid text.\n\nSee the translations attribute for usage examples.",
-          "type": "Object"
+          "type": "string"
         }
       }
     }
   },
   "methods": {
     "refresh": {
-      "description": "Redraw the entire data grid after having made some external modifications. This method does not accept any arguments."
+      "description": "Redraw the entire data grid after having made some external modifications."
     },
     "getContextByNode": {
       "description": "Returns an object with context for the given child DOM node. This will always contain the subid for the node, defined as the 'subId' property on the context object. Additional element specific information may also be included. For more details on returned objects, see context objects.",
@@ -725,7 +758,8 @@
           "description": "The new value to set the property to.",
           "type": "*"
         }
-      ]
+      ],
+      "return": "void"
     },
     "getProperty": {
       "description": "Retrieves a value for a property or a single subproperty for complex properties.",
@@ -746,7 +780,8 @@
           "description": "An object containing the property and value pairs to set.",
           "type": "Object"
         }
-      ]
+      ],
+      "return": "void"
     }
   },
   "events": {

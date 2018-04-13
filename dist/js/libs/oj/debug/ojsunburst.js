@@ -1,4 +1,5 @@
 /**
+ * @license
  * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
@@ -16,6 +17,9 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/in
  * @augments oj.dvtBaseComponent
  * @since 0.7
  * @ojstatus preview
+ * @ojrole application
+ * @ojshortdesc An interactive data visualization in which hierarchical data is represented in concentric rings.  Each ring segment is proportionally sized relative to the other segments at a given level.
+ * @ojtsignore
  *
  * @classdesc
  * <h3 id="sunburstOverview-section">
@@ -77,7 +81,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/in
  *    containers, saving expensive DOM calls.
  * </p>
  *
- * {@ojinclude "name":"trackResize"}
+ * {@ojinclude "name":"fragment_trackResize"}
  *
  * {@ojinclude "name":"rtl"}
  */
@@ -85,7 +89,485 @@ oj.__registerWidget('oj.ojSunburst', $['oj']['dvtBaseComponent'],
 {
   widgetEventPrefix : "oj",
   options: {
-
+    /**
+     * Specifies the animation duration in milliseconds. For data change animations with multiple stages, 
+     * this attribute defines the duration of each stage. For example, if an animation contains two stages, 
+     * the total duration will be two times this attribute's value. The default value comes from the CSS and varies based on theme.
+     * @expose
+     * @name animationDuration
+     * @memberof oj.ojSunburst
+     * @instance
+     * @type {number}
+     * @ojunits milliseconds
+     */
+    animationDuration: undefined,
+    
+    /**
+     * Specifies the animation that is applied on data changes.
+     * @expose
+     * @name animationOnDataChange
+     * @memberof oj.ojSunburst
+     * @instance
+     * @type {string}
+     * @ojvalue {string} "auto"
+     * @ojvalue {string} "none"
+     * @default "none"
+     */
+    animationOnDataChange: "none",
+    
+    /**
+     * Specifies the animation that is shown on initial display.
+     * @expose
+     * @name animationOnDisplay
+     * @memberof oj.ojSunburst
+     * @instance
+     * @type {string}
+     * @ojvalue {string} "auto"
+     * @ojvalue {string} "none"
+     * @default "none"
+     */
+    animationOnDisplay: "none",
+    
+    /**
+     * The color that is displayed during a data change animation when a node is updated.
+     * @expose
+     * @name animationUpdateColor
+     * @memberof oj.ojSunburst
+     * @instance
+     * @type {string}
+     * @default ""
+     */
+    animationUpdateColor: "",
+    
+    /**
+     * The number of levels of nodes to display. By default all nodes are displayed.
+     * @expose
+     * @name displayLevels
+     * @memberof oj.ojSunburst
+     * @instance
+     * @type {number}
+     * @default Number.MAX_VALUE
+     */
+    displayLevels: Number.MAX_VALUE,
+    
+    /**
+     * Specifies the key set containing the ids of sunburst nodes that should be expanded on initial render.
+     * Use the <a href="ExpandedKeySet.html">ExpandedKeySet</a> class to specify nodes to expand.
+     * Use the <a href="ExpandAllKeySet.html">ExpandAllKeySet</a> class to expand all nodes.                 
+     * By default, all sunburst nodes are expanded.
+     * @expose
+     * @name expanded
+     * @memberof oj.ojSunburst
+     * @instance
+     * @type {KeySet}
+     * @default new ExpandAllKeySet()
+     * @ojwriteback
+     */
+    expanded: new oj.ExpandAllKeySet(),
+    
+    /**
+     * An array of category strings used for filtering. Nodes with any category matching an item in this array will be filtered.
+     * @expose
+     * @name hiddenCategories
+     * @memberof oj.ojSunburst
+     * @instance
+     * @type {Array.<string>}
+     * @default []
+     * @ojwriteback
+     */
+    hiddenCategories: [],
+    
+    /**
+     * An array of category strings used for highlighting. Nodes matching all categories in this array will be highlighted.
+     * @expose
+     * @name highlightedCategories
+     * @memberof oj.ojSunburst
+     * @instance
+     * @type {Array.<string>}
+     * @default []
+     * @ojwriteback
+     */
+    highlightedCategories: [],
+    
+    /**
+     * The matching condition for the highlightedCategories property. By default, highlightMatch is 'all' and only items whose categories match all of the values specified in the highlightedCategories array will be highlighted. If highlightMatch is 'any', then items that match at least one of the highlightedCategories values will be highlighted.
+     * @expose
+     * @name highlightMatch
+     * @memberof oj.ojSunburst
+     * @instance
+     * @type {string}
+     * @ojvalue {string} "any"
+     * @ojvalue {string} "all"
+     * @default "all"
+     */
+    highlightMatch: "all",
+    
+    /**
+     * Defines the behavior applied when hovering over the nodes.
+     * @expose
+     * @name hoverBehavior
+     * @memberof oj.ojSunburst
+     * @instance
+     * @type {string}
+     * @ojvalue {string} "dim"
+     * @ojvalue {string} "none"
+     * @default "none"
+     */
+    hoverBehavior: "none",
+    
+    /**
+     * Specifies initial hover delay in ms for highlighting nodes.
+     * @expose
+     * @name hoverBehaviorDelay
+     * @memberof oj.ojSunburst
+     * @instance
+     * @type {number}
+     * @default 200
+     * @ojunits milliseconds
+     */
+    hoverBehaviorDelay: 200,
+    
+    /**
+     * An object containing an optional callback function for tooltip customization. 
+     * @expose
+     * @name tooltip
+     * @memberof oj.ojSunburst
+     * @instance
+     * @type {Object}
+     * @default {"renderer": null}
+     */
+    tooltip: {
+      /**
+       *  A function that returns a custom tooltip. The function takes a dataContext argument,
+       *  provided by the sunburst, with the following properties:
+       *  <ul>
+       *    <li>parentElement: The tooltip element. The function can directly modify or append content to this element.</li>
+       *    <li>id: The id of the hovered node.</li>
+       *    <li>label: The label of the hovered node.</li>
+       *    <li>value: The value of the hovered node.</li>
+       *    <li>radius: The radius of the hovered node.</li>
+       *    <li>color: The color of the hovered node.</li>
+       *    <li>data: The data object of the hovered node.</li>
+       *    <li>componentElement: The sunburst element.</li>
+       *  </ul>
+       *  The function should return an Object that contains only one of the two properties:
+       *  <ul>
+       *    <li>insert: HTMLElement | string - An HTML element, which will be appended to the tooltip, or a tooltip string.</li> 
+       *    <li>preventDefault: <code>true</code> - Indicates that the tooltip should not be displayed. It is not necessary to return {preventDefault:false} to display tooltip, since this is a default behavior.</li> 
+       *  </ul>
+       * @expose
+       * @name tooltip.renderer
+       * @memberof! oj.ojSunburst
+       * @instance
+       * @type {function(Object):Object|null}
+       * @default null
+       */
+      renderer: null
+    },
+    /**
+     * Specifies the selection mode.
+     * @expose
+     * @name selectionMode
+     * @memberof oj.ojSunburst
+     * @instance
+     * @type {string}
+     * @ojvalue {string} "none"
+     * @ojvalue {string} "single"
+     * @ojvalue {string} "multiple"
+     * @default "multiple"
+     */
+    selectionMode: "multiple",
+    
+    /**
+     * Specifies whether client side rotation is enabled.
+     * @expose
+     * @name rotation
+     * @memberof oj.ojSunburst
+     * @instance
+     * @type {string}
+     * @ojvalue {string} "off"
+     * @ojvalue {string} "on"
+     * @default "on"
+     */
+    rotation: "on",
+    
+    /**
+     * Specifies whether whether the nodes are sorted by size. When sorting is enabled, nodes that have the same parent are sorted in order of descending size.
+     * @expose
+     * @name sorting
+     * @memberof oj.ojSunburst
+     * @instance
+     * @type {string}
+     * @ojvalue {string} "on"
+     * @ojvalue {string} "off"
+     * @default "off"
+     */
+    sorting: "off",
+    
+    /**
+     * An object defining custom root node content for the sunburst.
+     * @expose
+     * @name rootNodeContent
+     * @memberof oj.ojSunburst
+     * @instance
+     * @type {Object}
+     * @default {"renderer": null}
+     */
+    rootNodeContent: {
+      /**
+       * A function that returns custom root node content. The function takes a dataContext argument,
+       * provided by the sunburst, with the following properties:
+       * <ul>
+       *   <li>outerBounds: Object containing (x, y, width, height) of the rectangle circumscribing the root node area. 
+       *   The x and y coordinates are relative to the top, left corner of the element.</li>
+       *   <li>innerBounds: Object containing (x, y, width, height) of the rectangle inscribed in the root node area. 
+       *   The x and y coordinates are relative to the top, left corner of the element.</li>
+       *   <li>id: The id of the root node.</li>
+       *   <li>data: The data object of the root node.</li>
+       *   <li>componentElement: The sunburst element.</li>
+       * </ul>
+       * The function should return an Object with the following property: 
+       * <ul>
+       *    <li>insert: HTMLElement - HTML element, which will be overlaid on top of the sunburst. 
+       *    This HTML element will block interactivity of the sunburst by default, but the CSS pointer-events 
+       *    property can be set to 'none' on this element if the sunburst's interactivity is desired. 
+       *    </li> 
+       * </ul>
+       * @expose
+       * @name rootNodeContent.renderer
+       * @memberof! oj.ojSunburst
+       * @instance
+       * @type {function(Object):Object|null}
+       * @default null
+       */
+       renderer: null
+    },
+    
+    /**
+     * Specifies the starting angle of the sunburst. Valid values are numbers between 0 and 360.
+     * @expose
+     * @name startAngle
+     * @memberof oj.ojSunburst
+     * @instance
+     * @type {number}
+     * @default 90
+     * @ojunits degrees
+     * @ojmin 0
+     * @ojmax 360
+     * @ojwriteback
+     */
+    startAngle: 90,
+    
+    /**
+     * Specifies the label describing the color metric of the sunburst. This label will be used in the legend.
+     * @expose
+     * @name colorLabel
+     * @memberof oj.ojSunburst
+     * @instance
+     * @type {string}
+     * @default ""
+     */
+    colorLabel: "",
+    
+    /**
+     * Specifies the label describing the size metric of the sunburst. This label will be used in the legend.
+     * @expose
+     * @name sizeLabel
+     * @memberof oj.ojSunburst
+     * @instance
+     * @type {string}
+     * @default ""
+     */
+    sizeLabel: "",
+    
+    /**
+     * Specifies whether drilling is enabled. Drillable nodes will show a pointer cursor on hover and fire an <code class="prettyprint">ojBeforeDrill</code> and <code class="prettyprint">ojDrill</code> event on click (double click if selection is enabled). Drilling on a node causes a property change to the rootNode attribute. The displayLevels attribute can be used in conjunction with drilling to display very deep hieracrchies. Use "on" to enable drilling for all nodes. To enable or disable drilling on individual nodes use the drilling attribute in each node.
+     * @expose
+     * @name drilling
+     * @memberof oj.ojSunburst
+     * @instance
+     * @type {string}
+     * @ojvalue {string} "on"
+     * @ojvalue {string} "off"
+     * @default "off"
+     */
+    drilling: "off",
+    
+    /**
+     * The id of the root node. When specified, only the root node and children of the root will be displayed.
+     * @expose
+     * @name rootNode
+     * @memberof oj.ojSunburst
+     * @instance
+     * @type {string}
+     * @default ""
+     */
+    rootNode: "",
+    
+    /**
+     * An array of objects with the following properties that defines the data for the nodes. Also accepts a Promise for deferred data rendering. No data will be rendered if the Promise is rejected.
+     * @expose
+     * @name nodes
+     * @memberof oj.ojSunburst
+     * @instance
+     * @type {Array.<Object>|Promise|null}
+     * @default null
+     */
+    nodes: null,
+    
+    /**
+     * An object defining default properties for the nodes. Component CSS classes should be used to set component wide styling. 
+     * This API should be used only for styling a specific instance of the component. Properties specified on this object may 
+     * be overridden by specifications on the sunburst nodes. Some property default values come from the CSS and varies based on theme.
+     * @expose
+     * @name nodeDefaults
+     * @memberof oj.ojSunburst
+     * @instance
+     * @type {Object}
+     * @default {"borderWidth": 1, "showDisclosure": "off", "labelMinLength": 1, "labelDisplay": "auto", "labelHalign": "center"}
+     */
+     nodeDefaults: {
+       /**
+        * The default border color of the nodes.
+        * @expose
+        * @name nodeDefaults.borderColor
+        * @memberof! oj.ojSunburst
+        * @instance
+        * @type {string}
+        */
+       borderColor: "rgba(255,255,255,0.3)",
+       
+       /**
+        * The default border width of the nodes.
+        * @expose
+        * @name nodeDefaults.borderWidth
+        * @memberof! oj.ojSunburst
+        * @instance
+        * @type {number}
+        * @default 1
+        * @ojunits pixels
+        */
+       borderWidth: 1,
+       
+       /**
+        * Specifies whether to display the expand/collapse button on hover. If the button is clicked, the expanded attribute is updated with the new array of node ids.
+        * @expose
+        * @name nodeDefaults.showDisclosure
+        * @memberof! oj.ojSunburst
+        * @instance
+        * @type {string}
+        * @ojvalue {string} "on"
+        * @ojvalue {string} "off"
+        * @default "off"
+        */
+       showDisclosure: "off",
+      
+       /**
+        * The horizontal alignment for labels displayed within the node. Only applies to rotated text.
+        * @expose
+        * @name nodeDefaults.labelHalign
+        * @memberof! oj.ojSunburst
+        * @instance
+        * @type {string}
+        * @ojvalue {string} "inner"
+        * @ojvalue {string} "outer"
+        * @ojvalue {string} "center"
+        * @default "center"
+        */
+       labelHalign: "center",
+       
+       /**
+        * The CSS style object defining the style of the label. The default value comes from the CSS and varies based on theme.
+        * @expose
+        * @name nodeDefaults.labelStyle
+        * @memberof! oj.ojSunburst
+        * @instance
+        * @type {Object}
+        */
+       labelStyle: undefined,
+       
+       /**
+        * The minimum number of visible characters needed in order to render a truncated label. If the minimum is not met when calculating the truncated label then the label is not displayed.
+        * @expose
+        * @name nodeDefaults.labelMinLength
+        * @memberof! oj.ojSunburst
+        * @instance
+        * @type {number}
+        * @default 1
+        */
+       labelMinLength: 1,
+       
+       /**
+        * The label display behavior for the nodes. More labels are generally displayed when using rotation, with the trade off of readability. When auto is used, rotated or horizontal labels will be used based on the client browser and platform.
+        * @expose
+        * @name nodeDefaults.labelDisplay
+        * @memberof! oj.ojSunburst
+        * @instance
+        * @type {string}
+        * @ojvalue {string} "horizontal"
+        * @ojvalue {string} "rotated"
+        * @ojvalue {string} "off"
+        * @ojvalue {string} "auto"
+        * @default "auto"
+        */
+       labelDisplay: "auto",
+       
+       /**
+        * The color of the node hover feedback. The default value comes from the CSS and varies based on theme.
+        * @expose
+        * @name nodeDefaults.hoverColor
+        * @memberof! oj.ojSunburst
+        * @instance
+        * @type {string}
+        */
+       hoverColor: undefined,
+       
+       /**
+        * The inner color of the node selection feedback. The default value comes from the CSS and varies based on theme.
+        * @expose
+        * @name nodeDefaults.selectedInnerColor
+        * @memberof! oj.ojSunburst
+        * @instance
+        * @type {string}
+        */
+       selectedInnerColor: undefined,
+       
+       /**
+        * The outer color of the node selection feedback. The default value comes from the CSS and varies based on theme.
+        * @expose
+        * @name nodeDefaults.selectedOuterColor
+        * @memberof! oj.ojSunburst
+        * @instance
+        * @type {string}
+        */
+       selectedOuterColor: undefined  
+     },
+    
+    /**
+     * An array containing the ids of the initially selected nodes.
+     * @expose
+     * @name selection
+     * @memberof oj.ojSunburst
+     * @instance
+     * @type {Array.<string>}
+     * @default []
+     * @ojwriteback
+     */
+    selection: [],
+    
+    /**
+     * Data visualizations require a press and hold delay before triggering tooltips and rollover effects on mobile devices to avoid interfering with page panning, but these hold delays can make applications seem slower and less responsive. For a better user experience, the application can remove the touch and hold delay when data visualizations are used within a non scrolling container or if there is sufficient space outside of the visualization for panning. If touchResponse is touchStart the element will instantly trigger the touch gesture and consume the page pan events. If touchResponse is auto, the element will behave like touchStart if it determines that it is not rendered within scrolling content and if panning is not available for those elements that support the feature. 
+     * @expose
+     * @name touchResponse
+     * @memberof oj.ojSunburst
+     * @instance
+     * @type {string}
+     * @ojvalue {string} "touchStart"
+     * @ojvalue {string} "auto"
+     * @default "auto"
+     */
+    touchResponse: "auto",
+     
     /**
      * Triggered during user rotation of the sunburst.
      *
@@ -235,11 +717,12 @@ oj.__registerWidget('oj.ojSunburst', $['oj']['dvtBaseComponent'],
   //** @inheritdoc */
   _GetChildStyleClasses : function() {
     var styleClasses = this._super();
-    styleClasses['oj-sunburst-attribute-type-text'] = {'path' : 'styleDefaults/_attributeTypeTextStyle', 'property' : 'CSS_TEXT_PROPERTIES'};
-    styleClasses['oj-sunburst-attribute-value-text'] = {'path' : 'styleDefaults/_attributeValueTextStyle', 'property' : 'CSS_TEXT_PROPERTIES'};
-    styleClasses['oj-sunburst-drill-text'] = {'path' : 'styleDefaults/_drillTextStyle', 'property' : 'CSS_TEXT_PROPERTIES'};
-    styleClasses['oj-sunburst-current-drill-text'] = {'path' : 'styleDefaults/_currentTextStyle', 'property' : 'CSS_TEXT_PROPERTIES'};
-    styleClasses['oj-sunburst-node'] = {'path' : 'nodeDefaults/labelStyle', 'property' : 'CSS_TEXT_PROPERTIES'};
+    styleClasses['oj-dvtbase oj-sunburst'] = {'path': 'animationDuration', 'property': 'ANIM_DUR'};
+    styleClasses['oj-sunburst-attribute-type-text'] = {'path' : 'styleDefaults/_attributeTypeTextStyle', 'property' : 'TEXT'};
+    styleClasses['oj-sunburst-attribute-value-text'] = {'path' : 'styleDefaults/_attributeValueTextStyle', 'property' : 'TEXT'};
+    styleClasses['oj-sunburst-drill-text'] = {'path' : 'styleDefaults/_drillTextStyle', 'property' : 'TEXT'};
+    styleClasses['oj-sunburst-current-drill-text'] = {'path' : 'styleDefaults/_currentTextStyle', 'property' : 'TEXT'};
+    styleClasses['oj-sunburst-node'] = {'path' : 'nodeDefaults/labelStyle', 'property' : 'TEXT'};
     styleClasses['oj-sunburst-node oj-hover'] = {'path' : 'nodeDefaults/hoverColor', 'property' : 'border-top-color'};
     styleClasses['oj-sunburst-node oj-selected'] = [
       {'path' : 'nodeDefaults/selectedOuterColor', 'property' : 'border-top-color'},
@@ -525,383 +1008,7 @@ oj.__registerWidget('oj.ojSunburst', $['oj']['dvtBaseComponent'],
  * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
  * @memberof oj.ojSunburst
  */
-/**
- * Specifies the animation duration in milliseconds. For data change animations with multiple stages, this attribute defines the duration of each stage. For example, if an animation contains two stages, the total duration will be two times this attribute's value.
- * @expose
- * @name animationDuration
- * @memberof oj.ojSunburst
- * @instance
- * @type {number}
- * @default <code class="prettyprint">null</code>
- */
-/**
- * Specifies the animation that is applied on data changes.
- * @expose
- * @name animationOnDataChange
- * @memberof oj.ojSunburst
- * @instance
- * @type {string}
- * @ojvalue {string} "auto"
- * @ojvalue {string} "none"
- * @default <code class="prettyprint">"none"</code>
- */
-/**
- * Specifies the animation that is shown on initial display.
- * @expose
- * @name animationOnDisplay
- * @memberof oj.ojSunburst
- * @instance
- * @type {string}
- * @ojvalue {string} "auto"
- * @ojvalue {string} "none"
- * @default <code class="prettyprint">"none"</code>
- */
-/**
- * The color that is displayed during a data change animation when a node is updated.
- * @expose
- * @name animationUpdateColor
- * @memberof oj.ojSunburst
- * @instance
- * @type {string}
- * @default <code class="prettyprint">null</code>
- */
-/**
- * The number of levels of nodes to display. By default all nodes are displayed.
- * @expose
- * @name displayLevels
- * @memberof oj.ojSunburst
- * @instance
- * @type {number}
- * @default <code class="prettyprint">null</code>
- */
-/**
- * Specifies the key set containing the ids of sunburst nodes that should be expanded on initial render. By default, all sunburst nodes are expanded.
- * @expose
- * @name expanded
- * @memberof oj.ojSunburst
- * @instance
- * @type {KeySet}
- * @default <code class="prettyprint">new keySet.ExpandAllKeySet()</code>
- */
-/**
- * An array of category strings used for filtering. Nodes with any category matching an item in this array will be filtered.
- * @expose
- * @name hiddenCategories
- * @memberof oj.ojSunburst
- * @instance
- * @type {Array.<string>}
- * @default <code class="prettyprint">null</code>
- * @ojwriteback
- */
-/**
- * An array of category strings used for highlighting. Nodes matching all categories in this array will be highlighted.
- * @expose
- * @name highlightedCategories
- * @memberof oj.ojSunburst
- * @instance
- * @type {Array.<string>}
- * @default <code class="prettyprint">null</code>
- * @ojwriteback
- */
-/**
- * The matching condition for the highlightedCategories property. By default, highlightMatch is 'all' and only items whose categories match all of the values specified in the highlightedCategories array will be highlighted. If highlightMatch is 'any', then items that match at least one of the highlightedCategories values will be highlighted.
- * @expose
- * @name highlightMatch
- * @memberof oj.ojSunburst
- * @instance
- * @type {string}
- * @ojvalue {string} "any"
- * @ojvalue {string} "all"
- * @default <code class="prettyprint">"all"</code>
- */
-/**
- * Defines the behavior applied when hovering over the nodes.
- * @expose
- * @name hoverBehavior
- * @memberof oj.ojSunburst
- * @instance
- * @type {string}
- * @ojvalue {string} "dim"
- * @ojvalue {string} "none"
- * @default <code class="prettyprint">"none"</code>
- */
-/**
- * Specifies initial hover delay in ms for highlighting nodes.
- * @expose
- * @name hoverBehaviorDelay
- * @memberof oj.ojSunburst
- * @instance
- * @type {number}
- * @default <code class="prettyprint">null</code>
- */
-/**
- *  An object containing an optional callback function for tooltip customization. 
- * @expose
- * @name tooltip
- * @memberof oj.ojSunburst
- * @instance
- * @type {object}
- * @default <code class="prettyprint">null</code>
- */
-/**
- *  A function that returns a custom tooltip. The function takes a dataContext argument,
- *  provided by the sunburst, with the following properties:
- *  <ul>
- *    <li>parentElement: The tooltip element. The function can directly modify or append content to this element.</li>
- *    <li>id: The id of the hovered node.</li>
- *    <li>label: The label of the hovered node.</li>
- *    <li>value: The value of the hovered node.</li>
- *    <li>radius: The radius of the hovered node.</li>
- *    <li>color: The color of the hovered node.</li>
- *    <li>data: The data object of the hovered node.</li>
- *    <li>componentElement: The sunburst element.</li>
- *  </ul>
- *  The function should return an Object that contains only one of the two properties:
- *  <ul>
- *    <li>insert: HTMLElement | string - An HTML element, which will be appended to the tooltip, or a tooltip string.</li> 
- *    <li>preventDefault: <code>true</code> - Indicates that the tooltip should not be displayed. It is not necessary to return {preventDefault:false} to display tooltip, since this is a default behavior.</li> 
- *  </ul>
- * @expose
- * @name tooltip.renderer
- * @memberof! oj.ojSunburst
- * @instance
- * @type {function(object)}
- * @default <code class="prettyprint">null</code>
- */
-/**
- * An object defining default properties for the nodes.
- * @expose
- * @name nodeDefaults
- * @memberof oj.ojSunburst
- * @instance
- * @type {object}
- * @default <code class="prettyprint">null</code>
- */
-/**
- * The default border color of the nodes.
- * @expose
- * @name nodeDefaults.borderColor
- * @memberof! oj.ojSunburst
- * @instance
- * @type {string}
- * @default <code class="prettyprint">null</code>
- */
-/**
- * The default border width of the nodes.
- * @expose
- * @name nodeDefaults.borderWidth
- * @memberof! oj.ojSunburst
- * @instance
- * @type {number}
- * @default <code class="prettyprint">null</code>
- */
-/**
- * Specifies whether to display the expand/collapse button on hover. If the button is clicked, the expanded attribute is updated with the new array of node ids.
- * @expose
- * @name nodeDefaults.showDisclosure
- * @memberof! oj.ojSunburst
- * @instance
- * @type {string}
- * @ojvalue {string} "on"
- * @ojvalue {string} "off"
- * @default <code class="prettyprint">"off"</code>
- */
-/**
- * The horizontal alignment for labels displayed within the node. Only applies to rotated text.
- * @expose
- * @name nodeDefaults.labelHalign
- * @memberof! oj.ojSunburst
- * @instance
- * @type {string}
- * @ojvalue {string} "inner"
- * @ojvalue {string} "outer"
- * @ojvalue {string} "center"
- * @default <code class="prettyprint">"center"</code>
- */
-/**
- * The CSS style object defining the style of the label.
- * @expose
- * @name nodeDefaults.labelStyle
- * @memberof! oj.ojSunburst
- * @instance
- * @type {object}
- * @default <code class="prettyprint">null</code>
- */
-/**
- * The minimum number of visible characters needed in order to render a truncated label. If the minimum is not met when calculating the truncated label then the label is not displayed.
- * @expose
- * @name nodeDefaults.labelMinLength
- * @memberof! oj.ojSunburst
- * @instance
- * @type {number}
- * @default <code class="prettyprint">1</code>
- */
-/**
- * The label display behavior for the nodes. More labels are generally displayed when using rotation, with the trade off of readability. When auto is used, rotated or horizontal labels will be used based on the client browser and platform.
- * @expose
- * @name nodeDefaults.labelDisplay
- * @memberof! oj.ojSunburst
- * @instance
- * @type {string}
- * @ojvalue {string} "horizontal"
- * @ojvalue {string} "rotated"
- * @ojvalue {string} "off"
- * @ojvalue {string} "auto"
- * @default <code class="prettyprint">"auto"</code>
- */
-/**
- * The color of the node hover feedback.
- * @expose
- * @name nodeDefaults.hoverColor
- * @memberof! oj.ojSunburst
- * @instance
- * @type {string}
- * @default <code class="prettyprint">null</code>
- */
-/**
- * The inner color of the node selection feedback.
- * @expose
- * @name nodeDefaults.selectedInnerColor
- * @memberof! oj.ojSunburst
- * @instance
- * @type {string}
- * @default <code class="prettyprint">null</code>
- */
-/**
- * The outer color of the node selection feedback.
- * @expose
- * @name nodeDefaults.selectedOuterColor
- * @memberof! oj.ojSunburst
- * @instance
- * @type {string}
- * @default <code class="prettyprint">null</code>
- */
-/**
- * Specifies the selection mode.
- * @expose
- * @name selectionMode
- * @memberof oj.ojSunburst
- * @instance
- * @type {string}
- * @ojvalue {string} "none"
- * @ojvalue {string} "single"
- * @ojvalue {string} "multiple"
- * @default <code class="prettyprint">"multiple"</code>
- */
-/**
- * Specifies whether client side rotation is enabled.
- * @expose
- * @name rotation
- * @memberof oj.ojSunburst
- * @instance
- * @type {string}
- * @ojvalue {string} "off"
- * @ojvalue {string} "on"
- * @default <code class="prettyprint">"on"</code>
- */
-/**
- * Specifies whether whether the nodes are sorted by size. When sorting is enabled, nodes that have the same parent are sorted in order of descending size.
- * @expose
- * @name sorting
- * @memberof oj.ojSunburst
- * @instance
- * @type {string}
- * @ojvalue {string} "on"
- * @ojvalue {string} "off"
- * @default <code class="prettyprint">"off"</code>
- */
-/**
- * An object defining custom root node content for the sunburst.
- * @expose
- * @name rootNodeContent
- * @memberof oj.ojSunburst
- * @instance
- * @type {object}
- * @default <code class="prettyprint">null</code>
- */
-/**
- * A function that returns custom root node content. The function takes a dataContext argument,
- * provided by the sunburst, with the following properties:
- * <ul>
- *   <li>outerBounds: Object containing (x, y, width, height) of the rectangle circumscribing the root node area. 
- *   The x and y coordinates are relative to the top, left corner of the element.</li>
- *   <li>innerBounds: Object containing (x, y, width, height) of the rectangle inscribed in the root node area. 
- *   The x and y coordinates are relative to the top, left corner of the element.</li>
- *   <li>id: The id of the root node.</li>
- *   <li>data: The data object of the root node.</li>
- *   <li>componentElement: The sunburst element.</li>
- * </ul>
- * The function should return an Object with the following property: 
- * <ul>
- *    <li>insert: HTMLElement - HTML element, which will be overlaid on top of the sunburst. 
- *    This HTML element will block interactivity of the sunburst by default, but the CSS pointer-events 
- *    property can be set to 'none' on this element if the sunburst's interactivity is desired. 
- *    </li> 
- * </ul>
- * @expose
- * @name rootNodeContent.renderer
- * @memberof! oj.ojSunburst
- * @instance
- * @type {function(object)}
- * @default <code class="prettyprint">null</code>
- */
-/**
- * Specifies the starting angle of the sunburst. Valid values are numbers between 0 and 360.
- * @expose
- * @name startAngle
- * @memberof oj.ojSunburst
- * @instance
- * @type {number}
- * @default <code class="prettyprint">90</code>
- * @ojwriteback
- */
-/**
- * Specifies the label describing the color metric of the sunburst. This label will be used in the legend.
- * @expose
- * @name colorLabel
- * @memberof oj.ojSunburst
- * @instance
- * @type {string}
- * @default <code class="prettyprint">null</code>
- */
-/**
- * Specifies the label describing the size metric of the sunburst. This label will be used in the legend.
- * @expose
- * @name sizeLabel
- * @memberof oj.ojSunburst
- * @instance
- * @type {string}
- * @default <code class="prettyprint">null</code>
- */
-/**
- * Specifies whether drilling is enabled. Drillable nodes will show a pointer cursor on hover and fire an <code class="prettyprint">ojBeforeDrill</code> and <code class="prettyprint">ojDrill</code> event on click (double click if selection is enabled). Drilling on a node causes a property change to the rootNode attribute. The displayLevels attribute can be used in conjunction with drilling to display very deep hieracrchies. Use "on" to enable drilling for all nodes. To enable or disable drilling on individual nodes use the drilling attribute in each node.
- * @expose
- * @name drilling
- * @memberof oj.ojSunburst
- * @instance
- * @type {string}
- * @ojvalue {string} "on"
- * @ojvalue {string} "off"
- * @default <code class="prettyprint">"off"</code>
- */
-/**
- * The id of the root node. When specified, only the root node and children of the root will be displayed.
- * @expose
- * @name rootNode
- * @memberof oj.ojSunburst
- * @instance
- * @type {string}
- * @default <code class="prettyprint">null</code>
- */
-/**
- * An array of objects with the following properties that defines the data for the nodes. Also accepts a Promise for deferred data rendering. No data will be rendered if the Promise is rejected.
- * @expose
- * @name nodes
- * @memberof oj.ojSunburst
- * @instance
- * @type {Array.<object>|Promise}
- * @default <code class="prettyprint">null</code>
- */
+
 /**
  * The border color of the node.
  * @expose
@@ -909,7 +1016,7 @@ oj.__registerWidget('oj.ojSunburst', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojSunburst
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The border width of the node.
@@ -918,7 +1025,7 @@ oj.__registerWidget('oj.ojSunburst', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojSunburst
  * @instance
  * @type {number}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * An array of objects with properties for the child nodes.
@@ -926,8 +1033,8 @@ oj.__registerWidget('oj.ojSunburst', $['oj']['dvtBaseComponent'],
  * @name nodes[].nodes
  * @memberof! oj.ojSunburst
  * @instance
- * @type {Array.<object>}
- * @default <code class="prettyprint">null</code>
+ * @type {Array.<Object>}
+ * @default null
  */
 /**
  * The id of the node.
@@ -936,7 +1043,7 @@ oj.__registerWidget('oj.ojSunburst', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojSunburst
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * An optional array of category strings corresponding to this data item. This enables highlighting and filtering of individual data items through interactions with the legend and other visualization elements. The categories array of each node is required to be a superset of the categories array of its parent node. If not specified, the ids of the node and its ancestors will be used.
@@ -945,7 +1052,7 @@ oj.__registerWidget('oj.ojSunburst', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojSunburst
  * @instance
  * @type {Array.<string>}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The relative size of the node.
@@ -954,7 +1061,7 @@ oj.__registerWidget('oj.ojSunburst', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojSunburst
  * @instance
  * @type {number}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The fill color of the node.
@@ -963,27 +1070,7 @@ oj.__registerWidget('oj.ojSunburst', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojSunburst
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
- */
-/**
- * The CSS style class to apply to the node. The style class and inline style will override any other styling specified through the options. For tooltip interactivity, it's recommended to also pass a representative color to the node color attribute.
- * @ignore
- * @name nodes[].className
- * @memberof! oj.ojSunburst
- * @instance
- * @type {string}
- * @default <code class="prettyprint">null</code>
- * @deprecated This attribute is deprecated, use the svgClassName attribute instead.
- */
-/**
- * The inline style to apply to the node. The style class and inline style will override any other styling specified through the options. For tooltip interactivity, it's recommended to also pass a representative color to the node color attribute.
- * @ignore
- * @name nodes[].style
- * @memberof! oj.ojSunburst
- * @instance
- * @type {object}
- * @default <code class="prettyprint">null</code>
- * @deprecated This attribute is deprecated, use the svgStyle attribute instead.
+ * @default null
  */
 /**
  * The CSS style class to apply to the node. The style class and inline style will override any other styling specified through the properties. For tooltip interactivity, it's recommended to also pass a representative color to the node color attribute.
@@ -992,7 +1079,7 @@ oj.__registerWidget('oj.ojSunburst', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojSunburst
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The inline style to apply to the node. The style class and inline style will override any other styling specified through the properties. For tooltip interactivity, it's recommended to also pass a representative color to the node color attribute.
@@ -1000,8 +1087,8 @@ oj.__registerWidget('oj.ojSunburst', $['oj']['dvtBaseComponent'],
  * @name nodes[].svgStyle
  * @memberof! oj.ojSunburst
  * @instance
- * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @type {Object}
+ * @default null
  */
 /**
  * The label for this node.
@@ -1010,7 +1097,7 @@ oj.__registerWidget('oj.ojSunburst', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojSunburst
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The horizontal alignment for labels displayed within the node. Only applies to rotated text.
@@ -1022,7 +1109,7 @@ oj.__registerWidget('oj.ojSunburst', $['oj']['dvtBaseComponent'],
  * @ojvalue {string} "inner"
  * @ojvalue {string} "outer"
  * @ojvalue {string} "center"
- * @default <code class="prettyprint">"center"</code>
+ * @default "center"
  */
 /**
  * Specifies whether or not the node will be selectable.
@@ -1033,7 +1120,7 @@ oj.__registerWidget('oj.ojSunburst', $['oj']['dvtBaseComponent'],
  * @type {string}
  * @ojvalue {string} "off"
  * @ojvalue {string} "auto"
- * @default <code class="prettyprint">"auto"</code>
+ * @default "auto"
  */
 /**
  * The description of this node. This is used for accessibility and also for customizing the tooltip text.
@@ -1042,7 +1129,7 @@ oj.__registerWidget('oj.ojSunburst', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojSunburst
  * @instance
  * @type {string}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 /**
  * The pattern used to fill the node.
@@ -1064,7 +1151,7 @@ oj.__registerWidget('oj.ojSunburst', $['oj']['dvtBaseComponent'],
  * @ojvalue {string} "largeDiamond"
  * @ojvalue {string} "largeTriangle"
  * @ojvalue {string} "none"
- * @default <code class="prettyprint">"none"</code>
+ * @default "none"
  */
 /**
  * The CSS style object defining the style of the label.
@@ -1072,8 +1159,8 @@ oj.__registerWidget('oj.ojSunburst', $['oj']['dvtBaseComponent'],
  * @name nodes[].labelStyle
  * @memberof! oj.ojSunburst
  * @instance
- * @type {object}
- * @default <code class="prettyprint">null</code>
+ * @type {Object}
+ * @default null
  */
 /**
  * Specifies whether to display the expand/collapse button on hover for a specific node. If the button is clicked, the expanded attribute is updated with the new array of node ids.
@@ -1085,7 +1172,7 @@ oj.__registerWidget('oj.ojSunburst', $['oj']['dvtBaseComponent'],
  * @ojvalue {string} "on"
  * @ojvalue {string} "off"
  * @ojvalue {string} "inherit"
- * @default <code class="prettyprint">"inherit"</code>
+ * @default "inherit"
  */
 /**
  * The label display behavior for the nodes. More labels are generally displayed when using rotation, with the trade off of readability. When auto is used, rotated or horizontal labels will be used based on the client browser and platform.
@@ -1098,7 +1185,7 @@ oj.__registerWidget('oj.ojSunburst', $['oj']['dvtBaseComponent'],
  * @ojvalue {string} "rotated"
  * @ojvalue {string} "off"
  * @ojvalue {string} "auto"
- * @default <code class="prettyprint">"auto"</code>
+ * @default "auto"
  */
 /**
  * Specifies whether drilling is enabled for the node. Drillable nodes will show a pointer cursor on hover and fire an <code class="prettyprint">ojDrill</code> event on click (double click if selection is enabled). To enable drilling for all nodes at once, use the drilling attribute in the top level.
@@ -1110,7 +1197,7 @@ oj.__registerWidget('oj.ojSunburst', $['oj']['dvtBaseComponent'],
  * @ojvalue {string} "on"
  * @ojvalue {string} "off"
  * @ojvalue {string} "inherit"
- * @default <code class="prettyprint">"inherit"</code>
+ * @default "inherit"
  */
 /**
  * The radius of the node relative to the other nodes.
@@ -1119,30 +1206,8 @@ oj.__registerWidget('oj.ojSunburst', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojSunburst
  * @instance
  * @type {number}
- * @default <code class="prettyprint">1</code>
+ * @default 1
  */
-/**
- * An array containing the ids of the initially selected nodes.
- * @expose
- * @name selection
- * @memberof oj.ojSunburst
- * @instance
- * @type {Array.<string>}
- * @default <code class="prettyprint">null</code>
- * @ojwriteback
- */
-/**
- * Data visualizations require a press and hold delay before triggering tooltips and rollover effects on mobile devices to avoid interfering with page panning, but these hold delays can make applications seem slower and less responsive. For a better user experience, the application can remove the touch and hold delay when data visualizations are used within a non scrolling container or if there is sufficient space outside of the visualization for panning. If touchResponse is touchStart the element will instantly trigger the touch gesture and consume the page pan events. If touchResponse is auto, the element will behave like touchStart if it determines that it is not rendered within scrolling content and if panning is not available for those elements that support the feature. 
- * @expose
- * @name touchResponse
- * @memberof oj.ojSunburst
- * @instance
- * @type {string}
- * @ojvalue {string} "touchStart"
- * @ojvalue {string} "auto"
- * @default <code class="prettyprint">"auto"</code>
- */
-
 
 // SubId Locators **************************************************************
 
@@ -1316,15 +1381,91 @@ var ojSunburstMeta = {
       "type": "string"
     },
     "translations": {
+      "type": "Object",
       "properties": {
         "componentName": {
-          "type": "string"
+          "type": "string",
+          "value": "Sunburst"
+        },
+        "labelAndValue": {
+          "type": "string",
+          "value": "{0}: {1}"
+        },
+        "labelClearSelection": {
+          "type": "string",
+          "value": "Clear Selection"
         },
         "labelColor": {
-          "type": "string"
+          "type": "string",
+          "value": "Color"
+        },
+        "labelCountWithTotal": {
+          "type": "string",
+          "value": "{0} of {1}"
+        },
+        "labelDataVisualization": {
+          "type": "string",
+          "value": "Data Visualization"
+        },
+        "labelInvalidData": {
+          "type": "string",
+          "value": "Invalid data"
+        },
+        "labelNoData": {
+          "type": "string",
+          "value": "No data to display"
         },
         "labelSize": {
-          "type": "string"
+          "type": "string",
+          "value": "Size"
+        },
+        "stateCollapsed": {
+          "type": "string",
+          "value": "Collapsed"
+        },
+        "stateDrillable": {
+          "type": "string",
+          "value": "Drillable"
+        },
+        "stateExpanded": {
+          "type": "string",
+          "value": "Expanded"
+        },
+        "stateHidden": {
+          "type": "string",
+          "value": "Hidden"
+        },
+        "stateIsolated": {
+          "type": "string",
+          "value": "Isolated"
+        },
+        "stateMaximized": {
+          "type": "string",
+          "value": "Maximized"
+        },
+        "stateMinimized": {
+          "type": "string",
+          "value": "Minimized"
+        },
+        "stateSelected": {
+          "type": "string",
+          "value": "Selected"
+        },
+        "stateUnselected": {
+          "type": "string",
+          "value": "Unselected"
+        },
+        "stateVisible": {
+          "type": "string",
+          "value": "Visible"
+        },
+        "tooltipCollapse": {
+          "type": "string",
+          "value": "Collapse"
+        },
+        "tooltipExpand": {
+          "type": "string",
+          "value": "Expand"
         }
       }
     }

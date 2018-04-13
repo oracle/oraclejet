@@ -1,4 +1,5 @@
 /**
+ * @license
  * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
@@ -19,8 +20,18 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'ojs/ojradiocheckbox', 'o
 /**
  * @ojcomponent oj.ojRadioset
  * @augments oj.editableValue
+ * @ojsignature [{
+   *                target: "Type",
+   *                value: "class ojRadioset extends editableValue<any, ojRadiosetSettableProperties>"
+   *               },
+   *               {
+   *                target: "Type",
+   *                value: "ojRadiosetSettableProperties extends editableValueSettableProperties<any>",
+   *                for: "SettableProperties"
+   *               }
+   *              ]
  * @since 0.6
- * @ojshortdesc Radio Set Element
+ * @ojshortdesc A grouping of related radio buttons.
  * @ojrole radio
  * @ojrole radiogroup
  * @ojrole option
@@ -318,7 +329,6 @@ oj.__registerWidget("oj.ojRadioset", $['oj']['editableValue'],
      * @instance
      * @ojwriteback
      * @default null
-     * When the option is not set, the value of the checked radio is used, if a radio is checked.
      * @memberof oj.ojRadioset
      * @type {*}
      */
@@ -340,6 +350,7 @@ oj.__registerWidget("oj.ojRadioset", $['oj']['editableValue'],
    * @expose 
    * @memberof oj.ojRadioset
    * @public
+   * @return {void}
    * @instance
    */
   refresh: function() 
@@ -393,7 +404,7 @@ oj.__registerWidget("oj.ojRadioset", $['oj']['editableValue'],
    *      submitForm();
    *    }
    *  });
-   * @return {Promise} Promise resolves to "valid" if 
+   * @return {Promise.<string>} Promise resolves to "valid" if 
    * the component passed all validations. 
    * The Promise resolves to "invalid" if there were validation errors.
    * 
@@ -481,8 +492,8 @@ oj.__registerWidget("oj.ojRadioset", $['oj']['editableValue'],
     // has an ID
     element.uniqueId();
     this._processOjOptions();
-    // The processOjOptions renders input/label, so we need to go through and 
-    // get the this.$radios after this is called.
+    // The processOjOptions renders input/label from the oj-options, 
+    // so now we need to go through and get this.$radios.
     this.$radios = this._findRadiosWithMatchingName();
     
     // first check to see if this.element is NOT a fieldset. If fieldset, throw error.
@@ -508,7 +519,7 @@ oj.__registerWidget("oj.ojRadioset", $['oj']['editableValue'],
     this._on(this._events);
     this._setup();
   },
-  /**
+    /**
    * Resets this.$radios. This is called at the beginning of a refresh in EditableValue
    * @override
    * @memberof oj.ojRadioset
@@ -546,21 +557,16 @@ oj.__registerWidget("oj.ojRadioset", $['oj']['editableValue'],
     this.$radios.not(".oj-radio")._ojRadioCheckbox();
   },  
   /**
-   * Sets focus on the element that naturally gets focus. For radioset, this is the first radio <br/>
-   * 
-   * @returns {*} a truthy value if focus was set to the intended element, a falsey value 
-   * otherwise.
    * @override
    * @memberof oj.ojRadioset
    * @instance
    * @protected
-   * @since 0.7
+   * @since 5.0.0
    */
-  Focus : function ()
+  GetFocusElement : function ()
   {
     // We need :focusable here so that we don't try to focus on an element that isn't focusable.
-    this._GetContentElement().filter(":focusable").first().focus();
-    return true;
+    return this._GetContentElement().filter(":focusable").first()[0];
   },
   /**
    * Whether the component is required.
@@ -607,7 +613,19 @@ oj.__registerWidget("oj.ojRadioset", $['oj']['editableValue'],
    */
   _ValidateReturnBoolean: oj.EditableValueUtils._ValidateReturnBoolean,
 
-  // This function processes the oj-option children, setting the custem renderer.
+  /** 
+   * This function processes the oj-option children, sets the custom renderer, and 
+   * creates input type=radio and label dom from them.
+   * 
+   * We don't want to rely on the framework calling the customOptionRenderer 
+   * as a result of setting options[i]["customOptionRenderer"] = renderer; in this function. 
+   * This could lead to timing bugs when data-oj-binding-provider="none". (when not "none",
+   * we know the oj-options are created before the oj-radioset gets created, so no timing issue)
+   * Therefore we create the input/label not in the customOptionRenderer, 
+   * but in a separate function that we call.
+   * @private
+   * @instance
+   */
   _processOjOptions : function ()
   {
     if (this._IsCustomElement())
@@ -616,23 +634,35 @@ oj.__registerWidget("oj.ojRadioset", $['oj']['editableValue'],
       var i, len;
       var renderer = this._customOptionRenderer.bind(this);
       var options = this.element.children("oj-option");
+      
       for (i = 0, len = options.length; i < len; i++)
-      {
+      { 
         options[i]["customOptionRenderer"] = renderer;
+        this._initInputLabelFromOjOption(options[i]);
       }
 
       // for oj-option that are inside the wrapper (after refresh)
       options = this.element.children(".oj-radioset-wrapper").find("oj-option");
       if (options.length > 0) 
       {
-        for (i = 0, len = options.length; i < len; i++) {
+        for (i = 0, len = options.length; i < len; i++)
+        {
           options[i]["customOptionRenderer"] = renderer;
+          this._initInputLabelFromOjOption(options[i]);
         }
       }
     }        
   },
-  // custom oj-option renderer
-  _customOptionRenderer : function (elem)
+
+  /**
+   * Create the input type='radio'/label dom from attributes on oj-option element.
+   * oj-radioset is made up of input/labels.
+   * This gets called during the oj-radioset _CreateComponent and refresh
+   * @param {Element} elem the oj-option element
+   * @private
+   * @instance
+   */
+  _initInputLabelFromOjOption : function (elem)
   {
     var span;
     var label;
@@ -640,12 +670,19 @@ oj.__registerWidget("oj.ojRadioset", $['oj']['editableValue'],
 
     // let's make sure that each oj-option has an ID so the
     // label element can reference the input element via the 'for' attribute
+    // we have tests in place where oj-option doesn't have id and where it does
+    // both for the databound case and non-databound case. In the databound case, the 
+    // bindings are resolved before we get here, so we will be fine.
     $(ojoption).uniqueId();
     
     var id = ojoption.getAttribute("id");
     var radioId = id+"|rb";
-    var radio = document.getElementById(radioId);;
-    var alreadyProcessed = (radio !== null); // Was the oj-option already rendered
+    var radio = document.getElementById(radioId);
+    // Was the oj-option already rendered?
+    // It is possible that the answer is true;
+    // the use case is when we dynamically add an oj-option to the oj-radioset, and in that
+    // case we call _processOjOptions (which in turn calls this function) from _ResetComponentState
+    var alreadyProcessed = (radio !== null); 
 
     // check to see if we've already processed the oj-option dom or not
     // in the code below, we use setAttribute() for everything as we want to be
@@ -667,7 +704,7 @@ oj.__registerWidget("oj.ojRadioset", $['oj']['editableValue'],
 
     var name = this.element[0].id; // Use the id of the ojradioset as the name for the oj-options.
     var ariaLabel = ojoption.getAttribute("aria-label");
-    var ariaLabelledBy = ojoption.getAttribute("aria-labelledby")
+    var ariaLabelledBy = ojoption.getAttribute("aria-labelledby");
     
     // The value attribute of the radio only supports text, so we need to be
     // able to access the oj-option's value property instead.  This attribute
@@ -677,8 +714,6 @@ oj.__registerWidget("oj.ojRadioset", $['oj']['editableValue'],
 
     if (name && name != "")
       radio.setAttribute("name", name);
-    else
-      radio.removeAttribute("name");
 
     if (ariaLabel && ariaLabel != "")
       radio.setAttribute("aria-label", ariaLabel);
@@ -694,11 +729,30 @@ oj.__registerWidget("oj.ojRadioset", $['oj']['editableValue'],
       radio.setAttribute("disabled", true);
     else
       radio.removeAttribute("disabled");
-    
+  },  
+  
+  // custom oj-option renderer
+  // Because we can't rely on this being called when we set the customOptionRenderer property
+  // in _processOjOptions we shouldn't do the input.label creation from the oj-option 
+  // in this function. (If we did, the _ComponentCreate code that relies on the
+  // inputs/labels being created already would not work.)
+  // The correct thing to do is to create the input/label in _initInputLabelFromOjOption
+  // Then rely on this function being called after the oj-option has been created and we are
+  // changing properties on it.
+  _customOptionRenderer : function (elem)
+  {
+    var ojoption = elem;
+    var id = ojoption.getAttribute("id");
+    var radioId = id+"|rb";
+    var radio = document.getElementById(radioId);
+    // Was the oj-option already rendered into an _ojRadioCheckbox() in _CreateComponent?
+    var radioExists = (radio !== null); 
+    var hasOjRadioClass = radioExists && radio.classList.contains('oj-radio');
+
     // When an oj-option child is disabled (by setting the disabled attribute to
     // true) and it re-renders, the component should refresh automatically rather than requiring the
     // user to call refresh. See .   
-    if (alreadyProcessed)
+    if (hasOjRadioClass)
     {
       $(radio)._ojRadioCheckbox("option", "disabled", ojoption.disabled);
     }
@@ -1246,7 +1300,8 @@ oj.__registerWidget("oj.ojRadioset", $['oj']['editableValue'],
  * <p>Sub-ID for the radioset's radios.</p>
  *
  * @ojsubid oj-radioset-inputs
- * @deprecated 4.0.0 Since the application supplies the input elements, it can supply a unique ID by which the input elements can be accessed.
+ * @deprecated 3.0.0 Since the application supplies the input elements, it can supply a unique ID by which the input elements can be accessed.
+ * @ignore
  * @memberof oj.ojRadioset
  *
  * @example <caption>Get the nodes for the radios:</caption>
@@ -1418,6 +1473,25 @@ var ojRadiosetMeta = {
     },    
     "required": {
       "type": "boolean"
+    },
+    "translations": {
+      "type": "Object",
+      "properties": {
+        "required": {
+          "type": "Object",
+          "properties": {
+            "hint": {
+              "type": "string"
+            },
+            "messageDetail": {
+              "type": "string"
+            },
+            "messageSummary": {
+              "type": "string"
+            }
+          }
+        }
+      }
     },  
     "value": {
       "type": "any",

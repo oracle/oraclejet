@@ -21,32 +21,6 @@
 @if $includeTabBarClasses != false {
     @include module-include-once("alta.ios.tabbar") {
 
-        .oj-tabbar-icon-only .oj-tabbar-item:not(.oj-hover) .oj-tabbar-item-icon
-        {
-            color: $tabBarItemIconColorDefault;
-        }
-
-        //center align the entire contents
-        .oj-tabbar-vertical:not(.oj-tabbar-icon-only) .oj-tabbar-item-content {
-            @include oj-justify-content-property(center);
-        }
-        
-        .oj-tabbar-vertical:not(.oj-tabbar-icon-only) .oj-tabbar-item-content .oj-tabbar-item-label {
-            @include oj-flex-property(0 0 auto);
-        }
-        
-        //This is Needed for ios as icon default color is not visible on selected item
-        .oj-tabbar-item.oj-selected .oj-tabbar-remove-icon:not(:hover),
-        // This is needed in ios, as icon only list does't have dark color bg circle.
-        .oj-tabbar-icon-only .oj-tabbar-item.oj-selected:not(.oj-hover) .oj-tabbar-item-icon {
-            color: $tabBarItemIconColorSelected;
-        }
-        
-        //For horizontal navtabs, button size should be equal.
-        .oj-tabbar-horizontal .oj-tabbar-item {
-            @include oj-flex-property(1 1 0);
-        }
-
         .oj-tabbar-overflow-item-icon {
            @extend .oj-fwk-icon-dots-horizontal;
         }

@@ -1,4 +1,5 @@
 /**
+ * @license
  * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
@@ -15,10 +16,14 @@ define(['ojs/ojcore', 'jquery', 'ojL10n!ojtranslations/nls/localeElements', 'ojs
  */
 
 /**
- * @constructor
+ * @class
  * @param {Object=} options an object literal used to provide an optional information to 
  * @augments oj.Converter 
+ * @ojsignature {target: "Type", 
+ *                value: "abstract class DateTimeConverter extends Converter<string>"}
+ *       
  * @name oj.DateTimeConverter
+ * @abstract
  * @export
  * @since 0.6
  */
@@ -36,6 +41,7 @@ oj.Object.createSubclass(oj.DateTimeConverter, oj.Converter, "oj.DateTimeConvert
  * @param {Object=} options an object literal used to provide an optional information to 
  * initialize the converter.<p>
  * @export
+ * @ignore
  */
 oj.DateTimeConverter.prototype.Init = function(options) 
 {
@@ -63,6 +69,9 @@ oj.DateTimeConverter.prototype.format = function (value)
 /**
  * Returns true if a 24-hour format is set; false otherwise.
  * @export
+ * @abstract
+ * @ojsignature {target: "Type", 
+ *                value: "():boolean"}
  */
 oj.DateTimeConverter.prototype.isHourInDaySet = function()
 {
@@ -72,6 +81,9 @@ oj.DateTimeConverter.prototype.isHourInDaySet = function()
 /**
  * Returns true if 12-hour is set; false otherwise.
  * @export
+ * @ojsignature {target: "Type", 
+ *                value: "():boolean"}
+ * @abstract
  */
 oj.DateTimeConverter.prototype.isHourInAMPMSet = function()
 {
@@ -81,6 +93,9 @@ oj.DateTimeConverter.prototype.isHourInAMPMSet = function()
 /**
  * Returns true if minutes are shown in the time portion; false otherwise.
  * @export
+ * @abstract
+ * @ojsignature {target: "Type", 
+ *                value: "():boolean"}
  */
 oj.DateTimeConverter.prototype.isMinuteSet = function()
 {
@@ -90,6 +105,9 @@ oj.DateTimeConverter.prototype.isMinuteSet = function()
 /**
  * Returns true if seconds are shown in the time portion; false otherwise.
  * @export
+ * @ojsignature {target: "Type", 
+ *                value: "():boolean"}
+ * @abstract
  */
 oj.DateTimeConverter.prototype.isSecondSet = function()
 {
@@ -99,6 +117,9 @@ oj.DateTimeConverter.prototype.isSecondSet = function()
 /**
  * Returns true if milliseconds are shown in the time portion; false otherwise.
  * @export
+ * @ojsignature {target: "Type", 
+ *                value: "():boolean"}
+ * @abstract
  */
 oj.DateTimeConverter.prototype.isMilliSecondSet = function()
 {
@@ -108,6 +129,9 @@ oj.DateTimeConverter.prototype.isMilliSecondSet = function()
 /**
  * Returns true if year is shown in the date portion; false otherwise.
  * @export
+ * @ojsignature {target: "Type", 
+ *                value: "():boolean"}
+ * @abstract
  */
 oj.DateTimeConverter.prototype.isYearSet = function()
 {
@@ -117,6 +141,9 @@ oj.DateTimeConverter.prototype.isYearSet = function()
 /**
  * Returns true if month is shown in the date portion; false otherwise.
  * @export
+ * @ojsignature {target: "Type", 
+ *                value: "():boolean"}
+ * @abstract
  */
 oj.DateTimeConverter.prototype.isMonthSet = function()
 {
@@ -126,6 +153,9 @@ oj.DateTimeConverter.prototype.isMonthSet = function()
 /**
  * Returns true if day is shown in the date portion; false otherwise.
  * @export
+ * @ojsignature {target: "Type", 
+ *                value: "():boolean"}
+ * @abstract
  */
 oj.DateTimeConverter.prototype.isDaySet = function()
 {
@@ -135,6 +165,9 @@ oj.DateTimeConverter.prototype.isDaySet = function()
 /**
  * Returns true if the day name is shown in the date portion; false otherwise.
  * @export
+ * @ojsignature {target: "Type", 
+ *                value: "():boolean"}
+ * @abstract
  */
 oj.DateTimeConverter.prototype.isDayNameSet = function()
 {
@@ -143,9 +176,12 @@ oj.DateTimeConverter.prototype.isDayNameSet = function()
 
 /**
  * Returns the calculated week for the isoString value.
+ * @param {string} value to return the calculated week of
+ * @return {number|undefined} calculated week.
  * @export
+ * @abstract
  */
-oj.DateTimeConverter.prototype.calculateWeek = function()
+oj.DateTimeConverter.prototype.calculateWeek = function(value)
 {
   oj.Assert.failedInAbstractFunction();
 };
@@ -184,6 +220,7 @@ oj.DateTimeConverter.prototype.compareISODates = function (isoStr, isoStr2)
  * Gets the supported timezones for the converter.<br/>
  *
  * @return {Array} supported timezones
+ * @since 4.0.0
  * @export
  */
 oj.DateTimeConverter.prototype.getAvailableTimeZones = function ()
@@ -199,34 +236,58 @@ oj.DateTimeConverter.prototype.getAvailableTimeZones = function ()
 /**
  * Constructs a DateRestrictionValidator that ensures the value provided is not in a disabled entry of dayMetaData
  * @param {Object=} options an object literal used to provide the following properties
- * @param {Function=} options.dayFormatter - Additional info to be used when rendering the day. This 
+ * @export
+ * @constructor
+ * @since 0.6
+ * @augments oj.Validator
+ * @ojsignature [{target: "Type", 
+ *                value: "class DateRestrictionValidator extends Validator<string>"},
+ *               {target: "Type",
+ *                value: "oj.DateRestrictionValidator.ValidatorOptions",
+ *                for: "options", jsdocOverride: true}
+ *              ]
+ */
+oj.DateRestrictionValidator = function _DateRestrictionValidator(options)
+{
+  this.Init(options);
+};
+
+/**
+ * Input type for the dayFormatter option call back function
+ * @typedef {object} oj.DateRestrictionValidator.DayFormatterInput
+ * @property {number} fullYear
+ * @property {number} month
+ * @property {number} date
+ */
+/**
+ * Output type for the dayFormatter option call back function
+ * @typedef {object} oj.DateRestrictionValidator.DayFormatterOutput
+ * @property {boolean=} disabled
+ * @property {string=} className
+ * @property {string=} tooltip
+ */
+/**
+ * @typedef {object} oj.DateRestrictionValidator.ValidatorOptions
+ * @property {(function(oj.DateRestrictionValidator.DayFormatterInput): (oj.DateRestrictionValidator.DayFormatterOutput|null|'all'))=} dayFormatter - Additional info to be used when rendering the day. This 
  * should be a JavaScript Function callback which accepts as its argument the following JSON format 
  * <code class="prettyprint">{fullYear: Date.getFullYear(), month: Date.getMonth()+1, date: Date.getDate()}</code>
  * and returns <code class="prettyprint">null</code> or all or partial JSON data of the form 
  * <code class="prettyprint">{disabled: true|false, className: "additionalCSS", tooltip: 'Stuff to display'}</code>
- * @param {string=} options.messageSummary - an optional custom error message summarizing the 
+ * @property {string=} messageSummary - an optional custom error message summarizing the 
  * error. When not present, the default message summary is the resource defined with the key 
  * <code class="prettyprint">oj-validator.restriction.date.messageSummary</code>.
  * Tokens: {value} - value entered by user<p>. 
  * Example:<br/>
  * "Value {value} is disabled."<br/>
  * <p>
- * @param {string=} options.messageDetail - a custom error message used for creating detail part 
+ * @property {string=} messageDetail - a custom error message used for creating detail part 
  * of message. When not present, the default message detail is the 
  * resource defined with the key <code class="prettyprint">oj-validator.restriction.date.messageDetail</code>.
  * Tokens: {value} - value entered by user<p>. 
  * Example:<br/>
  * "Value {value} is a disabled entry. Please select a different date."<br/>
  * </p>
- * @export
- * @constructor
- * @since 0.6
- * @augments oj.Validator
  */
-oj.DateRestrictionValidator = function _DateRestrictionValidator(options)
-{
-  this.Init(options);
-};
 
 // Subclass from oj.Validator 
 oj.Object.createSubclass(oj.DateRestrictionValidator, oj.Validator, "oj.DateRestrictionValidator");
@@ -236,6 +297,7 @@ oj.Object.createSubclass(oj.DateRestrictionValidator, oj.Validator, "oj.DateRest
  * @param {Object=} options
  * @memberof oj.DateRestrictionValidator
  * @instance
+ * @ignore
  * @export
  */
 oj.DateRestrictionValidator.prototype.Init = function (options)
@@ -281,6 +343,8 @@ oj.DateRestrictionValidator.prototype._inDisabled = function(valueDateParam)
  * @returns {string} original if validation was successful
  *
  * @throws {Error} when there is no match
+ * @ojsignature {target: "Type", for: "returns",
+ *                value: "void"}
  * @memberof oj.DateRestrictionValidator
  * @instance
  * @export
@@ -333,27 +397,45 @@ oj.DateRestrictionValidator.prototype.getHint = function ()
 /**
  * Constructs a DateTimeRangeValidator that ensures the value provided is within a given range
  * @param {Object=} options an object literal used to provide the following properties
- * @param {Object} options.converter - an instance implementation of oj.DateTimeConverter (i.e. oj.IntlDateTimeConverter). 
+ * @export
+ * @constructor
+ * @augments oj.Validator
+ * @ojsignature [{target: "Type", 
+ *                value: "class DateTimeRangeValidator extends Validator<string>"},
+ *               {target: "Type",
+ *                value: "oj.DateTimeRangeValidator.ValidatorOptions",
+ *                for: "options", jsdocOverride: true}
+ *              ]
+ * @since 0.6
+*/
+oj.DateTimeRangeValidator = function _DateTimeRangeValidator(options)
+{
+  this.Init(options);
+};
+
+/**
+ * @typedef {Object} oj.DateTimeRangeValidator.ValidatorOptions
+ * @property {oj.DateTimeConverter} converter - an instance implementation of oj.DateTimeConverter (i.e. oj.IntlDateTimeConverter). 
  * In order to compare isoString value with the timeZone options in the converter, it is necessary for the validator that 
  * a converter is passed in.
- * @param {string=} options.min - the minimum datetime value of the entered value. Should be ISOString.
- * @param {string=} options.max - the maximum datetime value of the entered value. Should be ISOString.
- * @param {Object=} options.hint - an optional object literal of hints to be used. 
- * @param {string=} options.hint.max - a hint used to indicate the allowed maximum. When not present, 
+ * @property {string=} min - the minimum datetime value of the entered value. Should be ISOString.
+ * @property {string=} max - the maximum datetime value of the entered value. Should be ISOString.
+ * @property {Object=} hint - an optional object literal of hints to be used. 
+ * @property {string=} hint.max - a hint used to indicate the allowed maximum. When not present, 
  * the default hint is the resource defined with the key 
  * <code class="prettyprint">oj-validator.range.datetime.hint.max</code>.<p>
  * Tokens: <br/>
  * {max} - the maximum<p>
  * Usage: <br/>
  * Enter a datetime less than or equal to {max}
- * @param {string=} options.hint.min - a hint used to indicate the allowed minimum. When not present, 
+ * @property {string=} hint.min - a hint used to indicate the allowed minimum. When not present, 
  * the default hint is the resource defined with the key 
  * <code class="prettyprint">oj-validator.range.datetime.hint.min</code>.<p>
  * Tokens: <br/>
  * {min} the minimum <p>
  * Usage: <br/>
  * Enter a datetime greater than or equal to {min}
- * @param {string=} options.hint.inRange - a hint used to indicate the allowed range. When not 
+ * @property {string=} hint.inRange - a hint used to indicate the allowed range. When not 
  * present, the default hint is the resource defined with the key 
  * <code class="prettyprint">oj-validator.range.datetime.hint.inRange</code>.<p>
  * Tokens:<br/>
@@ -361,7 +443,7 @@ oj.DateRestrictionValidator.prototype.getHint = function ()
  * {max} the maximum<p>
  * Usage: <br/>
  * Enter a datetime between {min} and {max}
- * @param {string=} options.translationKey - an optional string for the default messages + hints. Note 
+ * @property {string=} translationKey - an optional string for the default messages + hints. Note 
  * that this is required only when the validator is used standlone (i.e. if one uses min + max 
  * attribute for ojInputDate the validator will have this already be set to correct "date" value)
  * <ul>
@@ -370,9 +452,9 @@ oj.DateRestrictionValidator.prototype.getHint = function ()
  *  <li>"time"</li>
  * </ul>
  * <br/>
- * @param {Object=} options.messageDetail - an optional object literal of custom error messages to 
+ * @property {Object=} messageDetail - an optional object literal of custom error messages to 
  * be used.
- * @param {string=} options.messageDetail.rangeUnderflow - the detail error message to be used when 
+ * @property {string=} messageDetail.rangeUnderflow - the detail error message to be used when 
  * input value is less than the set minimum value. When not present, the default detail message is 
  * the resource defined with the key 
  * <code class="prettyprint">oj-validator.range.datetime.messagedetail.rangeUnderflow</code>.<p>
@@ -381,7 +463,7 @@ oj.DateRestrictionValidator.prototype.getHint = function ()
  * {min} - the minimum allowed value<p>
  * Usage: <br/>
  * Entered {value} with min being {min}
- * @param {string=} options.messageDetail.rangeOverflow - the detail error message to be used when 
+ * @property {string=} messageDetail.rangeOverflow - the detail error message to be used when 
  * input value exceeds the maximum value set.  When not present, the default detail message is 
  * the resource defined with the key 
  * <code class="prettyprint">oj-validator.range.datetime.messagedetail.rangeOverflow</code>.<p>
@@ -390,25 +472,17 @@ oj.DateRestrictionValidator.prototype.getHint = function ()
  * {max} - the maximum allowed value<p>
  * Usage: <br/>
  * Entered {value} with max being {max}
- * @param {Object=} options.messageSummary - optional object literal of custom error summary message 
+ * @property {Object=} messageSummary - optional object literal of custom error summary message 
  * to be used. 
- * @param {string=} options.messageSummary.rangeUnderflow - the summary of the error message when 
+ * @property {string=} messageSummary.rangeUnderflow - the summary of the error message when 
  * input value is less than the set minimum value. When not present, the default message summary is 
  * the resource defined with the key 
  * <code class="prettyprint">oj-validator.range.datetime.messageSummary.rangeUnderflow</code>.
- * @param {string=} options.messageSummary.rangeOverflow - the summary of the error message when 
+ * @property {string=} messageSummary.rangeOverflow - the summary of the error message when 
  * input value exceeds the maximum value set.  When not present, the default message summary is 
  * the resource defined with the key 
  * <code class="prettyprint">oj-validator.range.datetime.messageSummary.rangeOverflow</code>.
- * @export
- * @constructor
- * @augments oj.Validator
- * @since 0.6
-*/
-oj.DateTimeRangeValidator = function _DateTimeRangeValidator(options)
-{
-  this.Init(options);
-};
+ */
 
 // Subclass from oj.Validator 
 oj.Object.createSubclass(oj.DateTimeRangeValidator, oj.Validator, "oj.DateTimeRangeValidator");
@@ -419,6 +493,7 @@ oj.Object.createSubclass(oj.DateTimeRangeValidator, oj.Validator, "oj.DateTimeRa
  * @memberof oj.DateTimeRangeValidator
  * @instance
  * @export
+ * @ignore
  */
 oj.DateTimeRangeValidator.prototype.Init = function (options)
 {
@@ -458,8 +533,9 @@ oj.DateTimeRangeValidator.prototype.Init = function (options)
  * Validates the minimum + maximum conditions
  *
  * @param {string} value that is being validated
- * @returns {string} original if validation was successful
- *
+ * @returns {string|null} original if validation was successful
+ * @ojsignature {target: "Type", for: "returns",
+ *                value: "void"}
  * @throws {Error} when there is no match
  * @memberof oj.DateTimeRangeValidator
  * @instance
@@ -601,6 +677,161 @@ oj.DateTimeRangeValidator.prototype.getHint = function ()
   return hint;
 };
 /**
+ * Copyright (c) 2008, 2013, Oracle and/or its affiliates. 
+ * All rights reserved.
+ */
+
+
+
+/**
+ * A factory implementation to create the built-in datetime converter of type 
+ * {@link oj.IntlDateTimeConverter}. 
+ * 
+ * @name oj.DateTimeConverterFactory
+ * @hideconstructor
+ * @public
+ * @class
+ * @example <caption>create an instance of the jet datetime converter using the options provided</caption>
+ * var dtcf = oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME);  
+ * var dateOptions = {year: '2-digit', month: 'numeric', day: 'numeric'};
+ * var dateConverter = dtcf.createConverter(dateOptions);
+ * @since 0.6
+ * 
+ */
+oj.DateTimeConverterFactory = (function ()
+{
+  function _createDateTimeConverter(options)
+  {
+    return new oj.IntlDateTimeConverter(options);
+  }
+
+  /**
+   * 
+   * @public
+   */
+  return {
+    /**
+     * Creates an immutable (jet) datetime converter instance. 
+     * 
+     * @param {Object=} options an object literal used to provide an optional information to 
+     * initialize the jet datetime converter. For details on what to pass for options, refer to 
+     * @link oj.IntlDateTimeConverter.
+     * 
+     * @return {oj.IntlDateTimeConverter} 
+     * @ojsignature {target: "Type", for: "options", value: "oj.IntlDateTimeConverter.ConverterOptions"}
+     * @instance
+     * @memberOf oj.DateTimeConverterFactory
+     * @public
+     */
+    'createConverter': function (options)
+    {
+      return _createDateTimeConverter(options);
+    }
+  };
+}()); // notice immediate invocation of anonymous function
+
+/** Register the default factory provider function */
+oj.Validation.__registerDefaultConverterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME, // factory name
+oj.DateTimeConverterFactory);
+
+
+// JET VALIDATOR FACTORIES 
+
+/**
+ * a factory implementation to create an instance of the built-in dateTimeRange validator of type 
+ * {@link oj.DateTimeRangeValidator}. 
+ * 
+ * @example <caption>create an instance of the dateTimeRange validator using the factory</caption>
+ * var drvf = oj.Validation.validatorFactory(oj.ValidatorFactory.VALIDATOR_TYPE_DATETIMERANGE);  
+ * var birthdateOptions = {min: new Date(1930, 00, 01), max: new Date(1995, 11,31)};
+ * var birthdateValidator = drvf.createValidator(birthdateOptions);
+ *  
+ * @name oj.DateTimeRangeValidatorFactory
+ * @hideconstructor
+ * @class
+ * @public
+ * @since 0.6
+ * 
+ */
+oj.DateTimeRangeValidatorFactory = (function () 
+{
+  
+  function _createDateTimeRangeValidator(options) 
+  {
+    return new oj.DateTimeRangeValidator(options);
+  }
+  
+  return {
+    /**
+     * Creates an immutable validator instance of type {@link oj.DateTimeRangeValidator} that ensures 
+     * that the (datetime) value provided is within a given range.
+     * 
+     * @param {Object=} options an object literal used to provide the minimum, maximum and other 
+     * optional values. See {@link oj.DateTimeRangeValidator} for details.<p>
+     * 
+     * @return {oj.DateTimeRangeValidator}
+     * @memberOf oj.DateTimeRangeValidatorFactory
+     * @instance
+     * @ojsignature {target: "Type", for: "options", value: "oj.DateTimeRangeValidator.ValidatorOptions"}
+     * @public
+     */
+    'createValidator': function(options) {
+      return _createDateTimeRangeValidator(options);
+    }
+  };
+}()); // notice immediate invocation of anonymous function
+
+/** Register the default factory provider function */
+oj.Validation.__registerDefaultValidatorFactory(oj.ValidatorFactory.VALIDATOR_TYPE_DATETIMERANGE,
+                                                oj.DateTimeRangeValidatorFactory);
+												
+/**
+ * a factory method to create an instance of the built-in dateRestriction validator of type 
+ * {@link oj.DateRestrictionValidator}. 
+ * 
+ * @example <caption>create an instance of the dateRestriction validator using the factory </caption>
+ * var drvf = oj.Validation.validatorFactory(oj.ValidatorFactory.VALIDATOR_TYPE_DATERESTRICTION);
+ * var drValidator = drvf.createValidator();
+ *  
+ * @name oj.DateRestrictionValidatorFactory
+ * @class
+ * @hideconstructor
+ * @since 0.6
+ * @public
+ * 
+ */
+oj.DateRestrictionValidatorFactory = (function () 
+{
+  
+  function _createDateRestrictionValidator(options) 
+  {
+    return new oj.DateRestrictionValidator(options);
+  }
+  
+  return {
+    /**
+     * Creates an immutable validator instance of type oj.DateRestrictionValidator that ensures that the 
+     * isoString value provided is not in a disabled entry of dayFormatter callback.
+     * 
+     * @param {Object=} options an object literal
+     * See {@link oj.ojInputDate} and {@link oj.DateRestrictionValidator} for details.<p>
+     * 
+     * @return {oj.DateRestrictionValidator}
+     * @memberOf oj.DateRestrictionValidatorFactory
+     * @instance
+     * @ojsignature {target: "Type", for: "options", value: "oj.DateRestrictionValidator.ValidatorOptions"}
+     * @public
+     */
+    'createValidator': function(options) {
+      return _createDateRestrictionValidator(options);
+    }
+  };
+}()); // notice immediate invocation of anonymous function
+
+/** Register the default factory provider function */
+oj.Validation.__registerDefaultValidatorFactory(oj.ValidatorFactory.VALIDATOR_TYPE_DATERESTRICTION,
+                                                oj.DateRestrictionValidatorFactory);
+/**
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
  */
@@ -663,9 +894,71 @@ oj.DateTimeRangeValidator.prototype.getHint = function ()
  * Lenient parse can be disabled by setting the property lenientParse to "none". In which case the user input must
  * be an exact match of the expected pattern and all the leniency described above will be disabled.
  *
- * @property {Object=} options - an object literal used to provide an optional information to 
+ * @param {Object=} options - an object literal used to provide an optional information to 
  * initialize the converter.<p>
- * @property {string=} options.year - allowed values are "2-digit", "numeric". When no options are 
+ * 
+ * @example <caption>Create a date time converter using no options. This uses the default value for 
+ * year, month, day properties</caption>
+ * var converterFactory = oj.Validation.converterFactory("datetime");
+ * converter = converterFactory.createConverter();
+ * var resolved = converter.resolvedOpions();
+ * // logs "day=numeric, month=numeric, year=numeric"
+ * console.log("day=" + resolved.day + ", month=" + resolved.month + ", year=" + resolved.year);
+ * <br/>
+ * 
+ * @example <caption>Create a date time converter using the ECMA options to represent date</caption>
+ * var options = { year:'2-digit', month: '2-digit', day: '2-digit'};
+ * var converterFactory = oj.Validation.converterFactory("datetime");
+ * converter = converterFactory.createConverter(options);<br/>
+ * 
+ * @example <caption>Create a date time converter using the 'pattern' option</caption>
+ * var options = {pattern: 'MM-dd-yyyy'}; 
+ * var converterFactory = oj.Validation.converterFactory("datetime");
+ * converter = converterFactory.createConverter(options);<br/>
+ * 
+ * @example <caption>Create a date time converter using the standard format length</caption>
+ * var options = {formatType: 'date', dateFormat: 'medium'}; 
+ * var converterFactory = oj.Validation.converterFactory("datetime");
+ * converter = converterFactory.createConverter(options);<br/>
+ *
+ * @example <caption>Create a date time converter using specific pattern with IANA timezone ID with 
+ * isoStrFormat of offset.</caption>
+ * var options = {pattern: 'MM/dd/yy hh:mm:ss a Z', timeZone: 'America/Los_Angeles', isoStrFormat: 'offset'}; 
+ * var converterFactory = oj.Validation.converterFactory("datetime");
+ * converter = converterFactory.createConverter(options);<br/>
+ *
+ * @example <caption>Create a date time converter using specific pattern with Etc/GMT timezone ID with 
+ * isoStrFormat of zulu.</caption>
+ * var options = {pattern: 'MM/dd/yy hh:mm:ss a Z', timeZone: 'Etc/GMT-08:00', isoStrFormat: 'zulu'};  
+ * var converterFactory = oj.Validation.converterFactory("datetime");
+ * converter = converterFactory.createConverter(options);<br/>
+ * 
+ * @example <caption>Disable lenient parse.</caption>
+ * var options = {pattern: 'MM/dd/yy', lenientParse:'none'};  
+ * var converterFactory = oj.Validation.converterFactory("datetime");
+ * converter = converterFactory.createConverter(options);
+ * var str = "14/05/16";
+ * var obj = converter.parse(str); --> RangeError: 13 is out of range.  Enter a value between 1 and 12 for month.<br/>
+ *
+ * @export
+ * @augments oj.DateTimeConverter
+ * @name oj.IntlDateTimeConverter
+ * @ojsignature [{target: "Type", 
+ *                value: "class IntlDateTimeConverter extends DateTimeConverter"},
+ *               {target: "Type",
+ *                value: "oj.IntlDateTimeConverter.ConverterOptions",
+ *                for: "options", jsdocOverride: true}
+ *              ]
+ * @since 0.6
+ */
+oj.IntlDateTimeConverter = function(options)
+{
+  this.Init(options);
+};
+
+/**
+ * @typedef {object} oj.IntlDateTimeConverter.ConverterOptions
+ * @property {('2-digit'|'numeric')=} year - allowed values are "2-digit", "numeric". When no options are 
  * set the default value of "numeric" is used.
  * <p style='padding-left: 5px;'>
  * <table class="generic-table styling-table">
@@ -691,7 +984,7 @@ oj.DateTimeRangeValidator.prototype.getHint = function ()
  * </table>
  * </p>
  *
- * @property {number=} options.two-digit-year-start - the 100-year period 2-digit year. 
+ * @property {number=} two-digit-year-start - the 100-year period 2-digit year. 
  * During parsing, two digit years will be placed in the range two-digit-year-start to two-digit-year-start + 100 years. 
  * The default is 1950.
  * <p style='padding-left: 5px;'>
@@ -699,7 +992,7 @@ oj.DateTimeRangeValidator.prototype.getHint = function ()
  * Example: if two-digit-year-start is 1900, 10 is parsed as 1910
  * </p>
  *
- * @property {string=} options.month - specifies how the month is formatted. Allowed values are 
+ * @property {('2-digit'|'numeric'|'narrow'|'short'|'long')=} month - specifies how the month is formatted. Allowed values are 
  * "2-digit", "numeric", "narrow", "short", "long". The last 3 values behave in the same way as for 
  * weekday, indicating the length of the string used. When no options are set the default value of 
  * "numeric" is used.
@@ -742,7 +1035,7 @@ oj.DateTimeRangeValidator.prototype.getHint = function ()
  * </table>
  * </p>
  *
- * @property {string=} options.day - specifies how the day is formatted. Allowed values are "2-digit",
+ * @property {('2-digit'|'numeric')=} day - specifies how the day is formatted. Allowed values are "2-digit",
  *  "numeric". When no options are set the default value of "numeric" is used.
  * <p style='padding-left: 5px;'>
  * <table class="generic-table styling-table">
@@ -768,7 +1061,7 @@ oj.DateTimeRangeValidator.prototype.getHint = function ()
  * </table>
  * </p>
  *
- * @property {string=} options.hour - specifies how the hour is formatted. Allowed values are 
+ * @property {('2-digit'|'numeric')=} hour - specifies how the hour is formatted. Allowed values are 
  * "2-digit" or "numeric". The hour is displayed using the 12 or 24 hour clock, depending on the 
  * locale. See 'hour12' for details.
  * <p style='padding-left: 5px;'>
@@ -795,19 +1088,19 @@ oj.DateTimeRangeValidator.prototype.getHint = function ()
  * </table>
  * </p>
  *
- * @property {string=} options.minute - specifies how the minute is formatted. Allowed values are 
+ * @property {('2-digit'|'numeric')=} minute - specifies how the minute is formatted. Allowed values are 
  * "2-digit", "numeric". Although allowed values for minute are numeric and 2-digit, minute is always 
  * displayed as 2 digits: 00-59.
  *
- * @property {string=} options.second - specifies whether the second should be displayed as "2-digit" 
+ * @property {('2-digit'|'numeric')=} second - specifies whether the second should be displayed as "2-digit" 
  * or "numeric". Although allowed values for second are numeric and 2-digit, second is always displayed 
  * as 2 digits: 00-59.
  * 
- * @property {string=} options.millisecond - specifies how the minute is formatted. Allowed 
+ * @property {('numeric')=} millisecond - specifies how the minute is formatted. Allowed 
  * value is "numeric". millisecond is always displayed as 3-digits except the case where only millisecond 
  * is present (hour and minute not specified) in which case we display it as no-padded number, example: .5
  *
- * @property {string=} options.weekday - specifies how the day of the week is formatted. If absent, it 
+ * @property {('narrow'|'short'|'long')=} weekday - specifies how the day of the week is formatted. If absent, it 
  * is not included in the date formatting. Allowed values are "narrow", "short", "long" indicating the 
  * length of the string used.
  * <p style='padding-left: 5px;'>
@@ -839,11 +1132,11 @@ oj.DateTimeRangeValidator.prototype.getHint = function ()
  * </table>
  * </p>
  *
- * @property {string=} options.era - specifies how the era is included in the formatted date. If 
+ * @property {('narrow'|'short'|'long')=} era - specifies how the era is included in the formatted date. If 
  * absent, it is not included in the date formatting. Allowed values are "narrow", "short", "long".
  * Although allowed values are narrow, short, long, we only display era in abbreviated format: BC, AD.
  *
- * @property {string=} options.timeZoneName - allowed values are "short", "long".
+ * @property {('short'|'long')=} timeZoneName - allowed values are "short", "long".
  * <p style='padding-left: 5px;'>
  * <table class="generic-table styling-table">
  *   <thead>
@@ -869,7 +1162,7 @@ oj.DateTimeRangeValidator.prototype.getHint = function ()
  * </table>
  * </p>
  *
- * @property {string=} options.timeZone - The possible values of the timeZone property are valid IANA 
+ * @property {string=} timeZone - The possible values of the timeZone property are valid IANA 
  * timezone IDs. If the users want to pass an offset, they can use one of the Etc/GMT timezone IDs.
  * <p style='padding-left: 5px;'>
  * <table class="generic-table styling-table">
@@ -894,7 +1187,7 @@ oj.DateTimeRangeValidator.prototype.getHint = function ()
  * </table>
  * </p>
  *
- * @property {string=} options.isoStrFormat - specifies in which format the ISO string is returned. 
+ * @property {('offset'|'zulu'|'local'|'auto')=} isoStrFormat - specifies in which format the ISO string is returned. 
  * The possible values of isoStrFormat are: "offset", "zulu", "local", "auto". 
  * The default format is auto.
  * <p style='padding-left: 5px;'>
@@ -931,7 +1224,7 @@ oj.DateTimeRangeValidator.prototype.getHint = function ()
  * </table>
  * </p>
  *
- * @property {string=} options.dst - The dst option can be used for time only values in conjunction with offset. 
+ * @property {(boolean)=} dst - The dst option can be used for time only values in conjunction with offset. 
  * Setting dst to true indicates the time is in DST. By default the time is interpreted as standard time. 
  * The possible values of dst are: "true" or "false". Default is "false".
  * <p style='padding-left: 5px;'>
@@ -959,7 +1252,7 @@ oj.DateTimeRangeValidator.prototype.getHint = function ()
  * cnv.parse(str, localeElements, options);-->2015-11-01T01:00:00-08:00
  * </p>
  *
- * @property {boolean=} options.hour12 - specifies what time notation is used for formatting the time. 
+ * @property {boolean=} hour12 - specifies what time notation is used for formatting the time. 
  * A true value uses the 12-hour clock and false uses the 24-hour clock (often called military time 
  * in the US). This property is undefined if the hour property is not used when formatting the date.
  * <p style='padding-left: 5px;'>
@@ -983,7 +1276,7 @@ oj.DateTimeRangeValidator.prototype.getHint = function ()
  * </table>
  * </p>
  * 
- * @property {string=} options.pattern - a localized string pattern, where the the characters used in 
+ * @property {string=} pattern - a localized string pattern, where the the characters used in 
  * pattern conform to Unicode CLDR for date time formats. This will override all other options 
  * when present. <br/>
  * NOTE: 'pattern' is provided for backwards compatibility with existing apps that may want the 
@@ -1207,7 +1500,7 @@ oj.DateTimeRangeValidator.prototype.getHint = function ()
  *   </tbody>
  * </table>
  * 
- * @property {string=} options.formatType - determines the 'standard' date and/or time format lengths 
+ * @property {('date'|'time'|'datetime')=} formatType - determines the 'standard' date and/or time format lengths 
  * to use. Allowed values: "date", "time", "datetime". See 'dateFormat' and 'timeFormat' options. 
  * When set a value must be specified.
  * <p style='padding-left: 5px;'>
@@ -1239,7 +1532,7 @@ oj.DateTimeRangeValidator.prototype.getHint = function ()
  * </table>
  * </p>
  *
- * @property {string=} options.dateFormat - specifies the standard date format length to use when 
+ * @property {('short'|'medium'|'long'|'full')=} dateFormat - specifies the standard date format length to use when 
  * formatType is set to "date" or "datetime". Allowed values are : "short" (default), "medium", "long", 
  * "full". 
  * <p style='padding-left: 5px;'>
@@ -1271,7 +1564,7 @@ oj.DateTimeRangeValidator.prototype.getHint = function ()
  * </table>
  * </p>
  *
- * @property {string=} options.timeFormat - specifies the standard time format length to use when 
+ * @property {('short'|'medium'|'long'|'full')=} timeFormat - specifies the standard time format length to use when 
  * 'formatType' is set to "time" or "datetime". Allowed values: "short" (default), "medium", "long", 
  * "full". 
  * <p style='padding-left: 5px;'>
@@ -1303,66 +1596,13 @@ oj.DateTimeRangeValidator.prototype.getHint = function ()
  * </table>
  * </p>
  * 
- *  @property {string=} options.lenientParse - The lenientParse property can be used to enable or disable leninet parsing.
+ *  @property {('full'|'none')=} lenientParse - The lenientParse property can be used to enable or disable leninet parsing.
  *  Allowed values: "full" (default), "none". 
  * <p style='padding-left: 5px;'>
  * By default the lenient parse is enabled and the leniency rules descibed above will be used. When lenientParse is
  * set to "none" the lenient parse is disabled and the user input must match the expected input otherwise an exception will
  * be thrown.</p>
- * 
- * @example <caption>Create a date time converter using no options. This uses the default value for 
- * year, month, day properties</caption>
- * var converterFactory = oj.Validation.converterFactory("datetime");
- * converter = converterFactory.createConverter();
- * var resolved = converter.resolvedOpions();
- * // logs "day=numeric, month=numeric, year=numeric"
- * console.log("day=" + resolved.day + ", month=" + resolved.month + ", year=" + resolved.year);
- * <br/>
- * 
- * @example <caption>Create a date time converter using the ECMA options to represent date</caption>
- * var options = { year:'2-digit', month: '2-digit', day: '2-digit'};
- * var converterFactory = oj.Validation.converterFactory("datetime");
- * converter = converterFactory.createConverter(options);<br/>
- * 
- * @example <caption>Create a date time converter using the 'pattern' option</caption>
- * var options = {pattern: 'MM-dd-yyyy'}; 
- * var converterFactory = oj.Validation.converterFactory("datetime");
- * converter = converterFactory.createConverter(options);<br/>
- * 
- * @example <caption>Create a date time converter using the standard format length</caption>
- * var options = {formatType: 'date', dateFormat: 'medium'}; 
- * var converterFactory = oj.Validation.converterFactory("datetime");
- * converter = converterFactory.createConverter(options);<br/>
- *
- * @example <caption>Create a date time converter using specific pattern with IANA timezone ID with 
- * isoStrFormat of offset.</caption>
- * var options = {pattern: 'MM/dd/yy hh:mm:ss a Z', timeZone: 'America/Los_Angeles', isoStrFormat: 'offset'}; 
- * var converterFactory = oj.Validation.converterFactory("datetime");
- * converter = converterFactory.createConverter(options);<br/>
- *
- * @example <caption>Create a date time converter using specific pattern with Etc/GMT timezone ID with 
- * isoStrFormat of zulu.</caption>
- * var options = {pattern: 'MM/dd/yy hh:mm:ss a Z', timeZone: 'Etc/GMT-08:00', isoStrFormat: 'zulu'};  
- * var converterFactory = oj.Validation.converterFactory("datetime");
- * converter = converterFactory.createConverter(options);<br/>
- * 
- * @example <caption>Disable lenient parse.</caption>
- * var options = {pattern: 'MM/dd/yy', lenientParse:'none'};  
- * var converterFactory = oj.Validation.converterFactory("datetime");
- * converter = converterFactory.createConverter(options);
- * var str = "14/05/16";
- * var obj = converter.parse(str); --> RangeError: 13 is out of range.  Enter a value between 1 and 12 for month.<br/>
- *
- * @export
- * @augments oj.DateTimeConverter 
- * @name oj.IntlDateTimeConverter
- * @since 0.6
  */
-oj.IntlDateTimeConverter = function(options)
-{
-  this.Init(options);
-};
-
 // Subclass from oj.Object 
 oj.Object.createSubclass(oj.IntlDateTimeConverter, oj.DateTimeConverter, "oj.IntlDateTimeConverter");
 oj.IntlDateTimeConverter._DEFAULT_DATE = new Date(1998, 10, 29, 15, 45, 31);
@@ -1373,6 +1613,7 @@ oj.IntlDateTimeConverter._DEFAULT_DATE = new Date(1998, 10, 29, 15, 45, 31);
  * the converter.<p>
  * 
  * @export
+ * @ignore
  */
 oj.IntlDateTimeConverter.prototype.Init = function(options) 
 {
@@ -1396,7 +1637,7 @@ oj.IntlDateTimeConverter.prototype._getWrapped = function ()
  * <p>
  * 
  * @param {string} value to be formatted for display which should be an isoString
- * @return {string|Object} the formatted value suitable for display
+ * @return {string|null} the formatted value suitable for display
  * 
  * @throws {Error} a ConverterError both when formatting fails, and if the options provided during 
  * initialization cannot be resolved correctly.
@@ -1444,7 +1685,7 @@ oj.IntlDateTimeConverter.prototype.format = function (value)
  * 
  * @param {string} value - value to be formatted. This value is compared with the current date 
  * on the client to arrive at the relative formatted value.
- * @param {Object} relativeOptions - an Object literal containing the following properties. The 
+ * @param {Object=} relativeOptions - an Object literal containing the following properties. The 
  * default options are ignored during relative formatting - 
  * @param {string=} relativeOptions.formatUsing - Specifies the relative formatting convention to. 
  * Allowed values are "displayName" and “calendar”. Setting value to 'displayName' uses the relative 
@@ -1518,22 +1759,16 @@ oj.IntlDateTimeConverter.prototype.formatRelative = function(value, relativeOpti
 };
 
 /**
- * Retrieves a hint String describing the format the value is expected to be in. THe pattern used is 
- * provided through resolvedOptions, except when an actual pattern is set in the options. Otherwise 
- * hint is empty.
+ * It returns null for the placeholder hint. There is no default placeholder hint when using our IntlDateTimeConverter. 
  * 
- * @return {String} a hint describing the format the value is expected to be in.
+ * @return {null} hint for the converter.
  * @memberOf oj.IntlDateTimeConverter
  * @export
  */
 oj.IntlDateTimeConverter.prototype.getHint = function ()
-{
-  var resolvedOptions = this.resolvedOptions(), patternFromOptions = 
-          resolvedOptions["patternFromOptions"] || this.getOptions()['pattern'];
-  
-  // TODO: converter hints are often shown in placeholder and is a user-friendly readable pattern. 
-  // Until this feature is implemented use the CLDR pattern converted to lowercase
-  return patternFromOptions ? patternFromOptions.toLowerCase() : "";
+{ 
+  //do not return any hint.
+  return null;
 };
 
 // Returns the hint value.
@@ -1564,6 +1799,8 @@ oj.IntlDateTimeConverter.prototype._getHintValue = function()
 /**
  * Returns the options called with converter initialization.
  * @return {Object} an object of options.
+ * @ojsignature {target: "Type", for: "returns",
+ *                value: "oj.IntlDateTimeConverter.ConverterOptions"}
  * @export
  * @memberOf oj.IntlDateTimeConverter
  * 
@@ -1578,7 +1815,9 @@ oj.IntlDateTimeConverter.prototype.getOptions = function ()
  * the object. If options was not provided at the time of initialization, the properties will be 
  * derived from the locale defaults.
  * @return {Object} an object of resolved options. Properties whose corresponding internal 
- * properties are not present are not assigned.
+ * properties are not present are not assigned. 
+ * @ojsignature {target: "Type", for: "returns",
+ *                value: "oj.IntlDateTimeConverter.ConverterOptions"}
  * @throws a oj.ConverterError when the options that the converter was initialized with are invalid. 
  * @memberOf oj.IntlDateTimeConverter
  * @export
@@ -1617,6 +1856,7 @@ oj.IntlDateTimeConverter.prototype.resolvedOptions = function ()
  * Returns true if a 24-hour format is set; false otherwise.
  * @memberOf oj.IntlDateTimeConverter
  * @export
+ * @return {boolean}
  */
 oj.IntlDateTimeConverter.prototype.isHourInDaySet = function()
 {
@@ -1634,6 +1874,7 @@ oj.IntlDateTimeConverter.prototype.isHourInDaySet = function()
  * Returns true if 12-hour is set; false otherwise.
  * @memberOf oj.IntlDateTimeConverter
  * @export
+ * @return {boolean}
  */
 oj.IntlDateTimeConverter.prototype.isHourInAMPMSet = function()
 {
@@ -1652,6 +1893,7 @@ oj.IntlDateTimeConverter.prototype.isHourInAMPMSet = function()
  * Returns true if minutes are shown in the time portion; false otherwise.
  * @memberOf oj.IntlDateTimeConverter
  * @export
+ * @return {boolean}
  */
 oj.IntlDateTimeConverter.prototype.isMinuteSet = function()
 {
@@ -1662,6 +1904,7 @@ oj.IntlDateTimeConverter.prototype.isMinuteSet = function()
  * Returns true if seconds are shown in the time portion; false otherwise.
  * @memberOf oj.IntlDateTimeConverter
  * @export
+ * @return {boolean}
  */
 oj.IntlDateTimeConverter.prototype.isSecondSet = function()
 {
@@ -1672,6 +1915,7 @@ oj.IntlDateTimeConverter.prototype.isSecondSet = function()
  * Returns true if milliseconds are shown in the time portion; false otherwise.
  * @memberOf oj.IntlDateTimeConverter
  * @export
+ * @return {boolean}
  */
 oj.IntlDateTimeConverter.prototype.isMilliSecondSet = function()
 {
@@ -1682,6 +1926,7 @@ oj.IntlDateTimeConverter.prototype.isMilliSecondSet = function()
  * Returns true if year is shown in the date portion; false otherwise.
  * @memberOf oj.IntlDateTimeConverter
  * @export
+ * @return {boolean}
  */
 oj.IntlDateTimeConverter.prototype.isYearSet = function()
 {
@@ -1692,6 +1937,7 @@ oj.IntlDateTimeConverter.prototype.isYearSet = function()
  * Returns true if month is shown in the date portion; false otherwise.
  * @memberOf oj.IntlDateTimeConverter
  * @export
+ * @return {boolean}
  */
 oj.IntlDateTimeConverter.prototype.isMonthSet = function()
 {
@@ -1702,6 +1948,7 @@ oj.IntlDateTimeConverter.prototype.isMonthSet = function()
  * Returns true if day is shown in the date portion; false otherwise.
  * @memberOf oj.IntlDateTimeConverter
  * @export
+ * @return {boolean}
  */
 oj.IntlDateTimeConverter.prototype.isDaySet = function()
 {
@@ -1712,6 +1959,7 @@ oj.IntlDateTimeConverter.prototype.isDaySet = function()
  * Returns true if the day name is shown in the date portion; false otherwise.
  * @memberOf oj.IntlDateTimeConverter
  * @export
+ * @return {boolean}
  */
 oj.IntlDateTimeConverter.prototype.isDayNameSet = function()
 {
@@ -1750,8 +1998,8 @@ oj.IntlDateTimeConverter.prototype.calculateWeek = function(value)
  * Or oj.IntlConverterUtils.isoToDate if one wish to utilize the timezone of the isoString.
  * </p>
  * 
- * @param {String|string} value to parse
- * @return {string|Object} the parsed value as an ISOString.
+ * @param {string} value to parse
+ * @return {string|null} the parsed value as an ISOString.
  * 
  * @throws {Error} a ConverterError both when parsing fails, and if the options provided during 
  * initialization cannot be resolved correctly. Parsing can also fail when the value includes a time
@@ -2014,6 +2262,7 @@ oj.IntlDateTimeConverter.prototype._isOptionSet = function (optionName)
  * {id: 'America/Edmonton', displayName: '(UTC-07:00) Edmonton - heure des Rocheuses' } <br/> 
  * 
  * @return {Array} supported timezones
+ * @since 4.0.0
  * @export
  */
 oj.IntlDateTimeConverter.prototype.getAvailableTimeZones = function ()
@@ -2033,569 +2282,6 @@ oj.IntlDateTimeConverter.prototype._getTimePositioning = function ()
 };
 
 
-/**
- * Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
- */
-
-/** This is a forked version of moment-timezone.js
- * The MIT License (MIT)
- * Copyright (c) 2014 Tim Wood
- * https://github.com/moment/moment-timezone/blob/develop/LICENSE
- */
-
-/*
- DESCRIPTION
- OraTimeZone object implements timeZone support.
- 
- PRIVATE CLASSES
- <list of private classes defined - with one-line descriptions>
- 
- NOTES
- <other useful comments, qualifications, etc.>
- 
- MODIFIED    (MM/DD/YY)
-        02/01/15 - Creation
- */
-
-
-
-/**
- * @ignore
- */
-var OraTimeZone;
-
-OraTimeZone = (function () {
-
-  var _zones = {};
-  var instance;
-  var _charCodeToInt;
-  var _unpackBase60;
-  var _arrayToInt;
-  var _intToUntil;
-  var _mapIndices;
-  var _unpack;
-  var _packBase60;
-  var _packBase60Fraction;
-  var  _normalizeName;
-  var _getZone;
-  var _addZone;
-  var _throwInvalidtimeZoneID;
-  var _throwNonExistingTime;
-  var _throwMissingTimeZoneData;
-  var _GMT_REGEXP = /^Etc\/GMT/i;
-  var _SECOND = 1000;
-  var _MINUTE = 60 * _SECOND;
-  var _HOUR = 60 * _MINUTE;
-  var _MIN_OFFSET = -14 * 60;
-  var _MAX_OFFSET = +12 * 60;
-
-  /************************************
-   Unpacking
-   ************************************/
-
-  var __BASE60 = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWX';
-  var  _EPSILON = 0.000001; // Used to fix floating point rounding errors
-
-  _packBase60Fraction = function (fraction, precision) {
-    var buffer = '.',
-      output = '',
-      current;
-
-    while (precision > 0) {
-      precision -= 1;
-      fraction *= 60;
-      current = Math.floor(fraction + _EPSILON);
-      buffer += __BASE60[current];
-      fraction -= current;
-
-      // Only add buffer to output once we have a non-zero value.
-      // This makes '.000' output '', and '.100' output '.1'
-      if (current) {
-        output += buffer;
-        buffer = '';
-      }
-    }
-
-    return output;
-  };
-
-  _packBase60 = function (number, precision) {
-    var output = '';
-    var  absolute = Math.abs(number);
-    var  whole = Math.floor(absolute);
-    var  fraction = _packBase60Fraction(absolute - whole, Math.min(~~precision, 10));
-
-    while (whole > 0) {
-      output = __BASE60[whole % 60] + output;
-      whole = Math.floor(whole / 60);
-    }
-
-    if (number < 0) {
-      output = '-' + output;
-    }
-
-    if (output && fraction) {
-      return output + fraction;
-    }
-
-    if (!fraction && output === '-') {
-      return '0';
-    }
-
-    return output || fraction || '0';
-  };
-
-  /************************************
-   Unpacking
-   ************************************/
-  _charCodeToInt = function (charCode) {
-    if (charCode > 96) {
-      return charCode - 87;
-    }
-    else if (charCode > 64) {
-      return charCode - 29;
-    }
-    return charCode - 48;
-  };
-
-  _unpackBase60 = function (string) {
-    var i = 0;
-    var parts = string.split('.');
-    var whole = parts[0];
-    var fractional = parts[1] || '';
-    var multiplier = 1;
-    var num;
-    var out = 0;
-    var sign = 1;
-
-    // handle negative numbers
-    if (string.charCodeAt(0) === 45) {
-      i = 1;
-      sign = -1;
-    }
-    // handle digits before the decimal
-    for (; i < whole.length; i++) {
-      num = _charCodeToInt(whole.charCodeAt(i));
-      out = 60 * out + num;
-    }
-    // handle digits after the decimal
-    for (i = 0; i < fractional.length; i++) {
-      multiplier = multiplier / 60;
-      num = _charCodeToInt(fractional.charCodeAt(i));
-      out += num * multiplier;
-    }
-    return out * sign;
-  };
-
-
-  _arrayToInt = function (array) {
-    for (var i = 0; i < array.length; i++) {
-      array[i] = _unpackBase60(array[i]);
-    }
-  };
-
-  _intToUntil = function (array, length) {
-    for (var i = 0; i < length; i++) {
-      array[i] = Math.round((array[i - 1] || 0) + (array[i] * _MINUTE)); // minutes to milliseconds
-    }
-
-    array[length - 1] = Infinity;
-  };
-
-  _mapIndices = function (source, indices) {
-    var out = [], i;
-    for (i = 0; i < indices.length; i++) {
-      out[i] = source[indices[i]];
-    }
-    return out;
-  };
-
-  _unpack = function (id, string) {
-    var data = string.split('|');
-    var  offsets = data[1].split(' ');
-    var  indices = data[2].split('');
-    var  untils = data[3].split(' ');
-
-    _arrayToInt(offsets);
-    _arrayToInt(indices);
-    _arrayToInt(untils);
-    _intToUntil(untils, indices.length);
-    return {
-      name : id,
-      abbrs : _mapIndices(data[0].split(' '), indices),
-      offsets : _mapIndices(offsets, indices),
-      untils : untils
-    };
-  };
-
-  /************************************
-   Exceptions
-   ************************************/
-  _throwInvalidtimeZoneID = function (str) {
-    var msg, error, errorInfo;
-    msg = "invalid timeZone ID: " + str;
-    error = new Error(msg);
-    errorInfo = {
-      'errorCode' : 'invalidTimeZoneID',
-      'parameterMap' : {
-        'timeZoneID' : str
-      }
-    };
-    error['errorInfo'] = errorInfo;
-    throw error;
-  };
-
-  _throwNonExistingTime = function () {
-    var msg, error, errorInfo;
-    msg = "The input time does not exist because it falls during the transition to daylight saving time.";
-    error = new Error(msg);
-    errorInfo = {
-      'errorCode' : 'nonExistingTime'
-    };
-    error['errorInfo'] = errorInfo;
-    throw error;
-  };
-  
-  _throwMissingTimeZoneData = function () {
-    var msg, error, errorInfo;
-    msg = "TimeZone data is missing. Please call require 'ojs/ojtimezonedata' in order to load the TimeZone data.";
-    error = new Error(msg);
-    errorInfo = {
-      'errorCode' : 'missingTimeZoneData'
-    };
-    error['errorInfo'] = errorInfo;
-    throw error;
-  };
-
-  /************************************
-   Zone object
-   ************************************/
-
-  /**
-   * @ignore
-   * @constructor
-   */
-  function Zone (name, tzData) {
-    var data = tzData['zones'][name];
-    //Try  if name matches Etc/GMT offset
-    if (_GMT_REGEXP.test(name)) {
-      var hours, minutes = 0;
-      var offset = name.replace(_GMT_REGEXP, "");
-      var parts = offset.split(":");
-      hours = parseInt(parts[0], 10) * 60;
-      if (isNaN(hours))
-        return;
-      if (parts.length === 2) {
-        minutes = parseInt(parts[1], 10);
-        if (isNaN(minutes))
-          return;
-      }
-      hours += (hours >= 0) ? minutes : -minutes;
-      //offset must be between -14 and +12
-      if (hours < _MIN_OFFSET || hours > _MAX_OFFSET)
-        return;
-      hours = _packBase60(hours, 1);
-      var gmtName = name.replace("/etc\//i", "").toUpperCase();
-      data = gmtName + "|" + hours + "|" + "0|";
-    }
-    if (data !== undefined)
-      this._set(_unpack(name, data));
-  }
-
-  Zone.prototype = {
-    _set : function (unpacked) {
-      this.name = unpacked.name;
-      this.abbrs = unpacked.abbrs;
-      this.untils = unpacked.untils;
-      this.offsets = unpacked.offsets;
-    },
-    parse : function (target, dst, ignoreDst, throwException) {
-      var offsets = this.offsets;
-      var  untils = this.untils;
-      var  max = untils.length - 1;
-      var  offset;
-      var offset1;
-      var i;
-      var transitionTime;
-      var gapTime;
-      var dupTime;
-      var until;
-      for (i = 0; i < max; i++) {
-        offset = offsets[i];
-        offset1 = offsets[i + 1];
-        until = untils[i];
-        transitionTime = until - (offset * _MINUTE);
-        gapTime = transitionTime + _HOUR;
-        dupTime = transitionTime - _HOUR;
-        //Transition to dst:
-        //Test if the time falls during the non existing hour when trasition to
-        //dst happens. The missing hour is between transitionTime and gapTime.
-        //If we are converting from source timezone to target timezone, we do not
-        //throw an exception if target timezone falls in non existing window, 
-        //we just skip one hour, throwException is passed as false in this scenario.
-        if (target >= transitionTime && target < gapTime && offset > offset1) {
-          if(throwException === true) {
-            _throwNonExistingTime();
-          }
-          else {
-            return (i + 1);
-          }
-        }
-        //Test if the time falls during the duplicate hour when dst ends.
-        //The duplicate hour is between dupTime and transitionTime.
-        //if dst is set to true, return dst offset.
-        if (target >= dupTime && target < transitionTime && offset < offset1) {
-          if (dst) {
-            return i;
-          }
-          return (i + 1);
-        }
-        //Time is outside transtition times.
-        if (target < until - (offset * _MINUTE)) {
-          if (ignoreDst === false) {
-            if (dst) {
-              if (offset < offset1) {
-                return i;
-              }
-              return (i + 1);
-            }
-            else {
-              if (offset < offset1) {
-                return (i +1);
-              }
-              return i;
-            }
-          }
-          return i;
-        }
-      }
-      return max;
-    },
-    //user first need to call pasre to get the index, then pass it to the 
-    //2 functions below
-    abbr : function (idx) {
-      return this.abbrs[idx];
-    },
-    ofset : function (idx) {
-      var len = this.offsets.length;
-      if(idx >= 0 && idx < len) {
-        return parseInt(this.offsets[idx], 10);
-      }  
-      return parseInt(this.offsets[len -1], 10);
-    },
-    len : function () {
-      return this.offsets.length;
-    }
-  };
-
-  /************************************
-   timeZOne functions
-   ************************************/
-  _normalizeName = function (name) {
-    return (name || '').toLowerCase().replace(/\//g, '_');
-  };
-
-  _addZone = function (name, tzData) {
-    var zone, zoneName;
-    zone = new Zone(name, tzData);
-    zoneName = _normalizeName(zone['name']);
-    _zones[zoneName] = zone;
-  };
-
-  _getZone = function (name, tzData) {
-    var zoneName = _normalizeName(name);
-    if (_zones[zoneName] === undefined)
-      _addZone(name, tzData);
-    return _zones[_normalizeName(name)] || null;
-  };
-
-
-  function _init () {
-    return {
-      getZone : function (name, localeElements) {
-        var tzData = localeElements['supplemental']['timeZoneData'];
-        if(tzData === undefined) {
-          _throwMissingTimeZoneData();
-        }
-        var s = _getZone(name, tzData);
-        //try the links
-        if (!s) {          
-          var link = tzData['links'][name];
-          if (link) {
-            s = _getZone(link, tzData);
-          }
-        }
-        if (!s) {
-          _throwInvalidtimeZoneID(name);
-        }
-        return s;
-      }
-    };
-  }
-
-  return {
-    /**
-     * getInstance.
-     * Returns the singleton instance of OraTimeZone class. 
-     * @ignore
-     * @memberOf OraTimeZone
-     * @return {Object} The singleton OraTimeZone instance.
-     */
-    getInstance : function () {
-      if (!instance) {
-        instance = _init();
-      }
-      return instance;
-    }
-  };
-}());
-/**
- * Copyright (c) 2008, 2013, Oracle and/or its affiliates. 
- * All rights reserved.
- */
-
-
-
-/**
- * A factory implementation to create the built-in datetime converter of type 
- * {@link oj.IntlDateTimeConverter}. 
- * 
- * @name oj.DateTimeConverterFactory
- * @public
- * @class
- * @example <caption>create an instance of the jet datetime converter using the options provided</caption>
- * var dtcf = oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME);  
- * var dateOptions = {year: '2-digit', month: 'numeric', day: 'numeric'};
- * var dateConverter = dtcf.createConverter(dateOptions);
- * @since 0.6
- * 
- */
-oj.DateTimeConverterFactory = (function ()
-{
-  function _createDateTimeConverter(options)
-  {
-    return new oj.IntlDateTimeConverter(options);
-  }
-
-  /**
-   * 
-   * @public
-   */
-  return {
-    /**
-     * Creates an immutable (jet) datetime converter instance. 
-     * 
-     * @param {Object=} options an object literal used to provide an optional information to 
-     * initialize the jet datetime converter. For details on what to pass for options, refer to 
-     * @link oj.IntlDateTimeConverter.
-     * 
-     * @return {oj.IntlDateTimeConverter} 
-     * @memberOf oj.DateTimeConverterFactory
-     * @public
-     */
-    'createConverter': function (options)
-    {
-      return _createDateTimeConverter(options);
-    }
-  };
-}()); // notice immediate invocation of anonymous function
-
-/** Register the default factory provider function */
-oj.Validation.__registerDefaultConverterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME, // factory name
-oj.DateTimeConverterFactory);
-
-
-// JET VALIDATOR FACTORIES 
-
-/**
- * a factory implementation to create an instance of the built-in dateTimeRange validator of type 
- * {@link oj.DateTimeRangeValidator}. 
- * 
- * @example <caption>create an instance of the dateTimeRange validator using the factory</caption>
- * var drvf = oj.Validation.validatorFactory(oj.ValidatorFactory.VALIDATOR_TYPE_DATETIMERANGE);  
- * var birthdateOptions = {min: new Date(1930, 00, 01), max: new Date(1995, 11,31)};
- * var birthdateValidator = drvf.createValidator(birthdateOptions);
- *  
- * @name oj.DateTimeRangeValidatorFactory
- * @class
- * @public
- * @since 0.6
- * 
- */
-oj.DateTimeRangeValidatorFactory = (function () 
-{
-  
-  function _createDateTimeRangeValidator(options) 
-  {
-    return new oj.DateTimeRangeValidator(options);
-  }
-  
-  return {
-    /**
-     * Creates an immutable validator instance of type {@link oj.DateTimeRangeValidator} that ensures 
-     * that the (datetime) value provided is within a given range.
-     * 
-     * @param {Object=} options an object literal used to provide the minimum, maximum and other 
-     * optional values. See {@link oj.DateTimeRangeValidator} for details.<p>
-     * 
-     * @return {oj.DateTimeRangeValidator}
-     * @memberOf oj.DateTimeRangeValidatorFactory
-     * @public
-     */
-    'createValidator': function(options) {
-      return _createDateTimeRangeValidator(options);
-    }
-  };
-}()); // notice immediate invocation of anonymous function
-
-/** Register the default factory provider function */
-oj.Validation.__registerDefaultValidatorFactory(oj.ValidatorFactory.VALIDATOR_TYPE_DATETIMERANGE,
-                                                oj.DateTimeRangeValidatorFactory);
-												
-/**
- * a factory method to create an instance of the built-in dateRestriction validator of type 
- * {@link oj.DateRestrictionValidator}. 
- * 
- * @example <caption>create an instance of the dateRestriction validator using the factory </caption>
- * var drvf = oj.Validation.validatorFactory(oj.ValidatorFactory.VALIDATOR_TYPE_DATERESTRICTION);
- * var drValidator = drvf.createValidator();
- *  
- * @name oj.DateRestrictionValidatorFactory
- * @class
- * @since 0.6
- * @public
- * 
- */
-oj.DateRestrictionValidatorFactory = (function () 
-{
-  
-  function _createDateRestrictionValidator(options) 
-  {
-    return new oj.DateRestrictionValidator(options);
-  }
-  
-  return {
-    /**
-     * Creates an immutable validator instance of type oj.DateRestrictionValidator that ensures that the 
-     * isoString value provided is not in a disabled entry of dayFormatter callback.
-     * 
-     * @param {Object=} options an object literal
-     * See {@link oj.ojInputDate} and {@link oj.DateRestrictionValidator} for details.<p>
-     * 
-     * @return {oj.DateRestrictionValidator}
-     * @memberOf oj.DateRestrictionValidatorFactory
-     * @public
-     */
-    'createValidator': function(options) {
-      return _createDateRestrictionValidator(options);
-    }
-  };
-}()); // notice immediate invocation of anonymous function
-
-/** Register the default factory provider function */
-oj.Validation.__registerDefaultValidatorFactory(oj.ValidatorFactory.VALIDATOR_TYPE_DATERESTRICTION,
-                                                oj.DateRestrictionValidatorFactory);
 /**
  * Copyright (c) 2016, Oracle and/or its affiliates.
  * All rights reserved.
@@ -3358,6 +3044,7 @@ oj.Validation.__registerDefaultValidatorFactory(oj.ValidatorFactory.VALIDATOR_TY
  * var str = "14/05/16";
  * var obj = converter.parse(str, localeElements, options); --> RangeError: 13 is out of range.  Enter a value between 1 and 12 for month.<br/>
  * @name OraDateTimeConverter
+ * @ignore
  */
 
 /**
@@ -7414,4 +7101,421 @@ OraDateTimeConverter = (function () {
   };
 }());
 
+/**
+ * Copyright (c) 2014, Oracle and/or its affiliates.
+ * All rights reserved.
+ */
+
+/** This is a forked version of moment-timezone.js
+ * The MIT License (MIT)
+ * Copyright (c) 2014 Tim Wood
+ * https://github.com/moment/moment-timezone/blob/develop/LICENSE
+ */
+
+/*
+ DESCRIPTION
+ OraTimeZone object implements timeZone support.
+ 
+ PRIVATE CLASSES
+ <list of private classes defined - with one-line descriptions>
+ 
+ NOTES
+ <other useful comments, qualifications, etc.>
+ 
+ MODIFIED    (MM/DD/YY)
+        02/01/15 - Creation
+ */
+
+
+
+/**
+ * @ignore
+ */
+var OraTimeZone;
+
+OraTimeZone = (function () {
+
+  var _zones = {};
+  var instance;
+  var _charCodeToInt;
+  var _unpackBase60;
+  var _arrayToInt;
+  var _intToUntil;
+  var _mapIndices;
+  var _unpack;
+  var _packBase60;
+  var _packBase60Fraction;
+  var  _normalizeName;
+  var _getZone;
+  var _addZone;
+  var _throwInvalidtimeZoneID;
+  var _throwNonExistingTime;
+  var _throwMissingTimeZoneData;
+  var _GMT_REGEXP = /^Etc\/GMT/i;
+  var _SECOND = 1000;
+  var _MINUTE = 60 * _SECOND;
+  var _HOUR = 60 * _MINUTE;
+  var _MIN_OFFSET = -14 * 60;
+  var _MAX_OFFSET = +12 * 60;
+
+  /************************************
+   Unpacking
+   ************************************/
+
+  var __BASE60 = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWX';
+  var  _EPSILON = 0.000001; // Used to fix floating point rounding errors
+
+  _packBase60Fraction = function (fraction, precision) {
+    var buffer = '.',
+      output = '',
+      current;
+
+    while (precision > 0) {
+      precision -= 1;
+      fraction *= 60;
+      current = Math.floor(fraction + _EPSILON);
+      buffer += __BASE60[current];
+      fraction -= current;
+
+      // Only add buffer to output once we have a non-zero value.
+      // This makes '.000' output '', and '.100' output '.1'
+      if (current) {
+        output += buffer;
+        buffer = '';
+      }
+    }
+
+    return output;
+  };
+
+  _packBase60 = function (number, precision) {
+    var output = '';
+    var  absolute = Math.abs(number);
+    var  whole = Math.floor(absolute);
+    var  fraction = _packBase60Fraction(absolute - whole, Math.min(~~precision, 10));
+
+    while (whole > 0) {
+      output = __BASE60[whole % 60] + output;
+      whole = Math.floor(whole / 60);
+    }
+
+    if (number < 0) {
+      output = '-' + output;
+    }
+
+    if (output && fraction) {
+      return output + fraction;
+    }
+
+    if (!fraction && output === '-') {
+      return '0';
+    }
+
+    return output || fraction || '0';
+  };
+
+  /************************************
+   Unpacking
+   ************************************/
+  _charCodeToInt = function (charCode) {
+    if (charCode > 96) {
+      return charCode - 87;
+    }
+    else if (charCode > 64) {
+      return charCode - 29;
+    }
+    return charCode - 48;
+  };
+
+  _unpackBase60 = function (string) {
+    var i = 0;
+    var parts = string.split('.');
+    var whole = parts[0];
+    var fractional = parts[1] || '';
+    var multiplier = 1;
+    var num;
+    var out = 0;
+    var sign = 1;
+
+    // handle negative numbers
+    if (string.charCodeAt(0) === 45) {
+      i = 1;
+      sign = -1;
+    }
+    // handle digits before the decimal
+    for (; i < whole.length; i++) {
+      num = _charCodeToInt(whole.charCodeAt(i));
+      out = 60 * out + num;
+    }
+    // handle digits after the decimal
+    for (i = 0; i < fractional.length; i++) {
+      multiplier = multiplier / 60;
+      num = _charCodeToInt(fractional.charCodeAt(i));
+      out += num * multiplier;
+    }
+    return out * sign;
+  };
+
+
+  _arrayToInt = function (array) {
+    for (var i = 0; i < array.length; i++) {
+      array[i] = _unpackBase60(array[i]);
+    }
+  };
+
+  _intToUntil = function (array, length) {
+    for (var i = 0; i < length; i++) {
+      array[i] = Math.round((array[i - 1] || 0) + (array[i] * _MINUTE)); // minutes to milliseconds
+    }
+
+    array[length - 1] = Infinity;
+  };
+
+  _mapIndices = function (source, indices) {
+    var out = [], i;
+    for (i = 0; i < indices.length; i++) {
+      out[i] = source[indices[i]];
+    }
+    return out;
+  };
+
+  _unpack = function (id, string) {
+    var data = string.split('|');
+    var  offsets = data[1].split(' ');
+    var  indices = data[2].split('');
+    var  untils = data[3].split(' ');
+
+    _arrayToInt(offsets);
+    _arrayToInt(indices);
+    _arrayToInt(untils);
+    _intToUntil(untils, indices.length);
+    return {
+      name : id,
+      abbrs : _mapIndices(data[0].split(' '), indices),
+      offsets : _mapIndices(offsets, indices),
+      untils : untils
+    };
+  };
+
+  /************************************
+   Exceptions
+   ************************************/
+  _throwInvalidtimeZoneID = function (str) {
+    var msg, error, errorInfo;
+    msg = "invalid timeZone ID: " + str;
+    error = new Error(msg);
+    errorInfo = {
+      'errorCode' : 'invalidTimeZoneID',
+      'parameterMap' : {
+        'timeZoneID' : str
+      }
+    };
+    error['errorInfo'] = errorInfo;
+    throw error;
+  };
+
+  _throwNonExistingTime = function () {
+    var msg, error, errorInfo;
+    msg = "The input time does not exist because it falls during the transition to daylight saving time.";
+    error = new Error(msg);
+    errorInfo = {
+      'errorCode' : 'nonExistingTime'
+    };
+    error['errorInfo'] = errorInfo;
+    throw error;
+  };
+  
+  _throwMissingTimeZoneData = function () {
+    var msg, error, errorInfo;
+    msg = "TimeZone data is missing. Please call require 'ojs/ojtimezonedata' in order to load the TimeZone data.";
+    error = new Error(msg);
+    errorInfo = {
+      'errorCode' : 'missingTimeZoneData'
+    };
+    error['errorInfo'] = errorInfo;
+    throw error;
+  };
+
+  /************************************
+   Zone object
+   ************************************/
+
+  /**
+   * @ignore
+   * @constructor
+   */
+  function Zone (name, tzData) {
+    var data = tzData['zones'][name];
+    //Try  if name matches Etc/GMT offset
+    if (_GMT_REGEXP.test(name)) {
+      var hours, minutes = 0;
+      var offset = name.replace(_GMT_REGEXP, "");
+      var parts = offset.split(":");
+      hours = parseInt(parts[0], 10) * 60;
+      if (isNaN(hours))
+        return;
+      if (parts.length === 2) {
+        minutes = parseInt(parts[1], 10);
+        if (isNaN(minutes))
+          return;
+      }
+      hours += (hours >= 0) ? minutes : -minutes;
+      //offset must be between -14 and +12
+      if (hours < _MIN_OFFSET || hours > _MAX_OFFSET)
+        return;
+      hours = _packBase60(hours, 1);
+      var gmtName = name.replace("/etc\//i", "").toUpperCase();
+      data = gmtName + "|" + hours + "|" + "0|";
+    }
+    if (data !== undefined)
+      this._set(_unpack(name, data));
+  }
+
+  Zone.prototype = {
+    _set : function (unpacked) {
+      this.name = unpacked.name;
+      this.abbrs = unpacked.abbrs;
+      this.untils = unpacked.untils;
+      this.offsets = unpacked.offsets;
+    },
+    parse : function (target, dst, ignoreDst, throwException) {
+      var offsets = this.offsets;
+      var  untils = this.untils;
+      var  max = untils.length - 1;
+      var  offset;
+      var offset1;
+      var i;
+      var transitionTime;
+      var gapTime;
+      var dupTime;
+      var until;
+      for (i = 0; i < max; i++) {
+        offset = offsets[i];
+        offset1 = offsets[i + 1];
+        until = untils[i];
+        transitionTime = until - (offset * _MINUTE);
+        gapTime = transitionTime + _HOUR;
+        dupTime = transitionTime - _HOUR;
+        //Transition to dst:
+        //Test if the time falls during the non existing hour when trasition to
+        //dst happens. The missing hour is between transitionTime and gapTime.
+        //If we are converting from source timezone to target timezone, we do not
+        //throw an exception if target timezone falls in non existing window, 
+        //we just skip one hour, throwException is passed as false in this scenario.
+        if (target >= transitionTime && target < gapTime && offset > offset1) {
+          if(throwException === true) {
+            _throwNonExistingTime();
+          }
+          else {
+            return (i + 1);
+          }
+        }
+        //Test if the time falls during the duplicate hour when dst ends.
+        //The duplicate hour is between dupTime and transitionTime.
+        //if dst is set to true, return dst offset.
+        if (target >= dupTime && target < transitionTime && offset < offset1) {
+          if (dst) {
+            return i;
+          }
+          return (i + 1);
+        }
+        //Time is outside transtition times.
+        if (target < until - (offset * _MINUTE)) {
+          if (ignoreDst === false) {
+            if (dst) {
+              if (offset < offset1) {
+                return i;
+              }
+              return (i + 1);
+            }
+            else {
+              if (offset < offset1) {
+                return (i +1);
+              }
+              return i;
+            }
+          }
+          return i;
+        }
+      }
+      return max;
+    },
+    //user first need to call pasre to get the index, then pass it to the 
+    //2 functions below
+    abbr : function (idx) {
+      return this.abbrs[idx];
+    },
+    ofset : function (idx) {
+      var len = this.offsets.length;
+      if(idx >= 0 && idx < len) {
+        return parseInt(this.offsets[idx], 10);
+      }  
+      return parseInt(this.offsets[len -1], 10);
+    },
+    len : function () {
+      return this.offsets.length;
+    }
+  };
+
+  /************************************
+   timeZOne functions
+   ************************************/
+  _normalizeName = function (name) {
+    return (name || '').toLowerCase().replace(/\//g, '_');
+  };
+
+  _addZone = function (name, tzData) {
+    var zone, zoneName;
+    zone = new Zone(name, tzData);
+    zoneName = _normalizeName(zone['name']);
+    _zones[zoneName] = zone;
+  };
+
+  _getZone = function (name, tzData) {
+    var zoneName = _normalizeName(name);
+    if (_zones[zoneName] === undefined)
+      _addZone(name, tzData);
+    return _zones[_normalizeName(name)] || null;
+  };
+
+
+  function _init () {
+    return {
+      getZone : function (name, localeElements) {
+        var tzData = localeElements['supplemental']['timeZoneData'];
+        if(tzData === undefined) {
+          _throwMissingTimeZoneData();
+        }
+        var s = _getZone(name, tzData);
+        //try the links
+        if (!s) {          
+          var link = tzData['links'][name];
+          if (link) {
+            s = _getZone(link, tzData);
+          }
+        }
+        if (!s) {
+          _throwInvalidtimeZoneID(name);
+        }
+        return s;
+      }
+    };
+  }
+
+  return {
+    /**
+     * getInstance.
+     * Returns the singleton instance of OraTimeZone class. 
+     * @ignore
+     * @memberOf OraTimeZone
+     * @return {Object} The singleton OraTimeZone instance.
+     */
+    getInstance : function () {
+      if (!instance) {
+        instance = _init();
+      }
+      return instance;
+    }
+  };
+}());
 });

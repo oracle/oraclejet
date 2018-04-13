@@ -1,4 +1,5 @@
 /**
+ * @license
  * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
@@ -7,33 +8,6 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojdnd'],
        function(oj, $)
 {
 
-/**
-  * Copyright (c) 2015, Oracle and/or its affiliates.
-  * All rights reserved.
-  */
-
-/**
-  *  Common tree/node state
-  *  @ignore
-  *  @export
-  *  @classdesc  Common Tree/node state
-  *  @protected
-  *  @constructor
-  */
-function TreeUtils()
-{
-};
-
-
-// css class names
-
-TreeUtils._OJ_EXPANDED    = "oj-expanded" ;
-TreeUtils._OJ_COLLAPSED   = "oj-collapsed" ;
-TreeUtils._OJ_HOVER       = "oj-hover" ;
-TreeUtils._OJ_SELECTED    = "oj-selected" ;
-TreeUtils._OJ_DISABLED    = "oj-disabled" ;
-TreeUtils._OJ_DEFAULT     = "oj-default" ;
-TreeUtils._OJ_TEMPNODE    = "oj-treenode-temp" ;
 /**
   * Copyright (c) 2015, Oracle and/or its affiliates.
   * All rights reserved.
@@ -2013,6 +1987,33 @@ oj.TreeDndContext._DND_INTERNAL_DT  ="_ojtree" ;    // internal data type for tr
 oj.TreeDndContext._DND_INTERNAL_DT_REORDER ="_ojtreereorder" ;   // internal data type for reorder
 
 /**
+  * Copyright (c) 2015, Oracle and/or its affiliates.
+  * All rights reserved.
+  */
+
+/**
+  *  Common tree/node state
+  *  @ignore
+  *  @export
+  *  @classdesc  Common Tree/node state
+  *  @protected
+  *  @constructor
+  */
+function TreeUtils()
+{
+};
+
+
+// css class names
+
+TreeUtils._OJ_EXPANDED    = "oj-expanded" ;
+TreeUtils._OJ_COLLAPSED   = "oj-collapsed" ;
+TreeUtils._OJ_HOVER       = "oj-hover" ;
+TreeUtils._OJ_SELECTED    = "oj-selected" ;
+TreeUtils._OJ_DISABLED    = "oj-disabled" ;
+TreeUtils._OJ_DEFAULT     = "oj-default" ;
+TreeUtils._OJ_TEMPNODE    = "oj-treenode-temp" ;
+/**
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
  */
@@ -2361,7 +2362,7 @@ oj.TreeDndContext._DND_INTERNAL_DT_REORDER ="_ojtreereorder" ;   // internal dat
   * @augments oj.baseComponent
   * @since 0.6
   * @ignore
-  * @deprecated This component is deprecated. Use oj.ojTreeView instead.
+  * @deprecated  4.2.0 Use oj.ojTreeView instead.
   *
   * @classdesc
   * <h3 id="treeOverview-section">
@@ -9878,7 +9879,7 @@ if ((! newVal) && (! this.options["contextMenu"])) {
           }
           else if (ot === "object") {
              try
-             {                                           // don't crash if no ojdatacollection-common
+             {                                           // don't crash if no jsontreedatasource
                if (s instanceof oj.JsonTreeDataSource) {
                  this._data.ds.type = DS_TREE ;          // we have a tree DS source
                }
@@ -9889,7 +9890,7 @@ if ((! newVal) && (! this.options["contextMenu"])) {
              } ;
              if (this._data.ds.type !== DS_TREE) {
                try
-               {                                           // don't crash if no ojtree-model
+               {                                           // don't crash if no data source
                   if (s instanceof oj.CollectionTreeDataSource) {
                     this._data.ds.type = DS_COLLECTION ;   // we have a tree DS source
                   }

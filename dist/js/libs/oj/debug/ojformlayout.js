@@ -1,4 +1,5 @@
 /**
+ * @license
  * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
@@ -18,7 +19,9 @@ define(['ojs/ojcore', 'ojs/ojcomponentcore', 'ojs/ojlabel'],
 /**
  * @ojcomponent oj.ojFormLayout
  * @since 4.1.0
+ * @ojshortdesc Used to group child input controls in an organized layout that can be optimized for multiple display sizes.
  * @ojstatus preview
+ * @ojsignature {target: "Type", value:"class ojFormLayout extends JetElement<ojFormLayoutSettableProperties>"}
  *
  * @classdesc
  * <h3 id="optionOverview-section">
@@ -42,11 +45,37 @@ define(['ojs/ojcore', 'ojs/ojcomponentcore', 'ojs/ojlabel'],
  * &lt;/oj-form-layout> 
  * </code></pre>
  *
- * <p>The oj-form-layout element currently suuports custom element children that support the label-hint 
+ * <p>The oj-form-layout element currently supports custom element children that support the label-hint 
  * and help-hints attributes (oj-input-text, oj-text-area, etc.).
  * For each custom element child with label-hint, FormLayout will generate an oj-label element and pair
  * them together in the layout.
  * </p>
+ */
+
+/**
+ * @member
+ * @name direction
+ * @expose
+ * @memberof oj.ojFormLayout
+ * @instance
+ * @type {string}
+ * @default <code class="prettyprint">"column"</code>
+ * @ojvalue {string} "column" Components are laid out in columns
+ * @ojvalue {string} "row" Components are laid out in rows
+ * @desc Specifies the layout direction of the form layout children.
+ *
+ * @example <caption>Initialize the oj-form-layout with the <code class="prettyprint">direction</code> attribute specified:</caption>
+ * &lt;oj-form-layout direction="row">
+ *   &lt;oj-input-text id="inputcontrol" required value="text" label-hint="input 1">&lt;/oj-input-text>
+ *   &lt;oj-text-area id="textareacontrol" value='text' rows="6" label-hint="textarea">&lt;/oj-text-area>
+ * &lt;/oj-form-layout>
+ *
+ * @example <caption>Get or set the <code class="prettyprint">disabled</code> property after initialization:</caption>
+ * // getter
+ * var dir = myFormLayout.direction;
+ *
+ * // setter
+ * myFormLayout.direction = "column";
  */
 
 /**
@@ -56,7 +85,7 @@ define(['ojs/ojcore', 'ojs/ojcomponentcore', 'ojs/ojlabel'],
  * @memberof oj.ojFormLayout
  * @instance
  * @type {string}
- * @default <code class="prettyprint">"top"</code>
+ * @default "top"
  * @ojvalue {string} "start" Label is inline with the start of its editable value component
  * @ojvalue {string} "top" Label is on top of its editable value component
  * @desc Specifies how the label is aligned with its editable value component.
@@ -82,7 +111,7 @@ define(['ojs/ojcore', 'ojs/ojcomponentcore', 'ojs/ojlabel'],
  * @memberof oj.ojFormLayout
  * @instance
  * @type {string}
- * @default <code class="prettyprint">"33%"</code>
+ * @default "33%"
  * @desc Specifies the label width.
  * <p>This specifies the width of the oj-label elements.  This can be any legal <a href="https://developer.mozilla.org/en-US/docs/Web/CSS/width">CSS width</a>.</p>
  *
@@ -102,12 +131,38 @@ define(['ojs/ojcore', 'ojs/ojcomponentcore', 'ojs/ojlabel'],
 
 /**
  * @member
+ * @name labelWrapping
+ * @expose
+ * @memberof oj.ojFormLayout
+ * @instance
+ * @type {string}
+ * @default <code class="prettyprint">"wrap"</code>
+ * @ojvalue {string} "truncate" Label will trunctate if needed
+ * @ojvalue {string} "wrap" Label will wrap if needed
+ * @desc Specifies if the label text should wrap or truncate.
+ *
+ * @example <caption>Initialize the oj-form-layout with the <code class="prettyprint">label-wrapping</code> attribute specified:</caption>
+ * &lt;oj-form-layout label-wrapping="truncate">
+ *   &lt;oj-input-text id="inputcontrol" required value="text" label-hint="input 1">&lt;/oj-input-text>
+ *   &lt;oj-text-area id="textareacontrol" value='text' rows="6" label-hint="textarea">&lt;/oj-text-area>
+ * &lt;/oj-form-layout>
+ *
+ * @example <caption>Get or set the <code class="prettyprint">labelWrapping</code> property after initialization:</caption>
+ * // getter
+ * var wrap = myFormLayout.labelWrapping;
+ *
+ * // setter
+ * myFormLayout.labelWrapping = 'wrap';
+ */
+
+/**
+ * @member
  * @name maxColumns
  * @expose
  * @memberof oj.ojFormLayout
  * @instance
  * @type {number}
- * @default <code class="prettyprint">1</code>
+ * @default 1
  * @desc Specifies the maximum number of columns.
  *
  * @example <caption>Initialize the oj-form-layout with the <code class="prettyprint">max-columns</code> attribute specified:</caption>
@@ -131,6 +186,7 @@ define(['ojs/ojcore', 'ojs/ojcomponentcore', 'ojs/ojlabel'],
  * @function setProperty
  * @param {string} property - The property name to set. Supports dot notation for subproperty access.
  * @param {*} value - The new value to set the property to.
+ * @return {void}
  * 
  * @expose
  * @memberof oj.ojFormLayout
@@ -156,7 +212,7 @@ define(['ojs/ojcore', 'ojs/ojcomponentcore', 'ojs/ojlabel'],
  * Performs a batch set of properties.
  * @function setProperties
  * @param {Object} properties - An object containing the property and value pairs to set.
- * 
+ * @return {void}
  * @expose
  * @memberof oj.ojFormLayout
  * @instance
@@ -171,6 +227,7 @@ define(['ojs/ojcore', 'ojs/ojcomponentcore', 'ojs/ojlabel'],
  * 
  * @expose
  * @memberof oj.ojFormLayout
+ * @return {void}
  * @instance
  */ 
 
@@ -179,6 +236,11 @@ define(['ojs/ojcore', 'ojs/ojcomponentcore', 'ojs/ojlabel'],
  */
 var ojFormLayoutMeta = {
   "properties": {
+    "direction": {
+      "type": "string",
+      "enumValues": ["column", "row"],
+      "value": "column"
+    },
     "labelEdge": {
       "type": "string",
       "enumValues": ["start", "top"],
@@ -187,6 +249,11 @@ var ojFormLayoutMeta = {
     "labelWidth": {
       "type": "string",
       "value": "33%"
+    },
+    "labelWrapping": {
+      "type": "string",
+      "enumValues": ["truncate", "wrap"],
+      "value": "wrap"
     },
     "maxColumns": {
       "type": "number",
@@ -215,7 +282,7 @@ function ojFormLayout(context) {
   var element = context.element;
   var LABEL_ELEMENT_ID = "-labelled-by";
   // We need to mark every element we add so that we can remove it during a refresh/re-render.
-  var BONUS_DOM_ATTR = "data-oj-ofl-bonus-dom";
+  var BONUS_DOM_ATTR = "data-oj-formlayout-bonus-dom";
   var BONUS_DOM_SELECTOR = "["+BONUS_DOM_ATTR+"]";
   var ojFormReadyResolveFunc;
   var readyResolveFunc;
@@ -237,6 +304,8 @@ function ojFormLayout(context) {
    * @private
    */
   self._rootElementMutationObserver = new MutationObserver(function (mutations) {
+    var needsRefresh = false;
+    
     // if the oj-form-layout has been removed from the body element's subtree,
     // no need to remove event listeners or refresh.  Just disconnect the observer.
     // This can happen when you press apply in the cookbook demo.
@@ -280,6 +349,7 @@ function ojFormLayout(context) {
     ojForm.classList.add("oj-form");
     ojForm.setAttribute("data-oj-context","");
     ojForm.setAttribute("data-oj-internal","");
+    ojForm.setAttribute(BONUS_DOM_ATTR,"");
 
     // wrap the children with the div
     // we use .firstChild and not .firstElementChild so that comment
@@ -298,7 +368,7 @@ function ojFormLayout(context) {
    * render, all of the bonus dom elements are removed.  Then the bonus dom
    * elements are added (for both initial and non-initial cases).  The bonus dom
    * are the elements like oj-flex/oj-flex-item DIVs and oj-label elements that
-   * get added and these are marked with "data-oj-ofl-bonus-dom".
+   * get added and these are marked with "data-oj-formlayout-bonus-dom".
    * 
    * @memberof oj.ojFormLayout
    * @instance
@@ -426,6 +496,17 @@ function ojFormLayout(context) {
       ojForm.classList.remove("oj-formlayout-labels-inline");
     }
 
+    if (element["labelWrapping"] === "truncate")
+      ojForm.classList.add("oj-formlayout-labels-nowrap");
+    else
+      ojForm.classList.remove("oj-formlayout-labels-nowrap");
+
+    // When direction === "row", we need to set the columns to 1, as we use the
+    // oj-flex and oj-flex-item divs to control the number of columns.
+    if (element["direction"] === "row")
+      maxCols = 1;
+    else
+      maxCols = element["maxColumns"];
 
     ojForm["style"]["columnCount"] = maxCols;
     ojForm["style"]["webkitColumnCount"] = maxCols;
@@ -434,7 +515,7 @@ function ojFormLayout(context) {
   
   /**
    * This method goes through and removes all of the bonus dom elements, those that
-   * have been marked with the 'data-oj-ofl-bonus-dom' attribute. For oj-label bonus
+   * have been marked with the 'data-oj-formlayout-bonus-dom' attribute. For oj-label bonus
    * dom elements, we just remove the element as we don't need to preserve the children.
    * For the oj-flex and oj-flex-item DIVs, we need to preserve the children as they
    * contain the original child elements that we don't want removed. 
@@ -447,7 +528,7 @@ function ojFormLayout(context) {
   {
     var bonusDomElems = ojForm.querySelectorAll(BONUS_DOM_SELECTOR);
     var length = bonusDomElems.length;
-
+    
     for (var i = 0; i < length; ++i)
     {
       var bonusDomElem = bonusDomElems[i];
@@ -476,18 +557,49 @@ function ojFormLayout(context) {
   function _addLabelsFromHints()
   {
     var child = ojForm.firstElementChild;
+    var childCnt = 0;
+    var directionIsColumn = element["direction"] === "column";
 
     // for all of the direct children, add a label for any child element supports "labelHint"
     while (child) {
       // check for custom element
       if (child.tagName.indexOf("-") !== -1)
       {
-        if (child.classList.contains("oj-complete"))
+        if (child.tagName.toLowerCase() === "oj-label")
+        {
+          // if we find an oj-label component, then skip it and the next sibling element.
+          // If there is no next sibling element, throw an error.  We don't need to know
+          // if they are completely upgraded as we are excepting all element types for the child
+          // that follows an oj-label.  The assumption is that the app developer has correctly
+          // associated the oj-label with and element of some kind.
+          var label = child;
+          child = child.nextElementSibling; // move to the next child element
+
+          // an oj-label should always be followed by an element
+          if (!child)
+          {
+            _ensureUniqueId(element);
+            _ensureUniqueId(label);
+
+            // make the component ready before throwing an error so the page won't hang
+            _ojFormMakeReady();
+            _makeReady();
+
+            throw new Error("oj-form-layout component with id='"+element.id+"' has an oj-label child element with id='"+label.id+
+                    "' but has no next sibling element that it is associated with.");
+          }
+        }
+        else if (child.classList.contains("oj-complete"))
         {
           _addLabelFromHint(child);
         }
         else
         {
+          // we need to tell this child if it needs an oj-flex div created for it.
+          if (directionIsColumn || childCnt%element["maxColumns"] === 0)
+          {
+            child.setAttribute("data-oj-needs-oj-flex-div", "");
+          }
           // This custom element child hasn't been upgraded so add it to the unresolved children
           unresolvedChildren.push(child);
         }
@@ -495,6 +607,7 @@ function ojFormLayout(context) {
       else
         _unsupportedChildType(child);
       
+      childCnt++;
       child = child.nextElementSibling; // move to the next child element
     }   
   }
@@ -512,9 +625,11 @@ function ojFormLayout(context) {
     throw new Error("oj-form-layout component with id='"+element["id"]+"' has a child element "+child.tagName+" with id='"+child["id"]+
             "' that is not a supported child type.  See oj-form-layout tag documentation for more information.");
   }
+
   /**
    * For one child, add an oj-label if it supports label-hint.
    * 
+   * @param {EventTarget} child The element that may need an oj-label created
    * @memberof oj.ojFormLayout
    * @returns {Element|null} the oj-label element or null if no label was created
    * @instance
@@ -524,28 +639,28 @@ function ojFormLayout(context) {
   {
     var ojLabel = null;
     
-      if ("labelHint" in child)
-      {
-        _ensureUniqueId(child);
-        ojLabel = _createOjLabelAndInitialize(child);
+    if (child instanceof Element && "labelHint" in child)
+    {
+      _ensureUniqueId(child);
+      ojLabel = _createOjLabelAndInitialize(child);
 
-        // the label should preceed the input element it is associated with
-        child.parentElement.insertBefore(ojLabel, child); // @HTMLUpdateOK insert oj-label containing trusted content.
+      // the label should preceed the input element it is associated with
+      child.parentElement.insertBefore(ojLabel, child); // @HTMLUpdateOK insert oj-label containing trusted content.
 
-        _updateLabelHelpAndShowRequired(child, ojLabel);
-        // JET's custom element's property change events, 
-        // e.g., labelHintChanged, 
-        // do not bubble and component events do bubble. 
-        // Therefore, we can't listen on the 
-        // oj-form-layout for child property change events.
-        // We add them to the component themselves.
-        _addChildEventListeners(child);
-      }
-      else
+      _updateLabelHelpAndShowRequired(child, ojLabel);
+      // JET's custom element's property change events, 
+      // e.g., labelHintChanged, 
+      // do not bubble and component events do bubble. 
+      // Therefore, we can't listen on the 
+      // oj-form-layout for child property change events.
+      // We add them to the component themselves.
+      _addChildEventListeners(child);
+    }
+    else
       _unsupportedChildType(child);
         
     return ojLabel;
-      }
+  }
       
   /**
    * create the oj-label and initialize it
@@ -665,6 +780,7 @@ function ojFormLayout(context) {
    * these property change events. Instead we
    * put them on the child component themselves, and we share the listener.
    * 
+   * @param {Element} child
    * @memberof oj.ojFormLayout
    * @instance
    * @private
@@ -684,7 +800,7 @@ function ojFormLayout(context) {
    */
   function _moveNewDirectChildrenToOjFormDiv(mutations)
   {
-    var mutationsLength = mutations.length
+    var mutationsLength = mutations.length;
     
     for (var i = 0; i < mutationsLength; i++)
     {
@@ -717,7 +833,7 @@ function ojFormLayout(context) {
    */
   function _processUnresolvedChildren(mutations)
   {
-    var mutationsLength = mutations.length
+    var mutationsLength = mutations.length;
     
     for (var i = 0; i < mutationsLength; i++)
     {
@@ -733,7 +849,7 @@ function ojFormLayout(context) {
           // If a label was created, add the flex divs
           if (ojLabel)
           {
-            _addFlexDivs(ojLabel, mutation.target);
+            _addFlexDivs(ojLabel, mutation.target, mutation.target.hasAttribute("data-oj-needs-oj-flex-div"));
           }
         }
       }
@@ -754,7 +870,7 @@ function ojFormLayout(context) {
    */
   function _removeEventListenersFromRemovedChildren(mutations)
   {
-    var mutationsLength = mutations.length
+    var mutationsLength = mutations.length;
     
     for (var i = 0; i < mutationsLength; i++)
     {
@@ -783,6 +899,7 @@ function ojFormLayout(context) {
    * Return the oj-label element for a component. This may be the oj-label with a for attribute
    * for the component, or may be the oj-label that this component's labelled-by points to.
    * 
+   * @param {EventTarget} child The child element whose label we want to return
    * @memberof oj.ojFormLayout
    * @instance
    * @return {Element} The oj-label element.
@@ -794,10 +911,12 @@ function ojFormLayout(context) {
     // for editable value components that have a labelled-by attribute, we need to
     // retrieve the oj-label by the labelledBy ID. Otherwise
     // we query for it by the for attribute.
-    if ("labelledBy" in child)
-      ojLabel = element.getElementById(child["labelledBy"]);
-    else
+    if ("labelledBy" in child) {
+      // For some reason, element is undefined in this case, so using document
+      ojLabel = document.getElementById(child["labelledBy"]);
+    } else {
       ojLabel = element.querySelector('oj-label[for="'+child["id"]+'"]');
+    }
     
     return ojLabel;
   }
@@ -807,6 +926,8 @@ function ojFormLayout(context) {
    * required attributes.  This needs to be done after the label is no longer
    * busy.
    * 
+   * @param {Element} comp
+   * @param {Element} ojLabel
    * @memberof oj.ojFormLayout
    * @instance
    * @private
@@ -847,8 +968,10 @@ function ojFormLayout(context) {
     var label;
     var elem;
     var arrayLength = ojForm.children.length;
+    var directionIsColumn = element["direction"] === "column";
     var j = 0;
-    _appendChildrenToArray(ojForm.children, childArray)
+    var pairCnt = 0; // counter of label/element count
+    _appendChildrenToArray(ojForm.children, childArray);
     
     // each iteration should process a label/input pair
     while(j < arrayLength) {
@@ -860,35 +983,41 @@ function ojFormLayout(context) {
         j++; // skip to the next element
         elem = childArray[j];
         
-        _addFlexDivs(label, elem);
+        // for direction === "row", we only render the oj-flex div once per row.
+        _addFlexDivs(label, elem, directionIsColumn || pairCnt%element["maxColumns"] === 0);
       }
+      pairCnt++;
       j++;
     }   
   }
 
-  function _addFlexDivs(label, elem)
+  function _addFlexDivs(label, elem, createOjFlex)
   {
     var ojFlex;
     var labelOjFlexItem;
-    var elementOjFlexItem
+    var elementOjFlexItem;
 
+    if (createOjFlex)
       ojFlex = _createDivElement("oj-flex");
-      labelOjFlexItem = _createDivElement("oj-flex-item");
-      ojFlex.appendChild(labelOjFlexItem); // @HTMLUpdateOK append div containing trusted content.
+    else
+      ojFlex = label.previousElementSibling; // This will be the oj-flex div for a row
 
-      labelOjFlexItem.appendChild(label); // @HTMLUpdateOK append oj-label containing trusted content.
+    labelOjFlexItem = _createDivElement("oj-flex-item");
+    ojFlex.appendChild(labelOjFlexItem); // @HTMLUpdateOK append div containing trusted content.
 
-      // set the width of the label flex item
-      labelOjFlexItem.style.webkitFlex = "0 1 "+labelWidth;
-      labelOjFlexItem.style.flex = "0 1 "+labelWidth;
-      labelOjFlexItem.style.maxWidth = labelWidth;
-      labelOjFlexItem.style.width = labelWidth;
+    labelOjFlexItem.appendChild(label); // @HTMLUpdateOK append oj-label containing trusted content.
 
-      // create the component flex-item and append the element as a child
-      elementOjFlexItem = _createDivElement("oj-flex-item");
-      ojFlex.appendChild(elementOjFlexItem); // @HTMLUpdateOK append div containing trusted content.
-      elem.parentElement.insertBefore(ojFlex, elem); // @HTMLUpdateOK insert div containing trusted content.
-      elementOjFlexItem.appendChild(elem); // @HTMLUpdateOK append element containing trusted content.
+    // set the width of the label flex item
+    labelOjFlexItem.style.webkitFlex = "0 1 "+labelWidth;
+    labelOjFlexItem.style.flex = "0 1 "+labelWidth;
+    labelOjFlexItem.style.maxWidth = labelWidth;
+    labelOjFlexItem.style.width = labelWidth;
+
+    // create the component flex-item and append the element as a child
+    elementOjFlexItem = _createDivElement("oj-flex-item");
+    ojFlex.appendChild(elementOjFlexItem); // @HTMLUpdateOK append div containing trusted content.
+    elem.parentElement.insertBefore(ojFlex, elem); // @HTMLUpdateOK insert div containing trusted content.
+    elementOjFlexItem.appendChild(elem); // @HTMLUpdateOK append element containing trusted content.
   }
 
   /**
@@ -922,7 +1051,7 @@ function ojFormLayout(context) {
     div.setAttribute("data-oj-internal","");
     div.classList.add(className);
     return div;
-  }
+      }
 
   /**
    * The target element of a mutation should be a DIV with the bonus dom attribute
@@ -944,13 +1073,14 @@ function ojFormLayout(context) {
   function _ignoreMutations(mutations)
   {
     var ignore = true;
-    var mutationsLength = mutations.length
+    var mutationsLength = mutations.length;
 
     for (var i = 0; i < mutationsLength; i++)
     {
       var mutation = mutations[i];
       
-      if (mutation.type === "childList" && _isBonusDomDiv(mutation.target))
+      if (mutation.type === "childList" && _isBonusDomDivOrSelf(mutation.target)
+                                        && _isMutationOfThisFormLayout(mutation.target))
       {
         ignore = false;
         break;
@@ -961,21 +1091,51 @@ function ojFormLayout(context) {
   }
   
   /**
-   * Checks to see if the node is a DIV with our bonus dom attribute on it
+   * Checks to see if the node is a DIV with our bonus dom attribute on it or if it is the
+   * oj-form-layout itself.
    * 
    * @param {Node} node Node to check.
    * @returns {boolean|null} true if we have a parent DIV with the bonus dom attribute
    */
-  function _isBonusDomDiv(node)
+  function _isBonusDomDivOrSelf(node)
   {
-    return node &&
-           node.tagName === "DIV" &&
-           node.hasAttribute(BONUS_DOM_ATTR);
+    return node === element || (node &&
+                                node.tagName === "DIV" &&
+                                node.hasAttribute(BONUS_DOM_ATTR));
   }
-  
+  /**
+   * Checks to make sure that this mutation belongs to this oj-form-layout rather than a nested -oj-form-layout
+   * @param {Node} node
+   * @returns {boolean}
+   */
+  function _isMutationOfThisFormLayout(node)
+  {
+    var result = true;
+    
+    while (node !== element)
+    {
+      if (node.tagName === "OJ-FORM-LAYOUT")
+      {
+        result = false;
+        break;
+      }
+      
+      node = node.parentElement;
+
+      // must be a deleted node so ignore it
+      if (node == null)
+      {
+        result = false;
+        break;
+      }
+    }
+    
+    return result;
+  }
   /**
    * Remove a dom element preserving all of its children
    * 
+   * @param {Element} elem
    * @memberof oj.ojFormLayout
    * @instance
    * @private
@@ -993,6 +1153,7 @@ function ojFormLayout(context) {
   /**
    * If an element doesn't have an ID, generate a unique ID for it.
    * 
+   * @param {Element} elem
    * @memberof oj.ojFormLayout
    * @instance
    * @private

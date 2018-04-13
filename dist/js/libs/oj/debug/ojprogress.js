@@ -1,4 +1,5 @@
 /**
+ * @license
  * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
@@ -28,7 +29,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
  * @ojstatus preview
  * @since 1.0.0
  * @augments oj.baseComponent
- * @ojshortdesc The JET Progress element allows a user to display progress of an operation in a rectangular horizontal or a circular meter.
+ * @ojshortdesc Displays progress of an operation in a rectangular horizontal meter or in a circular meter.
  * @classdesc
  * <h3 id="progressOverview-section">
  *   JET Progress
@@ -96,7 +97,7 @@ oj.__registerWidget("oj.ojProgressbar",  $['oj']['baseComponent'], {
      * @public
      * @type {number}
      * @instance
-     * @memberof! oj.ojProgress
+     * @memberof oj.ojProgress
      * @default 100
      * @ojmin 0
      * @example <caption>Initialize the Progress with the <code class="prettyprint">max</code> attribute specified</caption>
@@ -117,7 +118,7 @@ oj.__registerWidget("oj.ojProgressbar",  $['oj']['baseComponent'], {
      * @public
      * @type {number}
      * @instance
-     * @memberof! oj.ojProgress
+     * @memberof oj.ojProgress
      * @default 0
      * @ojmin -1
      * @ojwriteback
@@ -139,7 +140,7 @@ oj.__registerWidget("oj.ojProgressbar",  $['oj']['baseComponent'], {
      * @type {string}
      * @memberof oj.ojProgress
      * @since 3.0
-     * @ojvalue {string} "bar" displays progress in a rectangular horizontal meter.
+     * @ojvalue {string} "bar" displays progress in a rectangular horizontal meter
      * @ojvalue {string} "circle" displays progress in a circular meter
      * @default "bar"
      * @example <caption>Initialize the Progress with the <code class="prettyprint">type</code> attribute specified</caption>
@@ -161,7 +162,7 @@ oj.__registerWidget("oj.ojProgressbar",  $['oj']['baseComponent'], {
      * @type {boolean}
      * @ignore
      * @instance
-     * @memberof! oj.ojProgress
+     * @memberof oj.ojProgress
      * @default false
      * @example <caption>Initialize the Progress with the <code class="prettyprint">disabled</code> attribute specified</caption>
      * &lt;oj-progress disabled='true'>&lt;/oj-progress>
@@ -181,13 +182,15 @@ oj.__registerWidget("oj.ojProgressbar",  $['oj']['baseComponent'], {
      * Variable used to indicate that the value is indeterminate
      *
      * @override
+     * @memberof oj.ojProgress
      * @private
      */
   _indeterminate: false,
   /**
    * Create the Progress
    * @override
-   * @memberof! ojProgress
+   * @memberof oj.ojProgress
+   * @return {void}
    * @protected
    */
   _ComponentCreate: function() {
@@ -202,8 +205,18 @@ oj.__registerWidget("oj.ojProgressbar",  $['oj']['baseComponent'], {
                     "role": "progress",
                     "aria-valuemin": this.min
             });
+    this.element.addClass("oj-component");
+    this._setUpProgressType();
+  },
+  /**
+   * Sets up train based on type
+   * @memberof oj.ojProgress
+   * @return {void}
+   * @private
+   */
+  _setUpProgressType: function() {
     if (this.options.type === "circle") {
-      this.element.addClass("oj-progress-circle oj-component")
+      this.element.addClass("oj-progress-circle")
       this._setupCircleSVG();
     }
     else {
@@ -216,12 +229,13 @@ oj.__registerWidget("oj.ojProgressbar",  $['oj']['baseComponent'], {
   },
 
   /**
-   * <p>Initialize the options.</p>
+   * <p>Initialize the options</p>
    * @protected
    * @param {Object} originalDefaults
    * @param {Object} constructorOptions
    * @override
    * @memberof oj.ojProgress
+   * @return {void}
    */
   _InitOptions : function (originalDefaults, constructorOptions)
   {
@@ -243,6 +257,8 @@ oj.__registerWidget("oj.ojProgressbar",  $['oj']['baseComponent'], {
    * @param {number} newValue The new value of the progress being passed in.
    * @override
    * @private
+   * @memberof oj.ojProgress
+   * @return {number}
    */
   _constrainedValue: function( newValue ) {
     if ( newValue === undefined ) {
@@ -265,6 +281,8 @@ oj.__registerWidget("oj.ojProgressbar",  $['oj']['baseComponent'], {
    * @param {Object} options The options being set
    * @override
    * @private
+   * @memberof oj.ojProgress
+   * @return {void}
    */
   _setOptions: function( options, flags ) {
     // Ensure "value" option is set after other values (like max)
@@ -282,12 +300,14 @@ oj.__registerWidget("oj.ojProgressbar",  $['oj']['baseComponent'], {
    * Setup the svg for the determinate progress circle. The determinate progress circle is composed of
    * two circles, one for the value and one for the track. The strokes of the circles are used for the visual rendering.
    * @private
+   * @memberof oj.ojProgress
+   * @return {void}
    */
   _setupCircleSVG : function ()
   {
     // Clear existing SVG
     if(this.svg)
-      $(this.svg).remove();
+      this.svg.remove();
 
     if(!this._indeterminate) {
 
@@ -320,7 +340,7 @@ oj.__registerWidget("oj.ojProgressbar",  $['oj']['baseComponent'], {
       svg.appendChild(bgCircle);
       svg.appendChild(circle);
 
-      this.svg = svg;
+      this.svg = $(svg);
 
       this.element[0].appendChild(svg);
     }
@@ -332,21 +352,48 @@ oj.__registerWidget("oj.ojProgressbar",  $['oj']['baseComponent'], {
    * @param {string|number} value The value being set
    * @override
    * @private
+   * @memberof oj.ojProgress
+   * @return {void}
    */
-  _setOption: function( key, value, flags ) {
-    if ( key === "max" ) {
-      // Don't allow a max less than min
-      value = Math.max( this.min, value );
-    }
+   _setOption: function( key, value, flags ) {
+     if ( key === "max" ) {
+       // Don't allow a max less than min
+       value = Math.max( this.min, value );
+     }
+     //If changing the type of progress, want to remove the old progress
+     //and rerender a new one
+     if ( key === "type" ) {
+       if (this.options.type === "circle") {
+         this.element.removeClass("oj-progress-circle");
+         if(this.svg)
+           this.svg.remove();
+       }
+       else {
+         this.element
+               .removeClass( "oj-progress-bar" )
+         this.valueDiv.remove();
+       }
 
-    this._super( key, value, flags );
-  },
+       if(this.overlayDiv) {
+         this.overlayDiv.remove();
+         this.overlayDiv = null;
+       }
+     }
+     this._super( key, value, flags );
+     //If changing the type of progress, want to remove the old progress
+     //and rerender a new one
+     if ( key === "type" ) {
+       this._setUpProgressType();
+     }
+   },
 
   /**
    * Calculates the percentage of the progress that has been loaded based on min, max, and value.
    *
    * @override
    * @private
+   * @memberof oj.ojProgress
+   * @return {number}
    */
     _percentage: function() {
       return Math.min(this._indeterminate ? 100 : 100 * ( this.options.value - this.min ) / ( this.options.max - this.min ), 100);
@@ -357,6 +404,8 @@ oj.__registerWidget("oj.ojProgressbar",  $['oj']['baseComponent'], {
     *
     * @override
     * @private
+    * @memberof oj.ojProgress
+    * @return {void}
     */
     _refreshValue: function() {
       var value = this.options.value;
@@ -405,6 +454,8 @@ oj.__registerWidget("oj.ojProgressbar",  $['oj']['baseComponent'], {
    *
    * @override
    * @private
+   * @memberof oj.ojProgress
+   * @return {void}
    */
    _destroy: function() {
      if (this.options.type === "circle") {
@@ -414,18 +465,20 @@ oj.__registerWidget("oj.ojProgressbar",  $['oj']['baseComponent'], {
      }
      else {
        this.element
-             .removeClass( "oj-progress-bar" )
-             .removeAttr( "role" )
-             .removeAttr( "aria-valuemin" )
-             .removeAttr( "aria-valuemax" )
-             .removeAttr( "aria-valuenow" );
+             .removeClass( "oj-progress-bar oj-component" );
 
        this.valueDiv.remove();
-       this._super();
+       if(this._indeterminate)
+         this.element.removeClass( "oj-progress-bar-indeterminate" )
      }
-
+     this.element
+                  .removeAttr( "role" )
+                  .removeAttr( "aria-valuemin" )
+                  .removeAttr( "aria-valuemax" )
+                  .removeAttr( "aria-valuenow" )
      if(this.overlayDiv)
        this.overlayDiv.remove();
+     this._super();
    }
 
   // Fragments:
@@ -519,6 +572,15 @@ var ojProgressMeta = {
     },
     "radius": {
       "type": "number"
+    },
+    "translations": {
+      "type": "Object",
+      "properties": {
+        "ariaIndeterminateProgressText": {
+          "type": "string",
+          "value": "In Progress"
+        }
+      }
     },
     "value": {
       "type": "number",

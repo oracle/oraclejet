@@ -1,4 +1,5 @@
 /**
+ * @license
  * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
@@ -18,6 +19,7 @@ define(['ojs/ojcore', 'jquery', 'ojL10n!ojtranslations/nls/localeElements', 'ojs
  * @classdesc Locale Data Services
  * @export
  * @since 0.6
+ * @hideconstructor
  */
 oj.LocaleData = {};
 
@@ -28,6 +30,7 @@ oj.LocaleData = {};
  * This method may also be used by an application that wants to completely replace the Locale Elements bundle that is automatically
  * fetched by an AMD loader.
  * @param {Object} bundle resource bundle that should be used by the framework
+ * @return {void}
  * @export
  */
 oj.LocaleData.setBundle = function(bundle)
@@ -71,7 +74,8 @@ oj.LocaleData.getWeekendEnd = function()
 /**
  * Retrieves locale-specific names of the days of the week
  * @return {Array.<string>} names of the days from Sunday through Sturday
- * @param {string} type - the type of the name. Currently, "abbreviated", "narrow" and "wide" are supported
+ * @param {string} [type] - the type of the name. Currently, "abbreviated", "narrow" and "wide" are supported
+ * @ojsignature { target:"Type", for: "type", value: "'abbreviated'|'narrow'|'wide'"}
  * @export
  */
 oj.LocaleData.getDayNames = function(type)
@@ -88,7 +92,8 @@ oj.LocaleData.getDayNames = function(type)
 /**
  * Retrieves locale-specific names of months
  * @return {Array.<string>} names of months from January through December
- * @param {string} type - the type of the name. Currently, "abbreviated", "narrow" and "wide" are supported
+ * @param {string} [type] - the type of the name. Currently, "abbreviated", "narrow" and "wide" are supported
+ * @ojsignature { target:"Type", for: "type", value: "'abbreviated'|'narrow'|'wide'"}
  * @export
  */
 oj.LocaleData.getMonthNames = function(type)
@@ -899,9 +904,9 @@ oj.OraI18nUtils.formatString = function (str, params)
 /**
  * Returns a person's initials
  * 
- * @param {string} firstName first name
- * @param {string} lastName last name or surname
- * @returns {string} uppercase concatenation of first letter of first name and first letter
+ * @param {string=} firstName first name
+ * @param {string=} lastName last name or surname
+ * @returns {string|undefined} uppercase concatenation of first letter of first name and first letter
  * of last name.
  * There are the following special cases:
  * - If the name is Arabic characters, it returns empty string.
@@ -989,6 +994,7 @@ oj.OraI18nUtils.getInitials = function (firstName, lastName)
  * @see oj.ValidatorFactory
  * @name oj.Validation
  * @class 
+ * @hideconstructor
  * @export
  * @since 0.6
  * 
@@ -1028,6 +1034,8 @@ oj.Validation._CONTRACTS = {'converter' : {name: "oj.ConverterFactory",  type: o
  * oj.ConverterFactory.
  * 
  * @export
+ * @ojsignature {target: "Type", 
+ *                value: "<V, CF extends oj.ConverterFactory<V>>(type:'number'|'color'|'datetime'|string, instance?:CF): CF|null"}
  * @see oj.ConverterFactory
  * @example <caption>Initialize a JET datetime converter instance using options
  * and use it in a knockout-binding and bind it to the
@@ -1142,7 +1150,10 @@ oj.Validation.converterFactory = function (type, instance)
  * var requiredValidator = vf.createValidator(reqValOptions);
  * var isValid = validator.validate(value);
  * @export
+ * @since 0.6
  * @see oj.ValidatorFactory
+ * @ojsignature {target: "Type", 
+ *   value: "<V, VF extends oj.ValidatorFactory<V>>(type:'required'|'regexp'|'numberRange'|'length'|'dateTimeRange'|'dateRestriction'|string, instance?:VF): VF|null"}
  */
 oj.Validation.validatorFactory = function (type, instance)
 {
@@ -1171,9 +1182,11 @@ oj.Validation.validatorFactory = function (type, instance)
  * 
  * @param {string} type The default converter factory for the type. Supported types are 'number' and 
  * 'datetime'
- * @return {Object} an instance of oj.ConverterFactory or null if an unknown type is requested.
+ * @return {Object|null} an instance of oj.ConverterFactory or null if an unknown type is requested.
  * 
  * @export
+ * @ojsignature {target:"Type", 
+ *    value: "<V>(type: 'number'|'color'|'datetime'): oj.ConverterFactory<V>|null"}
  * @see oj.ConverterFactory
  * @see oj.Validation.converterFactory
  * 
@@ -1190,9 +1203,11 @@ oj.Validation.getDefaultConverterFactory = function (type)
  * 
  * @param {string} type The default converter factory for the type. Supported types are 'number' and 
  * 'datetime'
- * @return {Object} an instance of oj.ConverterFactory or null if an unknown type is requested.
+ * @return {Object|null} an instance of oj.ConverterFactory or null if an unknown type is requested.
  * 
  * @export
+ * @ojsignature {target:"Type", 
+ *    value: "<V>(type: 'required'|'regexp'|'numberRange'|'length'|'dateTimeRange'|'dateRestriction'): oj.ValidatorFactory<V>|null"}
  * @see oj.ValidatorFactory
  * @see oj.Validation.validatorFactory
  */
@@ -1340,6 +1355,8 @@ oj.Validation._registerFactory = function(name, instance, factories, contractDef
  * @abstract
  * @class
  * @export
+ * @since 0.6
+ * @ojsignature {target: "Type", value: "class ConverterFactory<V>"}
  * @see oj.Validation
  * @see oj.NumberConverterFactory
  * @see oj.DateTimeConverterFactory
@@ -1379,6 +1396,7 @@ oj.ConverterFactory =
    * @member
    * @type {string}
    */
+
   "CONVERTER_TYPE_DATETIME" : 'datetime',
   
   /**
@@ -1402,6 +1420,10 @@ oj.ConverterFactory =
    * for its initialization. The properties provided in the options is implementation specific.
    * 
    * @return {Object} a converter instance.
+   * @ojsignature { target: "Type", 
+   *                value: "oj.Converter<V>",
+   *                for: "returns"}
+   * @instance
    * @throws {TypeError} if an unrecognized type was provided 
    * @expose
    * 
@@ -1443,7 +1465,7 @@ oj.ConverterFactory =
    *  span.innerHTML = content.value;
    * ...
    */
-  createConverter : function(options) {}  
+  createConverter : function(options) {}
 };
 
 /**
@@ -1456,7 +1478,9 @@ oj.ConverterFactory =
  * @name oj.ValidatorFactory
  * @abstract
  * @class
+ * @ojsignature {target: "Type", value: "class ValidatorFactory<V>"}
  * @export
+ * @since 0.6
  * @see oj.Validation
  * @see oj.DateRestrictionValidatorFactory
  * @see oj.DateTimeRangeValidatorFactory
@@ -1583,6 +1607,10 @@ oj.ValidatorFactory =
    * 
    * @return {Object} a validator instance.
    * @throws {TypeError} if an unrecognized type was provided 
+   * @ojsignature { target: "Type", 
+   *                value: "oj.Validator<V>",
+   *                for: "returns"}
+   * @instance
    * @expose
    * @see oj.DateRestrictionValidator
    * @see oj.DateTimeRangeValidator
@@ -1591,7 +1619,14 @@ oj.ValidatorFactory =
    * @see oj.RegExpValidator
    * @see oj.RequiredValidator
    */
-  createValidator : function(options) {}  
+  createValidator : function(options) {} 
+
+  /**
+   * A ducktype for accessing converter or validator created and/ registered by referring to {@link oj.Validation.validatorFactory} or {@link oj.Validation.converterFactory}
+   * @typedef {object} oj.Validation.FactoryRegisteredValidatorOrConverter
+   * @property {string} type the name of the factory registered
+   * @property {Object=} options options to the validator or converter
+   */
 };
 
 /**
@@ -1609,7 +1644,9 @@ oj.ValidatorFactory =
  * @param {Object=} options an object literal used to provide an optional information to 
  * initialize the converter.<p>
  * @export
- * @constructor
+ * @ojsignature {target: "Type", value: "class Converter<V>"}
+ * @abstract
+ * @class
  * @since 0.6
  */
 oj.Converter = function(options)
@@ -1626,6 +1663,7 @@ oj.Object.createSubclass(oj.Converter, oj.Object, "oj.Converter");
  * @param {Object=} options an object literal used to provide an optional information to 
  * initialize the converter.<p>
  * @export
+ * @ignore
  */
 oj.Converter.prototype.Init = function(options) 
 {
@@ -1639,14 +1677,16 @@ oj.Converter.prototype.Init = function(options)
 /**
  * Returns a hint that describes the converter format expected.
  * @method getHint
- * @return {String|null} a hint describing the format the value is expected to be in.
+ * @return {string|null} a hint describing the format the value is expected to be in.
  * @memberof oj.Converter
+ * @ojsignature {target: "Type", value: "?(): string|null"}
  * @instance
  */
 
 /**
  * Returns the options called with converter initialization.
  * @return {Object} an object of options.
+ * @ojsignature {target: "Type", value: "?(): object"}
  * @export
  */
 oj.Converter.prototype.getOptions = function () 
@@ -1658,8 +1698,11 @@ oj.Converter.prototype.getOptions = function ()
 /**
  * Parses a String value using the options provided. 
  * @method parse
- * @param {String} value to parse
- * @return {(Number|Date)} the parsed value. 
+ * @param {string} value to parse
+ * @return {*} the parsed value. 
+ * @ojsignature [
+ *                {target: "Type", value: "V", for: "returns"}
+ *              ]
  * @throws {Error} if parsing fails
  * @memberof oj.Converter
  * @instance
@@ -1668,10 +1711,11 @@ oj.Converter.prototype.getOptions = function ()
 /**
  * Formats the value using the options provided. 
  * 
- * @param {(Number|Date)} value the value to be formatted for display
- * @return {(String|null)} the localized and formatted value suitable for display
+ * @param {*} value the value to be formatted for display
+ * @return {(string|null)} the localized and formatted value suitable for display
  * @throws {Error} if formatting fails.
  * @method format
+ * @ojsignature {target: "Type", value: "V", for: "value"}
  * @memberof oj.Converter
  * @instance
  */
@@ -1681,6 +1725,7 @@ oj.Converter.prototype.getOptions = function ()
  * the object. If options was not provided at the time of initialization, the properties will be 
  * derived from the locale defaults.
  * @return {Object} an object of resolved options.
+ * @ojsignature {target: "Type", value: "?(): object"}
  * @export
  */
 oj.Converter.prototype.resolvedOptions = function ()
@@ -1701,6 +1746,8 @@ oj.Converter.prototype.resolvedOptions = function ()
  * @param {string} summary a localized String that provides a summary of the error
  * @param {string} detail a localized String that provides a detail of the error
  * @constructor
+ * @ojtsimport ojmessaging
+ * @since 0.6
  * @export
  */
 oj.ConverterError = function (summary, detail)
@@ -1718,6 +1765,7 @@ oj.ConverterError.prototype = new Error();
  * @param {Object} message an Object that duck-types oj.Message which is an 
  * Object with summary, detail, and severity properties.
  * @export
+ * @ignore
  */
 oj.ConverterError.prototype.Init = function (message)
 {
@@ -1736,6 +1784,7 @@ oj.ConverterError.prototype.Init = function (message)
  * 
  * @return {Object} an Object that duck-types oj.Message which is an 
  * Object with summary, detail, and severity properties.
+ * @ojsignature {target: "Type", value: "oj.Message", for: "returns"}
  * @export
  */
 oj.ConverterError.prototype.getMessage = function ()
@@ -1754,33 +1803,56 @@ oj.ConverterError.prototype.getMessage = function ()
 /**
  *  @example <caption>Create a Validator and implement its methods.</caption>
  * 
- *  var TimeIncrementValidator = function () { };
+ *  //Validator to ensure that the selected time is a multiple of 15 minute interval.
+ *  //This converter takes in a converter option which will be used to format the hint/error
+ *  //message shown to the user. It is mandatory to pass the converter option.
+ *  var TimeIncrementValidator = function (options) { 
+ *    if(options && options.converter){
+ *      this._converter = options.converter;
+ *    }
+ *  };
  *  //Need to be a subclass of oj.Validator
  *  oj.Object.createSubclass(TimeIncrementValidator, oj.Validator, "TimeIncrementValidator");
- *  //Below validate function will perform the necessary validation
+ * 
+ *  // Validates if the passed in value is a multiple of 15 minute interval.
+ *  // Throws an error if the validation fails.
  *  TimeIncrementValidator.prototype.validate = function (value)
  *  {
- *    if (!value)
+ *    if (value)
  *    {
- *      return value;
- *    }
- *    value = oj.IntlConverterUtils.isoToLocalDate(value);
- *    var minutes = value.getMinutes();
- *    //Check if the minute is in increment of 15 by taking a modulo
- *    if ((minutes % 15) !== 0)
- *    {
- *      throw new oj.ValidatorError("Uh oh, not an increment value.", "Hey put the increment value not " + value);
- *    }
- *    else 
- *    {
- *      return value;
+ *      var currentTime = oj.IntlConverterUtils.isoToLocalDate(value);
+ *      var previousValidValue, nextValidValue, sampleMinutes;
+ *      var minutes = currentTime.getMinutes();
+ *      //Check if the minute is in increment of 15 by taking a modulo
+ *      if ((minutes % 15) !== 0)
+ *      {
+ *        sampleMinute = Math.floor((minutes / 15))*15;
+ *        currentTime.setMinutes(sampleMinute);
+ *        previousValidValue = oj.IntlConverterUtils.dateToLocalIso(currentTime);
+ *        sampleMinute = sampleMinute+ 15;
+ *        if(sampleMinute >= 60){
+ *          sampleMinute = 0;
+ *          currentTime.setTime(currentTime.getTime() + (60*60*1000));
+ *        }
+ *        currentTime.setMinutes(sampleMinute);
+ *        nextValidValue = oj.IntlConverterUtils.dateToLocalIso(currentTime);
+ *        throw new oj.ValidatorError("Only multiples of 15 minute intervals are allowed.", "For example, " + this._converter.format(previousValidValue) +
+ *                                     " or "+ this._converter.format(nextValidValue));
+ *      }
  *    }
  *  };
  *  
- *  //No hint for this validator
+ *  //Generates a hint message with 4 different samples of valid values.
  *  TimeIncrementValidator.prototype.getHint = function ()
  *  {
- *    return null;
+ *    var currentTime = new Date();
+ *    var hintMessage = "Only 15 minute intervals accepted, for example";
+ *    //generate 4 sample values
+ *    for (var i = 0; i < 4; i++) {
+ *      currentTime.setMinutes(i * 15);
+ *      hintMessage = hintMessage + ", " + this._converter.format(oj.IntlConverterUtils.dateToLocalIso(currentTime));
+ *    }
+ *    return hintMessage;
  *  };
  * @example <caption>Create a Validator and implement its methods. Bind it to the
  * JET form component which will call this 'validate' to validate the user's input.</caption>
@@ -1800,14 +1872,17 @@ oj.ConverterError.prototype.getMessage = function ()
  *  -- HTML --
  *  &lt;oj-input-date id="nextday" value="{{endDate}}" 
  *  validators="{{[weekendDateValidator, endDateValidator]}}">&lt;/oj-input-date>
- * @constructor
+ * @abstract
+ * @class
+ * @param {Object=} options An object which contains the options for the validator
+ * @ojsignature {target: "Type", value: "class Validator<V>"}
  * @export
  * @since 0.6
  * 
  */
-oj.Validator = function()
+oj.Validator = function(options)
 {
-  this.Init();
+  this.Init(options);
 };
 
 // Subclass from oj.Object 
@@ -1816,8 +1891,9 @@ oj.Object.createSubclass(oj.Validator, oj.Object, "oj.Validator");
 /**
  * Initializes validator instance with the set options
  * @export
+ * @ignore
  */
-oj.Validator.prototype.Init = function() 
+oj.Validator.prototype.Init = function(options) 
 {
   oj.Validator.superclass.Init.call(this);
 };
@@ -1825,6 +1901,8 @@ oj.Validator.prototype.Init = function()
 
 /**
  * Validates the value.
+ * The function typically returns true if the validation passes and throws an error if it fails.
+ * However some of the implementations (like LengthValidator) returns the original input if the validation is successful.
  * 
  * @example <caption>Create a Validator and implement the validate method. Bind it to the
  * JET form component which will call this 'validate' to validate the user's input.</caption>
@@ -1844,10 +1922,16 @@ oj.Validator.prototype.Init = function()
  *  -- HTML --
  *  &lt;oj-input-date id="nextday" value="{{endDate}}" 
  *  validators="{{[weekendDateValidator, endDateValidator]}}">&lt;/oj-input-date>
- * @param {Object} value to be validated
- * @return {*} a boolean true if validation passes.
- * @throws Error if validation fails
+ * @param {*} value to be validated
+ * @return {*} a boolean true or the original value if validation passes.
+ * @throws {Error} if validation fails
  * @method validate
+ * @ojsignature [{target: "Type", 
+ *                value: "V",
+ *                for: "value"},
+ *                {target: "Type", 
+ *                value: "void",
+ *                for: "returns"}]
  * @memberof oj.Validator
  * @instance
  */
@@ -1868,9 +1952,10 @@ oj.Validator.prototype.Init = function()
  *  -- HTML --
  *  &lt;oj-input-date id="nextday" value="{{endDate}}" 
  *  validators="{{[weekendDateValidator, endDateValidator]}}">&lt;/oj-input-date>
- * @returns {*} a hint string or null
+ * @returns {string|null} a hint string or null
  * @method getHint
  * @memberof oj.Validator
+ * @ojsignature {target: "Type", value: "?(): string|null"}
  * @instance
  */
 
@@ -1895,6 +1980,8 @@ oj.Validator.prototype.Init = function()
  *    }
  *  };
  * @constructor
+ * @ojtsimport ojmessaging
+ * @since 0.6
  * @export
  */
 oj.ValidatorError = function (summary, detail)
@@ -1913,6 +2000,7 @@ oj.ValidatorError.prototype = new Error();
  * Object with summary, detail, and severity keys. The severity is
  * oj.Message.SEVERITY_LEVEL['ERROR'].
  * @export
+ * @ignore
  */
 oj.ValidatorError.prototype.Init = function (message)
 {
@@ -1939,154 +2027,12 @@ oj.ValidatorError.prototype.Init = function (message)
  * Object with summary, detail, and severity properties.
  * The severity is
  * oj.Message.SEVERITY_LEVEL['ERROR']
+ * @ojsignature {target: "Type", value: "oj.Message", for: "returns"}
  * @export
  */
 oj.ValidatorError.prototype.getMessage = function ()
 {
   return this._message;
-};
-/**
- * Copyright (c) 2008, 2013, Oracle and/or its affiliates.
- * All rights reserved.
- */
-
-/**
- * Constructs a RequiredValidator that ensures that the value provided is not empty
- * @param {Object=} options an object literal used to provide an optional hint and error message.<p>
- * @param {string=} options.hint an optional hint text. There is no default hint provided by this 
- * validator.
- * @param {string=} options.messageSummary - an optional custom error message summarizing the 
- * error. When not present, the default message summary is the resource defined with the key 
- * <code class="prettyprint">oj-validator.required.summary</code>.<p>
- * <p>The messageSummary string is passed as the 'pattern' parameter to
- * [oj.Translations.html#applyParameters]{@link oj.Translations}. As stated in
- * that documentation, if you are using a reserved character, you need to escape it with 
- * a dollar character ('$').
- * </p>
- * Tokens: {label} - this token can be used to substitute the label of the component at runtime. </p>
- * <p>
- * Example:<br/>
- * "'{label}' Required"<br/>
- * </p>
- * @param {string=} options.messageDetail - a custom error message used for creating detail part 
- * of message, when the value provided is empty. When not present, the default message detail is the 
- * resource defined with the key <code class="prettyprint">oj-validator.required.detail</code>.
- * <p>The messageDetail string is passed as the 'pattern' parameter to
- * [oj.Translations.html#applyParameters]{@link oj.Translations}. As stated in
- * that documentation, if you are using a reserved character, you need to escape it with 
- * a dollar character ('$').
- * </p>
- * <p>Tokens: {label} - this token can be used to substitute the label of the component at runtime.</p>
- * <p>
- * Example:<br/>
- * "A value is required for the field '{label}'."<br/>
- * </p>
- * 
- * @export
- * @constructor
- * @augments oj.Validator
- * @since 0.6
- * 
- */
-oj.RequiredValidator = function (options)
-{
-  this.Init(options);
-};
-
-// Subclass from oj.Object or oj.Validator. It does not matter
-oj.Object.createSubclass(oj.RequiredValidator, oj.Validator, "oj.RequiredValidator");
-
-// key to access required validator specific resources in the bundle 
-oj.RequiredValidator._BUNDLE_KEY_DETAIL = "oj-validator.required.detail";
-oj.RequiredValidator._BUNDLE_KEY_SUMMARY = "oj-validator.required.summary";
-
-/**
- * Initializes validator instance with the set options
- * @param {Object=} options
- * @memberof oj.RequiredValidator
- * @instance
- */
-oj.RequiredValidator.prototype.Init = function (options)
-{
-  oj.RequiredValidator.superclass.Init.call(this);
-  this._options = options;
-};
-
-/**
- * Validates value to be non-empty
- * 
- * @param {Object|string|number} value that is being validated 
- * @returns {boolean} true if validation was was successful the value is non-empty
- * 
- * @throws {Error} when fails required-ness check
- * @memberof oj.RequiredValidator
- * @instance
- * @export
- */
-oj.RequiredValidator.prototype.validate = function (value)
-{
-  var detail;
-  var label = "";
-  var localizedDetail;
-  var localizedSummary;
-  var summary;
-  var params = {};
-
-  // checks for empty arrays and String. Objects are considered non-null.
-  // Need to specifically test for if value is 0 first if number is passed on.
-  if ((typeof value === "number" && value === 0) || (value && value.length !== 0))
-  {
-    return true;
-  }
-  else
-  {
-    if (this._options)
-    {
-      // we have deprecated support for message param and instead use messageDetail.
-      detail = this._options['messageDetail'] || this._options['message'] || null;
-      summary = this._options['messageSummary'] || null;
-      label = this._options['label'] || "";
-    }
-    params = {'label': label};
-    localizedSummary = (summary) ? oj.Translations.applyParameters(summary, params) :
-    oj.Translations.getTranslatedString(this._getSummaryKey(), params);
-    localizedDetail = (detail) ?
-    oj.Translations.applyParameters(detail, params) :
-    oj.Translations.getTranslatedString(this._getDetailKey(), params);
-
-    throw new oj.ValidatorError(localizedSummary, localizedDetail);
-  }
-
-};
-
-/**
- * A message to be used as hint, when giving a hint on the expected pattern. There is no default 
- * hint for this property.
- * 
- * @returns {String|string|null} a hint message or null if no hint is available in the options
- * @memberof oj.RequiredValidator
- * @instance
- * @export
- */
-oj.RequiredValidator.prototype.getHint = function ()
-{
-  var hint = "";
-  if (this._options && (this._options['hint']))
-  {
-    hint = oj.Translations.getTranslatedString(this._options['hint']);
-  }
-
-  return hint;
-};
-
-oj.RequiredValidator.prototype._getSummaryKey = function ()
-{
-  return oj.RequiredValidator._BUNDLE_KEY_SUMMARY;
-};
-
-oj.RequiredValidator.prototype._getDetailKey = function ()
-{
-  return oj.RequiredValidator._BUNDLE_KEY_DETAIL;
 };
 /**
  * Copyright (c) 2016, Oracle and/or its affiliates.
@@ -2106,16 +2052,20 @@ oj.RequiredValidator.prototype._getDetailKey = function ()
    * @constructor
    * @augments oj.Converter 
    * @name oj.ColorConverter
+   * @ojtsimport ojcolor
+   * @ojsignature [{target: "Type", 
+   *                value: "class ColorConverter extends Converter<oj.Color>"},
+   *               {target: "Type",
+   *                value: "oj.ColorConverter.ConverterOptions",
+   *                for: "options",
+   *                jsdocOverride: true}
+   *              ]
    
    * @classdesc An {@link oj.Color} object format converter.
    * @desc Creates a Converter that allows any color format to be obtained from an {@link oj.Color} object.
    * @since 0.6
-   * @property {Object=} options - an object literal used to provide optional information to 
+   * @param {Object=} options - an object literal used to provide optional information to 
    * initialize the converter.
-   * @property {string=} options.format - sets the format of the converted color specification.
-   * Allowed values are "rgb" (the default, if omitted), "hsl", "hsv" "hex", and "hex3". "hex" returns six
-   * hex digits ('#rrggbb'), and "hex3" returns three hex digits if possible ('#rgb') or six hex
-   * digits if the value cannot be converted to three.
    * @example <caption>Create a color converter to convert an rgb specification to hsl format</caption>
    * var cvFactory = oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_COLOR);
    * var cv        = cv.createConverter({format: "hsl");
@@ -2128,6 +2078,14 @@ oj.RequiredValidator.prototype._getDetailKey = function ()
     this.Init(options);
   };
 
+  /**
+   * @typedef {object} oj.ColorConverter.ConverterOptions
+   * @property {('rgb'|'hsl'|'hsv'|'hex'|'hex3')=} format - sets the format of the converted color specification.
+   * Allowed values are "rgb" (the default, if omitted), "hsl", "hsv" "hex", and "hex3". "hex" returns six
+   * hex digits ('#rrggbb'), and "hex3" returns three hex digits if possible ('#rgb') or six hex
+   * digits if the value cannot be converted to three.
+   */
+
 // Subclass from oj.Converter 
   oj.Object.createSubclass(oj.ColorConverter, oj.Converter, "oj.ColorConverter");
 
@@ -2136,6 +2094,7 @@ oj.RequiredValidator.prototype._getDetailKey = function ()
    * @param {Object=} options an object literal used to provide an optional information to 
    * initialize the converter.<p>
    * @export
+   * @ignore
    */
   oj.ColorConverter.prototype.Init = function (options)
   {
@@ -2223,6 +2182,7 @@ oj.RequiredValidator.prototype._getDetailKey = function ()
    * Returns an object literal with properties reflecting the color formatting options computed based 
    * on the options parameter.
    * 
+   * @ojsignature {target: "Type", for: "returns", value: "oj.ColorConverter.ConverterOptions"}
    * @return {Object} An object literal containing the resolved values for the following options.
    * <ul>
    * <li><b>format</b>: A string value with the format of the color specification.
@@ -2259,6 +2219,7 @@ oj.RequiredValidator.prototype._getDetailKey = function ()
    *  @param {boolean=} allow3Char  If true the representation is 3 hex characters
    *  (if possible). If false, or omitted, 6 hex characters are used.
    *  @return {string} The hex string representation of the color object.
+   *  @private
    */
   function _toHexString(color, allow3Char)
   {
@@ -2270,6 +2231,7 @@ oj.RequiredValidator.prototype._getDetailKey = function ()
    *  Converts an oj.Color object to an hsl/hsla string 
    *  @param {Object} color  The oj.Color object to be converted to an hsl/hsla string.
    *  @return {string} The hsl/hsla representation of the color object.
+   *  @private
    */
   function _toHslString(color)
   {
@@ -2286,6 +2248,7 @@ oj.RequiredValidator.prototype._getDetailKey = function ()
    *  @param {boolean=} allow3Char  If true the representation is 3 hex characters
    *                   (if possible). If false, or omitted, 6 hex characters are used.
    *  @return {string} The hex string representation of the color object.
+   *  @private
    */
   function _toHex(color, allow3Char)
   {
@@ -2296,6 +2259,7 @@ oj.RequiredValidator.prototype._getDetailKey = function ()
    *  Converts an oj.Color object to an hsv/hsva string 
    *  @param {Object} color  The oj.Color object to be converted to an hsv/hsva string.
    *  @return {string} The hsv/hsva representation of the color object.
+   *  @private
    */
   function _toHsvString(color)
   {
@@ -2320,6 +2284,7 @@ oj.RequiredValidator.prototype._getDetailKey = function ()
    * @param {boolean=} allow3Char  If true the representation is 3 hex characters
    *                   (if possible). If false, or omitted, 6 hex characters are used.
    * @returns {string} a 3 or 6 hex character string.
+   * @private
    */
   function _rgbToHex(r, g, b, allow3Char)
   {
@@ -2350,6 +2315,7 @@ oj.RequiredValidator.prototype._getDetailKey = function ()
    * @param {number} g the green value
    * @param {number} b the blue value
    * @returns {Object} Object with properties h, s, l, in [0, 1].
+   * @private
    */
   function _rgbToHsl(r, g, b)
   {
@@ -2397,6 +2363,7 @@ oj.RequiredValidator.prototype._getDetailKey = function ()
    * @param {number} g the green value
    * @param {number} b the blue value
    * @returns {Object} Object with properties h, s, v, in [0,1].
+   * @private
    */
   function _rgbToHsv(r, g, b)
   {
@@ -2459,7 +2426,8 @@ oj.RequiredValidator.prototype._getDetailKey = function ()
 
 
   /**
-   *   Take input from [0, n] and return it as [0, 1]
+   * Take input from [0, n] and return it as [0, 1]
+   * @private
    */
   function _bound01(n, max)
   {
@@ -2491,6 +2459,7 @@ oj.RequiredValidator.prototype._getDetailKey = function ()
   /**
    *   Need to handle 1.0 as 100%, since once it is a number, there is no difference between it and 1
    *   <http://stackoverflow.com/questions/7422072/javascript-how-to-detect-number-as-a-decimal-including-1-0>
+   *   @private
    */
   function _isOnePointZero(n)
   {
@@ -2501,6 +2470,7 @@ oj.RequiredValidator.prototype._getDetailKey = function ()
    *  Check to see if string passed in is a percentage
    *  @param {string}  n  The number string
    *  @return {boolean}  True if the string contains a '%' character.
+   *  @private
    */
   function _isPercentage(n)
   {
@@ -2514,6 +2484,7 @@ oj.RequiredValidator.prototype._getDetailKey = function ()
    *  if neccessary.  e.g. 'a' -> '0a'
    *  @param {string} c  The hex character(s) to be tested.
    *  @return {string} A two character hex string.
+   *  @private
    */
   function _pad2(c)
   {
@@ -2522,7 +2493,7 @@ oj.RequiredValidator.prototype._getDetailKey = function ()
   ;
 
 
-  /**
+  /*
    *   Throw an invalid color specfication error.
    */
   function _throwInvalidColorSyntax()
@@ -2541,7 +2512,7 @@ oj.RequiredValidator.prototype._getDetailKey = function ()
   ;
 
 
-  /**
+  /*
    *   Throw an invalid converter specfication error.
    */
   function _throwInvalidColorFormatOption()
@@ -2566,385 +2537,6 @@ oj.RequiredValidator.prototype._getDetailKey = function ()
 
 
 /**
- * Copyright (c) 2008, 2013, Oracle and/or its affiliates. 
- * All rights reserved.
- */
-/**
- * A factory implementation to create the built-in color converter of type 
- * {@link oj.ColorConverter}. 
- * 
- * @name oj.ColorConverterFactory
- * @public
- * @class
- * @example <caption>create an instance of the jet color converter using the options provided</caption>
- * var ccf = oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_COLOR);  
- * var options = {format: 'hsl'};
- * var colorConverter = ccf.createConverter(options);
- * @since 0.6
- * 
- */
-oj.ColorConverterFactory = (function () 
-{
-  function _createColorConverter(options) 
-  {
-    return new oj.ColorConverter(options);
-  }
-  
-  /**
-   * 
-   * @public
-   */
-  return {
-    /**
-     * Creates an immutable (jet) color converter instance. 
-     * 
-     * @param {Object=} options an object literal used to provide an optional information to 
-     * initialize the jet color converter. For details on what to pass for options, refer to 
-     * {@link oj.ColorConverter}.
-     * 
-     * @return {oj.ColorConverter} 
-     * @memberOf oj.ColorConverterFactory
-     * @public
-     */
-    'createConverter' : function(options) {
-                             return _createColorConverter(options);
-    }
-  };
-}()); // notice immediate invocation of anonymous function
-
-/** Register the default factory provider function */
-oj.Validation.__registerDefaultConverterFactory(oj.ConverterFactory.CONVERTER_TYPE_COLOR, // factory name
-                                                oj.ColorConverterFactory);
-
-
-// JET VALIDATOR FACTORIES 
-
-/**
- * A factory implementation to create an instance of the built-in required validator of type 
- * {@link oj.RequiredValidator}. 
- * 
- * @example <caption>create an instance of the required validator using the factory</caption>
- * var rvf = oj.Validation.validatorFactory(oj.ValidatorFactory.VALIDATOR_TYPE_REQUIRED); 
- * var options = {'hint' : 'a value is required for this field'};
- * var requiredValidator = rvf.createValidator(options);
- * 
- * @name oj.RequiredValidatorFactory
- * @class
- * @public
- * @since 0.6
- * 
- */
-oj.RequiredValidatorFactory = (function () 
-{
-  
-  function _createRequiredValidator(options) 
-  {
-    return new oj.RequiredValidator(options);
-  }
-  
-  return {
-    /**
-     * Creates an immutable validator instance of type @link oj.RequiredValidator that ensures that 
-     * the value provided is not empty.  
-     * 
-     * @param {Object=} options an object literal used to provide an optional hint and error 
-     * message. See {@link oj.RequiredValidator} for details.<p>
-     * 
-     * @return {oj.RequiredValidator}
-     * @memberOf oj.RequiredValidatorFactory
-     * @public
-     */
-    'createValidator': function(options) {
-      return _createRequiredValidator(options);
-    }
-  };
-}()); // notice immediate invocation of anonymous function
-
-/** Register the default factory provider function */
-oj.Validation.__registerDefaultValidatorFactory(oj.ValidatorFactory.VALIDATOR_TYPE_REQUIRED,
-                                                oj.RequiredValidatorFactory);
-                               
-/**
- * A factory implementation that creates an instance of the built-in regExp validator of type 
- * {@link oj.RegExpValidator}.
- * 
- * @example <caption>create an instance of the regExp validator using the factory</caption>
- * var rvf = oj.Validation.validatorFactory(oj.ValidatorFactory.VALIDATOR_TYPE_REGEXP);  
- * var usernameValidator = rvf.createValidator(
- *  {
- *    'pattern': '[a-zA-Z0-9]{3,}', 
- *    'messageDetail': 'You must enter at least 3 letters or numbers'}
- *  });
- * 
- * @name oj.RegExpValidatorFactory
- * @class
- * @public
- * @since 0.6
- * 
- */
-oj.RegExpValidatorFactory = (function () 
-{
-  
-  function _createRegExpValidator(options) 
-  {
-    return new oj.RegExpValidator(options);
-  }
-  
-  return {
-    /**
-     * Creates an immutable validator instance of type {@link oj.RegExpValidator} that ensures the value 
-     * matches the provided pattern. 
-     * 
-     * @param {Object} options an object literal used to provide the pattern, an optional hint, error 
-     * message among others. See {@link oj.RegExpValidator} for details.<p>
-     * 
-     * 
-     * @return {oj.RegExpValidator} 
-     * @memberOf oj.RegExpValidatorFactory
-     * @public
-     */
-    'createValidator': function(options) {
-      return _createRegExpValidator(options);
-    }
-  };
-}()); // notice immediate invocation of anonymous function
-
-/** Register the default factory provider function */
-oj.Validation.__registerDefaultValidatorFactory(oj.ValidatorFactory.VALIDATOR_TYPE_REGEXP,
-                                                oj.RegExpValidatorFactory);
-                                        
-                              
-/**
- * Returns an instance of oj.LengthValidatorFactory that provides a factory method to create an 
- * instance of a length validator. 
- * 
- * @example <caption>create an instance of the length validator using the factory</caption>
- * var lvf = oj.Validation.validatorFactory(oj.ValidatorFactory.VALIDATOR_TYPE_LENGTH);
- * var options = {hint: {max: 'Enter {max} or fewer characters'}, max: 10};
- * var lValidator = lvf.createValidator(options);
- * 
- * @name oj.LengthValidatorFactory
- * @class
- * @public
- * @since 0.6
- * 
- */
-oj.LengthValidatorFactory = (function () 
-{
-  
-  function _createLengthValidator(options) 
-  {
-    return new oj.LengthValidator(options);
-  }
-  
-  return {
-    /**
-     * Creates an immutable validator instance of type oj.LengthValidator that ensures that the 
-     * value provided is withing a given length.
-     * 
-     * @param {Object=} options an object literal used to provide the 'minimum', 'maximum' and other 
-     * optional values. See {@link oj.LengthValidator} for details.<p>
-     * 
-     * @return {oj.LengthValidator}
-     * @memberOf oj.LengthValidatorFactory
-     * @public
-     */
-    'createValidator': function(options) {
-      return _createLengthValidator(options);
-    }
-  };
-}()); // notice immediate invocation of anonymous function
-
-/** Register the default factory provider function */
-oj.Validation.__registerDefaultValidatorFactory(oj.ValidatorFactory.VALIDATOR_TYPE_LENGTH,
-                                                oj.LengthValidatorFactory);
-/**
- * Copyright (c) 2008, 2013, Oracle and/or its affiliates.
- * All rights reserved.
- */
-
-/**
- * Constructs a RegExpValidator that ensures the value matches the provided pattern
- * @param {Object} options an object literal used to provide the pattern, an optional hint and error 
- * message.
- * @param {RegExp=} options.pattern - a regexp pattern that the validator matches a value against.<p>
- * Example:<br/>
- * '\\d{10}'
- * @param {string=} options.hint - an optional hint text. There is no default hint provided by the 
- * validator. It is generally not recommended to show the actual pattern in the hint as it might be 
- * confusing to end-user, but if you do, you can use the {pattern} token.<p>
- * <p>The hint string is passed as the 'pattern' parameter to
- * [oj.Translations.html#applyParameters]{@link oj.Translations}. As stated in
- * that documentation, if you are using a reserved character, you need to escape it with 
- * a dollar character ('$').
- * </p>
- * Tokens: <br/>
- * {pattern} - the pattern to enforce<p>
- * Example:<br/>
- * "value must meet this pattern {pattern}" 
- * @param {string=} options.messageSummary - a custom error message summarizing the error when the 
- * users input does not match the specified pattern. When not present, the default summary is the 
- * resource defined with the key <code class="prettyprint">oj-validator.regExp.summary</code>. 
- * It is generally not recommended to show the actual pattern in the message as it might be 
- *  confusing to end-user. <p>
- * <p>The messageSummary string is passed as the 'pattern' parameter to
- * [oj.Translations.html#applyParameters]{@link oj.Translations}. As stated in
- * that documentation, if you are using a reserved character, you need to escape it with 
- * a dollar character ('$').
- * </p>
- * Tokens: <p>
- * {label} - label of the component for which this message applies. The label may not always be 
- * available depending on the usage of the validator. <br/>
- * {pattern} - the pattern the value should match<br/>
- * {value} - value entered by user<p>
- * Examples:<br/>
- * "'{label}' Format Incorrect" // translating to 'Phone Number' Format Incorrect
- * @param {string=} options.messageDetail - a custom error message to be used for creating detail 
- * part of message, when the users input does not match the specified pattern. When not present, the 
- * default detail message is the resource defined with the key 
- * <code class="prettyprint">oj-validator.regExp.detail</code>.<p>
- * <p>The messageDetail string is passed as the 'pattern' parameter to
- * [oj.Translations.html#applyParameters]{@link oj.Translations}. As stated in
- * that documentation, if you are using a reserved character, you need to escape it with 
- * a dollar character ('$').
- * </p>
- * Tokens:<br/>
- * {label} - label text of the component for which this message applies. <br/>
- * {pattern} the 'pattern' that the value should match <br/>
- * {value} value entered by the user <p>
- * Examples:<br/>
- * "The value {value} must contain at least 3 alphanumeric characters"<br/>
- * @export
- * @constructor
- * @augments oj.Validator 
- * @since 0.6
- */
-oj.RegExpValidator = function (options)
-{
-  this.Init(options);
-};
-
-// Subclass from oj.Object or oj.Validator. It does not matter
-oj.Object.createSubclass(oj.RegExpValidator, oj.Validator, "oj.RegExpValidator");
-
-// key to access required validator specific resources in the bundle 
-oj.RegExpValidator._BUNDLE_KEY_DETAIL = "oj-validator.regExp.detail";
-oj.RegExpValidator._BUNDLE_KEY_SUMMARY = "oj-validator.regExp.summary";
-
-/**
- * Initializes validator instance with the set options
- * @param {Object} options
- * @memberof oj.RegExpValidator
- * @instance
- */
-oj.RegExpValidator.prototype.Init = function (options)
-{
-  oj.RegExpValidator.superclass.Init.call(this);
-  this._options = options;
-};
-
-/**
- * Validates value for matches using the regular expression provided by the pattern. This method 
- * does not raise an error when value is the empty string or null; the method returns true indicating
- * that the validation was successful. If the application wants the empty string to fail validation, 
- * then the application should chain in the required validator (e.g., set required on the input). 
- *  
- * @param {string|number} value that is being validated 
- * @returns {boolean} true if validation was successful 
- * 
- * @throws {Error} when there is no match
- * @memberof oj.RegExpValidator
- * @instance
- * @export
- */
-oj.RegExpValidator.prototype.validate = function (value)
-{
-  var detail;
-  var label;
-  var params;
-  var pattern = (this._options && this._options['pattern']) || "";
-
-  var summary;
-
-
-  // don't validate null or empty string; per 
-  // There are one of two ways we could handle the empty string:
-  // 1) blow up on null and then require that customers wrap the validator with one that 
-  // succeeds on null if they don’t like the behavior 
-  // 2) Accept null and expect that the application will chain in the required checked if necessary
-  // As a team we decided 2) was better than 1).
-  if (value === null || value === undefined || value === "")
-  {
-    return true;
-  }
-
-  // when using digits as input values parseString becomes a integer type, so get away with it.
-  value = (value || value === 0) ? value.toString() : value;
-
-  // We intend that the pattern provided is matched exactly
-  var exactPattern = "^(" + pattern + ")$", valid = false,
-  localizedDetail, localizedSummary, matchArr;
-
-  matchArr = value.match(exactPattern);
-  if ((matchArr !== null) && (matchArr[0] === value))
-  {
-    valid = true;
-  }
-  else
-  {
-    if (this._options)
-    {
-      summary = this._options['messageSummary'] || null;
-      detail = this._options['messageDetail'] || null;
-      label = this._options && this._options['label'] || "";
-    }
-
-    params = {'label': label, 'pattern': pattern, 'value': value};
-    localizedSummary = summary ?
-    oj.Translations.applyParameters(summary, params) :
-    oj.Translations.getTranslatedString(this._getSummaryKey(), params);
-    localizedDetail = (detail) ?
-    oj.Translations.applyParameters(detail, params) :
-    oj.Translations.getTranslatedString(this._getDetailKey(), params);
-
-    throw new oj.ValidatorError(localizedSummary, localizedDetail);
-  }
-
-  return valid;
-};
-
-/**
- * A message to be used as hint, when giving a hint on the expected pattern. There is no default 
- * hint for this property.
- * 
- * @returns {string|null} a hint message or null if no hint is available in the options
- * @memberof oj.RegExpValidator
- * @instance
- * @export
- */
-oj.RegExpValidator.prototype.getHint = function ()
-{
-  var hint = null;
-  var params = {};
-  if (this._options && (this._options['hint']))
-  {
-    params = {'pattern': this._options['pattern']};
-    hint = oj.Translations.applyParameters(this._options['hint'], params);
-  }
-
-  return hint;
-};
-
-oj.RegExpValidator.prototype._getSummaryKey = function ()
-{
-  return oj.RegExpValidator._BUNDLE_KEY_SUMMARY;
-};
-
-oj.RegExpValidator.prototype._getDetailKey = function ()
-{
-  return oj.RegExpValidator._BUNDLE_KEY_DETAIL;
-};
-/**
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
  */
@@ -2952,7 +2544,8 @@ oj.RegExpValidator.prototype._getDetailKey = function ()
 /**
  * @export
  * @class oj.IntlConverterUtils
- * @classdesc Utility function for converters 
+ * @classdesc Utility function for converters
+ * @hideconstructor
  * @since 0.7
  */
 oj.IntlConverterUtils = {};
@@ -3022,9 +2615,13 @@ oj.IntlConverterUtils.getLocalTimeZoneOffset = function()
 /**
  * Given either an Object literal representing a 'converter' option (used in components) or a 
  * converter instance of type oj.Converter, this method returns the converter instance.
+ * You can also pass in a string. In this case, it will return you an instance of a converter
+ * registered with that type. 
  * 
- * @param {Object} converterOption
- * @returns {Object} converterInstance or null if a converter cannot be determined
+ * @param {string| Object} converterOption
+ * @returns {Object|null} converterInstance or null if a converter cannot be determined 
+ * @ojsignature {
+ *        target: "Type", value: "<T>(converterOption: string|oj.Validation.FactoryRegisteredValidatorOrConverter|oj.Converter<T>): oj.Converter<T>|null"}
  * @export
  * @since 0.6
  */
@@ -3288,9 +2885,9 @@ oj.IntlConverterUtils._normalizeIsoString = function(isoString)
 /**
  * Returns a person's initials
  * 
- * @param {string} firstName first name
- * @param {string} lastName last name
- * @returns {string} uppercase concatenation of first letter of first name and first letter
+ * @param {string=} firstName first name
+ * @param {string=} lastName last name
+ * @returns {string|undefined} uppercase concatenation of first letter of first name and first letter
  * of last name.
  * There are the following special cases:
  * - If the name is Arabic characters, it returns empty string.
@@ -3328,7 +2925,26 @@ oj.IntlConverterUtils.getInitials = function(firstName, lastName)
  * using the messageDetail and messageSummary options.
  * <p>
  * @param {Object=} options an object literal used to provide:<p>
- * @param {string=} options.countBy - A string that specifies how to count the length. Valid values are
+ * @export
+ * @constructor
+ * @augments oj.Validator
+ * @ojsignature [{target: "Type", 
+ *                value: "class LengthValidator extends Validator<number|string>"},
+ *               {target: "Type",
+ *                value: "oj.LengthValidator.ValidatorOptions",
+ *                for: "options",
+ *                jsdocOverride: true}
+ *              ]
+ * @since 0.7
+ */
+oj.LengthValidator = function (options)
+{
+  this.Init(options);
+};
+
+/**
+ * @typedef {object} oj.LengthValidator.ValidatorOptions
+ * @property {('codeUnit'|'codePoint')=} countBy - A string that specifies how to count the length. Valid values are
  * <code class="prettyprint">"codeUnit"</code> and <code class="prettyprint">"codePoint"</code>.
  * Defaults to <code class="prettyprint">oj.LengthValidator.defaults.countBy</code> which defaults
  * to <code class="prettyprint">"codeUnit"</code>.<br/>
@@ -3337,29 +2953,29 @@ oj.IntlConverterUtils.getInitials = function(firstName, lastName)
  * <code class="prettyprint">"codePoint"</code> 
  * counts the number of Unicode code points. 
  * Here a Unicode surrogate pair has a length of one.<br/>
- * @param {number=} options.min - a number 0 or greater that is the minimum length of the value.
- * @param {number=} options.max - a number 1 or greater that is the maximum length of the value.
- * @param {Object=} options.hint - an optional object literal of hints to be used. 
+ * @property {number=} min - a number 0 or greater that is the minimum length of the value.
+ * @property {number=} max - a number 1 or greater that is the maximum length of the value.
+ * @property {Object=} hint - an optional object literal of hints to be used. 
  * <p>The hint strings (e.g., hint.min) are  passed as the 'pattern' parameter to
  * [oj.Translations.html#applyParameters]{@link oj.Translations}. As stated in
  * that documentation, if you are using a reserved character, you need to escape it with 
  * a dollar character ('$').
  * </p> 
- * @param {string=} options.hint.max - a hint message to be used to indicate the allowed maximum. 
+ * @property {string=} hint.max - a hint message to be used to indicate the allowed maximum. 
  * When not present, the default hint is the resource defined with the key 
  * <code class="prettyprint">oj-validator.length.hint.max</code>.<p>
  * Tokens: <br/>
  * {max} - the maximum<p>
  * Usage: <br/>
  * Enter {max} or fewer characters
- * @param {string=} options.hint.min - a hint message to be used to indicate the allowed minimum. 
+ * @property {string=} hint.min - a hint message to be used to indicate the allowed minimum. 
  * When not present, the default hint is the resource defined with the key 
  * <code class="prettyprint">oj-validator.length.hint.min</code>.<p>
  * Tokens: <br/>
  * {min} the minimum<p>
  * Usage: <br/>
  * Enter {min} or more characters 
- * @param {string=} options.hint.inRange - a hint message to be used to indicate the allowed range. 
+ * @property {string=} hint.inRange - a hint message to be used to indicate the allowed range. 
  * When not present, the default hint is the resource defined with the key 
  * <code class="prettyprint">oj-validator.length.hint.inRange</code>.<p>
  * Tokens: <br/>
@@ -3367,21 +2983,21 @@ oj.IntlConverterUtils.getInitials = function(firstName, lastName)
  * {max} - the maximum<p>
  * Usage: <br/>
  * Enter between {min} and {max} characters
- * @param {string=} options.hint.exact - a hint message to be used, to indicate the exact length. 
+ * @property {string=} hint.exact - a hint message to be used, to indicate the exact length. 
  * When not present, the default hint is the resource defined with the key 
  * <code class="prettyprint">oj-validator.length.hint.exact</code>.<p>
  * Tokens: <br/>
  * {length} the length<p>
  * Usage: <br/>
  * Enter {length} characters
- * @param {Object=} options.messageDetail - an optional object literal of custom error messages to 
+ * @property {Object=} messageDetail - an optional object literal of custom error messages to 
  * be used.
  * <p>The messageDetail strings (e.g., messageDetail.tooLong) are  passed as the 'pattern' 
  * parameter to [oj.Translations.html#applyParameters]{@link oj.Translations}. As stated in
  * that documentation, if you are using a reserved character, you need to escape it with 
  * a dollar character ('$').
  * </p> 
- * @param {string=} options.messageDetail.tooLong - the detail error message to be used as the error 
+ * @property {string=} messageDetail.tooLong - the detail error message to be used as the error 
  * message, when the length of the input value exceeds the maximum value set. When not present, the 
  * default detail message is the resource defined with the key 
  * <code class="prettyprint">oj-validator.length.messageDetail.tooLong</code>.<p>
@@ -3390,7 +3006,7 @@ oj.IntlConverterUtils.getInitials = function(firstName, lastName)
  * {max} - the maximum allowed value<p>
  * Usage: <br/>
  * The {value} has too many characters. Enter {max} or fewer characters, not more.
- * @param {string=} options.messageDetail.tooShort - the detail error message to be used as the error 
+ * @property {string=} messageDetail.tooShort - the detail error message to be used as the error 
  * message, when the length of the input value is less the minimum value set. When not present, the 
  * default detail message is the resource defined with the key 
  * <code class="prettyprint">oj-validator.length.messageDetail.tooShort</code>.<p>
@@ -3399,30 +3015,22 @@ oj.IntlConverterUtils.getInitials = function(firstName, lastName)
  * {min} - the minimum allowed value<p>
  * Usage: <br/>
  * The {value} has too few characters. Enter {min} or more characters, not less.
- * @param {Object=} options.messageSummary - optional object literal of custom error summary message 
+ * @property {Object=} messageSummary - optional object literal of custom error summary message 
  * to be used. 
  * <p>The messageSummary strings (e.g., messageSummary.tooLong) are  passed as the 'pattern' 
  * parameter to [oj.Translations.html#applyParameters]{@link oj.Translations}. As stated in
  * that documentation, if you are using a reserved character, you need to escape it with 
  * a dollar character ('$').
  * </p> 
- * @param {string=} options.messageSummary.tooLong - the message to be used as the summary error 
+ * @property {string=} messageSummary.tooLong - the message to be used as the summary error 
  * message, when the length of the input value exceeds the maximum value set. When not present, the 
  * default message summary is the resource defined with the key 
  * <code class="prettyprint">oj-validator.length.messageSummary.tooLong</code>.
- * @param {string=} options.messageSummary.tooShort - the message to be used as the summary error 
+ * @property {string=} messageSummary.tooShort - the message to be used as the summary error 
  * message, when input value is less than the set minimum value. When not present, the default 
  * message summary is the resource defined with the key 
  * <code class="prettyprint">oj-validator.length.messageSummary.tooShort</code>.
- * @export
- * @constructor
- * @augments oj.Validator
- * @since 0.7
  */
-oj.LengthValidator = function (options)
-{
-  this.Init(options);
-};
 
 /**
  * The set of attribute/value pairs that serve as default values 
@@ -3456,6 +3064,7 @@ oj.Object.createSubclass(oj.LengthValidator, oj.Validator, "oj.LengthValidator")
 /**
  * Initializes validator instance with the set options
  * @param {Object=} options
+ * @ignore
  */
 oj.LengthValidator.prototype.Init = function (options)
 {
@@ -3494,7 +3103,7 @@ oj.LengthValidator.prototype.Init = function (options)
  * A message to be used as hint, when giving a hint about the expected length. There is no default 
  * hint for this property.
  * 
- * @returns {String|null} a hint message or null if no hint is available in the options
+ * @returns {string|null} a hint message or null if no hint is available in the options
  * @memberof oj.LengthValidator
  * @instance
  * @export
@@ -3547,9 +3156,10 @@ oj.LengthValidator.prototype.getHint = function ()
 /**
  * Validates the length of value is greater than minimum and/or less than maximum.
  *
- * @param {string} value that is being validated
+ * @param {string|number} value that is being validated
  * @returns {string} original if validation was successful
- *
+ * @ojsignature {target: "Type", for: "returns",
+ *                value: "void"}
  * @throws {Error} when the length is out of range.
  * @export
  */
@@ -3609,6 +3219,7 @@ oj.LengthValidator.prototype.validate = function (value)
 /**
  * @returns {number} the length of the text counted by UTF-16 codepoint
  *  or codeunit as specified in the countBy option.
+ * @private
  */
 oj.LengthValidator.prototype._getLength = function (text)
 {
@@ -3649,4 +3260,557 @@ oj.LengthValidator.prototype._getLength = function (text)
   }
   return length;
 };
+/**
+ * Copyright (c) 2008, 2013, Oracle and/or its affiliates.
+ * All rights reserved.
+ */
+
+/**
+ * Constructs a RegExpValidator that ensures the value matches the provided pattern
+ * @param {Object=} options an object literal used to provide the pattern, an optional hint and error 
+ * message.
+ * @export
+ * @constructor
+ * @augments oj.Validator 
+ * @ojsignature [{target: "Type", 
+ *                value: "class RegExpValidator extends Validator<string|number>"},
+ *               {target: "Type",
+ *                value: "oj.RegExpValidator.ValidatorOptions",
+ *                for: "options", jsdocOverride: true}
+ *              ]
+ * @since 0.6
+ */
+oj.RegExpValidator = function (options)
+{
+  this.Init(options);
+};
+
+// Subclass from oj.Object or oj.Validator. It does not matter
+oj.Object.createSubclass(oj.RegExpValidator, oj.Validator, "oj.RegExpValidator");
+
+// key to access required validator specific resources in the bundle 
+oj.RegExpValidator._BUNDLE_KEY_DETAIL = "oj-validator.regExp.detail";
+oj.RegExpValidator._BUNDLE_KEY_SUMMARY = "oj-validator.regExp.summary";
+
+/**
+  * @typedef {object} oj.RegExpValidator.ValidatorOptions
+  * @property {string=} pattern - a regexp pattern that the validator matches a value against.<p>
+  * Example:<br/>
+  * '\\d{10}'
+  * @property {string=} hint - an optional hint text. There is no default hint provided by the 
+  * validator. It is generally not recommended to show the actual pattern in the hint as it might be 
+  * confusing to end-user, but if you do, you can use the {pattern} token.<p>
+  * <p>The hint string is passed as the 'pattern' parameter to
+  * [oj.Translations.html#applyParameters]{@link oj.Translations}. As stated in
+  * that documentation, if you are using a reserved character, you need to escape it with 
+  * a dollar character ('$').
+  * </p>
+  * Tokens: <br/>
+  * {pattern} - the pattern to enforce<p>
+  * Example:<br/>
+  * "value must meet this pattern {pattern}" 
+  * @property {string=} messageSummary - a custom error message summarizing the error when the 
+  * users input does not match the specified pattern. When not present, the default summary is the 
+  * resource defined with the key <code class="prettyprint">oj-validator.regExp.summary</code>. 
+  * It is generally not recommended to show the actual pattern in the message as it might be 
+  *  confusing to end-user. <p>
+  * <p>The messageSummary string is passed as the 'pattern' parameter to
+  * [oj.Translations.html#applyParameters]{@link oj.Translations}. As stated in
+  * that documentation, if you are using a reserved character, you need to escape it with 
+  * a dollar character ('$').
+  * </p>
+  * Tokens: <p>
+  * {label} - label of the component for which this message applies. The label may not always be 
+  * available depending on the usage of the validator. <br/>
+  * {pattern} - the pattern the value should match<br/>
+  * {value} - value entered by user<p>
+  * Examples:<br/>
+  * "'{label}' Format Incorrect" // translating to 'Phone Number' Format Incorrect
+  * @property {string=} messageDetail - a custom error message to be used for creating detail 
+  * part of message, when the users input does not match the specified pattern. When not present, the 
+  * default detail message is the resource defined with the key 
+  * <code class="prettyprint">oj-validator.regExp.detail</code>.<p>
+  * <p>The messageDetail string is passed as the 'pattern' parameter to
+  * [oj.Translations.html#applyParameters]{@link oj.Translations}. As stated in
+  * that documentation, if you are using a reserved character, you need to escape it with 
+  * a dollar character ('$').
+  * </p>
+  * Tokens:<br/>
+  * {label} - label text of the component for which this message applies. <br/>
+  * {pattern} the 'pattern' that the value should match <br/>
+  * {value} value entered by the user <p>
+  * Examples:<br/>
+  * "The value {value} must contain at least 3 alphanumeric characters"<br/>
+  */
+/**
+ * Initializes validator instance with the set options
+ * @param {Object=} options
+ * @memberof oj.RegExpValidator
+ * @instance
+ * @ignore
+ */
+oj.RegExpValidator.prototype.Init = function (options)
+{
+  oj.RegExpValidator.superclass.Init.call(this);
+  this._options = options;
+};
+
+/**
+ * Validates value for matches using the regular expression provided by the pattern. This method 
+ * does not raise an error when value is the empty string or null; the method returns true indicating
+ * that the validation was successful. If the application wants the empty string to fail validation, 
+ * then the application should chain in the required validator (e.g., set required on the input). 
+ *  
+ * @param {string|number} value that is being validated 
+ * @returns {boolean} true if validation was successful
+ * @ojsignature {target: "Type", for: "returns",
+ *                value: "void"}
+ * 
+ * @throws {Error} when there is no match
+ * @memberof oj.RegExpValidator
+ * @instance
+ * @export
+ */
+oj.RegExpValidator.prototype.validate = function (value)
+{
+  var detail;
+  var label;
+  var params;
+  var pattern = (this._options && this._options['pattern']) || "";
+
+  var summary;
+
+
+  // don't validate null or empty string; per 
+  // There are one of two ways we could handle the empty string:
+  // 1) blow up on null and then require that customers wrap the validator with one that 
+  // succeeds on null if they don’t like the behavior 
+  // 2) Accept null and expect that the application will chain in the required checked if necessary
+  // As a team we decided 2) was better than 1).
+  if (value === null || value === undefined || value === "")
+  {
+    return true;
+  }
+
+  // when using digits as input values parseString becomes a integer type, so get away with it.
+  value = (value || value === 0) ? value.toString() : value;
+
+  // We intend that the pattern provided is matched exactly
+  var exactPattern = "^(" + pattern + ")$", valid = false,
+  localizedDetail, localizedSummary, matchArr;
+
+  matchArr = value.match(exactPattern);
+  if ((matchArr !== null) && (matchArr[0] === value))
+  {
+    valid = true;
+  }
+  else
+  {
+    if (this._options)
+    {
+      summary = this._options['messageSummary'] || null;
+      detail = this._options['messageDetail'] || null;
+      label = this._options && this._options['label'] || "";
+    }
+
+    params = {'label': label, 'pattern': pattern, 'value': value};
+    localizedSummary = summary ?
+    oj.Translations.applyParameters(summary, params) :
+    oj.Translations.getTranslatedString(this._getSummaryKey(), params);
+    localizedDetail = (detail) ?
+    oj.Translations.applyParameters(detail, params) :
+    oj.Translations.getTranslatedString(this._getDetailKey(), params);
+
+    throw new oj.ValidatorError(localizedSummary, localizedDetail);
+  }
+
+  return valid;
+};
+
+/**
+ * A message to be used as hint, when giving a hint on the expected pattern. There is no default 
+ * hint for this property.
+ * 
+ * @returns {string|null} a hint message or null if no hint is available in the options
+ * @memberof oj.RegExpValidator
+ * @instance
+ * @export
+ */
+oj.RegExpValidator.prototype.getHint = function ()
+{
+  var hint = null;
+  var params = {};
+  if (this._options && (this._options['hint']))
+  {
+    params = {'pattern': this._options['pattern']};
+    hint = oj.Translations.applyParameters(this._options['hint'], params);
+  }
+
+  return hint;
+};
+
+oj.RegExpValidator.prototype._getSummaryKey = function ()
+{
+  return oj.RegExpValidator._BUNDLE_KEY_SUMMARY;
+};
+
+oj.RegExpValidator.prototype._getDetailKey = function ()
+{
+  return oj.RegExpValidator._BUNDLE_KEY_DETAIL;
+};
+/**
+ * Copyright (c) 2008, 2013, Oracle and/or its affiliates.
+ * All rights reserved.
+ */
+
+/**
+ * Constructs a RequiredValidator that ensures that the value provided is not empty
+ * @param {Object=} options an object literal used to provide an optional hint and error message.<p>
+ * 
+ * @export
+ * @constructor
+ * @augments oj.Validator
+ * @ojsignature [{target: "Type", value: "class RequiredValidator extends Validator<Object|string|number>"},
+ *               {target: "Type", value: "oj.RequiredValidator.ValidatorOptions", for: "options", jsdocOverride: true}]
+ * @since 0.6
+ * 
+ */
+oj.RequiredValidator = function (options)
+{
+  this.Init(options);
+};
+
+// Subclass from oj.Object or oj.Validator. It does not matter
+oj.Object.createSubclass(oj.RequiredValidator, oj.Validator, "oj.RequiredValidator");
+
+// key to access required validator specific resources in the bundle 
+oj.RequiredValidator._BUNDLE_KEY_DETAIL = "oj-validator.required.detail";
+oj.RequiredValidator._BUNDLE_KEY_SUMMARY = "oj-validator.required.summary";
+
+/**
+ * @typedef {object} oj.RequiredValidator.ValidatorOptions
+ * @property {string=} hint an optional hint text. There is no default hint provided by this 
+ * validator.
+ * @property {string=} messageSummary - an optional custom error message summarizing the 
+ * error. When not present, the default message summary is the resource defined with the key 
+ * <code class="prettyprint">oj-validator.required.summary</code>.<p>
+ * <p>The messageSummary string is passed as the 'pattern' parameter to
+ * [oj.Translations.html#applyParameters]{@link oj.Translations}. As stated in
+ * that documentation, if you are using a reserved character, you need to escape it with 
+ * a dollar character ('$').
+ * </p>
+ * Tokens: {label} - this token can be used to substitute the label of the component at runtime. </p>
+ * <p>
+ * Example:<br/>
+ * "'{label}' Required"<br/>
+ * </p>
+ * @property {string=} messageDetail - a custom error message used for creating detail part 
+ * of message, when the value provided is empty. When not present, the default message detail is the 
+ * resource defined with the key <code class="prettyprint">oj-validator.required.detail</code>.
+ * <p>The messageDetail string is passed as the 'pattern' parameter to
+ * [oj.Translations.html#applyParameters]{@link oj.Translations}. As stated in
+ * that documentation, if you are using a reserved character, you need to escape it with 
+ * a dollar character ('$').
+ * </p>
+ * <p>Tokens: {label} - this token can be used to substitute the label of the component at runtime.</p>
+ * <p>
+ * Example:<br/>
+ * "A value is required for the field '{label}'."<br/>
+ * </p>
+ */
+/**
+ * Initializes validator instance with the set options
+ * @param {Object=} options
+ * @memberof oj.RequiredValidator
+ * @instance
+ * @ignore
+ */
+oj.RequiredValidator.prototype.Init = function (options)
+{
+  oj.RequiredValidator.superclass.Init.call(this);
+  this._options = options;
+};
+
+/**
+ * Validates value to be non-empty
+ * 
+ * @param {Object|string|number} value that is being validated 
+ * @returns {boolean} true if validation was was successful the value is non-empty
+ * 
+ * @throws {Error} when fails required-ness check
+ * @ojsignature {target: "Type", for: "returns",
+ *                value: "void"}
+ * @memberof oj.RequiredValidator
+ * @instance
+ * @export
+ */
+oj.RequiredValidator.prototype.validate = function (value)
+{
+  var detail;
+  var label = "";
+  var localizedDetail;
+  var localizedSummary;
+  var summary;
+  var params = {};
+
+  // checks for empty arrays and String. Objects are considered non-null.
+  // Need to specifically test for if value is 0 first if number is passed on.
+  if ((typeof value === "number" && value === 0) || (value && value.length !== 0))
+  {
+    return true;
+  }
+  else
+  {
+    if (this._options)
+    {
+      // we have deprecated support for message param and instead use messageDetail.
+      detail = this._options['messageDetail'] || this._options['message'] || null;
+      summary = this._options['messageSummary'] || null;
+      label = this._options['label'] || "";
+    }
+    params = {'label': label};
+    localizedSummary = (summary) ? oj.Translations.applyParameters(summary, params) :
+    oj.Translations.getTranslatedString(this._getSummaryKey(), params);
+    localizedDetail = (detail) ?
+    oj.Translations.applyParameters(detail, params) :
+    oj.Translations.getTranslatedString(this._getDetailKey(), params);
+
+    throw new oj.ValidatorError(localizedSummary, localizedDetail);
+  }
+
+};
+
+/**
+ * A message to be used as hint, when giving a hint on the expected pattern. There is no default 
+ * hint for this property.
+ * 
+ * @returns {string|null} a hint message or null if no hint is available in the options
+ * @memberof oj.RequiredValidator
+ * @instance
+ * @export
+ */
+oj.RequiredValidator.prototype.getHint = function ()
+{
+  var hint = "";
+  if (this._options && (this._options['hint']))
+  {
+    hint = oj.Translations.getTranslatedString(this._options['hint']);
+  }
+
+  return hint;
+};
+
+oj.RequiredValidator.prototype._getSummaryKey = function ()
+{
+  return oj.RequiredValidator._BUNDLE_KEY_SUMMARY;
+};
+
+oj.RequiredValidator.prototype._getDetailKey = function ()
+{
+  return oj.RequiredValidator._BUNDLE_KEY_DETAIL;
+};
+/**
+ * Copyright (c) 2008, 2013, Oracle and/or its affiliates. 
+ * All rights reserved.
+ */
+/**
+ * A factory implementation to create the built-in color converter of type 
+ * {@link oj.ColorConverter}. 
+ * 
+ * @name oj.ColorConverterFactory
+ * @public
+ * @class
+ * @hideconstructor
+ * @example <caption>create an instance of the jet color converter using the options provided</caption>
+ * var ccf = oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_COLOR);  
+ * var options = {format: 'hsl'};
+ * var colorConverter = ccf.createConverter(options);
+ * @since 0.6
+ * 
+ */
+oj.ColorConverterFactory = (function () 
+{
+  function _createColorConverter(options) 
+  {
+    return new oj.ColorConverter(options);
+  }
+  
+  /**
+   * 
+   * @public
+   */
+  return {
+    /**
+     * Creates an immutable (jet) color converter instance. 
+     * 
+     * @param {Object=} options an object literal used to provide an optional information to 
+     * initialize the jet color converter. For details on what to pass for options, refer to 
+     * {@link oj.ColorConverter}.
+     * 
+     * @return {oj.ColorConverter} 
+     * @ojsignature {target: "Type", for: "options", value: "oj.ColorConverter.ConverterOptions"}
+     * @instance
+     * @memberOf oj.ColorConverterFactory
+     * @public
+     */
+    'createConverter' : function(options) {
+                             return _createColorConverter(options);
+    }
+  };
+}()); // notice immediate invocation of anonymous function
+
+/** Register the default factory provider function */
+oj.Validation.__registerDefaultConverterFactory(oj.ConverterFactory.CONVERTER_TYPE_COLOR, // factory name
+                                                oj.ColorConverterFactory);
+
+// JET VALIDATOR FACTORIES 
+
+/**
+ * A factory implementation to create an instance of the built-in required validator of type 
+ * {@link oj.RequiredValidator}. 
+ * 
+ * @example <caption>create an instance of the required validator using the factory</caption>
+ * var rvf = oj.Validation.validatorFactory(oj.ValidatorFactory.VALIDATOR_TYPE_REQUIRED); 
+ * var options = {'hint' : 'a value is required for this field'};
+ * var requiredValidator = rvf.createValidator(options);
+ * 
+ * @name oj.RequiredValidatorFactory
+ * @hideconstructor
+ * @class
+ * @public
+ * @since 0.6
+ * 
+ */
+oj.RequiredValidatorFactory = (function () 
+{
+  
+  function _createRequiredValidator(options) 
+  {
+    return new oj.RequiredValidator(options);
+  }
+  
+  return {
+    /**
+     * Creates an immutable validator instance of type @link oj.RequiredValidator that ensures that 
+     * the value provided is not empty.  
+     * 
+     * @param {Object=} options an object literal used to provide an optional hint and error 
+     * message. See {@link oj.RequiredValidator} for details.<p>
+     * 
+     * @return {oj.RequiredValidator}
+     * @ojsignature {target: "Type", for: "options", value: "oj.RequiredValidator.ValidatorOptions"}
+     * @memberOf oj.RequiredValidatorFactory
+     * @instance
+     * @public
+     */
+    'createValidator': function(options) {
+      return _createRequiredValidator(options);
+    }
+  };
+}()); // notice immediate invocation of anonymous function
+
+/** Register the default factory provider function */
+oj.Validation.__registerDefaultValidatorFactory(oj.ValidatorFactory.VALIDATOR_TYPE_REQUIRED,
+                                                oj.RequiredValidatorFactory);
+                               
+/**
+ * A factory implementation that creates an instance of the built-in regExp validator of type 
+ * {@link oj.RegExpValidator}.
+ * 
+ * @example <caption>create an instance of the regExp validator using the factory</caption>
+ * var rvf = oj.Validation.validatorFactory(oj.ValidatorFactory.VALIDATOR_TYPE_REGEXP);  
+ * var usernameValidator = rvf.createValidator(
+ *  {
+ *    'pattern': '[a-zA-Z0-9]{3,}', 
+ *    'messageDetail': 'You must enter at least 3 letters or numbers'}
+ *  });
+ * 
+ * @name oj.RegExpValidatorFactory
+ * @class
+ * @public
+ * @hideconstructor
+ * @since 0.6
+ * 
+ */
+oj.RegExpValidatorFactory = (function () 
+{
+  
+  function _createRegExpValidator(options) 
+  {
+    return new oj.RegExpValidator(options);
+  }
+  
+  return {
+    /**
+     * Creates an immutable validator instance of type {@link oj.RegExpValidator} that ensures the value 
+     * matches the provided pattern. 
+     * 
+     * @param {Object} options an object literal used to provide the pattern, an optional hint, error 
+     * message among others. See {@link oj.RegExpValidator} for details.<p>
+     * 
+     * 
+     * @return {oj.RegExpValidator} 
+     * @memberOf oj.RegExpValidatorFactory
+     * @ojsignature {target: "Type", for: "options", value: "oj.RegExpValidator.ValidatorOptions"}
+     * @instance
+     * @public
+     */
+    'createValidator': function(options) {
+      return _createRegExpValidator(options);
+    }
+  };
+}()); // notice immediate invocation of anonymous function
+
+/** Register the default factory provider function */
+oj.Validation.__registerDefaultValidatorFactory(oj.ValidatorFactory.VALIDATOR_TYPE_REGEXP,
+                                                oj.RegExpValidatorFactory);
+                                        
+                              
+/**
+ * Returns an instance of oj.LengthValidatorFactory that provides a factory method to create an 
+ * instance of a length validator. 
+ * 
+ * @example <caption>create an instance of the length validator using the factory</caption>
+ * var lvf = oj.Validation.validatorFactory(oj.ValidatorFactory.VALIDATOR_TYPE_LENGTH);
+ * var options = {hint: {max: 'Enter {max} or fewer characters'}, max: 10};
+ * var lValidator = lvf.createValidator(options);
+ * 
+ * @name oj.LengthValidatorFactory
+ * @hideconstructor
+ * @class
+ * @public
+ * @since 0.6
+ * 
+ */
+oj.LengthValidatorFactory = (function () 
+{
+  
+  function _createLengthValidator(options) 
+  {
+    return new oj.LengthValidator(options);
+  }
+  
+  return {
+    /**
+     * Creates an immutable validator instance of type oj.LengthValidator that ensures that the 
+     * value provided is withing a given length.
+     * 
+     * @param {Object=} options an object literal used to provide the 'minimum', 'maximum' and other 
+     * optional values. See {@link oj.LengthValidator} for details.<p>
+     * 
+     * @return {oj.LengthValidator}
+     * @memberOf oj.LengthValidatorFactory
+     * @ojsignature {target: "Type", for: "options", value: "oj.LengthValidator.ValidatorOptions"}
+     * @instance
+     * @public
+     */
+    'createValidator': function(options) {
+      return _createLengthValidator(options);
+    }
+  };
+}()); // notice immediate invocation of anonymous function
+
+/** Register the default factory provider function */
+oj.Validation.__registerDefaultValidatorFactory(oj.ValidatorFactory.VALIDATOR_TYPE_LENGTH,
+                                                oj.LengthValidatorFactory);
 });

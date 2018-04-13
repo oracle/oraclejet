@@ -1,0 +1,134 @@
+// Copyright (c) 2014, 2018, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+@import "../../utilities/oj.utilities";
+@import "../../common/helpers/oj.common.helpers";
+
+// ----- start dependencies ---------
+
+// set up include variables before importing dependencies
+@if $includeMessagesClasses != false {
+  $includeIconClasses: true !global;
+  $includePopupClasses: true !global;
+  $includeMessageClasses: true !global;
+}
+
+// import dependencies
+@import "oj.alta.icons";
+@import "oj.alta.popup";
+@import "oj.alta.message";
+
+// ----- end dependencies ---------
+
+// import classes defined in the common directory
+@import "../../common/widgets/oj.common.messages";
+
+@if $includeMessagesClasses != false {
+  @include module-include-once("alta.messages") {
+    
+    //INDIVIDUAL MESSAGE OVERRIDES
+    //////////////////////////////
+    
+    .oj-messages-notification .oj-message-body {
+      padding: 0px 15px 13px 15px;
+    }
+    
+    .oj-messages-notification .oj-message-category {
+      padding: 0px 6px;
+    }
+    
+    .oj-messages-notification .oj-message-timestamp {
+      padding: 0px 2px;
+    }
+    
+    oj-messages:not(.oj-messages-notification) .oj-message-timestamp {
+      padding: 0px 5px;
+    }
+    
+    // Large-up screen responsive overrides
+    @if $responsiveQueryLargeUp and $responsiveQueryLargeUp != none {
+      @media  #{$responsiveQueryLargeUp} {
+        
+        //INDIVIDUAL MESSAGE OVERRIDES
+        //////////////////////////////
+        
+        oj-messages:not(.oj-messages-notification) .oj-message-header {
+          @include oj-ltr() {
+            padding: 11px 12px 0px 20px;
+          }
+          @include oj-rtl() {
+            padding: 11px 20px 0px 12px;
+          }
+        }
+        
+        oj-messages:not(.oj-messages-notification) .oj-message-body {
+          @include oj-ltr() {
+            padding: 0px 20px 20px 46px;
+          }
+          @include oj-rtl() {
+            padding: 0px 46px 20px 20px;
+          }
+        }
+        
+        oj-messages:not(.oj-messages-notification) .oj-message-category {
+          padding: 0px 10px;
+        }
+      }
+    }
+    
+    // Medium-up screen responsive overrides
+    @if $responsiveQueryMediumUp and $responsiveQueryMediumUp != none {
+      @media  #{$responsiveQueryMediumUp} {
+        
+        //INDIVIDUAL MESSAGE OVERRIDES
+        //////////////////////////////
+        
+        .oj-messages-notification .oj-message-header {
+          @include oj-ltr() {
+            padding: 3px 7px 0px 15px;
+          }
+          @include oj-rtl() {
+            padding: 3px 15px 0px 7px;
+          }
+        }
+      }
+    }
+    
+    // Medium screen responsive overrides
+    @if $responsiveQueryMediumOnly and $responsiveQueryMediumOnly != none {
+      @media  #{$responsiveQueryMediumOnly} {
+        
+        //INDIVIDUAL MESSAGE OVERRIDES
+        //////////////////////////////
+        
+        oj-messages:not(.oj-messages-notification) .oj-message-header {
+          @include oj-ltr() {
+            padding: 8px 7px 0px 15px;
+          }
+          @include oj-rtl() {
+            padding: 8px 15px 0px 7px;
+          }
+        }
+      }
+    }
+    
+    // Small screen responsive overrides
+    @if $responsiveQuerySmallOnly and $responsiveQuerySmallOnly != none {
+      @media  #{$responsiveQuerySmallOnly} {
+        
+        //INDIVIDUAL MESSAGE OVERRIDES
+        //////////////////////////////
+        
+        oj-messages:not(.oj-messages-inline) .oj-message-timestamp {
+          padding: 0px 2px;
+        }
+        
+        // Need the 3 specific layout references, otherwise would not override style in the generic 
+        //  ones outside the responsive section above
+        .oj-messages-inline .oj-message-body,
+        .oj-messages-general .oj-message-body,
+        .oj-messages-notification .oj-message-body {
+          padding: 0px 10px 13px 10px;
+        }
+      }
+    }
+  }
+}

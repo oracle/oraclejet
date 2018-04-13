@@ -66,6 +66,66 @@
       width: 100%;
     }
 
+    // oj-input-text specific
+    // We need to make the wrapper position relative so that we can make the
+    // clear icon button position absolute.
+    .oj-inputtext {
+      position: relative;
+    }
+    // clear icon styles    
+    .oj-inputtext .oj-inputtext-clear-icon-btn {
+      position: absolute;
+      @include oj-display-inline-flex-property();
+      @include oj-align-items-property(center);
+      @include oj-justify-content-property(center);
+      height: $formControlInputHeight;
+      width: 25px;
+      text-decoration: none;
+      cursor: default;
+
+      @include oj-ltr() {
+        right: 0px;
+      }      
+      @include oj-rtl() {
+        left: 0px;
+      }
+    }
+    // override background color set in a:active (mobile)
+    a.oj-inputtext-clear-icon-btn:active {
+      background-color: transparent;
+    }
+    .oj-inputtext-clear-icon {
+      @extend .oj-fwk-icon-cross03;
+      margin-top: 1px;
+      color: inherit;
+    }
+    // No focus ring
+    .oj-inputtext .oj-inputtext-clear-icon-btn:focus {
+      outline:none;
+    }
+    // if clear-icon="conditional", we make it visible on focus or hover
+    .oj-inputtext.oj-focus:not(.oj-form-control-empty-clearicon).oj-inputtext-clearicon-conditional .oj-inputtext-clear-icon-btn,
+    .oj-inputtext.oj-hover:not(.oj-form-control-empty-clearicon).oj-inputtext-clearicon-conditional .oj-inputtext-clear-icon-btn {
+      visibility: visible;
+    }
+    // hide the icon conditionally
+    .oj-inputtext.oj-inputtext-clearicon-conditional .oj-inputtext-clear-icon-btn {
+      visibility: hidden;
+    }
+    
+    // add padding when the icon is shown so that the text doesn't show up under
+    // the icon.
+    .oj-inputtext.oj-inputtext-clearicon-visible .oj-inputtext-input,
+    .oj-inputtext.oj-focus.oj-inputtext-clearicon-conditional .oj-inputtext-input,
+    .oj-inputtext.oj-hover.oj-inputtext-clearicon-conditional .oj-inputtext-input {
+      @include oj-ltr() {
+        padding-right: 21px;
+      }      
+      @include oj-rtl() {
+        padding-left: 21px;
+      }
+    }
+
     // general css input styles between the components
     .oj-inputtext-input,
     .oj-inputpassword-input,
@@ -116,7 +176,7 @@
       box-sizing: border-box;
       @include oj-form-control-content-no-focus-padding;
     }
-
+    
     // specific css for textarea-input
     .oj-textarea-input,
     .oj-textarea-nocomp

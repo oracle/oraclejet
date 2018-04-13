@@ -189,6 +189,10 @@ dvt.PictoChart.prototype.render = function(options, width, height) {
  * @override
  */
 dvt.PictoChart.prototype.SetOptions = function(options) {
+  // DataProvider Support : Must be done before setting this.Options
+  // if (options['data'])
+  //   options['items'] = options['data'];
+
   if (options) {
     // Combine the user options with the defaults and store
     this.Options = this.Defaults.calcOptions(options);
@@ -408,6 +412,7 @@ dvt.PictoChart.prototype.getAutomation = function() {
     this._automation = new DvtPictoChartAutomation(this);
   return this._automation;
 };
+
 /**
  * Provides automation services for dvt.PictoChart.
  * @class  DvtPictoChartAutomation
@@ -498,6 +503,7 @@ DvtPictoChartAutomation.prototype.getItem = function(index) {
 DvtPictoChartAutomation.prototype.getItemCount = function() {
   return this._picto.getItems().length;
 };
+
 /**
  * Event Manager for pictoChart component.
  * @param {dvt.PictoChart} picto
@@ -621,6 +627,7 @@ DvtPictoChartEventManager.prototype.processActionEvent = function(obj) {
   if (obj && obj.getAction && obj.getAction())
     this.FireEvent(dvt.EventFactory.newActionEvent('action', obj.getAction(), obj.getId()));
 };
+
 /**
  * Default values and utility functions for component versioning.
  * @class
@@ -663,6 +670,15 @@ DvtPictoChartDefaults.VERSION_1 = {
   '_tooltipLabelStyle': new dvt.CSSStyle('color: #666666; padding: 0px 2px'),
   '_tooltipValueStyle': new dvt.CSSStyle('color: #333333; padding: 0px 2px')
 };
+
+/**
+ * @override
+ */
+DvtPictoChartDefaults.prototype.getAnimationDuration = function(options)
+{ 
+  return options['animationDuration'];
+};
+
 // Copyright (c) 2014, 2016, Oracle and/or its affiliates. All rights reserved.
 
 /**
@@ -744,6 +760,7 @@ DvtPictoChartImageMarker.prototype._setAnimationParams = function(params) {
   this.setWidth(params[2]);
   this.setHeight(params[3]);
 };
+
 // Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
 /**
  * PictoChartItem
@@ -1215,6 +1232,7 @@ DvtPictoChartItem.prototype.setKeyboardTooltipLocation = function(location) {
 DvtPictoChartItem.prototype.getKeyboardTooltipLocation = function() {
   return this._keyboardTooltipLocation;
 };
+
 /**
  * @param {DvtPictoChartEventManager} eventManager The owning event manager.
  * @class DvtPictoChartKeyboardHandler
@@ -1309,7 +1327,8 @@ DvtPictoChartKeyboardHandler.prototype.processKeyDown = function(event) {
   else
     return DvtPictoChartKeyboardHandler.superclass.processKeyDown.call(this, event);
 };
-// Copyright (c) 2014, 2016, Oracle and/or its affiliates. All rights reserved.
+
+// Copyright (c) 2014, 2017, Oracle and/or its affiliates. All rights reserved.
 
 /**
  *  @param {DvtPictChart} picto
@@ -1323,7 +1342,7 @@ DvtPictoChartKeyboardHandler.prototype.processKeyDown = function(event) {
  *  @constructor
  */
 var DvtPictoChartShapeMarker = function(picto, shape, cx, cy, width, height, id) {
-  DvtPictoChartShapeMarker.superclass.Init.call(this, picto.getCtx(), shape == 'none' ? null : shape, dvt.CSSStyle.SKIN_ALTA, cx, cy, width, height, null, true, id);
+  DvtPictoChartShapeMarker.superclass.Init.call(this, picto.getCtx(), shape == 'none' ? null : shape, dvt.CSSStyle.SKIN_ALTA, cx, cy, width, height, null, true, true, id);
   this._picto = picto;
 };
 
@@ -1395,6 +1414,7 @@ DvtPictoChartShapeMarker.prototype._setAnimationParams = function(params) {
   this.setWidth(params[2]);
   this.setHeight(params[3]);
 };
+
 /**
  * Renderer for dvt.PictoChart.
  * @class
@@ -1785,6 +1805,7 @@ DvtPictoChartRenderer.isOriginRight = function(picto) {
   var isEnd = origin == 'topEnd' || origin == 'bottomEnd';
   return dvt.Agent.isRightToLeft(picto.getCtx()) ? !isEnd : isEnd;
 };
+
 dvt.exportProperty(dvt, 'PictoChart', dvt.PictoChart);
 dvt.exportProperty(dvt.PictoChart, 'newInstance', dvt.PictoChart.newInstance);
 dvt.exportProperty(dvt.PictoChart.prototype, 'destroy', dvt.PictoChart.prototype.destroy);
@@ -1796,7 +1817,7 @@ dvt.exportProperty(dvt.PictoChart.prototype, 'select', dvt.PictoChart.prototype.
 dvt.exportProperty(DvtPictoChartAutomation.prototype, 'getDomElementForSubId', DvtPictoChartAutomation.prototype.getDomElementForSubId);
 dvt.exportProperty(DvtPictoChartAutomation.prototype, 'getItem', DvtPictoChartAutomation.prototype.getItem);
 dvt.exportProperty(DvtPictoChartAutomation.prototype, 'getItemCount', DvtPictoChartAutomation.prototype.getItemCount);
-})(dvt);
 
+})(dvt);
   return dvt;
 });

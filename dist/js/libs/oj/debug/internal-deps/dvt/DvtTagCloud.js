@@ -211,6 +211,10 @@ dvt.TagCloud.prototype.select = function(selection) {
  */
 dvt.TagCloud.prototype.SetOptions = function(options) {
   if (options) {
+    // transfer data passed via DataProvider to the items property where our code expects it
+    if (options['data']) {
+      options['items'] = options['data'];
+    }
     // Combine the user options with the defaults and store
     this.Options = this.Defaults.calcOptions(options);
   }
@@ -370,6 +374,7 @@ dvt.TagCloud.prototype.getDragFeedback = function() {
   }
   return displayables;
 };
+
 // APIs called by the ADF Faces drag source for dvt.TagCloud
 /**
  * If this object supports drag, returns the client id of the drag component.
@@ -447,6 +452,7 @@ dvt.TagCloud.prototype.initiateDrag = function() {
 dvt.TagCloud.prototype.dragDropEnd = function() {
   this._dragSource.dragDropEnd();
 };
+
 // APIs called by the ADF Faces drop target for dvt.TagCloud
 /**
  * If a drop is possible at these mouse coordinates, returns the client id
@@ -461,6 +467,7 @@ dvt.TagCloud.prototype.acceptDrag = function(mouseX, mouseY, clientIds) {
     this._dropTarget = new DvtTagCloudDropTarget();
   return this._dropTarget.acceptDrag(mouseX, mouseY, clientIds);
 };
+
 /**
  * Provides automation services for a DVT component.
  * @class  DvtTagCloudAutomation
@@ -549,6 +556,7 @@ DvtTagCloudAutomation.prototype.getItem = function(index) {
 DvtTagCloudAutomation.prototype.getItemCount = function() {
   return this._tagCloud.getObjects().length;
 };
+
 /**
  * Creates an instance of DvtTagCloudItem which extends dvt.BackgroundOutputText with hover and selection feedback.
  * @extends {dvt.BackgroundOutputText}
@@ -561,10 +569,9 @@ DvtTagCloudAutomation.prototype.getItemCount = function() {
  * @param {dvt.CSSStyle} style The CSS style to be applied to the text and background
  * @param {object=} itemStyle The optional style to be applied directly to the item text
  * @param {string=} styleClass The optional class to be applied directly to the item text
- * @param {string=} id The optional id for the corresponding DOM element
  */
-var DvtTagCloudItem = function(tagCloud, context, textStr, x, y, style, itemStyle, styleClass, id) {
-  this.Init(tagCloud, context, textStr, x, y, style, itemStyle, styleClass, id);
+var DvtTagCloudItem = function(tagCloud, context, textStr, x, y, style, itemStyle, styleClass) {
+  this.Init(tagCloud, context, textStr, x, y, style, itemStyle, styleClass);
 };
 
 dvt.Obj.createSubclass(DvtTagCloudItem, dvt.BackgroundOutputText);
@@ -604,11 +611,10 @@ DvtTagCloudItem.ANIMATION_INSERT_PRIORITY = 2;
  * @param {dvt.CSSStyle} style The CSS style to be applied to the text and background
  * @param {object=} itemStyle The optional style to be applied directly to the item text
  * @param {string=} styleClass The optional class to be applied directly to the item text
- * @param {string=} id The optional id for the corresponding DOM element
  * @protected
  */
-DvtTagCloudItem.prototype.Init = function(tagCloud, context, textStr, x, y, style, itemStyle, styleClass, id) {
-  DvtTagCloudItem.superclass.Init.call(this, context, textStr, x, y, style, id);
+DvtTagCloudItem.prototype.Init = function(tagCloud, context, textStr, x, y, style, itemStyle, styleClass) {
+  DvtTagCloudItem.superclass.Init.call(this, context, textStr, x, y, style);
   this._tagCloud = tagCloud;
   this.alignAuto();
 
@@ -826,6 +832,7 @@ DvtTagCloudItem._lightenColor = function(color, opacity) {
   var lighterB = (1 - opacity) * 255 + opacity * b;
   return dvt.ColorUtils.makeRGB(Math.floor(lighterR), Math.floor(lighterG), Math.floor(lighterB));
 };
+
 /**
  * Logical object for tag cloud data object displayables.
  * @param {dvt.TagCloud} tagCloud The owning component
@@ -1147,6 +1154,7 @@ DvtTagCloudObjPeer.prototype.getDragTransferable = function(mouseX, mouseY) {
 DvtTagCloudObjPeer.prototype.getDragFeedback = function(mouseX, mouseY) {
   return this._view.getDragFeedback();
 };
+
 /**
  * Default values and utility functions for component versioning.
  * @class
@@ -1182,6 +1190,7 @@ DvtTagCloudDefaults.VERSION_1 = {
   },
   'touchResponse' : 'auto'
 };
+
 /**
  * Renderer for dvt.TagCloud.
  * @class
@@ -1317,7 +1326,7 @@ DvtTagCloudRenderer._renderItems = function(tagCloud, container, availSpace) {
     style.setStyle(dvt.CSSStyle.FONT_SIZE, fontSizeFunction.call(null, data['value']).toString());
 
     var className = data['svgClassName'] || data['className'];
-    var item = new DvtTagCloudItem(tagCloud, tagCloud.getCtx(), data['label'], 0, 0, style, itemStyle, className, data['id']);
+    var item = new DvtTagCloudItem(tagCloud, tagCloud.getCtx(), data['label'], 0, 0, style, itemStyle, className);
     var peer = new DvtTagCloudObjPeer(tagCloud, item, data);
     tagCloud.EventManager.associate(item, peer);
     tagCloud.registerObject(peer, i);
@@ -1385,6 +1394,7 @@ DvtTagCloudRenderer._adjustAvailSpace = function(availSpace) {
   availSpace.w = Math.round(availSpace.w);
   availSpace.h = Math.round(availSpace.h);
 };
+
 /**
  * Layout utility class for dvt.TagCloud
  */
@@ -1614,6 +1624,7 @@ DvtTagCloudLayoutUtils._calculateLineBreaks = function(arDims, width) {
   }
   return lines;
 };
+
 /**
  * Style related utility functions for DvtChartImpl.
  * @class
@@ -1632,6 +1643,7 @@ dvt.Obj.createSubclass(DvtTagCloudStyleUtils, dvt.Obj);
 DvtTagCloudStyleUtils.getAnimationDuration = function(tagCloud) {
   return tagCloud.getOptions()['styleDefaults']['animationDuration'] / 1000;
 };
+
 /**
  * Event Manager for tree components.
  * @param {dvt.TagCloud} view
@@ -1738,6 +1750,7 @@ DvtTagCloudEventManager.prototype._processActionEvent = function(obj) {
 DvtTagCloudEventManager.prototype.GetTouchResponse = function() {
   return this._view.getOptions()['touchResponse'];
 };
+
 /**
  * @param {dvt.EventManager} manager The owning dvt.EventManager
  * @class DvtTagCloudKeyboardHandler
@@ -1788,6 +1801,7 @@ DvtTagCloudKeyboardHandler.getNextNavigable = function(currentNavigable, event, 
   else
     return null;
 };
+
 /**
  * Drop Target event handler for dvt.TagCloud
  * @class DvtTagCloudDropTarget
@@ -1805,6 +1819,7 @@ dvt.Obj.createSubclass(DvtTagCloudDropTarget, dvt.DropTarget);
 DvtTagCloudDropTarget.prototype.acceptDrag = function(mouseX, mouseY, clientIds) {
   return clientIds[0];
 };
+
 dvt.exportProperty(dvt, 'TagCloud', dvt.TagCloud);
 dvt.exportProperty(dvt.TagCloud, 'newInstance', dvt.TagCloud.newInstance);
 dvt.exportProperty(dvt.TagCloud.prototype, 'render', dvt.TagCloud.prototype.render);
@@ -1815,7 +1830,7 @@ dvt.exportProperty(dvt.TagCloud.prototype, 'select', dvt.TagCloud.prototype.sele
 dvt.exportProperty(DvtTagCloudAutomation.prototype, 'getDomElementForSubId', DvtTagCloudAutomation.prototype.getDomElementForSubId);
 dvt.exportProperty(DvtTagCloudAutomation.prototype, 'getItem', DvtTagCloudAutomation.prototype.getItem);
 dvt.exportProperty(DvtTagCloudAutomation.prototype, 'getItemCount', DvtTagCloudAutomation.prototype.getItemCount);
-})(dvt);
 
+})(dvt);
   return dvt;
 });

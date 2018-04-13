@@ -175,9 +175,9 @@
     }
 
     /*
-     * For disabled headers
+     * For disabled header icons
      */
-    .oj-collapsible.oj-disabled .oj-collapsible-header-icon {
+    .oj-collapsible.oj-disabled > .oj-collapsible-header > .oj-collapsible-header-icon {
       color: $iconColorDisabled;
       opacity: $opacityDisabled;
     }

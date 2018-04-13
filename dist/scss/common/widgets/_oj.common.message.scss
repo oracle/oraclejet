@@ -1,0 +1,123 @@
+// Copyright (c) 2014, 2018, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the 
+//          version in your base theme's directory, 
+//          for example alta/widgets/_oj.alta.message.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+@import "../../utilities/oj.utilities";
+
+@if $includeMessageClasses != false {
+  @include module-include-once("common.message") {
+    
+    oj-message:not(.oj-complete) {
+      visibility: hidden;
+    }
+    
+    .oj-message-container {
+      width:100%;
+      display: inline-flex;
+      flex-direction: column;
+    }
+    
+    .oj-message-header {
+      display: inline-flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .oj-message-leading-header {
+      align-items: center;
+      display: inline-flex;
+    }
+    
+    .oj-message-trailing-header {
+      align-items: center;
+      display:inline-flex;
+    }
+    
+    .oj-message-custom-icon {
+      width: 20px;
+      height: 20px;
+    }
+    
+    .oj-message-category {
+      color: $messageCategoryTextColor;
+      font-size: $messageCategoryFontSize;
+
+      // category text is expected to be single word, but it could be long, like "CONFIRMATION"
+      //  which could end up overlapping the timestamp in small screens, eg. small iphones.
+      //  Allow most lenient wrapping between two adjacent letters to prevent this.
+      word-break: break-all;
+    }
+    
+    .oj-message-category h1 {
+      color: inherit;
+      font-size: inherit;
+      
+      // Supress the undesirable 8px margin and 2px bottom padding in generic h1
+      margin: 0px;
+      padding: 0px;
+      
+      // Supress the undesirable variance in font-weight across themes in generic h1, we want it
+      //  to be normal in all themes in the messages
+      font-weight: 400;
+    }
+    
+    .oj-message-body {
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      align-items: flex-start;
+    }
+    
+    // Inline component messages also share this class
+    .oj-message-summary {
+      font-weight: $messageSummaryFontWeight;
+      color: $messageSummaryTextColor;
+      font-size: $messageSummaryFontSize;
+      
+      // usually a multi word text, set wrap at word ends
+      word-wrap: break-word;
+      line-height: $messageSummaryLineHeight;
+    }
+    
+    // Inline component messages also share this class
+    .oj-message-detail {
+      color: $messageDetailTextColor;
+      font-size: $messageDetailFontSize;
+      
+      // usually a multi word text, set wrap at word ends
+      word-wrap: break-word;
+      line-height: $messageDetailLineHeight;
+    }
+    
+    .oj-message-timestamp {
+      color: $messageTimeTextColor;
+      font-size: $messageTimeFontSize;
+      @include oj-bidi-property($property: 'text-align', $startOrEnd: end);
+      flex-grow: 9;
+      
+      // in worst case let it wrap at word ends so as to not overlap with category text
+      word-wrap: break-word;
+    }
+    
+    .oj-message-close {
+      @include oj-bidi-property($property: 'float', $startOrEnd: end);
+      display: $messageCloseIconDisplay;
+    }
+    
+    // Theme defaults for properties
+    //------------------------------
+
+    $messageDefaults: ();
+
+    @if ($messageAutoTimeoutOptionDefault != null) {
+        $messageDefaults: map-merge($messageDefaults, (autoTimeout: $messageAutoTimeoutOptionDefault));
+    }
+
+    .oj-message-option-defaults {
+        font-family: oj-json-from-map($messageDefaults);
+    }
+  }
+}

@@ -1,4 +1,5 @@
 /**
+ * @license
  * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
@@ -55,6 +56,7 @@ oj.ListViewDndContext.prototype.reset = function()
     this.m_dragImage = null;
     this.m_currentDragItem = null;
     this.m_dragItems = null;
+    this.m_contextMenuItem = null;
 };
 
 /******************************** common helpers ***********************************************/
@@ -164,10 +166,11 @@ oj.ListViewDndContext.prototype._findItem = function(target)
 
 /**
  * Gets selected items
+ * @param {boolean=} excludeContextMenuItem true if to exclude the the item user right clicked on, false or undefined otherwise.
  * @return {Array.<Element>} an array of selected item's elements.
  * @private
  */
-oj.ListViewDndContext.prototype._getSelectedItems = function()
+oj.ListViewDndContext.prototype._getSelectedItems = function(excludeContextMenuItem)
 {
     var items, selection, i, elem;
 
@@ -198,9 +201,17 @@ oj.ListViewDndContext.prototype._getSelectedItems = function()
     }
 
     // include the item right click on, if it's not in the selection already
-    if (this.m_contextMenuItem != null && this.m_contextMenuItem.length > 0 && items.indexOf(this.m_contextMenuItem.get(0)) == -1)
+    if (!excludeContextMenuItem && this.m_contextMenuItem != null && this.m_contextMenuItem.length > 0)
     {
-        items.push(this.m_contextMenuItem.get(0));
+        // verify contextMenuItem is still valid 
+        if (!this.listview.element.get(0).contains(this.m_contextMenuItem.get(0)))
+        {
+            this.m_contextMenuItem = null;
+        }
+        else if (items.indexOf(this.m_contextMenuItem.get(0)) == -1)
+        {
+            items.push(this.m_contextMenuItem.get(0));
+        }
     }
 
     return items;
@@ -379,7 +390,7 @@ oj.ListViewDndContext.prototype._setDraggable = function(target)
                 }
 
               // if dragging an item, it must be already the current item or one of the selected item
-              selectedItems = this._getSelectedItems();
+              selectedItems = this._getSelectedItems(true);
               if (selectedItems.length > 0)
               {
                   // in order to initiate drag the item must be the current active item
@@ -417,7 +428,6 @@ oj.ListViewDndContext.prototype._setDraggable = function(target)
 oj.ListViewDndContext.prototype._unsetDraggable = function(target)
 {
     var cls, dragger;
-
     if (this._getDragOptions() != null || this.IsItemReOrdering())
     {
         cls = this.GetDragAffordanceClass();
@@ -702,7 +712,7 @@ oj.ListViewDndContext.prototype._handleDragStart = function(event)
         }
         else
         {
-            items = this._getSelectedItems();
+            items = this._getSelectedItems(true);
         }
 
         if (items.length > 0)
@@ -806,6 +816,9 @@ oj.ListViewDndContext.prototype._handleDragEnd = function(event)
     this.m_dragImage = null;
     this.m_currentDragItem = null;
     this.m_dragItems = null;
+
+    // focus should now be at document body, since blur event was skipped, do the tabindex change here
+    this.listview._doBlur();
 };
 
 /**
@@ -1188,7 +1201,7 @@ oj.ListViewDndContext.prototype._handleDragLeave = function(event)
 
         // Remove the drop target indicator if we are no longer in listview since
         // this may be the last dnd event we get.
-        if (!this._isDndEventInElement(event, event.currentTarget))
+        if (!this._isDndEventInElement(event, event.currentTarget) && item.hasClass('oj-drop'))
         {
             this._cleanupDropTarget();
             this._restoreGroupItemStyle();
@@ -1480,21 +1493,28 @@ oj.ListViewDndContext.prototype._buildContextMenuListItem = function(command, ta
 {
     var listItem = $(document.createElement(tagName));
     listItem.attr('data-oj-command', command);
-    listItem.append(this._buildContextMenuLabel(command)); //@HTMLUpdateOK
+    listItem.append(this._buildContextMenuLabel(command, tagName === "OJ-OPTION")); //@HTMLUpdateOK
     return listItem;
 };
 
 /**
  * Builds a context menu label by looking up command translation
  * @param {string} command the string to look up translation for
+ * @param {boolean=} useOjOption whether oj-option tag should be used
  * @return {jQuery|string} a jQuery object with HTML containing a label
  * @private
  */
-oj.ListViewDndContext.prototype._buildContextMenuLabel = function(command)
+oj.ListViewDndContext.prototype._buildContextMenuLabel = function(command, useOjOption)
 {
     // convert to the translation key convention
     var key = 'label' + command.charAt(0).toUpperCase() + command.slice(1);
-    return $('<a href="#"></a>').text(this.listview.ojContext.getTranslatedString(key));
+    var textNode = document.createTextNode(this.listview.ojContext.getTranslatedString(key));
+    
+    // for custom elements, no <a> tag is required
+    if (useOjOption)
+        return textNode;
+    else
+        return $('<a href="#"></a>').append(textNode); //@HTMLUpdateOK
 };
 
 /**

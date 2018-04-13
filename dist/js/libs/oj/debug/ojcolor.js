@@ -1,4 +1,5 @@
 /**
+ * @license
  * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
@@ -27,6 +28,27 @@ define(['ojs/ojcore'], function(oj)
       mathMin     = Math.min,
       mathMax     = Math.max;
 
+/**
+ * @typedef {Object} oj.Color.RGBA
+ * @property {number} r the red value
+ * @property {number} g the green value
+ * @property {number} b the blue value
+ * @property {number} [a] the optional alpha value
+ */
+/**
+ * @typedef {Object} oj.Color.HSLA
+ * @property {number} h the hue value
+ * @property {number} s the saturation value
+ * @property {number} l the luminosity or lightness value
+ * @property {number} [a] the optional alpha value
+ */
+/**
+ * @typedef {Object} oj.Color.HSVA
+ * @property {number} h the hue value
+ * @property {number} s the saturation value
+ * @property {number} v the value
+ * @property {number} [a] the optional alpha value
+ */
 /**
  * @class oj.Color
  * @since 3.0.0
@@ -89,6 +111,10 @@ define(['ojs/ojcore'], function(oj)
  *  <li>a: &nbsp; the alpha value (optional)</li>
  * </ul>
  * </li></ul>
+ * @ojsignature {target: "Type", 
+ *               value: "string|oj.Color.RGBA|oj.Color.HSLA|oj.Color.HSVA",
+ *               for: "color",
+ *               jsdocOverride: true}
  * @constructor
  * @throws {Error} if the color specification cannot be parsed correctly.
  * @export

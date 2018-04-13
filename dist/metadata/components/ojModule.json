@@ -1,0 +1,95 @@
+{
+  "name": "oj-module",
+  "version": "5.0.0",
+  "jetVersion": "5.0.0",
+  "displayName": "ojModule Element",
+  "preview": true,
+  "description": "Navigational element that manages content replacement within a particular region of the page.",
+  "properties": {
+    "animation": {
+      "description": "Defines animation object used for view transitions.",
+      "type": "Object",
+      "displayName": "Animation",
+      "value": null
+    },
+    "config": {
+      "description": "An array of strings of allowed MIME types or file extensions that can be uploaded. If not specified, accept all file types",
+      "type": "Object",
+      "displayName": "Config",
+      "value": null,
+      "properties": {
+        "cleanupMode": {
+          "description": "The cleanup mode for the view.",
+          "type": "string",
+          "value": "onDisconnect",
+          "enumValues": [
+            "none",
+            "onDisconnect"
+          ],
+          "propertyEditorValues": {
+            "none": {
+              "description": "Use the setting to preserve the view, e.g. if the view and view model will be stored in external cache.",
+              "displayName": "None"
+            },
+            "onDisconnect": {
+              "description": "The View nodes will be destroyed on disconnect.",
+              "displayName": "On Disconnect"
+            }
+          }
+        },
+        "view": {
+          "description": "Defines module view.",
+          "type": "Array<Node>",
+          "value": null
+        },
+        "viewModel": {
+          "description": "The ViewModel instance.",
+          "type": "Object",
+          "value": null
+        }
+      }
+    }
+  },
+  "events": {
+    "ojTransitionStart": {
+      "description": "Triggered before transition to the new View is started",
+      "detail": {
+        "viewModel": {
+          "description": "ViewModel for the new View.",
+          "type": "Object"
+        }
+      }
+    },
+    "ojViewConnected": {
+      "description": "Triggered after the View is inserted into the DOM",
+      "detail": {
+        "viewModel": {
+          "description": "ViewModel for the View being attached to the DOM.",
+          "type": "Object"
+        }
+      }
+    },
+    "ojTransitionEnd": {
+      "description": "Triggered after transition to the new View is complete",
+      "detail": {
+        "viewModel": {
+          "description": "ViewModel for the new View.",
+          "type": "Object"
+        }
+      }
+    },
+    "ojViewDisconnected": {
+      "description": "Triggered after the View is removed from the DOM",
+      "detail": {
+        "viewModel": {
+          "description": "An array of DOM nodes that represent the disconnected View. The application can use the nodes to store them in cache.",
+          "type": "Object"
+        },
+        "view": {
+          "description": "ViewModel for the new View.",
+          "type": "Array<Node>"
+        }
+      }
+    }
+  }
+}

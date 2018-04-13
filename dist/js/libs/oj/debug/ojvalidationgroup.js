@@ -1,4 +1,5 @@
 /**
+ * @license
  * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
@@ -31,9 +32,12 @@ define(['ojs/ojcore', 'ojs/ojcomponentcore'],
  *  property.
  * </p>
  * <p>The oj-validation-group element searches all its descendents. 
- * Once it finds a component with a valid property, it adds it to the list of components 
- * it is tracking. It does not check that component's children since the component's valid 
- * state should be based on its children's valid state, if any. 
+ * When it finds a component with a <code class="prettyprint">valid</code> property, 
+ * it adds it to the list of components 
+ * it is tracking. For performance reasons it does not search the tracked component's 
+ * children since the tracked component's valid state will  be based on 
+ * its children's valid state, if it has children with valid states.
+
  * Once it finds all the components it needs to track, it calculates its own
  * valid property value based on all the enabled (including hidden) components it tracks.
  * Enabled means not disabled or readonly, so 
@@ -47,6 +51,9 @@ define(['ojs/ojcore', 'ojs/ojcomponentcore'],
  * be notified and will update its own valid value if it has changed.
  * </p>
  * <p>This is an example of the oj-validation-group wrapping the JET form components.
+ * All the JET form components have the <code class="prettyprint">valid</code> property. 
+ * It is not shown in the HTML markup
+ * because it is readonly and cannot be set by the application developer.
  * <pre class="prettyprint">
  * <code>
  * &lt;oj-validation-group>

@@ -1,0 +1,1320 @@
+// Copyright (c) 2014, 2018, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// Copyright (c) 2014, 2018, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+
+
+//-----------------------------------------------------------------------------
+// PALETTE VARIABLES:
+//       these can be thought of as the color palette for the
+//       application. These variables are not used directly
+//       in the widget files, rather they are referred to by
+//       other variables.
+//-----------------------------------------------------------------------------
+
+
+// interaction state colors
+//----------------------------------
+
+// $interaction1Color is often used to
+// indicate a selected state.
+$interaction1Color: #0572ce !default;
+
+// $interaction2Color and $interaction3Color are often
+// used to indicate hover or focus on a row or item
+$interaction2Color: #ebeced !default;
+$interaction3Color: #dcdcde !default;
+
+// $interaction4Color is often used to
+// indicate active or selected on a row or item
+$interaction4Color: #c2ddf7 !default;
+
+// $interaction5Color and $interaction6Color are
+// often used to indicate state in a "header",
+// for example a column header
+$interaction5Color: #d4d4d6 !default;
+$interaction6Color: #dae9f5 !default;
+
+// $interaction7Color is often used to indicate state
+// in a "collection", for example inactive selected
+$interaction7Color: #fafaeb !default;
+
+
+// background colors
+//----------------------------------
+$background1Color: #ffffff !default;
+$background2Color: #f6f6f7 !default;
+$background3Color: #fcfdfe !default;
+$background4Color: #e2e2e5 !default;
+$background5Color: #fafafa !default;
+$background6Color: #daeaf8 !default;
+$contrastBackground1Color: #313334 !default;
+
+// border colors
+//----------------------------------
+$border1Color:       #e7e7e9 !default;
+$border2Color:       #d5dfe5 !default;
+$border3Color:       #c8c8c8 !default;
+$border4Color:       #c8cfd5 !default;
+$border5Color:       $border2Color !default;
+$border6Color:       #000000 !default;
+$border7Color:       #ffffff !default;
+$border8Color:       #4f4f4f !default;
+
+
+//-----------------------------------------------------------------------------
+// TEXT VARIABLES
+//       these variables control text appearance and are
+//       broadly used in the widget specific files. There
+//       may be widget specific text variables that override
+//       or refer to these variables.
+//-----------------------------------------------------------------------------
+
+
+
+// text colors -
+//    these variables are used broadly
+//    in the widget files
+//----------------------------------
+$textColor:             #000 !default;
+$primaryTextColor:      $textColor !default;
+$secondaryTextColor:    #595959!default;
+$tertiaryTextColor:     $secondaryTextColor !default;
+$contrastTextColor:     #ffffff !default;
+$textColorDisabled:     #9e9e9e !default;
+
+$formControlLabelColor: #3a3a3a !default;
+
+$headerTextColor:       #3a3a3a !default;
+
+$linkTextColor:         $interaction1Color !default;
+$linkTextColorActive:   null !default;
+$linkTextColorVisited:  $linkTextColor !default;
+// note that $opacityDisabled is
+// used for a disabled link in addition to color
+$linkTextColorDisabled: $linkTextColor !default;
+
+
+//-----------------------------------------------------------------------------
+// GENERAL VARIABLES
+//       these variables are used to set general theme properties
+//       like icon and drag and drop colors, border radius defaults,
+//       animation duration defaults, etc. These variables
+//       are broadly in the widget specific files.
+//-----------------------------------------------------------------------------
+
+
+// icon colors
+//----------------------------------
+// these are used to control the color of icon font icons
+$iconColor:         $textColor !default;
+// colors for clickable icons below
+$iconColorDefault:  #878c90 !default;
+$iconColorHover:    #85bbe7 !default;
+$iconColorActive:   $interaction1Color !default;
+$iconColorSelected: $iconColorActive !default;
+// note that $opacityDisabled is
+// used for a disabled icon in addition to color
+$iconColorDisabled: $iconColorDefault !default;
+
+// interaction cue colors
+//----------------------------------
+$colorRequired: #ff0000 !default;
+
+// border color
+//----------------------------------
+$borderColorError:   #dd6666 !default;
+$borderColorWarning: #ffd699 !default;
+
+// messaging
+//----------------------------------
+
+// We want to keep the background colors as they are in the UX spec and not
+// derive them from border colors since bg colors need to pass high contrast
+// mode - that is, the bg color needs to be light enough
+// so the text on them can be read easily.
+$messageComponentInlineBorderColorLightnessAdjustment: 4% !default;
+
+$messageComponentInlineBgColorError: #FFF3F3 !default;
+$messageComponentInlineBorderColorError: darken($messageComponentInlineBgColorError, $messageComponentInlineBorderColorLightnessAdjustment) !default;
+
+$messageComponentInlineBgColorWarning: #fff2de !default;
+$messageComponentInlineBorderColorWarning: darken($messageComponentInlineBgColorWarning, $messageComponentInlineBorderColorLightnessAdjustment) !default;
+
+$messageComponentInlineBgColorConfirmation: #E5F6EA !default;
+$messageComponentInlineBorderColorConfirmation: darken($messageComponentInlineBgColorConfirmation, $messageComponentInlineBorderColorLightnessAdjustment) !default;
+
+$messageComponentInlineBgColorInfo: #EAF5FB !default;
+$messageComponentInlineBorderColorInfo: darken($messageComponentInlineBgColorInfo, $messageComponentInlineBorderColorLightnessAdjustment) !default;
+
+// drag and drop
+//----------------------------------
+$dropTarget1Color:  #D9F4FA !default;
+$dropTarget2Color:  adjust-color($dropTarget1Color, $lightness: -6%, $saturation: -10%) !default;
+
+
+// shadow
+//----------------------------------
+$boxShadowColor: #000000 !default;
+$smallBoxShadow:  0 0 5px 0 transparentize($boxShadowColor, .80) !default;
+$mediumBoxShadow: 1px 1px 5px 0 transparentize($boxShadowColor, .60) !default;
+$largeBoxShadow:  1px 1px 10px 0 transparentize($boxShadowColor, .55) !default;
+
+
+// overlay
+//----------------------------------
+// this is used for something like a modal dialog to overlay the
+// rest of the screen, indicating it's not reachable
+$overlayBgColor:     #000000 !default;
+
+
+//-----------------------------------------------------------------------------
+// WIDGET VARIABLES
+//       these variables are widget (or widget group)
+//       specific, for example button or form control variables.
+//-----------------------------------------------------------------------------
+
+
+// BODY
+//-----------------------------------------------------------------------------
+// to override an existing background image use $bodyBgImage: none;
+$bodyBgColor:   $background1Color !default;
+$bodyTextColor: $textColor !default;
+
+
+// LINK
+//-----------------------------------------------------------------------------
+// link text color defined in "text colors" section, look for "$linkTextColor"
+$linkBgColorActive:       $interaction2Color !default;
+
+
+// PANEL
+//-----------------------------------------------------------------------------
+
+// panel defaults:
+$panelBgColor:             $background1Color !default;
+$panelBorderColor:         $border1Color !default;
+$panelBorderColorSelected: $interaction1Color !default;
+
+
+// panel alternatives
+
+
+// using these adjustments panels can choose to
+// consistently determine their border colors by changing
+// the saturation/lightness of their background colors
+$panelBorderColorSaturationAdjustment: 5% !default;
+$panelBorderColorLightnessAdjustment: -5% !default;
+
+
+$panel1BgColor:     $background2Color !default;
+$panel1BorderColor: $border3Color     !default;
+
+$panel2BgColor:     #dae9f5 !default;
+$panel2BorderColor: #aed8fa !default;
+
+
+$panel3BgColor:     #fef9e8 !default;
+$panel3BorderColor: adjust-color($panel3BgColor, $lightness: $panelBorderColorLightnessAdjustment, $saturation: $panelBorderColorSaturationAdjustment) !default;
+
+$panel4BgColor:     #ffe4e1 !default;
+
+// NOTE: we should be using adjust color for $panel4BorderColor like we do for $panel3BorderColor,
+// but unfortunately we're using libsass and the output on windows and linux is not the
+// same which is causing test failures, so hard coding this border color for now.
+// See libsass issue https://github.com/sass/libsass/issues/1554
+$panel4BorderColor: #ffcdc8 !default;
+
+
+$panel5BgColor:     $background4Color !default;
+$panel5BorderColor: $border3Color     !default;
+
+
+// HEADERS
+//-----------------------------------------------------------------------------
+// header text color defined in "text colors" section, look for "$headerTextColor"
+$headerBorderColor:     $border2Color !default;
+
+
+// the background variables below are for a header "container",
+// like the title bar of a dialog or an accordion header
+$headerBgColor:         $background4Color !default;
+$headerBgColorDisabled: $background5Color !default;
+
+
+
+// WINDOW
+//-----------------------------------------------------------------------------
+$windowBorderColor: #c8d7e0 !default;
+$windowBgColor:     $background1Color !default;
+
+// NOTE WINDOW
+//-----------------------------------------------------------------------------
+$noteWindowBorderColor:      $windowBorderColor !default;
+$noteWindowBgColor:          $windowBgColor !default;
+$noteWindowBoxShadow: $smallBoxShadow !default;
+
+// POPUP
+//-----------------------------------------------------------------------------
+// popups are sometimes called a "dropdown" or "inline selector"
+$popupBorderColor:  $windowBorderColor !default;
+$popupBgColor:      $background1Color !default;
+$popupBoxShadow:    $smallBoxShadow !default;
+
+// APPLICATION LAYOUT - WEB
+//-------------------------------------------------------------
+
+// Header
+$appLayoutWebHeaderBgColor: $headerBgColor !default;
+$appLayoutWebHeaderBorderColor: $border2Color !default;
+$appLayoutWebHeaderTextColor: $secondaryTextColor !default;
+$appLayoutWebHeaderBoxShadow: 0 3px 3px transparentize($boxShadowColor, .9) !default;
+
+// Footer
+$appLayoutWebFooterBgColor: $appLayoutWebHeaderBgColor !default;
+$appLayoutWebFooterBorderColor: $appLayoutWebHeaderBorderColor !default;
+
+// Offcanvas
+$appLayoutWebOffcanvasBgColor: $contrastBackground1Color !default;
+
+// APPLICATION LAYOUT - HYBRID
+//-------------------------------------------------------------
+
+// Header
+$appLayoutHybridHeaderTextColor: $textColor !default;
+$appLayoutHybridHeaderBorderColor: null !default;
+$appLayoutHybridHeaderBgColor: $background2Color !default;
+$appLayoutHybridHeaderBoxShadow: none !default;
+
+// Footer
+$appLayoutHybridFooterBorderColor: null !default;
+$appLayoutHybridFooterBgColor: $appLayoutHybridHeaderBgColor !default;
+
+// Nav Bar
+$appLayoutHybridNavBarBoxShadow: none !default;
+
+// Nav Drawer
+$appLayoutHybridOffcanvasBgColor: $appLayoutWebOffcanvasBgColor !default;
+
+
+// MENU
+//-----------------------------------------------------------------------------
+
+// menu parts
+//----------------------------------
+
+// menus (.oj-menu), whether top-level or submenu
+$menuBorderColor:                    $windowBorderColor !default;
+$menuBgColor:                          $popupBgColor !default;
+
+// top-level menus (.oj-menu.oj-component)
+$menuBoxShadow:                      none !default;
+
+// submenus (.oj-menu.oj-menu-submenu)
+$menuSubmenuBoxShadow:               $menuBoxShadow !default;
+
+// menu items (.oj-menu-item) and their anchors
+$menuItemBorderColor:                  null !default;
+$menuItemTextColor:                  $headerTextColor !default;
+
+// disabled menu items and their anchors
+$menuItemTextColorDisabled:          transparentize($menuItemTextColor, 0.80) !default;
+
+// focused menu items (.oj-focus) and their ancestor menu items (.oj-focus-ancestor)
+$menuItemBgColorFocus:               $interaction3Color !default;
+$menuItemBorderColorFocus:             null !default;
+
+// menu icons (.oj-menu-item-icon), not submenu icons
+$menuIconColor:                      $interaction1Color !default;
+
+// disabled menu icons, not submenu icons
+$menuIconColorDisabled:                null !default;
+
+// submenu icons
+$menuSubmenuIconColor:               #999 !default; // fill color of SVG icon in UX spec
+
+// menu group dividers (.oj-menu-divider, different than the border that iOS puts between every menu item)
+$menuDividerBorderColor:             $border2Color !default;
+
+
+// sheet menus
+//----------------------------------
+
+// sheet menus (.oj-menu-sheet)
+$menuSheetBgColor:                     $menuBgColor !default;
+
+// sheet menu items (.oj-menu-item) and their anchors
+$menuSheetItemBorderColor:             $menuItemBorderColor !default;
+$menuSheetItemBgColor:                 null !default;
+$menuSheetItemTextColor:             transparentize($textColor, .1) !default;
+
+// disabled sheet menu items and their anchors
+$menuSheetItemTextColorDisabled:     transparentize($textColor, .8) !default;
+
+// focused sheet menu items (.oj-focus)
+$menuSheetItemBgColorFocus:            $menuItemBgColorFocus !default;
+$menuSheetItemBorderColorFocus:        $menuItemBorderColorFocus !default;
+
+// sheet menu group dividers (.oj-menu-divider, different than the border that iOS puts between every menu item)
+$menuSheetDividerBorderColor:          $menuDividerBorderColor !default;
+
+
+
+// BUTTONS
+//-----------------------------------------------------------------------------
+
+// button states
+//----------------------------------
+// default
+$buttonBgColor:                   $interaction1Color !default;
+$buttonTextColor:                 $contrastTextColor !default;
+$buttonIconColor:                 $buttonTextColor !default;
+$buttonBorderColor:               $buttonBgColor!default;
+$buttonInternalBorderColor:       #c4ced7 !default;
+$buttonTextShadow:                null !default;
+$buttonBoxShadow:                 null !default;
+
+// hover
+$buttonBgColorHover:              darken($interaction4Color, 14%) !default;
+$buttonTextColorHover:            $buttonTextColor !default;
+$buttonIconColorHover:            $buttonTextColorHover !default;
+$buttonBorderColorHover:          $buttonBgColorHover !default;
+$buttonTextShadowHover:           null !default;
+$buttonBoxShadowHover:            $buttonBoxShadow !default;
+
+// active
+$buttonBgColorActive:             darken($interaction1Color, 12%) !default;
+$buttonTextColorActive:           $buttonTextColor !default;
+$buttonIconColorActive:           $buttonTextColorActive !default;
+$buttonBorderColorActive:         $buttonBgColorActive !default;
+$buttonInternalBorderColorActive: $buttonInternalBorderColor !default;
+$buttonTextShadowActive:          null !default;
+$buttonBoxShadowActive:           $buttonBoxShadow !default;
+
+// selected - default to use active values
+$buttonBgColorSelected:           darken($buttonBgColor, 15%) !default;
+$buttonTextColorSelected:         $buttonTextColorActive !default;
+$buttonIconColorSelected:         $buttonIconColorActive !default;
+$buttonBorderColorSelected:       $buttonBorderColorActive !default;
+$buttonInternalBorderColorSelected: $buttonInternalBorderColorActive !default;
+$buttonTextShadowSelected:        $buttonTextShadowActive !default;
+$buttonBoxShadowSelected:         $buttonBoxShadowActive !default;
+
+// selected and hovered
+$buttonTextColorSelectedHover:    $contrastTextColor !default;
+$buttonIconColorSelectedHover:    $buttonTextColorSelectedHover !default;
+$buttonBgColorSelectedHover:      $interaction4Color !default;
+$buttonBorderColorSelectedHover:  $buttonBgColorSelectedHover !default;
+
+// disabled
+$buttonBgColorDisabled:           darken($interaction3Color, 3%) !default;
+$buttonTextColorDisabled:         lighten($textColorDisabled, 2%) !default;
+$buttonIconColorDisabled:         darken($textColorDisabled, 12%) !default;
+$buttonBorderColorDisabled:       $buttonBgColorDisabled !default;
+$buttonBoxShadowDisabled:         none !default;
+
+// disabled and selected
+$buttonTextColorSelectedDisabled:            darken($buttonTextColor, 6%) !default;
+$buttonIconColorSelectedDisabled:            $buttonTextColorSelectedDisabled !default;
+$buttonBgColorSelectedDisabled:              darken($interaction3Color, 9%) !default;
+$buttonBorderColorSelectedDisabled:          $buttonBgColorSelectedDisabled !default;
+$buttonInternalBorderColorSelectedDisabled:  $buttonInternalBorderColor !default;
+
+
+// button chroming
+//----------------------------------
+
+// half chrome default
+$buttonHalfChromeTextColor:               $buttonBgColor !default;
+$buttonHalfChromeIconColor:               $buttonHalfChromeTextColor !default;
+
+// half chrome hover
+$buttonHalfChromeTextColorHover:          darken($interaction4Color, 14%) !default;
+$buttonHalfChromeIconColorHover:          $buttonHalfChromeTextColorHover !default;
+$buttonHalfChromeBgColorHover:            transparent !default;
+$buttonHalfChromeBorderColorHover:        $buttonHalfChromeBgColorHover !default;
+
+// half chrome active
+$buttonHalfChromeTextColorActive:         $buttonTextColor !default;
+$buttonHalfChromeIconColorActive:         $buttonHalfChromeTextColorActive !default;
+$buttonHalfChromeBgColorActive:           $buttonBgColorActive !default;
+$buttonHalfChromeBorderColorActive:       $buttonHalfChromeBgColorActive !default;
+
+// half chrome selected
+$buttonHalfChromeTextColorSelected:       $buttonHalfChromeTextColorActive !default;
+$buttonHalfChromeIconColorSelected:       $buttonHalfChromeTextColorSelected !default;
+$buttonHalfChromeBgColorSelected:         $buttonHalfChromeBgColorActive !default;
+$buttonHalfChromeBorderColorSelected:     $buttonHalfChromeBgColorSelected !default;
+
+// half chrome selected and hovered
+$buttonHalfChromeTextColorSelectedHover:  $buttonTextColor !default;
+$buttonHalfChromeIconColorSelectedHover:  $buttonHalfChromeTextColorSelectedHover !default;
+$buttonHalfChromeBgColorSelectedHover:    $buttonBgColorHover !default;
+$buttonHalfChromeBorderColorSelectedHover:  $buttonHalfChromeBgColorSelectedHover !default;
+
+// half chrome disabled
+$buttonHalfChromeTextColorDisabled:       $buttonTextColorDisabled !default;
+$buttonHalfChromeIconColorDisabled:       $buttonHalfChromeTextColorDisabled !default;
+
+// half chrome disabled and selected
+$buttonHalfChromeTextColorSelectedDisabled:    $buttonTextColorSelectedDisabled !default;
+$buttonHalfChromeIconColorSelectedDisabled:    $buttonHalfChromeTextColorSelectedDisabled !default;
+$buttonHalfChromeBgColorSelectedDisabled:      $buttonBgColorSelectedDisabled !default;
+$buttonHalfChromeBorderColorSelectedDisabled:  $buttonHalfChromeBgColorSelectedDisabled !default;
+
+
+// outlined default
+$buttonOutlinedChromeTextColor:               $buttonHalfChromeTextColor !default;
+$buttonOutlinedChromeIconColor:               $buttonHalfChromeIconColor !default;
+$buttonOutlinedChromeBorderColor:             $buttonOutlinedChromeTextColor !default;
+$buttonOutlinedChromeInternalBorderColor:     null !default;
+
+// outlined hover
+$buttonOutlinedChromeTextColorHover:          $buttonHalfChromeTextColorHover !default;
+$buttonOutlinedChromeIconColorHover:          $buttonHalfChromeIconColorHover !default;
+$buttonOutlinedChromeBgColorHover:        $buttonHalfChromeBgColorHover !default;
+$buttonOutlinedChromeBorderColorHover:    darken($interaction4Color, 14%) !default;
+
+// outlined active
+$buttonOutlinedChromeTextColorActive:         $buttonHalfChromeTextColorActive !default;
+$buttonOutlinedChromeIconColorActive:         $buttonHalfChromeIconColorActive !default;
+$buttonOutlinedChromeBgColorActive:           $buttonHalfChromeBgColorActive !default;
+$buttonOutlinedChromeBorderColorActive:       $buttonHalfChromeBorderColorActive !default;
+$buttonOutlinedChromeInternalBorderColorActive:  null !default;
+
+// outlined selected
+$buttonOutlinedChromeTextColorSelected:       $buttonHalfChromeTextColorSelected !default;
+$buttonOutlinedChromeIconColorSelected:       $buttonHalfChromeIconColorSelected !default;
+$buttonOutlinedChromeBgColorSelected:         $buttonHalfChromeBgColorSelected !default;
+$buttonOutlinedChromeBorderColorSelected:     $buttonHalfChromeBorderColorSelected !default;
+$buttonOutlinedChromeInternalBorderColorSelected:  $buttonInternalBorderColor !default;
+
+// outlined selected and hovered
+$buttonOutlinedChromeTextColorSelectedHover:  $buttonHalfChromeTextColorSelectedHover !default;
+$buttonOutlinedChromeIconColorSelectedHover:  $buttonHalfChromeIconColorSelectedHover !default;
+$buttonOutlinedChromeBgColorSelectedHover:      $buttonBgColorHover !default;
+$buttonOutlinedChromeBorderColorSelectedHover:  $buttonOutlinedChromeBgColorSelectedHover !default;
+
+// outlined disabled
+$buttonOutlinedChromeTextColorDisabled:       $buttonBgColorDisabled !default;
+$buttonOutlinedChromeIconColorDisabled:       $buttonBgColorDisabled !default;
+$buttonOutlinedChromeBorderColorDisabled:     $buttonBgColorDisabled !default;
+
+// outlined disabled and selected
+$buttonOutlinedChromeTextColorSelectedDisabled:    $buttonHalfChromeTextColorSelectedDisabled !default;
+$buttonOutlinedChromeIconColorSelectedDisabled:    $buttonHalfChromeIconColorSelectedDisabled !default;
+$buttonOutlinedChromeBgColorSelectedDisabled:      $buttonHalfChromeBgColorSelectedDisabled !default;
+$buttonOutlinedChromeBorderColorSelectedDisabled:  $buttonHalfChromeBorderColorSelectedDisabled !default;
+$buttonOutlinedChromeInternalBorderColorSelectedDisabled:  $buttonOutlinedChromeInternalBorderColorSelected !default;
+
+
+// alternate button colors
+//----------------------------------
+$buttonContrastTextColor: $contrastTextColor !default;
+$buttonPrimaryColor:      $interaction1Color !default;
+$buttonConfirmColor:      #03805a !default;
+
+
+
+// BUTTONSET
+//-----------------------------------------------------------------------------
+
+// DIALOG
+//-----------------------------------------------------------------------------
+
+$dialogBoxShadow:           $smallBoxShadow !default;
+$dialogBorderColor:         $interaction1Color !default;
+$dialogBgColor:             $windowBgColor !default;
+
+$dialogHeaderBorderColor:   transparent !default;
+$dialogHeaderBgColor:       transparent !default;
+$dialogHeaderTextColor:     $primaryTextColor !default;
+
+$dialogFooterDividerColor:      $dialogBorderColor !default;
+
+// TOOLBAR
+//-----------------------------------------------------------------------------
+
+$toolbarBorderColor:  $panelBorderColor !default;
+$toolbarBgColor:      null !default;
+
+// FORM LAYOUT
+//-----------------------------------------------------------------------------
+
+// outer border
+$formLayoutBorderColor:  null !default;
+// divider between rows
+$formLayoutDividerColor: null !default;
+
+
+// FORM CONTROLS
+//-----------------------------------------------------------------------------
+
+// form control states
+//----------------------------------
+
+// *****default*****
+$formControlBgColor:         $background1Color !default;
+$formControlBorderColor:     #bababa          !default;
+
+// $formControlInput* variables apply to
+// input style form controls, like input text
+$formControlInputValueColor:          $textColor !default;
+
+// $formControlTrigger* variables apply to
+// trigger style form controls, triggers some type of picker, like a select or date
+$formControlTriggerValueColor: $formControlInputValueColor !default;
+
+
+// *****active*****
+$formControlTriggerBgColorActive: $interaction3Color !default;
+
+
+// *****focus*****
+$formControlInputBorderColorFocus:           $interaction1Color  !default;
+
+// *****readonly*****
+$formControlValueColorReadOnly:  $textColor !default;
+
+// *****disabled*****
+$formControlBgColorDisabled: #ececec !default;
+$formControlValueColorDisabled:  $formControlInputValueColor !default;
+$formControlBorderColorDisabled: #d9d9d9 !default;
+
+// *****placeholder*****
+$formControlPlaceholderColor: #6b6b6b !default;
+
+// radioset and checkboxset states
+//----------------------------------
+//default
+$radioCheckboxSetBorderColor: $border1Color !default;
+$radioCheckboxSetBgColor: $background2Color !default;
+$radioCheckboxItemDividerColor: transparent !default;
+$radioCheckboxLabelColor: $textColor !default;
+
+// active
+$radioCheckboxItemBgColorActive: $interaction3Color !default;
+$radioCheckboxItemDividerColorActive: $radioCheckboxItemDividerColor !default;
+
+// selected
+$radioCheckboxLabelColorSelected: null !default;
+
+// SELECT
+//----------------------------------------
+
+//arrow
+$selectArrowColor: #000000 !default;
+
+// picker
+$selectPickerBgColor: $formControlBgColor !default;
+
+//INPUT SEARCH
+//--------------------------------------------------------------
+$inputSearchBgColor: $formControlBgColor !default;
+$inputSearchBgColorDisabled: $formControlBgColorDisabled !default;
+
+
+// SLIDER
+//-----------------------------------------------------------------------------
+
+$sliderThumbBoxShadow:            null !default;
+
+// colors for enabled state
+$sliderThumbBgColor:             $interaction1Color !default;
+$sliderThumbBorderColor:        $sliderThumbBgColor !default;
+$sliderBarBgColor:               #c6c6c6 !default;
+$sliderBarValueBgColor:         $interaction1Color !default;
+
+// hover
+$sliderThumbBgColorHover:        $sliderThumbBgColor !default;
+
+// active
+$sliderThumbBgColorActive:       lighten($sliderThumbBgColor, 25%) !default;
+$sliderThumbBorderColorActive:   $sliderThumbBorderColor !default;
+$sliderBarValueBgColorActive:    $sliderThumbBgColorActive !default;
+
+// thumb disabled
+$sliderThumbBgColorDisabled:     #c8c8c8 !default;
+$sliderThumbBorderColorDisabled: $sliderThumbBgColorDisabled !default;
+$sliderBarBgColorDisabled:       $interaction5Color !default;
+$sliderBarValueBgColorDisabled:  $sliderThumbBgColorDisabled !default;
+
+// Color picker variables
+$sliderColorPickerThumbBorderColor:     white !default;
+$sliderColorPickerThumbBoxShadow:       $mediumBoxShadow !default;
+
+
+// COLOR SPECTRUM
+//-----------------------------------------------------------------------------
+
+// Spectrum saturation/luminosity rectangle
+$colorSpectrumBorderColor:       $border1Color !default;
+
+// Spectrum Thumb
+$colorSpectrumThumbBorderColor:         $sliderColorPickerThumbBorderColor !default;
+$colorspectrumThumbBorderColorDisabled: $sliderThumbBorderColorDisabled;
+$colorSpectrumThumbBoxShadow:           $sliderColorPickerThumbBoxShadow !default;
+
+
+// COLOR PALETTE
+//-----------------------------------------------------------------------------
+
+$colorPaletteTextColor :             $textColor !default;
+$colorPaletteSwatchInnerBorderColor:         $border8Color !default;
+$colorPaletteSwatchOuterBorderColorSelected: $linkTextColor !default;
+
+
+//SWITCH
+//-----------------------------------------------------------------------------
+
+
+// ENABLED OFF
+$switchThumbShadow: none !default;
+// ----- COLORS -----
+$switchTrackBgColor:                     $background1Color !default; // #ffffff
+$switchTrackBorderColor:                 $interaction1Color !default;
+$switchThumbBgColor:                     $switchTrackBorderColor !default; // #0572ce
+$switchThumbBorderColor:                 $switchTrackBorderColor !default; // #0572ce
+
+// ENABLED ON
+$switchThumbShadowSelected: $switchThumbShadow !default;
+// ----- COLORS -----
+$switchTrackBgColorSelected:             $switchTrackBorderColor !default; // #0572ce
+$switchTrackBorderColorSelected:         $switchTrackBgColorSelected !default; // #0572ce
+$switchThumbBgColorSelected:             $background1Color !default; // #ffffff
+$switchThumbBorderColorSelected:         $switchThumbBgColorSelected !default; // #ffffff
+
+// HOVER OFF
+// ----- COLORS -----
+$switchTrackBgColorHover:                $background1Color !default; // #ffffff
+$switchTrackBorderColorHover:            lighten($switchTrackBorderColor, 25%) !default;
+$switchThumbBgColorHover:                $switchTrackBorderColorHover !default; // #00a8ff
+$switchThumbBorderColorHover:            $switchTrackBorderColorHover !default; // #00a8ff
+
+// HOVER ON
+// ----- COLORS -----
+$switchTrackBgColorSelectedHover:        $switchTrackBorderColorHover !default; // #00a8ff
+$switchTrackBorderColorSelectedHover:    $switchTrackBgColorSelectedHover !default; // #00a8ff
+$switchThumbBgColorSelectedHover:        $background1Color !default; // #ffffff
+$switchThumbBorderColorSelectedHover:    $switchThumbBgColorSelectedHover !default; // #ffffff
+
+// ACTIVE OFF
+// ----- COLORS -----
+$switchTrackBgColorActive:               $switchTrackBgColorHover !default; // #ffffff
+$switchTrackBorderColorActive:           $switchTrackBorderColorHover !default; // #00a8ff
+$switchThumbBgColorActive:               $switchThumbBgColorHover !default; // #00a8ff
+$switchThumbBorderColorActive:           $switchThumbBorderColorHover !default; // #00a8ff
+
+// ACTIVE ON
+// ----- COLORS -----
+$switchTrackBgColorSelectedActive:        $switchTrackBgColorSelectedHover !default; // #00a8ff
+$switchTrackBorderColorSelectedActive:    $switchTrackBorderColorSelectedHover !default; // #00a8ff
+$switchThumbBgColorSelectedActive:        $switchThumbBgColorSelectedHover !default; // #ffffff
+$switchThumbBorderColorSelectedActive:    $switchThumbBorderColorSelectedHover !default; // #ffffff
+
+// READONLY OFF
+// ----- COLORS -----
+$switchTrackBgColorReadonly:             $background1Color !default; // #ffffff
+$switchTrackBorderColorReadonly:         #000000 !default;
+$switchThumbBgColorReadonly:             $switchTrackBorderColorReadonly !default; // #000000
+$switchThumbBorderColorReadonly:         $switchTrackBorderColorReadonly !default; // #000000
+
+// READONLY ON
+// ----- COLORS -----
+$switchTrackBgColorSelectedReadonly:     $switchTrackBorderColorReadonly !default; // #000000
+$switchTrackBorderColorSelectedReadonly: $switchTrackBgColorSelectedReadonly !default; // #000000
+$switchThumbBgColorSelectedReadonly:     $background1Color !default; // #ffffff
+$switchThumbBorderColorSelectedReadonly: $switchThumbBgColorSelectedReadonly !default; // #ffffff
+
+// DISABLED OFF
+// ----- COLORS -----
+$switchTrackBgColorDisabled:             #fdfdfd !default;
+$switchTrackBorderColorDisabled:         #e5e5e5 !default;
+$switchThumbBgColorDisabled:             $switchTrackBorderColorDisabled !default; // #e5e5e5
+$switchThumbBorderColorDisabled:         $switchTrackBorderColorDisabled !default; // #e5e5e5
+
+// DISABLED ON
+// ----- COLORS -----
+$switchTrackBgColorSelectedDisabled:     $switchTrackBorderColorDisabled !default; // #e5e5e5
+$switchTrackBorderColorSelectedDisabled: $switchTrackBgColorSelectedDisabled !default; // #e5e5e5
+$switchThumbBgColorSelectedDisabled:     #cfcfcf !default;
+$switchThumbBorderColorSelectedDisabled: $switchThumbBgColorSelectedDisabled !default; // #cfcfcf
+
+
+// LISTBOX
+//-----------------------------------------------------------------------------
+// listbox values used in drop down for
+// inputTime, select, combobox
+$listboxBgColorFocus: $interaction2Color !default;
+
+// listbox message color
+$listboxMessageTextColor: $secondaryTextColor !default;
+
+
+// Common values for datepicker and timepicker
+//-----------------------------------------------------------------------------
+
+$dateTimePickerSwitcherBgColor: $background4Color     !default;
+
+// DATEPICKER
+//-----------------------------------------------------------------------------
+
+$datepickerBgColorSelected:   $buttonHalfChromeBgColorSelected   !default;
+$datepickerTextColorSelected: $buttonHalfChromeTextColorSelected !default;
+$datepickerBorderColorToday:  $border3Color                      !default;
+$datepickerBgColorToday:      $background2Color                  !default;
+$datepickerBgColorHover:      adjust-color($datepickerBgColorSelected, $saturation: -28%, $lightness: 30%)  !default;
+$datepickerTextColorHover:    $datepickerTextColorSelected       !default;
+$datepickerBorderColorFocus:  $datepickerBgColorHover            !default;
+
+$datepickerHeaderTextColor:   $buttonHalfChromeIconColor         !default;
+
+$datepickerButtonTextColor:       $datepickerBgColorSelected     !default;
+$datepickerButtonTextColorHover:  $datepickerBgColorHover        !default;
+$datepickerButtonTextColorActive: $datepickerButtonTextColor     !default;
+
+
+// TIMEPICKER
+//-----------------------------------------------------------------------------
+
+$timepickerItemBgColorFocus: $interaction3Color             !default;
+
+$timepickerTextColor:        $interaction1Color             !default; // #0572ce
+$timepickerTextColorHover:   $iconColorHover                !default; // #85bbe7
+$timepickerTextColorActive:  $timepickerTextColor           !default; // #0572ce
+
+// TABS
+//-----------------------------------------------------------------------------
+
+// tabs content area
+//----------------------------------
+$tabsPanelBgColor:      $panelBgColor !default;
+$tabsPanelBorderColor:  $panelBorderColor !default;
+
+// individual tabs
+//----------------------------------
+$tabsNavTextColor:                 $linkTextColor !default;
+
+// selected
+$tabsNavBorderColorSelected:       $border3Color !default;
+
+// this color and border width are used at the top
+// of the selected tab when the tabs are horizontal
+// (or on the start side when the tabs are vertical)
+$tabsNavAccentBorderColorSelected: $interaction1Color !default;
+$tabsNavAccentBorderWidthSelected: 3px !default;
+
+
+// PROGRESS
+//-----------------------------------------------------------------------------
+$progressValueBgColor:                   $interaction1Color !default;
+$progressBarBgColor:                     $border3Color !default;
+$progressBarBorderColor:                 $border4Color !default;
+
+$progressCircleBgColor:                  $progressBarBgColor !default;
+
+// TRAIN
+//-----------------------------------------------------------------------------
+
+// unvisited state
+$trainBgColor:                            $iconColorDefault !default;
+$trainBorderColor:                        $trainBgColor !default;
+$trainLabelColor:                         $secondaryTextColor !default;
+$trainButtonTextColor:                    $contrastTextColor !default;
+
+// visited state
+$trainBgColorVisited:                     $interaction1Color !default;
+$trainBorderColorVisited:                 $trainBgColorVisited !default;
+$trainLabelColorVisited:                  $secondaryTextColor !default;
+$trainButtonTextColorVisited:             $contrastTextColor !default;
+
+// selected state
+$trainBgColorSelected:                    $interaction1Color !default;
+$trainBorderColorSelected:                $trainBgColorSelected !default;
+$trainButtonTextColorSelected:            $contrastTextColor !default;
+
+// disabled state
+$trainBgColorDisabled:                    $border3Color !default;
+$trainBorderColorDisabled:                $trainBgColorDisabled !default;
+$trainLabelColorDisabled:                 $textColor !default;
+$trainButtonTextColorDisabled:            $contrastTextColor !default;
+
+// hover state
+$trainBgColorHover:                       $iconColorHover !default;
+$trainBorderColorHover:                   $trainBgColorHover !default;
+$trainButtonTextColorHover:               $contrastTextColor !default;
+
+// active state
+$trainBgColorActive :                     $background6Color !default;
+$trainBorderColorActive:                  $interaction1Color !default;
+$trainButtonTextColorActive:              $trainBgColorVisited !default;
+
+// connector variables
+// step connector type. Valid values are 'individual' or 'continuous. A 'continuous'
+// connector is a single shape behind all of the step buttons while the 'individual'
+// connector renders seperate shapes between each step.
+$trainConnectorBgColor:                   $border3Color !default;
+$trainContinuousConnectorBgColorSelected: transparent !default;
+
+//TREE
+//-----------------------------------------------------------------------------
+
+// text
+$treeTextColor:                     $linkTextColor !default;
+
+// node bg
+$treeNodeBgColorHover:              transparent !default;
+$treeNodeBgColorSelected:           $interaction4Color !default;
+$treeNodeBgColorHoverSelected:      $interaction4Color !default;
+$treeNodeBgColorSelectedInactive:   $interaction3Color !default;
+
+// node text border
+$treeNodeBorderColorHover:            $border8Color !default;
+$treeNodeBorderColorSelected:         $treeNodeBgColorSelected !default;
+$treeNodeBorderColorHoverSelected:    $treeTextColor !default;
+$treeNodeBorderColorSelectedInactive: #bfd4e5 !default;
+
+// Dnd
+$treeDndMarkerLineColor:      $interaction1Color !default;
+
+
+// DATA GRID (ALSO USED BY TABLE AND LIST VIEW)
+//-----------------------------------------------------------------------------
+// Default
+$collectionBorderColor:                       $border2Color !default;
+$collectionBgColor:                           $background1Color !default;
+
+// Headers
+$collectionHeaderTextColor:                   lighten($headerTextColor, 5%) !default;
+
+// Headers - Default
+$collectionHeaderBgColor:                     $background1Color !default;
+$collectionHeaderBorderColor:                 $collectionBorderColor !default;
+// Headers - Hover
+$collectionHeaderBgColorHover:                lighten($interaction5Color, 6%) !default;
+// Headers - Focus
+$collectionHeaderBgColorFocus:                adjust-color($interaction4Color, $lightness: -4%, $saturation: 12%) !default;
+// Headers - Selected
+$collectionHeaderBgColorSelected:             adjust-color($interaction3Color, $lightness: -13%, $saturation: -1%) !default;
+// Headers - Selected Inactive (selected but focus outside the component)
+$collectionHeaderBgColorSelectedInactive:     adjust-color($interaction7Color, $lightness: -3%, $saturation: -5%) !default;
+// Headers - Dragged
+$collectionHeaderBgColorDrag:                 adjust-color($interaction6Color, $lightness: -3%, $saturation: -20%) !default;
+$collectionHeaderDragImageBorderColor:        darken($border3Color, 3%) !default;
+
+// Cells
+$collectionCellTextColor:                     lighten($textColor, 13%)  !default;
+// Cells - Default
+$collectionCellBorderColor:                   $border5Color !default;
+$collectionCellBgColor:                       $background1Color !default;
+$collectionCellBandedBgColor:                 $background2Color !default;
+// Cells - Hover
+$collectionCellBgColorHover:                  adjust-color($interaction2Color, $lightness: 1.7%, $saturation: 5%, $hue:-10) !default;
+$collectionCellBorderColorHover:              $collectionCellBorderColor !default;
+// Cells - Focus
+$collectionCellBgColorFocus:                  $interaction4Color !default;
+$collectionCellBorderColorFocus:              $collectionCellBorderColor !default;
+// Cells - Selected
+$collectionCellBgColorSelected:               $interaction3Color !default;
+$collectionCellBorderColorSelected:           adjust-color($border1Color, $lightness: -17.5%, $saturation: -3%) !default;
+// Cells - Selected Inactive (selected but focus outside the component)
+$collectionCellBgColorSelectedInactive:       $collectionCellBgColorSelected !default;
+$collectionCellBorderColorSelectedInactive:   $collectionCellBorderColorSelected !default;
+// Cells - Dragged
+$collectionCellBgColorDrag:                   $collectionHeaderBgColor;
+$collectionCellDragImageBorderColor:          transparent !default;
+// Cells - Editable, will be added when editing is enabled on the datagrid
+$collectionEditableCellBorderColorFocus:      $border6Color !default;
+// Color applied to cells that are read only when editing is enabled on the datagrid
+$collectionEditableCellBgColorReadOnly:       $background2Color !default;
+
+// Status Text
+$collectionStatusBgColor:                     adjust-color($interaction7Color, $lightness: -7%, $saturation: 30%, $hue:1) !default;
+
+// Touch Selection Affordances
+$collectionSelectionAffordanceBorderColor:    $interaction1Color !default;
+
+
+// TREEVIEW
+//-----------------------------------------------------------------------------
+
+// text
+$treeViewTextColor:                   $linkTextColor !default;
+
+// node background color
+$treeViewItemBgColorHover:            $collectionCellBgColorHover !default;
+$treeViewItemBgColorSelected:         $collectionCellBgColorSelected !default;
+$treeViewItemBgColorSelectedInactive: $collectionCellBgColorSelected !default; // BgColorSelectedInactive is too light
+
+// dnd
+$treeViewDropLineColor:               $interaction1Color !default;
+$treeViewDropMarkerColor:             $interaction1Color !default;
+
+
+// TABLE
+//-----------------------------------------------------------------------------
+
+//  $tableHeaderBorderColor is used when display=list,
+//  when display=grid $collectionHeaderBorderColor is used instead
+$tableHeaderBorderColor:                    $border4Color !default;
+
+// LISTVIEW
+//-----------------------------------------------------------------------------
+
+$listViewDrillIconColor:       $iconColorDefault !default;
+
+// PULL TO REFRESH
+//-----------------------------------------------------------------------------
+
+// pull to refresh panel background color
+$refresherBgColor:             $background2Color !default;
+
+// SWIPE TO REVEAL
+//-----------------------------------------------------------------------------
+
+// text color applied to all action items
+$swipeActionsTextColor:      #ffffff !default;
+// background color applied to action items with no action type style class specified
+$swipeActionsDefaultBgColor: $interaction1Color !default;
+
+$swipeActionsNeutralBgColor:    #61788b !default;
+$swipeActionsAttentionBgColor:    #bf552e !default;
+$swipeActionsDangerBgColor:   #ba0006 !default;
+
+// INDEXER
+//-----------------------------------------------------------------------------
+
+// text color of the prefix in the indexer
+$indexerTextColor:           $secondaryTextColor !default;
+// text color of the prefix in the indexer in disabled state
+$indexerTextColorDisabled:   null !default;
+
+
+// NAVIGATIONLIST
+//-----------------------------------------------------------------------------
+
+//---Common variables----
+
+//Default
+$navigationListItemLabelColorDefault:                      $secondaryTextColor !default;
+$navigationListItemIconColorDefault:                       $navigationListItemLabelColorDefault !default;
+$navigationListCollapsibleIconColorDefault:                $navigationListItemLabelColorDefault !default;
+
+//Hover
+$navigationListItemBorderColorHover:                       $iconColorHover !default;
+$navigationListItemBgColorHover:                           $interaction2Color !default;
+$navigationListItemIconColorHover:                         $iconColorHover !default;
+
+//Selected
+$navigationListItemLabelColorSelected:                     $interaction1Color !default;
+$navigationListItemBorderColorSelected:                    $interaction1Color !default;
+$navigationListItemIconColorSelected:                      $iconColorSelected !default;
+$navigationListItemBgColorSelected:                        $background2Color !default; // only applies to vertical navlist
+
+//Focus
+$navigationListItemOutlineColorFocus:                      $border8Color !default;
+
+//Disabled
+$navigationListItemLabelColorDisabled:                     $navigationListItemLabelColorDefault !default;
+$navigationListIconColorDisabled:                          $navigationListItemLabelColorDefault !default;
+
+// category divider - used between categories
+$navigationListCategoryDividerColor:                       $border1Color !default;
+
+//----------Common icon only variables
+
+//Hover
+$navigationListItemIconOnlyBgColorHover:                   null !default;
+
+//Selected
+$navigationListItemIconOnlyBgColorSelected:                null !default;
+$navigationListIconOnlyIconColorSelected:                  $interaction1Color !default;
+
+//-------Navlist Contrast variables--------------
+
+//Default
+$navigationListItemContrastLabelColorDefault:              #c0c4c8 !default;
+
+//Hover
+$navigationListItemContrastLabelColorHover:                #fafafa !default;
+$navigationListItemContrastBgColorHover:                   #262628 !default;
+
+//Selected
+$navigationListItemContrastLabelColorSelected:             #fafafa !default;
+$navigationListItemContrastBgColorSelected:                #202324 !default;
+
+//Disabled
+$navigationListItemContrastLabelColorDisabled:             #696c6E !default;
+
+
+//------Horizontal list variables----
+
+// Default
+$navigationListHorizontalItemBorderColor:                  transparent !default;
+$navigationListHorizontalItemLabelColorDefault:            $navigationListItemLabelColorDefault !default;
+$navigationListHorizontalItemIconColorDefault:             $navigationListItemIconColorDefault !default;
+
+// divider - used between text items when horizontal
+$navigationListHorizontalItemDividerColor:                 $border2Color !default;
+
+// Selected
+$navigationListHorizontalItemBgColorSelected:              null !default;
+$navigationListHorizontalItemBorderColorSelected:          $interaction1Color !default;
+$navigationListHorizontalItemLabelColorSelected:           $navigationListItemLabelColorSelected !default;
+$navigationListHorizontalItemIconColorSelected:            $navigationListItemIconColorSelected !default;
+
+//----------------Horizontal navigationlist contrast variables
+$navigationListHorizontalItemContrastBgColorSelected:         #ffffff !default;
+$navigationListHorizontalItemContrastLabelColorSelected:      #313334 !default;
+
+// END of NavigationList variables
+
+//TabBar
+//----------------------------------------------------------------------
+//Default
+$tabBarItemBorderColor:                               transparent !default;
+$tabBarItemLabelColorDefault:                         $formControlLabelColor !default;
+$tabBarItemIconColorDefault:                          $formControlLabelColor !default;
+
+//Hover
+$tabBarItemBorderColorHover:                        $iconColorHover !default;
+$tabBarItemBgColorHover:                            $interaction2Color !default;
+$tabBarItemIconColorHover:                          $iconColorHover !default;
+$tabBarItemIconOnlyBgColorHover:                    null !default;
+
+//selected
+$tabBarItemLabelColorSelected:                        $interaction1Color !default;
+$tabBarItemIconColorSelected:                       $interaction1Color !default;
+$tabBarItemBorderColorSelected:                       transparent !default;
+$tabBarItemBgColorSelected:                           transparent !default;
+$tabBarItemIconOnlyBgColorSelected:                 null !default;
+$tabBarIconOnlyIconColorSelected:                   $interaction1Color !default;
+
+//active
+$tabBarItemBgColorActive:                           null !default;
+$tabBarItemBorderColorActive:                       null !default;
+
+//Focus
+$tabBarItemOutlineColorFocus:                       $border8Color !default;
+
+//Disabled
+$tabBarItemLabelColorDisabled:                      $tabBarItemLabelColorDefault !default;
+$tabBarIconColorDisabled:                           $tabBarItemLabelColorDefault !default;
+
+// category divider - used between categories
+$tabBarCategoryDividerColor:                        $border1Color !default;
+
+//---------------Vertical tab bar variables-----------------
+
+//Separator color used in vertical tabbar
+$tabBarVerticalItemSeparatorColor:                          null !default;
+
+//------Horizontal Tab Bar variables----
+
+// Default
+$tabBarHorizontalItemBorderColor:                   transparent !default;
+
+// divider - used between text items when horizontal
+$tabBarHorizontalItemDividerColor:                  $border2Color !default;
+
+//selected
+$tabBarHorizontalItemLabelColorSelected:            $tabBarItemLabelColorSelected !default;
+$tabBarHorizontalItemIconColorSelected:             $tabBarItemIconColorSelected !default;
+$tabBarHorizontalItemBgColorSelected:               $tabBarItemBgColorSelected !default;
+$tabBarHorizontalItemBorderColorSelected:           $interaction1Color !default;
+
+// Hover
+$tabBarHorizontalItemBorderColorHover:              $tabBarItemBorderColorHover !default;
+
+//-------Tab Bar Contrast variables--------------
+//Default
+$tabBarItemContrastLabelColorDefault:               #c0c4c8 !default;
+
+//Hover
+$tabBarItemContrastLabelColorHover:                 #fafafa !default;
+$tabBarItemContrastBgColorHover:                    #262628 !default;
+
+//Selected
+$tabBarItemContrastLabelColorSelected:                #313334 !default;
+$tabBarItemContrastBgColorSelected:                   #ffffff !default;
+//Horizontal Navigation Tabs  contrast variables
+$tabBarHorizontalItemContrastBgColorSelected:         $tabBarItemContrastBgColorSelected !default;
+$tabBarHorizontalItemContrastLabelColorSelected:      $tabBarItemContrastLabelColorSelected !default;
+
+//Disabled
+$tabBarItemContrastLabelColorDisabled:              #696c6E !default;
+
+// END of TabBar variables
+
+// File picker
+//-----------------------------------------------------------------------------
+
+//oj-file-picker
+$filePickerBgColor:               $formControlBgColor !default;
+$filePickerBorderColor:           $formControlBorderColor !default;
+$filePickerTextColor:             $linkTextColor !default;
+
+//active
+$filePickerBgColorActive:         rgba($dropTarget1Color, 0.6) !default;
+
+// DVT
+//-----------------------------------------------------------------------------
+$dvtAxisTitleTextColor: $tertiaryTextColor !default;
+
+// attribute group colors
+//----------------------------------
+$dvtCategory1Color: #237bb1 !default;
+$dvtCategory2Color: #68c182 !default;
+$dvtCategory3Color: #fad55c !default;
+$dvtCategory4Color: #ed6647 !default;
+$dvtCategory5Color: #8561c8 !default;
+$dvtCategory6Color: #6ddbdb !default;
+$dvtCategory7Color: #ffb54d !default;
+$dvtCategory8Color: #e371b2 !default;
+$dvtCategory9Color: #47bdef !default;
+$dvtCategory10Color: #a2bf39 !default;
+$dvtCategory11Color: #a75dba !default;
+$dvtCategory12Color: #f7f37b !default;
+
+// gauge threshold colors
+//----------------------------------
+// used for the first threshold on a gauge, typically represents a low value
+$dvtThreshold1Color: #ed6647 !default;
+// used for the second threshold on a gauge, typically represents a medium value
+$dvtThreshold2Color: #fad55c !default;
+// used for the third threshold on a gauge, typically represents a high value
+$dvtThreshold3Color: #68c182 !default;
+
+// background
+//----------------------------------
+$dvtComponentBgColor: $background1Color !default;
+$dvtComponentBg2Color: #dddddd !default;
+$dvtTooltipBgColor: $background2Color !default;
+
+// border
+//----------------------------------
+$dvtBorderColor: $border6Color !default;
+$dvtBorder2Color: $border7Color !default;
+$dvtPanelBorderColor: $border2Color !default;
+
+// charts
+//----------------------------------
+$dvtChartStockFallingBgColor: $dvtThreshold1Color !default;
+$dvtChartStockRangeBgColor: #b8b8b8 !default;
+$dvtChartStockRisingBgColor: #6b6f74 !default;
+$dvtChartSubtitleTextColor: $secondaryTextColor !default;
+$dvtChartTitleTextColor: $headerTextColor !default;
+
+// diagram
+//----------------------------------
+$dvtDiagramNodeBorderColorHover: rgba(0,0,0,.3) !default;
+$dvtDiagramLinkBorderColorHover: $dvtDiagramNodeBorderColorHover !default;
+$dvtDiagramLinkColor: #9bb2c7 !default;
+
+// nbox
+//----------------------------------
+$dvtNBoxCellBgColor: #e9e9e9 !default;
+$dvtNBoxCellBgColorMinimized: $dvtNBoxCellBgColor !default;
+$dvtNBoxCellBgColorMaximized: $dvtComponentBg2Color !default;
+$dvtNBoxDialogBorderColor: #bcc7d2 !default;
+
+// pictochart
+//----------------------------------
+$dvtPictoChartItemBgColor: #a6acb1 !default;
+
+// thematic map
+//----------------------------------
+$dvtMapBgColor: $dvtComponentBg2Color !default;
+$dvtMapMarkerBgColor: #333333 !default;
+$dvtMapLinkColor: $dvtDiagramLinkColor !default;
+
+// timeline
+//----------------------------------
+
+$dvtTimelineBorderColor:               $dvtPanelBorderColor !default;
+
+$dvtTimelineItemBgColor:               $dvtComponentBgColor !default;
+$dvtTimelineItemBorderColor:           #648baf !default;
+$dvtTimelineItemBorderColorHover:      #85bbe7 !default;
+$dvtTimelineItemBorderColorSelected:   $dvtBorderColor !default;
+$dvtTimelineItemDescriptionColor:      $textColor !default;
+$dvtTimelineItemTitleColor:            $secondaryTextColor !default;
+
+$dvtTimelineMajorAxisLabelColor:       $secondaryTextColor !default;
+$dvtTimelineMajorAxisSeparatorColor:   #bcc7d2 !default;
+$dvtTimelineMinorAxisSeparatorColor:   $dvtTimelineMajorAxisSeparatorColor !default;
+$dvtTimelineMinorAxisBgColor:          $background2Color !default;
+$dvtTimelineMinorAxisBorderColor:      $border2Color !default;
+$dvtTimelineMinorAxisLabelColor:       $textColor !default;
+
+$dvtTimelineOverviewBgColor:           #e6ecf3 !default;
+$dvtTimelineOverviewLabelColor:        $secondaryTextColor !default;
+$dvtTimelineOverviewWindowBgColor:     $background1Color !default;
+$dvtTimelineOverviewWindowBorderColor: $border8Color !default;
+
+$dvtTimelineSeriesBgColor:             $background2Color !default;
+$dvtTimelineSeriesLabelColor:          $headerTextColor !default;
+$dvtTimelineSeriesEmptyTextColor:      $textColor !default;
+
+$dvtTimelineReferenceObjectColor:      #ff591f !default;
+
+// treemap
+//----------------------------------
+$dvtTreemapNodeHeaderBorderColor: $headerBorderColor !default;
+$dvtTreemapNodeHeaderBorderColorHover: $interaction5Color !default;
+$dvtTreemapNodeHeaderBgColor: $interaction6Color !default;
+$dvtTreemapNodeBorderColorHover: $interaction2Color !default;
+$dvtTreemapDrillTextColor: $linkTextColor !default;
+
+// sunburst
+//----------------------------------
+$dvtSunburstNodeBorderColorHover: $dvtTreemapNodeBorderColorHover !default;
+$dvtSunburstDrillTextColor: $linkTextColor !default;
+
+// timeaxis
+//----------------------------------
+$dvtTimeAxisBgColor:        transparent !default;
+$dvtTimeAxisBorderColor:    $border2Color !default;
+$dvtTimeAxisLabelColor:     $textColor !default;
+$dvtTimeAxisSeparatorColor: $border2Color !default;
+
+// gantt
+//----------------------------------
+$dvtGanttBgColor:                 $collectionBgColor !default;
+$dvtGanttBorderColor:             $collectionBorderColor !default;
+$dvtGanttHorizontalGridlineColor: $collectionCellBorderColor !default;
+$dvtGanttVerticalGridlineColor:   $dvtTimelineMajorAxisSeparatorColor !default;
+$dvtGanttEmptyTextColor:          $textColor !default;
+
+$dvtGanttRowBgColor:              $collectionCellBgColor !default;
+$dvtGanttTaskBgColor:             $dvtCategory1Color !default;
+$dvtGanttMilestoneBgColor:        $tertiaryTextColor !default;
+$dvtGanttSummaryBgColor:          $iconColorDefault !default;
+$dvtGanttTaskBorderColorSelected: $dvtBorderColor !default;
+
+$dvtGanttMajorAxisBgColor:        lighten($collectionHeaderBgColor, 1%) !default;
+$dvtGanttMajorAxisBorderColor:    $collectionHeaderBorderColor !default;
+$dvtGanttMajorAxisLabelColor:     $collectionHeaderTextColor !default;
+$dvtGanttMajorAxisSeparatorColor: $collectionHeaderBorderColor !default;
+
+$dvtGanttMinorAxisBgColor:        $dvtGanttMajorAxisBgColor !default;
+$dvtGanttMinorAxisBorderColor:    $dvtGanttMajorAxisBorderColor !default;
+$dvtGanttMinorAxisLabelColor:     $collectionCellTextColor !default;
+$dvtGanttMinorAxisSeparatorColor: $dvtGanttMajorAxisSeparatorColor !default;
+
+$dvtGanttDependencyLineColor:     $formControlLabelColor !default;
+
+//icon
+//----------------------------------
+$iconCircleInnerBgColor:         #707375 !default;
+$iconCircleBorderOffsetBgColor:  #FFFFFF !default;//the padding color between border and circle
+$iconCircleBorderColor:          $iconCircleInnerBgColor !default;
+$iconCircleFontColor:            #FFFFFF !default;
+
+
+//avatar
+//----------------------------------
+$avatarInnerBgColor:         $iconCircleInnerBgColor !default;
+$avatarBorderOffsetBgColor:  $avatarInnerBgColor !default;//the padding color between border and circle
+$avatarBorderColor:          $avatarInnerBgColor !default;
+$avatarTextColor:            $iconCircleFontColor !default;
+
+$selectTriggerBgColorActive: $formControlBgColor !default;

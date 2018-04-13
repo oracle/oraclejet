@@ -1,20 +1,10 @@
 {
   "name": "IntlDateTimeConverter",
-  "version": "4.2.0",
-  "jetVersion": "4.2.0",
+  "version": "5.0.0",
+  "jetVersion": "5.0.0",
   "displayName": "IntlDateTimeConverter",
   "description": "IntlDateTimeConverter",
   "methods": {
-    "Init": {
-      "description": "Initializes the date time converter instance with the set options.",
-      "params": [
-        {
-          "name": "options",
-          "description": "an object literal used to provide an optional information to initialize \nthe converter.",
-          "type": "Object"
-        }
-      ]
-    },
     "format": {
       "description": "Formats the isoString value using the options provided and returns a string value. \n",
       "params": [
@@ -24,7 +14,7 @@
           "type": "string"
         }
       ],
-      "return": "string|Object"
+      "return": "string|null"
     },
     "formatRelative": {
       "description": "Formats an ISOString as a relative date time, using the relativeOptions. \n",
@@ -70,8 +60,8 @@
       "return": "string|null"
     },
     "getHint": {
-      "description": "Retrieves a hint String describing the format the value is expected to be in. THe pattern used is \nprovided through resolvedOptions, except when an actual pattern is set in the options. Otherwise \nhint is empty.",
-      "return": "String"
+      "description": "It returns null for the placeholder hint. There is no default placeholder hint when using our IntlDateTimeConverter.",
+      "return": "null"
     },
     "getOptions": {
       "description": "Returns the options called with converter initialization.",
@@ -82,31 +72,40 @@
       "return": "Object"
     },
     "isHourInDaySet": {
-      "description": "Returns true if a 24-hour format is set; false otherwise."
+      "description": "Returns true if a 24-hour format is set; false otherwise.",
+      "return": "boolean"
     },
     "isHourInAMPMSet": {
-      "description": "Returns true if 12-hour is set; false otherwise."
+      "description": "Returns true if 12-hour is set; false otherwise.",
+      "return": "boolean"
     },
     "isMinuteSet": {
-      "description": "Returns true if minutes are shown in the time portion; false otherwise."
+      "description": "Returns true if minutes are shown in the time portion; false otherwise.",
+      "return": "boolean"
     },
     "isSecondSet": {
-      "description": "Returns true if seconds are shown in the time portion; false otherwise."
+      "description": "Returns true if seconds are shown in the time portion; false otherwise.",
+      "return": "boolean"
     },
     "isMilliSecondSet": {
-      "description": "Returns true if milliseconds are shown in the time portion; false otherwise."
+      "description": "Returns true if milliseconds are shown in the time portion; false otherwise.",
+      "return": "boolean"
     },
     "isYearSet": {
-      "description": "Returns true if year is shown in the date portion; false otherwise."
+      "description": "Returns true if year is shown in the date portion; false otherwise.",
+      "return": "boolean"
     },
     "isMonthSet": {
-      "description": "Returns true if month is shown in the date portion; false otherwise."
+      "description": "Returns true if month is shown in the date portion; false otherwise.",
+      "return": "boolean"
     },
     "isDaySet": {
-      "description": "Returns true if day is shown in the date portion; false otherwise."
+      "description": "Returns true if day is shown in the date portion; false otherwise.",
+      "return": "boolean"
     },
     "isDayNameSet": {
-      "description": "Returns true if the day name is shown in the date portion; false otherwise."
+      "description": "Returns true if the day name is shown in the date portion; false otherwise.",
+      "return": "boolean"
     },
     "calculateWeek": {
       "description": "Returns the calculated week for the isoString value",
@@ -125,10 +124,10 @@
         {
           "name": "value",
           "description": "to parse",
-          "type": "String|string"
+          "type": "string"
         }
       ],
-      "return": "string|Object"
+      "return": "string|null"
     },
     "compareISODates": {
       "description": "Compares 2 ISO 8601 strings, returning the time difference between the two",

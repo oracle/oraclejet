@@ -1021,6 +1021,7 @@ DvtTreeView.prototype.UpdateAriaNavigation = function(root) {
     }
   }
 };
+
 // APIs called by the ADF Faces drag source for DvtTreeView
 
 
@@ -1091,6 +1092,7 @@ DvtTreeView.prototype.initiateDrag = function() {
 DvtTreeView.prototype.dragDropEnd = function() {
   this._dragSource.dragDropEnd();
 };
+
 // APIs called by the ADF Faces drop target for DvtTreeView
 
 
@@ -1126,6 +1128,7 @@ DvtTreeView.prototype.dragExit = function() {
 DvtTreeView.prototype.getDropSite = function(mouseX, mouseY) {
   return this._dropTarget.getDropSite(mouseX, mouseY);
 };
+
 /**
  * Animation handler for tree data objects.
  * @param {dvt.Context} context The platform specific context object.
@@ -1214,6 +1217,7 @@ DvtTreeAnimationHandler._isAncestor = function(ancestors, node) {
   // No match found
   return false;
 };
+
 /**
  * Drop Target event handler for DvtTreeView
  * @param {DvtTreeView} view
@@ -1268,6 +1272,7 @@ DvtTreeDropTarget.prototype.getDropSite = function(mouseX, mouseY) {
   else
     return null;
 };
+
 /**
  * Event Manager for tree components.
  * @param {DvtTreeView} view
@@ -1488,6 +1493,7 @@ DvtTreeEventManager.prototype.ProcessRolloverEvent = function(event, obj, bOver)
 DvtTreeEventManager.prototype.GetTouchResponse = function() {
   return this._view.getOptions()['touchResponse'];
 };
+
 /**
  * Base class for tree component nodes.
  * @class The base class for tree component nodes.
@@ -2419,6 +2425,7 @@ DvtTreeNode.prototype.UpdateAriaLabel = function() {
 DvtTreeNode.prototype.isRootNode = function() {
   return this.getId() == this.getView().getRootNode().getId() || this.isArtificialRoot();
 };
+
 /**
  * Simple logical object for drilling and tooltip support.
  * @param {DvtTreeNode} node The associated node, if it has been created.
@@ -2487,6 +2494,7 @@ DvtTreePeer.prototype.handleMouseOut = function() {
     this._node.handleMouseOut();
   }
 };
+
 /**
  * Breadcrumb rendering utilities for tree components.
  * @class
@@ -2546,6 +2554,7 @@ DvtTreeBreadcrumbsRenderer.render = function(treeView, availSpace, ancestors, ro
   treeView.removeChild(breadcrumbs);
   return breadcrumbs;
 };
+
 /**
  * Legend rendering utilies for tree components.
  * @class
@@ -2834,6 +2843,7 @@ DvtTreeLegendRenderer._renderLabels = function(context, treeView, legend, availW
   }
   return labelContainer;
 };
+
 /*---------------------------------------------------------------------------------*/
 /*  DvtTreeKeyboardHandler     Keyboard handler for Sunburst                   */
 /*---------------------------------------------------------------------------------*/
@@ -2867,6 +2877,7 @@ DvtTreeKeyboardHandler.prototype.isMultiSelectEvent = function(event)
 {
   return event.keyCode == dvt.KeyboardEvent.SPACE && event.ctrlKey;
 };
+
 /**
  * Default values and utility functions for component versioning.
  * @class
@@ -2926,6 +2937,15 @@ DvtTreeDefaults.prototype.Init = function(defaultsMap) {
 
   DvtTreeDefaults.superclass.Init.call(this, ret);
 };
+
+/**
+ * @override
+ */
+DvtTreeDefaults.prototype.getAnimationDuration = function(options)
+{ 
+  return options['animationDuration'];
+};
+
 /**
  * Utility functions for DvtTreeView.
  * @class
@@ -3113,6 +3133,7 @@ DvtTreeUtils.findRootAndAncestors = function(nodes, rootId, ancestors) {
   }
   return null;
 };
+
 // Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
 
 /**
@@ -3426,6 +3447,7 @@ DvtTreeAutomation._getNodeByIndex = function(nodes, index) {
   // None found, return null
   return null;
 };
+
 /**
  * @constructor
  * Treemap component.
@@ -4000,6 +4022,7 @@ dvt.Treemap.prototype.getIsolatedNodes = function() {
 dvt.Treemap.prototype.getNodeContent = function() {
   return this._nodeContent;
 };
+
 /**
  * Class representing a treemap node.
  * @param {dvt.Treemap} treemap The owning treemap component.
@@ -5521,6 +5544,7 @@ DvtTreemapNode.prototype._removeAllNodeContent = function() {
     this._removeNodeContent(id);
   }
 };
+
 /**
  * Base layout class for treemaps.
  * @class
@@ -5612,6 +5636,7 @@ DvtTreemapLayoutBase.prototype.getGapSize = function(view, depth) {
   else // none
     return 0;
 };
+
 /**
  * Layout class for treemaps.  This layout optimizes the aspect ratios, making the nodes as square as
  * possible for improved comparisons between nodes.  This layout does not maintain the ordering of
@@ -5811,6 +5836,7 @@ DvtTreemapLayoutSquarifying.prototype._layoutRow = function(row, w, r)
     return new dvt.Rectangle(r.x + width, r.y, r.w - width, r.h);
   }
 };
+
 /**
  * Layout class for treemaps.  This layout allocates space across a single dimension for each layer,
  * alternating between horizontal and vertical allocation.  This layout maintains the ordering of
@@ -5908,6 +5934,7 @@ DvtTreemapLayoutSliceAndDice.prototype._layout = function(isHoriz, view, node, x
     }
   }
 };
+
 /*---------------------------------------------------------------------------------*/
 /*  DvtTreemapKeyboardHandler     Keyboard handler for Treemap                     */
 /*---------------------------------------------------------------------------------*/
@@ -5942,6 +5969,7 @@ DvtTreemapKeyboardHandler.prototype.isNavigationEvent = function(event)
 
   return isNavigable;
 };
+
 /**
  * Event Manager for Treemap.
  * @param {dvt.Treemap} view The treemap to associate with this event manager
@@ -5993,6 +6021,7 @@ DvtTreemapEventManager.prototype.isClearMenuAllowed = function()
 };
 
 
+
 dvt.Bundle.addDefaultStrings(dvt.Bundle.TREEMAP_PREFIX, {
   'COLOR': 'Color',
   'ISOLATE': 'Isolate',
@@ -6000,6 +6029,7 @@ dvt.Bundle.addDefaultStrings(dvt.Bundle.TREEMAP_PREFIX, {
   'RESTORE': 'Restore',
   'SIZE': 'Size'
 });
+
 /**
  * Default values and utility functions for component versioning.
  * @class
@@ -6063,6 +6093,7 @@ DvtTreemapDefaults.VERSION_1 = {
   'nodeSeparators': 'bevels',
   'nodeContent': {}
 };
+
 /**
  * @constructor
  * Sunburst component.
@@ -6593,6 +6624,7 @@ dvt.Sunburst.prototype.CreateNode = function(nodeOptions) {
 dvt.Sunburst.prototype.getCenterPoint = function() {
   return this._translatePt;
 };
+
 /**
  * Class representing a sunburst node.
  * @param {dvt.Sunburst} sunburst The owning sunburst component.
@@ -7966,6 +7998,7 @@ DvtSunburstNode.prototype._evaluateExpanded = function(sunburst, props) {
       this.setDisclosed(false);
   }
 };
+
 /**
  * Layout class for sunbursts.
  * @class
@@ -8076,6 +8109,7 @@ DvtSunburstLayout._calcLargestRadius = function(node) {
     return node.__getRadius();
   }
 };
+
 /**
  * Event Manager for Sunburst.
  *
@@ -8223,6 +8257,7 @@ DvtSunburstEventManager.prototype.RotateEndTouch = function(event, touch) {
 };
 
 
+
 dvt.Bundle.addDefaultStrings(dvt.Bundle.SUNBURST_PREFIX, {
   'COLLAPSE': 'Collapse',
   'COLOR': 'Color',
@@ -8230,6 +8265,7 @@ dvt.Bundle.addDefaultStrings(dvt.Bundle.SUNBURST_PREFIX, {
   'OTHER': 'Other',
   'SIZE': 'Size'
 });
+
 /**
  * Default values and utility functions for component versioning.
  * @class
@@ -8263,6 +8299,7 @@ DvtSunburstDefaults.VERSION_1 = {
   'expanded': 'all',
   'startAngle': 90
 };
+
 dvt.exportProperty(dvt, 'Sunburst', dvt.Sunburst);
 dvt.exportProperty(dvt, 'Treemap', dvt.Treemap);
 dvt.exportProperty(dvt.Treemap, 'newInstance', dvt.Treemap.newInstance);
@@ -8276,7 +8313,7 @@ dvt.exportProperty(DvtTreeView.prototype, 'select', DvtTreeView.prototype.select
 
 dvt.exportProperty(DvtTreeAutomation.prototype, 'getDomElementForSubId', DvtTreeAutomation.prototype.getDomElementForSubId);
 dvt.exportProperty(DvtTreeAutomation.prototype, 'getNode', DvtTreeAutomation.prototype.getNode);
-})(dvt);
 
+})(dvt);
   return dvt;
 });

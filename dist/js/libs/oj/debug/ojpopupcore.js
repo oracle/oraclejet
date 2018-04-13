@@ -1,4 +1,5 @@
 /**
+ * @license
  * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
@@ -7,982 +8,6 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore', 'jqueryui-amd/
        function(oj, $)
 {
 
-/*jslint browser: true*/
-/*
-** Copyright (c) 2004, 2012, Oracle and/or its affiliates. All rights reserved.
-*/
-/**
- * @preserve Copyright 2013 jQuery Foundation and other contributors
- * Released under the MIT license.
- * http://jquery.org/license
- */
-
-/**
- * Utilities used in conjunction with the jquery positon utility.
- * @ignore
- * @class oj.PositionUtils
- * @ojtsignore
- */
-oj.PositionUtils = {};
-
-/**
- * <p>Of the properties on the position object, "my" and "at" are of interest. The base jQuery
- * horizontal alignment mnemonics are "right", "center" and "left". For better JET RTL
- * support we have added "start" and "end".  Depending on the rtl direction, "start" and
- * "end" will be replaced with "left" or "right". The resultant postion object will
- * be a new instance that extends the position passed as the first argument.
- *
- * <p>Likewise, JET supports "<" and ">" operators wherever "-" and "+" are supported.
- * The "<" value means "- in LTR; + in RTL", while the ">" value means "+ in LTR; - in RTL".
- * E.g. a "my" value of "start<40" shifts the menu 40px "startward," while a "my" value of
- * "start>40" shifts the menu 40px "endward."
- *
- * @param {Object} position source position object
- * @param {boolean} isRtl
- * @return {Object} position object that has normalized jquery horizontal mnemonics.
- */
-oj.PositionUtils.normalizeHorizontalAlignment = function(position, isRtl)
-{
-  // This assertion prevents security testing: someone could pass in a bogus position
-  //oj.Assert.assertObject(position, "position");
-  var target = $.extend({}, position);
-  for (var i = 0; i < oj.PositionUtils._ALIGN_RULE_PROPERTIES.length; i++)
-  {
-    var propName = oj.PositionUtils._ALIGN_RULE_PROPERTIES[i];
-    var align = target[propName];
-    if (!align)
-      continue;
-
-    if (oj.StringUtils.isString(align))
-    {
-      target[propName] = align.replace("start", (isRtl ? "right" : "left"))
-                              .replace("end", (isRtl ? "left" : "right"))
-                              .replace("<", (isRtl ? "+" : "-"))
-                              .replace(">", (isRtl ? "-" : "+"));
-    }
-    else
-    {
-      for (var s = 0; s < oj.PositionUtils._SUB_ALIGN_RULE_PROPERTIES.length; s++)
-      {
-        var subPropName = oj.PositionUtils._SUB_ALIGN_RULE_PROPERTIES[s];
-        var subAlign = align[subPropName];
-        if (oj.StringUtils.isString(subAlign))
-        {
-            align[subPropName] = subAlign.replace("start", (isRtl ? "right" : "left"))
-                              .replace("end", (isRtl ? "left" : "right"))
-                              .replace("<", (isRtl ? "+" : "-"))
-                              .replace(">", (isRtl ? "-" : "+"));
-        }
-      }
-    }
-  }
-
-  return target;
-};
-
-/**
- * <p>In the jQuery UI [Position]{@link http://api.jqueryui.com/position/} utility,
- * the "of" field specifies the element or event relative to which the popup should
- * be positioned.
- *
- * <p>Popup components like Menu often need to position themselves relative to their
- * launcher (e.g. MenuButton), or the launching event (e.g. right-click event), both
- * of which can vary on a per-launch basis.  To facilitate specifying these policies
- * in advance, in a component option, it's useful to support "launcher" and "event"
- * keywords in the "of" field.  Without these keywords, the app would have to set
- * this field at each popup launch, via either the open() method or a beforeOpen listener,
- * at which point they could supply the actual event or launcher element for this
- * particular launch.
- *
- * <p>This method is intended to be called by the popup component at launch time.  It
- * takes an "of" field possibly containing these keywords, and the event and launcher
- * for the current launch, and returns a new "of" value where those keywords have
- * been replaced by the event or launcher, so that the resulting "position" object
- * is ready to be passed to the JQUI utility.
- *
- * <p>Since callers may have different needs, this method does not log if, say,
- * of==="event" && event==null.  Callers should log or throw if this condition
- * indicates application error.
- *
- * <p>While the code is simple, it's useful to centralize the logic to avoid subtle
- * differences in behavior among JET popup components.
- *
- * @param of the "of" field of a position object.  Defaults to "launcher" if null/undefined.
- * @param launcher launcher element
- * @param event event that opened the popup
- * @return normalized "of" value
- */
-oj.PositionUtils.normalizePositionOf = function(of, launcher, event)
-{
-  return (of === "event")
-    ? event
-    : (of == null || of === "launcher")
-      ? launcher
-      : of;
-};
-
-// TODO: file a JQ bug and link to it here.
-/**
- * On iOS and Android, the JQ Event object wrapping touch* events lacks pageX and pageY properties, which is contrary to the
- * contract [1].  This breaks JQ's position() API [2], which assumes that the contract is obeyed.  Specifically, it
- * relies on the pageX/Y fields of the Event object passed as the "of" field (and publicly docs that it does so).
- *
- * Per W3C [3], pageX/Y are found in originalEvent.touches[i] or originalEvent.changedTouches[i], where originalEvent is
- * the native (not JQ) event, and i is 0 for us.  In practice, for touchstart at least, iOS7 and 8 Mobile Safari, but
- * apparently not Android Chrome, also put pageX and pageY on the top-level native event, and the values seem to be the
- * same as those in the touches array.  We'll use the cross-platform W3C location.
- *
- * To workaround the JQ bug, popup components like Menu can call this method at open() time.  This method copies the properties
- * to the wrapper JQ event.
- *
- * [1] http://api.jquery.com/category/events/event-object/
- * [2] http://api.jqueryui.com/position/
- * [3] http://www.w3.org/TR/touch-events/#touch-interface et. seq.
- *
- * @private
- * @param event
- */
-oj.PositionUtils._normalizeEventForPosition = function(event)
-{
-  $.each(["pageX", "pageY"], function (index, pagePos)
-  {
-    if (event && event[pagePos] === undefined && event.originalEvent)
-    {
-      var originalEvent = event.originalEvent;
-      var type = originalEvent.type;
-      var touchList = (type === "touchstart" || type === "touchmove")
-          ? "touches"
-          : (type === "touchend") ? "changedTouches" : null;
-
-      if (touchList)
-      {
-        var firstTouch = originalEvent[touchList][0];
-        if (firstTouch)
-          event[pagePos] = firstTouch[pagePos];
-      }
-    }
-  });
-};
-
-/**
- * @private
- * @const
- */
-oj.PositionUtils._ALIGN_RULE_PROPERTIES = ['my', 'at'];
-
-/**
- * @private
- * @const
- */
-oj.PositionUtils._SUB_ALIGN_RULE_PROPERTIES = ['vertical', 'horizontal'];
-
-/**
- * A common utilty that is designed be be called for a jquery ui position "using" callback
- * that will check to see if the target aligning "of" position is clipped in an overflow
- * container.  Used by popups that should auto dismiss when what they are aligning to is
- * no longer visible.  The aligning position can be either an element, event or a rect.
- *
- * @param {Object} props second argument to the jquery ui position "using" callback.
- * @returns {boolean} <code>true</code> if the point aligned is not totally visible in and overflow container
- */
-oj.PositionUtils.isAligningPositionClipped = function(props)
-{
-  // Alignment can be to an element, event or a rect but we only care to make this
-  // check if alignment is to an element - .
-  if (props["target"] && props["target"]["height"] > 0 && props["target"]["width"] > 0)
-  {
-    // if the target has a width and height greater than zero then it's an element
-    /** @type {jQuery} */
-    var positionOf = props["target"]["element"];
-    return !oj.PositionUtils.isWithinViewport(positionOf);
-  }
-  else
-    return false;
-};
-
-
-/**
- * Returns <code>true</code> if the jquery element is visible within overflow an
- * overflow container. The check only considers statically positioned elements and
- * stops short of the body.
- *
- * The first positioned ancestor is treated as the root viewport. Positioned elements need be
- * compared with the window viewport versus its ancestors.  Visibility of positioned
- * elements also need to compare stacking contexts within the document to determine
- * what is on top "visible" - thus excluded from this check.
- *
- * @param {jQuery} element jquery element to test
- * @returns {boolean}
- */
-oj.PositionUtils.isWithinViewport = function(element)
-{
-
-  function isVisible(alignBox, containerBox)
-  {
-    if (["hidden", "scroll", "auto"].indexOf(containerBox["overflowY"]) > -1)
-    {
-      // 1px fudge factor for rounding errors
-      if ((alignBox["bottom"] - containerBox["top"]) < -1)
-        return false;
-
-      var scrollBarWidth = (containerBox["overflowX"] === "auto" || containerBox["overflowX"] === "scroll") ?
-                          oj.DomUtils.getScrollBarWidth() : 0;
-      if ((containerBox["bottom"] - scrollBarWidth) - alignBox["top"] < 1)
-        return false;
-    }
-
-    if (["hidden", "scroll", "auto"].indexOf(containerBox["overflowX"]) > -1)
-    {
-      scrollBarWidth = ((containerBox["overflowY"] === "auto" || containerBox["overflowY"] === "scroll") &&
-                       oj.DomUtils.getReadingDirection() === "rtl") ? oj.DomUtils.getScrollBarWidth() : 0;
-      if ((alignBox["right"] - (containerBox["left"] + scrollBarWidth)) < -1)
-        return false;
-
-      var scrollBarWidth = ((containerBox["overflowX"] === "auto" || containerBox["overflowX"] === "scroll") &&
-                       oj.DomUtils.getReadingDirection() === "ltr") ? oj.DomUtils.getScrollBarWidth() : 0;
-      if ((alignBox["left"] - (containerBox["right"] - scrollBarWidth)) > -1)
-        return false;
-    }
-
-    return true;
-  };
-
-  function hasOverflow(element)
-  {
-    return "visible" !== element.css("overflow-x") ||
-           "visible" !== element.css("overflow-y");
-  };
-
-  function getRect(element)
-  {
-    var domElement = element[0];
-    if (domElement.nodeType === 1)
-    {
-      var rec = $.extend({}, domElement.getBoundingClientRect());
-      rec["overflowX"] = element.css("overflow-x");
-      rec["overflowY"] = element.css("overflow-y");
-      return rec;
-    }
-    return {'height': 0, 'width': 0};
-  };
-
-  function isPositioned(element)
-  {
-    return ["fixed", "absolute", "relative"].indexOf(element.css("position")) > -1 &&
-           (Math.abs(oj.DomUtils.getCSSLengthAsInt(element.css("top"))) > 0 ||
-            Math.abs(oj.DomUtils.getCSSLengthAsInt(element.css("bottom"))) > 0 ||
-            Math.abs(oj.DomUtils.getCSSLengthAsInt(element.css("left"))) > 0 ||
-            Math.abs(oj.DomUtils.getCSSLengthAsInt(element.css("right"))) > 0);
-  };
-
-  if (!element)
-    return false;
-  else if ($.isWindow(element[0]) || isPositioned(element))
-    return true;
-
-  var alignBox = getRect(element);
-
-  // check that the element is not hidden in overflow
-  var isWithinViewPort = true;
-  var parent = element.parent();
-  while (isWithinViewPort && parent && parent.length > 0 &&  "BODY" !== parent[0].nodeName && parent[0].nodeType === 1 && !isPositioned(parent))
-  {
-    if (hasOverflow(parent))
-    {
-      var parentBox = getRect(parent);
-      // ignore elements with empty border-boxes
-      if (parentBox['height'] > 0 && parentBox['width'] > 0)
-      {
-        isWithinViewPort = isVisible(alignBox, parentBox);
-      }
-    }
-    parent = parent.parent();
-  }
-
-  return isWithinViewPort;
-};
-
-/**
- * Mapping of horizontal-vertical (x,y) alignment positon to the corresponding css
- * "transform-origin" attribute.
- *
- * horizontal: right, left, center
- * vertical: top, bottom, middle
- *
- * @private
- * @const
- */
-oj.PositionUtils._ANIMATION_TRANSFORM_ORIGIN_RULES =
-    {
-      'right-top' : 'right top',
-      'right-middle' : 'right center',
-      'right-bottom' : 'right bottom',
-      'left-top' : 'left top',
-      'left-middle' : 'left center',
-      'left-bottom' : 'left bottom',
-      'center-top' : 'center top',
-      'center-middle' : 'center center',
-      'center-bottom' : 'center bottom'
-    };
-
-/**
- * Data attribute key used to store the alignment of the popup relative
- * to the aligning element - position.of
- *
- * @private
- * @const
- * @type {string}
- */
- oj.PositionUtils._ALIGN_MNEMONIC_DATA = "oj-popup-align-mnemonic"
-
-/**
- * Pass the root popup element and the second argument of the jquery ui position utils using
- * callback.  Stashes away the alignment hints returned by the position utility as a data property
- * on the target jquery element.  The alignment hints are used to define the transform-origin
- * of animation effects.
- *
- * @see oj.PositionUtils.addTransformOriginAnimationEffectsOption
- * @param {jQuery} element popup root node
- * @param {Object} props second argument to the jquery ui position "using" callback.
- * @return {void}
- */
- oj.PositionUtils.captureTransformOriginAnimationEffectsOption =  function(element, props)
- {
-   var alignMnemonic = [props["horizontal"], props["vertical"]].join("-");
-   element.data(oj.PositionUtils._ALIGN_MNEMONIC_DATA, alignMnemonic);
- };
-
-/**
- * Pass "open" or "close" animation effects.  Replaces occurances of
- * "transformOrigin":"#myPositon" with a value that represents the popups alignment.
- *
- * @see oj.PositionUtils.captureTransformOriginAnimationEffectsOption
- * @param {jQuery} element popup root node
- * @param {string|Object|Array} effects animation instructions
- * @returns {string|Object|Array} effects with the transformOrign property resolved
- */
-oj.PositionUtils.addTransformOriginAnimationEffectsOption = function (element, effects)
-{
-  var effectsAsString;
-  var isEffectsTypeofString;
-
-  if (!oj.StringUtils.isString(effects))
-  {
-    isEffectsTypeofString = false;
-    effectsAsString = JSON.stringify(effects);
-  }
-  else
-  {
-    isEffectsTypeofString = true;
-    effectsAsString = effects;
-  }
-
-  var exp = /#myPosition/g;
-  if (effectsAsString.match(exp))
-  {
-    var alignMnemonic = /** @type {string} */ (element.data(oj.PositionUtils._ALIGN_MNEMONIC_DATA));
-    if (oj.StringUtils.isEmptyOrUndefined(alignMnemonic))
-      alignMnemonic = "center-middle";
-
-    var transformOrigin = oj.PositionUtils._ANIMATION_TRANSFORM_ORIGIN_RULES[alignMnemonic];
-
-    effectsAsString = effectsAsString.replace(exp, transformOrigin);
-
-    effects = isEffectsTypeofString ? effectsAsString :
-      /** @type {Object} */ (JSON.parse(effectsAsString));
-  }
-
-  return effects;
-};
-
-
-/**
- * Splits the jquery UI vertical mnemonic into 3 groups.
- * @private
- * @constant {RegExp}
- */
-oj.PositionUtils._JQUI_MNEMONIC_GRP_REGX = /^(\w+)(\+|\-)?(\d+)?/;
-
-/**
- * Verify vertical mnemonic.
- * @private
- * @constant {RegExp}
- */
-oj.PositionUtils._VERTICAL_ENUM_TST_REGX = /^top$|^center$|^bottom$/;
-
-/**
- * Verify horizontal mnemonic.
- * @private
- * @constant {RegExp}
- */
-oj.PositionUtils._HORIZONTAL_ENUM_TST_REGX = /^start$|^left$|^center$|^end$|^right$/;
-
-/**
- * Verify collision mnemonic.
- * @private
- * @constant {RegExp}
- */
-oj.PositionUtils._COLLISION_ENUM_TST_REGX = /^none$|^flip$|^flipfit$|^fit$|^flipcenter$/;
-
-/**
- * @private
- * @param {string} token containing a position alignment rule
- * @param {RegExp} testRegX regular expression to verify the token enumerations
- * @returns {Array} array of two values [alignment, offset].
- */
-oj.PositionUtils._parsePositionNmnemonic = function(token, testRegX)
-{
-  var data = [null, Number.NaN];
-  var groups = oj.PositionUtils._JQUI_MNEMONIC_GRP_REGX.exec(token);
-
-  if (groups[1] && testRegX.test(groups[1]))
-  {
-    data[0] = groups[1];
-
-    // has an offset prefiex by +|-
-    if (groups[2])
-    {
-      var offset = parseInt(groups[3], 10);
-      if (!isNaN(offset))
-      {
-        offset *= (groups[2] === "-" ? -1 : 1);
-        data[1] = offset;
-      }
-    }
-  }
-  return data;
-};
-
-/**
- *
- * @private
- * @param {?} value that might be a json string
- * @returns {?} returns an object if the value is a json string; otherwise,
- *          a null value is returned.
- */
-oj.PositionUtils._parseJSON = function(value)
-{
-  if (oj.StringUtils.isString(value) && /^{/.test(value) && /}$/.test(value))
-  {
-    try
-    {
-      return JSON.parse(value);
-    }
-    catch (e) {}
-  }
-
-  return null;
-}
-
-/**
- * Converts a source "position.my" or "position.at" into a suitable state held by jet components.
- *
- * @param {string} type "my" or "at"
- * @param {Object} source postion.my or position.at to shape into a Jet position object
- * @param {Object=} offsetSource position.offset
- * @param {Object=} sourceDefault default values
- * @returns {Object} internal position impl
- * @private
- */
-oj.PositionUtils._coerceMyAtToJet = function (type, source, offsetSource, sourceDefault)
-{
-  var obj = oj.PositionUtils._parseJSON(source);
-  if (obj)
-    source = obj;
-
-  obj = oj.PositionUtils._parseJSON(offsetSource);
-  if (obj)
-    offsetSource = obj;
-
-  if (!sourceDefault)
-    sourceDefault = {};
-
-  var target = $.extend({}, sourceDefault);
-  var offsetTarget = {"x": 0, "y": 0};
-  if (offsetSource && "x" in offsetSource && "y" in offsetSource)
-  {
-    offsetTarget["x"] = oj.DomUtils.getCSSLengthAsInt(offsetSource["x"]);
-    offsetTarget["y"] = oj.DomUtils.getCSSLengthAsInt(offsetSource["y"]);
-  }
-
-  var groups;
-
-  if (oj.StringUtils.isString(source))  // jquery ui
-  {
-    // split horizontal and vertical tokens
-    var tokens = source.split(/\s/);
-
-    // parse horizontal
-    if (tokens.length > 0 && !oj.StringUtils.isEmpty(tokens[0]))
-    {
-      groups = oj.PositionUtils._parsePositionNmnemonic(tokens[0],
-        oj.PositionUtils._HORIZONTAL_ENUM_TST_REGX);
-
-      // verify horizontal enum
-      if (groups[0])
-      {
-        target["horizontal"] = groups[0];
-        if (!isNaN(groups[1]))
-          offsetTarget["x"] = groups[1];
-      }
-    }
-
-    // parse vertical
-    if (tokens.length > 1 && !oj.StringUtils.isEmpty(tokens[1]))
-    {
-      groups = oj.PositionUtils._parsePositionNmnemonic(tokens[1],
-        oj.PositionUtils._VERTICAL_ENUM_TST_REGX);
-
-      // verify vertical enum
-      if (groups[0])
-      {
-        target["vertical"] = groups[0];
-        if (!isNaN(groups[1]))
-          offsetTarget["y"] = groups[1];
-      }
-    }
-  }
-  else if (source)
-  {
-    // my is is in the jet position format
-    if ("horizontal" in source)
-    {
-      groups = oj.PositionUtils._parsePositionNmnemonic(source["horizontal"],
-        oj.PositionUtils._HORIZONTAL_ENUM_TST_REGX);
-
-      if (groups[0])
-      {
-        target["horizontal"] = groups[0];
-        if (!isNaN(groups[1]))
-          offsetTarget["x"] = groups[1];
-      }
-    }
-
-    if ("vertical" in source)
-    {
-      groups = oj.PositionUtils._parsePositionNmnemonic(source["vertical"],
-        oj.PositionUtils._VERTICAL_ENUM_TST_REGX);
-
-      if (groups[0])
-      {
-        target["vertical"] = groups[0];
-        if (!isNaN(groups[1]))
-          offsetTarget["y"] = groups[1];
-      }
-    }
-  }
-
-  var targetPosition = {};
-  targetPosition[type] = target;
-  targetPosition["offset"] = offsetTarget;
-  return targetPosition;
-};
-
-/**
- * Converts a source "position.collision" into a suitable state held by jet components.
- *
- * @param {string} collisionSource postion.collision to shape into a Jet position object
- * @param {string=} collisionDefault default values
- * @returns {Object} internal position impl
- * @private
- */
-oj.PositionUtils._coerceCollisionToJet = function (collisionSource, collisionDefault)
-{
-  var collisionTarget = collisionDefault;
-
-  if (oj.PositionUtils._COLLISION_ENUM_TST_REGX.test(collisionSource))
-  {
-    collisionTarget = collisionSource;
-  }
-
-  return {"collision": collisionTarget};
-};
-
-
-/**
- * Converts a source "position.of" into a suitable state held by jet components.
- *
- * @param {Object} ofSource position.of
- * @param {Object=} ofDefault default value
- * @return {Object} internal postion object
- * @private
- */
-oj.PositionUtils._coerceOfToJet = function (ofSource, ofDefault)
-{
-  function _escapeId(id)
-  {
-    var targetId = [];
-    var regex = /\w|_|-/;
-
-    for (var i = 0; i < id.length; i++)
-    {
-      var c = id.substring(i, i + 1);
-      if (regex.test(c))
-        targetId.push(c);
-      else
-        targetId.push("\\" + c);
-    }
-    return targetId.join("");
-  }
-
-  var obj = oj.PositionUtils._parseJSON(ofSource);
-  if (obj)
-    ofSource = obj;
-
-  var targetOf = ofDefault;
-
-  if (oj.StringUtils.isString(ofSource))
-  {
-    targetOf = ofSource;          // assume a valid selector
-  }
-  else if ($.isWindow(ofSource))
-  {
-    targetOf = "window";
-  }
-  else if (ofSource instanceof Element || ofSource instanceof $)
-  {
-    ofSource = $(ofSource);
-    ofSource.uniqueId();
-    var id = ofSource.attr("id");
-    targetOf = "#" + _escapeId(id);
-  }
-  else if (ofSource instanceof Event || ofSource instanceof $.Event)
-  {
-    if ("pageX" in ofSource || "pageY" in ofSource)
-    {
-      targetOf = {};
-      targetOf["x"] = oj.DomUtils.getCSSLengthAsFloat(ofSource["pageX"]);
-      targetOf["y"] = oj.DomUtils.getCSSLengthAsFloat(ofSource["pageY"]);
-    }
-  }
-  else if (ofSource)
-  {
-    if ("x" in ofSource || "y" in ofSource)
-    {
-      targetOf = {};
-      targetOf["x"] = oj.DomUtils.getCSSLengthAsFloat(ofSource["x"]);
-      targetOf["y"] = oj.DomUtils.getCSSLengthAsFloat(ofSource["y"]);
-    }
-  }
-
-  return {"of": targetOf};
-};
-
-/**
- * Converts a source "position" into a suitable state held by jet components.
- *
- * @param {Object} source position
- * @param {Object=} defaults for target position
- * @return {Object} internal postion object
- */
-oj.PositionUtils.coerceToJet = function (source, defaults)
-{
-  if (!source)
-    source = {};
-
-  var obj = oj.PositionUtils._parseJSON(source);
-  if (obj)
-    source = obj;
-
-  if (!defaults)
-    defaults = {};
-
-  function _coerceUsingToJet(usingSource, usingDefault)
-  {
-    var targetUsing = $.isFunction(usingSource) ? usingSource : usingDefault;
-    return {"using": targetUsing};
-  }
-
-  var myDefault = defaults["my"];
-  var atDefault = defaults["at"];
-  var collisionDefault = defaults["collision"];
-  var ofDefault = defaults["of"];
-  var usingDefault = undefined;  // to dangerous to inherit
-
-  var targetMy = oj.PositionUtils._coerceMyAtToJet("my", source["my"], source["offset"], myDefault);
-  var targetAt = oj.PositionUtils._coerceMyAtToJet("at", source["at"], null, atDefault);
-
-  // sum the "at" and "my" offsets
-  var targetOffset = {"offset":
-      {"x": targetMy["offset"]["x"] + targetAt["offset"]["x"],
-       "y": targetMy["offset"]["y"] + targetAt["offset"]["y"],
-    }};
-  delete targetMy["offset"];
-  delete targetAt["offset"];
-
-  var target = $.extend({},
-                 targetMy,
-                 targetAt,
-                 targetOffset,
-                 oj.PositionUtils._coerceCollisionToJet(source["collision"], collisionDefault),
-                 oj.PositionUtils._coerceOfToJet(source["of"], ofDefault),
-                 _coerceUsingToJet(source["using"], usingDefault));
-
-  return target;
-};
-
-
-/**
- * Converts the jet position object into the jQuery UI object used by the position utility.
- *
- * @param {Object} source internal position object
- * @return {Object} jQuery UI position Object
- */
-oj.PositionUtils.coerceToJqUi = function (source)
-{
-  function alignToJqUi(align, direction)
-  {
-    var tokens = [];
-    if (source[align][direction])
-      tokens.push(source[align][direction]);
-    else
-      tokens.push("center");
-
-    if ("my" === align && source["offset"])
-    {
-      var offsetDirection = ("horizontal" === direction ? "x" : "y");
-      var offset = source["offset"][offsetDirection];
-      if (!isNaN(offset) && offset !== 0)
-      {
-        tokens.push(offset > 0 ? "+" : "");
-        tokens.push(Math.floor(offset).toString());
-      }
-    }
-
-    return tokens.join("");
-  }
-
-
-  var target = {};
-
-  // convert my and at
-  ["my","at"].forEach(function (align)
-    {
-      if (source[align])
-      {
-         var tokens = [];
-         tokens.push(alignToJqUi(align, "horizontal"));
-         tokens.push(" ");
-         tokens.push(alignToJqUi(align, "vertical"));
-         target[align] = tokens.join("");
-      }
-    });
-
-    // convert of
-    var ofSource = source["of"];
-    if (oj.StringUtils.isString(ofSource))
-    {
-      if ("window" === ofSource)
-        target["of"] = window;
-      else
-        target["of"] = ofSource;
-    }
-    else if (ofSource && !oj.StringUtils.isString(ofSource) && "x" in ofSource && "y" in ofSource)
-    {
-      var x = ofSource["x"];
-      var y = ofSource["y"];
-      var nativeEvent = document.createEvent("MouseEvents");
-      nativeEvent.initMouseEvent("click", true, true, window, 1, x, y, x, y,
-                                 false, false, false, false, 0, null);
-      target["of"] = $.Event(nativeEvent, {"pageX": x, "pageY": y});
-    }
-    else
-    {
-      target["of"] = ofSource;
-    }
-
-    if (source["collision"])
-      target["collision"] = source["collision"];
-
-    // convert using
-    if (source["using"])
-      target["using"] = source["using"];
-
-  return target;
-};
-
-/**
- * Custom jquery UI position collision rule that will first apply the "flip" rule and follow with "center" alignment.
- * @ojtsignore
- */
-$.ui.position["flipcenter"] =
-{
-  /**
-   * @param {{top: number, left: number}} position
-   * @param {{targetWidth: number,
-   *         targetHeight: number,
-   *         elemWidth: number,
-   *         elemHeight: number,
-   *         collisionPosition: {marginLeft: number, marginTop: number},
-   *         collisionWidth: number,
-   *         collisionHeight: number,
-   *         offset: Array.<number>,
-   *         my: Array.<string>,
-   *         at: Array.<string>,
-   *         within: {element: jQuery, isWindow: boolean, isDocument: boolean, offset: {left: number, top: number}, scrollLeft: number, scrollTop: number, width: number, height: number},
-   *         elem: jQuery
-   *        }} data
-   * @returns {undefined}
-   */
-  "left": function (position, data)
-  {
-    // stash away the initial position calculated from the at alignment
-    var posLeft = position["left"];
-
-    // call on the flip rule
-    $.ui.position["flip"]["left"].call(this, position, data);
-
-    // These calcs were taken from the "fit" rule.
-    var within = data["within"];
-    var withinOffset = within["isWindow"] ? within["scrollLeft"] : within["offset"]["left"];
-    var outerWidth = within["width"];
-    var collisionPosLeft = position["left"] - data["collisionPosition"]["marginLeft"];
-    var overLeft = withinOffset - collisionPosLeft;
-    var overRight = collisionPosLeft + data["collisionWidth"] - outerWidth - withinOffset;
-
-    // if popup is not within, center align it
-    if (overLeft > 0 || overRight > 0)
-    {
-      // find the center of the target element
-      if ("right" === data["at"][0])
-        posLeft -= data["targetWidth"] /2;
-      else if ("left" === data["at"][0])
-        posLeft += data["targetWidth"] /2;
-
-      var isRTL = oj.DomUtils.getReadingDirection() === "rtl";
-      var dirFactor = isRTL ? -1 : 1;
-
-      // factor in half the width of the popup
-      posLeft -= dirFactor * (data["elemWidth"] / 2);
-
-      // Force the popup start to be within the viewport.
-      // This collision rule is only used by input components internally. The notewindow will auto dismiss when
-      // what it is aligned to is hidden in a scroll container.
-      position["left"] = Math.max(0, posLeft);
-    }
-  },
-  /**
-   * @param {{top: number, left: number}} position
-   * @param {{targetWidth: number,
-   *         targetHeight: number,
-   *         elemWidth: number,
-   *         elemHeight: number,
-   *         collisionPosition: {marginLeft: number, marginTop: number},
-   *         collisionWidth: number,
-   *         collisionHeight: number,
-   *         offset: Array.<number>,
-   *         my: Array.<string>,
-   *         at: Array.<string>,
-   *         within: {element: jQuery, isWindow: boolean, isDocument: boolean, offset: {left: number, top: number}, scrollLeft: number, scrollTop: number, width: number, height: number},
-   *         elem: jQuery
-   *        }} data
-   * @returns {undefined}
-   */
-  "top": function (position, data)
-  {
-    // stash away the initial position calculated from the at alignment
-    var posTop = position["top"];
-
-    $.ui.position["flip"]["top"].call(this, position, data);
-
-    // These calcs were taken from the "fit" rule.
-    var within = data["within"];
-    var withinOffset = within["isWindow"] ? within["scrollTop"] : within["offset"]["top"];
-    var outerHeight = data["within"]["height"];
-    var collisionPosTop = position["top"] - data["collisionPosition"]["marginTop"];
-    var overTop = withinOffset - collisionPosTop;
-    var overBottom = collisionPosTop + data["collisionHeight"] - outerHeight - withinOffset;
-
-    if (overTop > 0 || overBottom > 0)
-    {
-      // find the center of the target element
-      if ("top" === data["at"][1])
-        posTop += data["targetHeight"] /2;
-      else if ("bottom" === data["at"][1])
-        posTop -= data["targetHeight"] /2;
-
-      // factor in half the height of the popup
-      posTop += data["elemHeight"] / 2;
-
-      // Force the popup top to be within the viewport.
-      // This collision rule is only used by input components internally. The notewindow will auto dismiss when
-      // what it is aligned to is hidden in a scroll container.
-      position["top"] = Math.max(0, posTop);
-    }
-  }
-};
-
-/**
- * Forked the jquery UI "flip" position collision rule in version 1.11.4.
- * The jquery version doesn't consider the best fit in terms of
- * top/bottom. The rule favors top when there is no fit versus choosing the
- * best fit, lesser of two evils. The new JET spin of this rule will pick
- * the better fit versus favoring top when there is no fit.
- *
- * Outside of making the code closure compiler friendly, there is only
- * a single line difference.  It's noted with a bug number.
- * @private
- */
-var _origLeftFlipCollisionRule = $.ui.position["flip"]["left"];  //stash away the original left flip rule
-
-/**
- * @ojtsignore
- */
-$.ui.position["flip"] = {
-  "left": _origLeftFlipCollisionRule.bind(this),
-  /**
-   * @param {{top: number, left: number}} position
-   * @param {{targetWidth: number,
-   *         targetHeight: number,
-   *         elemWidth: number,
-   *         elemHeight: number,
-   *         collisionPosition: {marginLeft: number, marginTop: number},
-   *         collisionWidth: number,
-   *         collisionHeight: number,
-   *         offset: Array.<number>,
-   *         my: Array.<string>,
-   *         at: Array.<string>,
-   *         within: {element: jQuery, isWindow: boolean, isDocument: boolean, offset: {left: number, top: number}, scrollLeft: number, scrollTop: number, width: number, height: number},
-   *         elem: jQuery
-   *        }} data
-   * @returns {undefined}
-   */
-  "top": function(position, data)
-  {
-    var within = data["within"],
-    withinOffset = within["offset"]["top"] + within["scrollTop"],
-    outerHeight = within["height"],
-    offsetTop = within["isWindow"] ? within["scrollTop"] : within["offset"]["top"],
-    collisionPosTop = position["top"] - data["collisionPosition"]["marginTop"],
-    overTop = collisionPosTop - offsetTop,
-    overBottom = collisionPosTop + data["collisionHeight"] - outerHeight - offsetTop,
-    top = data["my"][ 1 ] === "top",
-    myOffset = top ? -data["elemHeight"] :
-                data["my"][ 1 ] === "bottom" ? data["elemHeight"] : 0,
-    atOffset = data["at"][ 1 ] === "top" ? data["targetHeight"] :
-                data["at"][ 1 ] === "bottom" ? -data["targetHeight"] : 0,
-    offset = -2 * data["offset"][ 1 ],
-    newOverBottom,
-    newOverTop;
-    if (overTop < 0)
-    {
-      newOverBottom = position["top"] + myOffset + atOffset + offset + data["collisionHeight"] - outerHeight - withinOffset;
-      if (newOverBottom < 0 || newOverBottom < Math.abs(overTop))
-      {
-        //  - only flip up if there is more "over" on top than bottom
-        if (overBottom < 0 && overTop > overBottom)
-          position["top"] += myOffset + atOffset + offset;
-      }
-    } else if (overBottom > 0)
-    {
-      newOverTop = position["top"] - data["collisionPosition"]["marginTop"] + myOffset + atOffset + offset - offsetTop;
-      if (newOverTop > 0 || Math.abs(newOverTop) < overBottom)
-      {
-        position["top"] += myOffset + atOffset + offset;
-      }
-    }
-  }
-};
 /*jslint browser: true*/
 /*
  ** Copyright (c) 2004, 2012, Oracle and/or its affiliates. All rights reserved.
@@ -2251,12 +1276,18 @@ oj.ZOrderUtils.removeFromAncestorLayer = function (popup)
 
   layer.removeData(oj.ZOrderUtils._EVENTS_DATA);
   layer.removeData(oj.ZOrderUtils._MODALITY_DATA);
+  popup.removeData(oj.ZOrderUtils._LAYER_ID_DATA);
 
   var popupDom = popup[0];
   oj.Components.subtreeDetached(popupDom);
   oj.ZOrderUtils._removeSurrogate(layer);
-  oj.DomUtils.unwrap(popup, layer);
-  popup.removeData(oj.ZOrderUtils._LAYER_ID_DATA);
+
+  // if the popup is not orphaned
+  if (popupDom && popupDom.parentElement)
+    oj.DomUtils.unwrap(popup, layer);
+  else
+    layer.remove();
+
   oj.Components.subtreeAttached(popupDom);
 };
 
@@ -2616,6 +1647,101 @@ oj.ZOrderUtils._openPopupsCallback = function (layer, context)
 };
 
 /**
+ * @public
+ * @param {!Element} element to determine if it's above the top modal popup
+ * @returns {boolean} returns <code>true</code> if the element is above the top modal popup
+ */
+oj.ZOrderUtils.isAboveTopModalLayer = function(element)
+{
+  /**
+   * @return {Element|undefined}
+   */
+  function getTopLayer()
+  {
+    // traverses the first level of popups looking for the popup with the highest
+    // stacking context.
+    // pre-order traversal
+    function callback(layer, context)
+    {
+      var level = context['level'];
+
+      // first level traversal only
+      if (level > 0)
+        return oj.ZOrderUtils.VISIT_RESULT.REJECT;
+
+      var prevLayer = context['topLayer'];
+      if (prevLayer)
+      {
+        // if the current layer has a higher context than the prev, it becomes the top
+        if (oj.ZOrderUtils.compareStackingContexts($(layer), $(prevLayer)) > 0)
+          context['topLayer'] = layer;
+      }
+      else
+        context['topLayer'] = layer;
+    }
+
+    var context = {"topLayer": null};
+    var defaultLayer = oj.ZOrderUtils.getDefaultLayer();
+    oj.ZOrderUtils.preOrderVisit(defaultLayer, callback, context);
+    if (context["topLayer"])
+      return context["topLayer"][0];
+    else
+      return undefined;
+  }
+
+  /**
+   *
+   * @param {!Element} topLayer
+   * @return {Element|undefined}
+   */
+  function getTopModalLayer(topLayer)
+  {
+    // post-order traversal starting at the topLayer.  Retuns the modal popup at the
+    // highest deepest level.
+    function callback(layer, context)
+    {
+      if (layer[0].hasAttribute(oj.ZOrderUtils._OVERLAY_ATTR))
+      {
+        context["topModalPopup"] = layer;
+        return oj.ZOrderUtils.VISIT_RESULT.COMPLETE;
+      }
+      else
+        return oj.ZOrderUtils.VISIT_RESULT.ACCEPT;
+    }
+
+    var context = {"topModalPopup": null};
+    if (topLayer.hasAttribute(oj.ZOrderUtils._OVERLAY_ATTR))
+      context["topModalPopup"] = $(topLayer);
+
+    oj.ZOrderUtils.postOrderVisit($(topLayer), callback, context);
+
+    if (context["topModalPopup"])
+      return context["topModalPopup"][0];
+    else
+      return undefined;
+  }
+
+  // inexpensive prerequisite check
+  if (!element || !oj.ZOrderUtils.hasPopupsOpen())
+    return true;
+
+  // Popups closest to the body will have the greatest stacking context weight.
+  // Find the top first level layer.
+  var topLayer = getTopLayer();
+  if (!topLayer)
+    return true;
+
+  // look for the last modal popup open starting from the top layer
+  var topModalLayer = getTopModalLayer(topLayer);
+  if (!topModalLayer)
+    return true;
+
+  // Returns true if the target element is a child of the top most modal layer.
+  return oj.DomUtils.isAncestorOrSelf(topModalLayer, element) ||
+         oj.ZOrderUtils.compareStackingContexts($(topModalLayer), $(element)) < 0;
+};
+
+/**
  * Utility used for testing. Compares two jquery singleton wappered elements
  * determining which element has the greatest stacking context.
  * @public
@@ -2650,7 +1776,7 @@ oj.ZOrderUtils.compareStackingContexts = function (el1, el2)
       var opacity = oj.DomUtils.getCSSLengthAsFloat(parent.css("opacity"));
       var zindex = oj.DomUtils.getCSSLengthAsInt(parent.css("z-index"));
       var order = $.inArray(parent[0], parent.parent().children());
-      if ($.inArray(position, positions) > -1)
+      if ($.inArray(position, positions) > -1 && zindex > 0)
         stack.push({'weight' : [level++, zindex, order], 'order' : [order]});
       else if (opacity < 1)
         stack.push({'weight' : [level++, 1, order], 'order' : [order]});
@@ -2664,14 +1790,13 @@ oj.ZOrderUtils.compareStackingContexts = function (el1, el2)
     }
     return stack;
   }
-  ;
 
   function compareSets (n1, n2) {
     var maxLen = Math.max(n1.length, n2.length);
     for (var i = 0; i < maxLen; i++)
     {
-      var e1 = i < n1.length ? n1[i] : -1;
-      var e2 = i < n2.length ? n2[i] : -1;
+      var e1 = i < n1.length ? n1[i] : 0;
+      var e2 = i < n2.length ? n2[i] : 0;
       if (e1 === e2)
         continue;
       else if (e1 < e2)
@@ -3443,5 +2568,985 @@ oj.PopupWhenReadyMediator.prototype.isOperationPending = function (widgetInstanc
     isPending = true;
   }
   return isPending;
+};
+/*jslint browser: true*/
+/*
+** Copyright (c) 2004, 2012, Oracle and/or its affiliates. All rights reserved.
+*/
+/**
+ * @preserve Copyright 2013 jQuery Foundation and other contributors
+ * Released under the MIT license.
+ * http://jquery.org/license
+ */
+
+/**
+ * Utilities used in conjunction with the jquery positon utility.
+ * @ignore
+ * @class oj.PositionUtils
+ * @ojtsignore
+ */
+oj.PositionUtils = {};
+
+/**
+ * <p>Of the properties on the position object, "my" and "at" are of interest. The base jQuery
+ * horizontal alignment mnemonics are "right", "center" and "left". For better JET RTL
+ * support we have added "start" and "end".  Depending on the rtl direction, "start" and
+ * "end" will be replaced with "left" or "right". The resultant postion object will
+ * be a new instance that extends the position passed as the first argument.
+ *
+ * <p>Likewise, JET supports "<" and ">" operators wherever "-" and "+" are supported.
+ * The "<" value means "- in LTR; + in RTL", while the ">" value means "+ in LTR; - in RTL".
+ * E.g. a "my" value of "start<40" shifts the menu 40px "startward," while a "my" value of
+ * "start>40" shifts the menu 40px "endward."
+ *
+ * @param {Object} position source position object
+ * @param {boolean} isRtl
+ * @return {Object} position object that has normalized jquery horizontal mnemonics.
+ */
+oj.PositionUtils.normalizeHorizontalAlignment = function(position, isRtl)
+{
+  // This assertion prevents security testing: someone could pass in a bogus position
+  //oj.Assert.assertObject(position, "position");
+  var target = $.extend({}, position);
+  for (var i = 0; i < oj.PositionUtils._ALIGN_RULE_PROPERTIES.length; i++)
+  {
+    var propName = oj.PositionUtils._ALIGN_RULE_PROPERTIES[i];
+    var align = target[propName];
+    if (!align)
+      continue;
+
+    if (oj.StringUtils.isString(align))
+    {
+      target[propName] = align.replace("start", (isRtl ? "right" : "left"))
+                              .replace("end", (isRtl ? "left" : "right"))
+                              .replace("<", (isRtl ? "+" : "-"))
+                              .replace(">", (isRtl ? "-" : "+"));
+    }
+    else
+    {
+      for (var s = 0; s < oj.PositionUtils._SUB_ALIGN_RULE_PROPERTIES.length; s++)
+      {
+        var subPropName = oj.PositionUtils._SUB_ALIGN_RULE_PROPERTIES[s];
+        var subAlign = align[subPropName];
+        if (oj.StringUtils.isString(subAlign))
+        {
+            align[subPropName] = subAlign.replace("start", (isRtl ? "right" : "left"))
+                              .replace("end", (isRtl ? "left" : "right"))
+                              .replace("<", (isRtl ? "+" : "-"))
+                              .replace(">", (isRtl ? "-" : "+"));
+        }
+      }
+    }
+  }
+
+  return target;
+};
+
+/**
+ * <p>In the jQuery UI [Position]{@link http://api.jqueryui.com/position/} utility,
+ * the "of" field specifies the element or event relative to which the popup should
+ * be positioned.
+ *
+ * <p>Popup components like Menu often need to position themselves relative to their
+ * launcher (e.g. MenuButton), or the launching event (e.g. right-click event), both
+ * of which can vary on a per-launch basis.  To facilitate specifying these policies
+ * in advance, in a component option, it's useful to support "launcher" and "event"
+ * keywords in the "of" field.  Without these keywords, the app would have to set
+ * this field at each popup launch, via either the open() method or a beforeOpen listener,
+ * at which point they could supply the actual event or launcher element for this
+ * particular launch.
+ *
+ * <p>This method is intended to be called by the popup component at launch time.  It
+ * takes an "of" field possibly containing these keywords, and the event and launcher
+ * for the current launch, and returns a new "of" value where those keywords have
+ * been replaced by the event or launcher, so that the resulting "position" object
+ * is ready to be passed to the JQUI utility.
+ *
+ * <p>Since callers may have different needs, this method does not log if, say,
+ * of==="event" && event==null.  Callers should log or throw if this condition
+ * indicates application error.
+ *
+ * <p>While the code is simple, it's useful to centralize the logic to avoid subtle
+ * differences in behavior among JET popup components.
+ *
+ * @param of the "of" field of a position object.  Defaults to "launcher" if null/undefined.
+ * @param launcher launcher element
+ * @param event event that opened the popup
+ * @return normalized "of" value
+ */
+oj.PositionUtils.normalizePositionOf = function(of, launcher, event)
+{
+  return (of === "event")
+    ? event
+    : (of == null || of === "launcher")
+      ? launcher
+      : of;
+};
+
+// TODO: file a JQ bug and link to it here.
+/**
+ * On iOS and Android, the JQ Event object wrapping touch* events lacks pageX and pageY properties, which is contrary to the
+ * contract [1].  This breaks JQ's position() API [2], which assumes that the contract is obeyed.  Specifically, it
+ * relies on the pageX/Y fields of the Event object passed as the "of" field (and publicly docs that it does so).
+ *
+ * Per W3C [3], pageX/Y are found in originalEvent.touches[i] or originalEvent.changedTouches[i], where originalEvent is
+ * the native (not JQ) event, and i is 0 for us.  In practice, for touchstart at least, iOS7 and 8 Mobile Safari, but
+ * apparently not Android Chrome, also put pageX and pageY on the top-level native event, and the values seem to be the
+ * same as those in the touches array.  We'll use the cross-platform W3C location.
+ *
+ * To workaround the JQ bug, popup components like Menu can call this method at open() time.  This method copies the properties
+ * to the wrapper JQ event.
+ *
+ * [1] http://api.jquery.com/category/events/event-object/
+ * [2] http://api.jqueryui.com/position/
+ * [3] http://www.w3.org/TR/touch-events/#touch-interface et. seq.
+ *
+ * @private
+ * @param event
+ */
+oj.PositionUtils._normalizeEventForPosition = function(event)
+{
+  $.each(["pageX", "pageY"], function (index, pagePos)
+  {
+    if (event && event[pagePos] === undefined && event.originalEvent)
+    {
+      var originalEvent = event.originalEvent;
+      var type = originalEvent.type;
+      var touchList = (type === "touchstart" || type === "touchmove")
+          ? "touches"
+          : (type === "touchend") ? "changedTouches" : null;
+
+      if (touchList)
+      {
+        var firstTouch = originalEvent[touchList][0];
+        if (firstTouch)
+          event[pagePos] = firstTouch[pagePos];
+      }
+    }
+  });
+};
+
+/**
+ * @private
+ * @const
+ */
+oj.PositionUtils._ALIGN_RULE_PROPERTIES = ['my', 'at'];
+
+/**
+ * @private
+ * @const
+ */
+oj.PositionUtils._SUB_ALIGN_RULE_PROPERTIES = ['vertical', 'horizontal'];
+
+/**
+ * A common utilty that is designed be be called for a jquery ui position "using" callback
+ * that will check to see if the target aligning "of" position is clipped in an overflow
+ * container.  Used by popups that should auto dismiss when what they are aligning to is
+ * no longer visible.  The aligning position can be either an element, event or a rect.
+ *
+ * @param {Object} props second argument to the jquery ui position "using" callback.
+ * @returns {boolean} <code>true</code> if the point aligned is not totally visible in and overflow container
+ */
+oj.PositionUtils.isAligningPositionClipped = function(props)
+{
+  // Alignment can be to an element, event or a rect but we only care to make this
+  // check if alignment is to an element - .
+  if (props["target"] && props["target"]["height"] > 0 && props["target"]["width"] > 0)
+  {
+    // if the target has a width and height greater than zero then it's an element
+    /** @type {jQuery} */
+    var positionOf = props["target"]["element"];
+    return !oj.PositionUtils.isWithinViewport(positionOf);
+  }
+  else
+    return false;
+};
+
+
+/**
+ * Returns <code>true</code> if the jquery element is visible within overflow an
+ * overflow container. The check only considers statically positioned elements and
+ * stops short of the body.
+ *
+ * The first positioned ancestor is treated as the root viewport. Positioned elements need be
+ * compared with the window viewport versus its ancestors.  Visibility of positioned
+ * elements also need to compare stacking contexts within the document to determine
+ * what is on top "visible" - thus excluded from this check.
+ *
+ * @param {jQuery} element jquery element to test
+ * @returns {boolean}
+ */
+oj.PositionUtils.isWithinViewport = function(element)
+{
+
+  function isVisible(alignBox, containerBox)
+  {
+    if (["hidden", "scroll", "auto"].indexOf(containerBox["overflowY"]) > -1)
+    {
+      // 1px fudge factor for rounding errors
+      if ((alignBox["bottom"] - containerBox["top"]) < -1)
+        return false;
+
+      // find horizontal scrollbar size. always present when "scroll", or when "auto" and scrollWidth > innerWidth
+      var scrollBarWidth = ((containerBox["overflowX"] === "auto" && containerBox["scrollWidth"] > containerBox["innerWidth"]) ||
+              containerBox["overflowX"] === "scroll") ? oj.DomUtils.getScrollBarWidth() : 0;
+      if ((containerBox["bottom"] - scrollBarWidth) - alignBox["top"] < 1)
+        return false;
+    }
+
+    if (["hidden", "scroll", "auto"].indexOf(containerBox["overflowX"]) > -1)
+    {
+      // find vertical scrollbar width. always present when "scroll", or when "auto" and scrollHeight > innerHeight
+      scrollBarWidth = ((containerBox["overflowY"] === "auto" && containerBox["scrollHeight"] > containerBox["innerHeight"]) || 
+              containerBox["overflowY"] === "scroll") ? oj.DomUtils.getScrollBarWidth() : 0;
+      
+      // depending on ltr vs rtl, the vertical scrollbar can be on either side of the container, so only include the side its on
+      if (((alignBox["right"] - (containerBox["left"] + (oj.DomUtils.getReadingDirection() === "rtl" ? scrollBarWidth : 0))) < -1) ||
+          ((alignBox["left"] - (containerBox["right"] - (oj.DomUtils.getReadingDirection() === "ltr" ? scrollBarWidth : 0))) > -1))
+        return false;
+    }
+
+    return true;
+  };
+
+  function hasOverflow(element)
+  {
+    return "visible" !== element.css("overflow-x") ||
+           "visible" !== element.css("overflow-y");
+  };
+
+  function getRect(element)
+  {
+    var domElement = element[0];
+    if (domElement.nodeType === 1)
+    {
+      var rec = $.extend({}, domElement.getBoundingClientRect());
+      rec["overflowX"] = element.css("overflow-x");
+      rec["overflowY"] = element.css("overflow-y");
+      rec["innerHeight"] = element.innerHeight();
+      rec["innerWidth"] = element.innerWidth();
+      rec["scrollHeight"] = domElement["scrollHeight"];
+      rec["scrollWidth"] = domElement["scrollWidth"];
+      return rec;
+    }
+    return {'height': 0, 'width': 0};
+  };
+
+  function isPositioned(element)
+  {
+    return ["fixed", "absolute", "relative"].indexOf(element.css("position")) > -1 &&
+           (Math.abs(oj.DomUtils.getCSSLengthAsInt(element.css("top"))) > 0 ||
+            Math.abs(oj.DomUtils.getCSSLengthAsInt(element.css("bottom"))) > 0 ||
+            Math.abs(oj.DomUtils.getCSSLengthAsInt(element.css("left"))) > 0 ||
+            Math.abs(oj.DomUtils.getCSSLengthAsInt(element.css("right"))) > 0);
+  };
+
+  if (!element)
+    return false;
+  else if ($.isWindow(element[0]) || isPositioned(element))
+    return true;
+
+  var alignBox = getRect(element);
+
+  // check that the element is not hidden in overflow
+  var isWithinViewPort = true;
+  var parent = element.parent();
+  while (isWithinViewPort && parent && parent.length > 0 &&  "BODY" !== parent[0].nodeName && parent[0].nodeType === 1 && !isPositioned(parent))
+  {
+    if (hasOverflow(parent))
+    {
+      var parentBox = getRect(parent);
+      // ignore elements with empty border-boxes
+      if (parentBox['height'] > 0 && parentBox['width'] > 0)
+      {
+        isWithinViewPort = isVisible(alignBox, parentBox);
+      }
+    }
+    parent = parent.parent();
+  }
+
+  return isWithinViewPort;
+};
+
+/**
+ * Mapping of horizontal-vertical (x,y) alignment positon to the corresponding css
+ * "transform-origin" attribute.
+ *
+ * horizontal: right, left, center
+ * vertical: top, bottom, middle
+ *
+ * @private
+ * @const
+ */
+oj.PositionUtils._ANIMATION_TRANSFORM_ORIGIN_RULES =
+    {
+      'right-top' : 'right top',
+      'right-middle' : 'right center',
+      'right-bottom' : 'right bottom',
+      'left-top' : 'left top',
+      'left-middle' : 'left center',
+      'left-bottom' : 'left bottom',
+      'center-top' : 'center top',
+      'center-middle' : 'center center',
+      'center-bottom' : 'center bottom'
+    };
+
+/**
+ * Data attribute key used to store the alignment of the popup relative
+ * to the aligning element - position.of
+ *
+ * @private
+ * @const
+ * @type {string}
+ */
+ oj.PositionUtils._ALIGN_MNEMONIC_DATA = "oj-popup-align-mnemonic"
+
+/**
+ * Pass the root popup element and the second argument of the jquery ui position utils using
+ * callback.  Stashes away the alignment hints returned by the position utility as a data property
+ * on the target jquery element.  The alignment hints are used to define the transform-origin
+ * of animation effects.
+ *
+ * @see oj.PositionUtils.addTransformOriginAnimationEffectsOption
+ * @param {jQuery} element popup root node
+ * @param {Object} props second argument to the jquery ui position "using" callback.
+ * @return {void}
+ */
+ oj.PositionUtils.captureTransformOriginAnimationEffectsOption =  function(element, props)
+ {
+   var alignMnemonic = [props["horizontal"], props["vertical"]].join("-");
+   element.data(oj.PositionUtils._ALIGN_MNEMONIC_DATA, alignMnemonic);
+ };
+
+/**
+ * Pass "open" or "close" animation effects.  Replaces occurances of
+ * "transformOrigin":"#myPositon" with a value that represents the popups alignment.
+ *
+ * @see oj.PositionUtils.captureTransformOriginAnimationEffectsOption
+ * @param {jQuery} element popup root node
+ * @param {string|Object|Array} effects animation instructions
+ * @returns {string|Object|Array} effects with the transformOrign property resolved
+ */
+oj.PositionUtils.addTransformOriginAnimationEffectsOption = function (element, effects)
+{
+  var effectsAsString;
+  var isEffectsTypeofString;
+
+  if (!oj.StringUtils.isString(effects))
+  {
+    isEffectsTypeofString = false;
+    effectsAsString = JSON.stringify(effects);
+  }
+  else
+  {
+    isEffectsTypeofString = true;
+    effectsAsString = effects;
+  }
+
+  var exp = /#myPosition/g;
+  if (effectsAsString.match(exp))
+  {
+    var alignMnemonic = /** @type {string} */ (element.data(oj.PositionUtils._ALIGN_MNEMONIC_DATA));
+    if (oj.StringUtils.isEmptyOrUndefined(alignMnemonic))
+      alignMnemonic = "center-middle";
+
+    var transformOrigin = oj.PositionUtils._ANIMATION_TRANSFORM_ORIGIN_RULES[alignMnemonic];
+
+    effectsAsString = effectsAsString.replace(exp, transformOrigin);
+
+    effects = isEffectsTypeofString ? effectsAsString :
+      /** @type {Object} */ (JSON.parse(effectsAsString));
+  }
+
+  return effects;
+};
+
+
+/**
+ * Splits the jquery UI vertical mnemonic into 3 groups.
+ * @private
+ * @constant {RegExp}
+ */
+oj.PositionUtils._JQUI_MNEMONIC_GRP_REGX = /^(\w+)(\+|\-)?(\d+)?/;
+
+/**
+ * Verify vertical mnemonic.
+ * @private
+ * @constant {RegExp}
+ */
+oj.PositionUtils._VERTICAL_ENUM_TST_REGX = /^top$|^center$|^bottom$/;
+
+/**
+ * Verify horizontal mnemonic.
+ * @private
+ * @constant {RegExp}
+ */
+oj.PositionUtils._HORIZONTAL_ENUM_TST_REGX = /^start$|^left$|^center$|^end$|^right$/;
+
+/**
+ * Verify collision mnemonic.
+ * @private
+ * @constant {RegExp}
+ */
+oj.PositionUtils._COLLISION_ENUM_TST_REGX = /^none$|^flip$|^flipfit$|^fit$|^flipcenter$/;
+
+/**
+ * @private
+ * @param {string} token containing a position alignment rule
+ * @param {RegExp} testRegX regular expression to verify the token enumerations
+ * @returns {Array} array of two values [alignment, offset].
+ */
+oj.PositionUtils._parsePositionNmnemonic = function(token, testRegX)
+{
+  var data = [null, Number.NaN];
+  var groups = oj.PositionUtils._JQUI_MNEMONIC_GRP_REGX.exec(token);
+
+  if (groups[1] && testRegX.test(groups[1]))
+  {
+    data[0] = groups[1];
+
+    // has an offset prefiex by +|-
+    if (groups[2])
+    {
+      var offset = parseInt(groups[3], 10);
+      if (!isNaN(offset))
+      {
+        offset *= (groups[2] === "-" ? -1 : 1);
+        data[1] = offset;
+      }
+    }
+  }
+  return data;
+};
+
+/**
+ *
+ * @private
+ * @param {?} value that might be a json string
+ * @returns {?} returns an object if the value is a json string; otherwise,
+ *          a null value is returned.
+ */
+oj.PositionUtils._parseJSON = function(value)
+{
+  if (oj.StringUtils.isString(value) && /^{/.test(value) && /}$/.test(value))
+  {
+    try
+    {
+      return JSON.parse(value);
+    }
+    catch (e) {}
+  }
+
+  return null;
+}
+
+/**
+ * Converts a source "position.my" or "position.at" into a suitable state held by jet components.
+ *
+ * @param {string} type "my" or "at"
+ * @param {Object} source postion.my or position.at to shape into a Jet position object
+ * @param {Object=} offsetSource position.offset
+ * @param {Object=} sourceDefault default values
+ * @returns {Object} internal position impl
+ * @private
+ */
+oj.PositionUtils._coerceMyAtToJet = function (type, source, offsetSource, sourceDefault)
+{
+  var obj = oj.PositionUtils._parseJSON(source);
+  if (obj)
+    source = obj;
+
+  obj = oj.PositionUtils._parseJSON(offsetSource);
+  if (obj)
+    offsetSource = obj;
+
+  if (!sourceDefault)
+    sourceDefault = {};
+
+  var target = $.extend({}, sourceDefault);
+  var offsetTarget = {"x": 0, "y": 0};
+  if (offsetSource && "x" in offsetSource && "y" in offsetSource)
+  {
+    offsetTarget["x"] = oj.DomUtils.getCSSLengthAsInt(offsetSource["x"]);
+    offsetTarget["y"] = oj.DomUtils.getCSSLengthAsInt(offsetSource["y"]);
+  }
+
+  var groups;
+
+  if (oj.StringUtils.isString(source))  // jquery ui
+  {
+    // split horizontal and vertical tokens
+    var tokens = source.split(/\s/);
+
+    // parse horizontal
+    if (tokens.length > 0 && !oj.StringUtils.isEmpty(tokens[0]))
+    {
+      groups = oj.PositionUtils._parsePositionNmnemonic(tokens[0],
+        oj.PositionUtils._HORIZONTAL_ENUM_TST_REGX);
+
+      // verify horizontal enum
+      if (groups[0])
+      {
+        target["horizontal"] = groups[0];
+        if (!isNaN(groups[1]))
+          offsetTarget["x"] = groups[1];
+      }
+    }
+
+    // parse vertical
+    if (tokens.length > 1 && !oj.StringUtils.isEmpty(tokens[1]))
+    {
+      groups = oj.PositionUtils._parsePositionNmnemonic(tokens[1],
+        oj.PositionUtils._VERTICAL_ENUM_TST_REGX);
+
+      // verify vertical enum
+      if (groups[0])
+      {
+        target["vertical"] = groups[0];
+        if (!isNaN(groups[1]))
+          offsetTarget["y"] = groups[1];
+      }
+    }
+  }
+  else if (source)
+  {
+    // my is is in the jet position format
+    if ("horizontal" in source)
+    {
+      groups = oj.PositionUtils._parsePositionNmnemonic(source["horizontal"],
+        oj.PositionUtils._HORIZONTAL_ENUM_TST_REGX);
+
+      if (groups[0])
+      {
+        target["horizontal"] = groups[0];
+        if (!isNaN(groups[1]))
+          offsetTarget["x"] = groups[1];
+      }
+    }
+
+    if ("vertical" in source)
+    {
+      groups = oj.PositionUtils._parsePositionNmnemonic(source["vertical"],
+        oj.PositionUtils._VERTICAL_ENUM_TST_REGX);
+
+      if (groups[0])
+      {
+        target["vertical"] = groups[0];
+        if (!isNaN(groups[1]))
+          offsetTarget["y"] = groups[1];
+      }
+    }
+  }
+
+  var targetPosition = {};
+  targetPosition[type] = target;
+  targetPosition["offset"] = offsetTarget;
+  return targetPosition;
+};
+
+/**
+ * Converts a source "position.collision" into a suitable state held by jet components.
+ *
+ * @param {string} collisionSource postion.collision to shape into a Jet position object
+ * @param {string=} collisionDefault default values
+ * @returns {Object} internal position impl
+ * @private
+ */
+oj.PositionUtils._coerceCollisionToJet = function (collisionSource, collisionDefault)
+{
+  var collisionTarget = collisionDefault;
+
+  if (oj.PositionUtils._COLLISION_ENUM_TST_REGX.test(collisionSource))
+  {
+    collisionTarget = collisionSource;
+  }
+
+  return {"collision": collisionTarget};
+};
+
+
+/**
+ * Converts a source "position.of" into a suitable state held by jet components.
+ *
+ * @param {Object} ofSource position.of
+ * @param {Object=} ofDefault default value
+ * @return {Object} internal postion object
+ * @private
+ */
+oj.PositionUtils._coerceOfToJet = function (ofSource, ofDefault)
+{
+  function _escapeId(id)
+  {
+    var targetId = [];
+    var regex = /\w|_|-/;
+
+    for (var i = 0; i < id.length; i++)
+    {
+      var c = id.substring(i, i + 1);
+      if (regex.test(c))
+        targetId.push(c);
+      else
+        targetId.push("\\" + c);
+    }
+    return targetId.join("");
+  }
+
+  var obj = oj.PositionUtils._parseJSON(ofSource);
+  if (obj)
+    ofSource = obj;
+
+  var targetOf = ofDefault;
+
+  if (oj.StringUtils.isString(ofSource))
+  {
+    targetOf = ofSource;          // assume a valid selector
+  }
+  else if ($.isWindow(ofSource))
+  {
+    targetOf = "window";
+  }
+  else if (ofSource instanceof Element || ofSource instanceof $)
+  {
+    ofSource = $(ofSource);
+    ofSource.uniqueId();
+    var id = ofSource.attr("id");
+    targetOf = "#" + _escapeId(id);
+  }
+  else if (ofSource instanceof Event || ofSource instanceof $.Event)
+  {
+    if ("pageX" in ofSource || "pageY" in ofSource)
+    {
+      targetOf = {};
+      targetOf["x"] = oj.DomUtils.getCSSLengthAsFloat(ofSource["pageX"]);
+      targetOf["y"] = oj.DomUtils.getCSSLengthAsFloat(ofSource["pageY"]);
+    }
+  }
+  else if (ofSource)
+  {
+    if ("x" in ofSource || "y" in ofSource)
+    {
+      targetOf = {};
+      targetOf["x"] = oj.DomUtils.getCSSLengthAsFloat(ofSource["x"]);
+      targetOf["y"] = oj.DomUtils.getCSSLengthAsFloat(ofSource["y"]);
+    }
+  }
+
+  return {"of": targetOf};
+};
+
+/**
+ * Converts a source "position" into a suitable state held by jet components.
+ *
+ * @param {Object} source position
+ * @param {Object=} defaults for target position
+ * @return {Object} internal postion object
+ */
+oj.PositionUtils.coerceToJet = function (source, defaults)
+{
+  if (!source)
+    source = {};
+
+  var obj = oj.PositionUtils._parseJSON(source);
+  if (obj)
+    source = obj;
+
+  if (!defaults)
+    defaults = {};
+
+  function _coerceUsingToJet(usingSource, usingDefault)
+  {
+    var targetUsing = $.isFunction(usingSource) ? usingSource : usingDefault;
+    return {"using": targetUsing};
+  }
+
+  var myDefault = defaults["my"];
+  var atDefault = defaults["at"];
+  var collisionDefault = defaults["collision"];
+  var ofDefault = defaults["of"];
+  var usingDefault = undefined;  // to dangerous to inherit
+
+  var targetMy = oj.PositionUtils._coerceMyAtToJet("my", source["my"], source["offset"], myDefault);
+  var targetAt = oj.PositionUtils._coerceMyAtToJet("at", source["at"], null, atDefault);
+
+  // sum the "at" and "my" offsets
+  var targetOffset = {"offset":
+      {"x": targetMy["offset"]["x"] + targetAt["offset"]["x"],
+       "y": targetMy["offset"]["y"] + targetAt["offset"]["y"],
+    }};
+  delete targetMy["offset"];
+  delete targetAt["offset"];
+
+  var target = $.extend({},
+                 targetMy,
+                 targetAt,
+                 targetOffset,
+                 oj.PositionUtils._coerceCollisionToJet(source["collision"], collisionDefault),
+                 oj.PositionUtils._coerceOfToJet(source["of"], ofDefault),
+                 _coerceUsingToJet(source["using"], usingDefault));
+
+  return target;
+};
+
+
+/**
+ * Converts the jet position object into the jQuery UI object used by the position utility.
+ *
+ * @param {Object} source internal position object
+ * @return {Object} jQuery UI position Object
+ */
+oj.PositionUtils.coerceToJqUi = function (source)
+{
+  function alignToJqUi(align, direction)
+  {
+    var tokens = [];
+    if (source[align][direction])
+      tokens.push(source[align][direction]);
+    else
+      tokens.push("center");
+
+    if ("my" === align && source["offset"])
+    {
+      var offsetDirection = ("horizontal" === direction ? "x" : "y");
+      var offset = source["offset"][offsetDirection];
+      if (!isNaN(offset) && offset !== 0)
+      {
+        tokens.push(offset > 0 ? "+" : "");
+        tokens.push(Math.floor(offset).toString());
+      }
+    }
+
+    return tokens.join("");
+  }
+
+
+  var target = {};
+
+  // convert my and at
+  ["my","at"].forEach(function (align)
+    {
+      if (source[align])
+      {
+         var tokens = [];
+         tokens.push(alignToJqUi(align, "horizontal"));
+         tokens.push(" ");
+         tokens.push(alignToJqUi(align, "vertical"));
+         target[align] = tokens.join("");
+      }
+    });
+
+    // convert of
+    var ofSource = source["of"];
+    if (oj.StringUtils.isString(ofSource))
+    {
+      if ("window" === ofSource)
+        target["of"] = window;
+      else
+        target["of"] = ofSource;
+    }
+    else if (ofSource && !oj.StringUtils.isString(ofSource) && "x" in ofSource && "y" in ofSource)
+    {
+      var x = ofSource["x"];
+      var y = ofSource["y"];
+      var nativeEvent = document.createEvent("MouseEvents");
+      nativeEvent.initMouseEvent("click", true, true, window, 1, x, y, x, y,
+                                 false, false, false, false, 0, null);
+      target["of"] = $.Event(nativeEvent, {"pageX": x, "pageY": y});
+    }
+    else
+    {
+      target["of"] = ofSource;
+    }
+
+    if (source["collision"])
+      target["collision"] = source["collision"];
+
+    // convert using
+    if (source["using"])
+      target["using"] = source["using"];
+
+  return target;
+};
+
+/**
+ * Custom jquery UI position collision rule that will first apply the "flip" rule and follow with "center" alignment.
+ * @ojtsignore
+ */
+$.ui.position["flipcenter"] =
+{
+  /**
+   * @param {{top: number, left: number}} position
+   * @param {{targetWidth: number,
+   *         targetHeight: number,
+   *         elemWidth: number,
+   *         elemHeight: number,
+   *         collisionPosition: {marginLeft: number, marginTop: number},
+   *         collisionWidth: number,
+   *         collisionHeight: number,
+   *         offset: Array.<number>,
+   *         my: Array.<string>,
+   *         at: Array.<string>,
+   *         within: {element: jQuery, isWindow: boolean, isDocument: boolean, offset: {left: number, top: number}, scrollLeft: number, scrollTop: number, width: number, height: number},
+   *         elem: jQuery
+   *        }} data
+   * @returns {undefined}
+   */
+  "left": function (position, data)
+  {
+    // stash away the initial position calculated from the at alignment
+    var posLeft = position["left"];
+
+    // call on the flip rule
+    $.ui.position["flip"]["left"].call(this, position, data);
+
+    // These calcs were taken from the "fit" rule.
+    var within = data["within"];
+    var withinOffset = within["isWindow"] ? within["scrollLeft"] : within["offset"]["left"];
+    var outerWidth = within["width"];
+    var collisionPosLeft = position["left"] - data["collisionPosition"]["marginLeft"];
+    var overLeft = withinOffset - collisionPosLeft;
+    var overRight = collisionPosLeft + data["collisionWidth"] - outerWidth - withinOffset;
+
+    // if popup is not within, center align it
+    if (overLeft > 0 || overRight > 0)
+    {
+      // find the center of the target element
+      if ("right" === data["at"][0])
+        posLeft -= data["targetWidth"] /2;
+      else if ("left" === data["at"][0])
+        posLeft += data["targetWidth"] /2;
+
+      var isRTL = oj.DomUtils.getReadingDirection() === "rtl";
+      var dirFactor = isRTL ? -1 : 1;
+
+      // factor in half the width of the popup
+      posLeft -= dirFactor * (data["elemWidth"] / 2);
+
+      // Force the popup start to be within the viewport.
+      // This collision rule is only used by input components internally. The notewindow will auto dismiss when
+      // what it is aligned to is hidden in a scroll container.
+      position["left"] = Math.max(0, posLeft);
+    }
+  },
+  /**
+   * @param {{top: number, left: number}} position
+   * @param {{targetWidth: number,
+   *         targetHeight: number,
+   *         elemWidth: number,
+   *         elemHeight: number,
+   *         collisionPosition: {marginLeft: number, marginTop: number},
+   *         collisionWidth: number,
+   *         collisionHeight: number,
+   *         offset: Array.<number>,
+   *         my: Array.<string>,
+   *         at: Array.<string>,
+   *         within: {element: jQuery, isWindow: boolean, isDocument: boolean, offset: {left: number, top: number}, scrollLeft: number, scrollTop: number, width: number, height: number},
+   *         elem: jQuery
+   *        }} data
+   * @returns {undefined}
+   */
+  "top": function (position, data)
+  {
+    // stash away the initial position calculated from the at alignment
+    var posTop = position["top"];
+
+    $.ui.position["flip"]["top"].call(this, position, data);
+
+    // These calcs were taken from the "fit" rule.
+    var within = data["within"];
+    var withinOffset = within["isWindow"] ? within["scrollTop"] : within["offset"]["top"];
+    var outerHeight = data["within"]["height"];
+    var collisionPosTop = position["top"] - data["collisionPosition"]["marginTop"];
+    var overTop = withinOffset - collisionPosTop;
+    var overBottom = collisionPosTop + data["collisionHeight"] - outerHeight - withinOffset;
+
+    if (overTop > 0 || overBottom > 0)
+    {
+      // find the center of the target element
+      if ("top" === data["at"][1])
+        posTop += data["targetHeight"] /2;
+      else if ("bottom" === data["at"][1])
+        posTop -= data["targetHeight"] /2;
+
+      // factor in half the height of the popup
+      posTop += data["elemHeight"] / 2;
+
+      // Force the popup top to be within the viewport.
+      // This collision rule is only used by input components internally. The notewindow will auto dismiss when
+      // what it is aligned to is hidden in a scroll container.
+      position["top"] = Math.max(0, posTop);
+    }
+  }
+};
+
+/**
+ * Forked the jquery UI "flip" position collision rule in version 1.11.4.
+ * The jquery version doesn't consider the best fit in terms of
+ * top/bottom. The rule favors top when there is no fit versus choosing the
+ * best fit, lesser of two evils. The new JET spin of this rule will pick
+ * the better fit versus favoring top when there is no fit.
+ *
+ * Outside of making the code closure compiler friendly, there is only
+ * a single line difference.  It's noted with a bug number.
+ * @private
+ */
+var _origLeftFlipCollisionRule = $.ui.position["flip"]["left"];  //stash away the original left flip rule
+
+/**
+ * @ojtsignore
+ */
+$.ui.position["flip"] = {
+  "left": _origLeftFlipCollisionRule.bind(this),
+  /**
+   * @param {{top: number, left: number}} position
+   * @param {{targetWidth: number,
+   *         targetHeight: number,
+   *         elemWidth: number,
+   *         elemHeight: number,
+   *         collisionPosition: {marginLeft: number, marginTop: number},
+   *         collisionWidth: number,
+   *         collisionHeight: number,
+   *         offset: Array.<number>,
+   *         my: Array.<string>,
+   *         at: Array.<string>,
+   *         within: {element: jQuery, isWindow: boolean, isDocument: boolean, offset: {left: number, top: number}, scrollLeft: number, scrollTop: number, width: number, height: number},
+   *         elem: jQuery
+   *        }} data
+   * @returns {undefined}
+   */
+  "top": function(position, data)
+  {
+    var within = data["within"],
+    withinOffset = within["offset"]["top"] + within["scrollTop"],
+    outerHeight = within["height"],
+    offsetTop = within["isWindow"] ? within["scrollTop"] : within["offset"]["top"],
+    collisionPosTop = position["top"] - data["collisionPosition"]["marginTop"],
+    overTop = collisionPosTop - offsetTop,
+    overBottom = collisionPosTop + data["collisionHeight"] - outerHeight - offsetTop,
+    top = data["my"][ 1 ] === "top",
+    myOffset = top ? -data["elemHeight"] :
+                data["my"][ 1 ] === "bottom" ? data["elemHeight"] : 0,
+    atOffset = data["at"][ 1 ] === "top" ? data["targetHeight"] :
+                data["at"][ 1 ] === "bottom" ? -data["targetHeight"] : 0,
+    offset = -2 * data["offset"][ 1 ],
+    newOverBottom,
+    newOverTop;
+    if (overTop < 0)
+    {
+      newOverBottom = position["top"] + myOffset + atOffset + offset + data["collisionHeight"] - outerHeight - withinOffset;
+      if (newOverBottom < 0 || newOverBottom < Math.abs(overTop))
+      {
+        //  - only flip up if there is more "over" on top than bottom
+        if (overBottom < 0 && overTop > overBottom)
+          position["top"] += myOffset + atOffset + offset;
+      }
+    } else if (overBottom > 0)
+    {
+      newOverTop = position["top"] - data["collisionPosition"]["marginTop"] + myOffset + atOffset + offset - offsetTop;
+      if (newOverTop > 0 || Math.abs(newOverTop) < overBottom)
+      {
+        position["top"] += myOffset + atOffset + offset;
+      }
+    }
+  }
 };
 });

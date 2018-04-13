@@ -1,4 +1,5 @@
 /**
+ * @license
  * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
@@ -17,8 +18,12 @@ define(['ojs/ojcore', 'jquery', 'ojL10n!ojtranslations/nls/localeElements', 'ojs
 /**
  * @export
  * @constructor
- * @augments oj.Converter 
+ * @augments oj.Converter
+ * @ojsignature {target: "Type", 
+ *                value: "class NumberConverter extends Converter<number>"}
+ *              
  * @name oj.NumberConverter
+ * @abstract
  * @since 0.6
  */
 oj.NumberConverter = function()
@@ -34,6 +39,7 @@ oj.Object.createSubclass(oj.NumberConverter, oj.Converter, "oj.NumberConverter")
  * @param {Object=} options an object literal used to provide an optional information to 
  * initialize the converter.<p>
  * @export
+ * @ignore
  */
 oj.NumberConverter.prototype.Init = function(options) 
 {
@@ -43,8 +49,8 @@ oj.NumberConverter.prototype.Init = function(options)
 /**
  * Formats the Number value using the options provided and returs a String value.
  * 
- * @param {Number} value the value to be formatted for display
- * @return {(String|null)} the localized and formatted value suitable for display
+ * @param {number} value the value to be formatted for display
+ * @return {(string|null)} the localized and formatted value suitable for display
  * @throws {Error} a ConverterError if formatting fails.
  * @export
  */
@@ -56,8 +62,8 @@ oj.NumberConverter.prototype.format = function (value)
 /**
  * Parses the value using the options provided and returns a Number object.
  * 
- * @param {String} value to parse
- * @return {Number} the parsed value as a Number object.
+ * @param {string} value to parse
+ * @return {number} the parsed value as a Number object.
  * @throws {Error} a ConverterError if parsing fails
  * @export
  */
@@ -66,324 +72,6 @@ oj.NumberConverter.prototype.parse = function (value)
   return oj.NumberConverter.superclass.parse.call(this, value);
 };
 
-/**
- * Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
- */
-
-/**
- * Constructs a NumberRangeValidator that ensures the value provided is within a given range
- * @param {Object=} options an object literal used to provide the following properties
- * @param {number=} options.min - the minimum number value of the entered value.
- * @param {number=} options.max - the maximum number value of the entered value.
- * @param {Object=} options.hint - an optional object literal of hints to be used.
- * <p>The hint strings (e.g., hint.min) are  passed as the 'pattern' parameter to
- * [oj.Translations.html#applyParameters]{@link oj.Translations}. As stated in
- * that documentation, if you are using a reserved character, you need to escape it with 
- * a dollar character ('$').
- * </p> 
- * @param {string=} options.hint.max - a hint used to indicate the allowed maximum. When not present, 
- * the default hint is the resource defined with the key 
- * <code class="prettyprint">oj-validator.range.number.hint.max</code>.<p>
-\\ 
- * Tokens: <br/>
- * {max} - the maximum<p>
- * Usage: <br/>
- * Enter a number less than or equal to {max}
- * @param {string=} options.hint.min - a hint used to indicate the allowed minimum. When not present, 
- * the default hint is the resource defined with the key 
- * <code class="prettyprint">oj-validator.range.number.hint.min</code>.<p>
- * Tokens: <br/>
- * {min} the minimum <p>
- * Usage: <br/>
- * Enter a number greater than or equal to {min}</li>
- * @param {string=} options.hint.inRange - a hint used to indicate the allowed range. When not 
- * present, the default hint is the resource defined with the key 
- * <code class="prettyprint">oj-validator.range.number.hint.inRange</code>.<p>
- * Tokens:<br/>
- * {min} the minimum<br/>
- * {max} the maximum<p>
- * Usage: <br/>
- * Enter a number between {min} and {max}
- * @param {string=} options.hint.exact - a hint used to indicate the allowed value. 
- * This is used when min and max are non-null and are equal to each other.  
- * When not present, the default hint is the resource defined with the key 
- * <code class="prettyprint">oj-validator.range.number.hint.exact</code>.<p>
- * Tokens:<br/>
- * {num} the number allowed<br/>
- * Usage: <br/>
- * Enter the number {num}
- * @since 3.0.0 
- * @param {Object=} options.messageDetail - an optional object literal of custom error messages to 
- * be used.
- * <p>The messageDetail strings (e.g., messageDetail.rangeUnderflow) are  passed as the 'pattern' 
- * parameter to [oj.Translations.html#applyParameters]{@link oj.Translations}. As stated in
- * that documentation, if you are using a reserved character, you need to escape it with 
- * a dollar character ('$').
- * </p> 
- * @param {string=} options.messageDetail.rangeUnderflow - the detail error message to be used when 
- * input value is less than the set minimum value. When not present, the default detail message is 
- * the resource defined with the key 
- * <code class="prettyprint">oj-validator.range.number.messageDetail.rangeUnderflow</code>.<p>
- * Tokens:<br/>
- * {value} - value entered by the user<br/>
- * {min} - the minimum allowed value<p>
- * Usage: <br/>
- * The number must be greater than or equal to {min}.
- * @param {string=} options.messageDetail.rangeOverflow - the detail error message to be used when 
- * input value exceeds the maximum value set. When not present, the default detail message is 
- * the resource defined with the key 
- * <code class="prettyprint">oj-validator.range.number.messageDetail.rangeOverflow</code>.<p>
- * Tokens:<br/>
- * {value} - value entered by the user<br/>
- * {max} - the maximum allowed value<p>
- * Usage: <br/>
- * The number must be less than or equal to {max}.   
- * @param {string=} options.messageDetail.exact - the detail error message to be used when the
- * input value is not between min and max when min and max are both non-null and equal.
- *  When not present, the default detail message is the resource defined with the key 
- * <code class="prettyprint">oj-validator.range.number.messageDetail.exact</code>.<p>
- * Tokens:<br/>
- * {num} - the allowed value<p>
- * Usage: <br/>
- * The number must be {num}.
- * @since 3.0.0 
- * @param {Object=} options.messageSummary - optional object literal of custom error summary message 
- * to be used. 
- * @param {string=} options.messageSummary.rangeUnderflow - the summary of the error message when 
- * input value is less than the set minimum value. When not present, the default message summary is 
- * the resource defined with the key 
- * <code class="prettyprint">oj-validator.range.number.messageSummary.rangeUnderflow</code>.
- * @param {string=} options.messageSummary.rangeOverflow - the summary of the error message when 
- * input value exceeds the maximum value set.  When not present, the default message summary is 
- * the resource defined with the key 
- * <code class="prettyprint">oj-validator.range.number.messageSummary.rangeOverflow</code>.
- * @export
- * @constructor
- * @augments oj.Validator
- * @since 0.7
- * 
- */
-oj.NumberRangeValidator = function _NumberRangeValidator(options)
-{
-  this.Init(options);
-};
-
-// Subclass from oj.Validator 
-oj.Object.createSubclass(oj.NumberRangeValidator, oj.Validator, "oj.NumberRangeValidator");
-
-/**
- * Initializes validator instance with the set options
- * @param {Object=} options
- * @memberof oj.NumberRangeValidator
- * @instance
- * @export
- */
-oj.NumberRangeValidator.prototype.Init = function (options)
-{
-  oj.NumberRangeValidator.superclass.Init.call(this);
-
-  if (options)
-  {
-    this._min = options["min"];
-    this._max = options["max"];
-    this._converter = oj.IntlConverterUtils.getConverterInstance(options['converter']);
-    this._hint = options['hint'] || {};
-    this._customMessageSummary = options['messageSummary'] || {};
-    this._customMessageDetail = options['messageDetail'] || {};
-  }
-};
-
-/**
- * Validates the minimum + maximum conditions
- *
- * @param {string|number} value that is being validated
- * @returns {string} original if validation was successful
- *
- * @throws {Error} when value is out of range
- * @memberof oj.NumberRangeValidator
- * @instance
- * @export
- */
-oj.NumberRangeValidator.prototype.validate = function (value)
-{
-  var string = value ? value.toString() : value;
-  var numberValue = parseFloat(string); 
-  var customMessageSummary = this._customMessageSummary;
-  var customMessageDetail = this._customMessageDetail;
-  var messageDetailRangeOverflow = customMessageDetail["rangeOverflow"]; 
-  var messageDetailRangeUnderflow = customMessageDetail["rangeUnderflow"]; 
-  var messageDetailExact = customMessageDetail["exact"];
-  var messageSummaryRangeOverflow = customMessageSummary["rangeOverflow"];
-  var messageSummaryRangeUnderflow = customMessageSummary["rangeUnderflow"];
-  var min = this._min !== undefined ? parseFloat(this._min) : null; 
-  var max = this._max !== undefined ? parseFloat(this._max) : null; 
-  var minStr = min && this._converter ? this._converter['format'](min) : min;
-  var maxStr = max && this._converter ? this._converter['format'](max) : max;
-  var summary = ""; 
-  var detail = ""; 
-  var params = null;
-  var translations = oj.Translations;
-  
-  if(value === null) 
-  {
-    // request to not throw an error when value being passed is of null
-    return value;
-  }
-  
-  if (min !== null && max !== null)
-  {
-    //range
-    if ((numberValue >= min && numberValue <= max) || min > max)
-    {
-      return string;
-    }
-  }
-  else 
-  {
-    //only min
-    if (min !== null)
-    {
-      if (numberValue >= min)
-      {
-        return string;
-      }
-	  
-    }
-    //max only or no min or max
-    else 
-    {
-      if (max === null || numberValue <= max)
-      {
-        return string;
-      }
-    }
-  }
-  
-  // if we haven't returned with an OK, then we need to throw a ValidatorError
-  // 
-  // First check if we have both a max and a min and if they are equal. If so the message will
-  // be the messageDetail.exact message, like "Enter the number 1"
-  if (max !== null && min !== null && min === max)
-  {
-    params = {"value": value, "num": maxStr};
-    detail = messageDetailExact ? 
-      translations.applyParameters(messageDetailExact, params) : 
-      translations.getTranslatedString('oj-validator.range.number.messageDetail.exact', params);
-    // if number is greater than max, the summary may say "The number is too high"
-    if (numberValue > max)
-    {
-      summary = messageSummaryRangeOverflow ? 
-        messageSummaryRangeOverflow : 
-        translations.getTranslatedString('oj-validator.range.number.messageSummary.rangeOverflow');            
-    } 
-    // if number is less than min, the summary may say "The number is too low"
-    else if (numberValue < min)
-    {
-      summary = messageSummaryRangeOverflow ? 
-        messageSummaryRangeUnderflow : 
-        translations.getTranslatedString('oj-validator.range.number.messageSummary.rangeUnderflow');
-    }
-  }
-  // Next check if we have a max, and the number we are validating is greater than the max
-  // throw an error, 
-  // like "The number is too high." and "The number must be less than or equal to {max}"
-  else if (max !== null && numberValue > max)
-  {
-	  params = {"value": value, "max": maxStr};
-    summary = messageSummaryRangeOverflow ?
-      messageSummaryRangeOverflow : 
-      translations.getTranslatedString('oj-validator.range.number.messageSummary.rangeOverflow');
-    detail = messageDetailRangeOverflow ?
-      translations.applyParameters(messageDetailRangeOverflow, params) : 
-      translations.getTranslatedString('oj-validator.range.number.messageDetail.rangeOverflow', params);
-  }
-  // 
-  // Else check if we have a min, and the number we are validating is less than the min
-  // throw an error, 
-  // like "The number is too low." and "The number must be greater than or equal to {min}"
-  else if (min !== null && numberValue < min)
-  {
- 	  params = {"value": value, "min": minStr};
-    summary = messageSummaryRangeUnderflow ? 
-      messageSummaryRangeUnderflow : 
-      translations.getTranslatedString('oj-validator.range.number.messageSummary.rangeUnderflow');
-    detail = messageDetailRangeUnderflow ? 
-      translations.applyParameters(messageDetailRangeUnderflow, params) : 
-      translations.getTranslatedString('oj-validator.range.number.messageDetail.rangeUnderflow', params);   
-  }
-
-  throw new oj.ValidatorError(summary, detail);
-};
-
-/**
- * @returns {String|null} a hint message or null if no hint is available in the options.
- * A hint message may be like "Enter a value between {min} and {max}"
- * or "Enter a number greater than or equal to {min}"
- * @memberof oj.NumberRangeValidator
- * @instance
- * @export
- */
-oj.NumberRangeValidator.prototype.getHint = function ()
-{
-  var hint = null;
-  var hints = this._hint; 
-  var hintInRange = hints["inRange"];
-  var hintExact = hints["exact"];
-  var hintMinimum = hints["min"];
-  var hintMaximum = hints["max"];
-  var translations = oj.Translations;
-  var min = this._min !== undefined ? parseFloat(this._min) : null; 
-  var max = this._max !== undefined ? parseFloat(this._max) : null;
-  var minStr = min && this._converter ? this._converter['format'](min) : min;
-  var maxStr = max && this._converter ? this._converter['format'](max) : max;
-	 
-  // if both min and max are specified, the hint may say something like "Enter a value
-  // between {min} and {max}".
-  if (min !== null && max !== null) 
-  {
-    if (min !== max)
-    {
-      // if hintInRange is specified (validator's hint.inRange option is set), 
-      // use that string, else use the default.
-      hint = hintInRange ?
-              translations.applyParameters(hintInRange, {"min": minStr, "max": maxStr}) : 
-              translations.getTranslatedString('oj-validator.range.number.hint.inRange', 
-                {"min": minStr, "max": maxStr});
-    }
-    else
-    {
-      // if hintExact is specified (validator's hint.exact option is set), 
-      // use that string, else use the default.
-      hint = hintExact ?
-              translations.applyParameters(hintExact, {"num": minStr}) : 
-              translations.getTranslatedString('oj-validator.range.number.hint.exact', 
-                {"num": minStr});
-    }
-  }
-  // else if min is specified, the hint may say something like "Enter a value
-  // greater than or equal to {min}".
-  else if (min !== null)
-  {
-    // if hintMinimum is specified (validator's hint.min option is set), 
-    // use that string, else use the default.
-    hint = hintMinimum ? 
-             translations.applyParameters(hintMinimum, {"min": minStr}) :
-	           translations.getTranslatedString('oj-validator.range.number.hint.min', {"min": minStr});
-  }
-  // else if max is specified, the hint may say something like "Enter a value
-  // less than or equal to {max}".
-  else if (max !== null)
-  {
-    // if hintMaximum is specified (validator's hint.max option is set), 
-    // use that string, else use the default.
-    hint = hintMaximum ?  
-            translations.applyParameters(hintMaximum, {"max": maxStr}) :
-            translations.getTranslatedString('oj-validator.range.number.hint.max', {"max": maxStr});
-  }
-
-  return hint;
-};
 /**
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
@@ -427,134 +115,8 @@ oj.NumberRangeValidator.prototype.getHint = function ()
  * Lenient parse can be disabled by setting the property lenientParse to "none". In which case the user input must
  * be an exact match of the expected pattern and all the leniency described above will be disabled.
  * <p>
- * @property {Object=} options - an object literal used to provide optional information to 
+ * @param {Object=} options - an object literal used to provide optional information to 
  * initialize the converter.
- * @property {string=} options.style - sets the style of number formatting. Allowed values are "decimal" 
- * (the default), "currency", "percent" or "unit". When a number is formatted as a decimal, the decimal 
- * character is replaced with the most appropriate symbol for the locale. In English this is a 
- * decimal point ("."), while in many locales it is a decimal comma (","). If grouping is enabled the 
- * locale dependent grouping separator is also used. These symbols are also used for numbers 
- * formatted as currency or a percentage, where appropriate.
- * @property {string=} options.currency - specifies the currency that will be used when formatting the 
- * number. The value should be a ISO 4217 alphabetic currency code. If the style is set to currency, 
- * it's required that the currency property also be specified. This is because there is no default 
- * currency associated with the current locale. The user must always specify the currency code 
- * to be shown, otherwise an error will be thrown. The current page locale 
- * (returned by oj.Config.getLocale()) determines the formatting elements of the number 
- * like grouping separator and decimal separator. The currency code tells us which currency to 
- * display in current page locale. JET has translations for currency names.
- * <p>
- * As an example if we want to format 1000.35 EURO and the page locale is "en-US", 
- * we pass {style:'currency', currency:'EUR', currencyDisplay:'symbol'} and we will get "€1,000.35"
- * If the page locale is "fr-FR", with the same options, we will get: "1 000,35 €"
- * </p>
- * @property {string=} options.unit - Mandatory when style is "unit". Allowed values: 
- * "byte" or "bit". It is used for formatting only. It can not be used for parsing.
- * <p> 
- * It is used to format digital units like 10Mb for bit unit or 10MB for byte unit. 
- * There is no need to specify the scale of the unit. We automatically detect it.
- * For example 1024 is formatted as 1KB and ?1048576? as 1MB.
- * The user can also specify 'minimumFractionDigits' and  'maximumFractionDigits' to be displayed, 
- * otherwise we use the locale's default max and min fraction digits.
- * </p> 
- * @property {string=} options.currencyDisplay - if the number is using currency formatting, specifies 
- * if the currency will be displayed using its "code" (as an ISO 4217 alphabetic currency code), 
- * "symbol" (a localized currency symbol (e.g. $ for US dollars, £ for Great British pounds, and so 
- * on), or "name" (a localized currency name. Allowed values are "code", "symbol" and "name". 
- * The default is "symbol".
- * @property {string=} options.decimalFormat -
- * specifies the decimal format length to use when style is set to "decimal". 
- * Allowed values are : "standard"(default), "short" and "long". 'standard' is equivalent to not 
- * specifying the 'decimalFormat' attribute, in that case the locale’s default decimal pattern 
- * is used for formatting.
- * <p>
- * The user can also specify 'minimumFractionDigits' and  'maximumFractionDigits' to display. 
- * When not present we use the locale's default max and min fraction digits.
- * </p>
- * <p>
- * There is no need to specify the scale; we automatically detect greatest scale that is less or 
- * equal than the input number. For example  1000000 is formatted as "1M" or "1 million" and
- * 1234 is formatted, with zero fractional digits, as "1K" or " 1 thousand" for 
- * short and long formats respectively. The pattern for the short and long number is locale dependent 
- * and uses plural rules for the particular locale.
- * </p>
- * <p>
- * NOTE: Currently this option formats a value (e.g., 2000 -> 2K), but it does not parse a value 
- * (e.g., 2K -> 2000), so it can only be used
- * in a readOnly EditableValue because readOnly EditableValue components do not call
- * the converter's parse function.
- * </p>
- * @property {string=} options.currencyFormat -
- * specifies the currency format length to use when style is set to "currency". 
- * Allowed values are : "standard"(default), "short" and "long". 'standard' is equivalent to not 
- * specifying the 'currencyFormat' attribute, in that case the locale's default currency pattern 
- * is used for formatting.
- * Similar to decimalFormat, currencyFormat can only be used for formatting. It can not be used for parsing.
- * <p>
- * The user can also specify 'minimumFractionDigits' and  'maximumFractionDigits' to display. 
- * When not present we use the locale's default max and min fraction digits.
- * </p>
- * <p>
- * There is no need to specify the scale; we automatically detect greatest scale that is less or 
- * equal than the input number. For example  1000000 is formatted as "$1M" or "1 million dollar" and
- * 1000 is formatted as "$1K" or " 1 thousand dollar" for short and long formats respectively.
- * The pattern for the short and long number is locale dependent and uses plural rules for the particular locale.
- * </p>
- * @property {number=} options.minimumIntegerDigits - sets the minimum number of digits before the 
- * decimal place (known as integer digits). The number is padded with leading zeros if it would not 
- * otherwise have enough digits. The value must be an integer between 1 and 21.
- * @property {number=} options.minimumFractionDigits - similar to 'minimumIntegerDigits', except it 
- * deals with the digits after the decimal place (fractional digits). It must be an integer between 
- * 0 and 20. The fractional digits will be padded with trailing zeros if they are less than the minimum.
- * @property {number=} options.maximumFractionDigits - follows the same rules as 'minimumFractionDigits', 
- * but sets the maximum number of fractional digits that are allowed. The value will be rounded if 
- * there are more digits than the maximum specified.
- * @property {boolean=} options.useGrouping - when the value is truthy, the locale dependent grouping 
- * separator is used when formatting the number. This is often known as the thousands separator, 
- * although it is up to the locale where it is placed. The ‘useGrouping’ is set to true by default.
- * @property {string=} options.pattern an optional localized pattern, where the characters used in 
- * pattern are as defined in the Unicode CLDR for numbers, percent or currency formats. When present 
- * this will override the other "options". <p>
- * 
- * &nbsp;&nbsp;- When the pattern represents a currency style the 'currency' property is required to 
- * be set, as not setting this will throw an error. The 'currencyDisplay' is optional. <br/>Example: 
- * {pattern: '¤#,##0', currency: 'USD'}. <p>
- * 
- * &nbsp;&nbsp;- It's not mandatory for the pattern to have the special character '¤' (currency sign) 
- * be present. When not present, values are treated as a currency value, but are not formatted to 
- * show the currency symbol. <br/>Example: {pattern: '#,##0', currency: 'USD'} <p>
- * 
- * &nbsp;&nbsp;- When the pattern represents a percent style, the percent special character ('%') needs to be 
- * explicitly specified in the pattern, e.g., {pattern: "#,##0%"}. If the pattern does not contain 
- * the percent character it's treated as a decimal pattern, unless the style is set to percent, 
- * in which case the value is treated as a percent value, but not formatted to show the percent symbol. 
- * <br/>Example: {style: 'percent', pattern: "#,##0"}. <p>
- * 
- * &nbsp;&nbsp;- A decimal pattern or exponent pattern is specified in the pattern using the CLDR 
- * conventions. <br/>Example: {pattern: "#,##0.00"} or {pattern: "0.##E+0"}. <p>
- * 
- * NOTE: 'pattern' is provided for backwards compatibility with existing apps that may want the 
- * convenience of specifying an explicit format mask. Setting a pattern will override the default 
- * locale specific format. <br/>
- * 
- * @property {string=} options.roundingMode - specifies the rounding behavior. 
- * This follows the Java.Math.RoundingMode behavior.
- * Currently we support the options: HALF_UP, HALF_DOWN, and HALF_EVEN 
- * 
- * @property {boolean=} options.roundDuringParse - Specifies whether or not to round during
- * parse. Defaults to false; the number converter rounds during format but not during parse.
- * 
- * @property {Object=} options.separators - An object with 2 fields: 'decimal' and 'group'.
- * It allows the user to provide custom decimal and grouping separators. It is accepted for both
- * format and parse methods. 
- * <br/>
- * 
- * @property {string=} options.lenientParse - The lenientParse property can be used to enable or disable leninet parsing.
- *  Allowed values: "full" (default), "none". 
- * <p style='padding-left: 5px;'>
- * By default the lenient parse is enabled and the leniency rules descibed above will be used. When lenientParse is
- * set to "none" the lenient parse is disabled and the user input must match the expected input otherwise an exception will 
- * be thrown.<br/><br/>
  * 
  * @example <caption>Create a number converter for currencies</caption>
  * var converterFactory = oj.Validation.converterFactory("number");
@@ -697,6 +259,12 @@ oj.NumberRangeValidator.prototype.getHint = function ()
  * @export
  * @augments oj.NumberConverter 
  * @name oj.IntlNumberConverter
+ * @ojsignature [{target: "Type", 
+ *                value: "class IntlNumberConverter extends NumberConverter"},
+ *               {target: "Type",
+ *                value: "oj.IntlNumberConverter.ConverterOptions",
+ *                for: "options", jsdocOverride: true}
+ *              ]
  * @since 0.6
  */
 oj.IntlNumberConverter = function(options)
@@ -704,6 +272,135 @@ oj.IntlNumberConverter = function(options)
   this.Init(options);
 };
 
+/**
+ * @typedef {object} oj.IntlNumberConverter.ConverterOptions
+ * @property {('decimal'|'currency'|'percent'|'unit')=} style - sets the style of number formatting. Allowed values are "decimal" 
+ * (the default), "currency", "percent" or "unit". When a number is formatted as a decimal, the decimal 
+ * character is replaced with the most appropriate symbol for the locale. In English this is a 
+ * decimal point ("."), while in many locales it is a decimal comma (","). If grouping is enabled the 
+ * locale dependent grouping separator is also used. These symbols are also used for numbers 
+ * formatted as currency or a percentage, where appropriate.
+ * @property {string=} currency - specifies the currency that will be used when formatting the 
+ * number. The value should be a ISO 4217 alphabetic currency code. If the style is set to currency, 
+ * it's required that the currency property also be specified. This is because there is no default 
+ * currency associated with the current locale. The user must always specify the currency code 
+ * to be shown, otherwise an error will be thrown. The current page locale 
+ * (returned by oj.Config.getLocale()) determines the formatting elements of the number 
+ * like grouping separator and decimal separator. The currency code tells us which currency to 
+ * display in current page locale. JET has translations for currency names.
+ * <p>
+ * As an example if we want to format 1000.35 EURO and the page locale is "en-US", 
+ * we pass {style:'currency', currency:'EUR', currencyDisplay:'symbol'} and we will get "€1,000.35"
+ * If the page locale is "fr-FR", with the same options, we will get: "1 000,35 €"
+ * </p>
+ * @property {('byte'|'bit')=} unit - Mandatory when style is "unit". Allowed values: 
+ * "byte" or "bit". It is used for formatting only. It can not be used for parsing.
+ * <p> 
+ * It is used to format digital units like 10Mb for bit unit or 10MB for byte unit. 
+ * There is no need to specify the scale of the unit. We automatically detect it.
+ * For example 1024 is formatted as 1KB and ?1048576? as 1MB.
+ * The user can also specify 'minimumFractionDigits' and  'maximumFractionDigits' to be displayed, 
+ * otherwise we use the locale's default max and min fraction digits.
+ * </p> 
+ * @property {('code'|'symbol'|'name')=} currencyDisplay - if the number is using currency formatting, specifies 
+ * if the currency will be displayed using its "code" (as an ISO 4217 alphabetic currency code), 
+ * "symbol" (a localized currency symbol (e.g. $ for US dollars, £ for Great British pounds, and so 
+ * on), or "name" (a localized currency name. Allowed values are "code", "symbol" and "name". 
+ * The default is "symbol".
+ * @property {('standard'|'short'|'long')=} decimalFormat -
+ * specifies the decimal format length to use when style is set to "decimal". 
+ * Allowed values are : "standard"(default), "short" and "long". 'standard' is equivalent to not 
+ * specifying the 'decimalFormat' attribute, in that case the locale’s default decimal pattern 
+ * is used for formatting.
+ * <p>
+ * The user can also specify 'minimumFractionDigits' and  'maximumFractionDigits' to display. 
+ * When not present we use the locale's default max and min fraction digits.
+ * </p>
+ * <p>
+ * There is no need to specify the scale; we automatically detect greatest scale that is less or 
+ * equal than the input number. For example  1000000 is formatted as "1M" or "1 million" and
+ * 1234 is formatted, with zero fractional digits, as "1K" or " 1 thousand" for 
+ * short and long formats respectively. The pattern for the short and long number is locale dependent 
+ * and uses plural rules for the particular locale.
+ * </p>
+ * <p>
+ * NOTE: Currently this option formats a value (e.g., 2000 -> 2K), but it does not parse a value 
+ * (e.g., 2K -> 2000), so it can only be used
+ * in a readOnly EditableValue because readOnly EditableValue components do not call
+ * the converter's parse function.
+ * </p>
+ * @property {('standard'|'short'|'long')=} currencyFormat -
+ * specifies the currency format length to use when style is set to "currency". 
+ * Allowed values are : "standard"(default), "short" and "long". 'standard' is equivalent to not 
+ * specifying the 'currencyFormat' attribute, in that case the locale's default currency pattern 
+ * is used for formatting.
+ * Similar to decimalFormat, currencyFormat can only be used for formatting. It can not be used for parsing.
+ * <p>
+ * The user can also specify 'minimumFractionDigits' and  'maximumFractionDigits' to display. 
+ * When not present we use the locale's default max and min fraction digits.
+ * </p>
+ * <p>
+ * There is no need to specify the scale; we automatically detect greatest scale that is less or 
+ * equal than the input number. For example  1000000 is formatted as "$1M" or "1 million dollar" and
+ * 1000 is formatted as "$1K" or " 1 thousand dollar" for short and long formats respectively.
+ * The pattern for the short and long number is locale dependent and uses plural rules for the particular locale.
+ * </p>
+ * @property {number=} minimumIntegerDigits - sets the minimum number of digits before the 
+ * decimal place (known as integer digits). The number is padded with leading zeros if it would not 
+ * otherwise have enough digits. The value must be an integer between 1 and 21.
+ * @property {number=} minimumFractionDigits - similar to 'minimumIntegerDigits', except it 
+ * deals with the digits after the decimal place (fractional digits). It must be an integer between 
+ * 0 and 20. The fractional digits will be padded with trailing zeros if they are less than the minimum.
+ * @property {number=} maximumFractionDigits - follows the same rules as 'minimumFractionDigits', 
+ * but sets the maximum number of fractional digits that are allowed. The value will be rounded if 
+ * there are more digits than the maximum specified.
+ * @property {boolean=} useGrouping - when the value is truthy, the locale dependent grouping 
+ * separator is used when formatting the number. This is often known as the thousands separator, 
+ * although it is up to the locale where it is placed. The ‘useGrouping’ is set to true by default.
+ * @property {string=} pattern an optional localized pattern, where the characters used in 
+ * pattern are as defined in the Unicode CLDR for numbers, percent or currency formats. When present 
+ * this will override the other "options". <p>
+ * 
+ * &nbsp;&nbsp;- When the pattern represents a currency style the 'currency' property is required to 
+ * be set, as not setting this will throw an error. The 'currencyDisplay' is optional. <br/>Example: 
+ * {pattern: '¤#,##0', currency: 'USD'}. <p>
+ * 
+ * &nbsp;&nbsp;- It's not mandatory for the pattern to have the special character '¤' (currency sign) 
+ * be present. When not present, values are treated as a currency value, but are not formatted to 
+ * show the currency symbol. <br/>Example: {pattern: '#,##0', currency: 'USD'} <p>
+ * 
+ * &nbsp;&nbsp;- When the pattern represents a percent style, the percent special character ('%') needs to be 
+ * explicitly specified in the pattern, e.g., {pattern: "#,##0%"}. If the pattern does not contain 
+ * the percent character it's treated as a decimal pattern, unless the style is set to percent, 
+ * in which case the value is treated as a percent value, but not formatted to show the percent symbol. 
+ * <br/>Example: {style: 'percent', pattern: "#,##0"}. <p>
+ * 
+ * &nbsp;&nbsp;- A decimal pattern or exponent pattern is specified in the pattern using the CLDR 
+ * conventions. <br/>Example: {pattern: "#,##0.00"} or {pattern: "0.##E+0"}. <p>
+ * 
+ * NOTE: 'pattern' is provided for backwards compatibility with existing apps that may want the 
+ * convenience of specifying an explicit format mask. Setting a pattern will override the default 
+ * locale specific format. <br/>
+ * 
+ * @property {('HALF_UP'|'HALF_DOWN'|'HALF_EVEN')=} roundingMode - specifies the rounding behavior. 
+ * This follows the Java.Math.RoundingMode behavior.
+ * Currently we support the options: HALF_UP, HALF_DOWN, and HALF_EVEN 
+ * 
+ * @property {boolean=} roundDuringParse - Specifies whether or not to round during
+ * parse. Defaults to false; the number converter rounds during format but not during parse.
+ * 
+ * @property {Object=} separators - An object with 2 fields: 'decimal' and 'group'.
+ * It allows the user to provide custom decimal and grouping separators. It is accepted for both
+ * format and parse methods. 
+ * <br/>
+ * 
+ * @property {('full'|'none')=} lenientParse - The lenientParse property can be used to enable or disable leninet parsing.
+ *  Allowed values: "full" (default), "none". 
+ * <p style='padding-left: 5px;'>
+ * By default the lenient parse is enabled and the leniency rules descibed above will be used. When lenientParse is
+ * set to "none" the lenient parse is disabled and the user input must match the expected input otherwise an exception will 
+ * be thrown.<br/><br/>
+ */
 oj.Object.createSubclass(oj.IntlNumberConverter, oj.NumberConverter, "oj.IntlNumberConverter");
 
 /**
@@ -711,6 +408,7 @@ oj.Object.createSubclass(oj.IntlNumberConverter, oj.NumberConverter, "oj.IntlNum
  * @param {Object=} options an object literal used to provide an optional information to 
  * initialize the converter.<p>
  * @export
+ * @ignore
  */
 oj.IntlNumberConverter.prototype.Init = function(options) 
 {
@@ -733,7 +431,7 @@ oj.IntlNumberConverter.prototype._getWrapped = function ()
  * Formats a Number and returns the formatted string, using the options this converter was 
  * initialized with.
  * 
- * @param {Number|number} value to be formatted for display
+ * @param {number} value to be formatted for display
  * @return {string} the localized and formatted value suitable for display. When the value is 
  * formatted as a percent it's multiplied by 100.
  * 
@@ -774,9 +472,9 @@ oj.IntlNumberConverter.prototype.format = function (value)
 };
 
 /**
- * Retrieves a hint String describing the format the value is expected to be in.
+ * In general, returns hint for the converter. For a IntlNumberConverter returned value is always null.
  * 
- * @return {String} a hint describing the format the value is expected to be in.
+ * @return {null} a hint describing the format the value is expected to be in.
  * @export
  */
 oj.IntlNumberConverter.prototype.getHint = function ()
@@ -791,6 +489,8 @@ oj.IntlNumberConverter.prototype.getHint = function ()
 /**
  * Returns the options called with converter initialization.
  * @return {Object} an object of options.
+ * @ojsignature {target:"Type", for: "returns",
+ *    value: "oj.IntlNumberConverter.ConverterOptions"}
  * @export
  */
 oj.IntlNumberConverter.prototype.getOptions = function () 
@@ -801,7 +501,7 @@ oj.IntlNumberConverter.prototype.getOptions = function ()
 /**
  * Parses a string value to return a Number, using the options this converter was initialized with. 
  * 
- * @param {String|string} value to parse
+ * @param {string} value to parse
  * @return {number|null} the parsed number or null if the value was null or an empty string. When 
  * the value is parsed as a percent its 1/100th part is returned.
  * 
@@ -873,6 +573,8 @@ oj.IntlNumberConverter.prototype.parse = function (value)
  * <li><b>separators</b>: - An object with 2 fields: 'decimal' and 'group'.</li>
  * 
  * @throws a oj.ConverterError when the options that the converter was initialized with are invalid. 
+ * @ojsignature {target:"Type", for: "returns",
+ *    value: "oj.IntlNumberConverter.ConverterOptions"}
  * @export
  */
 oj.IntlNumberConverter.prototype.resolvedOptions = function()
@@ -966,9 +668,9 @@ oj.IntlNumberConverter.prototype._processConverterError = function (e, value)
         //  - implement parse() for short number converter
         //  
         summary =  oj.Translations.getTranslatedString(
-          "oj-converter.number.decimalFormatUnsupportedParse.summary");
+          "oj-converter.number.shortLongUnsupportedParse.summary");
         detail = oj.Translations.getTranslatedString(
-          "oj-converter.number.decimalFormatUnsupportedParse.detail");
+          "oj-converter.number.shortLongUnsupportedParse.detail");
         converterError = new oj.ConverterError(summary, detail);
     }
 
@@ -1029,6 +731,336 @@ oj.IntlNumberConverter.prototype._getHintValue = function()
 };
 
 /**
+ * Copyright (c) 2014, Oracle and/or its affiliates.
+ * All rights reserved.
+ */
+
+/**
+ * Constructs a NumberRangeValidator that ensures the value provided is within a given range
+ * @param {Object=} options an object literal used to provide the following properties
+ * @export
+ * @constructor
+ * @augments oj.Validator
+ * @ojsignature [{target: "Type", 
+ *                value: "class NumberRangeValidator extends Validator<string|number>"},
+ *               {target: "Type",
+ *                value: "oj.NumberRangeValidator.ValidatorOptions",
+ *                for: "options", jsdocOverride: true}
+ *              ]
+ * @since 0.7
+ * 
+ */
+oj.NumberRangeValidator = function _NumberRangeValidator(options)
+{
+  this.Init(options);
+};
+
+// Subclass from oj.Validator 
+oj.Object.createSubclass(oj.NumberRangeValidator, oj.Validator, "oj.NumberRangeValidator");
+
+/**
+ * @typedef {object} oj.NumberRangeValidator.ValidatorOptions
+ * @property {number=} min - the minimum number value of the entered value.
+ * @property {number=} max - the maximum number value of the entered value.
+ * @property {Object=} hint - an optional object literal of hints to be used.
+ * <p>The hint strings (e.g., hint.min) are  passed as the 'pattern' parameter to
+ * [oj.Translations.html#applyParameters]{@link oj.Translations}. As stated in
+ * that documentation, if you are using a reserved character, you need to escape it with 
+ * a dollar character ('$').
+ * </p> 
+ * @property {string=} hint.max - a hint used to indicate the allowed maximum. When not present, 
+ * the default hint is the resource defined with the key 
+ * <code class="prettyprint">oj-validator.range.number.hint.max</code>.<p>
+ * Tokens: <br/>
+ * {max} - the maximum<p>
+ * Usage: <br/>
+ * Enter a number less than or equal to {max}
+ * @property {string=} hint.min - a hint used to indicate the allowed minimum. When not present, 
+ * the default hint is the resource defined with the key 
+ * <code class="prettyprint">oj-validator.range.number.hint.min</code>.<p>
+ * Tokens: <br/>
+ * {min} the minimum <p>
+ * Usage: <br/>
+ * Enter a number greater than or equal to {min}</li>
+ * @property {string=} hint.inRange - a hint used to indicate the allowed range. When not 
+ * present, the default hint is the resource defined with the key 
+ * <code class="prettyprint">oj-validator.range.number.hint.inRange</code>.<p>
+ * Tokens:<br/>
+ * {min} the minimum<br/>
+ * {max} the maximum<p>
+ * Usage: <br/>
+ * Enter a number between {min} and {max}
+ * @property {string=} hint.exact - a hint used to indicate the allowed value. 
+ * This is used when min and max are non-null and are equal to each other.  
+ * When not present, the default hint is the resource defined with the key 
+ * <code class="prettyprint">oj-validator.range.number.hint.exact</code>.<p>
+ * Tokens:<br/>
+ * {num} the number allowed<br/>
+ * Usage: <br/>
+ * Enter the number {num}
+ * @since 3.0.0 
+ * @property {Object=} messageDetail - an optional object literal of custom error messages to 
+ * be used.
+ * <p>The messageDetail strings (e.g., messageDetail.rangeUnderflow) are  passed as the 'pattern' 
+ * parameter to [oj.Translations.html#applyParameters]{@link oj.Translations}. As stated in
+ * that documentation, if you are using a reserved character, you need to escape it with 
+ * a dollar character ('$').
+ * </p> 
+ * @property {string=} messageDetail.rangeUnderflow - the detail error message to be used when 
+ * input value is less than the set minimum value. When not present, the default detail message is 
+ * the resource defined with the key 
+ * <code class="prettyprint">oj-validator.range.number.messageDetail.rangeUnderflow</code>.<p>
+ * Tokens:<br/>
+ * {value} - value entered by the user<br/>
+ * {min} - the minimum allowed value<p>
+ * Usage: <br/>
+ * The number must be greater than or equal to {min}.
+ * @property {string=} messageDetail.rangeOverflow - the detail error message to be used when 
+ * input value exceeds the maximum value set. When not present, the default detail message is 
+ * the resource defined with the key 
+ * <code class="prettyprint">oj-validator.range.number.messageDetail.rangeOverflow</code>.<p>
+ * Tokens:<br/>
+ * {value} - value entered by the user<br/>
+ * {max} - the maximum allowed value<p>
+ * Usage: <br/>
+ * The number must be less than or equal to {max}.   
+ * @property {string=} messageDetail.exact - the detail error message to be used when the
+ * input value is not between min and max when min and max are both non-null and equal.
+ *  When not present, the default detail message is the resource defined with the key 
+ * <code class="prettyprint">oj-validator.range.number.messageDetail.exact</code>.<p>
+ * Tokens:<br/>
+ * {num} - the allowed value<p>
+ * Usage: <br/>
+ * The number must be {num}.
+ * @since 3.0.0 
+ * @property {Object=} messageSummary - optional object literal of custom error summary message 
+ * to be used. 
+ * @property {string=} messageSummary.rangeUnderflow - the summary of the error message when 
+ * input value is less than the set minimum value. When not present, the default message summary is 
+ * the resource defined with the key 
+ * <code class="prettyprint">oj-validator.range.number.messageSummary.rangeUnderflow</code>.
+ * @property {string=} messageSummary.rangeOverflow - the summary of the error message when 
+ * input value exceeds the maximum value set.  When not present, the default message summary is 
+ * the resource defined with the key 
+ * <code class="prettyprint">oj-validator.range.number.messageSummary.rangeOverflow</code>.
+ */
+
+/**
+ * Initializes validator instance with the set options
+ * @param {Object=} options
+ * @memberof oj.NumberRangeValidator
+ * @instance
+ * @export
+ * @ignore
+ */
+oj.NumberRangeValidator.prototype.Init = function (options)
+{
+  oj.NumberRangeValidator.superclass.Init.call(this);
+
+  if (options)
+  {
+    this._min = options["min"];
+    this._max = options["max"];
+    this._converter = oj.IntlConverterUtils.getConverterInstance(options['converter']);
+    this._hint = options['hint'] || {};
+    this._customMessageSummary = options['messageSummary'] || {};
+    this._customMessageDetail = options['messageDetail'] || {};
+  }
+};
+
+/**
+ * Validates the minimum + maximum conditions
+ *
+ * @param {string|number} value that is being validated
+ * @returns {string|null} original if validation was successful
+ *
+ * @throws {Error} when value is out of range
+ * @ojsignature {target: "Type", for: "returns",
+ *                value: "void"}
+ * @memberof oj.NumberRangeValidator
+ * @instance
+ * @export
+ */
+oj.NumberRangeValidator.prototype.validate = function (value)
+{
+  var string = value ? value.toString() : value;
+  var numberValue = parseFloat(string); 
+  var customMessageSummary = this._customMessageSummary;
+  var customMessageDetail = this._customMessageDetail;
+  var messageDetailRangeOverflow = customMessageDetail["rangeOverflow"]; 
+  var messageDetailRangeUnderflow = customMessageDetail["rangeUnderflow"]; 
+  var messageDetailExact = customMessageDetail["exact"];
+  var messageSummaryRangeOverflow = customMessageSummary["rangeOverflow"];
+  var messageSummaryRangeUnderflow = customMessageSummary["rangeUnderflow"];
+  var min = this._min !== undefined ? parseFloat(this._min) : null; 
+  var max = this._max !== undefined ? parseFloat(this._max) : null; 
+  var minStr = min && this._converter ? this._converter['format'](min) : min;
+  var maxStr = max && this._converter ? this._converter['format'](max) : max;
+  var summary = ""; 
+  var detail = ""; 
+  var params = null;
+  var translations = oj.Translations;
+  
+  if(value === null) 
+  {
+    // request to not throw an error when value being passed is of null
+    return value;
+  }
+  
+  if (min !== null && max !== null)
+  {
+    //range
+    if ((numberValue >= min && numberValue <= max) || min > max)
+    {
+      return string;
+    }
+  }
+  else 
+  {
+    //only min
+    if (min !== null)
+    {
+      if (numberValue >= min)
+      {
+        return string;
+      }
+	  
+    }
+    //max only or no min or max
+    else 
+    {
+      if (max === null || numberValue <= max)
+      {
+        return string;
+      }
+    }
+  }
+  
+  // if we haven't returned with an OK, then we need to throw a ValidatorError
+  // 
+  // First check if we have both a max and a min and if they are equal. If so the message will
+  // be the messageDetail.exact message, like "Enter the number 1"
+  if (max !== null && min !== null && min === max)
+  {
+    params = {"value": value, "num": maxStr};
+    detail = messageDetailExact ? 
+      translations.applyParameters(messageDetailExact, params) : 
+      translations.getTranslatedString('oj-validator.range.number.messageDetail.exact', params);
+    // if number is greater than max, the summary may say "The number is too high"
+    if (numberValue > max)
+    {
+      summary = messageSummaryRangeOverflow ? 
+        messageSummaryRangeOverflow : 
+        translations.getTranslatedString('oj-validator.range.number.messageSummary.rangeOverflow');            
+    } 
+    // if number is less than min, the summary may say "The number is too low"
+    else if (numberValue < min)
+    {
+      summary = messageSummaryRangeOverflow ? 
+        messageSummaryRangeUnderflow : 
+        translations.getTranslatedString('oj-validator.range.number.messageSummary.rangeUnderflow');
+    }
+  }
+  // Next check if we have a max, and the number we are validating is greater than the max
+  // throw an error, 
+  // like "The number is too high." and "The number must be less than or equal to {max}"
+  else if (max !== null && numberValue > max)
+  {
+	  params = {"value": value, "max": maxStr};
+    summary = messageSummaryRangeOverflow ?
+      messageSummaryRangeOverflow : 
+      translations.getTranslatedString('oj-validator.range.number.messageSummary.rangeOverflow');
+    detail = messageDetailRangeOverflow ?
+      translations.applyParameters(messageDetailRangeOverflow, params) : 
+      translations.getTranslatedString('oj-validator.range.number.messageDetail.rangeOverflow', params);
+  }
+  // 
+  // Else check if we have a min, and the number we are validating is less than the min
+  // throw an error, 
+  // like "The number is too low." and "The number must be greater than or equal to {min}"
+  else if (min !== null && numberValue < min)
+  {
+ 	  params = {"value": value, "min": minStr};
+    summary = messageSummaryRangeUnderflow ? 
+      messageSummaryRangeUnderflow : 
+      translations.getTranslatedString('oj-validator.range.number.messageSummary.rangeUnderflow');
+    detail = messageDetailRangeUnderflow ? 
+      translations.applyParameters(messageDetailRangeUnderflow, params) : 
+      translations.getTranslatedString('oj-validator.range.number.messageDetail.rangeUnderflow', params);   
+  }
+
+  throw new oj.ValidatorError(summary, detail);
+};
+
+/**
+ * @returns {string|null} a hint message or null if no hint is available in the options.
+ * A hint message may be like "Enter a value between {min} and {max}"
+ * or "Enter a number greater than or equal to {min}"
+ * @memberof oj.NumberRangeValidator
+ * @instance
+ * @export
+ */
+oj.NumberRangeValidator.prototype.getHint = function ()
+{
+  var hint = null;
+  var hints = this._hint; 
+  var hintInRange = hints["inRange"];
+  var hintExact = hints["exact"];
+  var hintMinimum = hints["min"];
+  var hintMaximum = hints["max"];
+  var translations = oj.Translations;
+  var min = this._min !== undefined ? parseFloat(this._min) : null; 
+  var max = this._max !== undefined ? parseFloat(this._max) : null;
+  var minStr = min && this._converter ? this._converter['format'](min) : min;
+  var maxStr = max && this._converter ? this._converter['format'](max) : max;
+	 
+  // if both min and max are specified, the hint may say something like "Enter a value
+  // between {min} and {max}".
+  if (min !== null && max !== null) 
+  {
+    if (min !== max)
+    {
+      // if hintInRange is specified (validator's hint.inRange option is set), 
+      // use that string, else use the default.
+      hint = hintInRange ?
+              translations.applyParameters(hintInRange, {"min": minStr, "max": maxStr}) : 
+              translations.getTranslatedString('oj-validator.range.number.hint.inRange', 
+                {"min": minStr, "max": maxStr});
+    }
+    else
+    {
+      // if hintExact is specified (validator's hint.exact option is set), 
+      // use that string, else use the default.
+      hint = hintExact ?
+              translations.applyParameters(hintExact, {"num": minStr}) : 
+              translations.getTranslatedString('oj-validator.range.number.hint.exact', 
+                {"num": minStr});
+    }
+  }
+  // else if min is specified, the hint may say something like "Enter a value
+  // greater than or equal to {min}".
+  else if (min !== null)
+  {
+    // if hintMinimum is specified (validator's hint.min option is set), 
+    // use that string, else use the default.
+    hint = hintMinimum ? 
+             translations.applyParameters(hintMinimum, {"min": minStr}) :
+	           translations.getTranslatedString('oj-validator.range.number.hint.min', {"min": minStr});
+  }
+  // else if max is specified, the hint may say something like "Enter a value
+  // less than or equal to {max}".
+  else if (max !== null)
+  {
+    // if hintMaximum is specified (validator's hint.max option is set), 
+    // use that string, else use the default.
+    hint = hintMaximum ?  
+            translations.applyParameters(hintMaximum, {"max": maxStr}) :
+            translations.getTranslatedString('oj-validator.range.number.hint.max', {"max": maxStr});
+  }
+
+  return hint;
+};
+/**
  * Copyright (c) 2008, 2013, Oracle and/or its affiliates. 
  * All rights reserved.
  */
@@ -1040,6 +1072,7 @@ oj.IntlNumberConverter.prototype._getHintValue = function()
  * {@link oj.IntlNumberConverter}. 
  * 
  * @name oj.NumberConverterFactory
+ * @hideconstructor
  * @class
  * 
  * @example <caption>create an instance of the jet datetime converter using the options provided</caption>
@@ -1068,6 +1101,8 @@ oj.NumberConverterFactory = (function ()
      * 
      * @return {oj.IntlNumberConverter}
      * @memberOf oj.NumberConverterFactory
+     * @ojsignature {target: "Type", for: "options", value: "oj.IntlNumberConverter.ConverterOptions"}
+     * @instance
      * @public
      */
     'createConverter': function(options) {
@@ -1093,6 +1128,7 @@ oj.Validation.__registerDefaultConverterFactory(oj.ConverterFactory.CONVERTER_TY
  * var lrValidator = lrvf.createValidator(options);
  * 
  * @name oj.NumberRangeValidatorFactory
+ * @hideconstructor
  * @class
  * @public
  * @since 0.6
@@ -1116,6 +1152,8 @@ oj.NumberRangeValidatorFactory = (function ()
      * 
      * @return {oj.NumberRangeValidator}
      * @memberOf oj.NumberRangeValidatorFactory
+     * @instance
+     * @ojsignature {target: "Type", for: "options", value: "oj.NumberRangeValidator.ValidatorOptions"}
      * @public
      */
     'createValidator': function(options) {
@@ -1428,6 +1466,7 @@ oj.Validation.__registerDefaultValidatorFactory(oj.ValidatorFactory.VALIDATOR_TY
  * <br/>
  * 
  * @name OraNumberConverter
+ * @ignore
  */
 
 /**
@@ -1678,6 +1717,8 @@ OraNumberConverter = (function () {
       }
       if (numberSettings['maximumFractionDigits'] < numberSettings['minimumFractionDigits']) {
         numberSettings['maximumFractionDigits'] = numberSettings['minimumFractionDigits'];
+        oj.Logger.info(
+        "maximumFractionDigits is less than minimumFractionDigits, so maximumFractionDigits will be set to minimumFractionDigits");
       }
     }
   };

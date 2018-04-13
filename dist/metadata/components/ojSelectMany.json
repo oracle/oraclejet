@@ -1,27 +1,27 @@
 {
   "name": "oj-select-many",
-  "version": "4.2.0",
-  "jetVersion": "4.2.0",
+  "version": "5.0.0",
+  "jetVersion": "5.0.0",
   "displayName": "Multi Select",
   "preview": true,
   "roles": [
     "combobox"
   ],
-  "description": "JET Select Many provides support for multi-select and search filtering.",
+  "description": "A dropdown list that supports multiple selections and search filtering.",
   "properties": {
     "describedBy": {
-      "description": "It is used to establish a relationship between this component and another element.\nTypically this is not used by the application developer, but by the oj-label custom element's\ncode. One use case is where the oj-label custom element code writes described-by\non its form component for accessibility reasons.\nTo facilitate correct screen reader behavior, the described-by attribute is\ncopied to the aria-describedby attribute on the component's dom element.",
+      "description": "described the relationship between this component and another element.",
       "type": "string",
       "displayName": "Described By"
     },
     "disabled": {
-      "description": "Whether the component is disabled. The default is false.\n\n\nWhen the disabled property changes due to programmatic \nintervention, the component may clear messages and run validation in some cases. \n\nwhen a required component is initialized as disabled \nvalue=\"{{currentValue}}\" required disabled, \ndeferred validation is skipped.\nwhen a disabled component is enabled, if component is invalid and showing messages then all component messages are cleared, and full validation run using the display value. if there are validation errors, they are shown. if no errors result from the validation, the value property is updated. Page authors can listen to the onValueChanged event to clear custom errors. if component is valid and has no errors then deferred validation is run. if there is a deferred validation error, then the valid property is updated. if component is invalid and deferred errors then component messages are cleared and deferred validation re-run. if there is a deferred validation error, then the valid property is updated. \n\nwhen enabled component is disabled then no validation is run and the component appears \ndisabled.\n\n",
+      "description": "Whether the component is disabled. The default is false.",
       "type": "boolean",
       "displayName": "Disabled",
       "value": false
     },
     "displayOptions": {
-      "description": "Display options for auxilliary content that determines where it should be displayed \nin relation to the component. \n\n\nThe types of messaging content for which display options can be configured include \nmessages, converterHint, \nvalidatorHint and helpInstruction.\nThe display options for each type is specified either as an array of strings or a string. When \nan array is specified the first display option takes precedence over the second and so on. \n\n\nJET editable components set defaults that apply to the entire app/page. \nIt is possible to override the defaults on \na per instance basis as explained in the examples below or change defaults for the entire\napplication using \noj.Components#setDefaultOptions method.\nIt is much easier to change the defaults using setDefaultOptions once rather than putting\nthe displayOptions option on every component instance.\n\n\nWhen display-options changes due to programmatic intervention, the component updates its \ndisplay to reflect the updated choices. For example, if 'help.instruction' property goes from \n'notewindow' to 'none' then it no longer shows in the notewindow.\n\n\nA side note: help.instruction and message detail text can include formatted HTML text, whereas hints and \nmessage summary text cannot. If you use formatted text, it should be accessible \nand make sense to the user if formatting wasn't there.\nTo format the help.instruction, you could do this:\n<html>Enter <b>at least</b> 6 characters</html>\n",
+      "description": "Customize how to display to the user the form field's messages, converter and validator hints and help instruction text.",
       "type": "Object|undefined",
       "displayName": "Display Options",
       "value": {
@@ -42,19 +42,19 @@
       "properties": {
         "converterHint": {
           "description": "supported values are 'placeholder', \n'notewindow', 'none'. The \ndefault value is ['placeholder', 'notewindow']. When there \nis already a placeholder set on the component, the converter hint falls back to display \ntype of 'notewindow'.\nTo change the default value you can do this - \nE.g. {'displayOptions: {'converterHint': ['none']}}",
-          "type": "Array|string"
+          "type": "Array<('placeholder'|'notewindow'|'none')>|'placeholder'|'notewindow'|'none'"
         },
         "validatorHint": {
           "description": "supported values are 'notewindow', \n'none'.\nTo change the default value you can do this - \n{'displayOptions: {'validatorHint': ['none']}}",
-          "type": "Array|string"
+          "type": "Array<('notewindow'|'none')>|'notewindow'|'none'"
         },
         "messages": {
           "description": "supported values are 'notewindow', \n'inline',\n'none'. The default is 'inline'. \nTo change the default value you can do this - \nE.g. {'displayOptions: {'messages': 'none'}}",
-          "type": "Array|string"
+          "type": "Array<('inline'|'notewindow'|'none')>|'inline'|'notewindow'|'none'"
         },
         "helpInstruction": {
           "description": "supported values are 'notewindow', \n'none'.\nTo change the default value you can do this - \nE.g. displayOptions='{\"helpInstruction\": \"none\"}'",
-          "type": "Array|string"
+          "type": "Array<('notewindow'|'none')>|'notewindow'|'none'"
         }
       }
     },
@@ -75,34 +75,39 @@
       }
     },
     "helpHints": {
-      "description": "Represents hints for oj-form-layout element to render help information on the label of the editable component. \nThis is used only if the editable component is added as a direct child to an oj-form-layout element, and the labelHint property is also specified.\n\n\nThe helpHints object contains a definition property and a source property.\n\n\ndefinition - hint for help definition text.\nsource - hint for help source URL.\n",
+      "description": "Represents hints for oj-form-layout element to \nrender help information on the label of the editable component.",
       "type": "Object.<string, string>",
       "displayName": "Help Hints",
       "value": {
         "definition": "",
         "source": ""
       },
+      "translatable": true,
       "properties": {
         "definition": {
           "description": "Hint for help definition text associated with the label. \nIt is what shows up when the user hovers over the help icon, or tabs into the help icon, or press and holds the help icon on a mobile device. No formatted text is available for help definition attribute.\n\nSee the help-hints attribute for usage examples.",
-          "type": "string"
+          "type": "string",
+          "value": ""
         },
         "source": {
           "description": "Hint for help source URL associated with the label. \nIf present, a help icon will render next to the label. For security reasons we only support urls with protocol http: or https:. If the url doesn't comply we ignore it and throw an error. \nPass in an encoded URL since we do not encode the URL.\n\nSee the help-hints attribute for usage examples.",
-          "type": "string"
+          "type": "string",
+          "value": ""
         }
       }
     },
     "labelHint": {
-      "description": "Represents a hint for oj-form-layout element to render a label on the editable component. \nThis is used only if the editable component is added as a direct child to an oj-form-layout element.\n\n\nWhen labelHint is present it gives a hint to the oj-form-layout element to create an oj-label element for the editable component.\nWhen the labelHint property changes oj-form-layout element refreshes to \ndisplay the updated label information. \n",
+      "description": "Represents a hint for oj-form-layout element to render a label on the editable component.",
       "type": "string",
-      "displayName": "Label Hint"
+      "displayName": "Label Hint",
+      "value": "",
+      "translatable": true
     },
     "messagesCustom": {
-      "description": "List of messages an app would add to the component when it has business/custom validation \nerrors that it wants the component to show. When this option is set the message shows to the \nuser right away. To clear the custom message, set messagesCustom\nback to an empty array.\nEach message in the array is an object that duck types oj.Message. \nSee Message for details.\n\n\nSee the Validation and Messages section\nfor details on when the component clears messagesCustom; \nfor example, when full validation is run.\n",
-      "type": "Array.<Object>|undefined",
+      "description": "List of messages an app would add to the component",
+      "type": "Array<Object>",
       "displayName": "Messages Custom",
-      "value": "[]",
+      "value": [],
       "writeback": true
     },
     "minimumResultsForSearch": {
@@ -120,12 +125,12 @@
     },
     "options": {
       "description": "The option items for the Select.",
-      "type": "Array.<(oj.Option|oj.Optgroup)>",
+      "type": "null|Array<(oj.Option|oj.Optgroup)>|oj.DataProvider.<oj.Option>",
       "displayName": "Options",
       "value": null
     },
     "optionsKeys": {
-      "description": "Specify the key names to use in the options array. Depending on options-keys means that the signature of the data does not match what is supported by the options attribute. When using Typescript, this would result in a compilation error. Best practice is to use a oj.ListDataProviderView with data mapping as a replacement. However, for the app that must fetch data from a REST endpoint where the data fields do not match those that are supported by the options attribute or the dataProvider doesn't implement oj.FetchByKeys, you may use the options-keys with any dataProvider that implements only oj.IteratingDataProvider interface.",
+      "description": "Specify the key names to use in the options array. Depending on options-keys means that the signature of the data does not match what is supported by the options attribute. When using Typescript, this would result in a compilation error. Best practice is to use a oj.ListDataProviderView with data mapping as a replacement. However, for the app that must fetch data from a REST endpoint where the data fields do not match those that are supported by the options attribute, you may use the options-keys with any dataProvider that implements oj.DataProvider interface.",
       "type": "Object",
       "displayName": "Options Keys",
       "value": null,
@@ -194,10 +199,10 @@
       "value": false
     },
     "translations": {
-      "description": "A collection of translated resources from the translation bundle, or null if this\ncomponent has no resources. Resources may be accessed and overridden individually or collectively, as seen in the examples.\n\nIf this component has translations, their documentation immediately follows this doc entry.",
-      "type": "Object",
+      "description": "A collection of translated resources from the translation bundle, or null if this\ncomponent has no resources. Resources may be accessed and overridden individually or collectively, as seen in the examples. If the component does not contain any translatable resource, the default value of this attribute will be \nnull. If not, an object containing all resources relevant to the component.\n\nIf this component has translations, their documentation immediately follows this doc entry.",
+      "type": "Object|null",
       "displayName": "Translations",
-      "value": null,
+      "translatable": true,
       "properties": {
         "filterFurther": {
           "description": "Text at the top of drop down when not all results are fetched and users need to filter further.",
@@ -225,15 +230,18 @@
           "properties": {
             "hint": {
               "description": "Hint text used by required validation error.\n\nSee the translations attribute for usage examples.",
-              "type": "string"
+              "type": "string",
+              "value": ""
             },
             "messageDetail": {
               "description": "Message text that describes the details of the required validation error.\n\nSee the translations attribute for usage examples.",
-              "type": "string"
+              "type": "string",
+              "value": ""
             },
             "messageSummary": {
               "description": "Message text for summarizing a required validation error.\n\nSee the translations attribute for usage examples.",
-              "type": "string"
+              "type": "string",
+              "value": ""
             }
           }
         },
@@ -245,7 +253,7 @@
       }
     },
     "valid": {
-      "description": " \nThe current valid state of the component. It is evaluated on initial render.\nIt is re-evaluated after validation is run (full or deferred) when messagesCustom is updated, since messagesCustom can be added by the app developer any time. when showMessages() is called. Since showMessages() moves the hidden messages into messages shown, if the valid state was \"invalidHidden\" then it would become \"invalidShown\". when the required property has changed. If a component is empty and has required set, the valid state may be \"invalidHidden\" (if no invalid messages are being shown as well). If required property is removed, the valid state would change to \"valid\". Note: New valid states may be added to the list of valid values in future releases. Any new values will start with \"invalid\" if it is an invalid state, \"pending\" if it is pending state, and \"valid\" if it is a valid state.\n",
+      "description": "The validity state of the component",
       "type": "string",
       "displayName": "Valid",
       "writeback": true,
@@ -278,8 +286,14 @@
     },
     "value": {
       "description": "The value of the element.",
-      "type": "Array.<*>",
+      "type": "Array<*>",
       "displayName": "Value"
+    },
+    "valueOptions": {
+      "description": "The current values of the element and theirs associated display labels.",
+      "type": "null|Array<Object>",
+      "displayName": "Value Options",
+      "value": null
     }
   },
   "methods": {
@@ -292,18 +306,12 @@
       "return": "Promise"
     },
     "reset": {
-      "description": "Resets the component by clearing all messages and messages attributes - \nmessagesCustom -\nand updates the component's display value using the attribute value. User entered values will be \nerased when this method is called."
+      "description": "Resets the component by clearing all messages and messages attributes - \nmessagesCustom -\nand updates the component's display value using the attribute value. User entered values will be \nerased when this method is called.",
+      "return": "void"
     },
     "showMessages": {
-      "description": "Takes all deferred messages and shows them. \nIt then updates the valid property; e.g.,\nif the valid state was \"invalidHidden\"\nbefore showMessages(), the valid state will become \"invalidShown\" after showMessages(). \n\nIf there were no deferred messages this method simply returns. \n"
-    },
-    "focus": {
-      "description": "Sets focus on the element that naturally gets focus. For example, this would be the input \nelement for input type components. ",
-      "return": "undefined"
-    },
-    "blur": {
-      "description": "Blurs the element that naturally gets focus. For example, this would be the input \nelement for input type components. ",
-      "return": "undefined"
+      "description": "Takes all deferred messages and shows them. \nIt then updates the valid property; e.g.,\nif the valid state was \"invalidHidden\"\nbefore showMessages(), the valid state will become \"invalidShown\" after showMessages(). \n\nIf there were no deferred messages this method simply returns. \n",
+      "return": "void"
     },
     "setProperty": {
       "description": "Sets a property or a single subproperty for complex properties and notifies the component\nof the change, triggering a [property]Changed event.",
@@ -318,7 +326,8 @@
           "description": "The new value to set the property to.",
           "type": "*"
         }
-      ]
+      ],
+      "return": "void"
     },
     "getProperty": {
       "description": "Retrieves a value for a property or a single subproperty for complex properties.",
@@ -339,7 +348,8 @@
           "description": "An object containing the property and value pairs to set.",
           "type": "Object"
         }
-      ]
+      ],
+      "return": "void"
     }
   },
   "events": {

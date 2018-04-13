@@ -1,4 +1,5 @@
 /**
+ * @license
  * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
@@ -34,9 +35,20 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'jqueryui-amd/widgets/dra
    * @ojcomponent oj.ojSlider
    * @ojdisplayname Slider
    * @augments oj.editableValue
-   * @ojsignature class ojSlider extends editableValue<number>
+   * @ojsignature [{
+   *                target: "Type",
+   *                value: "class ojSlider extends editableValue<number, ojSliderSettableProperties>"
+   *               },
+   *               {
+   *                target: "Type",
+   *                value: "ojSliderSettableProperties extends editableValueSettableProperties<number>",
+   *                for: "SettableProperties"
+   *               }
+   *              ]
+   * 
    * @ojrole slider
    * @since 0.7
+   * @ojshortdesc Displays an interactive slider element.
    * @ojstatus preview
    *
    * @classdesc
@@ -81,12 +93,12 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'jqueryui-amd/widgets/dra
    * <code class="prettyprint">oj-slider </code> element to set a horizontal slider's 
    * width or a vertical slider's height.
    * </p>
+   * Use the <code class="prettyprint">transient-value</code> attribute to access
+   * slider value changes during slider thumb repositioning.
+   * </p>
    * Note that the <code class="prettyprint">range</code> value for the
    * <code class="prettyprint">type</code> attribute
-   * is not part of the initial (4.0) release of the custom element slider. In addition, the 
-   * <code class="prettyprint">raw-value</code> attribute is also not part of the 
-   * initial release of the custom element slider.
-   * We anticipate that these features will be included in the next dot release (4.1). 
+   * is not part of the initial (4.0) release of the custom element slider. 
    * </p>
    * <h3 id="touch-section">
    *   Touch End User Information
@@ -190,6 +202,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'jqueryui-amd/widgets/dra
        * myComponent.max = 100;
        */
       max: 100,
+
       /**
        * The minimum value of the slider.
        * The <code class="prettyprint">min</code> must not be greater than the
@@ -213,6 +226,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'jqueryui-amd/widgets/dra
        * 
        */
       min: 0,
+
       /**
        * Specify the orientation of the slider.
        *
@@ -316,8 +330,8 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'jqueryui-amd/widgets/dra
        * myComponent.step = 10;
        * 
        **/
-
       step: 1,
+
       /**
        * The slider type determines whether the slider how the value is represented in the UI.
        *
@@ -345,15 +359,14 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'jqueryui-amd/widgets/dra
        * myComponent.type = "fromMax";
        *
        */
-
       type: 'fromMin',
+
       /**
        * The numerical value of the slider.
        *
        * <p> Note that the <code class="prettyprint">value</code> attribute should
        * be compatible with the <code class="prettyprint">type</code> attribute, as
-       * described above. A value that is not compatible with the type will be coerced
-       * into a compatible value.
+       * described above.
        *
        * @example <caption>Initialize the slider with the
        * <code class="prettyprint">value</code> attribute:</caption>
@@ -374,31 +387,32 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'jqueryui-amd/widgets/dra
        * @ojwriteback
        * @memberof oj.ojSlider
        * @type {?number}
-       * @ojsignature number|undefined
        */
       value: 0,
-      // note - rawValue not exposed for custom elements.
+
       /**
-       * <p>The  <code class="prettyprint">rawValue</code> is the read-only attribute for
+       * <p>The  <code class="prettyprint">transientValue</code> is the read-only attribute for
        * retrieving the transient value from the slider.</p>
        * <p>
-       * The <code class="prettyprint">rawValue</code> updates to display the transient
+       * The <code class="prettyprint">transientValue</code> updates to display the transient
        * changes of the slider thumb value (subject to the step constraints). The difference
-       * in behavior is that <code class="prettyprint">rawValue</code> will be updated the
-       * thumb as it is sliding, where as the <code class="prettyprint">value</code> attribute is
-       * updated only after the thumb is released (or after a key press).
+       * in behavior is <code class="prettyprint">transientValue</code> will be updated
+       * as the thumb is sliding, where as <code class="prettyprint">value</code>
+       * is updated only after the thumb is released (or after a key press).
        * </p>
        * <p>This is a read-only attribute so page authors cannot set or change it directly.</p>
        * @expose
+       * @alias transientValue
        * @access public
-       * @ignore
        * @instance
+       * @ojwriteback
        * @memberof oj.ojSlider
-       * @type {?number|undefined}
-       * @since 1.2
+       * @type {?number}
+       * @since 5.0
        * @readonly
+       * @ojstatus preview
        */
-      rawValue: undefined
+      rawValue: null
 
     },
 
@@ -442,8 +456,29 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'jqueryui-amd/widgets/dra
         this._elementWrapped = this.element;
       }
 
+      // use 'transientValue' for custom elements,
+      // and use 'rawValue' for widget syntax.
+      this._transientValueName = this._IsCustomElement() ? "transientValue" : "rawValue";
       this._componentSetup();
     },
+
+     /**
+      * Convenience function to set the rawValue option. Overrides EditableValue _SetRawValue.
+      * @param {String} val value to set rawValue to
+      * @param {Event} event DOM event 
+      * @return {void}
+      * @memberof oj.ojSlider
+      * @instance
+      * @override
+      * @private
+      */
+     _SetRawValue : function (val, event) {
+       var flags = {};
+       flags['_context'] = {originalEvent: event, writeback: true, internalSet: true, readOnly: true};
+       if (!oj.Object.compareValues(this.options[this._transientValueName], val)) {
+         this.option(this._transientValueName, val, flags);
+       }
+     },
 
     //
     // Setup the component based on the current options.
@@ -647,7 +682,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'jqueryui-amd/widgets/dra
      *
      * @param {string} displayValue of the new string to be displayed
      *
-     * @memberof oj.slider
+     * @memberof oj.ojSlider
      * @instance
      * @protected
      */
@@ -660,7 +695,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'jqueryui-amd/widgets/dra
      *
      * @return {string} usually a string display value
      *
-     * @memberof oj.slider
+     * @memberof oj.ojSlider
      * @instance
      * @protected
      */
@@ -1332,21 +1367,9 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'jqueryui-amd/widgets/dra
 
     _setSingleValue: function (event, newValue, rawOnly) {
       this._newValue = this._trimAlignValue(newValue);
-      // not exposing rawValue for slider custom element 4.0.
-      if (!this._IsCustomElement()) {
-        this._SetRawValue(this._newValue, event);
-      }
+      this._SetRawValue(this._newValue, event);
       if (!rawOnly) {
-        // not exposing rawValue for slider custom element 4.0.
-        if (this._IsCustomElement()) {
-          // 
-          // supress the rawValueChanged event that is triggered in EditableValue.js
-          // (by updating raw value prior to calling super._SetValue().
-          // (note that this will supress the setDisplayValue()._setRawValue() 
-          // (Remove this code once we expose rawValue for custom elements.)
-          // 
-          this.options['rawValue'] = this._newValue;
-        }
+        this.options[this._transientValueName] = this._newValue;
         this._SetValue(this._newValue, event);
         this._updateUI();
       }
@@ -1359,18 +1382,12 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'jqueryui-amd/widgets/dra
       if (this._multipleThumbs) {
         // store the last change values for creating draggable containment
         this._lastChangedValues = this._getNewValues(index, this._newMultiValue[index]);
-        // not exposing rawValue for slider custom element 4.0.
-        if (!this._IsCustomElement()) {
           this._SetRawValue(this._lastChangedValues, event);
-        }
         if (!rawOnly) {
           this._SetValue(this._lastChangedValues, event);
         }
       } else {
-        // not exposing rawValue for slider custom element 4.0.
-        if (!this._IsCustomElement()) {
-          this._SetRawValue(this._newValue, event);
-        }
+        this._SetRawValue(this._newValue, event);
         if (!rawOnly) {
           this._SetValue(this._newValue, event);
         }
@@ -1563,6 +1580,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'jqueryui-amd/widgets/dra
       case 'type':
         this._reCreate();
         break;
+
       default:
         break;
       }
@@ -1576,6 +1594,11 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'jqueryui-amd/widgets/dra
     _reCreate: function () {
       this._destroySliderDom();
       this._componentSetup();
+      if (this.OuterWrapper) {
+        // When we programmatically recreate a custom element slider
+        // (in order to implemement option change), we assert oj-complete.
+        this._elementWrapped.addClass('oj-complete');
+      }
       this._AfterCreate();
     },
 
@@ -2097,10 +2120,10 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'jqueryui-amd/widgets/dra
       }
     },
 
-    // throw an error if min > max
+    // throw an error if min >= max
     _checkMinMax: function(min, max) {
       if (min != null && max != null) {
-        if (min > max) {
+        if (min >= max) {
           throw new Error(this.getTranslatedString('maxMin'));
         }
       }
@@ -2558,8 +2581,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'jqueryui-amd/widgets/dra
      */
 
     /**
-     * Several CSS classes are defined to implement the slider's style. The key classes are
-     * the following:
+     * The following CSS class can be applied by the page author as needed.
      *
      * <p>
      * <table class="generic-table styling-table">
@@ -2570,32 +2592,6 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'jqueryui-amd/widgets/dra
      *     </tr>
      *   </thead>
      *   <tbody>
-     *     <tr>
-     *       <td>oj-slider</td>
-     *       <td>Top level slider class. </td>
-     *     </tr>
-     *     <tr>
-     *       <td>oj-slider-thumb</td>
-     *       <td>Styles the slider thumb.</td>
-     *     </tr>
-     *     <tr>
-     *       <td>oj-slider-bar</td>
-     *       <td>Styles the slider bar. The slider bar spans the full width of a
-     *        horizontal slider.</td>
-     *     </tr>
-     *     <tr>
-     *       <td>oj-slider-bar-value</td>
-     *       <td>Styles the slider bar value. The slider bar value is the colored (blue by default)
-     *       part of the slider bar.</td>
-     *     </tr>
-     *     <tr>
-     *       <td>oj-slider-horizontal</td>
-     *       <td>This class is present when the slider is oriented horizontally.</td>
-     *     </tr>
-     *     <tr>
-     *       <td>oj-slider-vertical</td>
-     *       <td>This class is present when the slider is oriented vertically.</td>
-     *     </tr>
      *     <tr>
      *       <td>oj-focus-highlight</td>
      *       <td>{@ojinclude "name":"ojFocusHighlightDoc"}</td>
@@ -2659,9 +2655,39 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'jqueryui-amd/widgets/dra
       'step': {
         'type': 'number'
       },
+      'transientValue': {
+        'type': 'number',
+        'readOnly': true,
+        'writeback': true
+      },
       'type': {
         'type': 'string',
         'enumValues': ['single', 'fromMin', 'fromMax']
+      },
+      "translations": {
+        "type": "Object",
+        "properties": {
+          "invalidStep": {
+            "type": "string",
+            "value": "Invalid step; step must be > 0"
+          },
+          "maxMin": {
+            "type": "string",
+            "value": "Max must not be less than min"
+          },
+          "noValue": {
+            "type": "string",
+            "value": "ojSlider has no value"
+          },
+          "optionNum": {
+            "type": "string",
+            "value": "{option} option is not a number"
+          },
+          "valueRange": {
+            "type": "string",
+            "value": "Value must be within min to max range"
+          }
+        }
       },
       'value': {
         'type': 'number',

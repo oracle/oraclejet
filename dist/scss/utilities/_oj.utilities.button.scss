@@ -536,30 +536,30 @@
 @mixin oj-button-state-flat (
     // required fields
     $altButtonBgColor,
-    $altButtonBgColorHover,
-    $altButtonBgColorActive,
 
     // default
     $altButtonTextColor:                   null,
     $altButtonIconColor:                   $altButtonTextColor,
-    $altButtonBorderColor:                 $altButtonBgColor,
+    $altButtonBorderColor:                 transparent,
     $altButtonBgImage:                     none, 
     $altButtonTextShadow:                  none, 
     $altButtonBoxShadow:                   none,
 
     // hover
+    $altButtonBgColorHover:                $altButtonBgColor,
     $altButtonTextColorHover:              $altButtonTextColor,
     $altButtonIconColorHover:              $altButtonIconColor,
-    $altButtonBorderColorHover:            $altButtonBgColorHover,
-    $altButtonBgImageHover:                none,                   
+    $altButtonBorderColorHover:            $altButtonBorderColor,
+    $altButtonBgImageHover:                linear-gradient(hsla(0,0%,100%,.15), hsla(0,0%,100%,.15)),                   
     $altButtonTextShadowHover:             none,
     $altButtonBoxShadowHover:              none,
 
     // active
+    $altButtonBgColorActive:               $altButtonBgColor,
     $altButtonTextColorActive:             $altButtonTextColor,
     $altButtonIconColorActive:             $altButtonIconColor,
-    $altButtonBorderColorActive:           $altButtonBgColorActive,
-    $altButtonBgImageActive:               none,                  
+    $altButtonBorderColorActive:           $altButtonBorderColor,
+    $altButtonBgImageActive:               linear-gradient(hsla(0,0%,0%,.10), hsla(0,0%,0%,.10)),                  
     $altButtonTextShadowActive:            none,
     $altButtonBoxShadowActive:             none,
     $altButtonOpacityActive:               null,

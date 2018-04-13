@@ -894,6 +894,7 @@ dvt.NBox.prototype.isAnimationAllowed = function() {
 dvt.NBox.prototype.setAnimationAllowed = function(animationAllowed) {
   this._animationAllowed = animationAllowed;
 };
+
 // APIs called by the ADF Faces drag source for dvt.NBox
 
 
@@ -964,6 +965,7 @@ dvt.NBox.prototype.initiateDrag = function() {
 dvt.NBox.prototype.dragDropEnd = function() {
   this._dragSource.dragDropEnd();
 };
+
 // APIs called by the ADF Faces drop target for dvt.NBox
 
 
@@ -999,6 +1001,7 @@ dvt.NBox.prototype.dragExit = function() {
 dvt.NBox.prototype.getDropSite = function(mouseX, mouseY) {
   return this._dropTarget.getDropSite(mouseX, mouseY);
 };
+
 // Copyright (c) 2013, 2016, Oracle and/or its affiliates. All rights reserved.
 
 
@@ -1345,6 +1348,7 @@ dvt.NBoxConstants.HEIGHT = 'height';
  */
 dvt.NBoxConstants.WIDTH = 'width';
 
+
 dvt.Bundle.addDefaultStrings(dvt.Bundle.NBOX_PREFIX, {
   'HIGHLIGHTED_COUNT': '{0}/{1}',
   'COMMA_SEP_LIST': '{0}, {1}',
@@ -1354,6 +1358,7 @@ dvt.Bundle.addDefaultStrings(dvt.Bundle.NBOX_PREFIX, {
   'ADDITIONAL_DATA': 'Additional Data',
   'SIZE': 'Size'
 });
+
 // Copyright (c) 2013, 2016, Oracle and/or its affiliates. All rights reserved.
 
 
@@ -1412,7 +1417,7 @@ DvtNBoxDefaults.VERSION_1 = {
       'scrollbarHandleColor': '#abb0b4',
       'scrollbarHandleHoverColor' : '#333333',
       'scrollbarHandleActiveColor' : '#333333'},
-    '__drawerDefaults' : {'background': '#e9e9e9',
+    '_drawerDefaults' : {'background': '#e9e9e9',
       'borderColor': '#bcc7d2',
       'borderRadius': 1,
       'headerBackground': 'linear-gradient(to bottom, #f5f5f5 0%, #f0f0f0 100%)',
@@ -1447,7 +1452,7 @@ DvtNBoxDefaults.VERSION_1 = {
     '__legendDefaults' : {'sectionStyle': 'color: #252525;' + dvt.BaseComponentDefaults.FONT_FAMILY_ALTA_BOLD_12,
       'itemStyle': 'color: #252525;' + dvt.BaseComponentDefaults.FONT_FAMILY_ALTA_12,
       'markerColor': '#808080'},
-    '__categoryNodeDefaults' : {'labelStyle': new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_ALTA)}
+    '_categoryNodeDefaults' : {'labelStyle': new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_ALTA)}
   },
   '__layout': {
     'componentGap': 8,
@@ -1490,6 +1495,7 @@ DvtNBoxDefaults.VERSION_1 = {
  */
 DvtNBoxDefaults.SKIN_ALTA = {
 };
+
 var DvtNBoxCell = function() {};
 
 dvt.Obj.createSubclass(DvtNBoxCell, dvt.Container);
@@ -1962,6 +1968,7 @@ DvtNBoxCell.prototype.getKeyboardFocusDisplayable = function() {
   }
   return null;
 };
+
 /**
  * An NBox node.
  * @param {dvt.NBox} nbox the parent nbox
@@ -2490,6 +2497,7 @@ DvtNBoxNode.prototype.getChildContainer = function(create) {
 DvtNBoxNode.prototype.setChildContainer = function(container) {
   this._childContainer = container;
 };
+
 var DvtNBoxNodeOverflow = function() {};
 
 dvt.Obj.createSubclass(DvtNBoxNodeOverflow, dvt.Container);
@@ -2749,6 +2757,7 @@ DvtNBoxNodeOverflow.prototype.getKeyboardFocusDisplayable = function() {
   var newNode = newPrevNode['__next'];
   return DvtNBoxDataUtils.getDisplayable(this._nbox, newNode);
 };
+
 var DvtNBoxCategoryNode = function() {};
 
 dvt.Obj.createSubclass(DvtNBoxCategoryNode, dvt.Container);
@@ -3244,6 +3253,7 @@ DvtNBoxCategoryNode.prototype.getKeyboardFocusDisplayable = function() {
   }
   return null;
 };
+
 /**
  * Category rollover handler for NBox
  * @param {function} callback A function that responds to component events.
@@ -3288,6 +3298,7 @@ DvtNBoxCategoryRolloverHandler.prototype.GetRolloutCallback = function(event, ob
   };
   return dvt.Obj.createCallback(this, callback);
 };
+
 var DvtNBoxDrawer = function() {};
 
 dvt.Obj.createSubclass(DvtNBoxDrawer, dvt.Container);
@@ -3552,6 +3563,7 @@ DvtNBoxDrawer.prototype.getKeyboardFocusDisplayable = function() {
     return DvtNBoxDataUtils.getDisplayable(this._nbox, groupNodeData);
   return null;
 };
+
 /**
  * Animation handler for NBox
  * @param {dvt.Context} context the platform specific context object
@@ -3615,6 +3627,7 @@ DvtNBoxDataAnimationHandler.prototype.getNewNBox = function() {
 DvtNBoxDataAnimationHandler.prototype.getAnimationDuration = function() {
   return DvtNBoxStyleUtils.getAnimationDuration(this._oldNBox);
 };
+
 /**
  * Drop Target event handler for dvt.NBox
  * @param {dvt.NBox} view
@@ -3671,6 +3684,7 @@ DvtNBoxDropTarget.prototype.getDropSite = function(mouseX, mouseY) {
   else
     return null;
 };
+
 // Copyright (c) 2014, 2016, Oracle and/or its affiliates. All rights reserved.
 /**
  * Event Manager for dvt.NBox.
@@ -3825,6 +3839,7 @@ DvtNBoxEventManager.prototype.GetTouchResponse = function() {
     return dvt.EventManager.TOUCH_RESPONSE_TOUCH_START;
   return dvt.EventManager.TOUCH_RESPONSE_AUTO;
 };
+
 /**
  * Keyboard handler for the NBox component
  * @param {dvt.EventManager} manager The owning dvt.EventManager
@@ -3979,6 +3994,7 @@ DvtNBoxKeyboardHandler.getNextNavigableCategoryNode = function(curr, event, navi
   }
   return next;
 };
+
 
 
 /**
@@ -4778,6 +4794,7 @@ DvtNBoxAutomation.prototype.getNodeIdFromIndex = function(index) {
 DvtNBoxAutomation.prototype.getNodeIndexFromId = function(id) {
   return DvtNBoxDataUtils.getNodeIndex(this._nBox, id);
 };
+
 // Copyright (c) 2013, 2017, Oracle and/or its affiliates. All rights reserved.
 
 
@@ -6084,6 +6101,7 @@ DvtNBoxRenderer._renderEmptyText = function(nbox, container, availSpace) {
       new dvt.Rectangle(availSpace.x, availSpace.y, availSpace.w, availSpace.h),
       nbox.getEventManager(), options['_statusMessageStyle']);
 };
+
 // Copyright (c) 2013, 2017, Oracle and/or its affiliates. All rights reserved.
 
 
@@ -6880,7 +6898,8 @@ DvtNBoxCellRenderer._addAccessibilityAttributes = function(nbox, cellData, cellC
       object.setAriaProperty(dvt.NBoxConstants.LABEL, desc);
   }
 };
-// Copyright (c) 2013, 2017, Oracle and/or its affiliates. All rights reserved.
+
+// Copyright (c) 2013, 2018, Oracle and/or its affiliates. All rights reserved.
 
 
 /**
@@ -7641,23 +7660,13 @@ DvtNBoxNodeRenderer._renderNodeLabels = function(nbox, node, nodeContainer, node
  * @return {nnumber} max label width
  */
 DvtNBoxNodeRenderer._getMaxLabelWidth = function(nbox, nodes) {
-  // create and add labels to temporary container
-  var container = new dvt.Container();
+  var nodeLabels = [];
   for (var n = 0; n < nodes.length; n++) {
     var node = nodes[n];
-    container.addChild(DvtNBoxDataUtils.getNodeLabel(nbox, node));
-    container.addChild(DvtNBoxDataUtils.getNodeSecondaryLabel(nbox, node));
+    nodeLabels.push(DvtNBoxDataUtils.getNodeLabel(nbox, node));
+    nodeLabels.push(DvtNBoxDataUtils.getNodeSecondaryLabel(nbox, node));
   }
-  nbox.addChild(container);
-  var width = container.getDimensions().w;
-
-  // clean up container
-  while (container.getNumChildren() > 0) {
-    container.removeChild(container.getChildAt(0));
-  }
-  nbox.removeChild(container);
-
-  return width;
+  return dvt.TextUtils.getMaxTextDimensions(nodeLabels).w;
 };
 
 /**
@@ -7931,6 +7940,7 @@ DvtNBoxNodeRenderer._addAccessibilityAttributes = function(nbox, object) {
       object.setAriaProperty(dvt.NBoxConstants.LABEL, desc);
   }
 };
+
 // Copyright (c) 2013, 2017, Oracle and/or its affiliates. All rights reserved.
 
 
@@ -8276,6 +8286,7 @@ DvtNBoxCategoryNodeRenderer._addAccessibilityAttributes = function(nbox, object)
       object.setAriaProperty(dvt.NBoxConstants.LABEL, desc);
   }
 };
+
 // Copyright (c) 2013, 2017, Oracle and/or its affiliates. All rights reserved.
 
 
@@ -8704,6 +8715,7 @@ DvtNBoxDrawerRenderer._addAccessibilityAttributes = function(nbox, data, drawerC
       object.setAriaProperty(dvt.NBoxConstants.LABEL, desc);
   }
 };
+
 /**
  * Data related utility functions for dvt.NBox.
  * @class
@@ -9050,7 +9062,8 @@ DvtNBoxDataUtils.getNode = function(nbox, nodeIndex) {
  * @return {number} the node index
  */
 DvtNBoxDataUtils.getNodeIndex = function(nbox, id) {
-  return nbox.getOptions()['__nodeMap'][id];
+  var nodeMap = nbox.getOptions()['__nodeMap'];
+  return nodeMap ? nodeMap[id] : -1;
 };
 
 
@@ -9707,6 +9720,7 @@ DvtNBoxDataUtils.getNextNavigableNode = function(nbox, object, event) {
 };
 
 
+
 // Copyright (c) 2013, 2016, Oracle and/or its affiliates. All rights reserved.
 
 
@@ -10237,7 +10251,7 @@ DvtNBoxStyleUtils.getStyledCategoryIndicatorIcon = function(nbox, categoryNode) 
  * @return {string} the background for the drawer
  */
 DvtNBoxStyleUtils.getDrawerBackground = function(nbox) {
-  return nbox.getOptions()[dvt.NBoxConstants.STYLE_DEFAULTS]['__drawerDefaults']['background'];
+  return nbox.getOptions()[dvt.NBoxConstants.STYLE_DEFAULTS]['_drawerDefaults']['background'];
 };
 
 
@@ -10247,7 +10261,7 @@ DvtNBoxStyleUtils.getDrawerBackground = function(nbox) {
  * @return {string} the header background for the drawer
  */
 DvtNBoxStyleUtils.getDrawerHeaderBackground = function(nbox) {
-  return nbox.getOptions()[dvt.NBoxConstants.STYLE_DEFAULTS]['__drawerDefaults']['headerBackground'];
+  return nbox.getOptions()[dvt.NBoxConstants.STYLE_DEFAULTS]['_drawerDefaults']['headerBackground'];
 };
 
 
@@ -10257,7 +10271,7 @@ DvtNBoxStyleUtils.getDrawerHeaderBackground = function(nbox) {
  * @return {string} the border color for the drawer
  */
 DvtNBoxStyleUtils.getDrawerBorderColor = function(nbox) {
-  return nbox.getOptions()[dvt.NBoxConstants.STYLE_DEFAULTS]['__drawerDefaults'][dvt.NBoxConstants.BORDER_COLOR];
+  return nbox.getOptions()[dvt.NBoxConstants.STYLE_DEFAULTS]['_drawerDefaults'][dvt.NBoxConstants.BORDER_COLOR];
 };
 
 
@@ -10267,7 +10281,7 @@ DvtNBoxStyleUtils.getDrawerBorderColor = function(nbox) {
  * @return {number} the border radius for the drawer
  */
 DvtNBoxStyleUtils.getDrawerBorderRadius = function(nbox) {
-  return nbox.getOptions()[dvt.NBoxConstants.STYLE_DEFAULTS]['__drawerDefaults'][dvt.NBoxConstants.BORDER_RADIUS];
+  return nbox.getOptions()[dvt.NBoxConstants.STYLE_DEFAULTS]['_drawerDefaults'][dvt.NBoxConstants.BORDER_RADIUS];
 };
 
 
@@ -10277,7 +10291,7 @@ DvtNBoxStyleUtils.getDrawerBorderRadius = function(nbox) {
  * @return {dvt.CSSStyle} the label style for the drawer
  */
 DvtNBoxStyleUtils.getDrawerLabelStyle = function(nbox) {
-  return nbox.getOptions()[dvt.NBoxConstants.STYLE_DEFAULTS]['__drawerDefaults'][dvt.NBoxConstants.LABEL_STYLE];
+  return nbox.getOptions()[dvt.NBoxConstants.STYLE_DEFAULTS]['_drawerDefaults'][dvt.NBoxConstants.LABEL_STYLE];
 };
 
 
@@ -10287,7 +10301,7 @@ DvtNBoxStyleUtils.getDrawerLabelStyle = function(nbox) {
  * @return {dvt.CSSStyle} the count label style the drawer
  */
 DvtNBoxStyleUtils.getDrawerCountLabelStyle = function(nbox) {
-  return nbox.getOptions()[dvt.NBoxConstants.STYLE_DEFAULTS]['__drawerDefaults']['countLabelStyle'];
+  return nbox.getOptions()[dvt.NBoxConstants.STYLE_DEFAULTS]['_drawerDefaults']['countLabelStyle'];
 };
 
 
@@ -10297,7 +10311,7 @@ DvtNBoxStyleUtils.getDrawerCountLabelStyle = function(nbox) {
  * @return {number} the count border radius for the drawer
  */
 DvtNBoxStyleUtils.getDrawerCountBorderRadius = function(nbox) {
-  return nbox.getOptions()[dvt.NBoxConstants.STYLE_DEFAULTS]['__drawerDefaults']['countBorderRadius'];
+  return nbox.getOptions()[dvt.NBoxConstants.STYLE_DEFAULTS]['_drawerDefaults']['countBorderRadius'];
 };
 
 
@@ -10307,7 +10321,7 @@ DvtNBoxStyleUtils.getDrawerCountBorderRadius = function(nbox) {
  * @return {dvt.CSSStyle} the label style for category nodes
  */
 DvtNBoxStyleUtils.getCategoryNodeLabelStyle = function(nbox) {
-  return nbox.getOptions()[dvt.NBoxConstants.STYLE_DEFAULTS]['__categoryNodeDefaults']['labelStyle'];
+  return nbox.getOptions()[dvt.NBoxConstants.STYLE_DEFAULTS]['_categoryNodeDefaults']['labelStyle'];
 };
 
 
@@ -10364,6 +10378,7 @@ DvtNBoxStyleUtils.getLabelHalign = function(nbox, data) {
     return rtl ? dvt.OutputText.H_ALIGN_RIGHT : dvt.OutputText.H_ALIGN_LEFT;
   }
 };
+
 dvt.exportProperty(dvt, 'NBox', dvt.NBox);
 dvt.exportProperty(dvt.NBox, 'newInstance', dvt.NBox.newInstance);
 dvt.exportProperty(dvt.NBox.prototype, 'render', dvt.NBox.prototype.render);
@@ -10382,7 +10397,7 @@ dvt.exportProperty(DvtNBoxAutomation.prototype, 'getDialogNode', DvtNBoxAutomati
 dvt.exportProperty(DvtNBoxAutomation.prototype, 'getNodeIdFromIndex', DvtNBoxAutomation.prototype.getNodeIdFromIndex);
 dvt.exportProperty(DvtNBoxAutomation.prototype, 'getNodeIndexFromId', DvtNBoxAutomation.prototype.getNodeIndexFromId);
 
-})(dvt);
 
+})(dvt);
   return dvt;
 });

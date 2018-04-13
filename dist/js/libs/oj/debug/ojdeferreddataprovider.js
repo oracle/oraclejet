@@ -1,4 +1,5 @@
 /**
+ * @license
  * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
@@ -10,12 +11,12 @@
  */
 define(['ojs/ojcore', 'jquery', 'knockout', 'ojs/ojcomponentcore', 'ojs/ojeventtarget', 'ojs/ojdataprovider'], function(oj, $, ko)
 {
-var DeferredDataProvider = (function () {
+var DeferredDataProvider = /** @class */ (function () {
     function DeferredDataProvider(_dataProvider, _capabilityFunc) {
         this._dataProvider = _dataProvider;
         this._capabilityFunc = _capabilityFunc;
         this._DATAPROVIDER = 'dataProvider';
-        this.AsyncIterable = (function () {
+        this.AsyncIterable = /** @class */ (function () {
             function class_1(_asyncIterator) {
                 this._asyncIterator = _asyncIterator;
                 this[Symbol.asyncIterator] = function () {
@@ -24,7 +25,7 @@ var DeferredDataProvider = (function () {
             }
             return class_1;
         }());
-        this.AsyncIterator = (function () {
+        this.AsyncIterator = /** @class */ (function () {
             function class_2(_asyncIteratorPromise) {
                 this._asyncIteratorPromise = _asyncIteratorPromise;
             }
@@ -37,6 +38,9 @@ var DeferredDataProvider = (function () {
             return class_2;
         }());
     }
+    /**
+     * Fetch the first block of data
+     */
     DeferredDataProvider.prototype.fetchFirst = function (params) {
         var asyncIteratorPromise = this._getDataProvider().then(function (dataProvider) {
             return dataProvider.fetchFirst(params)[Symbol.asyncIterator]();
@@ -44,37 +48,57 @@ var DeferredDataProvider = (function () {
         return new this.AsyncIterable(new this.AsyncIterator(asyncIteratorPromise));
     };
     ;
+    /**
+     * Fetch rows by keys
+     */
     DeferredDataProvider.prototype.fetchByKeys = function (params) {
         return this._getDataProvider().then(function (dataProvider) {
             return dataProvider.fetchByKeys(params);
         });
     };
+    /**
+     * Check if rows are contained by keys
+     */
     DeferredDataProvider.prototype.containsKeys = function (params) {
         return this._getDataProvider().then(function (dataProvider) {
             return dataProvider.containsKeys(params);
         });
     };
+    /**
+     * Fetch rows by offset
+     */
     DeferredDataProvider.prototype.fetchByOffset = function (params) {
         return this._getDataProvider().then(function (dataProvider) {
             return dataProvider.fetchByOffset(params);
         });
     };
+    /**
+     * Returns the total size of the data
+     */
     DeferredDataProvider.prototype.getTotalSize = function () {
         return this._getDataProvider().then(function (dataProvider) {
             return dataProvider.getTotalSize();
         });
     };
+    /**
+     * Returns a string that indicates if this data provider is empty.
+     * Returns "unknown" if the dataProvider has not resolved yet.
+     */
     DeferredDataProvider.prototype.isEmpty = function () {
         if (!this[this._DATAPROVIDER])
             return "unknown";
         else
             return this[this._DATAPROVIDER].isEmpty();
     };
+    /**
+     * Determines whether this DataProvider supports certain feature.
+     */
     DeferredDataProvider.prototype.getCapability = function (capabilityName) {
         if (this._capabilityFunc)
             return this._capabilityFunc(capabilityName);
         return null;
     };
+    /** EVENT TARGET IMPLEMENTATION **/
     DeferredDataProvider.prototype.addEventListener = function (eventType, listener) {
         this._getDataProvider().then(function (dataProvider) {
             dataProvider.addEventListener(eventType, listener);
@@ -93,6 +117,9 @@ var DeferredDataProvider = (function () {
         return this[this._DATAPROVIDER].dispatchEvent(evt);
     };
     ;
+    /**
+     * Returns the resolved dataProvider for this instance
+     */
     DeferredDataProvider.prototype._getDataProvider = function () {
         var self = this;
         return this._dataProvider.then(function (dataProvider) {
@@ -108,13 +135,6 @@ var DeferredDataProvider = (function () {
     return DeferredDataProvider;
 }());
 oj['DeferredDataProvider'] = DeferredDataProvider;
-oj.Object.exportPrototypeSymbol('DeferredDataProvider.prototype.containsKeys', { containsKeys: DeferredDataProvider.prototype.containsKeys });
-oj.Object.exportPrototypeSymbol('DeferredDataProvider.prototype.fetchByKeys', { fetchByKeys: DeferredDataProvider.prototype.fetchByKeys });
-oj.Object.exportPrototypeSymbol('DeferredDataProvider.prototype.fetchByOffset', { fetchByOffset: DeferredDataProvider.prototype.fetchByOffset });
-oj.Object.exportPrototypeSymbol('DeferredDataProvider.prototype.fetchFirst', { fetchFirst: DeferredDataProvider.prototype.fetchFirst });
-oj.Object.exportPrototypeSymbol('DeferredDataProvider.prototype.getCapability', { getCapability: DeferredDataProvider.prototype.getCapability });
-oj.Object.exportPrototypeSymbol('DeferredDataProvider.prototype.getTotalSize', { getTotalSize: DeferredDataProvider.prototype.getTotalSize });
-oj.Object.exportPrototypeSymbol('DeferredDataProvider.prototype.isEmpty', { isEmpty: DeferredDataProvider.prototype.isEmpty });
 
 /**
  * Copyright (c) 2017, Oracle and/or its affiliates.
@@ -130,13 +150,19 @@ oj.Object.exportPrototypeSymbol('DeferredDataProvider.prototype.isEmpty', { isEm
 /*jslint browser: true,devel:true*/
 /**
  * @ojstatus preview
+ * @since 4.2.0
  * @export
  * @class oj.DeferredDataProvider
  * @implements oj.DataProvider
  * @classdesc This class implements {@link oj.DataProvider}.  
- *            This object represents a data provider that is created with deferred data and can be used by any component that requires a data provider that will be created with data from a Promise, such as [oj.ojChart]{@link oj.ojChart}
+ *            This object represents a data provider that is created with deferred data and can be used by any component that requires a data provider that will be created with data from a Promise.
  * @param {Promise.<oj.DataProvider>} dataProvider A promise that resolves to an oj.DataProvider
  * @param {Function} capabilityFunc An function that implements {@link oj.DataProvider#getCapability}.
+ * @ojsignature [{target: "Type",
+ *               value: "class DeferredDataProvider<K, D> implements DataProvider<K, D>"},
+ *               {target: "Type",
+ *               value: "Promise<oj.DataProvider<K, D>>[]", 
+ *               for: "dataProvider"}]
  * @example
  * // DeferredDataProvider is used in cases where the data for the data provider will be
  * // provided asynchronously. In the example below, let getDeferredData() be any function
@@ -165,6 +191,8 @@ oj.Object.exportPrototypeSymbol('DeferredDataProvider.prototype.isEmpty', { isEm
  * @instance
  * @method
  * @name containsKeys
+ * @ojsignature {target: "Type",
+ *               value: "(params: FetchByKeysParameters<K>): Promise<ContainsKeysResults<K>>"}
  */
   
 /**
@@ -179,6 +207,8 @@ oj.Object.exportPrototypeSymbol('DeferredDataProvider.prototype.isEmpty', { isEm
  * @instance
  * @method
  * @name fetchByKeys
+ * @ojsignature {target: "Type",
+ *               value: "(params: FetchByKeysParameters<K>): Promise<FetchByKeysResults<K, D>>"}
  */
 
 /**
@@ -193,6 +223,8 @@ oj.Object.exportPrototypeSymbol('DeferredDataProvider.prototype.isEmpty', { isEm
  * @instance
  * @method
  * @name fetchByOffset
+ * @ojsignature {target: "Type",
+ *               value: "(params: FetchByOffsetParameters<D>): Promise<FetchByOffsetResults<K, D>>"}
  */  
   
 /**
@@ -208,6 +240,8 @@ oj.Object.exportPrototypeSymbol('DeferredDataProvider.prototype.isEmpty', { isEm
  * @instance
  * @method
  * @name fetchFirst
+ * @ojsignature {target: "Type",
+ *               value: "<F extends FetchListResult<K, D>>(params?: FetchListParameters<D>): AsyncIterable<F>"}
  */
   
 /**
@@ -241,7 +275,7 @@ oj.Object.exportPrototypeSymbol('DeferredDataProvider.prototype.isEmpty', { isEm
 /**
  * Return a string that indicates if this data provider is empty 
  * @ojstatus preview
- * @return {string} a string that indicates if this data provider is empty. Valid values are:
+ * @return {"yes"|"no"|"unknown"} a string that indicates if this data provider is empty. Valid values are:
  *                  "yes": this data provider is empty.
  *                  "no": this data provider is not empty.
  *                  "unknown": it is not known if this data provider is empty until it has resolved, and a fetch is made.

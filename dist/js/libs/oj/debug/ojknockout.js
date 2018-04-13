@@ -1,4 +1,5 @@
 /**
+ * @license
  * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
@@ -85,6 +86,8 @@ GlobalChangeQueue.prototype._deliverChangesImpl = function()
  * @param {?(Object|string)=} options - property object
  * @see oj.ComponentBinding.create
  * @constructor
+ * @since 1.0
+ * @hideconstructor
  */
 oj.ComponentBinding = function(name, options)
 {
@@ -221,6 +224,7 @@ oj.ComponentBinding.getDefaultInstance = function()
  *        The function will receive the same parameters as the 'afterCreate' callback above.
  *   </li>
  * </ul>
+ * @return {void}
  * @export
  */
 oj.ComponentBinding.prototype.setupManagedAttributes = function(opts)
@@ -242,6 +246,7 @@ oj.ComponentBinding.prototype.setupManagedAttributes = function(opts)
  * Calling this method is optional - the changes will be delivered after a 1ms timeout
  * if this method is never invoked. However, you may call this method to speed up
  * component updates when the aplication code is done updating the view models.
+ * @return {void}
  * @export
  */
 oj.ComponentBinding.deliverChanges = function()
@@ -1016,23 +1021,24 @@ oj.ComponentBinding._OPTION_MAP = '_ojOptions';
 
 
 /**
- * Redefine ko.removeNode, so that JET components can implement custom _destroy() behavior when
- * the cmponent's nore is being removed (see ).
+ * Redefine ko.utils.domNodeDisposal.cleanExternalData, so that JET components can avoid removing the wrapper node during
+ * KO cleanup
  * @private
  */
  (function()
  {
-    var name = 'removeNode';
-    var wrapped = ko[name];
+    var name = 'cleanExternalData';
+    var disposal = ko.utils.domNodeDisposal;
+    var wrapped = disposal[name];
     
-    ko[name]  = function(node) 
+    disposal[name] = function(node) 
     {
       // This module doe snot have an explicit dependency on ojcomponentcore,
       // so check for the oj.Components instance dynamically
-      var ojComponents = oj.Components;
-      if (ojComponents)
+      var func = oj.DomUtils ? oj.DomUtils.setInKoCleanExternal: null;
+      if (func)
       {
-        oj.DomUtils.setInKoRemoveNode(node);
+        func(node);
       }
       try
       {
@@ -1040,9 +1046,9 @@ oj.ComponentBinding._OPTION_MAP = '_ojOptions';
       }
       finally
       {
-        if (ojComponents)
+        if (func)
         {
-          oj.DomUtils.setInKoRemoveNode(null);
+          func(null);
         }
       }
     };
@@ -1913,455 +1919,386 @@ oj.ComponentBinding.getDefaultInstance().setupManagedAttributes({
 })();
 
 
-/*!
-  Knockout Fast Foreach v0.6.0 (2016-07-28T11:02:54.197Z)
-  By: Brian M Hunt (C) 2015 | License: MIT
-
-  Adds `fastForEach` to `ko.bindingHandlers`.
-  
-  Modification notice: The code is obtained from https://github.com/brianmhunt/knockout-fast-foreach 
-  and modified by Oracle JET team to be included into Oracle JET project.
-*/
-
-(function() {
-  "use strict";
-// index.js
-// --------
-// Fast For Each
-//
-// Employing sound techniques to make a faster Knockout foreach binding.
-// --------
-
-//      Utilities
-var MAX_LIST_SIZE = 9007199254740991;
-
-// from https://github.com/jonschlinkert/is-plain-object
-function isPlainObject(o) {
-  return !!o && typeof o === 'object' && o.constructor === Object;
-}
-
-// From knockout/src/virtualElements.js
-var commentNodesHaveTextProperty = document && document.createComment("test").text === "<!--test-->";
-var startCommentRegex = commentNodesHaveTextProperty ? /^<!--\s*ko(?:\s+([\s\S]+))?\s*-->$/ : /^\s*ko(?:\s+([\s\S]+))?\s*$/;
-var supportsDocumentFragment = document && typeof document.createDocumentFragment === "function";
-function isVirtualNode(node) {
-  return (node.nodeType === 8) && startCommentRegex.test(commentNodesHaveTextProperty ? node.text : node.nodeValue);
-}
-
-
-// Get a copy of the (possibly virtual) child nodes of the given element,
-// put them into a container, then empty the given node.
-function makeTemplateNode(sourceNode) {
-  var container = document.createElement("div");
-  var parentNode;
-  if(sourceNode['_templateNode'] && sourceNode['_templateNode'].content) 
-  {
-    // For e.g. <template> tags
-    parentNode = sourceNode['_templateNode'].content; //parentNode = sourceNode.content;
-  }
-  else if (sourceNode['_templateNode']) 
-  {
-    parentNode = sourceNode['_templateNode'];
-  }
-  
-  ko.utils.arrayForEach(ko.virtualElements.childNodes(parentNode), function (child) {
-    // FIXME - This cloneNode could be expensive; we may prefer to iterate over the
-    // parentNode children in reverse (so as not to foul the indexes as childNodes are
-    // removed from parentNode when inserted into the container)
-    if (child) {
-      container.insertBefore(child.cloneNode(true), null);
-    }
-  });
-  return container;
-}
-
-// Mimic a KO change item 'add'
-function valueToChangeAddItem(value, index) {
-  return {
-    status: 'added',
-    value: value,
-    index: index
-  };
-}
-
-// KO 3.4 doesn't seem to export this utility function so it's here just to be sure
-function createSymbolOrString(identifier) {
-  //return typeof Symbol === 'function' ? Symbol(identifier) : identifier;
-  return identifier;
-}
-
-// Array.prototype.map doesn't execute the mapping function on indices that don't have assigned values
-// so it would be a NOP for new Array(5).  Call this for loop based version instead
-function arrayMap(array, mapping) {
-  var result;
-  if (array) {
-    result = [];
-    for (var i = 0; i < array.length; i++) {
-      result.push(mapping(array[i], i, array));
-    }
-  }
-  return result;
-}
-
-// store a symbol for caching the pending delete info index in the data item objects
-var PENDING_DELETE_INDEX_KEY = createSymbolOrString("_ko_ffe_pending_delete_index");
-
 /**
- * @constructor
- */
-function OjForEach(spec) {
-  this.element = spec.element;
-  this.container = isVirtualNode(this.element) ?
-                   this.element.parentNode : this.element;
-  this['$context'] = spec['$context'];
-  this['data'] = spec['data'];
-  this['as'] = spec['as'];
-  this['templateNode'] = makeTemplateNode(spec.element);
-  this.changeQueue = [];
-  this.firstLastNodesList = [];
-  this.indexesToDelete = [];
-  this.rendering_queued = false;
-  this.pendingDeletes = [];
-
-  // Remove existing content.
-  ko.virtualElements['emptyNode'](this.element);
-
-  // Prime content
-  var primeData = ko.unwrap(this['data']);
-  this.onArrayChange(arrayMap(primeData, valueToChangeAddItem), true);
-
-  // Watch for changes
-  if (ko.isObservable(this['data'])) {
-    if (!this['data'].indexOf) {
-      // Make sure the observable is trackable.
-      this['data'] = this['data']['extend']({ 'trackArrayChanges': true });
-    }
-    this.changeSubs = this['data']['subscribe'](this.onArrayChange, this, 'arrayChange');
-  }
-}
-
-OjForEach.PENDING_DELETE_INDEX_KEY = PENDING_DELETE_INDEX_KEY;
-
-OjForEach.prototype.dispose = function () {
-  if (this.changeSubs) {
-    this.changeSubs['dispose']();
-  }
-  this.flushPendingDeletes();
-};
-
-
-// If the array changes we register the change.
-OjForEach.prototype.onArrayChange = function (changeSet, isInitial) {
-  var self = this;
-  var changeMap = {
-    'added': [],
-    'deleted': []
-  };
-
-  // knockout array change notification index handling:
-  // - sends the original array indexes for deletes
-  // - sends the new array indexes for adds
-  // - sorts them all by index in ascending order
-  // because of this, when checking for possible batch additions, any delete can be between to adds with neighboring indexes, so only additions should be checked
-  for (var i = 0, len = changeSet.length; i < len; i++) {
-
-    if (changeMap['added'].length && changeSet[i].status == 'added') {
-      var lastAdd = changeMap['added'][changeMap['added'].length - 1];
-      var lastIndex = lastAdd.isBatch ? lastAdd.index + lastAdd.values.length - 1 : lastAdd.index;
-      if (lastIndex + 1 == changeSet[i].index) {
-        if (!lastAdd.isBatch) {
-          // transform the last addition into a batch addition object
-          lastAdd = {
-            isBatch: true,
-            status: 'added',
-            index: lastAdd.index,
-            values: [lastAdd.value]
-          };
-          changeMap['added'].splice(changeMap['added'].length - 1, 1, lastAdd);
-        }
-        lastAdd.values.push(changeSet[i].value);
-        continue;
-      }
-    }
-
-    changeMap[changeSet[i].status].push(changeSet[i]);
-  }
-
-  if (changeMap['deleted'].length > 0) {
-    this.changeQueue.push.apply(this.changeQueue, changeMap['deleted']);
-    this.changeQueue.push({ status: 'clearDeletedIndexes' });
-  }
-  this.changeQueue.push.apply(this.changeQueue, changeMap['added']);
-  // Once a change is registered, the ticking count-down starts for the processQueue.
-  if (this.changeQueue.length > 0 && !this.rendering_queued) {
-    this.rendering_queued = true;
-    self.processQueue();
-  }
-};
-
-
-// Reflect all the changes in the queue in the DOM, then wipe the queue.
-OjForEach.prototype.processQueue = function () {
-  var self = this;
-  var lowestIndexChanged = MAX_LIST_SIZE;
-
-  ko.utils.arrayForEach(this.changeQueue, function (changeItem) {
-    if (typeof changeItem.index === 'number') {
-      lowestIndexChanged = Math.min(lowestIndexChanged, changeItem.index);
-    }
-    // console.log(self['data'](), "CI", JSON.stringify(changeItem, null, 2), JSON.stringify($(self.element).text()))
-    self[changeItem.status](changeItem);
-    // console.log("  ==> ", JSON.stringify($(self.element).text()))
-  });
-  this.flushPendingDeletes();
-  this.rendering_queued = false;
-
-  // Update our indexes.
-  this.updateIndexes(lowestIndexChanged);
-
-  this.changeQueue = [];
-};
-
-
-// Process a changeItem with {status: 'added', ...}
-/**
- * @expose
- * @ignore 
- */
-OjForEach.prototype.added = function (changeItem) {
-  var index = changeItem.index;
-  var valuesToAdd = changeItem.isBatch ? changeItem.values : [changeItem.value];
-  var referenceElement = this.getLastNodeBeforeIndex(index);
-  // gather all childnodes for a possible batch insertion
-  var allChildNodes = [];
-
-  for (var i = 0, len = valuesToAdd.length; i < len; ++i) {
-    var childNodes;
-
-    // we check if we have a pending delete with reusable nodesets for this data, and if yes, we reuse one nodeset
-    var pendingDelete = this.getPendingDeleteFor(valuesToAdd[i]);
-    if (pendingDelete && pendingDelete.nodesets.length) {
-      childNodes = pendingDelete.nodesets.pop();
-    } else {
-      var templateClone = this['templateNode'].cloneNode(true);
-      var current = {
-          'data': valuesToAdd[i],
-          'index': index + i,
-          'observableIndex': ko.observable()
-        };
-      var childContext = this['$context']['extend']({
-        '$root': undefined,
-        '$parent': undefined,
-        '$parents': undefined,
-        '$current': current
-      });
-      if (this['as']) {
-        childContext[this['as']] = current;
-      }
-
-      // apply bindings first, and then process child nodes, because bindings can add childnodes
-      ko.applyBindingsToDescendants(childContext, templateClone);
-
-      childNodes = ko.virtualElements.childNodes(templateClone);
-    }
-
-    // Note discussion at https://github.com/angular/angular.js/issues/7851
-    allChildNodes.push.apply(allChildNodes, Array.prototype.slice.call(childNodes));
-    this.firstLastNodesList.splice(index + i, 0, { first: childNodes[0], last: childNodes[childNodes.length - 1] });
-  }
-
-  this.insertAllAfter(allChildNodes, referenceElement);
-};
-
-OjForEach.prototype.getNodesForIndex = function (index) {
-  var result = [],
-    ptr = this.firstLastNodesList[index].first,
-    last = this.firstLastNodesList[index].last;
-  result.push(ptr);
-  while (ptr && ptr !== last) {
-    ptr = ptr.nextSibling;
-    result.push(ptr);
-  }
-  return result;
-};
-
-OjForEach.prototype.getLastNodeBeforeIndex = function (index) {
-  if (index < 1 || index - 1 >= this.firstLastNodesList.length)
-    return null;
-  return this.firstLastNodesList[index - 1].last;
-};
-
-OjForEach.prototype.insertAllAfter = function (nodeOrNodeArrayToInsert, insertAfterNode) {
-  var frag, len, i,
-    containerNode = this.element;
-
-  // poor man's node and array check, should be enough for this
-  if (nodeOrNodeArrayToInsert.nodeType === undefined && nodeOrNodeArrayToInsert.length === undefined) {
-    throw new Error("Expected a single node or a node array");
-  }
-  if (nodeOrNodeArrayToInsert.nodeType !== undefined) {
-    ko.virtualElements.insertAfter(containerNode, nodeOrNodeArrayToInsert, insertAfterNode);
-    return [nodeOrNodeArrayToInsert];
-  } else if (nodeOrNodeArrayToInsert.length === 1) {
-    ko.virtualElements.insertAfter(containerNode, nodeOrNodeArrayToInsert[0], insertAfterNode);
-  } else if (supportsDocumentFragment) {
-    frag = document.createDocumentFragment();
-
-    for (i = 0, len = nodeOrNodeArrayToInsert.length; i !== len; ++i) {
-      frag.appendChild(nodeOrNodeArrayToInsert[i]);
-    }
-    ko.virtualElements.insertAfter(containerNode, frag, insertAfterNode);
-  } else {
-    // Nodes are inserted in reverse order - pushed down immediately after
-    // the last node for the previous item or as the first node of element.
-    for (i = nodeOrNodeArrayToInsert.length - 1; i >= 0; --i) {
-      var child = nodeOrNodeArrayToInsert[i];
-      if (!child) { break; }
-      ko.virtualElements.insertAfter(containerNode, child, insertAfterNode);
-    }
-  }
-  return nodeOrNodeArrayToInsert;
-};
-
-// checks if the deleted data item should be handled with delay for a possible reuse at additions
-OjForEach.prototype.shouldDelayDeletion = function (data) {
-  return data && (typeof data === "object" || typeof data === "function");
-};
-
-// gets the pending deletion info for this data item
-OjForEach.prototype.getPendingDeleteFor = function (data) {
-  var index = data && data[PENDING_DELETE_INDEX_KEY];
-  if (index === undefined) return null;
-  return this.pendingDeletes[index];
-};
-
-// tries to find the existing pending delete info for this data item, and if it can't, it registeres one
-OjForEach.prototype.getOrCreatePendingDeleteFor = function (data) {
-  var pd = this.getPendingDeleteFor(data);
-  if (pd) {
-    return pd;
-  }
-  pd = {
-    data: data,
-    nodesets: []
-  };
-  data[PENDING_DELETE_INDEX_KEY] = this.pendingDeletes.length;
-  this.pendingDeletes.push(pd);
-  return pd;
-};
-
-// Process a changeItem with {status: 'deleted', ...}
-/**
- * @expose
  * @ignore
  */
-OjForEach.prototype.deleted = function (changeItem) {
-  // if we should delay the deletion of this data, we add the nodeset to the pending delete info object
-  if (this.shouldDelayDeletion(changeItem.value)) {
-    var pd = this.getOrCreatePendingDeleteFor(changeItem.value);
-    pd.nodesets.push(this.getNodesForIndex(changeItem.index));
-  } else { // simple data, just remove the nodes
-    this.removeNodes(this.getNodesForIndex(changeItem.index));
-  }
-  this.indexesToDelete.push(changeItem.index);
-};
+oj.__KO_CUSTOM_BINDING_PROVIDER_INSTANCE.addPostprocessor({'getBindingAccessors': _replaceComponentBindingWithV2});
 
-// removes a set of nodes from the DOM
-OjForEach.prototype.removeNodes = function (nodes) {
-  if (!nodes.length) { return; }
 
-  var removeFn = function () {
-    var parent = nodes[0].parentNode;
-    for (var i = nodes.length - 1; i >= 0; --i) {
-      ko.cleanNode(nodes[i]);
-      parent.removeChild(nodes[i]);
-    }
-  };
 
-  removeFn();
-};
-
-// flushes the pending delete info store
-// this should be called after queue processing has finished, so that data items and remaining (not reused) nodesets get cleaned up
-// we also call it on dispose not to leave any mess
-OjForEach.prototype.flushPendingDeletes = function () {
-  for (var i = 0, len = this.pendingDeletes.length; i != len; ++i) {
-    var pd = this.pendingDeletes[i];
-    while (pd.nodesets.length) {
-      this.removeNodes(pd.nodesets.pop());
-    }
-    if (pd.data && pd.data[PENDING_DELETE_INDEX_KEY] !== undefined)
-      delete pd.data[PENDING_DELETE_INDEX_KEY];
-  }
-  this.pendingDeletes = [];
-};
-
-// We batch our deletion of item indexes in our parallel array.
-// See brianmhunt/knockout-fast-foreach#6/#8
 /**
- * @expose
- * @ignore 
+ * This function modifies the return value of getBindingAccessors()
+ * to separate bindings for each tracked attributess in the 'inline' ojComponent binding
+ * @param node
+ * @param bindingContext
+ * @param accessorMap
+ * @param wrapped
+ * @ignore
  */
-OjForEach.prototype.clearDeletedIndexes = function () {
-  // We iterate in reverse on the presumption (following the unit tests) that KO's diff engine
-  // processes diffs (esp. deletes) monotonically ascending i.e. from index 0 -> N.
-  for (var i = this.indexesToDelete.length - 1; i >= 0; --i) {
-    this.firstLastNodesList.splice(this.indexesToDelete[i], 1);
+function _replaceComponentBindingWithV2(node, bindingContext, accessorMap, wrapped)
+{
+  if (accessorMap == null)
+  {
+    return null;
   }
-  this.indexesToDelete = [];
-};
 
-
-OjForEach.prototype.getContextStartingFrom = function (node) {
-  var ctx;
-  while (node) {
-    ctx = ko.contextFor(node);
-    if (ctx) { return ctx; }
-    node = node.nextSibling;
+  // Remove the old (pre-V2) binding from the accessor map
+  var bindingName = _findOwnBinding(accessorMap)
+  if (bindingName != null)
+  {
+    accessorMap = _modifyOjComponentBinding(node, bindingName, wrapped, bindingContext, accessorMap);
   }
-};
 
+  return accessorMap;
+}
 
-OjForEach.prototype.updateIndexes = function (fromIndex) {
-  var ctx;
-  for (var i = fromIndex, len = this.firstLastNodesList.length; i < len; ++i) {
-    ctx = this.getContextStartingFrom(this.firstLastNodesList[i].first);
-    if (ctx && ctx['$current']) {
-      ctx['$current']['observableIndex'](i);
+/**
+ * @ignore
+ */
+function _findOwnBinding(accessorMap)
+{
+  var keys = Object.keys(accessorMap)
+  for (var i=-0; i<keys.length; i++)
+  {
+    var key = keys[i];
+    if (oj.ComponentBinding._isNameRegistered(key))
+    {
+      return key;
     }
   }
-};
+  return null;
+}
 
-ko['bindingHandlers']['_ojBindForEach_'] = {
-  // Valid valueAccessors:
-  //    []
-  //    ko.observable([])
-  //    ko.observableArray([])
-  //    ko.computed
-  //    {data: array, name: string, as: string}
-  'init': function init(element, valueAccessor, bindings, vm, context) {
-    var ffe, value = valueAccessor();
-    if (isPlainObject(value)) {
-      value.element = value.element || element;
-      value['$context'] = context;
-      ffe = new OjForEach(value);
-    } else {
-      ffe = new OjForEach({
-        element: element,
-        'data': ko.unwrap(context['$rawData']) === value ? context['$rawData'] : value,
-        '$context': context
-      });
+/**
+ * @param node
+ * @param bindingName
+ * @param wrapped
+ * @param bindingContext
+ * @param accessorMap
+ * @ignore
+ */
+function _modifyOjComponentBinding(node, bindingName, wrapped, bindingContext, accessorMap)
+{
+  var info = _getBindingValueInfo(node, bindingName, wrapped, bindingContext);
+
+  var bindingList = info.attrList;
+
+  if (bindingList == null) // binding is specified externally (as opposed to an 'inline' object literal)
+  {
+    return accessorMap;
+  }
+
+  var bindingMap = {};
+  _keyValueArrayForEach(bindingList,
+    function(key, value)
+    {
+      bindingMap[key] = value;
     }
+  );
 
-    ko.utils.domNodeDisposal.addDisposeCallback(element, function () {
-      ffe.dispose();
-    });
-    return { 'controlsDescendantBindings': true };
-  },
-};
+  // clone the original accessor map
+  accessorMap = oj.CollectionUtils.copyInto({}, accessorMap);
 
-ko.virtualElements.allowedBindings['_ojBindForEach_'] = true;
+  //Add accessor for the V2 version of the Component bidning
+  accessorMap[bindingName] =
+                      _getOjComponent2BindingAccessor(bindingContext, bindingMap, info.bindingExpr);
+
+  return accessorMap;
+
+}
+
+/**
+ * @ignore
+ */
+function _getOjComponent2BindingAccessor(bindingContext, attributeMap, bindingExpr)
+{
+  var accessorFunc = function()
+  {
+    var accessor = {};
+    Object.keys(attributeMap).forEach(
+      function(option)
+      {
+        var expression = attributeMap[option];
+
+        // bindingContext will be passed as as the first parameter to the evaluator
+        var getter = oj.ComponentBinding.__CreateEvaluator(expression).bind(null, bindingContext);
+
+        Object.defineProperty(accessor, option,
+          {
+            'get': getter,
+            'enumerable': true
+          }
+        );
+      }
+    );
+
+    Object.defineProperty(accessor, oj.ComponentBinding._OPTION_MAP,
+      {
+        'value': attributeMap
+        /* not enumerable */
+      }
+    );
+
+    return accessor;
+  }
+
+  // Define toString() for the custom accessor function since we do not want the entire function body to show up in
+  // the log whenever a binding evaluation error occurs
+  accessorFunc.toString = function(){return bindingExpr;};
+
+  return accessorFunc;
+}
+
+
+/**
+ * @param node
+ * @param wrapped
+ * @param bindingContext
+ * @ignore
+ */
+function _getBindingString(node, wrapped, bindingContext)
+{
+  var func = wrapped['getBindingsString'];
+  if (func)
+  {
+    return func.call(wrapped, node, bindingContext);
+  }
+
+  switch (node.nodeType)
+  {
+    case 1: // Element
+      return node.getAttribute("data-bind");
+
+    case 8: // Comment node
+      var match = node.nodeValue.match(/^\s*ko(?:\s+([\s\S]+))?\s*$/);
+      return  (match ? match[1]: null);
+  }
+  return null;
+}
+
+/**
+ * @param node
+ * @param bindingName
+ * @param wrapped
+ * @param bindingContext
+ * @ignore
+ */
+function _getBindingValueInfo(node, bindingName, wrapped, bindingContext)
+{
+  var list = null;
+
+  var bindingString = _getBindingString(node, wrapped, bindingContext);
+  var keyValueArray = ko.jsonExpressionRewriting.parseObjectLiteral(bindingString);
+
+  var selfVal = null;
+
+  _keyValueArrayForEach(keyValueArray,
+    function(key, value)
+    {
+      if (key === bindingName)
+      {
+        selfVal = value;
+        return true;
+      }
+      return false;
+    }
+  );
+
+  if (selfVal != null)
+  {
+    // check for object literal
+    if (selfVal.indexOf('{') === 0)
+    {
+      list = ko.jsonExpressionRewriting.parseObjectLiteral(selfVal);
+    }
+  }
+
+  return {attrList: list, bindingExpr: selfVal};
+}
+
+function _keyValueArrayForEach(array, callback)
+{
+  for(var i=0; i<array.length; i++)
+  {
+    var entry = array[i];
+    var key = entry['key'];
+    var value = entry['value'];
+    if (key != null && value != null && callback(key.trim(), value.trim()))
+    {
+      break;
+    }
+  }
+}
+
+
+oj.__KO_CUSTOM_BINDING_PROVIDER_INSTANCE.addPostprocessor(
+  {
+    'nodeHasBindings': function(node, wrappedReturn)
+    {
+      if (!oj.BaseCustomElementBridge)
+        return wrappedReturn;
+      return wrappedReturn || (node.nodeType === 1 && oj.BaseCustomElementBridge.getRegistered(node.nodeName));
+    },
+
+    'getBindingAccessors': function(node, bindingContext, wrappedReturn)
+    {
+      if (node.nodeType === 1 && oj.BaseCustomElementBridge)
+      {
+        var name = node.nodeName;
+        var info = oj.BaseCustomElementBridge.getRegistered(name);
+        
+        if (info)
+        {
+          wrappedReturn = wrappedReturn || {};
+
+          wrappedReturn['_ojCustomElement'] = function() {return {composite: info.composite}}
+
+        }
+      }
+
+      return wrappedReturn;
+    }
+  }
+);
+
+/**
+ * @ignore
+ */
+(function()
+{
+  ko['bindingHandlers']['_ojCustomElement'] =
+  {
+    'after': ['attr'], // Ensure attr binding is processed first so to handle :disabled case since we only process on init
+    'init': function(element, valueAccessor, allBindingsAccessor, viewModel, bindingContext)
+    {
+       // Apply child bindings first
+       ko.applyBindingsToDescendants(bindingContext, element);
+       
+       return {'controlsDescendantBindings' : true};
+    },
+    
+    'update': function(element, valueAccessor, allBindingsAccessor, viewModel, bindingContext)
+    {
+      var callbackId = 0;
+      var _expressionHandler;
+      var attributeListener;
+      
+      // This instance won't be created unless oj.BaseCustomElementBridge is defined so this call is safe
+      var bridge = oj.BaseCustomElementBridge.getInstance(element);
+      
+      function cleanup()
+      {
+        if (_expressionHandler)
+        {
+          _expressionHandler.teardown();
+          _expressionHandler = null;
+        }
+        
+       
+        if(attributeListener)
+        {
+          element.removeEventListener(_ATTRIBUTE_CHANGED, attributeListener);
+          attributeListener = null;
+        }
+      };
+      
+      function setup(isComposite)
+      {
+        var metadataProps = oj.BaseCustomElementBridge.getProperties(bridge, element);
+        _expressionHandler = new oj.__ExpressionPropertyUpdater(element, bindingContext, isComposite);
+
+        // Dummy metadata for passing to the ExpressionPropertyUpdater for DOM listener attributes i.e. on-*
+        var domListenerMetadata = {_domListener:true};
+        
+        // Set a flag on the bridge to indicate that we are initializing expressions from the DOM
+        // to avoid overriding any property sets that could have occured after
+        bridge.__INITIALIZING_PROPS = true;
+
+        // setupExpression will only update properties defined in metadata so it's safe to iterate through all element attributes
+        // including ones defined on the base HTML prototype
+        var attrs = element.attributes; // attrs is a NamedNodeMap
+        for (var i = 0; i < attrs.length; i++)
+        {
+          var attr = attrs[i];
+          var propName = oj.__AttributeUtils.attributeToPropertyName(attr.nodeName);
+          var eventName = oj.__AttributeUtils.eventListenerPropertyToEventType(propName);
+          var isDomEvent = eventName && !metadataProps[propName];
+          _expressionHandler.setupExpression(attr.value, propName, isDomEvent ? domListenerMetadata : metadataProps[propName.split('.')[0]]);
+        }
+        
+        bridge.__INITIALIZING_PROPS = false;
+
+        attributeListener = function(evt)
+        {
+          var detail = evt['detail'];
+          var attr = detail['attribute'];
+          var propName = oj.__AttributeUtils.attributeToPropertyName(attr);
+          var eventName = oj.__AttributeUtils.eventListenerPropertyToEventType(propName);
+          var isDomEvent = eventName && !metadataProps[propName];
+          
+          var metadata = isDomEvent ? domListenerMetadata : metadataProps[propName.split('.')[0]]; // send metadata for top level property
+          _expressionHandler.setupExpression(detail['value'], propName, metadata);
+         
+        };
+            
+        element.addEventListener(_ATTRIBUTE_CHANGED, attributeListener);
+      };
+  
+      // Since we are tracking all our dependencies explicitly, we are suspending dependency detection here.
+      // update() will be called only once as a result
+      ko.ignoreDependencies(
+        function()
+        {
+          ko.computed(
+            function()
+            {
+              // Access valueAccesor to ensure that the binding is re-initialzied when an
+              // observable ViewModel is mutated
+              var isComposite = valueAccessor().composite;
+              
+              if (!ko.computedContext.isInitial()) 
+              {
+                cleanup();
+              }
+              
+              callbackId++;
+              
+              
+              function _createCallbackWithIdMatching(currentId, callback)
+              {
+                var ret = function(id, value)
+                {
+                  if (id === callbackId)
+                  {
+                    callback(value);
+                  }
+                }.bind(undefined, currentId);
+                return ret;
+              }
+              
+              setup(isComposite);
+              bridge.PlaybackEarlyPropertySets(element);
+              oj._KnockoutBindingProvider.getInstance().__NotifyBindingsApplied(element);
+              
+            },
+            null,
+            {'disposeWhenNodeIsRemoved' : element}
+          )
+        }
+      );
+  
+      ko.utils.domNodeDisposal.addDisposeCallback(element, cleanup);
+    
+  
+  
+    }
+  }
+  
+  var _ATTRIBUTE_CHANGED = 'attribute-changed';
 })();
+
+
+
 /**
  * @ignore
  * @constructor
@@ -2372,7 +2309,11 @@ oj.__ExpressionPropertyUpdater = function(element, bindingContext, skipThrottlin
   // This function should be called when the bindings are applied initially and whenever the expression attribute changes
   this.setupExpression = function(attrVal, propName, metadata)
   {
-    // See if attribute is a component property by checking for metadata
+    // If no metadata was passed in, just return bc this is not a component property.
+    if (!metadata)
+      return;
+
+    // See if attribute is a component property/subproperty by checking for metadata
     var meta = _getPropertyMetadata(propName, metadata);
     if (!meta)
       return;
@@ -2735,419 +2676,6 @@ oj.__ExpressionPropertyUpdater = function(element, bindingContext, skipThrottlin
 };
 
 /**
- * @ojstatus preview
- * @ojcomponent oj.ojBindIf
- * @ojbindingelement
- * @since 4.1.0
- *
- * @classdesc
- * <h3 id="chartOverview-section">
- *   If Binding
- *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#ifOverview-section"></a>
- * </h3>
- * <p>Use &lt;oj-bind-if&gt; to conditionally render its contents only if a provided test 
- * returns true. Note that the &lt;oj-bind-if&gt; element will be removed from the DOM 
- * after binding is applied. For slotting, applications need to wrap the oj-bind-if element 
- * inside another HTML element (e.g. &lt;span&gt;) with the slot attribute. The oj-bind-if element does not support 
- * the slot attribute.</p>
- *
- * @example <caption>Initialize the oj-bind-if:</caption>
- * &lt;oj-bind-if test='[[myTest]]'>
- *   &lt;div>My Contents&lt;/div>
- * &lt;/oj-bind-if>
- */
-
-/**
- * The test condition for the if clause. The children of the element will 
- * only be rendered if the test is true.
- * @expose
- * @name test
- * @memberof oj.ojBindIf
- * @instance
- * @type {boolean}
- * @example <caption>Initialize the oj-bind-if:</caption>
- * &lt;oj-bind-if test='[[myTest]]'>
- *   &lt;div>My Contents&lt;/div>
- * &lt;/oj-bind-if>
- */
-
-/*jslint browser: true*/
-/*
-** Copyright (c) 2014, Oracle and/or its affiliates. All rights reserved.
-*/
-
-
-/**
- * @class oj.ResponsiveKnockoutUtils
- * @classdesc Utilities for creating knockout observables to implement responsive pages. 
- * For example you could use oj.ResponsiveKnockoutUtils.createMediaQueryObservable to 
- * create an observable based on the screen width and then bind the tab bar's 
- * orientation attribute to it. See the method doc below for specific examples.
- * @since 1.1.0
- * @export
- * @ojstatus preview
- */
-oj.ResponsiveKnockoutUtils = {};
-
-/**
- * <p>creates an observable that 
- * returns true or false based on a media query string. 
- * Can be used in conjuntion with {@link oj.ResponsiveUtils.getFrameworkQuery}
- * to create an observable based on a framework media query.</p>
- * 
- * <p>Example:</p>
- * <pre class="prettyprint">
- * <code>
- *    var customQuery = oj.ResponsiveKnockoutUtils.createMediaQueryObservable(
- *                                         '(min-width: 400px)');
- *
- *    var lgQuery = oj.ResponsiveUtils.getFrameworkQuery(
- *                             oj.ResponsiveUtils.FRAMEWORK_QUERY_KEY.LG_UP);
- *        
- *    self.large = oj.ResponsiveKnockoutUtils.createMediaQueryObservable(lgQuery);
- * </code></pre>
- * 
- * @param {string} queryString media query string, for example '(min-width: 400px)'
- * @return a knockout observable  that 
- *              returns true or false based on a media query string.
- * @export
- * @static
- */
-oj.ResponsiveKnockoutUtils.createMediaQueryObservable = function(queryString)
-{
-
-  if (queryString == null)
-  {
-    throw new Error("oj.ResponsiveKnockoutUtils.createMediaQueryObservable: aborting, queryString is null");
-  }
-
-  var query = window.matchMedia(queryString);
-
-  var observable = ko.observable(query.matches);
-
-  // add a listener for future changes
-  query.addListener(function(query) {
-      observable(query.matches);
-      //console.log("query listener called! query.matches = " + query.matches + ", size = " + (document.outerWidth || document.body.clientWidth));
-  });
-
-
- 
-  // There is a major bug in webkit, tested on ios 7 going from
-  // landscape to portrait.
-  //    https://bugs.webkit.org/show_bug.cgi?id=123293
-  // 
-  // Basically if you use a media query in css
-  // then the js matchmedia call won't work! 
-  //
-  // According to the bug this is known to be on webkit 538.4,
-  // but I see it on 537.51 as well which is earlier, so 
-  // assume the problem exists generally on safari.
-  // Chrome now uses blink instead of webkit, but chrome
-  // still has webkit in their user agent string, however they
-  // now only change the number after "Chrome".
-  
-  if (navigator.userAgent.indexOf("WebKit") != -1 && 
-      navigator.userAgent.indexOf("Chrome") == -1) 
-  {
-    $(window).resize(function() {
-      //console.log("Resize called! Size = " + (document.outerWidth || document.body.clientWidth));
-
-      // Somehow if I change some text in the dom on resize 
-      // the query listener is called
-      var selector = "oj-webkit-bug-123293";
-
-      if($('body').has("." + selector).length === 0) 
-      {
-        // setting display: none doesn't work, so using 
-        // oj-helper-hidden-accessible because this visually 
-        // hides the content without using display:none. 
-        // However we don't want screen readers to read 
-        // this so setting aria-hidden to true.
-        $('body').append('<div aria-hidden="true" class="oj-helper-hidden-accessible ' + selector + '">'); // @HTMLUpdateOK 
-      }
-
-      $("." + selector).text((new Date().getMilliseconds()).toString()); // @HTMLUpdateOK 
-    });
-  }
-  
-  return observable;
-};
-
-
-/**
- * This function creates a computed observable, the 
- * value of which is one of the {@link oj.ResponsiveUtils.SCREEN_RANGE} constants. 
- * For example when the width is in the 
- * range defined by the sass variable $mediumScreenRange then 
- * the observable returns <code>oj.ResponsiveUtils.SCREEN_RANGE.MD</code>, 
- * but if it's in the range defined by $largeScreenRange then 
- * it returns <code>oj.ResponsiveUtils.SCREEN_RANGE.LG</code>, etc. 
- * 
- * 
- * 
- * <p>Example:</p>
- * <pre class="prettyprint">
- * <code>
- *        // create an observable which returns the current screen range
- *        self.screenRange = oj.ResponsiveKnockoutUtils.createScreenRangeObservable();
- *
- *        self.label2 = ko.computed(function() {
- *          var range = self.screenRange();
- * 
- *          if ( oj.ResponsiveUtils.compare( 
- *                       range, oj.ResponsiveUtils.SCREEN_RANGE.MD) <= 0)
- *          {
- *            // code for when screen is in small or medium range
- *          }
- *          else if (range == oj.ResponsiveUtils.SCREEN_RANGE.XL)
- *          {
- *            // code for when screen is in XL range
- *          }
- *        });
- * </code></pre>
- *
- * @return a knockout observable the value of which is one of the
- *  screen range constants, for example oj.ResponsiveUtils.SCREEN_RANGE.MD
- * @export
- * @static
- */
-oj.ResponsiveKnockoutUtils.createScreenRangeObservable = function()
-{
-  // queryies
-  var xxlQuery = oj.ResponsiveUtils.getFrameworkQuery(
-                                oj.ResponsiveUtils.FRAMEWORK_QUERY_KEY.XXL_UP);
-
-  var xlQuery = oj.ResponsiveUtils.getFrameworkQuery(
-                                oj.ResponsiveUtils.FRAMEWORK_QUERY_KEY.XL_UP);
-
-  var lgQuery = oj.ResponsiveUtils.getFrameworkQuery(
-                                oj.ResponsiveUtils.FRAMEWORK_QUERY_KEY.LG_UP);
-
-  var mdQuery = oj.ResponsiveUtils.getFrameworkQuery(
-                                oj.ResponsiveUtils.FRAMEWORK_QUERY_KEY.MD_UP);
-
-  var smQuery = oj.ResponsiveUtils.getFrameworkQuery(
-                                oj.ResponsiveUtils.FRAMEWORK_QUERY_KEY.SM_UP);
-
-
-
-  // observables
-  var xxlObservable = xxlQuery == null ? 
-                      null : 
-                      oj.ResponsiveKnockoutUtils.createMediaQueryObservable(xxlQuery);
-
-  var xlObservable = xlQuery == null ? 
-                     null : 
-                     oj.ResponsiveKnockoutUtils.createMediaQueryObservable(xlQuery);
-
-  var lgObservable = lgQuery == null ? 
-                     null : 
-                     oj.ResponsiveKnockoutUtils.createMediaQueryObservable(lgQuery);
-
-  var mdObservable = mdQuery == null ? 
-                     null : 
-                     oj.ResponsiveKnockoutUtils.createMediaQueryObservable(mdQuery);
-
-  var smObservable = smQuery == null ? 
-                     null : 
-                     oj.ResponsiveKnockoutUtils.createMediaQueryObservable(smQuery);
-
-
-  return ko.computed(function() {
-    if (xxlObservable && xxlObservable())
-      return oj.ResponsiveUtils.SCREEN_RANGE.XXL; 
-
-    if (xlObservable && xlObservable())
-      return oj.ResponsiveUtils.SCREEN_RANGE.XL; 
-
-    if (lgObservable && lgObservable())
-      return oj.ResponsiveUtils.SCREEN_RANGE.LG; 
-
-    if (mdObservable && mdObservable())
-      return oj.ResponsiveUtils.SCREEN_RANGE.MD; 
-
-    if (smObservable && smObservable())
-      return oj.ResponsiveUtils.SCREEN_RANGE.SM; 
-
-    throw new Error(" NO MATCH in oj.ResponsiveKnockoutUtils.createScreenRangeObservable");
-
-  });
-};
-
-/**
- * Common method to handle managed attributes for both init and update
- * @param {string} name the name of the attribute
- * @param {Object} value the value of the attribute
- * @param {Object} bindingContext the ko binding context
- * @return {Object} the modified attribute
- * @private
- */
-function _handleManagedMapAttributes(name, value, bindingContext) {
-  if (name === "areaLayers") {
-    for (var i = 0; i < value.length; i++) {
-      var areaDataLayer = value[i]['areaDataLayer'];
-      if (areaDataLayer) {
-        var template = areaDataLayer['template'];
-        if (template != null) {
-          areaDataLayer['_templateRenderer'] = _getDvtDataRenderer(bindingContext, template);
-        }
-      }
-    }
-    return {'areaLayers': value};
-  }
-  else if (name === "pointDataLayers") {
-    for (var i = 0; i < value.length; i++) {
-      var template = value[i]['template'];
-      if (template != null) {
-        value[i]['_templateRenderer'] = _getDvtDataRenderer(bindingContext, template);
-      }
-    }
-    return {'pointDataLayers': value};
-  }
-  return null;
-}
-
-oj.ComponentBinding.getDefaultInstance().setupManagedAttributes({
-  'attributes': ["areaLayers", "pointDataLayers"],
-  'init': function (name, value, element, widgetConstructor, valueAccessor, allBindingsAccessor, bindingContext) {
-    return _handleManagedMapAttributes(name, value, bindingContext);
-  },
-  'update': function (name, value, element, widgetConstructor, valueAccessor, allBindingsAccessor, bindingContext) {
-    return _handleManagedMapAttributes(name, value, bindingContext);
-  },
-  'for': 'ojThematicMap'
-});
-
-/**
- * Utility methods for knockout templates.
- * 
- * @ojstatus preview
- * @since 4.0.0
- * @namespace
- * @export
- */
-oj.KnockoutTemplateUtils = {};
-
-/**
- * JET custom elements do not support template binding attributes, so applications using knockout templates 
- * should use this utility to convert their knockout templates to a renderer function for use in component 
- * renderer APIs instead.
- * 
- * @param {string} template The name of the knockout template to use.
- * @param {boolean=} bReplaceNode True if the entire target node should be replaced by the output of the template.
- *                                If false or omitted, the children of the target node will be replaced.
- * @return {function(Object)} A renderer function that takes a context object.
- * @export
- * 
- * @example <caption>Convert a knockout template to a custom tooltip renderer function:</caption>
- * &lt;oj-tag-cloud tooltip.renderer="[[oj.KnockoutTemplateUtils.getRenderer('tooltip_template')]]">&lt;/oj-tag-cloud>
- */
-oj.KnockoutTemplateUtils.getRenderer = function(template, bReplaceNode) 
-{
-  var templateRenderer = function (context) {
-    // For DVTs, the node to attach the template to is different than the context's parentElement key
-    var parentElement = context['_parentElement'] || context['parentElement'];
-    
-    var bindingContext = ko.contextFor(context['componentElement']);
-
-    var childContext = bindingContext['createChildContext'](context['data'], null, function(binding) { binding['$context'] = context; });
-    ko['renderTemplate'](template, childContext, {'afterRender': function(renderedElement) { $(renderedElement)['_ojDetectCleanData'](); }}, 
-      parentElement, bReplaceNode ? 'replaceNode' : 'replaceChildren');
-    return null;
-  };
-  
-  return function (context) {
-    if (context['componentElement'].classList && context['componentElement'].classList.contains("oj-dvtbase")){
-      // Create a dummy div
-      var dummyDiv = document.createElement("div");
-      dummyDiv.style.display = "none";
-      dummyDiv._dvtcontext = context['_dvtcontext'];
-      context['componentElement'].appendChild(dummyDiv);
-      Object.defineProperty(context, '_parentElement', { 'value': dummyDiv, 'enumerable': false });
-      Object.defineProperty(context, '_templateCleanup', { 'value': function(){$(dummyDiv).remove();}, 'enumerable': false });
-      Object.defineProperty(context, '_templateName', { 'value': template, 'enumerable': false });
-
-      templateRenderer(context);
-
-      var elem = dummyDiv.children[0];
-      if (elem) {
-        if (elem.namespaceURI === 'http://www.w3.org/2000/svg') {
-          dummyDiv.removeChild(elem);
-          $(dummyDiv).remove();
-        } 
-        return {'insert':elem};
-      }
-      return {'preventDefault':true};
-    }
-    else {
-      return templateRenderer(context);
-    }
-  };
-};
-/**
- * @ojstatus preview
- * @ojcomponent oj.ojBindText
- * @ojbindingelement
- * @since 4.1.0
- *
- * @classdesc
- * <h3 id="chartOverview-section">
- *   Text Binding
- *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#textOverview-section"></a>
- * </h3>
- * <p>Use &lt;oj-bind-text&gt; to bind a text node to a variable. Note that the
- * &lt;oj-bind-text&gt; element will be removed from the DOM after binding is
- * applied, and any child elements it has will be removed. For slotting, applications 
- * need to wrap the oj-bind-text element inside another HTML element (e.g. &lt;span&gt;) with the slot attribute. 
- * The oj-bind-text element does not support the slot attribute.</p>
- *
- * @example <caption>Initialize the oj-bind-text:</caption>
- * &lt;span>
- *   &lt;oj-bind-text value='[[myText]]'>&lt;/oj-bind-text>
- * &lt;/span>
- */
-
-/**
- * The value of the text node.
- * @expose
- * @name value
- * @memberof oj.ojBindText
- * @instance
- * @type {string}
- * @example <caption>Initialize the oj-bind-text:</caption>
- * &lt;span>
- *   &lt;oj-bind-text value='[[myText]]'>&lt;/oj-bind-text>
- * &lt;/span>
- */
-
-/**
- * Common method to handle managed attributes for both init and update
- * @param {string} name the name of the attribute
- * @param {Object} value the value of the attribute
- * @param {Object} bindingContext the ko binding context
- * @return {Object} the modified attribute
- * @private
- */
-function _handleManagedTreemapAttributes(name, value, bindingContext) {
-  if (name === "nodeContent" && value['template']) {
-    value['_renderer'] = _getDvtRenderer(bindingContext, value['template']);
-  }
-  return {'nodeContent': value};
-}
-
-oj.ComponentBinding.getDefaultInstance().setupManagedAttributes({
-  'attributes': ["nodeContent"],
-  'init': function (name, value, element, widgetConstructor, valueAccessor, allBindingsAccessor, bindingContext) {
-    return _handleManagedTreemapAttributes(name, value, bindingContext);
-  },
-  'update': function (name, value, element, widgetConstructor, valueAccessor, allBindingsAccessor, bindingContext) {
-    return _handleManagedTreemapAttributes(name, value, bindingContext);
-  },
-  'for': 'ojTreemap'
-});
-
-/**
  * @ignore
  */
 (function () {
@@ -3223,7 +2751,15 @@ oj.ComponentBinding.getDefaultInstance().setupManagedAttributes({
             for (var i = 0; i < boundAttrs.length; i++)
             {
               var attr = boundAttrs[i];
-              attrEvaluators[attr] = _getValueEvaluator(node, attr, node.getAttribute(_getBoundAttrName(attr)), bindingContext, 'string');
+              var evaluator;
+              // For the class attribute, we also support array and object types so we should check
+              // for arrays and convert to a computed that returns a string for knockout. For object
+              // types we pass to knockout's css binding instead of attr so pass the attrEvaluators object
+              // and the wrappedReturn to the method to determine which to use.
+              if (attr === 'class')
+                _setClassEvaluator(wrappedReturn, attrEvaluators, node, node.getAttribute(_getBoundAttrName(attr)), bindingContext);
+              else
+                attrEvaluators[attr] = _getValueEvaluator(node, attr, node.getAttribute(_getBoundAttrName(attr)), bindingContext, 'string');
             }
 
             wrappedReturn['attr'] = _getObjectEvaluator(attrEvaluators);
@@ -3300,15 +2836,35 @@ oj.ComponentBinding.getDefaultInstance().setupManagedAttributes({
   }
   
   function _getReplacementNodes (node, bindableAttr, binding){
-    var openComment = document.createComment(binding);
-    var closeComment = document.createComment('/ko');
-
-    var newNodes = [openComment];
+    // Wrap the ko comment we will generate with an additional wrapper
+    // with all of the attribute info that was on the original DOM node.
+    // <!--oj-bind-for-each data='[[users]]' -->
+    var nodeName = node.tagName.toLowerCase();
+    var ojcommenttext = nodeName;
+    var attrs = node.attributes;
+    for (var i = 0; i < attrs.length; i++) {
+      // jsperf says string concat is faster than array join, but
+      // varies across browsers whether text += or text = text + is faster
+      // the below method is fastest on Chrome and not bad on FF
+      var attr = attrs[i];
+      ojcommenttext = ojcommenttext + ' ';
+      ojcommenttext = ojcommenttext + attr.name;
+      ojcommenttext = ojcommenttext + "='";
+      ojcommenttext = ojcommenttext + attr.value;
+      ojcommenttext = ojcommenttext + "'"; 
+    }
 
     var parent  = node.parentNode;
-    parent.insertBefore(openComment, node); // @HTMLUpdateOK
+    var ojOpenComment = document.createComment(ojcommenttext);
+    var ojCloseComment = document.createComment('/' + nodeName);
+    parent.insertBefore(ojOpenComment, node); // @HTMLUpdateOK
 
-    // Copy the oj-bind-x children into the comment node
+    var koOpenComment = document.createComment(binding);
+    var koCloseComment = document.createComment('/ko');
+    parent.insertBefore(koOpenComment, node); // @HTMLUpdateOK
+
+    var newNodes = [ojOpenComment, koOpenComment];
+    // Copy oj-bind-x children into the comment node
     if (bindableAttr === 'if')
     {
       while (node.childNodes.length > 0)
@@ -3327,19 +2883,21 @@ oj.ComponentBinding.getDefaultInstance().setupManagedAttributes({
         newNodes.push(child);
         if (child.nodeType === 1 && "template" === child.nodeName.toLowerCase()) 
         {
-          if (!openComment['_templateNode'])
-            Object.defineProperty(openComment, '_templateNode', { 'value': child, 'enumerable': false });
+          if (!koOpenComment['_templateNode'])
+            Object.defineProperty(koOpenComment, '_templateNode', { 'value': child, 'enumerable': false });
           else 
             throw new Error("Multiple templates found: oj-bind-for-each requires a single template element as its direct child");
         }
       }
       // check for the template since it is a required attribute for oj-bind-for-each.
-      if (!openComment['_templateNode'])
+      if (!koOpenComment['_templateNode'])
         throw new Error("Template not found: oj-bind-for-each requires a single template element as its direct child");
     }
-    newNodes.push(closeComment);
+    parent.insertBefore(koCloseComment, node); // @HTMLUpdateOK
+    newNodes.push(koCloseComment);
 
-    parent.replaceChild(closeComment, node);
+    parent.replaceChild(ojCloseComment, node); // @HTMLUpdateOK
+    newNodes.push(ojCloseComment);
 
     return newNodes;
   }
@@ -3360,6 +2918,45 @@ oj.ComponentBinding.getDefaultInstance().setupManagedAttributes({
     }
 
     return null;
+  }
+
+  function _setClassEvaluator(wrappedReturn, attrEvaluators, elem, value, bindingContext)
+  {
+    var evaluator, resolvedValue, isArray;
+    var exp = oj.__AttributeUtils.getExpressionInfo(value).expr;
+    if (exp == null)
+    {
+      resolvedValue = oj.__AttributeUtils.coerceValue(elem, 'class', value, 'any');
+      isArray = Array.isArray(resolvedValue);
+      evaluator = function() {
+        return isArray ? resolvedValue.join(' ') : resolvedValue;
+      };
+    }
+    else
+    {
+      evaluator = oj.ComponentBinding.__CreateEvaluator(exp).bind(null, bindingContext);
+      var classObs = evaluator();
+
+      if (typeof classObs === 'function')
+      {
+        resolvedValue = classObs();
+        isArray = Array.isArray(resolvedValue);
+        if (isArray)
+        {
+          evaluator = ko.pureComputed(function() {
+            return classObs().join(' ');
+          });
+        }
+      }
+      else
+      {
+        resolvedValue = classObs;
+      }
+    }
+    if (typeof resolvedValue === 'string' || isArray)
+      attrEvaluators['class'] = evaluator;
+    else
+      wrappedReturn['css'] = evaluator
   }
 
   function _getValueEvaluator(elem, attr, value, bindingContext, type)
@@ -3468,6 +3065,316 @@ oj.ComponentBinding.getDefaultInstance().setupManagedAttributes({
   var _BINDINGS = "_ojbindingsobj";
 })();
 /**
+ * @ignore
+ * @constructor
+ * @private
+ */
+oj._KnockoutBindingProvider = function()
+{
+  
+
+  /**
+   * @ignore
+   */
+  this.__NotifyBindingsApplied = function(elem)
+  {
+    elem['resolveBP'](this);
+  }
+
+}
+
+/**
+ * @ignore
+ */
+oj._KnockoutBindingProvider.getInstance = function()
+{
+  return oj._KnockoutBindingProvider._instance;
+}
+
+/**
+ * @ignore
+ */
+oj._KnockoutBindingProvider._instance = new oj._KnockoutBindingProvider();
+
+
+
+
+
+/**
+ * Utility methods for knockout templates.
+ * 
+ * @ojstatus preview
+ * @since 4.0.0
+ * @namespace
+ * @export
+ */
+oj.KnockoutTemplateUtils = {};
+
+/**
+ * JET custom elements do not support template binding attributes, so applications using knockout templates 
+ * should use this utility to convert their knockout templates to a renderer function for use in component 
+ * renderer APIs instead.
+ * 
+ * @param {string} template The name of the knockout template to use.
+ * @param {boolean=} bReplaceNode True if the entire target node should be replaced by the output of the template.
+ *                                If false or omitted, the children of the target node will be replaced.
+ * @return {function(Object)} A renderer function that takes a context object.
+ * @export
+ * 
+ * @example <caption>Convert a knockout template to a custom tooltip renderer function:</caption>
+ * &lt;oj-tag-cloud tooltip.renderer="[[oj.KnockoutTemplateUtils.getRenderer('tooltip_template')]]">&lt;/oj-tag-cloud>
+ */
+oj.KnockoutTemplateUtils.getRenderer = function(template, bReplaceNode) 
+{
+  var templateRenderer = function (context) {
+    // For DVTs, the node to attach the template to is different than the context's parentElement key
+    var parentElement = context['_parentElement'] || context['parentElement'];
+    
+    var bindingContext = ko.contextFor(context['componentElement']);
+
+    var childContext = bindingContext['createChildContext'](context['data'], null, function(binding) { binding['$context'] = context; });
+    ko['renderTemplate'](template, childContext, {'afterRender': function(renderedElement) { $(renderedElement)['_ojDetectCleanData'](); }}, 
+      parentElement, bReplaceNode ? 'replaceNode' : 'replaceChildren');
+    return null;
+  };
+  
+  return function (context) {
+    if (context['componentElement'].classList && context['componentElement'].classList.contains("oj-dvtbase")){
+      // Create a dummy div
+      var dummyDiv = document.createElement("div");
+      dummyDiv.style.display = "none";
+      dummyDiv._dvtcontext = context['_dvtcontext'];
+      context['componentElement'].appendChild(dummyDiv);
+      Object.defineProperty(context, '_parentElement', { 'value': dummyDiv, 'enumerable': false });
+      Object.defineProperty(context, '_templateCleanup', { 'value': function(){$(dummyDiv).remove();}, 'enumerable': false });
+      Object.defineProperty(context, '_templateName', { 'value': template, 'enumerable': false });
+
+      templateRenderer(context);
+
+      var elem = dummyDiv.children[0];
+      if (elem) {
+        if (elem.namespaceURI === 'http://www.w3.org/2000/svg') {
+          dummyDiv.removeChild(elem);
+          $(dummyDiv).remove();
+        } 
+        return {'insert':elem};
+      }
+      return {'preventDefault':true};
+    }
+    else {
+      return templateRenderer(context);
+    }
+  };
+};
+/*jslint browser: true*/
+/*
+** Copyright (c) 2014, Oracle and/or its affiliates. All rights reserved.
+*/
+
+
+/**
+ * @class oj.ResponsiveKnockoutUtils
+ * @classdesc Utilities for creating knockout observables to implement responsive pages. 
+ * For example you could use oj.ResponsiveKnockoutUtils.createMediaQueryObservable to 
+ * create an observable based on the screen width and then bind the tab bar's 
+ * orientation attribute to it. See the method doc below for specific examples.
+ * @since 1.1.0
+ * @export
+ * @hideconstructor
+ * @ojtsimport knockout
+ * @ojstatus preview
+ */
+oj.ResponsiveKnockoutUtils = {};
+
+/**
+ * <p>creates an observable that 
+ * returns true or false based on a media query string. 
+ * Can be used in conjuntion with {@link oj.ResponsiveUtils.getFrameworkQuery}
+ * to create an observable based on a framework media query.</p>
+ * 
+ * <p>Example:</p>
+ * <pre class="prettyprint">
+ * <code>
+ *    var customQuery = oj.ResponsiveKnockoutUtils.createMediaQueryObservable(
+ *                                         '(min-width: 400px)');
+ *
+ *    var lgQuery = oj.ResponsiveUtils.getFrameworkQuery(
+ *                             oj.ResponsiveUtils.FRAMEWORK_QUERY_KEY.LG_UP);
+ *        
+ *    self.large = oj.ResponsiveKnockoutUtils.createMediaQueryObservable(lgQuery);
+ * </code></pre>
+ * 
+ * @param {string} queryString media query string, for example '(min-width: 400px)'
+ * @return a knockout observable  that 
+ *              returns true or false based on a media query string.
+ * @ojsignature {target: "Type", for: "returns", value: "KnockoutObservable<boolean>"}
+ * @export
+ * @static
+ */
+oj.ResponsiveKnockoutUtils.createMediaQueryObservable = function(queryString)
+{
+
+  if (queryString == null)
+  {
+    throw new Error("oj.ResponsiveKnockoutUtils.createMediaQueryObservable: aborting, queryString is null");
+  }
+
+  var query = window.matchMedia(queryString);
+
+  var observable = ko.observable(query.matches);
+
+  // add a listener for future changes
+  query.addListener(function(query) {
+      observable(query.matches);
+      //console.log("query listener called! query.matches = " + query.matches + ", size = " + (document.outerWidth || document.body.clientWidth));
+  });
+
+
+ 
+  // There is a major bug in webkit, tested on ios 7 going from
+  // landscape to portrait.
+  //    https://bugs.webkit.org/show_bug.cgi?id=123293
+  // 
+  // Basically if you use a media query in css
+  // then the js matchmedia call won't work! 
+  //
+  // According to the bug this is known to be on webkit 538.4,
+  // but I see it on 537.51 as well which is earlier, so 
+  // assume the problem exists generally on safari.
+  // Chrome now uses blink instead of webkit, but chrome
+  // still has webkit in their user agent string, however they
+  // now only change the number after "Chrome".
+  
+  if (navigator.userAgent.indexOf("WebKit") != -1 && 
+      navigator.userAgent.indexOf("Chrome") == -1) 
+  {
+    $(window).resize(function() {
+      //console.log("Resize called! Size = " + (document.outerWidth || document.body.clientWidth));
+
+      // Somehow if I change some text in the dom on resize 
+      // the query listener is called
+      var selector = "oj-webkit-bug-123293";
+
+      if($('body').has("." + selector).length === 0) 
+      {
+        // setting display: none doesn't work, so using 
+        // oj-helper-hidden-accessible because this visually 
+        // hides the content without using display:none. 
+        // However we don't want screen readers to read 
+        // this so setting aria-hidden to true.
+        $('body').append('<div aria-hidden="true" class="oj-helper-hidden-accessible ' + selector + '">'); // @HTMLUpdateOK 
+      }
+
+      $("." + selector).text((new Date().getMilliseconds()).toString()); // @HTMLUpdateOK 
+    });
+  }
+  
+  return observable;
+};
+
+
+/**
+ * This function creates a computed observable, the 
+ * value of which is one of the {@link oj.ResponsiveUtils.SCREEN_RANGE} constants. 
+ * For example when the width is in the 
+ * range defined by the sass variable $mediumScreenRange then 
+ * the observable returns <code>oj.ResponsiveUtils.SCREEN_RANGE.MD</code>, 
+ * but if it's in the range defined by $largeScreenRange then 
+ * it returns <code>oj.ResponsiveUtils.SCREEN_RANGE.LG</code>, etc. 
+ * 
+ * 
+ * 
+ * <p>Example:</p>
+ * <pre class="prettyprint">
+ * <code>
+ *        // create an observable which returns the current screen range
+ *        self.screenRange = oj.ResponsiveKnockoutUtils.createScreenRangeObservable();
+ *
+ *        self.label2 = ko.computed(function() {
+ *          var range = self.screenRange();
+ * 
+ *          if ( oj.ResponsiveUtils.compare( 
+ *                       range, oj.ResponsiveUtils.SCREEN_RANGE.MD) <= 0)
+ *          {
+ *            // code for when screen is in small or medium range
+ *          }
+ *          else if (range == oj.ResponsiveUtils.SCREEN_RANGE.XL)
+ *          {
+ *            // code for when screen is in XL range
+ *          }
+ *        });
+ * </code></pre>
+ *
+ * @return a knockout observable the value of which is one of the
+ *  screen range constants, for example oj.ResponsiveUtils.SCREEN_RANGE.MD
+ * @ojsignature {target: "Type", for: "returns", value: "KnockoutObservable<string>"}
+ * @export
+ * @static
+ */
+oj.ResponsiveKnockoutUtils.createScreenRangeObservable = function()
+{
+  // queryies
+  var xxlQuery = oj.ResponsiveUtils.getFrameworkQuery(
+                                oj.ResponsiveUtils.FRAMEWORK_QUERY_KEY.XXL_UP);
+
+  var xlQuery = oj.ResponsiveUtils.getFrameworkQuery(
+                                oj.ResponsiveUtils.FRAMEWORK_QUERY_KEY.XL_UP);
+
+  var lgQuery = oj.ResponsiveUtils.getFrameworkQuery(
+                                oj.ResponsiveUtils.FRAMEWORK_QUERY_KEY.LG_UP);
+
+  var mdQuery = oj.ResponsiveUtils.getFrameworkQuery(
+                                oj.ResponsiveUtils.FRAMEWORK_QUERY_KEY.MD_UP);
+
+  var smQuery = oj.ResponsiveUtils.getFrameworkQuery(
+                                oj.ResponsiveUtils.FRAMEWORK_QUERY_KEY.SM_UP);
+
+
+
+  // observables
+  var xxlObservable = xxlQuery == null ? 
+                      null : 
+                      oj.ResponsiveKnockoutUtils.createMediaQueryObservable(xxlQuery);
+
+  var xlObservable = xlQuery == null ? 
+                     null : 
+                     oj.ResponsiveKnockoutUtils.createMediaQueryObservable(xlQuery);
+
+  var lgObservable = lgQuery == null ? 
+                     null : 
+                     oj.ResponsiveKnockoutUtils.createMediaQueryObservable(lgQuery);
+
+  var mdObservable = mdQuery == null ? 
+                     null : 
+                     oj.ResponsiveKnockoutUtils.createMediaQueryObservable(mdQuery);
+
+  var smObservable = smQuery == null ? 
+                     null : 
+                     oj.ResponsiveKnockoutUtils.createMediaQueryObservable(smQuery);
+
+
+  return ko.computed(function() {
+    if (xxlObservable && xxlObservable())
+      return oj.ResponsiveUtils.SCREEN_RANGE.XXL; 
+
+    if (xlObservable && xlObservable())
+      return oj.ResponsiveUtils.SCREEN_RANGE.XL; 
+
+    if (lgObservable && lgObservable())
+      return oj.ResponsiveUtils.SCREEN_RANGE.LG; 
+
+    if (mdObservable && mdObservable())
+      return oj.ResponsiveUtils.SCREEN_RANGE.MD; 
+
+    if (smObservable && smObservable())
+      return oj.ResponsiveUtils.SCREEN_RANGE.SM; 
+
+    throw new Error(" NO MATCH in oj.ResponsiveKnockoutUtils.createScreenRangeObservable");
+
+  });
+};
+
+/**
  * Returns a renderer function and executes the template specified in the binding attribute. (for example, a knockout template).
  * @param {Object} bindingContext the ko binding context
  * @param {string} template the name of the template
@@ -3535,6 +3442,491 @@ oj.ComponentBinding.getDefaultInstance().setupManagedAttributes({
   }                   
 })();
 
+/*!
+  Knockout Fast Foreach v0.6.0 (2016-07-28T11:02:54.197Z)
+  By: Brian M Hunt (C) 2015 | License: MIT
+
+  Adds `fastForEach` to `ko.bindingHandlers`.
+  
+  Modification notice: The code is obtained from https://github.com/brianmhunt/knockout-fast-foreach 
+  and modified by Oracle JET team to be included into Oracle JET project.
+*/
+
+(function() {
+  "use strict";
+// index.js
+// --------
+// Fast For Each
+//
+// Employing sound techniques to make a faster Knockout foreach binding.
+// --------
+
+//      Utilities
+var MAX_LIST_SIZE = 9007199254740991;
+
+// from https://github.com/jonschlinkert/is-plain-object
+function isPlainObject(o) {
+  return !!o && typeof o === 'object' && o.constructor === Object;
+}
+
+// From knockout/src/virtualElements.js
+var commentNodesHaveTextProperty = document && document.createComment("test").text === "<!--test-->";
+var startCommentRegex = commentNodesHaveTextProperty ? /^<!--\s*ko(?:\s+([\s\S]+))?\s*-->$/ : /^\s*ko(?:\s+([\s\S]+))?\s*$/;
+var supportsDocumentFragment = document && typeof document.createDocumentFragment === "function";
+function isVirtualNode(node) {
+  return (node.nodeType === 8) && startCommentRegex.test(commentNodesHaveTextProperty ? node.text : node.nodeValue);
+}
+
+
+// Get a copy of the (possibly virtual) child nodes of the given element,
+// put them into a container, then empty the given node.
+function makeTemplateNode(sourceNode) {
+  var container = document.createElement("div");
+  var parentNode;
+  if(sourceNode['_templateNode'] && sourceNode['_templateNode'].content) 
+  {
+    // For e.g. <template> tags
+    parentNode = sourceNode['_templateNode'].content; //parentNode = sourceNode.content;
+  }
+  else if (sourceNode['_templateNode']) 
+  {
+    parentNode = sourceNode['_templateNode'];
+  }
+  else
+  {
+    //allow body of a script tag to be used as a template
+    var scripts = sourceNode.parentNode.getElementsByTagName('SCRIPT');
+    parentNode = scripts && scripts.length > 0 ? ko.utils.parseHtmlFragment(scripts[0].text) : sourceNode;
+  }
+  
+  var nodes = Array.isArray(parentNode) ? parentNode : ko.virtualElements.childNodes(parentNode);
+  ko.utils.arrayForEach(nodes, function (child) {
+    // FIXME - This cloneNode could be expensive; we may prefer to iterate over the
+    // parentNode children in reverse (so as not to foul the indexes as childNodes are
+    // removed from parentNode when inserted into the container)
+    if (child) {
+      container.insertBefore(child.cloneNode(true), null); // @HTMLUpdateOK
+    }
+  });
+  return container;
+}
+
+// Mimic a KO change item 'add'
+function valueToChangeAddItem(value, index) {
+  return {
+    status: 'added',
+    value: value,
+    index: index
+  };
+}
+
+// KO 3.4 doesn't seem to export this utility function so it's here just to be sure
+function createSymbolOrString(identifier) {
+  //return typeof Symbol === 'function' ? Symbol(identifier) : identifier;
+  return identifier;
+}
+
+// Array.prototype.map doesn't execute the mapping function on indices that don't have assigned values
+// so it would be a NOP for new Array(5).  Call this for loop based version instead
+function arrayMap(array, mapping) {
+  var result;
+  if (array) {
+    var length = array.length;
+    result = new Array(length);
+    for (var i = 0; i < length; i++) {
+      result[i] = mapping(array[i], i, array);
+    }
+  }
+  return result;
+}
+
+// store a symbol for caching the pending delete info index in the data item objects
+var PENDING_DELETE_INDEX_KEY = createSymbolOrString("_ko_ffe_pending_delete_index");
+
+/**
+ * @constructor
+ * @private
+ * @since 4.1.0
+ */
+function OjForEach(element, value, context) {
+  this.element = value.element || element;
+  this.container = isVirtualNode(this.element) ?
+                   this.element.parentNode : this.element;
+  this.$context = context;
+  this.data = value['data'];
+  this.as = value['as'];
+  this.templateNode = makeTemplateNode(this.element);
+  this.changeQueue = [];
+  this.firstLastNodesList = [];
+  this.indexesToDelete = [];
+  this.rendering_queued = false;
+  this.pendingDeletes = [];
+
+  // Remove existing content.
+  ko.virtualElements.emptyNode(this.element);
+
+  // Prime content
+  var primeData = ko.unwrap(this.data);
+  this.onArrayChange(arrayMap(primeData, valueToChangeAddItem));
+  this.addSubscriptions();
+}
+
+OjForEach.PENDING_DELETE_INDEX_KEY = PENDING_DELETE_INDEX_KEY;
+
+OjForEach.prototype.addSubscriptions = function () {
+  // Watch for changes
+  if (ko.isObservable(this.data)) {
+    if (!this.data.indexOf) {
+      // Make sure the observable is trackable.
+      this.data = this.data['extend']({ 'trackArrayChanges': true });
+    }
+    this.changeSubs = this.data['subscribe'](this.onArrayChange, this, 'arrayChange');
+  }
+};
+
+OjForEach.prototype.removeSubscriptions = function () {
+  if (this.changeSubs) {
+    this.changeSubs['dispose']();
+  }
+};
+
+
+// If the array changes we register the change.
+OjForEach.prototype.onArrayChange = function (changeSet) {
+  
+  var self = this;
+  var changeMap = {
+    'added': [],
+    'deleted': []
+  };
+  var statusAdded = 'added', statusDeleted = 'deleted';
+  
+  // knockout array change notification index handling:
+  // - sends the original array indexes for deletes
+  // - sends the new array indexes for adds
+  // - sorts them all by index in ascending order
+  // because of this, when checking for possible batch additions, any delete can be between to adds with neighboring indexes, so only additions should be checked
+  for (var i = 0, len = changeSet.length; i < len; i++) {
+
+    if (changeMap[statusAdded].length && changeSet[i].status == statusAdded) {
+      var lastAdd = changeMap[statusAdded][changeMap[statusAdded].length - 1];
+      var lastIndex = lastAdd.isBatch ? lastAdd.index + lastAdd.values.length - 1 : lastAdd.index;
+      if (lastIndex + 1 == changeSet[i].index) {
+        if (!lastAdd.isBatch) {
+          // transform the last addition into a batch addition object
+          lastAdd = {
+            isBatch: true,
+            status: statusAdded,
+            index: lastAdd.index,
+            values: [lastAdd.value]
+          };
+          changeMap[statusAdded].splice(changeMap[statusAdded].length - 1, 1, lastAdd);
+        }
+        lastAdd.values.push(changeSet[i].value);
+        continue;
+      }
+    }
+
+    changeMap[changeSet[i].status].push(changeSet[i]);
+  }
+
+  if (changeMap[statusDeleted].length > 0) {
+    this.changeQueue.push.apply(this.changeQueue, changeMap[statusDeleted]);
+    this.changeQueue.push({ status: 'clearDeletedIndexes' });
+  }
+  this.changeQueue.push.apply(this.changeQueue, changeMap[statusAdded]);
+  // Once a change is registered, the ticking count-down starts for the processQueue.
+  if (this.changeQueue.length > 0 && !this.rendering_queued) {
+    this.rendering_queued = true;
+    self.processQueue();
+  }
+};
+
+
+// Reflect all the changes in the queue in the DOM, then wipe the queue.
+OjForEach.prototype.processQueue = function () {
+  var self = this;
+  var lowestIndexChanged = MAX_LIST_SIZE;
+
+  ko.utils.arrayForEach(this.changeQueue, function (changeItem) {
+    if (typeof changeItem.index === 'number') {
+      lowestIndexChanged = Math.min(lowestIndexChanged, changeItem.index);
+    }
+    // console.log(self['data'](), "CI", JSON.stringify(changeItem, null, 2), JSON.stringify($(self.element).text()))
+    self[changeItem.status](changeItem);
+    // console.log("  ==> ", JSON.stringify($(self.element).text()))
+  });
+  this.flushPendingDeletes();
+  this.rendering_queued = false;
+
+  // Update our indexes.
+  this.updateIndexes(lowestIndexChanged);
+
+  this.changeQueue = [];
+};
+
+
+// Process a changeItem with {status: 'added', ...}
+/**
+ * @expose
+ * @ignore 
+ */
+OjForEach.prototype.added = function (changeItem) {
+  var index = changeItem.index;
+  var valuesToAdd = changeItem.isBatch ? changeItem.values : [changeItem.value];
+  var referenceElement = this.getLastNodeBeforeIndex(index);
+  // gather all childnodes for a possible batch insertion
+  var allChildNodes = [];
+
+  for (var i = 0, len = valuesToAdd.length; i < len; ++i) {
+    var childNodes;
+
+    // we check if we have a pending delete with reusable nodesets for this data, and if yes, we reuse one nodeset
+    var pendingDelete = this.getPendingDeleteFor(valuesToAdd[i]);
+    if (pendingDelete && pendingDelete.nodesets.length) {
+      childNodes = pendingDelete.nodesets.pop();
+    } else {
+      var templateClone = this.templateNode.cloneNode(true);
+      var current = {
+          'data': valuesToAdd[i],
+          'index': index + i,
+          'observableIndex': ko.observable()
+        };
+      var childContext = this.$context['extend']({
+        '$root': undefined,
+        '$parent': undefined,
+        '$parents': undefined,
+        '$current': current
+      });
+      if (this.as) {
+        childContext[this.as] = current;
+      }
+
+      // apply bindings first, and then process child nodes, because bindings can add childnodes
+      ko.applyBindingsToDescendants(childContext, templateClone);
+
+      childNodes = ko.virtualElements.childNodes(templateClone);
+    }
+
+    // Note discussion at https://github.com/angular/angular.js/issues/7851
+    allChildNodes.push.apply(allChildNodes, Array.prototype.slice.call(childNodes));
+    this.firstLastNodesList.splice(index + i, 0, { first: childNodes[0], last: childNodes[childNodes.length - 1] });
+  }
+
+  this.insertAllAfter(allChildNodes, referenceElement);
+};
+
+OjForEach.prototype.getNodesForIndex = function (index) {
+  var result = [],
+    ptr = this.firstLastNodesList[index].first,
+    last = this.firstLastNodesList[index].last;
+  result.push(ptr);
+  while (ptr && ptr !== last) {
+    ptr = ptr.nextSibling;
+    result.push(ptr);
+  }
+  return result;
+};
+
+OjForEach.prototype.getLastNodeBeforeIndex = function (index) {
+  if (index < 1 || index - 1 >= this.firstLastNodesList.length)
+    return null;
+  return this.firstLastNodesList[index - 1].last;
+};
+
+OjForEach.prototype.insertAllAfter = function (nodeOrNodeArrayToInsert, insertAfterNode) {
+  var frag, len, i,
+    containerNode = this.element;
+
+  // poor man's node and array check, should be enough for this
+  if (nodeOrNodeArrayToInsert.nodeType === undefined && nodeOrNodeArrayToInsert.length === undefined) {
+    throw new Error("Expected a single node or a node array");
+  }
+  if (nodeOrNodeArrayToInsert.nodeType !== undefined) {
+    ko.virtualElements.insertAfter(containerNode, nodeOrNodeArrayToInsert, insertAfterNode); // @HTMLUpdateOK
+    return [nodeOrNodeArrayToInsert];
+  } else if (nodeOrNodeArrayToInsert.length === 1) {
+    ko.virtualElements.insertAfter(containerNode, nodeOrNodeArrayToInsert[0], insertAfterNode); // @HTMLUpdateOK
+  } else if (supportsDocumentFragment) {
+    frag = document.createDocumentFragment();
+
+    for (i = 0, len = nodeOrNodeArrayToInsert.length; i !== len; ++i) {
+      frag.appendChild(nodeOrNodeArrayToInsert[i]);
+    }
+    ko.virtualElements.insertAfter(containerNode, frag, insertAfterNode); // @HTMLUpdateOK
+  } else {
+    // Nodes are inserted in reverse order - pushed down immediately after
+    // the last node for the previous item or as the first node of element.
+    for (i = nodeOrNodeArrayToInsert.length - 1; i >= 0; --i) {
+      var child = nodeOrNodeArrayToInsert[i];
+      if (!child) { break; }
+      ko.virtualElements.insertAfter(containerNode, child, insertAfterNode); // @HTMLUpdateOK
+    }
+  }
+  return nodeOrNodeArrayToInsert;
+};
+
+// checks if the deleted data item should be handled with delay for a possible reuse at additions
+OjForEach.prototype.shouldDelayDeletion = function (data) {
+  return data && (typeof data === "object" || typeof data === "function");
+};
+
+// gets the pending deletion info for this data item
+OjForEach.prototype.getPendingDeleteFor = function (data) {
+  var index = data && data[PENDING_DELETE_INDEX_KEY];
+  if (index === undefined) return null;
+  return this.pendingDeletes[index];
+};
+
+// tries to find the existing pending delete info for this data item, and if it can't, it registeres one
+OjForEach.prototype.getOrCreatePendingDeleteFor = function (data) {
+  var pd = this.getPendingDeleteFor(data);
+  if (pd) {
+    return pd;
+  }
+  pd = {
+    data: data,
+    nodesets: []
+  };
+  data[PENDING_DELETE_INDEX_KEY] = this.pendingDeletes.length;
+  this.pendingDeletes.push(pd);
+  return pd;
+};
+
+// Process a changeItem with {status: 'deleted', ...}
+/**
+ * @expose
+ * @ignore
+ */
+OjForEach.prototype.deleted = function (changeItem) {
+  // if we should delay the deletion of this data, we add the nodeset to the pending delete info object
+  if (this.shouldDelayDeletion(changeItem.value)) {
+    var pd = this.getOrCreatePendingDeleteFor(changeItem.value);
+    pd.nodesets.push(this.getNodesForIndex(changeItem.index));
+  } else { // simple data, just remove the nodes
+    this.removeNodes(this.getNodesForIndex(changeItem.index));
+  }
+  this.indexesToDelete.push(changeItem.index);
+};
+
+// removes a set of nodes from the DOM
+OjForEach.prototype.removeNodes = function (nodes) {
+  if (!nodes.length) { return; }
+
+  var removeFn = function () {
+    var parent = nodes[0].parentNode;
+    for (var i = nodes.length - 1; i >= 0; --i) {
+      ko.cleanNode(nodes[i]);
+      parent.removeChild(nodes[i]);
+    }
+  };
+
+  removeFn();
+};
+
+// flushes the pending delete info store
+// this should be called after queue processing has finished, so that data items and remaining (not reused) nodesets get cleaned up
+OjForEach.prototype.flushPendingDeletes = function () {
+  for (var i = 0, len = this.pendingDeletes.length; i != len; ++i) {
+    var pd = this.pendingDeletes[i];
+    while (pd.nodesets.length) {
+      this.removeNodes(pd.nodesets.pop());
+    }
+    if (pd.data && pd.data[PENDING_DELETE_INDEX_KEY] !== undefined)
+      delete pd.data[PENDING_DELETE_INDEX_KEY];
+  }
+  this.pendingDeletes = [];
+};
+
+// We batch our deletion of item indexes in our parallel array.
+// See brianmhunt/knockout-fast-foreach#6/#8
+/**
+ * @expose
+ * @ignore 
+ */
+OjForEach.prototype.clearDeletedIndexes = function () {
+  // We iterate in reverse on the presumption (following the unit tests) that KO's diff engine
+  // processes diffs (esp. deletes) monotonically ascending i.e. from index 0 -> N.
+  for (var i = this.indexesToDelete.length - 1; i >= 0; --i) {
+    this.firstLastNodesList.splice(this.indexesToDelete[i], 1);
+  }
+  this.indexesToDelete = [];
+};
+
+
+OjForEach.prototype.getContextStartingFrom = function (node) {
+  var ctx;
+  while (node) {
+    ctx = ko.contextFor(node);
+    if (ctx) { return ctx; }
+    node = node.nextSibling;
+  }
+};
+
+
+OjForEach.prototype.updateIndexes = function (fromIndex) {
+  var ctx;
+  for (var i = fromIndex, len = this.firstLastNodesList.length; i < len; ++i) {
+    ctx = this.getContextStartingFrom(this.firstLastNodesList[i].first);
+    if (ctx && ctx['$current']) {
+      ctx['$current']['observableIndex'](i);
+    }
+  }
+};
+
+// Getter used in ko.computed callback that monitors array replacements 
+OjForEach.prototype.getData = function () {
+  return this.data;
+};
+
+// Setter used in ko.computed callback that monitors array replacements 
+OjForEach.prototype.setData = function (data) {
+  this.removeSubscriptions();
+  this.data = data;
+  this.addSubscriptions();
+};
+
+ko['bindingHandlers']['_ojBindForEach_'] = {
+  // Valid valueAccessors:
+  //    {data: array, as: string}
+  'init': function init(element, valueAccessor, bindings, vm, context) {
+    
+    var ffe, value;
+    
+    ko.computed(function() {
+      //: watch for array modifications, that are not covered by addSubscriptions() call:
+      //- non-observable array replacement triggered by CCA
+      //- array data defined with expression
+      value = valueAccessor();
+      if (ffe) {
+        var updatedValues = value['data'];
+        var currentValues = ffe.getData();
+        var currentArray, updatedArray;
+        //retrive the array data that might be defined as an observable 
+        ko.ignoreDependencies(function() {
+          currentArray = ko.unwrap(currentValues);
+          updatedArray = ko.unwrap(updatedValues);
+        });
+        // initialize options for ko.utils.compareArrays
+        // 'dontLimitMoves':true recommended for newer code, 'sparse':true is used for trackArray changes
+        var compareArrayOptions = {'sparse':true,'dontLimitMoves':true};
+        var changeSet = ko.utils.compareArrays(currentArray, updatedArray, compareArrayOptions);
+        ffe.setData(updatedValues);
+        ffe.onArrayChange(changeSet);
+      }
+    });
+    
+    ffe = new OjForEach(element, value, context);
+
+    ko.utils.domNodeDisposal.addDisposeCallback(element, function () {
+      ffe.removeSubscriptions();
+    });
+    return { 'controlsDescendantBindings': true };
+  },
+};
+
+ko.virtualElements.allowedBindings['_ojBindForEach_'] = true;
+})();
 //
 // Define a template source that allows the use of a knockout array (ko[])
 // to provide storage for a template string.
@@ -3638,9 +4030,105 @@ oj.koStringTemplateEngine.install = function()
 
 
 /**
+ * Returns a renderer function executes the template specified in the binding attribute.
+ * (for example, a knockout template).
+ * @param {Object} bindingContext the ko binding context
+ * @param {string} template the name of the template
+ * @return {Function} the renderer function
+ * @private
+ */
+function _getListViewItemRenderer(bindingContext, template)
+{
+    return function(context)
+    {
+        var parent, childContext;
+
+        parent = context['parentElement'];
+        // runs the template
+        childContext = bindingContext['createChildContext'](context['data'], null, 
+                           function(binding)
+                           {
+                               binding['$itemContext'] = context;
+                           }
+                       );
+        ko['renderTemplate'](template, childContext, {
+                           'afterRender': function(renderedElement)
+                           {
+                               $(renderedElement)['_ojDetectCleanData']();
+                           }}, parent, 'replaceNode');
+
+        // tell the listview not to do anything
+        return null;
+    };
+}
+
+/**
+ * Common method to handle managed attributes for both init and update
+ * @param {string} name the name of the attribute
+ * @param {Object} value the value of the attribute
+ * @param {Object} bindingContext the ko binding context
+ * @return {Object} the modified attribute
+ * @private
+ */
+function _handleListViewManagedAttributes(name, value, bindingContext)
+{
+    if (name == "item")
+    {
+      // find the cell template and creates a renderer
+      var template = value['template'];
+      if (template != null)
+      {
+        value['renderer'] = _getListViewItemRenderer(bindingContext, template);
+      }
+
+      return {'item': value};
+    }
+
+    return null;
+}
+
+oj.ComponentBinding.getDefaultInstance().setupManagedAttributes(
+{
+  'attributes': ["item"],
+  'init': function(name, value, element, widgetConstructor, valueAccessor, allBindingsAccessor, bindingContext)
+  {
+    var result = _handleListViewManagedAttributes(name, value, bindingContext);
+    if (result != null)
+        return result;
+  },
+  'update': function(name, value, element, widgetConstructor, valueAccessor, allBindingsAccessor, bindingContext)
+  {
+    return _handleListViewManagedAttributes(name, value, bindingContext);
+  },
+      
+  'for': 'ojListViewRenderer'
+});
+
+/**
+ * Default declaration for ojListView
+ */
+oj.ComponentBinding.getDefaultInstance().setupManagedAttributes(
+{
+  'for': 'ojListView',
+  'use': 'ojListViewRenderer'
+});
+
+/**
+ * Default declaration for ojListView
+ */
+oj.ComponentBinding.getDefaultInstance().setupManagedAttributes(
+{
+  'for': 'ojNavigationList',
+  'use': 'ojListViewRenderer'
+});
+
+
+/**
  * @ojstatus preview
  * @ojcomponent oj.ojBindForEach
+ * @ojshortdesc Binds items of an array to the specified markup section. The markup section is duplicated for each array item when element is rendered.
  * @ojbindingelement
+ * @ojsignature {target: "Type", value:"class ojBindForEach extends JetElement<ojBindForEachSettableProperties>"}
  * @since 4.1.0
  *
  * @classdesc
@@ -3677,6 +4165,8 @@ oj.koStringTemplateEngine.install = function()
  * <p>Note that the &lt;oj-bind-for-each&gt; element will be removed from the DOM after binding is applied.
  * For slotting, applications need to wrap the oj-bind-for-each element inside another HTML element (e.g. &lt;span&gt;) with the slot attribute.
  * The oj-bind-for-each element does not support the slot attribute.</p>
+ * <p>Also note that if the &lt;oj-bind-for-each&gt; element is being used to programmatically build an HTML table, 
+ * it must be placed in the view of an oj-module and loaded via ModuleElementUtils.</p>
  *
  * @example <caption>Initialize the oj-bind-for-each - access data using <code>$current</code>:</caption>
  *  &lt;oj-bind-for-each data='[{"type":"Apple"},{"type":"Orange"}]'>
@@ -3694,7 +4184,8 @@ oj.koStringTemplateEngine.install = function()
  */
 
 /**
- * The array that you wish to iterate over. Required property.
+ * The array that you wish to iterate over. Required property. Note that the &lt;oj-bind-for-each&gt; will 
+ * dynamically update the generated DOM in response to changes if the value is an observableArray.
  * @expose
  * @name data
  * @memberof oj.ojBindForEach
@@ -3714,164 +4205,81 @@ oj.koStringTemplateEngine.install = function()
  */
 
 /**
- * @ignore
+ * @ojstatus preview
+ * @ojcomponent oj.ojBindIf
+ * @ojshortdesc Conditionally render its contents only if a provided test returns true.
+ * @ojsignature {target: "Type", value:"class ojBindIf extends JetElement<ojBindIfSettableProperties>"}
+ * @ojbindingelement
+ * @since 4.1.0
+ *
+ * @classdesc
+ * <h3 id="overview-section">
+ *   If Binding
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#overview-section"></a>
+ * </h3>
+ * <p>Use &lt;oj-bind-if&gt; to conditionally render its contents only if a provided test 
+ * returns true. Note that the &lt;oj-bind-if&gt; element will be removed from the DOM 
+ * after binding is applied. For slotting, applications need to wrap the oj-bind-if element 
+ * inside another HTML element (e.g. &lt;span&gt;) with the slot attribute. The oj-bind-if element does not support 
+ * the slot attribute.</p>
+ *
+ * @example <caption>Initialize the oj-bind-if:</caption>
+ * &lt;oj-bind-if test='[[myTest]]'>
+ *   &lt;div>My Contents&lt;/div>
+ * &lt;/oj-bind-if>
  */
-(function()
-{
-  ko['bindingHandlers']['_ojCustomElement'] =
-  {
-    'after': ['attr'], // Ensure attr binding is processed first so to handle :disabled case since we only process on init
-    'init': function(element, valueAccessor, allBindingsAccessor, viewModel, bindingContext)
-    {
-       // Apply child bindings first
-       ko.applyBindingsToDescendants(bindingContext, element);
-       
-       return {'controlsDescendantBindings' : true};
-    },
-    
-    'update': function(element, valueAccessor, allBindingsAccessor, viewModel, bindingContext)
-    {
-      var callbackId = 0;
-      var _expressionHandler;
-      var attributeListener;
-      
-      // This instance won't be created unless oj.BaseCustomElementBridge is defined so this call is safe
-      var bridge = oj.BaseCustomElementBridge.getInstance(element);
 
-      var propsPromise = bridge.getPropertiesPromise();
-      
-      function cleanup()
-      {
-        if (_expressionHandler)
-        {
-          _expressionHandler.teardown();
-          _expressionHandler = null;
-        }
-        
-       
-        if(attributeListener)
-        {
-          element.removeEventListener(_ATTRIBUTE_CHANGED, attributeListener);
-          attributeListener = null;
-        }
-      };
-      
-      function setup(isComposite)
-      {
-        var metadataProps = oj.BaseCustomElementBridge.getProperties(bridge);
-        _expressionHandler = new oj.__ExpressionPropertyUpdater(element, bindingContext, isComposite);
+/**
+ * The test condition for the if clause. The children of the element will 
+ * only be rendered if the test is true.
+ * @expose
+ * @name test
+ * @memberof oj.ojBindIf
+ * @instance
+ * @type {boolean}
+ * @example <caption>Initialize the oj-bind-if:</caption>
+ * &lt;oj-bind-if test='[[myTest]]'>
+ *   &lt;div>My Contents&lt;/div>
+ * &lt;/oj-bind-if>
+ */
 
-        // Dummy metadata for passing to the ExpressionPropertyUpdater for DOM listener attributes i.e. on-*
-        var domListenerMetadata = {_domListener:true};
-        
-        // Set a flag on the bridge to indicate that we are initializing expressions from the DOM
-        // to avoid overriding any property sets that could have occured after
-        bridge._initializingExpressions = true;
+/**
+ * @ojstatus preview
+ * @ojcomponent oj.ojBindText
+ * @ojshortdesc Binds a text node to an expression.
+ * @ojsignature {target: "Type", value:"class ojBindText extends JetElement<ojBindTextSettableProperties>"}
+ * @ojbindingelement
+ * @since 4.1.0
+ *
+ * @classdesc
+ * <h3 id="overview-section">
+ *   Text Binding
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#overview-section"></a>
+ * </h3>
+ * <p>Use &lt;oj-bind-text&gt; to bind a text node to a variable. Note that the
+ * &lt;oj-bind-text&gt; element will be removed from the DOM after binding is
+ * applied, and any child elements it has will be removed. For slotting, applications 
+ * need to wrap the oj-bind-text element inside another HTML element (e.g. &lt;span&gt;) with the slot attribute. 
+ * The oj-bind-text element does not support the slot attribute.</p>
+ *
+ * @example <caption>Initialize the oj-bind-text:</caption>
+ * &lt;span>
+ *   &lt;oj-bind-text value='[[myText]]'>&lt;/oj-bind-text>
+ * &lt;/span>
+ */
 
-        // setupExpression will only update properties defined in metadata so it's safe to iterate through all element attributes
-        // including ones defined on the base HTML prototype
-        var attrs = element.attributes; // attrs is a NamedNodeMap
-        for (var i = 0; i < attrs.length; i++)
-        {
-          var attr = attrs[i];
-          var propName = oj.__AttributeUtils.attributeToPropertyName(attr.nodeName);
-          var eventName = oj.__AttributeUtils.eventListenerPropertyToEventType(propName);
-          var isDomEvent = eventName && !metadataProps[propName];
-          _expressionHandler.setupExpression(attr.value, propName, isDomEvent ? domListenerMetadata : metadataProps[propName.split('.')[0]]);
-        }
-        
-        bridge._initializingExpressions = false;
-
-        attributeListener = function(evt)
-        {
-          var detail = evt['detail'];
-          var attr = detail['attribute'];
-          var propName = oj.__AttributeUtils.attributeToPropertyName(attr);
-          var eventName = oj.__AttributeUtils.eventListenerPropertyToEventType(propName);
-          var isDomEvent = eventName && !metadataProps[propName];
-          
-          var metadata = isDomEvent ? domListenerMetadata : metadataProps[propName.split('.')[0]]; // send metadata for top level property
-          _expressionHandler.setupExpression(detail['value'], propName, metadata);
-         
-        };
-            
-        element.addEventListener(_ATTRIBUTE_CHANGED, attributeListener);
-      };
-  
-      // Since we are tracking all our dependencies explicitly, we are suspending dependency detection here.
-      // update() will be called only once as a result
-      ko.ignoreDependencies(
-        function()
-        {
-          ko.computed(
-            function()
-            {
-              // Access valueAccesor to ensure that the binding is re-initialzied when an
-              // observable ViewModel is mutated
-              var isComposite = valueAccessor().composite;
-              
-              if (!ko.computedContext.isInitial()) 
-              {
-                cleanup();
-              }
-              
-              callbackId++;
-              
-              
-              function _createCallbackWithIdMatching(currentId, callback)
-              {
-                var ret = function(id, value)
-                {
-                  if (id === callbackId)
-                  {
-                    callback(value);
-                  }
-                }.bind(undefined, currentId);
-                return ret;
-              }
-              
-              // The propsPromise is resolved synchronously in the connected callback for JET custom elements,
-              // but not for composites which are registered asynchronously due to the metadata Promise. Since
-              // the 1.0 custom element polyfill calls the connected callback synchronously, the binding provider
-              // promises will resolve children first allowing us to ensure that children are ready by the time
-              // parents are being created so our internal code can access properties early.
-              propsPromise.then(
-                _createCallbackWithIdMatching(callbackId,
-                  function()
-                  {
-                    setup(isComposite);
-                    oj._KnockoutBindingProvider.getInstance().__NotifyBindingsApplied(element);
-                  }
-                ),
-                _createCallbackWithIdMatching(callbackId,
-                  function(reason)
-                  {
-                    //rejected
-                    oj.Logger.error("Custom element binding setup failed. Reason: %o", 
-                        reason);
-                  }
-                )
-              );
-              
-              
-            },
-            null,
-            {'disposeWhenNodeIsRemoved' : element}
-          )
-        }
-      );
-  
-      ko.utils.domNodeDisposal.addDisposeCallback(element, cleanup);
-    
-  
-  
-    }
-  }
-  
-  var _ATTRIBUTE_CHANGED = 'attribute-changed';
-})();
-
-
+/**
+ * The value of the text node.
+ * @expose
+ * @name value
+ * @memberof oj.ojBindText
+ * @instance
+ * @type {string}
+ * @example <caption>Initialize the oj-bind-text:</caption>
+ * &lt;span>
+ *   &lt;oj-bind-text value='[[myText]]'>&lt;/oj-bind-text>
+ * &lt;/span>
+ */
 
 /**
  * Common method to handle managed attributes for both init and update
@@ -3897,6 +4305,32 @@ oj.ComponentBinding.getDefaultInstance().setupManagedAttributes({
     return _handleManagedGaugeAttributes(name, value, bindingContext);
   },
   'for': 'ojStatusMeterGauge'
+});
+
+/**
+ * Common method to handle managed attributes for both init and update
+ * @param {string} name the name of the attribute
+ * @param {Object} value the value of the attribute
+ * @param {Object} bindingContext the ko binding context
+ * @return {Object} the modified attribute
+ * @private
+ */
+function _handleManagedSunburstAttributes(name, value, bindingContext) {
+  if (name === "rootNodeContent" && value['template']) {
+    value['_renderer'] = _getDvtRenderer(bindingContext, value['template']);
+  }
+  return {'rootNodeContent': value};
+}
+
+oj.ComponentBinding.getDefaultInstance().setupManagedAttributes({
+  'attributes': ["rootNodeContent"],
+  'init': function (name, value, element, widgetConstructor, valueAccessor, allBindingsAccessor, bindingContext) {
+    return _handleManagedSunburstAttributes(name, value, bindingContext);
+  },
+  'update': function (name, value, element, widgetConstructor, valueAccessor, allBindingsAccessor, bindingContext) {
+    return _handleManagedSunburstAttributes(name, value, bindingContext);
+  },
+  'for': 'ojSunburst'
 });
 
 /*jslint browser: true, devel: true*/
@@ -4096,248 +4530,6 @@ oj.ComponentBinding.getDefaultInstance().setupManagedAttributes(
   });
 
 /**
- * @ignore
- */
-oj.__KO_CUSTOM_BINDING_PROVIDER_INSTANCE.addPostprocessor({'getBindingAccessors': _replaceComponentBindingWithV2});
-
-
-
-/**
- * This function modifies the return value of getBindingAccessors()
- * to separate bindings for each tracked attributess in the 'inline' ojComponent binding
- * @param node
- * @param bindingContext
- * @param accessorMap
- * @param wrapped
- * @ignore
- */
-function _replaceComponentBindingWithV2(node, bindingContext, accessorMap, wrapped)
-{
-  if (accessorMap == null)
-  {
-    return null;
-  }
-
-  // Remove the old (pre-V2) binding from the accessor map
-  var bindingName = _findOwnBinding(accessorMap)
-  if (bindingName != null)
-  {
-    accessorMap = _modifyOjComponentBinding(node, bindingName, wrapped, bindingContext, accessorMap);
-  }
-
-  return accessorMap;
-}
-
-/**
- * @ignore
- */
-function _findOwnBinding(accessorMap)
-{
-  var keys = Object.keys(accessorMap)
-  for (var i=-0; i<keys.length; i++)
-  {
-    var key = keys[i];
-    if (oj.ComponentBinding._isNameRegistered(key))
-    {
-      return key;
-    }
-  }
-  return null;
-}
-
-/**
- * @param node
- * @param bindingName
- * @param wrapped
- * @param bindingContext
- * @param accessorMap
- * @ignore
- */
-function _modifyOjComponentBinding(node, bindingName, wrapped, bindingContext, accessorMap)
-{
-  var info = _getBindingValueInfo(node, bindingName, wrapped, bindingContext);
-
-  var bindingList = info.attrList;
-
-  if (bindingList == null) // binding is specified externally (as opposed to an 'inline' object literal)
-  {
-    return accessorMap;
-  }
-
-  var bindingMap = {};
-  _keyValueArrayForEach(bindingList,
-    function(key, value)
-    {
-      bindingMap[key] = value;
-    }
-  );
-
-  // clone the original accessor map
-  accessorMap = oj.CollectionUtils.copyInto({}, accessorMap);
-
-  //Add accessor for the V2 version of the Component bidning
-  accessorMap[bindingName] =
-                      _getOjComponent2BindingAccessor(bindingContext, bindingMap, info.bindingExpr);
-
-  return accessorMap;
-
-}
-
-/**
- * @ignore
- */
-function _getOjComponent2BindingAccessor(bindingContext, attributeMap, bindingExpr)
-{
-  var accessorFunc = function()
-  {
-    var accessor = {};
-    Object.keys(attributeMap).forEach(
-      function(option)
-      {
-        var expression = attributeMap[option];
-
-        // bindingContext will be passed as as the first parameter to the evaluator
-        var getter = oj.ComponentBinding.__CreateEvaluator(expression).bind(null, bindingContext);
-
-        Object.defineProperty(accessor, option,
-          {
-            'get': getter,
-            'enumerable': true
-          }
-        );
-      }
-    );
-
-    Object.defineProperty(accessor, oj.ComponentBinding._OPTION_MAP,
-      {
-        'value': attributeMap
-        /* not enumerable */
-      }
-    );
-
-    return accessor;
-  }
-
-  // Define toString() for the custom accessor function since we do not want the entire function body to show up in
-  // the log whenever a binding evaluation error occurs
-  accessorFunc.toString = function(){return bindingExpr;};
-
-  return accessorFunc;
-}
-
-
-/**
- * @param node
- * @param wrapped
- * @param bindingContext
- * @ignore
- */
-function _getBindingString(node, wrapped, bindingContext)
-{
-  var func = wrapped['getBindingsString'];
-  if (func)
-  {
-    return func.call(wrapped, node, bindingContext);
-  }
-
-  switch (node.nodeType)
-  {
-    case 1: // Element
-      return node.getAttribute("data-bind");
-
-    case 8: // Comment node
-      var match = node.nodeValue.match(/^\s*ko(?:\s+([\s\S]+))?\s*$/);
-      return  (match ? match[1]: null);
-  }
-  return null;
-}
-
-/**
- * @param node
- * @param bindingName
- * @param wrapped
- * @param bindingContext
- * @ignore
- */
-function _getBindingValueInfo(node, bindingName, wrapped, bindingContext)
-{
-  var list = null;
-
-  var bindingString = _getBindingString(node, wrapped, bindingContext);
-  var keyValueArray = ko.jsonExpressionRewriting.parseObjectLiteral(bindingString);
-
-  var selfVal = null;
-
-  _keyValueArrayForEach(keyValueArray,
-    function(key, value)
-    {
-      if (key === bindingName)
-      {
-        selfVal = value;
-        return true;
-      }
-      return false;
-    }
-  );
-
-  if (selfVal != null)
-  {
-    // check for object literal
-    if (selfVal.indexOf('{') === 0)
-    {
-      list = ko.jsonExpressionRewriting.parseObjectLiteral(selfVal);
-    }
-  }
-
-  return {attrList: list, bindingExpr: selfVal};
-}
-
-function _keyValueArrayForEach(array, callback)
-{
-  for(var i=0; i<array.length; i++)
-  {
-    var entry = array[i];
-    var key = entry['key'];
-    var value = entry['value'];
-    if (key != null && value != null && callback(key.trim(), value.trim()))
-    {
-      break;
-    }
-  }
-}
-
-
-oj.__KO_CUSTOM_BINDING_PROVIDER_INSTANCE.addPostprocessor(
-  {
-    'nodeHasBindings': function(node, wrappedReturn)
-    {
-      if (!oj.BaseCustomElementBridge)
-        return wrappedReturn;
-      return wrappedReturn || (node.nodeType === 1 && oj.BaseCustomElementBridge.getRegistered(node.nodeName));
-    },
-
-    'getBindingAccessors': function(node, bindingContext, wrappedReturn)
-    {
-      if (node.nodeType === 1 && oj.BaseCustomElementBridge)
-      {
-        var name = node.nodeName;
-        var info = oj.BaseCustomElementBridge.getRegistered(name);
-        
-        if (info)
-        {
-          wrappedReturn = wrappedReturn || {};
-
-          wrappedReturn['_ojCustomElement'] = function() {return {composite: info.composite}}
-
-        }
-      }
-
-      return wrappedReturn;
-    }
-  }
-);
-
-/**
  * Common method to handle managed attributes for both init and update
  * @param {string} name the name of the attribute
  * @param {Object} value the value of the attribute
@@ -4345,153 +4537,41 @@ oj.__KO_CUSTOM_BINDING_PROVIDER_INSTANCE.addPostprocessor(
  * @return {Object} the modified attribute
  * @private
  */
-function _handleManagedSunburstAttributes(name, value, bindingContext) {
-  if (name === "rootNodeContent" && value['template']) {
-    value['_renderer'] = _getDvtRenderer(bindingContext, value['template']);
+function _handleManagedMapAttributes(name, value, bindingContext) {
+  if (name === "areaLayers") {
+    for (var i = 0; i < value.length; i++) {
+      var areaDataLayer = value[i]['areaDataLayer'];
+      if (areaDataLayer) {
+        var template = areaDataLayer['template'];
+        if (template != null) {
+          areaDataLayer['_templateRenderer'] = _getDvtDataRenderer(bindingContext, template);
+        }
+      }
+    }
+    return {'areaLayers': value};
   }
-  return {'rootNodeContent': value};
+  else if (name === "pointDataLayers") {
+    for (var i = 0; i < value.length; i++) {
+      var template = value[i]['template'];
+      if (template != null) {
+        value[i]['_templateRenderer'] = _getDvtDataRenderer(bindingContext, template);
+      }
+    }
+    return {'pointDataLayers': value};
+  }
+  return null;
 }
 
 oj.ComponentBinding.getDefaultInstance().setupManagedAttributes({
-  'attributes': ["rootNodeContent"],
+  'attributes': ["areaLayers", "pointDataLayers"],
   'init': function (name, value, element, widgetConstructor, valueAccessor, allBindingsAccessor, bindingContext) {
-    return _handleManagedSunburstAttributes(name, value, bindingContext);
+    return _handleManagedMapAttributes(name, value, bindingContext);
   },
   'update': function (name, value, element, widgetConstructor, valueAccessor, allBindingsAccessor, bindingContext) {
-    return _handleManagedSunburstAttributes(name, value, bindingContext);
+    return _handleManagedMapAttributes(name, value, bindingContext);
   },
-  'for': 'ojSunburst'
+  'for': 'ojThematicMap'
 });
-
-/**
- * @ignore
- * @constructor
- * @private
- */
-oj._KnockoutBindingProvider = function()
-{
-  /**
-   * @ignore
-   */
-  this.whenReady = function(elem)
-  {
-    return _getReadyMediatorInstance(elem).getPromise();
-  }
-  
-  /**
-   * @ignore
-   */
-  this.addDisposeCallback =  function(elem, callback)
-  {
-    ko.utils.domNodeDisposal.addDisposeCallback(elem, callback);
-  }
-  
-
-  /**
-   * @ignore
-   */
-  this.__NotifyBindingsApplied = function(elem)
-  {
-    _getReadyMediatorInstance(elem).resolve(true);
-  }
-
-  /**
-   * @ignore
-   */
-  function _getReadyMediatorInstance(elem)
-  {
-    var prop = "_ojBndMdtr";
-    var mediator = elem[prop];
-    if (!mediator)
-    {
-      mediator = new ElementMediator();
-      Object.defineProperty(elem, prop, {'value': mediator});
-    }
-    return mediator;
-  }
-  
-  /**
-   * @ignore
-   * @constructor
-   */
-  function ElementMediator()
-  {
-    this.getPromise = function()
-    {
-      if (!_promise)
-      {
-        _promise = new Promise(function(resolve){_resolver = resolve;});
-      }
-      return _promise;
-    };
-    
-    this.resolve = function(val)
-    {
-      if (_resolver)
-      {
-        _resolver(val);
-        _resolver = null;
-      }
-      else if (!_promise)
-      {
-        _promise = Promise.resolve(val);
-      }
-    }
-    
-    var _promise;
-    var _resolver;
-  }
-}
-
-/**
- * @ignore
- */
-oj._KnockoutBindingProvider.getInstance = function()
-{
-  return oj._KnockoutBindingProvider._instance;
-}
-
-/**
- * @ignore
- */
-oj._KnockoutBindingProvider._instance = new oj._KnockoutBindingProvider();
-
-
-
-
-
-/**
- * Returns a renderer function executes the template specified in the binding attribute.
- * (for example, a knockout template).
- * @param {Object} bindingContext the ko binding context
- * @param {string} template the name of the template
- * @return {Function} the renderer function
- * @private
- */
-function _getListViewItemRenderer(bindingContext, template)
-{
-    return function(context)
-    {
-        var parent, childContext;
-
-        parent = context['parentElement'];
-        // runs the template
-        childContext = bindingContext['createChildContext'](context['data'], null, 
-                           function(binding)
-                           {
-                               binding['$itemContext'] = context;
-                           }
-                       );
-        ko['renderTemplate'](template, childContext, {
-                           'afterRender': function(renderedElement)
-                           {
-                               $(renderedElement)['_ojDetectCleanData']();
-                           }}, parent, 'replaceNode');
-
-        // tell the listview not to do anything
-        return null;
-    };
-}
 
 /**
  * Common method to handle managed attributes for both init and update
@@ -4501,57 +4581,22 @@ function _getListViewItemRenderer(bindingContext, template)
  * @return {Object} the modified attribute
  * @private
  */
-function _handleListViewManagedAttributes(name, value, bindingContext)
-{
-    if (name == "item")
-    {
-      // find the cell template and creates a renderer
-      var template = value['template'];
-      if (template != null)
-      {
-        value['renderer'] = _getListViewItemRenderer(bindingContext, template);
-      }
-
-      return {'item': value};
-    }
-
-    return null;
+function _handleManagedTreemapAttributes(name, value, bindingContext) {
+  if (name === "nodeContent" && value['template']) {
+    value['_renderer'] = _getDvtRenderer(bindingContext, value['template']);
+  }
+  return {'nodeContent': value};
 }
 
-oj.ComponentBinding.getDefaultInstance().setupManagedAttributes(
-{
-  'attributes': ["item"],
-  'init': function(name, value, element, widgetConstructor, valueAccessor, allBindingsAccessor, bindingContext)
-  {
-    var result = _handleListViewManagedAttributes(name, value, bindingContext);
-    if (result != null)
-        return result;
+oj.ComponentBinding.getDefaultInstance().setupManagedAttributes({
+  'attributes': ["nodeContent"],
+  'init': function (name, value, element, widgetConstructor, valueAccessor, allBindingsAccessor, bindingContext) {
+    return _handleManagedTreemapAttributes(name, value, bindingContext);
   },
-  'update': function(name, value, element, widgetConstructor, valueAccessor, allBindingsAccessor, bindingContext)
-  {
-    return _handleListViewManagedAttributes(name, value, bindingContext);
+  'update': function (name, value, element, widgetConstructor, valueAccessor, allBindingsAccessor, bindingContext) {
+    return _handleManagedTreemapAttributes(name, value, bindingContext);
   },
-      
-  'for': 'ojListViewRenderer'
+  'for': 'ojTreemap'
 });
 
-/**
- * Default declaration for ojListView
- */
-oj.ComponentBinding.getDefaultInstance().setupManagedAttributes(
-{
-  'for': 'ojListView',
-  'use': 'ojListViewRenderer'
 });
-
-/**
- * Default declaration for ojListView
- */
-oj.ComponentBinding.getDefaultInstance().setupManagedAttributes(
-{
-  'for': 'ojNavigationList',
-  'use': 'ojListViewRenderer'
-});
-
-
-return oj._KnockoutBindingProvider.getInstance();});

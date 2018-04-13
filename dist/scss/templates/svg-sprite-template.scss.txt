@@ -27,7 +27,7 @@
       @include oj-fwk-icon-{{base}}-scale;
     }
 
-    /* in high-contrast mode, background-image disappears, so we have to use content */
+    // In high-contrast mode, background-image disappears, so we have to use content.
     .oj-hicontrast .oj-fwk-icon-{{base}} {
       background-image: none;
     }
@@ -37,8 +37,11 @@
       height: 100%;
     }
 
-    /* in print mode, background-image disappears, so we have to use content */
-    @media print {
+    // In print mode, background-image disappears, so we have to use content.
+    // For small dppx, sprites may be clipped significantly, so we disable it.
+    // IE and Safari do not support dppx, so they will always use sprites, and
+    // that is fine because the clipping is insignificant on IE and Safari. 
+    @media print, (max-resolution: .99dppx) {
       .oj-fwk-icon-{{base}} {
         background-image: none;
       }

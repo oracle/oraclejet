@@ -1,4 +1,5 @@
 /**
+ * @license
  * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
@@ -20,11 +21,67 @@ define(['ojs/ojcore', 'jquery', "hammerjs", "ojs/ojjquery-hammer", 'promise', 'o
 (function() {
 
 /**
+ * @typedef {Object} oj.ojMenu.PositionAlign
+ * @property {"top"|"bottom"|"center"} [vertical] Vertical alignment.
+ * @property {"start"|"end"|"left"|"center"|"bottom"} [horizontal] Horizontal alignment. <p>
+ * <ul>
+ *  <li><b>"start"</b> evaluates to "left" in LTR mode and "right" in RTL mode.</li>
+ *  <li><b>"end"</b> evaluates to "right" in LTR mode and "left" in RTL mode.</li>
+ * </ul>
+ *
+ */
+
+/**
+ * @typedef {Object} oj.ojMenu.PositionPoint
+ * @property {number} [x] Horizontal aligment offset.
+ * @property {number} [y] Vertical alignment offset.
+ */
+
+/**
+ * @typedef {Object} oj.ojMenu.Position
+ * @property {oj.ojMenu.PositionAlign} [my] Defines which edge on the menu to align with the target ("of") element.
+ * @property {oj.ojMenu.PositionAlign} [at] Defines which position on the target element ("of") to align the positioned element
+ *                                  against.
+ * @property {oj.ojMenu.PositionPoint} [offset] Defines a point offset in pixels from the ("my") alignment.
+ * @property {string|oj.ojMenu.PositionPoint} [of] Which element to position the menu against.  The default is the
+ * <code class="prettyprint">launcher</code> argument passed to the
+ * <code class="prettyprint">open</code> method. <p>
+ *
+ * If the value is a string, it should be a selector or the literal string value
+ * of <code class="prettyprint">window</code>.  Otherwise, a point of x,y.  When a point
+ * is used, the values are relative to the whole document.  Page horizontal and vertical
+ * scroll offsets need to be factored into this point - see UIEvent
+ * <a href="https://developer.mozilla.org/en-US/docs/Web/API/UIEvent/pageX">pageX</a>,
+ * <a href="https://developer.mozilla.org/en-US/docs/Web/API/UIEvent/pageY">pageY</a>.
+ *
+ * @property {"flip"|"fit"|"flipfit"|"none"} [collision] Rule for alternate alignment. <p>
+ * <ul>
+ *  <li><b>"flip"</b> the element to the opposite side of the target and the
+ *             collision detection is run again to see if it will fit. Whichever side
+ *             allows more of the element to be visible will be used. </li>
+ * <li><b>"fit"</b> shift the element away from the edge of the window. </li>
+ * <li><b>"flipfit"</b> first applies the flip logic, placing the element
+ *  on whichever side allows more of the element to be visible. Then the fit logic
+ *  is applied to ensure as much of the element is visible as possible.</li>
+ * <li><b>"none"</b> no collision detection.</li>
+ * </ul>
+ */
+
+/**
+ * @typedef {Object} oj.ojMenu.OpenOptions
+ * @property {string} [display] Determines whether the menu is displayed as a dropDown menu or a sheet menu.
+ * @property {string} [initialFocus] Determines focus behavior when the menu is initially opened.
+ * @property {string|Element} [launcher] The DOM node (which may or may not be a JET element) that launches this menu.
+ * @property {oj.ojMenu.Position} [position] Determines the position of a dropDown menu when launched. Ignored for sheet menus.
+ */
+
+/**
  * @ojcomponent oj.ojMenu
  * @ojdisplayname Menu
  * @augments oj.baseComponent
  * @ojrole menu
  * @since 0.6
+ * @ojshortdesc Displays a popup menu with support for touch, mouse, and keyboard interactions.
  * @ojstatus preview
  *
  * @classdesc
@@ -41,13 +98,22 @@ define(['ojs/ojcore', 'jquery', "hammerjs", "ojs/ojjquery-hammer", 'promise', 'o
  * <code>&lt;oj-menu id="menu" style="display:none" aria-label="Order Edit">
  *   &lt;oj-option>Item 1&lt;/oj-option>
  *   &lt;oj-option>Item 2&lt;/oj-option>
- *   &lt;oj-option>Item 3&lt;/oj-option>
+ *   &lt;oj-option>Item 3
+ *     &lt;oj-menu id="submenu">
+ *       &lt;oj-option>Item 3-1&lt;/oj-option>
+ *       &lt;oj-option>Item 3-2&lt;/oj-option>
+ *       &lt;oj-option>Item 3-3&lt;/oj-option>
+ *       &lt;oj-option>Item 3-4&lt;/oj-option>
+ *       &lt;oj-option>Item 3-5&lt;/oj-option>
+ *     &lt;/oj-menu>
+ *   &lt;/oj-option>
  *   &lt;oj-option>Item 4&lt;/oj-option>
  *   &lt;oj-option>Item 5&lt;/oj-option>
  * &lt;/oj-menu>
  * </code></pre>
  *
- * <p>JET Menus are not intended to be scrollable, as large, unwieldy menus are not good UX.  Ideally menus should have a manageable number of items.
+ * <p>JET Menus are not intended to be scrollable, as large, unwieldy menus are not good UX.  Ideally menus should have a manageable number of items; if this is not
+ * possible, then it is preferable to organize contents into submenus, rather than introducing scrolling.
  *
  *
  * <h3 id="popup-section">
@@ -63,6 +129,19 @@ define(['ojs/ojcore', 'jquery', "hammerjs", "ojs/ojjquery-hammer", 'promise', 'o
  * as shown in the above code sample.
  *
  *
+ * <h3 id="submenus-section">
+ *   Submenus
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#submenus-section"></a>
+ * </h3>
+ * 
+ * <p>Submenus can be created by specifying nested <code class="prettyprint">oj-menu</code> elements under the desired <code class="prettyprint">oj-option</code> elements.
+ * 
+ * <p>When a submenu is present, a default submenu icon will be automatically added to the parent menu item (see <a href="#itemIcons-section">Menu Item Icons</a>).
+ * 
+ * <p>Sheet menus are not appropriate when submenus are present. Therefore, submenus and there parent menus are always displayed as a dropDown regardless of the
+ * <code class="prettyprint">open-options.display</code> attribute's value.
+ * 
+ * 
  * <h3 id="dividers-section">
  *   Dividers
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#dividers-section"></a>
@@ -86,9 +165,11 @@ define(['ojs/ojcore', 'jquery', "hammerjs", "ojs/ojjquery-hammer", 'promise', 'o
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#itemIcons-section"></a>
  * </h3>
  *
- * <p>Menu items currently support the rendering of start and end icons. To render start or end icons for a menu item, the
- * <code class="prettyprint">startIcon</code> or <code class="prettyprint">endIcon</code> slot of the <code class="prettyprint">oj-option</code>
- * should be specified. See the <code class="prettyprint">oj-option</code> doc for details about accepted children and slots.</p>
+ * <p>Menu items currently support the rendering of start and end icons. Submenu icons are inserted automatically. To replace the default
+ * submenu icon with a custom icon, the <code class="prettyprint">endIcon</code> slot should be specified. To render additional start
+ * or end icons for a menu item, the <code class="prettyprint">startIcon</code> or <code class="prettyprint">endIcon</code> slot of the
+ * <code class="prettyprint">oj-option</code> should be specified. See the <code class="prettyprint">oj-option</code> doc for details about
+ * accepted children and slots.</p>
  * 
  * 
  * <h3 id="dismissal-section">
@@ -132,7 +213,8 @@ define(['ojs/ojcore', 'jquery', "hammerjs", "ojs/ojjquery-hammer", 'promise', 'o
  * </h3>
  *
  * <p>The app should supply either an <code class="prettyprint">aria-label</code> or <code class="prettyprint">aria-labelledby</code>
- * attribute on the menu's root element, except possibly for menu buttons as discussed below.
+ * attribute on the menu's root element, except possibly for menu buttons as discussed below. These attributes should not be supplied
+ * for submenus, which are labeled automatically.
  *
  * <p>If a menu is shared by different launchers, and should have a different label for each launcher, then a
  * <a href="#event:ojBeforeOpen">ojBeforeOpen</a> listener can be used to set a different label per launch.
@@ -293,6 +375,9 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
          * @memberof oj.ojMenu
          * @instance
          * @type {Object}
+         * @ojsignature { target: "Type",
+         *                value: "oj.ojMenu.OpenOptions",
+         *                jsdocOverride: true }
          *
          * @example <caption>Initialize the menu, setting some <code class="prettyprint">openOptions</code> values.</caption>
          * &lt;oj-menu open-options.initial-focus='true' open-options.launcher='myLauncher'>&lt;/oj-menu>
@@ -305,7 +390,7 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
          * var values = myMenu.openOptions;
          *
          * // Set one, leaving the others intact
-         * myMenu.openOptions.initialFocus = 'none';
+         * myMenu.setProperty('openOptions.initialFocus', 'none');
          *
          * // Set many.  Any existing openOptions not listed are lost
          * myMenu.openOptions = { 'launcher': 'myLauncher',
@@ -323,6 +408,9 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
              *
              * <p>To avoid disorienting the user, if the screen width changes while the menu is already open (e.g. due to a device
              * rotation), the display may not change until the next launch.
+             * 
+             * <p>Sheet menus are not appropriate when submenus are present.  Thus, menus having submenus are always displayed as
+             * a dropDown, regardless of the values of this option and the SASS variable.
              *
              * <p>If the SASS variable is set to 0 or a huge value such as 99999px, then all menus with
              * <code class="prettyprint">display</code> set to <code class="prettyprint">"auto"</code> will always display as a
@@ -348,7 +436,7 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
              * var display = myMenu.openOptions.display;
              *
              * // setter:
-             * myMenu.openOptions.display = 'sheet';
+             * myMenu.setProperty('openOptions.display', 'sheet');
              */
             display : "auto",
 
@@ -373,12 +461,12 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
              * var initialFocus = myMenu.openOptions.initialFocus;
              *
              * // setter:
-             * myMenu.openOptions.initialFocus = 'none';
+             * myMenu.setProperty('openOptions.initialFocus', 'none');
              */
             initialFocus : "menu",
 
             /**
-             * <p>The DOM node (which may or may not be a JET component) that launches this menu.
+             * <p>The DOM node (which may or may not be a JET element) that launches this menu.
              * This node must be focusable, as focus is returned to it upon menu dismissal.
              *
              * <p>The launcher must either be specified in this component option, or on each menu launch -- see <a href="#open">open()</a>
@@ -388,7 +476,7 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
              * @alias openOptions.launcher
              * @memberof! oj.ojMenu
              * @instance
-             * @type {string|Object}
+             * @type {string|Element}
              * @default null
              *
              * @example <caption>Initialize the menu with the <code class="prettyprint">openOptions.launcher</code> sub-option specified:</caption>
@@ -399,7 +487,7 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
              * var launcher = myMenu.openOptions.launcher;
              *
              * // setter:
-             * myMenu.openOptions.launcher = 'myLauncher';
+             * myMenu.setProperty('openOptions.launcher', 'myLauncher');
              */
             launcher: null,
 
@@ -407,20 +495,14 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
              * <p>Determines the position of a dropDown menu when launched via the <code class="prettyprint">open()</code> method or via menu button or
              * context menu functionality.  Ignored for sheet menus.
              *
-             * <p>Please refer to the jQuery UI [Position]{@link http://api.jqueryui.com/position/} utility for details about the various choices.
-             * In addition to that syntax, note that JET supports the following reading direction-aware extended syntax in the
-             * <code class="prettyprint">my</code> and <code class="prettyprint">at</code> fields:
+             * <p>The "my" and "at" properties define aligment points relative to the menu and other element.  The "my" property represents the menu's
+             * alignment where the "at" property represents the other element that can be identified by "of" or defauts to the launcher when the menu
+             * opens.  The values of these properties describe horizontal and vertical alignments.</p>
              *
              * <ul>
              * <li>JET supports <code class="prettyprint">start</code> and <code class="prettyprint">end</code> values wherever <code class="prettyprint">left</code>
              * and <code class="prettyprint">right</code> are supported.  The <code class="prettyprint">start</code> value means "left in LTR; right in RTL",
              * while the <code class="prettyprint">end</code> value means "right in LTR; left in RTL."</li>
-             *
-             * <li>Similarly, JET supports <code class="prettyprint">></code> and <code class="prettyprint">&lt;</code> operators wherever <code class="prettyprint">+</code>
-             * and <code class="prettyprint">-</code> are supported.  The <code class="prettyprint">></code> value means "+ in LTR; - in RTL",
-             * while the <code class="prettyprint">&lt;</code> value means "- in LTR; + in RTL."  E.g. a <code class="prettyprint">my</code> value
-             * of <code class="prettyprint">"start>40"</code> shifts the menu 40px "endward," while a <code class="prettyprint">my</code> value
-             * of <code class="prettyprint">"start&lt;40"</code> shifts the menu 40px "startward."</li>
              * </ul>
              *
              * <p>Menu also supports the following extended syntax for the <code class="prettyprint">of</code> field:
@@ -430,17 +512,24 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
              * <li>The <code class="prettyprint">"launcher"</code> keyword means "position the menu relative to the launcher element."</li>
              * </ul>
              *
-             * <p>By default, when the <code class="prettyprint">of</code> field is not set, the menu is positioned relative to the launcher.
+             * <p>By default, when the <code class="prettyprint">of</code> field is not set, the menu is positioned relative to the launcher.</p>
+             * 
+             * <p>The default position value varies between menus and submenus as follows:
+             * <ul>
+             *   <li>Top level menu default: <code class="prettyprint">{ my: { horizontal: "start", vertical: "top" }, at: { horizontal: "start", vertical: "bottom" }, offset: { x: 0, y: 0 }, collision: "flipfit" }</code></li>
+             *   <li>Submenu default: <code class="prettyprint">{ my: { horizontal: "start", vertical:  "top" }, at: { horizontal: "end", vertical: "top" }, offset: { x: 0, y: 0 }, collision: "flipfit" }</code></li>
+             * </ul>
+             * 
+             * <b>Deprecated v5.0.0 jQuery UI position syntax; Use of a percent unit with "my" or "at" is not supported.</b>
              *
              * @expose
              * @alias openOptions.position
              * @memberof! oj.ojMenu
              * @instance
-             * @type {Object}
-             * @default { "my": "start top", "at": "start bottom", "collision": "flipfit" }
+             * @type {Object}  
              *
              * @example <caption>Initialize the menu with the <code class="prettyprint">openOptions.position</code> option specified:</caption>
-             * &lt;oj-menu open-options.position.my='start'>&lt;/oj-menu>
+             * &lt;oj-menu open-options.position.my.horizontal='start'>&lt;/oj-menu>
              *
              * @example <caption>Get or set the <code class="prettyprint">openOptions.position</code> sub-option, after initialization:</caption>
              * // Get one field of position object
@@ -450,23 +539,179 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
              * var position = myMenu.openOptions.position;
              *
              * // Set one field of position object, leaving the others intact
-             * myMenu.openOptions.position.at = 'end bottom';
+             * myMenu.setProperty('openOptions.position.at.horizontal', 'right');
              *
              * // Set entire position object. Any fields not listed are lost.
-             * myMenu.openOptions.position = { 'my': 'start top', 'at': 'end<5 top+5', 'collision': 'flipfit' };
+             * myMenu.setProperty('openOptions.position', {"my": {"horizontal": "start", "vertical": "bottom"},
+             *                                             "at": {"horizontal": "end", "vertical": "top" },
+             *                                             "offset": {"x": 0, "y":5}});
              */
             position: {
-                /** @expose */
-                my: "start top",
-                /** @expose */
-                at: "start bottom",
-
-                // : Ensure menu stays onscreen (hence no autoscrolling/jumping the page to move it back onscreen), even when when
-                // the screen is very small (phones, small desktop browser windows).  If the menu height is less than the viewport height, but
-                // greater than the viewport height y-above and y-below the launcher, then with the default "flip" policy, the menu will appear
-                // y-above or y-below the launcher, and the window will autoscroll vertically to display the menu, while with the "flipfit" policy, the
-                // menu will appear z-above the launcher as needed to stay onscreen, so the window does not need to autoscroll vertically. Likewise horizontally.
-                "collision": "flipfit"
+              /**
+               * Defines which edge on the menu to align with the target ("of") element.
+               *
+               * @expose
+               * @memberof! oj.ojMenu
+               * @instance
+               * @alias openOptions.position.my
+               * @name openOptions.position.my
+               * @type {{horizontal:string, vertical:string}}
+               */
+              'my' : {
+                /**
+                 * Defines the horizontal alignment of the menu.
+                 * @expose
+                 * @memberof! oj.ojMenu
+                 * @instance
+                 * @alias openOptions.position.my.horizontal
+                 * @name openOptions.position.my.horizontal
+                 * @type {string}
+                 * @default 'start'
+                 * @ojvalue {string} "start" evaluates to "left" in LTR mode and "right" in RTL mode.
+                 * @ojvalue {string} "end" evaluates to "right" in LTR mode and "left" in RTL mode.
+                 * @ojvalue {string} "left"
+                 * @ojvalue {string} "center"
+                 * @ojvalue {string} "right"
+                 */
+                'horizontal': 'start',
+                /**
+                 * Defines the vertical alignment of the menu.
+                 * @expose
+                 * @memberof! oj.ojMenu
+                 * @instance
+                 * @alias openOptions.position.my.vertical
+                 * @name openOptions.position.my.vertical
+                 * @type {string}
+                 * @default 'top'
+                 * @ojvalue {string} "top"
+                 * @ojvalue {string} "center"
+                 * @ojvalue {string} "bottom"
+                 */
+                'vertical': 'top'
+              },
+              /**
+               * Defines a point offset in pixels from the ("my") alignment.
+               * @expose
+               * @memberof! oj.ojMenu
+               * @instance
+               * @alias openOptions.position.offset
+               * @name openOptions.position.offset
+               * @type {{x:number, y:number}}
+               */
+              'offset': {
+                /**
+                 * Horizontal aligment offset.
+                 * @expose
+                 * @memberof! oj.ojMenu
+                 * @instance
+                 * @alias openOptions.position.offset.x
+                 * @name openOptions.position.offset.x
+                 * @type {number}
+                 * @default 0
+                 */
+                'x': 0,
+                /**
+                 * Vertical alignment offset.
+                 * @expose
+                 * @memberof! oj.ojMenu
+                 * @instance
+                 * @alias openOptions.position.offset.y
+                 * @name openOptions.position.offset.y
+                 * @type {number}
+                 * @default 0
+                 */
+                'y': 0
+              },
+              /**
+               * Defines which position on the target element ("of") to align the positioned element
+               * against.
+               *
+               * @expose
+               * @memberof! oj.ojMenu
+               * @instance
+               * @alias openOptions.position.at
+               * @name openOptions.position.at
+               * @type {{horizontal:string, vertical:string}}
+               */
+              'at' : {
+                /**
+                 * Defines the horizontal alignment of what the menu is aligned to. For top-level menus, the default value is "start". For submenus, the default value is "end".
+                 * @expose
+                 * @memberof! oj.ojMenu
+                 * @instance
+                 * @alias openOptions.position.at.horizontal
+                 * @name openOptions.position.at.horizontal
+                 * @type {string}
+                 * @ojvalue {string} "start" evaluates to "left" in LTR mode and "right" in RTL mode.
+                 * @ojvalue {string} "end" evaluates to "right" in LTR mode and "left" in RTL mode.
+                 * @ojvalue {string} "left"
+                 * @ojvalue {string} "center"
+                 * @ojvalue {string} "right"
+                 */
+                'horizontal': 'start',
+                /**
+                 * Defines the vertical alignment of what the menu is aligned to. For top-level menus, the default value is "bottom". For submenus, the default value is "top".
+                 * @expose
+                 * @memberof! oj.ojMenu
+                 * @instance
+                 * @alias openOptions.position.at.vertical
+                 * @name openOptions.position.at.vertical
+                 * @type {string}
+                 * @ojvalue {string} "top"
+                 * @ojvalue {string} "center"
+                 * @ojvalue {string} "bottom"
+                 */
+                'vertical': 'bottom'
+              },
+              /**
+               * Which element to position the menu against.  The default is the
+               * <code class="prettyprint">launcher</code> argument passed to the
+               * <code class="prettyprint">open</code> method.
+               *
+               * If the value is a string, it should be a selector or the literal string value
+               * of <code class="prettyprint">window</code>.  Otherwise, a point of x,y.  When a point
+               * is used, the values are relative to the whole document.  Page horizontal and vertical
+               * scroll offsets need to be factored into this point - see UIEvent
+               * <a href="https://developer.mozilla.org/en-US/docs/Web/API/UIEvent/pageX">pageX</a>,
+               * <a href="https://developer.mozilla.org/en-US/docs/Web/API/UIEvent/pageY">pageY</a>.
+               *
+               * @example <caption>Finding the point for an svg element:</caption>
+               * var rect = svgDom.getBoundingClientRect();
+               * var position = {of:{x:rect.left + window.pageXOffset, y:rect.top + window.pageYOffset}};
+               *
+               * @expose
+               * @memberof! oj.ojMenu
+               * @instance
+               * @alias openOptions.position.of
+               * @name openOptions.position.of
+               * @type {string|{x: number, y: number}| undefined}
+               */
+              'of' : undefined,
+              /**
+               * Rule for alternate alignment.
+               *
+               * @expose
+               * @memberof! oj.ojMenu
+               * @instance
+               * @alias openOptions.position.collision
+               * @name openOptions.position.collision
+               * @type {string}
+               * @default 'flipfit'
+               * @ojvalue {string} "flip" the element to the opposite side of the target and the
+               *  collision detection is run again to see if it will fit. Whichever side
+               *  allows more of the element to be visible will be used.
+               * @ojvalue {string} "fit" shift the element away from the edge of the window.
+               * @ojvalue {string} "flipfit" first applies the flip logic, placing the element
+               *  on whichever side allows more of the element to be visible. Then the fit logic
+               *  is applied to ensure as much of the element is visible as possible.
+               * @ojvalue {string} "none" no collision detection.
+               */
+              // : Ensure menu stays onscreen (hence no autoscrolling/jumping the page to move it back onscreen), even when when
+              // the screen is very small (phones, small desktop browser windows).  If the menu height is less than the viewport height, but
+              // greater than the viewport height y-above and y-below the launcher, then with the default "flip" policy, the menu will appear
+              // y-above or y-below the launcher, and the window will autoscroll vertically to display the menu, while with the "flipfit" policy, the
+              // menu will appear z-above the launcher as needed to stay onscreen, so the window does not need to autoscroll vertically. Likewise horizontally.
+              'collision' : 'flipfit'
             }
         },
 
@@ -552,18 +797,18 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
          * @event
          * @memberof oj.ojMenu
          * @instance
-         * @property {CustomEvent} event a custom event
-         * @property {Object} event.detail an object containing component specific event info
-         * @property {string} event.detail.action The action that is starting the animation.
-         *            The number of actions can vary from component to component.
+         * @ojcancelable
+         * @ojbubbles
+         * @property {"open"|"close"} action The action that is starting the animation.
+         *            The number of actions can vary from element to element.
          *            Suggested values are:
          *                    <ul>
-         *                      <li>"open" - when a menu is opened</li>
-         *                      <li>"close" - when a menu is closed</li>
+         *                      <li>"open" - when a menu element is opened</li>
+         *                      <li>"close" - when a menu element is closed</li>
          *                    </ul>
-         * @property {Element} event.detail.element target of animation
-         * @property {function} event.detail.endCallback If the event listener calls
-         *            event.preventDefault to cancel the default animation, it must call the
+         * @property {!Element} element target of animation
+         * @property {!function():void} endCallback If the event listener calls
+         *            event.preventDefault to cancel the default animation, It must call the
          *            endCallback function when it finishes its own animation handling and any
          *            custom animation has ended.
          *            
@@ -603,17 +848,17 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
          * @event
          * @memberof oj.ojMenu
          * @instance
-         * @property {Event} event a custom event
-         * @property {Object} event.detail an object containing component specific event info
-         * @property {Element} event.detail.element target of animation
-         * @property {string} event.detail.action The action that is starting the animation.
-         *                   The number of actions can vary from component to component.
+         * @ojcancelable
+         * @ojbubbles
+         * @property {!Element} element target of animation
+         * @property {"open"|"close"} action The action that is ending the animation.
+         *                   The number of actions can vary from element to element.
          *                   Suggested values are:
          *                    <ul>
-         *                      <li>"open" - when a menu component is opened</li>
-         *                      <li>"close" - when a menu component is closed</li>
+         *                      <li>"open" - when a menu element is opened</li>
+         *                      <li>"close" - when a menu element is closed</li>
          *                    </ul>
-         * 
+         *                    
          * @example <caption>Bind an event listener to the
          *          <code class="prettyprint">onOjAnimateEnd</code> property to listen for the "open"
          *          ending animation:</caption>
@@ -665,9 +910,8 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
          * @event
          * @memberof oj.ojMenu
          * @instance
-         * @property {Event} event a custom event
-         * @property {Object} event.detail an object containing component specific event info
-         * @property {Object} event.detail.openOptions Settings in use for this menu launch.
+         * @ojcancelable
+         * @ojbubbles
          */
         beforeOpen: null,
 
@@ -754,20 +998,37 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
          *
          * <p>To ensure keyboard accessibility, the only correct, supported way to react to the selection of a menu item is to listen
          * for this event.  Click listeners and <code class="prettyprint">href</code> navigation should not be used.
+         * 
+         * <p>To find the value of the menu item that triggered an action event, the event.target.value should be used.
          *
          * @expose
          * @event
          * @memberof oj.ojMenu
          * @instance
-         * @property {Event} event a custom event
-         * @property {Object} event.detail an object containing component specific event info
+         * @ojcancelable
+         * @ojbubbles
+         * @since 4.0.0
+         * @example <caption>Find the value of the selected menu item:</caption>
+         *   myMenu.onOjAction = function( event )
+         *   {
+         *     // the target of the action event is the selected &lt;oj-option> element
+         *     var itemSelected = event.target;
+         *     
+         *     // find the 'value' of the selected &lt;oj-option> element
+         *     var selectedValue = itemSelected.value;
+         *   }
          */
         action: null
     },
 
+    /**
+     * @memberof oj.ojMenu
+     * @instance
+     * @protected
+     * @override
+     */
     _ComponentCreate: function() { // Override of protected base class method.  Method name needn't be quoted since is in externs.js.
         this._super();
-        var self = this;
 
         // Create aliases, that won't be renamed, for the private methods that are called by unit tests.  These unit tests come
         // from JQUI, in which these methods were actually public.  With these aliases, we don't have to @expose private method names
@@ -776,11 +1037,6 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
         this["_focusForTesting"] = this._focus;
         this["_nextForTesting"] = this._next;
         this["_selectForTesting"] = this._select;
-
-        this.activeMenu = this.element;
-
-        // flag used to prevent firing of the click handler as the event bubbles up through nested menus
-        this.mouseHandled = false;
 
         // Cancel menu item is supported for custom elements, so we only need the following check for the old syntax
         if (!this._IsCustomElement())
@@ -793,8 +1049,40 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
             // TODO: When support for non-<ul> menus is pulled after the deprecation period, replace the above check with this one:
 //          if (this.element[0].tagName.toLowerCase() !== "ul")
 //              throw new Error("Menu must be based on a <ul> element.");
-        }
 
+            this._createAsTopLevelMenu();
+        }
+        else
+        {
+            //check if this is a submenu
+            var parentOption = this.element.parent();
+            if (parentOption.is( "oj-option" ))
+            {
+                var parentMenu = parentOption.parent();
+                if (parentMenu.is( "oj-menu" ))
+                {
+                    this._isSubmenu = true;
+                    this._createAsSubmenu();
+                }
+            }
+
+            if (!this._isSubmenu)
+                this._createAsTopLevelMenu();
+            
+            // fixup the position option if custom element menu or submenu
+            var options = this.options;
+            options["openOptions"]["position"] = oj.PositionUtils.coerceToJet(options["openOptions"]["position"]);
+        }
+    },
+    
+    _createAsTopLevelMenu: function()
+    {
+        var self = this;
+        this.activeMenu = this.element;
+        
+        // flag used to prevent firing of the click handler as the event bubbles up through nested menus
+        this.mouseHandled = false;
+        
         this._setupSwipeBehavior();
 
         this.element
@@ -979,8 +1267,24 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
             }
         });
 
-        // callback that overrides the positon['using'] for auto dismissal when aligning element is cropped.
+        // callback that overrides the position['using'] for auto dismissal when aligning element is cropped.
         this._usingCallback = $.proxy(this._usingHandler, this);
+        this._setup();
+    },
+    
+    _createAsSubmenu: function()
+    {
+        // set special container name as this should have submenu defaults
+        this.element.attr(oj.Components._OJ_CONTAINER_ATTR, this['widgetName']);
+        
+        this.element
+            .uniqueId()
+            .addClass( "oj-menu oj-component oj-menu-submenu oj-menu-dropdown" ) // submenus are always dropdown
+            .hide()
+            .attr({
+                "role": this.role,
+                "tabIndex": "0"
+            });
         this._setup();
     },
 
@@ -1014,66 +1318,117 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
         var ojOption = $(option);
         var self = this;
         
-        // check for disabled state in case all we need to do is update disabled attribute
-        if (option['disabled'] == true)
-            ojOption.addClass('oj-disabled')
-        else if (option['disabled'] == false)
-            ojOption.removeClass('oj-disabled')
+        // clear out any roles or classes that we may have previously set
+        this._clearOption(ojOption);
+        
+        // if 'a' tag already exists, we need to remove it and re-render content
+        var anchors = ojOption.children('a');
+        for (var i = 0; i < anchors.length; i++)
+        {
+            var customAnchor = $(anchors[i]);
+            if (customAnchor.attr('ojmenu') === 'opt')
+            {
+                // reset existing slots, and remove the custom anchor
+                customAnchor.children()
+                    .removeClass('oj-menu-item-icon')
+                    .removeClass('oj-menu-item-end-icon');
+
+                customAnchor.replaceWith(customAnchor.contents());
+                break;
+            }
+        }
         
         // test to see if this is a divider
-        if (ojOption.is(":not(.oj-menu-item)") && !/[^\-\u2014\u2013\s]/.test( ojOption.text() )) // hyphen, em dash, en dash
-            return;
-        
-        var a = ojOption.children("a");
-        if (a.length > 0)
-            return;
-        
-        a = document.createElement('a');
-        a.setAttribute('href', '#');
-        ojOption.prepend(a); // @HTMLUpdateOK append trusted new DOM to menu item
-        
-        var supportedSlots = ["startIcon", "", "endIcon"];
-        var slots = oj.CustomElementBridge.getSlotMap(option);
+        if (!/[^\-\u2014\u2013\s]/.test( ojOption.text() )) // hyphen, em dash, en dash
+            this._initDividers(ojOption);
+        else
+        {
+            this._initMenuItems(ojOption);
+            
+            // create 'a' tag
+            var a = document.createElement('a');
+            a.setAttribute('href', '#');
 
-        // reparent the slots, and make sure any necessary styling is applied
-        $.each(supportedSlots, function(i, slotName) {
-            if (slots[slotName]) {
-                if (slotName === "")
-                {
-                    $.each(slots[slotName], function(j, node) {
-                        $(a).append(node); // @HTMLUpdateOK reparent trusted child DOM in menu item
-                    })
+            // tag with ojmenu attribute to identify it later
+            a.setAttribute('ojmenu', 'opt');
+            customAnchor = $(a);
+
+            customAnchor.uniqueId()
+                   .attr({
+                       "tabIndex": "-1",
+                       "role": this._itemRole()
+                   });
+
+            ojOption.prepend(a); // @HTMLUpdateOK append trusted new DOM to menu item
+            
+            var supportedSlots = ["startIcon", "", "endIcon"];
+            var slots = oj.BaseCustomElementBridge.getSlotMap(option);
+
+            // reparent the slots, and make sure any necessary styling is applied
+            $.each(supportedSlots, function(i, slotName) {
+                if (slots[slotName]) {
+                    if (slotName === "")
+                    {
+                        $.each(slots[slotName], function(j, node) {
+                            // handle the submenu case
+                            if (($(node).is("oj-menu")))
+                            {
+                                self._setupSubmenu(customAnchor, $(node));
+                                this._hasSubmenus = true;
+                            }
+                            else
+                                customAnchor.append(node); // @HTMLUpdateOK reparent trusted child DOM in menu item
+                        });
+                    }
+                    else if (slotName === "startIcon")
+                    {
+                        var startIconCount = slots[slotName].length;
+                        self._maxStartIconCount = Math.max(self._maxStartIconCount, startIconCount);
+
+                        $.each(slots[slotName], function(j, node) {
+                            $(node).addClass('oj-menu-item-icon');
+                            customAnchor.append(node); // @HTMLUpdateOK reparent trusted child DOM in menu item
+
+                            // positioning logic doesn't need to run if there is only 1 start icon
+                            if (startIconCount > 1)
+                                self._positionStartIcon(node, j, startIconCount);
+                        });
+                    }
+                    else if (slotName === "endIcon")
+                    {
+                        var endIconCount = slots[slotName].length;
+                        self._maxEndIconCount = Math.max(self._maxEndIconCount, endIconCount);
+
+                        $.each(slots[slotName], function(j, node) {
+                            $(node).addClass('oj-menu-item-end-icon');
+                            customAnchor.append(node); // @HTMLUpdateOK reparent trusted child DOM in menu item
+
+                            // positioning logic doesn't need to run if there is only 1 end icon
+                            if (endIconCount > 1)
+                                self._positionEndIcon(node, j, endIconCount);
+                        });
+                    }
                 }
-                else if (slotName === "startIcon")
-                {
-                    var startIconCount = slots[slotName].length;
-                    self._maxStartIconCount = Math.max(self._maxStartIconCount, startIconCount);
-                    
-                    $.each(slots[slotName], function(j, node) {
-                        $(node).addClass('oj-menu-item-icon');
-                        $(a).append(node); // @HTMLUpdateOK reparent trusted child DOM in menu item
-                        
-                        // positioning logic doesn't need to run if there is only 1 start icon
-                        if (startIconCount > 1)
-                            self._positionStartIcon(node, j, startIconCount);
-                    })
-                }
-                else if (slotName === "endIcon")
-                {
-                    var endIconCount = slots[slotName].length;
-                    self._maxEndIconCount = Math.max(self._maxEndIconCount, endIconCount);
-                    
-                    $.each(slots[slotName], function(j, node) {
-                        $(node).addClass('oj-menu-item-end-icon');
-                        $(a).append(node); // @HTMLUpdateOK reparent trusted child DOM in menu item
-                        
-                        // positioning logic doesn't need to run if there is only 1 end icon
-                        if (endIconCount > 1)
-                            self._positionEndIcon(node, j, endIconCount);
-                    })
-                }
+            });
+            
+            // check for disabled state in case all we need to do is update disabled attribute
+            if (option['disabled'] == true)
+            {
+                ojOption.addClass('oj-disabled');
+                customAnchor.attr( "aria-disabled", "true" );
             }
-        });
+            else if (option['disabled'] == false)
+            {
+                ojOption.removeClass('oj-disabled');
+                customAnchor.removeAttr( "aria-disabled" );
+            }
+        }
+        
+        var children = this.element.children();
+        var dividers = children.filter( ".oj-menu-divider" );
+        
+        // ensure "before/after-divider" classes are applied iff appropriate
+        this._initDividerNeighbors(children, dividers);
     },
     
     // Helper method to position start icons
@@ -1108,6 +1463,25 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
         $(node).css( marginProperty, (margin + this._endIconWidth * (count - index - 1)) + 'px' );
     },
     
+    // Helper method to handle menu item padding updates
+    _updateMenuPadding: function($menu) {
+        
+        var anchors = $menu.children()  // <li>s
+                          .children(); // <a>s
+        var iconCount = anchors.children(".oj-menu-item-icon:not(.oj-menu-cancel-icon)").length; // icons other than cancel item's icon
+        $menu.toggleClass( "oj-menu-icons", !!iconCount )
+            .toggleClass( "oj-menu-text-only", !iconCount );
+
+        if (this._maxStartIconCount && this._maxStartIconCount > 1)
+            this._applyAnchorIconPadding(anchors, this._startIconWidth, this._maxStartIconCount, true);
+
+        var endIconCount = anchors.children(".oj-menu-item-end-icon").length;
+        $menu.toggleClass( "oj-menu-end-icons", !!endIconCount );
+
+        if (this._maxEndIconCount && this._maxEndIconCount > 1)
+            this._applyAnchorIconPadding(anchors, this._endIconWidth, this._maxEndIconCount, false);
+    },
+    
     // Helper method to apply icon padding to menu item anchors
     _applyAnchorIconPadding: function(anchors, iconWidth, count, isStart) {
         if ((this.isRtl && isStart) || (!this.isRtl && !isStart))
@@ -1118,7 +1492,7 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
         anchors.each(function() {
             var padding = parseInt($(this).css( paddingProperty ), 10);
             $(this).css( paddingProperty, (padding + iconWidth * (count - 1)) + 'px' );
-        })
+        });
     },
     
    /**
@@ -1185,7 +1559,14 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
                 };
     },
 
-
+    /**
+     * @memberof oj.ojMenu
+     * @instance
+     * @protected
+     * @param {string} key option name
+     * @param {?Object} value of the target option identified by the key
+     * @override
+     */
     _setOption: function( key, value ) { // Override of protected base class method.  Method name needn't be quoted since is in externs.js.
         this._superApply( arguments ); // TBD: consider calling super at end, so that optionChange (fired at end of super) is fired at very end
 
@@ -1198,6 +1579,12 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
         }
     },
 
+    /**
+     * @memberof oj.ojMenu
+     * @instance
+     * @protected
+     * @override
+     */
     _destroy: function() { // Override of protected base class method.  Method name needn't be quoted since is in externs.js.
         if (this.element.is(":visible"))
             this.__dismiss();
@@ -1404,7 +1791,7 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
     },
 
     /**
-     * Refreshes the visual state of the menu. JET components require a <code class="prettyprint">refresh()</code> after the DOM is
+     * Refreshes the visual state of the menu. JET elements require a <code class="prettyprint">refresh()</code> after the DOM is
      * programmatically changed underneath the component.  For Menu, this includes:
      *
      * <ul>
@@ -1416,6 +1803,7 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
      * @expose
      * @memberof oj.ojMenu
      * @instance
+     * @return {void}
      *
      * @example <caption>Invoke the <code class="prettyprint">refresh</code> method:</caption>
      * myMenu.refresh();
@@ -1459,17 +1847,30 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
 
     _setup: function() { // Private, not an override (not in base class).  Method name unquoted so will be safely optimized (renamed) by GCC as desired.
         this.isRtl = this._GetReadingDirection() === "rtl";
-
-        var self=this;
         
         if (!this._IsCustomElement())
-            var submenus = this.element.find( this.options.menuSelector ); // <ul>'s except root <ul>
+            this._setupWidgetMenus();
         else
         {
-            self._processOjOptions();
-            // comment this out for now as we are not including submenus for 4.0
-            submenus = $([]); //this.element.find( 'oj-menu' ); // <oj-menu> tags
+            this._processOjOptions();
+            
+            if (this._isSubmenu)
+                this.options.openOptions.launcher = this.element.parent();
+            
+            // ensure menu padding is updated
+            this._updateMenuPadding(this.element);
         }
+
+        // If the active item has been removed, blur the menu
+        if ( this.active && !$.contains( this.element[ 0 ], this.active[ 0 ] ) ) {
+            this._blur();
+        }
+    },
+    
+    _setupWidgetMenus: function() { // Private, not an override (not in base class).  Method name unquoted so will be safely optimized (renamed) by GCC as desired.
+        var self=this;
+        
+        var submenus = this.element.find( this.options.menuSelector ); // <ul>'s except root <ul>
         
         var menus = submenus.add( this.element ),                      // <ul>'s including root <ul>
             children = menus.children();                               // <li>'s in root menu and submenus
@@ -1514,23 +1915,8 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
                 "aria-hidden": "true"
             })
             .each(function() {
-                var menu = $( this ), // <ul>
-                    item = self._getSubmenuAnchor( menu ), // <a>
-                    submenuIcon = $( "<span>" );
-
-                submenuIcon   // separate stmt rather than chaining, since GCC can't tell that this is the setter overload of .data().
-                    .addClass( "oj-menu-submenu-icon oj-component-icon" )
-                    .data( "oj-ojMenu-submenu-icon", true ); // TODO: can't we just look for the class at destroy time rather than adding this data?
-
-                item
-                    .attr( "aria-haspopup", "true" )
-                    .attr( "aria-expanded", "false" ) // per a11y team, live on <a>, not <ul> like JQUI
-                    .append( submenuIcon ); // @HTMLUpdateOK append trusted new DOM to menu item
-
-                // id always exists due to uniqueId() call above
-                var itemId = /** @type {string|undefined}  tell GCC is getter, not setter, overload of attr() */
-                             (item.attr( "id" ));
-                menu.attr( "aria-labelledby", itemId );
+                var menu = $( this ); // <ul>
+                self._setupSubmenu(self._getSubmenuAnchor( menu ), menu);
             });
 
         menus.each(function() {
@@ -1539,27 +1925,24 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
             // This facilitates leaving space for a "column" of icons iff at least one icon is present, and doing so for each menu/submenu independently.
             // We exclude the cancel item's icon from the count, as that icon is always present if the cancel item is, but it's themed to show up iff
             // oj-menu-icons is present, i.e. iff at least one other icon is present.
-            var menu = $( this ); // <ul>
-            var anchors = menu.children()  // <li>s
-                              .children(); // <a>s
-            var iconCount = anchors.children(".oj-menu-item-icon:not(.oj-menu-cancel-icon)").length; // icons other than cancel item's icon
-            menu.toggleClass( "oj-menu-icons", !!iconCount )
-                .toggleClass( "oj-menu-text-only", !iconCount );
-        
-            if (self._maxStartIconCount && self._maxStartIconCount > 1)
-                self._applyAnchorIconPadding(anchors, self._startIconWidth, self._maxStartIconCount, true);
-            
-            var endIconCount = anchors.children(".oj-menu-item-end-icon").length;
-            menu.toggleClass( "oj-menu-end-icons", !!endIconCount );
-            
-            if (self._maxEndIconCount && self._maxEndIconCount > 1)
-                self._applyAnchorIconPadding(anchors, self._endIconWidth, self._maxEndIconCount, false);
+            self._updateMenuPadding($(this));
         });
-
-        // If the active item has been removed, blur the menu
-        if ( this.active && !$.contains( this.element[ 0 ], this.active[ 0 ] ) ) {
-            this._blur();
-        }
+    },
+    
+    // helper method to create and add a submenu icon to the item provided
+    _setupSubmenu: function(item, submenu) {
+        var submenuIcon = $( "<span>" );
+        
+        submenuIcon   // separate stmt rather than chaining, since GCC can't tell that this is the setter overload of .data().
+            .addClass( "oj-menu-submenu-icon oj-component-icon" )
+            .data( "oj-ojMenu-submenu-icon", true ); // TODO: can't we just look for the class at destroy time rather than adding this data?
+    
+        item
+            .attr( "aria-haspopup", "true" )
+            .attr( "aria-expanded", "false" ) // per a11y team, live on <a>, not <ul> like JQUI
+            .append( submenuIcon ); // @HTMLUpdateOK append trusted new DOM to menu item
+    
+        submenu.attr( "aria-labelledby", item.attr( "id" ));
     },
 
     /**
@@ -1602,12 +1985,25 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
         dividers.prev().addClass( "oj-menu-item-before-divider" );
         dividers.next().addClass( "oj-menu-item-after-divider" );
     },
+    
+    /**
+     * @private
+     */
+    _clearOption: function(option) { // Private, not an override (not in base class).  Method name unquoted so will be safely optimized (renamed) by GCC as desired.
+        option.removeClass( "oj-menu-item-before-divider oj-menu-item-after-divider oj-menu-divider oj-menu-item" )
+              .removeAttr( "role" );
+    },
 
     /*
      * Given a list of one or more submenus (typically <ul>'s), finds the <a>'s that are their labels.
      */
     _getSubmenuAnchor: function(submenu) { // Private, not an override (not in base class).  Method name unquoted so will be safely optimized (renamed) by GCC as desired.
         return submenu.prev( "a" );
+    },
+
+    _getSubmenuWidget: function(submenu) { // Private, not an override (not in base class).  Method name unquoted so will be safely optimized (renamed) by GCC as desired.
+        var constructor = oj.Components.__GetWidgetConstructor(submenu, "ojMenu");
+        return constructor && constructor("instance");
     },
 
     _itemRole: function() { // Private, not an override (not in base class).  Method name unquoted so will be safely optimized (renamed) by GCC as desired.
@@ -1666,7 +2062,7 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
 
         var nested = item.children( ".oj-menu" ); // immediately nested submenu.  length 0 or 1.
         if ( nested.length && event && ( /^mouse/.test( event.type ) && !this.active.hasClass( "oj-disabled" ) ) ) {
-            this._startOpening(nested);
+            this._startOpening(event, nested);
         }
         this.activeMenu = item.parent();
     },
@@ -1882,6 +2278,8 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
         //trigger action event on the oj-option element
         if (selectUi && selectUi["item"].length)
         {
+            // the following event construction is taken from the '_triggerCustomEvent' logic, but we can't
+            // use that method since the child <oj-option> is not a full fledged JET element.
             var detail = {};
             var eventName = "ojAction";
             var itemElement = selectUi["item"][0];
@@ -2024,6 +2422,15 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
      * @expose
      * @memberof oj.ojMenu
      * @instance
+     * @return {void}
+     * @ojsignature { target: "Type",
+     *                value: "oj.ojMenu.OpenOptions",
+     *                for: "openOptions",
+     *                jsdocOverride: true }
+     * @fires oj.ojMenu#ojBeforeOpen
+     * @fires oj.ojMenu#ojAnimationStart
+     * @fires oj.ojMenu#ojAnimationEnd
+     * @fires oj.ojMenu#ojOpen
      *
      * @param {Object=} event What triggered the menu launch.  May be <code class="prettyprint">null</code>.  May be omitted if subsequent params are omitted.
      * @param {Object=} openOptions Options to merge with the <code class="prettyprint">openOptions</code> option.  May be <code class="prettyprint">null</code>.  May be omitted if subsequent params are omitted.
@@ -2053,7 +2460,7 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
           // want the _clickAwayHandler for the old launcher to dismiss it.
           this._dismissEvent = null;
         }
-
+        
         //
         // Important:  Merge [submenu]openOptions *before* calling _trigger(), and don't use the merged values until *after* the call.
         // Reason:  Per doc on open() and beforeOpen event, we pass the merged openOptions to beforeOpen listeners as a "live" object,
@@ -2069,6 +2476,9 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
         // $.fn.position copies the object passed to it before modifying it, so Step 2 isn't needed for that reason.
         openOptions = $.extend({}, this.options.openOptions, openOptions);
         openOptions.position = $.extend({}, openOptions.position);
+        if (this._IsCustomElement())
+            this._setPosition(openOptions.position);
+        
         submenuOpenOptions = $.extend({}, this.options.submenuOpenOptions, submenuOpenOptions);
 
         // getCurrentOpenOptions() returns a deep copy of this._currentOpenOptions if set.  Put the live copy in the ivar, and have that method make the copy, so that the method picks up
@@ -2144,7 +2554,17 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
             // vary by launch when there are submenus.
             this.element.addClass("oj-menu-dropdown").removeClass("oj-menu-sheet");
             modality = _DROPDOWN_MODALITY;
-            position = oj.PositionUtils.normalizeHorizontalAlignment(openOptions.position, this.isRtl);
+            
+            // convert the position option back to JQuery format if custom element menu or submenu
+            if (this._IsCustomElement())
+            {
+                // fixup the position option if custom element menu or submenu
+                openOptions.position = oj.PositionUtils.coerceToJet(openOptions.position, this.options["openOptions"]["position"]);
+                position = oj.PositionUtils.coerceToJqUi(openOptions.position);
+            }
+            else
+                position = openOptions.position;
+            position = oj.PositionUtils.normalizeHorizontalAlignment(position, this.isRtl);
             position.of = oj.PositionUtils.normalizePositionOf(position.of, launcher, event);
 
             // since already checked for null launcher above, this is only possible if "of" was "event" but the event was null.  Caller error.
@@ -2215,6 +2635,23 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
         oj.PopupService.getInstance().open(psOptions);
         
         this._disableAnimation = false;
+    },
+    
+    /**
+     * @memberof oj.ojMenu
+     * @instance
+     * @private
+     * @param {?Object} position object set as an option or passed as an argument to the open
+     *                  method.
+     */
+    _setPosition : function (position)
+    {
+      var options = this.options; 
+      
+      // new position extends the existing object
+      // covert to jet internal position format
+      if (position)
+        options["openOptions"]["position"] = oj.PositionUtils.coerceToJet(position, options["openOptions"]["position"]);
     },
 
     /**
@@ -2298,7 +2735,7 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
       this._trigger( "open", event, {});
     },
 
-    _startOpening: function( submenu ) { // Private, not an override (not in base class).  Method name unquoted so will be safely optimized (renamed) by GCC as desired.
+    _startOpening: function( event, submenu ) { // Private, not an override (not in base class).  Method name unquoted so will be safely optimized (renamed) by GCC as desired.
         this._clearTimer && this._clearTimer();
 
         // Don't open if already open fixes a Firefox bug that caused a .5 pixel
@@ -2310,12 +2747,12 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
         this._clearTimer = this._setTimer(function() {
             delete this._clearTimer;
             this._close();
-            this._open( submenu );
+            this._open( event, submenu );
         }, this._getSubmenuBusyStateDescription("closing and opening"), this.delay );
     },
 
     // opens a *sub*menu
-    _open: function( submenu ) { // Private, not an override (not in base class).  Method name unquoted so will be safely optimized (renamed) by GCC as desired.
+    _open: function( event, submenu ) { // Private, not an override (not in base class).  Method name unquoted so will be safely optimized (renamed) by GCC as desired.
 
         // Don't open if already open.
         // Calling position() again when the submenu is animating will mess up
@@ -2323,8 +2760,22 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
         if ( submenu.attr( "aria-hidden" ) !== "true" ) {
             return;
         }
-
-        var position = $.extend( {"of": this.active}, this._submenuPosition); // normalizeHorizontalAlignment() was already called on the ivar
+        
+        if (this._IsCustomElement())
+        {
+            var submenuWidget = this._getSubmenuWidget(submenu);
+            var beforeOpenResults = submenuWidget._trigger2( "beforeOpen", event);
+            
+            if (!beforeOpenResults['proceed'])
+                return;
+            
+            var position = oj.PositionUtils.coerceToJqUi(submenuWidget.options.openOptions.position);
+            position = oj.PositionUtils.normalizeHorizontalAlignment(position, this.isRtl);
+        }
+        else
+            position = this._submenuPosition;
+        
+        position = $.extend( {"of": this.active}, position); // normalizeHorizontalAlignment() was already called on the ivar
 
         this._clearTimer && this._clearTimer();
         this.element.find( ".oj-menu" ).not( submenu.parents( ".oj-menu" ) )
@@ -2568,7 +3019,7 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
                 .first();
 
         if ( newItem && newItem.length ) {
-            this._open( newItem.parent() );
+            this._open( event, newItem.parent() );
 
             this._clearTimer && this._clearTimer();
 
@@ -2790,7 +3241,7 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
      * @since 2.1.0
      *
      * @param {!Element} node {@ojinclude "name":"getSubIdByNodeNodeParam"}
-     * @returns {Object|null} {@ojinclude "name":"getSubIdByNodeReturn"}
+     * @return {Object|null} {@ojinclude "name":"getSubIdByNodeReturn"}
      *
      * @example <caption>{@ojinclude "name":"getSubIdByNodeCaption"}</caption>
      * {@ojinclude "name":"getSubIdByNodeExample"}
@@ -2933,7 +3384,7 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
      * @param {string} operation currently requested
      * @param {string} methodName to invoke to trigger the target operation
      * @param {Array} methodArgs passed to a queue operation
-     * @returns {boolean} <code>true</code> if a close or open operation is pending completion.
+     * @return {boolean} <code>true</code> if a close or open operation is pending completion.
      */
     _isOperationPending: function (operation, methodName, methodArgs)
     {
@@ -2965,7 +3416,7 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
      *                                 1. The timer is cancelled before "callback" is called
      *                                 2. "callback" is called and doesn't return a promise
      *                                 3. "callback" is called, returns a promise, and the promise is resolved
-     * @returns {function()} a "cancel" function as described above
+     * @return {function()} a "cancel" function as described above
      */
     _setTimer: function (callback, description, delay, notifier) {
         // Call this line each time rather than caching busyContext
@@ -3030,6 +3481,14 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
 
       this._super();
     }
+    
+    // Override contextMenu slot definition to remove it from the jsdoc as it is not supported for menus
+    
+    /**
+     * @ojslot contextMenu
+     * @memberof oj.ojMenu
+     * @ignore
+     */
 
     // API doc for inherited methods with no JS in this file:
 
@@ -3151,6 +3610,22 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
      * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
      * @memberof oj.ojMenu
      */
+});
+
+oj.Components.setDefaultOptions(
+{
+  'ojMenu': // properties for all menu components 
+  {
+    'openOptions': oj.Components.createDynamicPropertyGetter(function(context){
+      return {
+        'position': (oj.BaseCustomElementBridge.getRegistered(context['element'].tagName) != null) ?
+          (context['containers'].indexOf('ojMenu') >= 0 ?
+            { my : { horizontal : "start", vertical : "top"}, at : { horizontal : "end", vertical : "top" }, offset : { x : 0, y : 0 }, collision : "flipfit" } :
+            { my : { horizontal : "start", vertical : "top"}, at : { horizontal : "start", vertical : "bottom" }, offset : { x : 0, y : 0 }, collision : "flipfit" }) :
+          { my : "start top", at : "start bottom", collision : "flipfit" }
+      };
+    })
+  }
 });
 
 //////////////////     SUB-IDS     //////////////////
@@ -3345,10 +3820,11 @@ var ojMenuMeta = {
       }
     },
     "translations": {
-      "type": "object",
+      "type": "Object",
       "properties": {
         "labelCancel": {
-          "type": "string"
+          "type": "string",
+          "value": "Cancel"
         }
       }
     }

@@ -1,4 +1,5 @@
 /**
+ * @license
  * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
@@ -18,6 +19,8 @@ define(['ojs/ojcore'], function(oj)
  * @constructor
  * @hideconstructor
  * @abstract
+ * @since 4.1.0
+ * @ojsignature {target: "Type", value: "abstract class KeySet<K>"}
  */
 var KeySet = function() {};
 
@@ -56,9 +59,10 @@ KeySet.prototype.SetInternal = function(set)
  * @return {KeySet} a new KeySet with the specified keys included.
  * @method
  * @name add
- * @memberof! KeySet
+ * @memberof KeySet
  * @instance
  * @abstract
+ * @ojsignature {target: "Type", value: "<KS extends KeySet<K>>(keys: Set<K>|Array<K>): KS"}
  */
 
 /**
@@ -67,9 +71,10 @@ KeySet.prototype.SetInternal = function(set)
  * @return {KeySet} a new KeySet that signals all keys are added to this set.
  * @method
  * @name addAll
- * @memberof! KeySet
+ * @memberof KeySet
  * @instance
  * @abstract
+ * @ojsignature {target: "Type", value: "<KS extends KeySet<K>>(): KS"}
  */
 
 /**
@@ -79,9 +84,10 @@ KeySet.prototype.SetInternal = function(set)
  * @return {KeySet} a new KeySet with the specified keys excluded.
  * @method
  * @name delete
- * @memberof! KeySet
+ * @memberof KeySet
  * @instance
  * @abstract
+ * @ojsignature {target: "Type", value: "<KS extends KeySet<K>>(keys: Set<K>|Array<K>): KS"}
  */
 
 /**
@@ -90,7 +96,7 @@ KeySet.prototype.SetInternal = function(set)
  * @return {boolean} true if this set should include all keys, false otherwise.
  * @method
  * @name isAddAll
- * @memberof! KeySet
+ * @memberof KeySet
  * @instance
  * @abstract
  */
@@ -102,9 +108,10 @@ KeySet.prototype.SetInternal = function(set)
  * @return {boolean} true if the specified key is contained in this set, false otherwise.
  * @method
  * @name has
- * @memberof! KeySet
+ * @memberof KeySet
  * @instance
  * @abstract
+ * @ojsignature {target: "Type", value: "K", for: "key"}
  */
 
 /**
@@ -113,9 +120,10 @@ KeySet.prototype.SetInternal = function(set)
  * @return {KeySet} a new KeySet with no keys.
  * @method
  * @name clear
- * @memberof! KeySet
+ * @memberof KeySet
  * @instance
  * @abstract
+ * @ojsignature {target: "Type", value: "<KS extends KeySet<K>>(): KS"}
  */
 
 /**
@@ -287,12 +295,15 @@ KeySet.prototype._populate = function(keys)
  * Create a new immutable KeySet containing the keys of the expanded items.
  * Use this KeySet when specifying individual keys to expand.
  *
- * @param {Set|Array=} keys A set of keys to initialize this KeySet with.
+ * @param {(Set|Array)=} keys A set of keys to initialize this KeySet with.
  * @ojstatus preview
  * @class ExpandedKeySet
  * @classdesc The ExpandedKeySet class contains a set of keys of the expanded items.
  * @extends {KeySet}
  * @constructor
+ * @since 4.1.0
+ * @ojsignature [{target: "Type", value: "class ExpandedKeySet<K> extends KeySet<K>"},
+ *               {target: "Type", value: "Set<K>|Array<K>", for:"keys"}]
  * @example <caption>Creates a new ExpandedKeySet with an initial set of keys to expand:</caption>
  * require(['ojs/ojkeyset'], 
  *   function(keySet) {
@@ -320,7 +331,8 @@ oj.ExpandedKeySet = ExpandedKeySet;
  * @expose
  * @instance
  * @alias add
- * @memberof! ExpandedKeySet 
+ * @memberof ExpandedKeySet 
+ * @ojsignature {target: "Type", value: "<ExpandedKeySet>(keys: Set<K>|Array<K>): ExpandedKeySet"}
  */
 ExpandedKeySet.prototype.add = function(keys)
 {
@@ -334,7 +346,8 @@ ExpandedKeySet.prototype.add = function(keys)
  * @expose
  * @instance
  * @alias addAll
- * @memberof! ExpandedKeySet 
+ * @memberof ExpandedKeySet 
+ * @ojsignature {target: "Type", value: "<ExpandAllKeySet>(): ExpandAllKeySet"}
  */
 ExpandedKeySet.prototype.addAll = function()
 {
@@ -348,7 +361,7 @@ ExpandedKeySet.prototype.addAll = function()
  * @expose
  * @instance
  * @alias isAddAll
- * @memberof! ExpandedKeySet 
+ * @memberof ExpandedKeySet 
  */
 ExpandedKeySet.prototype.isAddAll = function()
 {
@@ -364,7 +377,8 @@ ExpandedKeySet.prototype.isAddAll = function()
  * @expose
  * @instance
  * @alias delete
- * @memberof! ExpandedKeySet 
+ * @memberof ExpandedKeySet 
+ * @ojsignature {target: "Type", value: "<ExpandedKeySet>(keys: Set<K>|Array<K>): ExpandedKeySet"}
  */
 ExpandedKeySet.prototype.delete = function(keys)
 {
@@ -379,7 +393,8 @@ ExpandedKeySet.prototype.delete = function(keys)
  * @expose
  * @instance
  * @alias clear
- * @memberof! ExpandedKeySet 
+ * @memberof ExpandedKeySet 
+ * @ojsignature {target: "Type", value: "<ExpandedKeySet>(): ExpandedKeySet"}
  */
 ExpandedKeySet.prototype.clear = function()
 {
@@ -394,7 +409,8 @@ ExpandedKeySet.prototype.clear = function()
  * @expose
  * @instance
  * @alias has
- * @memberof! ExpandedKeySet 
+ * @memberof ExpandedKeySet 
+ * @ojsignature {target: "Type", value: "K", for:"key"}
  */
 ExpandedKeySet.prototype.has = function(key)
 {
@@ -408,7 +424,8 @@ ExpandedKeySet.prototype.has = function(key)
  * @expose
  * @instance
  * @alias values
- * @memberof! ExpandedKeySet 
+ * @memberof ExpandedKeySet 
+ * @ojsignature {target: "Type", value: "Set<K>", for:"returns"}
  */
 ExpandedKeySet.prototype.values = function()
 {
@@ -423,6 +440,8 @@ ExpandedKeySet.prototype.values = function()
  * @classdesc The ExpandAllKeySet class represents a set with all keys expanded.
  * @extends {KeySet}
  * @constructor
+ * @since 4.1.0
+ * @ojsignature {target: "Type", value: "class ExpandAllKeySet<K> extends KeySet<K>"}
  * @example <caption>Creates a new ExpandAllKeySet to expand all keys</caption>
  * require(['ojs/ojkeyset'], 
  *   function(keySet) {
@@ -451,6 +470,7 @@ oj.ExpandAllKeySet = ExpandAllKeySet;
  * @instance
  * @alias add
  * @memberof! ExpandAllKeySet 
+ * @ojsignature {target: "Type", value: "<ExpandAllKeySet>(keys: Set<K>|Array<K>): ExpandAllKeySet"}
  */
 ExpandAllKeySet.prototype.add = function(keys)
 {
@@ -467,6 +487,7 @@ ExpandAllKeySet.prototype.add = function(keys)
  * @instance
  * @alias addAll
  * @memberof! ExpandAllKeySet 
+ * @ojsignature {target: "Type", value: "<ExpandAllKeySet>(): ExpandAllKeySet"}
  */
 ExpandAllKeySet.prototype.addAll = function()
 {
@@ -497,6 +518,7 @@ ExpandAllKeySet.prototype.isAddAll = function()
  * @instance
  * @alias delete
  * @memberof! ExpandAllKeySet 
+ * @ojsignature {target: "Type", value: "<ExpandAllKeySet>(keys: Set<K>|Array<K>): ExpandAllKeySet"}
  */
 ExpandAllKeySet.prototype.delete = function(keys)
 {
@@ -512,6 +534,7 @@ ExpandAllKeySet.prototype.delete = function(keys)
  * @instance
  * @alias clear
  * @memberof! ExpandAllKeySet 
+ * @ojsignature {target: "Type", value: "<ExpandedKeySet>(): ExpandedKeySet"}
  */
 ExpandAllKeySet.prototype.clear = function()
 {
@@ -527,6 +550,7 @@ ExpandAllKeySet.prototype.clear = function()
  * @instance
  * @alias has
  * @memberof! ExpandAllKeySet 
+ * @ojsignature {target: "Type", value: "<ExpandAllKeySet>(): ExpandAllKeySet"}
  */
 ExpandAllKeySet.prototype.has = function(key)
 {
@@ -541,6 +565,7 @@ ExpandAllKeySet.prototype.has = function(key)
  * @instance
  * @alias deletedValues
  * @memberof! ExpandAllKeySet 
+ * @ojsignature {target: "Type", value: "Set<K>", for: "returns"}
  */
 ExpandAllKeySet.prototype.deletedValues = function()
 {

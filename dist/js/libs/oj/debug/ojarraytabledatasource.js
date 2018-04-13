@@ -1,4 +1,5 @@
 /**
+ * @license
  * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
@@ -25,6 +26,8 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojdatasource-common'], function(oj, $)
 /**
  * @export
  * @class oj.ArrayTableDataSource
+ * @since 1.0
+ * @ojtsignore
  * @extends oj.TableDataSource
  * @classdesc Object representing data available from an array.  This data source can be used by [ListView]{@link oj.ojListView}, [NavigationList]{@link oj.ojNavigationList},
  *            [TabBar]{@link oj.ojTabBar}, and [Table]{@link oj.ojTable}.<br><br>
@@ -34,14 +37,18 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojdatasource-common'], function(oj, $)
  *                                      <p>This can be either an Array, or a Knockout observableArray.</p>
  *                                      <p>Each array element should be an object representing one row of data, with the property names and values corresponding to column names and values.
  *                                         Array of primitive values such as ["Apple", "Orange"] is not currently supported.</p>
- * @param {Object|null} options Options for the TableDataSource
- * @param {string} options.idAttribute The column that contains the row key.
+ * @param {Object|null} [options] Options for the TableDataSource
+ * @param {string} [options.idAttribute] The column that contains the row key.
  *                 If this is not specified, all the values in a row are used as the key.
- * @param {string} options.startFetch Control whether to start initial fetch when the TableDataSource is bound to a component.  Valid values are:<br><br>
+ * @param {"enabled"|"disabled"} [options.startFetch] Control whether to start initial fetch when the TableDataSource is bound to a component.  Valid values are:<br><br>
  *                                    <b>"enabled"</b> (default) - Start initial fetch automatically when the TableDataSource is bound to a component.<br>
  *                                    <b>"disabled"</b> - Do not start initial fetch automatically.  Application will call the <a href="#fetch">fetch()</a> method to
  *                                                        start the first fetch.
+ * @ojsignature {target: "Type",
+ *               value: "KnockoutObservableArray<object>|Array<object>",
+ *               for: "data"}
  * @constructor
+ * @ojtsignore
  * @example
  * // First initialize an array
  * var deptArray = [{DepartmentId: 10, DepartmentName: 'Administration', LocationId: 200},
@@ -104,17 +111,21 @@ oj.Object.createSubclass(oj.ArrayTableDataSource, oj.TableDataSource, "oj.ArrayT
  * @desc If set to a function(row1, row2), then this function is called comparing raw row data (see the
  * JavaScript array.sort() for details)
  * @memberof oj.ArrayTableDataSource
+ * @type {null|string|Function}
+ * @ojsignature {target: "Type",
+ *               value: "null|string|((param0: object, param1?: object)=> number|string|object)"}
  */
 oj.ArrayTableDataSource.prototype.comparator = null;
 
 /**
  * @export
+ * 
+ * @type {Object} 
+ * @property {*} criteria.key The key that identifies which field to sort
+ * @property {'ascending'|'descending'|'none'} criteria.direction the sort direction, valid values are "ascending", "descending", "none" (default)
+ *
  * @desc The sort criteria. Whenever sort() is called with the criteria parameter, that value is copied to this
  * property. If sort() is called with empty sort criteria then the criteria set in this property is used.
- * 
- * @type {Object} criteria the sort criteria.
- * @property {Object} criteria.key The key that identifies which field to sort
- * @property {string} criteria.direction the sort direction, valid values are "ascending", "descending", "none" (default)
  * @memberof oj.ArrayTableDataSource
  */
 oj.ArrayTableDataSource.prototype.sortCriteria = null;
@@ -134,9 +145,10 @@ oj.ArrayTableDataSource.prototype.Init = function()
 /**
  * Add a row (or array of rows) to the end
  * 
- * @param {Object} m Row object data (or array of rows) to add. These should be sets of attribute/values.
- * @param {Object=} options silent: if set, do not fire an add event<p>
- *                          at: splice the new row at the value given (at:index). If an array of rows then this should be an array of indexes <p>
+ * @param {Object|Array.<Object>} m Row object data (or array of rows) to add. These should be sets of attribute/values.
+ * @param {Object=} options 
+ * @param {boolean} [options.silent] if set, do not fire an add event<p>
+ * @param {number|Array.<number>} [options.at] splice the new row at the value given (at:index). If an array of rows then this should be an array of indexes <p>
  * @return {Promise} Promise object resolves to a compound object which contains an array of row data objects, an array of keys, and an array of indexes which were added triggering done when complete.<p>
  *         The structure of the resolved compound object is:<p>
  * <table>
@@ -146,6 +158,10 @@ oj.ArrayTableDataSource.prototype.Init = function()
  * <tr><td><b>indexes</b></td><td>An array of index values for the rows</td></tr>
  * </tbody>
  * </table> 
+ * @ojsignature {target:"Type",
+ *               value: "Promise<null|oj.ArrayTableDataSource.RowDatas>",
+ *               for: "returns",
+ *               jsdocOverride: true}
  * @export
  * @expose
  * @memberof oj.ArrayTableDataSource
@@ -173,6 +189,10 @@ oj.ArrayTableDataSource.prototype.add = function(m, options)
  * <tr><td><b>key</b></td><td>The key value for the row</td></tr>
  * </tbody>
  * </table>
+ * @ojsignature {target:"Type",
+ *               value: "Promise<null|oj.TableDataSource.RowData>",
+ *               for: "returns",
+ *               jsdocOverride: true}
  * @export
  * @expose
  * @memberof oj.ArrayTableDataSource
@@ -199,17 +219,22 @@ oj.ArrayTableDataSource.prototype.at = function(index, options)
 
 /**
  * Change a row (or array of rows), if found.
- * @param {Object} m Row object data (or array of rows) to change. These should be sets of attribute/values.
- * @param {Object=} options silent: if set, do not fire a change event<p>
+ * @param {Object|Array.<Object>} m Row object data (or array of rows) to change. These should be sets of attribute/values.
+ * @param {Object=} options 
+ * @param {boolean} [options.silent] if set, do not fire an add event<p>
  * @return {Promise} Promise object resolves to a compound object which contains an array of row data objects, an array of keys, and an array of indexes which were changed triggering done when complete.<p>
- *         The structure of the resolved compound object is:<p>
+ *          The structure of the resolved compound object is:<p>
  * <table>
  * <tbody>
  * <tr><td><b>data</b></td><td>An array of raw row data</td></tr>
  * <tr><td><b>keys</b></td><td>An array of key values for the rows</td></tr>
  * <tr><td><b>indexes</b></td><td>An array of index values for the rows</td></tr>
  * </tbody>
- * </table> 
+ * </table>
+ * @ojsignature {target:"Type",
+ *               value: "Promise<null|oj.ArrayTableDataSource.RowDatas>",
+ *               for: "returns",
+ *               jsdocOverride: true}
  * @export
  * @expose
  * @memberof oj.ArrayTableDataSource
@@ -256,17 +281,21 @@ oj.ArrayTableDataSource.prototype.change = function(m, options)
 /**
  * Fetch the row data.
  * @param {Object=} options Options to control fetch
- * @param {number} options.startIndex The index at which to start fetching records.
- * @param {boolean} options.silent If set, do not fire a sync event.
+ * @param {number} [options.startIndex] The index at which to start fetching records.
+ * @param {boolean} [options.silent] If set, do not fire a sync event.
  * @return {Promise} Promise object resolves to a compound object which contains an array of row data objects, an array of ids, and the startIndex triggering done when complete.<p>
- *         The structure of the resolved compound object is:<p>
+ *      The structure of the resolved compound object is:<p>
  * <table>
  * <tbody>
  * <tr><td><b>data</b></td><td>An array of raw row data</td></tr>
  * <tr><td><b>keys</b></td><td>An array of key values for the rows</td></tr>
  * <tr><td><b>startIndex</b></td><td>The startIndex for the returned set of rows</td></tr>
  * </tbody>
- * </table>  
+ * </table> 
+ * @ojsignature {target:"Type",
+ *               value: "Promise<null|oj.TableDataSource.RowDatas>",
+ *               for: "returns",
+ *               jsdocOverride: true}
  * @export
  * @expose
  * @memberof oj.ArrayTableDataSource
@@ -297,6 +326,10 @@ oj.ArrayTableDataSource.prototype.fetch = function(options)
  * <tr><td><b>key</b></td><td>The key value for the row</td></tr>
  * </tbody>
  * </table>
+ * @ojsignature {target:"Type",
+ *               value: "Promise<null|oj.TableDataSource.RowData>",
+ *               for: "returns",
+ *               jsdocOverride: true}
  * @export
  * @expose
  * @memberof oj.ArrayTableDataSource
@@ -326,10 +359,11 @@ oj.ArrayTableDataSource.prototype.getCapability = function(feature)
 
 /**
  * Remove a row (or array of rows), if found.
- * @param {Object}  m Row object data (or array of rows) to remove. These should be sets of attribute/values.
- * @param {Object=} options silent: if set, do not fire a remove event 
+ * @param {Object|Array.<Object>}  m Row object data (or array of rows) to remove. These should be sets of attribute/values.
+ * @param {Object=} options 
+ * @param {boolean} [options.silent] if set, do not fire a remove event 
  * @return {Promise} Promise object resolves to a compound object which contains an array of row data objects, an array of keys, and an array of indexes which were removed triggering done when complete.<p>
- *         The structure of the resolved compound object is:<p>
+ *      The structure of the resolved compound object is:<p>
  * <table>
  * <tbody>
  * <tr><td><b>data</b></td><td>An array of raw row data</td></tr>
@@ -337,6 +371,10 @@ oj.ArrayTableDataSource.prototype.getCapability = function(feature)
  * <tr><td><b>indexes</b></td><td>An array of index values for the rows</td></tr>
  * </tbody>
  * </table> 
+ * @ojsignature {target:"Type",
+ *               value: "Promise<null|oj.ArrayTableDataSource.RowDatas>",
+ *               for: "returns",
+ *               jsdocOverride: true}
  * @export
  * @expose
  * @memberof oj.ArrayTableDataSource
@@ -352,9 +390,9 @@ oj.ArrayTableDataSource.prototype.remove = function(m, options)
 /**
  * Remove and replace the entire list of rows with a new set of rows, if provided. Otherwise, empty the datasource. The next fetch
  * call will re-populate the datasource with the original array data. To empty out the data, call reset with an empty array.
- * @param {Object=} data Array of row objects with which to replace the data. 
+ * @param {Array.<Object>=} data Array of row objects with which to replace the data. 
  * @param {Object=} options user options, passed to event
- * @return {Promise} promise object triggering done when complete.
+ * @return {Promise.<void>} promise object triggering done when complete.
  * @export
  * @expose
  * @memberof oj.ArrayTableDataSource
@@ -385,10 +423,10 @@ oj.ArrayTableDataSource.prototype.reset = function(data, options)
 
 /**
  * Performs a sort on the data source.
- * @param {Object|null} criteria the sort criteria.
- * @param {Object} criteria.key The key that identifies which field to sort
- * @param {string} criteria.direction the sort direction, valid values are "ascending", "descending", "none" (default)
- * @return {Promise} promise object triggering done when complete.
+ * @param {Object|null} [criteria] the sort criteria.
+ * @param {*} criteria.key The key that identifies which field to sort
+ * @param {'ascending'|'descending'|'none'} criteria.direction the sort direction, valid values are "ascending", "descending", "none" (default)
+ * @return {Promise.<null>} promise object triggering done when complete.
  * @export
  * @expose
  * @memberof oj.ArrayTableDataSource
@@ -1084,4 +1122,12 @@ oj.ArrayTableDataSource._LOGGER_MSG =
     '_INFO_ARRAY_TABLE_DATASOURCE_IDATTR': "idAttribute option has not been specified. Will default to using 'id' if the field exists. If not, will use all the fields.",
     '_ERR_ARRAY_TABLE_DATASOURCE_IDATTR_NOT_IN_ROW': "Specified idAttribute {0} not in row data. Please ensure all specified idAttribute fields are in the row data or do not specify idAttribute and all fields will be used as id."
   };
+
+/**
+ * Shape of Data Info returned by methods like, add/change/remove.
+ * @typedef {Object} oj.ArrayTableDataSource.RowDatas
+ * @property {Array.<Object>} data An array of raw row data. 
+ * @property {Array.<any>} keys An array of key values for the rows.
+ * @property {Array.<number>} indexes An array of index values for the rows.
+ */
 });

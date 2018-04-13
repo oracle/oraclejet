@@ -1,7 +1,7 @@
 // Copyright (c) 2014, 2018, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-// WARNING: do not directly import this file, instead import the 
-//          version in your base theme's directory, 
+// WARNING: do not directly import this file, instead import the
+//          version in your base theme's directory,
 //          for example alta/widgets/_oj.alta.formcontrol.inputdatetime.scss
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
@@ -10,48 +10,48 @@
 
 @if $includeInputDateTimeClasses != false {
   @include module-include-once("common.inputdatetime") {
-            
+
     // This is to prevent the flash of unstyled content before the html becomes JET components.
     @if $initialVisibility == hidden {
       oj-input-time:not(.oj-complete) {
         visibility: hidden;
-      }      
+      }
     }
 
     // This is to prevent the flash of unstyled content before the html becomes JET components.
     @if $initialVisibility == hidden {
       oj-input-date:not(.oj-complete) {
         visibility: hidden;
-      }      
+      }
     }
-            
+
     // This is to prevent the flash of unstyled content before the html becomes JET components.
     @if $initialVisibility == hidden {
       oj-input-date-time:not(.oj-complete) {
         visibility: hidden;
-      }      
+      }
     }
-            
+
     // This is to prevent the flash of unstyled content before the html becomes JET components.
     @if $initialVisibility == hidden {
       oj-date-picker:not(.oj-complete) {
         visibility: hidden;
-      }      
+      }
     }
 
     // This is to prevent the flash of unstyled content before the html becomes JET components.
     @if $initialVisibility == hidden {
       oj-calendar:not(.oj-complete) {
         visibility: hidden;
-      }      
+      }
     }
 
     .oj-inputdatetime, // added to root for ojInputDateTime, ojInputDate, and ojInputTime
     .oj-inputdatetime-date-time, // added to root for ojInputDateTime
     .oj-inputdatetime-date-only, // added to root for ojInputDate
     .oj-inputdatetime-time-only {  // added to root for ojInputTime
-      /* use a width of 100% and then max and min width so that when 
-         there's less room for the form control it can automatically 
+      /* use a width of 100% and then max and min width so that when
+         there's less room for the form control it can automatically
          get smaller instead of overflowing its boundaries */
       max-width: $formControlLargeMaxWidth;
       min-width: $formControlMinWidth;
@@ -59,16 +59,16 @@
       // font size needs to be on the root, because max/min width is in em.
       font-size: $formControlTriggerFontSize;
       @include oj-form-control-text-size-adjust($formControlTriggerFontSize);
-      
+
       display: inline-block;
       position: relative;
     }
 
-    //added to root for ojInputDateTime and ojInputDate when of inline, since div need to restrict the size due to 
+    //added to root for ojInputDateTime and ojInputDate when of inline, since div need to restrict the size due to
     //messaging
     .oj-inputdatetime-inline {
-      /* use a width of 100% and then max and min width so that when 
-         there's less room for the form control it can automatically 
+      /* use a width of 100% and then max and min width so that when
+         there's less room for the form control it can automatically
          get smaller instead of overflowing its boundaries */
       max-width: $dateTimePickerWidth + 2; // need to account for the border
       min-width: $formControlMinWidth;
@@ -78,7 +78,7 @@
     // Class that wraps the input element and trigger icons. Need a separate one due to inline mode.
     .oj-inputdatetime-input-container {
       box-sizing: border-box;
-      // use inline-flex properties. This will grow the input and the buttons will take up 
+      // use inline-flex properties. This will grow the input and the buttons will take up
       // the remaining width
       @include oj-display-inline-flex-property();
       width: 100%;
@@ -94,7 +94,7 @@
       min-width: 1em;
       font-family: inherit;
       font-weight: normal;
-      padding: 0 $formControlPaddingHorizontal; 
+      padding: 0 $formControlPaddingHorizontal;
       height: $formControlTriggerHeight;
 
       // normally removing an outline can cause accessibility issues, however
@@ -103,18 +103,18 @@
       // an outline on inputs anyway
       outline: 0;
 
-      @include oj-ltr() { 
+      @include oj-ltr() {
         //need to disable right border if trigger exists
-        border-width: oj-shorthand-property-value-top($formControlBorderWidth) 0  oj-shorthand-property-value-bottom($formControlBorderWidth)  oj-shorthand-property-value-left($formControlBorderWidth); 
+        border-width: oj-shorthand-property-value-top($formControlBorderWidth) 0  oj-shorthand-property-value-bottom($formControlBorderWidth)  oj-shorthand-property-value-left($formControlBorderWidth);
         @include oj-border-radius($formControlBorderRadius 0 0 $formControlBorderRadius,
         $slowOverride: false);
       }
 
-      @include oj-rtl() { 
+      @include oj-rtl() {
         //need to disable left border if trigger exists
         border-width: oj-shorthand-property-value-top($formControlBorderWidth)  oj-shorthand-property-value-right($formControlBorderWidth)  oj-shorthand-property-value-bottom($formControlBorderWidth) 0;
         @include oj-border-radius(0 $formControlBorderRadius $formControlBorderRadius 0,
-        $slowOverride: false); 
+        $slowOverride: false);
       }
 
       @include oj-border-radius-slowoverride();
@@ -140,12 +140,12 @@
       // an outline on inputs anyway
       outline: 0;
 
-      //since need to make it look like input and the trigger are of a single input, need to disable one side of 
+      //since need to make it look like input and the trigger are of a single input, need to disable one side of
       //input and one side of the trigger
 
       @include oj-ltr() {
         //disable left border
-        border-width: oj-shorthand-property-value-top($formControlBorderWidth)  oj-shorthand-property-value-right($formControlBorderWidth)  oj-shorthand-property-value-bottom($formControlBorderWidth) 0;; 
+        border-width: oj-shorthand-property-value-top($formControlBorderWidth)  oj-shorthand-property-value-right($formControlBorderWidth)  oj-shorthand-property-value-bottom($formControlBorderWidth) 0;;
         @include oj-border-radius(0 $formControlBorderRadius $formControlBorderRadius 0,
         $slowOverride: false);
       }
@@ -190,19 +190,19 @@
       $borderErrorWidth: oj-form-control-border-message-width-func();
       @include oj-ltr() {
 
-        border-width: oj-shorthand-property-value-top($borderErrorWidth) 0 
-          oj-shorthand-property-value-bottom($borderErrorWidth)  
+        border-width: oj-shorthand-property-value-top($borderErrorWidth) 0
+          oj-shorthand-property-value-bottom($borderErrorWidth)
           oj-shorthand-property-value-left($borderErrorWidth);
       }
 
       @include oj-rtl() {
-        border-width: oj-shorthand-property-value-top($borderErrorWidth)  
-          oj-shorthand-property-value-left($borderErrorWidth) 
+        border-width: oj-shorthand-property-value-top($borderErrorWidth)
+          oj-shorthand-property-value-left($borderErrorWidth)
           oj-shorthand-property-value-bottom($borderErrorWidth)  0;
       }
-      // We don't want to mess with the border-radius if the error border is on all four sides. 
+      // We don't want to mess with the border-radius if the error border is on all four sides.
       // Otherwise, set the border-radius to 0 to show a straight border.
-      @if(not(oj-form-control-message-border-four-sides($borderErrorWidth)) and 
+      @if(not(oj-form-control-message-border-four-sides($borderErrorWidth)) and
       $formControlBorderRadius != 0) {
         @include oj-border-radius(0);
       }
@@ -212,26 +212,26 @@
     .oj-inputdatetime.oj-warning .oj-inputdatetime-input-trigger {
       $borderErrorWidth: oj-form-control-border-message-width-func();
       @include oj-ltr() {
-        border-width: oj-shorthand-property-value-top($borderErrorWidth)  
-          oj-shorthand-property-value-right($borderErrorWidth) 
+        border-width: oj-shorthand-property-value-top($borderErrorWidth)
+          oj-shorthand-property-value-right($borderErrorWidth)
           oj-shorthand-property-value-bottom($borderErrorWidth) 0;
       }
 
       @include oj-rtl() {
-        border-width: oj-shorthand-property-value-top($borderErrorWidth)  0 
+        border-width: oj-shorthand-property-value-top($borderErrorWidth)  0
           oj-shorthand-property-value-bottom($borderErrorWidth)
           oj-shorthand-property-value-right($borderErrorWidth);
       }
-      // We don't want to mess with the border-radius if the error border is on all four sides. 
+      // We don't want to mess with the border-radius if the error border is on all four sides.
       // Otherwise, set the border-radius to 0 to show a straight border.
-      @if(not(oj-form-control-message-border-four-sides($borderErrorWidth)) and 
+      @if(not(oj-form-control-message-border-four-sides($borderErrorWidth)) and
       $formControlBorderRadius != 0) {
         @include oj-border-radius(0);
       }
     }
 
     // background color for input and trigger nodes change on active state
-    .oj-inputdatetime.oj-active .oj-inputdatetime-input-trigger, 
+    .oj-inputdatetime.oj-active .oj-inputdatetime-input-trigger,
     .oj-inputdatetime.oj-active .oj-inputdatetime-input {
       background-color: $formControlTriggerBgColorActive;
     }
@@ -246,7 +246,7 @@
       background-color: $formControlBgColorDisabled;
       border-color: $formControlBorderColorDisabled;
       opacity: $formControlOpacityDisabled;
-    }    
+    }
 
     //oj-read-only
     .oj-inputdatetime.oj-read-only .oj-inputdatetime-input {
@@ -261,7 +261,7 @@
 
     .oj-inputdatetime-calendar-clock-icon,
     .oj-inputdatetime-calendar-icon,
-    .oj-inputdatetime-time-icon { 
+    .oj-inputdatetime-time-icon {
       cursor: pointer;
       padding: 0 5px;
       vertical-align: middle;
@@ -308,22 +308,22 @@
 
 
     //**************************
-    // PICKER 
+    // PICKER
     //**************************
 
-    //'oj-datepicker-popup' is the class for the root of the ojPopup that 
-    //  contains the calendar. Remove the padding around the popup.  
+    //'oj-datepicker-popup' is the class for the root of the ojPopup that
+    //  contains the calendar. Remove the padding around the popup.
     .oj-datepicker-popup .oj-popup-content {
       padding: 0;
     }
-    
+
     // wrapper to facilitate animation
     .oj-datepicker-wrapper {
       padding-bottom: $dateTimePickerPadding;
     }
 
     /* Class for the root node that contains the floating calendar */
-    .oj-datepicker-content { 
+    .oj-datepicker-content {
       position: relative;
       overflow: hidden;
       box-sizing: border-box;
@@ -332,29 +332,29 @@
       }
     }
 
-    .oj-datepicker-header { 
+    .oj-datepicker-header {
       margin: $dateTimePickerPadding $dateTimePickerPadding 0;
-      position: relative; 
+      position: relative;
       background: none;
       border: 0;
       color: $headerTextColor;
     }
-    .oj-datepicker-prev-icon, 
-    .oj-datepicker-next-icon { 
-      position: absolute; 
+    .oj-datepicker-prev-icon,
+    .oj-datepicker-next-icon {
+      position: absolute;
       line-height: ($dateTimePickerWidth - (2 * $dateTimePickerPadding)) / 7;
     }
 
     //positioned absolutely so need to include it. Thought about making code change, but it is rather impactful
-    .oj-datepicker-prev-icon { 
+    .oj-datepicker-prev-icon {
       @include oj-ltr() {
-        left: 2px; 
+        left: 2px;
       }
       @include oj-rtl() {
         right: 2px;
       }
     }
-    .oj-datepicker-next-icon { 
+    .oj-datepicker-next-icon {
       @include oj-ltr() {
         right: 2px;
       }
@@ -363,16 +363,16 @@
       }
     }
 
-    .oj-datepicker-title { 
+    .oj-datepicker-title {
       //decreased the margin slightly for chrome on mac
-      margin: 0 2.2em; 
+      margin: 0 2.2em;
       height: ($dateTimePickerWidth - (2 * $dateTimePickerPadding)) / 7;
-      line-height: ($dateTimePickerWidth - (2 * $dateTimePickerPadding)) / 7; 
-      text-align: center; 
+      line-height: ($dateTimePickerWidth - (2 * $dateTimePickerPadding)) / 7;
+      text-align: center;
     }
 
-    .oj-datepicker-title select { 
-      font-size: $fontSize; 
+    .oj-datepicker-title select {
+      font-size: $fontSize;
       margin: 1px 0;
       background-color: inherit;
       color: inherit
@@ -402,8 +402,8 @@
       margin-right: 20px;
     }
 
-    .oj-datepicker-month, 
-    .oj-datepicker-year { 
+    .oj-datepicker-month,
+    .oj-datepicker-year {
       font-size: 18px;
       width: 48%;
       min-width: 0;
@@ -419,10 +419,10 @@
     .oj-datepicker-calendar th,
     .oj-datepicker-calendar td {
       border: 0;
-      text-align: center; 
+      text-align: center;
     }
 
-    .oj-datepicker-calendar th { 
+    .oj-datepicker-calendar th {
       padding: 0;
       height: ($dateTimePickerWidth - (2 * $dateTimePickerPadding)) / 7;
       text-transform: uppercase;
@@ -430,13 +430,13 @@
       color: $datepickerHeaderTextColor;
     }
 
-    .oj-datepicker-calendar td {     
+    .oj-datepicker-calendar td {
       padding: 0;
     }
 
-    .oj-datepicker-calendar td span, 
-    .oj-datepicker-calendar td a { 
-      display: block; 
+    .oj-datepicker-calendar td span,
+    .oj-datepicker-calendar td a {
+      display: block;
       padding: 0;
       border-radius: 50%;
       box-sizing: border-box;
@@ -446,35 +446,35 @@
       text-align: center;
     }
 
-    .oj-datepicker-calendar.oj-datepicker-weekdisplay td span, 
-    .oj-datepicker-calendar.oj-datepicker-weekdisplay td a { 
+    .oj-datepicker-calendar.oj-datepicker-weekdisplay td span,
+    .oj-datepicker-calendar.oj-datepicker-weekdisplay td a {
       width: ($dateTimePickerWidth - (2 * $dateTimePickerPadding)) / 8;
       height: ($dateTimePickerWidth - (2 * $dateTimePickerPadding)) / 8;
       line-height: (($dateTimePickerWidth - (2 * $dateTimePickerPadding)) / 8) - 4;
     }
-    
-    .oj-datepicker-calendar.oj-datepicker-monthview, 
+
+    .oj-datepicker-calendar.oj-datepicker-monthview,
     .oj-datepicker-calendar.oj-datepicker-yearview {
       /* Take up space on right and bottom to make it same size as day view */
       margin-right: $dateTimePickerPadding + 20;
       margin-bottom: 5px;
     }
 
-    .oj-datepicker-calendar.oj-datepicker-monthview td, 
+    .oj-datepicker-calendar.oj-datepicker-monthview td,
     .oj-datepicker-calendar.oj-datepicker-yearview td {
       padding: 8px 3px 3px 23px;
     }
 
-    .oj-datepicker-calendar.oj-datepicker-monthview td span, 
-    .oj-datepicker-calendar.oj-datepicker-monthview td a, 
-    .oj-datepicker-calendar.oj-datepicker-yearview td span, 
+    .oj-datepicker-calendar.oj-datepicker-monthview td span,
+    .oj-datepicker-calendar.oj-datepicker-monthview td a,
+    .oj-datepicker-calendar.oj-datepicker-yearview td span,
     .oj-datepicker-calendar.oj-datepicker-yearview td a {
       width: 49px;
       height: 49px;
       line-height: 45px;
       white-space: nowrap;
     }
-    
+
     .oj-datepicker-calendar td a:focus {
       outline: none;
     }
@@ -493,15 +493,15 @@
     .oj-datepicker-calendar td.oj-datepicker-today a.oj-selected,
     .oj-datepicker-calendar td a.oj-selected {
       font-weight: bold;
-      background: $datepickerBgColorSelected; 
-      color: $datepickerTextColorSelected; 
+      background: $datepickerBgColorSelected;
+      color: $datepickerTextColorSelected;
     }
 
-    .oj-datepicker-calendar td.oj-disabled { 
+    .oj-datepicker-calendar td.oj-disabled {
       opacity: $opacityDisabled;
     }
 
-    .oj-datepicker-calendar td.oj-disabled span { 
+    .oj-datepicker-calendar td.oj-disabled span {
       color: $linkTextColorDisabled;
     }
     .oj-datepicker-calendar td.oj-datepicker-other-month a.oj-enabled {
@@ -514,7 +514,7 @@
       border: 2px solid $datepickerBorderColorToday;
     }
 
-    .oj-datepicker-buttonpane { 
+    .oj-datepicker-buttonpane {
       box-sizing: border-box;
 
       height: ($dateTimePickerWidth - (2 * $dateTimePickerPadding)) / 7;
@@ -524,12 +524,12 @@
 
       display: inline-block;
       width: 100%;
-      @include oj-rtl() { 
-        clear: right; 
+      @include oj-rtl() {
+        clear: right;
       }
     }
-    .oj-datepicker-buttonpane a { 
-      width: auto; 
+    .oj-datepicker-buttonpane a {
+      width: auto;
       overflow: visible;
     }
 
@@ -544,40 +544,40 @@
     }
 
     /* with multiple calendars, need to override the width */
-    .oj-datepicker-content.oj-datepicker-multi { 
-      width: auto; 
+    .oj-datepicker-content.oj-datepicker-multi {
+      width: auto;
     }
     .oj-datepicker-group {
       box-sizing: border-box;
     }
-    .oj-datepicker-multi .oj-datepicker-group { 
+    .oj-datepicker-multi .oj-datepicker-group {
       @include oj-bidi-property($property: 'float', $startOrEnd: start);
     }
-    .oj-datepicker-multi-2 .oj-datepicker-group { 
-      width: 50%; 
+    .oj-datepicker-multi-2 .oj-datepicker-group {
+      width: 50%;
     }
-    .oj-datepicker-multi-3 .oj-datepicker-group { 
-      width: 33.3%; 
+    .oj-datepicker-multi-3 .oj-datepicker-group {
+      width: 33.3%;
     }
-    .oj-datepicker-multi-4 .oj-datepicker-group { 
-      width: 25%; 
+    .oj-datepicker-multi-4 .oj-datepicker-group {
+      width: 25%;
     }
     .oj-datepicker-multi .oj-datepicker-group-last .oj-datepicker-header,
-    .oj-datepicker-multi .oj-datepicker-group-middle .oj-datepicker-header { 
+    .oj-datepicker-multi .oj-datepicker-group-middle .oj-datepicker-header {
       @include oj-ltr() {
         border-left-width: 0;
       }
       @include oj-rtl() {
-        border-right-width: 0; 
+        border-right-width: 0;
       }
     }
-    .oj-datepicker-multi .oj-datepicker-buttonpane { 
-      clear: left; 
+    .oj-datepicker-multi .oj-datepicker-buttonpane {
+      clear: left;
     }
-    .oj-datepicker-row-break { 
-      clear: both; 
-      width: 100%; 
-      font-size: 0; 
+    .oj-datepicker-row-break {
+      clear: both;
+      width: 100%;
+      font-size: 0;
     }
 
     .oj-datepicker-unselectable {
@@ -595,17 +595,17 @@
       width: ($dateTimePickerWidth - (2 * $dateTimePickerPadding)) / 8;
     }
     th.oj-datepicker-week-col {
-      background-color: $background5Color;
+      background-color: $datepickerWeekOfYearHeaderBgColor;
     }
     td.oj-datepicker-week-col {
-      background-color: $background4Color;
+      background-color: $datepickerWeekOfYearCellBgColor;
     }
 
     //CSS to be applied when of inline, so to allow separation with the time picker
     .oj-datepicker-inline {
       margin-bottom: 6px;
     }
-    
+
     // datepicker-inline lays out the datepicker and then the time picker.
     // the root dom node has oj-form-control on it, and also the time-picker has oj-form-control
     // on it. So it has double the margin-bottom. Override it for the timepicker.
@@ -636,9 +636,9 @@
     }
 
     .oj-datetimepicker-switcher .oj-inputdatetime-calendar-icon,
-    .oj-datetimepicker-switcher .oj-inputdatetime-time-icon { 
+    .oj-datetimepicker-switcher .oj-inputdatetime-time-icon {
       @include oj-ltr() {
-        padding-left: 0; 
+        padding-left: 0;
       }
       @include oj-rtl() {
         padding-right: 0;
@@ -649,18 +649,18 @@
       @include oj-ltr() {
         padding-right: 20px;
       }
-      @include oj-rtl() { 
+      @include oj-rtl() {
         padding-left: 20px;
       }
     }
-    
+
     .oj-datepicker-inline .oj-datepicker-content {
       background-color: $panelBgColor;
-      border: 1px solid $panelBorderColor; 
+      border: 1px solid $panelBorderColor;
     }
 
     //**************************
-    // WHEEL TIME PICKER 
+    // WHEEL TIME PICKER
     //**************************
 
     .oj-timepicker-popup .oj-popup-content {
@@ -687,13 +687,13 @@
     }
 
     .oj-timepicker-header {
-      position: relative; 
+      position: relative;
     }
 
     .oj-timepicker-cancel-button {
-      position: absolute; 
+      position: absolute;
       @include oj-ltr() {
-        left: 0; 
+        left: 0;
       }
       @include oj-rtl() {
         right: 0;
@@ -701,7 +701,7 @@
     }
 
     .oj-timepicker-ok-button {
-      position: absolute; 
+      position: absolute;
       @include oj-ltr() {
         right: 0;
       }
@@ -753,7 +753,7 @@
     .oj-timepicker-wheel.oj-timepicker-meridian {
       margin-left: 4px;
     }
-    
+
     .oj-timepicker-wheel-item {
       transition: all 0.15s;
       top: -100px;
@@ -810,7 +810,7 @@
       height: 30px;
     }
 
-    // common to wheel items: position 3, 4, 5, 6, 7 
+    // common to wheel items: position 3, 4, 5, 6, 7
     // and position -3, -4, -5, -6, -7
     .oj-timepicker-wheel-item
     {
@@ -868,7 +868,7 @@
 
     // remove borders, inherit colors and stretch the height
     .oj-form-control-inherit .oj-inputdatetime .oj-inputdatetime-input {
-      @include oj-form-control-inherit();   
+      @include oj-form-control-inherit();
     }
 
     // Styling on form control dom which doesn't require text-align, padding, or color
@@ -876,30 +876,30 @@
     .oj-form-control-inherit .oj-inputdatetime .oj-inputdatetime-input-trigger {
       height:100%;
       background-color:inherit;
-      border-width: 0; 
-    }  
+      border-width: 0;
+    }
 
-    
+
     /* Override default options*/
     $inputDateTimeDefaultOptions: ();
-    
+
     @if ($inputDateTimeRenderModeOptionDefault) {
-      $inputDateTimeDefaultOptions: map-merge($inputDateTimeDefaultOptions, 
+      $inputDateTimeDefaultOptions: map-merge($inputDateTimeDefaultOptions,
                                               (renderMode: $inputDateTimeRenderModeOptionDefault));
     }
-    
+
     @if ($inputDateTimeKeyboardEditOptionDefault) {
-      $inputDateTimeDefaultOptions: map-merge($inputDateTimeDefaultOptions, 
+      $inputDateTimeDefaultOptions: map-merge($inputDateTimeDefaultOptions,
                                               (keyboardEdit: $inputDateTimeKeyboardEditOptionDefault));
     }
-    
+
     @if ($inputDateTimeDatePickerOptionDefault) {
-      $inputDateTimeDefaultOptions: map-merge($inputDateTimeDefaultOptions, 
+      $inputDateTimeDefaultOptions: map-merge($inputDateTimeDefaultOptions,
                                               (datePicker: $inputDateTimeDatePickerOptionDefault));
     }
-    
+
     @if ($inputDateTimeTimePickerOptionDefault) {
-      $inputDateTimeDefaultOptions: map-merge($inputDateTimeDefaultOptions, 
+      $inputDateTimeDefaultOptions: map-merge($inputDateTimeDefaultOptions,
                                               (timePicker: $inputDateTimeTimePickerOptionDefault));
     }
 

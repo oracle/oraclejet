@@ -1,0 +1,83 @@
+// Copyright (c) 2014, 2018, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+
+// brand colors
+$brandColor:           #027bc7 !default;
+$neutralHue:           203deg !default;
+$neutralSaturation:    2% !default;
+
+$brandColorLight5:     mix(white, $brandColor, 91) !default;
+$brandColorLight4:     mix(white, $brandColor, 88) !default;
+$brandColorLight3:     mix(white, $brandColor, 84) !default;
+$brandColorLight2:     mix(white, $brandColor, 70) !default;
+$brandColorLight1:     mix(white, $brandColor, 46) !default;
+$brandColorDark1:      mix(black, $brandColor, 20) !default;
+$brandColorDark2:      mix(black, $brandColor, 40) !default;
+
+$neutralColor1:   #ffffff !default;
+$neutralColor2:   hsl($neutralHue, $neutralSaturation, 99%) !default;
+$neutralColor3:   hsl($neutralHue, $neutralSaturation, 98%) !default;
+$neutralColor4:   hsl($neutralHue, $neutralSaturation, 97%) !default;
+$neutralColor5:   hsl($neutralHue, $neutralSaturation, 95%) !default;
+$neutralColor6:   hsl($neutralHue, $neutralSaturation, 93%) !default;
+$neutralColor7:   hsl($neutralHue, $neutralSaturation, 90%) !default;
+$neutralColor8:   hsl($neutralHue, $neutralSaturation, 88%) !default;
+$neutralColor9:   hsl($neutralHue, $neutralSaturation, 80%) !default;
+$neutralColor10:  hsl($neutralHue, $neutralSaturation, 78%) !default;
+$neutralColor11:  hsl($neutralHue, $neutralSaturation, 70%) !default;
+$neutralColor12:  hsl($neutralHue, $neutralSaturation, 55%) !default;
+$neutralColor13:  hsl($neutralHue, $neutralSaturation, 45%) !default;
+$neutralColor14:  hsl($neutralHue, $neutralSaturation, 30%) !default;
+$neutralColor15:  hsl($neutralHue, $neutralSaturation, 20%) !default;
+$neutralColor16:  hsl($neutralHue, $neutralSaturation, 15%) !default;
+$neutralColor17:  #000000 !default;
+
+// Accent colors
+$accentColorHighlight1:    #d9f4fa !default;
+$accentColorHighlight2:    #c2eaf3 !default;
+
+$accentColorDanger1:       #FCF3F4 !default;
+$accentColorDanger2:       #F8D3D6 !default;
+$accentColorDanger3:       #E65A66 !default;
+$accentColorDanger4:       #DE2333 !default;
+$accentColorDanger5:       #BA0006 !default;
+
+$accentColorAttention1:    #FEF5E4 !default;
+$accentColorAttention2:    #FCE7C1 !default;
+$accentColorAttention3:    #F8CA75 !default;
+$accentColorAttention4:    #F6B846 !default;
+$accentColorAttention5:    #BF552E !default;
+
+$accentColorInfo1:         #E9F4F8 !default;
+$accentColorInfo2:         #CAE4EF !default;
+$accentColorInfo3:         #80BFD9 !default;
+$accentColorInfo4:         #2B94BF !default;
+$accentColorInfo5:         #0574A1 !default;
+
+$accentColorConfirmation1: #ECF5E7 !default;
+$accentColorConfirmation2: #D9EACF !default;
+$accentColorConfirmation3: #B3D69F !default;
+$accentColorConfirmation4: #81BA5F !default;
+$accentColorConfirmation5: #008230 !default;
+
+$accentColorDvt1:          #237bb1 !default;
+$accentColorDvt2:          #68c182 !default;
+$accentColorDvt3:          #fad55c !default;
+$accentColorDvt4:          #ed6647 !default;
+$accentColorDvt5:          #8561c8 !default;
+$accentColorDvt6:          #6ddbdb !default;
+$accentColorDvt7:          #ffb54d !default;
+$accentColorDvt8:          #e371b2 !default;
+$accentColorDvt9:          #47bdef !default;
+$accentColorDvt10:         #a2bf39 !default;
+$accentColorDvt11:         #a75dba !default;
+$accentColorDvt12:         #f7f37b !default;
+
+// text colors
+$textColorBase: #000 !default;
+$textColor1: $textColorBase !default;
+$textColor2: rgba($textColorBase, 0.85) !default;
+$textColor3: rgba($textColorBase, 0.8) !default;
+$textColor4: rgba($textColorBase, 0.7) !default;
+$textColor5: rgba($textColorBase, 0.6) !default;
+$textColor6: rgba($textColorBase, 0.55) !default;
+$textColor7: rgba($textColorBase, 0.38) !default;

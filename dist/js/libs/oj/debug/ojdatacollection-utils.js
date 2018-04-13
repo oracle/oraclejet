@@ -1,4 +1,5 @@
 /**
+ * @license
  * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
@@ -7,7 +8,7 @@
 define(['ojs/ojcore', 'jquery'], function(oj, $)
 {
 /**
- * This class contains all utility methods used by the data grid colelction model.
+ * This class contains all utility methods used by the data grid collection model.
  * @export
  */
 oj.DataCollectionEditUtils = {};
@@ -45,10 +46,10 @@ oj.DataCollectionEditUtils.basicHandleEditEnd = function(event, ui)
 
 /**
  * 
- * @property {Event} event <code class="prettyprint">jQuery</code> event object
- * @property {Object} ui Parameters
+ * @param {Event} event <code class="prettyprint">jQuery</code> event object
+ * @param {Object} ui Parameters
  * @property {Object} ui.rowContext the row context
- * @property {number} ui.cancelEdit whether the edit was cancelled
+ * @property {number} ui.cancelEdit whether the edit was canceled
  * @return {boolean} Whether to veto the event
  * @export
  * @expose

@@ -1,4 +1,5 @@
 /**
+ * @license
  * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
@@ -22,6 +23,9 @@ define(['ojs/ojcore', 'jquery', 'knockout', 'ojs/ojdatasource-common', 'ojs/ojmo
  * @implements oj.PagingModel
  * @param {oj.Collection} collection the collection to use as source data for this paging control
  * @constructor
+ * @since 1.0
+ * @ojtsignore
+ * @ojtsimport knockout
  */
 oj.CollectionPagingDataSource = function(collection)
 {
@@ -47,6 +51,7 @@ oj.Object.createSubclass(oj.CollectionPagingDataSource, oj.DataSource, "oj.Colle
 /**
  * Initializes the instance.
  * @export
+ * @ojtsignore
  * @memberof oj.CollectionPagingDataSource
  */
 oj.CollectionPagingDataSource.prototype.Init = function()
@@ -93,7 +98,7 @@ oj.CollectionPagingDataSource.prototype._refreshObservableDataWindow = function(
  * @export
  * Return the current set of data in the paging window
  * 
- * @returns {Array} the current set of data in the paging window
+ * @returns {Array.<Object>} the current set of data in the paging window
  * @memberof oj.CollectionPagingDataSource
  */
 oj.CollectionPagingDataSource.prototype.getWindow = function() {
@@ -105,6 +110,9 @@ oj.CollectionPagingDataSource.prototype.getWindow = function() {
  * Get the observable array representing the current set of data in the paging window
  * 
  * @returns {Object} an observable array representing the current data in the paging window
+ * @ojsignature {target: "Type",
+ *               value: "KnockoutObservableArray<object>",
+ *               for: "returns"}
  * @memberof oj.CollectionPagingDataSource
  */
 oj.CollectionPagingDataSource.prototype.getWindowObservable = function() {
@@ -132,8 +140,8 @@ oj.CollectionPagingDataSource.prototype.getPage = function()
  * Set the current page
  * @param {number} value The current page
  * @param {Object=} options Options<p>
- *                  pageSize: The page size.<p>
- * @return {Promise} promise object triggering done when complete..
+ * @param {number} [options.pageSize] The page size.<p>
+ * @return {Promise.<null>} promise object triggering done when complete..
  * @export
  * @expose
  * @memberof oj.CollectionPagingDataSource
@@ -227,6 +235,10 @@ oj.CollectionPagingDataSource.prototype.getPageCount = function()
  * <tr><td><b>startIndex</b></td><td>The startIndex for the returned set of rows</td></tr>
  * </tbody>
  * </table>  
+ * @ojsignature {
+ *          target: "Type",
+ *          for: "returns",
+ *          value: "void|Promise<void|{data: Array<object>, startIndex: number}>"}
  * @export
  * @expose
  * @memberof oj.CollectionPagingDataSource
@@ -374,6 +386,9 @@ oj.CollectionPagingDataSource.prototype.totalSize = function()
  *                  "estimate" if the totalSize is an estimate 
  *                  "atLeast" if the totalSize is at least a certain number 
  *                  "unknown" if the totalSize is unknown
+ * @ojsignature {target:"Type",
+ *               value: "'actual'|'estimate'|'atLeast'|'unknown'",
+ *               for: "returns"}
  * @export
  * @expose
  * @memberof oj.CollectionPagingDataSource

@@ -1,0 +1,64 @@
+// Copyright (c) 2014, 2018, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+@import "../../utilities/oj.utilities";
+@import "../../common/helpers/oj.common.helpers";
+
+// ----- start dependencies ---------
+
+// set up include variables before importing dependencies
+@if $includeMessagesClasses != false {
+  $includeIconClasses: true !global;
+  $includePopupClasses: true !global;
+  $includeMessageClasses: true !global;
+}
+
+// import dependencies
+@import "oj.alta.ios.icons";
+@import "oj.alta.ios.popup";
+@import "oj.alta.ios.message";
+
+// ----- end dependencies ---------
+
+// import classes defined in the common directory
+@import "../../common/widgets/oj.common.messages";
+
+@if $includeMessagesClasses != false {
+  @include module-include-once("alta.ios.messages") {
+    
+    //INDIVIDUAL MESSAGE OVERRIDES
+    //////////////////////////////
+    
+    .oj-messages-inline .oj-message-header {
+      padding: 12px 10px 3px 10px;
+    }
+    
+    .oj-messages-inline .oj-message-body {
+      padding: 0px 10px 12px 10px;
+    }
+    
+    oj-messages:not(.oj-messages-inline) .oj-message-header {
+      @include oj-ltr() {
+        padding: 13px 14px 12px 8px;
+      }
+      @include oj-rtl() {
+        padding: 13px 8px 12px 14px;
+      }
+    }
+    
+    oj-message:not(.oj-messages-inline) .oj-message-body {
+      padding: 10px 14px 17px 13px;
+    }
+    
+    // Medium-up screen responsive overrides
+    @if $responsiveQueryMediumUp and $responsiveQueryMediumUp != none {
+      @media  #{$responsiveQueryMediumUp} {
+        
+        //INDIVIDUAL MESSAGE OVERRIDES
+        //////////////////////////////
+        
+        .oj-messages-inline .oj-message-summary {
+          padding-bottom: 4px;
+        }
+      }
+    }
+  }
+}

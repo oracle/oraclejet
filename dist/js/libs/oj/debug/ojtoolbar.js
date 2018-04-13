@@ -1,4 +1,5 @@
 /**
+ * @license
  * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
@@ -21,6 +22,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
  * @augments oj.baseComponent
  * @ojrole toolbar
  * @since 0.6
+ * @ojshortdesc Displays a strip of control elements (icons, buttons, separators, etc.) with support for touch, mouse, and keyboard interactions.
  * @ojstatus preview
  * 
  * @classdesc
@@ -283,6 +285,7 @@ oj.__registerWidget("oj.ojToolbar", $['oj']['baseComponent'], {
      * 
      * @expose 
      * @memberof oj.ojToolbar
+     * @return {void}
      * @instance
      * 
      * @example <caption>Invoke the <code class="prettyprint">refresh</code> method:</caption>
@@ -297,7 +300,8 @@ oj.__registerWidget("oj.ojToolbar", $['oj']['baseComponent'], {
         var self = this;
         this.isRtl = this._GetReadingDirection() === "rtl";
         
-        this.$enabledButtons = undefined;
+        // initialize as an empty JQuery object so we don't fall over if focus hasn't been introduced before a click is made
+        this.$enabledButtons = $();
         
         // When toolbar is binding listeners to buttons, use the Toolbar's eventNamespace, not the Button's 
         // eventNamespace, to facilitate later unbinding only the Toolbar listeners.
@@ -361,7 +365,7 @@ oj.__registerWidget("oj.ojToolbar", $['oj']['baseComponent'], {
     },
     
     _handleFocus: function( $button ) { 
-        if (!this._IsCustomElement() && this.$enabledButtons == null) {
+        if (!this._IsCustomElement() && this.$enabledButtons.length == 0) {
             // the subset of Toolbar buttons that are enabled.  Disabled buttons are not tabbable.
             this.$enabledButtons = this.$buttons.filter(function(index) {
                 return !$( this ).ojButton( "option", "disabled" );
@@ -506,7 +510,11 @@ oj.__registerWidget("oj.ojToolbar", $['oj']['baseComponent'], {
     //   to restore the tabstop, the toolbar becomes untabbable and inaccessible.
     // - Every other approach had similar robustness issues. 
     _mapToTabbable: function( $button ) { // Private, not an override (not in base class).  Method name unquoted so will be safely optimized (renamed) by GCC as desired.
-        var $enabledButtons = this.$enabledButtons;
+        var focusElems = [];
+        for (var i = 0; i < this.$enabledButtons.length; i++) {
+            focusElems.push(this._getButtonFocusElem(this.$enabledButtons[i]));
+        }
+        var $enabledButtonFocusElems = $(focusElems);
         return $button.map(function(index, elem) {
             // Buttons other than radios, and checked radios, are always tabbable if they're enabled, which this method requires.
             // Radios w/ name="" (incl name omitted) are not in a radio group, not even with other radios with w/ name="".  Radios 
@@ -516,7 +524,7 @@ oj.__registerWidget("oj.ojToolbar", $['oj']['baseComponent'], {
             } else {
                 // elem is unchecked radio in real (not "") group, which is tabbable iff no groupmate is checked.  Per above doc, we know that 
                 // all of its potentially checked groupmates are in $enabledButtons.
-                 var $checkedRadio = _radioGroup(elem, $enabledButtons).filter(":checked");
+                var $checkedRadio = _radioGroup(elem, $enabledButtonFocusElems).filter(":checked");
                 return ($checkedRadio.length ? $checkedRadio[0] : elem);
             }
         });

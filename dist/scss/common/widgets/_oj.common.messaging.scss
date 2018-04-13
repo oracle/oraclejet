@@ -75,26 +75,26 @@
 
     // red box
     .oj-messaging-inline-container .oj-message.oj-message-error {
-      background-color: $messageInlineBgColorError;
-      border-color: $messageInlineBorderColorError;
+      background-color: $messageComponentInlineBgColorError;
+      border-color: $messageComponentInlineBorderColorError;
     }
 
     // gold box
     .oj-messaging-inline-container .oj-message.oj-message-warning {
-      background-color: $messageInlineBgColorWarning;
-      border-color: $messageInlineBorderColorWarning;
+      background-color: $messageComponentInlineBgColorWarning;
+      border-color: $messageComponentInlineBorderColorWarning;
     }    
 
     // blue box
     .oj-messaging-inline-container .oj-message.oj-message-info {
-      background-color: $messageInlineBgColorInfo;
-      border-color: $messageInlineBorderColorInfo;
+      background-color: $messageComponentInlineBgColorInfo;
+      border-color: $messageComponentInlineBorderColorInfo;
     }
 
     // green box
     .oj-messaging-inline-container .oj-message.oj-message-confirmation {
-      background-color: $messageInlineBgColorConfirmation;
-      border-color: $messageInlineBorderColorConfirmation;
+      background-color: $messageComponentInlineBgColorConfirmation;
+      border-color: $messageComponentInlineBorderColorConfirmation;
     }
 
     /** 
@@ -118,7 +118,6 @@
      */
     .oj-message-content {
       display: inline-block;
-      word-wrap: break-word;
     }
 
     /**
@@ -126,12 +125,8 @@
      * 1. allow summary text to wrap normally.
      */
     
-    .oj-message-summary {
-      color: $textColor;
-      font-size: $fontSize;    
-      font-weight: 500;
+    .oj-message-content .oj-message-summary {
       vertical-align: top;
-      white-space: normal; /* 1 */
       @include oj-ltr() {
         padding: 0 0 0 10px;
       }
@@ -139,14 +134,12 @@
         padding: 0 10px 0 0; 
       } 
     }
-
+    
     /** 
      * message detail text 
      * 1. allow detail text to wrap normally.
      */
-    .oj-message-detail { 
-      color: $textColor;
-      white-space: normal; /* 1 */
+    .oj-message-content .oj-message-detail { 
       @include oj-ltr() {
         padding: 7px 0 0 10px;
       }
@@ -187,10 +180,9 @@
     .oj-message-status-icon {
       @include oj-flex-property(0 0 auto);
       position: relative;
-      top: 3px;
     }
     .oj-message-status-icon:before {
-      width: 16px; /* Needed for old versions of IE11 */
+      width: 20px; /* Needed for old versions of IE11 */
     }
 
     .oj-message-status-icon.oj-message-error-icon {
@@ -241,12 +233,12 @@
     
     $messageInlineAnimationDefaults: ();
  
-    @if ($messageInlineOpenAnimation) {
-      $messageInlineAnimationDefaults: map-merge($messageInlineAnimationDefaults, (open: $messageInlineOpenAnimation));
+    @if ($messageComponentInlineOpenAnimation) {
+      $messageInlineAnimationDefaults: map-merge($messageInlineAnimationDefaults, (open: $messageComponentInlineOpenAnimation));
     }
  
-    @if ($messageInlineCloseAnimation) {
-      $messageInlineAnimationDefaults: map-merge($messageInlineAnimationDefaults, (close: $messageInlineCloseAnimation));
+    @if ($messageComponentInlineCloseAnimation) {
+      $messageInlineAnimationDefaults: map-merge($messageInlineAnimationDefaults, (close: $messageComponentInlineCloseAnimation));
     }
 
     $messageInlineDefaultOptions: ();

@@ -1,0 +1,2 @@
+define(["./impl/fileSystemPersistenceStore"],function(a){"use strict";return function(){function b(b,c){var d=new a(b);return d.Init(c).then(function(){return d})}return{createPersistenceStore:function(a,c){return b(a,c)}}}()});
+//# sourceMappingURL=fileSystemPersistenceStoreFactory.js.map

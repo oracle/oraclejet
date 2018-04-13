@@ -25,6 +25,7 @@ dvt.Obj.createSubclass(dvt.AttrGroups, dvt.Obj);
 dvt.AttrGroups.prototype.get = function(value) {
   // subclasses must override
 };
+
 /**
  * Discrete attribute groups handler.
  * @class
@@ -77,6 +78,7 @@ dvt.DiscreteAttrGroups.prototype.get = function(group) {
 dvt.DiscreteAttrGroups.prototype.getMappingsArray = function() {
   return this._results.slice(0);
 };
+
 /**
  * Continuous attribute groups handler.
  * @param {number} minValue The minimum bounds for use in mapping values.
@@ -166,6 +168,7 @@ dvt.ContinuousAttrGroups.prototype._calcValue = function(a, b, percent) {
   // Note: Only color is supported by continuous attribute groups in this release.
   return dvt.ColorUtils.interpolateColor(a, b, percent);
 };
+
 /**
  * Legend rendering utilities for attribute groups components.
  * @class
@@ -331,6 +334,7 @@ dvt.LegendAttrGroupsRenderer._renderAttrGroupsDiscrete = function(context, event
   // Return the contents
   return ret;
 };
+
 /**
  * A component level breadcrumb drill event.
  * @param {string} id The id of the data item that was drilled.
@@ -354,6 +358,7 @@ dvt.BreadcrumbsDrillEvent.TYPE = 'breadcrumbsDrill';
 dvt.BreadcrumbsDrillEvent.prototype.getId = function() {
   return this._id;
 };
+
 // Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 
 
@@ -627,6 +632,7 @@ dvt.Breadcrumbs.prototype.SetCrumbs = function(crumbs) {
 dvt.Breadcrumbs.prototype.GetCrumbs = function() {
   return this._crumbs;
 };
+
 /**
  * Default values and utility functions for breadcrumb versioning.
  * @class
@@ -688,6 +694,7 @@ DvtBreadcrumbsDefaults._getDefaults = function(userOptions) {
 DvtBreadcrumbsDefaults.getGapSize = function(options, defaultSize) {
   return Math.ceil(defaultSize * options['layout']['gapRatio']);
 };
+
 /**
  * Event Manager for dvt.Breadcrumbs.
  */
@@ -758,6 +765,7 @@ DvtBreadcrumbsEventManager.prototype.handleKeyboardEvent = function(event) {
 
   return eventConsumed;
 };
+
 /**
  * Simple logical object for drilling and tooltip support.
  * @param {string} id The id of the associated breadcrumb.
@@ -808,6 +816,7 @@ DvtBreadcrumbsPeer.prototype.setDrillable = function(drillable) {
 DvtBreadcrumbsPeer.prototype.getDisplayable = function() {
   return this._displayable;
 };
+
 /**
  * Renderer for dvt.Breadcrumbs.
  * @class
@@ -1146,6 +1155,7 @@ DvtBreadcrumbsRenderer._newSeparator = function(breadcrumbs) {
   label.setCSSStyle(new dvt.CSSStyle(options.labelStyle));
   return label;
 };
+
 /**
  * @constructor
  */
@@ -1172,6 +1182,7 @@ dvt.PanelDrawerEvent.prototype.getSubType = function() {
 dvt.PanelDrawerEvent.prototype.getActivePanel = function() {
   return this._activePanel;
 };
+
 // Copyright (c) 2012, 2016, Oracle and/or its affiliates. All rights reserved.
 /**
  * @constructor
@@ -2169,14 +2180,14 @@ dvt.PanelDrawer.prototype._refreshPanelSize = function(id, anim, ecw, ech, xx, y
       var lastPanelId = this._panelOrder[this._panelOrder.length - 1];
       var lastTab = this.GetTab(lastPanelId);
       borderPath.push('L', 0, lastTab.getTranslateY() + dvt.PanelDrawer._TAB_SIZE);
-      this._expandedBorder.setCommands(borderPath);
+      this._expandedBorder.setCommandsArray(borderPath);
 
       //increase width so that bounce animation doesn't detach panelDRrawer from edge of component
       edgeX *= dvt.PanelDrawer._BOUNCE_WIDTH_FACTOR;
       borderPath = ['M', 0, lastTab.getTranslateY() + dvt.PanelDrawer._TAB_SIZE, 'L', 0, ech, 'L', edgeX, ech];
     } else {
       borderPath = ['M', 0, 0, 'L', 0, ech, 'L', edgeX, ech];
-      this._expandedBorder.setCommands(borderPath);
+      this._expandedBorder.setCommandsArray(borderPath);
     }
   }
   else if (this.getDockSide() == dvt.PanelDrawer.DOCK_BOTTOM) {
@@ -2187,22 +2198,22 @@ dvt.PanelDrawer.prototype._refreshPanelSize = function(id, anim, ecw, ech, xx, y
       var firstPanelId = this._panelOrder[0];
       var firstTab = this.GetTab(firstPanelId);
       borderPath.push('L', 0, firstTab.getTranslateY());
-      this._expandedBorder.setCommands(borderPath);
+      this._expandedBorder.setCommandsArray(borderPath);
 
       //increase width so that bounce animation doesn't detach panelDRrawer from edge of component
       edgeX *= dvt.PanelDrawer._BOUNCE_WIDTH_FACTOR;
       borderPath = ['M', 0, firstTab.getTranslateY(), 'L', 0, -ech, 'L', edgeX, -ech];
     } else {
       borderPath = ['M', 0, 0, 'L', 0, -ech, 'L', edgeX, -ech];
-      this._expandedBorder.setCommands(borderPath);
+      this._expandedBorder.setCommandsArray(borderPath);
     }
   }
 
   if (anim) {
-    anim.addProp(dvt.Animator.TYPE_PATH, this._expandedBorderResizable, this._expandedBorderResizable.getCommands, this._expandedBorderResizable.setCommands, borderPath);
+    anim.addProp(dvt.Animator.TYPE_PATH, this._expandedBorderResizable, this._expandedBorderResizable.getCommandsArray, this._expandedBorderResizable.setCommandsArray, borderPath);
   }
   else {
-    this._expandedBorderResizable.setCommands(borderPath);
+    this._expandedBorderResizable.setCommandsArray(borderPath);
   }
 
 };
@@ -2455,6 +2466,7 @@ dvt.PanelDrawer.prototype.getEventManager = function() {
   return this._eventManager;
 };
 
+
 // Copyright (c) 2014, 2016, Oracle and/or its affiliates. All rights reserved.
 /**
  * @constructor
@@ -2637,6 +2649,7 @@ DvtPanelDrawerTab.prototype._createKeyboardFocusEffect = function() {
   var dim = this.getDimensions();
   this._keyboardFocusEffect = new dvt.KeyboardFocusEffect(this.getCtx(), this, new dvt.Rectangle(dim.x + 1, dim.y + 1, dim.w - 2, dim.h - 2), null, null, true);
 };
+
 // Copyright (c) 2012, 2016, Oracle and/or its affiliates. All rights reserved.
 /**
  * @constructor
@@ -2743,6 +2756,7 @@ DvtPanelDrawerEventManager.prototype.OnComponentTouchClick = function(event) {
   }
   event.stopPropagation();
 };
+
 // Copyright (c) 2014, 2016, Oracle and/or its affiliates. All rights reserved.
 /*---------------------------------------------------------------------------------*/
 /*  DvtPanelDrawerKeyboardHandler     Keyboard handler for panel drawer            */
@@ -2828,6 +2842,7 @@ DvtPanelDrawerKeyboardHandler.prototype.getNextNavigable = function(currentNavig
   }
   return next;
 };
+
 /**
  * @constructor
  * @param {dvt.Context} context The rendering context
@@ -3165,6 +3180,7 @@ dvt.Train.prototype.destroy = function (listener) {
 }
 */
 
+
 /**
  * A Train event.
  * @param {int} index The currently selected index
@@ -3193,6 +3209,7 @@ DvtTrainEvent.TYPE = 'dvtTrain';
 DvtTrainEvent.prototype.getIndex = function() {
   return this._index;
 };
+
 // Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 /**
  * Creates an Overview window component
@@ -3597,6 +3614,7 @@ dvt.OverviewWindow.prototype.getDimensionsWithStroke = function(targetCoordinate
   return this.getDimensions(targetCoordinateSpace);
 };
 
+
 dvt.Bundle.addDefaultStrings(dvt.Bundle.SUBCOMPONENT_PREFIX, {
   'CONTROL_PANEL' : 'Control Panel',
   'CONTROL_PANEL_ZOOMANDCENTER' : 'Zoom and Center',
@@ -3630,7 +3648,7 @@ dvt.Bundle.addDefaultStrings(dvt.Bundle.SUBCOMPONENT_PREFIX, {
 });
 
 
-})(dvt);
 
+})(dvt);
   return dvt;
 });

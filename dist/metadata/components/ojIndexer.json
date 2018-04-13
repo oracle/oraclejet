@@ -1,7 +1,7 @@
 {
   "name": "oj-indexer",
-  "version": "4.2.0",
-  "jetVersion": "4.2.0",
+  "version": "5.0.0",
+  "jetVersion": "5.0.0",
   "displayName": "Indexer",
   "preview": true,
   "roles": [
@@ -16,45 +16,46 @@
       "value": null
     },
     "translations": {
-      "description": "A collection of translated resources from the translation bundle, or null if this\ncomponent has no resources. Resources may be accessed and overridden individually or collectively, as seen in the examples.\n\nIf this component has translations, their documentation immediately follows this doc entry.",
-      "type": "Object",
+      "description": "A collection of translated resources from the translation bundle, or null if this\ncomponent has no resources. Resources may be accessed and overridden individually or collectively, as seen in the examples. If the component does not contain any translatable resource, the default value of this attribute will be \nnull. If not, an object containing all resources relevant to the component.\n\nIf this component has translations, their documentation immediately follows this doc entry.",
+      "type": "Object|null",
       "displayName": "Translations",
-      "value": null,
+      "translatable": true,
       "properties": {
         "ariaDisabledLabel": {
           "description": "Provides properties to customize the text to read to the screen reader when there is no matching group header.",
-          "type": "Object"
+          "type": "string"
         },
         "ariaInBetweenText": {
           "description": "Provides properties to customize the text that represents between two characters in the Indexer.",
-          "type": "Object"
+          "type": "string"
         },
         "ariaKeyboardInstructionText": {
           "description": "Provides properties to customize the screen reader keyboard instructional text for the the Indexer.",
-          "type": "Object"
+          "type": "string"
         },
         "ariaOthersLabel": {
           "description": "Provides properties to customize the text to read to the screen reader when the non-letter characters is selected.",
-          "type": "Object"
+          "type": "string"
         },
         "ariaTouchInstructionText": {
           "description": "Provides properties to customize the screen reader touch instructional text for the the Indexer.",
-          "type": "Object"
+          "type": "string"
         },
         "indexerCharacters": {
           "description": "Provides properties to customize the characters to display in the Indexer.",
-          "type": "Object"
+          "type": "string"
         },
         "indexerOthers": {
           "description": "Provides properties to customize the non-letter characters to display in the Indexer.",
-          "type": "Object"
+          "type": "string"
         }
       }
     }
   },
   "methods": {
     "refresh": {
-      "description": "Redraw the entire indexer."
+      "description": "Redraw the entire indexer.",
+      "return": "void"
     },
     "setProperty": {
       "description": "Sets a property or a single subproperty for complex properties and notifies the component\nof the change, triggering a [property]Changed event.",
@@ -69,7 +70,8 @@
           "description": "The new value to set the property to.",
           "type": "*"
         }
-      ]
+      ],
+      "return": "void"
     },
     "getProperty": {
       "description": "Retrieves a value for a property or a single subproperty for complex properties.",
@@ -90,7 +92,8 @@
           "description": "An object containing the property and value pairs to set.",
           "type": "Object"
         }
-      ]
+      ],
+      "return": "void"
     }
   },
   "slots": {

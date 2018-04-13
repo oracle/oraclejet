@@ -1,4 +1,5 @@
 /**
+ * @license
  * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
@@ -134,8 +135,7 @@ oj.__registerWidget("oj._ojRadioCheckbox", $['oj']['baseComponent'],
   {
     this.element.toggleClass("oj-selected", checked);
     this.$label.toggleClass("oj-selected", checked);
-    if (this.$choiceItem)
-      this.$choiceItem.toggleClass("oj-selected", checked);
+    this.$choiceItem.toggleClass("oj-selected", checked);
   },
   /**
    * Returns a jQuery object containing the element visually representing the checkbox. 
@@ -240,6 +240,7 @@ oj.__registerWidget("oj._ojRadioCheckbox", $['oj']['baseComponent'],
         this.$label.addClass("oj-radio-label");
     }
     
+    // this will not be null since we create a choice item if there isn't one
     this.$choiceItem = this._getChoiceItem();
   
     var iElem = document.createElement("span"); 
@@ -248,19 +249,19 @@ oj.__registerWidget("oj._ojRadioCheckbox", $['oj']['baseComponent'],
       
     var self = this;
     this._focusable( this.element );
-    if (this.$choiceItem) {
-      this._AddHoverable(this.$choiceItem);
-      this._AddActiveable(this.$choiceItem);
+    
+    this._AddHoverable(this.$choiceItem);
+    this._AddActiveable(this.$choiceItem);
 
-      // the input gets focus on keyboard tabbing. It bubbles up, so in case the 
-      // input element is hidden (e.g., in the native themes the input is hidden and an image is 
-      // shown instead), we need to set the focus selectors on the oj-choice-item so
-      // we can style the checked image.
-      this._focusable({
-        'element': this.$choiceItem,
-        'applyHighlight': true
-      });
-    }
+    // the input gets focus on keyboard tabbing. It bubbles up, so in case the 
+    // input element is hidden (e.g., in the native themes the input is hidden and an image is 
+    // shown instead), we need to set the focus selectors on the oj-choice-item so
+    // we can style the checked image.
+    this._focusable({
+      'element': this.$choiceItem,
+      'applyHighlight': true
+    });
+
 
     this._AddHoverable(this.$label);
     this._AddActiveable(this.$label);
@@ -345,10 +346,8 @@ oj.__registerWidget("oj._ojRadioCheckbox", $['oj']['baseComponent'],
 
       this.$label.removeClass("oj-enabled")
        .addClass("oj-disabled");
-      if (this.$choiceItem) 
-      {
-        this.$choiceItem.removeClass("oj-enabled").addClass("oj-disabled");
-      }
+
+      this.$choiceItem.removeClass("oj-enabled").addClass("oj-disabled");
     }
     else // option not set to disabled. nor is parent. On refresh this is ok, since we get it from the option.
     {
@@ -359,10 +358,7 @@ oj.__registerWidget("oj._ojRadioCheckbox", $['oj']['baseComponent'],
       .addClass("oj-enabled");
       this.$label.addClass("oj-enabled")
       .removeClass("oj-disabled"); 
-      if (this.$choiceItem)
-      {
-        this.$choiceItem.addClass("oj-enabled").removeClass("oj-disabled");
-      }
+      this.$choiceItem.addClass("oj-enabled").removeClass("oj-disabled");
     }
   },
   /**
@@ -445,8 +441,9 @@ oj.__registerWidget("oj._ojRadioCheckbox", $['oj']['baseComponent'],
   /**
    * Call this before you wrap the input in a span class='oj-radiocheckbox-icon' because we
    * are looking for the span with oj-choice-item as the parent of the input.
+   * If it isn't there, this function will add it. So it never returns null.
    * @private
-   * @returns {Object|null}
+   * @returns {Object}
    */
   _getChoiceItem: function()
   {
@@ -455,43 +452,40 @@ oj.__registerWidget("oj._ojRadioCheckbox", $['oj']['baseComponent'],
     var labelSelector;
     var ojChoiceItemSpanString;    
     var siblingLabel;
-    
-    
-    if (this.element)
+
+    elementParent = this.element.parent();
+    // oj-choice-row and oj-choice-row-inline have been deprecated on December 7, 2016 in
+    // version 3.0.0. Use oj-choice-item instead.
+    if (elementParent && (elementParent.hasClass("oj-choice-item") || 
+    elementParent.hasClass("oj-choice-row") || elementParent.hasClass("oj-choice-row-inline")))
     {
-      elementParent = this.element.parent();
-      // oj-choice-row and oj-choice-row-inline have been deprecated on December 7, 2016 in
-      // version 3.0.0. Use oj-choice-item instead.
-      if (elementParent && (elementParent.hasClass("oj-choice-item") || 
-      elementParent.hasClass("oj-choice-row") || elementParent.hasClass("oj-choice-row-inline")))
+      choiceItem = elementParent;
+    }
+    else
+    {
+      oj.Logger.warn("The radioset/checkboxset's input and label dom should be wrapped in a dom " +
+        "node with class 'oj-choice-item'. JET is adding this missing dom to make the component work correctly.");
+
+      // Since we can't find the oj-choice-item, create one. 
+      // It needs to wrap the input and its label (if any)
+      ojChoiceItemSpanString = "<span class='oj-choice-item oj-choice-item-added'></span>";
+
+      // the most common case is an <input id='foo'><label for='foo'> pair, so look for that first
+      labelSelector = "label[for='" + this.element.attr("id") + "']";
+      siblingLabel = this.element.siblings().filter( labelSelector );
+
+      if (siblingLabel.length !== 0)
       {
-        choiceItem = elementParent;
+       this.element.add(siblingLabel).wrapAll(ojChoiceItemSpanString); //@HTMLUpdateOk adding empty span for styling
+       choiceItem = this.element.parent();
       }
       else
       {
-        oj.Logger.warn("The radioset/checkboxset's input and label dom should be wrapped in a dom " +
-          "node with class 'oj-choice-item'. JET is adding this missing dom to make the component work correctly.");
-          
-        // Since we can't find the oj-choice-item, create one. 
-        // It needs to wrap the input and its label (if any)
-        ojChoiceItemSpanString = "<span class='oj-choice-item oj-choice-item-added'></span>";
-        
-        // the most common case is an <input id='foo'><label for='foo'> pair, so look for that first
-        labelSelector = "label[for='" + this.element.attr("id") + "']";
-        siblingLabel = this.element.siblings().filter( labelSelector );
-
-        if (siblingLabel.length !== 0)
-        {
-         this.element.add(siblingLabel).wrapAll(ojChoiceItemSpanString); //@HTMLUpdateOk adding empty span for styling
-         choiceItem = this.element.parent();
-        }
-        else
-        {
-          this.element.wrapAll(ojChoiceItemSpanString); //@HTMLUpdateOk adding empty span for styling
-          choiceItem = this.element.parent();
-        }   
-      }
+        this.element.wrapAll(ojChoiceItemSpanString); //@HTMLUpdateOk adding empty span for styling
+        choiceItem = this.element.parent();
+      }   
     }
+ 
     return choiceItem;
   },
   /**
@@ -548,11 +542,10 @@ oj.__registerWidget("oj._ojRadioCheckbox", $['oj']['baseComponent'],
   _destroy : function ()
   {  
     var ret = this._super();
-    if (this.$choiceItem)
-    {
-      this._RemoveHoverable(this.$choiceItem);
-      this._RemoveActiveable(this.$choiceItem);
-    }
+
+    this._RemoveHoverable(this.$choiceItem);
+    this._RemoveActiveable(this.$choiceItem);
+
     this._RemoveHoverable(this.$label);
     this._RemoveActiveable(this.$label);
           
@@ -568,8 +561,8 @@ oj.__registerWidget("oj._ojRadioCheckbox", $['oj']['baseComponent'],
     {
       this.$label.removeClass("oj-enabled oj-disabled oj-selected oj-radio-label");
     }
-    if (this.$choiceItem)
-      this.$choiceItem.removeClass("oj-enabled oj-disabled oj-selected");
+
+    this.$choiceItem.removeClass("oj-enabled oj-disabled oj-selected");
     
     var self = this;
 

@@ -763,6 +763,7 @@ DropdownItemSprite.prototype.Init = function(context, x, y, w, h, id) {
 };
 
 
+
 /**
  * @constructor
  *
@@ -833,6 +834,7 @@ dvt.ComboBoxEvent.prototype.Init = function(subtype, index) {
 dvt.ComboBoxEvent.prototype.getIndex = function() {
   return this._index;
 };
+
 /**
  * @constructor
  * PanControl for use with Diagram.
@@ -1179,6 +1181,7 @@ DvtPanControl.prototype._rotatePanControlDirectionalArrow = function(localX, loc
   // displayObj.rotation = angleDeg - 45;
   displayObj.setRotation(angleRad - Math.PI / 4);
 };
+
 /**
  * @constructor
  */
@@ -1196,6 +1199,7 @@ DvtControlPanelEvent.SUBTYPE_HIDE = 'hide';
 DvtControlPanelEvent.prototype.getSubType = function() {
   return this._subtype;
 };
+
 /**
  * A control panel used by dvt.PanZoomCanvas for pan and zoom controls.
  * @param {dvt.Context} context The rendering context
@@ -2557,6 +2561,7 @@ dvt.ControlPanel.prototype.getActionDisplayable = function(type, stampId) {
   }
   return null;
 };
+
 /**
  * Default values and utility functions for PanZoomControlPanel versioning.
  * @class
@@ -2710,6 +2715,7 @@ DvtControlPanelDefaults._getDefaults = function(userOptions) {
     defaults = dvt.JsonUtils.clone(DvtControlPanelDefaults.DEFAULT);
   return defaults;
 };
+
 // Copyright (c) 2012, 2016, Oracle and/or its affiliates. All rights reserved.
 /**
  * @constructor
@@ -2854,6 +2860,7 @@ DvtControlPanelEventManager.prototype.HandleImmediateTouchStartInternal = functi
   event.blockTouchHold();
   dvt.EventManager.consumeEvent(event);
 };
+
 
 /*
  * dvt.ControlPanelLAFUtils Utility class for providing LAF for buttons in the control panel.
@@ -3255,6 +3262,7 @@ dvt.ControlPanelLAFUtils.GetShapePathCommands = function(context, width, height,
   }
   return arPoints;
 };
+
 /**
  * A component that supports panning and zooming
  * @param {dvt.Context} context The rendering context.
@@ -3874,6 +3882,7 @@ dvt.PanZoomComponent.prototype.ensureObjInViewport = function(event, navigable) 
 dvt.PanZoomComponent.prototype.isPanning = function() {
   return this._panAnimator != null || this._panningInterrupted;
 };
+
 // Copyright (c) 2011, 2017, Oracle and/or its affiliates. All rights reserved.
 /**
   *  Creates a canvas that supports panning and zooming.
@@ -4350,12 +4359,13 @@ dvt.PanZoomCanvas.prototype.zoomToFit = function(animator, fitBounds)
     var dx = (this._ww / 2) - cxBounds;
     var dy = (this._hh / 2) - cyBounds;
 
+    var oldZoom = this.getZoom(animator);
     var thisRef = this;
     var fireStartEventFunc = function() {
       thisRef.FireZoomEvent(dvt.ZoomEvent.SUBTYPE_ZOOM_TO_FIT_BEGIN, null, null, animator, bounds);
     };
     var fireEndEventFunc = function() {
-      thisRef.FireZoomEvent(dvt.ZoomEvent.SUBTYPE_ZOOM_TO_FIT_END, null, null, animator, bounds);
+      thisRef.FireZoomEvent(dvt.ZoomEvent.SUBTYPE_ZOOM_TO_FIT_END, thisRef.getZoom(), oldZoom, animator, bounds);
     };
 
     if (!animator)
@@ -5118,7 +5128,8 @@ dvt.PanZoomCanvas.prototype.destroy = function() {
   // Always call superclass last for destroy
   dvt.PanZoomCanvas.superclass.destroy.call(this);
 };
-// Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
+
+// Copyright (c) 2011, 2017, Oracle and/or its affiliates. All rights reserved.
 /**
  * @constructor
  * @param {dvt.Context} context The rendering context
@@ -5569,7 +5580,7 @@ dvt.PanZoomCanvasEventManager.prototype.ZoomEndTouch = function(event, touch) {
   var touchIds = this.TouchManager.getTouchIdsForObj(dvt.PanZoomCanvasEventManager._ZOOM_TOUCH_KEY);
   this._callbackObj.setCurrentTouchTargets(this.TouchManager.getStartTargetsByIds(touchIds));
   if (touchIds.length == 0)
-    this._callback.call(this._callbackObj, new dvt.ZoomEvent(dvt.ZoomEvent.SUBTYPE_ZOOM_END));
+    this._callback.call(this._callbackObj, new dvt.ZoomEvent(dvt.ZoomEvent.SUBTYPE_ZOOM_END, this._callbackObj.getZoom(), this._origZoom));
 };
 
 /**
@@ -5796,6 +5807,7 @@ dvt.PanZoomCanvasEventManager.prototype.StoreInfoByEventType = function(key) {
   }
   return dvt.PanZoomCanvasEventManager.superclass.StoreInfoByEventType.call(this, key);
 };
+
 /**
  *  @param {dvt.EventManager} manager The owning dvt.EventManager
  *  @class dvt.PanZoomCanvasKeyboardHandler
@@ -5857,6 +5869,7 @@ dvt.PanZoomCanvasKeyboardHandler.prototype.processKeyDown = function(event) {
     return dvt.PanZoomCanvasKeyboardHandler.superclass.processKeyDown.call(this, event);
   }
 };
+
 // Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 /**
  *  Creates a dvt.CollapsiblePanel
@@ -6366,6 +6379,7 @@ dvt.CollapsiblePanel.prototype.HandleMouseOut = function(event) {
   if (this._buttonFrame)
     this._buttonFrame.setAlpha(this._styleMap[dvt.ControlPanel.FRAME_ROLLOUT_ALPHA]);
 };
+
 /**
  * @constructor
  */
@@ -6383,6 +6397,7 @@ dvt.CollapsiblePanelEvent.SUBTYPE_SHOW = 'show';
 dvt.CollapsiblePanelEvent.prototype.getSubType = function() {
   return this._subtype;
 };
+
 /*
  * dvt.ImageLAFUtils Utility class for image
  */
@@ -6405,6 +6420,7 @@ dvt.ImageLAFUtils.loadIcon = function(context, uri) {
 
   return image;
 };
+
 // Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 
 
@@ -7696,8 +7712,9 @@ dvt.ButtonLAFUtils.parseStyle = function(dispObj, buttonStyle) {
   dispObj.setFill(fill);
   dispObj.setStroke(stroke);
 };
-dvt.exportProperty(dvt.PanZoomComponent.prototype, 'render', dvt.PanZoomComponent.prototype.render);
-})(dvt);
 
+dvt.exportProperty(dvt.PanZoomComponent.prototype, 'render', dvt.PanZoomComponent.prototype.render);
+
+})(dvt);
   return dvt;
 });

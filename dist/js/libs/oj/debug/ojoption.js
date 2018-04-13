@@ -1,4 +1,5 @@
 /**
+ * @license
  * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
@@ -11,69 +12,67 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
  * Copyright (c) 2017, Oracle and/or its affiliates.
  * All rights reserved.
  */
-/**
- * Option Renderer.
- * @ignore
- */
-var OptionRenderer = {};
 
 /**
- * Append each node to the element.
- * @ignore
+ * @constructor
+ * @private
  */
-OptionRenderer._appendNodes = function(elem, nodes) {
-  $.each(nodes, function(i, node) {
-    elem.appendChild(node);
-  })
-};
+function ojOption(context) {
 
-/**
- * Remove node from the element.
- * @ignore
- */
-OptionRenderer._removeNodes = function(elem, nodes) {
-  $.each(nodes, function(i, node) {
-    elem.removeChild(node);
-  })
-};
+  /**
+   * Append each node to the element.
+   * @private
+   */
+  function _appendNodes(elem, nodes) {
+    $.each(nodes, function(i, node) {
+      elem.appendChild(node);
+    })
+  };
 
-/**
- * Rearrange slots in the right order and remove unwanted slots.
- * @ignore
- */
-OptionRenderer._arrangeSlots = function(elem) {
-  // get the slotMap
-  var slots = oj.CustomElementBridge.getSlotMap(elem);
-  var supportedSlots = ["startIcon", "", "endIcon"];
-  
-  // remove unwanted slots
-  $.each(slots, function(slotName, nodes) {
-    if (supportedSlots.indexOf(slotName) == -1) {
-      OptionRenderer._removeNodes(elem, nodes);
-    }
-  })
-  
-  // rearrange slots
-  $.each(supportedSlots, function(i, slotName) {
-    if (slots[slotName])
-      OptionRenderer._appendNodes(elem, slots[slotName]);
-  })
-};
+  /**
+   * Remove node from the element.
+   * @private
+   */
+  function _removeNodes(elem, nodes) {
+    $.each(nodes, function(i, node) {
+      elem.removeChild(node);
+    })
+  };
 
-/**
- * Default option renderer.
- * @ignore
- */
-OptionRenderer.render = function(elem)
-{
-  var customRenderer = elem["customOptionRenderer"];
+  /**
+   * Rearrange slots in the right order and remove unwanted slots.
+   * @private
+   */
+  function _arrangeSlots(elem) {
+    // get the slotMap
+    var slots = oj.BaseCustomElementBridge.getSlotMap(elem);
+    var supportedSlots = ["startIcon", "", "endIcon"];
     
-  // reorder the slots and remove unwanted slots
-  OptionRenderer._arrangeSlots(elem);
-  
-  if (customRenderer && typeof customRenderer === "function")
-    customRenderer(elem);   
-};
+    // remove unwanted slots
+    $.each(slots, function(slotName, nodes) {
+      if (supportedSlots.indexOf(slotName) == -1) {
+        _removeNodes(elem, nodes);
+      }
+    })
+    
+    // rearrange slots
+    $.each(supportedSlots, function(i, slotName) {
+      if (slots[slotName])
+        _appendNodes(elem, slots[slotName]);
+    })
+  };
+
+  this.updateDOM = function() {
+    var customRenderer = context.element["customOptionRenderer"];
+
+    // reorder the slots and remove unwanted slots
+    _arrangeSlots(context.element);
+
+    if (customRenderer && typeof customRenderer === "function")
+      customRenderer(context.element);    
+  };
+}
+
  
 /**
  * Copyright (c) 2017, Oracle and/or its affiliates.
@@ -83,7 +82,10 @@ OptionRenderer.render = function(elem)
 /**
  * @ojcomponent oj.ojOption
  * @since 4.0.0
+ * @ojshortdesc Declare values for JET elements that display a list of values.
+ * @ojrole option
  * @ojstatus preview
+ * @ojsignature class ojOption extends JetElement<ojOptionSettableProperties>
  *
  * @classdesc
  * <h3 id="optionOverview-section">
@@ -120,11 +122,12 @@ OptionRenderer.render = function(elem)
  * <p>Disables the oj-option if set to <code class="prettyprint">true</code>.
  *
  * @name disabled
+ * @ojshortdesc Disables the option if set to true.
  * @expose
  * @memberof oj.ojOption
  * @instance
  * @type {boolean}
- * @default <code class="prettyprint">false</code>
+ * @default false
  *
  * @example <caption>Initialize the oj-option with the <code class="prettyprint">disabled</code> attribute specified:</caption>
  * &lt;oj-option disabled="[[isDisabled]]" value="option1">Option1&lt;/oj-option>
@@ -141,6 +144,8 @@ OptionRenderer.render = function(elem)
  * <p>Specifies the oj-option's value. The value is associated with the oj-option element whose display value may be different.
  *
  * @name value
+ * @ojshortdesc The value of the option.
+ * @ojrequired
  * @expose
  * @memberof oj.ojOption
  * @instance
@@ -161,6 +166,7 @@ OptionRenderer.render = function(elem)
  * <p>Child content for oj-option. This is normally the text node that displays for oj-option.</p>
  *
  * @ojchild Default
+ * @ojshortdesc The default slot for the option's content.
  * @memberof oj.ojOption
  *
  * @example <caption>Initialize the oj-option with child content specified:</caption>
@@ -173,6 +179,7 @@ OptionRenderer.render = function(elem)
  * <p>Named slot for the oj-option's start icon.</p>
  *
  * @ojslot startIcon
+ * @ojshortdesc The slot for the option's start icon.
  * @memberof oj.ojOption
  *
  * @example <caption>Initialize the oj-option with the <code class="prettyprint">startIcon</code> slot specified:</caption>
@@ -185,6 +192,7 @@ OptionRenderer.render = function(elem)
  * <p>Named slot for the oj-option's end icon.</p>
  *
  * @ojslot endIcon
+ * @ojshortdesc The slot for the option's end icon.
  * @memberof oj.ojOption
  *
  * @example <caption>Initialize the oj-option with the <code class="prettyprint">endIcon</code> slot specified:</caption>
@@ -200,6 +208,7 @@ OptionRenderer.render = function(elem)
  * @function setProperty
  * @param {string} property - The property name to set. Supports dot notation for subproperty access.
  * @param {*} value - The new value to set the property to.
+ * @return {void}
  * 
  * @expose
  * @memberof oj.ojOption
@@ -225,7 +234,7 @@ OptionRenderer.render = function(elem)
  * Refreshes the visual state of the component.
  * 
  * @function refresh
- * 
+ * @return {void}
  * @expose
  * @memberof oj.ojOption
  * @instance
@@ -234,6 +243,7 @@ OptionRenderer.render = function(elem)
  * Performs a batch set of properties.
  * @function setProperties
  * @param {Object} properties - An object containing the property and value pairs to set.
+ * @return {void}
  * 
  * @expose
  * @memberof oj.ojOption
@@ -264,7 +274,7 @@ OptionRenderer.render = function(elem)
       "action" : {}
     },
     "extension": {
-      _RENDER_FUNC: OptionRenderer.render
+      _CONSTRUCTOR: ojOption
     }
   };
   oj.CustomElementBridge.registerMetadata('oj-option', null, ojOptionMeta);

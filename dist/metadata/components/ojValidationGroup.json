@@ -1,7 +1,7 @@
 {
   "name": "oj-validation-group",
-  "version": "4.2.0",
-  "jetVersion": "4.2.0",
+  "version": "5.0.0",
+  "jetVersion": "5.0.0",
   "displayName": "Validation Group",
   "preview": true,
   "description": "ojValidationGroup",

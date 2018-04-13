@@ -8,10 +8,11 @@
 @import "../../utilities/oj.utilities";
 
 @import "oj.common.formlayout.mixins"; 
-@import "oj.common.formlayout.utilities";
 
 @if $includeFormLayoutElementClasses != false {
   @include module-include-once("common.formlayout.element") {
+    @include common-formlayout-selectors();
+
     // Generate the style classes for oj-form-layout custom element component.
     // Currently, we only have the common cases, but in the future, we may add
     // oj-form-layout element specific selectors here.

@@ -18,13 +18,24 @@
     }
 
     .oj-progress-bar {
+      position: relative;
       box-sizing: border-box;
-      height: 16px;
+      height: $progressBarHeight;
       overflow: hidden;
-      background: $progressBarBgColor;
       border: 1px $progressBarBorderStyle $progressBarBorderColor;
       @include oj-border-radius($progressBarBorderRadius);
     }
+
+    .oj-progress-bar::before {
+      content: "";
+      position: absolute;
+      height: 100%;
+      width: 100%;
+      z-index: -1;
+      background-color: $progressBarBgColor;
+      opacity: $progressBarBgOpacity;
+    }
+
     .oj-progress-bar-value {
       margin: 0;
       box-sizing: border-box;
@@ -78,8 +89,10 @@
     .oj-progress-circle {
       position: relative;
       display: inline-block;
-      width: 24px;
-      height: 24px;
+      width: $progressCircleSize;
+      height: $progressCircleSize;
+      max-width: 100%;
+      max-height: 100%;
     }
 
     .oj-progress-circle-base {
@@ -88,17 +101,16 @@
       stroke: $progressCircleBgColor;
     }
 
+    .oj-progress-circle-base:not(.oj-progress-circle-value) {
+      stroke-opacity: $progressCircleBgOpacity;
+    }
+
     .oj-progress-circle-value {
       stroke: $progressValueBgColor;
     }
 
     .oj-progress-circle-transform {
       transform: rotate(-90deg);
-    }
-
-    .oj-progress-circle-overlay {
-      background-size: cover;
-      background-image: url($progressCircleIndeterminateOverlayImage);
     }
   }
 }

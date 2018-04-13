@@ -1,4 +1,5 @@
 /**
+ * @license
  * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
@@ -21,6 +22,7 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore'],
  * @class oj.PullToRefreshUtils
  * @since 1.2.0
  * @export
+ * @hideconstructor
  * @ojstatus preview
  *
  * @classdesc
@@ -55,11 +57,12 @@ oj.PullToRefreshUtils = {};
  * @export
  * @param {Element} element the DOM element that hosts the content to refresh.  When the content is scrollable, the value of this parameter must be the scrollable element.  
  *                  Specifically, when using this with ListView, the ListView element might not necessarily be the scrollable element, but is one of its ancestors instead.
- * @param {function()} refreshFunc the function to invoke when refresh is triggered.  It must return a Promise.
+ * @param {function():Promise.<*>} refreshFunc the function to invoke when refresh is triggered.  It must return a Promise.
  * @param {Object=} options optional values that controls aspects of pull to refresh
- * @param {number} options.threshold the number of pixels to pull until refresh is triggered.  If not specified, a default value will be calculated based on the height of the panel consisting the refresh icon, primary text, and secondary text.
- * @param {string} options.primaryText the primary text to display.  The primary text is usually used to describe the pull action.  If not specified then no primary text will be displayed.
- * @param {string} options.secondaryText the secondary text to display.  The secondary text is used to add supplementary text.  If not specified then no secondary text will be displayed.
+ * @param {number=} options.threshold the number of pixels to pull until refresh is triggered.  If not specified, a default value will be calculated based on the height of the panel consisting the refresh icon, primary text, and secondary text.
+ * @param {string=} options.primaryText the primary text to display.  The primary text is usually used to describe the pull action.  If not specified then no primary text will be displayed.
+ * @param {string=} options.secondaryText the secondary text to display.  The secondary text is used to add supplementary text.  If not specified then no secondary text will be displayed.
+ * @return {void}
  *
  * @see #tearDownPullToRefresh
  */
@@ -161,14 +164,15 @@ oj.PullToRefreshUtils.setupPullToRefresh = function(element, refreshFunc, option
 
         if (checkTolerance)
         {
-            // we only want to check this once per pull
-            checkTolerance = false;
             movex = event.originalEvent.touches[0].clientX - parseInt($.data(content[0], "data-pullstart-horiz"), 10);
             // check if the intention is swipe left, if it is don't show the panel yet
             if (Math.abs(movex) > height)
             {
                 return;
             }
+
+            // we only want to check this as long as the panel is not visible yet
+            checkTolerance = false;
         }    
 
         content.css("height", height);
@@ -362,6 +366,7 @@ oj.PullToRefreshUtils._handleRelease = function(event, element, content, refresh
  * 
  * @export
  * @param {Element} element the DOM element that hosts the content to refresh
+ * @return {void}
  *
  * @see #setupPullToRefresh
  */

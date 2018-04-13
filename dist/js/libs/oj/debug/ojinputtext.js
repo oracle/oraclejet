@@ -1,4 +1,5 @@
 /**
+ * @license
  * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
@@ -20,10 +21,23 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue'],
  * @ojcomponent oj.inputBase
  * @augments oj.editableValue
  * @abstract
+ * @ojsignature [{
+ *                target: "Type",
+ *                value: "abstract class inputBase<V, SP extends inputBaseSettableProperties<V, SV>, SV= V, RV= V> extends editableValue<V, SP, SV, RV>"
+ *               },
+ *               {
+ *                target: "Type",
+ *                value: "inputBaseSettableProperties<V, SV=V, RV= V> extends editableValueSettableProperties<V, SV, RV>",
+ *                for: "SettableProperties"
+ *               }
+ *              ]
  * @since 0.6
  * @ojshortdesc Abstract InputBase element
  * @ojrole input
  * @hideconstructor
+ * @ojtsimport ojvalidation-base
+ * @ojtsimport ojvalidation-datetime
+ * @ojtsimport ojvalidation-number
  *
  * @classdesc
  * <h3 id="inputBaseOverview-section">
@@ -95,12 +109,14 @@ oj.__registerWidget("oj.inputBase", $['oj']['editableValue'],
   
   /** 
    * Array to be used for oj.EditableValueUtils.initializeOptionsFromDom attribute is the html-5 dom attribute name.
-   * If option is different, like in the case of readonly (readonly html vs readOnly (camelcase) component option), specify both attribute and option.
+   * If option is different, like in the case of readonly (readonly html vs readOnly 
+   * (camelcase) component option), specify both attribute and option.
+   * NOTE: This is for the widget components only. Do not add custom element attributes here.
    * @expose
    * @memberof! oj.inputBase
    * @private
    */
-  _GET_INIT_OPTIONS_PROPS: [{attribute: 'disabled', validateOption: true},
+  _GET_INIT_OPTIONS_PROPS_FOR_WIDGET: [{attribute: 'disabled', validateOption: true},
                             {attribute: 'pattern'},
                             {attribute: 'placeholder'},
                             {attribute: 'value'},
@@ -172,8 +188,82 @@ oj.__registerWidget("oj.inputBase", $['oj']['editableValue'],
      * @ojfragment inputBaseConverterOptionDoc
      * @memberof oj.inputBase
      **/
-    
-    
+    /** 
+     * Dictates component's autocomplete state. 
+     * This attribute indicates whether the value of the control can be automatically 
+     * completed by the browser.
+     * 
+     * @example <caption>Initialize component with <code class="prettyprint">autocomplete</code> attribute:</caption>
+     * &lt;oj-some-element autocomplete="on">&lt;/oj-some-element>
+     * 
+     * @example <caption>Get or set the <code class="prettyprint">autocomplete</code> property after initialization:</caption>
+     * // getter
+     * var ro = myComp.autocomplete;
+     *
+     * // setter
+     * myComp.autocomplete = "on";
+     * 
+     * @expose 
+     * @type {string}
+     * @ojvalue {string} "on" enable autofill
+     * @ojvalue {string} "off" disable autofill
+     * @alias autocomplete
+     * @default "on"
+     * @instance
+     * @since 4.0.0
+     * @memberof oj.inputBase
+     * @ojextension {_COPY_TO_INNER_ELEM: true}
+     */
+    autocomplete: undefined,
+     /** 
+     * Autofocus is a Boolean that reflects the autofocus attribute, If it is set to true 
+     * then the associated component  will get input focus when the page is loaded.
+     * Setting this property doesn't set the focus to the component: 
+     * it tells the browser to focus to it when the element is inserted in the document. 
+     * 
+     * @example <caption>Initialize component with <code class="prettyprint">autofocus</code> attribute:</caption>
+     * &lt;oj-some-element autofocus>&lt;/oj-some-element>
+     * 
+     * @example <caption>Get or set the <code class="prettyprint">autofocus</code> property after initialization:</caption>
+     * // getter
+     * var ro = myComp.autofocus;
+     *
+     * // setter
+     * myComp.autofocus = false;
+     * 
+     * @expose 
+     * @type {boolean}
+     * @alias autofocus
+     * @default false
+     * @instance
+     * @since 4.0.0
+     * @memberof oj.inputBase
+     * @ojextension {_COPY_TO_INNER_ELEM: true}
+     */
+    autofocus: false,    
+    /** 
+     * It indicates the name of the component. 
+     * 
+     * @example <caption>Initialize component with <code class="prettyprint">name</code> attribute:</caption>
+     * &lt;oj-some-element name="myName">&lt;/oj-some-element>
+     * 
+     * @example <caption>Get or set the <code class="prettyprint">name</code> property after initialization:</caption>
+     * // getter
+     * var ro = myComp.name;
+     *
+     * // setter
+     * myComp.name = myName;
+     * 
+     * @expose 
+     * @type {string}
+     * @default ""
+     * @alias name
+     * @instance
+     * @since 4.0.0
+     * @memberof oj.inputBase
+     * @ojextension {_COPY_TO_INNER_ELEM: true}
+     */
+    name: "",
     /**
      * The placeholder text to set on the element.
      * 
@@ -195,30 +285,33 @@ oj.__registerWidget("oj.inputBase", $['oj']['editableValue'],
      * @access public
      * @instance
      * @memberof! oj.inputBase
-     * @type {string|null|undefined}
+     * @type {string}
      */    
-    placeholder: undefined,    
+    placeholder: "",    
      /**
-     * <p>The  <code class="prettyprint">raw-value</code> is the read-only attribute for retrieving 
-     * the current value from the input field in text form.</p>
+     * <p>The  <code class="prettyprint">rawValue</code> is the read-only property for retrieving 
+     * the current value from the input field in string form. The main consumer of
+     * <code class="prettyprint">rawValue</code> is a converter.</p>
      * <p>
-     * The <code class="prettyprint">raw-value</code> updates on the 'input' javascript event, 
-     * so the <code class="prettyprint">raw-value</code> changes as the value of the input is changed. 
+     * The <code class="prettyprint">rawValue</code> updates on the 'input' javascript event, 
+     * so the <code class="prettyprint">rawValue</code> changes as the value of the input is changed. 
      * If the user types in '1,200' into the field, the rawValue will be '1', then '1,', then '1,2', 
      * ..., and finally '1,200'. Then when the user blurs or presses 
-     * Enter the <code class="prettyprint">value</code> property gets updated.
+     * Enter the <code class="prettyprint">value</code> property gets converted and validated
+     * (if there is a converter or validators) and then gets updated if valid.
      * </p>
      * <p>This is a read-only attribute so page authors cannot set or change it directly.</p>
      * @expose 
      * @access public
      * @instance
      * @memberof! oj.inputBase
-     * @type {string|undefined}
+     * @type {string}
+     * @ojsignature {target: "Type", value: "RV"}
      * @since 1.2.0
      * @readonly
      * @ojwriteback
      */
-    rawValue: undefined,     
+    rawValue: "",     
     /** 
      * Dictates component's readonly state. 
      * 
@@ -233,7 +326,7 @@ oj.__registerWidget("oj.inputBase", $['oj']['editableValue'],
      * myComp.readonly = false;
      * 
      * @expose 
-     * @type {boolean|undefined}
+     * @type {boolean}
      * @alias readonly
      * @default false
      * @instance
@@ -317,7 +410,7 @@ oj.__registerWidget("oj.inputBase", $['oj']['editableValue'],
      * @see #translations
      */
     required: false,
-    
+
     /** 
      * List of validators used by component when performing validation. Each item is either an 
      * instance that duck types {@link oj.Validator}, or is an Object literal containing the 
@@ -408,112 +501,10 @@ oj.__registerWidget("oj.inputBase", $['oj']['editableValue'],
      * @access public
      * @instance
      * @memberof oj.inputBase
-     * @ojsignature  Array<{type: string, options?: object}>|undefined
-     * @type {Array|undefined}
+     * @ojsignature  { target: "Type", value: "Array<oj.Validator<V>|oj.Validation.FactoryRegisteredValidatorOrConverter>|null"}
+     * @type {Array|null}
      */    
-    validators: undefined,
-    /** 
-     * Dictates component's autocomplete state. 
-     * This attribute indicates whether the value of the control can be automatically 
-     * completed by the browser.
-     * 
-     * @example <caption>Initialize component with <code class="prettyprint">autocomplete</code> attribute:</caption>
-     * &lt;oj-some-element autocomplete="on">&lt;/oj-some-element>
-     * 
-     * @example <caption>Get or set the <code class="prettyprint">autocomplete</code> property after initialization:</caption>
-     * // getter
-     * var ro = myComp.autocomplete;
-     *
-     * // setter
-     * myComp.autocomplete = "on";
-     * 
-     * @expose 
-     * @type {string|undefined}
-     * @ojvalue {string} "on" enable autofill
-     * @ojvalue {string} "off" disable autofill
-     * @alias autocomplete
-     * @default "on"
-     * @instance
-     * @memberof! oj.inputBase
-     */
-    autocomplete: undefined,
-     /** 
-     * Autofocus is a Boolean that reflects the autofocus attribute, If it is set to true 
-     * then the associated component  will get input focus when the page is loaded.
-     * Setting this property doesn't set the focus to the component: 
-     * it tells the browser to focus to it when the element is inserted in the document. 
-     * 
-     * @example <caption>Initialize component with <code class="prettyprint">autofocus</code> attribute:</caption>
-     * &lt;oj-some-element autofocus>&lt;/oj-some-element>
-     * 
-     * @example <caption>Get or set the <code class="prettyprint">autofocus</code> property after initialization:</caption>
-     * // getter
-     * var ro = myComp.autofocus;
-     *
-     * // setter
-     * myComp.autofocus = false;
-     * 
-     * @expose 
-     * @type {boolean|undefined}
-     * @alias autofocus
-     * @default false
-     * @instance
-     * @memberof! oj.inputBase
-     */
-    autofocus: false,
-     /** 
-     * Dictates component's inputmode. 
-     * It specifies a hint to the browser for which keyboard to display.
-     * 
-     * @example <caption>Initialize component with <code class="prettyprint">inputmode</code> attribute:</caption>
-     * &lt;oj-some-element inputmode="latin">&lt;/oj-some-element>
-     * 
-     * @example <caption>Get or set the <code class="prettyprint">inputmode</code> property after initialization:</caption>
-     * // getter
-     * var ro = myComp.inputmode;
-     *
-     * // setter
-     * myComp.inputmode = "latin";
-     * 
-     * @expose 
-     * @type {string|undefined}
-     * @ojvalue {string} "verbatim" Alphanumeric
-     * @ojvalue {string} "latin" Latin-script input
-     * @ojvalue {string} "latin-name" As latin, but for human names
-     * @ojvalue {string} "latin-prose" As latin, but with more aggressive typing aids
-     * @ojvalue {string} "full-width-latin" As latin-prose, but for the user's secondary languages
-     * @ojvalue {string} "kana" Kana or romaji input
-     * @ojvalue {string} "katakana" Katakana input
-     * @ojvalue {string} "numeric" Numeric input
-     * @ojvalue {string} "tel" Telephone input
-     * @ojvalue {string} "email" Email input
-     * @ojvalue {string} "url" URL input
-     * @alias inputmode
-     * @default "latin"
-     * @instance
-     * @memberof! oj.inputBase
-     */
-    inputmode: undefined,
-     /** 
-     * It indicates the name of the component. 
-     * 
-     * @example <caption>Initialize component with <code class="prettyprint">name</code> attribute:</caption>
-     * &lt;oj-some-element name="myName">&lt;/oj-some-element>
-     * 
-     * @example <caption>Get or set the <code class="prettyprint">name</code> property after initialization:</caption>
-     * // getter
-     * var ro = myComp.name;
-     *
-     * // setter
-     * myComp.name = myName;
-     * 
-     * @expose 
-     * @type {string|undefined}
-     * @alias name
-     * @instance
-     * @memberof! oj.inputBase
-     */
-    name: undefined,
+    validators: undefined
   },
   
   /**
@@ -543,7 +534,11 @@ oj.__registerWidget("oj.inputBase", $['oj']['editableValue'],
   _InitOptions: function(originalDefaults, constructorOptions)
   {
     this._super(originalDefaults, constructorOptions);
-    oj.EditableValueUtils.initializeOptionsFromDom(this._GET_INIT_OPTIONS_PROPS, constructorOptions, this);    
+    if (!this._IsCustomElement())
+    {
+      oj.EditableValueUtils.initializeOptionsFromDom(
+        this._GET_INIT_OPTIONS_PROPS_FOR_WIDGET, constructorOptions, this);
+    }
   },
 
   /**
@@ -1236,6 +1231,7 @@ oj.__registerWidget("oj.inputBase", $['oj']['editableValue'],
    * @expose
    * @memberof oj.inputBase
    * @public
+   * @return {void}
    * @instance
    */
   refresh: function()
@@ -1301,10 +1297,11 @@ oj.__registerWidget("oj.inputBase", $['oj']['editableValue'],
    *      submitForm();
    *    }
    *  });
-   * @return {Promise} Promise resolves to "valid" if there were no converter parse errors and
+   * @return {Promise.<string>} Promise resolves to "valid" if there were no converter parse errors and
    * the component passed all validations. 
    * The Promise resolves to "invalid" if there were converter parse errors or 
    * if there were validation errors.
+   * @ojsignature {target: "Type", value: "Promise<'valid'|'invalid'>", for : "returns"}
    * 
    * 
    * @method
@@ -1348,6 +1345,7 @@ oj.__registerWidget("oj.inputBase", $['oj']['editableValue'],
   }
 
 }, true);
+
 /**
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
@@ -1356,8 +1354,18 @@ oj.__registerWidget("oj.inputBase", $['oj']['editableValue'],
 /**
  * @ojcomponent oj.ojInputPassword
  * @augments oj.inputBase
+ * @ojsignature [{
+ *                target: "Type",
+ *                value: "class ojInputPassword extends inputBase<string, ojInputPasswordSettableProperties>"
+ *               },
+ *               {
+ *                target: "Type",
+ *                value: "ojInputPasswordSettableProperties extends inputBaseSettableProperties<string>",
+ *                for: "SettableProperties"
+ *               }
+ *              ]
  * @since 0.6
- * @ojshortdesc Input Password Element
+ * @ojshortdesc Provides basic support for specifying a text value of type 'password'.
  * @ojrole textbox
  * @ojstatus preview
  *
@@ -1585,6 +1593,7 @@ oj.__registerWidget("oj.ojInputPassword", $['oj']['inputBase'],
  * <p>Sub-ID for the ojInputPassword component's input element.</p>
  *
  * @ojsubid oj-inputpassword-input
+ * @ignore
  * @memberof oj.ojInputPassword
  * @deprecated 4.0.0 Since the application supplies this element, it can supply a unique ID by which the element can be accessed.
  *
@@ -1598,10 +1607,689 @@ oj.__registerWidget("oj.ojInputPassword", $['oj']['inputBase'],
  */
 
 /**
+ * @ojcomponent oj.ojInputText
+ * @augments oj.inputBase
+ * @ojsignature [{
+ *                target: "Type",
+ *                value: "class ojInputText extends inputBase<any, ojInputTextSettableProperties>"
+ *               },
+ *               {
+ *                target: "Type",
+ *                value: "ojInputTextSettableProperties extends inputBaseSettableProperties<any>",
+ *                for: "SettableProperties"
+ *               }
+ *              ]
+ * @since 0.6
+ * @ojshortdesc Provides basic support for specifying a text value.
+ * @ojrole textbox
+ * @ojstatus preview
+ *
+ * @classdesc
+ * <h3 id="inputTextOverview-section">
+ *   JET InputText Component
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#inputTextOverview-section"></a>
+ * </h3>
+ *
+ * <p>Description: The oj-input-text component enhances a browser input type="text" element.
+ * 
+ * <pre class="prettyprint"><code>&lt;oj-input-text>&lt;/oj-input-text></code></pre>
+ *
+ * {@ojinclude "name":"validationAndMessagingDoc"}
+ * 
+ * <h3 id="touch-section">
+ *   Touch End User Information
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#touch-section"></a>
+ * </h3>
+ *
+ * {@ojinclude "name":"touchDoc"}
+ *
+ *
+ * <h3 id="keyboard-section">
+ *   Keyboard End User Information
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#keyboard-section"></a>
+ * </h3>
+ *
+ * {@ojinclude "name":"keyboardDoc"}
+ *
+ * <h3 id="a11y-section">
+ *   Accessibility
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#a11y-section"></a>
+ * </h3>
+ * <h3 id="styling-section">
+ *   Styling
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#styling-section"></a>
+ * </h3>
+ *
+ * {@ojinclude "name":"stylingDoc"}
+ *
+ * <h3 id="label-section">
+ *   Label and InputText
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#label-section"></a>
+ * </h3>
+ * <p>
+ * It is up to the application developer to associate an oj-label with the oj-input-text component.
+ * For accessibility, you should associate an oj-label element to the oj-input-text component
+ * by putting an <code>id</code> on the oj-input-text element, and then setting the
+ * <code>for</code> attribute on the oj-label to be the component's id.
+ * </p>
+ *
+ * @example <caption>Declare the oj-input-text component with no attributes specified:</caption>
+ * &lt;oj-input-text>&lt;/oj-input-text>
+ *
+ * @example <caption>Initialize the component with some attributes:</caption>
+ * &lt;oj-input-text id="textId" disabled>&lt;/oj-input-text>
+ *
+ * @example <caption>Initialize a component attribute via component binding:</caption>
+ * &lt;oj-input-text id="textId" value="{{currentValue}}">&lt;/oj-input-text>
+ */
+oj.__registerWidget("oj.ojInputText", $['oj']['inputBase'],
+{
+  version : "1.0.0",
+  defaultElement : "<input>",
+  widgetEventPrefix : "oj",
+
+  /**
+   * @expose
+   * @private
+   */
+  _ATTR_CHECK : [{"attr": "type", "setMandatory": "text"}],
+
+  /**
+   * @expose
+   * @private
+   */
+  _CLASS_NAMES : "oj-inputtext-input",
+
+  /**
+   * @expose
+   * @private
+   */
+  _WIDGET_CLASS_NAMES : "oj-inputtext oj-form-control oj-component",
+  
+  /**
+   * @private
+   */
+  _ALLOWED_TYPES : ['email', 'number', 'search', 'tel', 'text', 'url'],
+
+  _CLICK_HANDLER_KEY: "click",
+
+  options :
+  {
+    /**
+     * @expose
+     * @memberof! oj.ojInputText
+     * @instance
+     * @type {string}
+     * @ojvalue {string} "never" The clear icon is never visible
+     * @ojvalue {string} "always" The clear icon is always visible
+     * @ojvalue {string} "conditional" The clear icon is visible under the following conditions:
+     * if the component has a non-empty value AND it either has focus OR the mouse is over the field.
+     * @default "never"
+     * @desc Specifies if the clear icon should be visible.
+     *
+     * @example <caption>Initialize the oj-input-text with the <code class="prettyprint">clear-icon</code> attribute specified:</caption>
+     * &lt;oj-input-text clear-icon="conditional" id="inputcontrol">&lt;/oj-input-text>
+     *
+     * @example <caption>Get or set the <code class="prettyprint">clearIcon</code> property after initialization:</caption>
+     * // getter
+     * var clearIcon = myInputText.clearIcon;
+     *
+     * // setter
+     * myInputText.clearIcon = 'conditional';
+     */
+    clearIcon: "never",
+    /**
+     * a converter instance that duck types {@link oj.Converter}. Or an object literal containing 
+     * the following properties.
+     * {@ojinclude "name":"inputBaseConverterOptionDoc"} 
+     * 
+     * @property {string} type - the converter type registered with the oj.ConverterFactory. 
+     * Supported types are 'number' and 'datetime'. See {@link oj.ConverterFactory} for details. 
+     * <br/>
+     * E.g., <code class="prettyprint">converter='{"type": "number"}'</code>
+     * @property {Object=} options - optional Object literal of options that the converter expects. 
+     * See {@link oj.IntlNumberConverter} for options supported by the number converter. See 
+     * {@link oj.IntlDateTimeConverter} for options supported by the date time converter. <br/>
+     * E.g., <code class="prettyprint">converter='{"type": "number", "options": {"style": "decimal"}}'</code>
+     * 
+     * @example <caption>Initialize the component with a number converter instance:</caption>
+     * &lt;oj-input-text converter="[[salaryConverter]]">&lt;/oj-input-text><br/>
+     * // Initialize converter instance using currency options
+     * var options = {style: 'currency', 'currency': 'USD', maximumFractionDigits: 0};
+     * var numberConverterFactory = oj.Validation.converterFactory("number");
+     * var salaryConverter = numberConverterFactory.createConverter(options);
+     * 
+     * @example <caption>Initialize the component with converter object literal:</caption>
+     * &lt;oj-input-text converter='{"type": "number", "options": {"style": "decimal"}}'>&lt;/oj-input-text>
+     * 
+     * @example <caption>Get or set the <code class="prettyprint">converter</code>
+     *  property after initialization:</caption>
+     * // getter
+     * var converter = myComp.converter;
+     *
+     * // setter
+     * myComp.converter = myConverter;
+     * @expose 
+     * @access public
+     * @instance
+     * @memberof! oj.ojInputText
+     * @ojsignature {
+     *    target: "Type",
+     *    value: "oj.Converter<any>|oj.Validation.FactoryRegisteredValidatorOrConverter|null"}
+     * @type {Object|undefined}
+     */    
+    converter: undefined,
+    /** 
+     * Indicates a list of pre-defined options to suggest to the user. 
+     * The value must be the id of a &lt;datalist> element in the same page.
+     * This attribute is ignored when the type attribute's value is hidden. 
+     * 
+     * @example <caption>Initialize component with <code class="prettyprint">list</code> attribute:</caption>
+     * &lt;oj-some-element list="sampleDataList">&lt;/oj-some-element>
+     * 
+     * <p>Example for datalist:
+     * <pre class="prettyprint">
+     * <code>
+     * &lt;datalist id="sampleDataList">
+     *   &lt;option value="item 1">item 1&lt;/option>
+     *   &lt;option value="item 2">item 2&lt;/option>
+     *   &lt;option value="item 3">item 3&lt;/option>
+     *   &lt;option value="item 4">item 4&lt;/option>
+     * &lt;/datalist> 
+     * </code></pre>
+     *
+     * @example <caption>Get or set the <code class="prettyprint">list</code> property after initialization:</caption>
+     * // getter
+     * var ro = myComp.list;
+     *
+     * // setter
+     * myComp.list = "myDataList";
+     * 
+     * @expose
+     * @instance
+     * @memberof! oj.ojInputText
+     * @type {string}
+     * @public
+     * @ojextension {_COPY_TO_INNER_ELEM: true}
+     */
+    list: "",
+    /**
+     * Regular expression pattern which will be used to validate the component's value.
+     * <p>
+     * When pattern is set to a non-empty string value, an implicit regExp validator is created using the validator
+     * factory -
+     * <code class="prettyprint">oj.Validation.validatorFactory(oj.ValidatorFactory.VALIDATOR_TYPE_REGEXP).createValidator()</code>.
+     * </p>
+     *
+     * @example <caption>Initialize the component with the <code class="prettyprint">pattern</code> attribute:</caption>
+     * &lt;oj-input-text pattern="[a-zA-Z0-9]{3,}">&lt;/oj-input-text><br/>
+     * 
+     * @example <caption>Get or set the <code class="prettyprint">pattern</code> property after initialization:</caption>
+     * // getter
+     * var pattern = myComp.pattern;
+     *
+     * // setter
+     * myComp.pattern = "[0-9]{3,}";
+     *
+     * @expose
+     * @instance
+     * @memberof! oj.ojInputText
+     * @type {string|undefined}
+     * @ignore
+     */
+    pattern: "",
+    /** 
+     * Setting the value of this attribute to true indicates that the element needs to have its 
+     * spelling and grammar checked. The value default indicates that the element is to act according
+     * to a default behavior, possibly based on the parent element's own spellcheck value. 
+     * The value false indicates that the element should not be checked.
+     * 
+     * @example <caption>Initialize component with <code class="prettyprint">spellcheck</code> attribute:</caption>
+     * &lt;oj-some-element spellcheck>&lt;/oj-some-element>
+     * 
+     * @example <caption>Get or set the <code class="prettyprint">spellcheck</code> property after initialization:</caption>
+     * // getter
+     * var ro = myComp.spellcheck;
+     *
+     * // setter
+     * myComp.spellcheck = false;
+     * 
+     * @expose
+     * @instance
+     * @memberof! oj.ojInputText
+     * @default false
+     * @type {boolean}
+     * @public
+     * @ojextension {_ATTRIBUTE_ONLY: true, _COPY_TO_INNER_ELEM: true}
+     */
+    spellcheck: false,
+    /**
+     * The type of virtual keyboard to display for entering value on mobile browsers.  This attribute has no effect on desktop browsers.
+     *
+     * @example <caption>Initialize the component with the <code class="prettyprint">virtual-keyboard</code> attribute:</caption>
+     * &lt;oj-input-text virtual-keyboard="number">&lt;/oj-input-text>
+     * 
+     * @example <caption>Get or set the <code class="prettyprint">virtualKeyboard</code> property after initialization:</caption>
+     * // Getter
+     * var virtualKeyboard = myComp.virtualKeyboard;
+     * 
+     * // Setter
+     * myComp.virtualKeyboard = "number";
+     *
+     * @expose
+     * @instance
+     * @memberof oj.ojInputText
+     * @type {string}
+     * @ojvalue {string} "auto" The component will determine the best virtual keyboard to use.
+     *                          <p>This is always "text" for this release but may change in future
+     *                          releases.</p>
+     * @ojvalue {string} "email" Use a virtual keyboard for entering email.
+     * @ojvalue {string} "number" Use a virtual keyboard for entering number.
+     *                            <p>Note that on Android and Windows Mobile, the "number" keyboard does
+     *                            not contain the minus sign.  This value should not be used on fields that
+     *                            accept negative values.</p>
+     * @ojvalue {string} "search" Use a virtual keyboard for entering search terms.
+     * @ojvalue {string} "tel" Use a virtual keyboard for entering telephone number.
+     * @ojvalue {string} "text" Use a virtual keyboard for entering text.
+     * @ojvalue {string} "url" Use a virtual keyboard for entering URL.
+     * @default "auto"
+     * @since 5.0.0
+     */
+    virtualKeyboard: "auto"
+
+    // Events
+
+    /**
+     * Triggered when the ojInputText is created.
+     *
+     * @event
+     * @name create
+     * @memberof oj.ojInputText
+     * @instance
+     * @property {Event} event event object
+     * @property {Object} ui Currently empty
+     * @ignore
+     *
+     * @example <caption>Initialize the ojInputText with the <code class="prettyprint">create</code> callback specified:</caption>
+     * $( ".selector" ).ojInputText({
+     *     "create": function( event, ui ) {}
+     * });
+     *
+     * @example <caption>Bind an event listener to the <code class="prettyprint">ojcreate</code> event:</caption>
+     * $( ".selector" ).on( "ojcreate", function( event, ui ) {} );
+     */
+    // create event declared in superclass, but we still want the above API doc
+  },
+
+  /**
+   * @protected
+   * @override
+   * @instance
+   * @memberof! oj.ojInputText
+   */
+  _ComponentCreate : function ()
+  {
+    var retVal = this._super();
+
+    // add in the clear icon if needed
+    var clearIconAttr = this.options["clearIcon"];
+    
+    this._processClearIconAttr(clearIconAttr);
+    
+    this._AddHoverable(this._wrapper);
+
+    // Set the input type attribute based on virtualKeyboard property
+    this._SetInputType(this._ALLOWED_TYPES);
+
+    return retVal;
+  },
+  /**
+   * Render or remove the clear icon
+   * @ignore
+   * @private
+   * @param {string} clearIconAttr
+   * @memberof oj.ojInputText
+   * @instance
+   */
+  _processClearIconAttr : function (clearIconAttr)
+  {
+    var wrapperElem = this._wrapper[0];
+    var clearIconBtn = wrapperElem.querySelector("a.oj-inputtext-clear-icon-btn");
+
+    if (clearIconAttr === "never" || this.options["disabled"] || this.options["readOnly"])
+    {
+      // remove the icon if it is there
+      if (clearIconBtn)
+      {
+        wrapperElem.removeChild(clearIconBtn);
+      }
+      
+      // if the clearIcon is not rendered, we shouldn't have these classes
+      wrapperElem.classList.remove('oj-inputtext-clearicon-visible');
+      wrapperElem.classList.remove("oj-inputtext-clearicon-conditional");
+    }
+    else
+    {
+      if (clearIconBtn === null)
+      {
+        var clearIcon;
+        clearIconBtn = document.createElement('a');
+        clearIconBtn.className = "oj-inputtext-clear-icon-btn oj-component-icon oj-clickable-icon-nocontext";
+        clearIconBtn.setAttribute("tabindex", "-1");
+        clearIconBtn.setAttribute("target", "_blank");
+        clearIcon = document.createElement('span');
+        clearIcon.className =
+                            "oj-inputtext-clear-icon";
+   
+        clearIconBtn.appendChild(clearIcon);
+        wrapperElem.appendChild(clearIconBtn);
+
+        clearIconBtn.addEventListener(this._CLICK_HANDLER_KEY, this._onClearIconClickHandler.bind(this));
+      }
+      
+      // If clear-icon = "always", we want the icon visible all the time
+      if (clearIconAttr === "always")
+        wrapperElem.classList.add('oj-inputtext-clearicon-visible');
+      else
+      {
+        wrapperElem.classList.remove('oj-inputtext-clearicon-visible');
+      
+        // for the conditional case, we add oj-inputtext-clearicon-hidden
+        if (clearIconAttr === "conditional")
+        {
+          // For the conditional case, we render oj-form-control-empty-clearicon if the input doesn't
+          // have a value, as we always want the clear icon hidden for this case.  When the input does
+          // have a value, then we use oj-inputtext-clearicon-conditional, which has selectors for
+          // oj-hover and oj-focus to determine when the icon is visible.
+          wrapperElem.classList.add("oj-inputtext-clearicon-conditional");
+          
+          var val;
+          
+          // if the component is not fully rendered, then we need to use the value option's value
+          // instead of the input element's value
+          if (wrapperElem.classList.contains("oj-complete"))
+            val = this.element[0].value;
+          else
+            val = this.options["value"];
+          
+          if (val !== "")
+          {
+            wrapperElem.classList.remove("oj-form-control-empty-clearicon");
+          }
+          else
+          {
+            wrapperElem.classList.add("oj-form-control-empty-clearicon");
+          }
+        }
+        else
+        {
+          wrapperElem.classList.remove("oj-inputtext-clearicon-conditional");
+          wrapperElem.classList.remove("oj-form-control-empty-clearicon");
+        }
+      }
+    }
+  },
+  /**
+   * Performs post processing after _SetOption() calls _superApply(). Different options, when changed, perform
+   * different tasks. 
+   * 
+   * @param {string} option
+   * @param {Object=} flags 
+   * @protected
+   * @memberof oj.ojInputText
+   * @instance
+   */
+  _AfterSetOption : function (option, flags)
+  {
+    this._super(option, flags);
+    
+    switch (option)
+    {
+      // all of these options potentially affect the visiblity and/or rendering of the icon
+      // so we need to process the icon if any of these change.
+      case "clearIcon" :
+      case "value" :
+      case "disabled" :
+      case "readOnly" :
+        this._processClearIconAttr(this.options["clearIcon"]);
+        break;
+      
+      case "virtualKeyboard":
+        this._SetInputType(this._ALLOWED_TYPES);
+        break;
+
+      default:
+        break;
+    }
+  },
+  /**
+   * Invoked when the input event happens
+   * 
+   * @ignore
+   * @protected
+   * @memberof! oj.ojInputText
+   * @param {Event} event
+   */
+  _onInputHandler : function (event) 
+  {
+    this._super(event);
+    var inputNode = event.target;
+    var wrapperNode = this._wrapper[0];
+    var clearIconAttr = this.options["clearIcon"];
+    
+    if (clearIconAttr === "conditional")
+    {
+      if (inputNode.value !== "")
+      {
+        wrapperNode.classList.remove("oj-form-control-empty-clearicon");
+      }
+      else
+      {
+        wrapperNode.classList.add("oj-form-control-empty-clearicon");
+      }
+    }
+  },  
+  /**
+   * The handler clears the value of the input element and sets the focus on the element
+   * NOTE: this handler expects the input text component to be bound to this via .bind()
+   * 
+   * @ignore
+   * @private
+   * @memberof! oj.ojInputText
+   * @param {Event} event
+   */
+  _onClearIconClickHandler : function (event)
+  {
+    var elem = this.element[0];
+
+    elem.value = "";
+    // we need to update the raw value to keep it in sync
+    this._SetRawValue(elem.value, event);
+    elem.focus();
+    this._wrapper[0].classList.add("oj-form-control-empty-clearicon");
+  },
+  /**
+   * Invoked when blur is triggered of the this.element
+   * We don't want to set the value if the event.relatedTarget is the clear icon button
+   * 
+   * @ignore
+   * @protected
+   * @memberof! oj.inputText
+   * @param {Event} event
+   */
+  _onBlurHandler : function (event) 
+  {
+    var wrapperNode = this._wrapper[0];
+    var target = event.relatedTarget;
+
+    // if this is the clear icon, skip the blur handler if it is an ancestor of the input text
+    if (!(target && 
+          target.classList.contains("oj-inputtext-clear-icon-btn") &&
+          target.parentElement &&
+          oj.DomUtils.isAncestorOrSelf(wrapperNode, target.parentElement)))
+    {
+      this._super(event);
+    }
+    else
+    {
+      // We need to put the oj-focus back on the wrapperNode so that the icon
+      // doesn't disappear on iOS and make it so that the click handler will fire.
+      wrapperNode.classList.add("oj-focus");
+    }
+  },
+  getNodeBySubId: function(locator)
+  {
+    var node = this._superApply(arguments), subId;
+    if (!node)
+    {
+      subId = locator['subId'];
+      if (subId === "oj-inputtext-input") {
+        node = this.element ? this.element[0] : null;
+      }
+    }
+    // Non-null locators have to be handled by the component subclasses
+    return node || null;
+  },
+
+  /**
+   * @override
+   * @instance
+   * @memberof! oj.ojInputText
+   * @protected
+   * @return {string}
+   */
+  _GetDefaultStyleClass : function ()
+  {
+    return "oj-inputtext";
+  },
+
+  /**
+   * @protected
+   * @override
+   * @instance
+   * @memberof! oj.ojInputText
+   */
+  _GetTranslationsSectionName: function()
+  {
+    return "oj-inputBase";
+  },
+  
+  /**
+   * Set the type of the input element based on virtualKeyboard option.
+   * @memberof oj.ojInputText
+   * @instance
+   * @protected
+   * @ignore
+   */
+  _SetInputType: oj.EditableValueUtils._SetInputType
+
+});
+
+  // Fragments:
+
+  /**
+   * <table class="keyboard-table">
+   *   <thead>
+   *     <tr>
+   *       <th>Target</th>
+   *       <th>Gesture</th>
+   *       <th>Action</th>
+   *     </tr>
+   *   </thead>
+   *   <tbody>
+   *    <tr>
+   *       <td>Input</td>
+   *       <td><kbd>Tap</kbd></td>
+   *       <td>Sets focus to input. If hints, help.instruction or messages exist in a notewindow,
+   *       popup the notewindow.</td>
+   *     </tr>
+   *   </tbody>
+   *  </table>
+   *
+   *
+   * @ojfragment touchDoc - Used in touch gesture section of classdesc, and standalone gesture doc
+   * @memberof oj.ojInputText
+   */
+
+   /**
+   * <table class="keyboard-table">
+   *   <thead>
+   *     <tr>
+   *       <th>Target</th>
+   *       <th>Key</th>
+   *       <th>Action</th>
+   *     </tr>
+   *   </thead>
+   *   <tbody>
+   *     <tr>
+   *       <td>Input</td>
+   *       <td><kbd>Tab In</kbd></td>
+   *       <td>Set focus to the input. 
+   *       If hints, help.instruction or messages exist in a notewindow, 
+   *        pop up the notewindow.</td>
+   *     </tr> 
+   *   </tbody>
+   * </table>
+   *
+   *
+   * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
+   * @memberof oj.ojInputText
+   */
+  /**
+   * {@ojinclude "name":"ojStylingDocIntro"}
+   * 
+   * <table class="generic-table styling-table">
+   *   <thead>
+   *     <tr>
+   *       <th>{@ojinclude "name":"ojStylingDocClassHeader"}</th>
+   *       <th>{@ojinclude "name":"ojStylingDocDescriptionHeader"}</th>
+   *     </tr>
+   *   </thead>
+   *   <tbody>
+   *     <tr>
+   *       <td>oj-form-control-text-align-right</td>
+   *       <td>Aligns the text to the right regardless of the reading direction,
+               this is normally used for right aligning numbers 
+   *     </td>
+   *     </tr>
+   *   </tbody>
+   * </table>
+   *
+   * @ojfragment stylingDoc - Used in Styling section of classdesc, and standalone Styling doc
+   * @memberof oj.ojInputText
+   */
+
+//////////////////     SUB-IDS     //////////////////
+/**
+ * <p>Sub-ID for the ojInputText component's input element.</p>
+ * 
+ * @ojsubid oj-inputtext-input
+ * @memberof oj.ojInputText
+ *
+ * @example <caption>Get the node for the input element:</caption>
+ * var node = myComp.getNodeBySubId("oj-input-text-input");
+ */
+
+/**
+ * Copyright (c) 2014, Oracle and/or its affiliates.
+ * All rights reserved.
+ */
+
+/**
  * @ojcomponent oj.ojTextArea
  * @augments oj.inputBase
+ * @ojsignature [{
+ *                target: "Type",
+ *                value: "class ojTextArea extends inputBase<any, ojTextAreaSettableProperties>"
+ *               },
+ *               {
+ *                target: "Type",
+ *                value: "ojTextAreaSettableProperties extends inputBaseSettableProperties<any>",
+ *                for: "SettableProperties"
+ *               }
+ *              ]
  * @since 0.6
- * @ojshortdesc TextArea Element
+ * @ojshortdesc Provides basic support for specifying a multi-line text value.
  * @ojrole textbox
  * @ojstatus preview
  *
@@ -1724,6 +2412,9 @@ oj.__registerWidget("oj.ojTextArea", $['oj']['inputBase'],
      * @access public
      * @instance
      * @memberof! oj.ojTextArea
+     * @ojsignature {
+     *    target: "Type",
+     *    value: "oj.Converter<any>|oj.Validation.FactoryRegisteredValidatorOrConverter|null"}
      * @type {Object|undefined}
      */    
     converter: undefined,
@@ -1754,6 +2445,27 @@ oj.__registerWidget("oj.ojTextArea", $['oj']['inputBase'],
      */
     pattern: "",
      /** 
+     * The number of visible text lines in the textarea. It can also be used to 
+     * give specific height to the textarea.
+     * 
+     * @example <caption>Initialize component with <code class="prettyprint">rows</code> attribute:</caption>
+     * &lt;oj-some-element rows="5">&lt;/oj-some-element>
+     * 
+     * @example <caption>Get or set the <code class="prettyprint">rows</code> property after initialization:</caption>
+     * // getter
+     * var ro = myComp.rows;
+     *
+     * // setter
+     * myComp.rows = 5;
+     * 
+     * @expose
+     * @instance
+     * @memberof! oj.ojTextArea
+     * @type {number}
+     * @ojextension {_COPY_TO_INNER_ELEM: true}
+     */
+    rows: undefined,
+     /** 
      * Setting the value of this attribute to true indicates that the element needs to have its 
      * spelling and grammar checked. The value default indicates that the element is to act according
      * to a default behavior, possibly based on the parent element's own spellcheck value. 
@@ -1773,29 +2485,10 @@ oj.__registerWidget("oj.ojTextArea", $['oj']['inputBase'],
      * @instance
      * @memberof! oj.ojTextArea
      * @default false
-     * @type {boolean|undefined}
+     * @type {boolean}
+     * @ojextension {_ATTRIBUTE_ONLY: true, _COPY_TO_INNER_ELEM: true}
      */
-    spellcheck: false,
-     /** 
-     * The number of visible text lines in the textarea. It can also be used to 
-     * give specific height to the textarea.
-     * 
-     * @example <caption>Initialize component with <code class="prettyprint">rows</code> attribute:</caption>
-     * &lt;oj-some-element rows="5">&lt;/oj-some-element>
-     * 
-     * @example <caption>Get or set the <code class="prettyprint">rows</code> property after initialization:</caption>
-     * // getter
-     * var ro = myComp.rows;
-     *
-     * // setter
-     * myComp.rows = "5";
-     * 
-     * @expose
-     * @instance
-     * @memberof! oj.ojTextArea
-     * @type {string|undefined}
-     */
-    rows: undefined
+    spellcheck: false
 
     // Events
 
@@ -1917,377 +2610,12 @@ oj.__registerWidget("oj.ojTextArea", $['oj']['inputBase'],
  * <p>Sub-ID for the ojTextArea component's textarea element.</p>
  * 
  * @ojsubid oj-textarea-input
+ * @ignore
  * @memberof oj.ojTextArea
  * @deprecated 4.0.0  Since the application supplies this element, it can supply a unique ID by which the element can be accessed.
  *
  * @example <caption>Get the node for the input element:</caption>
  * var node = myComp.getNodeBySubId("oj-textarea-input");
- */
-
-/**
- * Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
- */
-
-/**
- * @ojcomponent oj.ojInputText
- * @augments oj.inputBase
- * @since 0.6
- * @ojshortdesc Input Text Element
- * @ojrole textbox
- * @ojstatus preview
- *
- * @classdesc
- * <h3 id="inputTextOverview-section">
- *   JET InputText Component
- *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#inputTextOverview-section"></a>
- * </h3>
- *
- * <p>Description: The oj-input-text component enhances a browser input type="text" element.
- * 
- * <pre class="prettyprint"><code>&lt;oj-input-text>&lt;/oj-input-text></code></pre>
- *
- * {@ojinclude "name":"validationAndMessagingDoc"}
- * 
- * <h3 id="touch-section">
- *   Touch End User Information
- *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#touch-section"></a>
- * </h3>
- *
- * {@ojinclude "name":"touchDoc"}
- *
- *
- * <h3 id="keyboard-section">
- *   Keyboard End User Information
- *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#keyboard-section"></a>
- * </h3>
- *
- * {@ojinclude "name":"keyboardDoc"}
- *
- * <h3 id="a11y-section">
- *   Accessibility
- *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#a11y-section"></a>
- * </h3>
- * <h3 id="styling-section">
- *   Styling
- *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#styling-section"></a>
- * </h3>
- *
- * {@ojinclude "name":"stylingDoc"}
- *
- * <h3 id="label-section">
- *   Label and InputText
- *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#label-section"></a>
- * </h3>
- * <p>
- * It is up to the application developer to associate an oj-label with the oj-input-text component.
- * For accessibility, you should associate an oj-label element to the oj-input-text component
- * by putting an <code>id</code> on the oj-input-text element, and then setting the
- * <code>for</code> attribute on the oj-label to be the component's id.
- * </p>
- *
- * @example <caption>Declare the oj-input-text component with no attributes specified:</caption>
- * &lt;oj-input-text>&lt;/oj-input-text>
- *
- * @example <caption>Initialize the component with some attributes:</caption>
- * &lt;oj-input-text id="textId" disabled>&lt;/oj-input-text>
- *
- * @example <caption>Initialize a component attribute via component binding:</caption>
- * &lt;oj-input-text id="textId" value="{{currentValue}}">&lt;/oj-input-text>
- */
-oj.__registerWidget("oj.ojInputText", $['oj']['inputBase'],
-{
-  version : "1.0.0",
-  defaultElement : "<input>",
-  widgetEventPrefix : "oj",
-
-  /**
-   * @expose
-   * @private
-   */
-  _ATTR_CHECK : [{"attr": "type", "setMandatory": "text"}],
-
-  /**
-   * @expose
-   * @private
-   */
-  _CLASS_NAMES : "oj-inputtext-input",
-
-  /**
-   * @expose
-   * @private
-   */
-  _WIDGET_CLASS_NAMES : "oj-inputtext oj-form-control oj-component",
-
-  options :
-  {
-    /**
-     * a converter instance that duck types {@link oj.Converter}. Or an object literal containing 
-     * the following properties.
-     * {@ojinclude "name":"inputBaseConverterOptionDoc"} 
-     * 
-     * @property {string} type - the converter type registered with the oj.ConverterFactory. 
-     * Supported types are 'number' and 'datetime'. See {@link oj.ConverterFactory} for details. 
-     * <br/>
-     * E.g., <code class="prettyprint">converter='{"type": "number"}'</code>
-     * @property {Object=} options - optional Object literal of options that the converter expects. 
-     * See {@link oj.IntlNumberConverter} for options supported by the number converter. See 
-     * {@link oj.IntlDateTimeConverter} for options supported by the date time converter. <br/>
-     * E.g., <code class="prettyprint">converter='{"type": "number", "options": {"style": "decimal"}}'</code>
-     * 
-     * @example <caption>Initialize the component with a number converter instance:</caption>
-     * &lt;oj-input-text converter="[[salaryConverter]]">&lt;/oj-input-text><br/>
-     * // Initialize converter instance using currency options
-     * var options = {style: 'currency', 'currency': 'USD', maximumFractionDigits: 0};
-     * var numberConverterFactory = oj.Validation.converterFactory("number");
-     * var salaryConverter = numberConverterFactory.createConverter(options);
-     * 
-     * @example <caption>Initialize the component with converter object literal:</caption>
-     * &lt;oj-input-text converter='{"type": "number", "options": {"style": "decimal"}}'>&lt;/oj-input-text>
-     * 
-     * @example <caption>Get or set the <code class="prettyprint">converter</code>
-     *  property after initialization:</caption>
-     * // getter
-     * var converter = myComp.converter;
-     *
-     * // setter
-     * myComp.converter = myConverter;
-     * @expose 
-     * @access public
-     * @instance
-     * @memberof! oj.ojInputText
-     * @type {Object|undefined}
-     */    
-    converter: undefined,
-    /**
-     * Regular expression pattern which will be used to validate the component's value.
-     * <p>
-     * When pattern is set to a non-empty string value, an implicit regExp validator is created using the validator
-     * factory -
-     * <code class="prettyprint">oj.Validation.validatorFactory(oj.ValidatorFactory.VALIDATOR_TYPE_REGEXP).createValidator()</code>.
-     * </p>
-     *
-     * @example <caption>Initialize the component with the <code class="prettyprint">pattern</code> attribute:</caption>
-     * &lt;oj-input-text pattern="[a-zA-Z0-9]{3,}">&lt;/oj-input-text><br/>
-     * 
-     * @example <caption>Get or set the <code class="prettyprint">pattern</code> property after initialization:</caption>
-     * // getter
-     * var pattern = myComp.pattern;
-     *
-     * // setter
-     * myComp.pattern = "[0-9]{3,}";
-     *
-     * @expose
-     * @instance
-     * @memberof! oj.ojInputText
-     * @type {string|undefined}
-     * @ignore
-     */
-    pattern: "",
-    /** 
-     * Indicates a list of pre-defined options to suggest to the user. 
-     * The value must be the id of a &lt;datalist> element in the same page.
-     * This attribute is ignored when the type attribute's value is hidden. 
-     * 
-     * @example <caption>Initialize component with <code class="prettyprint">list</code> attribute:</caption>
-     * &lt;oj-some-element list="sampleDataList">&lt;/oj-some-element>
-     * 
-     * <p>Example for datalist:
-     * <pre class="prettyprint">
-     * <code>
-     * &lt;datalist id="sampleDataList">
-     *   &lt;option value="item 1">item 1&lt;/option>
-     *   &lt;option value="item 2">item 2&lt;/option>
-     *   &lt;option value="item 3">item 3&lt;/option>
-     *   &lt;option value="item 4">item 4&lt;/option>
-     * &lt;/datalist> 
-     * </code></pre>
-     *
-     * @example <caption>Get or set the <code class="prettyprint">list</code> property after initialization:</caption>
-     * // getter
-     * var ro = myComp.list;
-     *
-     * // setter
-     * myComp.list = "myDataList";
-     * 
-     * @expose
-     * @instance
-     * @memberof! oj.ojInputText
-     * @type {string|undefined}
-     * @public
-     */
-    list: "",
-    /** 
-     * Setting the value of this attribute to true indicates that the element needs to have its 
-     * spelling and grammar checked. The value default indicates that the element is to act according
-     * to a default behavior, possibly based on the parent element's own spellcheck value. 
-     * The value false indicates that the element should not be checked.
-     * 
-     * @example <caption>Initialize component with <code class="prettyprint">spellcheck</code> attribute:</caption>
-     * &lt;oj-some-element spellcheck>&lt;/oj-some-element>
-     * 
-     * @example <caption>Get or set the <code class="prettyprint">spellcheck</code> property after initialization:</caption>
-     * // getter
-     * var ro = myComp.spellcheck;
-     *
-     * // setter
-     * myComp.spellcheck = false;
-     * 
-     * @expose
-     * @instance
-     * @memberof! oj.ojInputText
-     * @default false
-     * @type {boolean|undefined}
-     * @public
-     */
-    spellcheck: false
-
-    // Events
-
-    /**
-     * Triggered when the ojInputText is created.
-     *
-     * @event
-     * @name create
-     * @memberof oj.ojInputText
-     * @instance
-     * @property {Event} event event object
-     * @property {Object} ui Currently empty
-     * @ignore
-     *
-     * @example <caption>Initialize the ojInputText with the <code class="prettyprint">create</code> callback specified:</caption>
-     * $( ".selector" ).ojInputText({
-     *     "create": function( event, ui ) {}
-     * });
-     *
-     * @example <caption>Bind an event listener to the <code class="prettyprint">ojcreate</code> event:</caption>
-     * $( ".selector" ).on( "ojcreate", function( event, ui ) {} );
-     */
-    // create event declared in superclass, but we still want the above API doc
-  },
-
-  getNodeBySubId: function(locator)
-  {
-    var node = this._superApply(arguments), subId;
-    if (!node)
-    {
-      subId = locator['subId'];
-      if (subId === "oj-inputtext-input") {
-        node = this.element ? this.element[0] : null;
-      }
-    }
-    // Non-null locators have to be handled by the component subclasses
-    return node || null;
-  },
-
-  /**
-   * @override
-   * @instance
-   * @memberof! oj.ojInputText
-   * @protected
-   * @return {string}
-   */
-  _GetDefaultStyleClass : function ()
-  {
-    return "oj-inputtext";
-  },
-
-  /**
-   * @protected
-   * @override
-   * @instance
-   * @memberof! oj.ojInputText
-   */
-  _GetTranslationsSectionName: function()
-  {
-    return "oj-inputBase";
-  }
-
-});
-
-  // Fragments:
-
-  /**
-   * <table class="keyboard-table">
-   *   <thead>
-   *     <tr>
-   *       <th>Target</th>
-   *       <th>Gesture</th>
-   *       <th>Action</th>
-   *     </tr>
-   *   </thead>
-   *   <tbody>
-   *    <tr>
-   *       <td>Input</td>
-   *       <td><kbd>Tap</kbd></td>
-   *       <td>Sets focus to input. If hints, help.instruction or messages exist in a notewindow,
-   *       popup the notewindow.</td>
-   *     </tr>
-   *   </tbody>
-   *  </table>
-   *
-   *
-   * @ojfragment touchDoc - Used in touch gesture section of classdesc, and standalone gesture doc
-   * @memberof oj.ojInputText
-   */
-
-   /**
-   * <table class="keyboard-table">
-   *   <thead>
-   *     <tr>
-   *       <th>Target</th>
-   *       <th>Key</th>
-   *       <th>Action</th>
-   *     </tr>
-   *   </thead>
-   *   <tbody>
-   *     <tr>
-   *       <td>Input</td>
-   *       <td><kbd>Tab In</kbd></td>
-   *       <td>Set focus to the input. 
-   *       If hints, help.instruction or messages exist in a notewindow, 
-   *        pop up the notewindow.</td>
-   *     </tr> 
-   *   </tbody>
-   * </table>
-   *
-   *
-   * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
-   * @memberof oj.ojInputText
-   */
-  /**
-   * {@ojinclude "name":"ojStylingDocIntro"}
-   * 
-   * <table class="generic-table styling-table">
-   *   <thead>
-   *     <tr>
-   *       <th>{@ojinclude "name":"ojStylingDocClassHeader"}</th>
-   *       <th>{@ojinclude "name":"ojStylingDocDescriptionHeader"}</th>
-   *     </tr>
-   *   </thead>
-   *   <tbody>
-   *     <tr>
-   *       <td>oj-form-control-text-align-right</td>
-   *       <td>Aligns the text to the right regardless of the reading direction,
-               this is normally used for right aligning numbers 
-   *     </td>
-   *     </tr>
-   *   </tbody>
-   * </table>
-   *
-   * @ojfragment stylingDoc - Used in Styling section of classdesc, and standalone Styling doc
-   * @memberof oj.ojInputText
-   */
-
-//////////////////     SUB-IDS     //////////////////
-/**
- * <p>Sub-ID for the ojInputText component's input element.</p>
- * 
- * @ojsubid oj-inputtext-input
- * @memberof oj.ojInputText
- *
- * @example <caption>Get the node for the input element:</caption>
- * var node = myComp.getNodeBySubId("oj-input-text-input");
  */
 
 (function() {
@@ -2326,6 +2654,36 @@ var inputBaseMeta = {
     "required": {
       "type": "boolean"
     },
+    "translations": {
+      "type": "Object",
+      "properties": {
+        "regexp": {
+          "type": "Object",
+          "properties": {
+            "messageDetail": {
+              "type": "string"
+            },
+            "messageSummary": {
+              "type": "string"
+            }
+          }
+        },
+        "required": {
+          "type": "Object",
+          "properties": {
+            "hint": {
+              "type": "string"
+            },
+            "messageDetail": {
+              "type": "string"
+            },
+            "messageSummary": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
     "validators": {
       "type": "Array"
     }
@@ -2363,6 +2721,10 @@ oj.CustomElementBridge.register('oj-input-password', {'metadata': oj.CustomEleme
 (function() {
 var ojInputTextMeta = {
   "properties": {
+    "clearIcon": {
+      "type": "string",
+      "enumValues": ["always", "conditional", "never"]
+    },
     "converter": {
       "type": "Object"
     },
@@ -2382,6 +2744,10 @@ var ojInputTextMeta = {
     "value": {
       "type": "any",
       "writeback": true
+    },
+    "virtualKeyboard": {
+      "type": "string",
+      "enumValues": ["auto", "email", "number", "search", "tel", "text", "url"]
     }
   },
   "methods": {},

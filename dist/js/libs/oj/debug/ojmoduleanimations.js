@@ -1,4 +1,5 @@
 /**
+ * @license
  * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
@@ -47,6 +48,8 @@ define(['ojs/ojcore', 'knockout', 'jquery', 'promise', 'ojs/ojanimation'], funct
  * </ul>
  *
  * @namespace
+ * @ojtsimport ojmodule-element
+ * @since 1.2
  * @export
  */
 oj.ModuleAnimations = {};
@@ -164,6 +167,11 @@ oj.ModuleAnimations._createViewParent = function(oldView)
   *                  Default is false.
   * @return {Object} an implementation of the ModuleAnimation interface
   * @export
+  *@ojsignature [
+  *  { target: "Type", for: "oldViewEffect", value: "{effect: oj.AnimationUtils.AnimationMethods, [key:string]: any}|oj.AnimationUtils.AnimationMethods|null"},
+  *  { target: "Type", for: "newViewEffect", value: "{effect: oj.AnimationUtils.AnimationMethods, [key:string]: any}|oj.AnimationUtils.AnimationMethods|null"},
+  *  { target: "Type", for: "returns", value: "oj.ModuleElementAnimation"}
+  * ]
   * 
   * @example <caption>Create a custom ModuleAnimation that fades out old view by 50% and slides in the new view:</caption>
   * var customAnimation = oj.ModuleAnimations.createAnimation({"effect":"fadeOut", "endOpacity":0.5}, {"effect":"slideIn", "direction":"end"}, true);
@@ -376,6 +384,7 @@ oj.ModuleAnimations.revealRight = oj.ModuleAnimations._getImplementation('reveal
  * the new view will slide to the left.  On "rtl" page, it will slide to the
  * right.
  * @export
+ * @ojsignature {target: "Type", value: "oj.ModuleElementAnimation"}
  * @memberof oj.ModuleAnimations
  */
 oj.ModuleAnimations.coverStart = oj.DomUtils.getReadingDirection() === 'rtl' ?
@@ -389,6 +398,7 @@ oj.ModuleAnimations.coverStart = oj.DomUtils.getReadingDirection() === 'rtl' ?
  * the old view will slide to the right.  On "rtl" page, it will slide to the
  * left.
  * @export
+ * @ojsignature {target: "Type", value: "oj.ModuleElementAnimation"}
  * @memberof oj.ModuleAnimations
  */
 oj.ModuleAnimations.revealEnd = oj.DomUtils.getReadingDirection() === 'rtl' ?
@@ -399,6 +409,7 @@ oj.ModuleAnimations.revealEnd = oj.DomUtils.getReadingDirection() === 'rtl' ?
  * ModuleAnimation implementation for changing views by
  * sliding the new view up to cover the old view.
  * @export
+ * @ojsignature {target: "Type", value: "oj.ModuleElementAnimation"}
  * @memberof oj.ModuleAnimations
  */
 oj.ModuleAnimations.coverUp = oj.ModuleAnimations._getImplementation('coverUp');
@@ -407,6 +418,7 @@ oj.ModuleAnimations.coverUp = oj.ModuleAnimations._getImplementation('coverUp');
  * ModuleAnimation implementation for changing views by
  * sliding the old view down to reveal the new view.
  * @export
+ * @ojsignature {target: "Type", value: "oj.ModuleElementAnimation"}
  * @memberof oj.ModuleAnimations
  */
 oj.ModuleAnimations.revealDown = oj.ModuleAnimations._getImplementation('revealDown');
@@ -415,6 +427,7 @@ oj.ModuleAnimations.revealDown = oj.ModuleAnimations._getImplementation('revealD
  * ModuleAnimation implementation for changing views by
  * zooming in on the new view.
  * @export
+ * @ojsignature {target: "Type", value: "oj.ModuleElementAnimation"}
  * @memberof oj.ModuleAnimations
  */
 oj.ModuleAnimations.zoomIn = oj.ModuleAnimations._getImplementation('zoomIn');
@@ -423,6 +436,7 @@ oj.ModuleAnimations.zoomIn = oj.ModuleAnimations._getImplementation('zoomIn');
  * ModuleAnimation implementation for changing views by
  * zooming out on the old view.
  * @export
+ * @ojsignature {target: "Type", value: "oj.ModuleElementAnimation"}
  * @memberof oj.ModuleAnimations
  */
 oj.ModuleAnimations.zoomOut = oj.ModuleAnimations._getImplementation('zoomOut');
@@ -431,6 +445,7 @@ oj.ModuleAnimations.zoomOut = oj.ModuleAnimations._getImplementation('zoomOut');
  * ModuleAnimation implementation for changing views by
  * fading in the new view and fading out the old view.
  * @export
+ * @ojsignature {target: "Type", value: "oj.ModuleElementAnimation"}
  * @memberof oj.ModuleAnimations
  */
 oj.ModuleAnimations.fade = oj.ModuleAnimations._getImplementation('fade');
@@ -439,6 +454,7 @@ oj.ModuleAnimations.fade = oj.ModuleAnimations._getImplementation('fade');
  * ModuleAnimation implementation for changing views by
  * having the new view push out the old view towards the start of the reading order.
  * @export
+ * @ojsignature {target: "Type", value: "oj.ModuleElementAnimation"}
  * @memberof oj.ModuleAnimations
  */
 oj.ModuleAnimations.pushStart = oj.ModuleAnimations._getImplementation('pushStart');
@@ -447,6 +463,7 @@ oj.ModuleAnimations.pushStart = oj.ModuleAnimations._getImplementation('pushStar
  * ModuleAnimation implementation for changing views by
  * having the new view push out the old view towards the end of the reading order.
  * @export
+ * @ojsignature {target: "Type", value: "oj.ModuleElementAnimation"}
  * @memberof oj.ModuleAnimations
  */
 oj.ModuleAnimations.pushEnd = oj.ModuleAnimations._getImplementation('pushEnd');
@@ -468,6 +485,7 @@ oj.ModuleAnimations.pushEnd = oj.ModuleAnimations._getImplementation('pushEnd');
  * "coverStart".</p>
  * @export
  * @memberof oj.ModuleAnimations
+ * @ojsignature {target: "Type", value: "oj.ModuleElementAnimation"}
  * @example <caption>Set the default in the theme (SCSS) :</caption>
  * $animationNavChildDefault:  coverStart  !default;
  */
@@ -490,6 +508,7 @@ oj.ModuleAnimations.navChild = oj.ModuleAnimations._getNavigateImplementation('n
  * "revealEnd".</p>
  * @export
  * @memberof oj.ModuleAnimations
+ * @ojsignature {target: "Type", value: "oj.ModuleElementAnimation"}
  * @example <caption>Set the default in the theme (SCSS) :</caption>
  * $animationNavParentDefault:  revealEnd  !default;
  */
@@ -506,6 +525,7 @@ oj.ModuleAnimations.navParent = oj.ModuleAnimations._getNavigateImplementation('
  *   <li>Windows theme: zoomIn</li>
  * </ul>
  * @export
+ * @ignore
  * @memberof oj.ModuleAnimations
  * @deprecated This is deprecated.  Please use <a href="#navChild">navChild</a> instead.
  */
@@ -522,6 +542,7 @@ oj.ModuleAnimations.drillIn = oj.ModuleAnimations.navChild;
  *   <li>Windows theme: zoomOut</li>
  * </ul>
  * @export
+ * @ignore
  * @memberof oj.ModuleAnimations
  * @deprecated This is deprecated.  Please use <a href="#navParent">navParent</a> instead.
  */
@@ -543,6 +564,7 @@ oj.ModuleAnimations.drillOut = oj.ModuleAnimations.navParent;
  * <p>Valid values are the names of specific animation implementations such as
  * "pushEnd".</p>
  * @export
+ * @ojsignature {target: "Type", value: "oj.ModuleElementAnimation"}
  * @memberof oj.ModuleAnimations
  * @example <caption>Set the default in the theme (SCSS) :</caption>
  * $animationNavSiblingEarlierDefault:  pushEnd  !default;
@@ -566,6 +588,7 @@ oj.ModuleAnimations.navSiblingEarlier = oj.ModuleAnimations._getNavigateImplemen
  * "pushStart".</p>
  * @export
  * @memberof oj.ModuleAnimations
+ * @ojsignature {target: "Type", value: "oj.ModuleElementAnimation"}
  * @example <caption>Set the default in the theme (SCSS) :</caption>
  * $animationNavSiblingLaterDefault:  pushStart  !default;
  */
@@ -585,6 +608,10 @@ oj.ModuleAnimations.navSiblingLater = oj.ModuleAnimations._getNavigateImplementa
   * </ul>
   *
   * @return {Object} switching implementation of the ModuleAnimation interface
+  * @ojsignature [
+  *    {target:"Type", for: "callback", value: "(param0: oj.ModuleAnimations.SwitcherCallBackParam) => oj.ModuleAnimations.Animations"},
+  *    {target:"Type", for: "returns", value: "oj.ModuleElementAnimation"}
+  *  ]
   * @export
   */
 oj.ModuleAnimations.switcher = function(callback)
@@ -634,5 +661,31 @@ oj.ModuleAnimations.switcher = function(callback)
 
   return new AnimateProxy();
 };
+
+/**
+ * @typedef {Object} oj.ModuleAnimations.SwitcherCallBackParam
+ * @property {Element} node
+ * @property {function() : any} valueAccessor
+ * @property {boolean} isInitial
+ * @property {any} oldViewModel
+ * @property {any} newViewModel
+ */
+/**
+ * All the available animation types supported in oj.ModuleAnimations
+ * @typedef {Object} oj.ModuleAnimations.Animations
+ * @ojvalue {string} "coverStart"
+ * @ojvalue {string} "coverUp"
+ * @ojvalue {string} "fade"
+ * @ojvalue {string} "navChild"
+ * @ojvalue {string} "navParent"
+ * @ojvalue {string} "navSiblingEarlier"
+ * @ojvalue {string} "navSiblingLater"
+ * @ojvalue {string} "pushEnd"
+ * @ojvalue {string} "pushStart"
+ * @ojvalue {string} "revealDown"
+ * @ojvalue {string} "revealEnd"
+ * @ojvalue {string} "zoomIn"
+ * @ojvalue {string} "zoomOut"
+ */
 
 });

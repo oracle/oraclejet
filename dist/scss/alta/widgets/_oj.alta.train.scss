@@ -27,60 +27,83 @@
     {
        @extend .oj-train-button.oj-hover;
     }
-    /* The message icon to be displayed on the step */
-    .oj-train-icon {
-      @if $trainButtonContinuousConnectorDiameter != $trainButtonDiameter {
-        bottom: ($trainButtonContinuousConnectorDiameter - $trainButtonDiameter)/2;
-        @include oj-ltr() {
-          right: ($trainButtonContinuousConnectorDiameter - $trainButtonDiameter)/2;
+    
+    @if $trainConnectorType == continuous {
+      
+      /* The message icon to be displayed on the step */
+      .oj-train-icon {
+        @if $trainButtonContinuousConnectorDiameter != $trainButtonDiameter {
+          bottom: ($trainButtonContinuousConnectorDiameter - $trainButtonDiameter)/2;
+          @include oj-ltr() {
+            right: ($trainButtonContinuousConnectorDiameter - $trainButtonDiameter)/2;
+          }
+          @include oj-rtl() {
+            left: ($trainButtonContinuousConnectorDiameter - $trainButtonDiameter)/2;
+          }
         }
-        @include oj-rtl() {
-          left: ($trainButtonContinuousConnectorDiameter - $trainButtonDiameter)/2;
-        }
+        border-style: none;
       }
-      border-style: none;
-    }
-    .oj-train-icon:before {
-      content: none;
+      .oj-train-icon:before {
+        content: none;
+      }
+      
+      .oj-train-icon.oj-confirmation {
+        @extend .oj-fwk-icon-status-confirmation2;
+      }
+  
+      .oj-train-icon.oj-info{
+        @extend .oj-fwk-icon-status-info2;
+      }
+  
+      .oj-train-icon.oj-warning {
+        @extend .oj-fwk-icon-status-warning2;
+      }
+  
+      .oj-train-icon.oj-error {
+        @extend .oj-fwk-icon-status-error2;
+      }
+  
+     .oj-train-icon,
+     .oj-train-icon.oj-confirmation,
+     .oj-train-icon.oj-error,
+     .oj-train-icon.oj-info,
+     .oj-train-icon.oj-warning,
+     .oj-train-button.oj-disabled .oj-train-icon,
+     .oj-train-button.oj-hover .oj-train-icon,
+     .oj-train-button.oj-active .oj-train-icon.oj-confirmation,
+     .oj-train-button.oj-active .oj-train-icon.oj-error,
+     .oj-train-button.oj-active .oj-train-icon.oj-info,
+     .oj-train-button.oj-active .oj-train-icon.oj-warning
+     .oj-train-button.oj-selected .oj-train-icon.oj-confirmation,
+     .oj-train-button.oj-selected .oj-train-icon.oj-error,
+     .oj-train-button.oj-selected .oj-train-icon.oj-info,
+     .oj-train-button.oj-selected .oj-train-icon.oj-warning,
+     .oj-train-button.oj-visited .oj-train-icon.oj-confirmation,
+     .oj-train-button.oj-visited .oj-train-icon.oj-error,
+     .oj-train-button.oj-visited .oj-train-icon.oj-info,
+     .oj-train-button.oj-visited .oj-train-icon.oj-warning {
+       background-color: transparent;
+       border-color: transparent;
+     }    
     }
     
-    .oj-train-icon.oj-confirmation {
-      @extend .oj-fwk-icon-status-confirmation2;
+    @if $trainConnectorType == individual {
+      .oj-train-button.oj-visited::before {
+        content: "";
+        @extend .oj-fwk-icon-checkmark-blue;
+      }
+
+      .oj-train-button.oj-hover.oj-visited::before {
+        content: "";
+        @extend .oj-fwk-icon-checkmark-white;
+      }
+      
+      .oj-train-button.oj-visited .oj-train-button-text{
+        display: none;
+      }
+
+
     }
 
-    .oj-train-icon.oj-info{
-      @extend .oj-fwk-icon-status-info2;
-    }
-
-    .oj-train-icon.oj-warning {
-      @extend .oj-fwk-icon-status-warning2;
-    }
-
-    .oj-train-icon.oj-error {
-      @extend .oj-fwk-icon-status-error2;
-    }
-
-   .oj-train-icon,
-   .oj-train-icon.oj-confirmation,
-   .oj-train-icon.oj-error,
-   .oj-train-icon.oj-info,
-   .oj-train-icon.oj-warning,
-   .oj-train-button.oj-disabled .oj-train-icon,
-   .oj-train-button.oj-hover .oj-train-icon,
-   .oj-train-button.oj-active .oj-train-icon.oj-confirmation,
-   .oj-train-button.oj-active .oj-train-icon.oj-error,
-   .oj-train-button.oj-active .oj-train-icon.oj-info,
-   .oj-train-button.oj-active .oj-train-icon.oj-warning
-   .oj-train-button.oj-selected .oj-train-icon.oj-confirmation,
-   .oj-train-button.oj-selected .oj-train-icon.oj-error,
-   .oj-train-button.oj-selected .oj-train-icon.oj-info,
-   .oj-train-button.oj-selected .oj-train-icon.oj-warning,
-   .oj-train-button.oj-visited .oj-train-icon.oj-confirmation,
-   .oj-train-button.oj-visited .oj-train-icon.oj-error,
-   .oj-train-button.oj-visited .oj-train-icon.oj-info,
-   .oj-train-button.oj-visited .oj-train-icon.oj-warning {
-     background-color: transparent;
-     border-color: transparent;
-   }
   }
 }

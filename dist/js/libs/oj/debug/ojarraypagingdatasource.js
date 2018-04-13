@@ -1,4 +1,5 @@
 /**
+ * @license
  * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
@@ -28,11 +29,14 @@ define(['ojs/ojcore', 'jquery', 'knockout', 'ojs/ojdatasource-common'], function
  * It is designed to feed a Knockout-bound HTML control, for example.
  * @export
  * @class oj.ArrayPagingDataSource
+ * @since 1.0
  * @classdesc Implementation of PagingModel using array data
  * @extends oj.DataSource
  * @implements oj.PagingModel
- * @param {Array} data
+ * @param {Array.<Object>} data
  * @constructor
+ * @ojtsignore
+ * @ojtsimport knockout
  */
 oj.ArrayPagingDataSource = function(data)
 {
@@ -51,6 +55,7 @@ oj.Object.createSubclass(oj.ArrayPagingDataSource, oj.DataSource, "oj.ArrayPagin
  * Initializes the instance.
  * @export
  * @memberof oj.ArrayPagingDataSource
+ * @ojtsignore
  */
 oj.ArrayPagingDataSource.prototype.Init = function()
 {
@@ -106,7 +111,7 @@ oj.ArrayPagingDataSource.prototype.handleEvent = function(eventType, event)
  * @export
  * Return the current set of data in the paging window
  * 
- * @returns {Array} the current set of data in the paging window
+ * @returns {Array.<Object>} the current set of data in the paging window
  * @memberof oj.ArrayPagingDataSource
  */
 oj.ArrayPagingDataSource.prototype.getWindow = function() {
@@ -118,6 +123,9 @@ oj.ArrayPagingDataSource.prototype.getWindow = function() {
  * Get the observable array representing the current set of data in the paging window
  * 
  * @returns {Object} an observable array representing the current data in the paging window
+ * @ojsignature {target: "Type",
+ *               value: "KnockoutObservableArray<object>",
+ *               for: "returns"}
  * @memberof oj.ArrayPagingDataSource
  */
 oj.ArrayPagingDataSource.prototype.getWindowObservable = function() {
@@ -145,8 +153,8 @@ oj.ArrayPagingDataSource.prototype.getPage = function()
  * Set the current page
  * @param {number} value The current page
  * @param {Object=} options Options<p>
- *                  pageSize: The page size.<p>
- * @return {Promise} promise object triggering done when complete..
+ * @param {number} [options.pageSize] The page size.<p>
+ * @return {Promise.<null>} promise object triggering done when complete..
  * @export
  * @expose
  * @memberof oj.ArrayPagingDataSource
@@ -230,16 +238,9 @@ oj.ArrayPagingDataSource.prototype.getPageCount = function()
 /**
  * Fetch the row data.
  * @param {Object=} options Options to control fetch
- * @param {number} options.startIndex The index at which to start fetching records.
- * @param {boolean} options.silent If set, do not fire a sync event.
- * @return {Promise} Promise object resolves to a compound object which contains an array of row data objects and the startIndex triggering done when complete.<p>
- *         The structure of the resolved compound object is:<p>
- * <table>
- * <tbody>
- * <tr><td><b>data</b></td><td>An array of raw row data</td></tr>
- * <tr><td><b>startIndex</b></td><td>The startIndex for the returned set of rows</td></tr>
- * </tbody>
- * </table>  
+ * @param {number} [options.startIndex] The index at which to start fetching records.
+ * @param {boolean} [options.silent] If set, do not fire a sync event.
+ * @return {Promise.<void>} Promise object resolves to void when done
  * @export
  * @expose
  * @memberof oj.ArrayPagingDataSource
@@ -323,6 +324,9 @@ oj.ArrayPagingDataSource.prototype.totalSize = function()
  *                  "estimate" if the totalSize is an estimate 
  *                  "atLeast" if the totalSize is at least a certain number 
  *                  "unknown" if the totalSize is unknown
+ * @ojsignature {target:"Type",
+ *               value: "'actual'|'estimate'|'atLeast'|'unknown'",
+ *               for: "returns"}
  * @export
  * @expose
  * @memberof oj.ArrayPagingDataSource
@@ -345,6 +349,4 @@ oj.ArrayPagingDataSource.prototype.getCapability = function(feature)
 {
     return null;
 };
-
-
 });

@@ -1,4 +1,5 @@
 /**
+ * @license
  * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
@@ -14,10 +15,15 @@ define(['ojs/ojcore', 'ojs/ojcomponentcore', 'ojs/ojcustomelement'],
 
 /**
  * @ojcomponent oj.ojSwitcher
+ * @ojsignature {
+ *                target: "Type",
+ *                value: "class ojSwitcher extends JetElement<ojSwitcherSettableProperties>"
+ *               }
  * @since 4.0.0
  * @ojstatus preview
  * @ojshortdesc Dynamically decides which child element should be made visible.
  * @classdesc The switcher element dynamically decides which child element should be made visible. It will make a child element visible only if it's <code class="prettyprint">slot</code> attribute's value matches with switcher's <code class="prettyprint">value</code> property.
+ * <p> If child content is expensive to render, use <a href="oj.ojDefer.html">oj-defer</a> to defer rendering until child element is made visible. 
  * <pre class="prettyprint">
  * <code>
  * &lt;oj-switcher value="[[selectedValue]]">
@@ -37,7 +43,7 @@ define(['ojs/ojcore', 'ojs/ojcomponentcore', 'ojs/ojcustomelement'],
  * @function setProperty
  * @param {string} property - The property name to set. Supports dot notation for subproperty access.
  * @param {*} value - The new value to set the property to.
- * 
+ * @return {void}
  * @expose
  * @memberof oj.ojSwitcher
  * @instance
@@ -62,7 +68,7 @@ define(['ojs/ojcore', 'ojs/ojcomponentcore', 'ojs/ojcustomelement'],
  * Performs a batch set of properties.
  * @function setProperties
  * @param {Object} properties - An object containing the property and value pairs to set.
- * 
+ * @return {void}
  * @expose
  * @memberof oj.ojSwitcher
  * @instance
@@ -74,7 +80,7 @@ define(['ojs/ojcore', 'ojs/ojcomponentcore', 'ojs/ojcustomelement'],
  * Refreshes the visual state of the component.
  * 
  * @function refresh
- * 
+ * @return {void}
  * @expose
  * @memberof oj.ojSwitcher
  * @instance
@@ -167,7 +173,7 @@ function ojSwitcher(context) {
 
   function _getSlotMap() {
     if (!_slotMap) {
-      _slotMap = oj.CustomElementBridge.getSlotMap(element);
+      _slotMap = oj.BaseCustomElementBridge.getSlotMap(element);
     }
     return _slotMap;
   }

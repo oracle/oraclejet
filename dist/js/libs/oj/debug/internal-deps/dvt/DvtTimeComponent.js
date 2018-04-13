@@ -999,6 +999,7 @@ dvt.TimeComponent.prototype.panBy = function(deltaX, deltaY)
 {
   this.panZoomCanvasBy(deltaX);
 };
+
 /**
  * Base event manager for Timeline and Gantt.
  * @param {dvt.TimeComponent} comp The owning dvt.Timeline or dvt.Gantt.
@@ -1382,6 +1383,7 @@ dvt.TimeComponentEventManager.prototype.GetTouchResponse = function()
   return dvt.EventManager.TOUCH_RESPONSE_TOUCH_HOLD;
 };
 
+
 /**
  * TimeComponent keyboard handler.
  * @param {dvt.EventManager} manager The owning dvt.EventManager.
@@ -1450,6 +1452,7 @@ dvt.TimeComponentKeyboardHandler.prototype.processKeyDown = function(event)
 
   return dvt.TimeComponentKeyboardHandler.superclass.processKeyDown.call(this, event);
 };
+
 /**
  * Style related utility functions for dvt.TimeComponent.
  * @class
@@ -1505,7 +1508,7 @@ DvtTimeComponentStyleUtils.getScrollbarPadding = function()
 {
   return DvtTimeComponentStyleUtils._SCROLLBAR_PADDING;
 };
-})(dvt);
 
+})(dvt);
   return dvt;
 });

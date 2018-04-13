@@ -541,6 +541,7 @@ DvtGauge.prototype.UpdateAriaAttributes = function() {
     }
   }
 };
+
 /**
  *  Provides automation services for a DVT component.
  *  @class DvtGaugeAutomation
@@ -613,8 +614,10 @@ DvtGaugeAutomation.prototype.getMetricLabel = function() {
   return DvtGaugeRenderer.getFormattedMetricLabel(this.getValue(), this._gauge);
 };
 
+
 dvt.Bundle.addDefaultStrings(dvt.Bundle.GAUGE_PREFIX, {
 });
+
 /**
  * Default values and utility functions for component versioning.
  * @class
@@ -690,6 +693,15 @@ DvtGaugeDefaults.isSkyrosSkin = function(gauge)
 {
   return (gauge.getOptions()['skin'] == dvt.CSSStyle.SKIN_SKYROS);
 };
+
+/**
+ * @override
+ */
+DvtGaugeDefaults.prototype.getAnimationDuration = function(options)
+{ 
+  return options['animationDuration'];
+};
+
 /**
  * Style related utility functions for gauge components.
  * @class
@@ -781,6 +793,7 @@ DvtGaugeDataUtils.getReferenceObject = function(gauge, index) {
   else
     return null;
 };
+
 /**
  * Event Manager for DvtGauge.
  * @param {DvtGauge} gauge
@@ -940,6 +953,7 @@ DvtGaugeEventManager.prototype.__isMouseEditing = function() {
   return this.IsMouseEditing;
 };
 
+
 /**
  * @param {dvt.EventManager} manager The owning dvt.EventManager
  * @param {DvtGauge} gauge
@@ -996,6 +1010,7 @@ DvtGaugeKeyboardHandler.prototype.processKeyDown = function(event) {
     }
   }
 };
+
 
 /**
  * Style related utility functions for gauge components.
@@ -1314,6 +1329,7 @@ DvtGaugeStyleUtils.getDialIndicator = function(indicatorType) {
 DvtGaugeStyleUtils.hasLabel = function(options) {
   return !!options['label']['text'];
 };
+
 /**
  * Renderer for DvtGauge.
  * @class
@@ -1631,6 +1647,7 @@ DvtGaugeRenderer.adjustForStep = function(options, value) {
   }
   return value;
 };
+
 // Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
 
 
@@ -1706,6 +1723,7 @@ dvt.LedGauge.prototype.Render = function(container, width, height)
 {
   DvtLedGaugeRenderer.render(this, container, width, height);
 };
+
 /**
  * Default values and utility functions for component versioning.
  * @class
@@ -1725,6 +1743,7 @@ dvt.Obj.createSubclass(DvtLedGaugeDefaults, DvtGaugeDefaults);
 DvtLedGaugeDefaults.VERSION_1 = {
   'type': 'circle'
 };
+
 /**
  * Renderer for dvt.LedGauge.
  * @class
@@ -1897,7 +1916,7 @@ DvtLedGaugeRenderer._renderShape = function(gauge, container, bounds) {
         // Calculate the dimensions and shift the shape to be centered at 0,0 within its containing rectangle
         var dim = dvt.DisplayableUtils.getDimForced(context, shape);
         var scaleTo100 = 100 / Math.max(dim.w, dim.h);
-        cmds = dvt.PathUtils.transformPath(shape.getCommands(), - scaleTo100 * (dim.x + dim.w / 2), - scaleTo100 * (dim.y + dim.h / 2), scaleTo100, scaleTo100);
+        cmds = dvt.PathUtils.transformPath(shape.getCommandsArray(), - scaleTo100 * (dim.x + dim.w / 2), - scaleTo100 * (dim.y + dim.h / 2), scaleTo100, scaleTo100);
         DvtLedGaugeRenderer._cache.put(type, cmds);
       }
     }
@@ -2282,6 +2301,7 @@ DvtLedGaugeRenderer._getMetricLabelBounds = function(gauge, container, bounds) {
   }
   return new dvt.Rectangle(newX, newY, newWidth, newHeight);
 };
+
 // Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
 
 
@@ -2347,9 +2367,9 @@ dvt.StatusMeterGauge.prototype.SetOptions = function(options) {
       options['plotArea']['svgStyle'] = options['plotArea']['style'];
   }
 
-  // <oj-status-meter-gauge> is editable by default
-  if (options['readOnly'] == null && this.getCtx().isCustomElement())
-    options['readOnly'] = false;
+  // Map the custom element readonly attr to the widget readOnly option
+  if (this.getCtx().isCustomElement())
+    options['readOnly'] = options['readonly'];
 
   // Combine the user options with the defaults and store
   dvt.StatusMeterGauge.superclass.SetOptions.call(this, this.Defaults.calcOptions(options));
@@ -2421,6 +2441,7 @@ dvt.StatusMeterGauge.prototype.GetValueAt = function(x, y) {
     return value;
   }
 };
+
 /**
  * Default values and utility functions for component versioning.
  * @class
@@ -2459,6 +2480,7 @@ DvtStatusMeterGaugeDefaults.VERSION_1 = {
   'startAngle': 90,
   'thresholdDisplay': 'onIndicator'
 };
+
 /**
  * Renderer for dvt.StatusMeterGauge.
  * @class
@@ -3610,6 +3632,7 @@ DvtStatusMeterGaugeRenderer._renderCenterContent = function(gauge, options, boun
       callback(newOverlay);
   }
 };
+
 // Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 
 
@@ -3696,6 +3719,7 @@ DvtStatusMeterGaugeIndicator.prototype.setAnimationParams = function(params) {
   if (params && params.length == 4)
     this.setCoords(params[0], params[1], params[2], params[3]);
 };
+
 // Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 
 
@@ -3776,6 +3800,7 @@ DvtStatusMeterGaugeCircularIndicator.prototype.setAnimationParams = function(par
   if (params && params.length == 5)
     this.setPath(params[0], params[1], params[2], params[3], params[4]);
 };
+
 // Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
 
 
@@ -3944,6 +3969,7 @@ dvt.DialGauge.prototype.GetValueAt = function(x, y) {
   var value = (ratio * (maxValue - minValue)) + minValue;
   return value;
 };
+
 /**
  * Default values and utility functions for component versioning.
  * @class
@@ -3968,6 +3994,7 @@ DvtDialGaugeDefaults.VERSION_1 = {
     'style': new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_ALTA)
   }
 };
+
 /**
  * Renderer for dvt.DialGauge.
  * @class
@@ -4467,6 +4494,7 @@ DvtDialGaugeRenderer._renderTickLabels = function(gauge, container, bounds) {
     }
   }
 };
+
 // Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 
 
@@ -4517,6 +4545,7 @@ DvtDialGaugeIndicator.prototype.setAnimationParams = function(params) {
   if (params && params.length == 1)
     this.setAngle(params[0]);
 };
+
 // Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
 
 /**
@@ -4595,9 +4624,9 @@ dvt.RatingGauge.prototype.SetOptions = function(options) {
       options['unselectedState']['svgStyle'] = options['unselectedState']['style'];
   }
 
-  // <oj-rating-gauge> is editable by default
-  if (options['readOnly'] == null && this.getCtx().isCustomElement())
-    options['readOnly'] = false;
+  // Map the custom element readonly attr to the widget readOnly option
+  if (this.getCtx().isCustomElement())
+    options['readOnly'] = options['readonly'];
 
   // Combine the user options with the defaults and store
   dvt.RatingGauge.superclass.SetOptions.call(this, this.Defaults.calcOptions(options));
@@ -4849,6 +4878,7 @@ dvt.RatingGauge.prototype.__getRatingGaugeItem = function(index) {
 dvt.RatingGauge.prototype.CreateEventManager = function() {
   return new DvtRatingGaugeEventManager(this);
 };
+
 /**
  * Default values and utility functions for component versioning.
  * @class
@@ -4886,6 +4916,7 @@ DvtRatingGaugeDefaults.VERSION_1 = {
   'preserveAspectRatio' : 'meet',
   'step': 1
 };
+
 /**
  * Rating gauge tooltip support
  * @param {dvt.RatingGauge} gauge The rating gauge.
@@ -4913,6 +4944,7 @@ DvtRatingGaugePeer.prototype.getDatatip = function(target, x, y) {
   var threshold = DvtGaugeDataUtils.getThreshold(this._gauge, thresholdIndex);
   return (threshold && threshold['shortDesc']) ? threshold['shortDesc'] : options['shortDesc'];
 };
+
 
 /**
  * Renderer for dvt.RatingGauge.
@@ -5057,6 +5089,7 @@ DvtRatingGaugeRenderer._createShapes = function(gauge, container, stateOptions) 
  * @param {number} height  The height of the marker.
  * @param {object} stateOptions The options object for this state.
  * @param {object} gaugeOptions The options object for the gauge.
+ * @return {dvt.Obj} shape The led gauge or image marker shape
  * @private
  */
 DvtRatingGaugeRenderer._createShape = function(context, x, y, width, height, stateOptions, gaugeOptions) {
@@ -5079,6 +5112,7 @@ DvtRatingGaugeRenderer._createShape = function(context, x, y, width, height, sta
   }
   return shape;
 };
+
 /**
  * Event Manager for dvt.RatingGauge.
  * @param {DvtGauge} gauge
@@ -5163,6 +5197,7 @@ DvtRatingGaugeEventManager.prototype.ProcessKeyboardEvent = function(event)
 DvtRatingGaugeEventManager.prototype.IsShowingTooltipWhileEditing = function() {
   return true;
 };
+
 dvt.exportProperty(dvt, 'DialGauge', dvt.DialGauge);
 dvt.exportProperty(dvt, 'LedGauge', dvt.LedGauge);
 dvt.exportProperty(dvt, 'RatingGauge', dvt.RatingGauge);
@@ -5184,7 +5219,7 @@ dvt.exportProperty(DvtGaugeAutomation.prototype, 'getMetricLabel', DvtGaugeAutom
  * Exporting for test automation purposes only.
  */
 dvt.LedGaugeRenderer = DvtLedGaugeRenderer;
-})(dvt);
 
+})(dvt);
   return dvt;
 });

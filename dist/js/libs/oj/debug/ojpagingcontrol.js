@@ -1,4 +1,5 @@
 /**
+ * @license
  * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
@@ -26,9 +27,12 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
  * @ojcomponent oj.ojPagingControl
  * @augments oj.baseComponent
  * @ojstatus preview
- * @ojshortdesc Paging Control Element
+ * @since 0.7
+ * @ojshortdesc Provides paging functionality for data collections.
  * @ojrole navigation
  * @ojrole button
+ * @ojtsimport ojpagingtabledatasource
+ * @ojtsignore
  * 
  * @classdesc
  * <h3 id="pagingcontrolOverview-section">
@@ -36,7 +40,8 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#pagingcontrolOverview-section"></a>
  * </h3>
  * <p>Description:</p>
- * <p>A JET PagingControl provides paging functionality.</p>
+ * <p>A JET PagingControl provides the ability to fetch and display a page of data at a time. The paging control will only fetch the items for the currently displayed page so it should be used for large datasets which can be fetched in pages. 
+ * The number of items per page is uniform and configurable. The paging control can be used with any DataSource which implements the oj.PagingModel interface, such as oj.PagingTableDataSource and oj.PagingDataGridDataSource. That means that the Paging Control can be used with ojTable, ojDataGrid, and ojListView.</p>
  * 
  * <pre class="prettyprint"><code>&lt;oj-paging-control
  *   data='{{pagingModel}}'
@@ -183,6 +188,8 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
              * @ojvalue {string} 'pages' Display the page links
              * @ojvalue {string} 'nav' Display the navigation arrows
              * @default ['auto']
+             * @ojsignature { target: "Type",
+             *                value: "?['auto'|'all'|'input'|'rangeText'|'pages'|'nav']"}
              */
             'layout': ['auto'], 
             /**
@@ -196,6 +203,8 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
              * @type {string}
              * @ojvalue {string} 'numbers' Render numeric page links
              * @ojvalue {string} 'dots' Render dots
+             * @ojsignature { target: "Type",
+             *                value: "?"}
              * @default "numbers"
              */
             'type': 'numbers', 
@@ -210,6 +219,8 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
              * @memberof! oj.ojPagingControl
              * @instance
              * @type {number}
+             * @ojsignature { target: "Type",
+             *                value: "?"}
              * @default 6
              * @ojmin 5
              */
@@ -225,6 +236,8 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
              * @type {string}
              * @ojvalue {string} 'horizontal'
              * @ojvalue {string} 'vertical'
+             * @ojsignature { target: "Type",
+             *                value: "?"}
              * @default "horizontal"
              */
             'orientation': 'horizontal'
@@ -319,7 +332,6 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
         },
       /**
        * @private
-       * @const
        */
       _BUNDLE_KEY:
         {
@@ -355,7 +367,6 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
         },
       /**
        * @private
-       * @const
        */
       _MARKER_STYLE_CLASSES:
         {
@@ -371,7 +382,6 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
         },
       /**
        * @private
-       * @const
        */
       _CSS_CLASSES:
         {
@@ -422,31 +432,26 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
         },
       /**
        * @private
-       * @const
        * @type {string}
        */
       _DATA_ATTR_PAGE_NUM: 'data-oj-pagenum',
       /**
        * @private
-       * @const
        * @type {string}
        */
       _OPTION_ENABLED: 'enabled',
       /**
        * @private
-       * @const
        * @type {string}
        */
       _OPTION_DISABLED: 'disabled',
       /**
        * @private
-       * @const
        * @type {string}
        */
       _TAB_INDEX: 'tabindex',
       /**
        * @private
-       * @const
        */
       _MODE:
         {
@@ -455,7 +460,6 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
         },
       /**
        * @private
-       * @const
        */
       _PAGE_OPTION_LAYOUT:
         {
@@ -468,12 +472,10 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
         },
       /**
        * @private
-       * @const
        */
       _PAGE_OPTION_DEFAULT_MAX_PAGE_LINKS: 6,
       /**
        * @private
-       * @const
        */
       _TYPE:
         {
@@ -488,7 +490,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
        * @memberof oj.ojPagingControl
        * @instance
        * @public
-       * @return {Promise} promise object triggering done when complete.
+       * @return {Promise.<null>} promise object triggering done when complete.
        * @throws {Error}
        * @export
        * @example <caption>Invoke the <code class="prettyprint">firstPage</code> method:</caption>
@@ -509,7 +511,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
        * @memberof oj.ojPagingControl
        * @instance
        * @public
-       * @return {Promise} promise object triggering done when complete.
+       * @return {Promise.<null>} promise object triggering done when complete.
        * @throws {Error}
        * @export
        * @example <caption>Invoke the <code class="prettyprint">previousPage</code> method:</caption>
@@ -535,7 +537,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
        * @memberof oj.ojPagingControl
        * @instance
        * @public
-       * @return {Promise} promise object triggering done when complete.
+       * @return {Promise.<null>} promise object triggering done when complete.
        * @throws {Error}
        * @export
        * @example <caption>Invoke the <code class="prettyprint">nextPage</code> method:</caption>
@@ -562,7 +564,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
        * @memberof oj.ojPagingControl
        * @instance
        * @public
-       * @return {Promise} promise object triggering done when complete.
+       * @return {Promise.<null>} promise object triggering done when complete.
        * @throws {Error}
        * @export
        * @example <caption>Invoke the <code class="prettyprint">lastPage</code> method:</caption>
@@ -587,7 +589,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
        * @instance
        * @public
        * @param {number} page  Page number. 
-       * @return {Promise} promise object triggering done when complete.
+       * @return {Promise.<null>} promise object triggering done when complete.
        * @throws {Error}
        * @export
        * @example <caption>Invoke the <code class="prettyprint">page</code> method:</caption>
@@ -613,7 +615,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
        * @memberof oj.ojPagingControl
        * @instance
        * @public
-       * @return {Promise} promise object triggering done when complete.
+       * @return {Promise.<null>} promise object triggering done when complete.
        * @throws {Error}
        * @export
        * @example <caption>Invoke the <code class="prettyprint">loadNext</code> method:</caption>
@@ -635,6 +637,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
        * @instance
        * @public
        * @export
+       * @return {void}
        * @example <caption>Invoke the <code class="prettyprint">refresh</code> method:</caption>
        * myPagingControl.refresh();
        */
@@ -3836,6 +3839,107 @@ var ojPagingControlMeta = {
     },
     "pageSize": {
       "type": "number"
+    },
+    "translations": {
+      "type": "Object",
+      "properties": {
+        "labelAccNavFirstPage": {
+          "type": "string",
+          "value": "First Page"
+        },
+        "labelAccNavLastPage": {
+          "type": "string",
+          "value": "Last Page"
+        },
+        "labelAccNavNextPage": {
+          "type": "string",
+          "value": "Next Page"
+        },
+        "labelAccNavPage": {
+          "type": "string",
+          "value": "Page"
+        },
+        "labelAccNavPreviousPage": {
+          "type": "string",
+          "value": "Previous Page"
+        },
+        "labelAccPaging": {
+          "type": "string",
+          "value": "Pagination"
+        },
+        "labelLoadMore": {
+          "type": "string",
+          "value": "Show More..."
+        },
+        "labelLoadMoreMaxRows": {
+          "type": "string",
+          "value": "Reached Maximum Limit of {maxRows} rows"
+        },
+        "labelNavInputPage": {
+          "type": "string",
+          "value": "Page"
+        },
+        "labelNavInputPageMax": {
+          "type": "string",
+          "value": "of {pageMax}"
+        },
+        "maxPageLinksInvalid": {
+          "type": "string",
+          "value": "Value for maxPageLinks is invalid."
+        },
+        "msgItemRangeCurrent": {
+          "type": "string",
+          "value": "{pageFrom}-{pageTo}"
+        },
+        "msgItemRangeCurrentSingle": {
+          "type": "string",
+          "value": "{pageFrom}"
+        },
+        "msgItemRangeItems": {
+          "type": "string",
+          "value": "items"
+        },
+        "msgItemRangeOf": {
+          "type": "string",
+          "value": "of"
+        },
+        "msgItemRangeOfApprox": {
+          "type": "string",
+          "value": "approx."
+        },
+        "msgItemRangeOfAtLeast": {
+          "type": "string",
+          "value": "at least"
+        },
+        "pageInvalid": {
+          "type": "string",
+          "value": "The page value entered is invalid."
+        },
+        "tipNavFirstPage": {
+          "type": "string",
+          "value": "First"
+        },
+        "tipNavInputPage": {
+          "type": "string",
+          "value": "Go To Page"
+        },
+        "tipNavLastPage": {
+          "type": "string",
+          "value": "Last"
+        },
+        "tipNavNextPage": {
+          "type": "string",
+          "value": "Next"
+        },
+        "tipNavPageLink": {
+          "type": "string",
+          "value": "Go To Page {pageNum}"
+        },
+        "tipNavPreviousPage": {
+          "type": "string",
+          "value": "Previous"
+        }
+      }
     }
   },
   "methods": {

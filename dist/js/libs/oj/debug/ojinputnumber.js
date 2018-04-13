@@ -1,4 +1,5 @@
 /**
+ * @license
  * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
@@ -34,13 +35,25 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'ojs/ojvalidation-number'
 (function() // inputNumber wrapper function, to keep "private static members" private
 {
 /**
- * @ojcomponent oj.ojInputNumber
+ * @ojcomponent oj.ojInputNumber 
  * @augments oj.editableValue
+ * @ojsignature [{
+ *                target: "Type",
+ *                value: "class ojInputNumber extends editableValue<number, ojInputNumberSettableProperties, number, string>"
+ *               },
+ *               {
+ *                target: "Type",
+ *                value: "ojInputNumberSettableProperties extends editableValueSettableProperties<number, number, string>",
+ *                for: "SettableProperties"
+ *               }
+ *              ]
  * @since 0.6
- * @ojshortdesc Input Number Element
+ * @ojshortdesc Provides basic support for specifying a number value.
  * @ojrole textbox
  * @ojrole spinbutton
  * @ojstatus preview
+ * @ojtsimport ojvalidation-base
+ * @ojtsimport ojvalidation-number
  * @classdesc
  * <h3 id="inputNumberOverview-section">
  *   JET InputNumber Component
@@ -124,8 +137,67 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
   version: "1.0.0",
   defaultElement: "<input>",
   widgetEventPrefix: "oj",
+  
+  /**
+   * @private
+   */
+  _ALLOWED_TYPES : ['number', 'text'],
+
   options:
   {
+    /** 
+     * Dictates component's autocomplete state. 
+     * This attribute indicates whether the value of the control can be automatically 
+     * completed by the browser.
+     * 
+     * @example <caption>Initialize component with <code class="prettyprint">autocomplete</code> attribute:</caption>
+     * &lt;oj-input-number autocomplete = "on">&lt;/oj-input-number>
+     * 
+     * @example <caption>Get or set the <code class="prettyprint">autocomplete</code> property after initialization:</caption>
+     * // getter
+     * var ro = myComp.autocomplete;
+     *
+     * // setter
+     * myComp.autocomplete = "on";
+     * 
+     * @expose 
+     * @type {string|undefined}
+     * @ojvalue {string} "on" enable autofill
+     * @ojvalue {string} "off" disable autofill
+     * @alias autocomplete
+     * @default "off"
+     * @instance
+     * @access public
+     * @memberof oj.ojInputNumber
+     * @ojextension {_COPY_TO_INNER_ELEM: true}
+     */
+    autocomplete: undefined,
+     /** 
+     * Autofocus is a Boolean that reflects the autofocus attribute, If it is set to true 
+     * then the associated component  will get input focus when the page is loaded.
+     * Setting this property doesn't set the focus to the component: 
+     * it tells the browser to focus to it when the element is inserted in the document. 
+     * 
+     * @example <caption>Initialize component with <code class="prettyprint">autofocus</code> attribute:</caption>
+     * &lt;oj-input-number autofocus>&lt;/oj-input-number>
+     * 
+     * @example <caption>Get or set the <code class="prettyprint">autofocus</code> property after initialization:</caption>
+     * // getter
+     * var ro = myComp.autofocus;
+     *
+     * // setter
+     * myComp.autofocus = false;
+     * 
+     * @expose 
+     * @type {boolean}
+     * @alias autofocus
+     * @access public
+     * @default false
+     * @instance
+     * @memberof oj.ojInputNumber
+     * @ojextension {_COPY_TO_INNER_ELEM: true}
+     */
+    autofocus: false,
     // TODO: revisit
     // It's expensive to create a default converter ahead of time when a page author can set a custom
     // one for if they do this will be promptly discarded.
@@ -133,6 +205,8 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
     /**
      * A number converter instance that duck types {@link oj.NumberConverter}. Or an object literal
      * containing the properties listed below.
+     * When no converter is specified, the default converter will be used,
+     * and default option of "numeric" is used. 
      * <p>
      * When <code class="prettyprint">converter</code> property changes due to programmatic
      * intervention, the component performs various tasks based on the current state it is in. </br>
@@ -219,6 +293,9 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
      * @access public
      * @instance
      * @memberof oj.ojInputNumber
+     * @ojsignature {
+     *    target: "Type",
+     *    value: "oj.Converter<number>|oj.Validation.FactoryRegisteredValidatorOrConverter"}
      * @type {Object}
      */
     converter: oj.Validation.converterFactory(
@@ -295,7 +372,29 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
      * 
      */
     min: null,
-
+     /** 
+     * It indicates the name of the component. 
+     * 
+     * @example <caption>Initialize component with <code class="prettyprint">name</code> attribute:</caption>
+     * &lt;oj-input-number name="myName">&lt;/oj-input-number>
+     * 
+     * @example <caption>Get or set the <code class="prettyprint">name</code> property after initialization:</caption>
+     * // getter
+     * var ro = myComp.name;
+     *
+     * // setter
+     * myComp.name = "myName";
+     * 
+     * @expose 
+     * @type {string}
+     * @alias name
+     * @access public
+     * @instance
+     * @default ""
+     * @memberof oj.ojInputNumber
+     * @ojextension {_COPY_TO_INNER_ELEM: true}
+     */
+    name: "",
     /**
      * The placeholder text to set on the element.
      *
@@ -314,13 +413,15 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
      *
      * @expose
      * @instance
+     * @default ""
      * @memberof oj.ojInputNumber
-     * @type {string|null|undefined}
+     * @type {string|null}
      */
-    placeholder: undefined,
+    placeholder: "",
     /**
-     * <p>The  <code class="prettyprint">rawValue</code> is the read-only property for retrieving
-     * the current value from the input field in text form.</p>
+     * <p>The <code class="prettyprint">rawValue</code> is the read-only property for retrieving
+     * the current value from the input field in string form. The main consumer of 
+     * <code class="prettyprint">rawValue</code> is a converter.</p>
      * <p>
      * The <code class="prettyprint">rawValue</code> updates on the 'input' javascript event,
      * so the <code class="prettyprint">rawValue</code> changes as the value of the input is changed.
@@ -334,6 +435,7 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
      * @instance
      * @memberof oj.ojInputNumber
      * @type {string|undefined}
+     * @ojsignature {target:"Type", value:"string"}
      * @since 1.2.0
      * @readonly
      * @ojwriteback
@@ -475,78 +577,6 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
      * myComponent.step = 5;
      * */
     step: 1,
-     /** 
-     * Dictates component's autocomplete state. 
-     * This attribute indicates whether the value of the control can be automatically 
-     * completed by the browser.
-     * 
-     * @example <caption>Initialize component with <code class="prettyprint">autocomplete</code> attribute:</caption>
-     * &lt;oj-input-number autocomplete = "on">&lt;/oj-input-number>
-     * 
-     * @example <caption>Get or set the <code class="prettyprint">autocomplete</code> property after initialization:</caption>
-     * // getter
-     * var ro = myComp.autocomplete;
-     *
-     * // setter
-     * myComp.autocomplete = "on";
-     * 
-     * @expose 
-     * @type {string|undefined}
-     * @ojvalue {string} "on" enable autofill
-     * @ojvalue {string} "off" disable autofill
-     * @alias autocomplete
-     * @default "off"
-     * @instance
-     * @access public
-     * @memberof oj.ojInputNumber
-     */
-    autocomplete: undefined,
-     /** 
-     * Autofocus is a Boolean that reflects the autofocus attribute, If it is set to true 
-     * then the associated component  will get input focus when the page is loaded.
-     * Setting this property doesn't set the focus to the component: 
-     * it tells the browser to focus to it when the element is inserted in the document. 
-     * 
-     * @example <caption>Initialize component with <code class="prettyprint">autofocus</code> attribute:</caption>
-     * &lt;oj-input-number autofocus>&lt;/oj-input-number>
-     * 
-     * @example <caption>Get or set the <code class="prettyprint">autofocus</code> property after initialization:</caption>
-     * // getter
-     * var ro = myComp.autofocus;
-     *
-     * // setter
-     * myComp.autofocus = false;
-     * 
-     * @expose 
-     * @type {boolean|undefined}
-     * @alias autofocus
-     * @access public
-     * @default false
-     * @instance
-     * @memberof oj.ojInputNumber
-     */
-    autofocus: false,
-     /** 
-     * It indicates the name of the component. 
-     * 
-     * @example <caption>Initialize component with <code class="prettyprint">name</code> attribute:</caption>
-     * &lt;oj-input-number name="myName">&lt;/oj-input-number>
-     * 
-     * @example <caption>Get or set the <code class="prettyprint">name</code> property after initialization:</caption>
-     * // getter
-     * var ro = myComp.name;
-     *
-     * // setter
-     * myComp.name = "myName";
-     * 
-     * @expose 
-     * @type {string|undefined}
-     * @alias name
-     * @access public
-     * @instance
-     * @memberof oj.ojInputNumber
-     */
-    name: undefined,
     /** 
      * List of validators used by component when performing validation. Each item is either an 
      * instance that duck types {@link oj.Validator}, or is an Object literal containing the 
@@ -637,6 +667,7 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
      * @access public
      * @instance
      * @memberof oj.ojInputNumber
+     * @ojsignature  { target: "Type", value: "Array<oj.Validator<number>|oj.Validation.FactoryRegisteredValidatorOrConverter>|null"}
      * @type {Array.<Object>|undefined}
      */
     
@@ -673,7 +704,36 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
      * @memberof oj.ojInputNumber
      * @type {?number}
      */
-    value: null
+    value: null,
+    /**
+     * The type of virtual keyboard to display for entering value on mobile browsers.  This attribute has no effect on desktop browsers.
+     *
+     * @example <caption>Initialize the component with the <code class="prettyprint">virtual-keyboard</code> attribute:</caption>
+     * &lt;oj-input-number virtual-keyboard="number">&lt;/oj-input-number>
+     * 
+     * @example <caption>Get or set the <code class="prettyprint">virtualKeyboard</code> property after initialization:</caption>
+     * // Getter
+     * var virtualKeyboard = myComp.virtualKeyboard;
+     * 
+     * // Setter
+     * myComp.virtualKeyboard = "number";
+     *
+     * @expose
+     * @instance
+     * @memberof oj.ojInputNumber
+     * @type {string}
+     * @ojvalue {string} "auto" The component will determine the best virtual keyboard to use.
+     *                          <p>This is always "text" for this release but may change in future
+     *                          releases.</p>
+     * @ojvalue {string} "number" Use a virtual keyboard for entering number.
+     *                            <p>Note that on Android and Windows Mobile, the "number" keyboard does
+     *                            not contain the minus sign.  This value should not be used on fields that
+     *                            accept negative values.</p>
+     * @ojvalue {string} "text" Use a virtual keyboard for entering text.
+     * @default "auto"
+     * @since 5.0.0
+     */
+    virtualKeyboard: "auto"
 
     // Events
 
@@ -752,6 +812,7 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
    * @memberof oj.ojInputNumber
    * @access public
    * @instance
+   * @return {void}
    * @example <caption>Invoke the <code class="prettyprint">refresh</code> method:</caption>
    * myComp.refresh();
    */
@@ -765,7 +826,8 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
    * Without the parameter, a single step is decremented.</p>
    <p>If the resulting value is above the max, below the min,
    or results in a step mismatch, the value will be adjusted to the closest valid value.</p>
-   * @param {Number} steps - Number of steps to decrement, defaults to 1.
+   * @param {number=} steps - Number of steps to decrement, defaults to 1.
+   * @return {void}
    * @expose
    * @instance
    * @memberof oj.ojInputNumber
@@ -782,7 +844,8 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
    * Without the parameter, a single step is incremented.</p>
    <p>If the resulting value is above the max, below the min,
    or results in a step mismatch, the value will be adjusted to the closest valid value.</p>
-   * @param {Number} steps - Number of steps to increment, defaults to 1.
+   * @param {number=} steps - Number of steps to increment, defaults to 1.
+   * @return {void}
    * @expose
    * @instance
    * @memberof oj.ojInputNumber
@@ -972,6 +1035,9 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
       case "converter":
         this._AfterSetOptionConverter(option);
         break;           
+      case "virtualKeyboard":
+        this._SetInputType(this._ALLOWED_TYPES);
+        break;        
       default:
         break;
     }
@@ -1286,7 +1352,7 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
    *      submitForm();
    *    }
    *  }); 
-   * @return {Promise} Promise resolves to "valid" if there were no converter parse errors and
+   * @return {Promise.<string>} Promise resolves to "valid" if there were no converter parse errors and
    * the component passed all validations. 
    * The Promise resolves to "invalid" if there were converter parse errors or 
    * if there were validation errors.
@@ -1583,7 +1649,7 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
     //
     // TODO: need to save off attributes and reset on destroy generically.
     this.saveType = element.prop("type");
-    element.attr("type", "text");
+    this._SetInputType(this._ALLOWED_TYPES);
 
 
     // As the buttons are not in the keyboard sequence at first
@@ -1707,6 +1773,8 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
     var maxOpt = options.max;
     var stepOpt = options.step;
     var initialValue = this.initialValue;
+    
+    // get the max precision. e.g., min=2.4, initialValue=3.444, maxPrecision is 3.
     var precision = this._precision(minOpt, stepOpt, initialValue);
     
     value = this._adjustValue(value, step, minOpt, maxOpt, stepOpt, precision, initialValue);
@@ -1896,17 +1964,23 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
     oj.Assert.assert(precision > 0);
     var power = Math.pow(10,precision);
     // if minOpt, maxOpt, stepOpt are undefined, keep them that way
-    var minOptPower = minOpt != null ? minOpt*power : minOpt;
-    var maxOptPower = maxOpt != null ? maxOpt*power : maxOpt;
-    var stepOptPower = stepOpt != null ? stepOpt*power : stepOpt;
+    // when we adjust the values to make them decimals, they should be whole numbers.
+    // javascript sometimes gives them fractions (
+    // e.g., 10000000.45*100=1000000044.9999999), so everywhere here we multiply
+    // by power, round the value to make it a whole number.
+    var minOptPower = minOpt != null ? Math.round(minOpt*power) : minOpt;
+    var maxOptPower = maxOpt != null ? Math.round(maxOpt*power) : maxOpt;
+    var stepOptPower = stepOpt != null ? Math.round(stepOpt*power) : stepOpt;
+    
+    
     var adjustValuePower =   
-      this._adjustValue(value*power, 
-                        step*power, 
+      this._adjustValue(Math.round(value*power), 
+                        Math.round(step*power), 
                         minOptPower, 
                         maxOptPower, 
                         stepOptPower, 
                         0, 
-                        initialValue*power);
+                        Math.round(initialValue*power));
     return adjustValuePower/power;
     
   },
@@ -2273,6 +2347,14 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
     this._stop();
   },
   /**
+   * Set the type of the input element based on virtualKeyboard option.
+   * @memberof oj.ojInputNumber
+   * @instance
+   * @protected
+   * @ignore
+   */
+  _SetInputType: oj.EditableValueUtils._SetInputType,
+  /**
    * the validate method from v3.x that returns a boolean
    * @memberof oj.ojInputNumber
    * @instance
@@ -2483,12 +2565,90 @@ var ojInputNumberMeta = {
     "step": {
       "type": "number"
     },
+    "translations": {
+      "type": "Object",
+      "properties": {
+        "numberRange": {
+          "type": "Object",
+          "properties": {
+            "hint": {
+              "type": "Object",
+              "properties": {
+                "exact": {
+                  "type": "string"
+                },
+                "inRange": {
+                  "type": "string"
+                },
+                "max": {
+                  "type": "string"
+                },
+                "min": {
+                  "type": "string"
+                }
+              }
+            },
+            "messageDetail": {
+              "type": "Object",
+              "properties": {
+                "exact": {
+                  "type": "string"
+                },
+                "rangeOverflow": {
+                  "type": "string"
+                },
+                "rangeUnderflow": {
+                  "type": "string"
+                }
+              }
+            },
+            "messageSummary": {
+              "type": "Object",
+              "properties": {
+                "rangeOverflow": {
+                  "type": "string"
+                },
+                "rangeUnderflow": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "required": {
+          "type": "Object",
+          "properties": {
+            "hint": {
+              "type": "string"
+            },
+            "messageDetail": {
+              "type": "string"
+            },
+            "messageSummary": {
+              "type": "string"
+            }
+          }
+        },
+        "tooltipDecrement": {
+          "type": "string",
+          "value": "Decrement"
+        },
+        "tooltipIncrement": {
+          "type": "string",
+          "value": "Increment"
+        }
+      }
+    },
     "validators": {
       "type": "Array"
     },
     "value": {
       "type": "number",
       "writeback": true
+    },
+    "virtualKeyboard": {
+      "type": "string",
+      "enumValues": ["auto", "number", "text"]
     }
   },
   "methods": {

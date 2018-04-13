@@ -1,21 +1,26 @@
 {
   "name": "oj-optgroup",
-  "version": "4.2.0",
-  "jetVersion": "4.2.0",
-  "displayName": "Optgroup",
+  "version": "5.0.0",
+  "jetVersion": "5.0.0",
+  "displayName": "Option Group",
   "preview": true,
-  "description": "ojOptgroup",
+  "roles": [
+    "option"
+  ],
+  "description": "Supports grouping of child oj-option elements.",
   "properties": {
     "disabled": {
-      "description": "Disables the oj-optgroup if set to true.",
+      "description": "Disables the group if set to true.",
       "type": "boolean",
       "displayName": "Disabled",
       "value": false
     },
     "label": {
-      "description": "Specifies the oj-optgroup's label.",
+      "description": "The group label.",
       "type": "string",
-      "displayName": "Label"
+      "displayName": "Label",
+      "translatable": true,
+      "required": true
     }
   },
   "methods": {

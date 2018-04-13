@@ -5,7 +5,7 @@
 //
 // adds a map of variable name and value to a list,
 // for example it could add this to the list passed in:
-// {name: "$interaction1Color", value: "#07ac02"}
+// {name: "$brandColor", value: "#027bc7"},
 //-------------------------------------------------------------
 @function _oj-theming-add-var($varList, $varName, $varValue)
 {
@@ -18,8 +18,8 @@
 //
 // Creates a list of palette var names and values, as in:
 //   [
-//    {name: "$interaction1Color", value: "#07ac02"},
-//    {name: "$interaction2Color", value: "#ebeced"},
+//    {name: "$brandColor", value: "#027bc7"},
+//    {name: "$brandColorDark1", value: "#02629f"},
 //        --- etc ---
 //   ]
 //
@@ -40,34 +40,84 @@
 {
   $colorList: ();
 
-  // interactions
-  $colorList: _oj-theming-add-var($colorList, '$interaction1Color', $interaction1Color);
-  $colorList: _oj-theming-add-var($colorList, '$interaction2Color', $interaction2Color);
-  $colorList: _oj-theming-add-var($colorList, '$interaction3Color', $interaction3Color);
-  $colorList: _oj-theming-add-var($colorList, '$interaction4Color', $interaction4Color);
-  $colorList: _oj-theming-add-var($colorList, '$interaction5Color', $interaction5Color);
-  $colorList: _oj-theming-add-var($colorList, '$interaction6Color', $interaction6Color);
-  $colorList: _oj-theming-add-var($colorList, '$interaction7Color', $interaction7Color);
+  // Brand Color
+  $colorList: _oj-theming-add-var($colorList, '$brandColorLight5', $brandColorLight5);
+  $colorList: _oj-theming-add-var($colorList, '$brandColorLight4', $brandColorLight4);
+  $colorList: _oj-theming-add-var($colorList, '$brandColorLight3', $brandColorLight3);
+  $colorList: _oj-theming-add-var($colorList, '$brandColorLight2', $brandColorLight2);
+  $colorList: _oj-theming-add-var($colorList, '$brandColorLight1', $brandColorLight1);
+  $colorList: _oj-theming-add-var($colorList, '$brandColor', $brandColor);
+  $colorList: _oj-theming-add-var($colorList, '$brandColorDark1', $brandColorDark1);
+  $colorList: _oj-theming-add-var($colorList, '$brandColorDark2', $brandColorDark2);
 
+  // Neutral Colors
+  $colorList: _oj-theming-add-var($colorList, '$neutralColor1', $neutralColor1);
+  $colorList: _oj-theming-add-var($colorList, '$neutralColor2', $neutralColor2);
+  $colorList: _oj-theming-add-var($colorList, '$neutralColor3', $neutralColor3);
+  $colorList: _oj-theming-add-var($colorList, '$neutralColor4', $neutralColor4);
+  $colorList: _oj-theming-add-var($colorList, '$neutralColor5', $neutralColor5);
+  $colorList: _oj-theming-add-var($colorList, '$neutralColor6', $neutralColor6);
+  $colorList: _oj-theming-add-var($colorList, '$neutralColor7', $neutralColor7);
+  $colorList: _oj-theming-add-var($colorList, '$neutralColor8', $neutralColor8);
+  $colorList: _oj-theming-add-var($colorList, '$neutralColor9', $neutralColor9);
+  $colorList: _oj-theming-add-var($colorList, '$neutralColor10', $neutralColor10);
+  $colorList: _oj-theming-add-var($colorList, '$neutralColor11', $neutralColor11);
+  $colorList: _oj-theming-add-var($colorList, '$neutralColor12', $neutralColor12);
+  $colorList: _oj-theming-add-var($colorList, '$neutralColor13', $neutralColor13);
+  $colorList: _oj-theming-add-var($colorList, '$neutralColor14', $neutralColor14);
+  $colorList: _oj-theming-add-var($colorList, '$neutralColor15', $neutralColor15);
+  $colorList: _oj-theming-add-var($colorList, '$neutralColor16', $neutralColor16);
+  $colorList: _oj-theming-add-var($colorList, '$neutralColor17', $neutralColor17);
 
-  // backgrounds
-  $colorList: _oj-theming-add-var($colorList, '$background1Color', $background1Color);
-  $colorList: _oj-theming-add-var($colorList, '$background2Color', $background2Color);
-  $colorList: _oj-theming-add-var($colorList, '$background3Color', $background3Color);
-  $colorList: _oj-theming-add-var($colorList, '$background4Color', $background4Color);
-  $colorList: _oj-theming-add-var($colorList, '$background5Color', $background5Color);
-  $colorList: _oj-theming-add-var($colorList, '$background6Color', $background6Color);
-  $colorList: _oj-theming-add-var($colorList, '$contrastBackground1Color', $contrastBackground1Color);
+  // Accent Colors
+  $colorList: _oj-theming-add-var($colorList, '$accentColorHighlight1', $accentColorHighlight1);
+  $colorList: _oj-theming-add-var($colorList, '$accentColorHighlight2', $accentColorHighlight2);
 
-  // borders
-  $colorList: _oj-theming-add-var($colorList, '$border1Color', $border1Color);
-  $colorList: _oj-theming-add-var($colorList, '$border2Color', $border2Color);
-  $colorList: _oj-theming-add-var($colorList, '$border3Color', $border3Color);
-  $colorList: _oj-theming-add-var($colorList, '$border4Color', $border4Color);
-  $colorList: _oj-theming-add-var($colorList, '$border5Color', $border5Color);
-  $colorList: _oj-theming-add-var($colorList, '$border6Color', $border6Color);
-  $colorList: _oj-theming-add-var($colorList, '$border7Color', $border7Color);
-  $colorList: _oj-theming-add-var($colorList, '$border8Color', $border8Color);
+  $colorList: _oj-theming-add-var($colorList, '$accentColorDanger1', $accentColorDanger1);
+  $colorList: _oj-theming-add-var($colorList, '$accentColorDanger2', $accentColorDanger2);
+  $colorList: _oj-theming-add-var($colorList, '$accentColorDanger3', $accentColorDanger3);
+  $colorList: _oj-theming-add-var($colorList, '$accentColorDanger4', $accentColorDanger4);
+  $colorList: _oj-theming-add-var($colorList, '$accentColorDanger5', $accentColorDanger5);
+
+  $colorList: _oj-theming-add-var($colorList, '$accentColorAttention1', $accentColorAttention1);
+  $colorList: _oj-theming-add-var($colorList, '$accentColorAttention2', $accentColorAttention2);
+  $colorList: _oj-theming-add-var($colorList, '$accentColorAttention3', $accentColorAttention3);
+  $colorList: _oj-theming-add-var($colorList, '$accentColorAttention4', $accentColorAttention4);
+  $colorList: _oj-theming-add-var($colorList, '$accentColorAttention5', $accentColorAttention5);
+
+  $colorList: _oj-theming-add-var($colorList, '$accentColorInfo1', $accentColorInfo1);
+  $colorList: _oj-theming-add-var($colorList, '$accentColorInfo2', $accentColorInfo2);
+  $colorList: _oj-theming-add-var($colorList, '$accentColorInfo3', $accentColorInfo3);
+  $colorList: _oj-theming-add-var($colorList, '$accentColorInfo4', $accentColorInfo4);
+  $colorList: _oj-theming-add-var($colorList, '$accentColorInfo5', $accentColorInfo5);
+
+  $colorList: _oj-theming-add-var($colorList, '$accentColorConfirmation1', $accentColorConfirmation1);
+  $colorList: _oj-theming-add-var($colorList, '$accentColorConfirmation2', $accentColorConfirmation2);
+  $colorList: _oj-theming-add-var($colorList, '$accentColorConfirmation3', $accentColorConfirmation3);
+  $colorList: _oj-theming-add-var($colorList, '$accentColorConfirmation4', $accentColorConfirmation4);
+  $colorList: _oj-theming-add-var($colorList, '$accentColorConfirmation5', $accentColorConfirmation5);
+
+  $colorList: _oj-theming-add-var($colorList, '$accentColorDvt1', $accentColorDvt1);
+  $colorList: _oj-theming-add-var($colorList, '$accentColorDvt2', $accentColorDvt2);
+  $colorList: _oj-theming-add-var($colorList, '$accentColorDvt3', $accentColorDvt3);
+  $colorList: _oj-theming-add-var($colorList, '$accentColorDvt4', $accentColorDvt4);
+  $colorList: _oj-theming-add-var($colorList, '$accentColorDvt5', $accentColorDvt5);
+  $colorList: _oj-theming-add-var($colorList, '$accentColorDvt6', $accentColorDvt6);
+  $colorList: _oj-theming-add-var($colorList, '$accentColorDvt7', $accentColorDvt7);
+  $colorList: _oj-theming-add-var($colorList, '$accentColorDvt8', $accentColorDvt8);
+  $colorList: _oj-theming-add-var($colorList, '$accentColorDvt9', $accentColorDvt9);
+  $colorList: _oj-theming-add-var($colorList, '$accentColorDvt10', $accentColorDvt10);
+  $colorList: _oj-theming-add-var($colorList, '$accentColorDvt11', $accentColorDvt11);
+  $colorList: _oj-theming-add-var($colorList, '$accentColorDvt12', $accentColorDvt12);
+
+  // text colors
+  $colorList: _oj-theming-add-var($colorList, '$textColor1', $textColor1);
+  $colorList: _oj-theming-add-var($colorList, '$textColor2', $textColor2);
+  $colorList: _oj-theming-add-var($colorList, '$textColor3', $textColor3);
+  $colorList: _oj-theming-add-var($colorList, '$textColor4', $textColor4);
+  $colorList: _oj-theming-add-var($colorList, '$textColor5', $textColor5);
+  $colorList: _oj-theming-add-var($colorList, '$textColor6', $textColor6);
+  $colorList: _oj-theming-add-var($colorList, '$textColor7', $textColor7);
 
   @return $colorList;
 
@@ -99,16 +149,18 @@
   $colorList: _oj-theming-add-var($colorList, '$headerTextColor', $headerTextColor);
   $colorList: _oj-theming-add-var($colorList, '$contrastTextColor', $contrastTextColor);
   $colorList: _oj-theming-add-var($colorList, '$textColorDisabled', $textColorDisabled);
-  $colorList: _oj-theming-add-var($colorList, '$textColorError', $textColorError);
   $colorList: _oj-theming-add-var($colorList, '$linkTextColor', $linkTextColor);
   $colorList: _oj-theming-add-var($colorList, '$linkTextColorDisabled', $linkTextColorDisabled);
   $colorList: _oj-theming-add-var($colorList, '$linkTextColorVisited', $linkTextColorVisited);
+  $colorList: _oj-theming-add-var($colorList, '$linkTextColorActive', $linkTextColorActive);
   $colorList: _oj-theming-add-var($colorList, '$iconColor', $iconColor);
   $colorList: _oj-theming-add-var($colorList, '$iconColorDefault', $iconColorDefault);
   $colorList: _oj-theming-add-var($colorList, '$iconColorHover', $iconColorHover);
   $colorList: _oj-theming-add-var($colorList, '$iconColorActive', $iconColorActive);
   $colorList: _oj-theming-add-var($colorList, '$iconColorSelected', $iconColorSelected);
   $colorList: _oj-theming-add-var($colorList, '$iconColorDisabled', $iconColorDisabled);
+  $colorList: _oj-theming-add-var($colorList, '$contrastBackground1Color', $contrastBackground1Color);
+  $colorList: _oj-theming-add-var($colorList, '$textColorError', $textColorError);
 
 
   $colorList: _oj-theming-add-var($colorList, '$buttonTextColor', $buttonTextColor);
@@ -204,6 +256,26 @@
   $colorList: _oj-theming-add-var($colorList, '$toolbarBorderColor', $toolbarBorderColor);
   $colorList: _oj-theming-add-var($colorList, '$toolbarBgColor', $toolbarBgColor);
 
+  $colorList: _oj-theming-add-var($colorList, '$menuBorderColor', $menuBorderColor);
+  $colorList: _oj-theming-add-var($colorList, '$menuBgColor', $menuBgColor);
+  $colorList: _oj-theming-add-var($colorList, '$menuItemBorderColor', $menuItemBorderColor);
+  $colorList: _oj-theming-add-var($colorList, '$menuItemTextColor', $menuItemTextColor);
+  $colorList: _oj-theming-add-var($colorList, '$menuItemTextColorDisabled', $menuItemTextColorDisabled);
+  $colorList: _oj-theming-add-var($colorList, '$menuItemBgColorFocus', $menuItemBgColorFocus);
+  $colorList: _oj-theming-add-var($colorList, '$menuItemBorderColorFocus', $menuItemBorderColorFocus);
+  $colorList: _oj-theming-add-var($colorList, '$menuIconColor', $menuIconColor);
+  $colorList: _oj-theming-add-var($colorList, '$menuIconColorDisabled', $menuIconColorDisabled);
+  $colorList: _oj-theming-add-var($colorList, '$menuSubmenuIconColor', $menuSubmenuIconColor);
+  $colorList: _oj-theming-add-var($colorList, '$menuDividerBorderColor', $menuDividerBorderColor);
+  $colorList: _oj-theming-add-var($colorList, '$menuSheetBgColor', $menuSheetBgColor);
+  $colorList: _oj-theming-add-var($colorList, '$menuSheetItemBorderColor', $menuSheetItemBorderColor);
+  $colorList: _oj-theming-add-var($colorList, '$menuSheetItemBgColor', $menuSheetItemBgColor);
+  $colorList: _oj-theming-add-var($colorList, '$menuSheetItemTextColor', $menuSheetItemTextColor);
+  $colorList: _oj-theming-add-var($colorList, '$menuSheetItemTextColorDisabled', $menuSheetItemTextColorDisabled);
+  $colorList: _oj-theming-add-var($colorList, '$menuSheetItemBgColorFocus', $menuSheetItemBgColorFocus);
+  $colorList: _oj-theming-add-var($colorList, '$menuSheetItemBorderColorFocus', $menuSheetItemBorderColorFocus);
+  $colorList: _oj-theming-add-var($colorList, '$menuSheetDividerBorderColor', $menuSheetDividerBorderColor);
+
   $colorList: _oj-theming-add-var($colorList, '$trainBgColor', $trainBgColor);
   $colorList: _oj-theming-add-var($colorList, '$trainBorderColor', $trainBorderColor);
   $colorList: _oj-theming-add-var($colorList, '$trainLabelColor', $trainLabelColor);
@@ -227,6 +299,11 @@
   $colorList: _oj-theming-add-var($colorList, '$trainButtonTextColorActive', $trainButtonTextColorActive);
   $colorList: _oj-theming-add-var($colorList, '$trainConnectorBgColor', $trainConnectorBgColor);
   $colorList: _oj-theming-add-var($colorList, '$trainContinuousConnectorBgColorSelected', $trainContinuousConnectorBgColorSelected);
+  $colorList: _oj-theming-add-var($colorList, '$trainConfirmationBgColor', $trainConfirmationBgColor);
+  $colorList: _oj-theming-add-var($colorList, '$trainErrorBgColor', $trainErrorBgColor);
+  $colorList: _oj-theming-add-var($colorList, '$trainWarningBgColor', $trainWarningBgColor);
+  $colorList: _oj-theming-add-var($colorList, '$trainInfoBgColor', $trainInfoBgColor);
+  $colorList: _oj-theming-add-var($colorList, '$trainIndividualConnectorBgColorSelected', $trainIndividualConnectorBgColorSelected);
 
   $colorList: _oj-theming-add-var($colorList, '$progressBarBgColor', $progressBarBgColor);
   $colorList: _oj-theming-add-var($colorList, '$progressValueBgColor', $progressValueBgColor);
@@ -284,14 +361,6 @@
   $colorList: _oj-theming-add-var($colorList, '$panelBorderColor', $panelBorderColor);
   $colorList: _oj-theming-add-var($colorList, '$panel1BgColor', $panel1BgColor);
   $colorList: _oj-theming-add-var($colorList, '$panel1BorderColor', $panel1BorderColor);
-  $colorList: _oj-theming-add-var($colorList, '$panel2BgColor', $panel2BgColor);
-  $colorList: _oj-theming-add-var($colorList, '$panel2BorderColor', $panel2BorderColor);
-  $colorList: _oj-theming-add-var($colorList, '$panel3BgColor', $panel3BgColor);
-  $colorList: _oj-theming-add-var($colorList, '$panel3BorderColor', $panel3BorderColor);
-  $colorList: _oj-theming-add-var($colorList, '$panel4BgColor', $panel4BgColor);
-  $colorList: _oj-theming-add-var($colorList, '$panel4BorderColor', $panel4BorderColor);
-  $colorList: _oj-theming-add-var($colorList, '$panel5BgColor', $panel5BgColor);
-  $colorList: _oj-theming-add-var($colorList, '$panel5BorderColor', $panel5BorderColor);
 
   $colorList: _oj-theming-add-var($colorList, '$tabsNavTextColor', $tabsNavTextColor);
   $colorList: _oj-theming-add-var($colorList, '$tabsNavBorderColorSelected', $tabsNavBorderColorSelected);
@@ -408,25 +477,44 @@
   $colorList: _oj-theming-add-var($colorList, '$borderColorError', $borderColorError);
   $colorList: _oj-theming-add-var($colorList, '$borderColorWarning', $borderColorWarning);
 
-  $colorList: _oj-theming-add-var($colorList, '$messageInlineBgColorError', $messageInlineBgColorError);
-  $colorList: _oj-theming-add-var($colorList, '$messageInlineBorderColorError', $messageInlineBorderColorError);
-  $colorList: _oj-theming-add-var($colorList, '$messageInlineBgColorWarning', $messageInlineBgColorWarning);
-  $colorList: _oj-theming-add-var($colorList, '$messageInlineBorderColorWarning', $messageInlineBorderColorWarning);
-  $colorList: _oj-theming-add-var($colorList, '$messageInlineBgColorInfo', $messageInlineBgColorInfo);
-  $colorList: _oj-theming-add-var($colorList, '$messageInlineBorderColorInfo', $messageInlineBorderColorInfo);
-  $colorList: _oj-theming-add-var($colorList, '$messageInlineBgColorConfirmation', $messageInlineBgColorConfirmation);
-  $colorList: _oj-theming-add-var($colorList, '$messageInlineBorderColorConfirmation', $messageInlineBorderColorConfirmation);
-
-
-
-
+  $colorList: _oj-theming-add-var($colorList, '$messageComponentInlineBgColorError', $messageComponentInlineBgColorError);
+  $colorList: _oj-theming-add-var($colorList, '$messageComponentInlineBorderColorError', $messageComponentInlineBorderColorError);
+  $colorList: _oj-theming-add-var($colorList, '$messageComponentInlineBgColorWarning', $messageComponentInlineBgColorWarning);
+  $colorList: _oj-theming-add-var($colorList, '$messageComponentInlineBorderColorWarning', $messageComponentInlineBorderColorWarning);
+  $colorList: _oj-theming-add-var($colorList, '$messageComponentInlineBgColorInfo', $messageComponentInlineBgColorInfo);
+  $colorList: _oj-theming-add-var($colorList, '$messageComponentInlineBorderColorInfo', $messageComponentInlineBorderColorInfo);
+  $colorList: _oj-theming-add-var($colorList, '$messageComponentInlineBgColorConfirmation', $messageComponentInlineBgColorConfirmation);
+  $colorList: _oj-theming-add-var($colorList, '$messageComponentInlineBorderColorConfirmation', $messageComponentInlineBorderColorConfirmation);
+  $colorList: _oj-theming-add-var($colorList, '$messagesGeneralOverlayBorderColor', $messagesGeneralOverlayBorderColor);
+  $colorList: _oj-theming-add-var($colorList, '$messageGeneralOverlayBorderColor', $messageGeneralOverlayBorderColor);
+  $colorList: _oj-theming-add-var($colorList, '$messageGeneralOverlayHeaderBgColor', $messageGeneralOverlayHeaderBgColor);
+  $colorList: _oj-theming-add-var($colorList, '$messageGeneralOverlayBodyBgColor', $messageGeneralOverlayBodyBgColor);
+  $colorList: _oj-theming-add-var($colorList, '$messagesNotificationOverlayBorderColor', $messagesNotificationOverlayBorderColor);
+  $colorList: _oj-theming-add-var($colorList, '$messageNotificationOverlayBorderColor', $messageNotificationOverlayBorderColor);
+  $colorList: _oj-theming-add-var($colorList, '$messageNotificationOverlayHeaderBgColor', $messageNotificationOverlayHeaderBgColor);
+  $colorList: _oj-theming-add-var($colorList, '$messageNotificationOverlayBodyBgColor', $messageNotificationOverlayBodyBgColor);
+  $colorList: _oj-theming-add-var($colorList, '$messageGeneralInlineBorderColor:', $messageGeneralInlineBorderColor);
+  $colorList: _oj-theming-add-var($colorList, '$messageCategoryTextColor', $messageCategoryTextColor);
+  $colorList: _oj-theming-add-var($colorList, '$messageTimeTextColor', $messageTimeTextColor);
+  $colorList: _oj-theming-add-var($colorList, '$messageSummaryTextColor', $messageSummaryTextColor);
+  $colorList: _oj-theming-add-var($colorList, '$messageDetailTextColor', $messageDetailTextColor);
 
   $colorList: _oj-theming-add-var($colorList, '$selectArrowColor', $selectArrowColor);
 
   $colorList: _oj-theming-add-var($colorList, '$listboxBgColorFocus', $listboxBgColorFocus);
 
+  $colorList: _oj-theming-add-var($colorList, '$dateTimePickerSwitcherBgColor', $dateTimePickerSwitcherBgColor);
+
   $colorList: _oj-theming-add-var($colorList, '$datepickerBgColorSelected', $datepickerBgColorSelected);
+  $colorList: _oj-theming-add-var($colorList, '$datepickerTextColorSelected', $datepickerTextColorSelected);
   $colorList: _oj-theming-add-var($colorList, '$datepickerBorderColorToday', $datepickerBorderColorToday);
+  $colorList: _oj-theming-add-var($colorList, '$datepickerBgColorHover', $datepickerBgColorHover);
+  $colorList: _oj-theming-add-var($colorList, '$datepickerTextColorHover', $datepickerTextColorHover);
+  $colorList: _oj-theming-add-var($colorList, '$datepickerBorderColorFocus', $datepickerBorderColorFocus);
+  $colorList: _oj-theming-add-var($colorList, '$datepickerHeaderTextColor', $datepickerHeaderTextColor);
+  $colorList: _oj-theming-add-var($colorList, '$datepickerButtonTextColor', $datepickerButtonTextColor);
+  $colorList: _oj-theming-add-var($colorList, '$datepickerButtonTextColorHover', $datepickerButtonTextColorHover);
+  $colorList: _oj-theming-add-var($colorList, '$datepickerButtonTextColorActive', $datepickerButtonTextColorActive);
 
   $colorList: _oj-theming-add-var($colorList, '$radioCheckboxSetBorderColor', $radioCheckboxSetBorderColor);
   $colorList: _oj-theming-add-var($colorList, '$radioCheckboxSetBgColor', $radioCheckboxSetBgColor);
@@ -506,7 +594,6 @@
   $colorList: _oj-theming-add-var($colorList, '$colorPaletteSwatchInnerBorderColor', $colorPaletteSwatchInnerBorderColor);
   $colorList: _oj-theming-add-var($colorList, '$colorPaletteSwatchOuterBorderColorSelected', $colorPaletteSwatchOuterBorderColorSelected);
 
-
   @return $colorList;
 }
 
@@ -519,8 +606,8 @@
 // COLLECTIONS
 //
 // Creates a list of var names and values for the 'Collections' category, as in:
-//   [{name: "$dataGridBorderColor", value: "#d6dfe6"},
-//    {name: "$dataGridBgColor", value: "#f7f9fc"},
+//   [{name: "$collectionBorderColor", value: "#d6dfe6"},
+//    {name: "$collectionBgColor", value: "#f7f9fc"},
 //        --- etc ---
 //   ]
 //
@@ -536,40 +623,40 @@
   $colorList: _oj-theming-add-var($colorList, '$dropTarget1Color', $dropTarget1Color);
   $colorList: _oj-theming-add-var($colorList, '$dropTarget2Color', $dropTarget2Color);
 
-  $colorList: _oj-theming-add-var($colorList, '$dataGridBorderColor', $dataGridBorderColor);
-  $colorList: _oj-theming-add-var($colorList, '$dataGridBgColor', $dataGridBgColor);
-  $colorList: _oj-theming-add-var($colorList, '$dataGridHeaderTextColor', $dataGridHeaderTextColor);
-  $colorList: _oj-theming-add-var($colorList, '$dataGridHeaderBgColor', $dataGridHeaderBgColor);
-  $colorList: _oj-theming-add-var($colorList, '$dataGridHeaderBorderColor', $dataGridHeaderBorderColor);
-  $colorList: _oj-theming-add-var($colorList, '$dataGridHeaderBgColorHover', $dataGridHeaderBgColorHover);
-  $colorList: _oj-theming-add-var($colorList, '$dataGridHeaderBgColorFocus', $dataGridHeaderBgColorFocus);
-  $colorList: _oj-theming-add-var($colorList, '$dataGridHeaderBgColorSelected', $dataGridHeaderBgColorSelected);
-  $colorList: _oj-theming-add-var($colorList, '$dataGridHeaderBgColorSelectedInactive', $dataGridHeaderBgColorSelectedInactive);
-  $colorList: _oj-theming-add-var($colorList, '$dataGridHeaderBgColorDrag', $dataGridHeaderBgColorDrag);
-  $colorList: _oj-theming-add-var($colorList, '$dataGridHeaderDragImageBorderColor', $dataGridHeaderDragImageBorderColor);
-  $colorList: _oj-theming-add-var($colorList, '$dataGridCellTextColor', $dataGridCellTextColor);
-  $colorList: _oj-theming-add-var($colorList, '$dataGridCellBorderColor', $dataGridCellBorderColor);
-  $colorList: _oj-theming-add-var($colorList, '$dataGridCellBgColor', $dataGridCellBgColor);
-  $colorList: _oj-theming-add-var($colorList, '$dataGridCellBandedBgColor', $dataGridCellBandedBgColor);
-  $colorList: _oj-theming-add-var($colorList, '$dataGridCellBgColorHover', $dataGridCellBgColorHover);
-  $colorList: _oj-theming-add-var($colorList, '$dataGridCellBorderColorHover', $dataGridCellBorderColorHover);
-  $colorList: _oj-theming-add-var($colorList, '$dataGridCellBgColorFocus', $dataGridCellBgColorFocus);
-  $colorList: _oj-theming-add-var($colorList, '$dataGridCellBorderColorFocus', $dataGridCellBorderColorFocus);
-  $colorList: _oj-theming-add-var($colorList, '$dataGridCellBgColorSelected', $dataGridCellBgColorSelected);
-  $colorList: _oj-theming-add-var($colorList, '$dataGridCellBorderColorSelected', $dataGridCellBorderColorSelected);
-  $colorList: _oj-theming-add-var($colorList, '$dataGridCellBgColorSelectedInactive', $dataGridCellBgColorSelectedInactive);
-  $colorList: _oj-theming-add-var($colorList, '$dataGridCellBorderColorSelectedInactive', $dataGridCellBorderColorSelectedInactive);
-  $colorList: _oj-theming-add-var($colorList, '$dataGridCellBgColorDrag', $dataGridCellBgColorDrag);
-  $colorList: _oj-theming-add-var($colorList, '$dataGridCellDragImageBorderColor', $dataGridCellDragImageBorderColor);
-  $colorList: _oj-theming-add-var($colorList, '$dataGridEditableCellBorderColorFocus', $dataGridEditableCellBorderColorFocus);
-  $colorList: _oj-theming-add-var($colorList, '$dataGridEditableCellBgColorReadOnly', $dataGridEditableCellBgColorReadOnly);
-  $colorList: _oj-theming-add-var($colorList, '$dataGridStatusBgColor', $dataGridStatusBgColor);
+  $colorList: _oj-theming-add-var($colorList, '$collectionBorderColor', $collectionBorderColor);
+  $colorList: _oj-theming-add-var($colorList, '$collectionBgColor', $collectionBgColor);
+  $colorList: _oj-theming-add-var($colorList, '$collectionHeaderTextColor', $collectionHeaderTextColor);
+  $colorList: _oj-theming-add-var($colorList, '$collectionHeaderBgColor', $collectionHeaderBgColor);
+  $colorList: _oj-theming-add-var($colorList, '$collectionHeaderBorderColor', $collectionHeaderBorderColor);
+  $colorList: _oj-theming-add-var($colorList, '$collectionHeaderBgColorHover', $collectionHeaderBgColorHover);
+  $colorList: _oj-theming-add-var($colorList, '$collectionHeaderBgColorFocus', $collectionHeaderBgColorFocus);
+  $colorList: _oj-theming-add-var($colorList, '$collectionHeaderBgColorSelected', $collectionHeaderBgColorSelected);
+  $colorList: _oj-theming-add-var($colorList, '$collectionHeaderBgColorSelectedInactive', $collectionHeaderBgColorSelectedInactive);
+  $colorList: _oj-theming-add-var($colorList, '$collectionHeaderBgColorDrag', $collectionHeaderBgColorDrag);
+  $colorList: _oj-theming-add-var($colorList, '$collectionHeaderDragImageBorderColor', $collectionHeaderDragImageBorderColor);
+  $colorList: _oj-theming-add-var($colorList, '$collectionCellTextColor', $collectionCellTextColor);
+  $colorList: _oj-theming-add-var($colorList, '$collectionCellBorderColor', $collectionCellBorderColor);
+  $colorList: _oj-theming-add-var($colorList, '$collectionCellBgColor', $collectionCellBgColor);
+  $colorList: _oj-theming-add-var($colorList, '$collectionCellBandedBgColor', $collectionCellBandedBgColor);
+  $colorList: _oj-theming-add-var($colorList, '$collectionCellBgColorHover', $collectionCellBgColorHover);
+  $colorList: _oj-theming-add-var($colorList, '$collectionCellBorderColorHover', $collectionCellBorderColorHover);
+  $colorList: _oj-theming-add-var($colorList, '$collectionCellBgColorFocus', $collectionCellBgColorFocus);
+  $colorList: _oj-theming-add-var($colorList, '$collectionCellBorderColorFocus', $collectionCellBorderColorFocus);
+  $colorList: _oj-theming-add-var($colorList, '$collectionCellBgColorSelected', $collectionCellBgColorSelected);
+  $colorList: _oj-theming-add-var($colorList, '$collectionCellBorderColorSelected', $collectionCellBorderColorSelected);
+  $colorList: _oj-theming-add-var($colorList, '$collectionCellBgColorSelectedInactive', $collectionCellBgColorSelectedInactive);
+  $colorList: _oj-theming-add-var($colorList, '$collectionCellBorderColorSelectedInactive', $collectionCellBorderColorSelectedInactive);
+  $colorList: _oj-theming-add-var($colorList, '$collectionCellBgColorDrag', $collectionCellBgColorDrag);
+  $colorList: _oj-theming-add-var($colorList, '$collectionCellDragImageBorderColor', $collectionCellDragImageBorderColor);
+  $colorList: _oj-theming-add-var($colorList, '$collectionEditableCellBorderColorFocus', $collectionEditableCellBorderColorFocus);
+  $colorList: _oj-theming-add-var($colorList, '$collectionEditableCellBgColorReadOnly', $collectionEditableCellBgColorReadOnly);
+  $colorList: _oj-theming-add-var($colorList, '$collectionStatusBgColor', $collectionStatusBgColor);
 
   $colorList: _oj-theming-add-var($colorList, '$tableHeaderBorderColor', $tableHeaderBorderColor);
 
   $colorList: _oj-theming-add-var($colorList, '$listViewDrillIconColor', $listViewDrillIconColor);
 
-  $colorList: _oj-theming-add-var($colorList, '$pullToRefreshBgColor', $pullToRefreshBgColor);
+  $colorList: _oj-theming-add-var($colorList, '$refresherBgColor', $refresherBgColor);
 
   $colorList: _oj-theming-add-var($colorList, '$indexerTextColor', $indexerTextColor);
   $colorList: _oj-theming-add-var($colorList, '$indexerTextColorDisabled', $indexerTextColorDisabled);
@@ -582,11 +669,11 @@
   $colorList: _oj-theming-add-var($colorList, '$treeViewDropLineColor', $treeViewDropLineColor);
   $colorList: _oj-theming-add-var($colorList, '$treeViewDropMarkerColor', $treeViewDropMarkerColor);
 
-  $colorList: _oj-theming-add-var($colorList, '$swipeToRevealActionTextColor', $swipeToRevealActionTextColor);
-  $colorList: _oj-theming-add-var($colorList, '$swipeToRevealActionBgColor', $swipeToRevealActionBgColor);
-  $colorList: _oj-theming-add-var($colorList, '$swipeToRevealMoreActionBgColor', $swipeToRevealMoreActionBgColor);
-  $colorList: _oj-theming-add-var($colorList, '$swipeToRevealFlagActionBgColor', $swipeToRevealFlagActionBgColor);
-  $colorList: _oj-theming-add-var($colorList, '$swipeToRevealAlertActionBgColor', $swipeToRevealAlertActionBgColor);
+  $colorList: _oj-theming-add-var($colorList, '$swipeActionsTextColor', $swipeActionsTextColor);
+  $colorList: _oj-theming-add-var($colorList, '$swipeActionsDefaultBgColor', $swipeActionsDefaultBgColor);
+  $colorList: _oj-theming-add-var($colorList, '$swipeActionsNeutralBgColor', $swipeActionsNeutralBgColor);
+  $colorList: _oj-theming-add-var($colorList, '$swipeActionsAttentionBgColor', $swipeActionsAttentionBgColor);
+  $colorList: _oj-theming-add-var($colorList, '$swipeActionsDangerBgColor', $swipeActionsDangerBgColor);
 
   @return $colorList;
 }
@@ -680,6 +767,7 @@
   $colorList: _oj-theming-add-var($colorList, '$dvtGanttRowBgColor', $dvtGanttRowBgColor);
   $colorList: _oj-theming-add-var($colorList, '$dvtGanttTaskBgColor', $dvtGanttTaskBgColor);
   $colorList: _oj-theming-add-var($colorList, '$dvtGanttMilestoneBgColor', $dvtGanttMilestoneBgColor);
+  $colorList: _oj-theming-add-var($colorList, '$dvtGanttSummaryBgColor', $dvtGanttSummaryBgColor);
   $colorList: _oj-theming-add-var($colorList, '$dvtGanttTaskBorderColorSelected', $dvtGanttTaskBorderColorSelected);
   $colorList: _oj-theming-add-var($colorList, '$dvtGanttMajorAxisBgColor', $dvtGanttMajorAxisBgColor);
   $colorList: _oj-theming-add-var($colorList, '$dvtGanttMajorAxisBorderColor', $dvtGanttMajorAxisBorderColor);
@@ -693,7 +781,489 @@
 
   @return $colorList;
 }
+@function oj-theming-text-colors()
+{
+  $generalVarsList: ();
+  $generalVarsList: _oj-theming-add-var($generalVarsList, '$textColor1', $textColor1);
+  $generalVarsList: _oj-theming-add-var($generalVarsList, '$textColor2', $textColor2);
+  $generalVarsList: _oj-theming-add-var($generalVarsList, '$textColor3', $textColor3);
+  $generalVarsList: _oj-theming-add-var($generalVarsList, '$textColor4', $textColor4);
+  $generalVarsList: _oj-theming-add-var($generalVarsList, '$textColor5', $textColor5);
+  $generalVarsList: _oj-theming-add-var($generalVarsList, '$textColor6', $textColor6);
+  $generalVarsList: _oj-theming-add-var($generalVarsList, '$textColor7', $textColor7);
 
+  $generalVarsList: _oj-theming-add-var($generalVarsList, '$textContrastColor1', $textContrastColor1);
+  $generalVarsList: _oj-theming-add-var($generalVarsList, '$textContrastColor2', $textContrastColor2);
+  $generalVarsList: _oj-theming-add-var($generalVarsList, '$textContrastColor3', $textContrastColor3);
+
+
+  $generalVarsList: _oj-theming-add-var($generalVarsList, '$brandColor', $brandColor);
+  $generalVarsList: _oj-theming-add-var($generalVarsList, '$brandColorDark1', $brandColorDark1);
+  $generalVarsList: _oj-theming-add-var($generalVarsList, '$brandColorDark2', $brandColorDark2);
+  $generalVarsList: _oj-theming-add-var($generalVarsList, '$brandColorLight1', $brandColorLight1);
+
+
+  $componentVarsList: ();
+
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$textColor', $textColor);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$primaryTextColor', $primaryTextColor);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$secondaryTextColor', $secondaryTextColor);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$tertiaryTextColor', $tertiaryTextColor);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$headerTextColor', $headerTextColor);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$formControlLabelColor', $formControlLabelColor);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$contrastTextColor', $contrastTextColor);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$textColorDisabled', $textColorDisabled);
+
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$linkTextColor', $linkTextColor);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$linkTextColorActive', $linkTextColorActive);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$linkTextColorVisited', $linkTextColorVisited);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$linkTextColorDisabled', $linkTextColorDisabled);
+
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$bodyTextColor', $bodyTextColor);
+
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$appLayoutWebHeaderTextColor', $appLayoutWebHeaderTextColor);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$appLayoutHybridHeaderTextColor', $appLayoutHybridHeaderTextColor);
+
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$menuItemTextColor', $menuItemTextColor);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$menuItemTextColorDisabled', $menuItemTextColorDisabled);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$menuSheetItemTextColor', $menuSheetItemTextColor);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$menuSheetItemTextColorDisabled', $menuSheetItemTextColorDisabled);
+
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$buttonTextColor', $buttonTextColor);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$buttonTextColorHover', $buttonTextColorHover);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$buttonTextColorActive', $buttonTextColorActive);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$buttonTextColorSelected', $buttonTextColorSelected);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$buttonTextColorSelectedHover', $buttonTextColorSelectedHover);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$buttonTextColorDisabled', $buttonTextColorDisabled);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$buttonTextColorSelectedDisabled', $buttonTextColorSelectedDisabled);
+
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$buttonHalfChromeTextColor', $buttonHalfChromeTextColor);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$buttonHalfChromeTextColorHover', $buttonHalfChromeTextColorHover);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$buttonHalfChromeTextColorActive', $buttonHalfChromeTextColorActive);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$buttonHalfChromeTextColorSelected', $buttonHalfChromeTextColorSelected);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$buttonHalfChromeTextColorSelectedHover', $buttonHalfChromeTextColorSelectedHover);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$buttonHalfChromeTextColorDisabled', $buttonHalfChromeTextColorDisabled);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$buttonHalfChromeTextColorSelectedDisabled', $buttonHalfChromeTextColorSelectedDisabled);
+
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$buttonOutlinedChromeTextColor', $buttonOutlinedChromeTextColor);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$buttonOutlinedChromeTextColorHover', $buttonOutlinedChromeTextColorHover);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$buttonOutlinedChromeTextColorActive', $buttonOutlinedChromeTextColorActive);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$buttonOutlinedChromeTextColorSelected', $buttonOutlinedChromeTextColorSelected);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$buttonOutlinedChromeTextColorSelectedHover', $buttonOutlinedChromeTextColorSelectedHover);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$buttonOutlinedChromeTextColor', $buttonOutlinedChromeTextColor);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$buttonOutlinedChromeTextColorDisabled', $buttonOutlinedChromeTextColorDisabled);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$buttonOutlinedChromeTextColorSelectedDisabled', $buttonOutlinedChromeTextColorSelectedDisabled);
+
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$buttonContrastTextColor', $buttonContrastTextColor);
+
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$dialogHeaderTextColor', $dialogHeaderTextColor);
+
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$formControlInputValueColor', $formControlInputValueColor);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$formControlTriggerValueColor', $formControlTriggerValueColor);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$formControlValueColorReadOnly', $formControlValueColorReadOnly);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$formControlValueColorDisabled', $formControlValueColorDisabled);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$formControlPlaceholderColor', $formControlPlaceholderColor);
+
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$radioCheckboxLabelColor', $radioCheckboxLabelColor);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$radioCheckboxLabelColorSelected', $radioCheckboxLabelColorSelected);
+
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$colorPaletteTextColor', $colorPaletteTextColor);
+
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$listboxMessageTextColor', $listboxMessageTextColor);
+
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$datepickerTextColorSelected', $datepickerTextColorSelected);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$datepickerTextColorHover', $datepickerTextColorHover);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$datepickerHeaderTextColor', $datepickerHeaderTextColor);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$datepickerButtonTextColor', $datepickerButtonTextColor);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$datepickerButtonTextColorHover', $datepickerButtonTextColorHover);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$datepickerButtonTextColorActive', $datepickerButtonTextColorActive);
+
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$timepickerTextColor', $timepickerTextColor);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$timepickerTextColorHover', $timepickerTextColorHover);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$timepickerTextColorActive', $timepickerTextColorActive);
+
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$tabsNavTextColor', $tabsNavTextColor);
+
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$trainLabelColor', $trainLabelColor);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$trainButtonTextColor', $trainButtonTextColor);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$trainLabelColorVisited', $trainLabelColorVisited);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$trainButtonTextColorVisited', $trainButtonTextColorVisited);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$trainButtonTextColorSelected', $trainButtonTextColorSelected);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$trainLabelColorDisabled', $trainLabelColorDisabled);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$trainButtonTextColorDisabled', $trainButtonTextColorDisabled);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$trainButtonTextColorHover', $trainButtonTextColorHover);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$trainButtonTextColorActive', $trainButtonTextColorActive);
+
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$treeTextColor', $treeTextColor);
+
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$collectionsHeaderTextColor', $collectionsHeaderTextColor);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$collectionsCellTextColor', $collectionsCellTextColor);
+
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$treeViewTextColor', $treeViewTextColor);
+
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$swipeToRevealActionTextColor', $swipeToRevealActionTextColor);
+
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$indexerTextColor', $indexerTextColor);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$indexerTextColorDisabled', $indexerTextColorDisabled);
+
+
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$navigationListItemLabelColorDefault', $navigationListItemLabelColorDefault);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$navigationListItemLabelColorSelected', $navigationListItemLabelColorSelected);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$navigationListItemLabelColorDisabled', $navigationListItemLabelColorDisabled);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$navigationListItemContrastLabelColorDefault', $navigationListItemContrastLabelColorDefault);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$navigationListItemContrastLabelColorHover', $navigationListItemContrastLabelColorHover);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$navigationListItemContrastLabelColorSelected', $navigationListItemContrastLabelColorSelected);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$navigationListItemContrastLabelColorDisabled', $navigationListItemContrastLabelColorDisabled);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$navigationListHorizontalItemLabelColorDefault', $navigationListHorizontalItemLabelColorDefault);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$navigationListHorizontalItemLabelColorSelected', $navigationListHorizontalItemLabelColorSelected);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$navigationListHorizontalItemContrastLabelColorSelected', $navigationListHorizontalItemContrastLabelColorSelected);
+
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$tabBarItemLabelColorDefault', $tabBarItemLabelColorDefault);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$tabBarItemLabelColorSelected', $tabBarItemLabelColorSelected);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$tabBarItemLabelColorDisabled', $tabBarItemLabelColorDisabled);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$tabBarHorizontalItemLabelColorSelected', $tabBarHorizontalItemLabelColorSelected);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$tabBarItemContrastLabelColorDefault', $tabBarItemContrastLabelColorDefault);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$tabBarItemContrastLabelColorHover', $tabBarItemContrastLabelColorHover);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$tabBarItemContrastLabelColorSelected', $tabBarItemContrastLabelColorSelected);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$tabBarHorizontalItemContrastLabelColorSelected', $tabBarHorizontalItemContrastLabelColorSelected);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$tabBarItemContrastLabelColorDisabled', $tabBarItemContrastLabelColorDisabled);
+
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$filePickerTextColor', $filePickerTextColor);
+
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$dvtAxisTitleTextColor', $dvtAxisTitleTextColor);
+
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$dvtChartSubtitleTextColor', $dvtChartSubtitleTextColor);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$dvtChartTitleTextColor', $dvtChartTitleTextColor);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$dvtTimelineItemDescriptionColor', $dvtTimelineItemDescriptionColor);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$dvtTimelineItemTitleColor', $dvtTimelineItemTitleColor);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$dvtTimelineMajorAxisLabelColor', $dvtTimelineMajorAxisLabelColor);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$dvtTimelineMinorAxisLabelColor', $dvtTimelineMinorAxisLabelColor);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$dvtTimelineOverviewLabelColor', $dvtTimelineOverviewLabelColor);
+
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$dvtTimelineSeriesLabelColor', $dvtTimelineSeriesLabelColor);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$dvtTimelineSeriesEmptyTextColor', $dvtTimelineSeriesEmptyTextColor);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$dvtTreemapDrillTextColor', $dvtTreemapDrillTextColor);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$dvtSunburstDrillTextColor', $dvtSunburstDrillTextColor);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$dvtTimeAxisLabelColor', $dvtTimeAxisLabelColor);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$dvtGanttEmptyTextColor', $dvtGanttEmptyTextColor);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$dvtGanttMajorAxisLabelColor', $dvtGanttMajorAxisLabelColor);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$dvtGanttMinorAxisLabelColor', $dvtGanttMinorAxisLabelColor);
+
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$iconCircleFontColor', $iconCircleFontColor);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$avatarTextColor', $avatarTextColor);
+
+  $textColorsMap: (
+    'generalVars': $generalVarsList,
+    'componentVars': $componentVarsList
+  );
+
+  @return $textColorsMap;
+}
+
+@function oj-theming-border-radius()
+{
+  $generalVarsList: ();
+  $generalVarsList: _oj-theming-add-var($generalVarsList, '$smallBorderRadius', $smallBorderRadius);
+  $generalVarsList: _oj-theming-add-var($generalVarsList, '$mediumBorderRadius', $mediumBorderRadius);
+  $generalVarsList: _oj-theming-add-var($generalVarsList, '$largeBorderRadius', $largeBorderRadius);
+
+  $componentVarsList: ();
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$panelBorderRadius', $panelBorderRadius);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$popupBorderRadius', $popupBorderRadius);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$menuBorderRadius', $menuBorderRadius);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$menuSheetBorderRadius', $menuSheetBorderRadius);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$menuSheetItemGroupBorderRadius', $menuSheetItemGroupBorderRadius);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$buttonBorderRadius', $buttonBorderRadius);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$buttonsetBorderRadius', $buttonsetBorderRadius);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$dialogBorderRadius', $dialogBorderRadius);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$formControlBorderRadius', $formControlBorderRadius);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$sliderThumbBorderRadius', $sliderThumbBorderRadius);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$sliderColorPickerThumbBorderRadius', $sliderColorPickerThumbBorderRadius);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$tabsNavBorderRadius', $tabsNavBorderRadius);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$progressBarBorderRadius', $progressBarBorderRadius);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$filmStripArrowBorderRadius', $filmStripArrowBorderRadius);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$tabBarItemBorderRadius', $tabBarItemBorderRadius);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$filePickerBorderRadius', $filePickerBorderRadius);
+
+  $borderRadiusMap: (
+    'generalVars': $generalVarsList,
+    'componentVars': $componentVarsList
+  );
+
+  @return $borderRadiusMap;
+}
+
+@function oj-theming-box-shadow()
+{
+  $generalVarsList: ();
+  $generalVarsList: _oj-theming-add-var($generalVarsList, '$smallBoxShadow', $smallBoxShadow);
+  $generalVarsList: _oj-theming-add-var($generalVarsList, '$mediumBoxShadow', $mediumBoxShadow);
+  $generalVarsList: _oj-theming-add-var($generalVarsList, '$largeBoxShadow', $largeBoxShadow);
+
+  $componentVarsList: ();
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$noteWindowBoxShadow', $noteWindowBoxShadow);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$popupBoxShadow', $popupBoxShadow);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$menuBoxShadow', $menuBoxShadow);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$menuSubmenuBoxShadow', $menuSubmenuBoxShadow);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$buttonBoxShadow', $buttonBoxShadow);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$dialogBoxShadow', $dialogBoxShadow);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$sliderThumbBoxShadow', $sliderThumbBoxShadow);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$sliderColorPickerThumbBoxShadow', $sliderColorPickerThumbBoxShadow);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$colorSpectrumThumbBoxShadow', $colorSpectrumThumbBoxShadow);
+
+  $boxShadowMap: (
+    'generalVars': $generalVarsList,
+    'componentVars': $componentVarsList
+  );
+
+  @return $boxShadowMap;
+}
+
+@function oj-theming-header-vars()
+{
+  $generalVarsList: ();
+  $generalVarsList: _oj-theming-add-var($generalVarsList, '$headerTextColor', $headerTextColor);
+  $generalVarsList: _oj-theming-add-var($generalVarsList, '$headerBorderColor', $headerBorderColor);
+  $generalVarsList: _oj-theming-add-var($generalVarsList, '$headerFontWeight', $headerFontWeight);
+  $generalVarsList: _oj-theming-add-var($generalVarsList, '$header1FontWeight', $header1FontWeight);
+  $generalVarsList: _oj-theming-add-var($generalVarsList, '$header2FontWeight', $header2FontWeight);
+  $generalVarsList: _oj-theming-add-var($generalVarsList, '$header3FontWeight', $header3FontWeight);
+  $generalVarsList: _oj-theming-add-var($generalVarsList, '$header4FontWeight', $header4FontWeight);
+  $generalVarsList: _oj-theming-add-var($generalVarsList, '$header5FontWeight', $header5FontWeight);
+  $generalVarsList: _oj-theming-add-var($generalVarsList, '$header1FontSize', $header1FontSize);
+  $generalVarsList: _oj-theming-add-var($generalVarsList, '$header2FontSize', $header2FontSize);
+  $generalVarsList: _oj-theming-add-var($generalVarsList, '$header3FontSize', $header3FontSize);
+  $generalVarsList: _oj-theming-add-var($generalVarsList, '$header4FontSize', $header4FontSize);
+  $generalVarsList: _oj-theming-add-var($generalVarsList, '$header5FontSize', $header5FontSize);
+
+  $componentVarsList: ();
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$dialogHeaderFontSize', $dialogHeaderFontSize);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$dialogHeaderBorderColor', $dialogHeaderBorderColor);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$dialogHeaderTextColor', $dialogHeaderTextColor);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$datepickerHeaderTextColor', $datepickerHeaderTextColor);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$collectionHeaderFontWeight', $collectionHeaderFontWeight);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$collectionHeaderTextColor', $collectionHeaderTextColor);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$collectionHeaderFontSize', $collectionHeaderFontSize);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$collectionHeaderBorderColor', $collectionHeaderBorderColor);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$tableHeaderBorderColor', $tableHeaderBorderColor);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$listViewHeaderFontSize', $listViewHeaderFontSize);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$listViewHeaderFontWeight', $listViewHeaderFontWeight);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$dvtChartSubtitleTextColor', $dvtChartSubtitleTextColor);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$dvtTimelineSeriesLabelColor', $dvtTimelineSeriesLabelColor);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$dvtTreemapNodeHeaderBorderColor', $dvtTreemapNodeHeaderBorderColor);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$dvtTreemapNodeHeaderBorderColorHover', $dvtTreemapNodeHeaderBorderColorHover);
+
+  $headerVarsMap: (
+    'generalVars': $generalVarsList,
+    'componentVars': $componentVarsList
+  );
+
+  @return $headerVarsMap;
+}
+
+@function oj-theming-window-vars()
+{
+  $generalVarsList: ();
+  $generalVarsList: _oj-theming-add-var($generalVarsList, '$windowBorderColor', $windowBorderColor);
+  $generalVarsList: _oj-theming-add-var($generalVarsList, '$windowBorderWidth', $windowBorderWidth);
+  $generalVarsList: _oj-theming-add-var($generalVarsList, '$windowBgColor', $windowBgColor);
+
+  $componentVarsList: ();
+
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$noteWindowBorderColor', $noteWindowBorderColor);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$noteWindowBorderWidth', $noteWindowBorderWidth);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$noteWindowBgColor', $noteWindowBgColor);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$popupBorderColor', $popupBorderColor);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$popupBorderWidth', $popupBorderWidth);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$popupBgColor', $popupBgColor);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$dialogBorderWidth', $dialogBorderWidth);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$dialogBgColor', $dialogBgColor);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$dialogBorderColor', $dialogBorderColor);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$dvtTooltipBgColor', $dvtTooltipBgColor);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$dvtTimelineOverviewWindowBgColor', $dvtTimelineOverviewWindowBgColor);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$dvtTimelineOverviewWindowBorderColor', $dvtTimelineOverviewWindowBorderColor);
+
+  $windowVarsMap: (
+    'generalVars': $generalVarsList,
+    'componentVars': $componentVarsList
+  );
+
+  @return $windowVarsMap;
+}
+
+@function oj-theming-text-colors()
+{
+  $generalVarsList: ();
+  $generalVarsList: _oj-theming-add-var($generalVarsList, '$textColor1', $textColor1);
+  $generalVarsList: _oj-theming-add-var($generalVarsList, '$textColor2', $textColor2);
+  $generalVarsList: _oj-theming-add-var($generalVarsList, '$textColor3', $textColor3);
+  $generalVarsList: _oj-theming-add-var($generalVarsList, '$textColor4', $textColor4);
+  $generalVarsList: _oj-theming-add-var($generalVarsList, '$textColor5', $textColor5);
+  $generalVarsList: _oj-theming-add-var($generalVarsList, '$textColor6', $textColor6);
+  $generalVarsList: _oj-theming-add-var($generalVarsList, '$textColor7', $textColor7);
+
+  $generalVarsList: _oj-theming-add-var($generalVarsList, '$brandColor', $brandColor);
+  $generalVarsList: _oj-theming-add-var($generalVarsList, '$brandColorDark1', $brandColorDark1);
+  $generalVarsList: _oj-theming-add-var($generalVarsList, '$brandColorDark2', $brandColorDark2);
+  $generalVarsList: _oj-theming-add-var($generalVarsList, '$brandColorLight1', $brandColorLight1);
+
+
+  $componentVarsList: ();
+
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$textColor', $textColor);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$primaryTextColor', $primaryTextColor);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$secondaryTextColor', $secondaryTextColor);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$tertiaryTextColor', $tertiaryTextColor);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$headerTextColor', $headerTextColor);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$formControlLabelColor', $formControlLabelColor);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$contrastTextColor', $contrastTextColor);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$textColorDisabled', $textColorDisabled);
+
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$linkTextColor', $linkTextColor);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$linkTextColorActive', $linkTextColorActive);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$linkTextColorVisited', $linkTextColorVisited);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$linkTextColorDisabled', $linkTextColorDisabled);
+
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$bodyTextColor', $bodyTextColor);
+
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$appLayoutWebHeaderTextColor', $appLayoutWebHeaderTextColor);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$appLayoutHybridHeaderTextColor', $appLayoutHybridHeaderTextColor);
+
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$menuItemTextColor', $menuItemTextColor);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$menuItemTextColorDisabled', $menuItemTextColorDisabled);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$menuSheetItemTextColor', $menuSheetItemTextColor);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$menuSheetItemTextColorDisabled', $menuSheetItemTextColorDisabled);
+
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$buttonTextColor', $buttonTextColor);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$buttonTextColorHover', $buttonTextColorHover);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$buttonTextColorActive', $buttonTextColorActive);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$buttonTextColorSelected', $buttonTextColorSelected);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$buttonTextColorSelectedHover', $buttonTextColorSelectedHover);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$buttonTextColorDisabled', $buttonTextColorDisabled);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$buttonTextColorSelectedDisabled', $buttonTextColorSelectedDisabled);
+
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$buttonHalfChromeTextColor', $buttonHalfChromeTextColor);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$buttonHalfChromeTextColorHover', $buttonHalfChromeTextColorHover);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$buttonHalfChromeTextColorActive', $buttonHalfChromeTextColorActive);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$buttonHalfChromeTextColorSelected', $buttonHalfChromeTextColorSelected);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$buttonHalfChromeTextColorSelectedHover', $buttonHalfChromeTextColorSelectedHover);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$buttonHalfChromeTextColorDisabled', $buttonHalfChromeTextColorDisabled);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$buttonHalfChromeTextColorSelectedDisabled', $buttonHalfChromeTextColorSelectedDisabled);
+
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$buttonOutlinedChromeTextColor', $buttonOutlinedChromeTextColor);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$buttonOutlinedChromeTextColorHover', $buttonOutlinedChromeTextColorHover);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$buttonOutlinedChromeTextColorActive', $buttonOutlinedChromeTextColorActive);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$buttonOutlinedChromeTextColorSelected', $buttonOutlinedChromeTextColorSelected);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$buttonOutlinedChromeTextColorSelectedHover', $buttonOutlinedChromeTextColorSelectedHover);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$buttonOutlinedChromeTextColor', $buttonOutlinedChromeTextColor);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$buttonOutlinedChromeTextColorDisabled', $buttonOutlinedChromeTextColorDisabled);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$buttonOutlinedChromeTextColorSelectedDisabled', $buttonOutlinedChromeTextColorSelectedDisabled);
+
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$buttonContrastTextColor', $buttonContrastTextColor);
+
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$dialogHeaderTextColor', $dialogHeaderTextColor);
+
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$formControlInputValueColor', $formControlInputValueColor);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$formControlTriggerValueColor', $formControlTriggerValueColor);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$formControlValueColorReadOnly', $formControlValueColorReadOnly);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$formControlValueColorDisabled', $formControlValueColorDisabled);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$formControlPlaceholderColor', $formControlPlaceholderColor);
+
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$radioCheckboxLabelColor', $radioCheckboxLabelColor);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$radioCheckboxLabelColorSelected', $radioCheckboxLabelColorSelected);
+
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$colorPaletteTextColor', $colorPaletteTextColor);
+
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$listboxMessageTextColor', $listboxMessageTextColor);
+
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$datepickerTextColorSelected', $datepickerTextColorSelected);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$datepickerTextColorHover', $datepickerTextColorHover);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$datepickerHeaderTextColor', $datepickerHeaderTextColor);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$datepickerButtonTextColor', $datepickerButtonTextColor);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$datepickerButtonTextColorHover', $datepickerButtonTextColorHover);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$datepickerButtonTextColorActive', $datepickerButtonTextColorActive);
+
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$timepickerTextColor', $timepickerTextColor);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$timepickerTextColorHover', $timepickerTextColorHover);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$timepickerTextColorActive', $timepickerTextColorActive);
+
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$tabsNavTextColor', $tabsNavTextColor);
+
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$trainLabelColor', $trainLabelColor);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$trainButtonTextColor', $trainButtonTextColor);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$trainLabelColorVisited', $trainLabelColorVisited);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$trainButtonTextColorVisited', $trainButtonTextColorVisited);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$trainButtonTextColorSelected', $trainButtonTextColorSelected);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$trainLabelColorDisabled', $trainLabelColorDisabled);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$trainButtonTextColorDisabled', $trainButtonTextColorDisabled);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$trainButtonTextColorHover', $trainButtonTextColorHover);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$trainButtonTextColorActive', $trainButtonTextColorActive);
+
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$treeTextColor', $treeTextColor);
+
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$collectionHeaderTextColor', $collectionHeaderTextColor);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$collectionCellTextColor', $collectionCellTextColor);
+
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$treeViewTextColor', $treeViewTextColor);
+
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$swipeActionsTextColor', $swipeActionsTextColor);
+
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$indexerTextColor', $indexerTextColor);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$indexerTextColorDisabled', $indexerTextColorDisabled);
+
+
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$navigationListItemLabelColorDefault', $navigationListItemLabelColorDefault);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$navigationListItemLabelColorSelected', $navigationListItemLabelColorSelected);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$navigationListItemLabelColorDisabled', $navigationListItemLabelColorDisabled);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$navigationListItemContrastLabelColorDefault', $navigationListItemContrastLabelColorDefault);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$navigationListItemContrastLabelColorHover', $navigationListItemContrastLabelColorHover);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$navigationListItemContrastLabelColorSelected', $navigationListItemContrastLabelColorSelected);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$navigationListItemContrastLabelColorDisabled', $navigationListItemContrastLabelColorDisabled);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$navigationListHorizontalItemLabelColorDefault', $navigationListHorizontalItemLabelColorDefault);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$navigationListHorizontalItemLabelColorSelected', $navigationListHorizontalItemLabelColorSelected);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$navigationListHorizontalItemContrastLabelColorSelected', $navigationListHorizontalItemContrastLabelColorSelected);
+
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$tabBarItemLabelColorDefault', $tabBarItemLabelColorDefault);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$tabBarItemLabelColorSelected', $tabBarItemLabelColorSelected);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$tabBarItemLabelColorDisabled', $tabBarItemLabelColorDisabled);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$tabBarHorizontalItemLabelColorSelected', $tabBarHorizontalItemLabelColorSelected);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$tabBarItemContrastLabelColorDefault', $tabBarItemContrastLabelColorDefault);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$tabBarItemContrastLabelColorHover', $tabBarItemContrastLabelColorHover);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$tabBarItemContrastLabelColorSelected', $tabBarItemContrastLabelColorSelected);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$tabBarHorizontalItemContrastLabelColorSelected', $tabBarHorizontalItemContrastLabelColorSelected);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$tabBarItemContrastLabelColorDisabled', $tabBarItemContrastLabelColorDisabled);
+
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$filePickerTextColor', $filePickerTextColor);
+
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$dvtAxisTitleTextColor', $dvtAxisTitleTextColor);
+
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$dvtChartSubtitleTextColor', $dvtChartSubtitleTextColor);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$dvtChartTitleTextColor', $dvtChartTitleTextColor);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$dvtTimelineItemDescriptionColor', $dvtTimelineItemDescriptionColor);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$dvtTimelineItemTitleColor', $dvtTimelineItemTitleColor);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$dvtTimelineMajorAxisLabelColor', $dvtTimelineMajorAxisLabelColor);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$dvtTimelineMinorAxisLabelColor', $dvtTimelineMinorAxisLabelColor);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$dvtTimelineOverviewLabelColor', $dvtTimelineOverviewLabelColor);
+
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$dvtTimelineSeriesLabelColor', $dvtTimelineSeriesLabelColor);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$dvtTimelineSeriesEmptyTextColor', $dvtTimelineSeriesEmptyTextColor);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$dvtTreemapDrillTextColor', $dvtTreemapDrillTextColor);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$dvtSunburstDrillTextColor', $dvtSunburstDrillTextColor);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$dvtTimeAxisLabelColor', $dvtTimeAxisLabelColor);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$dvtGanttEmptyTextColor', $dvtGanttEmptyTextColor);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$dvtGanttMajorAxisLabelColor', $dvtGanttMajorAxisLabelColor);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$dvtGanttMinorAxisLabelColor', $dvtGanttMinorAxisLabelColor);
+
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$iconCircleFontColor', $iconCircleFontColor);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$avatarTextColor', $avatarTextColor);
+
+  $textColorsMap: (
+    'generalVars': $generalVarsList,
+    'componentVars': $componentVarsList
+  );
+
+  @return $textColorsMap;
+}
 
 //-------------------------------------------------------------
 // All
@@ -832,10 +1402,110 @@
   $renamedVarFound: _oj-theming-var-renamed($renamedVarFound, progressbarIndeterminateOverlayCapacity, progressBarIndeterminateOverlayOpacity, $renamedProgressVars);
   $renamedVarFound: _oj-theming-var-renamed($renamedVarFound, includeProgressbarClasses, includeProgressClasses, $renamedProgressVars);
 
+  // pullToRefresh renamed to refresher
+  $renamedPullToRefreshVars: "ALL $pullToRefresh* VARS HAVE BEEN RENAMED. In your theming files please search for '$pullToRefresh' and replace it with '$refresher'.";
+  $renamedVarFound: _oj-theming-var-renamed($renamedVarFound, pullToRefreshBgColor, refresherBgColor, $renamedPullToRefreshVars);
+  $renamedVarFound: _oj-theming-var-renamed($renamedVarFound, pullToRefreshAnimationDuration, refresherAnimationDuration, $renamedPullToRefreshVars);
+  $renamedVarFound: _oj-theming-var-renamed($renamedVarFound, pullToRefreshImageDir, refresherImageDir, $renamedPullToRefreshVars);
 
+  // swipeToReveal renamed to swipeActions
+  $renamedSwipeToRevealVars: "ALL $swipeToReveal* VARS HAVE BEEN RENAMED. In your theming files please search for '$swipeToReveal' and replace it with '$swipeActions'.";
+  $renamedVarFound: _oj-theming-var-renamed($renamedVarFound, swipeToRevealAnimationDuration, swipeActionsAnimationDuration, $renamedSwipeToRevealVars);
+  $renamedVarFound: _oj-theming-var-renamed($renamedVarFound, swipeToRevealActionTextColor, swipeActionsTextColor, $renamedSwipeToRevealVars);
+  $renamedVarFound: _oj-theming-var-renamed($renamedVarFound, swipeToRevealActionBgColor, swipeActionsDefaultBgColor, $renamedSwipeToRevealVars);
+  $renamedVarFound: _oj-theming-var-renamed($renamedVarFound, swipeToRevealMoreActionBgColor, swipeActionsNeutralBgColor, $renamedSwipeToRevealVars);
+  $renamedVarFound: _oj-theming-var-renamed($renamedVarFound, swipeToRevealFlagActionBgColor, swipeActionsAttentionBgColor, $renamedSwipeToRevealVars);
+  $renamedVarFound: _oj-theming-var-renamed($renamedVarFound, swipeToRevealAlertActionBgColor, swipeActionsDangerBgColor, $renamedSwipeToRevealVars);
+
+  // component inline messaging variables renamed
+  $renamedInlineMessagingVars: "ALL $messageInline* VARS HAVE BEEN RENAMED. In your theming files please search for '$messageInline' and replace it with '$messageComponentInline'.";
+  $renamedVarFound: _oj-theming-var-renamed($renamedVarFound, messageInlineBorderColorLightnessAdjustment, messageComponentInlineBorderColorLightnessAdjustment, $renamedInlineMessagingVars);
+  $renamedVarFound: _oj-theming-var-renamed($renamedVarFound, messageInlineBgColorError, messageComponentInlineBgColorError, $renamedInlineMessagingVars);
+  $renamedVarFound: _oj-theming-var-renamed($renamedVarFound, messageInlineBorderColorError, messageComponentInlineBorderColorError, $renamedInlineMessagingVars);
+  $renamedVarFound: _oj-theming-var-renamed($renamedVarFound, messageInlineBgColorWarning, messageComponentInlineBgColorWarning, $renamedInlineMessagingVars);
+  $renamedVarFound: _oj-theming-var-renamed($renamedVarFound, messageInlineBorderColorWarning, messageComponentInlineBorderColorWarning, $renamedInlineMessagingVars);
+  $renamedVarFound: _oj-theming-var-renamed($renamedVarFound, messageInlineBgColorConfirmation, messageComponentInlineBgColorConfirmation, $renamedInlineMessagingVars);
+  $renamedVarFound: _oj-theming-var-renamed($renamedVarFound, messageInlineBorderColorConfirmation, messageComponentInlineBorderColorConfirmation, $renamedInlineMessagingVars);
+  $renamedVarFound: _oj-theming-var-renamed($renamedVarFound, messageInlineBgColorInfo, messageComponentInlineBgColorInfo, $renamedInlineMessagingVars);
+  $renamedVarFound: _oj-theming-var-renamed($renamedVarFound, messageInlineBorderColorInfo, messageComponentInlineBorderColorInfo, $renamedInlineMessagingVars);
+  $renamedVarFound: _oj-theming-var-renamed($renamedVarFound, messageInlineOpenAnimation, messageComponentInlineOpenAnimation, $renamedInlineMessagingVars);
+  $renamedVarFound: _oj-theming-var-renamed($renamedVarFound, messageInlineCloseAnimation, messageComponentInlineCloseAnimation, $renamedInlineMessagingVars);
 
   @if ($renamedVarFound == true)
   {
     @error "Please check the warnings above and rename the relevant variables before continuing."
   }
+};
+
+// @function _oj-theming-var-removed($removedVarFound, $oldVarName, $generalRmMessage: null) {
+//   @if (variable-exists($oldVarName) == true) {
+//     $rm_message: null;
+//
+//     @if ($generalRmMessage != null) {
+//       $rm_message: $generalRmMessage + " Specifically ";
+//     }
+//
+//     $rm_message: $rm_message + "var $#{$oldVarName}.";
+//
+//     @debug $rm_message;
+//     @return true;
+//   } @else {
+//     @return $removedVarFound;
+//   }
+// };
+
+@function _oj-theming-var-removed() {
+  $removedVars: (interaction1Color, interaction2Color, interaction3Color, interaction4Color, interaction5Color, interaction6Color, background1Color, background2Color, background3Color, background4Color, background5Color, background6Color, border1Color, border2Color, border3Color, border4Color, border5Color, border6Color, border7Color, border8Color);
+  $existFlag: false;
+  @each $item in $removedVars {
+    @if (variable-exists(#{$item}) == true) {
+        $existFlag: true;
+    }
+  }
+  @if($existFlag == true) {
+    @debug "Detected use of deprecated variable in theme with name '#{$themeName}' and target platform '#{$themeTargetPlatform}'. All $interaction*, $background*, and $border* variables have been replaced by new branding and neutral variables. Please read the JET 5.0 release notes for more information.";
+    @return true;
+  } @else {
+    @return false;
+  }
+};
+
+@mixin oj-theming-vars-removed() {
+  $removedVarFound: _oj-theming-var-removed();
 }
+
+// @mixin oj-theming-vars-removed() {
+//
+//   $removedVarFound: false;
+//
+//   // // Removed interaction, background, border variables
+//   $removedInteractionVars: "All interaction color variables has been removed";
+//   $removedVarFound: _oj-theming-var-removed($removedVarFound, interaction1Color, $removedInteractionVars);
+//   $removedVarFound: _oj-theming-var-removed($removedVarFound, interaction2Color, $removedInteractionVars);
+//   $removedVarFound: _oj-theming-var-removed($removedVarFound, interaction3Color, $removedInteractionVars);
+//   $removedVarFound: _oj-theming-var-removed($removedVarFound, interaction4Color, $removedInteractionVars);
+//   $removedVarFound: _oj-theming-var-removed($removedVarFound, interaction5Color, $removedInteractionVars);
+//   $removedVarFound: _oj-theming-var-removed($removedVarFound, interaction6Color, $removedInteractionVars);
+//   $removedBackgroundVars: "All background color variables has been removed";
+//   $removedVarFound: _oj-theming-var-removed($removedVarFound, background1Color, $removedBackgroundVars);
+//   $removedVarFound: _oj-theming-var-removed($removedVarFound, background2Color, $removedBackgroundVars);
+//   $removedVarFound: _oj-theming-var-removed($removedVarFound, background3Color, $removedBackgroundVars);
+//   $removedVarFound: _oj-theming-var-removed($removedVarFound, background4Color, $removedBackgroundVars);
+//   $removedVarFound: _oj-theming-var-removed($removedVarFound, background5Color, $removedBackgroundVars);
+//   $removedVarFound: _oj-theming-var-removed($removedVarFound, background6Color, $removedBackgroundVars);
+//   $removedBorderVars: "All border color variables has been removed ";
+//   $removedVarFound: _oj-theming-var-removed($removedVarFound, border1Color, $removedBorderVars);
+//   $removedVarFound: _oj-theming-var-removed($removedVarFound, border2Color, $removedBorderVars);
+//   $removedVarFound: _oj-theming-var-removed($removedVarFound, border3Color, $removedBorderVars);
+//   $removedVarFound: _oj-theming-var-removed($removedVarFound, border4Color, $removedBorderVars);
+//   $removedVarFound: _oj-theming-var-removed($removedVarFound, border5Color, $removedBorderVars);
+//   $removedVarFound: _oj-theming-var-removed($removedVarFound, border6Color, $removedBorderVars);
+//   $removedVarFound: _oj-theming-var-removed($removedVarFound, border7Color, $removedBorderVars);
+//   $removedVarFound: _oj-theming-var-removed($removedVarFound, border8Color, $removedBorderVars);
+//
+//
+//   @if ($removedVarFound == true)
+//   {
+//     @debug "All interaction, background, and border colors have been removed, a branding and neutral palette system has been put in its place. Please read the JET 5.0 release notes for more information."
+//   }
+// };

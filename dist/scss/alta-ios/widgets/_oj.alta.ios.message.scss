@@ -1,0 +1,26 @@
+// Copyright (c) 2014, 2018, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+@import "../../utilities/oj.utilities";
+
+// ----- start dependencies ---------
+
+// set up include variables before importing dependencies
+@if $includeMessageClasses != false {
+  $includeIconClasses: true !global;
+}
+
+// import dependencies
+@import "oj.alta.ios.icons";
+
+// ----- end dependencies ---------
+
+// import classes defined in the common directory
+@import "../../common/widgets/oj.common.message";
+
+@if $includeMessageClasses != false {
+  @include module-include-once("alta.ios.message") {
+    
+    .oj-message-category {
+      padding: 0px 10px;
+    }
+  }
+}

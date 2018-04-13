@@ -1,4 +1,5 @@
 /**
+ * @license
  * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
@@ -122,7 +123,7 @@ define(['ojs/ojcore', 'jquery', 'hammerjs', 'ojs/ojjquery-hammer', 'ojs/ojcompon
    * {@ojinclude "name":"keyboardDoc"}
    * @ojstatus preview
    * @ojcomponent oj.ojLabel
-   * @ojshortdesc Label Element
+   * @ojshortdesc Provides support for 'required' and 'help' icons on form field labels.
    * @since 4.0.0
    * @augments oj.baseComponent
    */
@@ -207,34 +208,13 @@ define(['ojs/ojcore', 'jquery', 'hammerjs', 'ojs/ojjquery-hammer', 'ojs/ojcompon
        *   definition: 'some new value',
        *   source: 'some new url'
        * };
+       * @property {(string|null)=} definition help definition text
+       * @property {(string|null)=} source help source url
        */
       help:
       {
-        /**
-         * <p>help definition text.  See the top-level <code class="prettyprint">help</code> option for details.
-         *
-         * @expose
-         * @alias help.definition
-         * @memberof! oj.ojLabel
-         * @instance
-         * @type {string|null}
-         * @default null
-         * @since 4.0.0
-         */
         definition: null,
-        /**
-         * <p>help source url.  See the top-level <code class="prettyprint">help</code> option for details.
-         *
-         * @expose
-         * @alias help.source
-         * @memberof! oj.ojLabel
-         * @instance
-         * @type {string|null}
-         * @default null
-         * @since 4.0.0
-         */
         source: null
-
       },
       /**
        * <code class="prettyprint">label-id</code> sets the <code class="prettyprint">id</code> 
@@ -360,6 +340,7 @@ define(['ojs/ojcore', 'jquery', 'hammerjs', 'ojs/ojjquery-hammer', 'ojs/ojcompon
      * document.getElementById("label2").refresh();
      * @access public
      * @instance
+     * @return {void}
      * @expose
      * @memberof oj.ojLabel
      */
@@ -769,7 +750,7 @@ define(['ojs/ojcore', 'jquery', 'hammerjs', 'ojs/ojjquery-hammer', 'ojs/ojcompon
     },
     /**  
     * If targetElement's tagName has a "-", return true, else return false.
-    * @param {Element|null} targetElement the HTML element the 'for' attribute is pointing to
+    * @param {Element} targetElement the HTML element the 'for' attribute is pointing to
     * @private
     * @memberof oj.ojLabel
     * @instance
@@ -778,16 +759,13 @@ define(['ojs/ojcore', 'jquery', 'hammerjs', 'ojs/ojjquery-hammer', 'ojs/ojcompon
     */
     _isElementCustomElement : function(targetElement)
     {
-      if (targetElement)
-      {
-        return (targetElement.tagName).indexOf('-') !== -1;
-      }
-      return false;
+      oj.Assert.assertDomElement(targetElement);
+      return (targetElement.tagName).indexOf('-') !== -1;
     },
     /**  
     * Checks the targetElement's tagname against oj-checkboxset or oj-radioset, because these
     * are the only components that do not support aria-required.
-    * @param {Element|null} targetElement the HTML element the 'for' attribute is pointing to
+    * @param {Element} targetElement the HTML element the 'for' attribute is pointing to
     * @private
     * @memberof oj.ojLabel
     * @instance
@@ -796,24 +774,27 @@ define(['ojs/ojcore', 'jquery', 'hammerjs', 'ojs/ojjquery-hammer', 'ojs/ojcompon
     */
     _isElementCustomElementAriaRequiredUnsupported : function(targetElement)
     {
+      oj.Assert.assertDomElement(targetElement);
+      
       var componentName;
       var componentNames = ["oj-radioset", "oj-checkboxset"];
       var length = componentNames.length;
       var tagName;
+      var found = false;
 
       if (targetElement)
       {
         tagName = targetElement.tagName.toLowerCase();
         
-        for(var i=0; i < length; i++)
+        for(var i=0; i < length && !found; i++)
         {
           componentName = componentNames[i];
           if (tagName.indexOf(componentName) === 0)
-            return true;
+            found = true;
         }
       }
       
-      return false;
+      return found;
     },
     /**  
     * Generic function to add a value to the element's attribute. For example, you can
@@ -983,6 +964,7 @@ define(['ojs/ojcore', 'jquery', 'hammerjs', 'ojs/ojjquery-hammer', 'ojs/ojcompon
 
     },
     /**
+     * Called if NOT a custom element.
      * move oj-label* classes from label element onto the root dom element
      * @private
      * @memberof oj.ojLabel
@@ -990,10 +972,6 @@ define(['ojs/ojcore', 'jquery', 'hammerjs', 'ojs/ojjquery-hammer', 'ojs/ojcompon
      */
     _moveLabelStyleClassesToRootDom: function ()
     {
-      if (this._isCustomElement)
-      {
-        return;
-      }
       var arrayOfClasses;
       var classes = this.element.attr("class");
       var className;
@@ -1002,10 +980,7 @@ define(['ojs/ojcore', 'jquery', 'hammerjs', 'ojs/ojjquery-hammer', 'ojs/ojcompon
       if (classes)
       {
         arrayOfClasses = classes.split(/\s+/);
-        if (arrayOfClasses != null)
-          numClasses = arrayOfClasses.length;
-        else
-          return;
+        numClasses = arrayOfClasses.length;
 
         for (var i = 0; i < numClasses; i++)
         {
@@ -1863,6 +1838,13 @@ define(['ojs/ojcore', 'jquery', 'hammerjs', 'ojs/ojjquery-hammer', 'ojs/ojcompon
      *       <td>oj-focus-highlight</td>
      *       <td>{@ojinclude "name":"ojFocusHighlightDoc"}</td>
      *     </tr>
+     *     <tr>
+     *       <td>oj-label-accesskey</td>
+     *       <td>Use this in a span around a single text character in the oj-label's text. 
+     *       It styles the character in a way that indicates to the 
+     *       user that this character is the accesskey. Use this in conjunction with
+     *       the HTML accesskey attribute on the oj-label element.</td>
+     *     </tr>
      *   </tbody>
      * </table>
      *
@@ -1906,6 +1888,19 @@ var ojLabelMeta = {
     },
     "for": {
       "type": "string"
+    },
+    "translations": {
+      "type": "Object",
+      "properties": {
+        "tooltipHelp": {
+          "type": "string",
+          "value": "Help"
+        },
+        "tooltipRequired": {
+          "type": "string",
+          "value": "Required"
+        }
+      }
     }
     
   },

@@ -139,6 +139,7 @@ dvt.Obj.createCallback = function(thisPtr, func) {
 dvt.Obj.defineConstant = function(constValue) {
   return constValue;
 };
+
 // Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
 /**
  * Utilities for Arrays.
@@ -565,6 +566,7 @@ dvt.ArrayUtils.forEach = function(array, callback) {
       callback(array[i], i, array);
   }
 };
+
 // Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 /**
  * Utilities for Strings.
@@ -640,6 +642,7 @@ dvt.StringUtils.processAriaLabel = function(label) {
 
   return ret;
 };
+
 // Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
 /**
  * Context object corresponding to an SVG document. The constructor creates a SVG document inside the specified
@@ -1566,6 +1569,7 @@ dvt.Context.prototype.setCustomElement = function(customElement) {
 dvt.Context.prototype.isCustomElement = function() {
   return this._customElement;
 };
+
 /**
  * A base class for shape fills, strokes, shadows, etc.
  * {@link DvtLockable}.
@@ -1607,6 +1611,7 @@ DvtLockable.prototype.isLocked = function() {
 DvtLockable.prototype.__lock = function() {
   this._bLocked = true;
 };
+
 // Copyright (c) 2011, 2017, Oracle and/or its affiliates. All rights reserved.
 /**
   * Class representing an item that can be scheduled to run with a scheduler.
@@ -2075,6 +2080,7 @@ DvtScheduled.prototype.Step = function(progress)
 {
   //do nothing; subclasses should implement
 };
+
 // Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
 /**
   * Class representing a scheduling service.
@@ -2188,6 +2194,7 @@ DvtScheduler.prototype.play = function()
     this._animationRequestId = dvt.Context.requestAnimationFrame(dvt.Obj.createCallback(this, this.HandleTimer));
   }
 };
+
 // Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
 /**
  * Class representing an animator that animates a property change.
@@ -2436,6 +2443,7 @@ var DvtAnimatorPropItem = function(type, obj, getter, setter, destVal) {
 dvt.Obj.createSubclass(DvtAnimatorPropItem, dvt.Obj);
 
 // Nested class end ////////////////////////////////////////
+
 // Copyright (c) 2011, 2017, Oracle and/or its affiliates. All rights reserved.
 /**
   * Abstract base class representing something that can be played, like an animation.
@@ -2670,6 +2678,7 @@ dvt.Playable.prototype.stop = function(bJumpToEnd)
 {
   //subclasses must override
 };
+
 // Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
 /**
   * Class representing a set of DvtPlayables that are played at the same time.
@@ -2860,6 +2869,7 @@ dvt.ParallelPlayable.prototype.DoEnd = function()
   }
   this._animationRequestId = null;
 };
+
 // Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
 /**
   * Class representing a set of DvtPlayables that are played one after another.
@@ -3070,6 +3080,7 @@ dvt.SequentialPlayable.prototype.DoEnd = function()
   }
   this._animationRequestId = null;
 };
+
 /**
  * Animation handler for black box animations.
  * @class dvt.BlackBoxAnimationHandler
@@ -3219,6 +3230,7 @@ dvt.BlackBoxAnimationHandler._offsetObjects = function(objs, offsetX, offsetY) {
     objs.setTranslate(objs.getTranslateX() + offsetX, objs.getTranslateY() + offsetY);
   }
 };
+
 /**
  * Animation handler for data objects.
  * @param {dvt.Context} context The platform specific context object.
@@ -3394,6 +3406,7 @@ dvt.DataAnimationHandler.prototype.getNumPlayables = function()
 {
   return this._playables.length;
 };
+
 // Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
 /**
   * Class defining easing functions for animations.
@@ -3671,6 +3684,7 @@ dvt.Easing.PolyInOut = function(progress, exp)
 dvt.Easing.prototype.Init = function()
 {
 };
+
 // Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
 /**
   * Class defining interpolation functions for animations.
@@ -4397,6 +4411,7 @@ DvtInterpolator._map[dvt.Animator.TYPE_GROW_PATH] = DvtInterpolator.InterpolateG
 DvtInterpolator._map[dvt.Animator.TYPE_FILL] = DvtInterpolator.InterpolateFill;
 DvtInterpolator._map[dvt.Animator.TYPE_STROKE] = DvtInterpolator.InterpolateStroke;
 DvtInterpolator._map[dvt.Animator.TYPE_POLYLINE] = DvtInterpolator.InterpolatePolyline;
+
 // Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
 /**
   * Class representing a timer.
@@ -4563,6 +4578,7 @@ dvt.Timer.prototype.StopTimer = function()
     this._timerId = null;
   }
 };
+
 // Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
 /**
   * Abstract base class representing an animation.
@@ -5191,6 +5207,7 @@ dvt.BaseAnimation.prototype.RestoreOriginalMatrices = function()
     }
   }
 };
+
 // Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
 /**
  * Class providing the ability to create a custom animation using a dvt.Animator.
@@ -5218,6 +5235,7 @@ dvt.CustomAnimation.prototype.getAnimator = function()
 {
   return this._animator;
 };
+
 // Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
 /**
   * Class representing an animation to move an object into view as
@@ -5427,6 +5445,7 @@ DvtAnimConveyorIn.prototype.GetConcatenatedRotationMatrix = function(obj, bounds
   mat.concat(currMat);
   return mat;
 };
+
 // Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
 /**
   * Class representing an animation to move an object out of view as
@@ -5579,6 +5598,7 @@ DvtAnimConveyorOut.prototype.PlayEndAnim = function()
   // Perform the animation immediately since this is not part of a slow component render operation.
   this._endAnim.play(true);
 };
+
 // Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
 /**
   * Class representing an animation to flip an object into view,
@@ -5721,6 +5741,7 @@ DvtAnimFlipIn.prototype.InitializePlay = function()
 
   this.ShowObjects();
 };
+
 // Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
 /**
   * Class representing an animation to flip an object out of view,
@@ -5832,6 +5853,7 @@ DvtAnimFlipOut.prototype.InitEndState = function(obj)
     this._animator.addProp(dvt.Animator.TYPE_NUMBER, obj, obj.getAlpha, obj.setAlpha, 0);
   }
 };
+
 // Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
 /**
   * Class representing an animation to rotate an object into view,
@@ -5867,6 +5889,7 @@ DvtAnimCubeIn.prototype.Init = function(context, objs, axis, rotationDir, durati
 
   this._cubeEffect = true;
 };
+
 // Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
 /**
   * Class representing an animation to rotate an object out of view,
@@ -5902,6 +5925,7 @@ DvtAnimCubeOut.prototype.Init = function(context, objs, axis, rotationDir, durat
 
   this._cubeEffect = true;
 };
+
 // Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
 /**
   * Class representing an animation to fade in an object.
@@ -5950,6 +5974,7 @@ dvt.AnimFadeIn.prototype.InitEndState = function(obj)
 {
   this._animator.addProp(dvt.Animator.TYPE_NUMBER, obj, obj.getAlpha, obj.setAlpha, 1);
 };
+
 // Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
 /**
   * Class representing an animation to fade out an object.
@@ -5988,6 +6013,7 @@ dvt.AnimFadeOut.prototype.InitEndState = function(obj)
 {
   this._animator.addProp(dvt.Animator.TYPE_NUMBER, obj, obj.getAlpha, obj.setAlpha, 0);
 };
+
 // Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
 /**
   * Class representing an animation to move an object by a given amount.
@@ -6055,6 +6081,7 @@ dvt.AnimMoveBy.prototype.InitEndState = function(obj)
 
   this._currIndex++;
 };
+
 // Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
 /**
   * Class representing an animation to move an object to a given point.
@@ -6122,6 +6149,7 @@ dvt.AnimMoveTo.prototype.InitEndState = function(obj)
 
   this._currIndex++;
 };
+
 // Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
 /**
   * Class representing an animation to scale an object by a given amount.
@@ -6189,6 +6217,7 @@ dvt.AnimScaleBy.prototype.InitEndState = function(obj)
 
   this._currIndex++;
 };
+
 // Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
 /**
   * Class representing an animation to move and fade in an object.  The object
@@ -6266,6 +6295,7 @@ dvt.AnimScaleFadeIn.prototype.InitEndState = function(obj)
   var currMat = obj.getMatrix();
   this._animator.addProp(dvt.Animator.TYPE_MATRIX, obj, obj.getMatrix, obj.setMatrix, currMat);
 };
+
 // Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
 /**
   * Class representing an animation to move and fade out an object.  The object
@@ -6334,6 +6364,7 @@ dvt.AnimScaleFadeOut.prototype.InitEndState = function(obj)
   this._animator.addProp(dvt.Animator.TYPE_NUMBER, obj, obj.getTranslateX, obj.setTranslateX, point.x);
   this._animator.addProp(dvt.Animator.TYPE_NUMBER, obj, obj.getTranslateY, obj.setTranslateY, point.y);
 };
+
 // Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
 /**
   * Class representing an animation to scale an object to a given value.
@@ -6401,6 +6432,7 @@ dvt.AnimScaleTo.prototype.InitEndState = function(obj)
 
   this._currIndex++;
 };
+
 // Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
 /**
   * Class representing an animation to pop an object in.
@@ -6564,6 +6596,7 @@ dvt.AnimPopIn.prototype.RemoveTempContainers = function() {
     this._tempContainers = null;
   }
 };
+
 // Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
 /**
   * Class representing an animation to pop an object out.
@@ -6725,6 +6758,7 @@ dvt.AnimPopOut.prototype.RemoveTempContainers = function() {
     this._tempContainers = null;
   }
 };
+
 // Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
 /**
   * Class used to animate replacing one set of display objects with another
@@ -6769,6 +6803,7 @@ DvtCombinedAnimConveyor.prototype.Init = function(context, outObjs, inObjs, outD
 
   DvtCombinedAnimConveyor.superclass.Init.call(this, context, [conveyorOut, conveyorIn]);
 };
+
 // Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
 /**
   * Class used to animate replacing one set of display objects with
@@ -6812,6 +6847,7 @@ dvt.CombinedAnimCube.prototype.Init = function(context, outObjs, inObjs, axis, r
 
   dvt.CombinedAnimCube.superclass.Init.call(this, context, [cubeOut, cubeIn]);
 };
+
 // Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
 /**
   * Class used to animate replacing one set of display objects with another set by
@@ -6851,6 +6887,7 @@ DvtCombinedAnimFade.prototype.Init = function(context, outObjs, inObjs, duration
 
   DvtCombinedAnimFade.superclass.Init.call(this, context, [fadeOut, fadeIn]);
 };
+
 // Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
 /**
   * Class used to animate replacing one set of display objects with
@@ -6906,6 +6943,7 @@ dvt.CombinedAnimFlip.prototype.Init = function(context, outObjs, inObjs, axis, r
 
   dvt.CombinedAnimFlip.superclass.Init.call(this, context, [flipOut, flipIn]);
 };
+
 // Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
 /**
   * Class used to animate replacing one set of display objects with another set by
@@ -6946,6 +6984,7 @@ dvt.CombinedAnimMoveBy.prototype.Init = function(context, outObjs, inObjs, outOf
 
   dvt.CombinedAnimMoveBy.superclass.Init.call(this, context, [moveOut, moveIn]);
 };
+
 // Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
 /**
   * Class used to animate replacing one set of display objects with another set by
@@ -7001,6 +7040,7 @@ DvtCombinedAnimScaleFade.prototype.Init = function(context, outObjs, inObjs, bou
 
   DvtCombinedAnimScaleFade.superclass.Init.call(this, context, [fadeOut, fadeIn]);
 };
+
 // Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
 /**
   * Class used to animate a set of display objects popping into the display
@@ -7060,6 +7100,7 @@ dvt.CombinedAnimPopIn.prototype.Init = function(context, objs, bCenter, popDurat
 
   dvt.CombinedAnimPopIn.superclass.Init.call(this, context, array);
 };
+
 // Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
 /**
   * Class used to animate a set of display objects popping out of the display
@@ -7120,6 +7161,7 @@ DvtCombinedAnimPopOut.prototype.Init = function(context, objs, bCenter, popDurat
 
   DvtCombinedAnimPopOut.superclass.Init.call(this, context, array);
 };
+
 // Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 /*-------------------------------------------------------------------------*/
 /*   DvtBaseDrawEffect                                                     */
@@ -7173,6 +7215,7 @@ DvtBaseDrawEffect.prototype.setId = function(id) {
 DvtBaseDrawEffect.prototype.mergeProps = function(obj) {
   obj.setId(this._id);
 };
+
 // Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
 /*-------------------------------------------------------------------------*/
 /*   dvt.ColorUtils       A static class for css color manipulation         */
@@ -7207,6 +7250,11 @@ dvt.ColorUtils._FACTOR = 0.15;  // default darkening percentage.
 /** @private */
 dvt.ColorUtils._names;          // associative array
 
+/**
+ * Cache for getContrastingTextColor() to prevent repeated computations.
+ * @private
+ */
+dvt.ColorUtils._CONTRASTING_TEXT_COLOR_CACHE = {};
 
 /*-------------------------------------------------------------------------*/
 /*  getColorFromName()                                                     */
@@ -7367,7 +7415,7 @@ dvt.ColorUtils.getColorFromName = function(name)
 
     dvt.ColorUtils._names = ar;
   }
-  return dvt.ColorUtils._names[name];
+  return dvt.ColorUtils._names[name.toLowerCase()];
 
 };
 
@@ -8424,6 +8472,47 @@ dvt.ColorUtils.inferColor = function(baseColor1, baseColor2, newColor1) {
   return dvt.ColorUtils.makePound(red, green, blue);
 };
 
+/**
+ * Returns the relative brightness of any point in a colorspace, normalized to 0 for darkest black and 1 for lightest white.
+ * Follows the formula in www.w3.org/TR/WCAG20/#relativeluminancedef
+ * @param {string} color
+ * @return {number} The relative luminance of the provided color.
+ */
+dvt.ColorUtils.getLuminance = function(color) {
+  var transform = function(c) {
+    var cs = c / 255;
+    return cs < 0.03928 ? (cs / 12.92) : Math.pow((cs + 0.055) / 1.055, 2.4);
+  };
+
+  var r = dvt.ColorUtils.getRed(color);
+  var g = dvt.ColorUtils.getGreen(color);
+  var b = dvt.ColorUtils.getBlue(color);
+  return 0.2126 * transform(r) + 0.7152 * transform(g) + 0.0722 * transform(b);
+};
+
+/**
+ * Returns the contrast ratio between two colors. The ratio can range from 1 to 21.
+ * Follows the formula in www.w3.org/TR/WCAG20/#contrast-ratiodef
+ * @param {string} color1
+ * @param {string} color2
+ * @return {number} The contrast ratio.
+ */
+dvt.ColorUtils.getContrastRatio = function(color1, color2) {
+  return dvt.ColorUtils.getContrastRatioByLuminance(dvt.ColorUtils.getLuminance(color1), dvt.ColorUtils.getLuminance(color2));
+};
+
+/**
+ * Returns the contrast ratio between two relative luminance values. The ratio can range from 1 to 21.
+ * Follows the formula in www.w3.org/TR/WCAG20/#contrast-ratiodef
+ * @param {string} luminance1
+ * @param {string} luminance2
+ * @return {number} The contrast ratio.
+ */
+dvt.ColorUtils.getContrastRatioByLuminance = function(luminance1, luminance2) {
+  var l1 = luminance1 + 0.05;
+  var l2 = luminance2 + 0.05;
+  return (l1 > l2) ? (l1 / l2) : (l2 / l1);
+};
 
 /**
  * Returns a contrasting text color for the specified background color.
@@ -8431,11 +8520,15 @@ dvt.ColorUtils.inferColor = function(baseColor1, baseColor2, newColor1) {
  * @return {string} A constrasting color for use on text.
  */
 dvt.ColorUtils.getContrastingTextColor = function(backgroundColor) {
-  var r = dvt.ColorUtils.getRed(backgroundColor);
-  var g = dvt.ColorUtils.getGreen(backgroundColor);
-  var b = dvt.ColorUtils.getBlue(backgroundColor);
-  var yiq = (r * 299 + g * 587 + b * 114) / 1000;
-  return (yiq >= 128) ? '#000000' : '#FFFFFF';
+  // Retrieve from cache if it has been computed before
+  if (!dvt.ColorUtils._CONTRASTING_TEXT_COLOR_CACHE[backgroundColor]) {
+    var luminance = dvt.ColorUtils.getLuminance(backgroundColor);
+    var whiteContrast = dvt.ColorUtils.getContrastRatioByLuminance(luminance, 1);
+    var blackContrast = dvt.ColorUtils.getContrastRatioByLuminance(luminance, 0);
+    var textColor = (whiteContrast > blackContrast) ? '#FFFFFF' : '#000000';
+    dvt.ColorUtils._CONTRASTING_TEXT_COLOR_CACHE[backgroundColor] = textColor;
+  }
+  return dvt.ColorUtils._CONTRASTING_TEXT_COLOR_CACHE[backgroundColor];
 };
 
 /**
@@ -8471,6 +8564,7 @@ dvt.ColorUtils.fixColorForPlatform = function(color, alpha) {
   }
   return colorObj;
 };
+
 // Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 
 
@@ -8634,6 +8728,7 @@ dvt.ClipPath.prototype.addPath = function(d)
   obj.d = d;
   this._addRegion(obj);
 };
+
 // Copyright (c) 2015, 2016, Oracle and/or its affiliates. All rights reserved.
 /**
  *  Defines a mask.
@@ -8677,6 +8772,7 @@ dvt.Mask.prototype.getGradient = function() {
 dvt.Mask.prototype.getBounds = function() {
   return this._bounds;
 };
+
 // Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 /*-------------------------------------------------------------------------*/
 /*   dvt.Fill                                                               */
@@ -8758,6 +8854,7 @@ dvt.Fill.prototype.setId = function(id) {
 dvt.Fill.prototype.equals = function(fill) {
   return true; // subclasses should override
 };
+
 // Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 /**
   * A shape fill class rendering a solid fill color.
@@ -8882,6 +8979,7 @@ dvt.SolidFill.prototype.equals = function(fill) {
   else
     return false;
 };
+
 // Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
 /*-------------------------------------------------------------------------*/
 /*   dvt.Stroke                 Base stroke properties                      */
@@ -9215,6 +9313,7 @@ dvt.Stroke.getDefaultDash = function(type, width) {
   else
     return null;
 };
+
 // Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 /*---------------------------------------------------------------------------*/
 /*    dvt.GradientStroke            Gradient stroke definition class          */
@@ -9386,6 +9485,7 @@ dvt.GradientStroke.prototype.mergeProps = function(obj)
 
   dvt.GradientStroke.superclass.mergeProps.call(this, obj);
 };
+
 // Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 /*---------------------------------------------------------------------------*/
 /*    dvt.LinearGradientStroke       Linear Gradient stroke class             */
@@ -9518,6 +9618,7 @@ dvt.LinearGradientStroke.prototype.setAngle = function(degrees)
   }
 };
 
+
 // Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 /**
   * A class representing the stroke properties for a solid line.
@@ -9620,6 +9721,7 @@ dvt.SolidStroke.prototype.mergeProps = function(obj)
   obj._sc = this._sc;      // stroke color
   obj._sa = this._sa;      // stroke alpha
 };
+
 // Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 /*-------------------------------------------------------------------------*/
 /*   dvt.Shadow                     Base drop shadow                        */
@@ -9737,6 +9839,7 @@ dvt.Shadow.prototype.mergeProps = function(obj)
   obj._bHide = this._bHide;
   obj._Id = this._Id;
 };
+
 
 
 // Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
@@ -9877,6 +9980,7 @@ dvt.GradientFill.prototype.equals = function(fill) {
   else
     return false;
 };
+
 // Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 /*---------------------------------------------------------------------------*/
 /*    dvt.LinearGradientFill       Linear Gradient fill class                     */
@@ -10023,6 +10127,7 @@ dvt.LinearGradientFill.prototype.equals = function(fill) {
   else
     return false;
 };
+
 // Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 /*---------------------------------------------------------------------------*/
 /*    dvt.ImageFill            Image fill definition class                    */
@@ -10137,6 +10242,7 @@ dvt.ImageFill.prototype.equals = function(fill) {
 
   return false;
 };
+
 // Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
 /*---------------------------------------------------------------------------*/
 /*    dvt.PatternFill            Pattern definition class                     */
@@ -10356,6 +10462,7 @@ dvt.PatternFill._convertPatternValue = function(patternStr) {
   else
     return patternStr;
 };
+
 // Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 /*---------------------------------------------------------------------------*/
 /*    dvt.RadialGradientFill       Radial Gradient fill class                 */
@@ -10502,6 +10609,7 @@ dvt.RadialGradientFill.prototype.equals = function(fill) {
   else
     return false;
 };
+
 // Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
 
 
@@ -10573,6 +10681,7 @@ dvt.SelectionEffectUtils.getSelectingCursor = function()
 {
   return 'pointer';
 };
+
 
 // Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 /*---------------------------------------------------------------------*/
@@ -10679,6 +10788,7 @@ dvt.KeyboardFocusEffect.prototype.hide = function() {
   if (this._focusEffect instanceof dvt.Shape)
     this._container.removeChild(this._focusEffect);
 };
+
 // Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 
 /**
@@ -10726,6 +10836,7 @@ dvt.Dimension.prototype.getWidth = function() {
 dvt.Dimension.prototype.getHeight = function() {
   return this.h;
 };
+
 // Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
 
 /**
@@ -11205,6 +11316,7 @@ dvt.Matrix.prototype.isIdentity = function()
   return (this._a == 1 && this._b == 0 && this._c == 0 && this._d == 1 && this._tx == 0 && this._ty == 0);
 };
 
+
 // Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 
 /**
@@ -11242,6 +11354,7 @@ dvt.Point.prototype.equals = function(p)
 
   return false;
 };
+
 // Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 
 /**
@@ -11444,6 +11557,7 @@ dvt.Rectangle.prototype.equals = function(obj) {
 dvt.Rectangle.prototype.toString = function() {
   return this.x + ', ' + this.y + ', ' + this.w + ', ' + this.h;
 };
+
 // Copyright (c) 2013, 2016, Oracle and/or its affiliates. All rights reserved.
 
 /**
@@ -11512,6 +11626,7 @@ dvt.VectorUtils.scaleVector = function(v, s) {
 dvt.VectorUtils.getMagnitude = function(v) {
   return Math.sqrt(v.x * v.x + v.y * v.y);
 };
+
 /**
  * 2D array implementation for use in improving performance.  Alternate implementation options may be added in
  * the future as needed.
@@ -11570,6 +11685,7 @@ dvt.Array2D.prototype._getInner = function(keyA) {
   }
   return innerMap;
 };
+
 /**
  * LRU cache implementation for use in improving performance.  Alternate cache implementation options may be added in
  * the future as needed.
@@ -11681,6 +11797,7 @@ dvt.Cache.prototype.toString = function() {
   ret += '\nHit %: ' + Math.round(10000 * this._hits / (this._hits + this._misses)) / 100;
   return ret;
 };
+
 /**
  *  A static class for DnD support.
  *  @class dvt.DragAndDropUtils
@@ -11733,6 +11850,7 @@ dvt.DragAndDropUtils.getDragFeedbackBounds = function(displayables, targetCoordi
   }
   return bounds;
 };
+
 /**
  *  A static class for chart layout.
  *  @class dvt.LayoutUtils
@@ -11852,6 +11970,7 @@ dvt.LayoutUtils.getBubbleSize = function(z, minZ, maxZ, minSize, maxSize) {
   var area = minArea + (z - minZ) / (maxZ - minZ) * (maxArea - minArea);
   return Math.sqrt(area);
 };
+
 // Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 /**
  * Defines miscellaneous math constants and utilities.
@@ -11966,6 +12085,7 @@ dvt.Math.calculateAngleBetweenTwoVectors = function(vector1X, vector1Y, vector2X
   var angle = Math.atan2(vector2Y, vector2X) - Math.atan2(vector1Y, vector1X);
   return angle < 0 ? angle + dvt.Math.TWO_PI : angle;
 };
+
 /**
  * 2D map implementation for use in improving performance.  Alternate implementation options may be added in
  * the future as needed.
@@ -12024,6 +12144,7 @@ dvt.Map2D.prototype._getInnerMap = function(keyA) {
   }
   return innerMap;
 };
+
 /**
  * A specialized map used for tracking whether a set of pixel coords has been drawn to.
  * @param {number=} scale The scale factor determining how many pixels in each direction the map coords correspond to.
@@ -12186,6 +12307,7 @@ dvt.PixelMap.prototype._increment = function(x, y, incr) {
 dvt.PixelMap.prototype._adjustForScale = function(coord) {
   return Math.floor(coord / this._scale);
 };
+
 /**
  * @constructor
  * property map
@@ -12354,6 +12476,7 @@ dvt.PropMap.toELContext = function(xmlNode) {
   return obj;
 };
 
+
 // Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 
 /**
@@ -12390,6 +12513,7 @@ dvt.ImageLoader.loadImage = function(context, src, onComplete) {
   return loader.loadImage(src, onComplete);
 
 };
+
 
 
 // Copyright (c) 2012, 2017, Oracle and/or its affiliates. All rights reserved.
@@ -12553,6 +12677,7 @@ dvt.JsonUtils._isClonableObject = function(obj) {
   }
   return false;
 };
+
 /**
  * Abstract class for wrapper classes for native DOM events.
  * Internal events like dvt.ScrollEvent/dvt.ResizeEvent that do not wrap native DOM events should not extend this class.
@@ -12647,6 +12772,7 @@ dvt.BaseEvent.FindDisplayable = function(target) {
 
   return null;
 };
+
 /**
  * Base class for component level events.
  * @class The base class for component level events.
@@ -12728,6 +12854,7 @@ dvt.BaseComponentEvent.prototype.getParamValue = function(paramKey) {
 
 
 
+
 // Copyright (c) 2014, 2016, Oracle and/or its affiliates. All rights reserved.
 /**
  * @constructor
@@ -12773,6 +12900,7 @@ DvtFocusEvent.prototype.Init = function(event)
   if (event.relatedTarget != null)
     this.relatedTarget = dvt.BaseEvent.FindDisplayable(event.relatedTarget);
 };
+
 /**
  * Platform independent class for Keyboard Events.
  * @constructor
@@ -13062,6 +13190,7 @@ dvt.KeyboardEvent.isSemicolon = function(event)
     return keyCode == dvt.KeyboardEvent.WEBKIT_SEMICOLON;
   }
 };
+
 /**
  * @constructor
  * Wrapper class for Mouse Events.  This class roughly follows the DOM Level 2 API.
@@ -13152,6 +13281,7 @@ dvt.MouseEvent.prototype.modifyEventForIE = function(newType, newTargetElement) 
     this._isEventModifiedForIE = true;
   }
 };
+
 /**
  * Wrapper class for Touch Events.
  * @param {TouchEvent} event The DOM TouchEvent
@@ -13246,6 +13376,7 @@ dvt.TouchEvent.prototype.stopPropagation = function() {
 dvt.TouchEvent.prototype.setTouchManager = function(touchManager) {
   this._touchManager = touchManager;
 };
+
 /**
  * @constructor
  * Wrapper class providing access to a Touch.
@@ -13285,6 +13416,7 @@ dvt.Touch.prototype.Init = function(touch) {
   this.target = touch.target;
   this.identifier = (touch.identifier == null || isNaN(touch.identifier)) ? 1 : touch.identifier;
 };
+
 /**
  * @constructor
  * Keeps track of the current state of touches and fires higher-level logical events
@@ -14513,6 +14645,7 @@ dvt.TouchManager.prototype.reset = function() {
   this.resetTouchHold();
   this.resetDoubleTap();
 };
+
 /**
  * @constructor
  */
@@ -14538,6 +14671,7 @@ dvt.ViewportChangeEvent.prototype.getOldDimensions = function() {
 dvt.ViewportChangeEvent.prototype.getNewDimensions = function() {
   return this._newDim;
 };
+
 // Events when a custom tooltip action menu is interacted with
 /**
  * @constructor
@@ -14557,6 +14691,7 @@ dvt.Obj.createSubclass(DvtActionTooltipEvent, dvt.BaseComponentEvent);
 DvtActionTooltipEvent.prototype.Init = function(type) {
   DvtActionTooltipEvent.superclass.Init.call(this, type);
 };
+
 /**
  * @constructor
  * A higher-level class that represents a single touch event.
@@ -14683,6 +14818,7 @@ dvt.ComponentTouchEvent.prototype.isPropagationStopped = function() {
 dvt.ComponentTouchEvent.prototype.getNativeEvent = function() {
   return this._nativeEvent;
 };
+
 // Copyright (c) 2012, 2016, Oracle and/or its affiliates. All rights reserved.
 /**
  * @param {number} ww The width of the resize
@@ -14755,6 +14891,7 @@ dvt.ResizeEvent.prototype.getY = function() {
 dvt.ResizeEvent.prototype.getType = function() {
   return this.type;
 };
+
 // Copyright (c) 2012, 2016, Oracle and/or its affiliates. All rights reserved.
 /**
  * @param {number} x The x coordinate of the scroll
@@ -14806,6 +14943,7 @@ dvt.ScrollEvent.prototype.getY = function() {
 dvt.ScrollEvent.prototype.getType = function() {
   return this.type;
 };
+
 /**
  * @constructor
  * @param {string} type Event type.
@@ -14840,6 +14978,7 @@ dvt.MarqueeEvent.SUBTYPE_END = 'dvtMarqueeEndEvent';
 dvt.MarqueeEvent.prototype.getSubtype = function() {
   return this.subtype;
 };
+
 /**
  * @constructor
  * @param {string} type Event subtype.
@@ -14884,6 +15023,7 @@ dvt.PanZoomEvent.SUBTYPE_PINCH_END = 'dvtPinchEndEvent';
 dvt.PanZoomEvent.prototype.getSubtype = function() {
   return this.subtype;
 };
+
 /**
  * An event fired by dvt.SimpleScrollbar.
  * @param {string} subtype The subtype of event.
@@ -14929,6 +15069,7 @@ dvt.SimpleScrollbarEvent.prototype.getNewMin = function() {
 dvt.SimpleScrollbarEvent.prototype.getNewMax = function() {
   return this._newMax;
 };
+
 /**
  * Event factory for DOM events.
  * @class
@@ -15007,6 +15148,7 @@ dvt.DomEventFactory.generateMouseEventFromKeyboardEvent = function(keyboardEvent
   else
     return null;
 };
+
 /**
  * A pan event.
  * @param {string}  subType  subtype of the event; one of the constants
@@ -15095,6 +15237,7 @@ dvt.PanEvent.prototype.getOldY = function() {
 dvt.PanEvent.prototype.getAnimator = function() {
   return this._animator;
 };
+
 /**
  * A zoom event.
  * @param {string}  subType  subtype of the event; one of the constants
@@ -15237,6 +15380,7 @@ dvt.ZoomEvent.prototype.getTx = function() {
 dvt.ZoomEvent.prototype.getTy = function() {
   return this._ty;
 };
+
 // Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 
 /**
@@ -15412,6 +15556,7 @@ Dvt3rdPartyPathUtils._rotatePoints = function(points) {
     rPoints.push([points[i][1], points[i][0]]);
   return rPoints;
 };
+
 /**
  *   Static Utility Functions for dvt.Displayable
  *   @class dvt.DisplayableUtils
@@ -15495,6 +15640,7 @@ dvt.DisplayableUtils.isAncestor = function(ancestor, descendant) {
   }
   return false;
 };
+
 
 
 // Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
@@ -16264,6 +16410,7 @@ dvt.PathUtils._rectangle = function(x, y, w, h) {
 
   return cmd;
 };
+
 /**
  * Utility class to help create marker gradient fills
  *  @extends {dvt.Obj}
@@ -16320,6 +16467,7 @@ dvt.MarkerGradient.createMarkerGradient = function(color, marker, opacity)
 
   return gfs;
 };
+
 // Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 
 /**
@@ -16417,6 +16565,7 @@ dvt.PolygonUtils.translate = function(points, tx, ty) {
   }
   return ret;
 };
+
 // Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
 /**
  * Utility functions for text.
@@ -16832,6 +16981,7 @@ dvt.TextUtils.getOptimalFontSize = function(context, textString, cssStyle, bound
   }
   return '50px';
 };
+
 // Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 /**
  *   Static Shape Utility Functions
@@ -17079,6 +17229,7 @@ dvt.SvgShapeUtils.convertPointsArray = function(arPoints) {
   }
   return s;
 };
+
 // Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
 /**
  *  Abstract base class for displayable objects.
@@ -17983,6 +18134,7 @@ dvt.Displayable.generateAriaLabel = function(shortDesc, states) {
 
   return label;
 };
+
 // File containing all draw effect (filter) related functions defined on dvt.Displayable.
 
 dvt.Displayable.prototype.getNumDrawEffects = function()
@@ -18107,6 +18259,7 @@ dvt.Displayable.prototype._applyDrawEffects = function() {
     }
   }
 };
+
 // File containing all event listener related functions defined on dvt.Displayable.
 
 
@@ -18484,6 +18637,7 @@ dvt.Displayable.prototype._captureListener = function(event) {
   var dvtEvent = dvt.DomEventFactory.newEvent(event, this.getCtx());
   this.FireListener(dvtEvent, true);
 };
+
 // File containing all paint (fill and stroke) related functions defined on dvt.Displayable.
 
 /**
@@ -18732,6 +18886,7 @@ dvt.Displayable.prototype._manageDefinitions = function(oldObj, newObj) {
     }
   }
 };
+
 // File containing all transformation related functions defined on dvt.Displayable.
 
 
@@ -18995,6 +19150,7 @@ dvt.Displayable.prototype._modifyMatrix = function(sx, sy, tx, ty, angleRads) {
     this.setMatrix(mat);
   }
 };
+
 // Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
 /**
  * Container for displayable objects.
@@ -19562,6 +19718,7 @@ dvt.Container.prototype.setHollow = function(fc, strokeWidth) {
 dvt.Container.prototype.includeChildSubtree = function() {
   return true;
 };
+
 // Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 /**
  * Top level container for all displayables contained within the SVG document.  This class should not be extended.
@@ -19632,6 +19789,7 @@ DvtStage.prototype.disableSelection = function(target) {
     return false;
   };
 };
+
 // Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
 /**
  *  Abstract base class for shape displayables.
@@ -20097,6 +20255,7 @@ dvt.Shape.prototype.copyShape = function() {
   // subclasses should implement
   return null;
 };
+
 // Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 /**
  * Abstract base class for circular displayable that is drawn around a point.
@@ -20161,6 +20320,7 @@ DvtCircularShape.prototype.getCy = function() {
 DvtCircularShape.prototype.setCy = function(cy) {
   return this.SetSvgProperty('cy', cy, 0);
 };
+
 // Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 /**
  * Abstract base class for polygon displayable that is defined by an array of points.
@@ -20223,6 +20383,7 @@ DvtPolygonalShape.prototype.getDimensionsSelf = function(targetCoordinateSpace) 
   var bounds = dvt.PolygonUtils.getDimensions(this.getPoints());
   return this.ConvertCoordSpaceRect(bounds, targetCoordinateSpace);
 };
+
 // Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 /**
  * Arc displayable.
@@ -20569,6 +20730,7 @@ dvt.Arc.prototype.GetAriaElem = function() {
     this.CreateChildGroupElem(false, true);
   return dvt.Arc.superclass.GetAriaElem.call(this);
 };
+
 // Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 /**
  * Circle displayable.
@@ -20642,6 +20804,7 @@ dvt.Circle.prototype.getDimensionsSelf = function(targetCoordinateSpace) {
   var bounds = new dvt.Rectangle(this.getCx() - this.getRadius(), this.getCy() - this.getRadius(), this.getRadius() * 2, this.getRadius() * 2);
   return this.ConvertCoordSpaceRect(bounds, targetCoordinateSpace);
 };
+
 // Copyright (c) 2011, 2017, Oracle and/or its affiliates. All rights reserved.
 /**
  * Image displayable.
@@ -20901,6 +21064,7 @@ dvt.Image.prototype.setAriaProperty = function(property, value) {
   if (property != 'hidden')
     dvt.Image.superclass.setAriaProperty.call(this, 'hidden', null);
 };
+
 // Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 /**
  * Line displayable.
@@ -21151,6 +21315,7 @@ dvt.Line.prototype.setClassName = function(className, bSkipAdjustDimensions) {
     this._adjustDimensionsForStyle();
   return dvt.Line.superclass.setClassName.call(this, className);
 };
+
 // Copyright (c) 2014, 2017, Oracle and/or its affiliates. All rights reserved.
 
 /**
@@ -21669,7 +21834,7 @@ dvt.SimpleMarker.prototype._getCmds = function() {
   var dx = this._cx - (dim.x * scalex) - (dim.w * scalex) / 2;
   var dy = this._cy - (dim.y * scaley) - (dim.h * scaley) / 2;
 
-  return dvt.PathUtils.transformPath(this._path.getCommands(), dx, dy, scalex, scaley);
+  return dvt.PathUtils.transformPath(this._path.getCommandsArray(), dx, dy, scalex, scaley);
 };
 
 /**
@@ -21898,6 +22063,7 @@ dvt.SimpleMarker.prototype.setMaintainAspectRatio = function(bMaintainAspectRati
 dvt.SimpleMarker.prototype.getMaintainAspectRatio = function() {
   return this._bMaintainAspectRatio;
 };
+
 
 // Copyright (c) 2014, 2017, Oracle and/or its affiliates. All rights reserved.
 
@@ -22359,6 +22525,7 @@ dvt.ImageMarker.prototype.getDimensionsSelf = function(targetCoordinateSpace) {
   // Calculate the bounds relative to the target space
   return this.ConvertCoordSpaceRect(bounds, targetCoordinateSpace);
 };
+
 // Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 /**
  * Ellipse displayable.
@@ -22453,6 +22620,7 @@ dvt.Oval.prototype.getDimensionsSelf = function(targetCoordinateSpace) {
   var bounds = new dvt.Rectangle(this.getCx() - this.getRx(), this.getCy() - this.getRy(), this.getRx() * 2, this.getRy() * 2);
   return this.ConvertCoordSpaceRect(bounds, targetCoordinateSpace);
 };
+
 // Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
 /**
  * Path displayable.
@@ -22517,8 +22685,7 @@ dvt.Path.prototype.setCmds = function(cmds) {
  * Returns the array of SVG path commands, whose entries contain the commands followed by coordinates.
  * @return {array}
  */
-dvt.Path.prototype.getCommands = function() {
-  // TODO  rename to get/setCommandsArray
+dvt.Path.prototype.getCommandsArray = function() {
 
   // If cached copy exists, use it.
   var arCmds = this.GetProperty('arCmds');
@@ -22536,7 +22703,7 @@ dvt.Path.prototype.getCommands = function() {
  * @param {array} arCmds
  * @return {dvt.Path}
  */
-dvt.Path.prototype.setCommands = function(arCmds) {
+dvt.Path.prototype.setCommandsArray = function(arCmds) {
   // Convert to string and set
   var cmds = arCmds ? dvt.PathUtils.getPathString(arCmds) : null;
   this.setCmds(cmds);
@@ -22564,6 +22731,7 @@ dvt.Path.prototype.GetAriaElem = function() {
     this.CreateChildGroupElem(false, true);
   return dvt.Path.superclass.GetAriaElem.call(this);
 };
+
 
 // Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 /**
@@ -22609,6 +22777,7 @@ dvt.Polygon.prototype.GetAriaElem = function() {
     this.CreateChildGroupElem(false, true);
   return dvt.Polygon.superclass.GetAriaElem.call(this);
 };
+
 // Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 /**
  * Polyline displayable.
@@ -22645,6 +22814,7 @@ dvt.Polyline.prototype.copyShape = function()
 {
   return new dvt.Polyline(this.getCtx(), this.getPoints());
 };
+
 // Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
 /**
  * Rectangle displayable.
@@ -23066,6 +23236,7 @@ dvt.Rect.prototype.getDimensionsSelf = function(targetCoordinateSpace) {
   var bounds = new dvt.Rectangle(this.getX(), this.getY(), this.getWidth(), this.getHeight());
   return this.ConvertCoordSpaceRect(bounds, targetCoordinateSpace);
 };
+
 // Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
 /**
  * Creates an instance of dvt.OutputText.
@@ -23775,6 +23946,7 @@ dvt.OutputText.needsTextAnchorAdjustment = function() {
   // Don't adjust anchor in Batik environment.
   return dvt.Agent.isRightToLeft() && !dvt.Agent.isEnvironmentBatik();
 };
+
 // Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
 /**
  * Creates an instance of dvt.BackgroundOutputText.
@@ -24299,6 +24471,7 @@ dvt.BackgroundOutputText._hasBackgroundStyles = function(style) {
 dvt.BackgroundOutputText.prototype.includeChildSubtree = function() {
   return false;
 };
+
 // Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
 /**
  * Read-only text object that supports wrapping.
@@ -24310,9 +24483,10 @@ dvt.BackgroundOutputText.prototype.includeChildSubtree = function() {
  * @param {number} x
  * @param {number} y
  * @param {string} id
+ * @param {boolean=} preserveNewLine If true, text will wrap only on new line characters
  */
-dvt.MultilineText = function(context, textStr, x, y, id) {
-  this.Init(context, textStr, x, y, id);
+dvt.MultilineText = function(context, textStr, x, y, id, preserveNewLine) {
+  this.Init(context, textStr, x, y, id, preserveNewLine);
 };
 
 dvt.Obj.createSubclass(dvt.MultilineText, dvt.Container);
@@ -24347,9 +24521,10 @@ dvt.MultilineText.V_ALIGN_BOTTOM = 'bottom';
  * @param {number} x
  * @param {number} y
  * @param {string=} id The optional id for the corresponding DOM element.
+ * @param {string=} preserveNewLine
  * @protected
  */
-dvt.MultilineText.prototype.Init = function(context, textStr, x, y, id) {
+dvt.MultilineText.prototype.Init = function(context, textStr, x, y, id, preserveNewLine) {
   dvt.MultilineText.superclass.Init.call(this, context, null, id);
 
   /**
@@ -24385,6 +24560,20 @@ dvt.MultilineText.prototype.Init = function(context, textStr, x, y, id) {
    *  @private
    */
   this._noWrap = false;
+  
+  /** Flag for whether or not this text will wrap on new line characters.
+   *  @private
+   */
+  this._preserveNewLine = preserveNewLine ? preserveNewLine : false;
+  
+  /** Optimizing preserveNewLine wrapping.
+   *  Since the OutputTexts and their initial text strings will always be the
+   *  same, we create them once when the textString is set.
+   *  This avoids recreating them multiple times if a component needs to fit or
+   *  wrap the MultilineText more than once.
+   *  @private
+   */
+  this._preservedLines = [];
 
   // Apply properties
   this.setTextString(textStr);
@@ -24409,8 +24598,7 @@ dvt.MultilineText.prototype.getTextString = function() {
 dvt.MultilineText.prototype.setTextString = function(textString) {
   // Store the full string
   this._textString = (textString != null) ? String(textString) : null;
-
-  // Update the text instances
+  
   if (!this._textInstance) {
     // Create the primary text instance.  This instance is used to store all properties.
     this._textInstance = new dvt.OutputText(this.getCtx(), this._textString);
@@ -24418,11 +24606,16 @@ dvt.MultilineText.prototype.setTextString = function(textString) {
   }
   else {
     this._textInstance.setTextString(textString);
-
     // Remove any additional text lines
     this._removeAdditionalLines();
   }
 
+  if (this._preserveNewLine) { 
+    // Create text objects based on \n split, and wrap text.
+    this._generatePreservedLines();
+    this.wrapText(Infinity, Infinity, 1, false);
+  }
+  
   // Since this is a new text string, truncation has not occurred
   this._bTruncated = false;
 };
@@ -24691,6 +24884,7 @@ dvt.MultilineText.prototype.getCSSStyle = function() {
  * @return {dvt.MultilineText}
  */
 dvt.MultilineText.prototype.setCSSStyle = function(style) {
+  this._lineHeight = null; // a new cssStyle invalidates any previously calculated lineHeight
   dvt.ArrayUtils.forEach(this._getTextLines(), function(entry) { entry.setCSSStyle(style)});
   return this;
 };
@@ -24718,31 +24912,59 @@ dvt.MultilineText.prototype._removeAdditionalLines = function() {
   this._additionalLines = [];
 };
 
+/**
+ * Helper function to generate and save the default OutputTexts that get
+ * manipulated whens preserving new lines. Avoids having to create the elements 
+ * if the MultilineText is re-wrapped.
+ * @private
+ */
+dvt.MultilineText.prototype._generatePreservedLines = function() {  
+  if (this._preserveNewLine) {
+    this._preservedLines = [];  
+    var splits = this.getTextString().split(/\n+/);
+    var currentLine = this._textInstance;
+    var currentString = null;
+    this._preservedLines.push(currentLine); 
+       
+    for (var i = 0; i < splits.length; i++) {
+      currentString = splits[i].replace(/\s+/g,' ');  
+      currentLine.setTextString(currentString); 
+      
+      if (i < splits.length - 1) {
+        var newLine = currentLine.copyShape();
+        this._preservedLines.push(newLine);
+        currentLine = newLine;
+      }   
+    } 
+  }
+};
 
 /**
- * Truncates the text instance to fit within the given width.  Sets the untruncated text string on itself if
- * truncated text does not fit.  Only for use by dvt.TextUtils.
+ * Truncates the text instances to fit within the given width. Individual lines handle setting the untruncated text string on itself
+ * or removing itself from the MultilineText container if truncated text does not fit.  Only for use by dvt.TextUtils.
  * @param {number} maxWidth The maximum width of the text.
  * @param {number} maxHeight The maximum height of the text.
  * @param {number} minChars The minimum number of characters that should be displayed before ellipsis after truncation.
  * @return {boolean} false if the text cannot fit at all, true otherwise.
  */
 dvt.MultilineText.prototype.__fitText = function(maxWidth, maxHeight, minChars) {
-  // Clear any previous layout results
-  this._textInstance.setTextString(this.getTextString());
-  this._removeAdditionalLines();
-
-  // First try to fit the entire string in 1 line
-  if (!dvt.TextUtils.fitText(this._textInstance, maxWidth, maxHeight, this, minChars)) {
-    // String doesn't fit at all, remove from parent and return
-    this.getParent().removeChild(this);
-    return false;
+  if (!this._preserveNewLine) {
+    // Clear any previous layout results
+    this._textInstance.setTextString(this.getTextString());
+    this._removeAdditionalLines();
+  
+    // First try to fit the entire string in 1 line
+    if (!dvt.TextUtils.fitText(this._textInstance, maxWidth, maxHeight, this, minChars)) {
+      // String doesn't fit at all, remove from parent and return
+      this.getParent().removeChild(this);
+      return false;
+    }
+    else if (!this._textInstance.isTruncated()) // No truncation needed, text fits in one line.
+      return true;
+    else if (!this.isWrapEnabled()) // Accept text that fits partially
+      return true;
   }
-  else if (!this._textInstance.isTruncated()) // No truncation needed, text fits in one line.
-    return true;
-  else if (!this.isWrapEnabled()) // Accept text that fits partially
-    return true;
-
+  
   // Then wrap and truncate text to fit within the given parameters
   return this.wrapText(maxWidth, maxHeight, minChars, false);
 };
@@ -24755,81 +24977,120 @@ dvt.MultilineText.prototype.__fitText = function(maxWidth, maxHeight, minChars) 
  * @param {boolean=} breakOnTruncation Optional boolean to return unwrapped text if text does not fully fit in given dimensions
  * @return {boolean} false if the text cannot fit in the parameters, true otherwise.
  */
-dvt.MultilineText.prototype.wrapText = function(maxWidth, maxHeight, minChars, breakOnTruncation) {
-  // Truncation occurred.  Calculate line height so that we can add additional lines as space allows.
-  var lineHeight = this.getLineHeight();
-  var lineSpace = lineHeight * dvt.MultilineText._LINE_SPACE;
-  var maxLines = this.getMaxLines();
-  var availHeight = Math.min(maxHeight, maxLines * (lineHeight + lineSpace) - lineSpace) - lineHeight - lineSpace;
-
+dvt.MultilineText.prototype.wrapText = function(maxWidth, maxHeight, minChars, breakOnTruncation) {  
   if (this.getLineCount() > 1) // Clear any previous wrapping results
     this._removeAdditionalLines();
-
-  // Split the string into parts.  Reverse the array so that we can use like a queue.
-  var splits = this.getTextString().split(/\s+/);
-  splits.reverse();
-
-  // Loop and add each part into the current line.  Create a new line once the current is full.
-  var currentLine = this._textInstance;
-  var currentString = null;
-  var isInitialSplit = true;
-  while (splits.length > 0) {
-    // Try adding the next split into the current line.
-    var split = splits.pop();
-    var newString = currentString ? currentString + ' ' + split : split;
-    currentLine.setTextString(newString);
-    currentLine.setUntruncatedTextString(null);
-
-    if (!dvt.TextUtils.fitText(currentLine, maxWidth, Infinity, this, minChars, true)) {
-      if (isInitialSplit) // First piece of text does not fit at all. Returns false because no part of the text object will fit.
-        return false;
-      else // Subsequent piece of text doesn't fit at all.  Returns true because previous pieces of text had fit.
-        return true;
-    }
-    else if (currentLine.isTruncated()) {
-      // If there's no more space to add lines, we're done
+  
+  // Calculate line height so that we can add additional lines as space allows.
+  var lineHeight = this.getLineHeight();
+  var lineSpace = lineHeight * dvt.MultilineText._LINE_SPACE;
+  
+  var maxLines = this.getMaxLines();
+  var availHeight = Math.min(maxHeight, maxLines * (lineHeight + lineSpace) - lineSpace) - lineHeight - lineSpace;
+  
+  // We are currently splitting MultilineText wrapping into two exclusive behaviors
+  // 1. Wrap only on new line characters. Each line truncates according to maxWidth parameter.
+  // 2. Wrap between words as needed. Number of lines is dictated by the maxHeight parameter. 
+  //    The final line will truncate if we have used all the given space
+  if (this._preserveNewLine) {
+    var atLeastOneLineFits = false;
+    var previousLine = null;
+    for (var i = 0; i < this._preservedLines.length; i++) {
+      var currentLine = this._preservedLines[i];
+      
+      // Consider text truncated and return if we still have a line, but not enough availHeight
       if (availHeight < lineSpace + lineHeight) {
         this._bTruncated = true;
-        return true;
+        return atLeastOneLineFits;
       }
-
-      // Decide whether to keep this split in the current line or push to the next
-      if (currentString) {
-        // Always push the split to the next line if it didn't fit with the current one.
-        currentLine.setTextString(currentString);
-        splits.push(split);
-      }
-      else {
-        // This means that we are keeping a truncated text line, because we're not pushing the split back onto the stack
-        if (breakOnTruncation) {
-          this._textInstance.setTextString(this.getTextString());
-          this._removeAdditionalLines();
-          return false;
-        }
-        else
+      
+      if (dvt.TextUtils.fitText(currentLine, maxWidth, Infinity, this, minChars)) {
+        atLeastOneLineFits = true;
+        availHeight -= (lineSpace + lineHeight);    
+        // Consider the text truncated if any line is truncated
+        if (currentLine.isTruncated() && !this.isTruncated()) 
           this._bTruncated = true;
-      }
-
-      // Text partially fit, create a new line for the next split
-      if (splits.length > 0) {
-        var newLine = currentLine.copyShape();
-        newLine.setY(currentLine.getY() + lineSpace + lineHeight);
-        this.addChild(newLine);
-        this._additionalLines.push(newLine);
-
-        // Update the pointers to the line and the availHeight
-        currentLine = newLine;
-        currentString = null;
-        availHeight -= (lineSpace + lineHeight);
+        
+        if (i > 0) {
+          this._additionalLines.push(currentLine);
+          // Offset the new line from the previousLine, if none fit so far this line will be at the top
+          var offset = previousLine ? previousLine.getY() + lineSpace + lineHeight : this.getY();    
+          currentLine.setY(offset);
+          this.addChild(currentLine);
+        }
+        previousLine = currentLine;
       }
     }
-    else // Text completely fit, continue using this line
-      currentString = newString;
-
-    isInitialSplit = false;
+    return atLeastOneLineFits;
   }
+  else {
+    var currentLine = this._textInstance;
+    var currentString = null;
+        
+    // Split the string into parts.  Reverse the array so that we can use like a queue.
+    var splits = this.getTextString().split(/\s+/);
+    splits.reverse();
 
-  return true;
+    // Loop and add each part into the current line.  Create a new line once the current is full.
+    var isInitialSplit = true;
+    while (splits.length > 0) {
+      // Try adding the next split into the current line.
+      var split = splits.pop();
+      var newString = currentString ? currentString + ' ' + split : split;
+      currentLine.setTextString(newString);
+      currentLine.setUntruncatedTextString(null);
+
+      if (!dvt.TextUtils.fitText(currentLine, maxWidth, Infinity, this, minChars, true)) {
+        if (isInitialSplit) // First piece of text does not fit at all. Returns false because no part of the text object will fit.
+          return false;
+        else // Subsequent piece of text doesn't fit at all.  Returns true because previous pieces of text had fit.
+          return true;
+      }
+      else if (currentLine.isTruncated()) {
+        // If there's no more space to add lines, we're done
+        if (availHeight < lineSpace + lineHeight) {
+          this._bTruncated = true;
+          return true;
+        }
+
+        // Decide whether to keep this split in the current line or push to the next
+        if (currentString) {
+          // Always push the split to the next line if it didn't fit with the current one.
+          currentLine.setTextString(currentString);
+          splits.push(split);
+        }
+        else {
+          // This means that we are keeping a truncated text line, because we're not pushing the split back onto the stack
+          if (breakOnTruncation) {
+            this._textInstance.setTextString(this.getTextString());
+            this._removeAdditionalLines();
+            return false;
+          }
+          else
+            this._bTruncated = true;
+        }
+
+        // Text partially fit, create a new line for the next split
+        if (splits.length > 0) {
+          var newLine = currentLine.copyShape();
+          newLine.setY(currentLine.getY() + lineSpace + lineHeight);
+          this.addChild(newLine);
+          this._additionalLines.push(newLine);
+
+          // Update the pointers to the line and the availHeight
+          currentLine = newLine;
+          currentString = null;
+          availHeight -= (lineSpace + lineHeight);
+        }
+      }
+      else // Text completely fit, continue using this line
+        currentString = newString;
+
+      isInitialSplit = false;
+    }
+    
+    return true;
+  }
 };
 
 /**
@@ -24971,6 +25232,7 @@ dvt.MultilineText.prototype.setVertAlignment = function(align) {
     this.alignBottom();
 };
 
+
 // Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
 /**
  * Read-only text object that supports wrapping.
@@ -24984,9 +25246,10 @@ dvt.MultilineText.prototype.setVertAlignment = function(align) {
  * @param {number} y
  * @param {dvt.CSSStyle} style
  * @param {string=} id
+ * @param {boolean=} preserveNewLine If true, text will wrap only on new line characters
  */
-dvt.BackgroundMultilineText = function(context, textStr, x, y, style, id) {
-  this.Init(context, textStr, x, y, style, id);
+dvt.BackgroundMultilineText = function(context, textStr, x, y, style, id, preserveNewLine) {
+  this.Init(context, textStr, x, y, style, id, preserveNewLine);
 };
 
 dvt.Obj.createSubclass(dvt.BackgroundMultilineText, dvt.BackgroundOutputText);
@@ -25000,7 +25263,9 @@ dvt.Obj.createSubclass(dvt.BackgroundMultilineText, dvt.BackgroundOutputText);
  * @param {string=} id The optional id for the corresponding DOM element.
  * @protected
  */
-dvt.BackgroundMultilineText.prototype.Init = function(context, textStr, x, y, style, id) {
+dvt.BackgroundMultilineText.prototype.Init = function(context, textStr, x, y, style, id, preserveNewLine) {
+  this._preserveNewLine = preserveNewLine ? preserveNewLine : false;
+  
   dvt.BackgroundMultilineText.superclass.Init.call(this, context, textStr, x, y, style, id);
 };
 
@@ -25020,7 +25285,7 @@ dvt.BackgroundMultilineText.prototype.wrapText = function(maxWidth, maxHeight, m
  * @override
  */
 dvt.BackgroundMultilineText.prototype.CreateTextInstance = function(context, textStr, x, y, id) {
-  return new dvt.MultilineText(context, textStr, x, y, id);
+  return new dvt.MultilineText(context, textStr, x, y, id, this._preserveNewLine);
 };
 
 /**
@@ -25109,6 +25374,7 @@ dvt.BackgroundMultilineText.prototype.isWrapEnabled = function() {
 dvt.BackgroundMultilineText.prototype.UpdateSelectionEffect = function() {
   // noop: Does not participate in selection effects
 };
+
 
 // Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
 /**
@@ -25205,6 +25471,7 @@ dvt.Use.prototype.destroy = function() {
   this.getCtx().decreaseGlobalDefReference(this._targetId);
   dvt.Use.superclass.destroy.call(this);
 };
+
 /**
  * Style Utilities
  * @class dvt.StyleUtils
@@ -25299,6 +25566,7 @@ dvt.StyleUtils.getTimeMilliseconds = function(value) {
   }
   return value;
 };
+
 /**
  * @constructor
  * dvt.CSSGradient
@@ -25388,6 +25656,7 @@ dvt.CSSGradient.prototype.setRatios = function(arRatios)
 };
 
 
+
 /**
  * @constructor
  * DvtLinearGradient
@@ -25444,6 +25713,7 @@ DvtLinearGradient.prototype.setAngle = function(angle)
 {
   this._angle = angle;
 };
+
 
 /**
  * parse gradient string into gradient object
@@ -25825,6 +26095,7 @@ dvt.GradientParser._startsWith = function(str, value) {
   return str.indexOf(value) == 0;
 };
 
+
 /**
  * @constructor
  * Represents a set of CSS styles.
@@ -25914,6 +26185,7 @@ dvt.CSSStyle.CONTENT_BOX = 'content-box';
 // Size Properties
 dvt.CSSStyle.HEIGHT = 'height';
 dvt.CSSStyle.WIDTH = 'width';
+dvt.CSSStyle.MAX_WIDTH = 'max-width';
 
 //value for background-image
 dvt.CSSStyle.NONE = 'none';
@@ -25964,14 +26236,14 @@ dvt.CSSStyle._NAMED_COLOR_MAP = {
 };
 
 // numeric attributes List
-dvt.CSSStyle._numericAttrsList = [dvt.CSSStyle.WIDTH, dvt.CSSStyle.HEIGHT, dvt.CSSStyle.BORDER_WIDTH, dvt.CSSStyle.BORDER_TOP_WIDTH, dvt.CSSStyle.BORDER_BOTTOM_WIDTH, dvt.CSSStyle.BORDER_LEFT_WIDTH, dvt.CSSStyle.BORDER_RIGHT_WIDTH, dvt.CSSStyle.MARGIN, dvt.CSSStyle.MARGIN_TOP, dvt.CSSStyle.MARGIN_BOTTOM, dvt.CSSStyle.MARGIN_LEFT, dvt.CSSStyle.MARGIN_RIGHT, dvt.CSSStyle.PADDING, dvt.CSSStyle.PADDING_TOP, dvt.CSSStyle.PADDING_BOTTOM, dvt.CSSStyle.PADDING_LEFT, dvt.CSSStyle.PADDING_RIGHT];
+dvt.CSSStyle._numericAttrsList = [dvt.CSSStyle.MAX_WIDTH, dvt.CSSStyle.WIDTH, dvt.CSSStyle.HEIGHT, dvt.CSSStyle.BORDER_WIDTH, dvt.CSSStyle.BORDER_TOP_WIDTH, dvt.CSSStyle.BORDER_BOTTOM_WIDTH, dvt.CSSStyle.BORDER_LEFT_WIDTH, dvt.CSSStyle.BORDER_RIGHT_WIDTH, dvt.CSSStyle.MARGIN, dvt.CSSStyle.MARGIN_TOP, dvt.CSSStyle.MARGIN_BOTTOM, dvt.CSSStyle.MARGIN_LEFT, dvt.CSSStyle.MARGIN_RIGHT, dvt.CSSStyle.PADDING, dvt.CSSStyle.PADDING_TOP, dvt.CSSStyle.PADDING_BOTTOM, dvt.CSSStyle.PADDING_LEFT, dvt.CSSStyle.PADDING_RIGHT];
 
 dvt.CSSStyle._DOUBLE_QUOTE = '\"';
 dvt.CSSStyle._SINGLE_QUOTE = "'";
 
 // Default color ramps
 dvt.CSSStyle.COLORS_SKYROS = ['#003366', '#CC3300', '#666699', '#006666', '#FF9900', '#993366', '#99CC33', '#624390', '#669933', '#FFCC33', '#006699', '#EBEA79'];
-dvt.CSSStyle.COLORS_ALTA = ['#267db3', '#68c182', '#fad55c', '#ed6647', '#8561c8', '#6ddbdb', '#ffb54d', '#e371b2', '#47bdef', '#a2bf39', '#a75dba', '#f7f37b'];
+dvt.CSSStyle.COLORS_ALTA = ['#237bb1', '#68c182', '#fad55c', '#ed6647', '#8561c8', '#6ddbdb', '#ffb54d', '#e371b2', '#47bdef', '#a2bf39', '#a75dba', '#f7f37b'];
 
 
 /**
@@ -26316,6 +26588,10 @@ dvt.CSSStyle.prototype.getBorderWidth = function() {
 };
 
 // width and height
+dvt.CSSStyle.prototype.getMaxWidth = function() {
+  return this.getStyle(dvt.CSSStyle.MAX_WIDTH);
+};
+
 dvt.CSSStyle.prototype.getWidth = function() {
   return this.getStyle(dvt.CSSStyle.WIDTH);
 };
@@ -27240,6 +27516,7 @@ dvt.CSSStyle._parseStyleString = function(style, func) {
     }
   }
 };
+
 /**
  * Base class for JSON components.
  * @class
@@ -27582,6 +27859,7 @@ dvt.BaseComponent.prototype.destroy = function() {
   // Always call superclass last for destroy
   dvt.BaseComponent.superclass.destroy.call(this);
 };
+
 /**
  * Base class for JSON component defaults.
  * @class
@@ -27688,8 +27966,17 @@ dvt.BaseComponentDefaults.prototype.calcOptions = function(userOptions) {
   // Use defaults if no overrides specified
   if (!userOptions)
     return defaults;
-  else  // Merge the options object with the defaults
-    return dvt.JsonUtils.merge(userOptions, defaults, this.getNoCloneObject());
+
+  // Merge the options object with the defaults
+  var options =  dvt.JsonUtils.merge(userOptions, defaults, this.getNoCloneObject());
+
+  //  - short circuit animation if animation duration is 0
+  if (this.getAnimationDuration(options) == 0) {
+    options["animationOnDataChange"] = "none";
+    options["animationOnDisplay"] = "none";
+  }
+
+  return options;
 };
 
 
@@ -27727,6 +28014,16 @@ dvt.BaseComponentDefaults.prototype.getNoCloneObject = function()
 {
   return {};
 };
+
+/**
+ * Returns the animation duration from the options given.
+ * @param {object} options The options from which to get the animation duration.
+ * @return {number} The animation duration.
+ */
+dvt.BaseComponentDefaults.prototype.getAnimationDuration = function(options) {
+  return options["styleDefaults"] ? options["styleDefaults"]["animationDuration"] : null;
+};
+
 // DvtBaseComponentCache.js
 //
 // Copyright (c) 2016, Oracle and/or its affiliates. All rights reserved.
@@ -27865,6 +28162,7 @@ dvt.BaseComponentCache.prototype.putToCachedMap2D = function(mapKey, itemKeyA, i
   map.put(itemKeyA, itemKeyB, value);
 };
 
+
 /**
  * ShowPopupBehavior property bag.
  * @param {string} popupId The id of the popup that will be fired.
@@ -27988,6 +28286,7 @@ dvt.ShowPopupBehavior.prototype.getAlignId = function() {
 dvt.ShowPopupBehavior.prototype.getAlign = function() {
   return this._align;
 };
+
 /**
  * dvt.ClientBehavior property bag.
  * @param {string} type The type of client behavior
@@ -28042,6 +28341,7 @@ dvt.ClientBehavior.prototype.getProperty = function(propName) {
 dvt.ClientBehavior.prototype.getProperties = function() {
   return this._props;
 };
+
 /**
  * A minimalist scrollbar.
  * @class
@@ -28326,6 +28626,7 @@ dvt.SimpleScrollbar.prototype._setViewportRange = function(min, max, eventSubtyp
     this._callback.call(this._callbackObj, evt, this);
   }
 };
+
 /**
  * A minimalist scrollable container that can scroll either vertically or horizontally, but not both.
  * Use DvtScrollableContainer if scrolling in both directions is required.
@@ -28623,6 +28924,7 @@ dvt.SimpleScrollableContainer.prototype.scrollIntoView = function(displayable) {
 dvt.SimpleScrollableContainer.prototype.hasScrollingContent = function() {
   return this._contentSize > this._getAvailSize();
 };
+
 /**
  * Drag recognizer
  * @class dvt.DragRecognizer
@@ -28657,6 +28959,7 @@ dvt.DragRecognizer.prototype.abortPrep = function() {
 dvt.DragRecognizer.prototype.recognizeDrag = function() {
   return true; // subclasses should override
 };
+
 /**
  * Drag source event handler.
  * @param {dvt.Context} context
@@ -28863,6 +29166,7 @@ dvt.DragSource.prototype.setTouchManager = function(touchManager) {
 dvt.DragSource.prototype.getTouchManager = function() {
   return this._touchManager;
 };
+
 /**
  * Drop target event handler.
  * @class dvt.DropTarget
@@ -28913,6 +29217,7 @@ dvt.DropTarget.prototype.dragExit = function() {
 dvt.DropTarget.prototype.getDropSite = function(mouseX, mouseY) {
   return null; // subclasses should override
 };
+
 // Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 
 /**
@@ -29534,6 +29839,7 @@ dvt.Button.prototype.handleKeyboardEvent = function(event) {
   }
 };
 
+
 /**
  * dvt.TransientButton. This adds listeners that hide and show this button based
  * on focus, blur, mouse over, and mouse out events on the current stage.
@@ -29716,6 +30022,7 @@ dvt.TransientButton.prototype.OnMouseUp = function(event)
   //Event propagation is stopped because TransientButton should not initiate drag on mouse up event
   event.stopPropagation();
 };
+
 /**
  * A logical object for a set of displayables.
  * @interface
@@ -29738,6 +30045,7 @@ DvtLogicalObject.prototype.getDisplayables = function() {};
  * @return {string}
  */
 DvtLogicalObject.prototype.getAriaLabel = function() {};
+
 /**
  * An object that displays tooltips.
  * @interface
@@ -29768,6 +30076,7 @@ DvtTooltipSource.prototype.getDatatip = function(target, x, y) {};
  * @return {string} The datatip border color.
  */
 DvtTooltipSource.prototype.getDatatipColor = function() {};
+
 /**
  * An object that can be selected.
  * @interface
@@ -29810,6 +30119,7 @@ DvtSelectable.prototype.showHoverEffect = function() {};
  * Hides the hover effect.
  */
 DvtSelectable.prototype.hideHoverEffect = function() {};
+
 /**
  * An object that can handle keyboard events delegated to it by a dvt.EventManager
  * @interface
@@ -29832,6 +30142,7 @@ DvtComponentKeyboardHandler.prototype.handleKeyboardEvent = function(event) {};
  * click on a treemap node).
  */
 DvtComponentKeyboardHandler.prototype.hideKeyboardFocusEffect = function() {};
+
 /**
  * An object that can receive keyboard focus, and thus can be navigated to via the keyboard
  * @interface
@@ -29894,6 +30205,7 @@ DvtKeyboardNavigable.prototype.getContextMenuLocation = function() {};
  * @return {dvt.Point}
  */
 DvtKeyboardNavigable.prototype.getKeyboardTooltipLocation = function() {};
+
 /**
  * An object that can belongs to a category.
  * @interface
@@ -29915,6 +30227,7 @@ DvtCategoricalObject.prototype.getCategories = function() {};
  * @param {number} alpha The alpha to use for the highlighting.
  */
 DvtCategoricalObject.prototype.highlight = function(bDimmed, alpha) {};
+
 /**
  * An object that displays context menus.
  * @interface
@@ -29930,6 +30243,7 @@ dvt.Obj.createSubclass(DvtContextMenuSource, dvt.Obj);
  * @return {dvt.Point}
  */
 DvtContextMenuSource.prototype.getContextMenuLocation = function() {};
+
 /**
  * An object that displays popups.
  * @interface
@@ -29952,6 +30266,7 @@ DvtPopupSource.prototype.getId = function() {};
  * @return {array} The array of applicable DvtShowPopupBehaviors
  */
 DvtPopupSource.prototype.getShowPopupBehaviors = function() {};
+
 /**
  *  Provides automation services for a DVT component.
  *  @param {Object} dvtComponent
@@ -30052,6 +30367,7 @@ dvt.Automation.prototype.IsTooltipElement = function(domElement) {
     return true;
   return false;
 };
+
 /**
  * Simple logical object for custom datatip support.
  * @param {dvt.TooltipManager} tooltipManager
@@ -30091,6 +30407,7 @@ dvt.CustomDatatipPeer.prototype.getDatatip = function(target) {
 dvt.CustomDatatipPeer.prototype.getDatatipColor = function(target) {
   return this._datatipColor;
 };
+
 /**
  * Simple logical object for tooltip support.
  * @param {string} tooltip The tooltip to display.
@@ -30184,6 +30501,7 @@ dvt.SimpleObjPeer.prototype.getDatatip = function(target) {
 dvt.SimpleObjPeer.prototype.getDatatipColor = function(target) {
   return this._datatipColor;
 };
+
 /**
  * @constructor
  */
@@ -30651,6 +30969,7 @@ dvt.Agent.getFocusColor = function() {
   }
   return dvt.Agent._focusColor;
 };
+
 /**
  * Resource bundle base class.
  * @class
@@ -30820,6 +31139,7 @@ dvt.Bundle.getTranslation = function(options, optionsKey, bundlePrefix, key, rep
 
   return ret;
 };
+
 /**
  * Interactivity manager for context menu support.
  * @param {dvt.Context} context The platform specific context object.
@@ -30866,6 +31186,7 @@ dvt.ContextMenuHandler.prototype.show = function(event, menuType) {
   }
   return null;
 };
+
 /**
  * Interactivity manager for popup support.
  * @param {dvt.Context} context The platform specific context object.
@@ -31153,6 +31474,7 @@ DvtPopupBehaviorHandler.prototype.hasPopup = function(obj, triggers) {
   }
   return false;
 };
+
 /**
  * Interactivity manager for dvt component client behaviors
  * @param {dvt.Context} context The platform specific context object.
@@ -31206,6 +31528,7 @@ dvt.ClientBehaviorHandler.prototype.CreateClientBehaviorEvent = function(target,
   dvt.EventManager._addContextInfo(target, behaviorEvent);
   return behaviorEvent;
 };
+
 /**
   * Interactivity manager for selection.
   * @class dvt.SelectionHandler
@@ -31482,6 +31805,7 @@ dvt.SelectionHandler._isEquals = function(a, b) {
   else
     return false;
 };
+
 /**
   * Interactivity manager for keyboard events.
   * @param {dvt.EventManager} manager The owning dvt.EventManager
@@ -32025,6 +32349,7 @@ dvt.KeyboardHandler._areEqualWithinTolerance = function(a, b)
   return Math.abs(a - b) <= 0.0000001;
 };
 
+
 /**
  * Handler used for marquee operations.
  * @class
@@ -32283,6 +32608,7 @@ dvt.MarqueeHandler.prototype.getCursor = function(relPos) {
 dvt.MarqueeHandler.prototype.getGlassPane = function() {
   return this._glassPane;
 };
+
 /**
  * Handler used for pan and zoom operations.
  * @constructor
@@ -32612,6 +32938,7 @@ dvt.PanZoomHandler.prototype.isWithinBounds = function(relPos) {
   var pos = this._container.stageToLocal(relPos);
   return this._bounds.containsPoint(pos.x, pos.y);
 };
+
 /**
  * Base class object for tooltip services.
  * @class dvt.TooltipManager
@@ -32662,6 +32989,7 @@ dvt.TooltipManager.prototype.hideTooltip = function()
 {
   // TODO subclasses should override
 };
+
 
 
 /**
@@ -32939,6 +33267,7 @@ dvt.CategoryRolloverHandler.prototype.SetHighlightModeTimeout = function() {
 dvt.CategoryRolloverHandler.prototype.setHoverDelay = function(hoverDelay) {
   this._hoverDelay = hoverDelay;
 };
+
 /**
  * Event manager that processes low level events and sends them to the appropriate handlers.
  * @param {dvt.Context} context The platform specific context object.
@@ -34779,7 +35108,7 @@ dvt.EventManager.prototype._processTouchSelectionClear = function(dlo) {
       // There are two different policies for the clear selection dialog
       // 1) If a tap, show clear selection only for multiple selection when more than 1 is selected
       // 2) If a touch and hold + release, don't attempt a clear or perform a  clear
-      if (this.isClearMenuAllowed()) {
+      if (this.isClearMenuAllowed(dlo)) {
         var selType = selectionHandler.getType();
         if (selType == dvt.SelectionHandler.TYPE_MULTIPLE) {
           if (selectionHandler.getSelectedCount() > 1) {
@@ -35056,7 +35385,11 @@ dvt.EventManager.prototype.addClearAllActionItem = function() {
     actionTooltip.setTooltipBorderColor(DvtCustomTooltip.DEFAULT_BORDER_COLOR);
 };
 
-dvt.EventManager.prototype.isClearMenuAllowed = function()
+/**
+ * @param {object} logicalObject The logical object to check if clear menu is allowed
+ * @return {boolean}
+ */
+dvt.EventManager.prototype.isClearMenuAllowed = function(logicalObject)
 {
   return true;
 };
@@ -36321,7 +36654,10 @@ dvt.EventManager.prototype._handleDropTargetEventHelper = function(event, eventT
   if (callback) {
     var eventPayload = this.GetDropEventPayload(event);
     var callbackValue = callback($event, eventPayload);
-    if (callbackValue != null && !this._context.isCustomElement()) {
+    if (event.getNativeEvent().defaultPrevented) {
+      return false;
+    }
+    else if (callbackValue != null && !this._context.isCustomElement()) {
       // If there's a return value, don't handle dataTypes
       // Custom element syntax does not support return values
       return callbackValue;
@@ -36355,6 +36691,7 @@ dvt.EventManager.prototype._handleDropTargetEventHelper = function(event, eventT
 dvt.EventManager.prototype.DispatchElementEvent = function(eventType, eventDetail) {
   this.getCtx().getSvgDocument().dispatchEvent(new CustomEvent(eventType, {'detail': eventDetail}));
 };
+
 /**
  * Interactivity manager for custom tooltips and menus.  The two can be visually combined.
  * @class DvtCustomTooltipManager
@@ -36560,6 +36897,7 @@ DvtCustomTooltipManager._formatTextString = function(tooltip)
   }
   return fullText;
 };
+
 // Custom tooltip event handler
 /**
  * @constructor
@@ -36603,6 +36941,7 @@ DvtCustomTooltipEventHandler.prototype._handleMenuClick = function(targetObj) {
     }
   }
 };
+
 /*--------------------------------------------------------------------*/
 /*   DvtCustomTooltip              Action tooltip Component           */
 /*--------------------------------------------------------------------*/
@@ -37043,6 +37382,7 @@ DvtContextMenuTooltipItem.prototype.Init = function(context, id, listener, liste
   DvtContextMenuTooltipItem.superclass.Init.call(this, context, id, menuItem.getText(), listener, listenerObj);
   this._menuItem = menuItem;
 };
+
 /**
  * Abstract class for XML parser.
  * @extends {dvt.Obj}
@@ -37072,6 +37412,7 @@ dvt.XmlParser.prototype.parse = function(xmlString) {
 
   return null;
 };
+
 /**
  * Abstract class for XML node.  Subclasses should override to provide support
  * for different platforms.
@@ -37181,6 +37522,7 @@ dvt.XmlNode.prototype.getTextContent = function() {
 dvt.XmlNode.prototype.getElementsByTagName = function(name) {
   return null; //subclasses should override
 };
+
 
 /**
  * @param {dvt.Context} context
@@ -37672,6 +38014,7 @@ dvt.HtmlTooltipManager._restoreTag = function(text, tag) {
 dvt.HtmlTooltipManager.createStartTag = function(tag, style) {
   return ('<' + tag + ' style=\"' + style.toString() + '\">');
 };
+
 /**
  * Utility class for providing keyboard listeners to add to HTML divs
  * @class dvt.HtmlKeyboardListenerUtils
@@ -37788,6 +38131,7 @@ dvt.HtmlKeyboardListenerUtils._checkIgnoreTarget = function(event) {
   }
   return false;
 };
+
 /**
  * Wrapper class providing XML parsing functionality using the DOM.
  * @class DvtDomXmlParser
@@ -37811,6 +38155,7 @@ DvtDomXmlParser.prototype.parse = function(xmlString) {
   var root = xmlDoc.documentElement;
   return new dvt.DomXmlNode(root);
 };
+
 /**
  * Wrapper class providing access to DOM XML Nodes.
  * @extends {dvt.XmlNode}
@@ -37930,6 +38275,7 @@ dvt.DomXmlNode.prototype.getElementsByTagName = function(name) {
   }
   return ret;
 };
+
 
 /**
  * Factory class for component events to be fired to framework layers. Any changes to existing event payloads requires
@@ -38313,6 +38659,7 @@ dvt.EventFactory.newGanttViewportChangeEvent = function(viewportStart, viewportE
 dvt.EventFactory.newTreemapIsolateEvent = function(id) {
   return dvt.EventFactory.newEvent('isolate', id);
 };
+
 /**
  * A component client behavior event.
  * @param {dvt.ClientBehavior} clientHeavior The clientBehavior that was triggered.
@@ -38342,6 +38689,7 @@ dvt.ClientBehaviorEvent.TYPE = 'clientBehavior';
 dvt.ClientBehaviorEvent.prototype.getClientBehavior = function() {
   return this._clientBehavior;
 };
+
 // Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
 /**
  * Utilities for dispatching events.
@@ -38363,6 +38711,7 @@ dvt.EventDispatcher.dispatchEvent = function(callback, callbackObj, component, e
   if (callback && callback.call)
     callback.call(callbackObj, event, component);
 };
+
 // Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
 
 /**
@@ -38772,6 +39121,7 @@ dvt.ToolkitUtils.removeClassName = function(elem, className) {
 
 
 
+
 dvt.Bundle.addDefaultStrings(dvt.Bundle.UTIL_PREFIX, {
   'SCALING_SUFFIX_THOUSAND': 'K',
   'SCALING_SUFFIX_MILLION': 'M',
@@ -38878,7 +39228,8 @@ dvt.Bundle.addDefaultStrings(dvt.Bundle.UTIL_PREFIX, {
   'TIMELINE_SERIES': 'Series',
   'TREEMAP': 'Treemap'
 });
-// Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
+
+// Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
 /**
  * Document APIs.
  * @class dvt.SvgDocumentUtils
@@ -38995,12 +39346,16 @@ dvt.SvgDocumentUtils.cancelDomEvent = function(e)
  * @param {function} dragEndCallback The callback function that is called on drag end.
  * @param {object} callbackObj The object of the callback functions.
  * @param {boolean} bPreventClick (optional) Whether click should be prevented at the end of drag.
- * @return {function} A callback function to remove all listeners
  */
 dvt.SvgDocumentUtils.addDragListeners = function(displayable, dragStartCallback, dragMoveCallback, dragEndCallback, callbackObj, bPreventClick) {
   var isTouch = dvt.Agent.isTouchDevice();
   var context = displayable.getCtx();
   var bodyStyle = dvt.Agent.isEnvironmentBrowser() ? document.body.style : {};
+
+  var clickStaticCallback = function(event) {
+    // Prevent click from occurring (e.g. to prevent clearing selection)
+    event.stopPropagation();
+  };
 
   var dragStartStaticCallback = function(dvtEvent) {
     if (dragStartCallback.call(callbackObj, dvtEvent)) {
@@ -39057,35 +39412,12 @@ dvt.SvgDocumentUtils.addDragListeners = function(displayable, dragStartCallback,
     dragEndCallback.call(callbackObj, dvtEvent);
   };
 
-  var clickStaticCallback = function(event) {
-    // Prevent click from occurring (e.g. to prevent clearing selection)
-    event.stopPropagation();
-  };
-
   // Add the dragStart listener to the object.
   if (isTouch) {
     displayable.addEvtListener(dvt.TouchEvent.TOUCHSTART, dragStartStaticCallback);
   } else {
     displayable.addEvtListener(dvt.MouseEvent.MOUSEDOWN, dragStartStaticCallback);
   }
-
-  // return function to cleanup listeners
-  return function() {
-    // Clean up the dragMove and dragEnd event listeners
-    if (isTouch) {
-      document.removeEventListener('touchmove', dragMoveStaticCallback, true);
-      document.removeEventListener('touchend', dragEndStaticCallback, true);
-    }
-    else {
-      document.removeEventListener('mousemove', dragMoveStaticCallback, true);
-      document.removeEventListener('mouseup', dragEndStaticCallback, true);
-      document.removeEventListener('click', clickStaticCallback, true);
-    }
-
-    // Restore selection
-    bodyStyle.webkitUserSelect = dvt.SvgDocumentUtils._webkitUserSelect;
-    bodyStyle.MozUserSelect = dvt.SvgDocumentUtils._mozUserSelect;
-  };
 };
 
 /**
@@ -39119,6 +39451,7 @@ dvt.SvgDocumentUtils.disableMouseEvents = function(elem) {
     }
   }
 };
+
 /**
  * DvtSvgImageLoader.loadImage("pic.png", function(image) {
  *   alert(image.width);
@@ -39258,6 +39591,7 @@ DvtSvgImageLoader._addListenerToQueue = function(queue, listener) {
   }
 };
 
+
 // Used for rendering SVG content in to an HTML div wrapper
 /**
  * @param {dvt.Context} context
@@ -39331,6 +39665,7 @@ DvtHtmlRichTooltipManager.prototype.hideTooltip = function()
     stage.removeChildren();
   }
 };
+
 // Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 /**
   * A factory class for SVG to create object implementations.
@@ -39399,6 +39734,7 @@ DvtSvgImplFactory.prototype.newTooltipManager = function(id) {
 DvtSvgImplFactory.prototype.newRichTooltipManager = function(id) {
   return new DvtHtmlRichTooltipManager(this._context, id);
 };
+
 // Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
 /**
  * @constructor
@@ -39441,6 +39777,7 @@ DvtSvgFilterContext.prototype.createResultId = function(id)
   }
   return (id + (this._counter++));
 };
+
 // Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
 
 
@@ -39591,6 +39928,7 @@ DvtSvgFilterUtils.CreateFilterId = function()
 {
   return ('filt' + (DvtSvgFilterUtils._counter++));
 };
+
 // Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 /*---------------------------------------------------------------------------*/
 /*    DvtSvgGradientUtils    A static class for SVG gradient property manip- */
@@ -39759,6 +40097,7 @@ DvtSvgGradientUtils.createElem = function(grad, id)
   }
   return elemGrad;
 };
+
 // Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
 /*---------------------------------------------------------------------------*/
 /*    DvtSvgImageFillUtils    A static class for SVG image fill property     */
@@ -39834,6 +40173,7 @@ DvtSvgImageFillUtils.createElem = function(imageFill, id)
 
   return elemPat;
 };
+
 // Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
 /*---------------------------------------------------------------------------*/
 /*    DvtSvgPatternFillUtils    A static class for SVG pattern fill property */
@@ -40093,6 +40433,7 @@ DvtSvgPatternFillUtils.CreatePatternElems = function(patternFill, parentElem)
     dvt.ToolkitUtils.appendChildElem(parentElem, elem);
   }
 };
+
 // Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 /*---------------------------------------------------------------------------*/
 /*   DvtSvgShadowUtils    A static class for SVG drop shadow property manip- */
@@ -40423,6 +40764,7 @@ DvtSvgShadowUtils.CreateInnerFilterPrimitives = function(filt, shadow, svgDispla
   dvt.ToolkitUtils.appendChildElem(filt, elemO);
   dvt.ToolkitUtils.appendChildElem(filt, elemC2);
 };
+
 dvt.exportProperty(dvt, 'Agent', dvt.Agent);
 dvt.exportProperty(dvt.Agent, 'setEnvironment', dvt.Agent.setEnvironment);
 dvt.exportProperty(dvt.Agent, 'setHighContrast', dvt.Agent.setHighContrast);
@@ -40466,8 +40808,8 @@ dvt.exportProperty(dvt.JsonUtils, 'merge', dvt.JsonUtils.merge);
 
 dvt.exportProperty(DvtStage.prototype, 'addChild', DvtStage.prototype.addChild);
 
+
 return dvt;
 })();
-
   return dvt;
 });

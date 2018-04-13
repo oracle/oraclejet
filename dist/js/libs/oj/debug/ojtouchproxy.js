@@ -1,4 +1,5 @@
 /**
+ * @license
  * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
@@ -25,46 +26,42 @@ define(['ojs/ojcore', 'jquery'],
  * @ignore
  * @private
  */
-oj._TouchProxy  = function(elem)
-{
+oj._TouchProxy = function (elem) {
   this._init(elem);
-}
+};
 
 /**
  * Initializes the TouchProxy instance
- * 
+ *
  * @param {Object} elem
  * @private
  */
-oj._TouchProxy.prototype._init = function (elem)
-{
+oj._TouchProxy.prototype._init = function (elem) {
   this._elem = elem;
 
   this._touchHandled = false;
   this._touchMoved = false;
 
-  //add touchListeners
+  // add touchListeners
   this._touchStartHandler = $.proxy(this._touchStart, this);
   this._touchEndHandler = $.proxy(this._touchEnd, this);
   this._touchMoveHandler = $.proxy(this._touchMove, this);
 
   this._elem.on({
-    "touchstart": this._touchStartHandler,
-    "touchend": this._touchEndHandler,
-    "touchmove": this._touchMoveHandler,
-    "touchcancel": this._touchEndHandler
+    touchstart: this._touchStartHandler,
+    touchend: this._touchEndHandler,
+    touchmove: this._touchMoveHandler,
+    touchcancel: this._touchEndHandler
   });
-
 };
 
-oj._TouchProxy.prototype._destroy = function ()
-{
+oj._TouchProxy.prototype._destroy = function () {
   if (this._elem && this._touchStartHandler) {
     this._elem.off({
-      "touchstart": this._touchStartHandler,
-      "touchmove": this._touchMoveHandler,
-      "touchend": this._touchEndHandler,
-      "touchcancel": this._touchEndHandler
+      touchstart: this._touchStartHandler,
+      touchmove: this._touchMoveHandler,
+      touchend: this._touchEndHandler,
+      touchcancel: this._touchEndHandler
     });
 
     this._touchStartHandler = undefined;
@@ -80,19 +77,19 @@ oj._TouchProxy.prototype._destroy = function ()
  *
  * @private
  */
-oj._TouchProxy.prototype._touchHandler = function (event, simulatedType)
-{
+oj._TouchProxy.prototype._touchHandler = function (event, simulatedType) {
   // Ignore multi-touch events
   if (event.originalEvent.touches.length > 1) {
     return;
   }
 
-  // - contextmenu issues: presshold should launch the contextmenu on touch devices
-  if (event.type != "touchstart" && event.type != "touchend")
+  //  - contextmenu issues: presshold should launch the contextmenu on touch devices
+  if (event.type !== 'touchstart' && event.type !== 'touchend') {
     event.preventDefault();
+  }
 
-  var touch = event.originalEvent.changedTouches[0], 
-  simulatedEvent = document.createEvent("MouseEvent");
+  var touch = event.originalEvent.changedTouches[0];
+  var simulatedEvent = document.createEvent('MouseEvent');
 
   // Initialize the simulated mouse event using the touch event's coordinates
   // initMouseEvent(type, canBubble, cancelable, view, clickCount,
@@ -101,7 +98,7 @@ oj._TouchProxy.prototype._touchHandler = function (event, simulatedType)
   simulatedEvent.initMouseEvent(simulatedType, true, true, window, 1,
                                 touch.screenX, touch.screenY,
                                 touch.clientX, touch.clientY, false,
-                                false, false, false, 0/*left*/, null);
+                                false, false, false, 0/* left*/, null);
 
   touch.target.dispatchEvent(simulatedEvent);
 };
@@ -112,11 +109,11 @@ oj._TouchProxy.prototype._touchHandler = function (event, simulatedType)
  *
  * @private
  */
-oj._TouchProxy.prototype._touchStart = function (event)
-{
+oj._TouchProxy.prototype._touchStart = function (event) {
   // Ignore the event if already being handled
-  if (this._touchHandled)
+  if (this._touchHandled) {
     return;
+  }
 
   // set the touchHandled flag
   this._touchHandled = true;
@@ -125,9 +122,9 @@ oj._TouchProxy.prototype._touchStart = function (event)
   this._touchMoved = false;
 
   // Simulate the mouseover, mousemove and mousedown events
-  this._touchHandler(event, "mouseover");
-  this._touchHandler(event, "mousemove");
-  this._touchHandler(event, "mousedown");
+  this._touchHandler(event, 'mouseover');
+  this._touchHandler(event, 'mousemove');
+  this._touchHandler(event, 'mousedown');
 };
 
 /**
@@ -136,10 +133,9 @@ oj._TouchProxy.prototype._touchStart = function (event)
  *
  * @private
  */
-oj._TouchProxy.prototype._touchMove = function (event)
-{
+oj._TouchProxy.prototype._touchMove = function (event) {
   // Ignore event if not handled
-  if (! this._touchHandled) {
+  if (!this._touchHandled) {
     return;
   }
 
@@ -147,7 +143,7 @@ oj._TouchProxy.prototype._touchMove = function (event)
   this._touchMoved = true;
 
   // Simulate the mousemove event
-  this._touchHandler(event, "mousemove");
+  this._touchHandler(event, 'mousemove');
 };
 
 /**
@@ -156,32 +152,29 @@ oj._TouchProxy.prototype._touchMove = function (event)
  *
  * @private
  */
-oj._TouchProxy.prototype._touchEnd = function (event)
-{
+oj._TouchProxy.prototype._touchEnd = function (event) {
   // Ignore event if not handled
-  if (! this._touchHandled) {
+  if (!this._touchHandled) {
     return;
   }
 
   // Simulate the mouseup and mouseout events
-  this._touchHandler(event, "mouseup");
-  this._touchHandler(event, "mouseout");
+  this._touchHandler(event, 'mouseup');
+  this._touchHandler(event, 'mouseout');
 
   // If the touch interaction did not move, it should trigger a click
-  if (! this._touchMoved && event.type == "touchend") {
+  if (!this._touchMoved && event.type === 'touchend') {
     // Simulate the click event
-    this._touchHandler(event, "click");
+    this._touchHandler(event, 'click');
   }
 
   // Unset the flag
   this._touchHandled = false;
-
 };
 
-oj._TouchProxy._TOUCH_PROXY_KEY = "_ojTouchProxy";
+oj._TouchProxy._TOUCH_PROXY_KEY = '_ojTouchProxy';
 
-oj._TouchProxy.prototype.touchMoved = function()
-{
+oj._TouchProxy.prototype.touchMoved = function () {
   return this._touchMoved;
 };
 
@@ -190,12 +183,10 @@ oj._TouchProxy.prototype.touchMoved = function()
  * @param {Object} elem
  * @ignore
  */
-oj._TouchProxy.addTouchListeners = function(elem)
-{
+oj._TouchProxy.addTouchListeners = function (elem) {
   var jelem = $(elem);
   var proxy = jelem.data(oj._TouchProxy._TOUCH_PROXY_KEY);
-  if (! proxy)
-  {
+  if (!proxy) {
     proxy = new oj._TouchProxy(jelem);
     jelem.data(oj._TouchProxy._TOUCH_PROXY_KEY, proxy);
   }
@@ -208,17 +199,14 @@ oj._TouchProxy.addTouchListeners = function(elem)
  * @param {Object} elem
  * @ignore
  */
-oj._TouchProxy.removeTouchListeners = function(elem)
-{
+oj._TouchProxy.removeTouchListeners = function (elem) {
   var jelem = $(elem);
   var proxy = jelem.data(oj._TouchProxy._TOUCH_PROXY_KEY);
-  if (proxy)
-  {
+  if (proxy) {
     proxy._destroy();
     jelem.removeData(oj._TouchProxy._TOUCH_PROXY_KEY);
   }
 };
-
 
 
 });

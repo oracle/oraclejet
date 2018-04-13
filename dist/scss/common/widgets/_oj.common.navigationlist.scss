@@ -10,12 +10,12 @@
 
 @if $includeNavigationListClasses != false {
     @include module-include-once("common.navigationlist") {
-    
+
         // This is to prevent the flash of unstyled content before the html becomes JET components.
         @if $initialVisibility == hidden {
             oj-navigation-list:not(.oj-complete) {
                 visibility: hidden;
-            }      
+            }
         }
 
         oj-navigation-list {
@@ -69,15 +69,15 @@
 
         .oj-navigationlist-item-element:not(.oj-navigationlist-item) {
           display: block;
-          line-height: 0; //IE bug: IE is adding lineheight on top of actual contents height when display:block. 
+          line-height: 0; //IE bug: IE is adding lineheight on top of actual contents height when display:block.
         }
-        
+
         .oj-navigationlist-item-element {
           // work around for IE 11 which ignores list-style-type:none for sub items on first load.
-          // Setting list style image to transparent image. 
+          // Setting list style image to transparent image.
           list-style-image: url("data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7");
         }
-        
+
         /* Remove focus ring on outer ul element*/
         .oj-navigationlist-element:focus {
             outline: none;
@@ -97,13 +97,13 @@
             display: inline-block;
             visibility: hidden;
         }
-        
+
         .oj-navigationlist-page-level.oj-navigationlist-vertical .oj-navigationlist-item::before {
-            min-height: $tabBarItemMinHeight;
+            min-height: $tabBarVerticalItemMinHeight;
         }
-        
+
         .oj-navigationlist-page-level.oj-navigationlist-vertical .oj-navigationlist-item-label {
-            font-size: $tabBarItemFontSize;
+            font-size: $tabBarVerticalItemFontSize;
         }
 
         /* Styling for expand/collapse icons holder */
@@ -112,7 +112,7 @@
             @include oj-order-property(1);
             @include oj-align-self-property(center);
         }
-        
+
         a.oj-navigationlist-collapse-icon,
         a.oj-navigationlist-expand-icon,
         a.oj-navigationlist-collapse-icon:hover,
@@ -142,15 +142,16 @@
             color: $navigationListItemLabelColorDefault;
             .oj-contrast-marker & {
                 color: $navigationListItemContrastLabelColorDefault;
-        }
+            }
         }
 
         .oj-selected > a.oj-navigationlist-item-content > .oj-navigationlist-item-label{
             color: $navigationListItemLabelColorSelected;
             .oj-contrast-marker & {
                 color: $navigationListItemContrastLabelColorSelected;
+            }
         }
-        }
+
         .oj-hover:not(.oj-selected) > a.oj-navigationlist-item-content > .oj-navigationlist-item-label{
             .oj-contrast-marker & {
                 color: $navigationListItemContrastLabelColorHover;
@@ -255,12 +256,12 @@
         .oj-hicontrast .oj-navigationlist-item.oj-selected,
         .oj-hicontrast .oj-navigationlist-item.oj-selected.oj-hover,
         .oj-hicontrast .oj-navigationlist-item.oj-selected.oj-focus {
-            border: 1px solid #000000;
+            border: 1px solid;
         }
 
         .oj-hicontrast .oj-navigationlist-item.oj-hover,
         .oj-hicontrast .oj-navigationlist-item.oj-focus {
-            border: 1px dotted #000000;
+            border: 1px dotted;
         }
 
         /*Focus ring around  focused list item*/
@@ -331,11 +332,11 @@
             $tmpPadding: 0;//Need to define out side if to pass ruby sass build
             $tmpItemBorderWidth: oj-shorthand-property-value-left($navigationListItemBorderWidth);
             @if $tmpItemBorderWidth == 0 {
-                $tmpPadding:  $navigationListItemStartEndPadding; 
+                $tmpPadding:  $navigationListItemStartEndPadding;
             }@else {
                 $tmpPadding:  calc(#{$navigationListItemStartEndPadding} - #{$tmpItemBorderWidth})
             }
-            
+
             //Padding at start of item
             @include oj-rtl() {
                 padding-right: $tmpPadding;
@@ -463,7 +464,7 @@
         .oj-navigationlist-expand-icon:focus {
             outline: none;
         }
-        
+
         .oj-navigationlist-focused-element:not(.oj-focus-highlight) {
           outline: none;// avoid native browser ring on focus
         }
@@ -474,20 +475,20 @@
         .oj-navigationlist-page-level.oj-navigationlist-expanded:not(.oj-navigationlist-icon-only).oj-navigationlist-vertical .oj-navigationlist-item
         {
             $tmpPadding: 0;//Need to define out side if to pass ruby sass build
-            $tmpItemBorderWidth: oj-shorthand-property-value-left($tabBarItemBorderWidth);
+            $tmpItemBorderWidth: oj-shorthand-property-value-left($tabBarVerticalItemBorderWidth);
             @if $tmpItemBorderWidth == 0 {
-                $tmpPadding:  $navigationListItemStartEndPadding; 
+                $tmpPadding:  $navigationListItemStartEndPadding;
             }@else {
                 $tmpPadding:  calc(#{$navigationListItemStartEndPadding} - #{$tmpItemBorderWidth})
             }
             // need to override both ltr and rtl because default expanded navlist will have selection border based on direction.
             @include oj-rtl() {
                 padding-right: $tmpPadding;
-                border-width: 0 oj-shorthand-property-value-left($tabBarItemBorderWidth) oj-shorthand-property-value-bottom($tabBarItemBorderWidth) oj-shorthand-property-value-right($tabBarItemBorderWidth);
+                border-width: 0 oj-shorthand-property-value-left($tabBarVerticalItemBorderWidth) oj-shorthand-property-value-bottom($tabBarVerticalItemBorderWidth) oj-shorthand-property-value-right($tabBarVerticalItemBorderWidth);
             }
             @include oj-ltr() {
                 padding-left: $tmpPadding;
-                border-width: 0 oj-shorthand-property-value-right($tabBarItemBorderWidth) oj-shorthand-property-value-bottom($tabBarItemBorderWidth) oj-shorthand-property-value-left($tabBarItemBorderWidth);
+                border-width: 0 oj-shorthand-property-value-right($tabBarVerticalItemBorderWidth) oj-shorthand-property-value-bottom($tabBarVerticalItemBorderWidth) oj-shorthand-property-value-left($tabBarVerticalItemBorderWidth);
             }
             border-style: solid;
             border-radius: 0;
@@ -498,15 +499,15 @@
 
             // need to override both ltr and rtl as it was overriden above for border-width.
             @include oj-rtl() {
-                border-top-width: oj-shorthand-property-value-top($tabBarItemBorderWidth);
+                border-top-width: oj-shorthand-property-value-top($tabBarVerticalItemBorderWidth);
             }
             @include oj-ltr() {
-                border-top-width: oj-shorthand-property-value-top($tabBarItemBorderWidth);
+                border-top-width: oj-shorthand-property-value-top($tabBarVerticalItemBorderWidth);
             }
             border-top-left-radius: $tabBarItemBorderRadius;
             border-top-right-radius: $tabBarItemBorderRadius;
         }
-        
+
         .oj-navigationlist-page-level.oj-navigationlist-expanded:not(.oj-navigationlist-icon-only).oj-navigationlist-vertical .oj-navigationlist-item:last-of-type {
             border-bottom-left-radius: $tabBarItemBorderRadius;
             border-bottom-right-radius: $tabBarItemBorderRadius;
@@ -560,11 +561,11 @@
                 $tmpPadding: 0; //Need to define out side if to pass ruby sass build
                 $tmpItemBorderWidth: oj-shorthand-property-value-left($navigationListIconOnlyItemBorderWidth);
                 @if $tmpItemBorderWidth == 0 {
-                    $tmpPadding:  $navigationListIconOnlyIconStartEndPadding; 
+                    $tmpPadding:  $navigationListIconOnlyIconStartEndPadding;
                 }@else {
                     $tmpPadding:  calc(#{$navigationListIconOnlyIconStartEndPadding} - #{$tmpItemBorderWidth})
                 }
-              
+
                 @include oj-rtl() {
                     padding: 0 $tmpPadding 0 $navigationListIconOnlyIconStartEndPadding;
                 }
@@ -576,13 +577,13 @@
             .oj-navigationlist-page-level.oj-navigationlist-vertical.oj-navigationlist-icon-only .oj-navigationlist-item-icon
             {
                 $tmpPadding: 0;//Need to define out side if to pass ruby sass build
-                $tmpSelectionBorderWidth: oj-shorthand-property-value-left($tabBarIconOnlyItemBorderWidth);
+                $tmpSelectionBorderWidth: oj-shorthand-property-value-left($tabBarVerticalIconOnlyItemBorderWidth);
                 @if $tmpSelectionBorderWidth == 0 {
-                    $tmpPadding:  $navigationListIconOnlyIconStartEndPadding; 
+                    $tmpPadding:  $navigationListIconOnlyIconStartEndPadding;
                 }@else {
                     $tmpPadding:  calc(#{$navigationListIconOnlyIconStartEndPadding} - #{$tmpSelectionBorderWidth})
                 }
-                
+
                 @include oj-rtl() {
                     padding: 0 $tmpPadding 0 $navigationListIconOnlyIconStartEndPadding;
                 }
@@ -591,15 +592,15 @@
                     padding: 0 $navigationListIconOnlyIconStartEndPadding 0 $tmpPadding;
                 }
             }
-            
+
             .oj-navigationlist-page-level.oj-navigationlist-icon-only.oj-navigationlist-vertical .oj-navigationlist-item
             {
                 // need to override both ltr and rtl because default expanded navlist will have selection border based on direction.
                 @include oj-rtl() {
-                    border-width: 0 oj-shorthand-property-value-left($tabBarIconOnlyItemBorderWidth) oj-shorthand-property-value-bottom($tabBarIconOnlyItemBorderWidth) oj-shorthand-property-value-right($tabBarIconOnlyItemBorderWidth);
+                    border-width: 0 oj-shorthand-property-value-left($tabBarVerticalIconOnlyItemBorderWidth) oj-shorthand-property-value-bottom($tabBarVerticalIconOnlyItemBorderWidth) oj-shorthand-property-value-right($tabBarVerticalIconOnlyItemBorderWidth);
                 }
                 @include oj-ltr() {
-                    border-width: 0 oj-shorthand-property-value-right($tabBarIconOnlyItemBorderWidth) oj-shorthand-property-value-bottom($tabBarIconOnlyItemBorderWidth) oj-shorthand-property-value-left($tabBarIconOnlyItemBorderWidth);
+                    border-width: 0 oj-shorthand-property-value-right($tabBarVerticalIconOnlyItemBorderWidth) oj-shorthand-property-value-bottom($tabBarVerticalIconOnlyItemBorderWidth) oj-shorthand-property-value-left($tabBarVerticalIconOnlyItemBorderWidth);
                 }
                 border-style: solid;
                 border-radius: 0;
@@ -610,10 +611,10 @@
 
                 // need to override both ltr and rtl as it was overriden above for border-width.
                 @include oj-rtl() {
-                    border-top-width: oj-shorthand-property-value-top($tabBarIconOnlyItemBorderWidth);
+                    border-top-width: oj-shorthand-property-value-top($tabBarVerticalIconOnlyItemBorderWidth);
                 }
                 @include oj-ltr() {
-                    border-top-width: oj-shorthand-property-value-top($tabBarIconOnlyItemBorderWidth);
+                    border-top-width: oj-shorthand-property-value-top($tabBarVerticalIconOnlyItemBorderWidth);
                 }
                 border-top-left-radius: $tabBarItemBorderRadius;
                 border-top-right-radius: $tabBarItemBorderRadius;
@@ -623,7 +624,7 @@
                 border-bottom-left-radius: $tabBarItemBorderRadius;
                 border-bottom-right-radius: $tabBarItemBorderRadius;
             }
-            
+
             .oj-navigationlist-page-level.oj-navigationlist-vertical .oj-navigationlist-item.oj-selected {
                 background-color: $tabBarItemBgColorSelected;
                 .oj-contrast-marker & {
@@ -631,7 +632,7 @@
                 }
             }
         }
-        
+
 
         .oj-navigationlist-icon-only .oj-navigationlist-item-content {
             @include oj-justify-content-property(center);
@@ -656,7 +657,7 @@
         .oj-navigationlist-page-level.oj-navigationlist-vertical .oj-navigationlist-item.oj-selected {
             border-color: $tabBarItemBorderColorSelected;
         }
-        
+
          .oj-navigationlist-page-level.oj-navigationlist-vertical:not(.oj-navigationlist-icon-only) .oj-navigationlist-item.oj-selected {
             background-color: $tabBarItemBgColorSelected;
             .oj-contrast-marker & {
@@ -692,7 +693,7 @@
                 color: $tabBarItemContrastLabelColorSelected;
             }
         }
-        
+
         .oj-navigationlist-page-level.oj-navigationlist-vertical:not(.oj-navigationlist-icon-only)  .oj-navigationlist-item.oj-hover:not(.oj-selected) a.oj-navigationlist-item-content  .oj-navigationlist-item-label {
             .oj-contrast-marker & {
                 color: $navigationListItemContrastLabelColorHover;
@@ -738,7 +739,7 @@
         .oj-navigationlist-horizontal .oj-navigationlist-element {
                 @include oj-display-flex-property();
         }
-        
+
         .oj-navigationlist-horizontal .oj-navigationlist-item {
                 @include oj-flex-property(1 1 auto);
         }
@@ -851,7 +852,7 @@
             box-sizing: border-box;
             min-height: $navigationListHorizontalMinHeight;
         }
-        
+
         .oj-navigationlist-page-level.oj-navigationlist-horizontal .oj-navigationlist-item-element {
             min-height: $tabBarHorizontalItemMinHeight;
         }
@@ -869,7 +870,7 @@
         .oj-navigationlist-horizontal .oj-navigationlist-item-label {
                 @include oj-align-self-property(center);
         }
-        
+
         //Padding around icon in horizontal list
         .oj-navigationlist-horizontal .oj-navigationlist-item-icon
         {
@@ -957,7 +958,7 @@
             @include oj-justify-content-property(center);
             padding: $navigationListHorizontalItemPadding;
         }
-        
+
         .oj-navigationlist-horizontal.oj-navigationlist-stack-icon-label:not(.oj-navigationlist-icon-only) .oj-navigationlist-item-content {
             padding: $navigationListHorizontalStackedItemPadding;
         }
@@ -981,7 +982,7 @@
         .oj-navigationlist-horizontal.oj-navigationlist-stack-icon-label .oj-navigationlist-item-element {
             min-height: $navigationListHorizontalStackedIconMinHeight;
         }
-        
+
         .oj-navigationlist-page-level.oj-navigationlist-horizontal.oj-navigationlist-stack-icon-label .oj-navigationlist-item-element {
             min-height: $tabBarHorizontalItemStackedIconMinHeight;
         }
@@ -1062,7 +1063,7 @@
           }
           border-color: $tabBarHorizontalItemBorderColor;
         }
-        
+
         .oj-navigationlist-page-level.oj-navigationlist-horizontal:not(.oj-navigationlist-icon-only) .oj-navigationlist-item:first-of-type {
 
           @include oj-ltr() {
@@ -1092,7 +1093,7 @@
           }
           border-color: $tabBarHorizontalItemBorderColor;
         }
-        
+
         .oj-navigationlist-page-level.oj-navigationlist-horizontal.oj-navigationlist-icon-only .oj-navigationlist-item:first-of-type {
 
           @include oj-ltr() {
@@ -1108,8 +1109,8 @@
           }
         }
 
-        .oj-navigationlist-page-level.oj-navigationlist-horizontal.oj-navigationlist-icon-only .oj-navigationlist-item.oj-navigationlist-item-last-child, 
-        .oj-navigationlist-page-level.oj-navigationlist-horizontal:not(.oj-navigationlist-icon-only) .oj-navigationlist-item.oj-navigationlist-item-last-child {  
+        .oj-navigationlist-page-level.oj-navigationlist-horizontal.oj-navigationlist-icon-only .oj-navigationlist-item.oj-navigationlist-item-last-child,
+        .oj-navigationlist-page-level.oj-navigationlist-horizontal:not(.oj-navigationlist-icon-only) .oj-navigationlist-item.oj-navigationlist-item-last-child {
 
           @include oj-ltr() {
             border-top-right-radius: $tabBarItemBorderRadius;
@@ -1333,7 +1334,7 @@
             line-height: 12px;
         }
 
-        .oj-navigationlist-hierarchical-menu .oj-menu-item.oj-focus>a, 
+        .oj-navigationlist-hierarchical-menu .oj-menu-item.oj-focus>a,
         .oj-navigationlist-hierarchical-menu .oj-menu-item.oj-focus-ancestor>a {
             background: none;
         }
@@ -1375,7 +1376,7 @@
             margin-left: 4px;
             margin-right: 2px;
         }
-        
+
         .oj-navigationlist-hierarchical-menu .oj-menu-item-icon {
             position: static;
             @include oj-transform-property (none);
@@ -1399,7 +1400,7 @@
                 color: $tabBarHorizontalItemContrastLabelColorSelected;
             }
         }
-        
+
         .oj-navigationlist-vertical.oj-navigationlist-page-level.oj-navigationlist-expanded.oj-navigationlist-icon-only .oj-navigationlist-item.oj-selected:not(.oj-hover) .oj-navigationlist-item-icon {
             .oj-contrast-marker & {
                 color: $tabBarItemContrastLabelColorSelected;
@@ -1431,7 +1432,7 @@
         }
         .oj-navigationlist-no-data-message {
             padding: $panelPadding;
-            background-color: $dataGridCellBgColor;
+            background-color: $collectionCellBgColor;
             min-height: $fontSize;
         }
         /* Override  default options*/
@@ -1457,7 +1458,7 @@
         @if ($navigationListUpdateAnimation) {
             $navigationListAnimationDefaults: map-merge($navigationListAnimationDefaults, (update: $navigationListUpdateAnimation));
         }
- 
+
         @if ($navigationListExpandAnimation) {
             $navigationListAnimationDefaults: map-merge($navigationListAnimationDefaults, (expand: $navigationListExpandAnimation));
         }
@@ -1486,7 +1487,7 @@
         {
           $navigationListDefaultOptions: map-merge($navigationListDefaultOptions, (hierarchyMenuDisplayThresholdLevel: $navigationListHierarchyMenuThresholdOptionDefault));
         }
-        
+
         .oj-navigationlist-option-defaults {
            font-family: oj-json-from-map($navigationListDefaultOptions);
         }

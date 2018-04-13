@@ -21,6 +21,9 @@
 
 @if $includeMessagingClasses != false {
   @include module-include-once("alta.messaging") {
-   
+    
+    .oj-message-status-icon:before {
+      width: 16px; /* Needed for old versions of IE11 */
+    }
   }
 }

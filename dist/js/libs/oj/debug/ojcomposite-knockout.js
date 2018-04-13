@@ -1,4 +1,5 @@
 /**
+ * @license
  * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
@@ -6,174 +7,9 @@
 define(['ojs/ojcore', 'knockout', 'ojs/ojkoshared'], function(oj, ko)
 {
 /**
+ * @protected
  * @ignore
  */
-oj.CompositeTemplateRenderer = {};
-
-
-/**
- * @ignore
- */
-oj.CompositeTemplateRenderer.renderTemplate = function(params, element, view) 
-{
-  // Store composite children on a hidden node while slotting to avoid stale knockout bindings
-  // when observables are updated while children are disconnected from DOM. The _storeNodes methods
-  // also adds the storage node to the view so it's added to the DOM in setDomNodChildren
-  var nodeStorage = oj.CompositeTemplateRenderer._storeNodes(element, view);
-  ko.virtualElements.setDomNodeChildren(element, view);
-
-  oj.CompositeTemplateRenderer.invokeViewModelMethod(params.viewModel, 'attachedMethod', [params.viewModelContext]);
-  oj.CompositeTemplateRenderer.invokeViewModelMethod(params.viewModel, 'connected', [params.viewModelContext]);
-  
-  var bindingContext = oj.CompositeTemplateRenderer._createKoBindingContext(element);
-
-  // Null out the parent references since we don't want the composite View to be able to access the outside context
-  var childBindingContext = bindingContext['createChildContext'](params.viewModel, undefined, 
-    function (ctx) {
-      ctx[oj.Composite.__COMPOSITE_PROP] = element;
-      ctx['__oj_slots'] = params.slotMap;
-      ctx['__oj_nodestorage'] = nodeStorage;
-      ctx['$slotNodeCounts'] = params.slotNodeCounts;
-      ctx['$props'] = params.props;
-      ctx['$unique'] = params.unique;
-      ctx['$uniqueId'] = params.uniqueId;
-      ctx['$parent'] = null;
-      ctx['$parentContext'] = null;
-      ctx['$parents'] = null;
-    }
-  );
-  
-  ko.applyBindingsToDescendants(childBindingContext, element);
-
-  oj.CompositeTemplateRenderer.invokeViewModelMethod(params.viewModel, 'bindingsAppliedMethod', [params.viewModelContext]);
-};
-
-/**
- * @ignore
- */
-oj.CompositeTemplateRenderer.getEnclosingComposite = function(node)
-{
-  var enclosing = null;
-
-  for(var ctx = ko.contextFor(node); ctx && !enclosing; ctx = ctx['$parentContext'])
-  {
-    enclosing = ctx[oj.Composite.__COMPOSITE_PROP];
-  }
-  
-  return enclosing;
-};
-
-/**
- * @ignore
- */
-oj.CompositeTemplateRenderer.createTracker = function()
-{
-  return ko.observable();
-};
-
-/**
- * @ignore
- */
-oj.CompositeTemplateRenderer.invokeViewModelMethod = function(model, key, args)
-{
-  if (model == null)
-  {
-    return;
-  }
-  // Renaming of lifecycle methods is deprecated, so we don't want to introduce
-  // a new key for the new lifecycle listeners connected/disconnected since we're
-  // removing the defaults lookup in 5.0.0.
-  var name = oj.Composite.defaults[key] || key;
-  if (name != null && model)
-  {
-    var handler = model[name];
-    if (typeof handler === 'function')
-    {
-      return ko.ignoreDependencies(handler, model, args);
-    }
-  }
-};
-
-/**
- * @ignore
- */
-oj.CompositeTemplateRenderer.createSlotMap = function(element)
-{
-  var slotMap = {};
-  var childNodeList = element.childNodes;
-  for (var i = 0; i < childNodeList.length; i++)
-  {
-    var child = childNodeList[i];
-    // Only assign Text and Element nodes to a slot
-    if (oj.BaseCustomElementBridge.isSlotAssignable(child))
-    {
-      // Ignore text nodes that only contain whitespace
-      if (child.nodeType === 3 && !child.nodeValue.trim())
-      {
-        continue;
-      }
-
-      // Text nodes and elements with no slot attribute map to the default slot
-      var savedSlot = child['__oj_slots'];
-      var slot = savedSlot != null ? savedSlot : child.getAttribute && child.getAttribute('slot');
-      if (!slot)
-        slot = '';
-
-      if (!slotMap[slot])
-      {
-        slotMap[slot] = [];
-      }
-      slotMap[slot].push(child);
-    }
-  }
-  return slotMap;
-};
-
-/**
- * @ignore
- */
-oj.CompositeTemplateRenderer._storeNodes = function(element, view)
-{
-  var nodeStorage;
-  var childNodes = element.childNodes;
-  if (childNodes)
-  {
-    nodeStorage = document.createElement('div');
-    nodeStorage.setAttribute('data-bind', '_ojNodeStorage_')
-    nodeStorage.style.display = 'none';
-    view.push(nodeStorage);
-    var assignableNodes = [];
-    for (var i = 0; i < childNodes.length; i++)
-    {
-      var node = childNodes[i];
-      if (oj.BaseCustomElementBridge.isSlotAssignable(node))
-      {
-        assignableNodes.push(node);
-      }
-    }
-    assignableNodes.forEach(function (node) {
-      nodeStorage.appendChild(node); // @HTMLUpdateOK
-    });
-    // Notifies JET components inside nodeStorage that they have been hidden
-    if (oj.Components)
-      oj.Components.subtreeHidden(nodeStorage);
-  }
-  return nodeStorage;
-};
-
-/**
- * @ignore
- */
-oj.CompositeTemplateRenderer._createKoBindingContext = function(elem)
-{
-  var div = document.createElement("div");
-  ko.applyBindings(null, div);
-  var context = ko.contextFor(div);
-  
-  ko.cleanNode(div);
-  
-  return context;
-};
 (function()
 {
 
@@ -251,6 +87,137 @@ oj.CompositeTemplateRenderer._createKoBindingContext = function(elem)
 }
 )();
 
+/**
+ * @ignore
+ */
+oj.CompositeTemplateRenderer = {};
+
+
+/**
+ * @ignore
+ */
+oj.CompositeTemplateRenderer.renderTemplate = function(params, element, view) 
+{
+  // Store composite children on a hidden node while slotting to avoid stale knockout bindings
+  // when observables are updated while children are disconnected from DOM. The _storeNodes methods
+  // also adds the storage node to the view so it's added to the DOM in setDomNodChildren
+  var nodeStorage = oj.CompositeTemplateRenderer._storeNodes(element, view);
+  ko.virtualElements.setDomNodeChildren(element, view);
+
+  // Attached is deprecated in 4.2.0 for connected which is called when the view is first attached to the DOM
+  // and then each time the component is connected to the DOM after a disconnect
+  oj.CompositeTemplateRenderer.invokeViewModelMethod(params.viewModel, 'attached', [params.viewModelContext]);
+  oj.CompositeTemplateRenderer.invokeViewModelMethod(params.viewModel, 'connected', [params.viewModelContext]);
+  
+  var bindingContext = oj.CompositeTemplateRenderer._createKoBindingContext(element);
+
+  // Null out the parent references since we don't want the composite View to be able to access the outside context
+  var childBindingContext = bindingContext['createChildContext'](params.viewModel, undefined, 
+    function (ctx) {
+      ctx[oj.Composite.__COMPOSITE_PROP] = element;
+      ctx['__oj_slots'] = params.slotMap;
+      ctx['__oj_nodestorage'] = nodeStorage;
+      ctx['$slotNodeCounts'] = params.slotNodeCounts;
+      ctx['$slotCounts'] = params.slotNodeCounts;
+      ctx['$props'] = params.props;
+      ctx['$properties'] = params.props;
+      ctx['$unique'] = params.unique;
+      ctx['$uniqueId'] = params.uniqueId;
+      ctx['$parent'] = null;
+      ctx['$parentContext'] = null;
+      ctx['$parents'] = null;
+    }
+  );
+  
+  ko.applyBindingsToDescendants(childBindingContext, element);
+
+  oj.CompositeTemplateRenderer.invokeViewModelMethod(params.viewModel, 'bindingsApplied', [params.viewModelContext]);
+};
+
+/**
+ * @ignore
+ */
+oj.CompositeTemplateRenderer.getEnclosingComposite = function(node)
+{
+  var enclosing = null;
+
+  for(var ctx = ko.contextFor(node); ctx && !enclosing; ctx = ctx['$parentContext'])
+  {
+    enclosing = ctx[oj.Composite.__COMPOSITE_PROP];
+  }
+  
+  return enclosing;
+};
+
+/**
+ * @ignore
+ */
+oj.CompositeTemplateRenderer.createTracker = function()
+{
+  return ko.observable();
+};
+
+/**
+ * @ignore
+ */
+oj.CompositeTemplateRenderer.invokeViewModelMethod = function(model, name, args)
+{
+  if (model == null)
+  {
+    return;
+  }
+  var handler = model[name];
+  if (typeof handler === 'function')
+  {
+    return ko.ignoreDependencies(handler, model, args);
+  }
+};
+
+/**
+ * @ignore
+ */
+oj.CompositeTemplateRenderer._storeNodes = function(element, view)
+{
+  var nodeStorage;
+  var childNodes = element.childNodes;
+  if (childNodes)
+  {
+    nodeStorage = document.createElement('div');
+    nodeStorage.setAttribute('data-bind', '_ojNodeStorage_')
+    nodeStorage.style.display = 'none';
+    view.push(nodeStorage);
+    var assignableNodes = [];
+    for (var i = 0; i < childNodes.length; i++)
+    {
+      var node = childNodes[i];
+      if (oj.BaseCustomElementBridge.isSlotAssignable(node))
+      {
+        assignableNodes.push(node);
+      }
+    }
+    assignableNodes.forEach(function (node) {
+      nodeStorage.appendChild(node); // @HTMLUpdateOK
+    });
+    // Notifies JET components inside nodeStorage that they have been hidden
+    if (oj.Components)
+      oj.Components.subtreeHidden(nodeStorage);
+  }
+  return nodeStorage;
+};
+
+/**
+ * @ignore
+ */
+oj.CompositeTemplateRenderer._createKoBindingContext = function(elem)
+{
+  var div = document.createElement("div");
+  ko.applyBindings(null, div);
+  var context = ko.contextFor(div);
+  
+  ko.cleanNode(div);
+  
+  return context;
+};
 ko['bindingHandlers']['_ojNodeStorage_'] =
 {
   'init': function()
@@ -331,6 +298,7 @@ ko.virtualElements.allowedBindings['_ojBindSlot_'] = true;
 /**
  * @ojstatus preview
  * @ojcomponent oj.ojBindSlot
+ * @ojshortdesc A placeholder for child DOM to appear in a specified slot.
  * @ojbindingelement
  * @since 4.1.0
  *
@@ -586,7 +554,7 @@ ko.virtualElements.allowedBindings['_ojBindSlot_'] = true;
  *          </caption>
  * &lt;!-- Composite View -->
  * &lt;ul>
- *   &lt;oj-bind-for-each data="[[new Array($slotNodeCounts.foo)]]">
+ *   &lt;oj-bind-for-each data="[[new Array($slotCounts.foo)]]">
  *     &lt;template>
  *       &lt;li>
  *         &lt;oj-bind-slot name="foo" index="[[$current.index]]">&lt;/oj-bind-slot>

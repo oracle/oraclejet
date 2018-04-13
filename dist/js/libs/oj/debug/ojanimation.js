@@ -1,4 +1,5 @@
 /**
+ * @license
  * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
@@ -16,9 +17,36 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore'], function(oj, 
  * Utility methods for animating elements.
  *
  * <h3 id="custom-animation-section">
- *   Customizing Animation
+ *   Customizing and Disabling Animation
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#custom-animation-section"></a>
  * </h3>
+ * 
+ * Default animations can be customized or disabled at several levels with varying degrees of control:
+ * <ol>
+ *   <li>For all JET components.</li>
+ *   <li>For all instances of a JET component.</li>
+ *   <li>For one instance of a JET component.</li>
+ * </ol>
+ * 
+ * <h4>1. For all JET components</h4>
+ * 
+ * <p>There are several theme variables that control the speed of animations in JET.  Applications can change their values 
+ * to speed up or slow down animations for all components, or to disable animations altogether by setting them to 0:</p>
+ * <pre class="prettyprint"><code>$animationDurationShort: .25s !default;
+ * $animationDurationMedium: .4s !default;
+ * $animationDurationLong: .5s !default;
+ * </code></pre>
+ * <p>Note that setting them to 0 does not make the actions that invoke animations synchronous.  For example, opening a dialog is an asynchronous
+ * action.  By setting the animation duration to 0 simply makes the dialog appear to open immediately.  Events related to the dialog opening
+ * are still fired asynchronously, though with a much shorter delay.</p>
+ * 
+ * <h4>2. For All Instances of a JET Component.</h4>
+ * 
+ * <p>Default animations for JET components are defined by component-specific theme variables.  Changing the values of the theme variables for a particular component
+ * will affect the default animations for all instances of that component.  These theme variables are listed in the API documentation
+ * for the <code class="prettyprint">ojAnimateStart</code> event of each component.</p>
+ * 
+ * <h4>3. For One Instance of a JET Component</h4> 
  *
  * <p>Applications can customize animations triggered by actions in some components by listening for <code class="prettyprint">ojAnimateStart/ojAnimateEnd</code>
  *    events and override action specific animations.  See the documentation of individual components for support details of <code
@@ -34,6 +62,16 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore'], function(oj, 
  * </ul>
  *
  * <h4>Examples</h4>
+ * <br>
+ * <i>Disable a default "open" animation:</i>
+ * <pre class="prettyprint"><code>
+ * myComponent.addEventListener( "ojAnimateStart", function( event ) {
+ *   if (event.detail.action == "open") {
+ *     event.preventDefault();
+ *     event.detail.endCallback();
+ *   }
+ * });
+ * </code></pre>
  * <br>
  * <i>Customize a default "open" animation with oj.AnimationUtils method:</i>
  * <pre class="prettyprint"><code>
@@ -108,6 +146,7 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore'], function(oj, 
  * </code></pre>
  *
  * @namespace
+ * @since 2.1
  * @export
  */
 oj.AnimationUtils = {};
@@ -849,7 +888,7 @@ oj.AnimationUtils._fade = function(element, options, effect, startOpacity, endOp
  * Animaton effect method for fading in a HTML element.
  * 
  * @param {Element} element  the HTML element to animate
- * @param {Object} options Options applicable to the specific animation effect.
+ * @param {Object=} options Options applicable to the specific animation effect.
  * @param {string=} options.delay  The delay from the time the animation is applied to time the 
  * animation should begin. This may be specified in either seconds (by specifying s as the unit) or milliseconds 
  * (by specifying ms as the unit). Default is "0s".
@@ -862,7 +901,7 @@ oj.AnimationUtils._fade = function(element, options, effect, startOpacity, endOp
  *                                    Set to "all" to persist the inline style.  Default is "none".
  * @param {number=} options.startOpacity starting opacity. Default is 0.
  * @param {number=} options.endOpacity  ending opacity. Default is 1.
- * @return {Promise} a promise that will be resolved when the animation ends
+ * @return {Promise.<boolean>} a promise that will be resolved when the animation ends
  *
  * @export
  * @memberof oj.AnimationUtils
@@ -876,7 +915,7 @@ oj.AnimationUtils.fadeIn = function(element, options)
  * Animaton effect method for fading out a HTML element.
  *
  * @param {Element} element  the HTML element to animate
- * @param {Object} options Options applicable to the specific animation effect.
+ * @param {Object=} options Options applicable to the specific animation effect.
  * @param {string=} options.delay  The delay from the time the animation is applied to time the 
  * animation should begin. This may be specified in either seconds (by specifying s as the unit) or milliseconds 
  * (by specifying ms as the unit). Default is "0s".
@@ -889,7 +928,7 @@ oj.AnimationUtils.fadeIn = function(element, options)
  *                                    Set to "all" to persist the inline style.  Default is "none".
  * @param {number=} options.startOpacity starting opacity. Default is 1.
  * @param {number=} options.endOpacity  ending opacity. Default is 0.
- * @return {Promise} a promise that will be resolved when the animation ends
+ * @return {Promise.<boolean>} a promise that will be resolved when the animation ends
  *
  * @export
  * @memberof oj.AnimationUtils
@@ -903,7 +942,7 @@ oj.AnimationUtils.fadeOut = function(element, options)
  * Animaton effect method for expanding a HTML element.
  *
  * @param {Element} element  the HTML element to animate
- * @param {Object} options Options applicable to the specific animation effect.
+ * @param {Object=} options Options applicable to the specific animation effect.
  * @param {string=} options.delay  The delay from the time the animation is applied to time the 
  * animation should begin. This may be specified in either seconds (by specifying s as the unit) or milliseconds 
  * (by specifying ms as the unit). Default is "0s".
@@ -919,7 +958,7 @@ oj.AnimationUtils.fadeOut = function(element, options)
  * @param {string=} options.endMaxHeight ending max-height value to expand to.  Default is natural element height.
  * @param {string=} options.startMaxWidth starting max-width value to expand from.  Default is "0".
  * @param {string=} options.endMaxWidth starting max-width value to expand to.  Default is natural element width.
- * @return {Promise} a promise that will be resolved when the animation ends
+ * @return {Promise.<boolean>} a promise that will be resolved when the animation ends
  *
  * @export
  * @memberof oj.AnimationUtils
@@ -938,7 +977,7 @@ oj.AnimationUtils.expand = function(element, options)
  * call this method on the wrapper element instead.</p>
  *
  * @param {Element} element  the HTML element to animate
- * @param {Object} options Options applicable to the specific animation effect.
+ * @param {Object=} options Options applicable to the specific animation effect.
  * @param {string=} options.delay  The delay from the time the animation is applied to time the 
  * animation should begin. This may be specified in either seconds (by specifying s as the unit) or milliseconds 
  * (by specifying ms as the unit). Default is "0s".
@@ -954,7 +993,7 @@ oj.AnimationUtils.expand = function(element, options)
  * @param {string=} options.endMaxHeight ending max-height value to collapse to.  Default is "0".
  * @param {string=} options.startMaxWidth starting max-width value to collapse from.  Default is natural element width.
  * @param {string=} options.endMaxWidth starting max-width value to collapse to.  Default is "0".
- * @return {Promise} a promise that will be resolved when the animation ends
+ * @return {Promise.<boolean>} a promise that will be resolved when the animation ends
  *
  * @export
  * @memberof oj.AnimationUtils
@@ -1213,7 +1252,7 @@ oj.AnimationUtils._expandCollapse = function(element, options, isExpand)
  * Animaton effect method for zooming in a HTML element.
  *
  * @param {Element} element  the HTML element to animate
- * @param {Object} options Options applicable to the specific animation effect.
+ * @param {Object=} options Options applicable to the specific animation effect.
  * @param {string=} options.delay  The delay from the time the animation is applied to time the 
  * animation should begin. This may be specified in either seconds (by specifying s as the unit) or milliseconds 
  * (by specifying ms as the unit). Default is "0s".
@@ -1226,7 +1265,7 @@ oj.AnimationUtils._expandCollapse = function(element, options, isExpand)
  *                                    Set to "all" to persist the inline style.  Default is "none".
  * @param {string=} options.axis the axis along which to scale the element. Valid values are "x", "y", or "both". Default is "both".
  * @param {string=} options.transformOrigin set the CSS transform-origin property, which controls the anchor point for the zoom. Default is "center".
- * @return {Promise} a promise that will be resolved when the animation ends
+ * @return {Promise.<boolean>} a promise that will be resolved when the animation ends
  *
  * @export
  * @memberof oj.AnimationUtils
@@ -1240,7 +1279,7 @@ oj.AnimationUtils.zoomIn = function(element, options)
  * Animaton effect method for zooming out a HTML element.
  *
  * @param {Element} element  the HTML element to animate
- * @param {Object} options Options applicable to the specific animation effect.
+ * @param {Object=} options Options applicable to the specific animation effect.
  * @param {string=} options.delay  The delay from the time the animation is applied to time the 
  * animation should begin. This may be specified in either seconds (by specifying s as the unit) or milliseconds 
  * (by specifying ms as the unit). Default is "0s".
@@ -1253,7 +1292,7 @@ oj.AnimationUtils.zoomIn = function(element, options)
  *                                    Set to "all" to persist the inline style.  Default is "none".
  * @param {string=} options.axis the axis along which to scale the element. Valid values are "x", "y", or "both". Default is "both".
  * @param {string=} options.transformOrigin set the CSS transform-origin property, which controls the anchor point for the zoom. Default is "center".
- * @return {Promise} a promise that will be resolved when the animation ends
+ * @return {Promise.<boolean>} a promise that will be resolved when the animation ends
  *
  * @export
  * @memberof oj.AnimationUtils
@@ -1290,7 +1329,7 @@ oj.AnimationUtils._zoom = function(element, options, isIn)
  * Animaton effect method for sliding in a HTML element.
  *
  * @param {Element} element  the HTML element to animate
- * @param {Object} options Options applicable to the specific animation effect.
+ * @param {Object=} options Options applicable to the specific animation effect.
  * @param {string=} options.delay  The delay from the time the animation is applied to time the 
  * animation should begin. This may be specified in either seconds (by specifying s as the unit) or milliseconds 
  * (by specifying ms as the unit). Default is "0s".
@@ -1307,7 +1346,7 @@ oj.AnimationUtils._zoom = function(element, options, isIn)
  *                                  If moving in a horizontal direction, default to element width. Otherwise, default to "0px".
  * @param {string=} options.offsetY The offset on the y-axis to translate from. This value must be a number followed by a unit such as "px", "em", etc.
  *                                  If moving in a vertical direction, default to element height. Otherwise, default to "0px".
- * @return {Promise} a promise that will be resolved when the animation ends
+ * @return {Promise.<boolean>} a promise that will be resolved when the animation ends
  *
  * @export
  * @memberof oj.AnimationUtils
@@ -1321,7 +1360,7 @@ oj.AnimationUtils.slideIn = function(element, options)
  * Animaton effect method for sliding out a HTML element.
  *
  * @param {Element} element  the HTML element to animate
- * @param {Object} options Options applicable to the specific animation effect.
+ * @param {Object=} options Options applicable to the specific animation effect.
  * @param {string=} options.delay  The delay from the time the animation is applied to time the 
  * animation should begin. This may be specified in either seconds (by specifying s as the unit) or milliseconds 
  * (by specifying ms as the unit). Default is "0s".
@@ -1338,7 +1377,7 @@ oj.AnimationUtils.slideIn = function(element, options)
  *                                  If moving in a horizontal direction, default to element width. Otherwise, default to "0px".
  * @param {string=} options.offsetY The offset on the y-axis to translate to. This value must be a number followed by a unit such as "px", "em", etc.
  *                                  If moving in a vertical direction, default to element height. Otherwise, default to "0px".
- * @return {Promise} a promise that will be resolved when the animation ends
+ * @return {Promise.<boolean>} a promise that will be resolved when the animation ends
  *
  * @export
  * @memberof oj.AnimationUtils
@@ -1416,7 +1455,7 @@ oj.AnimationUtils._slide = function(element, options, isIn)
  * Animaton effect method for rippling a HTML element.
  *
  * @param {Element} element  the HTML element to animate
- * @param {Object} options Options applicable to the specific animation effect.
+ * @param {Object=} options Options applicable to the specific animation effect.
  * @param {string=} options.delay  The delay from the time the animation is applied to time the 
  * animation should begin. This may be specified in either seconds (by specifying s as the unit) or milliseconds 
  * (by specifying ms as the unit). Default is "0s".
@@ -1425,10 +1464,10 @@ oj.AnimationUtils._slide = function(element, options, isIn)
  * Default is "400ms".
  * @param {string=} options.timingFunction  One of the valid values for either CSS transition-timing-function or CSS 
  * animation-timing-function. Default is "ease".
- * @param {string} options.offsetX Horizontal offset of the ripple center, with a unit of either "px" or "%".
+ * @param {string=} options.offsetX Horizontal offset of the ripple center, with a unit of either "px" or "%".
  *                                  If the unit is "px", it specifies the offset in pixels.
  *                                  If the unit is "%", it specifies the offset as a percentage of the element's width.
- * @param {string} options.offsetY Vertical offset of the ripple center, with a unit of either "px" or "%".
+ * @param {string=} options.offsetY Vertical offset of the ripple center, with a unit of either "px" or "%".
  *                                  If the unit is "px", it specifies the offset in pixels.
  *                                  If the unit is "%", it specifies the offset as a percentage of the element's height.
  * @param {string=} options.color Color of the ripple. Default is specified in the "oj-animation-effect-ripple" CSS class.
@@ -1438,7 +1477,7 @@ oj.AnimationUtils._slide = function(element, options, isIn)
  *                                   Default is specified in the "oj-animation-effect-ripple" CSS class.
  * @param {number=} options.startOpacity start opacity of the ripple. Default is specified in the "oj-animation-effect-ripple" CSS class.
  * @param {number=} options.endOpacity end opacity of the ripple. Default is 0.
- * @return {Promise} a promise that will be resolved when the animation ends
+ * @return {Promise.<boolean>} a promise that will be resolved when the animation ends
  *
  * @export
  * @memberof oj.AnimationUtils
@@ -1695,7 +1734,7 @@ oj.AnimationUtils._flip = function(element, options, effect, startAngle, endAngl
  * Animaton effect method for rotating a HTML element into view.
  *
  * @param {Element} element  the HTML element to animate
- * @param {Object} options Options applicable to the specific animation effect.
+ * @param {Object=} options Options applicable to the specific animation effect.
  * @param {string=} options.delay  The delay from the time the animation is applied to time the 
  * animation should begin. This may be specified in either seconds (by specifying s as the unit) or milliseconds 
  * (by specifying ms as the unit). Default is "0s".
@@ -1719,7 +1758,7 @@ oj.AnimationUtils._flip = function(element, options, effect, startAngle, endAngl
  *                                         has children to represent the front and back faces of a card.  The child that represents the back face must have
  *                                         the "oj-animation-backface" marker class.  Use this option instead of the "transform-style: preserve-3d" CSS style because
  *                                         some browsers do not support "transform-style".  See the cookbook for a Card Flip example of using this option.</p>
- * @return {Promise} a promise that will be resolved when the animation ends
+ * @return {Promise.<boolean>} a promise that will be resolved when the animation ends
  *
  * @export
  * @memberof oj.AnimationUtils
@@ -1733,7 +1772,7 @@ oj.AnimationUtils.flipIn = function(element, options)
  * Animaton effect method for rotating a HTML element out of view.
  *
  * @param {Element} element  the HTML element to animate
- * @param {Object} options Options applicable to the specific animation effect.
+ * @param {Object=} options Options applicable to the specific animation effect.
  * @param {string=} options.delay  The delay from the time the animation is applied to time the 
  * animation should begin. This may be specified in either seconds (by specifying s as the unit) or milliseconds 
  * (by specifying ms as the unit). Default is "0s".
@@ -1757,7 +1796,7 @@ oj.AnimationUtils.flipIn = function(element, options)
  *                                         has children to represent the front and back faces of a card.  The child that represents the back face must have
  *                                         the "oj-animation-backface" marker class.  Use this option instead of the "transform-style: preserve-3d" CSS style because
  *                                         some browsers do not support "transform-style".  See the cookbook for a Card Flip example of using this option.</p>
- * @return {Promise} a promise that will be resolved when the animation ends
+ * @return {Promise.<boolean>} a promise that will be resolved when the animation ends
  *
  * @export
  * @memberof oj.AnimationUtils
@@ -1794,5 +1833,19 @@ oj.AnimationUtils.addTransition = function(element, options)
    
   return oj.AnimationUtils._animate(element, null, null, options, options['transitionProperties']);
 };
-
+/**
+ * All the available animation methods supported in oj.AnimationUtils
+ * @typedef {Object} oj.AnimationUtils.AnimationMethods
+ * @ojvalue {string} "collapse"
+ * @ojvalue {string} "expand"
+ * @ojvalue {string} "fadeIn"
+ * @ojvalue {string} "fadeOut"
+ * @ojvalue {string} "flipIn"
+ * @ojvalue {string} "flipOut"
+ * @ojvalue {string} "ripple"
+ * @ojvalue {string} "slideIn"
+ * @ojvalue {string} "slideOut"
+ * @ojvalue {string} "zoomIn"
+ * @ojvalue {string} "zoomOut"
+ */
 });

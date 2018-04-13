@@ -1,4 +1,5 @@
 /**
+ * @license
  * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
@@ -10,7 +11,11 @@
  */
 define(['ojs/ojcore', 'jquery', 'ojs/ojeventtarget', 'ojs/ojdataprovider'], function(oj, $)
 {
-var TableDataSourceAdapter = (function () {
+/**
+ * Copyright (c) 2014, Oracle and/or its affiliates.
+ * All rights reserved.
+ */
+var TableDataSourceAdapter = /** @class */ (function () {
     function TableDataSourceAdapter(tableDataSource) {
         this.tableDataSource = tableDataSource;
         this._KEY = 'key';
@@ -38,7 +43,7 @@ var TableDataSourceAdapter = (function () {
         this._REMOVE = 'remove';
         this._UPDATE = 'update';
         this._FETCHTYPE = 'fetchType';
-        this.AsyncIterable = (function () {
+        this.AsyncIterable = /** @class */ (function () {
             function class_1(_parent, _asyncIterator) {
                 this._parent = _parent;
                 this._asyncIterator = _asyncIterator;
@@ -48,7 +53,7 @@ var TableDataSourceAdapter = (function () {
             }
             return class_1;
         }());
-        this.AsyncIterator = (function () {
+        this.AsyncIterator = /** @class */ (function () {
             function class_2(_parent, _nextFunc, _params) {
                 this._parent = _parent;
                 this._nextFunc = _nextFunc;
@@ -62,7 +67,7 @@ var TableDataSourceAdapter = (function () {
             };
             return class_2;
         }());
-        this.AsyncIteratorResult = (function () {
+        this.AsyncIteratorResult = /** @class */ (function () {
             function class_3(_parent, value, done) {
                 this._parent = _parent;
                 this.value = value;
@@ -72,7 +77,7 @@ var TableDataSourceAdapter = (function () {
             }
             return class_3;
         }());
-        this.FetchByKeysResults = (function () {
+        this.FetchByKeysResults = /** @class */ (function () {
             function class_4(_parent, fetchParameters, results) {
                 this._parent = _parent;
                 this.fetchParameters = fetchParameters;
@@ -82,7 +87,7 @@ var TableDataSourceAdapter = (function () {
             }
             return class_4;
         }());
-        this.ContainsKeysResults = (function () {
+        this.ContainsKeysResults = /** @class */ (function () {
             function class_5(_parent, containsParameters, results) {
                 this._parent = _parent;
                 this.containsParameters = containsParameters;
@@ -92,7 +97,7 @@ var TableDataSourceAdapter = (function () {
             }
             return class_5;
         }());
-        this.FetchListResult = (function () {
+        this.FetchListResult = /** @class */ (function () {
             function class_6(_parent, fetchParameters, data, metadata) {
                 this._parent = _parent;
                 this.fetchParameters = fetchParameters;
@@ -104,7 +109,7 @@ var TableDataSourceAdapter = (function () {
             }
             return class_6;
         }());
-        this.Item = (function () {
+        this.Item = /** @class */ (function () {
             function class_7(_parent, metadata, data) {
                 this._parent = _parent;
                 this.metadata = metadata;
@@ -114,7 +119,7 @@ var TableDataSourceAdapter = (function () {
             }
             return class_7;
         }());
-        this.ItemMetadata = (function () {
+        this.ItemMetadata = /** @class */ (function () {
             function class_8(_parent, key) {
                 this._parent = _parent;
                 this.key = key;
@@ -122,7 +127,7 @@ var TableDataSourceAdapter = (function () {
             }
             return class_8;
         }());
-        this.FetchByOffsetResults = (function () {
+        this.FetchByOffsetResults = /** @class */ (function () {
             function class_9(_parent, fetchParameters, results, done) {
                 this._parent = _parent;
                 this.fetchParameters = fetchParameters;
@@ -134,7 +139,7 @@ var TableDataSourceAdapter = (function () {
             }
             return class_9;
         }());
-        this.FetchListParameters = (function () {
+        this.FetchListParameters = /** @class */ (function () {
             function class_10(_parent, size, sortCriteria) {
                 this._parent = _parent;
                 this.size = size;
@@ -144,7 +149,7 @@ var TableDataSourceAdapter = (function () {
             }
             return class_10;
         }());
-        this.SortCriterion = (function () {
+        this.SortCriterion = /** @class */ (function () {
             function class_11(_parent, attribute, direction) {
                 this._parent = _parent;
                 this.attribute = attribute;
@@ -154,7 +159,7 @@ var TableDataSourceAdapter = (function () {
             }
             return class_11;
         }());
-        this.DataProviderMutationEventDetail = (function () {
+        this.DataProviderMutationEventDetail = /** @class */ (function () {
             function class_12(_parent, add, remove, update) {
                 this._parent = _parent;
                 this.add = add;
@@ -166,7 +171,7 @@ var TableDataSourceAdapter = (function () {
             }
             return class_12;
         }());
-        this.DataProviderOperationEventDetail = (function () {
+        this.DataProviderOperationEventDetail = /** @class */ (function () {
             function class_13(_parent, keys, metadata, data, indexes) {
                 this._parent = _parent;
                 this.keys = keys;
@@ -180,7 +185,7 @@ var TableDataSourceAdapter = (function () {
             }
             return class_13;
         }());
-        this.DataProviderAddOperationEventDetail = (function () {
+        this.DataProviderAddOperationEventDetail = /** @class */ (function () {
             function class_14(_parent, keys, afterKeys, metadata, data, indexes) {
                 this._parent = _parent;
                 this.keys = keys;
@@ -266,6 +271,7 @@ var TableDataSourceAdapter = (function () {
     TableDataSourceAdapter.prototype.isEmpty = function () {
         return this.tableDataSource.totalSize() > 0 ? 'no' : 'yes';
     };
+    // Start PagingModel APIs
     TableDataSourceAdapter.prototype.getPage = function () {
         if (this._isPagingModelTableDataSource()) {
             return this.tableDataSource.getPage();
@@ -308,6 +314,10 @@ var TableDataSourceAdapter = (function () {
         }
         return null;
     };
+    // End PagingModel APIs
+    /**
+     * Get the function which performs the fetch
+     */
     TableDataSourceAdapter.prototype._getFetchFunc = function (params, offset) {
         var self = this;
         if (params != null &&
@@ -340,6 +350,9 @@ var TableDataSourceAdapter = (function () {
             return this._getTableDataSourceFetch(params, offset);
         }
     };
+    /**
+     * Get the function which invokes fetch() on TableDataSource
+     */
     TableDataSourceAdapter.prototype._getTableDataSourceFetch = function (params, offset) {
         var self = this;
         return function (params, fetchFirst) {
@@ -368,6 +381,7 @@ var TableDataSourceAdapter = (function () {
                         if (result !== null) {
                             self._isFetching = false;
                             if (result === undefined) {
+                                // fetch was not executed due to startFetch='disabled'
                                 result = {};
                                 result[self._KEYS] = [];
                                 result[self._DATA] = [];
@@ -406,6 +420,9 @@ var TableDataSourceAdapter = (function () {
             });
         };
     };
+    /**
+     * Add event listeners to TableDataSource
+     */
     TableDataSourceAdapter.prototype._addTableDataSourceEventListeners = function (tableDataSource) {
         var self = this;
         tableDataSource.on('sync', function (event) {
@@ -498,6 +515,8 @@ var TableDataSourceAdapter = (function () {
         tableDataSource.on('request', function (event) {
             if (typeof oj.Model !== "undefined" &&
                 event instanceof oj.Model) {
+                // ignore request events by oj.Model. Those will be followed by row
+                // mutation events anyway
                 return;
             }
             if (!self._isFetching) {
@@ -505,6 +524,11 @@ var TableDataSourceAdapter = (function () {
                     self.getStartItemIndex() == 0) {
                     self._startIndex = event[self._STARTINDEX];
                 }
+                // dispatch a refresh event which will trigger a the component to
+                // do a fetchFirst. However, the fact that we are receiving a request
+                // event means that a fetch was already done on the underlying TableDataSource.
+                // So we don't need to do another fetch once a fetchFirst comes in, we can
+                // just resolve with the results from the paired sync event.
                 self._requestEventTriggered = true;
                 self.dispatchEvent(new oj.DataProviderRefreshEvent());
             }
@@ -524,6 +548,9 @@ var TableDataSourceAdapter = (function () {
             self.dispatchEvent(new oj.GenericEvent(oj.PagingModel.EventType['PAGE'], options));
         });
     };
+    /**
+     * Check if it's a PagingModel TableDataSource
+     */
     TableDataSourceAdapter.prototype._isPagingModelTableDataSource = function () {
         if (this.tableDataSource['getStartItemIndex'] != null) {
             return true;
@@ -535,12 +562,5 @@ var TableDataSourceAdapter = (function () {
 oj.EventTargetMixin.applyMixin(TableDataSourceAdapter);
 oj['TableDataSourceAdapter'] = TableDataSourceAdapter;
 oj.TableDataSourceAdapter = TableDataSourceAdapter;
-oj.Object.exportPrototypeSymbol('TableDataSourceAdapter.prototype.containsKeys', { containsKeys: TableDataSourceAdapter.prototype.containsKeys });
-oj.Object.exportPrototypeSymbol('TableDataSourceAdapter.prototype.fetchByKeys', { fetchByKeys: TableDataSourceAdapter.prototype.fetchByKeys });
-oj.Object.exportPrototypeSymbol('TableDataSourceAdapter.prototype.fetchByOffset', { fetchByOffset: TableDataSourceAdapter.prototype.fetchByOffset });
-oj.Object.exportPrototypeSymbol('TableDataSourceAdapter.prototype.fetchFirst', { fetchFirst: TableDataSourceAdapter.prototype.fetchFirst });
-oj.Object.exportPrototypeSymbol('TableDataSourceAdapter.prototype.getCapability', { getCapability: TableDataSourceAdapter.prototype.getCapability });
-oj.Object.exportPrototypeSymbol('TableDataSourceAdapter.prototype.getTotalSize', { getTotalSize: TableDataSourceAdapter.prototype.getTotalSize });
-oj.Object.exportPrototypeSymbol('TableDataSourceAdapter.prototype.isEmpty', { isEmpty: TableDataSourceAdapter.prototype.isEmpty });
 
 });

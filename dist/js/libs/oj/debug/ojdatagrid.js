@@ -1,4 +1,5 @@
 /**
+ * @license
  * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
@@ -105,8 +106,8 @@ oj.DataGridResources = function(rtlMode, translationFunction, defaultOptions)
     this.commands['discontiguousSelection'] = "oj-datagrid-discontiguousSelection";
 
     this.attributes = {};
-    this.attributes['key'] = "data-oj-key";
-    this.attributes['context'] = "data-oj-context";
+    this.attributes['busyContext'] = oj.Context._OJ_CONTEXT_ATTRIBUTE; // 'data-oj-context'
+    this.attributes['context'] = "data-oj-cellContext";
     this.attributes['resizable'] = "data-oj-resizable";
     this.attributes['sortable'] = "data-oj-sortable";
     this.attributes['sortDir'] = "data-oj-sortdir";
@@ -228,7 +229,7 @@ var DvtDataGrid = function(root)
 
     // a mapping of style class+inline style combo to a dimension
     // to reduce the need to do excessive offsetWidth/offsetHeight
-    this.m_styleClassDimensionMap = {};
+    this.m_styleClassDimensionMap = {'width':{}, 'height':{}};
 
     // cached whether row/column count are unknown
     this.m_isEstimateRowCount = undefined;
@@ -275,9 +276,12 @@ DvtDataGrid.keyCodes =
     NUM5_KEY : 53,
     V_KEY : 86,
     X_KEY : 88,
+    F1_KEY : 112,
     F2_KEY : 113,
     F8_KEY : 119,
-    F10_KEY : 121
+    F10_KEY : 121,
+    F15_KEY : 126,
+    A_KEY : 65
 };
 
 // constants for update animation
@@ -328,6 +332,13 @@ DvtDataGrid.prototype.SetOptions = function(options, rendererWrapperFunction)
     this.m_options = new DvtDataGridOptions(options, rendererWrapperFunction);
 };
 
+/**
+ * Sets the original event after a sort event for use in selectionChanged events
+ * @param {Event} event - sort event to store
+ */
+DvtDataGrid.prototype.SetSortOriginalEvent = function(event){
+    this.m_sortInfo["originalEvent"] = event;
+};
 /**
  * Update options on DataGrid
  * @param {Object} options - the options to set on the data grid
@@ -396,11 +407,15 @@ DvtDataGrid.prototype._updateDataGrid = function(option, flags)
             this._updateHeaderOptions(obj, flags);
             break;
         case "scrollPosition":
-            this.setInitialScrollPosition();
+            obj = this.m_options.getScrollPosition();
+            this._updateScrollPosition(obj);
             break;
         case "selection":
             obj = this.m_options.getSelection();
             this._updateSelection(obj);
+            break;
+        case "selectionMode":
+            this._clearSelection(null);
             break;
 
         // just refresh
@@ -785,6 +800,15 @@ DvtDataGrid.prototype.SetOptionCallback = function(callback)
  * Set the callback for remove
  * @param {Function} callback a callback for the remove function
  */
+DvtDataGrid.prototype.SetContextCallback = function(callback)
+{
+    this.m_contextCallback = callback;
+};
+
+/**
+ * Set the callback for remove
+ * @param {Function} callback a callback for the remove function
+ */
 DvtDataGrid.prototype.SetRemoveCallback = function(callback)
 {
     this.m_removeCallback = callback;
@@ -797,6 +821,15 @@ DvtDataGrid.prototype.SetRemoveCallback = function(callback)
 DvtDataGrid.prototype.SetUniqueIdCallback = function(callback)
 {
     this._uniqueIdCallback = callback;
+};
+
+/**
+ * Set the callback for compare values
+ * @param {Function} callback a callback for the compare values function
+ */
+DvtDataGrid.prototype.SetCompareValuesCallback = function(callback)
+{
+    this._compareValuesCallback = callback;
 };
 
 /**
@@ -814,6 +847,8 @@ DvtDataGrid.prototype.SetSubtreeAttachedCallback = function(callback)
  */
 DvtDataGrid.prototype._remove = function(element)
 {
+    this._uniqueIdCallback(element, true);
+
     // check if there is a callback set for remove
     // callback allows jQuery to clean the node on a remove
     if (this.m_removeCallback != null)
@@ -1001,7 +1036,7 @@ DvtDataGrid.prototype.destroy = function()
     this._removeDataSourceEventListeners();
     this._removeDomEventListeners();
     delete this.m_styleClassDimensionMap;
-    this.m_styleClassDimensionMap = {};
+    this.m_styleClassDimensionMap = {'width':{}, 'height':{}};
 };
 
 /**
@@ -1394,7 +1429,7 @@ DvtDataGrid.prototype._getHeaderDimension = function(elem, key, axis, dimension)
 
     // check style class mapping, mapping prevents multiple offsetHeight calls on headers with the same class name
     className = elem['className'];
-    value = this.m_styleClassDimensionMap[className];
+    value = this.m_styleClassDimensionMap[dimension][className];
     if (value == null)
     {
         // exhausted all options, use offsetHeight then, remove element in the case of shim element
@@ -1405,7 +1440,7 @@ DvtDataGrid.prototype._getHeaderDimension = function(elem, key, axis, dimension)
     //class, so store it in the sizing manager cell can pick it up, header and cell dimension can vary on em
     this.m_sizingManager.setSize(axis, key, value);
 
-    this.m_styleClassDimensionMap[className] = value;
+    this.m_styleClassDimensionMap[dimension][className] = value;
     return value;
 };
 
@@ -1588,7 +1623,7 @@ DvtDataGrid.prototype.resetInternal = function()
 
     //dimensions
     this.m_sizingManager.clear();
-    this.m_styleClassDimensionMap = {};
+    this.m_styleClassDimensionMap = {'width':{}, 'height':{}};
     this.m_height = null;
     this.m_width = null;
     this.m_scrollHeight = null;
@@ -1612,6 +1647,7 @@ DvtDataGrid.prototype.resetInternal = function()
     this.m_trueIndex = {};
 
     //dnd
+    this.m_headerDragState = false;
     this.m_databodyDragState = false;
     this.m_databodyMove = false;
     this.m_moveRow = null;
@@ -1625,9 +1661,6 @@ DvtDataGrid.prototype.resetInternal = function()
     //event listeners
     this.m_docMouseMoveListener = null;
     this.m_docMouseUpListener = null;
-    this.m_handleDatabodyKeyDown = null;
-    this.m_handleRootFocus = null;
-    this.m_handleRootBlur = null;
     this.m_modelEvents = [];
 
     //scrolling
@@ -1637,6 +1670,7 @@ DvtDataGrid.prototype.resetInternal = function()
     this.m_currentScrollTop = null;
     this.m_prevScrollLeft = null;
     this.m_prevScrollTop = null;
+    this.m_handleScrollOverflow = null;
 
     //resizing
     this.m_resizing = false;
@@ -1710,7 +1744,6 @@ DvtDataGrid.prototype._handleInitialization = function(hasData)
     if (hasData == true)
     {
         this.resizeGrid();
-        this.setInitialScrollPosition();
         this.fillViewport();
 
         if (this.isFetchComplete())
@@ -1731,25 +1764,37 @@ DvtDataGrid.prototype._handleInitialization = function(hasData)
 
 /**
  * Run the events in the model event list
+ * The queue shifts the first event and runs that.
+ * The event is expected to call _runModelEventQueue 
+ * once it completes
+ * If the queue is empty, stop processing
+ * Usage: After any animation related event chain 
+ *        completes, run the event queue. 
+ *        During the event queue, queued events
+ *        should also have a call back to _runModelEventQueue
+ *        at its completion. See handleExpandEvent for an example
  * @private
  */
 DvtDataGrid.prototype._runModelEventQueue = function()
 {
-    var i, event;
-
-    if (this.m_processingEventQueue)
-    {
-        return;
-    }
-
-    this.m_processingEventQueue = true;
-
-    // check the model event queue to see if there are outstanding events
+    var event;
+    //Run the event queue generally after initialization 
+    //or animations are complete. 
+    //m_modelEvents acts as the queue and will
+    //be initialized normally. In the case that
+    //the m_modelEvent queue is accessed before 
+    //it is initialized, it will act as length 0 queue
     if (this.m_modelEvents != null)
     {
-        for (i = 0; i < this.m_modelEvents.length; i++)
+        this.m_processingEventQueue = true;
+        if (this.m_modelEvents.length === 0) {
+            this.m_processingEventQueue = false;
+            return;
+        } 
+        else 
         {
-            event = this.m_modelEvents[i];
+            event = this.m_modelEvents.shift();
+
             if (event['operation'] == 'expand')
             {
                 this.handleExpandEvent(event, true);
@@ -1763,11 +1808,11 @@ DvtDataGrid.prototype._runModelEventQueue = function()
                 this.handleModelEvent(event, true);
             }
         }
-        // empty the queue
-        this.m_modelEvents.length = 0;
     }
-
-    this.m_processingEventQueue = false;
+    else
+    {
+        this.m_processingEventQueue = false;
+    }
 };
 
 /**
@@ -1821,6 +1866,7 @@ DvtDataGrid.prototype.render = function(root)
     this.m_currentScrollTop = 0;
     this.m_prevScrollLeft = 0;
     this.m_prevScrollTop = 0;
+    this.m_handleScrollOverflow = false;
 
     this.m_rowHeaderLevelWidths = [];
     this.m_rowEndHeaderLevelWidths = [];
@@ -1972,6 +2018,7 @@ DvtDataGrid.prototype.buildGrid = function(root)
             rowHeader.addEventListener("mousemove", this.handleRowHeaderMouseMove.bind(this), false);
             colHeader.addEventListener("mousemove", this.handleColumnHeaderMouseMove.bind(this), false);
             rowHeader.addEventListener("mouseup", this.handleHeaderMouseUp.bind(this), false);
+            colHeader.addEventListener("mouseup", this.handleHeaderMouseUp.bind(this), false);
             rowHeader.addEventListener("mouseout", this.handleHeaderMouseOut.bind(this), false);
             colHeader.addEventListener("mouseout", this.handleHeaderMouseOut.bind(this), false);
             rowHeader.addEventListener("click", this.handleHeaderClick.bind(this), false);
@@ -1986,6 +2033,7 @@ DvtDataGrid.prototype.buildGrid = function(root)
             rowEndHeader.addEventListener("mousemove", this.handleRowHeaderMouseMove.bind(this), false);
             colEndHeader.addEventListener("mousemove", this.handleColumnHeaderMouseMove.bind(this), false);
             rowEndHeader.addEventListener("mouseup", this.handleHeaderMouseUp.bind(this), false);
+            colEndHeader.addEventListener("mouseup", this.handleHeaderMouseUp.bind(this), false);
             rowEndHeader.addEventListener("mouseout", this.handleHeaderMouseOut.bind(this), false);
             colEndHeader.addEventListener("mouseout", this.handleHeaderMouseOut.bind(this), false);
             rowEndHeader.addEventListener("click", this.handleHeaderClick.bind(this), false);
@@ -2127,7 +2175,19 @@ DvtDataGrid.prototype.resizeGrid = function()
         else
         {
             // for an issue where same size child causes scrollbars (similar code used in resizing already)
-            databody['style']['overflow'] = "hidden";
+            // Adding timeout to address firefox async scrolling and pixel perfect scroll bar issues:
+            // If the datagrid doesn't need scrolling, ff will skip the async scroll event, so we need to manually handle
+            // it with a timeout. Flag added here and handleScroll so that either will execute, but only once.
+            this.m_handleScrollOverflow = false;
+            var self = this;
+            setTimeout(function(){
+                // Need to check this in case the state has changed during the timeout period.
+                if (!self.m_handleScrollOverflow && !self.m_hasVerticalScroller && !self.m_hasHorizontalScroller)
+                {
+                    databody['style']['overflow'] = "hidden";
+                    self.m_handleScrollOverflow = true;
+                }
+            }, 10);                        
         }
     }
 
@@ -2440,6 +2500,12 @@ DvtDataGrid.prototype.buildCorners = function()
         this.m_corner = null;
     }
 
+    //corner listener:
+    if (this.m_corner && this.m_corner !== null)
+    {
+        this.m_corner.addEventListener("click", this.handleCornerClick.bind(this), false);
+    }
+
     //no bottom left corner if there are no row headers
     if (this.m_endRowHeader != -1)
     {
@@ -2571,7 +2637,7 @@ DvtDataGrid.prototype.buildCorners = function()
             this.m_bottomCorner = bottomCorner;
         }
     }
-	// remove bottom corner on resize if not neccessary
+    // remove bottom corner on resize if not neccessary
     if (this.m_bottomCorner != null && bottomCorner == null)
     {
         this.m_root.removeChild(this.m_bottomCorner);
@@ -2580,86 +2646,300 @@ DvtDataGrid.prototype.buildCorners = function()
 };
 
 /**
- * Sets the inital scroller postion. If initial scroll is set via key, will find the indexes from the data source
- * and call back to _intialScrollPositionCallback, otherwise will just call _intialScrollPositionCallback with the indexes
- * provided.
+ * Move to a desired scoll position object
+ * @private
  */
-DvtDataGrid.prototype.setInitialScrollPosition = function()
+DvtDataGrid.prototype._updateScrollPosition = function(scrollPositionObject)
 {
-    var scrollMode, columnScrollPosition, rowScrollPosition, firstCell;
-    scrollMode = this.m_options.getScrollPositionMode();
-    if (this.m_databody != undefined)
+    this._scrollToScrollPositionObject(scrollPositionObject);
+};
+
+/**
+ * Set the scrollPosition attribute on the grid
+ * @private
+ */
+DvtDataGrid.prototype._setScrollPosition = function()
+{
+    this.m_setOptionCallback("scrollPosition", this._createScrollPositionObject(this.m_currentScrollLeft, this.m_currentScrollTop), {'_context': {writeback: true, internalSet: true}});
+};
+
+/**
+ * Set the scrollPosition minus the keys
+ * @private
+ */
+DvtDataGrid.prototype._clearScrollPositionKeys = function()
+{
+    var newPos = this.m_options.getScrollPosition();
+    newPos['rowKey'] = undefined;
+    newPos['columnKey'] = undefined;
+    // do not writeback it will be updated once the sync has completed
+    this.m_setOptionCallback("scrollPosition", newPos, {'_context': {internalSet: true}});
+};
+
+/**
+ * Create a scroll position object from x,y coordinates
+ * @private
+ */
+DvtDataGrid.prototype._createScrollPositionObject = function(x, y)
+{
+    var scrollPositionObject = {'x': x, 'y': y};
+    var dir = this.getResources().isRTLMode() ? "right" : "left";
+    
+    var cell = this._getCellAtPixel(x, y);
+    if (cell != null)
     {
-        if (scrollMode != null)
+        scrollPositionObject['rowIndex'] = this._getIndex(cell, 'row');
+        scrollPositionObject['columnIndex'] = this._getIndex(cell, 'column');
+        scrollPositionObject['rowKey'] = this._getKey(cell, 'row');
+        scrollPositionObject['columnKey'] = this._getKey(cell, 'column');
+        scrollPositionObject['offsetX'] = x - this.getElementDir(cell, dir);
+        scrollPositionObject['offsetY'] = y - this.getElementDir(cell, "top");
+    }
+    else
+    {
+        var rowHeader = this._getHeaderAtPixel(y, 'row');
+        if (rowHeader != null)
         {
-            columnScrollPosition = this.m_options.getColumnScrollPosition();
-            rowScrollPosition = this.m_options.getRowScrollPosition();
+            scrollPositionObject['rowIndex'] = this._getIndex(rowHeader);            
+            scrollPositionObject['rowKey'] = this._getKey(rowHeader);
+            scrollPositionObject['offsetY'] = y - this.getElementDir(rowHeader, 'top');
+        }
+        
+        var columnHeader = this._getHeaderAtPixel(x, 'column');
+        if (columnHeader != null)
+        {
+            scrollPositionObject['columnIndex'] = this._getIndex(columnHeader);            
+            scrollPositionObject['columnKey'] = this._getKey(columnHeader);
+            scrollPositionObject['offsetX'] = x - this.getElementDir(columnHeader, dir);
+        }        
+    }
+    
+    return scrollPositionObject;
+};
 
-            if (columnScrollPosition == null && rowScrollPosition == null)
+/**
+ * Get a cell at x,y coordinates
+ * @private
+ */
+DvtDataGrid.prototype._getCellAtPixel = function(x, y)
+{
+    var cells = this.m_databody['firstChild']['childNodes'];
+    var dir = this.getResources().isRTLMode() ? "right" : "left";
+
+    for (var i = 0; i < cells.length; i++)
+    {
+        var cell = cells[i];
+        var cellLeft = this.getElementDir(cell, dir);
+        var cellRight = cellLeft + this.getElementWidth(cell);
+        
+        if (cellLeft <= x && x< cellRight)
+        {
+            var cellTop = this.getElementDir(cell, 'top');
+            var cellBottom = cellTop + this.getElementHeight(cell);
+            if (cellTop <= y && y < cellBottom)
             {
-                // no information provided in the scrollPosition option so bail
-                return;
-            }
-
-            if (scrollMode === 'key')
-            {
-                // if they specify only 1 key, get the other key that dataSource.indexes requires
-                // from the first row or cell locally
-                if (rowScrollPosition == null || columnScrollPosition == null)
-                {
-                    firstCell = this._getCellByIndex(this.createIndex(this.m_startRow, this.m_startCol));
-
-                    if (rowScrollPosition == null && firstCell != null)
-                    {
-                        rowScrollPosition = firstCell[this.getResources().getMappedAttribute('context')]['keys']['row'];
-                    }
-                    else if (columnScrollPosition == null && firstCell != null)
-                    {
-                        columnScrollPosition = firstCell[this.getResources().getMappedAttribute('context')]['keys']['column'];
-                    }
-                }
-
-                if (rowScrollPosition != null && columnScrollPosition != null)
-                {
-                    // need to use _indexes because the row/column could be off screen
-                    // get the indexes of the given keys and pass in a callback to kick off a scroller event
-                    this._indexes({'row': rowScrollPosition, 'column': columnScrollPosition}, this._intialScrollPositionCallback);
-                }
-            }
-            else
-            {
-                // if they specify only 1 index, set the other index to 0
-                if (rowScrollPosition == null)
-                {
-                    rowScrollPosition = 0;
-                }
-                else if (columnScrollPosition == null)
-                {
-                    columnScrollPosition = 0;
-                }
-
-                this._intialScrollPositionCallback({'row': rowScrollPosition, 'column': columnScrollPosition});
+                return cell;
             }
         }
+    }
+    return null;
+};
+
+/**
+ * Get a header at a given coordinate and axis
+ * @private
+ */
+DvtDataGrid.prototype._getHeaderAtPixel = function(pixel, axis)
+{
+    var self = this;
+    if (axis == 'row')
+    {
+        var headers = this.m_rowHeader['firstChild']['childNodes'];
+        var endheaders = this.m_rowEndHeader['firstChild']['childNodes'];
+        var dir = 'top';
+        var dimension = 'height';
+    }
+    else if (axis == 'column')
+    {
+        var headers = this.m_colHeader['firstChild']['childNodes'];
+        var endheaders = this.m_colEndHeader['firstChild']['childNodes'];
+        var dir = this.getResources().isRTLMode() ? "right" : "left";
+        var dimension = 'width';
+    }
+    
+    var loop = function(elements)
+    {
+        for (var i = 0; i < elements.length; i++)
+        {
+            var header = elements[i];
+            var start = self.getElementDir(header, dir);
+            var end = start + self.getElementDir(header, dimension);
+            
+            if (start <= pixel && pixel < end)
+            {
+                return header;
+            }
+        } 
+    };
+    
+    var header = loop(headers);
+    if (header == null)
+    {
+        header = loop(endheaders);
+    }
+
+    return header;
+};
+
+/**
+ * See if we have reached our desired scroll position
+ * @private
+ */
+DvtDataGrid.prototype._checkScrollPosition = function()
+{
+    if (this.m_desiredScrollPositionObject != null)
+    {
+        this._scrollToScrollPositionObject(this.m_desiredScrollPositionObject);
+    }
+    else if (!this.m_initialized)
+    {
+        this._updateScrollPosition(this.m_options.getScrollPosition());
+    }
+    else
+    {
+        this._setScrollPosition();
     }
 };
 
 /**
- * Sets the inital scroller postion, based on average column width and height
- * @param {Object} indexes the indexes to scroll to with property row and column, values are numbers
+ * Call initiate scroll to scroll to a scroll position object
+ */
+DvtDataGrid.prototype._scrollToScrollPositionObject = function(scrollPositionObject)
+{    
+    var x = scrollPositionObject['x'];
+    var y = scrollPositionObject['y'];
+    var rowIndex = scrollPositionObject['rowIndex'];
+    var columnIndex = scrollPositionObject['columnIndex'];
+    var rowKey = scrollPositionObject['rowKey'];   
+    var columnKey = scrollPositionObject['columnKey'];
+    var offsetX = scrollPositionObject['offsetX'] ? scrollPositionObject['offsetX'] : 0;
+    var offsetY = scrollPositionObject['offsetY'] ? scrollPositionObject['offsetY'] : 0;
+    
+    var newScrollX;
+    var newScrollY;
+    
+    var dir = this.getResources().isRTLMode() ? "right" : "left";
+    
+    var self = this;
+    
+    var indexFromKeyPromise = new Promise(function(resolve, reject) {
+         if (rowKey != null || columnKey != null)
+         {
+            self._indexes({'row': rowKey, 'column': columnKey}, function(indexes, keys){
+                resolve({'rowIndexFromKey':  indexes['row'], 'columnIndexFromKey': indexes['column']});
+            });
+         }
+         else
+         {
+            resolve({'rowIndexFromKey':  null, 'columnIndexFromKey': null});
+         }
+    });
+    
+    indexFromKeyPromise.then(function(returnObj)
+    {
+        var newScrollX = self._getPositionEstimate('column', dir, columnKey, returnObj['columnIndexFromKey'], columnIndex, x, offsetX, self.m_currentScrollLeft, self._getMaxRightPixel(), self.m_avgColWidth);        
+        var newScrollY = self._getPositionEstimate('row', 'top', rowKey, returnObj['rowIndexFromKey'], rowIndex, y, offsetY, self.m_currentScrollTop, self._getMaxBottomPixel(), self.m_avgRowHeight);
+        
+        if (newScrollX != self.m_currentScrollLeft || newScrollY != self.m_currentScrollTop)
+        {
+            self.m_desiredScrollPositionObject = scrollPositionObject;
+            self._initiateScroll(newScrollX, newScrollY);
+        }
+        else 
+        {
+            self.m_desiredScrollPositionObject = null;
+            self._setScrollPosition();
+        }        
+    });
+};
+
+/**
+ * Estimate the location of the scroll based on key/index/x,y following the jsdoc guidelines
  * @private
  */
-DvtDataGrid.prototype._intialScrollPositionCallback = function(indexes)
+DvtDataGrid.prototype._getPositionEstimate = function(axis, dir, key, indexFromKey, index, pos, offset, current, max, average)
+{    
+    var newScrollPos;
+    var isHighWatermark = this._isHighWatermarkScrolling();
+    
+    // indexFromKey === -1 means that the key is definitely not in the data source
+    // indexFromKey === null means that the key is possibly not in the data source
+    if (key != null && indexFromKey != -1)
+    {
+        var element = this._getCellOrHeaderByKey(key, axis);
+        if (element != null)
+        {
+            newScrollPos = this.getElementDir(element, dir) + offset;
+        }
+        else if (isHighWatermark)
+        {
+            newScrollPos = max;
+        }
+        else if (indexFromKey != null)
+        {
+            newScrollPos = (average * indexFromKey) + offset;
+        } 
+        
+        if (newScrollPos != null)
+        {
+            return newScrollPos;
+        }
+        
+        // if key specified and virtual scrolling but no index found, switch to index check
+    }
+    
+    if (index != null)
+    {
+        var element = this._getCellOrHeaderByIndex(index, axis);
+        if (element != null)
+        {
+           newScrollPos = this.getElementDir(element, dir) + offset;
+        }            
+        else if (isHighWatermark)
+        {
+           newScrollPos = max;
+        }            
+        else
+        {
+            newScrollPos = average * index;
+        }
+    }
+    else if (pos != null)
+    {
+        newScrollPos = pos;
+    }
+    else
+    {
+        newScrollPos = current;
+    }
+    
+    return newScrollPos;
+};
+
+/**
+ * Check if the key is rendered in the viewport to avoid asking the ds
+ * @private
+ */
+DvtDataGrid.prototype._isKeyRendered = function(key, axis)
 {
-    //scroll to index puts the desired index at the bottom of the viewport
-    var columnScrollPosition, rowScrollPosition, initialScrollLeft, initialScrollTop = 0;
-    columnScrollPosition = indexes['column'] === -1 ? 0 : indexes['column'];
-    rowScrollPosition = indexes['row'] === -1 ? 0 : indexes['row'];
-
-    initialScrollLeft = columnScrollPosition * this.m_avgColWidth;
-    initialScrollTop = rowScrollPosition * this.m_avgRowHeight;
-
-    this._initiateScroll(initialScrollLeft, initialScrollTop);
+    var cells = this.m_databody['firstChild']['childNodes'];
+    for (var i = 0; i < cells.length; i++)
+    {
+        if (this._shallowThenDeepCompare(this._getKey(cells[i], axis), key))
+        {
+            return cells[i];
+        }
+    }
 };
 
 /**
@@ -3186,7 +3466,7 @@ DvtDataGrid.prototype.fetchHeaders = function(axis, start, header, endHeader, fe
     // fetch size could be explicitly specified.  If not, use the calculated one.
     if (fetchSize == undefined)
     {
-        fetchSize = this.getFetchSize(axis);
+        fetchSize = this.getFetchCount(axis, start);
     }
 
     headerRange = {
@@ -3223,10 +3503,10 @@ DvtDataGrid.prototype.isHeaderFetchResponseValid = function(headerRange)
     var axis, responseCount;
 
     axis = headerRange['axis'];
-	if (this.m_fetching == null)
-	{
-		return false;
-	}
+    if (this.m_fetching == null)
+    {
+        return false;
+    }
     responseCount = this.m_fetching[axis]['count'];
 
     // do object reference check, imagine fetching 20 2 consecutive times but
@@ -3279,7 +3559,11 @@ DvtDataGrid.prototype.isHeaderFetchResponseInViewport = function(headerRange)
  */
 DvtDataGrid.prototype.handleHeadersFetchSuccess = function(startResults, headerRange, endResults, rowInsert)
 {
-    var axis, root, endRoot, start, count;
+    var axis, root, endRoot, start, count, scrollOptions, maxRowCount, maxColumnCount;
+            
+    scrollOptions = this.m_options.getScrollPolicyOptions();
+    maxRowCount = scrollOptions ? scrollOptions['maxRowCount'] : null;
+    maxColumnCount = scrollOptions ? scrollOptions['maxColumnCount'] : null;
 
     // validate result matches what we currently asks for
     if (!this.isHeaderFetchResponseValid(headerRange))
@@ -3317,7 +3601,8 @@ DvtDataGrid.prototype.handleHeadersFetchSuccess = function(startResults, headerR
         if (startResults != null)
         {
             this.buildColumnHeaders(root, startResults, start, count, false, false);
-            if (startResults.getCount() < headerRange['count'])
+            if (startResults.getCount() < headerRange['count'] || 
+                (maxColumnCount && maxColumnCount > 0 && maxColumnCount === start + startResults.getCount()))
             {
                 this.m_stopColumnHeaderFetch = true;
             }
@@ -3335,7 +3620,8 @@ DvtDataGrid.prototype.handleHeadersFetchSuccess = function(startResults, headerR
         if (endResults != null)
         {
             this.buildColumnEndHeaders(endRoot, endResults, start, count, false, false);
-            if (endResults.getCount() < headerRange['count'])
+            if (endResults.getCount() < headerRange['count'] || 
+                (maxColumnCount && maxColumnCount > 0 && maxColumnCount === start + endResults.getCount()))
             {
                 this.m_stopColumnEndHeaderFetch = true;
             }
@@ -3355,7 +3641,8 @@ DvtDataGrid.prototype.handleHeadersFetchSuccess = function(startResults, headerR
         if (startResults != null)
         {
             this.buildRowHeaders(root, startResults, start, count, rowInsert, false);
-            if (startResults.getCount() < headerRange['count'])
+            if (startResults.getCount() < headerRange['count'] || 
+                (maxRowCount && maxRowCount > 0 && maxRowCount === start + startResults.getCount()))
             {
                 this.m_stopRowHeaderFetch = true;
             }
@@ -3373,7 +3660,8 @@ DvtDataGrid.prototype.handleHeadersFetchSuccess = function(startResults, headerR
         if (endResults != null)
         {
             this.buildRowEndHeaders(endRoot, endResults, start, count, rowInsert, false);
-            if (endResults.getCount() < headerRange['count'])
+            if (endResults.getCount() < headerRange['count'] ||
+                (maxRowCount && maxRowCount > 0 && maxRowCount === start + endResults.getCount()))
             {
                 this.m_stopRowEndHeaderFetch = true;
             }
@@ -3438,11 +3726,11 @@ DvtDataGrid.prototype.handleHeadersFetchError = function(error, headerRange)
  * @param {number} level - the header level
  * @param {number} extent - the header extent
  * @param {number} depth - the header depth
- * @return {Object} the header context object, keys of {axis,index,data,key,datagrid}
+ * @return {Object} the header context object, keys of {axis,index,data,datagrid}
  */
 DvtDataGrid.prototype.createHeaderContext = function(axis, index, data, metadata, elem, level, extent, depth)
 {
-    var headerContext, key, prop;
+    var headerContext, prop;
     headerContext = {
     };
     headerContext['axis'] = axis;
@@ -3458,13 +3746,6 @@ DvtDataGrid.prototype.createHeaderContext = function(axis, index, data, metadata
     if (elem != null)
     {
         headerContext['parentElement'] = elem;
-    }
-
-    key = metadata['key'];
-    if (key != null && elem != null)
-    {
-        // store the key in the header element for fast retrieval
-        this._setKey(elem, key);
     }
 
     // merge properties from metadata into cell context
@@ -3951,8 +4232,8 @@ DvtDataGrid.prototype.buildAxisHeaders = function(headerRoot, headerSet, axis, s
     stopFetch = false;
     totalHeaderDimension = 0;
     totalLevelDimension = 0;
-	left = 0;
-	top = 0;
+    left = 0;
+    top = 0;
 
     if (!returnAsFragment)
     {
@@ -4059,7 +4340,11 @@ DvtDataGrid.prototype._renderContent = function(renderer, context, cell, data)
         }
 
         // make all focusable elements non-focusable, since we want to manage tab stops
-        this._disableAllFocusableElements(cell);
+        var busyContext = this.m_contextCallback(cell).getBusyContext();
+        var self=this;
+        busyContext.whenReady().then(function () {
+            self._disableAllFocusableElements(cell);
+        });
     }
     else
     {
@@ -4240,7 +4525,8 @@ DvtDataGrid.prototype.buildLevelHeaders = function(fragment, index, level, left,
 
         //build headerContext to pass to renderer
         headerContext = this.createHeaderContext(axis, index, headerData, headerMetadata, header, level, headerExtent, headerDepth);
-        header['id'] = this._createHeaderId(axis, headerContext['key']);
+        header.setAttribute(this.getResources().getMappedAttribute('busyContext'),'');
+        this._createUniqueId(header);
         header[this.getResources().getMappedAttribute('context')] = headerContext;
         inlineStyle = this.m_options.getInlineStyle(axis, headerContext);
         styleClass = this.m_options.getStyleClass(axis, headerContext);
@@ -4668,6 +4954,25 @@ DvtDataGrid.prototype.buildDatabody = function()
 };
 
 /**
+ * Get the fetch count which is limited by the scollPolicyOptions max count along the axis
+ * @private
+ */
+DvtDataGrid.prototype.getFetchCount = function(axis, start)
+{
+    var count = this.getFetchSize(axis);
+    if (this._isHighWatermarkScrolling())
+    {
+        var prop = axis === 'row' ? 'maxRowCount' : 'maxColumnCount';
+        var maxCount = this.m_options.getScrollPolicyOptions();
+        if (maxCount && maxCount[prop] != null && maxCount[prop] > 0)
+        {
+            count = Math.max(Math.min(count, maxCount[prop] - start), 0);
+        }
+    }
+    return count
+};
+
+/**
  * Fetch cells to put in the databody. Calls fetch cells on the data source,
  * setting callbacks for success and failure.
  * @param {Element} databody - the root of the databody element
@@ -4690,12 +4995,12 @@ DvtDataGrid.prototype.fetchCells = function(databody, rowStart, colStart, rowCou
 
     if (rowCount == null)
     {
-        rowCount = this.getFetchSize("row");
+        rowCount = this.getFetchCount("row", rowStart);
     }
 
     if (colCount == null)
     {
-        colCount = this.getFetchSize("column");
+        colCount = this.getFetchCount("column", colStart);
     }
 
     rowRange = {
@@ -4737,10 +5042,10 @@ DvtDataGrid.prototype.isCellFetchResponseValid = function(cellRange)
     responseRowRange = cellRange[0];
     responseColumnRange = cellRange[1];
 
-	if (this.m_fetching == null)
-	{
-		return false;
-	}
+    if (this.m_fetching == null)
+    {
+        return false;
+    }
 
     requestCellRanges = this.m_fetching['cells'];
 
@@ -4806,7 +5111,11 @@ DvtDataGrid.prototype.handleCellsFetchSuccess = function(cellSet, cellRange, row
             rowRangeNeedsUpdate, columnRange, columnStart, columnCount, columnRangeNeedsUpdate,
             databody, top, referenceCell, databodyContent, cleanDirection, left,
             isAppend, fragment, totalColumnWidth, totalRowHeight, i, avgHeight, avgWidth, duration, self,
-            rows, prev, addResult;
+            rows, prev, addResult, scrollOptions, maxRowCount, maxColumnCount;
+            
+    scrollOptions = this.m_options.getScrollPolicyOptions();
+    maxRowCount = scrollOptions ? scrollOptions['maxRowCount'] : null;
+    maxColumnCount = scrollOptions ? scrollOptions['maxColumnCount'] : null;
     totalRowCount = this.getDataSource().getCount("row");
     totalColumnCount = this.getDataSource().getCount("column");
 
@@ -4859,7 +5168,8 @@ DvtDataGrid.prototype.handleCellsFetchSuccess = function(cellSet, cellRange, row
     // OR if result set is less than what's requested, then assumes we have fetched the last row
     if ((rowCount == 0 && this._isCountUnknown('row') && rowRange['count'] > 0) ||
             (rowRangeNeedsUpdate && this._isHighWatermarkScrolling() && !this._isCountUnknown('row') && (this.m_endRow + rowCount + 1 >= totalRowCount)) ||
-            (rowCount < rowRange['count']))
+            (rowCount < rowRange['count']) || 
+            (this._isHighWatermarkScrolling() && maxRowCount && maxRowCount > 0 && rowStart + rowCount === maxRowCount) )
     {
         this.m_stopRowFetch = true;
     }
@@ -4875,7 +5185,8 @@ DvtDataGrid.prototype.handleCellsFetchSuccess = function(cellSet, cellRange, row
     // OR if result set is less than what's requested, then assumes we have fetched the last column
     if ((columnCount == 0 && this._isCountUnknown('column') && columnRange['count'] > 0) ||
             (columnRangeNeedsUpdate && this._isHighWatermarkScrolling() && !this._isCountUnknown('column') && (this.m_endCol + columnCount + 1 >= totalColumnCount)) ||
-            (columnCount < columnRange['count']))
+            (columnCount < columnRange['count']) ||
+            (this._isHighWatermarkScrolling() && maxColumnCount && maxColumnCount > 0 && columnStart + columnCount === maxColumnCount) )
     {
         this.m_stopColumnFetch = true;
     }
@@ -5015,28 +5326,27 @@ DvtDataGrid.prototype.handleCellsFetchSuccess = function(cellSet, cellRange, row
     // if virtual scrolling we may need to adjust when the user hits the beginning
     if (this.m_startCol == 0 && this.m_startColPixel != 0)
     {
-        //TODO:  this._shiftCellsInRows(-1 * this.m_startColPixel, false, null, 0, this.m_endCol, null, this.getResources().isRTLMode() ? "right" : "left")
+        this._shiftCellsAlongAxis('column', -this.m_startColPixel, 0, true)
         this.m_startColPixel = 0;
     }
     if (this.m_startRow == 0 && this.m_startRowPixel != 0)
     {
-        //TODO: this.pushRowsDown(this.m_databody['firstChild']['firstChild'], -this.m_startRowPixel);
+        this.pushRowsDown(0, -this.m_startRowPixel);
         this.m_startRowPixel = 0;
     }
 
     // fetch is done
     this.m_fetching['cells'] = false;
-    if (this.m_initialized)
-    {
-        // check if we need to sync header and databody scroll position
-        this._syncScroller();
-    }
-
+    
     // size the grid if fetch is done
     if (this.isFetchComplete())
     {
         this.hideStatusText();
 
+        this._syncScroller();
+        
+        this._checkScrollPosition();
+        
         // highlight focus cell or header if specified
         if (this.m_scrollIndexAfterFetch != null)
         {
@@ -5140,6 +5450,12 @@ DvtDataGrid.prototype.handleCellsFetchSuccess = function(cellSet, cellRange, row
                 this.fireEvent('ready', {});
             }
         }
+    }
+
+    // update any row/column selections if necessary. 
+    if (this._isSelectionEnabled() && this.isMultipleSelection())
+    {
+        this.updateSelectionHeader();
     }
 
     // end fetch
@@ -5526,7 +5842,8 @@ DvtDataGrid.prototype._addCellsToFragment = function(fragment, cellSet, rowStart
 
                 cell = document.createElement('div');
                 cellContext = this.createCellContext(indexes, cellData, cellMetadata, cell, extents);
-                cell['id'] = this._createCellId(cellContext['keys']);
+                cell.setAttribute(this.getResources().getMappedAttribute('busyContext'),'');
+                this._createUniqueId(cell);
                 cell[this.getResources().getMappedAttribute('context')] = cellContext;
 
                 //before setting our own styles, else we will overwrite them
@@ -5935,46 +6252,12 @@ DvtDataGrid.prototype.createCellContext = function(indexes, data, metadata, elem
 };
 
 /**
- * Creates the cell id from the keys
- * @param {Object} keys the row and colunmn key of the cell
- * @private
- */
-DvtDataGrid.prototype._createCellId = function(keys)
-{
-    return this.createSubId('r' + keys['row'] + 'c' + keys['column']);
-};
-
-/**
  * Creates a unique ID
  * @private
  */
 DvtDataGrid.prototype._createUniqueId = function(cell)
 {
     return this._uniqueIdCallback(cell, false);
-};
-
-/**
- * Creates the header id from the axis and key
- * @param {string} axis row/column
- * @param {string} key the header key
- * @private
- */
-DvtDataGrid.prototype._createHeaderId = function(axis, key)
-{
-    var prefix;
-    if (axis == 'columnEnd')
-    {
-        prefix = 'ce';
-    }
-    else if (axis == 'rowEnd')
-    {
-        prefix = 're';
-    }
-    else
-    {
-        prefix = axis.charAt(0);
-    }
-    return this.createSubId(prefix + key);
 };
 
 /**
@@ -6362,6 +6645,26 @@ DvtDataGrid.prototype._setFocusToFirstFocusableElement = function(elem)
  */
 DvtDataGrid.prototype.handleScroll = function(event)
 {
+    // Adding to address firefox async scrolling and pixel perfect scroll bar issues:
+    // If the datagrid doesn't need scrolling, ff will skip the async scroll event 
+    // If the handleScroll is called properly, it'll set the databody attribute as usual
+    // Flag added here and resizeGrid setTimeout function so that either will execute, but only once.
+    if (!this.m_handleScrollOverflow)
+    {
+        if (!this.m_hasVerticalScroller && !this.m_hasHorizontalScroller)
+        {
+            this.m_databody['style']['overflow'] = "hidden";
+        }
+        this.m_handleScrollOverflow = true;
+    }
+
+    // prevent scrolling when animating sort
+    if (this.m_animating)
+    {
+        event.preventDefault();
+        return;
+    }
+
     // scroll on touch is handled directly by touch handlers
     if (this.m_utils.isTouchDevice())
     {
@@ -6453,26 +6756,44 @@ DvtDataGrid.prototype.scroll = function(options)
 DvtDataGrid.prototype.scrollDelta = function(deltaX, deltaY)
 {
     var scrollLeft, scrollTop;
-    // prevent 'diagonal' scrolling
-    if (deltaX != 0 && deltaY != 0)
-    {
-        // direction depends on which way moves the most
-        if (Math.abs(deltaX) > Math.abs(deltaY))
-        {
-            deltaY = 0;
-            this.m_extraScrollOverY = null;
-        }
-        else
-        {
-            deltaX = 0;
-            this.m_extraScrollOverX = null;
-        }
-    }
+    // Make sure to adjust the scroller size in case the scroller is no longer the same size. 
+    this._adjustScrollerSize();
 
     scrollLeft = Math.max(0, Math.min(this._getMaxScrollWidth(), this.m_currentScrollLeft - deltaX));
     scrollTop = Math.max(0, Math.min(this._getMaxScrollHeight(), this.m_currentScrollTop - deltaY));
     this._initiateScroll(scrollLeft, scrollTop);
 };
+
+/**
+ * Used by touch scrolling to adjust the scroll position to prevent diagonal scrolling,
+ * since the deltas are obtained instead of new scroll position.
+ * @param {number} diffX - the change in X position
+ * @param {number} diffY - the change in Y position
+ * @returns {Array} adjusted diffX, diffY
+ */
+DvtDataGrid.prototype.adjustTouchScroll = function(diffX, diffY)
+{
+    // prevent 'diagonal' scrolling
+    if (this.m_utils.isTouchDevice())
+    {
+        if (diffX != 0 && diffY != 0)
+        {
+            // direction depends on which way moves the most
+            if (Math.abs(diffX) > Math.abs(diffY))
+            {
+                diffY = 0;
+                this.m_extraScrollOverY = null;
+            }
+            else
+            {
+                diffX = 0;
+                this.m_extraScrollOverX = null;
+            }
+        }        
+    }
+
+    return [diffX, diffY];
+}
 
 /**
  * Initiate a scroll, this will differentiate between scrolling on touch vs desktop
@@ -6614,6 +6935,7 @@ DvtDataGrid.prototype.scrollTo = function(scrollLeft, scrollTop)
             this.fireEvent('scroll', {'event': null, 'ui':{'scrollX': scrollLeft, 'scrollY': scrollTop}});
         }
     }
+    this._setScrollPosition();
 };
 
 /**
@@ -7127,7 +7449,7 @@ DvtDataGrid.prototype.fillViewport = function()
             if (!this.m_stopRowHeaderFetch || !this.m_stopRowEndHeaderFetch || !this.m_stopRowFetch)
             {
                 fetchStart = Math.max(0, this._getMaxBottom() + 1);
-                fetchSize = Math.max(0, this.getFetchSize("row"));
+                fetchSize = Math.max(0, this.getFetchCount("row", fetchStart));
                 this.fetchHeaders("row", fetchStart, this.m_rowHeader, this.m_rowEndHeader, fetchSize);
                 this.fetchCells(this.m_databody, fetchStart, this.m_startCol, fetchSize, this.m_endCol - this.m_startCol + 1);
                 return;
@@ -7148,7 +7470,7 @@ DvtDataGrid.prototype.fillViewport = function()
             if (!this.m_stopColumnHeaderFetch || !this.m_stopColumnEndHeaderFetch || !this.m_stopColumnFetch)
             {
                 fetchStart = Math.max(0, this._getMaxRight() + 1);
-                fetchSize = Math.max(0, this.getFetchSize("column"));
+                fetchSize = Math.max(0, this.getFetchCount("column", fetchStart));
                 this.fetchHeaders("column", fetchStart, this.m_colHeader, this.m_colEndHeader, fetchSize);
                 this.fetchCells(this.m_databody, this.m_startRow, fetchStart, this.m_endRow - this.m_startRow + 1, fetchSize);
                 return;
@@ -7353,6 +7675,10 @@ DvtDataGrid.prototype._removeCellsAlongAxis = function(axis, threshold, isFromEn
     while (j <= axisEnd && j >= axisStart)
     {
         key = this._getKey(this._getHeaderByIndex(j, 0, axisHeaders, axisLevelCount, axisStartHeader), axis);
+        if (key == null)
+        {
+            key = this._getKey(this._getCellByIndex(axis == 'column' ? this.createIndex(this.m_startRow, j) :this.createIndex(j, this.m_startCol)), axis);
+        }
         dimensionValue = this._getCellDimension(null, j, key, axis, dimension, false);
         if (isFromEnd ? (axisEndPixel - dimensionValue - totalDimensionChange > threshold) : (axisStartPixel + dimensionValue + totalDimensionChange < currentScroll - threshold))
         {
@@ -8221,6 +8547,10 @@ DvtDataGrid.prototype.handleRowHeaderMouseMove = function(event)
     {
         this._handleMove(event);
     }
+    else if (this.m_headerDragState && this.m_selectionFrontier && this.m_selectionFrontier['axis'].indexOf('row') != -1)
+    {
+        this.extendSelectionHeader(event.target, event);
+    }
     // if it is resizing use the mouse move on the document
     else if (!this.m_isResizing)
     {
@@ -8234,8 +8564,12 @@ DvtDataGrid.prototype.handleRowHeaderMouseMove = function(event)
  */
 DvtDataGrid.prototype.handleColumnHeaderMouseMove = function(event)
 {
+    if (this.m_headerDragState && this.m_selectionFrontier && this.m_selectionFrontier['axis'].indexOf('column') != -1)
+    {
+        this.extendSelectionHeader(event.target, event);
+    }
     // if it is resizing use the mouse move on the document
-    if (!this.m_isResizing)
+    else if (!this.m_isResizing)
     {
         this.handleMouseMove(event);
     }
@@ -8247,10 +8581,11 @@ DvtDataGrid.prototype.handleColumnHeaderMouseMove = function(event)
  */
 DvtDataGrid.prototype.handleHeaderMouseDown = function(event)
 {
-    var cell, row, processed, target;
+    var cell, row, processed, target, header, cellContext, shiftKey, selectionMode;
 
     this._exitActionableMode();
     target = /** @type {Element} */ (event.target);
+    shiftKey = event.shiftKey;
 
     if (this._isEditOrEnter())
     {
@@ -8289,16 +8624,41 @@ DvtDataGrid.prototype.handleHeaderMouseDown = function(event)
             processed = true;
         }
     }
-
     // activate header on click or right click
-    // this will also clear the selection
     if (!this.m_isResizing)
     {
         if (!this.m_root.contains(document.activeElement) || document.activeElement === this.m_root)
         {
             this.m_externalFocus = true;
         }
-        this.handleHeaderClickActive(event);
+
+        selectionMode = this.m_options.getSelectionMode();
+        header = this.findHeader(target);
+        cellContext = header[this.getResources().getMappedAttribute("context")];
+
+        // if click or right click we want to adjust the selction
+        // no else so that we can select a cell in the same row as long as no drag
+        // check if selection is enabled
+        if (this._isSelectionEnabled() && this.isMultipleSelection() && !(selectionMode == 'row' && cellContext['axis'].indexOf('row') == -1) && !this.m_databodyMove)
+        {
+            this.handleHeaderClickSelection(event);
+
+            // only allow drag on left click
+            if (event.button === 0)
+            {
+                this.m_headerDragState = true;
+            }
+        }
+        // for single row based selection only
+        else if (selectionMode == 'row' && cellContext['axis'].indexOf('row') != -1 && this._isSelectionEnabled())
+        {
+            this.handleHeaderClickSelection(event);            
+        }
+        // if not selecting, just make active.
+        else
+        {
+            this.handleHeaderClickActive(event);
+        }
     }
 
     if (processed === true)
@@ -8313,6 +8673,10 @@ DvtDataGrid.prototype.handleHeaderMouseDown = function(event)
  */
 DvtDataGrid.prototype.handleMouseUp = function(event)
 {
+    // toggle off the drag state
+    this.m_headerDragState = false;
+    this.m_databodyDragState = false;
+
     //if we mouseup outside the grid we want to cancel the selection and return the row
     if (this.m_databodyMove)
     {
@@ -8322,6 +8686,7 @@ DvtDataGrid.prototype.handleMouseUp = function(event)
     {
         this.handleResizeMouseUp(event);
     }
+
     this.m_databodyMove = false;
 };
 
@@ -8345,13 +8710,34 @@ DvtDataGrid.prototype.handleHeaderMouseOut = function(event)
     }
 };
 
+/**
+ * Event handler for when header mouse up event
+ * @protected
+ * @param {Event} event - header mouse up event
+ */
 DvtDataGrid.prototype.handleHeaderMouseUp = function(event)
 {
+    // handle anchor change while in header drag mode
+    this.handleDragAnchorChange(event);
+
+    // toggle off the drag state
+    this.m_headerDragState = false;
+    this.m_databodyDragState = false;
     if (this.m_databodyMove)
     {
         this._handleMoveMouseUp(event, true);
     }
 };
+
+/**
+ * Event handler for when the top left corner is clicked
+ * @protected
+ * @param {Event} event - click event on the top left corner
+ */
+DvtDataGrid.prototype.handleCornerClick = function(event)
+{
+    this._handleSelectAll(event);
+}
 
 /**
  * Event handler for when row/column header is clicked
@@ -8365,6 +8751,7 @@ DvtDataGrid.prototype.handleHeaderClick = function(event)
             this.m_utils.containsCSSClassName(target, this.getMappedStyle('sortdescending')))
             && this._isDOMElementSortable(target))
     {
+        this._removeTouchSelectionAffordance();
         this._handleHeaderSort(event);
         event.preventDefault();
     }
@@ -8543,6 +8930,7 @@ DvtDataGrid.prototype.handleDatabodyMouseMove = function(event)
 DvtDataGrid.prototype.handleDatabodyMouseUp = function(event)
 {
     this.m_databodyDragState = false;
+    this.m_headerDragState = false;
     if (this.m_databodyMove)
     {
         this._handleMoveMouseUp(event, true);
@@ -8666,6 +9054,13 @@ DvtDataGrid.prototype.handleDatabodyMouseWheel = function(event)
     var delta, deltaX, deltaY;
     // prevent scrolling of the page
     event.preventDefault();
+
+    // prevent scroll if animating sort
+    if (this.m_animating)
+    {
+        return;
+    }
+
 
     delta = this.m_utils.getMousewheelScrollDelta(event);
 
@@ -9005,20 +9400,6 @@ DvtDataGrid.prototype.handleHeaderTouchStart = function(event)
         this.m_touchActive = true;
         header = this.findHeader(target);
 
-        //after 300ms set the header active color as feedback if finger still down and not resizing
-        //Jim suggested the change to a shorter value and it looks much cleaner and easier to use
-        //No longer remove after 1000ms because we are setting active if context menu is brought up
-        //Don't change the active on an in header scroll either
-        setTimeout(function() {
-            if (this.m_touchActive && !this.m_isResizing &&
-                    this.m_currentX == this.m_startX && this.m_currentY == this.m_startY)
-            {
-                this._removeTouchSelectionAffordance();
-                //tap and hold sets header active
-                this._setActive(header, this._createActiveObject(header), event, true);
-            }
-        }.bind(this), DvtDataGrid.HEADER_TAP_SHORT_HOLD_DURATION);
-
         if (this.isResizeEnabled())
         {
             this.handleResize(event);
@@ -9037,7 +9418,6 @@ DvtDataGrid.prototype.handleHeaderTouchStart = function(event)
         this.handleHeaderTouchCancel(event);
     }
 };
-
 
 /**
  * Event handler for when touch moves on the header
@@ -9097,7 +9477,7 @@ DvtDataGrid.prototype.handleHeaderTouchMove = function(event)
  */
 DvtDataGrid.prototype.handleHeaderTouchEnd = function(event)
 {
-    var touchEnd, touchLength, tapMax = DvtDataGrid.HEADER_TAP_SHORT_HOLD_DURATION, header, target;
+    var touchEnd, touchLength, tapMax = DvtDataGrid.HEADER_TAP_SHORT_HOLD_DURATION, header, target, selectionMode, cellContext;
 
     //calculate the end of touch time for tap and hold
     touchEnd = (new Date()).getTime();
@@ -9106,7 +9486,6 @@ DvtDataGrid.prototype.handleHeaderTouchEnd = function(event)
     if (this.m_touchActive && !event.defaultPrevented)
     {
         target = /** @type {Element} */ (event.target);
-
         // if resizing handle resize first so that we don't conflict and forget to end
         if (this.m_isResizing && this.isResizeEnabled())
         {
@@ -9116,15 +9495,46 @@ DvtDataGrid.prototype.handleHeaderTouchEnd = function(event)
                 event.preventDefault();
             }
         }
-        // if a short tap sort
-        else if (this.m_currentX == this.m_startX && this.m_currentY == this.m_startY && touchLength < tapMax)
+        // if a short tap select
+        else if (this.m_currentX == this.m_startX && this.m_currentY == this.m_startY)
         {
-            if (this._isDOMElementSortable(target))
+            selectionMode = this.m_options.getSelectionMode();
+            header = this.findHeader(target);
+            cellContext = header[this.getResources().getMappedAttribute("context")];
+
+            //if touch in an icon it the click event will handle mousedown/up
+            if ((this.m_utils.containsCSSClassName(target, this.getMappedStyle('sortascending')) ||
+                    this.m_utils.containsCSSClassName(target, this.getMappedStyle('sortdescending')))
+                    && this._isDOMElementSortable(target))
             {
                 event.preventDefault();
-                this._handleHeaderSort(event);
                 this._removeTouchSelectionAffordance();
+                this._handleSortIconMouseDown(target);
+                this._handleHeaderSort(event);
             }
+            // if click or right click we want to adjust the selction
+            // no else so that we can select a cell in the same row as long as no drag
+            // check if selection is enabled
+            else if (this._isSelectionEnabled() && this.isMultipleSelection() && !(selectionMode == 'row' && cellContext['axis'].indexOf('row') == -1) && !this.m_databodyMove)
+            {
+                this.handleHeaderClickSelection(event);
+
+                // only allow drag on left click
+                if (event.button === 0)
+                {
+                    this.m_headerDragState = true;
+                }
+            }
+            // for single row based selection only
+            else if (selectionMode == 'row' && cellContext['axis'].indexOf('row') != -1 && this._isSelectionEnabled())
+            {
+                this.handleHeaderClickSelection(event);            
+            }
+            // if not selecting, just make active.
+            else
+            {
+                this.handleHeaderClickActive(event);            
+            }       
         }
         // if reordering a row
         else if (this.m_databodyMove)
@@ -9175,6 +9585,10 @@ DvtDataGrid.prototype._handleNonSwipeScroll = function(diffX, diffY)
     var time = (new Date()).getTime();
     // for non-swipe scroll use 0ms to prevent jiggling
     this._disableTouchScrollAnimation();
+
+    var diff = this.adjustTouchScroll(diffX, diffY);
+    diffX = diff[0];
+    diffY = diff[1];
 
     this.scrollDelta(diffX, diffY);
 
@@ -9262,7 +9676,14 @@ DvtDataGrid.prototype._handleSwipe = function(event, axis)
         this.m_colHeader['firstChild'].style.webkitTransitionDuration = transitionDuration + 'ms';
         this.m_rowEndHeader['firstChild'].style.webkitTransitionDuration = transitionDuration + 'ms';
         this.m_colEndHeader['firstChild'].style.webkitTransitionDuration = transitionDuration + 'ms';
-        this.scrollDelta(diffX + momentumX.destination, diffY + momentumY.destination);
+
+        diffX = diffX + momentumX.destination;
+        diffY = diffY + momentumY.destination;
+        var diff = this.adjustTouchScroll(diffX, diffY);
+        diffX = diff[0];
+        diffY = diff[1];
+
+        this.scrollDelta(diffX, diffY);
     }
 };
 
@@ -9515,7 +9936,7 @@ DvtDataGrid.prototype.queueModelEvent = function(event)
  */
 DvtDataGrid.prototype.handleModelEvent = function(event, fromQueue)
 {
-    var operation, keys, cellSet, headerSet, endHeaderSet, indexes, source, silent;
+    var operation, keys, cellSet, headerSet, endHeaderSet, indexes, source, silent, requiresAnimation;
 
     // in case if the model event arrives before the grid is fully rendered,
     // queue the event and handle it later
@@ -9532,6 +9953,7 @@ DvtDataGrid.prototype.handleModelEvent = function(event, fromQueue)
     headerSet = event['header'];
     endHeaderSet = event['endheader'];
     silent = event['silent'];
+    requiresAnimation = false;
 
     this.m_processingModelEvent = true;
 
@@ -9545,6 +9967,7 @@ DvtDataGrid.prototype.handleModelEvent = function(event, fromQueue)
         {
             // range insert event with cellset returned
             this._handleModelInsertRangeEvent(cellSet, headerSet, endHeaderSet);
+            requiresAnimation = true;
         }
         else
         {
@@ -9554,6 +9977,7 @@ DvtDataGrid.prototype.handleModelEvent = function(event, fromQueue)
     else if (operation === 'update')
     {
         this._handleModelUpdateEvent(indexes, keys);
+        requiresAnimation = true;
     }
     else if (operation === 'delete')
     {
@@ -9567,6 +9991,7 @@ DvtDataGrid.prototype.handleModelEvent = function(event, fromQueue)
         if (source && oj.FlattenedTreeDataGridDataSource && source instanceof oj.FlattenedTreeDataGridDataSource && this.m_utils.supportsTransitions())
         {
             this._handleModelDeleteEventWithAnimation(keys);
+            requiresAnimation = true;
         }
         else
         {
@@ -9583,6 +10008,18 @@ DvtDataGrid.prototype.handleModelEvent = function(event, fromQueue)
     }
 
     this.m_processingModelEvent = false;
+
+    //Need to rerun the queued events if 
+    //coming from the queue. If no animation
+    //was involved in the current event, 
+    //we can directly call _runModelEventQueue
+    //from here. Animation events will call
+    //_runModelEventQueue at the end of their 
+    //transition function.
+    if (!requiresAnimation && fromQueue)
+    {
+        this._runModelEventQueue();
+    }
 };
 
 /**
@@ -10240,6 +10677,9 @@ DvtDataGrid.prototype._updateCellsInRow = function(cellSet, rowIndex, renderer, 
             
             // end animation
             self._signalTaskEnd();
+
+            //runQueue if applicable
+            self._runModelEventQueue();
         };
         
         this._onTransitionEnd(cells[cells.length -1], listener, animationDuration);
@@ -10726,6 +11166,41 @@ DvtDataGrid.prototype._handleAnimationEnd = function()
 };
 
 /**
+ * Get a cell or header from a given key and axis, gets the first cell with that key
+ * @private
+ */
+DvtDataGrid.prototype._getCellOrHeaderByKey = function(key, axis)
+{
+    var element = null;
+    var cells = this._getAxisCellsByKey(key, axis, true);
+    if (cells != null && cells.length > 0)
+    {
+        element = cells[0];
+    }
+    
+    if (element == null)
+    {
+        if (axis === 'row')
+        {
+            element = this._findHeaderByKey(key, this.m_rowHeader, this.getMappedStyle('rowheadercell'));
+            if (element == null)
+            {
+                element = this._findHeaderByKey(key, this.m_rowEndHeader, this.getMappedStyle('rowendheadercell'));
+            }
+        }
+        else if (axis === 'column')
+        {
+            element = this._findHeaderByKey(key, this.m_colHeader, this.getMappedStyle('colheadercell'));
+            if (element == null)
+            {
+                element = this._findHeaderByKey(key, this.m_colEndHeader, this.getMappedStyle('colendheadercell'));
+            }
+        }
+    }    
+    return element;
+};
+
+/**
  * Find the header element by key inside a given root and className
  * @param {string|null} key the key
  * @param {DocumentFragment|Element} root
@@ -10755,7 +11230,7 @@ DvtDataGrid.prototype._findHeaderByKey = function(key, root, className)
     {
         header = headers[i];
         headerKey = this._getKey(header);
-        if (headerKey == key)
+        if (this._shallowThenDeepCompare(headerKey, key))
         {
             return header;
         }
@@ -10865,6 +11340,8 @@ DvtDataGrid.prototype._handleModelSyncEvent = function(event)
     this.m_stopColumnHeaderFetch = false;
     this.m_stopColumnEndHeaderFetch = false;
 
+    this._clearScrollPositionKeys();
+
     //clear selections
     this.m_selection = null;
     this.m_active = null;
@@ -10896,7 +11373,6 @@ DvtDataGrid.prototype._handleModelSyncEvent = function(event)
         {
             this.handleCellsFetchSuccessForLongScroll(cellSet, cellRange);
         }});
-    this.setInitialScrollPosition();
 };
 
 /************************************ active cell navigation ******************************/
@@ -11008,7 +11484,7 @@ DvtDataGrid.prototype._updateActive = function(activeObject, shouldFocus, should
  */
 DvtDataGrid.prototype._setActive = function(element, cellInfo, event, clearSelection, silent, shouldNotScroll)
 {
-    if (cellInfo != null && this.m_shouldFocus !== false && !shouldNotScroll)
+    if (cellInfo != null && !shouldNotScroll)
     {
         this._scrollToActive(cellInfo);
     }
@@ -11383,10 +11859,7 @@ DvtDataGrid.prototype.handleHeaderClickActive = function(event)
     header = this.findHeader(target);
     if (header != null)
     {
-        if (this._isSelectionEnabled())
-        {
-            this._clearSelection(event);
-        }
+        this._clearSelection(event);
         this._setActive(header, this._createActiveObject(header), event);
     }
 };
@@ -11408,15 +11881,52 @@ DvtDataGrid.prototype._scrollToActive = function(activeObject)
 };
 
 /**
- * Retrieve cell by keys
+ * Retrieve cell by keys, this is rarely used, more common to look up cells by index within the data grid
  * @param {Object} keys
  * @return {Element|null} the active cell
  * @private
  */
 DvtDataGrid.prototype._getCellByKeys = function(keys)
 {
-    var id = this._createCellId(keys);
-    return document.getElementById(id);
+    var databodyContent, cells, cell, i, rowKey, columnKey;
+    if (keys == null || keys['row'] == null || keys['column'] == null || 
+        this.m_databody == null || this.m_databody['firstChild'] == null)
+    {
+        return null;
+    }
+
+    databodyContent = this.m_databody['firstChild'];
+    cells = databodyContent.getElementsByClassName(this.getMappedStyle('cell'));
+    for (i = 0; i < cells.length; i++)
+    {
+        cell = cells[i];
+        rowKey = this._getKey(cell, 'row');
+        if (this._shallowThenDeepCompare(rowKey, keys['row']))
+        {
+            columnKey = this._getKey(cell, 'column');
+            if (this._shallowThenDeepCompare(columnKey, keys['column']))
+            {
+                return cell;
+            }
+        }
+    }
+
+    return null;
+};
+
+/**
+ * @param {*} value1
+ * @param {*} value2
+ * @return {boolean}
+ * @private
+ */
+DvtDataGrid.prototype._shallowThenDeepCompare = function(value1, value2)
+{
+    if (value1 === value2)
+    {
+        return true;
+    }
+    return this._compareValuesCallback(value1, value2);
 };
 
 /**
@@ -11457,7 +11967,7 @@ DvtDataGrid.prototype.getCellEndIndexes = function(cell)
 /**
  * Retrieve the index of a cell/header along a given axis
  * @param {Element|undefined|null} element
- * @param {string} axis
+ * @param {string=} axis
  * @return {number|null}
  */
 DvtDataGrid.prototype._getIndex = function(element, axis)
@@ -12404,35 +12914,23 @@ DvtDataGrid.prototype.readCurrentContent = function()
         currentCell = cell[0];
     }
 
-    // update aria properties with full context reference, don't focus it yet
-    this._setAriaProperties(this._createActiveObject(currentCell), null, currentCell);
-
-    // the aria-labelledby needs to be different from last time
-    // when it's read otherwise the screenreader will not read it
-    // therefore, toggle the aria-labelledby with a dummy reference
-    subid = this.createSubId("placeHolder");
-    needToModify = true;
+    //Fill in the placeholder div aria-labelledby with the currentCell label so that it 
+    //will read out the contents of the current cell when focus is shifted to the 
+    //place holder div. Set tabIndex to -1 so that it can be focused but not tabbed into.
+    this.m_placeHolder.tabIndex = -1;
     labelledBy = currentCell.getAttribute("aria-labelledby");
-    if (labelledBy != null && labelledBy.indexOf(subid) != -1)
-    {
-        needToModify = false;
-    }
+    this.m_placeHolder.setAttribute('aria-labelledby', labelledBy + ' ' + currentCell.id);
 
-    // add the reference to dummy subid if needed (see comment above)
-    if (needToModify)
-    {
-        // the dummy div needs to have something (i.e. space or empty string doesn't work)
-        this.m_placeHolder.textContent = "&nbsp";
-        labelledBy = currentCell.getAttribute("aria-labelledby");
-        currentCell.setAttribute("aria-labelledby", labelledBy + ' ' + subid);
+    //Since JAWS screen reader requires changing focus in order to 
+    //trigger a read command, we are toggling between the placeholder
+    //div and the currentCell.
+    if (this.m_placeHolder === document.activeElement) {
+        currentCell.focus();
     }
     else
     {
-        this.m_utils.empty(this.m_placeHolder);
+        this.m_placeHolder.focus();
     }
-
-    // focus active cell so the content is read
-    currentCell.focus();
     return true;
 };
 
@@ -12506,7 +13004,7 @@ DvtDataGrid.prototype._reRenderCell = function(cell, mode, classToToggle, editab
     }
     else
     {
-    this._renderContent(renderer, cellContext, cell, cellContext['data']);
+        this._renderContent(renderer, cellContext, cell, cellContext['data']);
     }
 };
 
@@ -12559,26 +13057,60 @@ DvtDataGrid.prototype.isArrowKey = function(keyCode)
  */
 DvtDataGrid.prototype.createIndex = function(row, column)
 {
+    if (row == null && column == null)
+    {
+        return null;
+    }
+    
+    var returnObj = {};
     if (row != null)
     {
-        if (column != null)
-        {
-            return {"row": row, "column": column};
-        }
-        return {"row": row};
+        returnObj['row'] = row;
     }
+    if (column != null)
+    {
+        returnObj['column'] = column;
+    }
+    return returnObj;
+};
 
-    return null;
+/**
+ * Checks if the corners of a selection matches the selection frontier index and parameter index
+ * @param {string} axis - the axis of the selection if header
+ * @param {number} index - one index of the selection
+ * @param {Object} selection - selection being checked
+ * @return {boolean} true or false whether or not the corners are matched
+ */
+DvtDataGrid.prototype.checkCorners = function(axis, index, selection)
+{
+    //ignore nested headers
+    if ((this.m_selectionFrontier['axis'] == 'column' && this.m_columnHeaderLevelCount != this.m_selectionFrontier['level']) || (this.m_selectionFrontier['axis'] == 'row' && this.m_rowHeaderLevelCount != this.m_selectionFrontier['level']) || (this.m_selectionFrontier['axis'] == 'rowEnd' && this.m_rowEndHeaderLevelCount != this.m_selectionFrontier['level']) || (this.m_selectionFrontier['axis'] == 'columnEnd' && this.m_columnEndHeaderLevelCount != this.m_selectionFrontier['level']))
+    {
+        return true;
+    }
+    if (axis.indexOf('row') != -1)
+    {
+        return ((index == selection['startIndex']['row'] && this.m_selectionFrontier['end'] == selection['endIndex']['row']) || (index == selection['endIndex']['row'] && this.m_selectionFrontier['end'] == selection['startIndex']['row']))
+    }
+    else if (axis.indexOf('column') != -1)
+    {
+        return ((index == selection['startIndex']['column'] && this.m_selectionFrontier['end'] == selection['endIndex']['column']) || (index == selection['endIndex']['column'] && this.m_selectionFrontier['end'] == selection['startIndex']['column']))
+    }
+    else 
+    {
+        return false;
+    }
 };
 
 /**
  * Handles arrow keys navigation on header
  * @param {number} keyCode description
  * @param {Event} event the DOM event that caused the arrow key
+ * @param {boolean} isExtend boolean if we are extending a selection
  * @param {boolean} jumpToHeaders jump to opposite headers if possible
  * @return  boolean true if the event was processed
  */
-DvtDataGrid.prototype.handleHeaderFocusChange = function(keyCode, event, jumpToHeaders)
+DvtDataGrid.prototype.handleHeaderFocusChange = function(keyCode, event, isExtend, jumpToHeaders)
 {
     var axis, index, level, elem, newCellIndex, newElement, newIndex, newLevel, depth,
             root, start, end, levelCount, stopFetch;
@@ -12607,6 +13139,41 @@ DvtDataGrid.prototype.handleHeaderFocusChange = function(keyCode, event, jumpToH
     level = this.m_active['level'];
     elem = this._getActiveElement();
     depth = elem != null ? this._getAttribute(elem, 'depth', true) : 1;
+    
+    // if cell mode, need to set values properly to check corners
+    if (!axis && !index && this.m_active)
+    {
+        axis = this.m_selectionFrontier['axis'];                
+        index = this.m_active['indexes'][axis];        
+    }
+
+    // if shiftkey active and we're navigating headers, as long as we don't leave headers, set isExtend to active.
+    if (event.shiftKey && !isExtend && this.m_selectionFrontier && this.isMultipleSelection())
+    {
+        isExtend = this.checkHeaderToDatabody(axis, keyCode);
+    }
+
+    // if extending and anchors are the same, use the selectionFrontier
+    if (isExtend && this.isArrowKey(keyCode) && this.isHeaderSelectionType(this.m_selectionFrontier) && this.checkCorners(axis, index, this.m_selection[this.m_selection.length - 1]))
+    {
+        axis = this.m_selectionFrontier['axis'];
+        index = this.m_selectionFrontier['index'];
+        level = this.m_selectionFrontier['level'];
+
+        if (index == -1)
+        {
+            index = this.m_active['indexes'][axis];
+        }
+
+        // don't allow changing levels if anchor is a cell. 
+        if (this.m_active['type'] == 'cell')
+        {
+            if (((keyCode === DvtDataGrid.keyCodes.LEFT_KEY || keyCode === DvtDataGrid.keyCodes.RIGHT_KEY) && axis.indexOf("row") != -1) || ((keyCode === DvtDataGrid.keyCodes.UP_KEY || keyCode === DvtDataGrid.keyCodes.DOWN_KEY) && axis.indexOf("column") != -1))
+            {
+                return;
+            }
+        }
+    }
 
     if (axis == 'column')
     {
@@ -12659,6 +13226,13 @@ DvtDataGrid.prototype.handleHeaderFocusChange = function(keyCode, event, jumpToH
         stopFetch = this.m_stopRowEndHeaderFetch;
     }
 
+    // get the selection frontier current header element
+    if (isExtend && this.isArrowKey(keyCode) && this.isHeaderSelectionType(this.m_selectionFrontier))
+    {
+        elem = this._getHeaderByIndex(index, level, root, levelCount, start);
+        depth = elem != null ? this._getAttribute(elem, 'depth', true) : 1;
+    }
+
     switch (keyCode)
     {
         case DvtDataGrid.keyCodes.LEFT_KEY:
@@ -12680,8 +13254,21 @@ DvtDataGrid.prototype.handleHeaderFocusChange = function(keyCode, event, jumpToH
                         break;
                     }
                 }
-
-                this._setActive(newElement, {'type':'header', 'index':newIndex, 'level':newLevel, 'axis':axis}, event);
+                if (isExtend)
+                {
+                    this.extendSelectionHeader(newElement, event, true);
+                }
+                else
+                {
+                    if (this._isSelectionEnabled() && !this.m_discontiguousSelection)
+                    {
+                        // unhighlight and clear selection
+                        this._clearSelection(event);
+                        this.m_selectionFrontier = {};
+                    } 
+                    this._setActive(newElement, {'type':'header', 'index':newIndex, 'level':newLevel, 'axis':axis}, event);
+                    this._highlightActive();                    
+                }
             }
             else if ((axis === 'row' || axis === 'rowEnd') && level > 0)
             {
@@ -12689,23 +13276,66 @@ DvtDataGrid.prototype.handleHeaderFocusChange = function(keyCode, event, jumpToH
                 newElement = this._getHeaderByIndex(index, level - 1, root, levelCount, start);
                 newIndex = this._getAttribute(newElement['parentNode'], 'start', true);
                 newLevel = this.getHeaderCellLevel(newElement);
-                this._setActive(newElement, {'type':'header', 'index':newIndex, 'level':newLevel, 'axis':axis}, event);
+
+                if (isExtend)
+                {
+                    this.extendSelectionHeader(newElement, event, true);
+                }
+                else
+                {
+                    if (this._isSelectionEnabled() && !this.m_discontiguousSelection)
+                    {
+                        // unhighlight and clear selection
+                        this._clearSelection(event);
+                        this.m_selectionFrontier = {};
+                    }
+                    this._setActive(newElement, {'type':'header', 'index':newIndex, 'level':newLevel, 'axis':axis}, event);
+                    this._highlightActive();                    
+                }
             }
             break;
         case DvtDataGrid.keyCodes.RIGHT_KEY:
             if (axis == 'rowEnd' && jumpToHeaders && this.m_endRowHeader != -1)
             {
                 newElement = this._getHeaderByIndex(index, this.m_rowHeaderLevelCount, this.m_rowHeader, this.m_rowHeaderLevelCount, this.m_startRowHeader);
-                this._setActive(newElement, {'type':'header', 'index':index, 'level':this.m_rowHeaderLevelCount, 'axis':axis}, event);
+                if (isExtend)
+                {
+                    this.extendSelectionHeader(newElement, event, true);
+                }
+                else
+                {
+                    if (this._isSelectionEnabled() && !this.m_discontiguousSelection)
+                    {
+                        // unhighlight and clear selection
+                        this._clearSelection(event);
+                        this.m_selectionFrontier = {};
+                    }
+                    this._setActive(newElement, {'type':'header', 'index':index, 'level':this.m_rowHeaderLevelCount, 'axis':axis}, event);
+                    this._highlightActive();                
+                }
             }
             else if (axis == 'row' && jumpToHeaders && this.m_endRowEndHeader != -1)
             {
                 newElement = this._getHeaderByIndex(index, this.m_rowEndHeaderLevelCount, this.m_rowEndHeader, this.m_rowEndHeaderLevelCount, this.m_startRowEndHeader);
-                this._setActive(newElement, {'type':'header', 'index':index, 'level': this.m_rowEndHeaderLevelCount, 'axis':axis}, event);
+                if (isExtend)
+                {
+                    this.extendSelectionHeader(newElement, event, true);
+                }
+                else
+                {
+                    if (this._isSelectionEnabled() && !this.m_discontiguousSelection)
+                    {
+                        // unhighlight and clear selection
+                        this._clearSelection(event);
+                        this.m_selectionFrontier = {};
+                    }
+                    this._setActive(newElement, {'type':'header', 'index':index, 'level':this.m_rowEndHeaderLevelCount, 'axis':axis}, event);
+                    this._highlightActive();                
+                }
             }
             else if (axis === 'row' || axis === 'rowEnd')
             {
-                if (level + depth >= levelCount)
+                if (level + depth >= levelCount && !isExtend)
                 {
                     // row header, move to databody
                     // make the first cell of the current row active
@@ -12732,6 +13362,7 @@ DvtDataGrid.prototype.handleHeaderFocusChange = function(keyCode, event, jumpToH
                     else
                     {
                         this._setActiveByIndex(newCellIndex, event);
+                        this._highlightActive();
                     }
                 }
                 else
@@ -12740,7 +13371,21 @@ DvtDataGrid.prototype.handleHeaderFocusChange = function(keyCode, event, jumpToH
                     newElement = this._getHeaderByIndex(index, level + depth, root, levelCount, start);
                     newIndex = this._getAttribute(newElement['parentNode'], 'start', true);
                     newLevel = this.getHeaderCellLevel(newElement);
-                    this._setActive(newElement, {'type':'header', 'index':newIndex, 'level': newLevel, 'axis':axis}, event);
+                    if (isExtend)
+                    {
+                        this.extendSelectionHeader(newElement, event, true);
+                    }
+                    else
+                    {
+                        if (this._isSelectionEnabled() && !this.m_discontiguousSelection)
+                        {
+                            // unhighlight and clear selection
+                            this._clearSelection(event);
+                            this.m_selectionFrontier = {};
+                        }
+                        this._setActive(newElement, {'type':'header', 'index':newIndex, 'level': newLevel, 'axis':axis}, event);
+                        this._highlightActive();                
+                    }
                 }
             }
             else
@@ -12768,7 +13413,21 @@ DvtDataGrid.prototype.handleHeaderFocusChange = function(keyCode, event, jumpToH
 
                 if (!(newIndex > end && stopFetch) && (this._isCountUnknown("column") || newIndex < this.getDataSource().getCount("column")))
                 {
-                    this._setActive(newElement, {'type':'header', 'index':newIndex, 'level': newLevel, 'axis':axis}, event);
+                    if (isExtend)
+                    {
+                        this.extendSelectionHeader(newElement, event, true);
+                    }
+                    else
+                    {
+                        if (this._isSelectionEnabled() && !this.m_discontiguousSelection)
+                        {
+                            // unhighlight and clear selection
+                            this._clearSelection(event);
+                            this.m_selectionFrontier = {};
+                        }
+                        this._setActive(newElement, {'type':'header', 'index':newIndex, 'level':newLevel, 'axis':axis}, event);
+                        this._highlightActive();                
+                    }
                 }
             }
             break;
@@ -12799,7 +13458,21 @@ DvtDataGrid.prototype.handleHeaderFocusChange = function(keyCode, event, jumpToH
                         break;
                     }
                 }
-                this._setActive(newElement, {'type':'header', 'index':newIndex, 'level': newLevel, 'axis':axis}, event);
+                if (isExtend)
+                {
+                    this.extendSelectionHeader(newElement, event, true);
+                }
+                else
+                {
+                    if (this._isSelectionEnabled() && !this.m_discontiguousSelection)
+                    {
+                        // unhighlight and clear selection
+                        this.m_selectionFrontier = {};
+                        this._clearSelection(event);
+                    }
+                    this._setActive(newElement, {'type':'header', 'index':newIndex, 'level':newLevel, 'axis':axis}, event);
+                    this._highlightActive();
+                }
             }
             else if ((axis === 'column' || axis === 'columnEnd') && level > 0)
             {
@@ -12807,23 +13480,65 @@ DvtDataGrid.prototype.handleHeaderFocusChange = function(keyCode, event, jumpToH
                 newElement = this._getHeaderByIndex(index, level - 1, root, levelCount, start);
                 newIndex = this._getAttribute(newElement['parentNode'], 'start', true);
                 newLevel = this.getHeaderCellLevel(newElement);
-                this._setActive(newElement, {'type':'header', 'index':newIndex, 'level': newLevel, 'axis':axis}, event);
+                if (isExtend)
+                {
+                    this.extendSelectionHeader(newElement, event, true);
+                }
+                else
+                {
+                    if (this._isSelectionEnabled() && !this.m_discontiguousSelection)
+                    {
+                        // unhighlight and clear selection
+                        this.m_selectionFrontier = {};
+                        this._clearSelection(event);
+                    }
+                    this._setActive(newElement, {'type':'header', 'index':newIndex, 'level':newLevel, 'axis':axis}, event);
+                    this._highlightActive();
+                }
             }
             break;
         case DvtDataGrid.keyCodes.DOWN_KEY:
             if (axis == 'columnEnd' && jumpToHeaders && this.m_endColHeader != -1)
             {
                 newElement = this._getHeaderByIndex(index, this.m_columnHeaderLevelCount, this.m_colHeader, this.m_columnHeaderLevelCount, this.m_startColHeader);
-                this._setActive(newElement, {'type':'header', 'index':index, 'level': this.m_columnHeaderLevelCount, 'axis':axis}, event);
+                if (isExtend)
+                {
+                    this.extendSelectionHeader(newElement, event, true);
+                }
+                else
+                {
+                    if (this._isSelectionEnabled() && !this.m_discontiguousSelection)
+                    {
+                        // unhighlight and clear selection
+                        this.m_selectionFrontier = {};
+                        this._clearSelection(event);
+                    }
+                    this._setActive(newElement, {'type':'header', 'index':index, 'level': this.m_columnHeaderLevelCount, 'axis':axis}, event);
+                    this._highlightActive();
+                }
             }
             else if (axis == 'column' && jumpToHeaders && this.m_endColEndHeader != -1)
                 {
                 newElement = this._getHeaderByIndex(index, this.m_columnEndHeaderLevelCount, this.m_colEndHeader, this.m_columnEndHeaderLevelCount, this.m_startColEndHeader);
-                this._setActive(newElement, {'type':'header', 'index':index, 'level': this.m_columnEndHeaderLevelCount, 'axis':axis}, event);
+                if (isExtend)
+                {
+                    this.extendSelectionHeader(newElement, event, true);
+                }
+                else
+                {
+                    if (this._isSelectionEnabled() && !this.m_discontiguousSelection)
+                    {
+                        // unhighlight and clear selection
+                        this._clearSelection(event);
+                        this.m_selectionFrontier = {};
+                    }
+                    this._setActive(newElement, {'type':'header', 'index':index, 'level': this.m_columnEndHeaderLevelCount, 'axis':axis}, event);
+                    this._highlightActive();
+                }
             }
             else if (axis === 'column' || axis === 'columnEnd')
             {
-                if (level + depth >= levelCount)
+                if (level + depth >= levelCount && !isExtend)
                 {
                     // column header, move to databody
                     // make the cell of the first row and current column active
@@ -12850,6 +13565,7 @@ DvtDataGrid.prototype.handleHeaderFocusChange = function(keyCode, event, jumpToH
                     else
                     {
                         this._setActiveByIndex(newCellIndex, event);
+                        this._highlightActive();
                     }
                 }
                 else
@@ -12858,7 +13574,21 @@ DvtDataGrid.prototype.handleHeaderFocusChange = function(keyCode, event, jumpToH
                     newElement = this._getHeaderByIndex(index, level + depth, root, levelCount, start);
                     newIndex = this._getAttribute(newElement['parentNode'], 'start', true);
                     newLevel = this.getHeaderCellLevel(newElement);
-                    this._setActive(newElement, {'type':'header', 'index':newIndex, 'level': newLevel, 'axis':axis}, event);
+                    if (isExtend)
+                    {
+                        this.extendSelectionHeader(newElement, event, true);
+                    }
+                    else
+                    {
+                        if (this._isSelectionEnabled() && !this.m_discontiguousSelection)
+                        {
+                            // unhighlight and clear selection
+                            this._clearSelection(event);
+                            this.m_selectionFrontier = {};
+                        }
+                        this._setActive(newElement, {'type':'header', 'index':newIndex, 'level': newLevel, 'axis':axis}, event);
+                        this._highlightActive();
+                    }
                 }
             }
             else
@@ -12886,7 +13616,21 @@ DvtDataGrid.prototype.handleHeaderFocusChange = function(keyCode, event, jumpToH
 
                 if (!(newIndex > end && stopFetch) && (this._isCountUnknown("row") || newIndex < this.getDataSource().getCount("row")))
                 {
-                    this._setActive(newElement, {'type':'header', 'index':newIndex, 'level': newLevel, 'axis':axis}, event);
+                    if (isExtend)
+                    {
+                        this.extendSelectionHeader(newElement, event, true);
+                    }
+                    else
+                    {
+                        if (this._isSelectionEnabled() && !this.m_discontiguousSelection)
+                        {
+                            // unhighlight and clear selection
+                            this._clearSelection(event);
+                            this.m_selectionFrontier = {};
+                        }
+                        this._setActive(newElement, {'type':'header', 'index':newIndex, 'level': newLevel, 'axis':axis}, event);
+                        this._highlightActive();
+                    }
                 }
             }
             break;
@@ -12942,6 +13686,27 @@ DvtDataGrid.prototype.handleHeaderFocusChange = function(keyCode, event, jumpToH
     }
     return true;
 };
+
+/**
+ * Check if the focus is changing from header to databody
+ * Get the label of the header
+ * @param {string} axis 
+ * @param {number} keyCode
+ * @returns {boolean} True if the header is not leaving the databody
+ */
+DvtDataGrid.prototype.checkHeaderToDatabody = function(axis, keyCode)
+{
+    if (!((axis === 'row' && this.m_rowHeaderLevelCount === this.m_selectionFrontier['level'] && keyCode == DvtDataGrid.keyCodes.RIGHT_KEY) || (axis === 'rowEnd' && this.m_rowEndHeaderLevelCount === this.m_selectionFrontier['level'] && keyCode == DvtDataGrid.keyCodes.LEFT_KEY) || (axis === 'column' && this.m_columnHeaderLevelCount === this.m_selectionFrontier['level'] && keyCode == DvtDataGrid.keyCodes.DOWN_KEY) || (axis === 'columnEnd' && this.m_columnEndHeaderLevelCount === this.m_selectionFrontier['level'] && keyCode == DvtDataGrid.keyCodes.UP_KEY)))
+    {
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+};
+
+
 
 /**
  * Get the label of the header
@@ -13050,6 +13815,23 @@ DvtDataGrid.prototype._getHeaderAndParents = function(header)
 };
 
 /**
+ * Checks if the input selection Frontier is type header
+ * @param {Object} selectionFrontier
+ * @returns {boolean} true if type header, false otherwise
+ */
+DvtDataGrid.prototype.isHeaderSelectionType = function(selectionFrontier)
+{
+    if (selectionFrontier && selectionFrontier['axis'])
+    {
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
+
+/**
  * Handles arrow keys navigation on cell
  * @param {number} keyCode description
  * @param {boolean} isExtend
@@ -13071,6 +13853,12 @@ DvtDataGrid.prototype.handleFocusChange = function(keyCode, isExtend, event, cha
     if (isExtend)
     {
         currentCellIndex = this.m_selectionFrontier;
+        // if extending and selection frontier has an axis component, we are in header realm 
+        if (this.isHeaderSelectionType(this.m_selectionFrontier))
+        {
+            this.handleHeaderFocusChange(keyCode, event, isExtend, jumpToHeaders);
+            return;
+        }
     }
     else
     {
@@ -13154,7 +13942,14 @@ DvtDataGrid.prototype.handleFocusChange = function(keyCode, isExtend, event, cha
             {
                 // reached the first column, go to row header if available
                 header = this._getHeaderByIndex(this.m_trueIndex['row'], this.m_rowHeaderLevelCount - 1, this.m_rowHeader, this.m_rowHeaderLevelCount, this.m_startRowHeader);
-                this._setActive(header, {'type':'header', 'index':this.m_trueIndex['row'], 'level': this.m_rowHeaderLevelCount - 1, 'axis': 'row'}, event, true);
+                if (this.m_discontiguousSelection)
+                {
+                    this.discontiguousHeaderSetActiveFromDatabody(event, 'row', header, this.m_rowHeaderLevelCount);
+                }
+                else
+                {
+                    this._setActive(header, {'type':'header', 'index':this.m_trueIndex['row'], 'level': this.m_rowHeaderLevelCount - 1, 'axis': 'row'}, event, true);                    
+                }
             }
             break;
         case DvtDataGrid.keyCodes.RIGHT_KEY:
@@ -13197,7 +13992,14 @@ DvtDataGrid.prototype.handleFocusChange = function(keyCode, isExtend, event, cha
             {
                 // reached the last column, go to row end header if available
                 header = this._getHeaderByIndex(this.m_trueIndex['row'], this.m_rowEndHeaderLevelCount - 1, this.m_rowEndHeader, this.m_rowEndHeaderLevelCount, this.m_startRowEndHeader);
-                this._setActive(header, {'type':'header', 'index':this.m_trueIndex['row'], 'level': this.m_rowEndHeaderLevelCount - 1, 'axis': 'rowEnd'}, event, true);
+                if (this.m_discontiguousSelection)
+                {
+                    this.discontiguousHeaderSetActiveFromDatabody(event, 'rowEnd', header, this.m_rowEndHeaderLevelCount);
+                }
+                else
+                {
+                    this._setActive(header, {'type':'header', 'index':this.m_trueIndex['row'], 'level': this.m_rowEndHeaderLevelCount - 1, 'axis': 'rowEnd'}, event, true);
+                }
             }
             else if (!isExtend)
             {
@@ -13236,7 +14038,14 @@ DvtDataGrid.prototype.handleFocusChange = function(keyCode, isExtend, event, cha
                 {
                     // reached the first row, go to column header if available
                     header = this._getHeaderByIndex(this.m_trueIndex['column'], this.m_columnHeaderLevelCount - 1, this.m_colHeader, this.m_columnHeaderLevelCount, this.m_startColHeader);
-                    this._setActive(header, {'type':'header', 'index':this.m_trueIndex['column'], 'level': this.m_columnHeaderLevelCount - 1, 'axis': 'column'}, event, true);
+                    if (this.m_discontiguousSelection)
+                    {
+                        this.discontiguousHeaderSetActiveFromDatabody(event, 'column', header, this.m_columnHeaderLevelCount);
+                    }
+                    else
+                    {
+                        this._setActive(header, {'type':'header', 'index':this.m_trueIndex['column'], 'level': this.m_columnHeaderLevelCount - 1, 'axis': 'column'}, event, true);
+                    }
                 }
             }
             break;
@@ -13268,7 +14077,14 @@ DvtDataGrid.prototype.handleFocusChange = function(keyCode, isExtend, event, cha
             {
                 // reached the last column, go to column end header if available
                 header = this._getHeaderByIndex(this.m_trueIndex['column'], this.m_columnEndHeaderLevelCount - 1, this.m_colEndHeader, this.m_columnEndHeaderLevelCount, this.m_startColEndHeader);
-                this._setActive(header, {'type':'header', 'index':this.m_trueIndex['column'], 'level': this.m_columnEndHeaderLevelCount - 1, 'axis': 'columnEnd'}, event, true);
+                if (this.m_discontiguousSelection)
+                {
+                    this.discontiguousHeaderSetActiveFromDatabody(event, 'columnEnd', header, this.m_columnEndHeaderLevelCount);
+                }
+                else
+                {
+                    this._setActive(header, {'type':'header', 'index':this.m_trueIndex['column'], 'level': this.m_columnEndHeaderLevelCount - 1, 'axis': 'columnEnd'}, event, true);
+                }
             }
             else if (!isExtend)
             {
@@ -13334,14 +14150,24 @@ DvtDataGrid.prototype.handleFocusChange = function(keyCode, isExtend, event, cha
 /**
  * Scrolls to an  index
  * @param {Object} index - the end index of the selection.
- * @param {boolean|null=} isExtend - true if we should not focus the the new index
+ * @param {boolean|null=} ignoreHighlight - true if we want to ignore highlighting a cell
+ * @param {boolean|null=} scrollToOrigin - true if we align the viewport with the origin
  */
-DvtDataGrid.prototype.scrollToIndex = function(index, isExtend)
+DvtDataGrid.prototype.scrollToIndex = function(index, ignoreHighlight, scrollToOrigin)
 {
     var row, column, deltaX, deltaY, scrollTop, viewportTop, viewportBottom, dir,
             rowTop, rowHeight, scrollLeft, cell, cellLeft, cellWidth, viewportLeft, viewportRight, scrollRows;
     row = index['row'];
     column = index['column'];
+    if (ignoreHighlight)
+    {
+        this.m_shouldFocus = false;
+    }
+    if (scrollToOrigin)
+    {
+        index['scrollToOrigin'] = true;
+    }
+
     dir = this.getResources().isRTLMode() ? "right" : "left";
 
     deltaX = 0;
@@ -13375,18 +14201,29 @@ DvtDataGrid.prototype.scrollToIndex = function(index, isExtend)
 
         rowTop = this.getElementDir(cell, 'top');
         rowHeight = this.getElementHeight(cell);
-        if (rowTop + rowHeight > viewportBottom)
-        {
-            deltaY = viewportBottom - (rowTop + rowHeight);
-        }
-        else if (rowTop < viewportTop)
+        // If we are scrolling to a row position, align it to the top row of the viewport
+        // if specified
+        if (scrollToOrigin || index['scrollToOrigin'])
         {
             deltaY = viewportTop - rowTop;
         }
+        else
+        {
+            if (rowTop + rowHeight > viewportBottom)
+            {
+                deltaY = viewportBottom - (rowTop + rowHeight);
+            }
+            else if (rowTop < viewportTop)
+            {
+                deltaY = viewportTop - rowTop;
+            }            
+        }
+
     }
 
     // if column is defined and it's not already a fetch outside of rendered
     // use scrollRows to know it was not pre-defined
+    // if initial Scroll, we should adjust the column
     if (!isNaN(column) && scrollRows != true)
     {
         // check if index is completely outside of rendered
@@ -13413,13 +14250,21 @@ DvtDataGrid.prototype.scrollToIndex = function(index, isExtend)
 
             cellLeft = this.getElementDir(cell, dir);
             cellWidth = this.getElementWidth(cell);
-            if (cellLeft < viewportLeft)
+
+            if (scrollToOrigin || index['scrollToOrigin'])
             {
                 deltaX = viewportLeft - cellLeft;
             }
-            else if (cellLeft + cellWidth > viewportRight)
+            else
             {
-                deltaX = viewportRight - (cellLeft + cellWidth);
+                if (cellLeft < viewportLeft)
+                {
+                    deltaX = viewportLeft - cellLeft;
+                }
+                else if (cellLeft + cellWidth > viewportRight)
+                {
+                    deltaX = viewportRight - (cellLeft + cellWidth);
+                }                
             }
         }
     }
@@ -13429,18 +14274,28 @@ DvtDataGrid.prototype.scrollToIndex = function(index, isExtend)
     {
         cell = this._getCellByIndex(index);
 
-        if (cell != null && isExtend !== true)
+        // this.m_shouldFocus for second call after initial scroll. 
+        if (cell != null && ignoreHighlight !== true && this.m_shouldFocus !== false)
         {
             // delay focus on cell until databody has scrolled (by the scroll event handler)
+            // if we are not highlighting, ignore this
             this.m_cellToFocus = cell;
         }
         this.scrollDelta(deltaX, deltaY);
     }//if there's an index we wanted to scroll to after fetch it has now been scrolled to by scrollToIndex, so highlight it
     else if (this.m_scrollIndexAfterFetch != null)
     {
-        if (this._setActiveByIndex(this.m_scrollIndexAfterFetch, null, false, false, true))
+        // this.m_shouldFocus for second call after initial scroll. 
+        if (!ignoreHighlight && this.m_shouldFocus !== false)
         {
-            this.m_scrollIndexAfterFetch = null;
+            if (this._setActiveByIndex(this.m_scrollIndexAfterFetch, null, false, false, true))
+            {
+                this.m_scrollIndexAfterFetch = null;
+            }
+        }
+        else
+        {
+            this.m_scrollIndexAfterFetch = null;            
         }
     }
 };
@@ -13565,7 +14420,7 @@ DvtDataGrid.prototype.scrollToHeader = function(headerInfo)
     // scroll if either horiz or vert scroll pos has changed
     if (delta != 0)
     {
-        if (header != null)
+        if (header != null && this.m_shouldFocus !== false)
         {
             // delay focus on cell until databody has scrolled (by the scroll event handler)
             this.m_cellToFocus = header;
@@ -13752,6 +14607,10 @@ DvtDataGrid.prototype.handleExpandEvent = function(event, fromQueue)
     // update screen reader alert
     this._setAccInfoText("accessibleRowExpanded");
     this.populateAccInfo();
+    if (fromQueue) 
+    {
+        this._runModelEventQueue();
+    }
 };
 
 /**
@@ -13781,19 +14640,9 @@ DvtDataGrid.prototype.handleCollapseEvent = function(event, fromQueue)
     // update screen reader alert
     this._setAccInfoText("accessibleRowCollapsed");
     this.populateAccInfo();
-};
-
-/**
- * Set the key on an element.
- * @param {Element} element the element to get key of
- * @param {Object|string|number} key the key to set
- * @private
- */
-DvtDataGrid.prototype._setKey = function(element, key)
-{
-    if (element != null)
+    if (fromQueue) 
     {
-        element[this.getResources().getMappedAttribute('key')] = key;
+        this._runModelEventQueue();
     }
 };
 
@@ -13806,7 +14655,8 @@ DvtDataGrid.prototype._setKey = function(element, key)
  */
 DvtDataGrid.prototype._getKey = function(element, axis)
 {
-    if (element != null)
+    // make sure the element has a context
+    if (element != null && element[this.getResources().getMappedAttribute("context")])
     {
         if (axis != null && this.m_utils.containsCSSClassName(element, this.getMappedStyle('cell')))
         {
@@ -14779,6 +15629,40 @@ DvtDataGrid.prototype._modifyAxisCellContextIndex = function(axis, atIndex, coun
 };
 
 /**
+ * Get a cell or header by index along a given axis, will return first cell on that axis
+ * @private
+ */
+DvtDataGrid.prototype._getCellOrHeaderByIndex = function(index, axis)
+{
+    var element = null;
+    var cells = this._getAxisCellsByIndex(index, axis, true);
+    if (cells != null && cells.length > 0)
+    {
+        element = cells[0];
+    }
+    if (element == null)
+    {
+        if (axis === 'row')
+        {
+            element = this._getHeaderByIndex(index, 0, this.m_rowHeader, this.m_rowHeaderLevelCount, this.m_startRowHeader);
+            if (element == null)
+            {
+                element = this._getHeaderByIndex(index, 0, this.m_rowEndHeader, this.m_rowEndHeaderLevelCount, this.m_startRowEndHeader);
+            }
+        }
+        if (axis === 'column')
+        {
+            element = this._getHeaderByIndex(index, 0, this.m_colHeader, this.m_columnHeaderLevelCount, this.m_startColHeader);
+            if (element == null)
+            {
+                element = this._getHeaderByIndex(index, 0, this.m_colEndHeader, this.m_columnEndHeaderLevelCount, this.m_startColEndHeader);
+            }
+        }
+    }
+    return element;
+};
+
+/**
  * Get a cell by index
  * @param {Object} indexes
  * @returns {Element|null}
@@ -14797,10 +15681,11 @@ DvtDataGrid.prototype._getCellByIndex = function(indexes)
  * Get all the cells along an axis by index
  * @param {number} index
  * @param {string} axis row/column
+ * @param {boolean=} breakOnFirstFind 
  * @returns {Array|null}
  * @private
  */
-DvtDataGrid.prototype._getAxisCellsByIndex = function(index, axis)
+DvtDataGrid.prototype._getAxisCellsByIndex = function(index, axis, breakOnFirstFind)
 {
     var i, cells, cell, start, end, axisExtent;
     cells = [];
@@ -14815,6 +15700,10 @@ DvtDataGrid.prototype._getAxisCellsByIndex = function(index, axis)
         {
             axisExtent = this.getCellExtents(cell)[axis == 'row' ? 'column' : 'row'];
             cells.push(cell)
+            if (breakOnFirstFind)
+            {
+                break;
+            }
         }
         else
         {
@@ -14828,12 +15717,13 @@ DvtDataGrid.prototype._getAxisCellsByIndex = function(index, axis)
  * Get all the cells along an axis by key
  * @param {string|null} key
  * @param {string} axis row/column
+ * @param {boolean=} breakOnFirstFind 
  * @returns {Array|null}
  * @private
  */
-DvtDataGrid.prototype._getAxisCellsByKey = function(key, axis)
+DvtDataGrid.prototype._getAxisCellsByKey = function(key, axis, breakOnFirstFind)
 {
-    var databodyContent, cells, cell, i, rowKey, matchingCells = [];
+    var databodyContent, cells, cell, i, axisKey, matchingCells = [];
     if (key == null || this.m_databody == null || this.m_databody['firstChild'] == null)
     {
         return null;
@@ -14846,10 +15736,14 @@ DvtDataGrid.prototype._getAxisCellsByKey = function(key, axis)
         cell = cells[i];
         if (this.m_utils.containsCSSClassName(cell, this.getMappedStyle('cell')))
         {
-            rowKey = this._getKey(cell, axis);
-            if (rowKey == key)
+            axisKey = this._getKey(cell, axis);
+            if (axisKey === key)
             {
                 matchingCells.push(cell);
+                if (breakOnFirstFind)
+                {
+                    break;
+                }
             }
         }
     }
@@ -15039,8 +15933,15 @@ DvtDataGrid.prototype.handleDatabodySelectionDrag = function(event)
 
     if (cell != null)
     {
-        index = this.getCellIndexes(cell);
-        this.extendSelection(index, event);
+        if (this.isHeaderSelectionType(this.m_selectionFrontier))
+        {
+            this.extendSelectionHeader(cell, event);
+        }
+        else
+        {
+            index = this.getCellIndexes(cell);
+            this.extendSelection(index, event);
+        }
     }
 
 };
@@ -15136,6 +16037,144 @@ DvtDataGrid.prototype._deselect = function(index)
 };
 
 /**
+ * Handles click to select header rows/columns
+ * @param {Event} event
+ */
+DvtDataGrid.prototype.handleHeaderClickSelection = function(event)
+{
+    var axis, index, level, target, header, start, end, elem, shiftKey;
+
+    target = /** @type {Element} */ (event.target);
+    header = this.findHeader(target);
+    shiftKey = event.shiftKey;
+
+    if (!shiftKey && header)
+    {
+        this._setActive(header, this._createActiveObject(header), event);
+    }
+
+    // no selection if header was not selected or if cell is active and shiftkey is not selected when selectin gheader
+    if (this.m_active == null || (this.m_active['type'] != 'header' && !event.shiftKey))
+    {
+        return false;
+    }
+
+    if (this.m_active['type'] == 'header')
+    {
+        axis = this.m_active['axis'];
+        index = this.m_active['index'];
+        level = this.m_active['level'];
+    }
+
+    if (this.m_utils.isTouchDevice())
+    {
+        //remove the touch affordance on a new tap, unhighlight the active cell, and select the new one
+        this._removeTouchSelectionAffordance();
+        this._selectHeader(axis, index, level, event)            
+    }
+    else
+    {
+        if (!shiftKey)
+        {
+            this._selectHeader(axis, index, level, event)            
+        }
+        else if (shiftKey)
+        {
+            var headerContext = target[this.getResources().getMappedAttribute("context")];
+            //check if cell anchor, if so inherit row/column axis from target
+            if (axis == null)
+            {
+                axis = headerContext['axis'];
+            }
+            //make sure we only handle row - row, column - column properly. row-column/column-row is ignored if shiftkey is active.
+            if ((axis.indexOf('row') != -1 && headerContext['axis'].indexOf("row") != -1) || (axis.indexOf('column') != -1 && headerContext['axis'].indexOf("column") != -1))
+            {
+                this.extendSelectionHeader(target, event)
+            }
+            return;
+        }
+    }
+}
+
+/**
+ * Handles discontiguous header set active from databody
+ * @param {Event} event triggering the operation
+ * @param {string} axis header axis
+ * @param {Element|null} header to be set active
+ * @param {number} axisLevelCount
+ */
+DvtDataGrid.prototype.discontiguousHeaderSetActiveFromDatabody = function(event, axis, header, axisLevelCount)
+{
+    var trueAxis = axis.replace("End", "");
+    var currentSelection = this.m_selection[this.m_selection.length - 1];
+    this.unhighlightSelection();
+    if (currentSelection['startIndex']['row'] == this.m_active['indexes']['row'] && currentSelection['endIndex']['row'] == this.m_active['indexes']['row'] && currentSelection['startIndex']['column'] == this.m_active['indexes']['column'] && currentSelection['endIndex']['column'] == this.m_active['indexes']['column'])
+    {
+        this.m_selection.pop();
+    }
+    this._setActive(header, {'type':'header', 'index':this.m_trueIndex[trueAxis], 'level': axisLevelCount - 1, 'axis': axis}, event, false);
+    this.rehighlightSelection();
+};
+
+/**
+ * Handles header change due to mouse up after dragging between parent/child or child/parent header anchor and target.
+ * @param {Event} event triggering the operation
+ */
+DvtDataGrid.prototype.handleDragAnchorChange = function(event)
+{
+    var targetElement, targetContext, targetStart, targetEnd, sourceParent, sourceParentContext, sourceParentStart, sourceParentEnd, extent;
+    // If dragging and we land in a parent or child of the anchor, reset the anchor. 
+    if (this.m_headerDragState)
+    {
+        targetElement = /** @type {Element} */ (event.target);
+        targetContext = targetElement[this.getResources().getMappedAttribute("context")];
+        sourceParent = this._getActiveElement();
+        sourceParentContext = sourceParent[this.getResources().getMappedAttribute("context")];
+        sourceParentStart = this._getAttribute(sourceParent['parentNode'], 'start', true);
+        sourceParentEnd = sourceParentStart + this._getAttribute(sourceParent['parentNode'], 'extent', true) - 1;
+
+        // if no extent, skip
+        if (!targetContext['extent'])
+        {
+            return;
+        }
+
+        if (targetContext['extent'] == 1)
+        {
+            targetStart = targetContext['index'];
+            targetEnd = targetContext['index'];
+        }
+        else
+        {
+            targetStart = this._getAttribute(targetElement['parentNode'], 'start', true);
+            targetEnd = targetStart + this._getAttribute(targetElement['parentNode'], 'extent', true) - 1;
+        }
+
+        sourceParentStart = this._getAttribute(sourceParent['parentNode'], 'start', true);
+        sourceParentEnd = sourceParentStart + this._getAttribute(sourceParent['parentNode'], 'extent', true) - 1;
+
+        extent = sourceParentContext['extent'];
+
+        if (extent != 1)
+        {
+            if ((targetStart <= sourceParentStart && targetEnd >= sourceParentEnd) || (targetStart >= sourceParentStart && targetEnd <= sourceParentEnd))
+            {
+                // if moving levels, and we are a parent or child of current cell, just reset active to the parent/child.
+                this._setActive(targetElement, this._createActiveObject(targetElement), event);
+            }
+        }
+        else
+        {
+            if (targetStart != targetEnd && (targetStart <= sourceParentStart && sourceParentStart <= targetEnd))
+            {
+                // if moving levels, and we are a parent or child of current cell, just reset active to the parent/child.
+                this._setActive(targetElement, this._createActiveObject(targetElement), event);
+            }             
+        }
+    }
+}
+
+/**
  * Handles click to select multiple cells/rows
  * @param {Event} event
  */
@@ -15194,6 +16233,38 @@ DvtDataGrid.prototype.handleDatabodyClickSelection = function(event)
         }
     }
 };
+
+/**
+ * Handle select all
+ * @param {Event} event the event causing the action
+ * @returns {boolean} true if processed
+ */
+DvtDataGrid.prototype._handleSelectAll = function(event)
+{
+    if (this._isSelectionEnabled() && this.isMultipleSelection())
+    {
+        if (this.m_options.getSelectionMode() == "row")
+        {
+            // drop the column index
+            this._selectRange(this.createIndex(0), this.createIndex(-1), event);
+        }
+        else
+        {
+            this._selectRange(this.createIndex(0, 0), this.createIndex(-1, -1), event);
+        }
+        // if affordances are active, remove them.
+        if (this.m_utils.isTouchDevice() && this.m_topSelectIconContainer && this.m_bottomSelectIconContainer)
+        {
+            this.m_topSelectIconContainer['parentNode'].removeChild(this.m_topSelectIconContainer);
+            this.m_bottomSelectIconContainer['parentNode'].removeChild(this.m_bottomSelectIconContainer);
+        }
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
 
 /**
  * Determine if the specified cell index is inside the current selection.
@@ -15361,7 +16432,15 @@ DvtDataGrid.prototype._selectEntireRow = function(rowStart, rowEnd, event)
     endIndex = this.createIndex(rowEnd, -1);
     returnObj = this._getSelectionStartAndEnd(startIndex, endIndex, 0);   
     
-    this._selectRange(this.createIndex(returnObj['min']['row'], 0), this.createIndex(returnObj['max']['row'], -1), event);
+    if (this.m_options.getSelectionMode() == "row")
+    {
+        // drop the column index
+        this._selectRange(this.createIndex(returnObj['min']['row']), this.createIndex(returnObj['max']['row']), event);
+    }
+    else
+    {
+        this._selectRange(this.createIndex(returnObj['min']['row'], 0), this.createIndex(returnObj['max']['row'], -1), event);        
+    }
 };
 
 /**
@@ -15413,13 +16492,20 @@ DvtDataGrid.prototype._selectRangeCallback = function(event, newRange)
     // as the previous matches the old reference and the new selection is a new
     // reference, create a brand new selection
     previous = this.GetSelection();
-    selection = [];
+    if (!this.m_discontiguousSelection && event && !(this.m_utils.ctrlEquivalent(event) && event.button == 0))
+    {
+        selection = [];        
+    }
+    else
+    {
+        selection = previous.slice(0);
+    }
     selection.push(newRange);
     this.m_selection = selection;
 
-    this.highlightRange(newRange);
+    this.rehighlightSelection();
 
-    if (this._isDatabodyCellActive())
+    if (this._isDatabodyCellActive() && event.target[this.getResources().getMappedAttribute("context")] && !event.target[this.getResources().getMappedAttribute("context")]['axis'] && !this.m_selectionFrontier['axis'])
     {
         // reset frontier to be the same as active
         this.m_selectionFrontier = this.m_active['indexes'];
@@ -15430,6 +16516,17 @@ DvtDataGrid.prototype._selectRangeCallback = function(event, newRange)
     // fire selection event if the selection has changed
     this._compareSelectionAndFire(event, previous);
 };
+
+/**
+ * Highlight all ranges in the selection
+ */
+DvtDataGrid.prototype.rehighlightSelection = function()
+{
+    for (var i = 0; i < this.m_selection.length; i++)
+    {
+        this.highlightRange(this.m_selection[i]);
+    }
+}
 
 /**
  * Retrieve the current selection
@@ -15502,6 +16599,13 @@ DvtDataGrid.prototype.fireSelectionEvent = function(event, previousSelection)
 DvtDataGrid.prototype.extendSelection = function(index, event, direction)
 {
     var anchor, activeRow, activeColumn, returnObj, minIndex, maxIndex;
+
+    // prevent cell selection when extending a row/column selection
+    if (this.m_active['type'] == 'header')
+    {
+        return;
+    }
+
     // find the the top left index
     if (this.m_utils.isTouchDevice())
     {
@@ -15537,6 +16641,221 @@ DvtDataGrid.prototype.extendSelection = function(index, event, direction)
    
     this._createRangeWithKeys(minIndex, maxIndex, this._extendSelectionCallback.bind(this, event, anchor));
 };
+
+/**
+ * Extend the selection for headers
+ * @param {Object} target - {axis, index} target of the selection.
+ * @param {Event=} event - the DOM event causing the selection to to be extended
+ * @param {boolean=} isExtend - boolean if we are extending a selection
+ */
+DvtDataGrid.prototype.extendSelectionHeader = function(target, event, isExtend)
+{
+    var anchor, axis, targetStart, targetEnd, sourceParent, sourceParentContext, sourceParentStart, sourceParentEnd, extent, endpoint, targetContext, targetElement, previousAnchor;
+    // no target so just return
+    if (target === null)
+    {
+        return;
+    }
+
+    targetElement = /** @type {Element} */ (target);
+    targetContext = target[this.getResources().getMappedAttribute("context")];
+
+    if (isExtend == null)
+    {
+        isExtend = this.m_discontiguousSelection;
+    }
+
+    // if no targetContext, break
+    if (!targetContext)
+    {
+        return;
+    }
+    else if (targetContext['cell'])
+    {
+        if (this.m_selectionFrontier['axis'].indexOf("column") != -1)
+        {
+            targetStart = targetContext['indexes']['column'];
+        }
+        else
+        {
+            targetStart = targetContext['indexes']['row'];            
+        }
+        targetEnd = targetStart;
+        endpoint = targetStart;
+    }
+    else
+    {
+        // check if target is the same as the current frontier target
+        if (this.m_selectionFrontier && targetContext['index'] == this.m_selectionFrontier['index'] && targetContext['level'] == this.m_selectionFrontier['level'])
+        {
+            return;
+        }
+
+        if (targetContext['extent'] == 1)
+        {
+            targetStart = targetContext['index'];
+            targetEnd = targetContext['index'];
+            endpoint = targetContext['index']
+        }
+        else
+        {
+            targetStart = this._getAttribute(target['parentNode'], 'start', true);
+            targetEnd = targetStart + this._getAttribute(target['parentNode'], 'extent', true) - 1;
+        }
+    }
+
+    sourceParent = this._getActiveElement();
+    sourceParentContext = sourceParent[this.getResources().getMappedAttribute("context")];
+
+    // find the the top left index
+    if (this.m_utils.isTouchDevice())
+    {
+        if (this.m_selectionFrontier['axis'].indexOf("column") != -1)
+        {
+            anchor = this.m_touchSelectAnchor['column'];
+        }
+        else
+        {
+            anchor = this.m_touchSelectAnchor['row'];            
+        }
+
+        if (anchor == -1)
+        {
+            anchor = 0;
+        }
+        sourceParentStart = anchor;
+        sourceParentEnd = anchor;
+        axis = this.m_selectionFrontier['axis'];
+    }
+    else
+    {
+        sourceParentStart = this._getAttribute(sourceParent['parentNode'], 'start', true);
+        sourceParentEnd = sourceParentStart + this._getAttribute(sourceParent['parentNode'], 'extent', true) - 1;
+
+        if (this.m_active['type'] === 'header')
+        {
+            axis = this.m_active['axis'];
+            anchor = this.m_active['index'];
+        }
+    }
+
+    if (this.m_active['type'] == 'cell')
+    {
+        extent = 1;
+        axis = targetContext['axis'];
+        if (axis.indexOf('row') != -1)
+        {
+            anchor = this.m_active['indexes']['row'];
+        }
+        else
+        {
+            anchor = this.m_active['indexes']['column'];
+        }
+    }
+    else
+    {
+        extent = sourceParentContext['extent'];
+    }
+
+    // pop if anchors match so we don't duplicate a selection
+    if (isExtend)
+    {
+        previousAnchor = this.m_selection[this.m_selection.length - 1];
+
+        // unhighlight selection now 
+        this.unhighlightSelection();
+
+        // check that the anchor and the selection frontier index match the previous anchor start and end indices
+        if (previousAnchor && this.checkCorners(axis, anchor, previousAnchor))
+        {
+            this.m_selection.pop();
+        }
+    }
+
+    if (extent != 1)
+    {
+        if ((targetStart <= sourceParentStart && targetEnd >= sourceParentEnd) || (targetStart >= sourceParentStart && targetEnd <= sourceParentEnd))
+        {
+            // if moving levels, and we are a parent or child of current cell, just reset active to the parent/child.
+            // unless we are click + drag, then we don't change the target
+            if (!this.m_headerDragState)
+            {
+                this._setActive(targetElement, this._createActiveObject(targetElement), event);
+            }
+
+            anchor = targetStart;
+            endpoint = targetEnd;
+        }
+        else if (targetStart > sourceParentStart && targetEnd > sourceParentEnd)
+        {
+            anchor = sourceParentStart;
+            endpoint = targetEnd;
+        }
+        else if (targetStart < sourceParentStart && targetEnd < sourceParentEnd)
+        {
+            anchor = targetStart; 
+            endpoint = sourceParentEnd;
+        }
+    }
+    else if (extent == 1)
+    {
+        if (targetStart != targetEnd)
+        {
+            if (targetStart <= anchor && anchor <= targetEnd)
+            {
+                // if moving levels, and we are a parent or child of current cell, just reset active to the parent/child.
+                // unless we are click + drag or have cell type anchor, then we don't change the target
+                if (!this.m_headerDragState && this.m_active['type'] != 'cell')
+                {
+                    this._setActive(targetElement, this._createActiveObject(targetElement), event);
+                }
+                anchor = targetStart;
+                endpoint = targetEnd;                    
+            } 
+            else if (targetStart <= anchor && targetEnd <= anchor)
+            {
+                endpoint = anchor
+                anchor = targetStart;
+            }
+            else if (targetStart >= anchor && targetEnd >= anchor)
+            {
+                endpoint = targetEnd;
+            }
+        } 
+    }
+
+    if (targetContext['cell'])
+    {
+        this.setHeaderSelectionFrontier(axis, endpoint, endpoint, this.m_selectionFrontier['level'], /** @type {Element} */ (target), true);
+    }
+    else
+    {
+        this.setHeaderSelectionFrontier(axis, endpoint, targetContext['index'], targetContext['level'], /** @type {Element} */ (target), true);        
+    }
+
+    if(axis.indexOf('column') != -1)
+    {
+        if (event)
+        {
+            this._selectEntireColumn(anchor, endpoint, event);
+        }
+        else
+        {
+            this._selectEntireColumn(anchor, endpoint, null);            
+        }
+    }
+    else if (axis.indexOf('row') != -1)
+    {
+        if (event)
+        {
+            this._selectEntireRow(anchor, endpoint, event);
+        }
+        else
+        {
+            this._selectEntireRow(anchor, endpoint, null);
+        }
+    }
+}
 
 /**
  * @param {Object} anchor - the current selection.
@@ -15771,10 +17090,9 @@ DvtDataGrid.prototype._getSelectionStartAndEnd = function(anchor, index, numElem
 DvtDataGrid.prototype._getLastAnchoredSelectionIndex = function(selection, anchor)
 {
     var i, rowStart, rowEnd, columnStart, columnEnd, rowAnchor, columnAnchor;
-
-    for (i = 0; i < selection.length; i += 1)
+    for (i = selection.length - 1; i > -1; i -= 1)
     {
-        // if row selection just compare rows
+        // if row selection just compare rows, also check if its not select all type.
         if (this._isContainSelection(anchor, [selection[i]]))
         {
             return i;
@@ -15823,30 +17141,49 @@ DvtDataGrid.prototype._extendSelectionCallback = function(event, anchor, newRang
         return;
     }
 
-    // We also need to overwrite the old selection instance with a new one
-    // so clone the old one, update, and then replace so that the object passed
-    // as the previous matches the old reference and the new selection is a new
-    // reference
-    selection = previous.slice(0);
-    // remove the current range and put it at the end
-    selection.splice(lastSelectionIndex, 1);
+    // if ctrl key is active, act as if discontiguous mode is on
+    if (this.m_discontiguousSelection || (event && this.m_utils.ctrlEquivalent(event) && event.button == 0))
+    {
+        // We also need to overwrite the old selection instance with a new one
+        // so clone the old one, update, and then replace so that the object passed
+        // as the previous matches the old reference and the new selection is a new
+        // reference
+        selection = previous.slice(0);
+
+        // unhighlight the last range
+        this.unhighlightRange(currentRange);        
+
+        // remove the current range and put it at the end
+        selection.splice(lastSelectionIndex, 1);
+    }
+    else
+    {
+        // not keeping selections so clear selection and unhighlight.
+        selection = [];
+        this.unhighlightSelection();
+    }
+     
+
     selection.push(newRange);
     this.m_selection = selection;
 
-    this.unhighlightRange(currentRange);
-    this.highlightRange(newRange, true);
+    // if ctrl key is active, act as if discontiguous mode is on
+    if (this.m_discontiguousSelection || (event && this.m_utils.ctrlEquivalent(event) && event.button == 0))
+    {
+        for (var i = 0; i < this.m_selection.length; i ++)
+        {
+            this.highlightRange(this.m_selection[i]);
+        }
+    }
+    else
+    {
+        this.highlightRange(newRange, true);
+    }
 
     // focus on the frontier cell
     this._makeSelectionFrontierFocus();
 
     this._compareSelectionAndFire(event, previous);
-
-    // per excel, user have to hit shift+f8 again to create another discontiguous selection
-    // unless is discontiguous selection mode through touch
-    if (this.m_discontiguousSelection && !this.m_utils.isTouchDevice())
-    {
-        this.setDiscontiguousSelectionMode(false);
-    }
 };
 
 /**
@@ -15915,6 +17252,99 @@ DvtDataGrid.prototype._makeSelectionFrontierFocus = function()
 };
 
 /**
+ * Selects the row or column of the specified header,
+ * @param {string} axis - the string axis of the header
+ * @param {number} index - the index of the header selected.
+ * @param {number} level - the level of the header selected.
+ * @param {Event} event - the event causing the header selection
+ */
+DvtDataGrid.prototype._selectHeader = function(axis, index, level, event)
+{
+    var start, end, elem;
+
+    // get indices and select rows/columns underneath header
+    if ((axis.indexOf('row') != -1 && this.m_rowHeaderLevelCount - 1 === level) || (axis.indexOf('column') != -1 && this.m_columnHeaderLevelCount - 1 === level))
+    {
+        start = index;
+        end = index;
+    }
+    else 
+    {
+        elem = this._getActiveElement();
+        start = /** @type {number} */ (this._getAttribute(elem['parentNode'], 'start', true));
+        end = start + this._getAttribute(elem['parentNode'], 'extent', true) - 1;
+    }
+
+    if (axis.indexOf('row') != -1)
+    {
+        // block selection on row based mode single
+        if ((start == end && !this.isMultipleSelection()) || this.isMultipleSelection())
+        {
+            this.setHeaderSelectionFrontier(axis, end, index, level, /** @type {Element} */ (event.target), true);
+    
+            //handle the space key in headers for rows
+            this._selectEntireRow(start, end, event);
+        }
+
+        // announce to screen reader, no need to include context info
+        this._setAccInfoText('accessibleRowSelected', {'row': index + 1});
+    }
+    else if (axis.indexOf('column') != -1) 
+    {
+        this.setHeaderSelectionFrontier(axis, end, index, level, /** @type {Element} */ (event.target), true);
+
+        //handle the space key in headers for columns
+        this._selectEntireColumn(start, end, event);
+
+        // announce to screen reader, no need to include context info
+        this._setAccInfoText('accessibleColumnSelected', {'column': index + 1});        
+    }
+
+    // In case we are row based single selection mode
+    if (this.isMultipleSelection())
+    {
+        this.m_headerDragState = true;
+    }
+}
+
+/**
+ * Sets the selection frontier for headers
+ * @param {string} axis - the string axis of the header
+ * @param {number} end - the index number of the far row/column from the anchor
+ * @param {number} index - the index of the header selected.
+ * @param {number} level - the level of the header selected.
+ * @param {Element} target target cell or header of the event
+ * @param {boolean} reset - whether or not to clear the selection frontier
+ */
+DvtDataGrid.prototype.setHeaderSelectionFrontier = function(axis, end, index, level, target, reset)
+{
+    if (reset)
+    {
+        this.m_selectionFrontier = {};
+    }
+    this.m_selectionFrontier['axis'] = axis;
+    this.m_selectionFrontier['end'] = end;
+    this.m_selectionFrontier['index'] = index;
+    this.m_selectionFrontier['level'] = level;
+    this.m_selectionFrontier['target'] = target;
+}
+
+/**
+ * Updates the selection for headers after a fetch
+ */
+DvtDataGrid.prototype.updateSelectionHeader = function()
+{
+    if (this.m_selectionFrontier && this.m_selectionFrontier['target'])
+    {
+        if (this.m_utils.isTouchDevice())
+        {
+            this.m_touchSelectAnchor = this.m_selection[this.m_selection.length - 1]['startIndex'];
+        }
+        this.extendSelectionHeader(this.m_selectionFrontier['target'], null)
+    }
+};
+
+/**
  * Selects the focus on the specified element, if ctrl+click to add cell/row to the current selection,
  * set the augment flag
  * Select and focus is an asynchronus call
@@ -15975,7 +17405,7 @@ DvtDataGrid.prototype._selectAndFocusRangeCallback = function(index, event, augm
     if (!augment)
     {
         // if we are not augmenting the selection modify the old one appropriately
-        if (!this.m_discontiguousSelection)
+        if (!this.m_discontiguousSelection && event && !(this.m_utils.ctrlEquivalent(event) && event.button == 0))
         {
             this.unhighlightSelection();
             // this should be a new selection
@@ -15987,7 +17417,7 @@ DvtDataGrid.prototype._selectAndFocusRangeCallback = function(index, event, augm
         else if (this._isDatabodyCellActive() && this.m_prevActive != null && this.m_prevActive['type'] == 'cell' &&
                 this.m_selectionFrontier['row'] == this.m_prevActive['indexes']['row'] &&
                 this.m_selectionFrontier['column'] == this.m_prevActive['indexes']['column'] &&
-                !this.m_utils.isTouchDevice())
+                !this.m_utils.isTouchDevice() && (event.keyCode || !this.isMultipleSelection()))
         {
             // remove the last selection
             selection.pop();
@@ -16051,7 +17481,7 @@ DvtDataGrid.prototype._compareSelectionAndFire = function(event, clone)
 DvtDataGrid.prototype._addTouchSelectionAffordance = function(event)
 {
     //icon in the corner
-    var cell, iconSize, topIcon, bottomIcon, selectionMode, left, dir, target, cellTop, cellBottom;
+    var cell, iconSize, topIcon, bottomIcon, selectionMode, left, dir, target, cellContext, cellTop, cellBottom;
     if (this.m_topSelectIconContainer == null && this.m_bottomSelectIconContainer == null)
     {
         dir = this.getResources().isRTLMode() ? "right" : "left";
@@ -16059,6 +17489,18 @@ DvtDataGrid.prototype._addTouchSelectionAffordance = function(event)
 
         target = /** @type {Element} */ (event.target);
         cell = this.findCell(target);
+        // if cell not found, try header
+        if (!cell)
+        {
+            cell = this.findHeader(target);
+        }
+        // if no cell is present, it is not a header or a cell. Probably corner click to select all. 
+        // in this case just return since we don't want affordances for select all (immutable selection).
+        if (!cell)
+        {
+            return;
+        }
+        cellContext = cell[this.getResources().getMappedAttribute("context")];
         cellTop = this.getElementDir(cell, 'top');
         cellBottom = cellTop + this.getElementHeight(cell);
 
@@ -16089,6 +17531,22 @@ DvtDataGrid.prototype._addTouchSelectionAffordance = function(event)
             left = (this.getElementWidth(this.m_databody) / 2) + this.m_currentScrollLeft - (iconSize / 2);
             this.setElementDir(this.m_topSelectIconContainer, left, dir);
             this.setElementDir(this.m_bottomSelectIconContainer, left, dir);
+        }
+        else if (cellContext['axis'] && cellContext['axis'].indexOf("row") != -1)
+        {
+            left = (this.getElementWidth(this.m_databody) / 2) + this.m_currentScrollLeft - (iconSize / 2);
+            this.setElementDir(this.m_topSelectIconContainer, left, dir);
+            this.setElementDir(this.m_bottomSelectIconContainer, left, dir);
+        }
+        else if (cellContext['axis'] && cellContext['axis'].indexOf("column") != -1)
+        {
+            cellTop = (this.getElementHeight(this.m_databody) / 2) + this.m_currentScrollTop - (iconSize / 2);
+            this.setElementDir(this.m_topSelectIconContainer, cellTop, 'top');
+            this.setElementDir(this.m_bottomSelectIconContainer, cellTop, 'top');
+
+            left = this.getElementDir(cell, dir) - (iconSize / 2);
+            this.setElementDir(this.m_topSelectIconContainer, left, dir);
+            this.setElementDir(this.m_bottomSelectIconContainer, left + this.calculateColumnWidth(cell), dir);
         }
         else
         {
@@ -16122,7 +17580,7 @@ DvtDataGrid.prototype._removeTouchSelectionAffordance = function()
 DvtDataGrid.prototype._moveTouchSelectionAffordance = function()
 {
     var selection, topRowCells, bottomRowCells, selectionMode, topIconCell, bottomIconCell, elementsInRange, dir, iconSize;
-
+    dir = this.getResources().isRTLMode() ? "right" : "left";
     selection = this.GetSelection();
     if (selection.length > 0)
     {
@@ -16139,10 +17597,33 @@ DvtDataGrid.prototype._moveTouchSelectionAffordance = function()
                 this.setElementDir(this.m_topSelectIconContainer, this.getElementDir(topRowCells[0], 'top') - (iconSize / 2), 'top');
                 this.setElementDir(this.m_bottomSelectIconContainer, this.getElementDir(bottomRowCells[0], 'top') + this.getElementHeight(bottomRowCells[0]) - (iconSize / 2), 'top');
             }
+            else if (selection[selection.length -1]['endIndex']['row'] != -1 && selection[selection.length -1]['endIndex']['column'] == -1)
+            {
+                topRowCells = this._getAxisCellsByKey(selection[selection.length - 1]['startKey']['row'], 'row');
+                bottomRowCells = this._getAxisCellsByKey(selection[selection.length - 1]['endKey']['row'], 'row');
+
+                this.setElementDir(this.m_topSelectIconContainer, this.getElementDir(topRowCells[0], 'top') - (iconSize / 2), 'top');
+                this.setElementDir(this.m_bottomSelectIconContainer, this.getElementDir(bottomRowCells[0], 'top') + this.getElementHeight(bottomRowCells[0]) - (iconSize / 2), 'top');
+
+                var left = (this.getElementWidth(this.m_databody) / 2) + this.m_currentScrollLeft - (iconSize / 2);
+                this.setElementDir(this.m_topSelectIconContainer, left, dir);
+                this.setElementDir(this.m_bottomSelectIconContainer, left, dir);
+
+            }
+            else if (selection[selection.length -1]['endIndex']['column'] != -1 && selection[selection.length -1]['endIndex']['row'] == -1)
+            {
+                topRowCells = this._getAxisCellsByKey(selection[selection.length - 1]['startKey']['column'], 'column');
+                bottomRowCells = this._getAxisCellsByKey(selection[selection.length - 1]['endKey']['column'], 'column');                
+
+                var top = (this.getElementHeight(this.m_databody) / 2) + this.m_currentScrollTop - (iconSize / 2);
+                this.setElementDir(this.m_topSelectIconContainer, top, 'top');
+                this.setElementDir(this.m_bottomSelectIconContainer, top, 'top');
+
+                this.setElementDir(this.m_topSelectIconContainer, this.getElementDir(topRowCells[0], 'left') - (iconSize / 2), 'left');
+                this.setElementDir(this.m_bottomSelectIconContainer, this.getElementDir(bottomRowCells[0], 'left') + this.getElementWidth(bottomRowCells[0]) - (iconSize / 2), 'left');
+            }
             else
             {
-                dir = this.getResources().isRTLMode() ? "right" : "left";
-
                 //get the cells for left/right alignment
                 topIconCell = this._getCellByIndex(selection[selection.length - 1]['startIndex']);
                 bottomIconCell = this._getCellByIndex(selection[selection.length - 1]['endIndex']);
@@ -16161,7 +17642,6 @@ DvtDataGrid.prototype._moveTouchSelectionAffordance = function()
         }
     }
 };
-
 /**
  * Moves the touch selection affordances horizontally in the row to ensure they are in the viewport.
  * Only moved in row selection.
@@ -16169,7 +17649,7 @@ DvtDataGrid.prototype._moveTouchSelectionAffordance = function()
  */
 DvtDataGrid.prototype._scrollTouchSelectionAffordance = function()
 {
-    var selectionMode, newLeft, dir;
+    var selectionMode, newLeft, newTop, dir;
     selectionMode = this.m_options.getSelectionMode();
     if (selectionMode === 'row')
     {
@@ -16180,6 +17660,25 @@ DvtDataGrid.prototype._scrollTouchSelectionAffordance = function()
             this.setElementDir(this.m_topSelectIconContainer, newLeft, dir);
             this.setElementDir(this.m_bottomSelectIconContainer, newLeft, dir);
         }
+    }
+    else if (selectionMode === 'cell' && this.isHeaderSelectionType(this.m_selectionFrontier))
+    {
+        if (this.m_topSelectIconContainer != null)
+        {
+            if (this.m_selectionFrontier['axis'].indexOf('row') != -1)
+            {
+                dir = this.getResources().isRTLMode() ? "right" : "left";
+                newLeft = (this.getElementWidth(this.m_databody) / 2) + this.m_currentScrollLeft;
+                this.setElementDir(this.m_topSelectIconContainer, newLeft, dir);
+                this.setElementDir(this.m_bottomSelectIconContainer, newLeft, dir);
+            }
+            else
+            {
+                newTop = (this.getElementHeight(this.m_databody) / 2) + this.m_currentScrollTop;
+                this.setElementDir(this.m_topSelectIconContainer, newTop, 'top');
+                this.setElementDir(this.m_bottomSelectIconContainer, newTop, 'top');
+            }
+        }        
     }
 };
 
@@ -16455,6 +17954,7 @@ DvtDataGrid.prototype._handleCellSort = function(event, direction, header)
     target = /** @type {Element} */ (event.target);
     if (header != null && !this._databodyEmpty())
     {
+        this._removeTouchSelectionAffordance();
         this._doHeaderSort(event, header, direction);
     }
 };
@@ -16854,9 +18354,9 @@ DvtDataGrid.prototype._handleSortEnd = function(newCellElements, newRowHeaderEle
     this._populateDatabody(databodyContent, newCellElements);
 
     // restore active cell
+    this._fireSortEvent();
     this._restoreActive();
     this.m_isSorting = false;
-    this._fireSortEvent();
     this._doDelayedSort();
 
     // end animation/sort
@@ -17150,10 +18650,11 @@ DvtDataGrid.prototype.processSortAnimationToPosition = function(duration, delay_
  */
 DvtDataGrid.prototype._restoreActive = function()
 {
-    var cell, rowHeader, cellIndex, axis, root, className;
+    var cell, rowHeader, cellIndex, axis, root, className, event;
     if (this.m_active != null)
     {
         axis = this.m_active['axis'];
+        event = this.m_sortInfo['originalEvent']; // Use the sort event as the close event's originalEvent
         if (this.m_active['type'] == 'cell')
         {
             // see if the cell exists after the sort
@@ -17169,21 +18670,21 @@ DvtDataGrid.prototype._restoreActive = function()
                     // this is the behavior we want since the ranges in the previous selection
                     // will in most cases be invalid after sort.  The only one we can maintain and
                     // make sense to do is the active cell
-                    this.selectAndFocus(cellIndex);
+                    this.selectAndFocus(cellIndex, event);
                 }
                 else
                 {
                     // make it active
-                    this._setActiveByIndex(cellIndex);
+                    this._setActiveByIndex(cellIndex, event);
                 }
             }
             else
             {
-                this._setActive(null, null, null, true);
+                this._setActive(null, null, event, true);
                 // clear selection it if selection enabled
                 if (this._isSelectionEnabled())
                 {
-                    this._clearSelection(this.m_sortInfo['event']);
+                    this._clearSelection(event);
                 }
             }
         }
@@ -17195,11 +18696,14 @@ DvtDataGrid.prototype._restoreActive = function()
             if (rowHeader != null)
             {
                 // make it active
-                this._setActive(rowHeader, null);
+                // Need to add context to scroll databody first before making
+                // the row header focus to make it focus properly.
+                var rowContext = rowHeader[this.getResources().getMappedAttribute("context")];
+                this._setActive(rowHeader, {'type': 'header', 'axis': axis, 'index': rowContext['index'], 'key': rowContext['key'], 'level': rowContext['level']}, event);
             }
             else
             {
-                this._setActive(null, null);
+                this._setActive(null, null, event);
             }
         }
     }
@@ -18155,6 +19659,11 @@ DvtDataGrid.prototype.manageResizeScrollbars = function()
         {
             // eliminate bounce back for touch scroll
             this._disableTouchScrollAnimation();
+            var delta = this.adjustTouchScroll(deltaX, deltaY);
+            deltaX = delta[0];
+            deltaY = delta[1];
+
+
             this.scrollDelta(deltaX, deltaY);
         }
     }
@@ -18207,12 +19716,18 @@ DvtDataGrid.prototype.resizeColumnWidthAndShift = function(widthChange)
  * @param {string} axis
  * @param {number} dimensionDelta
  * @param {number} startAxisChange
+ * @param {boolean|null=} shiftOnly true if only moving cells along an axis by dimensionDelta without resizing
  */
-DvtDataGrid.prototype._shiftCellsAlongAxis = function(axis, dimensionDelta, startAxisChange)
+DvtDataGrid.prototype._shiftCellsAlongAxis = function(axis, dimensionDelta, startAxisChange, shiftOnly)
 {
     var tempArray, dimension, endAxisChange, startOuterLoop, endOuterLoop, index, cell, cellContext, cellAxisStartIndex, axisExtent, startAdjustment, newStart, dir, i, j, newDimension;
 
     tempArray = [];
+
+    if (shiftOnly == null)
+    {
+        shiftOnly = false;
+    }
 
     if (axis == 'row')
     {
@@ -18245,7 +19760,7 @@ DvtDataGrid.prototype._shiftCellsAlongAxis = function(axis, dimensionDelta, star
             var extentWithinCellToIgnore = startAxisChange - cellAxisStartIndex;
             startAdjustment = (axisExtent - extentWithinCellToIgnore);
 
-            if (!(tempArray[i] && tempArray[i][startAxisChange]))
+            if (!(tempArray[i] && tempArray[i][startAxisChange]) && shiftOnly !== true)
             {
                 this.setElementDir(cell, this.getElementDir(cell, dimension) + dimensionDelta, dimension);
                 if (axis == 'row')
@@ -18258,8 +19773,15 @@ DvtDataGrid.prototype._shiftCellsAlongAxis = function(axis, dimensionDelta, star
                 }
             }
 
+            // start value ignore adjustment only if shiftOnly flag is true
+            var axisStartValue = startAxisChange;
+            if (shiftOnly !== true)
+            {
+                axisStartValue = startAxisChange + startAdjustment;
+            }
+
             // move the columns within the data body to account for width change
-            for (j = startAxisChange + startAdjustment; j <= endAxisChange; j++)
+            for (j = axisStartValue; j <= endAxisChange; j++)
             {
                 if (tempArray[i] && tempArray[i][j])
                 {
@@ -18707,32 +20229,44 @@ DvtDataGrid.prototype.getHeaderEdgePixels = function(elem)
  */
 var DvtDataGridSizingManager = function()
 {
-    this.sizes = {'column': {}, 'row': {}};
+    this.sizes = {'column': new Map(), 'row': new Map()};
 };
 
 /**
  * Set a size in the sizes object in the sizing manager
  * @param {string} axis - column/row
- * @param {number|string|null} headerKey - key of the element
+ * @param {*} headerKey - key of the element
  * @param {number} size - the size to put in the object
  */
 DvtDataGridSizingManager.prototype.setSize = function(axis, headerKey, size)
 {
-    this.sizes[axis][headerKey] = size;
+    this.sizes[axis].set(headerKey, size);
 };
 
 /**
  * Get a size from the sizing manager for a given axis and index,
  * @param {string} axis - column/row
- * @param {number|string|null} headerKey - key of the element
+ * @param {*} headerKey - key of the element
  * @return {number|null} a size if it exists
  */
 DvtDataGridSizingManager.prototype.getSize = function(axis, headerKey)
 {
-    if (this.sizes[axis].hasOwnProperty(headerKey)) {
-        return this.sizes[axis][headerKey];
+    // get does reference comparison
+    var size = this.sizes[axis].get(headerKey);
+    if (size != null)
+    {
+        return size;
     }
-    return null;
+    
+    // if reference comparison does not work we should check using compare values
+    this.sizes[axis].forEach(function(value, key, map){
+        if (size == null && oj.Object.compareValues(key, headerKey))
+        {
+            size = value;
+        }
+    });
+
+    return size;
 };
 
 /**
@@ -18740,7 +20274,8 @@ DvtDataGridSizingManager.prototype.getSize = function(axis, headerKey)
  */
 DvtDataGridSizingManager.prototype.clear = function()
 {
-    this.sizes = {'column': {}, 'row': {}};
+    this.sizes['column']["clear"]();
+    this.sizes['row']["clear"]();
 };
 /**
  * @preserve Copyright (c) 2014, Oracle and/or its affiliates.
@@ -19559,54 +21094,15 @@ DvtDataGridOptions.prototype.getVerticalGridlines = function()
 };
 
 /**
- * Get the inital row scroll position from the grid options
- * @return {string|number|Object|boolean|null} index or key of the row to show
+ * Get the scroll position from the grid options
+ * @return {string|number|Object|boolean|null} scrollPositionObject
  */
-DvtDataGridOptions.prototype.getRowScrollPosition = function()
+DvtDataGridOptions.prototype.getScrollPosition = function()
 {
-    var rowScrollPosition;
-    rowScrollPosition = this.extract("scrollPosition", "key", "row");
-    if (rowScrollPosition != null)
+    var scrollPosition = this.getProperty("scrollPosition");
+    if (scrollPosition != null)
     {
-        return rowScrollPosition;
-    }
-    return this.extract("scrollPosition", "index", "row");
-};
-
-/**
- * Get the inital column scroll position from the grid options
- * @return {string|number|Object|boolean|null} index or key of the column to show
- */
-DvtDataGridOptions.prototype.getColumnScrollPosition = function()
-{
-    var columnScrollPosition;
-    columnScrollPosition = this.extract("scrollPosition", "key", "column");
-    if (columnScrollPosition != null)
-    {
-        return columnScrollPosition;
-    }
-    return this.extract("scrollPosition", "index", "column");
-};
-
-/**
- * Get the inital column scroll position from the grid options
- * @return {string|number|Object|boolean|null} index or key of the column to show
- */
-DvtDataGridOptions.prototype.getScrollPositionMode = function()
-{
-    var scrollPosition;
-    scrollPosition = this.getProperty("scrollPosition");
-    if (scrollPosition == undefined)
-    {
-        return null;
-    }
-    if (scrollPosition['key'] != undefined)
-    {
-        return 'key';
-    }
-    if (scrollPosition['index'] != undefined)
-    {
-        return 'index';
+        return scrollPosition;
     }
     return null;
 };
@@ -19768,6 +21264,15 @@ DvtDataGridOptions.prototype.getScrollPolicy = function()
 
     return mode;
 };
+
+
+/**
+ * Get the scroll policy options
+ */
+DvtDataGridOptions.prototype.getScrollPolicyOptions = function()
+{
+    return this.getProperty("scrollPolicyOptions");
+};
 /**
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
@@ -19778,6 +21283,10 @@ DvtDataGridOptions.prototype.getScrollPolicy = function()
  * @augments oj.baseComponent
  * @since 0.6
  * @ojstatus preview
+ * @ojrole application
+ * @ojrole grid
+ * @ojshortdesc Displays data in a cell oriented grid.
+ * @ojtsignore
  *
  * @classdesc
  * <h3 id="datagridOverview-section">
@@ -19837,7 +21346,7 @@ DvtDataGridOptions.prototype.getScrollPolicy = function()
  *
  * <p>For all header and cell attributes, developers can specify a function as the return value.  The function takes a single argument, which is an object that contains contextual information about the particular header or cell.  This gives developers the flexibility to return different value depending on the context.</p>
  *
- * <p>For header attributes, the context paramter contains the following keys:</p>
+ * <p>For header attributes, the context parameter contains the following keys:</p>
  * <table class="keyboard-table">
  *   <thead>
  *     <tr>
@@ -19972,7 +21481,8 @@ DvtDataGridOptions.prototype.getScrollPolicy = function()
  * </h3>
  *
  * <p>The DataGrid supports both cell based and row based selection mode, which developers can specify using the selectionMode attribute.  For each mode developers can also specify whether single or multiple cells/rows can be selected.</p>
- * <p>Developers can specify or retrieve selection from the DataGrid using the selection attribute.  A selection in DataGrid consists of an array of ranges.  Each range contains the following keys: startIndex, endIndex, startKey, endKey.  Each of the keys contains value for 'row' and 'column'.  If endIndex and endKey are not specified, that means the range is unbounded, i.e. the cells of the entire row/column are selected.</p>
+ * <p>Developers can specify or retrieve selection from the DataGrid using the selection attribute.  A selection in DataGrid consists of an array of ranges.  Each range contains the following keys: startIndex, endIndex, startKey, endKey.  Each of the keys contains value for 'row' and 'column'.  If endIndex and endKey are not specified, -1, or null, that means the range is unbounded, i.e. the cells of the entire row/column are selected.</p>
+ * 
  *
  * <h3 id="geometry-section">
  *   Geometry Management
@@ -20110,9 +21620,10 @@ oj.__registerWidget('oj.ojDataGrid', $['oj']['baseComponent'],
                  * @memberof oj.ojDataGrid
                  * @instance
                  * @type {Object.<string, number>}
-                 * @default <code class="prettyprint">{"row":0, "column":0}</code>
+                 * @default {"row":0, "column":0}
                  * @property {number} row row banding interval
                  * @property {number} column column banding interval
+                 * @ojshortdesc Specifies the data body row and column banding intervals.
                  *
                  * @example <caption>Initialize the DataGrid with the <code class="prettyprint">bandingInterval</code> attribute specified:</caption>
                  * &lt;!-- Using dot notation -->
@@ -20147,7 +21658,8 @@ oj.__registerWidget('oj.ojDataGrid', $['oj']['baseComponent'],
                  * @memberof oj.ojDataGrid
                  * @instance
                  * @type {oj.DataGridDataSource}
-                 * @default <code class="prettyprint">null</code>
+                 * @default null
+                 * @ojshortdesc Specifies the grid data source.
                  *
                  * @example <caption>Initialize the DataGrid with the <code class="prettyprint">data</code> attribute specified:</caption>
                  * &lt;oj-data-grid data='{{myDataSource}}'>&lt;/oj-data-grid>
@@ -20168,9 +21680,10 @@ oj.__registerWidget('oj.ojDataGrid', $['oj']['baseComponent'],
                  * @memberof oj.ojDataGrid
                  * @instance
                  * @type {Object.<string, string>}
-                 * @default <code class="prettyprint">{"horizontal": "visible", "vertical": "visible"}</code>
+                 * @default {"horizontal": "visible", "vertical": "visible"}
                  * @property {string} horizontal horizontal gridlines, valid values are: 'hidden', 'visible'
                  * @property {string} vertical vertical gridlines, valid values are: 'hidden', 'visible'
+                 * @ojshortdesc Specifies the visibility of the grid body vertical and horizontal gridlines.
                  *
                  * @example <caption>Initialize the DataGrid with the <code class="prettyprint">gridlines</code> attribute specified:</caption>
                  * &lt;!-- Using dot notation -->
@@ -20197,61 +21710,92 @@ oj.__registerWidget('oj.ojDataGrid', $['oj']['baseComponent'],
                  */
                 gridlines: {'horizontal': 'visible', 'vertical': 'visible'},
                 /**
-                 * <p>The index or key of the row and/or column to display initially in the DataGrid.
-                 * Only key or index should be specified, if they both are the grid will scroll initially
-                 * to the key values.
+                 * <p>The information about the data grid scroll position. Contains the x,y pixel coordinates, as well as the index
+                 * and key information of the cell closest to the origin of the grid data body.
+                 *
+                 * <p>The default value contains just the x,y pixel values specified. Once data is fetched the index and key sub-properties will be added.
+                 * If there is no data the index and key sub-properties will not be available.
+                 *
+                 * <p>When setting the scrollPosition property applications can change any combination of the sub-properties.
+                 * If multiple sub-properties are set at once they will be used in key, index, pixel order where the latter can serve as hints.
+                 * If upon scrolling to the key the pixel position is within the cell the adjustment will be made to scroll to that pixel location.
+                 * If a sparse object is set the other sub-properties will be populated and updated once the grid has scrolled to that position.
+                 *
+                 * <p>If the scrollPolicy is 'loadMoreOnScroll' and the scrollPosition is set to something outside of the currently rendered region,
+                 * the grid will attempt to fetch until the specified scroll position is satisfied. If scrollPosition pixels are set out of the maximum visible
+                 * bounds once all cells have been rendered or the indexes are set out of the data source bounds once all data has been fetched, the scroll
+                 * position will be set at its maximum value along that axis.
+                 *
+                 * <p>If only setting scrollPosition using the keys sub-property to something outside of the currently rendered region, the grid will only scroll to that position
+                 * if the keys are present in the data source.
+                 *
+                 * <p>Note that a scrollPosition set on the grid may be changed if the set value cannot be displayed the origin of the grid. For example if you scroll to the last row index,
+                 * it will likely be updated to an index before that which corresponds to the row index at the origin, rather than the last row index which is at the bottom
+                 * of the visible region.
                  *
                  * @expose
                  * @memberof oj.ojDataGrid
                  * @instance
-                 * @type {Object.<string, Object>|null}
-                 * @default <code class="prettyprint">null</code>
-                 * @property {Object} index scroll to a given row and column index of the DataGrid
-                 * @property {number} index.row row index to scroll to
-                 * @property {number} index.column column index to scroll to
-                 * @property {Object} key scroll to a given row and column key of the DataGrid
-                 * @property {string} key.row row key to scroll to
-                 * @property {string} key.column column key to scroll to
+                 * @type {Object}
+                 * @default <code class="prettyprint">{x: 0, y: 0}</code>
+                 * @property {number=} x the horizontal position in pixel
+                 * @property {number=} y the vertical position in pixel
+                 * @property {number=} rowIndex the zero-based row index of the cell at the origin of the grid.  If <a href="#scrollPolicy">scrollPolicy</a> is set to 'loadMoreOnScroll' 
+                 * and the index is greater than maxCount set in <a href="#scrollPolicyOptions">scrollPolicyOptions</a>, then it will scroll and fetch
+                 * until the end of the list is reached and there's no more items to fetch.
+                 * @property {number=} columnIndex the zero-based column index of the cell at the origin of the grid.  If <a href="#scrollPolicy">scrollPolicy</a> is set to 'loadMoreOnScroll' 
+                 * and the index is greater than maxCount set in <a href="#scrollPolicyOptions">scrollPolicyOptions</a>, then it will scroll and fetch
+                 * until the end of the list is reached and there's no more items to fetch.
+                 * @property {*=} rowKey the row key of the cell at the origin of the grid. If DataGridDataSource is used for <a href="data">data</a> and the key does not exist in the 
+                 * DataGridDataSource, then the value is ignored.  If it is unknown in the data source then the grid will fetch and scroll until the item is found
+                 * or the end of the axis is reached and there's no more items to fetch.
+                 * @property {*=} columnKey the column key of the cell at the origin of the grid. If DataGridDataSource is used for <a href="data">data</a> and the key does not exist in the 
+                 * DataGridDataSource, then the value is ignored.  If it is unknown in the data source then the grid will fetch and scroll until the item is found
+                 * or the end of the axis is reached and there's no more items to fetch.
+                 * @property {number=} offsetX the horizontal offset in pixel relative to the cell identified by key/index.
+                 * @property {number=} offsetY the vertical offset in pixel relative to the cell identified by key/index.
+                 * @ojshortdesc Gets and sets the scroll position of the data grid.
                  *
                  * @example <caption>Initialize the DataGrid with the <code class="prettyprint">scrollPosition</code> attribute specified:</caption>
                  * &lt;!-- Using dot notation -->
-                 * &lt;oj-data-grid scroll-position.index.row='1' scroll-position.index.column='1'>&lt;/oj-data-grid>
+                 * &lt;oj-data-grid scroll-position.rowIndex='1' scroll-position.columnIndex='1'>&lt;/oj-data-grid>
                  *
                  * &lt;!-- Using JSON notation -->
-                 * &lt;oj-data-grid scroll-position='{"index":{"row": "1", "column": "1"}}'>&lt;/oj-data-grid>
+                 * &lt;oj-data-grid scroll-position='{"rowIndex": 1, "columnIndex": 1}'>&lt;/oj-data-grid>
                  *
                  * @example <caption>Get or set the <code class="prettyprint">scrollPosition</code> property after initialization:</caption>
                  * // Get one
-                 * var scrollPositionValue = myDataGrid.scrollPosition.index.row;
+                 * var scrollPositionValue = myDataGrid.scrollPosition.rowIndex;
                  *
                  * // Set one, leaving the others intact
-                 * myDataGrid.setProperty('scrollPosition.index.row', '1');
+                 * myDataGrid.setProperty('scrollPosition.rowIndex', 1);
                  *
                  * // Get all
                  * var scrollPositionValues = myDataGrid.scrollPosition;
                  *
-                 * // Set all.  Must list every resource key, as those not listed are lost.
+                 * // Set all. Those not listed will be lost until the scroll completes and the remaining fields are populated.
                  * myDataGrid.scrollPosition = {
-                 *     index: {
-                 *          row: '1',
-                 *          column: '1'
-                 *     }
+                 *     x: 50,
+                 *     y: 45
                  * };
                  */
-                scrollPosition: null,
+                scrollPosition: {x: 0, y: 0}, 
                 /**
-                 * <p>Specifies whether row/cell selection can be made and the cardinality
-                 * of each (single/multiple/none) selection in the DataGrid. Only one of the attributes, row or column,
-                 * should be set at at time. Selection is initially disabled, but setting the value to null will disable
-                 * selection.
+                 * <p>Specifies whether row or cell selection can be made and the cardinality of each (single/multiple/none) selection in the DataGrid.
+                 * Only one of the attributes, row or cell, should not be <code class="prettyprint">none</code> at a time. 
+                 * If both are not <code class="prettyprint">none</code> then an error will be thrown.
+                 * If the selection mode is changed at runtime the selection will be cleared.
+                 * 
+                 * Selection is initially disabled, but setting both attributes' value to <code class="prettyprint">none</code> will disable selection.
                  *
                  * @expose
                  * @memberof oj.ojDataGrid
                  * @instance
-                 * @type {Object.<string, string>|null}
-                 * @default <code class="prettyprint">null</code>
-                 * @property {string} row set row selection mode, valid values are: 'single', 'multiple'
-                 * @property {string} cell set cell selection mode, valid values are: 'single', 'multiple'
+                 * @type {Object.<string, string>}
+                 * @default {cell:'none', row:'none'}
+                 * @property {string} row set row selection mode, valid values are: 'none', 'single', 'multiple'
+                 * @property {string} cell set cell selection mode, valid values are: 'none', 'single', 'multiple'
+                 * @ojshortdesc Specifies row or cell selection.
                  *
                  * @example <caption>Initialize the DataGrid with the <code class="prettyprint">selectionMode</code> attribute specified:</caption>
                  * &lt;!-- Using dot notation -->
@@ -20273,9 +21817,73 @@ oj.__registerWidget('oj.ojDataGrid', $['oj']['baseComponent'],
                  * // Set all.  Must list every resource key, as those not listed are lost.
                  * myDataGrid.selectionMode = {
                  *     cell: 'multiple'
+                 *     row: 'none'
                  * };
                  */
-                selectionMode: null,
+                selectionMode: {
+                    /**
+                     * <p>Specifies whether cell selection can be made and the cardinality (single/multiple/none).
+                     * Only one of the <code class="prettyprint">selectionMode</code> attributes, row or cell, should not be <code class="prettyprint">none</code> at a time. 
+                     * If both are not <code class="prettyprint">none</code> then an error will be thrown.
+                     * 
+                     * Cell selection is initially disabled, but setting the attribute's value to <code class="prettyprint">none</code> will disable cell selection. 
+                     * If the selection mode is changed at runtime the selection will be cleared.
+                     *
+                     * @expose
+                     * @memberof! oj.ojDataGrid
+                     * @name selectionMode.cell
+                     * @instance
+                     * @type {string}
+                     * @default 'none'
+                     * @ojvalue {string} "none" no cell selection
+                     * @ojvalue {string} "single" at most one cell selected at a time
+                     * @ojvalue {string} "multiple" any number of cells selected at a time
+                     * @ojshortdesc Specifies cell selection.
+                     *
+                     * @example <caption>Initialize the DataGrid with the <code class="prettyprint">selectionMode.cell</code> attribute specified:</caption>
+                     * &lt;!-- Using dot notation -->
+                     * &lt;oj-data-grid selection-mode.cell='multiple'>&lt;/oj-data-grid>
+                     *
+                     * @example <caption>Get or set the <code class="prettyprint">selectionMode.cell</code> property after initialization:</caption>
+                     * // getter
+                     * var selectionModecellValue = myDataGrid.selectionMode.cell;
+                     *
+                     * // setter
+                     * myDataGrid.selectionMode.cell = 'single';
+                     */
+                    cell: 'none',
+                    /**
+                     * <p>Specifies whether row selection can be made and the cardinality (single/multiple/none).
+                     * Only one of the <code class="prettyprint">selectionMode</code> attributes, row or cell, should not be <code class="prettyprint">none</code> at a time. 
+                     * If both are not <code class="prettyprint">none</code> then an error will be thrown.
+                     * 
+                     * Row selection is initially disabled, but setting the attribute's value to <code class="prettyprint">none</code> will row disable selection.
+                     * If the selection mode is changed at runtime the selection will be cleared.
+                     *
+                     * @expose
+                     * @memberof! oj.ojDataGrid
+                     * @name selectionMode.row
+                     * @instance
+                     * @type {string}
+                     * @default 'none'
+                     * @ojvalue {string} "none" no row selection
+                     * @ojvalue {string} "single" at most one row selected at a time
+                     * @ojvalue {string} "multiple" any number of rows selected at a time
+                     * @ojshortdesc Specifies row selection.
+                     *
+                     * @example <caption>Initialize the DataGrid with the <code class="prettyprint">selectionMode.row</code> attribute specified:</caption>
+                     * &lt;!-- Using dot notation -->
+                     * &lt;oj-data-grid selection-mode.row='multiple'>&lt;/oj-data-grid>
+                     *
+                     * @example <caption>Get or set the <code class="prettyprint">selectionMode.row</code> property after initialization:</caption>
+                     * // getter
+                     * var selectionModeRowValue = myDataGrid.selectionMode.row;
+                     *
+                     * // setter
+                     * myDataGrid.selectionMode.row = 'single';
+                     */
+                    row: 'none'
+                },
                 /**
                  * <p>Enables or disables reordering the rows within the same DataGrid using drag and drop.
                  *
@@ -20288,10 +21896,11 @@ oj.__registerWidget('oj.ojDataGrid', $['oj']['baseComponent'],
                  * @property {Object} reorder an object with property row
                  * @property {string} reorder.row row reordering within the DataGrid, valid values are: 'enable', 'disable'
                  *
-                 * @default <code class="prettyprint">{"reorder": {"row" :"disable"}}</code>
+                 * @default {"reorder": {"row" :"disable"}}
                  * @expose
                  * @instance
                  * @memberof oj.ojDataGrid
+                 * @ojshortdesc Specifies the drag and drop row reordering.
                  *
                  * @example <caption>Initialize the DataGrid with the <code class="prettyprint">dnd</code> attribute specified:</caption>
                  * &lt;!-- Using dot notation -->
@@ -20325,10 +21934,11 @@ oj.__registerWidget('oj.ojDataGrid', $['oj']['baseComponent'],
                  * @memberof oj.ojDataGrid
                  * @instance
                  * @type {string|null}
-                 * @default <code class="prettyprint">'auto'</code>
-                 * @ojvalue {string} 'auto' the DataGrid will decide the scroll policy
-                 * @ojvalue {string} 'loadMoreOnScroll' additional data are fetched when the user scrolls to the bottom of the DataGrid and all previous data are kept in the DOM
-                 * @ojvalue {string} 'scroll' virtual scrolling is used meaning only rows/columns visibile in the viewport are fetched and kept in the DOM
+                 * @default 'auto'
+                 * @ojvalue {string} "auto" the DataGrid will decide the scroll policy
+                 * @ojvalue {string} "loadMoreOnScroll" additional data are fetched when the user scrolls to the bottom of the DataGrid and all previous data are kept in the DOM
+                 * @ojvalue {string} "scroll" virtual scrolling is used meaning only rows/columns visible in the viewport are fetched and kept in the DOM
+                 * @ojshortdesc Specifies the grid scroll mechanism.
                  *
                  * @example <caption>Initialize the DataGrid with the <code class="prettyprint">scrollPolicy</code> attribute specified:</caption>
                  * &lt;oj-data-grid scroll-policy='scroll'>&lt;/oj-data-grid>
@@ -20342,18 +21952,128 @@ oj.__registerWidget('oj.ojDataGrid', $['oj']['baseComponent'],
                  */
                 scrollPolicy: 'auto',
                 /**
+                 * <p> The following options are supported:
+                 * <ul>
+                 *   <li>maxRowCount: Maximum rows which will be displayed before fetching more will be stopped. Only applies when scrollPolicy is 'loadMoreOnScroll'.</li>
+                 *   <li>maxColumnCount: Maximum columns which will be displayed before fetching more will be stopped. Only applies when scrollPolicy is 'loadMoreOnScroll'.</li>
+                 * </ul>
+                 *
+                 * @ojshortdesc Gets and sets the fetch options for scrolling behaviors that triggers data fetches.
+                 * @expose
+                 * @instance
+                 * @memberof! oj.ojDataGrid
+                 * @type {Object.<number>|null}
+                 * @property {number=} maxRowCount The maximum total number of rows to fetch, -1 is unbounded
+                 * @property {number=} maxColumnCount The maximum total number of columns to fetch, -1 is unbounded
+                 * @default {'maxRowCount': 500, 'maxColumnCount': 500}
+                 *
+                 * @example <caption>Initialize the DataGrid with the <code class="prettyprint">scroll-policy-options</code> attribute specified:</caption>
+                 * &lt;!-- Using dot notation -->
+                 * &lt;oj-data-grid scroll-policy-options.max-row-count='500'>&lt;/oj-data-grid>
+                 *
+                 * @example <caption>Get or set the <code class="prettyprint">scrollPolicyOptions</code> property after initialization:</caption>
+                 * // Get one
+                 * var maxCountValue = myDataGrid.scrollPolicyOptions.maxRowCount;
+                 *
+                 * // Get all
+                 * var scrollPolicyOptionsValues = myDataGrid.scrollPolicyOptions;
+                 *
+                 * // Set one, leaving the others intact
+                 * myDataGrid.setProperty('scrollPolicyOptions.maxRowCount', 250);
+                 *
+                 * // Set all. Properties not listed will be lost.
+                 * myDataGrid.scrollPolicyOptions = {maxRowCount: 1000};
+                 */
+                scrollPolicyOptions: {
+                    /**
+                     * The maximum number of rows which will be displayed before fetching more rows will be stopped.
+                     * <p>See the <a href="#scrollPolicyOptions">scroll-policy-options</a> attribute for usage examples.</p>
+                     *
+                     * @expose
+                     * @name scrollPolicyOptions.maxRowCount
+                     * @memberof! oj.ojDataGrid
+                     * @instance
+                     * @type {number}
+                     * @default 500
+                     * @ojmin -1
+                     */                    
+                    'maxRowCount': 500, 
+                    /**
+                     * The maximum number of columns which will be displayed before fetching more rows will be stopped.
+                     * <p>See the <a href="#scrollPolicyOptions">scroll-policy-options</a> attribute for usage examples.</p>
+                     *
+                     * @expose
+                     * @name scrollPolicyOptions.maxColumnCount
+                     * @memberof! oj.ojDataGrid
+                     * @instance
+                     * @type {number}
+                     * @default 500
+                     * @ojmin -1
+                     */                    
+                    'maxColumnCount': 500
+                },
+                /**
                  * <p>Specifies the current selections in the DataGrid.
                  * Returns an array of range objects, or an empty array if there's no selection.
                  *
-                 * <p>The range object contains a startIndex, endIndex, startKey, and endKey. If cell selection is enabled
-                 * each will contain a row and column property. If row selection is enabled each will contain a row property only.
+                * <p>Cell Selection Range Objects:
+                * The cell selection range object contains subproperties:
+                * startIndex and startKey referring to the cell in the selection closest to the origin of the grid.
+                * endIndex and endKey referring to the cell in the selection furthest from the origin of the grid.
+                * All four subproperties will be objects with row and column subproperties themselves.
+                * Single cell selection would always have the same startIndex/endIndex and startKey/endKey.
+                * Example: cell selection for cell (1,2) to cell (3,4)
+                * [{startIndex: {row: 1, column: 2}, endIndex: {row: 3, column: 4}, startKey: {row: "r1", column: "c2"}, endKey: {row: "r3", column: "c4"}}]
                  *
+                * <p>Row Selection Range Objects:
+                * The row selection range object contains subproperty objects:
+                * startIndex and startKey referring to the row in the selection closest to the origin of the grid.
+                * endIndex and endKey referring to the row in the selection furthest from the origin of the grid.
+                * All four subproperties will be objects with only row as a subproperty themselves.
+                * Single row selection would always have the same startIndex/endIndex and startKey/endKey.
+                * Example: row selection for selecting row 1 to row 2
+                * [{startIndex: {row: 1}, endIndex: {row: 2}, startKey: {row: "r1"}, endKey: {row: "r2"}}]
+                *
+                * <p>Entire Row/Column Selection in Cell Selection Mode:
+                * In the case of an entire row or column selection:
+                * The startIndex subproperty along that axis will be set to 0.
+                * The endIndex subproperty along that axis will be set to -1, regardless of if the endIndex is known.
+                * The endKey subproperty along that axis will be set to null, regardless of if the endKey is known.
+                * Example: Cell selection spanning column 1 to column 2
+                * [{startIndex: {row: 0, column: 1}, endIndex: {row: -1, column: 2}, startKey: {row: "r0", column: "c1"}, endKey: {row: null, column: "c2"}}]
+                *
+                * <p>Select All:
+                * The startIndex subproperty values will be set to 0.
+                * The endIndex subproperty values will be set to -1, regardless of if the endIndex is known.
+                * Keys are set to null to remain consistent with row and column selections and to prevent misinterpretation of the selection range.
+                * Select All will cover all the data in the data source including that which is not displayed in the viewport.
+                * A select all type selection will not allow for deselections. 
+                * Example:
+                * [{startIndex: {row: 0, column: 0}, endIndex: {row: -1, column: -1}, startKey: {row: "r0", column: "c0"}, endKey: {row: null, column: null}]
+                *
+                * <p>Discontiguous Selection Ranges:
+                * In the case of multiple discontiguous selections, each individual selection will be one entry in the selection range array. Selection ranges
+                * may overlap with each other.
+                * Example: (1,2) to (3,4), and (5,6) to (7,8) would look like
+                * [{startIndex: {row: 1, column: 2}, endIndex: {row: 3, column: 4}, startKey: {row: "r1", column: "c2"}, endKey: {row: "r3", column: "c4"}},
+                * {startIndex: {row: 5, column: 6}, endIndex: {row: 7, column: 8}, startKey: {row: "r5", column: "c6"}, endKey: {row: "r7", column: "c8"}}]
+                *
+                * <p>Setting the selection:
+                * The selection can be set using any combination of startIndex/startKey and endIndex/endKey.
+                * If a sparse object is set the DataGrid will fill in the unspecifed portions of the object, if the cells are in the viewport.
+                * If they are not the DataGrid will attempt to ask the data source for the missing index or key. In the case of datasource unable to provide
+                * a key or index, the key or index will be marked with undefined values. If Datagrid lacks the appropriate data to create the selection, it
+                * will not create a selection and remove the invalid selection object.
+                * If the selection is set out of the scope of the currently displayed data the DataGrid will not change the selection object.
+                * As items within the selected range are scrolled into view they will be displayed as selected.
+                *
                  * @expose
                  * @memberof oj.ojDataGrid
                  * @instance
                  * @type {Array.<Object>}
-                 * @default <code class="prettyprint">[]</code>
+                 * @default []
                  * @ojwriteback
+                 * @ojshortdesc Specifies the grid's current selection.
                  *
                  * @example <caption>Initialize the DataGrid with the <code class="prettyprint">selection</code> attribute specified:</caption>
                  * &lt;!-- Using JSON notation -->
@@ -20366,7 +22086,7 @@ oj.__registerWidget('oj.ojDataGrid', $['oj']['baseComponent'],
                  * // Get all
                  * var selectionValues = myDataGrid.selection;
                  *
-                 * // Set all
+                * // Set all. Setter may be used with only indices or keys.
                  * myDataGrid.selection = [{startIndex: {row: 1, column: 1}, endIndex: {row: 2, column: 2}}];
                  */
                 selection: [],
@@ -20389,7 +22109,7 @@ oj.__registerWidget('oj.ojDataGrid', $['oj']['baseComponent'],
                  * @instance
                  * @memberof oj.ojDataGrid
                  * @type {Object}
-                 * @default <code class="prettyprint">null</code>
+                 * @default null
                  * @ojwriteback
                  * @property {string} type designates whether a header or databody cell is the current cell, valid values are: 'cell', 'header'
                  * @property {string} axis header axis, available if type is header, valid values are: 'row', 'column', 'rowEnd', 'columnEnd'
@@ -20402,6 +22122,7 @@ oj.__registerWidget('oj.ojDataGrid', $['oj']['baseComponent'],
                  * @property {Object} keys cell keys, available if type is cell
                  * @property {string} keys.row cell row key
                  * @property {string} keys.column cell column key
+                 * @ojshortdesc Specifies the grid's currently focused cell.
                  *
                  * @example <caption>Initialize the DataGrid with the <code class="prettyprint">currentCell</code> attribute specified:</caption>
                  * &lt;!-- Using dot notation -->
@@ -20434,9 +22155,9 @@ oj.__registerWidget('oj.ojDataGrid', $['oj']['baseComponent'],
                  * <p>Determine if the DataGrid is read only or editable.
                  * <p>Use <code class="prettyprint">none</code> if the DataGrid is strictly read only.
                  *
-                 * <p>The DataGrid <code class="prettyprint">editMode</code> is designed to support fast editing and requires that the input controls render fast and near synchronusly
+                 * <p>The DataGrid <code class="prettyprint">editMode</code> is designed to support fast editing and requires that the input controls render fast and near synchronously
                  * to be stamped inside an editable cell. The DataGrid supports overwrite behavior for all of JET's input components. Custom components that render synchronously or
-                 * components that only render asynchronusly due to Promises that resolve immediately will also be stampable. The modules for the stamped component loaded/required when the DataGrid is  
+                 * components that only render asynchronously due to Promises that resolve immediately will also be stampable. The modules for the stamped component loaded/required when the DataGrid is  
                  * loaded/required. Components that must go back to a server to render are not supported.
                  *
                  * <p>Use <code class="prettyprint">cellNavigation</code> to allow editable cells, but the DataGrid is currently read only and a single tab stop on the page.
@@ -20449,11 +22170,12 @@ oj.__registerWidget('oj.ojDataGrid', $['oj']['baseComponent'],
                  * @memberof oj.ojDataGrid
                  * @instance
                  * @type {string}
-                 * @default <code class="prettyprint">'none'</code>
+                 * @default 'none'
                  * @ojwriteback
-                 * @ojvalue {string} 'none' the DataGrid is read only
-                 * @ojvalue {string} 'cellNavigation' the DataGrid is a single tab stop and editable at the cell level, but currently read only
-                 * @ojvalue {string} 'cellEdit' the DataGrid cells are indivdually tabbable and editable
+                 * @ojvalue {string} "none" the DataGrid is read only
+                 * @ojvalue {string} "cellNavigation" the DataGrid is a single tab stop and editable at the cell level, but currently read only
+                 * @ojvalue {string} "cellEdit" the DataGrid cells are individually tabbable and editable
+                 * @ojshortdesc Specifies if the grid is read-only or editable.
                  *
                  * @example <caption>Initialize the DataGrid with the <code class="prettyprint">editMode</code> attribute specified:</caption>
                  * &lt;oj-data-grid edit-mode='cellEdit'>&lt;/oj-data-grid>
@@ -20473,6 +22195,7 @@ oj.__registerWidget('oj.ojDataGrid', $['oj']['baseComponent'],
                  * @alias header
                  * @memberof oj.ojDataGrid
                  * @instance
+                 * @ojshortdesc Specifies attributes on the headers.
                  *
                  * @example <caption>Initialize the DataGrid with the <code class="prettyprint">header</code> attribute specified:</caption>
                  * &lt;!-- Using dot notation -->
@@ -20505,6 +22228,7 @@ oj.__registerWidget('oj.ojDataGrid', $['oj']['baseComponent'],
                      * @alias header.row
                      * @memberof! oj.ojDataGrid
                      * @instance
+                     * @ojshortdesc Specifies attributes on the row headers.
                      *
                      * @example <caption>Initialize the DataGrid with the <code class="prettyprint">row</code> attribute specified:</caption>
                      * &lt;!-- Using dot notation -->
@@ -20540,7 +22264,8 @@ oj.__registerWidget('oj.ojDataGrid', $['oj']['baseComponent'],
                          * @memberof! oj.ojDataGrid
                          * @instance
                          * @type {function(Object)|string|null}
-                         * @default <code class="prettyprint">null</code>
+                         * @default null
+                         * @ojshortdesc CSS class names to apply to row headers.
                          *
                          * @example <caption>Initialize the DataGrid with the <code class="prettyprint">className</code> attribute specified:</caption>
                          * &lt;oj-data-grid header.row.class-name='myClassName'>&lt;/oj-data-grid>
@@ -20570,7 +22295,8 @@ oj.__registerWidget('oj.ojDataGrid', $['oj']['baseComponent'],
                          * @memberof! oj.ojDataGrid
                          * @instance
                          * @type {function(Object)|null}
-                         * @default <code class="prettyprint">null</code>
+                         * @default null
+                         * @ojshortdesc Specifies what renders is the row headers.
                          *
                          * @example <caption>Initialize the DataGrid with the <code class="prettyprint">renderer</code> attribute specified:</caption>
                          * &lt;oj-data-grid header.row.renderer='{{myRendererFunction}}'>&lt;/oj-data-grid>
@@ -20594,9 +22320,10 @@ oj.__registerWidget('oj.ojDataGrid', $['oj']['baseComponent'],
                          * @memberof! oj.ojDataGrid
                          * @instance
                          * @type {Object.<string, string>|Object.<string, function(Object)>|null}
-                         * @default <code class="prettyprint">{"width": "disable", "height": "disable"}</code>
+                         * @default {"width": "disable", "height": "disable"}
                          * @property {string} width row width resizable, valid values are: 'enable', 'disable'
                          * @property {string} height row header height resizable, valid values are: 'enable', 'disable'
+                         * @ojshortdesc Specifies resizing width or height on the row headers.
                          *
                          * @example <caption>Initialize the DataGrid with the <code class="prettyprint">resizable</code> attribute specified:</caption>
                          * &lt;!-- Using dot notation -->
@@ -20636,10 +22363,11 @@ oj.__registerWidget('oj.ojDataGrid', $['oj']['baseComponent'],
                          * @memberof! oj.ojDataGrid
                          * @instance
                          * @type {function(Object)|string}
-                         * @default <code class="prettyprint">'auto'</code>
-                         * @ojvalue {string} 'auto' get the sortable property from the data source
-                         * @ojvalue {string} 'enable' enable sorting on row headers
-                         * @ojvalue {string} 'disable' disable sorting on row headers
+                         * @default 'auto'
+                         * @ojvalue {string} "auto" get the sortable property from the data source
+                         * @ojvalue {string} "enable" enable sorting on row headers
+                         * @ojvalue {string} "disable" disable sorting on row headers
+                         * @ojshortdesc Specifies whether sorting is enabled on the row headers.
                          *
                          * @example <caption>Initialize the DataGrid with the <code class="prettyprint">sortable</code> attribute specified:</caption>
                          * &lt;oj-data-grid header.row.class-name='disable'>&lt;/oj-data-grid>
@@ -20662,7 +22390,8 @@ oj.__registerWidget('oj.ojDataGrid', $['oj']['baseComponent'],
                          * @memberof! oj.ojDataGrid
                          * @instance
                          * @type {function(Object)|string|null}
-                         * @default <code class="prettyprint">null</code>
+                         * @default null
+                         * @ojshortdesc Inline style to add to the row headers.
                          *
                          * @example <caption>Initialize the DataGrid with the <code class="prettyprint">style</code> attribute specified:</caption>
                          * &lt;oj-data-grid header.row.style='myStyle'>&lt;/oj-data-grid>
@@ -20683,6 +22412,7 @@ oj.__registerWidget('oj.ojDataGrid', $['oj']['baseComponent'],
                      * @alias header.column
                      * @memberof! oj.ojDataGrid
                      * @instance
+                     * @ojshortdesc Specifies attributes on the column headers.
                      *
                      * @example <caption>Initialize the DataGrid with the <code class="prettyprint">column</code> attribute specified:</caption>
                      * &lt;!-- Using dot notation -->
@@ -20718,7 +22448,8 @@ oj.__registerWidget('oj.ojDataGrid', $['oj']['baseComponent'],
                          * @memberof! oj.ojDataGrid
                          * @instance
                          * @type {function(Object)|string|null}
-                         * @default <code class="prettyprint">null</code>
+                         * @default null
+                         * @ojshortdesc CSS class names to apply to column headers.
                          *
                          * @example <caption>Initialize the DataGrid with the <code class="prettyprint">className</code> attribute specified:</caption>
                          * &lt;oj-data-grid header.column.class-name='myClassName'>&lt;/oj-data-grid>
@@ -20748,7 +22479,8 @@ oj.__registerWidget('oj.ojDataGrid', $['oj']['baseComponent'],
                          * @memberof! oj.ojDataGrid
                          * @instance
                          * @type {function(Object)|null}
-                         * @default <code class="prettyprint">null</code>
+                         * @default null
+                         * @ojshortdesc Specifies what renders is the column headers.
                          *
                          * @example <caption>Initialize the DataGrid with the <code class="prettyprint">renderer</code> attribute specified:</caption>
                          * &lt;oj-data-grid header.column.renderer='{{myRendererFunction}}'>&lt;/oj-data-grid>
@@ -20772,9 +22504,10 @@ oj.__registerWidget('oj.ojDataGrid', $['oj']['baseComponent'],
                          * @memberof! oj.ojDataGrid
                          * @instance
                          * @type {Object.<string, string>|Object.<string, function(Object)>|null}
-                         * @default <code class="prettyprint">{"width": "disable", "height": "disable"}</code>
+                         * @default {"width": "disable", "height": "disable"}
                          * @property {string} width column width resizable, valid values are: 'enable', 'disable'
                          * @property {string} height column header height resizable, valid values are: 'enable', 'disable'
+                         * @ojshortdesc Specifies resizing width or height on the column headers.
                          *
                          * @example <caption>Initialize the DataGrid with the <code class="prettyprint">resizable</code> attribute specified:</caption>
                          * &lt;!-- Using dot notation -->
@@ -20814,10 +22547,11 @@ oj.__registerWidget('oj.ojDataGrid', $['oj']['baseComponent'],
                          * @memberof! oj.ojDataGrid
                          * @instance
                          * @type {function(Object)|string}
-                         * @default <code class="prettyprint">'auto'</code>
-                         * @ojvalue {string} 'auto' get the sortable property from the data source
-                         * @ojvalue {string} 'enable' enable sorting on column headers
-                         * @ojvalue {string} 'disable' disable sorting on column headers
+                         * @default 'auto'
+                         * @ojvalue {string} "auto" get the sortable property from the data source
+                         * @ojvalue {string} "enable" enable sorting on column headers
+                         * @ojvalue {string} "disable" disable sorting on column headers
+                         * @ojshortdesc Specifies whether sorting is enabled on the column headers.
                          *
                          * @example <caption>Initialize the DataGrid with the <code class="prettyprint">sortable</code> attribute specified:</caption>
                          * &lt;oj-data-grid header.column.class-name='disable'>&lt;/oj-data-grid>
@@ -20840,7 +22574,8 @@ oj.__registerWidget('oj.ojDataGrid', $['oj']['baseComponent'],
                          * @memberof! oj.ojDataGrid
                          * @instance
                          * @type {function(Object)|string|null}
-                         * @default <code class="prettyprint">null</code>
+                         * @default null
+                         * @ojshortdesc Inline style to add to the column headers.
                          *
                          * @example <caption>Initialize the DataGrid with the <code class="prettyprint">style</code> attribute specified:</caption>
                          * &lt;oj-data-grid header.column.style='myStyle'>&lt;/oj-data-grid>
@@ -20861,6 +22596,7 @@ oj.__registerWidget('oj.ojDataGrid', $['oj']['baseComponent'],
                      * @alias header.columnEnd
                      * @memberof! oj.ojDataGrid
                      * @instance
+                     * @ojshortdesc Specifies attributes on the column end headers.
                      *
                      * @example <caption>Initialize the DataGrid with the <code class="prettyprint">columnEnd</code> attribute specified:</caption>
                      * &lt;!-- Using dot notation -->
@@ -20896,7 +22632,8 @@ oj.__registerWidget('oj.ojDataGrid', $['oj']['baseComponent'],
                          * @memberof! oj.ojDataGrid
                          * @instance
                          * @type {function(Object)|string|null}
-                         * @default <code class="prettyprint">null</code>
+                         * @default null
+                         * @ojshortdesc CSS class names to apply to column end headers.
                          *
                          * @example <caption>Initialize the DataGrid with the <code class="prettyprint">className</code> attribute specified:</caption>
                          * &lt;oj-data-grid header.column-end.class-name='myClassName'>&lt;/oj-data-grid>
@@ -20926,7 +22663,8 @@ oj.__registerWidget('oj.ojDataGrid', $['oj']['baseComponent'],
                          * @memberof! oj.ojDataGrid
                          * @instance
                          * @type {function(Object)|null}
-                         * @default <code class="prettyprint">null</code>
+                         * @default null
+                         * @ojshortdesc Specifies what renders is the column end headers.
                          *
                          * @example <caption>Initialize the DataGrid with the <code class="prettyprint">renderer</code> attribute specified:</caption>
                          * &lt;oj-data-grid header.column-end.renderer='{{myRendererFunction}}'>&lt;/oj-data-grid>
@@ -20950,9 +22688,10 @@ oj.__registerWidget('oj.ojDataGrid', $['oj']['baseComponent'],
                          * @memberof! oj.ojDataGrid
                          * @instance
                          * @type {Object.<string, string>|Object.<string, function(Object)>|null}
-                         * @default <code class="prettyprint">{"width": "disable", "height": "disable"}</code>
+                         * @default {"width": "disable", "height": "disable"}
                          * @property {string} width columnEnd width resizable, valid values are: 'enable', 'disable'
                          * @property {string} height columnEnd header height resizable, valid values are: 'enable', 'disable'
+                         * @ojshortdesc Specifies resizing width or height on the column end headers.
                          *
                          * @example <caption>Initialize the DataGrid with the <code class="prettyprint">resizable</code> attribute specified:</caption>
                          * &lt;!-- Using dot notation -->
@@ -20991,7 +22730,8 @@ oj.__registerWidget('oj.ojDataGrid', $['oj']['baseComponent'],
                          * @memberof! oj.ojDataGrid
                          * @instance
                          * @type {function(Object)|string|null}
-                         * @default <code class="prettyprint">null</code>
+                         * @default null
+                         * @ojshortdesc Inline style to add to the column end headers.
                          *
                          * @example <caption>Initialize the DataGrid with the <code class="prettyprint">style</code> attribute specified:</caption>
                          * &lt;oj-data-grid header.column-end.style='myStyle'>&lt;/oj-data-grid>
@@ -21012,6 +22752,7 @@ oj.__registerWidget('oj.ojDataGrid', $['oj']['baseComponent'],
                      * @alias header.rowEnd
                      * @memberof! oj.ojDataGrid
                      * @instance
+                     * @ojshortdesc Specifies attributes on the row end headers.
                      *
                      * @example <caption>Initialize the DataGrid with the <code class="prettyprint">rowEnd</code> attribute specified:</caption>
                      * &lt;!-- Using dot notation -->
@@ -21047,7 +22788,8 @@ oj.__registerWidget('oj.ojDataGrid', $['oj']['baseComponent'],
                          * @memberof! oj.ojDataGrid
                          * @instance
                          * @type {function(Object)|string|null}
-                         * @default <code class="prettyprint">null</code>
+                         * @default null
+                         * @ojshortdesc CSS class names to apply to row end headers.
                          *
                          * @example <caption>Initialize the DataGrid with the <code class="prettyprint">className</code> attribute specified:</caption>
                          * &lt;oj-data-grid header.row-end.class-name='myClassName'>&lt;/oj-data-grid>
@@ -21077,7 +22819,8 @@ oj.__registerWidget('oj.ojDataGrid', $['oj']['baseComponent'],
                          * @memberof! oj.ojDataGrid
                          * @instance
                          * @type {function(Object)|null}
-                         * @default <code class="prettyprint">null</code>
+                         * @default null
+                         * @ojshortdesc Specifies what renders is the row end headers.
                          *
                          * @example <caption>Initialize the DataGrid with the <code class="prettyprint">renderer</code> attribute specified:</caption>
                          * &lt;oj-data-grid header.row-end.renderer='{{myRendererFunction}}'>&lt;/oj-data-grid>
@@ -21101,9 +22844,10 @@ oj.__registerWidget('oj.ojDataGrid', $['oj']['baseComponent'],
                          * @memberof! oj.ojDataGrid
                          * @instance
                          * @type {Object.<string, string>|Object.<string, function(Object)>|null}
-                         * @default <code class="prettyprint">{"width": "disable", "height": "disable"}</code>
+                         * @default {"width": "disable", "height": "disable"}
                          * @property {string} width rowEnd width resizable, valid values are: 'enable', 'disable'
                          * @property {string} height rowEnd header height resizable, valid values are: 'enable', 'disable'
+                         * @ojshortdesc Specifies resizing width or height on the row end headers.
                          *
                          * @example <caption>Initialize the DataGrid with the <code class="prettyprint">resizable</code> attribute specified:</caption>
                          * &lt;!-- Using dot notation -->
@@ -21142,7 +22886,8 @@ oj.__registerWidget('oj.ojDataGrid', $['oj']['baseComponent'],
                          * @memberof! oj.ojDataGrid
                          * @instance
                          * @type {function(Object)|string|null}
-                         * @default <code class="prettyprint">null</code>
+                         * @default null
+                         * @ojshortdesc Inline style to add to the row end headers.
                          *
                          * @example <caption>Initialize the DataGrid with the <code class="prettyprint">style</code> attribute specified:</caption>
                          * &lt;oj-data-grid header.row-end.style='myStyle'>&lt;/oj-data-grid>
@@ -21164,6 +22909,7 @@ oj.__registerWidget('oj.ojDataGrid', $['oj']['baseComponent'],
                  * @memberof oj.ojDataGrid
                  * @instance
                  * @type {Object}
+                 * @ojshortdesc Specifies attributes on the cells.
                  *
                  * @example <caption>Initialize the DataGrid with the <code class="prettyprint">cell</code> attribute specified:</caption>
                  * &lt;!-- Using dot notation -->
@@ -21199,8 +22945,8 @@ oj.__registerWidget('oj.ojDataGrid', $['oj']['baseComponent'],
                      * @memberof! oj.ojDataGrid
                      * @instance
                      * @type {function(Object)|string|null}
-                     * @default <code class="prettyprint">null</code>
-                     *
+                     * @default null
+                     * @ojshortdesc CSS class names to apply to cells.
                      *
                      * @example <caption>Initialize the DataGrid with the <code class="prettyprint">className</code> attribute specified:</caption>
                      * &lt;oj-data-grid cell.class-name='myClassName'>&lt;/oj-data-grid>
@@ -21230,7 +22976,8 @@ oj.__registerWidget('oj.ojDataGrid', $['oj']['baseComponent'],
                      * @memberof! oj.ojDataGrid
                      * @instance
                      * @type {function(Object)|null}
-                     * @default <code class="prettyprint">null</code>
+                     * @default null
+                     * @ojshortdesc Specifies what renders is the cell.
                      *
                      * @example <caption>Initialize the DataGrid with the <code class="prettyprint">renderer</code> attribute specified:</caption>
                      * &lt;oj-data-grid cell.renderer='{{myRendererFunction}}'>&lt;/oj-data-grid>
@@ -21253,7 +23000,8 @@ oj.__registerWidget('oj.ojDataGrid', $['oj']['baseComponent'],
                      * @memberof! oj.ojDataGrid
                      * @instance
                      * @type {function(Object)|string|null}
-                     * @default <code class="prettyprint">null</code>
+                     * @default null
+                     * @ojshortdesc Inline style to add to the cells.
                      *
                      * @example <caption>Initialize the DataGrid with the <code class="prettyprint">style</code> attribute specified:</caption>
                      * &lt;oj-data-grid cell.style='myStyle'>&lt;/oj-data-grid>
@@ -21423,20 +23171,23 @@ oj.__registerWidget('oj.ojDataGrid', $['oj']['baseComponent'],
             this._isCreate = true;
                         
             // data source listeners will be added in SetupResources, but we need them earlier 
-            // for handling expanded option on rowexpander, and any pther rendered content
+            // for handling expanded option on rowexpander, and any other rendered content
             // that could trigger a datasource event.
             this.grid._addDataSourceEventListeners();
         }
+        this._checkSelectionMode(this.options);
         this.grid.SetOptions(this.options, this._WrapCustomElementRenderer.bind(self));
         this.grid.SetResources(this.resources);
         this.grid.SetCreateContextCallback(this._modifyContext.bind(self));
         this.grid.SetFixContextCallback(this._FixRendererContext.bind(self));
         this.grid.SetRemoveCallback(this._remove.bind(self));
         this.grid.SetUniqueIdCallback(this._uniqueId.bind(self));
+        this.grid.SetCompareValuesCallback(this._compareValues.bind(self));
         this.grid.SetNotReadyCallback(this._NotReady.bind(self));
         this.grid.SetMakeReadyCallback(this._MakeReady.bind(self));
         this.grid.SetOptionCallback(this.option.bind(self));
         this.grid.SetSubtreeAttachedCallback(oj.Components.subtreeAttached);
+        this.grid.SetContextCallback(oj.Context.getContext);
 
         this._focusable({
             'applyHighlight': true,
@@ -21455,7 +23206,7 @@ oj.__registerWidget('oj.ojDataGrid', $['oj']['baseComponent'],
 
         this._registerEventListeners();
 
-        //attempt to render the grid if visible and atatched
+        //attempt to render the grid if visible and attached
         this._possiblyRenderOrRefresh();
     },
     /**
@@ -21511,7 +23262,7 @@ oj.__registerWidget('oj.ojDataGrid', $['oj']['baseComponent'],
     {
         var self = this;
 
-        //listen for resizing, selection, sort and trigger relevent events
+        //listen for resizing, selection, sort and trigger relevant events
         this.grid.addListener('resize', function(details)
         {
             self._trigger('resize', details['event'], details['ui']);
@@ -21534,7 +23285,8 @@ oj.__registerWidget('oj.ojDataGrid', $['oj']['baseComponent'],
         });
         this.grid.addListener('sort', function(details)
         {
-            self._trigger('sort', details['event'], details['ui']);
+            var sortEvent = self._trigger2('sort', details['event'], details['ui']);
+            self.grid.SetSortOriginalEvent(sortEvent['event']);
         });
         this.grid.addListener('keydown', function(details)
         {
@@ -21559,8 +23311,6 @@ oj.__registerWidget('oj.ojDataGrid', $['oj']['baseComponent'],
     },
     /**
      * Redraw the entire data grid after having made some external modifications.
-     *
-     * <p>This method does not accept any arguments.
      *
      * @expose
      * @memberof oj.ojDataGrid
@@ -21677,6 +23427,19 @@ oj.__registerWidget('oj.ojDataGrid', $['oj']['baseComponent'],
         }
     },
 
+    _checkSelectionMode: function(options)
+    {
+        var selectionMode = options['selectionMode'];
+        if (selectionMode && 
+            selectionMode['row'] && 
+            selectionMode['cell'] &&
+            selectionMode['row'] != 'none' && 
+            selectionMode['cell'] != 'none')
+        {
+            throw new Error("JET DataGrid does not support selectionMode on cell and row simultaneously.");
+        }
+    },
+    
     /**
      * <p>Notifies the component that its subtree has been made visible programmatically after the component has
      * been created.
@@ -21779,14 +23542,20 @@ oj.__registerWidget('oj.ojDataGrid', $['oj']['baseComponent'],
                 case "resize":
                 case "rootAttributes":
                 case "scroll":
-                case "selectionMode":
                 case "sort":
+                    break;
+                    
+                // check if error for having two selections
+                // set to pass to clear selection on update
+                case "selectionMode":
+                    this._checkSelectionMode(options);
+                    returnVal = 'pass'
                     break;
 
                 // refresh at wrapper level
                 case "cell":
                 case "header":
-                    // we will only not do a full refresh if it's just updating one of the following options specifed using the
+                    // we will only not do a full refresh if it's just updating one of the following options specified using the
                     // dot notation like $('#datagrid').ojDataGrid('option', 'header.column.resizable', {'height': 'enable'}); if they
                     // use something like $('#datagrid').ojDataGrid('option', 'header', {'column': {'resizable': {'height': 'enable'}}});
                     // we are going to do a hard refresh because tracing down the changes across axis isn't trivial
@@ -21843,7 +23612,10 @@ oj.__registerWidget('oj.ojDataGrid', $['oj']['baseComponent'],
         return false;
     },
 
-    // remove all children except context menu slot
+    /**
+     * Remove all children except context menu slot
+     * @private
+     */
     _removeAllChildren: function()
     {
         $(this.root).children("[slot!='contextMenu']").remove();
@@ -21864,9 +23636,9 @@ oj.__registerWidget('oj.ojDataGrid', $['oj']['baseComponent'],
     _addContextMenu: function()
     {
         var self, menuContainer, rootId, resizeMenu = null, sortMenu = null, selectMenu = null,
-                moveMenu = null, listItems, sortCapability, menuItemsSetByGrid;
+                moveMenu = null, listItems, sortCapability, menuItemsSetByGrid, isCustomElement;
         self = this;
-
+        isCustomElement = self._IsCustomElement();
         menuContainer = this._GetContextMenu();
         if (!menuContainer)
         {
@@ -21893,20 +23665,39 @@ oj.__registerWidget('oj.ojDataGrid', $['oj']['baseComponent'],
             listItems = menuContainer.find('[data-oj-command]');
             menuItemsSetByGrid = [];
             listItems.each(function() {
-                var command, anchor, newListItem;
-                anchor = $(this).children('a');
-                if (anchor.length === 0 || self._menuItemsSetByGrid.indexOf(anchor.get(0)) != -1)
+                var command, newListItem, newLabel, returnVal;
+                returnVal = self._shouldUpdateListItem(this, isCustomElement);
+                
+                if (returnVal.shouldUpdate)
                 {
                     command = $(this).attr('data-oj-command').split("-");
-                    newListItem = self._buildContextMenuItem(command[command.length - 1], self._IsCustomElement());
-                    if (newListItem[0].tagName === "OJ-OPTION")
+                    if (isCustomElement)
                     {
-                        // replacing oj-option would trigger a detach/attach of custom element, better to just update the existing one
-                        this.innerHTML = newListItem[0].innerHTML; //@HTMLUpdateOK
-                        menuItemsSetByGrid.push($(this).children('a').get(0));
+                        // we do not support nested menus yet so just get the label
+                        newLabel = self._buildContextMenuLabel(command[command.length - 1], isCustomElement)[0];
+
+                        // replace a label we previously provided with a new one
+                        if (returnVal.itemToUpdate)
+                        {
+                            returnVal.itemToUpdate.textContent = newLabel.textContent;
+                            menuItemsSetByGrid.push(returnVal.itemToUpdate);
+                        }
+                        // the menu has been upgraded and contains a icon or something that is not in the default slot
+                        else if (returnVal.toFirstChild)
+                        {
+                            this.firstChild.appendChild(newLabel);
+                            menuItemsSetByGrid.push(newLabel);
+                        }
+                        // the menu has not been upgraded and has no default slot so add our label
+                        else
+                        {
+                            this.appendChild(newLabel);
+                            menuItemsSetByGrid.push(newLabel); 
+                        }
                     }
                     else
                     {
+                        newListItem = self._buildContextMenuItem(command[command.length - 1], isCustomElement);
                         $(this).replaceWith(newListItem); //@HTMLUpdateOK
                         menuItemsSetByGrid.push(newListItem.children('a').get(0));
                     }
@@ -21915,7 +23706,7 @@ oj.__registerWidget('oj.ojDataGrid', $['oj']['baseComponent'],
             this._menuItemsSetByGrid = menuItemsSetByGrid;
             if (menuContainer.data('oj-ojMenu'))
             {
-                if (this._IsCustomElement())
+                if (isCustomElement)
                 {
                     menuContainer[0].refresh();
                 }
@@ -21931,7 +23722,52 @@ oj.__registerWidget('oj.ojDataGrid', $['oj']['baseComponent'],
             this._addMenuSelectListener(menuContainer);
         }
     },
-
+    
+    /**
+     * Should the list item be updated
+     * In widget case this is if there is no anchor or we modified it previously, and we will just blow it out with a new one
+     * In Custom element we will replace the text that we previously provided or provide text if there was none previously
+     * @param {Element} item the oj-option or li that has a data-oj-command on it
+     * @param {boolean} isCustomElement true if custom element world
+     * @private
+     */
+    _shouldUpdateListItem: function(item, isCustomElement)
+    {    
+        var anchor, slots, appendToFirstChild = false;
+        if (isCustomElement)
+        {
+            // if the menu is upgraded we need the slots of the anchor underneath
+            // ojmenu currently has a bug where they do not upgrade if there is no text and just an icon
+            // need a way to know if the upgrade has happened was hoping oj-complete would be on the oj-option but it wasn't
+            if (item.firstElementChild != null && item.firstElementChild.getAttribute('ojmenu') === 'opt')
+            {
+                slots = oj.BaseCustomElementBridge.getSlotMap(item.firstElementChild);
+                appendToFirstChild = true;
+            }
+            else
+            {
+                slots = oj.BaseCustomElementBridge.getSlotMap(item);
+            }
+            // either there are no default slots or default slot length is zero so we should add
+            if (!slots[""] || slots[""].length === 0)
+            {
+                return {shouldUpdate: true, toFirstChild: appendToFirstChild};
+            }
+            // or there are default slots and we provided something
+            else if (slots[""])
+            {
+                var itemIndex = this._menuItemsSetByGrid.indexOf(slots[""][0]);
+                if (itemIndex != -1)
+                {
+                    return {shouldUpdate: true, itemToUpdate: this._menuItemsSetByGrid[itemIndex]}
+                }
+            }
+            return {shouldUpdate: false};
+        }
+        anchor = $(item).children('a');
+        return {shouldUpdate: (anchor.length === 0 || this._menuItemsSetByGrid.indexOf(anchor.get(0)) != -1)};
+    },    
+    
     /**
      * @param {jQuery} menu
      * @private
@@ -21949,6 +23785,10 @@ oj.__registerWidget('oj.ojDataGrid', $['oj']['baseComponent'],
         }
     },
 
+    /**
+     * Builds the data grid context menu
+     * @private
+     */    
     _createDefaultContextMenu: function()
     {
         var self = this, menuContainer, rootId, resizeMenu = null, sortMenu = null, selectMenu = null,
@@ -22058,16 +23898,17 @@ oj.__registerWidget('oj.ojDataGrid', $['oj']['baseComponent'],
     {
         var listItem = useOjOption ? $('<oj-option></oj-option>') : $('<li></li>');
         listItem.attr('data-oj-command', this._getMappedCommand(command));
-        listItem.append(this._buildContextMenuLabel(command)); //@HTMLUpdateOK
+        listItem.append(this._buildContextMenuLabel(command, useOjOption)); //@HTMLUpdateOK
         return listItem;
     },
     /**
      * Builds a context menu label by looking up command translation
      * @param {string} command the string to look up translation for
+     * @param {boolean=} useOjOption whether or not oj-option tag should be use which is the case when the menu is a custom element
      * @return {jQuery|string} a jQuery object with HTML containing a label
      * @private
      */
-    _buildContextMenuLabel: function(command)
+    _buildContextMenuLabel: function(command, useOjOption)
     {
         // convert to the translation key convention
         var key = 'label' + command.charAt(0).toUpperCase() + command.slice(1);
@@ -22076,7 +23917,8 @@ oj.__registerWidget('oj.ojDataGrid', $['oj']['baseComponent'],
             // always initialize to enable
             key = 'labelEnableNonContiguous';
         }
-        return $('<a href="#"></a>').text(this._getTranslation(key));
+        var text = this._getTranslation(key);
+        return useOjOption ? $('<span>').text(text) : $('<a href="#"></a>').text(text);
     },
 
     /**
@@ -22202,7 +24044,7 @@ oj.__registerWidget('oj.ojDataGrid', $['oj']['baseComponent'],
             this._discontiguousSelection = !this._discontiguousSelection;
             this.grid.handleContextMenuReturn(this.contextMenuEvent, this.menuItemFunction, this._discontiguousSelection);
 
-            // toggle discontigous context menu label text
+            // toggle discontiguous context menu label text
             var key = this._discontiguousSelection ? 'labelDisableNonContiguous' : 'labelEnableNonContiguous';
             item.children().first().text(this._getTranslation(key)); //@HTMLUpdateOK
         }
@@ -22250,7 +24092,7 @@ oj.__registerWidget('oj.ojDataGrid', $['oj']['baseComponent'],
     },
     /**
      * Add the disabled class to the menu item with a given command
-     * @param {string} command the command to add the diabled attribute to
+     * @param {string} command the command to add the disabled attribute to
      * @private
      */
     _addContextMenuCapability: function(command)
@@ -22264,7 +24106,7 @@ oj.__registerWidget('oj.ojDataGrid', $['oj']['baseComponent'],
     },
     /**
      * Remove the disabled class to the menu item with a given command
-     * @param {string} command the command to remove the diabled attribute to
+     * @param {string} command the command to remove the disabled attribute to
      * @private
      */
     _removeContextMenuCapability: function(command)
@@ -22474,7 +24316,7 @@ oj.__registerWidget('oj.ojDataGrid', $['oj']['baseComponent'],
                 return null;
             }
 
-            // depricated in 1.2 look to remove in the future
+            // deprecated in 1.2 look to remove in the future
             if (subId === 'oj-datagrid-sort-icon')
             {
                 return header.children('.' + this._getMappedStyle('sortcontainer')).children().get(0);
@@ -22640,7 +24482,7 @@ oj.__registerWidget('oj.ojDataGrid', $['oj']['baseComponent'],
     },
 
     /**
-     * Render or refresh the datagrid depending on the internal visibilty state of the DataGrid
+     * Render or refresh the datagrid depending on the internal visibility state of the DataGrid
      * If the data grid has sizing information available and is in render or refresh state call
      * the appropriate action and update the visibility property. If sizing is not available leave
      * the visibility property alone
@@ -22789,9 +24631,9 @@ oj.__registerWidget('oj.ojDataGrid', $['oj']['baseComponent'],
         // if there are multiple levels on the row header
         if (header.parent().hasClass(this._getMappedStyle('groupingcontainer')))
         {
-            // get the groupingContainer's start value and set thtat to the index
+            // get the groupingContainer's start value and set that to the index
             index = parseInt(header.parent().attr(this._getMappedAttribute('start')), 10);
-            //if this is the groupingContainer's first child rturn that value
+            //if this is the groupingContainer's first child return that value
             if (header.get(0) === header.parent().children(":first").get(0))
             {
                 return index;
@@ -22887,7 +24729,19 @@ oj.__registerWidget('oj.ojDataGrid', $['oj']['baseComponent'],
             $(element).uniqueId();
         }
     },
-    
+
+    /**
+     * Callback for datagrid to compare values
+     * @param {*} value1
+     * @param {*} value2
+     * @returns {boolean}
+     * @private
+     */
+    _compareValues: function (value1, value2)
+    {
+        return oj.Object.compareValues(value1, value2);
+    },
+
     /**
      * <p>Scroll the datagrid to an x,y pixel location.
      * <p>If the x,y point is outside the range of the viewport the grid will scroll to the nearest location.
@@ -23038,24 +24892,22 @@ oj.__registerWidget('oj.ojDataGrid', $['oj']['baseComponent'],
      *
      *     <tr>
      *       <td rowspan="2">Header</td>
-     *       <td><kbd>Press & Short Hold</kbd></td>
-     *       <td>Focus on the header.</td>
+     *       <td><kbd>Tap</kbd></td>
+     *       <td>If Multiple Selection is enabled or in row <code>selectionMode</code>, the row or column will be selected. Selection handles will appear for multiple selection. Otherwise, header cell will be focused.</td>
      *     </tr>
      *     <tr>
      *       <td><kbd>Press & Hold</kbd></td>
      *       <td>Display context menu</td>
      *     </tr>
-     *
-     *     <tr>
-     *       <td>Column Header</td>
-     *       <td><kbd>Tap</kbd></td>
-     *       <td>Sorts the column if <code class="prettyprint">sortable</code> enabled.</td>
-     *     </tr>
-     *
      *     <tr>
      *       <td>Header Gridline</td>
      *       <td><kbd>Drag</kbd></td>
      *       <td>Resizes the header if <code class="prettyprint">resizable</code> enabled along the axis.</td>
+     *     </tr>
+     *     <tr>
+     *       <td>Corner</td>
+     *       <td><kbd>Tap</kbd></td>
+     *       <td>Tapping on the corner will perform a select all operation on the datagrid if multiple selection is enabled.</td>
      *     </tr>
      *
      *   </tbody>
@@ -23076,7 +24928,7 @@ oj.__registerWidget('oj.ojDataGrid', $['oj']['baseComponent'],
      *   </thead>
      *   <tbody>
      *     <tr>
-     *       <td rowspan="23">Cell</td>
+     *       <td rowspan="24">Cell</td>
      *       <td><kbd>Tab</kbd></td>
      *       <td>The first Tab into the DataGrid moves focus to the first cell of the first row.  The second Tab moves focus to the next focusable element outside of the DataGrid.</td>
      *     </tr>
@@ -23149,6 +25001,10 @@ oj.__registerWidget('oj.ojDataGrid', $['oj']['baseComponent'],
      *       <td>Move the row that is marked to directly under the current row.  If the row with the focused cell is the last row, then it will be move to the row above the current row.</td>
      *     </tr>
      *     <tr>
+     *       <td><kbd>Ctrl + A</kbd></td>
+     *       <td>If multiple selection is enabled, performs a select all on the datagrid.</td>
+     *     </tr>
+     *     <tr>
      *       <td><kbd>Ctrl + Alt + 5</kbd></td>
      *       <td>Read the context and content of the current cell to the screen reader.</td>
      *     </tr>
@@ -23169,7 +25025,7 @@ oj.__registerWidget('oj.ojDataGrid', $['oj']['baseComponent'],
      *       <td>If the cell is actionable it exits actionable mode.</td>
      *     </tr>
      *     <tr>
-     *       <td rowspan="9">Column Header Cell</td>
+     *       <td rowspan="13">Column Header Cell</td>
      *       <td><kbd>LeftArrow</kbd></td>
      *       <td>Moves focus to the previous column header.  There is no wrapping at the beginning or end of the column headers.</td>
      *     </tr>
@@ -23181,7 +25037,6 @@ oj.__registerWidget('oj.ojDataGrid', $['oj']['baseComponent'],
      *       <td><kbd>DownArrow</kbd></td>
      *       <td>Moves focus to the cell of the first row directly below the column header. If using nested headers will move focus up a level.</td>
      *     </tr>
-     *     <tr>
      *     <tr>
      *       <td><kbd>UpArrow</kbd></td>
      *       <td>If using nested headers will move focus down a level.</td>
@@ -23203,7 +25058,31 @@ oj.__registerWidget('oj.ojDataGrid', $['oj']['baseComponent'],
      *       <td>Brings up the context menu.</td>
      *     </tr>
      *     <tr>
-     *       <td rowspan="7">Row Header Cell</td>
+     *       <td><kbd>Space</kbd></td>
+     *       <td>If multiple selection is enabled and not in <code>selectionMode</code> row, the column(s) underneath the header will be selected.</td>
+     *     </tr>
+     *     <tr>
+     *       <td><kbd>Shift + Right Arrow</kbd></td>
+     *       <td>If multiple selection is enabled and not in <code>selectionMode</code> row, the column selection will extend to the right by the number of columns covered by the header to the right of the current selection frontier header.</td>
+     *     </tr>
+     *     <tr>
+     *       <td><kbd>Shift + Left Arrow</kbd></td>
+     *       <td>If multiple selection is enabled and not in <code>selectionMode</code> row, the column selection will extend to the right left the number of columns covered by the header to the left of the current selection frontier header.</td>
+     *     </tr>
+     *     <tr>
+     *       <td><kbd>Shift + Up Arrow</kbd></td>
+     *       <td>If multiple selection is enabled and not in <code>selectionMode</code> row and the current selection frontier header has a parent nested header, the column selection will extend to cover the columns beneath the parent header. 
+     *           <br/> Extending the selection with arrow keys will use the parent level. If the parent header is directly above the anchor header, the anchor will shift to the parent header and future selections will be based on the parent header. 
+     *           <br/> If we are already at the highest level, nothing will happen.</td>
+     *     </tr>
+     *     <tr>
+     *       <td><kbd>Shift + Down Arrow</kbd></td>
+     *       <td>If multiple selection is enabled and not in <code>selectionMode</code> row and the current selection frontier header has a child nested header, the column selection will extend to cover the columns beneath the child header. 
+     *           <br/> Extending the selection with arrow keys will use the child level. If the child header is directly below the anchor header, the anchor will shift to the child header and future selections will be based on the child header. 
+     *           <br/> If we are already at the lowest level, it will simply move into the databody and select the first cell underneath the header.</td>
+     *     </tr>
+     *     <tr>
+     *       <td rowspan="12">Row Header Cell</td>
      *       <td><kbd>UpArrow</kbd></td>
      *       <td>Moves focus to the previous row header.  There is no wrapping at the beginning or end of the row headers.</td>
      *     </tr>
@@ -23231,6 +25110,32 @@ oj.__registerWidget('oj.ojDataGrid', $['oj']['baseComponent'],
      *       <td><kbd>Shift + F10</kbd></td>
      *       <td>Brings up the context menu.</td>
      *     </tr>
+     *     <tr>
+     *       <td><kbd>Space</kbd></td>
+     *       <td>If multiple selection is enabled, the row(s) underneath the header will be selected.</td>
+     *     </tr>
+     *     <tr>
+     *       <td><kbd>Shift + Up Arrow</kbd></td>
+     *       <td>If multiple selection is enabled, the row selection will extend up by the number of rows covered by the header above the current selection frontier header.</td>
+     *     </tr>
+     *     <tr>
+     *       <td><kbd>Shift + Down Arrow</kbd></td>
+     *       <td>If multiple selection is enabled, the row selection will extend down by the number of rows covered by the header below the current selection frontier header.</td>
+     *     </tr>
+     *     <tr>
+     *       <td><kbd>Shift + Left Arrow</kbd></td>
+     *       <td>If multiple selection is enabled and the current selection frontier header has a parent nested header, the row selection will extend to cover the rows beneath the parent header. 
+     *           <br/> Extending the selection with arrow keys will use the parent level. If the parent header is directly above the anchor header, the anchor will shift to the parent header and future selections will be based on the parent header. 
+     *           <br/> If we are already at the highest level, nothing will happen.</td>
+     *     </tr>
+     *     <tr>
+     *       <td><kbd>Shift + Right Arrow</kbd></td>
+     *       <td>If multiple selection is enabled  and the current selection frontier header has a child nested header, the row selection will extend to cover the rows beneath the child header. 
+     *           <br/> Extending the selection with arrow keys will use the child level. If the child header is directly below the anchor header, the anchor will shift to the child header and future selections will be based on the child header. 
+     *           <br/> If we are already at the lowest level, it will simply move into the databody and select the first cell underneath the header.</td>
+     *     </tr>
+
+
      *   </tbody>
      * </table>
      *
@@ -23255,7 +25160,7 @@ oj.__registerWidget('oj.ojDataGrid', $['oj']['baseComponent'],
      *     </tr>
      *     <tr>
      *       <td>oj-helper-align-items-[direction]</td>
-     *       <td>Use this class on cells' and headers' className prperty to align your content vertically. By default the alignment is center on cells and headers, see other possibilities in the flex layout align section.</td>
+     *       <td>Use this class on cells' and headers' className property to align your content vertically. By default the alignment is center on cells and headers, see other possibilities in the flex layout align section.</td>
      *     </tr>
      *     <tr>
      *       <td>oj-datagrid-cell-no-padding</td>
@@ -23373,7 +25278,7 @@ oj.__registerWidget('oj.ojDataGrid', $['oj']['baseComponent'],
      * @memberof oj.ojDataGrid
      */
     /**
-     * <p>Context for the ojDataGrid elements's headers.</p>
+     * <p>Context for the ojDataGrid element's headers.</p>
      *
      * @property {number} axis the axis of the header, possible values are 'row'/'column'/'columnEnd'/'rowEnd'
      * @property {function} component a reference to the DataGrid widgetConstructor
@@ -23430,6 +25335,7 @@ DvtDataGrid.prototype._setupActions = function()
         'SELECT_EXTEND_DOWN': this._handleExtendSelectionDown,
         'SELECT_ROW': this._handleSelectRow,
         'SELECT_COLUMN': this._handleSelectColumn,
+        'SELECT_ALL': this._handleSelectAll,
         'CUT': this._handleCut,
         'CANCEL_REORDER': this._handleCancelReorder,
         'PASTE': this._handlePaste
@@ -23852,7 +25758,7 @@ DvtDataGrid.prototype._handleFocusKey = function(event, element, keyCode, isExte
         }
         else
         {
-            return this.handleHeaderFocusChange(keyCode, event, jumpToHeaders);
+            return this.handleHeaderFocusChange(keyCode, event, isExtend, jumpToHeaders);
         }
     }
     return false;
@@ -23999,7 +25905,7 @@ DvtDataGrid.prototype._handleFocusColumnEndHeader = function(event, element)
 DvtDataGrid.prototype._handleSelectRow = function(event, element)
 {
     var axis, start, end, elem, level, index;
-    if  (!this._isSelectionEnabled() || !this.isMultipleSelection())
+    if  (!this._isSelectionEnabled() || (!this.isMultipleSelection() && this.m_options.getSelectionMode() != 'row'))
     {
         return false;
     }
@@ -24009,10 +25915,11 @@ DvtDataGrid.prototype._handleSelectRow = function(event, element)
         index = this.m_active['indexes']['row'];
         start = index;
         end  = index;
+        level = this.m_rowHeaderLevelCount - 1;
     }
     else
     {
-        if (this.m_active == null || this.m_active['type'] != 'header' || this.m_active['axis'] != 'row')
+        if (this.m_active == null || this.m_active['type'] != 'header' || this.m_active['axis'].indexOf('row') == -1)
         {
             return false;
         }
@@ -24031,6 +25938,18 @@ DvtDataGrid.prototype._handleSelectRow = function(event, element)
             end = start + this._getAttribute(elem['parentNode'], 'extent', true) - 1;
         }
     }
+
+    if (this.m_selectionFrontier)
+    {
+        if (this.m_selectionFrontier['axis'] && this.m_selectionFrontier['axis'].indexOf('column') != -1)
+        {
+            this._handleSelectAll(event);
+            return true;        
+        } 
+    }
+
+    // set the frontier as it would be with header selection
+    this.setHeaderSelectionFrontier('row', end, index, level, element, true);
 
     //handle the space key in headers
     this._selectEntireRow(start, end, event);
@@ -24059,10 +25978,11 @@ DvtDataGrid.prototype._handleSelectColumn = function(event, element)
         index = this.m_active['indexes']['column'];
         start = index;
         end  = index;
+        level = this.m_columnHeaderLevelCount - 1;
     }
     else
     {
-        if (this.m_active == null || this.m_active['type'] != 'header' || this.m_active['axis'] != 'column')
+        if (this.m_active == null || this.m_active['type'] != 'header' || this.m_active['axis'].indexOf('column') == -1)
         {
             return false;
         }
@@ -24081,6 +26001,18 @@ DvtDataGrid.prototype._handleSelectColumn = function(event, element)
             end = start + this._getAttribute(elem['parentNode'], 'extent', true) - 1;
         }
     }
+
+    if (this.m_selectionFrontier)
+    {
+        if (this.m_selectionFrontier['axis'] && this.m_selectionFrontier['axis'].indexOf('row') != -1)
+        {
+            this._handleSelectAll(event);
+            return true;        
+        } 
+    }
+
+    // set the frontier as it would be with header selection
+    this.setHeaderSelectionFrontier('column', end, index, level, element, true);
 
     //handle the space key in headers
     this._selectEntireColumn(start, end, event);
@@ -24295,13 +26227,17 @@ DvtDataGridKeyboardHandler.prototype.getAction = function(event, capabilities)
                     return 'CANCEL_EDIT';
                 }
             }
+            else if (this.grid.m_discontiguousSelection)
+            {
+                return 'SELECT_DISCONTIGUOUS';
+            }
             break;
         case keyCodes.SPACE_KEY:
-            if (cellOrHeader === 'row' && selection && ((selectionMode == 'cell' && multipleSelection) || selectionMode == 'row'))
+            if (cellOrHeader.indexOf('row') != -1 && selection && ((selectionMode == 'cell' && multipleSelection) || selectionMode == 'row'))
             {
                 return 'SELECT_ROW';
             }
-            else if (cellOrHeader === 'column' && selection && selectionMode == 'cell' && multipleSelection)
+            else if (cellOrHeader.indexOf('column') != -1 && selection && selectionMode == 'cell' && multipleSelection)
             {
                 return 'SELECT_COLUMN';
             }
@@ -24471,13 +26407,18 @@ DvtDataGridKeyboardHandler.prototype.getAction = function(event, capabilities)
         case keyCodes.CTRL_KEY:
         case keyCodes.ALT_KEY:
             break;
+        case keyCodes.A_KEY:
+            if (ctrlKey && selection && multipleSelection)
+            {
+                return 'SELECT_ALL';
+            }
         case keyCodes.NUM5_KEY:
             if (ctrlKey && altKey)
             {
                 return 'READ_CELL';
             }
         default:
-            if (!readOnly && currentMode === 'navigation' && cellOrHeader == 'cell')
+            if ((keyCode < keyCodes.F1_KEY || keyCode > keyCodes.F15_KEY) && !readOnly && currentMode === 'navigation' && cellOrHeader == 'cell')
             {
                 return 'DATA_ENTRY';
             }
@@ -24672,30 +26613,44 @@ var ojDataGridMeta = {
       "type": "string",
       "enumValues": ["auto", "loadMoreOnScroll", "scroll"]
     },
-    "scrollPosition": {
+    "scrollPolicyOptions": {
       "type": "object",
       "properties": {
-        "index": {
-          "type": "object",
-          "properties": {
-            "row": {
-              "type": "number"
-            },
-            "column": {
-              "type": "number"
-            }
-          }
+        "maxRowCount": {
+          "type": "number"
         },
-        "key": {
-          "type": "object",
-          "properties": {
-            "row": {
-              "type": "string"
-            },
-            "column": {
-              "type": "string"
-            }
-          }
+        "maxColumnCount": {
+          "type": "number"
+        }          
+      }
+    },
+    "scrollPosition": {
+      "writeback": true,        
+      "type": "object",
+      "properties": {
+        "rowIndex": {
+          "type": "number"
+        },
+        "columnIndex": {
+          "type": "number"
+        },
+        "rowKey": {
+          "type": "*"
+        },
+        "columnKey": {
+          "type": "*"
+        },
+        "x": {
+          "type": "number"
+        },
+        "y": {
+          "type": "number"
+        },
+        "offsetX": {
+          "type": "number"
+        },
+        "offsetY": {
+          "type": "number"
         }
       }
     },
@@ -24708,11 +26663,154 @@ var ojDataGridMeta = {
       "properties": {
         "row": {
           "type": "string",
-          "enumValues": ["single", "multiple"]
+          "enumValues": ["none", "single", "multiple"]
         },
         "cell": {
           "type": "string",
-          "enumValues": ["single", "multiple"]
+          "enumValues": ["none", "single", "multiple"]
+        }
+      }
+    },
+    "translations": {
+      "type": "Object",
+      "properties": {
+        "accessibleActionableMode": {
+          "type": "string"
+        },
+        "accessibleColumnContext": {
+          "type": "string"
+        },
+        "accessibleColumnEndHeaderContext": {
+          "type": "string"
+        },
+        "accessibleColumnHeaderContext": {
+          "type": "string"
+        },
+        "accessibleColumnSelected": {
+          "type": "string"
+        },
+        "accessibleColumnSpanContext": {
+          "type": "string"
+        },
+        "accessibleFirstColumn": {
+          "type": "string"
+        },
+        "accessibleFirstRow": {
+          "type": "string"
+        },
+        "accessibleLastColumn": {
+          "type": "string"
+        },
+        "accessibleLastRow": {
+          "type": "string"
+        },
+        "accessibleLevelContext": {
+          "type": "string"
+        },
+        "accessibleMultiCellSelected": {
+          "type": "string"
+        },
+        "accessibleNavigationMode": {
+          "type": "string"
+        },
+        "accessibleRangeSelectModeOff": {
+          "type": "string"
+        },
+        "accessibleRangeSelectModeOn": {
+          "type": "string"
+        },
+        "accessibleRowCollapsed": {
+          "type": "string"
+        },
+        "accessibleRowContext": {
+          "type": "string"
+        },
+        "accessibleRowEndHeaderContext": {
+          "type": "string"
+        },
+        "accessibleRowExpanded": {
+          "type": "string"
+        },
+        "accessibleRowHeaderContext": {
+          "type": "string"
+        },
+        "accessibleRowSelected": {
+          "type": "string"
+        },
+        "accessibleRowSpanContext": {
+          "type": "string"
+        },
+        "accessibleSelectionAffordanceBottom": {
+          "type": "string"
+        },
+        "accessibleSelectionAffordanceTop": {
+          "type": "string"
+        },
+        "accessibleSortAscending": {
+          "type": "string"
+        },
+        "accessibleSortDescending": {
+          "type": "string"
+        },
+        "accessibleStateSelected": {
+          "type": "string"
+        },
+        "accessibleSummaryEstimate": {
+          "type": "string"
+        },
+        "accessibleSummaryExact": {
+          "type": "string"
+        },
+        "accessibleSummaryExpanded": {
+          "type": "string"
+        },
+        "labelCut": {
+          "type": "string"
+        },
+        "labelDisableNonContiguous": {
+          "type": "string"
+        },
+        "labelEnableNonContiguous": {
+          "type": "string"
+        },
+        "labelPaste": {
+          "type": "string"
+        },
+        "labelResize": {
+          "type": "string"
+        },
+        "labelResizeDialogSubmit": {
+          "type": "string"
+        },
+        "labelResizeHeight": {
+          "type": "string"
+        },
+        "labelResizeWidth": {
+          "type": "string"
+        },
+        "labelSortCol": {
+          "type": "string"
+        },
+        "labelSortColAsc": {
+          "type": "string"
+        },
+        "labelSortColDsc": {
+          "type": "string"
+        },
+        "labelSortRow": {
+          "type": "string"
+        },
+        "labelSortRowAsc": {
+          "type": "string"
+        },
+        "labelSortRowDsc": {
+          "type": "string"
+        },
+        "msgFetchingData": {
+          "type": "string"
+        },
+        "msgNoData": {
+          "type": "string"
         }
       }
     }

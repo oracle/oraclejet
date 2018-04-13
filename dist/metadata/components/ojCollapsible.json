@@ -1,7 +1,7 @@
 {
   "name": "oj-collapsible",
-  "version": "4.2.0",
-  "jetVersion": "4.2.0",
+  "version": "5.0.0",
+  "jetVersion": "5.0.0",
   "displayName": "Collapsible",
   "preview": true,
   "description": "Displays a header that can be expanded to show its content.",
@@ -40,15 +40,16 @@
       "writeback": true
     },
     "translations": {
-      "description": "A collection of translated resources from the translation bundle, or null if this\ncomponent has no resources. Resources may be accessed and overridden individually or collectively, as seen in the examples.\n\nIf this component has translations, their documentation immediately follows this doc entry.",
-      "type": "Object",
+      "description": "A collection of translated resources from the translation bundle, or null if this\ncomponent has no resources. Resources may be accessed and overridden individually or collectively, as seen in the examples. If the component does not contain any translatable resource, the default value of this attribute will be \nnull. If not, an object containing all resources relevant to the component.\n\nIf this component has translations, their documentation immediately follows this doc entry.",
+      "type": "Object|null",
       "displayName": "Translations",
-      "value": null
+      "translatable": true
     }
   },
   "methods": {
     "refresh": {
-      "description": "Refreshes the visual state of the collapsible. This method does not accept any arguments."
+      "description": "Refreshes the visual state of the collapsible.\n\nThis method does not accept any arguments.",
+      "return": "void"
     },
     "setProperty": {
       "description": "Sets a property or a single subproperty for complex properties and notifies the component\nof the change, triggering a [property]Changed event.",
@@ -63,7 +64,8 @@
           "description": "The new value to set the property to.",
           "type": "*"
         }
-      ]
+      ],
+      "return": "void"
     },
     "getProperty": {
       "description": "Retrieves a value for a property or a single subproperty for complex properties.",
@@ -84,13 +86,13 @@
           "description": "An object containing the property and value pairs to set.",
           "type": "Object"
         }
-      ]
+      ],
+      "return": "void"
     }
   },
   "events": {
     "ojBeforeExpand": {
       "description": "Triggered immediately before the collapsible is expanded.",
-      "bubbles": true,
       "cancelable": true,
       "detail": {
         "header": {
@@ -105,7 +107,6 @@
     },
     "ojExpand": {
       "description": "Triggered immediately after the collapsible is expanded.",
-      "bubbles": true,
       "detail": {
         "header": {
           "description": "The header that was just expanded.",
@@ -119,7 +120,6 @@
     },
     "ojBeforeCollapse": {
       "description": "Triggered immediately before the collapsible is collapsed.",
-      "bubbles": true,
       "cancelable": true,
       "detail": {
         "header": {
@@ -134,7 +134,6 @@
     },
     "ojCollapse": {
       "description": "Triggered immediately after the collapsible is collapsed.",
-      "bubbles": true,
       "detail": {
         "header": {
           "description": "The header that was just collapsed.",

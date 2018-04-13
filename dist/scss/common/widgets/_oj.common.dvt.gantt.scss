@@ -1,7 +1,7 @@
 // Copyright (c) 2014, 2018, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
 // !!!
-// WARNING: do not directly import this file, instead import the 
-//          version in your theme's directory, 
+// WARNING: do not directly import this file, instead import the
+//          version in your theme's directory,
 //          for example alta/widgets/_oj.alta.dvt.gantt.scss
 // !!!
 
@@ -9,14 +9,14 @@
 
 @if $includeGanttClasses != false {
   @include module-include-once("common.gantt") {
-        
+
     // This is to prevent the flash of unstyled content before the html becomes JET components.
     @if $initialVisibility == hidden {
       oj-gantt:not(.oj-complete) {
         visibility: hidden;
-      }      
+      }
     }
-    
+
     /* Styling for the gantt widget */
     .oj-gantt {
       @include oj-animation-duration-property ($dvtAnimationDuration);
@@ -28,7 +28,7 @@
     .oj-gantt-container {
       fill: $dvtGanttBgColor;
       stroke: $dvtGanttBorderColor;
-      stroke-width: 1px; 
+      stroke-width: 1px;
     }
 
     /* Styling for the empty text */
@@ -67,7 +67,7 @@
       fill: $dvtGanttTaskBgColor;
       filter: url('#ojGanttTaskTintFilter');
     }
-    
+
     /* Styling for all tasks when hover */
     .oj-gantt-task.oj-hover {
       stroke-width: 2;
@@ -77,7 +77,7 @@
     .oj-gantt-task.oj-focus {
       stroke-width: 2;
     }
-    
+
     /* Styling for all tasks when selected */
     .oj-gantt-task.oj-selected {
       stroke: $dvtGanttTaskBorderColorSelected;
@@ -91,6 +91,12 @@
     /* Styling for all milestone tasks */
     .oj-gantt-task-milestone {
       fill: $dvtGanttMilestoneBgColor;
+    }
+
+    /* Styling for all summary tasks */
+    .oj-gantt-task-summary {
+      fill: $dvtGanttSummaryBgColor;
+      filter: none;
     }
 
     /* Styling for all task labels */
@@ -119,7 +125,7 @@
     .oj-gantt-baseline-milestone {
       fill: $dvtGanttMilestoneBgColor;
     }
-        
+
     /* Styling for the major time axis */
     .oj-gantt-major-axis {
       fill: $dvtGanttMajorAxisBgColor;
@@ -132,25 +138,25 @@
       font-size: $fontSize;
       font-weight: 500;
     }
-    
+
     /* Styling for the major time axis separators */
     .oj-gantt-major-axis-separator {
       stroke: $dvtGanttMajorAxisSeparatorColor;
     }
-    
+
     /* Styling for the minor time axis */
     .oj-gantt-minor-axis {
       fill: $dvtGanttMinorAxisBgColor;
       stroke: $dvtGanttMinorAxisBorderColor;
     }
-    
+
     /* Styling for the minor time axis labels */
     .oj-gantt-minor-axis-label {
       fill: $dvtGanttMinorAxisLabelColor;
       font-size: $smallFontSize;
       font-weight: normal;
     }
-    
+
     /* Styling for the minor time axis separators */
     .oj-gantt-minor-axis-separator {
       stroke: $dvtGanttMinorAxisSeparatorColor;
@@ -160,12 +166,12 @@
     .oj-gantt-reference-object {
       stroke: $dvtTimelineReferenceObjectColor;
     }
-                
+
     /* Styling for the tooltip label */
     .oj-gantt-tooltip-label {
       font-size: $smallFontSize;
       color: $formControlLabelColor;
-      padding: 0px 2px; 
+      padding: 0px 2px;
       white-space: nowrap;
 
       @include oj-ltr() {
@@ -196,43 +202,43 @@
       border-spacing: 2px;
       overflow: hidden;
     }
-                
+
     /* Styling for the zoom in icon */
     .oj-gantt-zoomin-icon {
       background-image:oj-common-image-url("dvt/common/func_plus_16_ena.png");
-      background-color:$background1Color;
-      border-color:#d6d7d8;
+      background-color:$dvtComponentBgColor;
+      border-color: $dvtPanelBorderColor;
     }
-    
+
     /* Styling for the zoom in icon on hover */
     .oj-gantt-zoomin-icon.oj-hover {
       background-image:oj-common-image-url("dvt/common/func_plus_16_hov.png");
     }
-    
+
     /* Styling for the zoom in icon on active */
     .oj-gantt-zoomin-icon.oj-active {
       background-image:oj-common-image-url("dvt/common/func_plus_16_act.png");
     }
-    
+
     /* Styling for the zoom in icon when disabled */
     .oj-gantt-zoomin-icon.oj-disabled {
       background-image:oj-common-image-url("dvt/common/func_plus_16_dis.png");
     }
-    
+
     .oj-gantt-zoomout-icon {
       background-image:oj-common-image-url("dvt/common/func_minus_16_ena.png");
-      background-color:$background1Color;
-      border-color:#d6d7d8;
+      background-color:$dvtComponentBgColor;
+      border-color: $dvtPanelBorderColor;
     }
-    
+
     .oj-gantt-zoomout-icon.oj-hover {
       background-image:oj-common-image-url("dvt/common/func_minus_16_hov.png");
     }
-    
+
     .oj-gantt-zoomout-icon.oj-active {
       background-image:oj-common-image-url("dvt/common/func_minus_16_act.png");
     }
-    
+
     .oj-gantt-zoomout-icon.oj-disabled {
       background-image:oj-common-image-url("dvt/common/func_minus_16_dis.png");
     }

@@ -1,10 +1,10 @@
 {
   "name": "oj-bind-slot",
-  "version": "4.2.0",
-  "jetVersion": "4.2.0",
+  "version": "5.0.0",
+  "jetVersion": "5.0.0",
   "displayName": "Bind Slot",
   "preview": true,
-  "description": "ojBindSlot",
+  "description": "A placeholder for child DOM to appear in a specified slot.",
   "properties": {
     "index": {
       "description": "An index value allowing the slot children to be individually slotted. This is useful when the composite needs to add additional DOM around slotted children.",

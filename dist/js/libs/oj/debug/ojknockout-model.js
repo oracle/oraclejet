@@ -1,4 +1,5 @@
 /**
+ * @license
  * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
@@ -14,6 +15,9 @@ define(['ojs/ojcore', 'knockout', 'ojs/ojmodel'], function(oj, ko)
  * @class oj.KnockoutUtils
  * @classdesc Utility methods for blending Knockout observables with the data model
  * @export
+ * @since 1.0
+ * @hideconstructor
+ * @ojtsimport knockout
  */
 oj.KnockoutUtils = function () {};
 
@@ -30,6 +34,7 @@ oj.KnockoutUtils.updatingCollectionFunc = "oj.collectionUpdatingFunc";
  * @param {boolean=} array Should function return an observable array if m is an oj.Collection, vs. an array of observables?
  * 
  * @return {Object|undefined} array of Knockout observables or an observable array
+ * @ojsignature {target: "Type", for: "returns", value: "Array<KnockoutObservable<any>>|KnockoutObservableArray<any>"}
  * @export
  */
 oj.KnockoutUtils.map = function (m, callback, array) 

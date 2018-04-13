@@ -62,6 +62,11 @@
       color: $dialogHeaderTextColor;
       font-weight: $headerFontWeight;
       position: relative;
+      // Use flex to align elements in the header (title and close icon)
+      @include oj-display-flex-property();
+      justify-content: space-between;
+      // The min-height provides a more consistent vertical centering of the header when the title font size varies due to browser-dependent font sizing differences.
+      min-height: $buttonSmallHeight;
     }
 
     .oj-draggable .oj-dialog-header,
@@ -72,25 +77,25 @@
     // Vertically align the body with the close icon. 
     // Adjust horizontal padding so that a centered title does not collide with the close icon.
     @if $dialogCloseIconPosition == top or $dialogCloseIconPosition == center {
-      // adjust margins so the the close button is positioned
+      // Adjust margins so the the close button is positioned
       // at the end of the dialog
      .oj-dialog-header-close-wrapper { 
         $dialogPaddingSide: oj-shorthand-property-value-left($dialogHeaderPadding);
         @include oj-ltr() {
           margin-right: (-$dialogPaddingSide);
-          float: right;
         }
         @include oj-rtl() {    
           margin-left: (-$dialogPaddingSide);
-          float: left;
         }
       }
     }
 
     @if $dialogCloseIconPosition == top {
-      // adjust margins so the the close button is vertically positioned
+      // Adjust margins so the the close button is vertically positioned
       // in the top of the dialog header.
-      .oj-dialog-header-close-wrapper + .oj-dialog-title {
+      // The class oj-dialog-header-close is asserted on the header div when there is a close button present.
+      // We use this to adjust title padding when we have a close button.
+      .oj-dialog-header-close .oj-dialog-title {
         padding-top: $buttonHeight - oj-shorthand-property-value-top($dialogHeaderPadding);
       }   
      .oj-dialog-header-close-wrapper { 
@@ -112,36 +117,43 @@
      }
 
     .oj-dialog-title {
-      display: block;
       overflow: hidden;
       cursor: default;
       @include oj-user-select-property (none);
+      // vertically center-align the title within the header
+      align-self: center;
     }
 
     @if $dialogHeaderTextAlign == center {
-      // 
       // The 'center' setting will center the dialog header text.
       // To achieve a centered title for dialogs that have
       // a close icon, we pad the side that does not have a close icon.
-      // 
-      .oj-dialog-title {
-          text-align: center;
+      .oj-dialog-header {
+         justify-content: center;
+         text-align: center;
        }   
-       // Adjust margin between the close button and the title so that
-       // the title remains centered.
-      .oj-dialog-header-close-wrapper + .oj-dialog-title {
-           $dialogPaddingSide: oj-shorthand-property-value-left($dialogBodyPadding);
-           @include oj-ltr() {    
-           padding-left: $buttonHeight - $dialogPaddingSide;
-          } 
+      // For the header flex layout with a centered title, we realize the proper layout
+      // by setting margin-left:auto when the header also has a close button.
+      .oj-dialog-header-close .oj-dialog-title {
+          $dialogPaddingSide: oj-shorthand-property-value-left($dialogBodyPadding);
+          margin-left:auto;
+          @include oj-ltr() {    
+            padding-left: $buttonHeight - $dialogPaddingSide;
+         } 
          @include oj-rtl() {    
-           padding-right: $buttonHeight - $dialogPaddingSide;
+            padding-right: $buttonHeight - $dialogPaddingSide;
+            margin-right:auto;
         }
       }
+      .oj-dialog-header-close-wrapper {
+         @include oj-ltr() {
+            margin-left:auto;
+         }
+       }
      }
 
     // Padding between the dialog title and the close icon
-    .oj-dialog-header-close-wrapper + .oj-dialog-title {
+    .oj-dialog-header-close .oj-dialog-title {
       @include oj-ltr() {
          padding-right: .2rem;
       }
@@ -178,7 +190,7 @@
     }   
 
     .oj-dialog-footer {
-      display: flex;
+      @include oj-display-flex-property();
       justify-content: flex-end;
       // Configure the footer content to be fixed height on resize.
       @include oj-flex-property(0 0 auto);

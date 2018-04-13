@@ -29,10 +29,10 @@
       vertical-align:middle;
       height: 100%;
       overflow: hidden;
-      color: $swipeToRevealActionTextColor;
-      transition: max-width $swipeToRevealAnimationDuration;
+      color: $swipeActionsTextColor;
+      transition: max-width $swipeActionsAnimationDuration;
       @include oj-transition-timing-function-property(ease-in-out);
-      background-color: $swipeToRevealActionBgColor;
+      background-color: $swipeActionsDefaultBgColor;
     }
 
     /*
@@ -46,21 +46,21 @@
      * Applied to the more action item
      */
     .oj-swipetoreveal .oj-swipetoreveal-more {
-        background-color: $swipeToRevealMoreActionBgColor;
+        background-color: $swipeActionsNeutralBgColor;
     }
 
     /*
      * Applied to the flag action item
      */
     .oj-swipetoreveal .oj-swipetoreveal-flag {
-        background-color: $swipeToRevealFlagActionBgColor;
+        background-color: $swipeActionsAttentionBgColor;
     }
 
     /*
      * Applied to the alert action item
      */
     .oj-swipetoreveal .oj-swipetoreveal-alert {
-        background-color: $swipeToRevealAlertActionBgColor;
+        background-color: $swipeActionsDangerBgColor;
     }
   }
 }

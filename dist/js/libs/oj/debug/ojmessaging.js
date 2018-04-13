@@ -1,4 +1,5 @@
 /**
+ * @license
  * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
@@ -19,7 +20,7 @@ define(['ojs/ojcore', 'jquery'], function(oj, $)
  * </p>
  * @param {string} summary - Localized summary message text
  * @param {string} detail - Localized detail message text 
- * @param {number|string=} severity - An optional severity for this message. Use constants 
+ * @param {(number|string)=} severity - An optional severity for this message. Use constants 
  * oj.Message.SEVERITY_LEVEL for number types and oj.Message.SEVERITY_TYPE for string types. Default 
  * is SEVERITY_ERROR if no severity is specified
  * @constructor
@@ -108,7 +109,7 @@ oj.Object.createSubclass(oj.Message, oj.Object, "oj.Message");
  * @memberof oj.Message
  * @instance
  * @type {string}
- * @default <code class="prettyprint">""</code>
+ * @default ""
  */
 
 /**
@@ -119,18 +120,18 @@ oj.Object.createSubclass(oj.Message, oj.Object, "oj.Message");
  * @memberof oj.Message
  * @instance
  * @type {string}
- * @default <code class="prettyprint">""</code>
+ * @default ""
  */
 
 /**
- * Severity type of message. See oj.Message.SEVERITY_TYPE.
+ * Severity type of message. See oj.Message.SEVERITY_TYPE for string types and oj.Message.SEVERITY_LEVEL for number types.
  * 
  * @member
  * @name severity
  * @memberof oj.Message
  * @instance
- * @type {string}
- * @default <code class="prettyprint">oj.Message.SEVERITY_TYPE.ERROR</code>
+ * @type {string|number}
+ * @default oj.Message.SEVERITY_TYPE.ERROR
  */
 
 /**
@@ -141,6 +142,7 @@ oj.Object.createSubclass(oj.Message, oj.Object, "oj.Message");
  * oj.Message.SEVERITY_LEVEL for number types and oj.Message.SEVERITY_TYPE for string types.
  *                   
  * @export
+ * @ignore
  */
 oj.Message.prototype.Init = function(summary, detail, severity) 
 {
@@ -211,8 +213,10 @@ oj.Message.prototype.clone = function ()
  * A convenience method that returns the severity level when given either a severity level of type 
  * number or a severity type of string. 
  * If severity level is not provided or is not valid this returns a severity error.
- * @param {string|number|undefined} severity 
+ * @param {(string|number|undefined)=} severity 
  * @return {number}
+ * @memberof oj.Message
+ * @public
  * @export
  */
 oj.Message.getSeverityLevel = function (severity)
@@ -246,8 +250,10 @@ oj.Message.getSeverityLevel = function (severity)
  * A convenience method that returns the severity type when given either a severity level of type 
  * number or a severity type of string. 
  * If severity level is not provided or is not valid this return a severity error.
- * @param {string|number|undefined} level 
+ * @param {(string|number|undefined)=} level 
  * @return {string}
+ * @memberof oj.Message
+ * @public
  * @export
  */
 oj.Message.getSeverityType = function (level) 
@@ -283,10 +289,12 @@ oj.Message.getSeverityType = function (level)
 /**
  * Returns the max severity level in a array of message objects. 
  * 
- * @param {Array} messages an array of message instances
+ * @param {Array.<oj.Message>=} messages an array of message instances or duck typed messages
  * @returns {number} -1 if none can be determined; otherwise a severity level as defined by 
  * oj.Message.SEVERITY_LEVEL.
  * @export
+ * @memberof oj.Message
+ * @public
  */
 oj.Message.getMaxSeverity = function (messages)
 {
@@ -310,9 +318,11 @@ oj.Message.getMaxSeverity = function (messages)
 /**
  * Returns false if messages are of severity error or greater.
  * 
- * @param {Array} messages an array of message instances
+ * @param {Array.<oj.Message>} messages an array of message instances or duck-typed messages
  * @returns {boolean} true if none of the messages are of severity error or greater. false otherwise
  * @export
+ * @memberof oj.Message
+ * @public
  */
 oj.Message.isValid = function (messages)
 {

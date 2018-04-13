@@ -1,4 +1,5 @@
 /**
+ * @license
  * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
@@ -37,7 +38,7 @@ var _originalTitle;
 /**
  * Hold the url adapter to be used.
  * @private
- * @type {Object}
+ * @type {oj.Router.urlPathAdapter|oj.Router.urlParamAdapter}
  */
 var _urlAdapter;
 
@@ -189,7 +190,8 @@ function _getSegments(path) {
  * @return {string}
  */
 function _getShortId(id) {
-   return _getSegments(id)[0];
+   var segment = _getSegments(id)[0];
+   return _decodeSlash(segment);
 }
 
 /**
@@ -323,6 +325,7 @@ function _getChildRouter(router, value) {
 
 /**
  * Only keep changes where the value doesn't match the current router state
+ * @private
  * @param {!Array.<_StateChange>} changes
  * @return {!Array.<_StateChange>}
  */
@@ -565,7 +568,11 @@ function _buildTitle(router) {
 /**
  * Dispatch the transitionedToState signal
  * @private
- * @param {{hasChanged:boolean}} param
+ * @param {Object} param
+ * @param {boolean} param.haschanged
+ * @param {oj.Router=} param.router
+ * @param {oj.RouterState=} param.oldState
+ * @param {oj.RouterState=} param.newState
  */
 function dispatchTransitionedToState(param) {
    oj.Router._transitionedToState.dispatch(param);
@@ -577,6 +584,7 @@ function dispatchTransitionedToState(param) {
  * @param {!oj.Router} router
  * @param {string=} value
  * @private
+ * @ojtsignore
  */
 function _StateChange(router, value) {
    this.router = router;
@@ -586,6 +594,7 @@ function _StateChange(router, value) {
 /**
  * Returns the RouterState object for the state id in this change object
  * @return {oj.RouterState} the RouterState matching the value
+ * @private
  */
 _StateChange.prototype.getState = function () {
    if (!this.state) {
@@ -600,6 +609,7 @@ _StateChange.prototype.getState = function () {
 /**
  * Store a state parameter value by appending it to the value as a path
  * @param {string=} value
+ * @private
  */
 _StateChange.prototype.addParameter = function (value) {
    if (value) {
@@ -947,7 +957,7 @@ function _update(change, origin) {
 
             var segments = _getSegments(change.value);
             newState._paramOrder.forEach(function(name, i) {
-               var newValue = segments[i+1];
+               var newValue = _decodeSlash(segments[i+1]);
                var oldValue = newState._parameters[name];
 
                // Update the parameter value
@@ -983,7 +993,10 @@ function _updateAll(updateObj) {
       oj.Router._updating = true;
    });
 
-   updateObj.allChanges.forEach(function(change) {
+   var oldState;
+   var allChanges = updateObj.allChanges;
+   allChanges.forEach(function(change) {
+      oldState = change.router['currentState'].peek();
       sequence = sequence.then(function() {
          if (!isTransitionCancelled()) {
             return _update(change, updateObj.origin);
@@ -992,10 +1005,27 @@ function _updateAll(updateObj) {
    });
 
    return sequence.then(function() {
-      var hasChanged = (updateObj.allChanges.length > 0) && (!isTransitionCancelled());
+      var hasChanged = false;
+      var router;
+      var newState;
+      if (allChanges.length) {
+        hasChanged = !isTransitionCancelled();
+        /*
+         * Pass the last state of a multi-state transition as the new state to
+         * which we're transitioning.
+         */
+        var change = allChanges[allChanges.length-1];
+        router = change.router;
+        newState = change.state;
+      }
       oj.Router._updating = false;
       oj.Logger.info('_updateAll returns %s.', String(hasChanged));
-      return { 'hasChanged': hasChanged };
+      return {
+        'hasChanged': hasChanged,
+        'router': router,
+        'oldState': oldState,
+        'newState': newState
+      };
    }, function(error) {
       oj.Router._updating = false;
       return Promise.reject(error);
@@ -1024,6 +1054,20 @@ function parseAndUpdate(origin) {
    return _canEnter(allChanges, origin).then(_updateAll);
 }
 
+/**
+ * Log the action and transaction as Logger.info.
+ * @param       {string} action     The action performed
+ * @param       {Object} transition The router transition.  The transition object
+ * contains the following properties:
+ * - {string} path The path to where the transition is occurring
+ * - {string} origin The origin of the transition.  Will be one of, "sync", "go",
+ *   "popState"
+ * - {oj.Router} router The instance of the router performing the transition
+ * - {string} historyUpdate A string indicating how the router should update the
+ *   browser history.  Possible values are, "skip" or "replace"
+ *   updated
+ * @private
+ */
 function _logTransition(action, transition) {
    if (oj.Logger.option('level') === oj.Logger.LEVEL_INFO) {
       var path = transition.path ? 'path=' + transition.path : '';
@@ -1224,7 +1268,9 @@ function _queueTransition(transition) {
  * @see oj.Router.rootInstance
  * @see oj.Router#createChildRouter
  * @constructor
+ * @hideconstructor
  * @export
+ * @ojtsimport knockout
  */
 oj.Router = function(key, parentRouter, parentState) {
    var router = this;
@@ -1361,7 +1407,7 @@ oj.Router = function(key, parentRouter, parentState) {
     * The state value property is the part of the state object that will be used in the application.
     * It is a shortcut for <code class="prettyprint">router.currentState().value;</code>
     * @name oj.Router#currentValue
-    * @type {function()}
+    * @type {function():(string|undefined)}
     * @readonly
     *
     * @example <caption>Display the content of the current state:</caption>
@@ -1378,9 +1424,15 @@ oj.Router = function(key, parentRouter, parentState) {
       });
 
    /**
-    * Used for the moduleNavigation that take direction
-    * @private
+    * The current navigation direction of the router, used for module animations.
+    * The value will either be undefined if navigating forward, or "back" if
+    * navigating backwards.
+    * This is the same value available as part of {@link oj.Router#moduleConfig|moduleConfig}.
+    * @name oj.Router#direction
     * @type {string|undefined}
+    * @readonly
+    * @since 5.0.0
+    * @ojstatus preview
     */
    this._navigationType = undefined;
 
@@ -1464,7 +1516,15 @@ oj.Router = function(key, parentRouter, parentState) {
     * It is recommended to use $.extend as described in the third example below.
     *
     * @name oj.Router#moduleConfig
+    * @type {Object}
     * @readonly
+    * @property {KnockoutObservable<string>} name
+    * @property {Object} params
+    * @property {Object} params.ojRouter
+    * @property {oj.Router} params.ojRouter.parentRouter
+    * @property {string} params.ojRouter.direction
+    * @property {Object} lifecycleListener
+    * @property {function(string):void} lifecycleListener.attached
     *
     * @example <caption>Configure an ojModule binding with a router</caption>
     * &lt;!-- This is where your main page content will be loaded --&gt;
@@ -1521,7 +1581,6 @@ oj.Router = function(key, parentRouter, parentState) {
          }, router),
          enumerable: true
       },
-
       'params': {
          value: Object.create(null, {
             'ojRouter': {
@@ -1531,7 +1590,6 @@ oj.Router = function(key, parentRouter, parentState) {
          }),
          enumerable: true
       },
-
       'lifecycleListener': {
          value: Object.create(null, {
             'attached': {
@@ -1550,6 +1608,18 @@ oj.Router = function(key, parentRouter, parentState) {
          enumerable: true
       }
    });
+
+    /**
+     * @typedef {object} oj.Router.ModuleConfigType
+     * @property {KnockoutObservable<string>} name The value of the current state.  See {@link oj.Router#currentValue}
+     * @property {Object} params
+     * @property {Object} params.ojRouter
+     * @property {oj.Router} params.ojRouter.parentRouter A reference to the current router
+     * @property {string} params.ojRouter.direction The animation direction of the module, if defined.
+     * @property {Object} params.ojRouter.parameters An object containing the observable parameters of the current router state.
+     * @property {Object} lifecycleListener
+     * @property {function(Object):void} lifecycleListener.attached The 'attached' listener for the module
+     */
 
     /**
      * Similar to {@link oj.Router#moduleConfig}, this object is meant to be used to configure
@@ -1582,11 +1652,12 @@ oj.Router = function(key, parentRouter, parentState) {
         employeeId.subscribe(function(newId) {
         });
      }
-
      * @name oj.Router#observableModuleConfig
-     * @type {Object} The observable module configuration object.
+     * @type {Object}
+     * @since 4.2.0
      * @readonly
      * @ojstatus preview
+     * @ojsignature {target: "Type", value: "KnockoutObservable<oj.Router.ModuleConfigType>", jsdocOverride: true}
      */
     this._getObservableModuleConfig = function() {
         if (!this._observableModuleConfig) {
@@ -1669,19 +1740,19 @@ oj.Router = function(key, parentRouter, parentState) {
         }
     }
 
-   Object.defineProperties(this, {
-      'parent': { value:
-         /**
-          * The parent router if it exits.
-          * Only the 'root' router does not have a parent router.
-          * @name oj.Router#parent
-          * @member
-          * @type {oj.Router|undefined}
-          * @readonly
-          */
-         (this._parentRouter), enumerable: true
-      }
-   });
+    Object.defineProperties(this, {
+       'parent': { value:
+          /**
+           * The parent router if it exits.
+           * Only the 'root' router does not have a parent router.
+           * @name oj.Router#parent
+           * @member
+           * @type {oj.Router|undefined}
+           * @readonly
+           */
+          (this._parentRouter), enumerable: true
+       }
+    });
 
 };
 
@@ -1691,6 +1762,7 @@ Object.defineProperties(oj.Router.prototype, {
    'stateId': { get: function () { return this._stateIdComp; }, enumerable: true },
    'currentState': { get: function () { return this._currentState; }, enumerable: true },
    'currentValue': { get: function () { return this._currentValue; }, enumerable: true },
+   'direction': { get: function () { return this._navigationType; }, enumerable: true },
    'defaultStateId': { get: function () { return this._defaultStateId; },
                        set: function(newValue) { this._defaultStateId = newValue; },
                        enumerable: true },
@@ -1869,7 +1941,7 @@ oj.Router.prototype.stateFromIdCallback = function(stateId) {
  * Configuring {@link oj.RouterState#parameteters router state parameters} should
  * be done here.  See the example below.
  *
- * @param {!(Object.<string, {label: string, value, isDefault: boolean}> |
+ * @param {!(Object.<string, {oj.RouterState.ConfigOptions}> |
  *         function(string): (oj.RouterState | undefined)) } option
  * Either a callback or a dictionary of states.
  * <h6>A callback:</h6>
@@ -1885,7 +1957,8 @@ oj.Router.prototype.stateFromIdCallback = function(stateId) {
  * states are defined on the fly.<br>See second example below.
  * <h6>A dictionary of states:</h6>
  * It is a dictionary in which the keys are state {@link oj.Router#id|id}s and values are objects
- * defining the state.<br>See first example below.
+ * defining the state.  Note that the forward slash character '/' is not allowed
+ * in the state Id.  See {@link oj.RouterState~ConfigOptions|ConfigOptions}.<br>See first example below.
  * <h6>Key</h6>
  * <table class="params">
  *   <thead><tr>
@@ -1900,34 +1973,21 @@ oj.Router.prototype.stateFromIdCallback = function(stateId) {
  *       <td class="description last">the state id.
  *       See the RouterState <a href="oj.RouterState.html#id">id</a> property.</td>
  *    </tr>
+ *    <tr>
+ *      <td class="type">
+ *        <span class="param-type">oj.RouterState.ConfigOptions</span>
+ *      </td>
+ *      <td class="value">
+ *        <span class="param-type">See {@link oj.RouterState~ConfigOptions|ConfigOptions}
+ *        for the options available for configuring router states</span>
+ *      </td>
  *   </tbody>
  * </table>
- * @param {string=} option.label the string for the link. This is also used to compose the title of
- * the page when no title property is defined.
- * See the {@link oj.RouterState#label} property.
- * @param {*=} option.value the object associated with this state.
- * See the {@link oj.RouterState#value} property.
- * @param {boolean=} option.isDefault true if this state is the default.
- * See the Router {@link oj.Router#defaultStateId|defaultStateId} property.
- * @param {(string|function():string)=} option.title the string to be used for the title of the page.
- * See the {@link oj.RouterState#title} property.
- * @param {(function(): boolean|function(): Promise.<boolean>)=} option.canEnter A callback that either
- * returns a boolean or the Promise of a boolean. If the boolean is true the transition will continue.
- * The default value is a method that always returns true.
- * See the {@link oj.RouterState#canEnter} property.
- * @param {(function()|function(): Promise)=} option.enter A callback or the
- * promise of a callback which execute when entering this state.
- * See the {@link oj.RouterState#enter} property.
- * @param {(function(): boolean|function(): Promise.<boolean>)=} option.canExit  A callback that either
- * returns a boolean or the Promise of a boolean. If the boolean is true the transition will continue.
- * The default value is a method that always returns true.
- * See the {@link oj.RouterState#canExit} property.
- * @param {(function()|function(): Promise)=} option.exit A callback or the
- * promise of a callback which execute when exiting this state.
- * See the {@link oj.RouterState#exit} property.
- * @return {!oj.Router} the oj.Router object this method was called on.
  * @export
  * @see oj.RouterState
+ * @ojsignature { target:'Type',
+ *              value: '{[key:string]: oj.RouterState.ConfigOptions}|((id:string)=> oj.RouterState)',
+ *              for: 'option'}
  * @example <caption>Add three states with id 'home', 'book' and 'tables':</caption>
  * router.configure({
  *    'home':   { label: 'Home',   value: 'homeContent', isDefault: true },
@@ -2022,6 +2082,39 @@ function _initialize() {
 }
 
 /**
+ * Convert forward slash characters used for paths to a character which doesn't
+ * require URL encoding (to save space in the URL) and is unambiguous from the
+ * path separator.
+ * @param       {string} value The string whose slash characters are to be encoded.
+ * @return      {string}      An encoded form of the string
+ * @private
+ */
+function _encodeSlash(value) {
+  var enc = value;
+  if (enc && enc.replace) {
+    enc = enc.replace(/~/g, '~0');
+    enc = enc.replace(/\//g, '~1');
+  }
+  return enc;
+}
+
+/**
+ * Given an encoded string from _encodeSlash, decode the characters to restore
+ * the value to its original form.
+ * @param       {string} value The string whose encoded slash values will be decoded.
+ * @return      {string}      The decoded form of the string
+ * @private
+ */
+function _decodeSlash(value) {
+  var dec = value;
+  if (dec && dec.replace) {
+    dec = dec.replace(/~1/g, '/');
+    dec = dec.replace(/~0/g, '~');
+  }
+  return dec;
+}
+
+/**
  * Go is used to transition to a new state using a path made of state ids separated by a slash.  The
  * path can be absolute or relative.<br>
  * <br>
@@ -2034,14 +2127,20 @@ function _initialize() {
  *    'chapt2'</li>
  *   <li><code class="prettyprint">router.go('chapt2/edit')</code>: transition
  *   router to state id 'chapt2' and child router to state id 'edit'</li>
+ *   <li><code class="prettyprint">router.go(['chapt2','edit'])</code>: equivalent
+ *   to the previous transition, but using an array of path strings in place of
+ *   forward slashes.
  * </ul>
  * <br>
  * If the stateIdPath argument is <code class="prettyprint">undefined</code> or an empty string, go
  * transition to the default state of the router.<br>
  * A {@link oj.Router.transitionedToState|transitionedToState} signal is
  * dispatched when the state transition has completed.
- * @param {string=} stateIdPath A path of ids representing the state to
- * transition to.
+ * @param {(string|Array.<string>)=} stateIdPath A path of ids representing the state to
+ * which to transition, separated by forward slashes (/).  This can also be an Array
+ * of strings, each segment representing individual states.  An array is typically used
+ * if the forward slash should be part of the state Id and needs to be distinguished
+ * from the path separators.
  * @param {Object=} options - an object with additional information on how to execute the transition.
  * @param {string} options.historyUpdate Specify how the transition should act on the browser
  * history. If this property is not specified, a new URL is added to the history.<br>
@@ -2086,14 +2185,15 @@ function _initialize() {
  * );
  * @example <caption>Transition a router to state id 'stepB' without updating the URL:</caption>
  * wizardRouter.go('stepB', { historyUpdate: 'skip' });
- *
- * @example <caption>Configuring
- * router.go(''
  */
 oj.Router.prototype.go = function(stateIdPath, options) {
    _initialize();
 
    options = options || [];
+
+   if (Array.isArray(stateIdPath)) {
+     stateIdPath = stateIdPath.map(_encodeSlash).join('/');
+   }
 
    return _queueTransition({ router: this, path: stateIdPath, origin: 'go',
                              historyUpdate: options['historyUpdate'] });
@@ -2204,6 +2304,7 @@ oj.Router.prototype._go = function(transition) {
  * so it can be bookmarked. When calling this method, the URL is immediately modified.
  * @param {!Object} data the data to store with this state.
  * @throws An error if the bookmarkable state is too big.
+ * @return {undefined}
  * @export
  * @example <caption>Store a color in the URL:</caption>
  * try {
@@ -2279,6 +2380,7 @@ oj.Router.prototype.retrieve = function() {
  * When this method is invoked on the {@link oj.Router.rootInstance|rootInstance}, it
  * also remove internal event listeners and re-initialize the
  * {@link oj.Router.defaults|defaults}.
+ * @return {undefined}
  * @export
  */
 oj.Router.prototype.dispose = function() {
@@ -2337,45 +2439,48 @@ oj.Router._transitionedToState = new signals.Signal();
 oj.Router._updating = false;
 
 Object.defineProperties(oj.Router, {
-   'rootInstance': { value:
-      /**
-       * The static instance of {@link oj.Router} representing the unique root router.
-       * This instance is created at the time the module is loaded.<br>
-       * All other routers will be children of this object.<br>
-       * The name of this router is 'root'. To change this name use the
-       * {@link oj.Router.defaults|rootInstanceName} property.
-       * @name oj.Router.rootInstance
-       * @type oj.Router
-       * @readonly
-       * @example <caption>Retrieve the root router and configure it:</caption>
-       * var router = oj.Router.rootInstance;
-       * router.configure({
-       *    'home':   { label: 'Home',   value: 'homeContent', isDefault: true },
-       *    'book':   { label: 'Book',   value: 'bookContent' },
-       *    'tables': { label: 'Tables', value: 'tablesContent' }
-       * });
-       */
-      rootRouter, enumerable: true
-   },
-   'transitionedToState': { value:
-      /**
-       * A {@link http://millermedeiros.github.io/js-signals/|signal} dispatched when the state transition
-       * has completed either by successfully changing the state or cancelling.<br>
-       * The parameter of the event handler is a boolean true when the state has changed.<br>
-       * This is usefull when some post processing is needed or to test the result after a state change.
-       * @name oj.Router.transitionedToState
-       * @readonly
-       * @example <caption>Creates promise that resolve when the state transition is complete.</caption>
-       * var promise = new Promise(function(resolve, reject) {
-       *       oj.Router.transitionedToState.add(function(result) {
-       *          if (result.hasChanged) {
-       *             oj.Logger.info('The state has changed');
-       *          }
-       *          resolve();
-       *       });
-       */
-      oj.Router._transitionedToState, enumerable: true
-   }
+  'rootInstance': {
+    /**
+     * The static instance of {@link oj.Router} representing the unique root router.
+     * This instance is created at the time the module is loaded.<br>
+     * All other routers will be children of this object.<br>
+     * The name of this router is 'root'. To change this name use the
+     * {@link oj.Router.defaults|rootInstanceName} property.
+     * @name oj.Router.rootInstance
+     * @type oj.Router
+     * @readonly
+     * @example <caption>Retrieve the root router and configure it:</caption>
+     * var router = oj.Router.rootInstance;
+     * router.configure({
+     *    'home':   { label: 'Home',   value: 'homeContent', isDefault: true },
+     *    'book':   { label: 'Book',   value: 'bookContent' },
+     *    'tables': { label: 'Tables', value: 'tablesContent' }
+     * });
+     */
+    value: rootRouter,
+    enumerable: true
+  },
+  'transitionedToState': {
+    /**
+     * A {@link http://millermedeiros.github.io/js-signals/|signal} dispatched when the state transition
+     * has completed either by successfully changing the state or cancelling.<br>
+     * The parameter of the event handler is a boolean true when the state has changed.<br>
+     * This is usefull when some post processing is needed or to test the result after a state change.
+     * @name oj.Router.transitionedToState
+     * @type {Object}
+     * @readonly
+     * @example <caption>Creates promise that resolve when the state transition is complete.</caption>
+     * var promise = new Promise(function(resolve, reject) {
+     *       oj.Router.transitionedToState.add(function(result) {
+     *          if (result.hasChanged) {
+     *             oj.Logger.info('The state has changed');
+     *          }
+     *          resolve();
+     *       });
+     */
+    value: oj.Router._transitionedToState,
+    enumerable: true
+  }
 });
 
 /**
@@ -2383,16 +2488,16 @@ Object.defineProperties(oj.Router, {
  * <h6>Warning: </h6>Defaults can not be changed after the first call to {@link oj.Router.sync|sync()}
  * has been made. To re-initialize the router, you need to call {@link oj.Router#dispose|dispose()} on
  * the {@link oj.Router.rootInstance|rootInstance} first then change the defaults.
- * @property {Object} urlAdapter an instance of the url adapter to use. If not specified, the router
+ * @property {oj.Router.urlPathAdapter|oj.Router.urlParamAdapter} [urlAdapter] an instance of the url adapter to use. If not specified, the router
  * will be using the path url adapter. Possible values are an instance of
  * {@link oj.Router.urlPathAdapter} or {@link oj.Router.urlParamAdapter}.
- * @property {string} baseUrl the base URL to be used for relative URL addresses. The value can be
+ * @property {string} [baseUrl] the base URL to be used for relative URL addresses. The value can be
  * absolute or relative.  If not specified, the default value is '/'.<br>
  * <b>Warning</b>: When using the {@link oj.Router.urlPathAdapter|path URL adapter} it is necessary
  * to set the base URL if your application is not using <code class="prettyprint">index.html</code>
  * or is not starting at the root folder. Using the base URL is the only way the router can retrieve
  * the part of the URL representing the state.<br>
- * @property {string} rootInstanceName the name used for the root router. If not defined,
+ * @property {string} [rootInstanceName] the name used for the root router. If not defined,
  * the name is 'root'. This is used by the {@link oj.Router.urlParamAdapter|urlParamAdapter} to build
  * the URL in the form of <code class="prettyprint">/index.html?root=book</code>.
  * @export
@@ -2564,7 +2669,16 @@ oj.Router.sync = function() {
  * @since 1.1.0
  * @classdesc Url adapter used by the {@link oj.Router} to manage URL in the form of
  * <code class="prettyprint">/book/chapter2</code>.<br>The UrlPathAdapter is the default
- * adapter used by the {@link oj.Router|router}. There are two available URL adapters,
+ * adapter used by the {@link oj.Router|router} as it makes more human-readable URLs,
+ * is user-friendly, and less likely to exceed the maximum charaacter limit in the
+ * browser URL.
+ * <br>Since this adapter generates path URLs, it's advisable that your application
+ * be able to restore the page should the user bookmark or reload the page.  For
+ * instance, given the URL <code class="prettyprint">/book/chapter2</code>, your
+ * application server ought to serve up content for "chapter2" if the user should
+ * bookmark or reload the page.  If that's not possible, then consider using the
+ * {@link oj.Router.urlParamAdapter|urlParamAdapter}.
+ * <br>There are two available URL adapters,
  * this one and the {@link oj.Router.urlParamAdapter|urlParamAdapter}.<br>To change
  * the URL adapter, use the {@link oj.Router.defaults|urlAdapter} property.
  * @see oj.Router.urlParamAdapter
@@ -2618,7 +2732,7 @@ oj.Router.urlPathAdapter = function () {
           // To retrieve the portion of the path representing the routers state,
           // remove the base portion of the path.
           path =  _location.pathname.replace(_basePath, ''),
-          segments = _getSegments(decodeURIComponent(path)),
+          segments = _getSegments(decodeURIComponent(path)).map(_decodeSlash),
           changes = [],
           stateStr, value,
           state,
@@ -2695,7 +2809,15 @@ oj.Router.urlPathAdapter = function () {
  * @class
  * @since 1.1.0
  * @classdesc Url adapter used by the {@link oj.Router} to manage URL in the form of
- * <code class="prettyprint">/index.html?root=book&book=chapter2</code>.<br>There are two available
+ * <code class="prettyprint">/index.html?root=book&book=chapter2</code>.  This adapter
+ * can be used if the {@link oj.Router.urlPathAdapter|urlPathAdapter} doesn't meet
+ * the application's needs.
+ * <br>This adapter is well-suited for single-page applications whose entry point
+ * is always a single document, i.e., "index.html" which restores its router state
+ * from additional parameters.  The router state is encoded as URL parameters and
+ * then restored after the page is loaded.  This is ideal for applications which
+ * cannot handle multiple entry points, as recommended by {@link oj.Router.urlPathAdapter|urlPathAdapter}.
+ * <br>There are two available
  * URL adapters, this one and the {@link oj.Router.urlPathAdapter|urlPathAdapter}.<br>To change
  * the URL adapter, use the {@link oj.Router.defaults|urlAdapter} property.
  * @see oj.Router.urlPathAdapter
@@ -2814,356 +2936,6 @@ return rootRouter;
 
 }());
 
-/**
- * Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
- */
-
-/*jslint browser: true*/
-/*global oj, Promise */
-
-/**
- * The RouterState module.
- */
-
-// Wrap in a IIFE to prevents the possiblity of collision in a non-AMD scenario.
-(function() {
-"use strict";
-   /**
-    * @class
-    * @since 1.1.0
-    * @classdesc
-    * Object representing a state of the router.
-    * @desc
-    * It is the type of the {@link oj.Router#currentState|currentState} property and type of
-    * the value returned by {@link oj.Router#getState|getState(String)}.
-    * @param {!string} id the state id.
-    * See the {@link oj.RouterState#id} property.
-    * @param {!Object=} options an object defining the state.
-    * @param {string=} options.label the string to be displayed in the command component.
-    * See the {@link oj.RouterState#label} property.
-    * @param {*=} options.value the object associated with this state.
-    * See the {@link oj.RouterState#value} property.
-    * @param {boolean=} options.isDefault true if this state is the default.
-    * See the {@link oj.Router#defaultStateId|defaultStateId} property.
-    * @param {(function(): boolean|function(): Promise.<boolean>)=} options.canEnter A callback that
-    * either returns a boolean or the Promise of a boolean. If the boolean is true the transition
-    * will continue.
-    * The default value is a method that always returns true.
-    * See the {@link oj.RouterState#canEnter} property.
-    * @param {(function()|function(): Promise)=} options.enter A callback or
-    * the promise of a callback which execute when entering this state.
-    * See the {@link oj.RouterState#enter} property.
-    * @param {(function(): boolean|function(): Promise.<boolean>)=} options.canExit  A callback that
-    * either returns a boolean or the Promise of a boolean. If the boolean is true the transition
-    * will continue.
-    * The default value is a method that always returns true.
-    * See the {@link oj.RouterState#canExit} property.
-    * @param {(function()|function(): Promise)=} options.exit A callback or
-    * the promise of a callback which execute when exiting this state.
-    * See the {@link oj.RouterState#canExit} property.
-    * @param {oj.Router=} router The router this state belongs to. If undefined, the method
-    * {@link oj.RouterState#go|go} and {@link oj.RouterState#isCurrent|isCurrent} will not work.
-    * @param {Array | undefined} options.parameters Array of state parameter.
-    * @constructor
-    * @export
-    */
-   oj.RouterState = function (id, options, router) {
-      options = options || {};
-      oj.Assert.assertString(id);
-      id = id.trim();
-
-      // The id is in the form /aaa/{p1}/{p2}
-      var path = id.split('/');
-
-      // Encode the id since it will be part of the URL
-      // We cannot have duplicate because the format of the object parameter
-      // doesn't allow it.
-      this._id = encodeURIComponent(path[0]);
-      path.shift();
-
-      /**
-       * Router parameters allow passing of name/value pairs easily from one state
-       * to another.
-       *
-       * Configure the router with the parameter names embedded in
-       * the key of the router state, enclosed by curly-braces.  The parameter
-       * keys will be used to retrieve their values.
-       * @name oj.RouterState#parameters
-       * @example
-       * <caption>Configure router with a parameterized state</caption>
-       * oj.Router.rootInstance.configure({
-       *    'list': { label: 'List' },
-       *    'detail/{empId}/{edit}'
-       * });
-       * @description Parameter values are passed in the URL, and are position-
-       * dependent.
-       * @example
-       * <caption>Parameter values are passed in the URL, and are position-
-       * dependent.</caption>
-       * /app/detail/e100/true
-       * @description The newly-activated state is passed the 'parameters' Object
-       * alongside the {@link oj.Router#instance} property to the View Model of
-       * the state (if {@link oj.Router#moduleConfig} is used).
-       * To reference the values, use the key name by which the router states
-       * were configured.
-       * @example
-       * <caption>Retrieve parameter values from router</caption>
-       * function ViewModel(config) {
-       *    var router = config['ojRouter']['instance'];
-       *    var params = config['ojRouter']['parameters'];
-       *    var empId = params['empId'];
-       *    var edit = params['edit'];
-       * }
-       * @type {Object}
-       * @ojstatus preview
-       */
-      this._parameters = {};
-
-      /**
-       * Internal array to track the order of configured param names.
-       * @type {Array}
-       * @private
-       */
-      this._paramOrder = new Array(path.length);
-
-      path.forEach(function(token, i) {
-         /*
-          * Match pattern "{token}"
-          */
-         var match = token.match(/^{(\w+)}$/);
-         if (match) {
-            token = match[1];
-            this._parameters[token] = null;
-            this._paramOrder[i] = token;
-         }
-      }.bind(this));
-
-      /**
-       * A callback that either returns a boolean or the Promise of a boolean.
-       * When defined, this callback is executed before entering this state. If the boolean
-       * is true the transition will continue, otherwise the state is not entered and the
-       * current state of the router does not change.
-       * The default value is a method that always returns true.
-       * @name oj.RouterState#canEnter
-       * @type {function():boolean|function():Promise.<boolean>}
-       */
-      this._canEnter = options['canEnter'];
-      if (this._canEnter) {
-         oj.Assert.assertFunctionOrNull(this._canEnter);
-      }
-
-      /**
-       * A callback or the promise of a callback which execute when entering this
-       * state.
-       * This callback executes after the router stateId changes.
-       * @name oj.RouterState#enter
-       * @type {function()|function():Promise}
-       */
-      this._enter = options['enter'];
-      if (this._enter) {
-         oj.Assert.assertFunctionOrNull(this._enter);
-      }
-
-      /**
-       * A callback that either returns a boolean or the Promise of a boolean.
-       * When defined, this callback is executed before exiting this state. If the boolean
-       * is true the transition will continue, otherwise the state is not exited and the
-       * current state of the router does not change.
-       * The default value is a method that always returns true.
-       * @name oj.RouterState#canExit
-       * @type {function():boolean|function():Promise.<boolean>}
-       */
-      this._canExit = options['canExit'];
-      if (this._canExit) {
-         oj.Assert.assertFunctionOrNull(this._canExit);
-      }
-
-      /**
-       * A callback or the promise of a callback which execute when exiting this
-       * state.
-       * This callback executes before the router stateId changes.
-       * @name oj.RouterState#exit
-       * @type {function()|function():Promise}
-       */
-      this._exit = options['exit'];
-      if (this._exit ) {
-         oj.Assert.assertFunctionOrNull(this._exit );
-      }
-      /**
-       * The value associated with this state. When this state is the current state of the
-       * router, it is the value returned by the observable {@link oj.Router#currentValue}.
-       * @name oj.RouterState#value
-       * @type {*}
-       */
-      this._value = options['value'];
-
-      /**
-       * The string to be used for the navigation component that will transition to this state.
-       * This is also used to build the title of the page when the {@link oj.RouterState#title}
-       * property is not defined. The title will be composed of the labels of all current
-       * states in the router hierarchy like "My Page | label lvl1 | label lvl2".
-       * @name oj.RouterState#label
-       * @type {string|undefined}
-       * @example <caption>Use the label property for the text of anchor tags in a list:</caption>
-       * &lt;ul id="foreachMenu" data-bind="foreach: router.states">
-       *   &lt;li>
-       *     &lt;a data-bind="text: label, css: {'active': isCurrent()},
-       *                   attr: {id: id}, click: go"> &lt;/a>
-       *   &lt;/li>
-       * &lt;/ul>
-       */
-      this._label = options['label'];
-
-      /**
-       * The string to be used for the page title. This can either be a string or a function
-       * returning a string. When more than one level of child router is defined, the title of
-       * the current state of the router nested the deepest has precedence. If the leaf router
-       * current state does not have a title property defined, the title of the current state of
-       * the parent router is used. If no title property is defined in the router hierarchy, a
-       * title is built using the {@link oj.RouterState#label} property.
-       * @name oj.RouterState#title
-       * @type {string|function():string|undefined}
-       */
-      this._title = options['title'];
-
-      /**
-       * @private
-       * @type {oj.Router|undefined}
-       *
-       */
-      this._router = router;
-
-      /**
-       * This property is used when the router states are ojModule names.
-       * When the router transition to this state, it will attempt to execute the callbacks canExit, canEnter,
-       * enter and exit on the viewModel object first. If the callback is not defined on the viewModel, the
-       * router will attempt to execute the callback on the {@link oj.RouterState|RouterState}.
-       * @private
-       * @type {Object|undefined}
-       */
-      this.viewModel = undefined;
-
-      Object.defineProperties(this, {
-         'id': { value:
-            /**
-             * The id of this state.<br>
-             * It uniquely identify a state object in a router. The id property can be used as the
-             * attribute id of a navigation component like link or button.
-             * @name oj.RouterState#id
-             * @readonly
-             * @type {!string}
-             * @example <caption>Use the state id property for the attribute id of anchor tags in a list:</caption>
-             * &lt;ul id="foreachMenu" data-bind="foreach: router.states">
-             *   &lt;li>
-             *     &lt;a data-bind="text: label, css: {'active': isCurrent()},
-             *                   attr: {id: id}, click: go"> &lt;/a>
-             *   &lt;/li>
-             * &lt;/ul>
-             */
-            (this._id), enumerable: true
-         },
-         'value': {
-            get: function () { return this._value; },
-            set: function(newValue) { this._value = newValue; },
-            enumerable: true
-         },
-         'label': {
-            get: function () { return this._label; },
-            set: function(newValue) { this._label = newValue; },
-            enumerable: true
-         },
-         'title': {
-            get: function () { return this._title; },
-            set: function(newValue) { this._title = newValue; },
-            enumerable: true
-         },
-         'canEnter': {
-            get: function () { return this._canEnter; },
-            set: function(newValue) { this._canEnter = newValue; },
-            enumerable: true
-         },
-         'enter': {
-            get: function () { return this._enter; },
-            set: function(newValue) { this._enter = newValue; },
-            enumerable: true
-         },
-         'canExit': {
-            get: function () { return this._canExit; },
-            set: function(newValue) { this._canExit = newValue; },
-            enumerable: true
-         },
-         'exit': {
-            get: function () { return this._exit; },
-            set: function(newValue) { this._exit = newValue; },
-            enumerable: true
-         },
-         'parameters': {
-            get: function () { return this._parameters; },
-            enumerable: true
-         }
-      });
-   };
-
-   /**
-    * Transition the router to this state.
-    * This is a convenience method used as the event handler for a Knockout click binding on
-    * a button or <code class="prettyprint">a</code> tag.<br>
-    * A {@link oj.Router.transitionedToState|transitionedToState} signal is dispatched when the
-    * state transition has completed.
-    * @return {!Promise.<{hasChanged: boolean}>} A Promise that resolves when the
-    * router is done with the state transition.<br>
-    * When the promise is fullfilled, the parameter value is an object with the property
-    * <code class="prettyprint">hasChanged</code>.<br>
-    * The value of <code class="prettyprint">hasChanged</code> is:
-    * <ul>
-    *   <li>true: If the router state changed.</li>
-    * </ul>
-    * When the Promise is rejected, the parameter value is:
-    * <ul>
-    *   <li>An Error object stipulating the reason for the rejection when an error
-    * occurred during the resolution.</li>
-    * </ul>
-    * @export
-    * @example <caption>Use the go function as the handler for a click binding:</caption>
-    * &lt;ul id="foreachMenu" data-bind="foreach: router.states">
-    *   &lt;li>
-    *     &lt;a data-bind="text: label, css: {'active': isCurrent()},
-    *                   attr: {id: id}, click: go"> &lt;/a>
-    *   &lt;/li>
-    * &lt;/ul>
-    */
-   oj.RouterState.prototype.go = function() {
-      if (!this._router) {
-         oj.Router._transitionedToState.dispatch({ 'hasChanged': false });
-         return Promise.reject(new Error('Router is not defined for this RouterState object.'));
-      }
-      return this._router.go(this._id);
-   };
-
-   /**
-    * Determine if the router current state is this state.
-    * This method is typically used by elements in the markup to show the appropriate selection value.
-    * @return {boolean} true if this state is the current router state.
-    * @throws An error if an owning router was not specified when the state was
-    * created.
-    * @export
-    * @example <caption>Use the is function to change the css of the state links:</caption>
-    * &lt;ul id="foreachMenu" data-bind="foreach: router.states">
-    *   &lt;li>
-    *     &lt;a data-bind="text: label, css: {'active': isCurrent()},
-    *                   attr: {id: id}, click: go"> &lt;/a>
-    *   &lt;/li>
-    * &lt;/ul>
-    */
-   oj.RouterState.prototype.isCurrent = function() {
-      if (!this._router) {
-         throw new Error('Router is not defined for this RouterState object.');
-      }
-      return this._router._stateId() === this._id;
-   };
-
-}());
 /**
  * Utility to compress JSON to store on the URL.
  */
@@ -3626,4 +3398,397 @@ function _decompress(length, resetValue, getNextValue) {
 }
 
 })();
+/**
+ * Copyright (c) 2014, Oracle and/or its affiliates.
+ * All rights reserved.
+ */
+
+/*jslint browser: true*/
+/*global oj, Promise */
+
+/**
+ * The RouterState module.
+ */
+
+// Wrap in a IIFE to prevents the possiblity of collision in a non-AMD scenario.
+(function() {
+"use strict";
+
+var stateParamExp = /^{(\w+)}$/;
+  /**
+   * @typedef {object} oj.RouterState.ConfigOptions
+   * @property {string=} label the string to be displayed in the command component.
+   * See the {@link oj.RouterState#label} property.
+   * @property {*=} value the object associated with this state.
+   * See the {@link oj.RouterState#value} property.
+   * @property {boolean=} isDefault true if this state is the default.
+   * See the {@link oj.Router#defaultStateId|defaultStateId} property.
+   * @property {(function(): boolean|function(): Promise.<boolean>)=} canEnter A callback that
+   * either returns a boolean or the Promise of a boolean. If the boolean is true the transition
+   * will continue.
+   * The default value is a method that always returns true.
+   * See the {@link oj.RouterState#canEnter} property.
+   * @property {(function():void|function(): Promise.<void>)=} enter A callback or
+   * the promise of a callback which execute when entering this state.
+   * See the {@link oj.RouterState#enter} property.
+   * @property {(function(): boolean|function(): Promise.<boolean>)=} canExit  A callback that
+   * either returns a boolean or the Promise of a boolean. If the boolean is true the transition
+   * will continue.
+   * The default value is a method that always returns true.
+   * See the {@link oj.RouterState#canExit} property.
+   * @property {(function():void|function(): Promise.<void>)=} exit A callback or
+   * the promise of a callback which execute when exiting this state.
+   * See the {@link oj.RouterState#canExit} property.
+   */
+
+   /**
+    * @class
+    * @since 1.1.0
+    * @classdesc
+    * Object representing a state of the router.
+    * @desc
+    * It is the type of the {@link oj.Router#currentState|currentState} property and type of
+    * the value returned by {@link oj.Router#getState|getState(String)}.
+    * @param {!string} id the state id.
+    * See the {@link oj.RouterState#id} property.
+    * @param {!Object=} options an object defining the state.
+    * @param {string=} options.label the string to be displayed in the command component.
+    * See the {@link oj.RouterState#label} property.
+    * @param {*=} options.value the object associated with this state.
+    * See the {@link oj.RouterState#value} property.
+    * @param {boolean=} options.isDefault true if this state is the default.
+    * See the {@link oj.Router#defaultStateId|defaultStateId} property.
+    * @param {(function(): boolean|function(): Promise.<boolean>)=} options.canEnter A callback that
+    * either returns a boolean or the Promise of a boolean. If the boolean is true the transition
+    * will continue.
+    * The default value is a method that always returns true.
+    * See the {@link oj.RouterState#canEnter} property.
+    * @param {(function():void|function(): Promise.<void>)=} options.enter A callback or
+    * the promise of a callback which execute when entering this state.
+    * See the {@link oj.RouterState#enter} property.
+    * @param {(function(): boolean|function(): Promise.<boolean>)=} options.canExit  A callback that
+    * either returns a boolean or the Promise of a boolean. If the boolean is true the transition
+    * will continue.
+    * The default value is a method that always returns true.
+    * See the {@link oj.RouterState#canExit} property.
+    * @param {(function():void|function(): Promise.<void>)=} options.exit A callback or
+    * the promise of a callback which execute when exiting this state.
+    * See the {@link oj.RouterState#canExit} property.
+    * @param {oj.Router=} router The router this state belongs to. If undefined, the method
+    * {@link oj.RouterState#go|go} and {@link oj.RouterState#isCurrent|isCurrent} will not work.
+    * @constructor
+    * @export
+    * @ojsignature {
+    *              target: 'Type',
+    *              for: 'options',
+    *              value: 'oj.RouterState.ConfigOptions',
+    *              jsdocOverride: true }
+    */
+   oj.RouterState = function (id, options, router) {
+      options = options || {};
+      oj.Assert.assertString(id);
+      id = id.trim();
+
+      // The id is in the form /aaa/{p1}/{p2}
+      var path = id.split('/');
+      // We cannot have duplicate because the format of the object parameter
+      // doesn't allow it.
+      this._id = path.shift();
+
+      /**
+       * Router parameters allow passing of name/value pairs easily from one state
+       * to another.
+       *
+       * Configure the router with the parameter names embedded in
+       * the key of the router state, enclosed by curly-braces.  The parameter
+       * keys will be used to retrieve their values.
+       * @name oj.RouterState#parameters
+       * @example
+       * <caption>Configure router with a parameterized state</caption>
+       * oj.Router.rootInstance.configure({
+       *    'list': { label: 'List' },
+       *    'detail/{empId}/{edit}'
+       * });
+       * @description Parameter values are passed in the URL, and are position-
+       * dependent.
+       * @example
+       * <caption>Parameter values are passed in the URL, and are position-
+       * dependent.</caption>
+       * /app/detail/e100/true
+       * @description The newly-activated state is passed the 'parameters' Object
+       * alongside the {@link oj.Router#instance} property to the View Model of
+       * the state (if {@link oj.Router#moduleConfig} is used).
+       * To reference the values, use the key name by which the router states
+       * were configured.
+       * @example
+       * <caption>Retrieve parameter values from router</caption>
+       * function ViewModel(config) {
+       *    var router = config['ojRouter']['instance'];
+       *    var params = config['ojRouter']['parameters'];
+       *    var empId = params['empId'];
+       *    var edit = params['edit'];
+       * }
+       * @type {Object}
+       * @ojstatus preview
+       * @since 4.2.0
+       */
+      this._parameters = {};
+
+      /**
+       * Internal array to track the order of configured param names.
+       * @type {Array}
+       * @private
+       */
+      this._paramOrder = new Array(path.length);
+
+      path.forEach(function(token, i) {
+         /*
+          * Match pattern "{token}"
+          */
+         var match = token.match(stateParamExp);
+         if (match) {
+            token = match[1];
+            this._parameters[token] = null;
+            this._paramOrder[i] = token;
+         }
+      }, this);
+
+      /**
+       * A callback that either returns a boolean or the Promise of a boolean.
+       * When defined, this callback is executed before entering this state. If the boolean
+       * is true the transition will continue, otherwise the state is not entered and the
+       * current state of the router does not change.
+       * <br>This allows the application to veto the transition into the
+       * state if there are known conditions that must be met before the state
+       * should be entered into.
+       * <br>If the operation (to check if the state can be entered) is synchronous,
+       * return a boolean directly; if asynchronous, a Promise of a boolean should
+       * be returned.  The state transition will not occur until either the boolean
+       * returned is true, or the Promise is resolved and returns true.
+       * <br>The default value is a method that always returns true.
+       * @name oj.RouterState#canEnter
+       * @type {(function():boolean|function():Promise.<boolean>)}
+       */
+      this._canEnter = options['canEnter'];
+      if (this._canEnter) {
+         oj.Assert.assertFunctionOrNull(this._canEnter);
+      }
+
+      /**
+       * A callback or the promise of a callback which executes when entering this
+       * state.
+       * This callback executes after the router stateId changes.
+       * @name oj.RouterState#enter
+       * @type {(function():void|function():Promise.<void>)}
+       */
+      this._enter = options['enter'];
+      if (this._enter) {
+         oj.Assert.assertFunctionOrNull(this._enter);
+      }
+
+      /**
+       * A callback that either returns a boolean or the Promise of a boolean.
+       * When defined, this callback is executed before exiting this state. If the boolean
+       * is true the transition will continue, otherwise the state is not exited and the
+       * current state of the router does not change.
+       * <br>This is typically used by states which need to verify user input is
+       * correct before moving on.  Synchronous checks can return a boolean directly,
+       * and asynchronous checks can return a Promise of a boolean.
+       * The state transition will not occur until either the boolean returned is
+       * true, or the Promise returned is resolved and returns true.
+       * <br>The default value is a method that always returns true.
+       * @name oj.RouterState#canExit
+       * @type {(function():boolean|function():Promise.<boolean>)}
+       */
+      this._canExit = options['canExit'];
+      if (this._canExit) {
+         oj.Assert.assertFunctionOrNull(this._canExit);
+      }
+
+      /**
+       * A callback or the promise of a callback which execute when exiting this
+       * state.
+       * This callback executes before the router stateId changes.
+       * @name oj.RouterState#exit
+       * @type {(function():void|function():Promise.<void>)}
+       */
+      this._exit = options['exit'];
+      if (this._exit ) {
+         oj.Assert.assertFunctionOrNull(this._exit );
+      }
+      /**
+       * The value associated with this state. When this state is the current state of the
+       * router, it is the value returned by the observable {@link oj.Router#currentValue}.
+       * @name oj.RouterState#value
+       * @type {*}
+       */
+      this._value = options['value'];
+
+      /**
+       * The string to be used for the navigation component that will transition to this state.
+       * This is also used to build the title of the page when the {@link oj.RouterState#title}
+       * property is not defined. The title will be composed of the labels of all current
+       * states in the router hierarchy like "My Page | label lvl1 | label lvl2".
+       * @name oj.RouterState#label
+       * @type {string|undefined}
+       * @example <caption>Use the label property for the text of anchor tags in a list:</caption>
+       * &lt;ul id="foreachMenu" data-bind="foreach: router.states">
+       *   &lt;li>
+       *     &lt;a data-bind="text: label, css: {'active': isCurrent()},
+       *                   attr: {id: id}, click: go"> &lt;/a>
+       *   &lt;/li>
+       * &lt;/ul>
+       */
+      this._label = options['label'];
+
+      /**
+       * The string to be used for the page title. This can either be a string or a function
+       * returning a string. When more than one level of child router is defined, the title of
+       * the current state of the router nested the deepest has precedence. If the leaf router
+       * current state does not have a title property defined, the title of the current state of
+       * the parent router is used. If no title property is defined in the router hierarchy, a
+       * title is built using the {@link oj.RouterState#label} property.
+       * @name oj.RouterState#title
+       * @type {string|function():string|undefined}
+       */
+      this._title = options['title'];
+
+      /**
+       * @private
+       * @type {oj.Router|undefined}
+       *
+       */
+      this._router = router;
+
+      /**
+       * This property is used when the router states are ojModule names.
+       * When the router transition to this state, it will attempt to execute the callbacks canExit, canEnter,
+       * enter and exit on the viewModel object first. If the callback is not defined on the viewModel, the
+       * router will attempt to execute the callback on the {@link oj.RouterState|RouterState}.
+       * @private
+       * @type {Object|undefined}
+       */
+      this.viewModel = undefined;
+
+      Object.defineProperties(this, {
+         'id': { value:
+            /**
+             * The id of this state.<br>
+             * It uniquely identify a state object in a router. The id property can be used as the
+             * attribute id of a navigation component like link or button.
+             * @name oj.RouterState#id
+             * @readonly
+             * @type {!string}
+             * @example <caption>Use the state id property for the attribute id of anchor tags in a list:</caption>
+             * &lt;ul id="foreachMenu" data-bind="foreach: router.states">
+             *   &lt;li>
+             *     &lt;a data-bind="text: label, css: {'active': isCurrent()},
+             *                   attr: {id: id}, click: go"> &lt;/a>
+             *   &lt;/li>
+             * &lt;/ul>
+             */
+            (this._id), enumerable: true
+         },
+         'value': {
+            get: function () { return this._value; },
+            set: function(newValue) { this._value = newValue; },
+            enumerable: true
+         },
+         'label': {
+            get: function () { return this._label; },
+            set: function(newValue) { this._label = newValue; },
+            enumerable: true
+         },
+         'title': {
+            get: function () { return this._title; },
+            set: function(newValue) { this._title = newValue; },
+            enumerable: true
+         },
+         'canEnter': {
+            get: function () { return this._canEnter; },
+            set: function(newValue) { this._canEnter = newValue; },
+            enumerable: true
+         },
+         'enter': {
+            get: function () { return this._enter; },
+            set: function(newValue) { this._enter = newValue; },
+            enumerable: true
+         },
+         'canExit': {
+            get: function () { return this._canExit; },
+            set: function(newValue) { this._canExit = newValue; },
+            enumerable: true
+         },
+         'exit': {
+            get: function () { return this._exit; },
+            set: function(newValue) { this._exit = newValue; },
+            enumerable: true
+         },
+         'parameters': {
+            get: function () { return this._parameters; },
+            enumerable: true
+         }
+      });
+   };
+
+   /**
+    * Transition the router to this state.
+    * This is a convenience method used as the event handler for a Knockout click binding on
+    * a button or <code class="prettyprint">a</code> tag.<br>
+    * A {@link oj.Router.transitionedToState|transitionedToState} signal is dispatched when the
+    * state transition has completed.
+    * @return {!Promise.<{hasChanged: boolean}>} A Promise that resolves when the
+    * router is done with the state transition.<br>
+    * When the promise is fullfilled, the parameter value is an object with the property
+    * <code class="prettyprint">hasChanged</code>.<br>
+    * The value of <code class="prettyprint">hasChanged</code> is:
+    * <ul>
+    *   <li>true: If the router state changed.</li>
+    * </ul>
+    * When the Promise is rejected, the parameter value is:
+    * <ul>
+    *   <li>An Error object stipulating the reason for the rejection when an error
+    * occurred during the resolution.</li>
+    * </ul>
+    * @export
+    * @example <caption>Use the go function as the handler for a click binding:</caption>
+    * &lt;ul id="foreachMenu" data-bind="foreach: router.states">
+    *   &lt;li>
+    *     &lt;a data-bind="text: label, css: {'active': isCurrent()},
+    *                   attr: {id: id}, click: go"> &lt;/a>
+    *   &lt;/li>
+    * &lt;/ul>
+    */
+   oj.RouterState.prototype.go = function() {
+      if (!this._router) {
+         oj.Router._transitionedToState.dispatch({ 'hasChanged': false });
+         return Promise.reject(new Error('Router is not defined for this RouterState object.'));
+      }
+      return this._router.go(this._id);
+   };
+
+   /**
+    * Determine if the router current state is this state.
+    * This method is typically used by elements in the markup to show the appropriate selection value.
+    * @return {boolean} true if this state is the current router state.
+    * @throws An error if an owning router was not specified when the state was
+    * created.
+    * @export
+    * @example <caption>Use the is function to change the css of the state links:</caption>
+    * &lt;ul id="foreachMenu" data-bind="foreach: router.states">
+    *   &lt;li>
+    *     &lt;a data-bind="text: label, css: {'active': isCurrent()},
+    *                   attr: {id: id}, click: go"> &lt;/a>
+    *   &lt;/li>
+    * &lt;/ul>
+    */
+   oj.RouterState.prototype.isCurrent = function() {
+      if (!this._router) {
+         throw new Error('Router is not defined for this RouterState object.');
+      }
+      return this._router._stateId() === this._id;
+   };
+
+}());
+
 });

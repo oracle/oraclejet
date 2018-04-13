@@ -40,7 +40,7 @@
 
         ul.oj-listview-element:not(.oj-listview-card-layout):last-child,
         ul.oj-listview-element:not(.oj-listview-card-layout) .oj-listview-group:last-child {
-            border-bottom: 4px solid $dataGridCellBgColor;
+            border-bottom: 4px solid $collectionCellBgColor;
         }
 
         /* styling on each list item, don't do it on card layout */
@@ -54,7 +54,7 @@
         .oj-listview.oj-focus-ancestor ul.oj-listview-element:not(.oj-listview-card-layout) .oj-listview-item.oj-focus,
         .oj-listview.oj-focus-ancestor ul.oj-listview-element:not(.oj-listview-card-layout) .oj-listview-item.oj-focus + li.oj-listview-item {
             background-size: 0 0;
-            border-top: 4px solid $dataGridCellBgColor;
+            border-top: 4px solid $collectionCellBgColor;
         }
 
         /* Styling on focused list or group item */
@@ -70,8 +70,8 @@
 
         /* styling for the item that is being moved using drag */
         ul.oj-listview-element:not(.oj-listview-card-layout) .oj-listview-item.oj-drag {
-            border-top: 1px solid $dataGridCellDragImageBorderColor;
-            border-bottom: 1px solid $dataGridCellDragImageBorderColor;
+            border-top: 1px solid $collectionCellDragImageBorderColor;
+            border-bottom: 1px solid $collectionCellDragImageBorderColor;
         }
   }
 }

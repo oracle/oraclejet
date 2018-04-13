@@ -1,901 +1,11 @@
 /**
+ * @license
  * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
 define(['ojs/ojcore', 'promise', 'ojs/ojcustomelement', 'ojs/ojcomposite-knockout'], function(oj)
 {
-/**
- * JET component custom element bridge.
- * 
- * Composite connnected callbacks occur asynchronously so we cannot
- * guarantee that child composite properties can be accessed before the
- * child busy state resolves.
- * 
- * Composite code and applications should always wait on the element or page level 
- * busy context before accessing properties or methods.
- * 
- * @class
- * @ignore
- */
-oj.CompositeElementBridge = {};
-
-/**
- * Prototype for the JET component custom element bridge instance
- */
-oj.CompositeElementBridge.proto = Object.create(oj.BaseCustomElementBridge.proto);
-
-oj.CollectionUtils.copyInto(oj.CompositeElementBridge.proto,
-{
-  AddComponentMethods: function(proto) 
-  {
-    // Add subproperty getter/setter
-    proto['setProperty'] = function(prop, value) { 
-      var event = oj.__AttributeUtils.eventListenerPropertyToEventType(prop);
-      var bridge = oj.BaseCustomElementBridge.getInstance(this);
-      var meta = oj.BaseCustomElementBridge.__GetPropertyMetadata(prop, oj.BaseCustomElementBridge.getProperties(bridge));
-
-      // If event listener or non component specific property, set directly on the element
-      if (event || !meta)
-      {
-        this[prop] = value;
-      }
-      else
-      {
-        var previousValue = this['getProperty'](prop);
-        // This ultimately triggers our element defined property setter
-        bridge.ValidateAndSetProperty(bridge.GetAliasForProperty.bind(bridge), this, prop, value, this);
-
-        // Property change events for top level properties will be triggered by ValidateAndSetProperty so avoid firing twice
-        if (bridge._READY_TO_FIRE && prop.indexOf('.') !== -1)
-          oj.CompositeElementBridge._firePropertyChangeEvent(this, prop, value, previousValue, 'external');
-      }
-    };
-    proto['getProperty'] = function(prop) { 
-      var event = oj.__AttributeUtils.eventListenerPropertyToEventType(prop);
-      var bridge = oj.BaseCustomElementBridge.getInstance(this);
-      var meta = oj.BaseCustomElementBridge.__GetPropertyMetadata(prop, oj.BaseCustomElementBridge.getProperties(bridge));
-
-      // For event listener and non component properties, retrieve the value directly stored on the element.
-      // For top level properties, this will delegate to our 'set' methods so we can handle default values.
-      if (event || !meta || prop.indexOf('.') === -1)
-        return this[prop];
-      else
-        return oj.BaseCustomElementBridge.__GetProperty(this, prop);
-    };
-    proto['_propsProto']['setProperty'] = function(prop, value) { 
-      // Check value against any defined enums
-      var meta = oj.BaseCustomElementBridge.__GetPropertyMetadata(prop, oj.BaseCustomElementBridge.getProperties(this._BRIDGE));
-
-      if (!meta) 
-      {
-        this._ELEMENT[prop] = value;
-      }
-      else
-      {
-        var previousValue = this['getProperty'](prop);
-
-        // Skip validation for inner sets so we don't throw an error when updating readOnly writeable properties
-        oj.BaseCustomElementBridge.__SetProperty(this._BRIDGE.GetAliasForProperty.bind(this._BRIDGE), this, prop, value);
-
-        // Property change events for top level properties will be triggered by ValidateAndSetProperty so avoid firing twice
-        if (prop.indexOf('.') !== -1)
-          oj.CompositeElementBridge._firePropertyChangeEvent(this._ELEMENT, prop, value, previousValue, 'internal');
-      }
-    };
-    proto['_propsProto']['getProperty'] = function(prop) {
-      var meta = oj.BaseCustomElementBridge.__GetPropertyMetadata(prop, oj.BaseCustomElementBridge.getProperties(this._BRIDGE));
-
-      // Use the element/props getters for top level properties to handle default values
-      if (!meta || prop.indexOf('.') === -1)
-        return this[prop];
-      else
-        return oj.BaseCustomElementBridge.__GetProperty(this, prop);
-    };
-    // Always add automation methods, but if the ViewModel defines overrides, wrap the overrides
-    // and pass the default implementation in as the last parameter to the ViewModel's method.
-    proto['getNodeBySubId'] = function(locator) {
-      var bridge = oj.BaseCustomElementBridge.getInstance(this);
-      if (bridge._VIEW_MODEL.getNodeBySubId)
-        return bridge._VIEW_MODEL.getNodeBySubId(locator, bridge._getNodeBySubId.bind(this));
-      else
-        return bridge._getNodeBySubId.bind(this)(locator);
-    };
-    proto['getSubIdByNode'] = function(node) {
-      var bridge = oj.BaseCustomElementBridge.getInstance(this);
-      if (bridge._VIEW_MODEL.getSubIdByNode)
-        return bridge._VIEW_MODEL.getSubIdByNode(node, bridge._getSubIdByNode.bind(this));
-      else
-        return bridge._getSubIdByNode.bind(this)(node);
-    };
-  },
-
-  CreateComponent: function(element) 
-  {
-    if (this._MODEL_PROMISE) 
-    {
-      var bridge = this;
-      this._ACTIVATED_PROMISE = this._MODEL_PROMISE.then(
-        function(model)
-        {
-          return oj.CompositeTemplateRenderer.invokeViewModelMethod(model, 'activatedMethod', [bridge._VM_CONTEXT]);
-        }
-      );
-    }
-
-    this._PROPS_DELAYED_PROMISE.resolvePromise(this._PROPS);
-
-    var slotNodeCounts = {};
-    // Generate slot map before we update DOM with view nodes
-    var slotMap = oj.CompositeTemplateRenderer.createSlotMap(element);
-    for (var slot in slotMap)
-      slotNodeCounts[slot] = slotMap[slot].length;
-    this._SLOT_MAP = slotMap;
-    this._SLOTS_DELAYED_PROMISE.resolvePromise(slotNodeCounts);
-    
-    var bridge = this;
-    var masterPromise = Promise.all([this._VIEW_PROMISE, this._MODEL_PROMISE, this._PROPS_DELAYED_PROMISE.getPromise(), this._CSS_PROMISE, this._ACTIVATED_PROMISE]);
-    masterPromise.then(function(values)
-    {
-      var view = values[0];
-      if (!view)
-      {
-        bridge.resolveDelayedReadyPromise();
-        throw "ojComposite is missing a View";
-      }
-
-      var params = {
-        props: bridge._PROPS,
-        slotMap: bridge._SLOT_MAP,
-        slotNodeCounts: slotNodeCounts,
-        unique: bridge._VM_CONTEXT['unique'],
-        uniqueId: bridge._VM_CONTEXT['uniqueId'],
-        viewModel: bridge._VIEW_MODEL,
-        viewModelContext: bridge._VM_CONTEXT
-      };
-      
-      
-      // Store the name of the binding provider on the element when we are about 
-      // to insert the view. This will allow custom elements within the view to look
-      // up the binding provider used by the composite (currently only KO).
-      Object.defineProperty(element, oj.Composite.__BINDING_PROVIDER, {value: 'knockout'});
-
-      if (oj.Components)
-      {
-        oj.Components.unmarkPendingSubtreeHidden(element);
-      }
-
-      oj.CompositeTemplateRenderer.renderTemplate(params, element, view);
-
-      // Set flag when we can fire property change events
-      bridge._READY_TO_FIRE = true;
-
-      // Resolve the component busy state 
-      bridge.resolveDelayedReadyPromise();
-
-      // Deprecated 3.0.0
-      oj.CompositeElementBridge._fireEvent('ready', element);
-    });
-  },
-
-  DefineMethodCallback: function (proto, method, methodMeta) 
-  {
-    proto[method] = function()
-    {
-      var methodName = methodMeta['internalName'] || method;
-      var bridge = oj.BaseCustomElementBridge.getInstance(this);
-      return bridge._VIEW_MODEL[methodName].apply(bridge._VIEW_MODEL, arguments);
-    };
-  },
-  
-  DefinePropertyCallback: function (proto, property, propertyMeta) 
-  {
-    var set = function(val, bOuterSet)
-    {
-      // Property trackers are observables are referenced when the property is set or retrieved,
-      // which allows us to automatically update the View when the property is mutated.
-      var propertyTracker = oj.CompositeElementBridge._getPropertyTracker(this._BRIDGE, property);
-      var old = propertyTracker.peek();
-      if (old !== val) // We should consider supporting custom comparators
-      {
-        // Skip validation for inner sets so we don't throw an error when updating readOnly writeable properties
-        if (bOuterSet)
-          val = this._BRIDGE.ValidatePropertySet(this._ELEMENT, property, val)
-
-        if (propertyMeta._eventListener)
-        {
-          this._BRIDGE.SetEventListenerProperty(this._ELEMENT, property, val);
-        }
-        propertyTracker(val);
-
-        if (!propertyMeta._derived && (!bOuterSet || (bOuterSet && this._BRIDGE._READY_TO_FIRE)))
-        {
-          var updatedFrom = bOuterSet ? 'external' : 'internal';
-          oj.CompositeElementBridge._firePropertyChangeEvent(this._ELEMENT, property, val, old, updatedFrom);
-        }
-      }
-    }
-
-    // Called on the ViewModel props object
-    var innerSet = function(val)
-    {
-      set.bind(this)(val, false);
-    }
-
-    // Called on the custom element
-    var outerSet = function(val)
-    {
-      var bridge = oj.BaseCustomElementBridge.getInstance(this);
-      set.bind(bridge._PROPS)(val, true);
-    }
-
-    var get = function(bOuterSet)
-    {
-      var propertyTracker = oj.CompositeElementBridge._getPropertyTracker(this._BRIDGE, property);
-      // If the attribute has not been set, return the default value
-      // Calling .peek() lets us check the propertyTracker value without creating a dependency
-      var value = bOuterSet ? propertyTracker.peek() : propertyTracker();
-      if (value === undefined)
-      {
-        value = propertyMeta['value'];
-        // Make a copy if the default value is an Object or Array to prevent modification
-        // of the metadata copy and store in the propertyTracker so we have a copy
-        // to modify in place for the object case
-        if (Array.isArray(value))
-          value = value.slice();
-        else if (typeof value === 'object')
-          value = oj.CollectionUtils.copyInto({}, value, undefined, true);
-        propertyTracker(value);
-      }
-      return value;
-    }
-
-    // Called on the ViewModel props object
-    var innerGet = function()
-    {
-      return get.bind(this, false)();
-    }
-
-    // Called on the custom element
-    var outerGet = function()
-    {
-      var bridge = oj.BaseCustomElementBridge.getInstance(this);
-      return get.bind(bridge._PROPS, true)();
-    }
-
-    // Don't add event listener properties for inner props
-    if (!propertyMeta._derived)
-      oj.BaseCustomElementBridge.__DefineDynamicObjectProperty(proto['_propsProto'], property, innerGet, innerSet);
-    oj.BaseCustomElementBridge.__DefineDynamicObjectProperty(proto, property, outerGet, outerSet);
-  },
-
-  GetMetadata: function(descriptor)
-  {
-    return descriptor['_metadata'];
-  },
-
-  HandleBindingsCleaned: function(element)
-  {
-    if (this._MODEL_PROMISE)
-    {
-      this._MODEL_PROMISE.then(function(model)
-      {
-        oj.CompositeTemplateRenderer.invokeViewModelMethod(model, 'disposeMethod', [element]);
-      });
-    }
-  },
-
-  HandleDetached: function(element) 
-  {
-    // Invoke callback on the superclass
-    oj.BaseCustomElementBridge.proto.HandleDetached.call(this, element);
-    
-    if (this._MODEL_PROMISE)
-    {
-      this._MODEL_PROMISE.then(function(model)
-      {
-        oj.CompositeTemplateRenderer.invokeViewModelMethod(model, 'detachedMethod', [element]);
-        oj.CompositeTemplateRenderer.invokeViewModelMethod(model, 'disconnected', [element]);
-      });
-    }
-  },  
-
-  HandleReattached: function(element) {
-    // Invoke callback on the superclass
-    oj.BaseCustomElementBridge.proto.HandleReattached.call(this, element);
-
-    if (this._MODEL_PROMISE)
-    {
-      var bridge = this;
-      this._MODEL_PROMISE.then(function(model)
-      {
-        oj.CompositeTemplateRenderer.invokeViewModelMethod(model, 'connected', [bridge._VM_CONTEXT]);
-      });
-    }
-  },
-
-  InitializeElement: function(element)
-  {
-    // Invoke callback on the superclass
-    oj.BaseCustomElementBridge.proto.InitializeElement.call(this, element);
-    
-    // Deprecated 3.0.0
-    oj.CompositeElementBridge._fireEvent('pending', element);
-
-    var descriptor = oj.BaseCustomElementBridge.__GetDescriptor(element.tagName);
-
-    if (oj.Components)
-    {
-      oj.Components.markPendingSubtreeHidden(element);
-    }
-
-    this.PARSE_FUNCTION = descriptor['parseFunction'];
-    if (element['_propsProto'])
-    {
-      this._PROPS = Object.create(element['_propsProto']);
-      this._PROPS._BRIDGE = this;
-      this._PROPS._ELEMENT = element;
-    }
-    this._PROPS_DELAYED_PROMISE = new oj.BaseCustomElementBridge.__DelayedPromise();
-    this._SLOTS_DELAYED_PROMISE = new oj.BaseCustomElementBridge.__DelayedPromise();
-
-    var vmContext = {
-      'element': element,
-      'props': this._PROPS_DELAYED_PROMISE.getPromise(),
-      'slotNodeCounts': this._SLOTS_DELAYED_PROMISE.getPromise(),
-      'unique': oj.BaseCustomElementBridge.__GetUnique()
-    };
-    vmContext['uniqueId'] = element.id ? element.id : vmContext['unique'];
-    this._VM_CONTEXT = vmContext;
-
-    var modelPromise = oj.CompositeElementBridge._getResourcePromise(descriptor, "viewModel", this);
-    if (modelPromise)
-    {
-      var bridge = this;
-      this._MODEL_PROMISE = modelPromise.then(
-        function(model)
-        {
-          if (typeof model === 'function')
-            model = new model(vmContext);
-          else // If the function returns a value, use it as the new model instance
-            model = oj.CompositeTemplateRenderer.invokeViewModelMethod(model, 'initializeMethod', [vmContext]) || model;
-
-          bridge._VIEW_MODEL = model;
-          return model;
-        }
-      );
-    }
-
-    var cache = oj.BaseCustomElementBridge.__GetCache(element.tagName);
-    if (!cache.view)
-    {
-      var viewPromise = oj.CompositeElementBridge._getResourcePromise(descriptor, "view", this);
-      if (viewPromise)
-      {
-        this._VIEW_PROMISE = viewPromise.then(function(view) 
-        {
-          // when multiple instances of the same CCA are on the same page, because of the async
-          // nature, we could end up with multiple promises created on the same view. The first
-          // resolved promise will set up cache.view, all others should just use the cached
-          // view instead of parsing it again. So here we check existence of cache in the resolve
-          // callback to avoid parsing the view multiple times.
-          if (!cache.view)
-          {
-            if (typeof(view) === 'string')
-            {
-              view = oj.CompositeElementBridge._getDomNodes(view, element);
-            }
-            cache.view = view;
-          }
-
-          // Need to clone nodes
-          return oj.CompositeElementBridge._getDomNodes(cache.view, element);
-        });
-      }
-    }
-    else
-    {
-      // Need to clone nodes
-      this._VIEW_PROMISE = Promise.resolve(oj.CompositeElementBridge._getDomNodes(cache.view, element));
-    }
-    
-    if (!cache.css)
-    {
-      // The CSS Promise will be null if loaded by the require-css plugin
-      var cssPromise = oj.CompositeElementBridge._getResourcePromise(descriptor, "css", this);
-      if (cssPromise)
-      {
-        cache.css = cssPromise.then(function(css)
-        {
-          // create and append style element only when we do have css content.
-          if (css)
-          {
-            var style = document.createElement('style');
-            style.type = 'text/css';
-            if (style.styleSheet) // for IE
-              style.styleSheet.cssText = css;
-            else
-              style.appendChild(document.createTextNode(css)); // @HTMLUpdateOK
-            document.head.appendChild(style); // @HTMLUpdateOK
-          }
-        });
-      }
-    }
-    this._CSS_PROMISE = cache.css;
-
-    // Loop through all element attributes to get initial properties
-    oj.BaseCustomElementBridge.__InitProperties(element, this._PROPS, this.PARSE_FUNCTION);
-    this.GetDelayedPropertiesPromise().resolvePromise();
-  },
-
-  InitializePrototype: function(proto)
-  {
-    Object.defineProperty(proto, '_propsProto', {value: {}});
-  },
-
-  _getNodeBySubId: function(locator) 
-  {
-    // The locator subId can fall into one of 3 categories below:
-    // 1) The target node belongs to a JET component or composite with a subId map
-    // 2) The target node maps directly to a subId
-    // 3) The composite does not have a match for the subId 
-    
-    // The returned subId map the following key/value pairs:
-    // {
-    //    [subId]: {
-    //      alias: [alias or null for non JET components], 
-    //      node: [node]
-    //    }
-    // }
-    var map = oj.CompositeElementBridge.__GetSubIdMap(this);
-    var match = map[locator['subId']];
-    if (match)
-    {
-      if (match['alias']) // Case #1
-      {
-        var clone = oj.CollectionUtils.copyInto({}, locator, undefined, true)
-        clone['subId'] = match['alias'];
-        var component = match['node'];
-        // Check to see if we should call the method on the element or widget
-        if (component.getNodeBySubId) 
-        {
-          return component.getNodeBySubId(clone);
-        } 
-        else 
-        {
-          return oj.Components.__GetWidgetConstructor(component)('getNodeBySubId', clone);
-        }
-      }
-      else
-      {
-        return match['node']; // Case #2
-      }
-    }
-
-    return null; // Case #3
-  },
-
-  _getSubIdByNode: function(node)
-  {
-    // The node can fall into one of 3 categories below:
-    // 1) The node is not a child of this composite.
-    // 2) The node is a child of an inner composite and we need to convert its aliased subId
-    // 3) The node is a child of this composite
-    // 3a) The node is mapped directly to a subId
-    // 3b) The node is owned by an element that has a getSubIdByNode method and we need to convert its aliased subId
-  
-    // Case #1
-    if (!this.contains(node))
-      return null;
-
-    // The returned node map has the following key/value pairs where nodeKey is 
-    // the value of the node's data-oj-subid[-map] attribute:
-    // [nodeKey]: { map: [subIdMap], node: [node] }
-    var nodeMap = oj.CompositeElementBridge.__GetNodeMap(this);
-
-    // Case #2
-    var composite = oj.Composite.getContainingComposite(node, this);
-    if (composite != null)
-    {
-      var nodeKey = composite.node.getAttribute('data-oj-subid-map');
-      var match = nodeMap[nodeKey];
-      if (match)
-      {
-        if (composite.getSubIdByNode)
-        {
-          var locator = composite.getSubIdByNode(node);
-          if (locator)
-          {
-            var alias = match['map'][locator['subId']];
-            locator['subId'] = alias;
-            return locator;
-          }
-        }
-      }
-      // Return null if we did not expose the node even though the inner composite does
-      return null;
-    }
-    
-    // Case #3
-    // Walk up DOM tree until we find the containing node with the subId mapping
-    var curNode = node;
-    while (curNode !== this)
-    {
-      // We do not support an element having both attributes. If both are specified, -map takes precedence.
-      var nodeKey = curNode.getAttribute('data-oj-subid-map') || curNode.getAttribute('data-oj-subid');
-      if (nodeKey)
-        break;
-      curNode = curNode.parentNode;
-    }
-
-    var match = nodeMap[nodeKey];
-    if (match) 
-    {
-      var map = match['map'];
-      if (!map) // Case #3a
-      {
-        return {'subId': nodeKey};
-      }
-      else // Case #3b
-      {
-        var component = match['node'];
-        var locator;
-        // Check to see if we should call the method on the element or widget
-        if (component.getSubIdByNode) 
-        {
-          locator = component.getSubIdByNode(node);
-        } 
-        else 
-        {
-          locator = oj.Components.__GetWidgetConstructor(component)('getSubIdByNode', node);
-        }
-
-        if (locator)
-        {
-          locator['subId'] = match['map'][locator['subId']];
-          return locator;
-        }
-      }
-    }
-
-    return null;
-  }
-  
-});
-
-/*************************/
-/* PUBLIC STATIC METHODS */
-/*************************/
-
-/**
- * Registers a composite component
- * @param {string} tagName The component name, which should contain a dash '-' and not be a reserved tag name.
- * @param {Object} descriptor The registration descriptor. The descriptor will contain keys for Metadata, View, ViewModel
- * and CSS that are detailed below. A View is required, but all others are optional.
- * See the <a href="#registration">registration section</a> above for a sample usage.
- * The value for each key is a plain Javascript object that describes the loading
- * behavior. One of the following keys must be set on the object:
- * <ul>
- * <li>promise - specifies the promise instance</li>
- * <li>inline - provides the object inline</li>
- * </ul>
- * @param {Object} descriptor.metadata Describes how component Metadata is loaded. The object must contain one of the keys
- * documented above and ultimately resolve to a JSON object.
- * @param {Object} descriptor.view Describes how component's View is loaded. The object must contain one of the keys
- * documented above and ultimately resolve to a string, array of DOM nodes, or document fragment.
- * @param {Object} descriptor.css Describes how component's CSS is loaded. If specified, the object must contain one of the keys
- * documented above and ultimately resolve to a string if loaded inline or as a Promise.
- * @param {Object} descriptor.viewModel Describes how component's ViewModel is loaded. If specified, the object must contain one of the keys
- * documented above. This option is only applicable to composites hosting a Knockout template
- * with a ViewModel and ultimately resolves to a constructor function or object instance. If the initial ViewModel resolves to an object instance, the
- * initialize lifecycle listener will be called. See the <a href="#lifecycle">initialize documentation</a> for more information.
- * @param {function(string, string, Object, function(string))} descriptor.parseFunction The function that will be called to parse attribute values.
- * Note that this function is only called for non bound attributes. The parseFunction will take the following parameters:
- * <ul>
- *  <li>{string} value: The value to parse.</li>
- *  <li>{string} name: The name of the property.</li>
- *  <li>{Object} meta: The metadata object for the property which can include its type, default value, 
- *      and any extensions that the composite has provided on top of the required metadata.</li>
- *  <li>{function(string)} defaultParseFunction: The default parse function for the given attribute 
- *      type which is used when a custom parse function isn't provided and takes as its parameters 
- *      the value to parse.</li>
- * </ul>
- * @ignore
- *
- */
-oj.CompositeElementBridge.register = function(tagName, descriptor)
-{
-  // Need to retrieve metadata to create prototype
-  if (oj.BaseCustomElementBridge.__Register(tagName, descriptor, oj.CompositeElementBridge.proto, true))
-  {
-    var metadataPromise = oj.CompositeElementBridge.getMetadata(tagName);
-    metadataPromise.then(function(metadata)
-    {
-      // Check that the component name, version, and JET versions are defined in the metadata
-      var name = metadata['name'];
-      if (!name)
-        oj.Logger.warn('Required property "name" missing from metadata for %s.', tagName);
-      else if (tagName != name)
-        oj.Logger.warn('Registered property tagName: %s does not match name: %s provided in metadata.', tagName, name);
-      if (!metadata['version'])
-        oj.Logger.warn('Required property "version" missing from metadata for %s.', tagName);
-      if (!metadata['jetVersion'])
-        oj.Logger.warn('Required composite "jetVersion" missing from metadata for %s.', tagName);
-      descriptor['_metadata'] = oj.BaseCustomElementBridge.__ProcessEventListeners(metadata, false);
-      customElements.define(tagName.toLowerCase(), oj.CompositeElementBridge.proto.getClass(descriptor));
-    });
-  }
-};
-
-/**
- * Returns a Promise resolving with the composite metadata with the given name.
- * @param {string} tagName The component name, which should contain a dash '-' and not be a reserved tag name.
- * @return {Promise}
- * @ignore
- */
-oj.CompositeElementBridge.getMetadata = function(tagName)
-{
-  var descriptor = oj.BaseCustomElementBridge.__GetDescriptor(tagName);
-  if (descriptor)
-  {
-    var metadataPromise = descriptor['_metadataPromise'];
-    if (!metadataPromise)
-    {
-      metadataPromise = oj.CompositeElementBridge._getResourcePromise(descriptor, 'metadata', null);
-      // Metadata is required starting in 3.0.0, but to be backwards compatible, just log a warning.
-      if (!metadataPromise) {
-        oj.Logger.warn("Required metadata is missing for " + tagName);
-        metadataPromise = Promise.resolve({});
-      }
-      descriptor['_metadataPromise'] = metadataPromise;
-    }
-    return metadataPromise;
-  }
-  return null;
-};
-
-/*****************************/
-/* NON PUBLIC STATIC METHODS */
-/*****************************/
-
-/**
- * @ignore
- */
-oj.CompositeElementBridge._fireEvent = function(type, element)
-{
-  element.dispatchEvent(new CustomEvent(type, {bubbles: true}));
-};
-
-/**
- * This differs from the one in BaseCustomElementBridge because of the extra 
- * updatedFrom field on the event's detail property.
- * @ignore
- */
-oj.CompositeElementBridge._firePropertyChangeEvent = function(element, name, value, previousValue, updatedFrom)
-{
-  var detail = {};
-  var subpropPath = name.split('.');
-  var eventName = name;
-  var eventValue = value;
-  var eventPrevValue = previousValue;
-  if (subpropPath.length > 1)
-  {
-    var subproperty = {};
-    subproperty['path'] = name;
-    subproperty['value'] = value;
-    subproperty['previousValue'] = previousValue;
-    detail['subproperty'] = subproperty;
-    eventName = subpropPath[0];
-    // We don't make a copy of the top level property so the old and new values will be the same;
-    eventValue = element[eventName];
-    eventPrevValue = eventValue;
-  }
-  detail['value'] = eventValue;
-  detail['previousValue'] = eventPrevValue;
-  detail['updatedFrom'] = updatedFrom;
-  element.dispatchEvent(new CustomEvent(eventName + "-changed", {'detail': detail}));
-  element.dispatchEvent(new CustomEvent(eventName + "Changed", {'detail': detail}));
-};
-
-/**
- * @ignore
- */
-oj.CompositeElementBridge._getDomNodes = function(content, element)
-{
-  if (typeof content === 'string')
-  {
-    var div = document.createElement('div');
-    div.innerHTML = content; //@HTMLUpdateOK content is the composite View which does not come from the end user
-    var nodes = [];
-    for (var i = 0; i < div.childNodes.length; i++)
-      nodes.push(div.childNodes[i])
-    return nodes;
-  }
-  else if (oj.CompositeElementBridge._isDocumentFragment(content))
-  {
-    var clonedContent = content.cloneNode(true);
-    var nodes = [];
-    for (var i = 0; i < clonedContent.childNodes.length; i++)
-      nodes.push(clonedContent.childNodes[i]);
-    return nodes;
-  }
-  else if (Array.isArray(content))
-  {
-    var clonedContent = [];
-    for (var i = 0; i < content.length; i++)
-      clonedContent.push(content[i].cloneNode(true));
-    return clonedContent;
-  }
-  else
-  {
-    var bridge = oj.BaseCustomElementBridge.getInstance(element);
-    bridge.resolveDelayedReadyPromise();
-    throw "The View (" + content + ") has an unsupported type";
-  }
-};
-
-/**
- * Creates the subId and node maps needed for automation
- * @ignore
- */
-oj.CompositeElementBridge._generateSubIdMap = function(bridge, element)
-{
-  if (!bridge._SUBID_MAP)
-  {
-    // The format of the map will be { [composite subId] : {alias: [alias], node: [node] } }
-    var subIdMap = {};
-    var nodeMap = {};
-
-    // data-oj-subid or data-oj-subid-map attributes can be defined on nested objects so we need
-    // to walk the composite tree skipping over slots
-    var children = element.children;
-    for (var i = 0; i < children.length; i++) {
-      oj.CompositeElementBridge._walkSubtree(subIdMap, nodeMap, children[i]);
-    }
-
-    bridge._NODE_MAP = nodeMap;
-    bridge._SUBID_MAP = subIdMap;
-  }
-};
-
-/**
- * Walks a composite subtree, parsing and generating subId mappings.
- * @ignore
- */
-oj.CompositeElementBridge._walkSubtree = function(subIdMap, nodeMap, node)
-{
-  if (!node.hasAttribute('slot'))
-  {
-    oj.CompositeElementBridge._addNodeToSubIdMap(subIdMap, nodeMap, node);
-    if (!oj.BaseCustomElementBridge.getRegistered(node.tagName) && !oj.Components.__GetWidgetConstructor(node))
-    {
-      var children = node.children;
-      for (var i = 0; i < children.length; i++)
-      {
-        oj.CompositeElementBridge._walkSubtree(subIdMap, nodeMap, children[i]);
-      }
-    }
-  }
-};
-
-/**
- * Checks to see if a node has defined subIds and adds them to the composite's
- * cached subId -> node and node -> subId maps for automation.
- * @ignore
- */
-oj.CompositeElementBridge._addNodeToSubIdMap = function(subIdMap, nodeMap, node)
-{
-  var nodeSubId = node.getAttribute('data-oj-subid');
-  var nodeSubIdMapStr = node.getAttribute('data-oj-subid-map');
-  // We do not support an element having both attributes. If both are specified, -map takes precedence.
-  if (nodeSubIdMapStr)
-  {
-    var parsedValue = JSON.parse(nodeSubIdMapStr);
-    if (typeof parsedValue === 'object' && !(parsedValue instanceof Array))
-    { 
-      // Due to closure compiler issues with passing in result of JSON.parse which has type * into Object.keys 
-      // which requires an Object, use for loop here instead of iterating over key Array.
-      var nodeSubIdMap = parsedValue;
-      var reverseMap = {};
-      for (var key in nodeSubIdMap)
-      {
-        subIdMap[key] = {'alias': nodeSubIdMap[key], 'node': node};
-        reverseMap[nodeSubIdMap[key]] = key;
-      }
-      nodeMap[nodeSubIdMapStr] = {'map': reverseMap, 'node': node};
-    }
-  }
-  else if (nodeSubId)
-  {
-    subIdMap[nodeSubId] = {'node': node};
-    nodeMap[nodeSubId] = {'node': node};
-  }
-};
-
-/**
- * Returns the subId to node mapping for the composite's View.
- * @ignore
- */
-oj.CompositeElementBridge.__GetSubIdMap = function(element)
-{
-  var bridge = oj.BaseCustomElementBridge.getInstance(element);
-  oj.CompositeElementBridge._generateSubIdMap(bridge, element);
-  return bridge._SUBID_MAP;
-};
-
-/**
- * Returns the node to subId mapping for the composite's View. The returned map has the 
- * following key/value pairs where nodeKey is value of the node's data-oj-subid[-map] attribute:
- * {
- *   [nodeKey]: {
- *     map: [subIdMap],
- *     node: [node]
- *   }
- * }
- * @return {Map}
- * @ignore
- */
-oj.CompositeElementBridge.__GetNodeMap = function(element)
-{
-  var bridge = oj.BaseCustomElementBridge.getInstance(element);
-  oj.CompositeElementBridge._generateSubIdMap(bridge, element);
-  return bridge._NODE_MAP;
-};
-
-/**
- * @ignore
- */
-oj.CompositeElementBridge._getPropertyTracker = function(bridge, property)
-{
-  if (!bridge._TRACKERS)
-    bridge._TRACKERS = {};
-  if (!bridge._TRACKERS[property])
-    bridge._TRACKERS[property] = oj.CompositeTemplateRenderer.createTracker();
-  return bridge._TRACKERS[property];
-};
-
-/**
- * @ignore
- */
-oj.CompositeElementBridge._getResourcePromise = function(descriptor, resourceType, bridge)
-{
-  var promise = null;
-  var resource = descriptor[resourceType];
-  if (resource != null)
-  {
-    if (resource.hasOwnProperty('inline'))
-      promise = Promise.resolve(resource['inline']);
-    else if (resource.hasOwnProperty('promise'))
-      promise = resource['promise'];
-    else
-    {
-      // This method is called by the public getMetadata method where we don't have a
-      // bridge instance and don't need to resolve any Promises. All other cases are
-      // called during component creation and should resolve ready Promise for errors.
-      if (bridge)
-        bridge.resolveDelayedReadyPromise();
-      var key = Object.keys(resource)[0];
-      throw "Invalid descriptor key '" + key + "' for the resource type: " + resourceType;
-    }
-  }
-  return promise;
-};
-
-/**
- * @ignore
- */
-oj.CompositeElementBridge._isDocumentFragment = function(content)
-{
-  if (window['DocumentFragment'])
-  {
-    return content instanceof DocumentFragment;
-  }
-  else
-  {
-    return content && content.nodeType === 11;
-  }
-};
-
 /**
  * <p>
  * A composite component is a reusable piece of UI that can be embedded as a custom HTML element and
@@ -936,8 +46,7 @@ oj.CompositeElementBridge._isDocumentFragment = function(content)
  * Registration is done via the <a href="#register">oj.Composite.register</a> API.
  * By registering a composite component, an application links an HTML tag with provided
  * Metadata, View, ViewModel and CSS which will be used to render the composite. These optional
- * pieces can be provided via a descriptor object passed into the register API which defines how
- * each piece will be loaded, either inline or as a Promise. See below for sample loader.js file configurations.
+ * pieces can be provided via a descriptor object passed into the register API. See below for sample loader.js file configurations.
  * </p>
  *
  * Note that in this example we are using require-css, a RequireJS plugin for loading css which will load the styles within our page
@@ -948,9 +57,9 @@ oj.CompositeElementBridge._isDocumentFragment = function(content)
  *   function(view, viewModel, metadata) {
  *     oj.Composite.register('my-chart',
  *     {
- *       metadata: {inline: JSON.parse(metadata)},
- *       view: {inline: view},
- *       viewModel: {inline: viewModel}
+ *       metadata: JSON.parse(metadata),
+ *       view: view,
+ *       viewModel: viewModel
  *     });
  *   }
  * );
@@ -968,9 +77,9 @@ oj.CompositeElementBridge._isDocumentFragment = function(content)
  * 
  *     oj.Composite.register('my-chart',
  *     {
- *       metadata: {inline: JSON.parse(metadata)},
- *       view: {inline: view},
- *       viewModel: {inline: viewModel},
+ *       metadata: JSON.parse(metadata),
+ *       view: view,
+ *       viewModel: viewModel,
  *       parseFunction: myChartParseFunction
  *     });
  *   }
@@ -984,7 +93,8 @@ oj.CompositeElementBridge._isDocumentFragment = function(content)
  *   Once registered within a page, a composite component can be used in the DOM as a custom HTML element like in the example below.
  *   A composite element will be recognized by the framework only after its module is loaded by the application. Once the element is 
  *   recognized, the framework will register a busy state for the element and will begin the process of 'upgrading' the element. 
- *   The element will not be ready for interaction (e.g. using properties or methods) until the upgrade process is complete. 
+ *   The element will not be ready for interaction (e.g. retrieving properties or calling methods) until the upgrade process is 
+ *   complete with the exception of property setters and the setProperty and setProperties methods.
  *   The application should listen to either the page-level or an element-scoped BusyContext before attempting to interact with 
  *   any JET custom elements. See the <a href="oj.BusyContext.html">BusyContext</a> documentation on how BusyContexts can be scoped.
  * </p>
@@ -1011,7 +121,7 @@ oj.CompositeElementBridge._isDocumentFragment = function(content)
  *  <a href="https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes">global attributes</a> or events.</b></p>
  *  
  * <p>The Metadata JSON object should have the following required properties: "name", "version", "jetVersion" and 
- *  the following optional properties: "description", "compositeDependencies", "icon", "displayName", "properties", "methods", "events", or "slots". 
+ *  the following optional properties: "description", "dependencies", "icon", "displayName", "properties", "methods", "events", or "slots". 
  *  See the tables below for descriptions of these properties. The Metadata can be extended by appending any extra information in an "extension" 
  *  field except at the first level of the "properties", "methods", "events" or "slots" objects. Any metadata in an extension field will be ignored.</p>
  *  
@@ -1115,6 +225,17 @@ oj.CompositeElementBridge._isDocumentFragment = function(content)
  *     </tr> 
  *     <tr>
  *       <td class="name"><code>compositeDependencies</code></td>
+ *       <td>no</td>
+ *       <td>no</td>
+ *       <td>{Object<string, string>}</td>
+ *       <td>Dependency to semantic version mapping for composite dependencies. 
+ *         3rd party libraries should not be included in this mapping.
+ *         <code>{"composite1": "1.2.0", "composite2": ">=2.1.0"}</code>
+ *         <p><b><i>This metadata property is deprecated as of JET 5.0.0.</i></b>  Please use the "dependencies" metadata property instead.</p>
+ *       </td> 
+ *     </tr> 
+ *     <tr>
+ *       <td class="name"><code>dependencies</code></td>
  *       <td>no</td>
  *       <td>no</td>
  *       <td>{Object<string, string>}</td>
@@ -1448,7 +569,9 @@ oj.CompositeElementBridge._isDocumentFragment = function(content)
  *               <td class="name"><code>translatable</code></td>
  *               <td>no</td>
  *               <td>{boolean}</td>
- *               <td>True if the <em>value</em> of this property is eligible to be included when application resources are translated for Internationalization. False by default.</td>
+ *               <td>True if the <em>value</em> of this property (or its sub-properties, unless explicitly overridden) 
+ *                   is eligible to be included when application resources are translated for Internationalization. False by default.
+ *               </td>
  *             </tr> 
  *             <tr>
  *               <td class="name"><code>units</code></td>
@@ -1809,13 +932,13 @@ oj.CompositeElementBridge._isDocumentFragment = function(content)
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#properties"></a>
  * </h2>
  * <p>
- * Properties defined in provided Metadata will be made available through the $props property of the View binding context
- * and through the props property on the context passed to the provided ViewModel constructor function or lifecycle listeners
- * if an object instance is passed. Unlike the $props property for the View, the props property made available to the
- * ViewModel will be a Promise which will contain the properties object when resolved. The application can access
- * the composite component properties by accessing them directly from the DOM element. Using the DOM setAttribute and
- * removeAttribute APIs will also result in property updates. Changes made to properties will
- * result in a [propertyName]Changed event being fired for that property regardless of where they are modified.
+ * Properties defined in provided Metadata will be made available through the <code>$properties</code> property of the View binding context
+ * and through the <code>properties</code> property on the context passed to the provided ViewModel constructor function or lifecycle listeners. 
+ * The application can access the composite component properties by accessing them directly from the 
+ * DOM element. Using the DOM setAttribute and removeAttribute APIs will also result in property updates. Changes made to properties will
+ * result in a [property]Changed event being fired for that property if the property was modified internally by the composite or externally
+ * by the application if the composite has been upgraded and its busy state resolved. Early property sets before the composite has been upgraded
+ * while allowed, will not result in [property]Changed events and will be passed to the component as part of its initial state.
  * </p>
  *
  * <h3 id="attr-to-prop-mapping">Property-to-Attribute Mapping
@@ -1858,26 +981,22 @@ oj.CompositeElementBridge._isDocumentFragment = function(content)
  * Composite component styling can be done via provided css. The JET framework will add the <code>oj-complete</code> class to the composite DOM 
  * element after metadata properties have been resolved. To prevent a flash of unstyled content before the composite properties have been setup, 
  * the composite css can include the following rule to hide the composite until the <code>oj-complete</code> class is set on the element.
- * <pre class="prettyprint">
- * <code>
+ * <pre class="prettyprint"><code>
  * my-chart:not(.oj-complete) {
  *   visibility: hidden;
  * }
- * </code>
- * </pre>
+ * </code></pre>
  * </p>
  *
  * <p>
  * Composite CSS will not be scoped to the composite component and selectors will need to be appropriately selective. We recommend scoping CSS classes 
  * and prefixing class names with the composite name as seen in the example below. <b>Note that we do not recommend overriding JET component CSS.
  * Composites should only update JET component styling via SASS variables.</b>
- * <pre class="prettyprint">
- * <code>
+ * <pre class="prettyprint"><code>
  * my-chart .my-chart-text {
  *   color: white;
  * }
- * </code>
- * </pre>
+ * </code></pre>
  * </p>
  *
  * <h2 id="events">Events
@@ -1886,39 +1005,12 @@ oj.CompositeElementBridge._isDocumentFragment = function(content)
  * <p>
  * Composite components fire the following events. Any custom composite events should be created and fired by the composite's ViewModel and documented in the metadata
  * for design and run time environments as needed.  In addition to standard add/removeEventListener syntax, declarative event listeners will also be supported for
- * custom composite events and [propertyName]Changed events.  As a result, if a composite declares an event of type "customType", applications can listen by setting the
- * "onCustomType" property or the "on-custom-type" attribute.  Similarly, property change listeners can be set via the appropriate "on[PropertyName]Changed" property or
+ * custom composite events and [property]Changed events.  As a result, if a composite declares an event of type "customType", applications can listen by setting the
+ * "onCustomType" property or the "on-custom-type" attribute.  Similarly, property change listeners can be set via the appropriate "on[property]Changed" property or
  * "on-[property-name]-changed" attribute. Expression syntax can be used in the on-[event-name] attributes, but we do not support executing arbitrary JavaScript like those for
  * native event attributes like onclick.
  * <ul>
- *  <li><b><i>pending (Deprecated)</i></b> - Fired to notify the application that a composite component is about to render. 
- *    This event is deprecated. The application should use the page's oj.BusyContext to determine when the composite is ready.</li>
- *  <li><b><i>ready (Deprecated)</i></b> - Fired after bindings are applied on the composite component's children. Child pending events will be fired before the parent
- *    composite component's ready event. Note that this does not gaurantee that its children are ready at this point as they could be performing
- *    their own asynchronous operations. Applications may use the pending and ready events  to determine when a composite
- *    component and its children are fully ready (i.e. when the number of received ready events matches the number of received pending events).
- *    This event is deprecated. The application should use the page's oj.BusyContext to determine when the composite is ready.</li>
- *  <li><b><i>[propertyName]-changed (Deprecated) </i></b> - Fired when a property is modified and contains the following fields in its event detail object:
- *    <ul>
- *      <li>previousValue - The previous property value</li>
- *      <li>value - The new property value</li>
- *      <li>updatedFrom - Where the property was updated from. Supported values are:
- *        <ul>
- *          <li>internal - The View or ViewModel</li>
- *          <li>external - The DOM Element either by its property setter, setAttribute, or external data binding.</li>
- *        </ul>
- *      </li>
- *      <li>subproperty - An object containing information about the subproperty that changed with the following fields:
- *        <ul>
- *          <li>path - The subproperty path that changed</li>
- *          <li>previousValue - The previous subproperty value</li>
- *          <li>value - The new subproperty value</li>
- *        </ul>
- *      </li>
- *    </ul>
- *    This event is deprecated.  Applications should listen to [propertyName]Changed events instead.
- *  </li>
- *  <li><b><i>[propertyName]Changed</i></b> - Fired when a property is modified and contains the following fields in its event detail object:
+ *  <li><b><i>[property]Changed</i></b> - Fired when a property is modified and contains the following fields in its event detail object:
  *    <ul>
  *      <li>previousValue - The previous property value</li>
  *      <li>value - The new property value</li>
@@ -1948,11 +1040,12 @@ oj.CompositeElementBridge._isDocumentFragment = function(content)
  * callback methods can be defined on its ViewModel and will be called at each stage of the composite
  * component's lifecycle. The ViewModel provided at registration can either be a function which will be 
  * treated as a constructor that will be invoked to create the ViewModel instance or an object which will
- * be treated as a singleton instance.
+ * be treated as a singleton instance. <b>The Object instance return type for the ViewModel
+ * is deprecated in 5.0.0.</b>
  *
  * <h4 class="name">initialize<span class="signature">(context)</span></h4>
  * <p>
- * This optional method may be implemented on the ViewModel to perform initialization tasks.
+ * <b>Deprecated since 5.0.0.</b> This optional method may be implemented on the ViewModel to perform initialization tasks.
  * This method will be invoked only if the ViewModel specified during registration is an object instance as opposed to a constructor function.
  * If the registered ViewModel is a constructor function, the same context object will be passed to the constructor function instead.
  * This method can return 1) nothing in which case the original model instance will be used, 2) a new model instance which will replace the original, 
@@ -1988,14 +1081,24 @@ oj.CompositeElementBridge._isDocumentFragment = function(content)
  *                <td>DOM element where the View is attached.</td>
  *              </tr>
  *              <tr>
+ *                <td class="name"><code>properties</code></td>
+ *                <td>Object</td>
+ *                <td>A map of the composite component's current properties and values.</td>
+ *              </tr>
+ *              <tr>
  *                <td class="name"><code>props</code></td>
  *                <td>Promise</td>
- *                <td>A Promise evaluating to the composite component's properties.</td>
+ *                <td><b>Deprecated: use properties instead.</b> A Promise evaluating to the composite component's properties.</td>
  *              </tr>
  *              <tr>
  *                <td class="name"><code>slotNodeCounts</code></td>
  *                <td>Promise</td>
- *                <td>A Promise evaluating to a map of slot name to assigned nodes count for the View.</td>
+ *                <td><b>Deprecated: use slotCounts instead.</b>A Promise evaluating to a map of slot name to assigned nodes count for the View.</td>
+ *              </tr>
+ *              <tr>
+ *                <td class="name"><code>slotCounts</code></td>
+ *                <td>Object</td>
+ *                <td>A map of slot name to assigned nodes count for the View.</td>
  *              </tr>
  *              <tr>
  *                <td class="name"><code>unique</code></td>
@@ -2050,14 +1153,24 @@ oj.CompositeElementBridge._isDocumentFragment = function(content)
  *                <td>DOM element where the View is attached.</td>
  *              </tr>
  *              <tr>
+ *                <td class="name"><code>properties</code></td>
+ *                <td>Object</td>
+ *                <td>A map of the composite component's current properties and values.</td>
+ *              </tr>
+ *              <tr>
  *                <td class="name"><code>props</code></td>
  *                <td>Promise</td>
- *                <td>A Promise evaluating to the composite component's properties.</td>
+ *                <td><b>Deprecated: use properties instead.</b> A Promise evaluating to the composite component's properties.</td>
  *              </tr>
  *              <tr>
  *                <td class="name"><code>slotNodeCounts</code></td>
  *                <td>Promise</td>
- *                <td>A Promise evaluating to a map of slot name to assigned nodes count for the View.</td>
+ *                <td><b>Deprecated: use slotCounts instead.</b>A Promise evaluating to a map of slot name to assigned nodes count for the View.</td>
+ *              </tr>
+ *              <tr>
+ *                <td class="name"><code>slotCounts</code></td>
+ *                <td>Object</td>
+ *                <td>A map of slot name to assigned nodes count for the View.</td>
  *              </tr>
  *              <tr>
  *                <td class="name"><code>unique</code></td>
@@ -2112,14 +1225,24 @@ oj.CompositeElementBridge._isDocumentFragment = function(content)
  *                <td>DOM element where the View is attached.</td>
  *              </tr>
  *              <tr>
+ *                <td class="name"><code>properties</code></td>
+ *                <td>Object</td>
+ *                <td>A map of the composite component's current properties and values.</td>
+ *              </tr>
+ *              <tr>
  *                <td class="name"><code>props</code></td>
  *                <td>Promise</td>
- *                <td>A Promise evaluating to the composite component's properties.</td>
+ *                <td><b>Deprecated: use properties instead.</b> A Promise evaluating to the composite component's properties.</td>
  *              </tr>
  *              <tr>
  *                <td class="name"><code>slotNodeCounts</code></td>
  *                <td>Promise</td>
- *                <td>A Promise evaluating to a map of slot name to assigned nodes count for the View.</td>
+ *                <td><b>Deprecated: use slotCounts instead.</b>A Promise evaluating to a map of slot name to assigned nodes count for the View.</td>
+ *              </tr>
+ *              <tr>
+ *                <td class="name"><code>slotCounts</code></td>
+ *                <td>Object</td>
+ *                <td>A map of slot name to assigned nodes count for the View.</td>
  *              </tr>
  *              <tr>
  *                <td class="name"><code>unique</code></td>
@@ -2174,14 +1297,24 @@ oj.CompositeElementBridge._isDocumentFragment = function(content)
  *                <td>DOM element where the View is attached.</td>
  *              </tr>
  *              <tr>
+ *                <td class="name"><code>properties</code></td>
+ *                <td>Object</td>
+ *                <td>A map of the composite component's current properties and values.</td>
+ *              </tr>
+ *              <tr>
  *                <td class="name"><code>props</code></td>
  *                <td>Promise</td>
- *                <td>A Promise evaluating to the composite component's properties.</td>
+ *                <td><b>Deprecated: use properties instead.</b> A Promise evaluating to the composite component's properties.</td>
  *              </tr>
  *              <tr>
  *                <td class="name"><code>slotNodeCounts</code></td>
  *                <td>Promise</td>
- *                <td>A Promise evaluating to a map of slot name to assigned nodes count for the View.</td>
+ *                <td><b>Deprecated: use slotCounts instead.</b>A Promise evaluating to a map of slot name to assigned nodes count for the View.</td>
+ *              </tr>
+ *              <tr>
+ *                <td class="name"><code>slotCounts</code></td>
+ *                <td>Object</td>
+ *                <td>A map of slot name to assigned nodes count for the View.</td>
  *              </tr>
  *              <tr>
  *                <td class="name"><code>unique</code></td>
@@ -2229,19 +1362,24 @@ oj.CompositeElementBridge._isDocumentFragment = function(content)
  *            </thead>
  *            <tbody>
  *              <tr>
- *                <td class="name"><code>element</code></td>
- *                <td>Node</td>
- *                <td>DOM element where the View is attached.</td>
+ *                <td class="name"><code>properties</code></td>
+ *                <td>Object</td>
+ *                <td>A map of the composite component's current properties and values.</td>
  *              </tr>
  *              <tr>
  *                <td class="name"><code>props</code></td>
  *                <td>Promise</td>
- *                <td>A Promise evaluating to the composite component's properties.</td>
+ *                <td><b>Deprecated: use properties instead.</b> A Promise evaluating to the composite component's properties.</td>
  *              </tr>
  *              <tr>
  *                <td class="name"><code>slotNodeCounts</code></td>
  *                <td>Promise</td>
- *                <td>A Promise evaluating to a map of slot name to assigned nodes count for the View.</td>
+ *                <td><b>Deprecated: use slotCounts instead.</b>A Promise evaluating to a map of slot name to assigned nodes count for the View.</td>
+ *              </tr>
+ *              <tr>
+ *                <td class="name"><code>slotCounts</code></td>
+ *                <td>Object</td>
+ *                <td>A map of slot name to assigned nodes count for the View.</td>
  *              </tr>
  *              <tr>
  *                <td class="name"><code>unique</code></td>
@@ -2256,6 +1394,84 @@ oj.CompositeElementBridge._isDocumentFragment = function(content)
  *            </tbody>
  *          </table>
  *        </td>
+ *     </tr>
+ *   </tbody>
+ * </table>
+ * 
+ * <h4 class="name">propertyChanged<span class="signature">(context)</span></h4>
+ * <p>
+ * This optional method may be implemented on the ViewModel and will be invoked when properties are updated before the [property]Changed event is fired.
+ * </p>
+ * <h5>Parameters:</h5>
+ * <table class="params">
+ *   <thead>
+ *     <tr>
+ *       <th>Name</th>
+ *       <th>Type</th>
+ *       <th>Description</th>
+ *     </tr>
+ *   </thead>
+ *   <tbody>
+ *     <tr>
+ *       <td>property</td>
+ *       <td>string</td>
+ *       <td>The property that changed.</td>
+ *     </tr>
+ *     <tr>
+ *       <td>value</td>
+ *       <td>*</td>
+ *       <td>The current value of the property that changed.</td>
+ *     </tr>
+ *     <tr>
+ *       <td>previousValue</td>
+ *       <td>*</td>
+ *       <td>The previous value of the property that changed.</td>
+ *     </tr>
+ *     <tr>
+ *       <td>updatedFrom</td>
+ *       <td>string</td>
+ *       <td>
+ *         Where the property was updated from. Supported values are:
+ *         <ul>
+ *           <li>external - By the application, using either the element's property setter, setAttribute, or external data binding.</li>
+ *           <li>internal - By the component, e.g. after user interaction with a text field or selection.</li>
+ *         </ul>  
+ *       </td>
+ *     </tr>
+ *     <tr>
+ *       <td>subproperty</td>
+ *       <td>Object</td>
+ *       <td>An object holding information about the subproperty that changed.
+ *         <table class="props">
+ *           <thead>
+ *             <tr>
+ *               <th>Name</th>
+ *               <th>Type</th>
+ *               <th>Description</th>
+ *             </tr>
+ *           </thead>
+ *           <tbody>
+ *             <tr>
+ *               <td>path</td>
+ *               <td>string</td>
+ *               <td>
+ *                 The subproperty path that changed, starting from the top level 
+ *                 property with subproperties delimited by '.'.
+ *               </td>
+ *             </tr>
+ *             <tr>
+ *               <td>value</td>
+ *               <td>*</td>
+ *               <td>The current value of the subproperty that changed.</td>
+ *             </tr>
+ *             <tr>
+ *               <td>previousValue</td>
+ *               <td>*</td>
+ *               <td>The previous value of the subproperty that changed.</td>
+ *             </tr>
+ *           </tbody>
+ *         </table>
+ *       </td>
  *     </tr>
  *   </tbody>
  * </table>
@@ -2283,30 +1499,7 @@ oj.CompositeElementBridge._isDocumentFragment = function(content)
  *   </tbody>
  * </table>
  *
-* <h4 class="name">dispose<span class="signature">(element)</span></h4>
- * <div class="description">
- * <b>Deprecated</b>: use the detached method instead.
- * This optional method may be implemented on the ViewModel and will be invoked when this composite component is being disposed.
- * </div>
- * <h5>Parameters:</h5>
- * <table class="params">
- *   <thead>
- *     <tr>
- *       <th>Name</th>
- *       <th>Type</th>
- *       <th>Description</th>
- *     </tr>
- *   </thead>
- *   <tbody>
- *     <tr>
- *       <td class="name"><code>element</code></td>
- *       <td>Node</td>
- *       <td>The composite component DOM element.</td>
- *     </tr>
- *   </tbody>
- * </table> 
  * 
- *
  * <h4 class="name">disconnected<span class="signature">(element)</span></h4>
  * <p>
  * This optional method may be implemented on the ViewModel and will be invoked when this composite component is disconnected from the DOM.
@@ -2384,42 +1577,15 @@ oj.CompositeElementBridge._isDocumentFragment = function(content)
  * </p>
  *
  * @namespace
+ * @since 2.0
  */
 oj.Composite = {};
 
 /**
- * Default configuration values.
- * Composite component conventions may be overridden for the entire application after the ojs/ojcomposite
- * module is loaded. For example:
- * <p><code class="prettyprint">
- * oj.Composite.defaults.bindingsAppliedMethod = 'applied';
- * </code></p>
- * @property {string} initializeMethod The name of the initialialization method. Defaults to 'initialize'.
- * @property {string} activatedMethod The name of the method invoked after the Model is instantiated. Defaults to 'activated'.
- * @property {string} attachedMethod The name of the method invoked when the View is inserted into the document DOM. Defaults to 'attached'.
- * @property {string} bindingsAppliedMethod The name of the method invoked after the bindings are applied on the View. Defaults to 'bindingsApplied'.
- * @property {string} detachedMethod The name of the method called when the composite is detached from the DOM. Defaults to 'detached'.
- * @property {string} disposeMethod <b>Deprecated</b>: Use the detached method instead. The name of the method called when the composite is disposed. Defaults to 'dispose'.
- * @deprecated Since composites are designed to be reusable components, we do not recommend overriding the default lifecycle listener names and potentially breaking consumed composites.
- *
- * @export
- * @memberof oj.Composite
- */
-oj.Composite.defaults =
-{
-  'initializeMethod': 'initialize',
-  'activatedMethod': 'activated',
-  'attachedMethod': 'attached',
-  'bindingsAppliedMethod': 'bindingsApplied',
-  'detachedMethod': 'detached',
-  'disposeMethod': 'dispose'
-};
-
-
-/**
- * Returns a Promise resolving with the composite metadata with the given name.
+ * Returns a Promise resolving with the composite metadata with the given name or null if the composite has not been registered.
  * @param {string} name The component name, which should contain a dash '-' and not be a reserved tag name.
- * @return {Promise}
+ * @return {Promise|null}
+ * @ojdeprecated {since: '5.0.0', description: 'Use oj.Composite.getComponentMetadata instead.'}
  * 
  * @export
  * @memberof oj.Composite
@@ -2427,7 +1593,34 @@ oj.Composite.defaults =
  */
 oj.Composite.getMetadata = function(name)
 {
-  return oj.CompositeElementBridge.getMetadata(name);
+  var metadata = oj.Composite.getComponentMetadata(name);
+  return metadata ? Promise.resolve(metadata) : null;
+};
+
+/**
+ * Returns the composite metadata with the given name or null if the composite has not been registered.
+ * @param {string} name The component name, which should contain a dash '-' and not be a reserved tag name.
+ * @return {Object|null}
+ * 
+ * @export
+ * @memberof oj.Composite
+ * @since 5.0.0
+ * @ojstatus preview
+ *
+ */
+oj.Composite.getComponentMetadata = function(name)
+{
+  // We have one registry where custom elements, definitional elements, and composites are all stored with
+  // the JET framework so we need to check to see if the element is a composite before returning its metadata
+  var info = oj.BaseCustomElementBridge.getRegistered(name);
+  if (info && info.composite)
+  {
+    // Descriptor is guaranteed to be there for registered elements because we throw an error at registration
+    // time if none is given
+    var descriptor = oj.BaseCustomElementBridge.__GetDescriptor(name);
+    return descriptor[oj.BaseCustomElementBridge.DESC_KEY_META];
+  }
+  return null;
 };
 
 /**
@@ -2435,27 +1628,22 @@ oj.Composite.getMetadata = function(name)
  * @param {string} name The component name, which should contain a dash '-' and not be a reserved tag name.
  * @param {Object} descriptor The registration descriptor. The descriptor will contain keys for Metadata, View, ViewModel
  * and CSS that are detailed below. At a minimum a composite must register Metadata and View files, but all others are optional.
+ * The composite resources should be mapped directly to each descriptor key. The support for an object with an 'inline' key mapped
+ * to the resource has been deprecated in 5.0.0.
  * See the <a href="#registration">registration section</a> above for a sample usage.
- * The value for each key is a plain Javascript object that describes the loading
- * behavior. One of the following keys must be set on the object:
- * <ul>
- * <li>promise - specifies the promise instance</li>
- * <li>inline - provides the object inline</li>
- * </ul>
- * @param {Object} descriptor.metadata Describes how component Metadata is loaded. The object must contain one of the keys
- * documented above and ultimately resolve to a JSON object.
- * @param {Object} descriptor.view Describes how component's View is loaded. The object must contain one of the keys
- * documented above and ultimately resolve to a string, array of DOM nodes, or document fragment.
- * @param {Object} descriptor.css (Deprecated) Describes how component's CSS is loaded. If specified, the object must contain one of the keys
- * documented above and ultimately resolve to a string if loaded inline or as a Promise. <b>Note that this key should not be used if the composite
- * styles contain references to any external resources and is deprecated in 4.1.0. require-css, a RequireJS CSS plugin, is the
- * current recommendation for CSS loading.</b>
- * @param {Object} descriptor.viewModel Describes how component's ViewModel is loaded. If specified, the object must contain one of the keys
- * documented above. This option is only applicable to composites hosting a Knockout template
- * with a ViewModel and ultimately resolves to a constructor function or object instance. If the initial ViewModel resolves to an object instance, the
- * initialize lifecycle listener will be called. See the <a href="#lifecycle">initialize documentation</a> for more information.
+ * @param {Object} descriptor.metadata A JSON formatted object describing the composite APIs. See the <a href="#metadata">metadata documentation</a> for more info.
+ * @param {string} descriptor.view A string, array of DOM nodes, or document fragment representing the HTML that will be used for the composite.
+ *                                 <b>The array of DOM nodes and document fragment types are deprecated in 5.0.0.</b>
+ * @param {string} descriptor.css (Deprecated) A string containing the composite CSS. <b>Note that this key should not be used if the composite
+ *                                styles contain references to any external resources and is deprecated in 4.1.0. require-css, a RequireJS CSS plugin, is the
+ *                                current recommendation for CSS loading.</b>
+ * @param {Object} descriptor.viewModel This option is only applicable to composites hosting a Knockout template
+ *                                      with a ViewModel and ultimately resolves to a constructor function or object instance. 
+ *                                      <b>The Object instance return type for the ViewModel is deprecated in 5.0.0.</b>
+ *                                      If the initial ViewModel resolves to an object instance, the initialize lifecycle listener 
+ *                                      will be called. See the <a href="#lifecycle">initialize documentation</a> for more information.
  * @param {function(string, string, Object, function(string))} descriptor.parseFunction The function that will be called to parse attribute values.
- * Note that this function is only called for non bound attributes. The parseFunction will take the following parameters:
+ *                                                              Note that this function is only called for non bound attributes. The parseFunction will take the following parameters:
  * <ul>
  *  <li>{string} value: The value to parse.</li>
  *  <li>{string} name: The name of the property.</li>
@@ -2526,4 +1714,713 @@ oj.Composite.__COMPOSITE_PROP = '__oj_composite';
  * @ignore
  */
 oj.Composite.__BINDING_PROVIDER = '__oj_binding_prvdr';
+/**
+ * JET component custom element bridge.
+ * 
+ * Composite connnected callbacks occur asynchronously so we cannot
+ * guarantee that child composite properties can be accessed before the
+ * child busy state resolves.
+ * 
+ * Composite code and applications should always wait on the element or page level 
+ * busy context before accessing properties or methods.
+ * 
+ * @class
+ * @ignore
+ */
+oj.CompositeElementBridge = {};
+
+/**
+ * Prototype for the JET component custom element bridge instance
+ */
+oj.CompositeElementBridge.proto = Object.create(oj.BaseCustomElementBridge.proto);
+
+oj.CollectionUtils.copyInto(oj.CompositeElementBridge.proto,
+{
+  beforePropertyChangedEvent: function(element, property, detail)
+  {
+    var vmContext = {'property': property};
+    oj.CollectionUtils.copyInto(vmContext, detail, undefined, true);
+    oj.CompositeTemplateRenderer.invokeViewModelMethod(this._VIEW_MODEL, 'propertyChanged', [vmContext]);
+  },
+
+  AddComponentMethods: function(proto) 
+  {
+    // Add subproperty getter/setter
+    proto['setProperty'] = function(prop, value) {
+      var bridge = oj.BaseCustomElementBridge.getInstance(this);
+      if (!bridge.SaveEarlyPropertySet(prop, value))
+        bridge.SetProperty(this, prop, value, this, true);
+    };
+    proto['getProperty'] = function(prop) {
+      var bridge = oj.BaseCustomElementBridge.getInstance(this);
+      return bridge.GetProperty(this, prop, this);
+    };
+    proto['_propsProto']['setProperty'] =  function(prop, value) {
+      // 'this' is the property object we pass to the ViewModel to track internal property changes
+      this._BRIDGE.SetProperty(this._ELEMENT, prop, value, this, false);
+    };
+    proto['_propsProto']['getProperty'] = function(prop) {
+      // 'this' is the property object we pass to the ViewModel to track internal property changes
+      return this._BRIDGE.GetProperty(this, prop, this);
+    };
+    // Always add automation methods, but if the ViewModel defines overrides, wrap the overrides
+    // and pass the default implementation in as the last parameter to the ViewModel's method.
+    proto['getNodeBySubId'] = function(locator) {
+      var bridge = oj.BaseCustomElementBridge.getInstance(this);
+      var viewModel = bridge._getViewModel(this);
+      if (viewModel.getNodeBySubId)
+        return viewModel.getNodeBySubId(locator, bridge._getNodeBySubId.bind(this));
+      else
+        return bridge._getNodeBySubId.bind(this)(locator);
+    };
+    proto['getSubIdByNode'] = function(node) {
+      var bridge = oj.BaseCustomElementBridge.getInstance(this);
+      var viewModel = bridge._getViewModel(this);
+      if (viewModel.getSubIdByNode)
+        return viewModel.getSubIdByNode(node, bridge._getSubIdByNode.bind(this));
+      else
+        return bridge._getSubIdByNode.bind(this)(node);
+    };
+  },
+
+  CreateComponent: function(element) 
+  {
+    // Setup the ViewModel context to pass to lifecycle listeners
+    var slotNodeCounts = {};
+    // Generate slot map before we update DOM with view nodes
+    var slotMap = oj.BaseCustomElementBridge.getSlotMap(element, true);
+    for (var slot in slotMap)
+      slotNodeCounts[slot] = slotMap[slot].length;
+    this._SLOT_MAP = slotMap;
+    var vmContext = {
+      'element': element,
+      'props': Promise.resolve(this._PROPS),
+      'properties': this._PROPS,
+      'slotNodeCounts': Promise.resolve(slotNodeCounts),
+      'slotCounts': slotNodeCounts,
+      'unique': oj.BaseCustomElementBridge.__GetUnique()
+    };
+    vmContext['uniqueId'] = element.id ? element.id : vmContext['unique'];
+    this._VM_CONTEXT = vmContext;
+
+    var model = oj.BaseCustomElementBridge.__GetDescriptor(element.tagName)[oj.BaseCustomElementBridge.DESC_KEY_VIEW_MODEL];
+    if (typeof model === 'function')
+      model = new model(vmContext);
+    else // The initialize callback is deprecated in 5.0.0. If the function returns a value, use it as the new model instance.
+      model = oj.CompositeTemplateRenderer.invokeViewModelMethod(model, 'initialize', [vmContext]) || model;
+    this._VIEW_MODEL = model;
+
+    // This method can return a Promise which will delay additional lifecycle phases until it is resolved.
+    var activatedPromise = oj.CompositeTemplateRenderer.invokeViewModelMethod(model, 'activated', [vmContext]) || Promise.resolve(true);
+
+    var bridge = this;
+    activatedPromise.then(function(values)
+    {
+      var params = {
+        props: bridge._PROPS,
+        slotMap: bridge._SLOT_MAP,
+        slotNodeCounts: slotNodeCounts,
+        unique: bridge._VM_CONTEXT['unique'],
+        uniqueId: bridge._VM_CONTEXT['uniqueId'],
+        viewModel: bridge._VIEW_MODEL,
+        viewModelContext: bridge._VM_CONTEXT
+      };
+      
+      // Store the name of the binding provider on the element when we are about 
+      // to insert the view. This will allow custom elements within the view to look
+      // up the binding provider used by the composite (currently only KO).
+      Object.defineProperty(element, oj.Composite.__BINDING_PROVIDER, {value: 'knockout'});
+
+      if (oj.Components)
+      {
+        oj.Components.unmarkPendingSubtreeHidden(element);
+      }
+
+      var cache = oj.BaseCustomElementBridge.__GetCache(element.tagName);
+      // Need to clone nodes first
+      var view = oj.CompositeElementBridge._getDomNodes(cache.view, element);
+      oj.CompositeTemplateRenderer.renderTemplate(params, element, view);
+
+      // Set flag when we can fire property change events
+      bridge.__READY_TO_FIRE = true;
+
+      // Resolve the component busy state 
+      bridge.resolveDelayedReadyPromise();
+    });
+  },
+
+  DefineMethodCallback: function (proto, method, methodMeta) 
+  {
+    proto[method] = function()
+    {
+      var methodName = methodMeta['internalName'] || method;
+      var bridge = oj.BaseCustomElementBridge.getInstance(this);
+      var viewModel = bridge._getViewModel(this);
+      return viewModel[methodName].apply(viewModel, arguments);
+    };
+  },
+  
+  DefinePropertyCallback: function (proto, property, propertyMeta) 
+  {
+    var set = function(value, bOuterSet)
+    {
+      // Properties can be set before the component is created. These early
+      // sets are actually saved until after component creation and played back.
+      if (!this._BRIDGE.SaveEarlyPropertySet(property, value))
+      {
+        // Property trackers are observables are referenced when the property is set or retrieved,
+        // which allows us to automatically update the View when the property is mutated.
+        var propertyTracker = oj.CompositeElementBridge._getPropertyTracker(this._BRIDGE, property);
+        var previousValue = propertyTracker.peek();
+        if (!oj.BaseCustomElementBridge.__CompareOptionValues(property, propertyMeta, value, previousValue)) // We should consider supporting custom comparators
+        {
+          // Skip validation for inner sets so we don't throw an error when updating readOnly writeable properties
+          if (bOuterSet)
+            value = this._BRIDGE.ValidatePropertySet(this._ELEMENT, property, value)
+
+          if (propertyMeta._eventListener)
+          {
+            this._BRIDGE.SetEventListenerProperty(this._ELEMENT, property, value);
+          }
+          propertyTracker(value);
+
+          if (!propertyMeta._derived)
+          {
+            var updatedFrom = bOuterSet ? 'external' : 'internal';
+            oj.BaseCustomElementBridge.__FirePropertyChangeEvent(this._ELEMENT, property, value, previousValue, updatedFrom);
+          }
+        }
+      }
+    }
+
+    // Called on the ViewModel props object
+    var innerSet = function(value)
+    {
+      set.bind(this)(value, false);
+    }
+
+    // Called on the custom element
+    var outerSet = function(value)
+    {
+      var bridge = oj.BaseCustomElementBridge.getInstance(this);
+      set.bind(bridge._PROPS)(value, true);
+    }
+
+    var get = function(bOuterSet)
+    {
+      var propertyTracker = oj.CompositeElementBridge._getPropertyTracker(this._BRIDGE, property);
+      // If the attribute has not been set, return the default value
+      // Calling .peek() lets us check the propertyTracker value without creating a dependency
+      var value = bOuterSet ? propertyTracker.peek() : propertyTracker();
+      if (value === undefined)
+      {
+        value = propertyMeta['value'];
+        // Make a copy if the default value is an Object or Array to prevent modification
+        // of the metadata copy and store in the propertyTracker so we have a copy
+        // to modify in place for the object case
+        if (Array.isArray(value))
+          value = value.slice();
+        else if (typeof value === 'object')
+          value = oj.CollectionUtils.copyInto({}, value, undefined, true);
+        propertyTracker(value);
+      }
+      return value;
+    }
+
+    // Called on the ViewModel props object
+    var innerGet = function()
+    {
+      return get.bind(this, false)();
+    }
+
+    // Called on the custom element
+    var outerGet = function()
+    {
+      var bridge = oj.BaseCustomElementBridge.getInstance(this);
+      return get.bind(bridge._PROPS, true)();
+    }
+
+    // Don't add event listener properties for inner props
+    if (!propertyMeta._derived)
+      oj.BaseCustomElementBridge.__DefineDynamicObjectProperty(proto['_propsProto'], property, innerGet, innerSet);
+    oj.BaseCustomElementBridge.__DefineDynamicObjectProperty(proto, property, outerGet, outerSet);
+  },
+
+  GetMetadata: function(descriptor)
+  {
+    // Composites have a public getMetadata API so we cannot directly modify the
+    // original metadata object when we add additional info for on[PropertyName] properties
+    return descriptor['_metadata'];
+  },
+
+  HandleDetached: function(element) 
+  {
+    // Invoke callback on the superclass
+    oj.BaseCustomElementBridge.proto.HandleDetached.call(this, element);
+    
+    // Detached is deprecated in 4.2.0 for disconnected
+    oj.CompositeTemplateRenderer.invokeViewModelMethod(this._VIEW_MODEL, 'detached', [element]);
+    oj.CompositeTemplateRenderer.invokeViewModelMethod(this._VIEW_MODEL, 'disconnected', [element]);
+  },  
+
+  HandleReattached: function(element) {
+    // Invoke callback on the superclass
+    oj.BaseCustomElementBridge.proto.HandleReattached.call(this, element);
+
+    oj.CompositeTemplateRenderer.invokeViewModelMethod(this._VIEW_MODEL, 'connected', [this._VM_CONTEXT]);
+  },
+
+  InitializeElement: function(element)
+  {
+    // Invoke callback on the superclass
+    oj.BaseCustomElementBridge.proto.InitializeElement.call(this, element);
+
+    if (oj.Components)
+      oj.Components.markPendingSubtreeHidden(element);
+
+    // Cache the View
+    var cache = oj.BaseCustomElementBridge.__GetCache(element.tagName);
+    if (!cache.view)
+    {
+      var view = oj.BaseCustomElementBridge.__GetDescriptor(element.tagName)[oj.BaseCustomElementBridge.DESC_KEY_VIEW];
+      // when multiple instances of the same CCA are on the same page, because of the async 
+      // nature, we could end up with multiple promises created on the same view. The first
+      // resolved promise will set up cache.view, all others should just use the cached 
+      // view instead of parsing it again. So here we check existence of cache in the resolve
+      // callback to avoid parsing the view multiple times.
+      if (!cache.view) 
+      {
+        if (typeof(view) === 'string')
+          cache.view = oj.CompositeElementBridge._getDomNodes(view, element);
+        cache.view = view;
+      }
+    }
+    
+    // Cache the CSS
+    if (!cache.css)
+    {
+      // The CSS Promise will be null if loaded by the require-css plugin
+      var css = oj.BaseCustomElementBridge.__GetDescriptor(element.tagName)[oj.BaseCustomElementBridge.DESC_KEY_CSS];
+      // CSS is optional so we need to check if it was provided
+      if (css)
+      {
+        var style = document.createElement('style');
+        style.type = 'text/css';
+        if (style.styleSheet) // for IE
+          style.styleSheet.cssText = css;
+        else
+          style.appendChild(document.createTextNode(css)); // @HTMLUpdateOK
+        document.head.appendChild(style); // @HTMLUpdateOK
+        // Set a flag that we've already processed and appended the style to the 
+        // document head so we only do this once for all composite instances
+        cache.css = true;
+      }
+    }
+
+    // Loop through all element attributes to get initial properties
+    oj.BaseCustomElementBridge.__InitProperties(element, this._PROPS);
+  },
+
+  InitializePrototype: function(proto)
+  {
+    // Invoke callback on the superclass
+    oj.BaseCustomElementBridge.proto.InitializePrototype.call(this, proto);
+    
+    Object.defineProperty(proto, '_propsProto', {value: {}});
+  },
+
+  InitializeBridge: function(element)
+  {
+    // Invoke callback on the superclass
+    oj.BaseCustomElementBridge.proto.InitializeBridge.call(this, element);
+    
+    if (element['_propsProto'])
+    {
+      this._PROPS = Object.create(element['_propsProto']);
+      this._PROPS._BRIDGE = this;
+      this._PROPS._ELEMENT = element;
+    }
+  },
+
+  _getNodeBySubId: function(locator) 
+  {
+    // The locator subId can fall into one of 3 categories below:
+    // 1) The target node belongs to a JET component or composite with a subId map
+    // 2) The target node maps directly to a subId
+    // 3) The composite does not have a match for the subId 
+    
+    // The returned subId map the following key/value pairs:
+    // {
+    //    [subId]: {
+    //      alias: [alias or null for non JET components], 
+    //      node: [node]
+    //    }
+    // }
+    var map = oj.CompositeElementBridge.__GetSubIdMap(this);
+    var match = map[locator['subId']];
+    if (match)
+    {
+      if (match['alias']) // Case #1
+      {
+        var clone = oj.CollectionUtils.copyInto({}, locator, undefined, true)
+        clone['subId'] = match['alias'];
+        var component = match['node'];
+        // Check to see if we should call the method on the element or widget
+        if (component.getNodeBySubId) 
+        {
+          return component.getNodeBySubId(clone);
+        } 
+        else 
+        {
+          return oj.Components.__GetWidgetConstructor(component)('getNodeBySubId', clone);
+        }
+      }
+      else
+      {
+        return match['node']; // Case #2
+      }
+    }
+
+    return null; // Case #3
+  },
+
+  _getSubIdByNode: function(node)
+  {
+    // The node can fall into one of 3 categories below:
+    // 1) The node is not a child of this composite.
+    // 2) The node is a child of an inner composite and we need to convert its aliased subId
+    // 3) The node is a child of this composite
+    // 3a) The node is mapped directly to a subId
+    // 3b) The node is owned by an element that has a getSubIdByNode method and we need to convert its aliased subId
+  
+    // Case #1
+    if (!this.contains(node))
+      return null;
+
+    // The returned node map has the following key/value pairs where nodeKey is 
+    // the value of the node's data-oj-subid[-map] attribute:
+    // [nodeKey]: { map: [subIdMap], node: [node] }
+    var nodeMap = oj.CompositeElementBridge.__GetNodeMap(this);
+
+    // Case #2
+    var composite = oj.Composite.getContainingComposite(node, this);
+    if (composite != null)
+    {
+      var nodeKey = composite.node.getAttribute('data-oj-subid-map');
+      var match = nodeMap[nodeKey];
+      if (match)
+      {
+        if (composite.getSubIdByNode)
+        {
+          var locator = composite.getSubIdByNode(node);
+          if (locator)
+          {
+            var alias = match['map'][locator['subId']];
+            locator['subId'] = alias;
+            return locator;
+          }
+        }
+      }
+      // Return null if we did not expose the node even though the inner composite does
+      return null;
+    }
+    
+    // Case #3
+    // Walk up DOM tree until we find the containing node with the subId mapping
+    var curNode = node;
+    while (curNode !== this)
+    {
+      // We do not support an element having both attributes. If both are specified, -map takes precedence.
+      var nodeKey = curNode.getAttribute('data-oj-subid-map') || curNode.getAttribute('data-oj-subid');
+      if (nodeKey)
+        break;
+      curNode = curNode.parentNode;
+    }
+
+    var match = nodeMap[nodeKey];
+    if (match) 
+    {
+      var map = match['map'];
+      if (!map) // Case #3a
+      {
+        return {'subId': nodeKey};
+      }
+      else // Case #3b
+      {
+        var component = match['node'];
+        var locator;
+        // Check to see if we should call the method on the element or widget
+        if (component.getSubIdByNode) 
+        {
+          locator = component.getSubIdByNode(node);
+        } 
+        else 
+        {
+          locator = oj.Components.__GetWidgetConstructor(component)('getSubIdByNode', node);
+        }
+
+        if (locator)
+        {
+          locator['subId'] = match['map'][locator['subId']];
+          return locator;
+        }
+      }
+    }
+
+    return null;
+  },
+
+  _getViewModel: function(element) 
+  {
+    if (!this._VIEW_MODEL)
+    {
+      this._throwError(element, "Cannot access methods before element is upgraded.");
+    }
+    return this._VIEW_MODEL;
+  }
+  
+});
+
+/*************************/
+/* PUBLIC STATIC METHODS */
+/*************************/
+
+/**
+ * See oj.Composite.register doc for details
+ * @ignore
+ *
+ */
+oj.CompositeElementBridge.register = function(tagName, descriptor)
+{
+
+  // Convert any descriptor objects using the deprecated inline keys to the new API
+  var descrip = {};
+  descrip[oj.BaseCustomElementBridge.DESC_KEY_META] = oj.CompositeElementBridge._getResource(descriptor, oj.BaseCustomElementBridge.DESC_KEY_META);
+  descrip[oj.BaseCustomElementBridge.DESC_KEY_VIEW] = oj.CompositeElementBridge._getResource(descriptor, oj.BaseCustomElementBridge.DESC_KEY_VIEW);
+  descrip[oj.BaseCustomElementBridge.DESC_KEY_CSS] = oj.CompositeElementBridge._getResource(descriptor, oj.BaseCustomElementBridge.DESC_KEY_CSS);
+  descrip[oj.BaseCustomElementBridge.DESC_KEY_VIEW_MODEL] = oj.CompositeElementBridge._getResource(descriptor, oj.BaseCustomElementBridge.DESC_KEY_VIEW_MODEL);
+  descrip[oj.BaseCustomElementBridge.DESC_KEY_PARSE_FUN] = descriptor[oj.BaseCustomElementBridge.DESC_KEY_PARSE_FUN];
+
+  if (oj.BaseCustomElementBridge.__Register(tagName, descrip, oj.CompositeElementBridge.proto, true))
+  {
+    var metadata = descrip[oj.BaseCustomElementBridge.DESC_KEY_META];
+    if (!metadata)
+    {
+      // Metadata is required starting in 3.0.0, but to be backwards compatible, just log a warning.
+      oj.Logger.warn("Composite registered'" + tagName.toLowerCase() + "' without Metadata.");
+      metadata = {};
+    }
+    else
+    {
+      // Check that the component name, version, and JET versions are defined in the metadata
+      var name = metadata['name'];
+      if (!name)
+        oj.Logger.warn('Warning registering composite %s. Required property "name" missing from metadata.', tagName);
+      else if (tagName != name)
+        oj.Logger.warn('Warning registering composite %s. Registered name: %s does not match name: %s provided in metadata.', tagName, tagName, name);
+      if (!metadata['version'])
+        oj.Logger.warn('Warning registering composite %s. Required property "version" missing from metadata.', tagName);
+      if (!metadata['jetVersion'])
+        oj.Logger.warn('Warning registering composite %s. Required composite "jetVersion" missing from metadata.', tagName);
+    }
+    var view = descrip[oj.BaseCustomElementBridge.DESC_KEY_VIEW];
+    if (view == null)
+      throw new Error("Cannot register composite '" + tagName.toLowerCase() + "' without a View.");
+
+    // __ProcessEventListeners returns a copy of the metadata so we're not updating the original here.
+    descrip['_metadata'] = oj.BaseCustomElementBridge.__ProcessEventListeners(metadata, false);
+    customElements.define(tagName.toLowerCase(), oj.CompositeElementBridge.proto.getClass(descrip));
+  }
+};
+
+/*****************************/
+/* NON PUBLIC STATIC METHODS */
+/*****************************/
+
+/**
+ * @ignore
+ */
+oj.CompositeElementBridge._getDomNodes = function(content, element)
+{
+  if (typeof content === 'string')
+  {
+    return oj.__HtmlUtils.stringToNodeArray(content);
+  }
+  else if (oj.CompositeElementBridge._isDocumentFragment(content))
+  {
+    var clonedContent = content.cloneNode(true);
+    var nodes = [];
+    for (var i = 0; i < clonedContent.childNodes.length; i++)
+      nodes.push(clonedContent.childNodes[i]);
+    return nodes;
+  }
+  else if (Array.isArray(content))
+  {
+    var clonedContent = [];
+    for (var i = 0; i < content.length; i++)
+      clonedContent.push(content[i].cloneNode(true));
+    return clonedContent;
+  }
+  else
+  {
+    var bridge = oj.BaseCustomElementBridge.getInstance(element);
+    // TODO update this error message once we remove support for Array of DOM nodes and DocumentFragment
+    bridge._throwError(element, "The composite View is not one of the following supported types: string, Array of DOM nodes, DocumentFragment");
+  }
+};
+
+/**
+ * Creates the subId and node maps needed for automation
+ * @ignore
+ */
+oj.CompositeElementBridge._generateSubIdMap = function(bridge, element)
+{
+  if (!bridge._SUBID_MAP)
+  {
+    // The format of the map will be { [composite subId] : {alias: [alias], node: [node] } }
+    var subIdMap = {};
+    var nodeMap = {};
+
+    // data-oj-subid or data-oj-subid-map attributes can be defined on nested objects so we need
+    // to walk the composite tree skipping over slots
+    var children = element.children;
+    for (var i = 0; i < children.length; i++) {
+      oj.CompositeElementBridge._walkSubtree(subIdMap, nodeMap, children[i]);
+    }
+
+    bridge._NODE_MAP = nodeMap;
+    bridge._SUBID_MAP = subIdMap;
+  }
+};
+
+/**
+ * Walks a composite subtree, parsing and generating subId mappings.
+ * @ignore
+ */
+oj.CompositeElementBridge._walkSubtree = function(subIdMap, nodeMap, node)
+{
+  if (!node.hasAttribute('slot'))
+  {
+    oj.CompositeElementBridge._addNodeToSubIdMap(subIdMap, nodeMap, node);
+    if (!oj.BaseCustomElementBridge.getRegistered(node.tagName) && !oj.Components.__GetWidgetConstructor(node))
+    {
+      var children = node.children;
+      for (var i = 0; i < children.length; i++)
+      {
+        oj.CompositeElementBridge._walkSubtree(subIdMap, nodeMap, children[i]);
+      }
+    }
+  }
+};
+
+/**
+ * Checks to see if a node has defined subIds and adds them to the composite's
+ * cached subId -> node and node -> subId maps for automation.
+ * @ignore
+ */
+oj.CompositeElementBridge._addNodeToSubIdMap = function(subIdMap, nodeMap, node)
+{
+  var nodeSubId = node.getAttribute('data-oj-subid');
+  var nodeSubIdMapStr = node.getAttribute('data-oj-subid-map');
+  // We do not support an element having both attributes. If both are specified, -map takes precedence.
+  if (nodeSubIdMapStr)
+  {
+    var parsedValue = JSON.parse(nodeSubIdMapStr);
+    if (typeof parsedValue === 'object' && !(parsedValue instanceof Array))
+    { 
+      // Due to closure compiler issues with passing in result of JSON.parse which has type * into Object.keys 
+      // which requires an Object, use for loop here instead of iterating over key Array.
+      var nodeSubIdMap = parsedValue;
+      var reverseMap = {};
+      for (var key in nodeSubIdMap)
+      {
+        subIdMap[key] = {'alias': nodeSubIdMap[key], 'node': node};
+        reverseMap[nodeSubIdMap[key]] = key;
+      }
+      nodeMap[nodeSubIdMapStr] = {'map': reverseMap, 'node': node};
+    }
+  }
+  else if (nodeSubId)
+  {
+    subIdMap[nodeSubId] = {'node': node};
+    nodeMap[nodeSubId] = {'node': node};
+  }
+};
+
+/**
+ * Returns the subId to node mapping for the composite's View.
+ * @ignore
+ */
+oj.CompositeElementBridge.__GetSubIdMap = function(element)
+{
+  var bridge = oj.BaseCustomElementBridge.getInstance(element);
+  oj.CompositeElementBridge._generateSubIdMap(bridge, element);
+  return bridge._SUBID_MAP;
+};
+
+/**
+ * Returns the node to subId mapping for the composite's View. The returned map has the 
+ * following key/value pairs where nodeKey is value of the node's data-oj-subid[-map] attribute:
+ * {
+ *   [nodeKey]: {
+ *     map: [subIdMap],
+ *     node: [node]
+ *   }
+ * }
+ * @return {Map}
+ * @ignore
+ */
+oj.CompositeElementBridge.__GetNodeMap = function(element)
+{
+  var bridge = oj.BaseCustomElementBridge.getInstance(element);
+  oj.CompositeElementBridge._generateSubIdMap(bridge, element);
+  return bridge._NODE_MAP;
+};
+
+/**
+ * @ignore
+ */
+oj.CompositeElementBridge._getPropertyTracker = function(bridge, property)
+{
+  if (!bridge._TRACKERS)
+    bridge._TRACKERS = {};
+  if (!bridge._TRACKERS[property])
+    bridge._TRACKERS[property] = oj.CompositeTemplateRenderer.createTracker();
+  return bridge._TRACKERS[property];
+};
+
+/**
+ * @ignore
+ */
+oj.CompositeElementBridge._getResource = function(descriptor, key)
+{
+  var resource = descriptor[key];
+  if (resource != null)
+  {
+    if (resource.hasOwnProperty('inline'))
+      return resource['inline'];
+    else if (resource.hasOwnProperty('promise'))
+      throw new Error("The 'promise' resource type for descriptor key '" + key + "' is no longer supported." +
+        " The resource should be passed directly as the value instead.");
+    else
+      return resource;
+  }
+};
+
+/**
+ * @ignore
+ */
+oj.CompositeElementBridge._isDocumentFragment = function(content)
+{
+  if (window['DocumentFragment'])
+  {
+    return content instanceof DocumentFragment;
+  }
+  else
+  {
+    return content && content.nodeType === 11;
+  }
+};
+
+
 });

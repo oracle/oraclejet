@@ -1,4 +1,5 @@
 /**
+ * @license
  * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
@@ -17,6 +18,7 @@ define(['ojs/ojcore', 'jquery', 'hammerjs', 'promise', 'ojs/ojjquery-hammer', 'o
  * The interface for oj.IndexerModel which should be implemented by all object instances
  * bound to the data parameter for ojIndexer. 
  * @export
+ * @since 1.2
  * @interface
  */
 oj.IndexerModel = function()
@@ -28,20 +30,23 @@ oj.IndexerModel = function()
  * Constant for the section that represents all non-letters including numbers and symbols.
  * @export
  * @expose
+ * @type {Object}
+ * @property {string} id The id of this section
+ * @property {string} label The label of this section
  * @name SECTION_OTHERS
- * @memberof! oj.IndexerModel
+ * @memberof oj.IndexerModel
  */
 oj.IndexerModel.SECTION_OTHERS = {'id': '__others__', 'label': oj.Translations.getTranslatedString('oj-ojIndexer.indexerOthers')};
 
 /**
  * Make a section current in the Indexer.  The implementation should scroll the associated ListView so that the section becomes visible.
- * @param {Object} section the current section
- * @return {Promise} a Promise which when resolved will return the section that the associated ListView actually scrolls to.  
+ * @param {string|Object} section the current section
+ * @return {Promise.<string>|Promise.<Object>} a Promise which when resolved will return the section that the associated ListView actually scrolls to.  
  *                   For example, the implementation could choose to scroll to the next available section in ListView if no data 
  *                   exists for that section.  
  * @method
  * @name setSection
- * @memberof! oj.IndexerModel
+ * @memberof oj.IndexerModel
  * @instance
  */
 
@@ -50,20 +55,20 @@ oj.IndexerModel.SECTION_OTHERS = {'id': '__others__', 'label': oj.Translations.g
  * a String or an object containing at least a 'label' field.  For example, the implementation may return an array of Strings 
  * representing letters of the alphabet. Or it may return an array of objects each containing a 'label' field for the section 
  * titles. 
- * @return {Array.<Object>} an array of all indexable sections 
+ * @return {Array.<string>|Array.<Object>} an array of all indexable sections 
  * @method
  * @name getIndexableSections
- * @memberof! oj.IndexerModel
+ * @memberof oj.IndexerModel
  * @instance
  */
 
 /**
  * Returns an array of objects each representing a section that does not have a corresponding section in the associated ListView.  
  * It must be a subset of the return value of <code>getIndexableSections</code>.  Return null or undefined if there's nothing missing.
- * @return {Array.<Object>} an array of missing sections
+ * @return {Array.<string>|Array.<Object>} an array of missing sections
  * @method
  * @name getMissingSections
- * @memberof! oj.IndexerModel
+ * @memberof oj.IndexerModel
  * @instance
  */
 /**
@@ -124,27 +129,25 @@ oj.ListViewIndexerModel.prototype._getMissingSections = function()
     var results = [], groupItems, sections, i, section, found, content;
 
     groupItems = this.listview._getGroupItemsCache();
-    if (groupItems != null)
-    {
-        sections = this.getIndexableSections();
-        for (i=0; i<sections.length; i++)
-        {
-            section = sections[i];
-            found = false;
-            groupItems.each(function(index) 
-            {
-                content = $(this).text();
-                if (content.length > 0 && content.charAt(0) == section)
-                {
-                    found = true;
-                    return false;
-                }            
-            });
 
-            if (!found)
+    sections = this.getIndexableSections();
+    for (i=0; i<sections.length; i++)
+    {
+        section = sections[i];
+        found = false;
+        groupItems.each(function(index) 
+        {
+            content = $(this).text();
+            if (content.length > 0 && content.charAt(0) == section)
             {
-                results.push(section);
-            }
+                found = true;
+                return false;
+            }            
+        });
+
+        if (!found)
+        {
+            results.push(section);
         }
     }
 
@@ -176,34 +179,31 @@ oj.ListViewIndexerModel.prototype.setSection = function(section)
  */
 oj.ListViewIndexerModel.prototype._setOtherSection = function()
 {
-    var sections, self = this, match, groupItems, content, i, section;
+    var sections, self = this, match, content, i, section;
 
     sections = this.getIndexableSections();
 
     return new Promise(function(resolve, reject) 
     {
         match = null;
-        groupItems = self.listview._getGroupItemsCache();
-        if (groupItems != null)
-        {
-            // find the group header that DOES NOT match ANY of the sections
-            groupItems.each(function(index) 
-            {
-                content = $(this).text();
-                for (i=0; i<sections.length; i++)
-                {
-                    section = sections[i];
-                    if (content.indexOf(section) == 0)
-                    {
-                        // skip and check next group header
-                        return true;
-                    }            
-                }
 
-                match = this;
-                return false;
-            });
-        }    
+        // find the group header that DOES NOT match ANY of the sections
+        self.listview._getGroupItemsCache().each(function(index) 
+        {
+            content = $(this).text();
+            for (i=0; i<sections.length; i++)
+            {
+                section = sections[i];
+                if (content.indexOf(section) == 0)
+                {
+                    // skip and check next group header
+                    return true;
+                }            
+            }
+
+            match = this;
+            return false;
+        });
 
         if (match)
         {
@@ -265,19 +265,15 @@ oj.ListViewIndexerModel.prototype._findGroupHeader = function(section)
 {
     var match, groupItems, content;
 
-    groupItems = this.listview._getGroupItemsCache();
-    if (groupItems != null)
+    this.listview._getGroupItemsCache().each(function(index) 
     {
-        groupItems.each(function(index) 
+        content = $(this).text();
+        if (content.indexOf(section) == 0)
         {
-            content = $(this).text();
-            if (content.indexOf(section) == 0)
-            {
-                match = this;
-                return false;
-            }            
-        });
-    }
+            match = this;
+            return false;
+        }            
+    });
 
     return match;
 };
@@ -306,6 +302,7 @@ oj.ListViewIndexerModel.prototype._findGroupHeader = function(section)
  * @augments oj.baseComponent
  * @since 1.2.0
  * @ojstatus preview
+ * @ojtsignore
  * 
  * @ojshortdesc Displays a list of sections that corresponds to group headers of a list.
  * @ojrole slider
@@ -476,6 +473,14 @@ oj.__registerWidget('oj.ojIndexer', $['oj']['baseComponent'],
         this._unregisterTouchHandler(container);
 
         // if there's outstanding busy state, release it now
+        this._resolveBusyState();
+    },
+
+    /**
+     * @private
+     */
+    _resolveBusyState: function()
+    {
         if (this.busyStateResolve)
         {
             this.busyStateResolve(null);
@@ -506,6 +511,7 @@ oj.__registerWidget('oj.ojIndexer', $['oj']['baseComponent'],
      * @expose
      * @memberof! oj.ojIndexer
      * @instance
+     * @return {void}
      * @example <caption>Invoke the <code class="prettyprint">refresh</code> method:</caption>
      * $( ".selector" ).ojIndexer( "refresh" );
      */
@@ -968,12 +974,10 @@ oj.__registerWidget('oj.ojIndexer', $['oj']['baseComponent'],
                 }
             }
 
-            self.busyStateResolve(null);
-            self.busyStateResolve = null;
+            self._resolveBusyState();
         }, function(e)
         {
-            self.busyStateResolve(null);
-            self.busyStateResolve = null;
+            self._resolveBusyState();
         });
     },
 
@@ -1302,7 +1306,33 @@ oj.__registerWidget('oj.ojIndexer', $['oj']['baseComponent'],
 (function() {
 var ojIndexerMeta = {
   "properties": {
-    "data": {}
+    "data": {},
+    "translations": {
+      "type": "Object",
+      "properties": {
+        "ariaDisabledLabel": {
+          "type": "string"
+        },
+        "ariaInBetweenText": {
+          "type": "string"
+        },
+        "ariaKeyboardInstructionText": {
+          "type": "string"
+        },
+        "ariaOthersLabel": {
+          "type": "string"
+        },
+        "ariaTouchInstructionText": {
+          "type": "string"
+        },
+        "indexerCharacters": {
+          "type": "string"
+        },
+        "indexerOthers": {
+          "type": "string"
+        }
+      }
+    }
   },
   "extension": {
     _INNER_ELEM: 'ul',

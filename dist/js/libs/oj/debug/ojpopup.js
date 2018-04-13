@@ -1,4 +1,5 @@
 /**
+ * @license
  * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
@@ -61,16 +62,63 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
     };
 
   /**
+   * @typedef {Object} oj.ojPopup.PositionAlign
+   * @property {"top"|"bottom"|"center"} [vertical] Vertical alignment.
+   * @property {"start"|"end"|"left"|"center"|"bottom"} [horizontal] Horizontal alignment. <p>
+   * <ul>
+   *  <li><b>"start"</b> evaluates to "left" in LTR mode and "right" in RTL mode.</li>
+   *  <li><b>"end"</b> evaluates to "right" in LTR mode and "left" in RTL mode.</li>
+   * </ul>
+   *
+   */
+
+  /**
+   * @typedef {Object} oj.ojPopup.PositionPoint
+   * @property {number} [x] Horizontal aligment offset.
+   * @property {number} [y] Vertical alignment offset.
+   */
+
+  /**
+   * @typedef {Object} oj.ojPopup.Position
+   * @property {oj.ojPopup.PositionAlign} [my] Defines which edge on the popup to align with the target ("of") element.
+   * @property {oj.ojPopup.PositionAlign} [at] Defines which position on the target element ("of") to align the positioned element
+   *                                  against.
+   * @property {oj.ojPopup.PositionPoint} [offset] Defines a point offset in pixels from the ("my") alignment.
+   * @property {string|oj.ojPopup.PositionPoint} [of] Which element to position the popup against.  The default is the
+   * <code class="prettyprint">launcher</code> argument passed to the
+   * <code class="prettyprint">open</code> method. <p>
+   *
+   * If the value is a string, it should be a selector or the literal string value
+   * of <code class="prettyprint">window</code>.  Otherwise, a point of x,y.  When a point
+   * is used, the values are relative to the whole document.  Page horizontal and vertical
+   * scroll offsets need to be factored into this point - see UIEvent
+   * <a href="https://developer.mozilla.org/en-US/docs/Web/API/UIEvent/pageX">pageX</a>,
+   * <a href="https://developer.mozilla.org/en-US/docs/Web/API/UIEvent/pageY">pageY</a>.
+   *
+   * @property {"flip"|"fit"|"flipfit"|"none"} [collision] Rule for alternate alignment. <p>
+   * <ul>
+   *  <li><b>"flip"</b> the element to the opposite side of the target and the
+   *             collision detection is run again to see if it will fit. Whichever side
+   *             allows more of the element to be visible will be used. </li>
+   * <li><b>"fit"</b> shift the element away from the edge of the window. </li>
+   * <li><b>"flipfit"</b> first applies the flip logic, placing the element
+   *  on whichever side allows more of the element to be visible. Then the fit logic
+   *  is applied to ensure as much of the element is visible as possible.</li>
+   * <li><b>"none"</b> no collision detection.</li>
+   * </ul>
+   */
+
+  /**
    * @ojcomponent oj.ojPopup
    * @augments oj.baseComponent
    * @ojstatus preview
-   *
+   * @since 1.1.0
    * @ojdisplayname Popup
-   * @ojshortdesc Themeable, WAI-ARIA-compliant popup that can display arbitrary content.
+   * @ojshortdesc Displays a popup window that can display arbitrary content.
    * @ojrole tooltip
    * @ojrole dialog
    * @ojrole alertdialog
-   * 
+   *
    * @classdesc
    * <h3 id="popupOverview-section">
    *   JET Popup Component
@@ -246,7 +294,7 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
            * @memberof oj.ojPopup
            * @instance
            * @type {string}
-           * @default focusLoss
+           * @default 'focusLoss'
            * @ojvalue {string} "none" disables auto dismissal behaviors.
            * @ojvalue {string} "focusLoss" defines auto dismissal behavior when focus leaves the
            *   content of the popup or associated launcher.  In addition, if what the popup is
@@ -275,7 +323,7 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
            * @memberof oj.ojPopup
            * @instance
            * @type {string}
-           * @default default
+           * @default 'default'
            * @ojvalue {string} "default" describes the popups border, shadow, and background color
            *           defined by the active theme.
            * @ojvalue {string} "none" turns off the outer chrome defined by the active theme.
@@ -302,7 +350,7 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
            * @memberof oj.ojPopup
            * @instance
            * @type {string}
-           * @default auto
+           * @default 'auto'
            * @ojvalue {string} "auto" is derived from the values of the modality and
            *          autoDismiss properties
            * @ojvalue {string} "none" prevents the popup from stealing focus when open.
@@ -324,10 +372,12 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
            * myPopup.initialFocus = "none";
            */
           initialFocus : 'auto',
+
+
           /**
            * <p>Position property is used to establish the location the popup will appear relative to
-           * another element. Positioning defines "my" alignment "at" the alignment "of" some other
-           * thing which can be "offset" by so many pixels.</p>
+           * another element. {@link oj.ojPopup.Position} defines "my" alignment "at" the alignment
+           * "of" some other thing which can be "offset" by so many pixels.</p>
            *
            * <p>The "my" and "at" properties defines aligment points relative to the popup and other
            * element.  The "my" property represents the popups alignment where the "at" property
@@ -335,12 +385,18 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
            * when the popup opens.  The values of these properties describe horizontal and
            * vertical alignments.</p>
            *
-           * @deprecated v3.0.0 jQuery UI position syntax; Use of a percent unit with
-           * "my" or "at" is not supported.
+           * <b>Deprecated v3.0.0 jQuery UI position syntax; Use of a percent unit with
+           * "my" or "at" is not supported.</b>
+           *
            * @expose
            * @memberof oj.ojPopup
            * @instance
            * @type {Object}
+           * @default {"my":{"vertical" :"start", "horizontal": "top"}, "at": {"vertical": "start", "horizontal": "bottom"}, "collision": "flip"}
+           * @ojsignature { target: "Type",
+           *                value: "oj.ojPopup.Position",
+           *                jsdocOverride: true}
+           * @name position
            * @example <caption>Initialize the popup with <code class="prettyprint">position</code>
            *           attribute specified:</caption>
            * &lt;oj-popup position.my.horizontal="left"
@@ -368,6 +424,7 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
                * @memberof! oj.ojPopup
                * @instance
                * @alias position.my
+               * @name position.my
                * @type {{horizontal:string, vertical:string}}
                */
               'my' : {
@@ -377,8 +434,9 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
                  * @memberof! oj.ojPopup
                  * @instance
                  * @alias position.my.horizontal
+                 * @name position.my.horizontal
                  * @type {string}
-                 * @default start
+                 * @default 'start'
                  * @ojvalue {string} "start" evaluates to "left" in LTR mode and "right" in RTL mode.
                  * @ojvalue {string} "end" evaluates to "right" in LTR mode and "left" in RTL mode.
                  * @ojvalue {string} "left"
@@ -392,8 +450,9 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
                  * @memberof! oj.ojPopup
                  * @instance
                  * @alias position.my.vertical
+                 * @name position.my.vertical
                  * @type {string}
-                 * @default top
+                 * @default 'top'
                  * @ojvalue {string} "top"
                  * @ojvalue {string} "center"
                  * @ojvalue {string} "bottom"
@@ -406,6 +465,7 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
                * @memberof! oj.ojPopup
                * @instance
                * @alias position.offset
+               * @name position.offset
                * @type {{x:number, y:number}}
                */
               'offset': {
@@ -415,6 +475,7 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
                  * @memberof! oj.ojPopup
                  * @instance
                  * @alias position.offset.x
+                 * @name position.offset.x
                  * @type {number}
                  * @default 0
                  */
@@ -425,6 +486,7 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
                  * @memberof! oj.ojPopup
                  * @instance
                  * @alias position.offset.y
+                 * @name position.offset.y
                  * @type {number}
                  * @default 0
                  */
@@ -438,6 +500,7 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
                * @memberof! oj.ojPopup
                * @instance
                * @alias position.at
+               * @name position.at
                * @type {{horizontal:string, vertical:string}}
                */
               'at' : {
@@ -447,8 +510,9 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
                  * @memberof! oj.ojPopup
                  * @instance
                  * @alias position.at.horizontal
+                 * @name position.at.horizontal
                  * @type {string}
-                 * @default start
+                 * @default 'start'
                  * @ojvalue {string} "start" evaluates to "left" in LTR mode and "right" in RTL mode.
                  * @ojvalue {string} "end" evaluates to "right" in LTR mode and "left" in RTL mode.
                  * @ojvalue {string} "left"
@@ -462,8 +526,9 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
                  * @memberof! oj.ojPopup
                  * @instance
                  * @alias position.at.vertical
+                 * @name position.at.vertical
                  * @type {string}
-                 * @default top
+                 * @default 'top'
                  * @ojvalue {string} "top"
                  * @ojvalue {string} "center"
                  * @ojvalue {string} "bottom"
@@ -490,7 +555,8 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
                * @memberof! oj.ojPopup
                * @instance
                * @alias position.of
-               * @type {string|{x, number, y: number}|undefined}
+               * @name position.of
+               * @type {string|{x: number, y: number}| undefined}
                */
               'of' : undefined,
               /**
@@ -500,8 +566,9 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
                * @memberof! oj.ojPopup
                * @instance
                * @alias position.collision
+               * @name position.collision
                * @type {string}
-               * @default flip
+               * @default 'flip'
                * @ojvalue {string} "flip" the element to the opposite side of the target and the
                *  collision detection is run again to see if it will fit. Whichever side
                *  allows more of the element to be visible will be used.
@@ -525,7 +592,7 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
            * @memberof oj.ojPopup
            * @instance
            * @type {string}
-           * @default none
+           * @default 'none'
            * @ojvalue {string} "none" no decoration will be displayed from the popup pointing to the
            *          launcher.
            * @ojvalue {string} "simple" enables showing the tail defined by the current theme.
@@ -558,7 +625,7 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
            * @ojvalue {string} "modal" The popup is modal. Interactions with other page elements are
            *          disabled. Modal popups overlay other page elements.
            * @type {string}
-           *
+           * @default 'modeless'
            * @example <caption>Initialize the popup to have modality
            *          <code class="prettyprint">modality</code></caption>
            * &lt;oj-popup modality="modal" &gt;&lt;/oj-popup&gt;
@@ -594,7 +661,6 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
            * @instance
            * @ojcancelable
            * @ojbubbles
-           * @property {Event} event a custom event
            */
           beforeOpen : null,
           /**
@@ -606,7 +672,6 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
            * @memberof oj.ojPopup
            * @instance
            * @ojbubbles
-           * @property {Event} event a custom event
            */
           open : null,
           /**
@@ -620,7 +685,6 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
            * @instance
            * @ojcancelable
            * @ojbubbles
-           * @property {Event} event a custom event
            */
           beforeClose : null,
           /**
@@ -632,7 +696,6 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
            * @memberof oj.ojPopup
            * @instance
            * @ojbubbles
-           * @property {Event} event a custom event
            */
           close : null,
           /**
@@ -647,7 +710,6 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
            * @memberof oj.ojPopup
            * @instance
            * @ojbubbles
-           * @property {Event} event a custom event
            */
           focus : null,
           /**
@@ -661,17 +723,15 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
            * @instance
            * @ojcancelable
            * @ojbubbles
-           * @property {CustomEvent} event a custom event
-           * @property {Object} event.detail an object containing component specific event info
-           * @property {string} event.detail.action The action that is starting the animation.
+           * @property {"open"|"close"} action The action that is starting the animation.
            *            The number of actions can vary from component to component.
            *            Suggested values are:
            *                    <ul>
            *                      <li>"open" - when a popup component is opened</li>
            *                      <li>"close" - when a popup component is closed</li>
            *                    </ul>
-           * @property {Element} event.detail.element target of animation
-           * @property {function} event.detail.endCallback If the event listener calls
+           * @property {!Element} element target of animation
+           * @property {!function():void} endCallback If the event listener calls
            *            event.preventDefault to cancel the default animation, It must call the
            *            endCallback function when it finishes its own animation handling and any
            *            custom animation has ended.
@@ -706,10 +766,8 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
            * @instance
            * @ojcancelable
            * @ojbubbles
-           * @property {Event} event a custom event
-           * @property {Object} event.detail an object containing component specific event info
-           * @property {Element} event.detail.element target of animation
-           * @property {string} event.detail.action The action that is starting the animation.
+           * @property {!Element} element target of animation
+           * @property {"open"|"close"} action The action that is ending the animation.
            *                   The number of actions can vary from component to component.
            *                   Suggested values are:
            *                    <ul>
@@ -817,8 +875,8 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
         this._super();
       },
       /**
-       * Opens the popup. This method accepts two arguments but both are optional.
-       *
+       * Opens the popup. This method accepts two arguments. The first argument "launcher" is
+       * required but the second "position" is optional.
        *
        * @expose
        * @method
@@ -827,11 +885,16 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
        * @instance
        * @param {!(string|Element)} launcher selector or dom element that is associated with the
        *        popup. Defines the context of how the popup is used. The argument is required.
-       * @param {?Object} position an element relative to another
+       * @param {Object=} position {@link oj.ojPopup.Position} an element relative to another
+       * @return {void}
+       * @ojsignature { target: "Type",
+       *                value: "oj.ojPopup.Position",
+       *                for: "position",
+       *                jsdocOverride: true}
        * @fires oj.ojPopup#ojBeforeOpen
-       * @fires oj.ojPopup#ojOpen
        * @fires oj.ojPopup#ojAnimationStart
        * @fires oj.ojPopup#ojAnimationEnd
+       * @fires oj.ojPopup#ojOpen
        *
        * @example <caption>Invoke the <code class="prettyprint">open</code> method:</caption>
        * var open = myPopup.open("#launcher");
@@ -956,10 +1019,11 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
        * @name oj.ojPopup#close
        * @memberof oj.ojPopup
        * @instance
+       * @return {void}
        * @fires oj.ojPopup#ojBeforeClose
-       * @fires oj.ojPopup#ojClose
        * @fires oj.ojPopup#ojAnimationStart
        * @fires oj.ojPopup#ojAnimationEnd
+       * @fires oj.ojPopup#ojClose
        *
        * @example <caption>Invoke the <code class="prettyprint">close</code> method:</caption>
        * myPopup.close();

@@ -1,10 +1,13 @@
 {
   "name": "oj-tag-cloud",
-  "version": "4.2.0",
-  "jetVersion": "4.2.0",
+  "version": "5.0.0",
+  "jetVersion": "5.0.0",
   "displayName": "Tag Cloud",
   "preview": true,
-  "description": "ojTagCloud",
+  "roles": [
+    "application"
+  ],
+  "description": "An interactive data visualization of textual data, where the importance of each tagged word or phrase is represented by font size or color.",
   "properties": {
     "animationOnDataChange": {
       "description": "Defines the animation that is applied on data changes.",
@@ -43,14 +46,14 @@
       }
     },
     "hiddenCategories": {
-      "description": "An array of category strings used for category filtering. Data items with a category \nin hiddenCategories will be filtered.",
-      "type": "Array.<string>",
+      "description": "An array of category strings used for category filtering. Data items with a category in hiddenCategories will be filtered.",
+      "type": "Array<string>",
       "displayName": "Hidden Categories",
-      "value": null,
+      "value": [],
       "writeback": true
     },
     "highlightMatch": {
-      "description": "The matching condition for the highlightedCategories option. By default, highlightMatch is 'all' \nand only items whose categories match all of the values specified in the highlightedCategories \narray will be highlighted. If highlightMatch is 'any', then items that match at least one of \nthe highlightedCategories values will be highlighted.",
+      "description": "The matching condition for the highlightedCategories option. By default, highlightMatch is 'all' and only items whose categories match all of the values specified in the highlightedCategories array will be highlighted. If highlightMatch is 'any', then items that match at least one of the highlightedCategories values will be highlighted.",
       "type": "string",
       "displayName": "Highlight Match",
       "value": "all",
@@ -68,10 +71,10 @@
       }
     },
     "highlightedCategories": {
-      "description": "An array of category strings used for category highlighting. Data items with a \ncategory in highlightedCategories will be highlighted.",
-      "type": "Array.<string>",
+      "description": "An array of category strings used for category highlighting. Data items with a category in highlightedCategories will be highlighted.",
+      "type": "Array<string>",
       "displayName": "Highlighted Categories",
-      "value": null,
+      "value": [],
       "writeback": true
     },
     "hoverBehavior": {
@@ -93,57 +96,10 @@
       }
     },
     "items": {
-      "description": "An array of objects with the following properties that defines the data items for the tag cloud items. \nAlso accepts a Promise or callback function for deferred data rendering. The function should return \none of the following: Promise: A Promise that will resolve with an array of data items. No data will be rendered if the Promise is rejected. Array: An array of data items. \n",
-      "type": "Array.<object>|Promise",
+      "description": "An array of objects with the following properties that defines the data items for the tag cloud items. Also accepts a Promise or callback function for deferred data rendering. The function should return one of the following: Promise: A Promise that will resolve with an array of data items. No data will be rendered if the Promise is rejected. Array: An array of data items. ",
+      "type": "Array<Object>|Promise|null",
       "displayName": "Items",
-      "value": null,
-      "properties": {
-        "categories": {
-          "description": "An array of category strings corresponding to the tag cloud items. This allows highlighting and filtering of items.",
-          "type": "Array.<string>",
-          "value": null
-        },
-        "color": {
-          "description": "The color of the text. Will be overridden by any color defined in the style option.",
-          "type": "string",
-          "value": null
-        },
-        "id": {
-          "description": "The id of the tag.",
-          "type": "string",
-          "value": null
-        },
-        "label": {
-          "description": "The text of the tag.",
-          "type": "string",
-          "value": null
-        },
-        "shortDesc": {
-          "description": "The description of the tag. This is used for customizing the tooltip text.",
-          "type": "string",
-          "value": null
-        },
-        "svgClassName": {
-          "description": "The CSS style class defining the style of the text.",
-          "type": "string",
-          "value": null
-        },
-        "svgStyle": {
-          "description": "The CSS style object defining the style of the text.",
-          "type": "object",
-          "value": null
-        },
-        "url": {
-          "description": "The url this tag references.",
-          "type": "string",
-          "value": null
-        },
-        "value": {
-          "description": "The value of the tag which will be used to scale its font-size within the tag cloud.",
-          "type": "number",
-          "value": null
-        }
-      }
+      "value": null
     },
     "layout": {
       "description": "The layout to use for tag display.",
@@ -165,9 +121,9 @@
     },
     "selection": {
       "description": "An array of id strings, used to define the selected data items.",
-      "type": "Array.<string>",
+      "type": "Array<string>",
       "displayName": "Selection",
-      "value": null,
+      "value": [],
       "writeback": true
     },
     "selectionMode": {
@@ -193,43 +149,45 @@
       }
     },
     "styleDefaults": {
-      "description": "An object defining the default styles for the tag cloud. Properties specified on this object may \nbe overridden by specifications on the data item.",
-      "type": "object",
+      "description": "Component CSS classes should be used to set component wide styling. This API should be used only for styling a specific instance of the component. Properties specified on this object may be overridden by specifications on the data item. Some property default values come from the CSS and varies based on theme.",
+      "type": "Object",
       "displayName": "Style Defaults",
-      "value": null,
+      "value": {
+        "hoverBehaviorDelay": 200,
+        "svgStyle": {}
+      },
       "properties": {
         "animationDuration": {
-          "description": "The duration of the animations in milliseconds.",
-          "type": "number",
-          "value": null
+          "description": "The duration of the animations in milliseconds. The default value comes from the CSS and varies based on theme.",
+          "type": "number"
         },
         "hoverBehaviorDelay": {
           "description": "Specifies initial hover delay in ms for highlighting data items.",
           "type": "number",
-          "value": null
+          "value": 200
         },
         "svgStyle": {
-          "description": "The CSS style object defining the style of the items.",
-          "type": "object",
-          "value": null
+          "description": "The CSS style object defining the style of the items. The default value comes from the CSS and varies based on theme.",
+          "type": "Object"
         }
       }
     },
     "tooltip": {
       "description": "An object containing an optional callback function for tooltip customization.",
-      "type": "object",
+      "type": "Object",
       "displayName": "Tooltip",
-      "value": null,
+      "value": {
+        "renderer": null
+      },
       "properties": {
         "renderer": {
-          "description": "A function that returns a custom tooltip. The function takes a dataContext argument, provided by the tag cloud, with the following properties: color: The color of the hovered item. componentElement: The tag cloud element. id: The id of the hovered item. label: The data label of the hovered item. parentElement: The tooltip element. The function can directly modify or append content to this element. value: The value of the hovered item. The function should return an Object that contains only one of the two properties: insert: HTMLElement | string - An HTML element, which will be appended to the tooltip, or a tooltip string. preventDefault: true - Indicates that the tooltip should not be displayed. It is not necessary to return {preventDefault:false} to display tooltip, since this is a default behavior. ",
-          "type": "function",
-          "value": null
+          "description": "A callback function that returns a custom tooltip. The callback function will be called with a context object containing information about the item that was clicked.",
+          "type": "function"
         }
       }
     },
     "touchResponse": {
-      "description": "Data visualizations require a press and hold delay before triggering tooltips and rollover effects on \nmobile devices to avoid interfering with page panning, but these hold delays can make applications seem \nslower and less responsive. For a better user experience, the application can remove the touch and hold \n\\delay when data visualizations are used within a non scrolling container or if there is sufficient space \noutside of the visualization for panning. If touchResponse is touchStart the element will instantly trigger \nthe touch gesture and consume the page pan events. If touchResponse is auto, the element will behave like \ntouchStart if it determines that it is not rendered within scrolling content and if element panning is not \navailable for those elements that support the feature.",
+      "description": "Data visualizations require a press and hold delay before triggering tooltips and rollover effects on mobile devices to avoid interfering with page panning, but these hold delays can make applications seem slower and less responsive. For a better user experience, the application can remove the touch and hold \\delay when data visualizations are used within a non scrolling container or if there is sufficient space outside of the visualization for panning. If touchResponse is touchStart the element will instantly trigger the touch gesture and consume the page pan events. If touchResponse is auto, the element will behave like touchStart if it determines that it is not rendered within scrolling content and if element panning is not available for those elements that support the feature.",
       "type": "string",
       "displayName": "Touch Response",
       "value": "auto",
@@ -247,7 +205,7 @@
       }
     },
     "trackResize": {
-      "description": "Defines whether the element will automatically render in response to\nchanges in size. If set to off, then the\napplication is responsible for calling refresh\nto render the element at the new size.",
+      "description": "Defines whether the element will automatically render in response to changes in size. If set to off, then the application is responsible for calling refresh to render the element at the new size.",
       "type": "string",
       "displayName": "Track Resize",
       "value": "on",
@@ -265,10 +223,10 @@
       }
     },
     "translations": {
-      "description": "A collection of translated resources from the translation bundle, or null if this\ncomponent has no resources. Resources may be accessed and overridden individually or collectively, as seen in the examples.\n\nIf this component has translations, their documentation immediately follows this doc entry.",
-      "type": "Object",
+      "description": "A collection of translated resources from the translation bundle, or null if this\ncomponent has no resources. Resources may be accessed and overridden individually or collectively, as seen in the examples. If the component does not contain any translatable resource, the default value of this attribute will be \nnull. If not, an object containing all resources relevant to the component.\n\nIf this component has translations, their documentation immediately follows this doc entry.",
+      "type": "Object|null",
       "displayName": "Translations",
-      "value": null,
+      "translatable": true,
       "properties": {
         "componentName": {
           "description": "Used to describe the data visualization type for accessibility.\n\nSee the translations attribute for usage examples.",
@@ -368,7 +326,7 @@
           "type": "number"
         }
       ],
-      "return": "Object"
+      "return": "Object|null"
     },
     "getItemCount": {
       "description": "Returns the number of items in the tag cloud data.",
@@ -386,7 +344,8 @@
       "return": "Object|null"
     },
     "refresh": {
-      "description": "Refreshes the component."
+      "description": "Refreshes the component.",
+      "return": "void"
     },
     "setProperty": {
       "description": "Sets a property or a single subproperty for complex properties and notifies the component\nof the change, triggering a [property]Changed event.",
@@ -401,7 +360,8 @@
           "description": "The new value to set the property to.",
           "type": "*"
         }
-      ]
+      ],
+      "return": "void"
     },
     "getProperty": {
       "description": "Retrieves a value for a property or a single subproperty for complex properties.",
@@ -422,7 +382,8 @@
           "description": "An object containing the property and value pairs to set.",
           "type": "Object"
         }
-      ]
+      ],
+      "return": "void"
     }
   },
   "slots": {

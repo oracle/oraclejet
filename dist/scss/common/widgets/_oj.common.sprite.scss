@@ -9,7 +9,7 @@
 
 // Include this mixin in component SCSS if the image needs to be scaled.
 @mixin oj-fwk-icon-document-scale($scaleFactor: 1) {
-  background-size: calc(316px * #{$scaleFactor}) calc(52px * #{$scaleFactor});
+  background-size: calc(332px * #{$scaleFactor}) calc(52px * #{$scaleFactor});
   background-position: calc((0px - 2px) * #{$scaleFactor}) calc((0px - 2px) * #{$scaleFactor});
   width: calc(16px * #{$scaleFactor});
   height: calc(16px * #{$scaleFactor});
@@ -17,7 +17,7 @@
 
 // Include this mixin in component SCSS if the image needs to be scaled.
 @mixin oj-fwk-icon-folder-collapsed-scale($scaleFactor: 1) {
-  background-size: calc(316px * #{$scaleFactor}) calc(52px * #{$scaleFactor});
+  background-size: calc(332px * #{$scaleFactor}) calc(52px * #{$scaleFactor});
   background-position: calc((-20px - 2px) * #{$scaleFactor}) calc((0px - 2px) * #{$scaleFactor});
   width: calc(16px * #{$scaleFactor});
   height: calc(16px * #{$scaleFactor});
@@ -25,7 +25,7 @@
 
 // Include this mixin in component SCSS if the image needs to be scaled.
 @mixin oj-fwk-icon-folder-open-scale($scaleFactor: 1) {
-  background-size: calc(316px * #{$scaleFactor}) calc(52px * #{$scaleFactor});
+  background-size: calc(332px * #{$scaleFactor}) calc(52px * #{$scaleFactor});
   background-position: calc((-40px - 2px) * #{$scaleFactor}) calc((0px - 2px) * #{$scaleFactor});
   width: calc(16px * #{$scaleFactor});
   height: calc(16px * #{$scaleFactor});
@@ -33,7 +33,7 @@
 
 // Include this mixin in component SCSS if the image needs to be scaled.
 @mixin oj-fwk-icon-group-avatar-scale($scaleFactor: 1) {
-  background-size: calc(316px * #{$scaleFactor}) calc(52px * #{$scaleFactor});
+  background-size: calc(332px * #{$scaleFactor}) calc(52px * #{$scaleFactor});
   background-position: calc((-60px - 2px) * #{$scaleFactor}) calc((0px - 2px) * #{$scaleFactor});
   width: calc(32px * #{$scaleFactor});
   height: calc(32px * #{$scaleFactor});
@@ -41,7 +41,7 @@
 
 // Include this mixin in component SCSS if the image needs to be scaled.
 @mixin oj-fwk-icon-none-scale($scaleFactor: 1) {
-  background-size: calc(316px * #{$scaleFactor}) calc(52px * #{$scaleFactor});
+  background-size: calc(332px * #{$scaleFactor}) calc(52px * #{$scaleFactor});
   background-position: calc((-96px - 2px) * #{$scaleFactor}) calc((0px - 2px) * #{$scaleFactor});
   width: calc(48px * #{$scaleFactor});
   height: calc(48px * #{$scaleFactor});
@@ -49,7 +49,7 @@
 
 // Include this mixin in component SCSS if the image needs to be scaled.
 @mixin oj-fwk-icon-person-avatar-scale($scaleFactor: 1) {
-  background-size: calc(316px * #{$scaleFactor}) calc(52px * #{$scaleFactor});
+  background-size: calc(332px * #{$scaleFactor}) calc(52px * #{$scaleFactor});
   background-position: calc((-148px - 2px) * #{$scaleFactor}) calc((0px - 2px) * #{$scaleFactor});
   width: calc(32px * #{$scaleFactor});
   height: calc(32px * #{$scaleFactor});
@@ -57,64 +57,64 @@
 
 // Include this mixin in component SCSS if the image needs to be scaled.
 @mixin oj-fwk-icon-status-confirmation-scale($scaleFactor: 1) {
-  background-size: calc(316px * #{$scaleFactor}) calc(52px * #{$scaleFactor});
+  background-size: calc(332px * #{$scaleFactor}) calc(52px * #{$scaleFactor});
   background-position: calc((-184px - 2px) * #{$scaleFactor}) calc((0px - 2px) * #{$scaleFactor});
-  width: calc(16px * #{$scaleFactor});
-  height: calc(16px * #{$scaleFactor});
+  width: calc(20px * #{$scaleFactor});
+  height: calc(20px * #{$scaleFactor});
 }
 
 // Include this mixin in component SCSS if the image needs to be scaled.
 @mixin oj-fwk-icon-status-confirmation2-scale($scaleFactor: 1) {
-  background-size: calc(316px * #{$scaleFactor}) calc(52px * #{$scaleFactor});
-  background-position: calc((-204px - 2px) * #{$scaleFactor}) calc((0px - 2px) * #{$scaleFactor});
+  background-size: calc(332px * #{$scaleFactor}) calc(52px * #{$scaleFactor});
+  background-position: calc((-208px - 2px) * #{$scaleFactor}) calc((0px - 2px) * #{$scaleFactor});
   width: calc(9px * #{$scaleFactor});
   height: calc(9px * #{$scaleFactor});
 }
 
 // Include this mixin in component SCSS if the image needs to be scaled.
 @mixin oj-fwk-icon-status-error-scale($scaleFactor: 1) {
-  background-size: calc(316px * #{$scaleFactor}) calc(52px * #{$scaleFactor});
-  background-position: calc((-217px - 2px) * #{$scaleFactor}) calc((0px - 2px) * #{$scaleFactor});
-  width: calc(16px * #{$scaleFactor});
-  height: calc(16px * #{$scaleFactor});
+  background-size: calc(332px * #{$scaleFactor}) calc(52px * #{$scaleFactor});
+  background-position: calc((-221px - 2px) * #{$scaleFactor}) calc((0px - 2px) * #{$scaleFactor});
+  width: calc(20px * #{$scaleFactor});
+  height: calc(20px * #{$scaleFactor});
 }
 
 // Include this mixin in component SCSS if the image needs to be scaled.
 @mixin oj-fwk-icon-status-error2-scale($scaleFactor: 1) {
-  background-size: calc(316px * #{$scaleFactor}) calc(52px * #{$scaleFactor});
-  background-position: calc((-237px - 2px) * #{$scaleFactor}) calc((0px - 2px) * #{$scaleFactor});
+  background-size: calc(332px * #{$scaleFactor}) calc(52px * #{$scaleFactor});
+  background-position: calc((-245px - 2px) * #{$scaleFactor}) calc((0px - 2px) * #{$scaleFactor});
   width: calc(9px * #{$scaleFactor});
   height: calc(9px * #{$scaleFactor});
 }
 
 // Include this mixin in component SCSS if the image needs to be scaled.
 @mixin oj-fwk-icon-status-info-scale($scaleFactor: 1) {
-  background-size: calc(316px * #{$scaleFactor}) calc(52px * #{$scaleFactor});
-  background-position: calc((-250px - 2px) * #{$scaleFactor}) calc((0px - 2px) * #{$scaleFactor});
-  width: calc(16px * #{$scaleFactor});
-  height: calc(16px * #{$scaleFactor});
+  background-size: calc(332px * #{$scaleFactor}) calc(52px * #{$scaleFactor});
+  background-position: calc((-258px - 2px) * #{$scaleFactor}) calc((0px - 2px) * #{$scaleFactor});
+  width: calc(20px * #{$scaleFactor});
+  height: calc(20px * #{$scaleFactor});
 }
 
 // Include this mixin in component SCSS if the image needs to be scaled.
 @mixin oj-fwk-icon-status-info2-scale($scaleFactor: 1) {
-  background-size: calc(316px * #{$scaleFactor}) calc(52px * #{$scaleFactor});
-  background-position: calc((-270px - 2px) * #{$scaleFactor}) calc((0px - 2px) * #{$scaleFactor});
+  background-size: calc(332px * #{$scaleFactor}) calc(52px * #{$scaleFactor});
+  background-position: calc((-282px - 2px) * #{$scaleFactor}) calc((0px - 2px) * #{$scaleFactor});
   width: calc(9px * #{$scaleFactor});
   height: calc(9px * #{$scaleFactor});
 }
 
 // Include this mixin in component SCSS if the image needs to be scaled.
 @mixin oj-fwk-icon-status-warning-scale($scaleFactor: 1) {
-  background-size: calc(316px * #{$scaleFactor}) calc(52px * #{$scaleFactor});
-  background-position: calc((-283px - 2px) * #{$scaleFactor}) calc((0px - 2px) * #{$scaleFactor});
-  width: calc(16px * #{$scaleFactor});
-  height: calc(16px * #{$scaleFactor});
+  background-size: calc(332px * #{$scaleFactor}) calc(52px * #{$scaleFactor});
+  background-position: calc((-295px - 2px) * #{$scaleFactor}) calc((0px - 2px) * #{$scaleFactor});
+  width: calc(20px * #{$scaleFactor});
+  height: calc(20px * #{$scaleFactor});
 }
 
 // Include this mixin in component SCSS if the image needs to be scaled.
 @mixin oj-fwk-icon-status-warning2-scale($scaleFactor: 1) {
-  background-size: calc(316px * #{$scaleFactor}) calc(52px * #{$scaleFactor});
-  background-position: calc((-303px - 2px) * #{$scaleFactor}) calc((0px - 2px) * #{$scaleFactor});
+  background-size: calc(332px * #{$scaleFactor}) calc(52px * #{$scaleFactor});
+  background-position: calc((-319px - 2px) * #{$scaleFactor}) calc((0px - 2px) * #{$scaleFactor});
   width: calc(9px * #{$scaleFactor});
   height: calc(9px * #{$scaleFactor});
 }
@@ -128,7 +128,7 @@
       @include oj-fwk-icon-document-scale;
     }
 
-    /* in high-contrast mode, background-image disappears, so we have to use content */
+    // In high-contrast mode, background-image disappears, so we have to use content.
     .oj-hicontrast .oj-fwk-icon-document {
       background-image: none;
     }
@@ -138,8 +138,11 @@
       height: 100%;
     }
 
-    /* in print mode, background-image disappears, so we have to use content */
-    @media print {
+    // In print mode, background-image disappears, so we have to use content.
+    // For small dppx, sprites may be clipped significantly, so we disable it.
+    // IE and Safari do not support dppx, so they will always use sprites, and
+    // that is fine because the clipping is insignificant on IE and Safari. 
+    @media print, (max-resolution: .99dppx) {
       .oj-fwk-icon-document {
         background-image: none;
       }
@@ -155,7 +158,7 @@
       @include oj-fwk-icon-folder-collapsed-scale;
     }
 
-    /* in high-contrast mode, background-image disappears, so we have to use content */
+    // In high-contrast mode, background-image disappears, so we have to use content.
     .oj-hicontrast .oj-fwk-icon-folder-collapsed {
       background-image: none;
     }
@@ -165,8 +168,11 @@
       height: 100%;
     }
 
-    /* in print mode, background-image disappears, so we have to use content */
-    @media print {
+    // In print mode, background-image disappears, so we have to use content.
+    // For small dppx, sprites may be clipped significantly, so we disable it.
+    // IE and Safari do not support dppx, so they will always use sprites, and
+    // that is fine because the clipping is insignificant on IE and Safari. 
+    @media print, (max-resolution: .99dppx) {
       .oj-fwk-icon-folder-collapsed {
         background-image: none;
       }
@@ -182,7 +188,7 @@
       @include oj-fwk-icon-folder-open-scale;
     }
 
-    /* in high-contrast mode, background-image disappears, so we have to use content */
+    // In high-contrast mode, background-image disappears, so we have to use content.
     .oj-hicontrast .oj-fwk-icon-folder-open {
       background-image: none;
     }
@@ -192,8 +198,11 @@
       height: 100%;
     }
 
-    /* in print mode, background-image disappears, so we have to use content */
-    @media print {
+    // In print mode, background-image disappears, so we have to use content.
+    // For small dppx, sprites may be clipped significantly, so we disable it.
+    // IE and Safari do not support dppx, so they will always use sprites, and
+    // that is fine because the clipping is insignificant on IE and Safari. 
+    @media print, (max-resolution: .99dppx) {
       .oj-fwk-icon-folder-open {
         background-image: none;
       }
@@ -209,7 +218,7 @@
       @include oj-fwk-icon-group-avatar-scale;
     }
 
-    /* in high-contrast mode, background-image disappears, so we have to use content */
+    // In high-contrast mode, background-image disappears, so we have to use content.
     .oj-hicontrast .oj-fwk-icon-group-avatar {
       background-image: none;
     }
@@ -219,8 +228,11 @@
       height: 100%;
     }
 
-    /* in print mode, background-image disappears, so we have to use content */
-    @media print {
+    // In print mode, background-image disappears, so we have to use content.
+    // For small dppx, sprites may be clipped significantly, so we disable it.
+    // IE and Safari do not support dppx, so they will always use sprites, and
+    // that is fine because the clipping is insignificant on IE and Safari. 
+    @media print, (max-resolution: .99dppx) {
       .oj-fwk-icon-group-avatar {
         background-image: none;
       }
@@ -236,7 +248,7 @@
       @include oj-fwk-icon-none-scale;
     }
 
-    /* in high-contrast mode, background-image disappears, so we have to use content */
+    // In high-contrast mode, background-image disappears, so we have to use content.
     .oj-hicontrast .oj-fwk-icon-none {
       background-image: none;
     }
@@ -246,8 +258,11 @@
       height: 100%;
     }
 
-    /* in print mode, background-image disappears, so we have to use content */
-    @media print {
+    // In print mode, background-image disappears, so we have to use content.
+    // For small dppx, sprites may be clipped significantly, so we disable it.
+    // IE and Safari do not support dppx, so they will always use sprites, and
+    // that is fine because the clipping is insignificant on IE and Safari. 
+    @media print, (max-resolution: .99dppx) {
       .oj-fwk-icon-none {
         background-image: none;
       }
@@ -263,7 +278,7 @@
       @include oj-fwk-icon-person-avatar-scale;
     }
 
-    /* in high-contrast mode, background-image disappears, so we have to use content */
+    // In high-contrast mode, background-image disappears, so we have to use content.
     .oj-hicontrast .oj-fwk-icon-person-avatar {
       background-image: none;
     }
@@ -273,8 +288,11 @@
       height: 100%;
     }
 
-    /* in print mode, background-image disappears, so we have to use content */
-    @media print {
+    // In print mode, background-image disappears, so we have to use content.
+    // For small dppx, sprites may be clipped significantly, so we disable it.
+    // IE and Safari do not support dppx, so they will always use sprites, and
+    // that is fine because the clipping is insignificant on IE and Safari. 
+    @media print, (max-resolution: .99dppx) {
       .oj-fwk-icon-person-avatar {
         background-image: none;
       }
@@ -290,7 +308,7 @@
       @include oj-fwk-icon-status-confirmation-scale;
     }
 
-    /* in high-contrast mode, background-image disappears, so we have to use content */
+    // In high-contrast mode, background-image disappears, so we have to use content.
     .oj-hicontrast .oj-fwk-icon-status-confirmation {
       background-image: none;
     }
@@ -300,8 +318,11 @@
       height: 100%;
     }
 
-    /* in print mode, background-image disappears, so we have to use content */
-    @media print {
+    // In print mode, background-image disappears, so we have to use content.
+    // For small dppx, sprites may be clipped significantly, so we disable it.
+    // IE and Safari do not support dppx, so they will always use sprites, and
+    // that is fine because the clipping is insignificant on IE and Safari. 
+    @media print, (max-resolution: .99dppx) {
       .oj-fwk-icon-status-confirmation {
         background-image: none;
       }
@@ -317,7 +338,7 @@
       @include oj-fwk-icon-status-confirmation2-scale;
     }
 
-    /* in high-contrast mode, background-image disappears, so we have to use content */
+    // In high-contrast mode, background-image disappears, so we have to use content.
     .oj-hicontrast .oj-fwk-icon-status-confirmation2 {
       background-image: none;
     }
@@ -327,8 +348,11 @@
       height: 100%;
     }
 
-    /* in print mode, background-image disappears, so we have to use content */
-    @media print {
+    // In print mode, background-image disappears, so we have to use content.
+    // For small dppx, sprites may be clipped significantly, so we disable it.
+    // IE and Safari do not support dppx, so they will always use sprites, and
+    // that is fine because the clipping is insignificant on IE and Safari. 
+    @media print, (max-resolution: .99dppx) {
       .oj-fwk-icon-status-confirmation2 {
         background-image: none;
       }
@@ -344,7 +368,7 @@
       @include oj-fwk-icon-status-error-scale;
     }
 
-    /* in high-contrast mode, background-image disappears, so we have to use content */
+    // In high-contrast mode, background-image disappears, so we have to use content.
     .oj-hicontrast .oj-fwk-icon-status-error {
       background-image: none;
     }
@@ -354,8 +378,11 @@
       height: 100%;
     }
 
-    /* in print mode, background-image disappears, so we have to use content */
-    @media print {
+    // In print mode, background-image disappears, so we have to use content.
+    // For small dppx, sprites may be clipped significantly, so we disable it.
+    // IE and Safari do not support dppx, so they will always use sprites, and
+    // that is fine because the clipping is insignificant on IE and Safari. 
+    @media print, (max-resolution: .99dppx) {
       .oj-fwk-icon-status-error {
         background-image: none;
       }
@@ -371,7 +398,7 @@
       @include oj-fwk-icon-status-error2-scale;
     }
 
-    /* in high-contrast mode, background-image disappears, so we have to use content */
+    // In high-contrast mode, background-image disappears, so we have to use content.
     .oj-hicontrast .oj-fwk-icon-status-error2 {
       background-image: none;
     }
@@ -381,8 +408,11 @@
       height: 100%;
     }
 
-    /* in print mode, background-image disappears, so we have to use content */
-    @media print {
+    // In print mode, background-image disappears, so we have to use content.
+    // For small dppx, sprites may be clipped significantly, so we disable it.
+    // IE and Safari do not support dppx, so they will always use sprites, and
+    // that is fine because the clipping is insignificant on IE and Safari. 
+    @media print, (max-resolution: .99dppx) {
       .oj-fwk-icon-status-error2 {
         background-image: none;
       }
@@ -398,7 +428,7 @@
       @include oj-fwk-icon-status-info-scale;
     }
 
-    /* in high-contrast mode, background-image disappears, so we have to use content */
+    // In high-contrast mode, background-image disappears, so we have to use content.
     .oj-hicontrast .oj-fwk-icon-status-info {
       background-image: none;
     }
@@ -408,8 +438,11 @@
       height: 100%;
     }
 
-    /* in print mode, background-image disappears, so we have to use content */
-    @media print {
+    // In print mode, background-image disappears, so we have to use content.
+    // For small dppx, sprites may be clipped significantly, so we disable it.
+    // IE and Safari do not support dppx, so they will always use sprites, and
+    // that is fine because the clipping is insignificant on IE and Safari. 
+    @media print, (max-resolution: .99dppx) {
       .oj-fwk-icon-status-info {
         background-image: none;
       }
@@ -425,7 +458,7 @@
       @include oj-fwk-icon-status-info2-scale;
     }
 
-    /* in high-contrast mode, background-image disappears, so we have to use content */
+    // In high-contrast mode, background-image disappears, so we have to use content.
     .oj-hicontrast .oj-fwk-icon-status-info2 {
       background-image: none;
     }
@@ -435,8 +468,11 @@
       height: 100%;
     }
 
-    /* in print mode, background-image disappears, so we have to use content */
-    @media print {
+    // In print mode, background-image disappears, so we have to use content.
+    // For small dppx, sprites may be clipped significantly, so we disable it.
+    // IE and Safari do not support dppx, so they will always use sprites, and
+    // that is fine because the clipping is insignificant on IE and Safari. 
+    @media print, (max-resolution: .99dppx) {
       .oj-fwk-icon-status-info2 {
         background-image: none;
       }
@@ -452,7 +488,7 @@
       @include oj-fwk-icon-status-warning-scale;
     }
 
-    /* in high-contrast mode, background-image disappears, so we have to use content */
+    // In high-contrast mode, background-image disappears, so we have to use content.
     .oj-hicontrast .oj-fwk-icon-status-warning {
       background-image: none;
     }
@@ -462,8 +498,11 @@
       height: 100%;
     }
 
-    /* in print mode, background-image disappears, so we have to use content */
-    @media print {
+    // In print mode, background-image disappears, so we have to use content.
+    // For small dppx, sprites may be clipped significantly, so we disable it.
+    // IE and Safari do not support dppx, so they will always use sprites, and
+    // that is fine because the clipping is insignificant on IE and Safari. 
+    @media print, (max-resolution: .99dppx) {
       .oj-fwk-icon-status-warning {
         background-image: none;
       }
@@ -479,7 +518,7 @@
       @include oj-fwk-icon-status-warning2-scale;
     }
 
-    /* in high-contrast mode, background-image disappears, so we have to use content */
+    // In high-contrast mode, background-image disappears, so we have to use content.
     .oj-hicontrast .oj-fwk-icon-status-warning2 {
       background-image: none;
     }
@@ -489,8 +528,11 @@
       height: 100%;
     }
 
-    /* in print mode, background-image disappears, so we have to use content */
-    @media print {
+    // In print mode, background-image disappears, so we have to use content.
+    // For small dppx, sprites may be clipped significantly, so we disable it.
+    // IE and Safari do not support dppx, so they will always use sprites, and
+    // that is fine because the clipping is insignificant on IE and Safari. 
+    @media print, (max-resolution: .99dppx) {
       .oj-fwk-icon-status-warning2 {
         background-image: none;
       }

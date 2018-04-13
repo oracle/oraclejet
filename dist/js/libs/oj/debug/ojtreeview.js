@@ -1,4 +1,5 @@
 /**
+ * @license
  * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
@@ -10,9 +11,20 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojanimation', 'ojs/o
 /**
  * @ojcomponent oj.ojTreeView
  * @augments oj.baseComponent
- * @ojstatus preview
  * @since 4.0.0
  * @ojstatus preview
+ * @ojshortdesc Displays hierarchical relationships between the items in a tree.
+ * @ojtsignore
+ * @ojrole tree
+ * @ojsignature [{
+ *                target: "Type",
+ *                value: "class ojTreeView<K, D> extends baseComponent<ojTreeViewSettableProperties<K,D>>"
+ *               },
+ *               {
+ *                target: "Type",
+ *                value: "ojTreeViewSettableProperties<K,D> extends baseComponentSettableProperties",
+ *                for: "SettableProperties"
+ *               }]
  *
  * @classdesc
  * <h3 id="treeViewOverview-section">
@@ -210,10 +222,12 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojanimation', 'ojs/o
        *
        * @expose
        * @public
-       * @type {Object}
+       * @type {*}
        * @instance
        * @memberof! oj.ojTreeView
        * @readonly
+       * @ojwriteback
+       * @ojsignature {target:"Type", value:"K"}
        *
        * @example <caption>Get the current item:</caption>
        * myTreeView.currentItem;
@@ -231,7 +245,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojanimation', 'ojs/o
        * @type {oj.TreeDataSource}
        * @instance
        * @memberof! oj.ojTreeView
-       * @default <code class="prettyprint">null</code>
+       * @default null
        *
        * @example <caption>Initialize the TreeView with an oj.Collection:</caption>
        * myTreeView.data = new oj.CollectionTableDataSource(collection);
@@ -245,6 +259,8 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojanimation', 'ojs/o
        *
        * @expose
        * @memberof! oj.ojTreeView
+       * @type {Object}
+       * @default {"drag": null, "drop": null}
        * @instance
        */
       dnd: {
@@ -254,9 +270,10 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojanimation', 'ojs/o
          * @memberof! oj.ojTreeView
          * @instance
          * @type {Object}
-         * @default <code class="prettyprint">null</code>
+         * @ojsignature {target: "Type", value: "?"}
+         * @default null
          * @property {Object} items If this object is specified, TreeView will initiate drag operation when the user drags on an item.
-         * @property {string|Array.<string>} items.dataTypes  (optional) The MIME types to use for the dragged data in the dataTransfer object. This can be a string if there is only one
+         * @property {string|Array.<string>} [items.dataTypes] (optional) The MIME types to use for the dragged data in the dataTransfer object. This can be a string if there is only one
          * type, or an array of strings if multiple types are needed.<br><br>
          * For example, if selected items of employee data are being dragged, dataTypes could be "application/employees+json". Drop targets can examine the data types and decide
          * whether to accept the data. A text input may only accept "text" data type, while a chart for displaying employee data may be configured to accept the "application/employees+json" type.<br><br>
@@ -264,17 +281,21 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojanimation', 'ojs/o
          * is an array of objects, with each object representing a model object from the underlying data source. For example, if the underlying data is an oj.Collection, then this
          * would be a oj.Model object. Note that when static HTML is used, then the value would be the HTML string of the selected item.<br><br>
          * This property is required unless the application calls setData itself in a dragStart callback function.
-         * @property {function} items.dragStart (optional) A callback function that receives the "dragstart" event and context information as arguments:<br><br>
+         * @property {function(Event, {items: Array.<D>}):void} [items.dragStart] (optional) A callback function that receives the "dragstart" event and context information as arguments:<br><br>
          * <code class="prettyprint">function(event, context)</code><br><br>
          * All of the event payloads listed below can be found under the <code class="prettyprint">context</code> argument.
          * <ul><li><code class="prettyprint">items</code>: An array of objects, with each object representing the data of one selected item.</li></ul><br>
          * This function can set its own data and drag image as needed. If dataTypes is specified, event.dataTransfer is already populated with the default data when this function is invoked.
          * If dataTypes is not specified, this function must call event.dataTransfer.setData to set the data or else the drag operation will be cancelled. In either case, the drag image is
          * set to an image of the dragged items on the TreeView.
-         * @property {function} items.drag  (optional) A callback function that receives the "drag" event as argument:<br><br>
+         * @property {function(Event):void} [items.drag] (optional) A callback function that receives the "drag" event as argument:<br><br>
          * <code class="prettyprint">function(event)</code><br><br>
-         * @property {function} items.dragEnd  (optional) A callback function that receives the "dragend" event as argument:<br><br>
+         * @property {function(Event):void} [items.dragEnd] (optional) A callback function that receives the "dragend" event as argument:<br><br>
          * <code class="prettyprint">function(event)</code><br><br>
+         *
+         * @ojsignature {target: "Type",
+         *               value: "?((event: Event, context: {items: Array<D>}) => void)",
+         *               for: "items.dragStart"}
          *
          * @example <caption>Initialize the TreeView such that only leaf items are focusable:</caption>
          * myTreeView.setProperty('dnd.drag.items', {
@@ -285,34 +306,40 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojanimation', 'ojs/o
         drag: null,
 
         /**
+         * @typedef {Object} oj.ojTreeView.ItemsDropOnDropContext
+         * @property {Element} item The item being dropped on.
+         * @property {'inside'|'before'|'after'|'first'} position The drop position relative to the item being dropped on.
+         */
+        /**
          * @expose
          * @alias dnd.drop
          * @memberof! oj.ojTreeView
          * @instance
          * @type {Object}
-         * @default <code class="prettyprint">null</code>
+         * @ojsignature {target: "Type", value: "?"}
+         * @default null
          * @property {Object} items  An object that specifies callback functions to handle dropping items<br><br>
-         * @property {string|Array.<string>} items.dataTypes  A data type or an array of data types this component can accept.<br><br>
+         * @property {string|Array.<string>} [items.dataTypes] A data type or an array of data types this component can accept.<br><br>
          * This property is required unless dragEnter, dragOver, and drop callback functions are specified to handle the corresponding events.
-         * @property {function} items.dragEnter (optional) A callback function that receives the "dragenter" event and context information as arguments:<br><br>
+         * @property {function(Event, {item: Element}):void} [items.dragEnter] (optional) A callback function that receives the "dragenter" event and context information as arguments:<br><br>
          * <code class="prettyprint">function(event, context)</code><br><br>
          * All of the event payloads listed below can be found under the <code class="prettyprint">context</code> argument.
          * <ul><li><code class="prettyprint">item</code>: The item being entered.</li></ul><br>
          * This function should call <code class="prettyprint">event.preventDefault()</code> to indicate the dragged data can be accepted.
          * Otherwise, dataTypes will be matched against the drag dataTypes to determine if the data is acceptable. If there is a match, <code class="prettyprint">event.preventDefault()</code>
          * will be called to indicate that the data can be accepted.
-         * @property {function} items.dragOver (optional) A callback function that receives the "dragover" event and context information as arguments:<br><br>
+         * @property {function(Event, {item: Element}):void} [items.dragOver] (optional) A callback function that receives the "dragover" event and context information as arguments:<br><br>
          * <code class="prettyprint">function(event, context)</code><br><br>
          * All of the event payloads listed below can be found under the <code class="prettyprint">context</code> argument.
          * <ul><li><code class="prettyprint">item</code>: The item being dragged over.</li></ul><br>
          * This function should call <code class="prettyprint">event.preventDefault()</code> to indicate the dragged data can be accepted.
          * Otherwise, dataTypes will be matched against the drag dataTypes to determine if the data is acceptable. If there is a match, <code class="prettyprint">event.preventDefault()</code>
          * will be called to indicate that the data can be accepted.
-         * @property {function} items.dragLeave (optional) A callback function that receives the "dragleave" event and context information as arguments:<br><br>
+         * @property {function(Event, {item: Element}):void} [items.dragLeave] (optional) A callback function that receives the "dragleave" event and context information as arguments:<br><br>
          * <code class="prettyprint">function(event, context)</code><br><br>
          * All of the event payloads listed below can be found under the <code class="prettyprint">context</code> argument.
          * <ul><li><code class="prettyprint">item</code>: The item that was last entered.</li></ul><br>
-         * @property {function} items.drop (required) A callback function that receives the "drop" event and context information as arguments:<br><br>
+         * @property {function(Event, oj.ojTreeView.ItemsDropOnDropContext):void} items.drop (required) A callback function that receives the "drop" event and context information as arguments:<br><br>
          * <code class="prettyprint">function(event, context)</code><br><br>
          * All of the event payloads listed below can be found under the <code class="prettyprint">context</code> argument.
          * <ul><li><code class="prettyprint">item</code>: The item being dropped on.</li>
@@ -320,6 +347,17 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojanimation', 'ojs/o
          * Valid values are "inside", "before", "after", and "first" (the first child of the item being dropped on).</li></ul><br>
          * This function should call <code class="prettyprint">event.preventDefault()</code> to indicate the dragged data can be accepted.<br><br>
          * If the application needs to look at the data for the item being dropped on, it can use the <code class="prettyprint">getContextByNode</code> method.
+         *
+         * @ojsignature [{target: "Type",
+         *                value: "?((event: Event, context: {item: Element}) => void)",
+         *                for: "items.dragEnter"},
+         *               {target: "Type",
+         *                value: "?((event: Event, context: {item: Element}) => void)",
+         *                for: "items.dragOver"},
+         *               {target: "Type",
+         *                value: "?((event: Event, context: {item: Element}) => void)",
+         *                for: "items.dragLeave"}]
+         *
          *
          * @example <caption>Initialize the TreeView such that only leaf items are focusable:</caption>
          * myTreeView.setProperty('dnd.drop.items', {
@@ -332,12 +370,16 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojanimation', 'ojs/o
 
       /**
        * Specifies the key set containing the keys of the TreeView items that should be expanded.
+       * Use the <a href="ExpandedKeySet.html">ExpandedKeySet</a> class to specify items to expand.
+       * Use the <a href="ExpandAllKeySet.html">ExpandAllKeySet</a> class to expand all items.
        *
        * @expose
        * @memberof! oj.ojTreeView
        * @instance
        * @type {KeySet}
-       * @default <code class="prettyprint">new keySet.ExpandedKeySet()</code>
+       * @default new ExpandedKeySet()
+       * @ojwriteback
+       * @ojsignature {target:"Type", value:"KeySet<K>"}
        *
        * @example <caption>Initialize the TreeView with some expanded items:</caption>
        * myTreeView.expanded = new keySet.ExpandedKeySet(['item1', 'item2']);
@@ -352,6 +394,19 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojanimation', 'ojs/o
        * @instance
        */
       item: {
+        // TODO: Add data provider to item context
+        /**
+         * @typedef {Object} oj.ojTreeView.ItemContext
+         * @property {Element} componentElement The TreeView element.
+         * @property {D} [data] The data object of the item (not available for static content).
+         * @property {number} depth The depth of the item. The depth of the first level children under the invisible root is 1.
+         * @property {number} index The index of the item relative to its parent, where 0 is the index of the first item.
+         * @property {K} key The key of the item.
+         * @property {boolean} leaf Whether the item is a leaf item.
+         * @property {Element} parentElement The TreeView item element. The renderer can use this to directly append content.
+         * @property {K} [parentKey] The key of the parent item (not available for root item).
+         * @ojsignature {target:"Type", value:"<K,D>", for:"genericTypeParameters"}
+         */
         /**
          * A function that returns whether the item is focusable.
          * A item that is not focusable cannot be clicked on or navigated to.
@@ -363,8 +418,11 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojanimation', 'ojs/o
          * @alias item.focusable
          * @memberof! oj.ojTreeView
          * @instance
-         * @type {function(Object)|null}
-         * @default <code class="prettyprint">null</code>
+         * @type {function(Object):boolean|null}
+         * @ojsignature {target: "Type",
+         *               value: "?((itemContext: oj.ojTreeView.ItemContext<K,D>) => boolean)",
+         *               jsdocOverride: true}
+         * @default null
          *
          * @example <caption>Initialize the TreeView such that only leaf items are focusable:</caption>
          * myTreeView.setProperty('item.focusable', function(itemContext)
@@ -382,15 +440,18 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojanimation', 'ojs/o
          *   <li>An Object with the following property:
          *     <ul><li>insert: HTMLElement | string - A string or a DOM element of the content inside the item.</li></ul>
          *   </li>
-         *   <li>undefined: If the developer chooses to manipulate the item element directly, the function should return undefined.</li>
+         *   <li>Nothing: If the developer chooses to manipulate the item element directly, the function should return nothing.</li>
          * </ul>
          *
          * @expose
          * @alias item.renderer
          * @memberof! oj.ojTreeView
          * @instance
-         * @type {function(Object)|null}
-         * @default <code class="prettyprint">null</code>
+         * @type {function(Object):Object|null}
+         * @ojsignature {target: "Type",
+         *               value: "?((itemContext: oj.ojTreeView.ItemContext<K,D>) => {insert: Element|string}|void)|null",
+         *               jsdocOverride: true}
+         * @default null
          *
          * @example <caption>Initialize the TreeView with a renderer:</caption>
          * myTreeView.setProperty('item.renderer', function(itemContext)
@@ -411,8 +472,11 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojanimation', 'ojs/o
          * @alias item.selectable
          * @memberof! oj.ojTreeView
          * @instance
-         * @type {function(Object)|null}
-         * @default <code class="prettyprint">null</code>
+         * @type {function(Object):boolean|null}
+         * @ojsignature {target: "Type",
+         *               value: "?((itemContext: oj.ojTreeView.ItemContext<K,D>) => boolean)",
+         *               jsdocOverride: true}
+         * @default null
          *
          * @example <caption>Initialize the TreeView such that only leaf items are selectable:</caption>
          * myTreeView.setProperty('item.selectable', function(itemContext)
@@ -429,8 +493,10 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojanimation', 'ojs/o
        * @expose
        * @memberof! oj.ojTreeView
        * @instance
-       * @type {Array.<Object>}
-       * @default <code class="prettyprint">[]</code>
+       * @type {Array.<*>}
+       * @default []
+       * @ojwriteback
+       * @ojsignature {target:"Type", value:"Array<K>"}
        *
        * @example <caption>Initialize the TreeView with specific selection:</caption>
        * myTreeView.selection = ['item1', 'item2'];
@@ -444,12 +510,12 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojanimation', 'ojs/o
        * @memberof! oj.ojTreeView
        * @instance
        * @type {string}
-       * @default <code class="prettyprint">none</code>
-       * @ojvalue {string} "none": Selection is disabled.
+       * @default "none"
+       * @ojvalue {string} "none" Selection is disabled.
        * @ojvalue {string} "single" Only one item can be selected at a time.
        * @ojvalue {string} "multiple" Multiple items can be selected at the same time.
        *
-       * @example <caption>Initialize the list view to enable multiple selection:</caption>
+       * @example <caption>Initialize the tree view to enable multiple selection:</caption>
        * myTreeView.selectionMode = 'multiple';
        */
       selectionMode: 'none',
@@ -464,8 +530,8 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojanimation', 'ojs/o
        * @event
        * @memberof oj.ojTreeView
        * @instance
-       * @property {Object} action The action that started the animation. See <a href="#animation-section">animation</a> section for a list of actions.
-       * @property {Object} element The target of animation.
+       * @property {'expand'|'collapse'} action The action that started the animation. See <a href="#animation-section">animation</a> section for a list of actions.
+       * @property {Element} element The target of animation.
        */
       animateEnd: null,
 
@@ -477,9 +543,9 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojanimation', 'ojs/o
        * @event
        * @memberof oj.ojTreeView
        * @instance
-       * @property {Object} action The action that starts the animation. See <a href="#animation-section">animation</a> section for a list of actions.
-       * @property {Object} element The target of animation.
-       * @property {function} endCallback If the event listener calls <code class="prettyprint">event.preventDefault()</code> to cancel the default animation, it must call the endCallback function when it finishes its own animation handling and when any custom animation ends.
+       * @property {'expand'|'collapse'} action The action that starts the animation. See <a href="#animation-section">animation</a> section for a list of actions.
+       * @property {Element} element The target of animation.
+       * @property {function():void} endCallback If the event listener calls <code class="prettyprint">event.preventDefault()</code> to cancel the default animation, it must call the endCallback function when it finishes its own animation handling and when any custom animation ends.
        */
       animateStart: null,
 
@@ -489,9 +555,10 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojanimation', 'ojs/o
        *
        * @expose
        * @event
+       * @ojcancelable
        * @memberof oj.ojTreeView
        * @instance
-       * @property {Object} key The key of the item to be collapsed.
+       * @property {*} key The key of the item to be collapsed.
        * @property {Element} item The item to be collapsed.
        */
       beforeCollapse: null,
@@ -502,11 +569,12 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojanimation', 'ojs/o
        *
        * @expose
        * @event
+       * @ojcancelable
        * @memberof oj.ojTreeView
        * @instance
-       * @property {Object} previousKey The key of the previous item.
+       * @property {*} previousKey The key of the previous item.
        * @property {Element} previousItem The previous item.
-       * @property {Object} key The key of the new current item.
+       * @property {*} key The key of the new current item.
        * @property {Element} item The new current item.
        */
       beforeCurrentItem: null,
@@ -517,9 +585,10 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojanimation', 'ojs/o
        *
        * @expose
        * @event
+       * @ojcancelable
        * @memberof oj.ojTreeView
        * @instance
-       * @property {Object} key The key of the item to be expanded.
+       * @property {*} key The key of the item to be expanded.
        * @property {Element} item The item to be expanded.
        */
       beforeExpand: null,
@@ -531,7 +600,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojanimation', 'ojs/o
        * @event
        * @memberof oj.ojTreeView
        * @instance
-       * @property {Object} key The key of the item that was just collapsed.
+       * @property {*} key The key of the item that was just collapsed.
        * @property {Element} item The item that was just collapsed.
        */
       collapse: null,
@@ -543,7 +612,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojanimation', 'ojs/o
        * @event
        * @memberof oj.ojTreeView
        * @instance
-       * @property {Object} key The key of the item that was just expanded.
+       * @property {*} key The key of the item that was just expanded.
        * @property {Element} item The item that was just expanded.
        */
       expand: null
@@ -655,6 +724,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojanimation', 'ojs/o
     {
       var self = this;
       this.element.removeClass('oj-complete');
+      this._keyList = new Set(); // list of existing node keys
 
       if (this.options['data'])
       {
@@ -743,6 +813,12 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojanimation', 'ojs/o
       var data = nodeSet.getData(index);
       var metadata = nodeSet.getMetadata(index);
       var key = metadata['key'];
+
+      // Prevent infinite recursion due to duplicated keys ()
+      if (this._keyList.has(key)) {
+        throw new Error("JET TreeView nodes should not have duplicated keys: " + key);
+      }
+      this._keyList.add(key);
 
       var renderer = self.options['item']['renderer'];
       renderer = self._WrapCustomElementRenderer(renderer);
@@ -862,10 +938,15 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojanimation', 'ojs/o
       if (itemContent.length == 0)
       {
         // Wrap everything except the subtree
+        // Use item.contents() to include text and comment nodes as well
         itemContent = $(document.createElement('div'))
           .addClass('oj-treeview-item-content')
-          .append(item.children(':not(ul)')) // @HTMLUpdateOK
-          .prependTo(item); // @HTMLUpdateOK
+          .append(item.contents()) // @HTMLUpdateOK
+          .appendTo(item); // @HTMLUpdateOK
+
+        // Take the subtree out of the itemContent wrapper
+        // Selector can't be used to exclude the ul when wrapping item.contents()
+        itemContent.children('ul').appendTo(item);
 
         itemContent.find('.oj-treeview-item-icon').addClass('oj-treeview-icon');
       }
@@ -1055,6 +1136,8 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojanimation', 'ojs/o
           return;
       }
 
+      this._lastSelectedItem = null;
+
       var subtree = this._getSubtree(item);
       if (subtree.length == 0)
       {
@@ -1068,8 +1151,6 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojanimation', 'ojs/o
       {
         self._expandAfterFetch(item, animate, event);
       }
-
-      this._lastSelectedItem = null;
     },
 
     /**
@@ -1132,6 +1213,8 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojanimation', 'ojs/o
 
       item.removeClass('oj-expanded').addClass('oj-collapsed').attr('aria-expanded', 'false');
 
+      this._lastSelectedItem = null;
+
       var subtree = this._getSubtree(item);
       if (animate)
       {
@@ -1156,8 +1239,6 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojanimation', 'ojs/o
       {
         subtree.css('max-height', 0);
       }
-
-      this._lastSelectedItem = null;
     },
 
     /**
@@ -1216,8 +1297,15 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojanimation', 'ojs/o
      */
     _isSelected: function(item)
     {
-      var key = this._getKey(item);
+      var selectionMode = this.options['selectionMode'];
       var selection = this.options['selection'];
+
+      if (selectionMode === 'none')
+        return false;
+      else if (selectionMode === 'single' && selection.length > 1)
+        selection = [selection[0]];
+
+      var key = this._getKey(item);
       return selection.indexOf(key) != -1;
     },
 
@@ -1230,7 +1318,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojanimation', 'ojs/o
     _select: function(item, event)
     {
       var selectionMode = this.options['selectionMode'];
-      if (selectionMode == 'none')
+      if (selectionMode === 'none')
         return;
 
       // Check whether the item is selectable
@@ -1243,7 +1331,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojanimation', 'ojs/o
       {
         var isTouch = oj.DomUtils.isTouchSupported();
         var isMetaKey = oj.DomUtils.isMetaKeyPressed(event);
-        var isMultiple = selectionMode == 'multiple';
+        var isMultiple = selectionMode === 'multiple';
         var isNavigation = event.keyCode == 40 || event.keyCode == 38;
         var key = this._getKey(item);
         var selection = [];
@@ -1466,25 +1554,36 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojanimation', 'ojs/o
     },
 
     /**
-     * Returns the closest item content to the event target.
-     * @param {Event} event The event.
+     * Returns the closest item to the element.
+     * @param {jQuery} elem The element.
      * @return {jQuery} The item content element.
      * @private
      */
-    _getClosestItemContent: function(event)
+    _getClosestItem: function(elem)
     {
-      return $(event.target).closest('.oj-treeview-item-content');
+      return elem.closest('.oj-treeview-item');
     },
 
     /**
-     * Returns the closest disclosure icon to the event target.
-     * @param {Event} event The event.
+     * Returns the closest item content to the element.
+     * @param {jQuery} elem The element.
+     * @return {jQuery} The item content element.
+     * @private
+     */
+    _getClosestItemContent: function(elem)
+    {
+      return elem.closest('.oj-treeview-item-content');
+    },
+
+    /**
+     * Returns the closest disclosure icon to the element.
+     * @param {jQuery} elem The element.
      * @return {jQuery} The disclosure icon element.
      * @private
      */
-    _getClosestDisclosureIcon: function(event)
+    _getClosestDisclosureIcon: function(elem)
     {
-      return $(event.target).closest('.oj-treeview-disclosure-icon');
+      return elem.closest('.oj-treeview-disclosure-icon');
     },
 
     /**
@@ -1495,7 +1594,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojanimation', 'ojs/o
     _handleClick: function(event)
     {
       // Clicking on disclosure icon
-      var disclosureIcon = this._getClosestDisclosureIcon(event);
+      var disclosureIcon = this._getClosestDisclosureIcon($(event.target));
       if (disclosureIcon.length > 0)
       {
         var item = disclosureIcon.closest('.oj-treeview-item');
@@ -1507,7 +1606,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojanimation', 'ojs/o
       }
 
       // Clicking on item content
-      var itemContent = this._getClosestItemContent(event);
+      var itemContent = this._getClosestItemContent($(event.target));
       if (itemContent.length > 0)
       {
         var item = itemContent.parent();
@@ -1517,9 +1616,13 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojanimation', 'ojs/o
       }
 
       // Clear selection otherwise
-      this._clearSelection();
-      this._lastSelectedItem = null;
-      this._userOptionChange('selection', [], event);
+      var selectionMode = this.options['selectionMode'];
+      if (selectionMode != 'none')
+      {
+        this._clearSelection();
+        this._lastSelectedItem = null;
+        this._userOptionChange('selection', [], event);
+      }
     },
 
     /**
@@ -1533,10 +1636,10 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojanimation', 'ojs/o
       if (oj.DomUtils.isTouchSupported())
         return;
 
-      var target = this._getClosestDisclosureIcon(event);
+      var target = this._getClosestDisclosureIcon($(event.target));
 
       if (target.length == 0)
-        target = this._getClosestItemContent(event);
+        target = this._getClosestItemContent($(event.target));
 
       // Add hover effect
       target.removeClass('oj-default');
@@ -1554,11 +1657,11 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojanimation', 'ojs/o
       if (oj.DomUtils.isTouchSupported())
         return;
 
-      var target = this._getClosestDisclosureIcon(event);
+      var target = this._getClosestDisclosureIcon($(event.target));
       target.removeClass('oj-selected');
 
       if (target.length == 0)
-        target = this._getClosestItemContent(event);
+        target = this._getClosestItemContent($(event.target));
 
       // Remove hover effect
       target.addClass('oj-default');
@@ -1572,7 +1675,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojanimation', 'ojs/o
      */
     _handleMouseDown: function(event)
     {
-      var disclosureIcon = this._getClosestDisclosureIcon(event);
+      var disclosureIcon = this._getClosestDisclosureIcon($(event.target));
       disclosureIcon.addClass('oj-selected');
     },
 
@@ -1583,7 +1686,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojanimation', 'ojs/o
      */
     _handleMouseUp: function(event)
     {
-      var disclosureIcon = this._getClosestDisclosureIcon(event);
+      var disclosureIcon = this._getClosestDisclosureIcon($(event.target));
       disclosureIcon.removeClass('oj-selected');
     },
 
@@ -1689,7 +1792,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojanimation', 'ojs/o
       while (item != null)
       {
         item = this._getNextItem(item);
-        if (this._isActionable(item, actionName))
+        if (item != null && this._isActionable(item, actionName))
           return item;
       }
       return null;
@@ -1740,7 +1843,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojanimation', 'ojs/o
       while (item != null)
       {
         item = this._getPreviousItem(item);
-        if (this._isActionable(item, actionName))
+        if (item != null && this._isActionable(item, actionName))
           return item;
       }
       return null;
@@ -1756,7 +1859,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojanimation', 'ojs/o
       var self = this;
       var isRTL = this._GetReadingDirection() == "rtl";
 
-      var targetItem = this._getClosestItemContent(event).parent();
+      var targetItem = this._getClosestItem($(event.target));
       if (targetItem.length == 0)
         return;
 
@@ -1779,8 +1882,23 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojanimation', 'ojs/o
       var dragOptions = this._getDragOptions();
       var dataTransfer = event.originalEvent.dataTransfer;
 
-      var dragData = [];
       var dragImage = $(document.createElement('ul')).addClass('oj-treeview-drag-image oj-treeview-list');
+      if (oj.AgentUtils.getAgentInfo()['browser'] === oj.AgentUtils.BROWSER.SAFARI)
+      {
+        // On Safari, the drag image is not rendered if the position is fixed.
+        // If we set {position: absolute; top: -10000px}, it should theoretically
+        // work for all browsers (as it does for table and listview), but it
+        // causes the treeview to blink frantically if you drag an unselected
+        // item on Chrome. When an unselected item is dragged, the treeview applies
+        // selection effect to it, but Chrome somehow doesn't like modifying the
+        // DOM and setting drag image at the same time if the drag image has absolute
+        // position and negative top (I tested that positive top is fine, but positive
+        // top adds a scrollbar on IE). This issue never happens on table and
+        // listview because they don't allow dragging unselected items.
+        dragImage.css('position', 'absolute');
+      }
+
+      var dragData = [];
       var topmost = Infinity;
       var leftmost = Infinity;
 
@@ -1943,8 +2061,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojanimation', 'ojs/o
       }
     },
 
-    
-    // @override    
+    // @inheritdoc
     _NotifyContextMenuGesture: function(menu, event, eventType)
     {
       if (eventType === 'keyboard')
@@ -1985,7 +2102,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojanimation', 'ojs/o
       if (subId === 'oj-treeview-disclosure')
         ret = item.children('.oj-treeview-disclosure-icon')[0];
       else if (subId === 'oj-treeview-item')
-        ret = item[0];
+        ret = item.children('.oj-treeview-item-content')[0];
 
       // Non-null locators have to be handled by the component subclasses
       return ret || null;
@@ -1998,14 +2115,12 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojanimation', 'ojs/o
         return null;
 
       var subId;
-      var item = $(node);
+      var disclosureIcon = this._getClosestDisclosureIcon($(node));
+      var item = this._getClosestItem($(node));
 
-      if (item.hasClass('oj-treeview-disclosure-icon'))
-      {
-        item = item.parent();
+      if (disclosureIcon.length > 0)
         subId = 'oj-treeview-disclosure';
-      }
-      else if (item.hasClass('oj-treeview-item'))
+      else if (item.length > 0)
         subId = 'oj-treeview-item';
       else
         return null;
@@ -2029,8 +2144,8 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojanimation', 'ojs/o
       if (!$.contains(this.element[0], node))
         return null;
 
-      var item = $(node);
-      if (!item.hasClass('oj-treeview-item'))
+      var item = this._getClosestItem($(node));
+      if (item.length < 1)
         return null;
 
       var context = {};

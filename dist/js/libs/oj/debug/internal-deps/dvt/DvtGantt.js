@@ -23,7 +23,7 @@ dvt.Obj.createSubclass(dvt.DomUtils, dvt.Obj);
  * returns <code>true</code> if the class name was added.
  * @param {Element|Node|null|undefined} domElement DOM Element to add style class name to
  * @param {?string} className Name of style class to add
- * @return {?boolean} <code>true</code> if the style class was added
+ * @return {boolean} <code>true</code> if the style class was added
  */
 dvt.DomUtils.addCSSClassName = function(domElement, className)
 {
@@ -58,7 +58,7 @@ dvt.DomUtils.addCSSClassName = function(domElement, className)
  * returns <code>true</code> if the class name was removed.
  * @param {Element|Node|null|undefined} domElement DOM Element to remove style class name from
  * @param {?string} className Name of style class to remove
- * @return {?boolean} <code>true</code> if the style class was removed
+ * @return {boolean} <code>true</code> if the style class was removed
  */
 dvt.DomUtils.removeCSSClassName = function(domElement, className)
 {
@@ -215,6 +215,7 @@ dvt.DomUtils._getCSSClassNameIndex = function(currentClassName, className)
   // no match
   return -1;
 };
+
 /**
  * Style related utility functions for dvt.Gantt.
  * @class
@@ -285,6 +286,13 @@ DvtGanttStyleUtils._DEFAULT_BASELINE_TASK_HEIGHT = 6;
  * @private
  */
 DvtGanttStyleUtils._DEFAULT_MILESTONE_BASELINE_Y_OFFSET = 6;
+
+/**
+ * The default summary task shape thickiness in px.
+ * @const
+ * @private
+ */
+DvtGanttStyleUtils._DEFAULT_SUMMARY_THICKNESS = 3;
 
 /**
  * The default actual task height (i.e. baseline present).
@@ -382,14 +390,28 @@ DvtGanttStyleUtils._DEFAULT_ANIMATION_DURATION = 0.5; // seconds
  * @const
  * @private
  */
-DvtGanttStyleUtils._DEPENDENCY_LINE_ARC_RADIUS = 5;
+DvtGanttStyleUtils._DEPENDENCY_LINE_ARC_RADIUS = 0;
 
 /**
- * The gap between the task label and the dependency line
+ * The length of the horizontal dependency portion coming in/out of a task.
  * @const
  * @private
  */
-DvtGanttStyleUtils._DEPENDENCY_LINE_TASK_LABEL_GAP = 2;
+DvtGanttStyleUtils._DEPENDENCY_LINE_TASK_FLANK_LENGTH = 7;
+
+/**
+ * The height of the dependency line marker.
+ * @const
+ * @private
+ */
+DvtGanttStyleUtils._DEPENDENCY_MARKER_HEIGHT = 8;
+
+/**
+ * The width of the dependency line marker.
+ * @const
+ * @private
+ */
+DvtGanttStyleUtils._DEPENDENCY_MARKER_WIDTH = 6;
 
 /**
  * Gets the horizontal scrollbar style.
@@ -443,6 +465,15 @@ DvtGanttStyleUtils.getBaselineTaskHeight = function()
 DvtGanttStyleUtils.getMilestoneBaselineYOffset = function()
 {
   return DvtGanttStyleUtils._DEFAULT_MILESTONE_BASELINE_Y_OFFSET;
+};
+
+/**
+ * Gets the summary task shape thickness.
+ * @return {number} The summary task shape thickness in px.
+ */
+DvtGanttStyleUtils.getSummaryThickness = function()
+{
+  return DvtGanttStyleUtils._DEFAULT_SUMMARY_THICKNESS;
 };
 
 /**
@@ -555,12 +586,12 @@ DvtGanttStyleUtils.getRowAxisGap = function()
 };
 
 /**
- * Gets the gap between the dependency line and the task label.
- * @return {number} The gap between the dependency line and the task label.
+ * Gets the length of the horizontal dependency portion coming in/out of a task.
+ * @return {number} The length of the horizontal dependency portion coming in/out of a task.
  */
-DvtGanttStyleUtils.getDependencyLineLabelGap = function()
+DvtGanttStyleUtils.getDependencyLineTaskFlankLength = function()
 {
-  return DvtGanttStyleUtils._DEPENDENCY_LINE_TASK_LABEL_GAP;
+  return DvtGanttStyleUtils._DEPENDENCY_LINE_TASK_FLANK_LENGTH;
 };
 
 /**
@@ -570,6 +601,33 @@ DvtGanttStyleUtils.getDependencyLineLabelGap = function()
 DvtGanttStyleUtils.getDependencyLineArcRadius = function()
 {
   return DvtGanttStyleUtils._DEPENDENCY_LINE_ARC_RADIUS;
+};
+
+/**
+ * Gets the width of the dependency line marker.
+ * @return {number} The width of the dependency line marker.
+ */
+DvtGanttStyleUtils.getDependencyLineMarkerWidth = function()
+{
+  return DvtGanttStyleUtils._DEPENDENCY_MARKER_WIDTH;
+};
+
+/**
+ * Gets the height of the dependency line marker.
+ * @return {number} The height of the dependency line marker.
+ */
+DvtGanttStyleUtils.getDependencyLineMarkerHeight = function()
+{
+  return DvtGanttStyleUtils._DEPENDENCY_MARKER_HEIGHT;
+};
+
+/**
+ * Gets the vertical gap between the top or bottom of the task and the point at which its dependency line can bend.
+ * @return {number} The gap size in px.
+ */
+DvtGanttStyleUtils.getDependencyLineTaskGap = function()
+{
+  return DvtGanttStyleUtils.getTaskPadding() - 1;
 };
 
 /**
@@ -907,6 +965,7 @@ DvtGanttStyleUtils.getSizeInPixels = function(size, totalSize) {
   else
     return 0;
 };
+
 /**
  * Utility functions for dvt.Gantt tooltips.
  * @class
@@ -1312,6 +1371,7 @@ DvtGanttTooltipUtils.formatValue = function(gantt, type, valueFormat, value) {
 
   return value;
 };
+
 /**
  * Animation manager for dvt.Gantt
  * @param {dvt.Gantt} gantt the Gantt component
@@ -2019,10 +2079,11 @@ DvtGanttAnimationManager.prototype.preAnimateRowLabelRemove = function(labelOutp
     onEnd();
   }
 };
+
 /**
  * Gantt component.  The component should never be instantiated directly.  Use the newInstance function instead
  * @param {dvt.Context} context The rendering context.
- * @param {string} callback The function that should be called to dispatch component events.
+ * @param {function} callback The function that should be called to dispatch component events.
  * @param {object} callbackObj The optional object instance on which the callback function is defined.
  * @class
  * @constructor
@@ -2038,7 +2099,7 @@ dvt.Obj.createSubclass(dvt.Gantt, dvt.TimeComponent);
 /**
  * Returns a new instance of dvt.Gantt.
  * @param {dvt.Context} context The rendering context.
- * @param {string} callback The function that should be called to dispatch component events.
+ * @param {function} callback The function that should be called to dispatch component events.
  * @param {object} callbackObj The optional object instance on which the callback function is defined.
  * @return {dvt.Gantt}
  */
@@ -2050,7 +2111,7 @@ dvt.Gantt.newInstance = function(context, callback, callbackObj)
 /**
  * Initializes the component.
  * @param {dvt.Context} context The rendering context.
- * @param {string} callback The function that should be called to dispatch component events.
+ * @param {function} callback The function that should be called to dispatch component events.
  * @param {object} callbackObj The optional object instance on which the callback function is defined.
  * @protected
  */
@@ -2078,6 +2139,15 @@ dvt.Gantt.prototype.Init = function(context, callback, callbackObj)
  */
 dvt.Gantt.prototype.SetOptions = function(options) 
 {
+  // As of 5.0.0 default values are introduced. Some defaults are null, but dvt.JsonUtils.merge() assumes null values are intentional.
+  // Explicitly set null values to undefined so that merging with our internal defaults work properly:
+  if (options['taskDefaults'] == null)
+    options['taskDefaults'] = {'baseline': {}};
+  if (options['taskDefaults']['baseline'] == null)
+    options['taskDefaults']['baseline'] = {};
+  options['taskDefaults']['height'] = options['taskDefaults']['height'] == null ? undefined : options['taskDefaults']['height'];
+  options['taskDefaults']['baseline']['height'] = options['taskDefaults']['baseline']['height'] == null ? undefined : options['taskDefaults']['baseline']['height'];
+  
   dvt.Gantt.superclass.SetOptions.call(this, options);
   //initial setup
   this.setSelectionMode(this.Options['selectionMode']);
@@ -2291,7 +2361,9 @@ dvt.Gantt.prototype.render = function(options, width, height)
   if (preferredLength)
     this.setContentLength(preferredLength);
 
-  if (this._minorAxis || this._majorAxis)
+  // Minor axis is required, and preparing viewport length depends on it having valid options
+  // Major axis options checking happens later in hasValidOptions()
+  if (this._minorAxis && this._minorAxis.hasValidOptions())
     this.prepareViewportLength();
 
   this._animationManager = new DvtGanttAnimationManager(this);
@@ -2456,7 +2528,7 @@ dvt.Gantt.prototype.updateRows = function()
     this.getCache().putToCache('baseTaskLabelCSSStyle', DvtGanttStyleUtils.getTaskLabelStyle(this.Options));
 
     // update databody clip path
-    DvtGanttRenderer._updateDatabody(this, this.getDatabody());
+    DvtGanttRenderer._renderDatabody(this);
 
     if (this.isRowAxisEnabled())
       labelContainer = this.getRowAxis();
@@ -2671,6 +2743,15 @@ dvt.Gantt.prototype.getDatabodyStart = function()
 dvt.Gantt.prototype.setDatabodyStart = function(databodyStart)
 {
   this._databodyStart = databodyStart;
+};
+
+/**
+ * Gets the databody height
+ * @return {number} the databody height
+ */
+dvt.Gantt.prototype.getDatabodyHeight = function()
+{
+  return this.getCanvasSize() - this.getAxesHeight();
 };
 
 /**
@@ -3027,29 +3108,14 @@ dvt.Gantt.prototype.panBy = function(deltaX, deltaY, diagonal)
   // scroll vertically and make sure it's scrolling in one direction only
   if (this._databody && deltaY != 0 && (diagonal || (Math.abs(deltaY) > Math.abs(deltaX))))
   {
-    var maxTranslateY = this._databodyStart;
-    var minTranslateY = maxTranslateY;
-    var bottomOffset = 0;
-    if ((this.getContentHeight() + this._databodyStart) >= this._canvasSize)
-    {
-      if (this.getAxisPosition() == 'bottom')
-        bottomOffset = this.getAxesHeight();
-      minTranslateY = -(this.getContentHeight() - this._canvasSize + bottomOffset);
-    }
-    // var minTranslateY = (this.getContentHeight() + this._databodyStart) >= this._canvasSize ? -(this.getContentHeight() - this._canvasSize) : maxTranslateY;
-    var newTranslateY = this._databody.getTranslateY() - deltaY;
-
-    if (newTranslateY < minTranslateY)
-      newTranslateY = minTranslateY;
-    else if (newTranslateY > maxTranslateY)
-      newTranslateY = maxTranslateY;
+    var newTranslateY = this.getBoundedContentTranslateY(this._databody.getTranslateY() - deltaY);
 
     this._databody.setTranslateY(newTranslateY);
     if (this.isRowAxisEnabled())
       this.getRowAxis().setTranslateY(newTranslateY);
 
     if (this.isContentDirScrollbarOn())
-      this.contentDirScrollbar.setViewportRange(newTranslateY - (this._canvasSize - this._databodyStart - bottomOffset), newTranslateY);
+      this.contentDirScrollbar.setViewportRange(newTranslateY - this.getDatabodyHeight(), newTranslateY);
 
     if (this._deplines != null)
       this._deplines.setTranslateY(newTranslateY);
@@ -3057,6 +3123,24 @@ dvt.Gantt.prototype.panBy = function(deltaX, deltaY, diagonal)
 
   if (this.isTimeDirScrollbarOn() && this.timeDirScrollbar)
     this.timeDirScrollbar.setViewportRange(this._viewStartTime, this._viewEndTime);
+};
+
+/**
+ * Utility method for getting the bounded translate y value of content containers
+ * (i.e. databody, dependency lines containers, and any other same size overlayed containers)
+ * @param {number} proposedTranslateY The proposed translate y, which is not necessarily bounded
+ * @return {number} The bounded version of the translate y
+ */
+dvt.Gantt.prototype.getBoundedContentTranslateY = function(proposedTranslateY)
+{
+  var contentHeight = this.getContentHeight();
+  if (contentHeight == null) // Initial render; proposed translate Y is always within bounds
+    return proposedTranslateY;
+
+  var databodyHeight = this.getDatabodyHeight();
+  var maxTranslateY = this.getDatabodyStart();
+  var minTranslateY = maxTranslateY + Math.min(0, databodyHeight - contentHeight);
+  return Math.min(maxTranslateY, Math.max(proposedTranslateY, minTranslateY));
 };
 
 /**
@@ -3267,6 +3351,7 @@ dvt.Gantt.prototype.getNavigableDependencyLinesForTask = function(task, type)
 dvt.Gantt.prototype.HandleTouchStart = function(event)
 {
 };
+
 /**
  * Gantt automation service.
  * @param {dvt.Gantt} gantt The owning dvt.Gantt.
@@ -3366,6 +3451,7 @@ DvtGanttAutomation.prototype.getDomElementForSubId = function(subId)
   }
   return null;
 };
+
 /**
  * Default values and utility functions for component versioning.
  * @class
@@ -3407,7 +3493,8 @@ DvtGanttDefaults.VERSION_1 = {
     'baseline': {
       'height': DvtGanttStyleUtils.getBaselineTaskHeight(),
       'borderRadius': '0'
-    }
+    },
+    'type': 'auto'
   },
   'rowAxis': {
     'rendered': 'off',
@@ -3439,6 +3526,15 @@ DvtGanttDefaults.prototype.getNoCloneObject = function()
     'referenceObjects': {'value': true}
   };
 };
+
+/**
+ * @override
+ */
+DvtGanttDefaults.prototype.getAnimationDuration = function(options)
+{ 
+  return options['_resources'] ? options['_resources']['animationDuration'] : null;
+};
+
 /**
  * Class representing a GanttDependency node.
  * @param {dvt.Gantt} gantt The gantt component
@@ -3505,7 +3601,7 @@ DvtGanttDependencyNode.CONFLICT_BOTH = 3;
  */
 DvtGanttDependencyNode.prototype.Init = function(gantt, props)
 {
-  DvtGanttDependencyNode.superclass.Init.call(this, gantt.getCtx(), null, props['id']);
+  DvtGanttDependencyNode.superclass.Init.call(this, gantt.getCtx(), null);
 
   this._gantt = gantt;
   this._props = props;
@@ -3530,12 +3626,20 @@ DvtGanttDependencyNode.prototype.getGantt = function()
 };
 
 /**
- * Retrieve the id of the task.
- * @return {object} the id of the task
+ * Retrieve the data id of the dependency line.
+ * @override
  */
 DvtGanttDependencyNode.prototype.getId = function()
 {
   return this._props['id'];
+};
+
+/**
+ * @override
+ */
+DvtGanttDependencyNode.prototype.getActiveElementId = function()
+{
+  return null; // Let a temporary id be generated if active element
 };
 
 /**
@@ -3656,7 +3760,10 @@ DvtGanttDependencyNode._getTaskStart = function(taskNode)
  */
 DvtGanttDependencyNode._getTaskMiddle = function(taskNode)
 {
-  return DvtGanttDependencyNode._getTaskTop(taskNode) + Math.round(taskNode.getTask().getShape('main').getFinalHeight() / 2);
+  var task = taskNode.getTask();
+  var taskMainShape = task.getShape('main');
+  var availableShapeHeight = (task.isSummary('main')) ? taskNode.getProps()['height'] : taskMainShape.getFinalHeight();
+  return DvtGanttDependencyNode._getTaskTop(taskNode) + taskMainShape.getFinalY() + Math.round(availableShapeHeight / 2);
 };
 
 /**
@@ -3716,7 +3823,7 @@ DvtGanttDependencyNode._getTaskTop = function(taskNode)
  */
 DvtGanttDependencyNode._getTaskBottom = function(taskNode)
 {
-  return DvtGanttDependencyNode._getTaskTop(taskNode) + taskNode.getTask().getShape('main').getFinalHeight();
+  return DvtGanttDependencyNode._getTaskTop(taskNode) + taskNode.getFinalHeight();
 };
 
 /**
@@ -3794,6 +3901,12 @@ DvtGanttDependencyNode.prototype.render = function(container)
   else
   {
     var line = new dvt.Path(gantt.getCtx(), DvtGanttDependencyNode._calcDepLine(gantt.getCtx(), predecessorNode, successorNode, type));
+    // If arc radius > 0, then leave pixel hinting--otherwise they look weird and pixelated.
+    // Otherwise, the lines are rectilinear, and should be crisp.
+    if (DvtGanttStyleUtils.getDependencyLineArcRadius() === 0)
+    {
+      line.setPixelHinting(true);
+    }
 
     elem = line.getElem();
     // sets the default arrow marker
@@ -3930,34 +4043,33 @@ DvtGanttDependencyNode._calcDepLine = function(context, predecessorNode, success
 {
   var isRTL = dvt.Agent.isRightToLeft(context);
 
-  // invoke the proper method to generate command for finish-* dependency or start-* dependency
-  // note for RTL the rendering is flipped so for example for start-finish dependency the rendering
+  // For RTL the rendering is flipped so for example for start-finish dependency the rendering
   // in RTL would be exactly like finish-start in LTR
   switch (type)
   {
     case DvtGanttDependencyNode.START_START:
       if (isRTL)
-        return DvtGanttDependencyNode._calcDepLineForFinish(predecessorNode, successorNode, true);
+        return DvtGanttDependencyNode._calcDepLineHelper(predecessorNode, successorNode, true, true);
       else
-        return DvtGanttDependencyNode._calcDepLineForStart(predecessorNode, successorNode, false);
+        return DvtGanttDependencyNode._calcDepLineHelper(predecessorNode, successorNode, false, false);
       break;
     case DvtGanttDependencyNode.START_FINISH:
       if (isRTL)
-        return DvtGanttDependencyNode._calcDepLineForFinish(predecessorNode, successorNode, false);
+        return DvtGanttDependencyNode._calcDepLineHelper(predecessorNode, successorNode, true, false);
       else
-        return DvtGanttDependencyNode._calcDepLineForStart(predecessorNode, successorNode, true);
+        return DvtGanttDependencyNode._calcDepLineHelper(predecessorNode, successorNode, false, true);
       break;
     case DvtGanttDependencyNode.FINISH_START:
       if (isRTL)
-        return DvtGanttDependencyNode._calcDepLineForStart(predecessorNode, successorNode, true);
+        return DvtGanttDependencyNode._calcDepLineHelper(predecessorNode, successorNode, false, true);
       else
-        return DvtGanttDependencyNode._calcDepLineForFinish(predecessorNode, successorNode, false);
+        return DvtGanttDependencyNode._calcDepLineHelper(predecessorNode, successorNode, true, false);
       break;
     case DvtGanttDependencyNode.FINISH_FINISH:
       if (isRTL)
-        return DvtGanttDependencyNode._calcDepLineForStart(predecessorNode, successorNode, false);
+        return DvtGanttDependencyNode._calcDepLineHelper(predecessorNode, successorNode, false, false);
       else
-        return DvtGanttDependencyNode._calcDepLineForFinish(predecessorNode, successorNode, true);
+        return DvtGanttDependencyNode._calcDepLineHelper(predecessorNode, successorNode, true, true);
       break;
     default:
       // invalid type, should not happen
@@ -3968,339 +4080,122 @@ DvtGanttDependencyNode._calcDepLine = function(context, predecessorNode, success
 };
 
 /**
- * Calculate path command for start-start and start-finish types dependency lines
+ * Calculate path command for typeBegin-typeEnd type dependency lines
  * @param {DvtGanttTaskNode} predecessorNode the predecessor
  * @param {DvtGanttTaskNode} successorNode the successor
- * @param {boolean} finish true if it's start-finish type, false otherwise
+ * @param {boolean} isTypeBeginFinish true if typeBegin is finish, false otherwise
+ * @param {boolean} isTypeEndFinish true if typeEnd is finish, false otherwise
  * @return {string} the command path
  * @private
  */
-DvtGanttDependencyNode._calcDepLineForStart = function(predecessorNode, successorNode, finish)
+DvtGanttDependencyNode._calcDepLineHelper = function(predecessorNode, successorNode, isTypeBeginFinish, isTypeEndFinish)
 {
+  // TODO: Right now, arc radius by default is 0, so no issues. If we later change the default arc radius to > 0,
+  // we'll need to make sure the radius <= the amount we want to translate before and after drawing the arc to prevent weird artifacts.
   var r = DvtGanttStyleUtils.getDependencyLineArcRadius();
-  var m = DvtGanttStyleUtils.getTaskPadding() + DvtGanttStyleUtils.getDependencyLineLabelGap();
+  var taskFlankLength = DvtGanttStyleUtils.getDependencyLineTaskFlankLength();
+  var markerWidth = DvtGanttStyleUtils.getDependencyLineMarkerWidth();
 
-  var x1 = DvtGanttDependencyNode._getTaskStart(predecessorNode);
-  var x2 = finish ? DvtGanttDependencyNode._getTaskEnd(successorNode) : DvtGanttDependencyNode._getTaskStart(successorNode);
-
+  var x1 = isTypeBeginFinish ? DvtGanttDependencyNode._getTaskEnd(predecessorNode) : DvtGanttDependencyNode._getTaskStart(predecessorNode);
+  var x2 = isTypeEndFinish ? DvtGanttDependencyNode._getTaskEnd(successorNode) : DvtGanttDependencyNode._getTaskStart(successorNode);
   var y1 = DvtGanttDependencyNode._getTaskMiddle(predecessorNode);
   var y2 = DvtGanttDependencyNode._getTaskMiddle(successorNode);
+  var y_intermediate = y2 >= y1 ? DvtGanttDependencyNode._getTaskBottom(predecessorNode) + DvtGanttStyleUtils.getDependencyLineTaskGap() : DvtGanttDependencyNode._getTaskTop(predecessorNode) - DvtGanttStyleUtils.getDependencyLineTaskGap();
 
+  // Lock values at .5 px grid to ensure consistent SVG rendering of crispedges across browsers
+  x1 = Math.round(x1) + 0.5;
+  x2 = Math.round(x2) + 0.5;
+  y1 = Math.round(y1) + 0.5;
+  y2 = Math.round(y2) + 0.5;
+  y_intermediate = Math.round(y_intermediate) + 0.5;
+
+  var x1_flank = x1 + (isTypeBeginFinish ? 1 : -1) * taskFlankLength;
+  var x2_flank = isTypeEndFinish ? x2 + taskFlankLength + markerWidth : x2 - taskFlankLength - markerWidth;
+
+  // Start at (x1, y1)
   var line = dvt.PathUtils.moveTo(x1, y1);
-  // x2 with margin included
-  var x2m = finish ? x2 + m : x2 - m;
 
-  // predecessor is after successor
-  if (x1 >= x2m)
+  if ((isTypeBeginFinish && x2_flank < x1_flank) || (!isTypeBeginFinish && x2_flank > x1_flank))
   {
-    // successor is below predecessor
+    // Horizontal line right (typeBegin == finish) or left (typeBegin == start) to x1_flank
+    line += dvt.PathUtils.horizontalLineTo(x1_flank + (isTypeBeginFinish ? -1 : 1) * r);
     if (y2 > y1)
     {
-      if (finish)
+      // Arc down
+      line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, isTypeBeginFinish ? 1 : 0, x1_flank, y1 + r);
+      if ((isTypeBeginFinish && isTypeEndFinish) || (!isTypeBeginFinish && !isTypeEndFinish))
       {
-        // line left
-        line += dvt.PathUtils.lineTo(x2m + r + r, y1);
-        // arc down
-        line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, 0, x2m + r, y1 + r);
-        // line down
-        line += dvt.PathUtils.lineTo(x2m + r, y2 - r);
-        // arc left
-        line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, 1, x2m, y2);
+        // Vertical line down
+        line += dvt.PathUtils.verticalLineTo(y2 - r);
+        // Arc left (typeBegin == finish) or right (typeBegin == start)
+        line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, isTypeBeginFinish ? 1 : 0, x1_flank + (isTypeBeginFinish ? -1 : 1) * r, y2);
       }
       else
       {
-        // line left
-        line += dvt.PathUtils.lineTo(x2m, y1);
-        // arc down
-        line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, 0, x2m - r, y1 + r);
-        // line down
-        line += dvt.PathUtils.lineTo(x2m - r, y2 - r);
-        // arc right
-        line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, 0, x2m, y2);
+        // Vertical line down
+        line += dvt.PathUtils.verticalLineTo(y_intermediate - r);
+        // Arc left (typeBegin == finish) or right (typeBegin == start)
+        line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, isTypeBeginFinish ? 1 : 0, x1_flank + (isTypeBeginFinish ? -1 : 1) * r, y_intermediate);
+        // Horizontal line left (typeBegin == finish) or right (typeBegin == start)
+        line += dvt.PathUtils.horizontalLineTo(x2_flank + (isTypeBeginFinish ? 1 : -1) * r);
+        // Arc down
+        line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, isTypeBeginFinish ? 0 : 1, x2_flank, y_intermediate + r);
+        // Vertical line down
+        line += dvt.PathUtils.verticalLineTo(y2 - r);
+        // Arc right (typeBegin == finish) or left (typeBegin == start)
+        line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, isTypeBeginFinish ? 0 : 1, x2_flank + (isTypeBeginFinish ? 1 : -1) * r, y2);
       }
     }
-    // successor is in the same y position as predecessor
-    else if (y2 == y1)
+    else if (y2 < y1)
     {
-      if (!finish)
+      // Arc up
+      line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, isTypeBeginFinish ? 0 : 1, x1_flank, y1 - r);
+      if ((isTypeBeginFinish && isTypeEndFinish) || (!isTypeBeginFinish && !isTypeEndFinish))
       {
-        var x1m = x1 - m;
-        var y2m = DvtGanttDependencyNode._getTaskBottom(predecessorNode) + m;
-
-        // line left
-        line += dvt.PathUtils.lineTo(x1m, y1);
-        // arc down
-        line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, 0, x1m - r, y1 + r);
-        // line down
-        line += dvt.PathUtils.lineTo(x1m - r, y2m - r);
-        // arc left
-        line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, 1, x1m - r - r, y2m);
-        // line left
-        line += dvt.PathUtils.lineTo(x2m, y2m);
-        // arc up
-        line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, 1, x2m - r, y2m - r);
-        // line up
-        line += dvt.PathUtils.lineTo(x2m - r, y2 + r);
-        // arc right
-        line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, 1, x2m, y2);
-      }
-    }
-    // successor is above predecessor
-    else
-    {
-      if (finish)
-      {
-        // line left
-        line += dvt.PathUtils.lineTo(x2m + r + r, y1);
-        // arc up
-        line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, 1, x2m + r, y1 - r);
-        // line up
-        line += dvt.PathUtils.lineTo(x2m + r, y2 + r);
-        // arc left
-        line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, 0, x2m, y2);
+        // Vertical line up
+        line += dvt.PathUtils.verticalLineTo(y2 + r);
+        // Arc left (typeBegin == finish) or right (typeBegin == start)
+        line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, isTypeBeginFinish ? 0 : 1, x1_flank + (isTypeBeginFinish ? -1 : 1) * r, y2);
       }
       else
       {
-        // line left
-        line += dvt.PathUtils.lineTo(x2m, y1);
-        // arc up
-        line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, 1, x2m - r, y1 - r);
-        // line up
-        line += dvt.PathUtils.lineTo(x2m - r, y2 + r);
-        // arc right
-        line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, 1, x2m, y2);
-      }
-    }
-  }
-  else
-  {
-    x1m = x1 - m;
-    if (y2 > y1)
-    {
-      if (finish)
-      {
-        var y2m = DvtGanttDependencyNode._getTaskBottom(predecessorNode) + m;
-
-        line += dvt.PathUtils.lineTo(x1m + r, y1);
-        // arc down
-        line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, 0, x1m, y1 + r);
-        // line down
-        line += dvt.PathUtils.lineTo(x1m, y2m - r);
-        // arc right
-        line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, 0, x1m + r, y2m);
-        // line right
-        line += dvt.PathUtils.lineTo(x2m, y2m);
-        // arc down
-        line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, 1, x2m + r, y2m + r);
-        // line down
-        line += dvt.PathUtils.lineTo(x2m + r, y2 - r);
-        // arc left
-        line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, 1, x2m, y2);
-      }
-      else
-      {
-        // line left
-        line += dvt.PathUtils.lineTo(x1m, y1);
-        // arc down
-        line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, 0, x1m - r, y1 + r);
-        // line down
-        line += dvt.PathUtils.lineTo(x1m - r, y2 - r);
-        // arc right
-        line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, 0, x1m, y2);
-      }
-    }
-    else if (y2 == y1)
-    {
-      var y2m = DvtGanttDependencyNode._getTaskBottom(predecessorNode) + m;
-      // line left
-      line += dvt.PathUtils.lineTo(x1m, y1);
-      // arc down
-      line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, 0, x1m - r, y1 + r);
-      // line down
-      line += dvt.PathUtils.lineTo(x1m - r, y2m - r);
-      // arc right
-      line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, 0, x1m, y2m);
-
-      if (finish)
-      {
-        // line right
-        line += dvt.PathUtils.lineTo(x2m, y2m);
-        // arc up
-        line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, 0, x2m + r, y2m - r);
-        // line up
-        line += dvt.PathUtils.lineTo(x2m + r, y2 + r);
-        // arc left
-        line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, 0, x2m, y2);
-      }
-      else
-      {
-        // line right
-        line += dvt.PathUtils.lineTo(x2m - r - r, y2m);
-        // arc up
-        line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, 0, x2m - r, y2m - r);
-        // line up
-        line += dvt.PathUtils.lineTo(x2m - r, y2 + r);
-        // arc right
-        line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, 1, x2m, y2);
+        // Vertical line up
+        line += dvt.PathUtils.verticalLineTo(y_intermediate + r);
+        // Arc left (typeBegin == finish) or right (typeBegin == start)
+        line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, isTypeBeginFinish ? 0 : 1, x1_flank + (isTypeBeginFinish ? -1 : 1) * r, y_intermediate);
+        // Horizontal line left (typeBegin == finish) or right (typeBegin == start)
+        line += dvt.PathUtils.horizontalLineTo(x2_flank + (isTypeBeginFinish ? 1 : -1) * r);
+        // Arc up
+        line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, isTypeBeginFinish ? 1 : 0, x2_flank, y_intermediate - r);
+        // Vertical line up
+        line += dvt.PathUtils.verticalLineTo(y2 + r);
+        // Arc right (typeBegin == finish) or left (typeBegin == start)
+        line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, isTypeBeginFinish ? 1 : 0, x2_flank + (isTypeBeginFinish ? 1 : -1) * r, y2);
       }
     }
     else
     {
-      y2m = DvtGanttDependencyNode._getTaskTop(predecessorNode) - m;
-
-      // line left
-      line += dvt.PathUtils.lineTo(x1m, y1);
-      // arc up
-      line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, 1, x1m - r, y1 - r);
-      if (finish)
+      // Arc down
+      line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, isTypeBeginFinish ? 1 : 0, x1_flank, y1 + r);
+      // Vertical line down
+      line += dvt.PathUtils.verticalLineTo(y_intermediate - r);
+      // Arc left (typeBegin == finish) or right (typeBegin == start)
+      line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, isTypeBeginFinish ? 1 : 0, x1_flank + (isTypeBeginFinish ? -1 : 1) * r, y_intermediate);
+      // Horizontal line left (typeBegin == finish) or right (typeBegin == start)
+      line += dvt.PathUtils.horizontalLineTo(x2_flank + (isTypeBeginFinish ? 1 : -1) * r);
+      // Arc up
+      line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, isTypeBeginFinish ? 1 : 0, x2_flank, y_intermediate - r);
+      // Vertical line up
+      line += dvt.PathUtils.verticalLineTo(y2 + r);
+      if (isTypeEndFinish)
       {
-        // line up
-        line += dvt.PathUtils.lineTo(x1m - r, y2m + r);
-        // arc right
-        line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, 1, x1m, y2m);
-        // line right
-        line += dvt.PathUtils.lineTo(x2m, y2m);
-        // arc up
-        line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, 0, x2m + r, y2m - r);
-        // line up
-        line += dvt.PathUtils.lineTo(x2m + r, y2 + r);
-        // arc left
-        line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, 0, x2m, y2);
+        // Arc left
+        line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, 0, x2_flank - r, y2);
       }
       else
       {
-        // line up
-        line += dvt.PathUtils.lineTo(x1m - r, y2 + r);
-        // arc right
-        line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, 1, x1m, y2);
-      }
-    }
-  }
-
-  line += dvt.PathUtils.lineTo(x2, y2);
-
-  return line;
-};
-
-/**
- * Calculate path command for finish-start and finish-finish types dependency lines
- * @param {DvtGanttTaskNode} predecessorNode the predecessor
- * @param {DvtGanttTaskNode} successorNode the successor
- * @param {boolean} finish true if it's finish-finish type, false otherwise
- * @return {string} the command path
- * @private
- */
-DvtGanttDependencyNode._calcDepLineForFinish = function(predecessorNode, successorNode, finish)
-{
-  var r = DvtGanttStyleUtils.getDependencyLineArcRadius();
-  var m = DvtGanttStyleUtils.getTaskPadding() + DvtGanttStyleUtils.getDependencyLineLabelGap();
-
-  var x1 = DvtGanttDependencyNode._getTaskEnd(predecessorNode);
-  var x2 = finish ? DvtGanttDependencyNode._getTaskEnd(successorNode) : DvtGanttDependencyNode._getTaskStart(successorNode);
-
-  var y1 = DvtGanttDependencyNode._getTaskMiddle(predecessorNode);
-  var y2 = DvtGanttDependencyNode._getTaskMiddle(successorNode);
-
-  var line = dvt.PathUtils.moveTo(x1, y1);
-  // x2 with margin included
-  var x2m = finish ? x2 + m : x2 - m;
-
-  if (x1 >= x2m)
-  {
-    // a little bit to the right
-    line += dvt.PathUtils.lineTo(x1 + m - r, y1);
-
-    if (y2 > y1)
-    {
-      // arc down
-      line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, 1, x1 + m, y1 + r);
-
-      if (finish)
-      {
-        // line down
-        line += dvt.PathUtils.lineTo(x1 + m, y2 - r);
-        // arc left
-        line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, 1, x1 + m - r, y2);
-      }
-      else
-      {
-        var y2m = DvtGanttDependencyNode._getTaskBottom(predecessorNode) + m;
-
-        // line down
-        line += dvt.PathUtils.lineTo(x1 + m, y2m - r);
-        // arc left
-        line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, 1, x1 + m - r, y2m);
-        // line left
-        line += dvt.PathUtils.lineTo(x2m, y2m);
-        // arc down
-        line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, 0, x2m - r, y2m + r);
-        // line down
-        line += dvt.PathUtils.lineTo(x2m - r, y2 - r);
-        // arc right
-        line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, 0, x2m, y2);
-      }
-    }
-    else if (y2 == y1)
-    {
-      var y2m = DvtGanttDependencyNode._getTaskBottom(predecessorNode) + m;
-      // line right
-      line += dvt.PathUtils.lineTo(x1 + m, y1);
-      // arc down
-      line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, 1, x1 + m + r, y1 + r);
-      // line down
-      line += dvt.PathUtils.lineTo(x1 + m + r, y2m - r);
-      // arc left
-      line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, 1, x1 + m, y2m);
-      if (finish)
-      {
-        // line left
-        line += dvt.PathUtils.lineTo(x2m + r + r, y2m);
-        // arc up
-        line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, 1, x2m + r, y2m - r);
-        // line up
-        line += dvt.PathUtils.lineTo(x2m + r, y2 + r);
-        // arc left
-        line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, 0, x2m, y2);
-      }
-      else
-      {
-        // line right
-        line += dvt.PathUtils.lineTo(x2m, y2m);
-        // arc up
-        line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, 1, x2m - r, y2m - r);
-        // line up
-        line += dvt.PathUtils.lineTo(x2m - r, y2 + r);
-        // arc right
-        line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, 1, x2m, y2);
-      }
-    }
-    else
-    {
-      // arc up
-      line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, 0, x1 + m, y1 - r);
-
-      if (finish)
-      {
-        // line up
-        line += dvt.PathUtils.lineTo(x1 + m, y2 + r);
-        // arc left
-        line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, 0, x1 + m - r, y2);
-      }
-      else
-      {
-        y2m = DvtGanttDependencyNode._getTaskTop(predecessorNode) - m;
-        // line up
-        line += dvt.PathUtils.lineTo(x1 + m, y2m + r);
-        // arc left
-        line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, 0, x1 + m - r, y2m);
-        // line left
-        line += dvt.PathUtils.lineTo(x2m, y2m);
-        // arc up
-        line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, 1, x2m - r, y2m - r);
-        // line up
-        line += dvt.PathUtils.lineTo(x2m - r, y2 + r);
-        // arc right
-        line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, 1, x2m, y2);
+        // Arc right
+        line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, 1, x2_flank + r, y2);
       }
     }
   }
@@ -4308,80 +4203,66 @@ DvtGanttDependencyNode._calcDepLineForFinish = function(predecessorNode, success
   {
     if (y2 > y1)
     {
-      if (finish)
+      // Horizontal line right (typeBegin == finish) or left (typeBegin == start)
+      line += dvt.PathUtils.horizontalLineTo(x2_flank + (isTypeBeginFinish ? -1 : 1) * r);
+      // Arc down
+      line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, isTypeBeginFinish ? 1 : 0, x2_flank, y1 + r);
+      // Vertical line down
+      line += dvt.PathUtils.verticalLineTo(y2 - r);
+      if (isTypeEndFinish)
       {
-        // line right
-        line += dvt.PathUtils.lineTo(x2m, y1);
-        // arc down
-        line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, 1, x2m + r, y1 + r);
-        // line down
-        line += dvt.PathUtils.lineTo(x2m + r, y2 - r);
-        // arc left
-        line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, 1, x2m, y2);
+        // Arc left (typeBegin == finish) or right (typeBegin == start)
+        line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, 1, x2_flank - r, y2);
       }
       else
       {
-        // line right
-        line += dvt.PathUtils.lineTo(x2m - r - r, y1);
-        // arc down
-        line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, 1, x2m - r, y1 + r);
-        // line down
-        line += dvt.PathUtils.lineTo(x2m - r, y2 - r);
-        // arc right
-        line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, 0, x2m, y2);
+        // Arc right (typeBegin == finish) or left (typeBegin == start)
+        line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, 0, x2_flank + r, y2);
       }
     }
-    else if (y2 == y1)
+    else if (y2 < y1)
     {
-      if (finish)
+      // Horizontal line right (typeBegin == finish) or left (typeBegin == start)
+      line += dvt.PathUtils.horizontalLineTo(x2_flank + (isTypeBeginFinish ? -1 : 1) * r);
+      // Arc up
+      line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, isTypeBeginFinish ? 0 : 1, x2_flank, y1 - r);
+      // Vertical line up
+      line += dvt.PathUtils.verticalLineTo(y2 + r);
+      if (isTypeEndFinish)
       {
-        var y2m = DvtGanttDependencyNode._getTaskBottom(predecessorNode) + m;
-        // line right
-        line += dvt.PathUtils.lineTo(x1 + m, y1);
-        // arc down
-        line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, 1, x1 + m + r, y1 + r);
-        // line down
-        line += dvt.PathUtils.lineTo(x1 + m + r, y2m - r);
-        // arc right
-        line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, 0, x1 + m + r + r, y2m);
-        // line right
-        line += dvt.PathUtils.lineTo(x2m, y2m);
-        // arc up
-        line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, 0, x2m + r, y2m - r);
-        // line up
-        line += dvt.PathUtils.lineTo(x2m + r, y2 + r);
-        // arc left
-        line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, 0, x2m, y2);
+        // Arc left
+        line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, 0, x2_flank - r, y2);
+      }
+      else
+      {
+        // Arc right
+        line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, 1, x2_flank + r, y2);
       }
     }
     else
     {
-      if (finish)
+      if ((isTypeBeginFinish && isTypeEndFinish) || (!isTypeBeginFinish && !isTypeEndFinish))
       {
-        // line right
-        line += dvt.PathUtils.lineTo(x2m, y1);
-        // arc up
-        line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, 0, x2m + r, y1 - r);
-        // line up
-        line += dvt.PathUtils.lineTo(x2m + r, y2 + r);
-        // arc left
-        line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, 0, x2m, y2);
-      }
-      else
-      {
-        // line right
-        line += dvt.PathUtils.lineTo(x2m - r - r, y1);
-        // arc up
-        line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, 0, x2m - r, y1 - r);
-        // line up
-        line += dvt.PathUtils.lineTo(x2m - r, y2 + r);
-        // arc right
-        line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, 1, x2m, y2);
+        // Horizontal line right (typeBegin == finish) or left (typeBegin == start)
+        line += dvt.PathUtils.horizontalLineTo(x1_flank + (isTypeBeginFinish ? -1 : 1) * r);
+        // Arc down
+        line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, isTypeBeginFinish ? 1 : 0, x1_flank, y1 + r);
+        // Vertical line down
+        line += dvt.PathUtils.verticalLineTo(y_intermediate - r);
+        // Arc right (typeBegin == finish) or left (typeBegin == start)
+        line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, isTypeBeginFinish ? 0 : 1, x1_flank + (isTypeBeginFinish ? 1 : -1) * r, y_intermediate);
+        // Horizontal line  right (typeBegin == finish) or left (typeBegin == start)
+        line += dvt.PathUtils.horizontalLineTo(x2_flank - r);
+        // Arc up
+        line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, isTypeBeginFinish ? 0 : 1, x2_flank, y_intermediate - r);
+        // Vertical line up
+        line += dvt.PathUtils.verticalLineTo(y2 + r);
+        // Arc left
+        line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, isTypeBeginFinish ? 0 : 1, x2_flank + (isTypeBeginFinish ? -1 : 1) * r, y2);
       }
     }
   }
-
-  // line right
+  // End at (x2, y2)
   line += dvt.PathUtils.lineTo(x2, y2);
 
   return line;
@@ -4537,6 +4418,7 @@ DvtGanttDependencyNode.prototype.getAriaLabel = function()
   desc = dvt.Bundle.getTranslation(options, 'accessibleDependencyInfo', '', '', [key, predecessor, successor]);
   return desc;
 };
+
 /**
  * Gantt event manager.
  * @param {dvt.Gantt} gantt The owning dvt.Gantt.
@@ -4563,6 +4445,7 @@ DvtGanttEventManager.prototype.setFocus = function(navigable)
   if (navigable instanceof DvtGanttTaskNode)
     this._comp.scrollTaskIntoView(navigable);
 };
+
 /**
  * Gantt keyboard handler.
  * @param {dvt.Gantt} gantt The Gantt component.
@@ -4903,6 +4786,7 @@ DvtGanttKeyboardHandler.prototype.processKeyDown = function(event)
 
   return DvtGanttKeyboardHandler.superclass.processKeyDown.call(this, event);
 };
+
 /**
  * Gantt JSON Parser
  * @class
@@ -4997,6 +4881,7 @@ DvtGanttParser.prototype.parse = function(options)
 
   return ret;
 };
+
 /**
  * Renderer for dvt.Gantt.
  * @class
@@ -5594,7 +5479,7 @@ DvtGanttRenderer._renderEmptyText = function(gantt, noData)
 /**
  * Renders the databody
  * @param {dvt.Gantt} gantt the gantt component.
- * @param {dvt.Container} container the container to add the databody to.
+ * @param {dvt.Container=} container the container to add the databody to.
  * @private
  */
 DvtGanttRenderer._renderDatabody = function(gantt, container)
@@ -5605,36 +5490,19 @@ DvtGanttRenderer._renderDatabody = function(gantt, container)
     databody = new dvt.Container(gantt.getCtx(), 'db');
     container.addChild(databody);
     gantt.setDatabody(databody);
+
+    // Initial state: show from the top
+    databody.setTranslateY(gantt.getDatabodyStart());
+    if (gantt.isRowAxisEnabled())
+      gantt.getRowAxis().setTranslateY(gantt.getDatabodyStart() + gantt.getStartYOffset());
   }
 
-  // Initial state: show from the top
-  databody.setTranslateY(gantt.getDatabodyStart());
-  if (gantt.isRowAxisEnabled())
-    gantt.getRowAxis().setTranslateY(gantt.getDatabodyStart() + gantt.getStartYOffset());
-
-  DvtGanttRenderer._updateDatabody(gantt, databody);
-};
-
-/**
- * Updates the databody based on new width of height of the canvas
- * @param {dvt.Gantt} gantt the Gantt component
- * @param {dvt.Container} databody the databody
- * @private
- */
-DvtGanttRenderer._updateDatabody = function(gantt, databody)
-{
-  var databodyHeight = gantt._canvasSize;
-  var majorAxis = gantt.getMajorAxis();
-  var minorAxis = gantt.getMinorAxis();
-  if (majorAxis)
-    databodyHeight = databodyHeight - majorAxis.getSize();
-  if (minorAxis)
-    databodyHeight = databodyHeight - minorAxis.getSize();
-
   var cp = new dvt.ClipPath();
-  cp.addRect(0, gantt.getDatabodyStart(), gantt.getContentLength(), databodyHeight);
-
+  cp.addRect(0, gantt.getDatabodyStart(), gantt.getContentLength(), gantt.getDatabodyHeight());
   databody.setClipPath(cp);
+
+  // Ensure databody translateY is within bounds
+  databody.setTranslateY(gantt.getBoundedContentTranslateY(databody.getTranslateY()));
 };
 
 /**
@@ -5873,6 +5741,9 @@ DvtGanttRenderer._renderRows = function(gantt, container, labelContainer)
 
   gantt.setRows(rowNodes);
   gantt.setContentHeight(top);
+
+  // Ensure databody translateY is within bounds
+  databody.setTranslateY(gantt.getBoundedContentTranslateY(databody.getTranslateY()));
 };
 
 /**
@@ -6060,7 +5931,6 @@ DvtGanttRenderer._generateRowNodes = function(gantt)
             var deferredTaskNodeProps = deferredTaskPropsArray.pop();
             oldRowNodeTaskNode.setRenderState('refurbish');
             oldRowNodeTaskNode.setProps(deferredTaskNodeProps);
-            oldRowNodeTaskNode.setId(deferredTaskNodeProps['id'], true);
           }
           else
           {
@@ -6125,8 +5995,11 @@ DvtGanttRenderer._renderDependencies = function(gantt, container)
 
   // need to update clippath if canvas size updated
   var cp = new dvt.ClipPath();
-  cp.addRect(0, gantt.getDatabodyStart(), gantt.getContentLength(), gantt._canvasSize);
+  cp.addRect(0, gantt.getDatabodyStart(), gantt.getContentLength(), gantt.getDatabodyHeight());
   deplines.setClipPath(cp);
+
+  // ensure container translateY is within bounds
+  deplines.setTranslateY(gantt.getBoundedContentTranslateY(deplines.getTranslateY()));
 
   // check if it's just updating dependency lines vs re-rendering
   var numChildren = deplines.getNumChildren();
@@ -6164,13 +6037,16 @@ DvtGanttRenderer._createDefaultMarker = function(gantt)
 
   var path = dvt.SvgShapeUtils.createElement('path');
 
-  dvt.ToolkitUtils.setAttrNullNS(elem, 'viewBox', '0 0 6 8');
-  dvt.ToolkitUtils.setAttrNullNS(elem, 'refX', '6');
-  dvt.ToolkitUtils.setAttrNullNS(elem, 'refY', '4');
-  dvt.ToolkitUtils.setAttrNullNS(elem, 'markerWidth', '6');
-  dvt.ToolkitUtils.setAttrNullNS(elem, 'markerHeight', '8');
+  var width = DvtGanttStyleUtils.getDependencyLineMarkerWidth();
+  var height = DvtGanttStyleUtils.getDependencyLineMarkerHeight();
+
+  dvt.ToolkitUtils.setAttrNullNS(elem, 'viewBox', '0 0 ' + width + ' ' + height);
+  dvt.ToolkitUtils.setAttrNullNS(elem, 'refX', width);
+  dvt.ToolkitUtils.setAttrNullNS(elem, 'refY', height / 2);
+  dvt.ToolkitUtils.setAttrNullNS(elem, 'markerWidth', width);
+  dvt.ToolkitUtils.setAttrNullNS(elem, 'markerHeight', height);
   dvt.ToolkitUtils.setAttrNullNS(elem, 'orient', 'auto');
-  dvt.ToolkitUtils.setAttrNullNS(path, 'd', 'M0,0L6,4,0,8V0Z');
+  dvt.ToolkitUtils.setAttrNullNS(path, 'd', 'M0,0L' + width + ',' + (height / 2) + ',' + '0,' + height + 'V0Z');
 
   elem.appendChild(path);
 
@@ -6178,6 +6054,7 @@ DvtGanttRenderer._createDefaultMarker = function(gantt)
 
   return id;
 };
+
 /**
  * Class representing a Gantt row axis
  * @param {dvt.Gantt} gantt the Gantt component
@@ -6294,6 +6171,7 @@ DvtGanttRowAxis.prototype.getRowLabelTexts = function()
 {
   return this._rowLabelTexts;
 };
+
 /**
  * Class representing a Gantt row label single line text.
  * @param {dvt.Context} context
@@ -6360,6 +6238,7 @@ DvtGanttRowLabelText.prototype.setRowIndex = function(index)
 {
   this._rowIndex = index;
 };
+
 /**
  * Class representing a Gantt row label multiline text.
  * @param {dvt.Context} context
@@ -6426,6 +6305,7 @@ DvtGanttRowLabelMultilineText.prototype.setRowIndex = function(index)
 {
   this._rowIndex = index;
 };
+
 /**
  * Class representing a GanttRow node.
  * @param {dvt.Gantt} gantt the Gantt component
@@ -6452,13 +6332,14 @@ dvt.Obj.createSubclass(DvtGanttRowNode, dvt.Container);
  */
 DvtGanttRowNode.prototype.Init = function(gantt, props, index, top)
 {
-  DvtGanttRowNode.superclass.Init.call(this, gantt.getCtx(), null, props['id']);
+  DvtGanttRowNode.superclass.Init.call(this, gantt.getCtx(), null);
 
   this._gantt = gantt;
   this._props = props;
   this._index = index;
   this._top = top;
   this._rowHeight = 0;
+  this._renderState = 'add';
 };
 
 /**
@@ -6525,8 +6406,8 @@ DvtGanttRowNode.prototype.setTop = function(top)
 };
 
 /**
- * Retrieve the id of the row
- * @return {object} the id of the row
+ * Retrieve the data id of the row
+ * @override
  */
 DvtGanttRowNode.prototype.getId = function()
 {
@@ -6646,13 +6527,16 @@ DvtGanttRowNode.prototype.mergeTaskDefaults = function(taskProps, taskDefaults)
 
   if (baselineProps && !(baselineProps['start'] == null && baselineProps['end'] == null))
   {
-    if (taskProps['height'] == null)
+    // If app didn't set a height value on the task or on the task defaults, then use the default height for when the baseline is present
+    if (taskProps['height'] == null && taskDefaults['height'] === DvtGanttStyleUtils.getStandaloneTaskHeight())
     {
       taskProps['height'] = DvtGanttStyleUtils.getActualTaskHeight();
     }
 
-    var isBaselineMilestone = baselineProps['start'] == baselineProps['end'] || baselineProps['start'] == null || baselineProps['end'] == null;
-    if (isBaselineMilestone && baselineProps['height'] == null)
+    var taskType = taskProps['type'] ? taskProps['type'] : taskDefaults['type'];
+    var isBaselineMilestone = (taskType === 'milestone') || (taskType === 'auto' && (baselineProps['start'] == baselineProps['end'] || baselineProps['start'] == null || baselineProps['end'] == null));
+    // If app didn't set a height value on the baseline or on the task defaults, and the baseline is a milestone, then use the default height
+    if (isBaselineMilestone && baselineProps['height'] == null && taskDefaults['baseline']['height'] === DvtGanttStyleUtils.getBaselineTaskHeight())
     {
       baselineProps['height'] = DvtGanttStyleUtils.getActualTaskHeight();
     }
@@ -6661,12 +6545,16 @@ DvtGanttRowNode.prototype.mergeTaskDefaults = function(taskProps, taskDefaults)
 };
 
 /**
- * Retrieve tasks of the row
+ * Retrieve tasks of the row. Returns empty array if given tasks is null or undefined.
  * @return {Array} an array of DvtGanttTaskNode each representing a task.
  */
 DvtGanttRowNode.prototype.getTasks = function()
 {
   var tasks = this._props['tasks'];
+  if (tasks == null)
+  {
+    this._tasks = [];
+  }
   if (tasks && this._tasks == null)
   {
     this._tasks = [];
@@ -6739,6 +6627,12 @@ DvtGanttRowNode.prototype.assignRowLevel = function(tasks)
       oldPreviousAdjacentTaskNode, oldNextAdjacentTaskNode,
       rowLevelBaselineMilestones = [],
       rowLevelRecentTasks = [], rowLevelHeights = [];
+
+  // If no tasks in the row, still show empty row with height as if a single task is there.
+  if (tasks.length == 0)
+  {
+    return [DvtGanttStyleUtils.getStandaloneTaskHeight() + 2 * DvtGanttStyleUtils.getTaskPadding()];
+  }
 
   // determine task top before rendering based on whether it overlaps with other tasks
   // if n tasks:
@@ -6880,54 +6774,51 @@ DvtGanttRowNode.prototype.assignRowLevel = function(tasks)
 DvtGanttRowNode.prototype.render = function(container, labelContainer, index)
 {
   this.sortTasks();
-  var taskNodes = this.getTasks();
-  if (taskNodes != null && taskNodes.length > 0)
+  var taskNodes = this.getTasks(); // always an array, albeit may be empty
+  var rowLevelHeights = this.assignRowLevel(taskNodes);
+  for (var i = 0; i < taskNodes.length; i++)
   {
-    var rowLevelHeights = this.assignRowLevel(taskNodes);
-    for (var i = 0; i < taskNodes.length; i++)
+    var taskNode = taskNodes[i];
+    var taskProps = taskNode.getProps();
+    var task = taskNode.getTask();
+    var taskRepBounds = task.getTimeSpanDimensions(taskProps['start'], taskProps['end']);
+    if (!taskRepBounds)
     {
-      var taskNode = taskNodes[i];
-      var taskProps = taskNode.getProps();
-      var task = taskNode.getTask();
-      var taskRepBounds = task.getTimeSpanDimensions(taskProps['start'], taskProps['end']);
-      if (!taskRepBounds)
-      {
-        taskRepBounds = task.getTimeSpanDimensions(taskProps['baseline']['start'], taskProps['baseline']['end']);
-      }
-      var x = taskRepBounds['startPos'];
-      var rowLevel = 0;
-      if (taskNode.getRowLevel() > 0)
-      {
-        rowLevel = rowLevelHeights[taskNode.getRowLevel() - 1];
-      }
-      taskNode.setFinalY(rowLevel + this.getTop() + DvtGanttStyleUtils.getTaskPadding());
-      taskNode.setFinalX(x);
-      taskNode.render(this);
+      taskRepBounds = task.getTimeSpanDimensions(taskProps['baseline']['start'], taskProps['baseline']['end']);
     }
-    // Need to render task labels AFTER all task shapes are rendered for auto label positioning
-    for (var j = 0; j < taskNodes.length; j++)
+    var x = taskRepBounds['startPos'];
+    var rowLevel = 0;
+    if (taskNode.getRowLevel() > 0)
     {
-      taskNode = taskNodes[j];
-      var taskLabel = taskNode.getTaskLabel();
-      var task = taskNode.getTask();
-      taskLabel.setAssociatedShape(task.getShape('main'));
-      taskLabel.render();
+      rowLevel = rowLevelHeights[taskNode.getRowLevel() - 1];
     }
-
-    this.setRowHeight(rowLevelHeights[rowLevelHeights.length - 1]);
-
-    this._renderRowLabel(this._gantt, this.getRowLabelText(), labelContainer);
-
-    if (this.getParent() != container)
-    {
-      if (index != null)
-        container.addChildAt(this, index);
-      else
-        container.addChild(this);
-    }
-
-    this._renderHorizontalGridline(this._gantt, this, this);
+    taskNode.setFinalY(rowLevel + this.getTop() + DvtGanttStyleUtils.getTaskPadding());
+    taskNode.setFinalX(x);
+    taskNode.render(this);
   }
+  // Need to render task labels AFTER all task shapes are rendered for auto label positioning
+  for (var j = 0; j < taskNodes.length; j++)
+  {
+    taskNode = taskNodes[j];
+    var taskLabel = taskNode.getTaskLabel();
+    var task = taskNode.getTask();
+    taskLabel.setAssociatedShape(task.getShape('main'));
+    taskLabel.render();
+  }
+
+  this.setRowHeight(rowLevelHeights[rowLevelHeights.length - 1]);
+
+  this._renderRowLabel(this._gantt, this.getRowLabelText(), labelContainer);
+
+  if (this.getParent() != container)
+  {
+    if (index != null)
+      container.addChildAt(this, index);
+    else
+      container.addChild(this);
+  }
+
+  this._renderHorizontalGridline(this._gantt, this, this);
 };
 
 /**
@@ -7144,6 +7035,7 @@ DvtGanttRowNode.prototype._getDate = function(date)
   else
     return (new Date(date)).getTime();
 };
+
 /**
  * Class representing a task container (i.e. container for shapes and labels that make up a task).
  * @param {dvt.Gantt} gantt The gantt component
@@ -7169,11 +7061,12 @@ dvt.Obj.createSubclass(DvtGanttTaskNode, dvt.Container);
  */
 DvtGanttTaskNode.prototype.Init = function(gantt, row, props)
 {
-  DvtGanttTaskNode.superclass.Init.call(this, gantt.getCtx(), null, props['id']);
+  DvtGanttTaskNode.superclass.Init.call(this, gantt.getCtx(), null);
 
   this._gantt = gantt;
   this._row = row;
   this._props = props;
+  this._renderState = 'add';
 
   this._task = new DvtGanttTask(gantt, this);
   this._taskLabel = new DvtGanttTaskLabel(gantt, this);
@@ -7197,6 +7090,23 @@ DvtGanttTaskNode.prototype.getProps = function()
 DvtGanttTaskNode.prototype.setProps = function(props)
 {
   this._props = props;
+};
+
+/**
+ * Gets the task data id.
+ * @override
+ */
+DvtGanttTaskNode.prototype.getId = function()
+{
+  return this._props['id'];
+};
+
+/**
+ * @override
+ */
+DvtGanttTaskNode.prototype.getActiveElementId = function()
+{
+  return null; // Let a temporary id be generated if active element
 };
 
 /**
@@ -7589,11 +7499,12 @@ DvtGanttTaskNode.prototype.setFinalY = function(finalY)
 
 /**
  * Gets final height (animation independent, e.g. final height after animation finishes)
+ * @param {boolean=} excludeProgress Whether to exclude the progress height in the calculation
  * @return {number} The final height.
  */
-DvtGanttTaskNode.prototype.getFinalHeight = function()
+DvtGanttTaskNode.prototype.getFinalHeight = function(excludeProgress)
 {
-  return this._task.getFinalHeight();
+  return this._task.getFinalHeight(excludeProgress);
 };
 
 /**
@@ -7633,6 +7544,14 @@ DvtGanttTaskNode.prototype.getAriaLabel = function()
     states.push(dvt.Bundle.getTranslation(options, this.isSelected() ? 'stateSelected' : 'stateUnselected', dvt.Bundle.UTIL_PREFIX, this.isSelected() ? 'STATE_SELECTED' : 'STATE_UNSELECTED'));
 
   var shortDesc = DvtGanttTooltipUtils.getDatatip(this, false, true);
+  if (this._task.isMilestone('main')) // note doesn't really make a difference if we query 'main' or 'baseline'
+  {
+    shortDesc = dvt.Bundle.getTranslation(options, 'accessibleTaskTypeMilestone') + ', ' + shortDesc;
+  }
+  else if (this._task.isSummary('main')) // note doesn't really make a difference if we query 'main' or 'baseline'
+  {
+    shortDesc = dvt.Bundle.getTranslation(options, 'accessibleTaskTypeSummary') + ', ' + shortDesc;
+  }
 
   // include hint of whether there are predecessors or successors
   if (this._predecessors != null || this._successors != null)
@@ -7853,6 +7772,7 @@ DvtGanttTaskNode.prototype.isShowingKeyboardFocusEffect = function()
 {
   return this._isShowingKeyboardFocusEffect;
 };
+
 /**
  * Class representing a task, which manages a collection
  * of elements (the main shape, baseline, progress, etc).
@@ -7959,9 +7879,9 @@ DvtGanttTask.prototype._applyStyles = function(taskShape, parentProp)
 };
 
 /**
- * Whether the task element is a milestone
+ * Whether the task element should be shown as a milestone
  * @param {string} elementType The task element in question
- * @return {boolean} whether the task element is a milestone
+ * @return {boolean} whether the task element should be shown as a milestone
  */
 DvtGanttTask.prototype.isMilestone = function(elementType)
 {
@@ -7969,17 +7889,37 @@ DvtGanttTask.prototype.isMilestone = function(elementType)
       baselineProps = taskProps['baseline'],
       start, end;
 
-  if (DvtGanttTaskShape.MAIN_TYPES.indexOf(elementType) > -1)
+  if (taskProps['type'] === 'milestone')
   {
-    start = taskProps['start'];
-    end = taskProps['end'];
+    return true;
   }
-  else if (DvtGanttTaskShape.BASELINE_TYPES.indexOf(elementType) > -1)
+  else if (taskProps['type'] === 'auto')
   {
-    start = baselineProps['start'];
-    end = baselineProps['end'];
+    if (DvtGanttTaskShape.MAIN_TYPES.indexOf(elementType) > -1)
+    {
+      start = taskProps['start'];
+      end = taskProps['end'];
+    }
+    else if (DvtGanttTaskShape.BASELINE_TYPES.indexOf(elementType) > -1)
+    {
+      start = baselineProps['start'];
+      end = baselineProps['end'];
+    }
+    return (start != null && start == end) || (start != null && end == null) || (start == null && end != null);
   }
-  return (start != null && start == end) || (start != null && end == null) || (start == null && end != null);
+  return false;
+};
+
+/**
+ * Whether the task element should be shown as a summary
+ * @param {string} elementType The task element in question
+ * @return {boolean} whether the task element should be shown as a summary
+ */
+DvtGanttTask.prototype.isSummary = function(elementType)
+{
+  // For now, whether a task is displayed as a summary is purely based on whether task type is 'summary'
+  var taskProps = this._container.getProps();
+  return elementType === 'main' && taskProps['type'] === 'summary';
 };
 
 /**
@@ -8045,9 +7985,10 @@ DvtGanttTask.prototype.getFillColor = function()
 
 /**
  * Gets the final height of the task (animation independent value)
+ * @param {boolean=} excludeProgress Whether to exclude the progress height in the calculation
  * @return {number} The final height of the task in pixels
  */
-DvtGanttTask.prototype.getFinalHeight = function()
+DvtGanttTask.prototype.getFinalHeight = function(excludeProgress)
 {
   // Calculate based on options so that one can call this method
   // before task is fully rendered
@@ -8061,12 +8002,15 @@ DvtGanttTask.prototype.getFinalHeight = function()
     baselineHeight = baselineProps['height'];
   }
 
-  var progressHeight = this.getProgressValue() !== null ? this.getProgressHeight() : 0;
+  var heightTaskToptoBaselineBottom = this.isMilestone('baseline') ? DvtGanttStyleUtils.getMilestoneBaselineYOffset() + Math.max(baselineHeight, taskHeight) : taskHeight + baselineHeight;
 
-  var heightTaskToptoBaselineBottom = this.isMilestone('baseline') ? DvtGanttStyleUtils.getMilestoneBaselineYOffset() + baselineHeight : taskHeight + baselineHeight;
-  if (taskHeight < progressHeight)
+  if (!excludeProgress)
   {
-    return Math.max(progressHeight, (progressHeight - taskHeight) / 2 + heightTaskToptoBaselineBottom);
+    var progressHeight = this.getProgressValue() !== null ? this.getProgressHeight() : 0;
+    if (taskHeight < progressHeight)
+    {
+      return Math.max(progressHeight, (progressHeight - taskHeight) / 2 + heightTaskToptoBaselineBottom);
+    }
   }
   return heightTaskToptoBaselineBottom;
 };
@@ -8095,12 +8039,16 @@ DvtGanttTask.prototype.removeEffect = function(effectType)
 DvtGanttTask.prototype.render = function()
 {
   // Task elements y positioning depends on progress bar height. Precalculate this value:
-  var progressHeight = this.getProgressValue !== null ? this.getProgressHeight() : 0;
+  var progressHeight = this.getProgressValue() !== null ? this.getProgressHeight() : 0;
 
   // Rendering in this order to ensure desired stacking on initial render
   this.renderBaseline(progressHeight);
   this.renderMain(progressHeight);
   this.renderProgress(progressHeight);
+  if (this._container.getProps()['type'] === 'summary' && this._mainShape)
+  {
+    this._container.addChild(this._mainShape); // summary shapes should be on top of everything
+  }
 };
 
 /**
@@ -8112,15 +8060,15 @@ DvtGanttTask.prototype.getRenderState = function(shapeType)
 {
   if (shapeType === 'main')
   {
-    return this._mainRenderState;
+    return this._mainShape.getRenderState();
   }
   if (shapeType === 'progress')
   {
-    return this._progressRenderState;
+    return this._progressShape.getRenderState();
   }
   if (shapeType === 'baseline')
   {
-    return this._baselineRenderState;
+    return this._baselineShape.getRenderState();
   }
 };
 
@@ -8137,11 +8085,10 @@ DvtGanttTask.prototype.renderBaseline = function(progressHeight)
 
   if (baselineProps)
   {
-    baselineDim = this.getTimeSpanDimensions(baselineProps['start'], baselineProps['end']);
+    // If type is "milestone", and if 'start' and 'end' values are specified and unequal, the 'start' value is used to evaluate position.
+    baselineDim = this.getTimeSpanDimensions(baselineProps['start'], (taskProps['type'] === 'milestone' && baselineProps['start'] != null && baselineProps['start'] != baselineProps['end']) ? baselineProps['start'] : baselineProps['end']);
     if (baselineDim)
     {
-      this._baselineRenderState = this._container.getRenderState() === 'refurbish' ? 'add' : 'exist';
-
       // Determine offset from main element
       offsetDim = this.getTimeSpanDimensions(taskProps['start'] ? taskProps['start'] : taskProps['end'], baselineProps['start']);
 
@@ -8149,10 +8096,10 @@ DvtGanttTask.prototype.renderBaseline = function(progressHeight)
 
       // Calculate final dimensions
       x = offsetDim ? offsetDim['distance'] : 0;
-      yOffset = isMilestone ? DvtGanttStyleUtils.getMilestoneBaselineYOffset() : taskProps['height'];
-      y = Math.max(0, (progressHeight - taskProps['height']) / 2) + yOffset;
       width = Math.abs(baselineDim['distance']);
       height = baselineProps['height'];
+      yOffset = isMilestone ? Math.max(taskProps['height'], height) + DvtGanttStyleUtils.getMilestoneBaselineYOffset() - height : taskProps['height'];
+      y = Math.max(0, (progressHeight - taskProps['height']) / 2) + yOffset;
       borderRadius = baselineProps['borderRadius'];
 
       // element doesn't exist in DOM already
@@ -8168,11 +8115,15 @@ DvtGanttTask.prototype.renderBaseline = function(progressHeight)
         {
           this._container.addChild(this._baselineShape); // Layering doesn't matter for bar case because there's no overlap.
         }
-        this._baselineRenderState = 'add';
+        this._baselineShape.setRenderState('add');
       }
-      else if (isMilestone) // case where was bar baseline, but turned to milestone baseline on rerender, then make sure it's behind everything
+      else
       {
-        this._container.addChildAt(this._baselineShape, 0);
+        this._baselineShape.setRenderState(this._container.getRenderState() === 'refurbish' ? 'add' : 'exist');
+        if (isMilestone) // case where was bar baseline, but turned to milestone baseline on rerender, then make sure it's behind everything
+        {
+          this._container.addChildAt(this._baselineShape, 0);
+        }
       }
 
       // Since final dimensions are not applied until after animations (if any), store
@@ -8236,23 +8187,27 @@ DvtGanttTask.prototype.renderMain = function(progressHeight)
 
   if (taskProps)
   {
-    mainDim = this.getTimeSpanDimensions(taskProps['start'], taskProps['end']);
+    // If type is "milestone", and if 'start' and 'end' values are specified and unequal, the 'start' value is used to evaluate position.
+    mainDim = this.getTimeSpanDimensions(taskProps['start'], (taskProps['type'] === 'milestone' && taskProps['start'] != null && taskProps['start'] != taskProps['end']) ? taskProps['start'] : taskProps['end']);
     if (mainDim)
     {
-      this._mainRenderState = this._container.getRenderState() === 'refurbish' ? 'add' : 'exist';
-
       // Calculate final dimensions
       x = 0;
       y = Math.max(0, (progressHeight - taskHeight) / 2);
       width = Math.abs(mainDim['distance']);
-      height = taskHeight;
+      // Summary task case, want the summary task shape to take on the full height
+      height = this.isSummary('main') ? this._container.getFinalHeight(true) : taskHeight;
       borderRadius = taskProps['borderRadius'];
 
       if (this._mainShape == null) // element doesn't exist in DOM already
       {
         this._mainShape = new DvtGanttTaskShape(this._gantt.getCtx(), x, y, width, height, borderRadius, this, 'main');
         this._container.addChild(this._mainShape);
-        this._mainRenderState = 'add';
+        this._mainShape.setRenderState('add');
+      }
+      else
+      {
+        this._mainShape.setRenderState(this._container.getRenderState() === 'refurbish' ? 'add' : 'exist');
       }
 
       // Since final dimensions are not applied until after animations (if any), store
@@ -8582,8 +8537,6 @@ DvtGanttTask.prototype.renderProgress = function(progressHeight)
 
   if (progressValue !== null && this._mainShape && !this.isMilestone('main'))
   {
-    this._progressRenderState = this._container.getRenderState() === 'refurbish' ? 'add' : 'exist';
-
     // Calculate final dimensions
     x = 0;
     y = Math.max(0, (taskHeight - progressHeight) / 2);
@@ -8594,7 +8547,11 @@ DvtGanttTask.prototype.renderProgress = function(progressHeight)
     {
       this._progressShape = new DvtGanttTaskShape(this._gantt.getCtx(), x, y, width, progressHeight, borderRadius, this, 'progress');
       this._container.addChild(this._progressShape);
-      this._progressRenderState = 'add';
+      this._progressShape.setRenderState('add');
+    }
+    else
+    {
+      this._progressShape.setRenderState(this._container.getRenderState() === 'refurbish' ? 'add' : 'exist');
     }
 
     this._progressShape.setFinalWidth(width);
@@ -8637,6 +8594,7 @@ DvtGanttTask.prototype.removeProgress = function()
     this._gantt.getAnimationManager().preAnimateTaskProgressRemove(this._progressShape, onRemoveEnd);
   }
 };
+
 /**
  * Class that manages a task label
  * @param {dvt.Gantt} gantt The gantt component
@@ -8664,6 +8622,7 @@ DvtGanttTaskLabel.prototype.Init = function(gantt, container, associatedShape)
   this._gantt = gantt;
   this._container = container;
   this._associatedShape = associatedShape;
+  this._renderState = 'add';
 };
 
 /**
@@ -8768,7 +8727,7 @@ DvtGanttTaskLabel.prototype._placeLabel = function(effectiveLabelPosition)
       isRTL = dvt.Agent.isRightToLeft(this._gantt.getCtx()),
       shapeLeftOffset, shapeRightOffset, shapeWidth,
       padding = DvtGanttStyleUtils.getTaskLabelPadding(),
-      x, y;
+      x, y, associatedShapeHeight;
 
   if (effectiveLabelPosition === 'progress' || effectiveLabelPosition === 'progressStart')
   {
@@ -8776,7 +8735,8 @@ DvtGanttTaskLabel.prototype._placeLabel = function(effectiveLabelPosition)
   }
 
   // Determine y position
-  y = this._associatedShape.getFinalY() + ((this._associatedShape.getFinalHeight() - labelDimensions.h) / 2);
+  associatedShapeHeight = (this._associatedShape.getType() === 'main' && this._container.getTask().isSummary('main')) ? this._container.getProps()['height'] : this._associatedShape.getFinalHeight();
+  y = this._associatedShape.getFinalY() + ((associatedShapeHeight - labelDimensions.h) / 2);
   this.setFinalY(y);
 
   // Determine x position (calculate LTR version, then flip for RTL)
@@ -9223,6 +9183,7 @@ DvtGanttTaskLabel.prototype.setFinalY = function(y)
 {
   this._finalY = y;
 };
+
 /**
  * Class representing a task element path shape.
  * @param {dvt.Context} context
@@ -9306,6 +9267,7 @@ DvtGanttTaskShape.prototype.Init = function(context, x, y, w, h, r, task, type, 
   this._r = r != null ? r : '0';
   this._task = task;
   this._type = type;
+  this._renderState = 'add';
   this._typeCmdGeneratorMap = {
     'main': this._generateRepShapeCmd,
     'mainSelect': this._generateRepShapeCmd,
@@ -9346,7 +9308,6 @@ DvtGanttTaskShape.prototype.Init = function(context, x, y, w, h, r, task, type, 
  */
 DvtGanttTaskShape.prototype._generateRepShapeCmd = function(x, y, w, h, r)
 {
-  // TODO GET EEFFECT_MARGIN FROM STYLEUTILS
   var margin = (DvtGanttTaskShape.MAIN_EFFECT_TYPES.indexOf(this._type) > -1 ||
                 DvtGanttTaskShape.BASELINE_EFFECT_TYPES.indexOf(this._type) > -1) * DvtGanttStyleUtils.getTaskEffectMargin(),
       diamondMargin;
@@ -9356,6 +9317,10 @@ DvtGanttTaskShape.prototype._generateRepShapeCmd = function(x, y, w, h, r)
   {
     diamondMargin = margin * Math.sqrt(2);
     return this._generateDiamondCmd(x, y - diamondMargin, h + 2 * diamondMargin, r);
+  }
+  else if (this._task.isSummary(this._type) && this._type === 'main') // current UX design, only main shape has a special summary shape; baseline shape and effects are always bars
+  {
+    return this._generateSummaryCmd(x, y, w, h, r);
   }
   else // bar shape otherwise
   {
@@ -9381,21 +9346,70 @@ DvtGanttTaskShape.prototype._generateRectCmd = function(x, y, w, h, r)
   // generate the path.
   if (r === '0' || r === '0px')
   {
-    if (!this._isRTL) // reference point at top left corner
-      return 'M' + x + ' ' + y +
-          ' H' + (x + w) +
-          ' V' + (y + h) +
-          ' H' + x +
-          ' Z';
-
-    // If RTL refrence point at top right corner
-    return 'M' + x + ' ' + y +
-        ' H' + (x - w) +
-        ' V' + (y + h) +
-        ' H' + x +
-        ' Z';
+    // In LTR, reference point is at top left corner; top right in RTL
+    return dvt.PathUtils.moveTo(x, y) +
+           dvt.PathUtils.horizontalLineTo(this._isRTL ? x - w : x + w) +
+           dvt.PathUtils.verticalLineTo(y + h) +
+           dvt.PathUtils.horizontalLineTo(x) +
+           dvt.PathUtils.closePath();
   }
   return dvt.PathUtils.rectangleWithBorderRadius(x - this._isRTL * w, y, w, h, r, Math.min(w, h), '0');
+};
+
+/**
+ * Generates the path command that draws a summary shape (bordered rect missing bottom side) with given dimensions and radius.
+ * In LTR, reference point is at the top left corner. Top right in RTL.
+ * @param {number} x position
+ * @param {number} y posiiton
+ * @param {number} w width
+ * @param {number} h height
+ * @param {string=} r borderradius
+ * @return {string} the command string
+ * @private
+ */
+DvtGanttTaskShape.prototype._generateSummaryCmd = function(x, y, w, h, r)
+{
+  // For our default 0px border radius case, skip the parsing and generate the path.
+  var thickness = DvtGanttStyleUtils.getSummaryThickness();
+  if (r === '0' || r === '0px')
+  {
+    if (w > 2 * thickness)
+    {
+      // In LTR, reference is at top left corner, top right in RTL
+      return dvt.PathUtils.moveTo(x, y + h) +
+             dvt.PathUtils.verticalLineTo(y) +
+             dvt.PathUtils.horizontalLineTo(this._isRTL ? x - w : x + w) +
+             dvt.PathUtils.verticalLineTo(y + h) +
+             dvt.PathUtils.horizontalLineTo(this._isRTL ? x - w + thickness : x + w - thickness) +
+             dvt.PathUtils.verticalLineTo(y + thickness) +
+             dvt.PathUtils.horizontalLineTo(this._isRTL ? x - thickness : x + thickness) +
+             dvt.PathUtils.verticalLineTo(y + h) +
+             dvt.PathUtils.closePath();
+    }
+    return this._generateRectCmd(x, y, w, h, r);
+  }
+
+  // Only support same radius for the top left and top right corners for summary tasks
+  var outerBr = Math.min(new dvt.CSSStyle({'border-radius': r}).getBorderRadius(), Math.min(w, h));
+  var innerBr = Math.max(outerBr - thickness, 0);
+  if (w > 2 * thickness)
+  {
+    // In LTR, reference is at top left corner, top right in RTL
+    return dvt.PathUtils.moveTo(x, y + h) +
+           dvt.PathUtils.verticalLineTo(y + outerBr) +
+           dvt.PathUtils.arcTo(outerBr, outerBr, Math.PI / 2, this._isRTL ? 0 : 1, this._isRTL ? x - outerBr : x + outerBr, y) +
+           dvt.PathUtils.horizontalLineTo(this._isRTL ? x - w + outerBr : x + w - outerBr) +
+           dvt.PathUtils.arcTo(outerBr, outerBr, Math.PI / 2, this._isRTL ? 0 : 1, this._isRTL ? x - w : x + w, y + outerBr) +
+           dvt.PathUtils.verticalLineTo(y + h) +
+           dvt.PathUtils.horizontalLineTo(this._isRTL ? x - w + thickness : x + w - thickness) +
+           dvt.PathUtils.verticalLineTo(y + thickness + innerBr) +
+           dvt.PathUtils.arcTo(innerBr, innerBr, Math.PI / 2, this._isRTL ? 1 : 0, this._isRTL ? x - w + thickness + innerBr : x + w - thickness - innerBr, y + thickness) +
+           dvt.PathUtils.horizontalLineTo(this._isRTL ? x - thickness - innerBr : x + thickness + innerBr) +
+           dvt.PathUtils.arcTo(innerBr, innerBr, Math.PI / 2, this._isRTL ? 1 : 0, this._isRTL ? x - thickness : x + thickness, y + thickness + innerBr) +
+           dvt.PathUtils.verticalLineTo(y + h) +
+           dvt.PathUtils.closePath();
+  }
+  return dvt.PathUtils.rectangleWithBorderRadius(x - this._isRTL * w, y, w, h, outerBr + 'px ' + outerBr + 'px 0px 0px', Math.min(w, h), '0');
 };
 
 /**
@@ -9410,29 +9424,28 @@ DvtGanttTaskShape.prototype._generateRectCmd = function(x, y, w, h, r)
 DvtGanttTaskShape.prototype._generateDiamondCmd = function(x, y, h, r)
 {
   var half_h = h / 2;
-  // For our default 0px border radius case, skip the parsing and
-  // generate the path.
+  // For our default 0px border radius case, skip the parsing and generate the path.
   if (r === '0' || r === '0px')
   {
-    return 'M' + x + ' ' + y +
-        ' L' + (x + half_h) + ' ' + (y + half_h) +
-        ' L' + x + ' ' + (y + h) +
-        ' L' + (x - half_h) + ' ' + (y + half_h) +
-        ' Z';
+    return dvt.PathUtils.moveTo(x, y) +
+           dvt.PathUtils.lineTo(x + half_h, y + half_h) +
+           dvt.PathUtils.lineTo(x, y + h) +
+           dvt.PathUtils.lineTo(x - half_h, y + half_h) +
+           dvt.PathUtils.closePath();
   }
   // Only support 4 corner with the same radius for milestone diamond
   var br = Math.min((new dvt.CSSStyle({'border-radius': r})).getBorderRadius(), h / (2 * Math.sqrt(2))),
       r_over_root2 = br / Math.sqrt(2),
       rx = br, ry = br;
-  return 'M' + (x - r_over_root2) + ' ' + (y + r_over_root2) +
-      ' A' + rx + ' ' + ry + ' 0 0 1 ' + (x + r_over_root2) + ' ' + (y + r_over_root2) +
-      ' L' + (x + half_h - r_over_root2) + ' ' + (y + half_h - r_over_root2) +
-      ' A' + rx + ' ' + ry + ' 0 0 1 ' + (x + half_h - r_over_root2) + ' ' + (y + half_h + r_over_root2) +
-      ' L' + (x + r_over_root2) + ' ' + (y + h - r_over_root2) +
-      ' A' + rx + ' ' + ry + ' 0 0 1 ' + (x - r_over_root2) + ' ' + (y + h - r_over_root2) +
-      ' L' + (x - half_h + r_over_root2) + ' ' + (y + half_h + r_over_root2) +
-      ' A' + rx + ' ' + ry + ' 0 0 1 ' + (x - half_h + r_over_root2) + ' ' + (y + half_h - r_over_root2) +
-      ' Z';
+  return dvt.PathUtils.moveTo(x - r_over_root2, y + r_over_root2) +
+         dvt.PathUtils.arcTo(rx, ry, 0, 1, x + r_over_root2, y + r_over_root2) +
+         dvt.PathUtils.lineTo(x + half_h - r_over_root2, y + half_h - r_over_root2) +
+         dvt.PathUtils.arcTo(rx, ry, 0, 1, x + half_h - r_over_root2, y + half_h + r_over_root2) +
+         dvt.PathUtils.lineTo(x + r_over_root2, y + h - r_over_root2) +
+         dvt.PathUtils.arcTo(rx, ry, 0, 1, x - r_over_root2, y + h - r_over_root2) +
+         dvt.PathUtils.lineTo(x - half_h + r_over_root2, y + half_h + r_over_root2) +
+         dvt.PathUtils.arcTo(rx, ry, 0, 1, x - half_h + r_over_root2, y + half_h - r_over_root2) +
+         dvt.PathUtils.closePath();
 };
 
 /**
@@ -9441,7 +9454,7 @@ DvtGanttTaskShape.prototype._generateDiamondCmd = function(x, y, h, r)
  */
 DvtGanttTaskShape.prototype._applyDefaultStyleClasses = function()
 {
-  var styleClass, milestoneDefaultClass, barDefaultClass, taskFillColor, style;
+  var styleClass, milestoneDefaultClass, barDefaultClass, summaryDefaultClass, taskFillColor, style;
   if (this._type === 'progress')
   {
     styleClass = this._task.getGantt().GetStyleClass('taskProgress');
@@ -9452,9 +9465,14 @@ DvtGanttTaskShape.prototype._applyDefaultStyleClasses = function()
     styleClass = this._task.getGantt().GetStyleClass('task');
     milestoneDefaultClass = this._task.getGantt().GetStyleClass('taskMilestone');
     barDefaultClass = this._task.getGantt().GetStyleClass('taskBar');
+    summaryDefaultClass = this._task.getGantt().GetStyleClass('taskSummary');
     if (this._task.isMilestone(this._type) && this._w == 0)
     {
       styleClass += ' ' + milestoneDefaultClass;
+    }
+    else if (this._task.isSummary(this._type))
+    {
+      styleClass += ' ' + summaryDefaultClass;
     }
     else
     {
@@ -9575,7 +9593,7 @@ DvtGanttTaskShape.prototype.getPhysicalStartOffset = function()
       DvtGanttTaskShape.BASELINE_TYPES.indexOf(this._type) > -1) &&
       this._task.isMilestone(this._type))
   {
-    return this._h / 2;
+    return this._finalHeight / 2;
   }
   return 0;
 };
@@ -9602,9 +9620,36 @@ DvtGanttTaskShape.prototype.getPhysicalEndOffset = function()
       DvtGanttTaskShape.BASELINE_TYPES.indexOf(this._type) > -1) &&
       this._task.isMilestone(this._type))
   {
-    return this._h / 2;
+    return this._finalHeight / 2;
   }
   return 0;
+};
+
+/**
+ * Gets the shape type.
+ * @return {string} The shape type.
+ */
+DvtGanttTaskShape.prototype.getType = function()
+{
+  return this._type;
+};
+
+/**
+ * Gets the render state of the shape.
+ * @return {string} the render state.
+ */
+DvtGanttTaskShape.prototype.getRenderState = function()
+{
+  return this._renderState;
+};
+
+/**
+ * Sets the render state of the shape.
+ * @param {string} state The render state.
+ */
+DvtGanttTaskShape.prototype.setRenderState = function(state)
+{
+  this._renderState = state;
 };
 
 /**
@@ -9832,6 +9877,7 @@ DvtGanttTaskShape.prototype.setDimensions = function(x, y, w, h, r)
   cmds = this._typeCmdGeneratorMap[this._type].call(this, this._x, this._y, this._w, this._h, this._r);
   this.setCmds(cmds);
 };
+
 dvt.exportProperty(dvt, 'Gantt', dvt.Gantt);
 dvt.exportProperty(dvt.Gantt, 'newInstance', dvt.Gantt.newInstance);
 dvt.exportProperty(dvt.Gantt.prototype, 'destroy', dvt.Gantt.prototype.destroy);
@@ -9840,7 +9886,7 @@ dvt.exportProperty(dvt.Gantt.prototype, 'render', dvt.Gantt.prototype.render);
 
 dvt.exportProperty(DvtGanttAutomation.prototype, 'getDomElementForSubId', DvtGanttAutomation.prototype.getDomElementForSubId);
 dvt.exportProperty(DvtGanttAutomation.prototype, 'GetSubIdForDomElement', DvtGanttAutomation.prototype.GetSubIdForDomElement);
-})(dvt);
 
+})(dvt);
   return dvt;
 });

@@ -1,4 +1,5 @@
 /**
+ * @license
  * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
@@ -39,6 +40,11 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojoption'],
  * @ojstatus preview
  * @ojshortdesc A clickable button.
  * @ojrole button
+ * @ojsignature [{
+ *                target: "Type",
+ *                value: "class ojButton<SP extends ojButtonSettableProperties = ojButtonSettableProperties> extends baseComponent<SP>"
+ *               }
+ *              ]
  *
  * @classdesc
  * <h3 id="buttonOverview-section">
@@ -149,6 +155,7 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
          * {@ojinclude "name":"buttonCommonChroming"}
          * 
          * @name chroming
+         * @instance
          * @memberof oj.ojButton
          * @type {string}
          * @ojvalue {string} "full" In typical themes, full-chrome buttons always have chrome.
@@ -175,6 +182,7 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
          * {@ojinclude "name":"buttonCommonChroming"}
          * 
          * @name chroming
+         * @instance
          * @memberof oj.ojMenuButton
          * @type {string}
          * @ojvalue {string} "full" In typical themes, full-chrome buttons always have chrome.
@@ -222,6 +230,7 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
          * 
          * @name disabled
          * @memberof oj.ojButton
+         * @instance
          * @type {boolean}
          * @default false
          * @ojshortdesc Specifies that the button element should be disabled.
@@ -242,6 +251,7 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
          * 
          * @name disabled
          * @memberof oj.ojMenuButton
+         * @instance
          * @type {boolean}
          * @default false
          * @ojshortdesc Specifies that the button element should be disabled.
@@ -276,6 +286,7 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
          * 
          * @name display
          * @memberof oj.ojButton
+         * @instance
          * @type {string}
          * @ojvalue {string} "all" Display both the label and icons.
          * @ojvalue {string} "icons" Display only the icons.
@@ -299,6 +310,7 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
          * <p>For accessibility, a JET Menu Button must always have a label set via the default slot, even if it is icon-only.
          * 
          * @name display
+         * @instance
          * @memberof oj.ojMenuButton
          * @type {string}
          * @ojvalue {string} "all" Display both the label and icons.
@@ -318,7 +330,7 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
          */
         
         /**
-         * <p>Whether to display both the <a href="#label">label</a> and <a href="#icons">icons</a> (<code class="prettyprint">"all"</code>)
+         * <p>Whether to display both the label and icons (<code class="prettyprint">"all"</code>)
          * or just the icons (<code class="prettyprint">"icons"</code>).  In the latter case, the label is displayed in a tooltip instead, unless a
          * tooltip was already supplied at create time.
          *
@@ -330,7 +342,7 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
         display: "all",
 
         /**
-         * <p>Text to show in the button.
+         * <p>Text to show in the button. The default is from the label in the DOM.
          *
          * <p>When not specified at create time, the element's HTML content is used, or its
          * <code class="prettyprint">value</code> attribute if the element is an input element of type button, submit, or reset, or
@@ -351,7 +363,6 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
          * @memberof oj.ojButton
          * @instance
          * @type {?string}
-         * @default the label from the DOM
          * @ignore
          * @example <caption>Initialize the button with the <code class="prettyprint">label</code> option specified:</caption>
          * $( ".selector" ).ojButton( { "label": "custom label" } );
@@ -378,15 +389,15 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
          *
          * <p>The <code class="prettyprint">start</code> and <code class="prettyprint">end</code> properties accept one or more
          * style class names (as seen in the examples), or <code class="prettyprint">null</code>, indicating "no icon."
+         * <p>The default start value is null and the default end values is
+         * <code class="prettyprint">"oj-component-icon oj-button-menu-dropdown-icon"</code> if this is a menu button, and
+         * <code class="prettyprint">null</code> otherwise.  See the <code class="prettyprint">menu</code> option.
          *
          * @ignore
          * @expose
          * @memberof oj.ojButton
          * @instance
          * @type {Object}
-         * @default <code class="prettyprint">{ start: null, end: foo }</code>, where foo is
-         * <code class="prettyprint">"oj-component-icon oj-button-menu-dropdown-icon"</code> if this is a menu button, and
-         * <code class="prettyprint">null</code> otherwise.  See the <code class="prettyprint">menu</code> option.
          *
          * @example <caption>Initialize the button, specifying both icons:</caption>
          * $( ".selector" ).ojButton({ "icons": { start: "demo-icon-font demo-bookmark-icon-16",
@@ -411,7 +422,7 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
              * @memberof! oj.ojButton
              * @instance
              * @type {?string}
-             * @default <code class="prettyprint">null</code>
+             * @default null
              *
              * @example <caption>Get or set the <code class="prettyprint">icons.start</code> sub-option, after initialization:</caption>
              * // getter
@@ -423,16 +434,14 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
             start: null,
             /**
              * <p>The end icon of the button.  See the top-level <code class="prettyprint">icons</code> option for details.
+             * The default is <code class="prettyprint">"oj-component-icon oj-button-menu-dropdown-icon"</code> if this is a menu button, and
+             * <code class="prettyprint">null</code> otherwise.  See the <code class="prettyprint">menu</code> option.
              * @ignore
              * @expose
              * @alias icons.end
              * @memberof! oj.ojButton
              * @instance
              * @type {?string}
-             * @default <code class="prettyprint">null</code>
-             *
-             * @default <code class="prettyprint">"oj-component-icon oj-button-menu-dropdown-icon"</code> if this is a menu button, and
-             * <code class="prettyprint">null</code> otherwise.  See the <code class="prettyprint">menu</code> option.
              *
              * @example <caption>Get or set the <code class="prettyprint">icons.end</code> sub-option, after initialization:</caption>
              * // getter
@@ -462,8 +471,9 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
          * @memberof oj.ojButton
          * @instance
          * @type {Element|Array.<Element>|string|jQuery|NodeList}
-         * @default <code class="prettyprint">null</code>
+         * @default null
          * @ignore
+         * @ojtsignore
          * @example <caption>Initialize a menu button:</caption>
          * $( ".selector" ).ojButton({ "menu": "#myMenu" });
          *
@@ -474,9 +484,24 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
          * // setter
          * $( ".selector" ).ojButton( "option", "menu", ".my-marker-class" );
          */
-        menu: null
+        menu: null,
 
         // Events
+        /**
+         * <p>Triggered when a button is clicked. This will be triggered by keyboard events as well as mouse/touch events.
+         *
+         * <p>To ensure keyboard accessibility, the only correct, supported way to react to the click of a button is to listen
+         * for this event. Click listeners and <code class="prettyprint">href</code> navigation should not be used.
+         *
+         * @expose
+         * @event
+         * @memberof oj.ojButton
+         * @instance
+         * @ojcancelable
+         * @ojbubbles
+         * @since 5.0.0
+         */
+        action: null
     },
 
     _InitOptions: function(originalDefaults, constructorOptions) {
@@ -595,6 +620,11 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
                 event.stopImmediatePropagation();
             }
         };
+        
+        this._ojActionClickHandler = function(event)
+        {
+            self._trigger('action', event, {});
+        };
 
         // Must do this in capture phase to avoid race condition where app's click
         // handlers on anchor buttons can be called if their listeners get registered
@@ -602,6 +632,7 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
         if (this._IsCustomElement())
         {
             this.rootElement[0].addEventListener("click", this._disabledClickHandler, true);
+            this.rootElement[0].addEventListener("click", this._ojActionClickHandler, false);
         }
         else
         {
@@ -825,7 +856,7 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
         var isMenuButton = rootElem.tagName === 'OJ-MENU-BUTTON';
 
         // we are responsible for reparenting any slots because of use of inner elem
-        var rootSlots = oj.CustomElementBridge.getSlotMap(rootElem);
+        var rootSlots = oj.BaseCustomElementBridge.getSlotMap(rootElem);
 
         // don't add context menu here since we do not ever need to move it
         if (isMenuButton)
@@ -846,7 +877,7 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
         $(rootElem).children().not(elem).not("[slot='contextMenu']").remove();
         
         // all slots are now within the inner button element
-        var slots = oj.CustomElementBridge.getSlotMap(elem);
+        var slots = oj.BaseCustomElementBridge.getSlotMap(elem);
 
         // rearrange slots
         $.each(supportedSlots, function(i, slotName) {
@@ -997,6 +1028,7 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
     {
         this._removeMenuBehavior(this._getMenuNode());
         this.buttonElement[0].removeEventListener("click", this._disabledClickHandler, true);
+        this.buttonElement[0].removeEventListener("click", this._ojActionClickHandler, false);
 
         // TBD: won't need this after the restore-attrs feature is in place.
         this.element
@@ -1411,7 +1443,7 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
 
             if ( !this.hasTitle )
             {
-                var buttonText = /** @type {string}  tell GCC is getter, not setter, overload of text() */
+                var buttonText = /** @type {string} */
                                  (textSpan.text());
                 this.rootElement.attr( "title", $.trim( buttonText ) ); // use buttonText, which is escaped, not options.label, which isn't!
             }
@@ -1936,6 +1968,7 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
      * 
      * @ojfragment accessibilityCommon
      * @memberof oj.ojButton
+     * @instance
      */
     
     /**
@@ -1953,6 +1986,7 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
      * 
      * @ojfragment stateCommon
      * @memberof oj.ojButton
+     * @instance
      */
     
     /**
@@ -1987,6 +2021,7 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
      *
      * @ojfragment touchDoc - Used in touch gesture section of classdesc, and standalone gesture doc
      * @memberof oj.ojButton
+     * @instance
      */
 
     /**
@@ -2027,6 +2062,7 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
      *
      * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
      * @memberof oj.ojButton
+     * @instance
      */
 
     /**
@@ -2066,6 +2102,7 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
      *
      * @ojfragment stylingDoc - Used in Styling section of classdesc, and standalone Styling doc
      * @memberof oj.ojButton
+     * @instance
      */
 });
 
@@ -2333,6 +2370,7 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
  *
  * @ojfragment buttonsetCommon
  * @memberof oj.ojButtonset
+ * @instance
  */
 
 oj.__registerWidget("oj.ojButtonset", $['oj']['baseComponent'],
@@ -2356,6 +2394,7 @@ oj.__registerWidget("oj.ojButtonset", $['oj']['baseComponent'],
          *
          * @name value
          * @memberof oj.ojButtonsetOne
+         * @instance
          * @type {*}
          * @default null
          * @ojwriteback
@@ -2383,6 +2422,7 @@ oj.__registerWidget("oj.ojButtonset", $['oj']['baseComponent'],
          *
          * @name value
          * @memberof oj.ojButtonsetMany
+         * @instance
          * @type {Array.<*>|null}
          * @default null
          * @ojwriteback
@@ -2434,6 +2474,7 @@ oj.__registerWidget("oj.ojButtonset", $['oj']['baseComponent'],
          *
          * @name chroming
          * @memberof oj.ojButtonsetOne
+         * @instance
          * @type {string|undefined}
          * @ojvalue {string} "full" In typical themes, full-chrome buttons always have chrome.
          * @ojvalue {string} "half" In typical themes, half-chrome buttons acquire chrome only in their hover, active, and selected states. Half-chroming is recommended for buttons in a toolbar.
@@ -2459,6 +2500,7 @@ oj.__registerWidget("oj.ojButtonset", $['oj']['baseComponent'],
          *
          * @name chroming
          * @memberof oj.ojButtonsetMany
+         * @instance
          * @type {string}
          * @ojvalue {string} "full" In typical themes, full-chrome buttons always have chrome.
          * @ojvalue {string} "half" In typical themes, half-chrome buttons acquire chrome only in their hover, active, and selected states. Half-chroming is recommended for buttons in a toolbar.
@@ -2508,6 +2550,7 @@ oj.__registerWidget("oj.ojButtonset", $['oj']['baseComponent'],
          *
          * @name display
          * @memberof oj.ojButtonsetOne
+         * @instance
          * @type {string}
          * @ojvalue {string} "all" Display both the label and icons.
          * @ojvalue {string} "icons" Display only the icons.
@@ -2529,6 +2572,7 @@ oj.__registerWidget("oj.ojButtonset", $['oj']['baseComponent'],
          *
          * @name display
          * @memberof oj.ojButtonsetMany
+         * @instance
          * @type {string}
          * @ojvalue {string} "all" Display both the label and icons.
          * @ojvalue {string} "icons" Display only the icons.
@@ -2546,7 +2590,7 @@ oj.__registerWidget("oj.ojButtonset", $['oj']['baseComponent'],
          * myButtonset.display = 'icons';
          */
         /**
-         * <p>Whether to display both the <a href="#label">label</a> and <a href="#icons">icons</a> (<code class="prettyprint">"all"</code>)
+         * <p>Whether to display both the label and icons (<code class="prettyprint">"all"</code>)
          * or just the icons (<code class="prettyprint">"icons"</code>) of the buttons.  In the latter case, the label is displayed in a tooltip instead.
          *
          * <p>The <code class="prettyprint">display</code> attribute will be ignored if no icons exist in the button.
@@ -2564,6 +2608,7 @@ oj.__registerWidget("oj.ojButtonset", $['oj']['baseComponent'],
          * @member
          * @name disabled
          * @memberof oj.ojButtonsetOne
+         * @instance
          * @type {boolean}
          * @default false
          * @ojshortdesc Specifies that the buttonset element should be disabled.
@@ -2584,6 +2629,7 @@ oj.__registerWidget("oj.ojButtonset", $['oj']['baseComponent'],
          * @member
          * @name disabled
          * @memberof oj.ojButtonsetMany
+         * @instance
          * @type {boolean}
          * @default false
          * @ojshortdesc Specifies that the buttonset element should be disabled.
@@ -2620,6 +2666,7 @@ oj.__registerWidget("oj.ojButtonset", $['oj']['baseComponent'],
          *
          * @name focusManagement
          * @memberof oj.ojButtonsetOne
+         * @instance
          * @type {string}
          * @ojvalue {string} "oneTabstop" Focus management is enabled.  The Buttonset is a single tabstop with arrow-key navigation.
          * @ojvalue {string} "none" Focus management is disabled, to avoid interfering with the focus management of a containing component.
@@ -2641,6 +2688,7 @@ oj.__registerWidget("oj.ojButtonset", $['oj']['baseComponent'],
          *
          * @name focusManagement
          * @memberof oj.ojButtonsetMany
+         * @instance
          * @type {string}
          * @ojvalue {string} "oneTabstop" Focus management is enabled.  The Buttonset is a single tabstop with arrow-key navigation.
          * @ojvalue {string} "none" Focus management is disabled, to avoid interfering with the focus management of a containing component.
@@ -2708,8 +2756,10 @@ oj.__registerWidget("oj.ojButtonset", $['oj']['baseComponent'],
         
         valid = valid || checked===null;
 
-        if (!valid)
+        if (!valid && (!this._IsCustomElement() || $buttons.length === this.element.children().length))
+        {
             throw new Error("Invalid 'checked' value set on JET Buttonset: " + checked);
+        }
     },
     // does comparsion and sets checked on inputs
     // for custom elements it will accept objects as values on inputs and will get the value from oj option rather than the input
@@ -2977,14 +3027,9 @@ oj.__registerWidget("oj.ojButtonset", $['oj']['baseComponent'],
         label.append(ojOption);  // @HTMLUpdateOK
         label.after(input);  // @HTMLUpdateOK
 
-        // if the buttonset has already been setup it should be reset on any rerender
-        // should be oj-complete but trying to avoid issue with oj option rerendering
-        // before the j-option is inited
-        if ($(this.element).hasClass('oj-buttonset'))
-        {
-            this.$buttons = this.element.find( this._items );
-            this._setup(false);
-        }
+        // reset buttonset group properties
+        this._setup(false);
+        this._setCheckedOnDom(this.options.checked, this.$buttons); // throws if checked option invalid
     },
 
     // remove the dom that we generated excluding the wrapped span
@@ -3010,7 +3055,7 @@ oj.__registerWidget("oj.ojButtonset", $['oj']['baseComponent'],
 
     // add needed CSS Classes to slots and wrap the text spans
     _addOptionClasses: function(option) {
-        var slotMap = oj.CustomElementBridge.getSlotMap(option);
+        var slotMap = oj.BaseCustomElementBridge.getSlotMap(option);
         var text = slotMap[""] ? slotMap[""] : null;
         var startIcon = slotMap["startIcon"] ? slotMap["startIcon"][0] : null;
         var endIcon = slotMap["endIcon"] ? slotMap["endIcon"][0] : null;
@@ -3047,7 +3092,7 @@ oj.__registerWidget("oj.ojButtonset", $['oj']['baseComponent'],
 
     // remove needed CSS Classes to slots
     _removeOptionClasses: function(option) {
-        var slotMap = oj.CustomElementBridge.getSlotMap(option);
+        var slotMap = oj.BaseCustomElementBridge.getSlotMap(option);
         var text = slotMap[""] ? slotMap[""] : null;
         var startIcon = slotMap["startIcon"] ? slotMap["startIcon"][0] : null;
         var endIcon = slotMap["endIcon"] ? slotMap["endIcon"][0] : null;
@@ -3075,12 +3120,6 @@ oj.__registerWidget("oj.ojButtonset", $['oj']['baseComponent'],
 
     _InitOptions: function(originalDefaults, constructorOptions) {
         this._super(originalDefaults, constructorOptions);
-
-        if (this._IsCustomElement())
-        {
-            this._removeNonOjOptions();
-            this._processOjOptions();
-        }
 
         this.$buttons = this.element.find( this._items );
 
@@ -3123,6 +3162,12 @@ oj.__registerWidget("oj.ojButtonset", $['oj']['baseComponent'],
             .addClass( "oj-buttonset oj-component" )
         this._setRole(this.options.focusManagement);
 
+        if (this._IsCustomElement())
+        {
+            this._removeNonOjOptions();
+            this._processOjOptions();
+        }
+        
         this._setup(true);
     },
 
@@ -3213,7 +3258,7 @@ oj.__registerWidget("oj.ojButtonset", $['oj']['baseComponent'],
         this.isRtl = this._GetReadingDirection() === "rtl";
         _setChromingClass(this.element, this.options.chroming);
 
-        if ((isCreate && !this.initCheckedFromDom) || this._IsCustomElement())
+        if ((isCreate && !this.initCheckedFromDom && !this._IsCustomElement()))
         {
             // if app provided a "checked" option, it wins over whatever's in the DOM.
             this._setCheckedOnDom(this.options.checked, this.$buttons); // throws if checked option invalid
@@ -3537,6 +3582,7 @@ oj.__registerWidget("oj.ojButtonset", $['oj']['baseComponent'],
      *
      * @ojfragment touchDoc - Used in touch gesture section of classdesc, and standalone gesture doc
      * @memberof oj.ojButtonset
+     * @instance
      */
 
     /**
@@ -3566,6 +3612,7 @@ oj.__registerWidget("oj.ojButtonset", $['oj']['baseComponent'],
      *
      * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
      * @memberof oj.ojButtonset
+     * @instance
      */
 
     /**
@@ -3602,6 +3649,7 @@ oj.__registerWidget("oj.ojButtonset", $['oj']['baseComponent'],
      *
      * @ojfragment stylingDoc - Used in Styling section of classdesc, and standalone Styling doc
      * @memberof oj.ojButtonset
+     * @instance
      */
 });
 
@@ -3659,6 +3707,7 @@ var BUTTON_EVENT_NAMESPACE = ".ojButton",
      * @param {!Element} radio  a radio button.  Not a JQ object, other button or element type, or null.
      * @param {jQuery=} $elems  optional JQ object, containing 0 or more elems that aren't necessarily radios or buttons, in which to look for groupmates.
      *                          E.g. the elements in a buttonset or toolbar.  Must not contain any false positives as defined above.
+     * @private
      */
     _radioGroup = function( radio, $elems )
     {
@@ -3742,7 +3791,6 @@ oj.Components.setDefaultOptions({
 });
 
 }() ); // end of Button / Buttonset wrapper function
-
 (function() {
 var ojButtonMeta = {
   "properties": {
@@ -3756,13 +3804,10 @@ var ojButtonMeta = {
     "display": {
       "type": "string",
       "enumValues": ["all", "icons"]
-    },
-    "href": {
-      "type": "string",
-      "extension": {
-        _COPY_TO_INNER_ELEM: true
-      }
     }
+  },
+  "events": {
+    "action" : {}
   },
   "extension": {
     _WIDGET_NAME: "ojButton"
@@ -3790,12 +3835,6 @@ var ojMenuButtonMeta = {
     "display": {
       "type": "string",
       "enumValues": ["all", "icons"]
-    },
-    "href": {
-      "type": "string",
-      "extension": {
-        _COPY_TO_INNER_ELEM: true
-      }
     }
   },
   "extension": {

@@ -1,34 +1,24 @@
 {
   "name": "IntlNumberConverter",
-  "version": "4.2.0",
-  "jetVersion": "4.2.0",
+  "version": "5.0.0",
+  "jetVersion": "5.0.0",
   "displayName": "IntlNumberConverter",
   "description": "IntlNumberConverter",
   "methods": {
-    "Init": {
-      "description": "Initializes the number converter instance with the set options.",
-      "params": [
-        {
-          "name": "options",
-          "description": "an object literal used to provide an optional information to \ninitialize the converter.",
-          "type": "Object"
-        }
-      ]
-    },
     "format": {
       "description": "Formats a Number and returns the formatted string, using the options this converter was \ninitialized with.",
       "params": [
         {
           "name": "value",
           "description": "to be formatted for display",
-          "type": "Number|number"
+          "type": "number"
         }
       ],
       "return": "string"
     },
     "getHint": {
-      "description": "Retrieves a hint String describing the format the value is expected to be in.",
-      "return": "String"
+      "description": "In general, returns hint for the converter. For a IntlNumberConverter returned value is always null.",
+      "return": "null"
     },
     "getOptions": {
       "description": "Returns the options called with converter initialization.",
@@ -40,7 +30,7 @@
         {
           "name": "value",
           "description": "to parse",
-          "type": "String|string"
+          "type": "string"
         }
       ],
       "return": "number|null"

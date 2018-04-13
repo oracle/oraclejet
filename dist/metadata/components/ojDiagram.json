@@ -1,10 +1,13 @@
 {
   "name": "oj-diagram",
-  "version": "4.2.0",
-  "jetVersion": "4.2.0",
+  "version": "5.0.0",
+  "jetVersion": "5.0.0",
   "displayName": "Diagram",
   "preview": true,
-  "description": "ojDiagram",
+  "roles": [
+    "application"
+  ],
+  "description": "Displays a set of nodes and the links between them. The node positions and link paths are specified by an application-provided layout function.",
   "properties": {
     "animationOnDataChange": {
       "description": "Specifies the animation that is applied on data changes.",
@@ -43,83 +46,75 @@
       }
     },
     "data": {
-      "description": "The data source for the Diagram element. See oj.DiagramDataSource",
-      "type": "object",
+      "description": "Specifies data source for the component.",
+      "type": "Object",
       "displayName": "Data",
       "value": null
     },
     "dnd": {
-      "description": "Provides support for HTML5 Drag and Drop events. Please refer to third party documentation on HTML5 Drag and Drop to learn how to use it.",
-      "type": "object",
+      "description": "Used to customize the drag and drop features.",
+      "type": "Object",
       "displayName": "Dnd",
-      "value": null,
+      "value": {
+        "drag": null,
+        "drop": null
+      },
       "properties": {
         "drag": {
-          "description": "An object that describes drag functionality.",
-          "type": "object",
+          "description": "Used to customize drag functionality.",
+          "type": "Object",
           "value": null,
           "properties": {
             "nodes": {
-              "description": "If this object is specified, the diagram will initiate drag operation when the user drags on diagram nodes.",
-              "type": "object",
-              "value": null,
+              "description": "Used to customize the drag features for nodes.",
+              "type": "Object",
               "properties": {
                 "dataTypes": {
-                  "description": "The MIME types to use for the dragged data in the dataTransfer object. This can be a string if there is only one type, or an array of strings if multiple types are needed. For example, if selected employee data items are being dragged, dataTypes could be \"application/employees+json\". Drop targets can examine the data types and decide whether to accept the data. For each type in the array, dataTransfer.setData will be called with the specified type and the data. The data is an array of the dataContexts of the selected data items. The dataContext is the JSON version of the dataContext that we use for \"tooltip\" option, excluding componentElement and parentElement. This property is required unless the application calls setData itself in a dragStart callback function.",
-                  "type": "string|Array.<string>",
-                  "value": null
+                  "description": "Specifies MIME type for dragged data.",
+                  "type": "string|Array<string>"
                 },
                 "drag": {
-                  "description": "An optional callback function that receives the \"drag\" event as argument.",
-                  "type": "function",
-                  "value": null
+                  "description": "Optional handler for drag event.",
+                  "type": "function"
                 },
                 "dragEnd": {
-                  "description": "An optional callback function that receives the \"dragend\" event as argument.",
-                  "type": "function",
-                  "value": null
+                  "description": "Optional handler for dragend event.",
+                  "type": "function"
                 },
                 "dragStart": {
-                  "description": "An optional callback function that receives the \"dragstart\" event and context information as arguments. The context information is as follows: nodes {Array.(object)}: An array of dataContexts of the dragged data nodes. The dataContext for the node has the following properties: id: The id of the hovered diagram object type : The type of the hovered diagram object - \"link\", \"promotedLink\" or \"node\" label: The label of the hovered diagram object. componentElement: the Diagram element data : data object for the node nodeOffset : an object with x,y properties, that reflects node offset from the upper left corner of the bounding box for the dragged content. This function can set its own data and drag image as needed. When this function is called, event.dataTransfer is already populated with the default data and drag image.",
-                  "type": "function",
-                  "value": null
+                  "description": "Optional handler for dragstart event.",
+                  "type": "function"
                 }
               }
             },
             "ports": {
-              "description": "If this object is specified, the diagram will initiate link creation when the user starts dragging from a port.",
-              "type": "object",
-              "value": null,
+              "description": "Defines link creation functionality.",
+              "type": "Object",
+              "value": {},
               "properties": {
                 "dataTypes": {
-                  "description": "The MIME types to use for the dragged data in the dataTransfer object. This can be a string if there is only one type, or an array of strings if multiple types are needed. and parentElement. This property is required unless the application calls setData itself in a dragStart callback function.",
-                  "type": "string|Array.<string>",
-                  "value": null
+                  "description": "Specifies MIME type for dragged data.",
+                  "type": "string|Array<string>"
                 },
                 "drag": {
-                  "description": "An optional callback function that receives the \"drag\" event as argument.",
-                  "type": "function",
-                  "value": null
+                  "description": "Optional handler for drag event.",
+                  "type": "function"
                 },
                 "dragEnd": {
-                  "description": "An optional callback function that receives the \"dragend\" event as argument.",
-                  "type": "function",
-                  "value": null
+                  "description": "Optional handler for dragend event.",
+                  "type": "function"
                 },
                 "dragStart": {
-                  "description": "An optional callback function that receives the \"dragstart\" event and context information as arguments. The context information is as follows: ports {object}: An object with the following properties: dataContext : The dataContext object of the link start node. The dataContext is the same as what we use for \"tooltip\" option. portElement : DOM element recognized as a port that received drag event. ",
-                  "type": "function",
-                  "value": null
+                  "description": "Optional handler for dragstart event.",
+                  "type": "function"
                 },
                 "linkStyle": {
-                  "description": "An optional callback function for customizing link feedback based on a starting node and a port. If the function is not specified the link feedback will use default link styles. The function will take a single parameter - a context object with the following properties: dataContext: The dataContext object of the link start node. portElement: DOM element recognized as a port that received drag event The function should return one of the following: an object with the following properties: svgStyle : Inline stlye object to be applied on the link feedback svgClassName : A name of a style class to be applied on the link null or undefined : the default link styles will be used for the link feedback ",
-                  "type": "function",
-                  "value": null
+                  "description": "Specifies link creation feedback.",
+                  "type": "function"
                 },
                 "selector": {
-                  "description": "A string, containing a selector expression, that will be used to identify the descendant DOM element in a diagram node that can be used for link creation. This property is requred.",
-                  "type": "string",
-                  "value": null
+                  "description": "Specifies DOM element selector used to start link creation.",
+                  "type": "string"
                 }
               }
             }
@@ -127,139 +122,114 @@
         },
         "drop": {
           "description": "An object that describes drop functionality.",
-          "type": "object",
+          "type": "Object",
           "value": null,
           "properties": {
             "background": {
               "description": "Allows dropping on the diagram background.",
-              "type": "object",
-              "value": null,
+              "type": "Object",
               "properties": {
                 "dataTypes": {
-                  "description": "An array of MIME data types the Diagram background can accept. This property is required unless dragEnter, dragOver, and drop callback functions are specified to handle the corresponding events.",
-                  "type": "string|Array.<string>",
-                  "value": null
+                  "description": "Specifies MIME types of objects that can be dropped on the Diagram background.",
+                  "type": "string|Array<string>"
                 },
                 "dragEnter": {
-                  "description": "An optional callback function that receives the \"dragenter\" event and context information as arguments. The context information is as follows: x {number}: x-coordinate value of the drop in the component coordinate system. y {number}: y-coordinate value of the drop in the component coordinate system. Note: When the dropped items are originated from Diagram, the x, y coordinates represent the upper left corner of the dropped content. This function should call event.preventDefault() to indicate the dragged data can be accepted. Otherwise, dataTypes will be matched against the drag data types to determine if the data is acceptable.",
-                  "type": "function",
-                  "value": null
+                  "description": "Optional handler for dragenter event.",
+                  "type": "function"
                 },
                 "dragLeave": {
-                  "description": "An optional callback function that receives the \"dragleave\" event and context information as arguments. The context information is as follows: x {number}: x-coordinate value of the drop in the component coordinate system. y {number}: y-coordinate value of the drop in the component coordinate system. Note: When the dropped items are originated from Diagram, the x, y coordinates represent the upper left corner of the dropped content.",
-                  "type": "function",
-                  "value": null
+                  "description": "Optional handler for dragleave event.",
+                  "type": "function"
                 },
                 "dragOver": {
-                  "description": "An optional callback function that receives the \"dragover\" event and context information as arguments. The context information is as follows: x {number}: x-coordinate value of the drop in the component coordinate system. y {number}: y-coordinate value of the drop in the component coordinate system. Note: When the dropped items are originated from Diagram, the x, y coordinates represent the upper left corner of the dropped content. This function should call event.preventDefault() to indicate the dragged data can be accepted. Otherwise, dataTypes will be matched against the drag data types to determine if the data is acceptable.",
-                  "type": "function",
-                  "value": null
+                  "description": "Optional handler for dragover event.",
+                  "type": "function"
                 },
                 "drop": {
-                  "description": "An optional callback function that receives the \"drop\" event and context information as arguments. The context information is as follows: x {number}: x-coordinate value of the drop in the component coordinate system. y {number}: y-coordinate value of the drop in the component coordinate system. Note: When the dropped items are originated from Diagram, the x, y coordinates represent the upper left corner of the dropped content. This function should call event.preventDefault() to indicate the dragged data can be accepted.",
-                  "type": "function",
-                  "value": null
+                  "description": "Handler for drop event.",
+                  "type": "function"
                 }
               }
             },
             "links": {
               "description": "Allows dropping on diagram links.",
-              "type": "object",
-              "value": null,
+              "type": "Object",
               "properties": {
                 "dataTypes": {
-                  "description": "An array of MIME data types the Diagram links can accept. This property is required unless dragEnter, dragOver, and drop callback functions are specified to handle the corresponding events.",
-                  "type": "string|Array.<string>",
-                  "value": null
+                  "description": "Specifies MIME types of objects that can be dropped on the Diagram links.",
+                  "type": "string|Array<string>"
                 },
                 "dragEnter": {
-                  "description": "An optional callback function that receives the \"dragenter\" event and context information as arguments. The context information is as follows: x {number}: x-coordinate value of the drop in the component coordinate system. y {number}: y-coordinate value of the drop in the component coordinate system. linkContext {object}: the JSON version of the data context for the target link. Note: When the dropped items are originated from Diagram, the x, y coordinates represent the upper left corner of the dropped content. This function should call event.preventDefault() to indicate the dragged data can be accepted. Otherwise, dataTypes will be matched against the drag data types to determine if the data is acceptable.",
-                  "type": "function",
-                  "value": null
+                  "description": "Optional handler for dragenter event.",
+                  "type": "function"
                 },
                 "dragLeave": {
-                  "description": "An optional callback function that receives the \"dragleave\" event and context information as arguments. The context information is as follows: x {number}: x-coordinate value of the drop in the component coordinate system. y {number}: y-coordinate value of the drop in the component coordinate system. linkContext {object}: the JSON version of the data context for the target link. Note: When the dropped items are originated from Diagram, the x, y coordinates represent the upper left corner of the dropped content.",
-                  "type": "function",
-                  "value": null
+                  "description": "Optional handler for dragleave event.",
+                  "type": "function"
                 },
                 "dragOver": {
-                  "description": "An optional callback function that receives the \"dragover\" event and context information as arguments. The context information is as follows: x {number}: x-coordinate value of the drop in the component coordinate system. y {number}: y-coordinate value of the drop in the component coordinate system. linkContext {object}: the JSON version of the data context for the target link. Note: When the dropped items are originated from Diagram, the x, y coordinates represent the upper left corner of the dropped content. This function should call event.preventDefault() to indicate the dragged data can be accepted. Otherwise, dataTypes will be matched against the drag data types to determine if the data is acceptable.",
-                  "type": "function",
-                  "value": null
+                  "description": "Optional handler for dragover event.",
+                  "type": "function"
                 },
                 "drop": {
-                  "description": "An optional callback function that receives the \"drop\" event and context information as arguments. The context information is as follows: x {number}: x-coordinate value of the drop in the component coordinate system. y {number}: y-coordinate value of the drop in the component coordinate system. linkContext {object}: the JSON version of the data context for the target link. Note: When the dropped items are originated from Diagram, the x, y coordinates represent the upper left corner of the dropped content. This function should call event.preventDefault() to indicate the dragged data can be accepted.",
-                  "type": "function",
-                  "value": null
+                  "description": "Handler for drop event.",
+                  "type": "function"
                 }
               }
             },
             "nodes": {
               "description": "Allows dropping on diagram nodes.",
-              "type": "object",
-              "value": null,
+              "type": "Object",
               "properties": {
                 "dataTypes": {
-                  "description": "An array of MIME data types the Diagram nodes can accept. This property is required unless dragEnter, dragOver, and drop callback functions are specified to handle the corresponding events.",
-                  "type": "string|Array.<string>",
-                  "value": null
+                  "description": "Specifies MIME types of objects that can be dropped on the Diagram nodes.",
+                  "type": "string|Array<string>"
                 },
                 "dragEnter": {
-                  "description": "An optional callback function that receives the \"dragenter\" event and context information as arguments. The context information is as follows: x {number}: x-coordinate value of the drop in the component coordinate system. y {number}: y-coordinate value of the drop in the component coordinate system. nodeX {number}: x-coordinate value of the drop in the target node coordinate system. nodeY {number}: x-coordinate value of the drop in the target node coordinate system. nodeContext {object}: the JSON version of the data context for the target node. Note: When the dropped items are originated from Diagram, the x, y coordinates represent the upper left corner of the dropped content. This function should call event.preventDefault() to indicate the dragged data can be accepted. Otherwise, dataTypes will be matched against the drag data types to determine if the data is acceptable.",
-                  "type": "function",
-                  "value": null
+                  "description": "Optional handler for dragenter event.",
+                  "type": "function"
                 },
                 "dragLeave": {
-                  "description": "An optional callback function that receives the \"dragleave\" event and context information as arguments. The context information is as follows: x {number}: x-coordinate value of the drop in the component coordinate system. y {number}: y-coordinate value of the drop in the component coordinate system. nodeX {number}: x-coordinate value of the drop in the target node coordinate system. nodeY {number}: x-coordinate value of the drop in the target node coordinate system. nodeContext {object}: the JSON version of the data context for the target node. Note: When the dropped items are originated from Diagram, the x, y coordinates represent the upper left corner of the dropped content.",
-                  "type": "function",
-                  "value": null
+                  "description": "Optional handler for dragleave event.",
+                  "type": "function"
                 },
                 "dragOver": {
-                  "description": "An optional callback function that receives the \"dragover\" event and context information as arguments. The context information is as follows: x {number}: x-coordinate value of the drop in the component coordinate system. y {number}: y-coordinate value of the drop in the component coordinate system. nodeX {number}: x-coordinate value of the drop in the target node coordinate system. nodeY {number}: x-coordinate value of the drop in the target node coordinate system. nodeContext {object}: the JSON version of the data context for the target node. Note: When the dropped items are originated from Diagram, the x, y coordinates represent the upper left corner of the dropped content. This function should call event.preventDefault() to indicate the dragged data can be accepted. Otherwise, dataTypes will be matched against the drag data types to determine if the data is acceptable.",
-                  "type": "function",
-                  "value": null
+                  "description": "Optional handler for dragover event.",
+                  "type": "function"
                 },
                 "drop": {
-                  "description": "An optional callback function that receives the \"drop\" event and context information as arguments. The context information is as follows: x {number}: x-coordinate value of the drop in the component coordinate system. y {number}: y-coordinate value of the drop in the component coordinate system. nodeX {number}: x-coordinate value of the drop in the target node coordinate system. nodeY {number}: x-coordinate value of the drop in the target node coordinate system. nodeContext {object}: the JSON version of the data context for the target node. Note: When the dropped items are originated from Diagram, the x, y coordinates represent the upper left corner of the dropped content. This function should call event.preventDefault() to indicate the dragged data can be accepted.",
-                  "type": "function",
-                  "value": null
+                  "description": "Handler for drop event.",
+                  "type": "function"
                 }
               }
             },
             "ports": {
               "description": "Allows dropping a link end on a port.",
-              "type": "object",
-              "value": null,
+              "type": "Object",
               "properties": {
                 "dataTypes": {
-                  "description": "An array of MIME data types the Diagram ports can accept. This property is required unless dragEnter, dragOver, and drop callback functions are specified to handle the corresponding events.",
-                  "type": "string|Array.<string>",
-                  "value": null
+                  "description": "Specifies MIME types of objects that can be dropped on the Diagram ports.",
+                  "type": "string|Array<string>"
                 },
                 "dragEnter": {
-                  "description": "An optional callback function that receives the \"dragenter\" event and context information as arguments. The context information is as follows: dataContext : the JSON version of the data context for the link end node. portElement : DOM element that represents a port that received drop event. This function should call event.preventDefault() to indicate the dragged data can be accepted. Otherwise, dataTypes will be matched against the drag data types to determine if the data is acceptable.",
-                  "type": "function",
-                  "value": null
+                  "description": "Optional handler for dragenter event.",
+                  "type": "function"
                 },
                 "dragLeave": {
-                  "description": "An optional callback function that receives the \"dragleave\" event and context information as arguments. The context information is as follows: dataContext : the JSON version of the data context for the link end node. portElement : DOM element that represents a port that received drop event. ",
-                  "type": "function",
-                  "value": null
+                  "description": "Optional handler for dragleave event.",
+                  "type": "function"
                 },
                 "dragOver": {
-                  "description": "An optional callback function that receives the \"dragover\" event and context information as arguments. The context information is as follows: dataContext : the JSON version of the data context for the link end node. portElement : DOM element that represents a port that received drop event. This function should call event.preventDefault() to indicate the dragged data can be accepted. Otherwise, dataTypes will be matched against the drag data types to determine if the data is acceptable.",
-                  "type": "function",
-                  "value": null
+                  "description": "Optional handler for dragover event.",
+                  "type": "function"
                 },
                 "drop": {
-                  "description": "An optional callback function that receives the \"drop\" event and context information as arguments. The context information is as follows: dataContext : the JSON version of the data context for the link end node. portElement : DOM element that represents a port that received drop event. This function should call event.preventDefault() to indicate the dragged data can be accepted.",
-                  "type": "function",
-                  "value": null
+                  "description": "Handler for drop event.",
+                  "type": "function"
                 },
                 "selector": {
-                  "description": "A string, containing a selector expression, that will be used to identify the descendant DOM element in a diagram node that can be used for link creation. This property is requred.",
-                  "type": "string",
-                  "value": null
+                  "description": "Specifies DOM element selector used for link creation end.",
+                  "type": "string"
                 }
               }
             }
@@ -268,26 +238,27 @@
       }
     },
     "expanded": {
-      "description": "Specifies the key set containing the ids of diagram nodes that should be expanded on initial render.",
+      "description": "Specifies the key set of ids for expanded diagram nodes.",
       "type": "KeySet",
       "displayName": "Expanded",
-      "value": "new keySet.ExpandedKeySet()"
+      "value": "new ExpandedKeySet()",
+      "writeback": true
     },
     "focusRenderer": {
-      "description": "An optional callback function to update the node in response to changes in keyboard focus state. \nThe function takes a single argument, provided by the component, with the following properties: componentElement: The Diagram element. parentElement: A parent group element that takes a custom SVG fragment as the node content. Modifications of the parentElement are not supported. data: The data object for the node. content: An object that describes child content. The object has the following properties element: an SVG group element that contains child nodes for the container. width: width of the child content. height: height of the child content. state: An object that reflects the current state of the diagram node. The object has the following properties hovered: hovered state, boolean. selected: selected state, boolean. focused: focused state, boolean. zoom: zoom state, number. expanded: expanded state, boolean. previousState: An object that reflects the previous state of the diagram node. The object has the following properties hovered: hovered state, boolean. selected: selected state, boolean. focused: focused state, boolean. zoom: zoom state, number. expanded: expanded state, boolean. id: Node id. type: Object type = node. renderDefaultFocus: Function for rendering default focus effect for the diagram node. renderDefaultHover: Function for rendering default hover effect for the diagram node. renderDefaultSelection: Function for rendering default selection effect for the diagram node. \n\nThe function should return one of the following: An Object with the following property: insert: SVGElement - An SVG element, which will be used as content of a Diagram node. undefined: Indicates that the existing DOM has been directly modified and no further action is required.\n",
-      "type": "function",
+      "description": "Specifies custom renderer for the diagram nodes used for focus updates.",
+      "type": "null|function",
       "displayName": "Focus Renderer",
       "value": null
     },
     "hiddenCategories": {
-      "description": "An array of category strings used for category filtering. Diagram nodes and links with a category in hiddenCategories will be filtered.",
-      "type": "Array.<string>",
+      "description": "Specifies categories used for filtering.",
+      "type": "Array<string>",
       "displayName": "Hidden Categories",
-      "value": null,
+      "value": [],
       "writeback": true
     },
     "highlightMatch": {
-      "description": "The matching condition for the highlightedCategories option. By default, highlightMatch is 'all' and only items whose categories match all of the values specified in the highlightedCategories array will be highlighted. If highlightMatch is 'any', then items that match at least one of the highlightedCategories values will be highlighted.",
+      "description": "Specifies matching condition used for category highlighting.",
       "type": "string",
       "displayName": "Highlight Match",
       "value": "all",
@@ -305,10 +276,10 @@
       }
     },
     "highlightedCategories": {
-      "description": "An array of category strings used for category highlighting. Diagram nodes and links with a category in highlightedCategories will be highlighted.",
-      "type": "Array.<string>",
+      "description": "Specifies categories used for highlighting.",
+      "type": "Array<string>",
       "displayName": "Highlighted Categories",
-      "value": null,
+      "value": [],
       "writeback": true
     },
     "hoverBehavior": {
@@ -330,16 +301,15 @@
       }
     },
     "hoverRenderer": {
-      "description": "An optional callback function to update the node in response to changes in hover state. \nThe function takes a single argument, provided by the component, with the following properties: componentElement: The Diagram element. parentElement: A parent group element that takes a custom SVG fragment as the node content. Modifications of the parentElement are not supported. data: The data object for the node. content: An object that describes child content. The object has the following properties element: an SVG group element that contains child nodes for the container. width: width of the child content. height: height of the child content. state: An object that reflects the current state of the diagram node. The object has the following properties hovered: hovered state, boolean. selected: selected state, boolean. focused: focused state, boolean. zoom: zoom state, number. expanded: expanded state, boolean. previousState: An object that reflects the previous state of the diagram node. The object has the following properties hovered: hovered state, boolean. selected: selected state, boolean. focused: focused state, boolean. zoom: zoom state, number. expanded: expanded state, boolean. id: Node id. type: Object type = node. renderDefaultFocus: Function for rendering default focus effect for the diagram node. renderDefaultHover: Function for rendering default hover effect for the diagram node. renderDefaultSelection: Function for rendering default selection effect for the diagram node. \n\nThe function should return one of the following: An Object with the following property: insert: SVGElement - An SVG element, which will be used as content of a Diagram node. undefined: Indicates that the existing DOM has been directly modified and no further action is required.\n",
-      "type": "function",
+      "description": "Specifies custom renderer for the diagram nodes used for hover updates.",
+      "type": "null|function",
       "displayName": "Hover Renderer",
       "value": null
     },
     "layout": {
-      "description": "A custom JavaScript client layout method - a custom code developed by a customer used to position Diagram nodes and links. The layout code must conform to the pluggable layout contract.",
+      "description": "Specifies layout callback used to position nodes and links.",
       "type": "function",
-      "displayName": "Layout",
-      "value": null
+      "displayName": "Layout"
     },
     "linkHighlightMode": {
       "description": "Defines link highlighting mode.",
@@ -360,13 +330,13 @@
       }
     },
     "linkProperties": {
-      "description": "Optional callback that provides a way to customize an appearance of the specific link, the function maps link data into link styles.\nThe function takes a data object for the link provided by the diagram. \nThe following properties are supported on the return object:",
-      "type": "function",
+      "description": "Optional callback for customizing link appearance based on link data.",
+      "type": "null|function",
       "displayName": "Link Properties",
       "value": null,
       "properties": {
         "labelStyle": {
-          "description": "The CSS style object defining the style of the link label.",
+          "description": "The CSS style object defining the style of the link label. The CSS max-width property can be used to truncate labels.",
           "type": "object"
         },
         "color": {
@@ -396,16 +366,16 @@
       }
     },
     "maxZoom": {
-      "description": "Specifies the maximum zoom level for this diagram. This can be any number greater than zero which indicates the maximum point to which Diagram objects can be scaled. A value of 2.0 implies that the Diagram can be zoomed in until Nodes appear at twice their natural size. By default, maxZoom is 1.0.",
+      "description": "Specifies the maximum zoom level for this diagram.",
       "type": "number",
       "displayName": "Max Zoom",
       "value": 1
     },
     "minZoom": {
-      "description": "Specifies the minimum zoom level for this diagram. If minZoom is greater than zero, it indicates the minimum point to which Diagram objects can be scaled. A value of 0.1 implies that the Diagram can be zoomed out until Nodes appear at one-tenth their natural size. By default, minZoom is set to zoom-to-fit level based on the currently visible Nodes and Links.",
+      "description": "Specifies the minimum zoom level for this diagram.",
       "type": "number",
       "displayName": "Min Zoom",
-      "value": null
+      "value": 0
     },
     "nodeHighlightMode": {
       "description": "Defines node highlighting mode.",
@@ -434,84 +404,38 @@
       }
     },
     "nodeProperties": {
-      "description": "Optional callback that provides a way to customize an appearance of the specific node, the function maps node data into node styles.\nThe function takes a data object for the node provided by the diagram. \nThe following properties are supported on the return object:",
-      "type": "function",
+      "description": "Optional callback for customizing node appearance based on node data.",
+      "type": "null|function",
       "displayName": "Node Properties",
       "value": null,
       "properties": {
-        "showDisclosure": {
-          "description": "Determines when to display the expand/collapse button.Supported values are \"on\", \"off\". Default value is \"on\".",
-          "type": "string"
-        },
         "labelStyle": {
-          "description": "The CSS style object defining the style of the node label.",
+          "description": "The CSS style object defining the style of the link label. The CSS max-width property can be used to truncate labels.",
           "type": "object"
         },
-        "icon": {
-          "description": "Specifies an icon to be used as a graphical element for the node",
-          "type": "object",
-          "properties": {
-            "borderColor": {
-              "description": "The border color of the icon.",
-              "type": "string"
-            },
-            "borderRadius": {
-              "description": "The border radius of the icon. CSS border-radius values accepted. Note that non-% values (including unitless) get interpreted as 'px'.",
-              "type": "string"
-            },
-            "borderWidth": {
-              "description": "The border width in pixels.",
-              "type": "number"
-            },
-            "color": {
-              "description": "The fill color of the icon.",
-              "type": "string"
-            },
-            "pattern": {
-              "description": "The fill pattern of the icon.Supported values are \"smallChecker\", \"smallCrosshatch\", \"smallDiagonalLeft\", \"smallDiagonalRight\", \"smallDiamond\", \"smallTriangle\", \"largeChecker\", \"largeCrosshatch\", \"largeDiagonalLeft\", \"largeDiagonalRight\", \"largeDiamond\", \"largeTriangle\", \"none\".Default value is \"none\".",
-              "type": "string"
-            },
-            "opacity": {
-              "description": "The opacity of the icon.",
-              "type": "number"
-            },
-            "shape": {
-              "description": "The shape of the icon. Can take the name of a built-in shape or the svg path commands for a custom shape.Supported built-in shapes:\"ellipse\", \"square\", \"plus\", \"diamond\", \"triangleUp\", \"triangleDown\", \"human\", \"rectangle\", \"star\", \"circle\".Default value is \"circle\".",
-              "type": "string"
-            },
-            "source": {
-              "description": "The URI of the node image.",
-              "type": "string"
-            },
-            "sourceHover": {
-              "description": "The optional URI of the node hover image. If not defined, the source image will be used.",
-              "type": "string"
-            },
-            "sourceHoverSelected": {
-              "description": "The optional URI of the selected image on hover. If not defined, the sourceSelected image will be used. If the sourceSelected image is not defined, the source image will be used.",
-              "type": "string"
-            },
-            "sourceSelected": {
-              "description": "The optional URI of the selected image. If not defined, the source image will be used.",
-              "type": "string"
-            },
-            "width": {
-              "description": "The width of the icon.",
-              "type": "number"
-            },
-            "height": {
-              "description": "The height of the icon.",
-              "type": "number"
-            },
-            "svgStyle": {
-              "description": "The CSS style object defining the style of the icon. The style class and style object will be applied directly on the icon and override any other styling specified through the properties.",
-              "type": "object"
-            },
-            "svgClassName": {
-              "description": "The CSS style class defining the style of the icon. The style class and style object will be applied directly on the icon and override any other styling specified through the properties.",
-              "type": "object"
-            }
-          }
+        "color": {
+          "description": "Link color.",
+          "type": "string"
+        },
+        "svgStyle": {
+          "description": "The SVG CSS style object defining link style. The style class and style object will be applied directly on the link and override any other styling specified through the properties.",
+          "type": "object"
+        },
+        "svgClassName": {
+          "description": "The SVG CSS style class defining link style. The style class and style object will be applied directly on the link and override any other styling specified through the properties.",
+          "type": "string"
+        },
+        "width": {
+          "description": "Link width in pixels.",
+          "type": "number"
+        },
+        "startConnectorType": {
+          "description": "Specifies the type of start connector on the link. Supported values are \"arrowOpen\", \"arrow\", \"arrowConcave\", \"circle\", \"rectangle\", \"rectangleRounded\", \"none\". Default value is \"none\".",
+          "type": "string"
+        },
+        "endConnectorType": {
+          "description": "Specifies the type of end connector on the link. Supported values are \"arrowOpen\", \"arrow\", \"arrowConcave\", \"circle\", \"rectangle\", \"rectangleRounded\", \"none\". Default value is \"none\".",
+          "type": "string"
         }
       }
     },
@@ -556,7 +480,7 @@
       }
     },
     "promotedLinkBehavior": {
-      "description": "Defines promoted link behavior for the component. If the value is set to none, the diagram will not retrieve additional data to resolve promoted links and will not display promoted links. If the value is set to lazy, the diagram will retrieve additional data to resolve promoted links if the data is already available and will display available promoted links. The component will not retrieve additional data if the data is not available yet. If the value is set to full, the diagram will retrieve additional data to resolve all promoted links and will display promoted links.",
+      "description": "Defines promoted link behavior for the component.",
       "type": "string",
       "displayName": "Promoted Link Behavior",
       "value": "lazy",
@@ -578,14 +502,14 @@
       }
     },
     "renderer": {
-      "description": "A callback function - a custom renderer - that will be used for initial node rendering. \nThe function takes a single argument, provided by the component, with the following properties: componentElement: The Diagram element. parentElement: A parent group element that takes a custom SVG fragment as the node content. Modifications of the parentElement are not supported. data: The data object for the node. content: An object that describes child content. The object has the following properties element: an SVG group element that contains child nodes for the container. width: width of the child content. height: height of the child content. state: An object that reflects the current state of the diagram node. The object has the following properties hovered: hovered state, boolean. selected: selected state, boolean. focused: focused state, boolean. zoom: zoom state, number. expanded: expanded state, boolean. previousState: An object that reflects the previous state of the diagram node. The object has the following properties hovered: hovered state, boolean. selected: selected state, boolean. focused: focused state, boolean. zoom: zoom state, number. expanded: expanded state, boolean. id: Node id. type: Object type = node. renderDefaultFocus: Function for rendering default focus effect for the diagram node. renderDefaultHover: Function for rendering default hover effect for the diagram node. renderDefaultSelection: Function for rendering default selection effect for the diagram node. \n\nThe function should return an Object with the following property: insert: SVGElement - An SVG element, which will be used as content of a Diagram node.\n",
-      "type": "function",
+      "description": "Specifies custom renderer for the diagram nodes used for initial rendering.",
+      "type": "null|function",
       "displayName": "Renderer",
       "value": null
     },
     "selection": {
       "description": "An array containing the ids of the selected nodes and links.",
-      "type": "Array.<string>",
+      "type": "Array<string>",
       "displayName": "Selection",
       "value": null,
       "writeback": true
@@ -613,41 +537,66 @@
       }
     },
     "selectionRenderer": {
-      "description": "An optional callback function to update the node in response to changes in selection state. \nThe function takes a single argument, provided by the component, with the following properties: componentElement: The Diagram element. parentElement: A parent group element that takes a custom SVG fragment as the node content. Modifications of the parentElement are not supported. data: The data object for the node. content: An object that describes child content. The object has the following properties element: an SVG group element that contains child nodes for the container. width: width of the child content. height: height of the child content. state: An object that reflects the current state of the diagram node. The object has the following properties hovered: hovered state, boolean. selected: selected state, boolean. focused: focused state, boolean. zoom: zoom state, number. expanded: expanded state, boolean. previousState: An object that reflects the previous state of the diagram node. The object has the following properties hovered: hovered state, boolean. selected: selected state, boolean. focused: focused state, boolean. zoom: zoom state, number. expanded: expanded state, boolean. id: Node id. type: Object type = node. renderDefaultFocus: Function for rendering default focus effect for the diagram node. renderDefaultHover: Function for rendering default hover effect for the diagram node. renderDefaultSelection: Function for rendering default selection effect for the diagram node. \nThe function should return one of the following: An Object with the following property: insert: SVGElement - An SVG element, which will be used as content of a Diagram node. undefined: Indicates that the existing DOM has been directly modified and no further action is required.\n",
-      "type": "function",
+      "description": "Specifies custom renderer for the diagram nodes used for selection updates.",
+      "type": "null|function",
       "displayName": "Selection Renderer",
       "value": null
     },
     "styleDefaults": {
       "description": "An object defining the style defaults for this diagram.",
-      "type": "object",
+      "type": "Object",
       "displayName": "Style Defaults",
-      "value": null,
+      "value": {
+        "hoverBehaviorDelay": 200,
+        "nodeDefaults": {
+          "labelStyle": {},
+          "showDisclosure": "on",
+          "icon": {
+            "pattern": "none",
+            "shape": "circle",
+            "width": 10,
+            "height": 10,
+            "svgClassName": ""
+          }
+        },
+        "linkDefaults": {
+          "width": 1,
+          "labelStyle": {},
+          "startConnectorType": "none",
+          "endConnectorType": "none",
+          "svgClassName": ""
+        },
+        "promotedLink": {
+          "width": 1,
+          "startConnectorType": "none",
+          "endConnectorType": "none",
+          "svgClassName": ""
+        }
+      },
       "properties": {
         "animationDuration": {
-          "description": "The duration of the animations in milliseconds.",
+          "description": "Defines animation duration in milliseconds.",
           "type": "number",
-          "value": null
+          "units": "milliseconds"
         },
         "hoverBehaviorDelay": {
           "description": "Specifies initial hover delay in ms for highlighting data items.",
           "type": "number",
-          "value": null
+          "value": 200,
+          "units": "milliseconds"
         },
         "linkDefaults": {
           "description": "Default link styles",
-          "type": "object",
-          "value": null,
+          "type": "Object",
+          "value": "{\"labelStyle: {}, \"\"startConnectorType\": \"none\", \"endConnectorType\": \"none\", \"width\": 1.0}",
           "properties": {
             "color": {
-              "description": "Default link color.",
-              "type": "string",
-              "value": null
+              "description": "Default link color. The default value comes from the CSS and varies based on theme.",
+              "type": "string"
             },
             "endConnectorType": {
               "description": "Specifies the type of end connector on the link.",
               "type": "string",
-              "value": "none",
               "enumValues": [
                 "arrow",
                 "arrowConcave",
@@ -682,14 +631,12 @@
               }
             },
             "labelStyle": {
-              "description": "The CSS style object defining the style of the primary label. Supports color, \nfontFamily, fontSize, fontStyle, fontWeight, textDecoration, cursor,\nbackgroundColor, borderColor, borderRadius, and borderWidth properties.",
-              "type": "object",
-              "value": null
+              "description": "Specifies CSS styles for the link label.",
+              "type": "Object"
             },
             "startConnectorType": {
               "description": "Specifies the type of start connector on the link.",
               "type": "string",
-              "value": "none",
               "enumValues": [
                 "arrow",
                 "arrowConcave",
@@ -725,55 +672,57 @@
             },
             "svgClassName": {
               "description": "The default SVG CSS style class to apply to the link.",
-              "type": "object",
-              "value": null
+              "type": "Object",
+              "value": "\"\""
             },
             "svgStyle": {
-              "description": "The default style object represents the SVG CSS style of the link. User defined custom SVG CSS Styles will be applied directly on the link.",
-              "type": "object",
-              "value": null
+              "description": "Specifies SVG CSS styles for the link.",
+              "type": "Object",
+              "value": {}
             },
             "width": {
               "description": "Default link width in pixels.",
               "type": "number",
-              "value": 1
+              "units": "pixels"
             }
           }
         },
         "nodeDefaults": {
           "description": "Default node styles",
-          "type": "object",
-          "value": null,
+          "type": "Object",
           "properties": {
             "icon": {
               "description": "Default style for the node icon.",
-              "type": "object",
-              "value": null,
+              "type": "Object",
+              "value": {
+                "width": 10,
+                "height": 10,
+                "fillPattern": "none",
+                "shape": "circle"
+              },
               "properties": {
                 "borderColor": {
                   "description": "Default border color of the icon.",
-                  "type": "string",
-                  "value": null
+                  "type": "string"
                 },
                 "borderRadius": {
-                  "description": "The default border radius of the icon. CSS border-radius values accepted. Note that non-% values (including unitless) get interpreted as 'px'.",
-                  "type": "string",
-                  "value": null
+                  "description": "Specifies default border radius of the icon.",
+                  "type": "string"
                 },
                 "borderWidth": {
                   "description": "Default border width of the icon in pixels.",
                   "type": "number",
-                  "value": null
+                  "units": "pixels"
                 },
                 "color": {
                   "description": "Default color of the icon.",
-                  "type": "string",
-                  "value": null
+                  "type": "string"
                 },
                 "height": {
                   "description": "Default icon height.",
                   "type": "number",
-                  "value": null
+                  "value": 10,
+                  "units": "pixels"
                 },
                 "pattern": {
                   "description": "Default fill pattern of the icon.",
@@ -837,7 +786,7 @@
                   }
                 },
                 "shape": {
-                  "description": "Default shape of the icon. Can take the name of a built-in shape or the svg path commands for a custom shape.",
+                  "description": "Specifies default shape of the icon.",
                   "type": "string",
                   "value": "circle",
                   "enumValues": [
@@ -887,45 +836,42 @@
                 },
                 "source": {
                   "description": "The URI of the node image",
-                  "type": "string",
-                  "value": null
+                  "type": "string"
                 },
                 "sourceHover": {
-                  "description": "The optional URI of the node hover image. If not defined, the source image will be used.",
-                  "type": "string",
-                  "value": null
+                  "description": "The optional URI of the node hover image.",
+                  "type": "string"
                 },
                 "sourceHoverSelected": {
-                  "description": "The optional URI of the selected image on hover. If not defined, the sourceSelected image will be used. If the sourceSelected image is not defined, the source image will be used.",
-                  "type": "string",
-                  "value": null
+                  "description": "The optional URI of the selected image on hover.",
+                  "type": "string"
                 },
                 "sourceSelected": {
-                  "description": "The optional URI of the selected image. If not defined, the source image will be used.",
-                  "type": "string",
-                  "value": null
+                  "description": "The optional URI of the selected image.",
+                  "type": "string"
                 },
                 "svgClassName": {
                   "description": "The SVG CSS style class to apply to the node icon.",
-                  "type": "object",
-                  "value": null
+                  "type": "string",
+                  "value": ""
                 },
                 "svgStyle": {
                   "description": "The default SVG CSS style object defining the style of the icon.",
-                  "type": "object",
-                  "value": null
+                  "type": "Object",
+                  "value": {}
                 },
                 "width": {
                   "description": "Default icon width.",
                   "type": "number",
-                  "value": null
+                  "value": 10,
+                  "units": "pixels"
                 }
               }
             },
             "labelStyle": {
-              "description": "The CSS style object defining the style of the primary label. Supports color, \nfontFamily, fontSize, fontStyle, fontWeight, textDecoration, cursor,\nbackgroundColor, borderColor, borderRadius, and borderWidth properties.",
-              "type": "object",
-              "value": null
+              "description": "Specifies CSS styles for the node label.",
+              "type": "Object",
+              "value": {}
             },
             "showDisclosure": {
               "description": "Determines when to display the expand/collapse button.",
@@ -948,18 +894,16 @@
         },
         "promotedLink": {
           "description": "Promoted link styles",
-          "type": "object",
-          "value": null,
+          "type": "Object",
+          "value": "{\"\"startConnectorType\": \"none\", \"endConnectorType\": \"none\", \"width\": 1.0}",
           "properties": {
             "color": {
-              "description": "Default promoted link color.",
-              "type": "string",
-              "value": null
+              "description": "Default promoted link color. The default value varies based on theme.",
+              "type": "string"
             },
             "endConnectorType": {
               "description": "Specifies the type of end connector on the promoted link.",
               "type": "string",
-              "value": "none",
               "enumValues": [
                 "arrow",
                 "arrowConcave",
@@ -996,7 +940,6 @@
             "startConnectorType": {
               "description": "Specifies the type of start connector on the promoted link.",
               "type": "string",
-              "value": "none",
               "enumValues": [
                 "arrow",
                 "arrowConcave",
@@ -1032,18 +975,18 @@
             },
             "svgClassName": {
               "description": "The SVG CSS style class to apply to the promoted link.",
-              "type": "object",
-              "value": null
+              "type": "Object",
+              "value": "\"\""
             },
             "svgStyle": {
               "description": "The promoted style object represents the CSS style of the link. User defined custom CSS Styles will be applied directly on the link.",
-              "type": "object",
-              "value": null
+              "type": "Object",
+              "value": {}
             },
             "width": {
               "description": "Default link width in pixels.",
               "type": "number",
-              "value": 1
+              "units": "pixels"
             }
           }
         }
@@ -1051,19 +994,21 @@
     },
     "tooltip": {
       "description": "An object containing an optional callback function for tooltip customization.",
-      "type": "object",
+      "type": "Object",
       "displayName": "Tooltip",
-      "value": null,
+      "value": {
+        "renderer": null
+      },
       "properties": {
         "renderer": {
-          "description": "A function that returns a custom tooltip. The function takes a dataContext argument, provided by the diagram, with the following properties: parentElement: The tooltip element. The function can directly modify or append content to this element. id: The id of the hovered diagram object. type : The type of the hovered diagram object - \"link\", \"promotedLink\" or \"node\". label: The label of the hovered diagram object. componentElement: The Diagram element. data : Relevant data for the object: data object for the node, if the object type is 'node' data object for the link, if the object type is 'link' an array of data objects that correspond to links represented by the promoted link The function should return an Object that contains only one of the two properties: insert: HTMLElement | string - An HTML element, which will be appended to the tooltip, or a tooltip string. preventDefault: true - Indicates that the tooltip should not be displayed. It is not necessary to return {preventDefault:false} to display tooltip, since this is a default behavior. ",
+          "description": "Specifies a function for a custom tooltip.",
           "type": "function",
           "value": null
         }
       }
     },
     "touchResponse": {
-      "description": "Data visualizations require a press and hold delay before triggering tooltips and rollover effects on mobile devices to avoid interfering with page panning, but these hold delays can make applications seem slower and less responsive. For a better user experience, the application can remove the touch and hold delay when data visualizations are used within a non scrolling container or if there is sufficient space outside of the visualization for panning. If touchResponse is touchStart the component will instantly trigger the touch gesture and consume the page pan events if the component does not require an internal feature that requires a touch start gesture like panning or zooming. If touchResponse is auto, the component will behave like touchStart if it determines that it is not rendered within scrolling content and if component panning is not available for those components that support the feature.",
+      "description": "Specifies touch response behavior.",
       "type": "string",
       "displayName": "Touch Response",
       "value": "auto",
@@ -1081,7 +1026,7 @@
       }
     },
     "trackResize": {
-      "description": "Defines whether the element will automatically render in response to\nchanges in size. If set to off, then the\napplication is responsible for calling refresh\nto render the element at the new size.",
+      "description": "Defines whether the element will automatically render in response to changes in size. If set to off, then the application is responsible for calling refresh to render the element at the new size.",
       "type": "string",
       "displayName": "Track Resize",
       "value": "on",
@@ -1099,10 +1044,10 @@
       }
     },
     "translations": {
-      "description": "A collection of translated resources from the translation bundle, or null if this\ncomponent has no resources. Resources may be accessed and overridden individually or collectively, as seen in the examples.\n\nIf this component has translations, their documentation immediately follows this doc entry.",
-      "type": "Object",
+      "description": "A collection of translated resources from the translation bundle, or null if this\ncomponent has no resources. Resources may be accessed and overridden individually or collectively, as seen in the examples. If the component does not contain any translatable resource, the default value of this attribute will be \nnull. If not, an object containing all resources relevant to the component.\n\nIf this component has translations, their documentation immediately follows this doc entry.",
+      "type": "Object|null",
       "displayName": "Translations",
-      "value": null,
+      "translatable": true,
       "properties": {
         "componentName": {
           "description": "Used to describe the data visualization type for accessibility.\n\nSee the translations attribute for usage examples.",
@@ -1207,8 +1152,8 @@
       }
     },
     "zoomRenderer": {
-      "description": "An optional callback function to update the node in response to changes in zoom level. \nThe function takes a single argument, provided by the component, with the following properties: componentElement: The Diagram element. parentElement: A parent group element that takes a custom SVG fragment as the node content. Modifications of the parentElement are not supported. data: The data object for the node. content: An object that describes child content. The object has the following properties element: an SVG group element that contains child nodes for the container. width: width of the child content. height: height of the child content. state: An object that reflects the current state of the diagram node. The object has the following properties hovered: hovered state, boolean. selected: selected state, boolean. focused: focused state, boolean. zoom: zoom state, number. expanded: expanded state, boolean. previousState: An object that reflects the previous state of the diagram node. The object has the following properties hovered: hovered state, boolean. selected: selected state, boolean. focused: focused state, boolean. zoom: zoom state, number. expanded: expanded state, boolean. id: Node id. type: Object type = node. renderDefaultFocus: Function for rendering default focus effect for the diagram node. renderDefaultHover: Function for rendering default hover effect for the diagram node. renderDefaultSelection: Function for rendering default selection effect for the diagram node. \n\nThe function should return one of the following: An Object with the following property: insert: SVGElement - An SVG element, which will be used as content of a Diagram node. undefined: Indicates that the existing DOM has been directly modified and no further action is required.\n",
-      "type": "function",
+      "description": "Specifies custom renderer for the diagram nodes used for zoom updates.",
+      "type": "null|function",
       "displayName": "Zoom Renderer",
       "value": null
     },
@@ -1290,7 +1235,8 @@
       "return": "Object|null"
     },
     "refresh": {
-      "description": "Refreshes the component."
+      "description": "Refreshes the component.",
+      "return": "void"
     },
     "setProperty": {
       "description": "Sets a property or a single subproperty for complex properties and notifies the component\nof the change, triggering a [property]Changed event.",
@@ -1305,7 +1251,8 @@
           "description": "The new value to set the property to.",
           "type": "*"
         }
-      ]
+      ],
+      "return": "void"
     },
     "getProperty": {
       "description": "Retrieves a value for a property or a single subproperty for complex properties.",
@@ -1326,12 +1273,14 @@
           "description": "An object containing the property and value pairs to set.",
           "type": "Object"
         }
-      ]
+      ],
+      "return": "void"
     }
   },
   "events": {
     "ojBeforeExpand": {
-      "description": "Triggered immediately before any container node in the diagram is expanded.",
+      "description": "Event handler for when a node is about to expand.",
+      "cancelable": true,
       "detail": {
         "nodeId": {
           "description": "the id of the expanding object",
@@ -1340,7 +1289,7 @@
       }
     },
     "ojExpand": {
-      "description": "Triggered when a node has been expanded. The ui object contains one property, \"nodeId\", which is the id of the node that has been expanded.",
+      "description": "Event handler for after a node has expanded.",
       "detail": {
         "nodeId": {
           "description": "the id of the expanded object",
@@ -1349,7 +1298,8 @@
       }
     },
     "ojBeforeCollapse": {
-      "description": "Triggered immediately before any container node in the diagram is collapsed.",
+      "description": "Event handler for when a node is about to collapse.",
+      "cancelable": true,
       "detail": {
         "data": {
           "description": "the id of the collapsing object",
@@ -1362,7 +1312,7 @@
       }
     },
     "ojCollapse": {
-      "description": "Triggered when a node has been collapsed.",
+      "description": "Event handler for after a node has collapsed.",
       "detail": {
         "data": {
           "description": "the id of the collapsed object",

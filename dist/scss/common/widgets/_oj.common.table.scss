@@ -1,7 +1,7 @@
 // Copyright (c) 2014, 2018, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-// WARNING: do not directly import this file, instead import the 
-//          version in your base theme's directory, 
+// WARNING: do not directly import this file, instead import the
+//          version in your base theme's directory,
 //          for example alta/widgets/_oj.alta.table.scss
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 @import "../../utilities/oj.utilities";
@@ -12,18 +12,18 @@
 
     /* table */
     /* --------------------------------------------------------------- */
-            
+
     // This is to prevent the flash of unstyled content before the html becomes JET components.
     @if $initialVisibility == hidden {
       oj-table:not(.oj-complete) {
         visibility: hidden;
-      }      
+      }
     }
 
     /* Component option defaults. */
     $tableDefaultOptions: ();
     $tableAnimationDefaults: ();
- 
+
     @if ($tableAddAnimation) {
         $tableAnimationDefaults: map-merge($tableAnimationDefaults, (add: $tableAddAnimation));
     }
@@ -39,7 +39,7 @@
     @if ($tableAnimationDefaults) {
         $tableDefaultOptions: map-merge($tableDefaultOptions, (animation: $tableAnimationDefaults));
     }
- 
+
     @if ($tableDisplayOptionDefault != null) {
        $tableDefaultOptions: map-merge($tableDefaultOptions, (display: $tableDisplayOptionDefault));
     }
@@ -47,37 +47,37 @@
     {
        $tableDefaultOptions: map-merge($tableDefaultOptions, (showIndicatorDelay: $loadingIndicatorDelayDuration));
     }
-    
+
     .oj-table-option-defaults {
        font-family: oj-json-from-map($tableDefaultOptions);
     }
-    
+
     /* Styling for the root component element. */
     .oj-table {
        position: relative;
        line-height: normal;
        font-size: inherit;
        min-width: 240px;
-       // min-height is 2 rows (1 row for the header + 1 row for the body) 
+       // min-height is 2 rows (1 row for the header + 1 row for the body)
        // to leave space for the No Data message.
-       min-height: 2 * $dataGridRowHeight;
+       min-height: 2 * $collectionRowHeight;
        // prevent graying on iOS safari
-       -webkit-tap-highlight-color: rgba(0,0,0,0); 
+       -webkit-tap-highlight-color: rgba(0,0,0,0);
        margin: 1px;
     }
-    
+
     /* Grid display styling for the root component element. */
     .oj-table.oj-table-grid-display {
-       border: 1px solid $dataGridBorderColor;
-       background-color: $dataGridBgColor;
+       border: 1px solid $collectionBorderColor;
+       background-color: $collectionBgColor;
        margin: 0;
     }
-    
+
     /* Styling for the root component element with warning. */
     .oj-table.oj-warning {
-       border: 1px solid $borderColorWarning; 
+       border: 1px solid $borderColorWarning;
     }
-     
+
     /* Styling for the component div container element. */
     .oj-table-container {
        display: inline-block;
@@ -85,17 +85,17 @@
        clear: both;
        box-sizing: border-box;
     }
-    
+
     /* Styling for HTML table element. */
     table.oj-table-element {
        box-sizing: border-box;
        width: calc(100% - 1px);
        outline: none;
-       border-collapse: collapse;  
+       border-collapse: collapse;
        border-spacing: 0;
        font-size: inherit;
     }
-    
+
     /* Styling for HTML table element when column resizing. */
     table.oj-table-element.oj-table-column-header-resizing {
        user-select: none;
@@ -103,51 +103,51 @@
        -webkit-user-select: none;
        -ms-user-select: none;
     }
-    
+
     /* Styling for the header element. */
-    .oj-table-header {    
-      color: $dataGridHeaderTextColor;
+    .oj-table-header {
+      color: $collectionHeaderTextColor;
       border-bottom: 1px solid $tableHeaderBorderColor;
       font-size: inherit;
       overflow: hidden;
     }
-    
+
     /* Styling for the header element when table has vertical or horizontal scrollbars. */
     .oj-table-scroll-vertical .oj-table-header,
     .oj-table-scroll-horizontal .oj-table-header {
       display: block;
       position: relative;
     }
-    
+
     /* Grid display styling for the header element. */
     .oj-table-grid-display .oj-table-header {
-      background-color: $dataGridHeaderBgColor;
-      border-bottom: 1px solid $dataGridHeaderBorderColor;
+      background-color: $collectionHeaderBgColor;
+      border-bottom: 1px solid $collectionHeaderBorderColor;
     }
-    
+
     /* Styling for the header row element. */
     .oj-table-header-row {
       height: $tableRowHeight;
       font-size: inherit;
       vertical-align: middle;
     }
-    
+
     /* Grid display or editable table styling for the header row element. */
     .oj-table-grid-display .oj-table-header-row,
     .oj-table-editable .oj-table-header-row {
-      height: calc(#{$dataGridRowHeight} + 4px);
+      height: calc(#{$collectionRowHeight} + 4px);
     }
-    
+
     /* Styling for the header row element when table is scrollable. */
     .oj-table-scroll .oj-table-header-row {
       min-height: $tableRowHeight;
       height: auto;
     }
-    
+
     /* Grid display or editable table styling for the header row element when table is scrollable. */
     .oj-table-scroll .oj-table-grid-display .oj-table-header-row,
     .oj-table-scroll .oj-table-editable .oj-table-header-row {
-      min-height: calc(#{$dataGridRowHeight} + 4px);
+      min-height: calc(#{$collectionRowHeight} + 4px);
       height: auto;
     }
 
@@ -161,7 +161,7 @@
     /* Styling for the column header elements. */
     .oj-table-column-header-cell {
        font-size: inherit;
-       font-weight: $dataGridHeaderFontWeight;
+       font-weight: $collectionHeaderFontWeight;
        @include oj-ltr() {
          padding-left: $tableHeaderPadding;
          padding-right: 0;
@@ -170,107 +170,107 @@
          padding-right: $tableHeaderPadding;
          padding-left: 0;
        }
-       padding-top: $dataGridCellPadding;
-       padding-bottom: $dataGridCellPadding;
+       padding-top: $collectionCellPadding;
+       padding-bottom: $collectionCellPadding;
        float: none;
        white-space: nowrap;
-       height: calc(#{$tableRowHeight} - 2 * #{$dataGridCellPadding});
-       line-height: calc(#{$tableRowHeight} - 2 * #{$dataGridCellPadding});
+       height: calc(#{$tableRowHeight} - 2 * #{$collectionCellPadding});
+       line-height: calc(#{$tableRowHeight} - 2 * #{$collectionCellPadding});
        text-overflow: ellipsis;
        overflow: hidden;
        @include oj-ltr() {
          text-align: left;
        }
-       @include oj-rtl() {    
-         text-align: right; 
+       @include oj-rtl() {
+         text-align: right;
        }
        box-sizing: content-box;
     }
-    
+
     /* Grid display or editable table styling for the column header elements. */
     .oj-table-grid-display .oj-table-column-header-cell,
     .oj-table-editable .oj-table-column-header-cell {
-       height: calc(#{$dataGridRowHeight} - 2 * #{$dataGridCellPadding});
-       line-height: calc(#{$dataGridRowHeight} - 2 * #{$dataGridCellPadding});
+       height: calc(#{$collectionRowHeight} - 2 * #{$collectionCellPadding});
+       line-height: calc(#{$collectionRowHeight} - 2 * #{$collectionCellPadding});
        @include oj-ltr() {
-         padding-left: $dataGridCellPadding;
-         padding-right: $dataGridCellPadding;
+         padding-left: $collectionCellPadding;
+         padding-right: $collectionCellPadding;
        }
        @include oj-rtl() {
-         padding-left: $dataGridCellPadding;
-         padding-right: $dataGridCellPadding;
+         padding-left: $collectionCellPadding;
+         padding-right: $collectionCellPadding;
        }
     }
-    
+
     /* Styling to remove the right border of the last column header. */
     .oj-table-column-header-cell:last-child {
        @include oj-ltr() {
          border-right: 0;
        }
-       @include oj-rtl() {    
+       @include oj-rtl() {
          border-left: 0;
        }
     }
-    
+
     /* Styling for the vertical grid lines for header cells. */
     .oj-table-column-header-cell.oj-table-vgrid-lines {
        @include oj-ltr() {
          border-right: 1px solid transparent;
        }
-       @include oj-rtl() {    
+       @include oj-rtl() {
          border-left: 1px solid transparent;
        }
     }
 
     /* Styling for the column header elements in selected state when table focused. */
-    .oj-table-element:not(.oj-table-column-header-resizing) .oj-table.oj-focus .oj-table-column-header-cell.oj-selected {
-       background-color: $dataGridHeaderBgColorSelected;
+    .oj-table-element:not(.oj-table-column-header-resizing) .oj-table-column-header-cell.oj-selected {
+       background-color: $collectionHeaderBgColorSelected;
     }
 
     /* Styling for the column header elements in selected state when table not focused. */
-    .oj-table-column-header-cell.oj-selected {
-       background-color: $dataGridHeaderBgColorSelectedInactive;
+    .oj-table:not(.oj-focus) .oj-table-column-header-cell.oj-selected {
+       background-color: $collectionHeaderBgColorSelectedInactive;
     }
-    
+
     /* Styling for the column header element in hover state. */
     .oj-table-column-header-cell.oj-hover {
-       background-color: $dataGridHeaderBgColorHover;
+       background-color: $collectionHeaderBgColorHover;
     }
-    
+
     /* Styling for the column header element in focused state. */
     .oj-table-element:not(.oj-table-column-header-resizing) .oj-table-column-header-cell.oj-focus {
        outline-offset: -1px;
        @include oj-browser-focus-outline-approximation($primaryTextColor);
     }
-    
+
     /* Styling for the dragged column header element. */
     .oj-table-column-header-cell.oj-drag {
-       background-color: $dataGridHeaderBgColorDrag;
+       background-color: $collectionHeaderBgColorDrag;
        color: $textColorDisabled;
     }
-    
+
     /* Styling for the column header drag image. */
     .oj-table-column-header-cell-drag-image {
-       border: 1px solid $dataGridHeaderDragImageBorderColor;
-       background-color: $dataGridHeaderBgColorSelected;
+       border: 1px solid $collectionHeaderDragImageBorderColor;
+       background-color: $collectionHeaderBgColorSelected;
     }
-    
+
     /* Styling for the column header drag indicator after a column. */
     .oj-table-column-header-cell.oj-table-column-header-drag-indicator-after {
        @include oj-ltr() {
          border-right: 6px solid $dropTarget2Color;
        }
-       @include oj-rtl() {    
+       @include oj-rtl() {
          border-left: 6px solid $dropTarget2Color;
        }
     }
- 
+
     /* Styling for the column header drag indicator before a column. */
     .oj-table-column-header-cell.oj-table-column-header-drag-indicator-before {
        @include oj-ltr() {
          border-left: 6px solid $dropTarget2Color;
        }
-       @include oj-rtl() {    
+       @include oj-rtl() {
          border-right: 6px solid $dropTarget2Color;
        }
     }
@@ -279,25 +279,24 @@
     /* Styling for the column header element. */
     .oj-table-column-header {
       position: relative;
-      height: inherit;
       float: none;
       text-overflow: inherit;
       overflow: inherit;
       @include oj-ltr() {
         padding-right: 10px;
       }
-      @include oj-rtl() {    
+      @include oj-rtl() {
         padding-left: 10px;
       }
     }
-    
+
     /* Grid display or editable table styling for the column header element. */
     .oj-table-grid-display .oj-table-column-header,
     .oj-table-editable .oj-table-column-header {
       @include oj-ltr() {
         padding-right: 0;
       }
-      @include oj-rtl() {    
+      @include oj-rtl() {
         padding-left: 0;
       }
     }
@@ -312,11 +311,11 @@
       @include oj-ltr() {
        padding-right: 5px;
       }
-      @include oj-rtl() {    
+      @include oj-rtl() {
        padding-left: 5px;
       }
     }
-    
+
     /* Grid display or editable table styling for the column header text. */
     .oj-table-grid-display .oj-table-column-header-text,
     .oj-table-editable .oj-table-column-header-text {
@@ -333,19 +332,19 @@
       @include oj-ltr() {
        right: 5px;
       }
-      @include oj-rtl() {    
+      @include oj-rtl() {
        left: 5px;
       }
       top: 0;
     }
-    
+
     /* Grid display or editable table styling for the column header sort ascending element. */
     .oj-table-grid-display .oj-table-column-header-asc,
     .oj-table-editable .oj-table-column-header-asc {
       @include oj-ltr() {
        right: -5px;
       }
-      @include oj-rtl() {    
+      @include oj-rtl() {
        left: -5px;
       }
       top: -2px;
@@ -362,24 +361,24 @@
       @include oj-ltr() {
        right: 5px;
       }
-      @include oj-rtl() {    
+      @include oj-rtl() {
        left: 5px;
       }
       top: 0;
     }
-    
+
     /* Grid display or editable table styling for the column header sort descending element. */
     .oj-table-grid-display .oj-table-column-header-dsc,
     .oj-table-editable .oj-table-column-header-dsc{
       @include oj-ltr() {
        right: -5px;
       }
-      @include oj-rtl() {    
+      @include oj-rtl() {
        left: -5px;
       }
       top: -2px;
     }
-    
+
     /* Styling for the column header sort ascending element in disabled state. */
     .oj-table-column-header-asc.oj-disabled {
       display: none;
@@ -402,42 +401,42 @@
       @include oj-ltr() {
         left: 0;
       }
-      @include oj-rtl() {    
-        right: 0; 
+      @include oj-rtl() {
+        right: 0;
       }
-    } 
-    
+    }
+
     /* Styling for the column header sort icons in hover state. */
     .oj-table-column-header-asc-icon.oj-hover,
     .oj-table-column-header-dsc-icon.oj-hover {
       text-decoration: none;
-    } 
+    }
 
     /* Icon for column header sort ascending in enabled state. */
-    // We also render oj-clickable-icon on the icon, 
+    // We also render oj-clickable-icon on the icon,
     // so the hover/active/etc colors come from there
     .oj-table-column-header-asc-icon {
       @extend .oj-fwk-icon-arrow-n;
-    } 
+    }
 
     /* Icon for column header sort ascending in disabled state. */
     .oj-table-column-header-asc-icon.oj-disabled {
       visibility: hidden;
-    } 
+    }
 
 
     /* Icon for column header sort descending */
-    // We also render oj-clickable-icon on the icon, 
+    // We also render oj-clickable-icon on the icon,
     // so the hover/active/etc colors come from there
     .oj-table-column-header-dsc-icon {
       @extend .oj-fwk-icon-arrow-s;
-    } 
+    }
 
     /* Icon for column header sort descending in disabled state. */
     .oj-table-column-header-dsc-icon.oj-disabled {
       visibility: hidden;
-    } 
-    
+    }
+
     /* Styling for the column header resize indicator. */
     .oj-table-column-header-resize-indicator {
       position: absolute;
@@ -446,18 +445,18 @@
       border-top-width: 0;
       border-bottom-width: 0;
       border-style: solid;
-      border-color: $interaction6Color;
+      border-color: $collectionHeaderBgColorSelected;
     }
-    
+
     /* Styling for the data body element. */
     .oj-table-body {
-      color: $dataGridCellTextColor;
+      color: $collectionCellTextColor;
       border-width: 0 0 1px;
-      border-color: $dataGridBorderColor;
-      border-style: solid; 
+      border-color: $collectionBorderColor;
+      border-style: solid;
       font-size: inherit;
     }
-    
+
     /* Styling for the table body element when table has vertical or horizontal scrollbars. */
     .oj-table-scroll-vertical .oj-table-body,
     .oj-table-scroll-horizontal .oj-table-body {
@@ -465,50 +464,50 @@
       overflow: auto;
       position: relative;
     }
-    
+
     /* Grid display styling for the data body element. */
     .oj-table-grid-display .oj-table-body {
-      background-color: $dataGridCellBgColor;
+      background-color: $collectionCellBgColor;
       border: 0;
     }
-    
+
     /* Styling for the data row elements. */
     .oj-table-body-row {
       height: $tableRowHeight;
       font-size: inherit;
     }
-    
+
     /* Grid display or editable table styling for the data row elements. */
     .oj-table-grid-display .oj-table-body-row,
     .oj-table-editable .oj-table-body-row {
-      height: calc(#{$dataGridRowHeight} + 4px);
+      height: calc(#{$collectionRowHeight} + 4px);
     }
-    
+
     /* Styling for the data row elements in focus state. */
     .oj-table-element:not(.oj-table-column-header-resizing) .oj-table-body-row.oj-focus:not(.oj-table-body-row-edit) {
        outline-offset: -1px;
        @include oj-browser-focus-outline-approximation($primaryTextColor);
     }
-    
+
     /* Styling for the data row drag indicator before a row. */
     .oj-table-body-row-drag-indicator-before {
-      height: $dataGridRowHeight;
+      height: $collectionRowHeight;
       background-color: $dropTarget2Color;
     }
-    
+
         /* Styling for the data row drag indicator after a row. */
     .oj-table-body-row-drag-indicator-after {
-      height: $dataGridRowHeight;
+      height: $collectionRowHeight;
       background-color: $dropTarget2Color;
     }
-    
-    /* Styling for the selection affordance icon on touch devices*/											 				
-    .oj-table-body-row-touch-selection-affordance-top-icon, 
+
+    /* Styling for the selection affordance icon on touch devices*/
+    .oj-table-body-row-touch-selection-affordance-top-icon,
     .oj-table-body-row-touch-selection-affordance-bottom-icon {
       @include oj-border-radius(50%);
-      border: 2px solid $dataGridSelectionAffordanceBorderColor;
-      border: 2px solid rgba($dataGridSelectionAffordanceBorderColor, 0.8);
-      box-sizing: border-box;		
+      border: 2px solid $collectionSelectionAffordanceBorderColor;
+      border: 2px solid rgba($collectionSelectionAffordanceBorderColor, 0.8);
+      box-sizing: border-box;
       background-color: $iconColorHover;
       position: absolute;
       width: 11px;
@@ -518,241 +517,241 @@
       left: 0;
       right: 0;
       top: 0;
-      bottom: 0;            
+      bottom: 0;
     }
-    
-    /* Styling for the selection affordance touchable area on touch devices*/											 				
+
+    /* Styling for the selection affordance touchable area on touch devices*/
     .oj-table-body-row-touch-selection-affordance-touch-area {
        width: 24px;
        height: 24px;
        position: absolute;
-    } 
-    
+    }
+
     /* Styling for the data cell elements. */
     .oj-table-data-cell {
        font-size: inherit;
        font-weight: normal;
        min-width: $fontSize;
        min-height: $fontSize;
-       padding-top: $dataGridCellPadding;
-       padding-bottom: $dataGridCellPadding;
+       padding-top: $collectionCellPadding;
+       padding-bottom: $collectionCellPadding;
        padding-left: $tableCellPadding;
        padding-right: $tableCellPadding;
        float: none;
        @include oj-ltr() {
          text-align: left;
        }
-       @include oj-rtl() {    
-         text-align: right; 
+       @include oj-rtl() {
+         text-align: right;
        }
        overflow: hidden;
        text-overflow: ellipsis;
        white-space: nowrap;
        box-sizing: content-box;
     }
-    
+
     /* Grid display or editable table styling for the data cell elements. */
     .oj-table-grid-display .oj-table-data-cell,
     .oj-table-editable .oj-table-data-cell {
-       padding-left: $dataGridCellPadding;
-       padding-right: $dataGridCellPadding;
-       height: calc(#{$dataGridRowHeight} - 11px);
+       padding-left: $collectionCellPadding;
+       padding-right: $collectionCellPadding;
+       height: calc(#{$collectionRowHeight} - 11px);
     }
-    
+
     /* Edit row styling for data cell elements. */
     .oj-table-body-row-edit .oj-table-data-cell:not(.oj-read-only) {
        padding: 0;
     }
-    
+
     /* Edit row styling for data cell elements. */
     .oj-table-data-cell.oj-table-data-cell-edit {
-       outline: 1px solid $dataGridEditableCellBorderColorFocus;
+       outline: 1px solid $collectionEditableCellBorderColorFocus;
     }
-    
+
     /* Styling on read only table cells, oj-readOnly must be applied by the application */
     .oj-table-data-cell.oj-read-only {
-       background-color: $dataGridEditableCellBgColorReadOnly;
+       background-color: $collectionEditableCellBgColorReadOnly;
     }
-    
+
     /* A helper class oj-table-data-cell-no-padding should have padding 0*/
     .oj-table-data-cell.oj-table-data-cell-no-padding {
        padding: 0;
     }
-    
+
     /* A helper class oj-table-data-cell-padding should be applied to editable components that should maintain padding in edit mode*/
     .oj-table-body-row-edit .oj-table-data-cell.oj-table-data-cell-padding {
-       padding: $dataGridCellPadding;
+       padding: $collectionCellPadding;
     }
-        
+
     /* Styling for the dragged data cell elements. */
     .oj-table-data-cell.oj-drag {
-       background-color: $dataGridCellBgColorDrag;
+       background-color: $collectionCellBgColorDrag;
        color: $textColorDisabled;
     }
-    
+
     /* Styling for the data cell elements in selected state when table focused. */
-    .oj-table-element:not(.oj-table-column-header-resizing) .oj-table.oj-focus .oj-table-data-cell.oj-selected {
-       background-color: $dataGridCellBgColorSelected;
+    .oj-table-element:not(.oj-table-column-header-resizing) .oj-table-data-cell.oj-selected {
+       background-color: $collectionCellBgColorSelected;
     }
-    
+
     /* Styling for the data cell elements in selected state when table in high contrast mode. */
     .oj-hicontrast .oj-table-data-cell.oj-selected {
        border: 3px double;
     }
 
     /* Styling for the data cell elements in selected state when table not focused. */
-    .oj-table-data-cell.oj-selected {
-       background-color: $dataGridCellBgColorSelectedInactive;
+    .oj-table:not(.oj-focus) .oj-table-data-cell.oj-selected {
+       background-color: $collectionCellBgColorSelectedInactive;
     }
-    
+
     /* Styling for the data cell elements in hover state. */
     .oj-table-data-cell.oj-hover {
-       background-color: $dataGridCellBgColorHover;
+       background-color: $collectionCellBgColorHover;
     }
 
     /* Styling on form controls stamped inside a table */
     .oj-table-data-cell.oj-form-control-inherit .oj-form-control {
-       height: calc(#{$dataGridRowHeight} + 4px);
+       height: calc(#{$collectionRowHeight} + 4px);
        @include oj-form-control-padding-override(
-         $padding: "0 calc(#{$dataGridCellPadding} + 1px)");
+         $padding: "0 calc(#{$collectionCellPadding} + 1px)");
     }
 
-    .oj-table-data-cell .oj-checkboxset .oj-checkbox-label {      
+    .oj-table-data-cell .oj-checkboxset .oj-checkbox-label {
       justify-content: flex-end;
     }
-    
+
     /* Styling for the footer. */
     .oj-table-footer {
        border-top: 1px solid $tableHeaderBorderColor;
        font-size: inherit;
        overflow: hidden;
     }
-    
+
     /* Styling for the footer when table has vertical or horizontal scrollbars. */
     .oj-table-scroll-vertical .oj-table-footer,
     .oj-table-scroll-horizontal .oj-table-footer {
       display: block;
       position: relative;
     }
-    
+
     /* Grid display styling for the footer. */
     .oj-table-grid-display .oj-table-footer {
-       background-color: $dataGridHeaderBgColor;
-       border-top: 1px solid $dataGridBorderColor;
+       background-color: $collectionHeaderBgColor;
+       border-top: 1px solid $collectionBorderColor;
     }
-    
+
     /* Styling for the footer row. */
     .oj-table-footer-row {
        height: $tableRowHeight;
        font-size: inherit;
     }
-    
+
     /* Grid display or editable table styling for the footer row. */
     .oj-table-grid-display .oj-table-footer-row,
     .oj-table-editable .oj-table-footer-row {
-       height: calc(#{$dataGridRowHeight} + 4px);
+       height: calc(#{$collectionRowHeight} + 4px);
     }
-    
+
     /* Styling for the footer row when table is scrollable. */
     .oj-table-scroll .oj-table-footer-row {
        min-height: $tableRowHeight;
        height: auto;
     }
-    
+
     /* Grid display or editable table styling for the footer row when table is scrollable. */
     .oj-table-scroll .oj-table-grid-display .oj-table-footer-row,
     .oj-table-scroll .oj-table-editable .oj-table-footer-row {
-       min-height: calc(#{$dataGridRowHeight} + 4px);
+       min-height: calc(#{$collectionRowHeight} + 4px);
        height: auto;
     }
-    
+
     /* Styling for the footer row when table has vertical or horizontal scrollbars. */
     .oj-table-scroll-vertical .oj-table-footer-row,
     .oj-table-scroll-horizontal .oj-table-footer-row {
       display: block;
       position: relative;
     }
-    
+
     /* Styling for the footer cells. */
     .oj-table-footer-cell {
        float: none;
-       padding-top: $dataGridCellPadding;
-       padding-bottom: $dataGridCellPadding;
+       padding-top: $collectionCellPadding;
+       padding-bottom: $collectionCellPadding;
        padding-left: $tableHeaderPadding;
        padding-right: $tableHeaderPadding;
        font-size: inherit;
        box-sizing: content-box;
     }
-    
+
     /* Grid display or editable table styling for the footer cells. */
     .oj-table-grid-display .oj-table-footer-cell,
     .oj-table-editable .oj-table-footer-cell {
-       padding-left: $dataGridCellPadding;
-       padding-right: $dataGridCellPadding;
+       padding-left: $collectionCellPadding;
+       padding-right: $collectionCellPadding;
     }
-        
+
     /* Styling for the vertical grid lines for data cells. */
     .oj-table-data-cell.oj-table-vgrid-lines {
        @include oj-ltr() {
-         border-right: 1px solid $dataGridCellBorderColor;
+         border-right: 1px solid $collectionCellBorderColor;
        }
-       @include oj-rtl() {    
-         border-left: 1px solid $dataGridCellBorderColor;
+       @include oj-rtl() {
+         border-left: 1px solid $collectionCellBorderColor;
        }
     }
-    
+
     /* Styling to remove the right border of the last vertical grid line. */
     .oj-table-vgrid-lines:last-child {
        @include oj-ltr() {
          border-right: 0;
        }
-       @include oj-rtl() {    
+       @include oj-rtl() {
          border-left: 0;
        }
     }
-    
-   
+
+
     /* Grid display styling for the vertical grid lines. */
     .oj-table-grid-display .oj-table-vgrid-lines,
     .oj-table-grid-display .oj-table-column-header-cell.oj-table-vgrid-lines {
        @include oj-ltr() {
-         border-right: 1px solid $dataGridCellBorderColor;
+         border-right: 1px solid $collectionCellBorderColor;
        }
-       @include oj-rtl() {    
-         border-left: 1px solid $dataGridCellBorderColor;
+       @include oj-rtl() {
+         border-left: 1px solid $collectionCellBorderColor;
        }
     }
 
     /* Styling for the horizontal grid lines. */
     .oj-table-hgrid-lines {
-       border-bottom: 1px solid $dataGridCellBorderColor;
+       border-bottom: 1px solid $collectionCellBorderColor;
     }
-    
+
     /* Styling for the inline message. */
     .oj-table-inline-message {
       padding: 10px;
       position: absolute;
     }
-    
+
     /* Styling for the inline message with warning. */
     .oj-table-inline-message.oj-warning {
-      background-color: $messageInlineBgColorWarning;
-      border: 1px solid $messageInlineBorderColorWarning;
+      background-color: $messageComponentInlineBgColorWarning;
+      border: 1px solid $messageComponentInlineBorderColorWarning;
       border-top-width: 0;
-    } 
-    
+    }
+
     /* Styling for the status message. */
     .oj-table-status-message {
       position: absolute;
     }
-    
+
     /* Styling for the status message text. */
     // InfoBackground & InfoText are CSS2 system colors
     .oj-table-status-message-text {
       background-color: InfoBackground;
       color: InfoText;
-      border: 1px $dataGridCellBorderColor solid;
-      padding: $dataGridCellPadding;
+      border: 1px $collectionCellBorderColor solid;
+      padding: $collectionCellPadding;
       display: inline-block;
     }
 
@@ -771,23 +770,23 @@
     /* Styling for the body message. */
     .oj-table-body-message {
       color: $textColor;
-      padding: $dataGridCellPadding;
-    } 
-    
-    /* Styling for a panel that can attach to the bottom of the table 
+      padding: $collectionCellPadding;
+    }
+
+    /* Styling for a panel that can attach to the bottom of the table
        and match the table colors. An app developer can put a paging control
        in a div with this class, for example. */
     .oj-table-panel-bottom {
     }
-    
-    /* Styling for a panel that can attach to the bottom of the table 
-       and match the table colors when table is in grid display. An app developer 
+
+    /* Styling for a panel that can attach to the bottom of the table
+       and match the table colors when table is in grid display. An app developer
        can put a paging control in a div with this class, for example. */
     .oj-table-panel-bottom-grid-display {
        border-style: solid;
-       border-color: $dataGridBorderColor; 
+       border-color: $collectionBorderColor;
        border-width: 0 1px 1px;
-       background-color: $dataGridBgColor; 
+       background-color: $collectionBgColor;
     }
   }
 }

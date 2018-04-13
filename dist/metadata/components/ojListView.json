@@ -1,7 +1,7 @@
 {
   "name": "oj-list-view",
-  "version": "4.2.0",
-  "jetVersion": "4.2.0",
+  "version": "5.0.0",
+  "jetVersion": "5.0.0",
   "displayName": "List View",
   "preview": true,
   "roles": [
@@ -10,9 +10,15 @@
   "styleClasses": [
     {
       "styleGroup": [
-        "oj-listview-card-layout"
+        "oj-clickthrough-disabled"
       ],
-      "description": "Shows items as cards and lay them out in a grid."
+      "description": "Use on any element inside an item where you do not want ListView to process the click event."
+    },
+    {
+      "styleGroup": [
+        "oj-focus-highlight"
+      ],
+      "description": "Under normal circumstances this class is applied automatically. It is documented here for the rare cases that an app developer needs per-instance control.\nThe \"oj-focus-highlight\" class applies focus styling that may not be desirable when the focus results from pointer interaction (touch or mouse), but which is needed for accessibility when the focus occurs by a non-pointer mechanism, for example keyboard or initial page load.\nThe application-level behavior for this component is controlled in the theme by the \"$focusHighlightPolicy\" SASS variable; however, note that this same variable controls the focus highlight policy of many components and patterns. The values for the variable are:\n\"nonPointer\": \"oj-focus-highlight\" is applied only when focus is not the result of pointer interaction. Most themes default to this value.\n\"all\": \"oj-focus-highlight\" is applied regardless of the focus mechanism.\n\"none\": \"oj-focus-highlight\" is never applied. This behavior is not accessible, and is intended for use when the application wishes to use its own event listener to precisely control when the class is applied (see below). The application must ensure the accessibility of the result.\nTo change the behavior on a per-instance basis, the application can set the SASS variable as desired and then use event listeners to toggle this class as needed."
     },
     {
       "styleGroup": [
@@ -22,9 +28,9 @@
     },
     {
       "styleGroup": [
-        "oj-focus-highlight"
+        "oj-listview-card-layout"
       ],
-      "description": "Under normal circumstances this class is applied automatically. It is documented here for the rare cases that an app developer needs per-instance control.\nThe \"oj-focus-highlight\" class applies focus styling that may not be desirable when the focus results from pointer interaction (touch or mouse), but which is needed for accessibility when the focus occurs by a non-pointer mechanism, for example keyboard or initial page load.\nThe application-level behavior for this component is controlled in the theme by the \"$focusHighlightPolicy\" SASS variable; however, note that this same variable controls the focus highlight policy of many components and patterns. The values for the variable are:\n\"nonPointer\": \"oj-focus-highlight\" is applied only when focus is not the result of pointer interaction. Most themes default to this value.\n\"all\": \"oj-focus-highlight\" is applied regardless of the focus mechanism.\n\"none\": \"oj-focus-highlight\" is never applied. This behavior is not accessible, and is intended for use when the application wishes to use its own event listener to precisely control when the class is applied (see below). The application must ensure the accessibility of the result.\nTo change the behavior on a per-instance basis, the application can set the SASS variable as desired and then use event listeners to toggle this class as needed."
+      "description": "Shows items as cards and lay them out in a grid."
     }
   ],
   "description": "Displays data items as a list or a grid with highly interactive features.",
@@ -33,6 +39,7 @@
       "description": "Gets and sets the alias for the current item when referenced inside the item template.",
       "type": "string",
       "displayName": "As",
+      "value": "",
       "preview": true
     },
     "currentItem": {
@@ -44,7 +51,7 @@
     },
     "data": {
       "description": "Gets and sets the data provider for this list.",
-      "type": "oj.TableDataSource|oj.TreeDataSource|oj.DataProvider|oj.IteratingDataProvider",
+      "type": "oj.TableDataSource|oj.TreeDataSource|oj.DataProvider",
       "displayName": "Data",
       "value": null
     },
@@ -66,24 +73,29 @@
           "value": null,
           "properties": {
             "items": {
-              "description": "If this object is specified, listview will initiate drag operation when the user drags on either a drag handle, which is an element with oj-listview-drag-handle class, or selected items if no drag handle is set on the item.",
+              "description": "If this object is specified, listview will initiate drag operation when the user drags on either a drag handle, which is an element with oj-listview-drag-handle class, or\nselected items if no drag handle is set on the item.",
               "type": "Object",
+              "value": null,
               "properties": {
                 "dataTypes": {
-                  "description": "(optional) The MIME types to use for the dragged data in the dataTransfer object. This can be a string if there is only one type, or an array of strings if multiple types are needed. For example, if selected items of employee data are being dragged, dataTypes could be \"application/employees+json\". Drop targets can examine the data types and decide whether to accept the data. A text input may only accept \"text\" data type, while a chart for displaying employee data may be configured to accept the \"application/employees+json\" type. For each type in the array, dataTransfer.setData will be called with the specified type and the JSON version of the selected item data as the value. The selected item data is an array of objects, with each object representing a model object from the underlying data source. For example, if the underlying data is an oj.Collection, then this would be a oj.Model object. Note that when static HTML is used, then the value would be the html string of the selected item. This property is required unless the application calls setData itself in a dragStart callback function.",
-                  "type": "string|Array.<string>"
-                },
-                "dragStart": {
-                  "description": "(optional) A callback function that receives the \"dragstart\" event and context information as arguments: function(event, context) Parameters: event: The DOM event object context: Context object with the following properties: items: An array of objects, with each object representing the data of one selected item This function can set its own data and drag image as needed. If dataTypes is specified, event.dataTransfer is already populated with the default data when this function is invoked. If dataTypes is not specified, this function must call event.dataTransfer.setData to set the data or else the drag operation will be cancelled. In either case, the drag image is set to an image of the dragged rows on the listview.",
-                  "type": "function"
+                  "description": "The MIME types to use for the dragged data in the dataTransfer object. This can be a string if there is only one \ntype, or an array of strings if multiple types are needed.\nFor example, if selected items of employee data are being dragged, dataTypes could be \"application/employees+json\". Drop targets can examine the data types and decide\nwhether to accept the data. A text input may only accept \"text\" data type, while a chart for displaying employee data may be configured to accept the \"application/employees+json\" type.\nFor each type in the array, dataTransfer.setData will be called with the specified type and the JSON version of the selected item data as the value. The selected item data \nis an array of objects, with each object representing a model object from the underlying data source. For example, if the underlying data is an oj.Collection, then this\nwould be a oj.Model object. Note that when static HTML is used, then the value would be the html string of the selected item.\nThis property is required unless the application calls setData itself in a dragStart callback function.",
+                  "type": "string|Array<string>",
+                  "value": null
                 },
                 "drag": {
-                  "description": "(optional) A callback function that receives the \"drag\" event as argument: function(event) Parameters: event: The DOM event object",
-                  "type": "function"
+                  "description": "An optional callback function that receives the \"drag\" event as argument.",
+                  "type": "function",
+                  "value": null
                 },
                 "dragEnd": {
-                  "description": "(optional) A callback function that receives the \"dragend\" event as argument: function(event) Parameters: event: The DOM event object",
-                  "type": "function"
+                  "description": "An optional callback function that receives the \"dragend\" event as argument.",
+                  "type": "function",
+                  "value": null
+                },
+                "dragStart": {
+                  "description": "A callback function that receives the \"dragstart\" event and context information as arguments. The ontext information has the following properties: items: An array of items being dragged \n\nThis function can set its own data and drag image as needed. If dataTypes is specified, event.dataTransfer is already populated with the default data when this function is invoked.\nIf dataTypes is not specified, this function must call event.dataTransfer.setData to set the data or else the drag operation will be cancelled. In either case, the drag image is \nset to an image of the dragged rows on the listview.",
+                  "type": "function",
+                  "value": null
                 }
               }
             }
@@ -95,28 +107,34 @@
           "value": null,
           "properties": {
             "items": {
-              "description": "An object that specifies callback functions to handle dropping items",
+              "description": "An object that specifies callback functions to handle dropping items.",
               "type": "Object",
+              "value": null,
               "properties": {
                 "dataTypes": {
-                  "description": "A data type or an array of data types this component can accept. This property is required unless dragEnter, dragOver, and drop callback functions are specified to handle the corresponding events.",
-                  "type": "string|Array.<string>"
+                  "description": "A data type or an array of data types this component can accept.\nThis property is required unless dragEnter, dragOver, and drop callback functions are specified to handle the corresponding events.",
+                  "type": "string|Array<string>",
+                  "value": null
                 },
                 "dragEnter": {
-                  "description": "(optional) A callback function that receives the \"dragenter\" event and context information as arguments: function(event, context) Parameters: event: The DOM event object context: Context object with the following properties: item: the item being entered This function should call event.preventDefault to indicate the dragged data can be accepted.",
-                  "type": "function"
-                },
-                "dragOver": {
-                  "description": "(optional) A callback function that receives the \"dragover\" event and context information as arguments: function(event, context) Parameters: event: The DOM event object context: Context object with the following properties: item: the item being dragged over Similar to dragEnter, this function should call event.preventDefault to indicate the dragged data can be accepted.",
-                  "type": "function"
+                  "description": "An optional callback function that receives the \"dragenter\" event and context information as arguments. The context information has the following properties: item: the item being entered \n\nThis function should call event.preventDefault to indicate the dragged data can be accepted.",
+                  "type": "function",
+                  "value": null
                 },
                 "dragLeave": {
-                  "description": "(optional) A callback function that receives the \"dragleave\" event and context information as arguments: function(event, context) Parameters: event: The DOM event object context: Context object with the following properties: item: the item that was last entered ",
-                  "type": "function"
+                  "description": "An optional callback function that receives the \"dragleave\" event and context information as arguments. The context information has the following properties: item: the item that was last entered \n",
+                  "type": "function",
+                  "value": null
+                },
+                "dragOver": {
+                  "description": "An optional callback function that receives the \"dragover\" event and context information as arguments. The context information has the following properties: item: the item being dragged over \n\nSimilar to dragEnter, this function should call event.preventDefault to indicate the dragged data can be accepted.",
+                  "type": "function",
+                  "value": null
                 },
                 "drop": {
-                  "description": "(required) A callback function that receives the \"drop\" event and context information as arguments: function(event, context) Parameters: event: The DOM event object context: Context object with the following properties: item: the item being dropped on position: the drop position relative to the item being dropped on reorder: true if the drop was a reorder in the same listview, false otherwise This function should call event.preventDefault to indicate the dragged data is accepted. If the application needs to look at the data for the item being dropped on, it can use the getDataForVisibleItem method.",
-                  "type": "function"
+                  "description": "A callback function that receives the \"drop\" event and context information as arguments. The context information has the following properties: item: the item being dropped on position: the drop position relative to the item being dropped on reorder: true if the drop was a reorder in the same listview, false otherwise \n\nThis function should call event.preventDefault to indicate the dragged data is accepted.\nIf the application needs to look at the data for the item being dropped on, it can use the getDataForVisibleItem method.",
+                  "type": "function",
+                  "value": null
                 }
               }
             }
@@ -169,8 +187,15 @@
         }
       }
     },
+    "expanded": {
+      "description": "Specifies the key set containing the keys of the items that should be expanded. \n\nUse the ExpandedKeySet class to specify items to expand.\nUse the ExpandAllKeySet class to expand all items.",
+      "type": "KeySet",
+      "displayName": "Expanded",
+      "value": "new ExpandedKeySet();",
+      "writeback": true
+    },
     "firstSelectedItem": {
-      "description": "Gets the key and data of the first selected item. The first selected item is defined as the first key returned by the selection property. The value of this property contains: key - the key of the first selected item. data - the data of the first selected item. If the selected item is not locally available, this will be null. If the data property is not set and that static HTML element is used as data, then this will be the item element. If no items are selected then this property will return an object with both key and data properties set to null.",
+      "description": "Gets the key and data of the first selected item. The first selected item is defined as the first\nkey returned by the selection property. The value of this property contains:\n\nkey - the key of the first selected item.\ndata - the data of the first selected item. If the selected item is not locally available, this will be null. If the data property is not set and that static HTML element is used as data, then this will be the item element.\n\nIf no items are selected then this property will return an object with both key and data properties set to null.",
       "type": "Object",
       "displayName": "First Selected Item",
       "value": {
@@ -178,13 +203,23 @@
         "data": null
       },
       "writeback": true,
-      "readOnly": true
+      "readOnly": true,
+      "properties": {
+        "key": {
+          "description": "The key of the first selected item",
+          "type": "*"
+        },
+        "data": {
+          "description": "The data of the first selected item",
+          "type": "*"
+        }
+      }
     },
     "groupHeaderPosition": {
       "description": "Gets and sets whether group header should stick to the top as user scrolls.",
       "type": "",
       "displayName": "Group Header Position",
-      "value": "sticky",
+      "value": "\"sticky\"",
       "enumValues": [
         "static",
         "sticky"
@@ -207,17 +242,17 @@
       "properties": {
         "focusable": {
           "description": "Gets and sets whether item can receive keyboard focus.",
-          "type": "function|boolean",
+          "type": "boolean|function",
           "value": true
         },
         "renderer": {
           "description": "Gets and sets the renderer for the item.",
-          "type": "function|null",
+          "type": "null|function",
           "value": null
         },
         "selectable": {
           "description": "Gets and sets whether the item can be selected.",
-          "type": "function|boolean",
+          "type": "boolean|function",
           "value": true
         }
       }
@@ -249,15 +284,18 @@
       "properties": {
         "fetchSize": {
           "description": "The number of items to fetch in each block",
-          "type": "number"
+          "type": "number",
+          "value": 25
         },
         "maxCount": {
           "description": "The maximum total number of items to fetch",
-          "type": "number"
+          "type": "number",
+          "value": 500
         },
         "scroller": {
-          "description": "The element which listview uses to determine the scroll position as well as the maximum scroll position. For example in a lot of mobile use cases where ListView occupies the entire screen, developers should set the scroller option to document.documentElement",
-          "type": "Element|null"
+          "description": "The element which listview uses to determine the scroll position as well as the maximum scroll position. For example in a lot of mobile use cases where ListView occupies the entire screen, developers should set the scroller option to document.documentElement.",
+          "type": "Element",
+          "value": null
         }
       }
     },
@@ -265,6 +303,10 @@
       "description": "Gets and sets the scroll position of list view.",
       "type": "Object",
       "displayName": "Scroll Position",
+      "value": {
+        "x": 0,
+        "y": 0
+      },
       "properties": {
         "x": {
           "description": "the horizontal position in pixel",
@@ -275,7 +317,7 @@
           "type": "number"
         },
         "index": {
-          "description": "the zero-based index of the item. If scrollPolicy is set to 'loadMoreOnScroll' and the index is greater than maxCount set in scrollPolicyOptions, then it will scroll and fetch until the end of the list is reached and there's no more items to fetch.",
+          "description": "the zero-based index of the item. If scrollPolicy is set to 'loadMoreOnScroll' \nand the index is greater than maxCount set in scrollPolicyOptions, then it will scroll and fetch\nuntil the end of the list is reached and there's no more items to fetch.",
           "type": "number"
         },
         "parent": {
@@ -283,7 +325,7 @@
           "type": "*"
         },
         "key": {
-          "description": "the key of the item. If DataProvider is used for data and the key does not exists in the DataProvider, then the value is ignored. If DataProvider is not used then ListView will fetch and scroll until the item is found or the end of the list is reached and there's no more items to fetch.",
+          "description": "the key of the item. If DataProvider is used for data and the key does not exists in the \nDataProvider, then the value is ignored. If DataProvider is not used then ListView will fetch and scroll until the item is found\nor the end of the list is reached and there's no more items to fetch.",
           "type": "*"
         },
         "offsetX": {
@@ -298,9 +340,9 @@
     },
     "selection": {
       "description": "Gets and sets the keys of the selected items.",
-      "type": "Array.<*>",
+      "type": "Array<*>",
       "displayName": "Selection",
-      "value": "[]",
+      "value": [],
       "writeback": true
     },
     "selectionMode": {
@@ -336,73 +378,70 @@
       "preview": true
     },
     "translations": {
-      "description": "A collection of translated resources from the translation bundle, or null if this\ncomponent has no resources. Resources may be accessed and overridden individually or collectively, as seen in the examples.\n\nIf this component has translations, their documentation immediately follows this doc entry.",
-      "type": "Object",
+      "description": "A collection of translated resources from the translation bundle, or null if this\ncomponent has no resources. Resources may be accessed and overridden individually or collectively, as seen in the examples. If the component does not contain any translatable resource, the default value of this attribute will be \nnull. If not, an object containing all resources relevant to the component.\n\nIf this component has translations, their documentation immediately follows this doc entry.",
+      "type": "Object|null",
       "displayName": "Translations",
-      "value": null,
+      "translatable": true,
       "properties": {
         "accessibleNavigateSkipItems": {
           "description": "Provides properties to customize the screen reader text when focus skips a number of items as a result of up/down arrow navigation in card layout mode.",
-          "type": "Object"
+          "type": "string"
         },
         "accessibleReorderAfterItem": {
           "description": "Provides properties to customize the screen reader text when the tentative drop target is after a certain item.",
-          "type": "Object"
+          "type": "string"
         },
         "accessibleReorderBeforeItem": {
           "description": "Provides properties to customize the screen reader text when the tentative drop target is before a certain item.",
-          "type": "Object"
+          "type": "string"
         },
         "accessibleReorderInsideItem": {
           "description": "Provides properties to customize the screen reader text when the tentative drop target is inside a certain item.",
-          "type": "Object"
+          "type": "string"
         },
         "accessibleReorderTouchInstructionText": {
           "description": "Provides properties to customize the screen reader touch instructional text for reordering items.",
-          "type": "Object"
+          "type": "string"
         },
         "indexerCharacters": {
           "description": "Provides properties to customize the characters to display in the Indexer.",
-          "type": "Object"
+          "type": "string"
         },
         "labelCopy": {
           "description": "Provides properties to customize the context menu copy label.\n\nSee the translations attribute for usage examples.",
-          "type": "Object"
+          "type": "string"
         },
         "labelCut": {
           "description": "Provides properties to customize the context menu cut label.\n\nSee the translations attribute for usage examples.",
-          "type": "Object"
+          "type": "string"
         },
         "labelPaste": {
           "description": "Provides properties to customize the context menu paste label.\n\nSee the translations attribute for usage examples.",
-          "type": "Object"
+          "type": "string"
         },
         "labelPasteAfter": {
           "description": "Provides properties to customize the context menu paste after label.\n\nSee the translations attribute for usage examples.",
-          "type": "Object"
+          "type": "string"
         },
         "labelPasteBefore": {
           "description": "Provides properties to customize the context menu paste before label.\n\nSee the translations attribute for usage examples.",
-          "type": "Object"
+          "type": "string"
         },
         "msgFetchingData": {
           "description": "Provides properties to customize the message text used by ListView when waiting for data.\n\nSee the translations attribute for usage examples.",
-          "type": "Object"
+          "type": "string"
         },
         "msgNoData": {
           "description": "Provides properties to customize the message text used by ListView when there are no items.\n\nSee the translations attribute for usage examples.",
-          "type": "Object"
+          "type": "string"
         }
       }
     }
   },
   "methods": {
     "refresh": {
-      "description": "Redraw the entire list."
-    },
-    "whenReady": {
-      "description": "Returns a Promise that resolves when this component becomes ready.",
-      "return": "Promise"
+      "description": "Redraw the entire list.",
+      "return": "void"
     },
     "getContextByNode": {
       "description": "Returns an object with context for the given child DOM node. This will always contain the subid for the node,\ndefined as the 'subId' property on the context object. Additional component specific information may also be included.\n\nFor more details on returned objects, see context objects.",
@@ -444,11 +483,7 @@
       "return": "*"
     },
     "getIndexerModel": {
-      "description": "Gets the IndexerModel which can be used with the ojIndexer. The IndexerModel provided by ListView by defaults returns a list of locale dependent characters. See translations for the key used to return all characters. When a user selects a character in the ojIndexer ListView will scroll to the group header (or the closest one) with the character as its prefix.",
-      "deprecated": {
-        "since": "3.0.0",
-        "description": "Implements your own IndexerModel or use the IndexerModelTreeDataSource class instead."
-      },
+      "description": "Gets the IndexerModel which can be used with the ojIndexer. The IndexerModel provided by ListView\nby defaults returns a list of locale dependent characters. See translations for the key used to return\nall characters. When a user selects a character in the ojIndexer ListView will scroll to the group \nheader (or the closest one) with the character as its prefix.",
       "return": "Object"
     },
     "scrollToItem": {
@@ -459,7 +494,8 @@
           "description": "An object with a 'key' property that identifies the item to scroll to.",
           "type": "Object"
         }
-      ]
+      ],
+      "return": "void"
     },
     "setProperty": {
       "description": "Sets a property or a single subproperty for complex properties and notifies the component\nof the change, triggering a [property]Changed event.",
@@ -474,7 +510,8 @@
           "description": "The new value to set the property to.",
           "type": "*"
         }
-      ]
+      ],
+      "return": "void"
     },
     "getProperty": {
       "description": "Retrieves a value for a property or a single subproperty for complex properties.",
@@ -495,7 +532,8 @@
           "description": "An object containing the property and value pairs to set.",
           "type": "Object"
         }
-      ]
+      ],
+      "return": "void"
     }
   },
   "events": {
@@ -504,7 +542,7 @@
       "detail": {
         "action": {
           "description": "the action that starts the animation. See animation section for a list of actions.",
-          "type": "Object"
+          "type": "string"
         },
         "element": {
           "description": "the target of animation.",
@@ -521,7 +559,7 @@
       "detail": {
         "action": {
           "description": "the action that started the animation. See animation section for a list of actions.",
-          "type": "Object"
+          "type": "string"
         },
         "element": {
           "description": "the target of animation.",
@@ -597,7 +635,7 @@
       "detail": {
         "items": {
           "description": "an array of items in which the copy action is performed on",
-          "type": "Array.<Element>"
+          "type": "Array<Element>"
         }
       }
     },
@@ -606,7 +644,7 @@
       "detail": {
         "items": {
           "description": "an array of items in which the cut action is performed on",
-          "type": "Array.<Element>"
+          "type": "Array<Element>"
         }
       }
     },
@@ -637,7 +675,7 @@
       "detail": {
         "items": {
           "description": "an array of items that are moved",
-          "type": "Array.<Element>"
+          "type": "Array<Element>"
         },
         "position": {
           "description": "the drop position relative to the reference item. Possible values are \"before\", \"after\", \"inside\"",
@@ -655,7 +693,7 @@
       "description": "The contextMenu slot is set on the oj-menu within this element. \nThis is used to designate the JET Menu that this component should launch as a context menu on right-click, Shift-F10, Press & Hold, or component-specific gesture. \nIf specified, the browser's native context menu will be replaced by the JET Menu specified in this slot.\n\nThe application can register a listener for the Menu's ojBeforeOpen event. The listener can cancel the launch via event.preventDefault(), \nor it can customize the menu contents by editing the menu DOM directly, and then calling refresh() on the Menu.\n\nTo help determine whether it's appropriate to cancel the launch or customize the menu, the ojBeforeOpen listener can use component API's to determine which \ntable cell, chart item, etc., is the target of the context menu. See the JSDoc and demos of the individual components for details. \n\nKeep in mind that any such logic must work whether the context menu was launched via right-click, Shift-F10, Press & Hold, or component-specific touch gesture."
     },
     "itemTemplate": {
-      "description": "The itemTemplate slot is used to specify the template for rendering each item in the list. The slot must be a <template> element. When the template is executed for each item, it will have access to the binding context containing the following properties: $current - an object that contains information for the current item being rendered componentElement - the <oj-list-view> custom element data - the data for the current item being rendered index - the zero-based index of the current item being rendered key - the key of the current item being rendered depth (available when hierarchical data is provided) - the depth of the current item being rendered. The depth of the first level children under the invisible root is 1 leaf (available when hierarchical data is provided) - whether the current item is a leaf node or not parentKey (available when hierarchical data is provided) - the key of the parent item. The parent key is null for root nodes alias - if as attribute was specified, the value will be used to provide an application-named alias for $current. The content of the template should not include the <li> element, only what's inside it. When both template and item.renderer are specified, the item.renderer takes precedence.",
+      "description": "The itemTemplate slot is used to specify the template for rendering each item in the list. The slot must be a <template> element. \n\nWhen the template is executed for each item, it will have access to the binding context containing the following properties:\n\n$current - an object that contains information for the current item being rendered componentElement - the <oj-list-view> custom element data - the data for the current item being rendered index - the zero-based index of the current item being rendered key - the key of the current item being rendered depth (available when hierarchical data is provided) - the depth of the current item being rendered. The depth of the first level children under the invisible root is 1 leaf (available when hierarchical data is provided) - whether the current item is a leaf node or not parentKey (available when hierarchical data is provided) - the key of the parent item. The parent key is null for root nodes \n\nalias - if as attribute was specified, the value will be used to provide an application-named alias for $current.\n\n\n\nThe content of the template should not include the <li> element, only what's inside it.\nWhen both template and item.renderer are specified, the item.renderer takes precedence.",
       "preview": true
     }
   }

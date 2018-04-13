@@ -43,5 +43,10 @@
       60%   {background-position:center}
       100%   {background-position:120%}
     }
+    
+    .oj-progress-circle-overlay {
+      background-size: cover;
+      background-image: url($progressCircleIndeterminateOverlayImage);
+    }
   }
 }

@@ -1415,6 +1415,7 @@ dvt.TimelineOverview.prototype.getMarkers = function()
 {
   return this._markers;
 };
+
 /**
  * Default values and utility functions for component versioning.
  * @class
@@ -1496,6 +1497,7 @@ DvtTimelineOverviewDefaults.VERSION_1 = {
   '_asdbw': '2px',
   '_aoc': 'off'
 };
+
 /**
  * TimelineOverview XML Parser
  * @param {dvt.TimelineOverview} timelineOverview The owning timelineOverview component.
@@ -1675,6 +1677,7 @@ DvtTimelineOverviewParser.prototype._parseTimeAxis = function(options)
   else
     return null;
 };
+
 /**
  * Class representing a timelineOverview node.
  * @param {dvt.TimelineOverview} timelineOverview The owning timelineOverview component.
@@ -1813,6 +1816,7 @@ DvtTimelineOverviewNode.prototype.setY = function(y)
 {
   this._y = y;
 };
+
 /**
  * Encapsulates an event fired by TimlineOverview
  * @param {string} type The type of event fired by TimelineOverview
@@ -1872,6 +1876,7 @@ dvt.TimelineOverviewEvent.prototype.isMultiSelect = function()
 
   return false;
 };
+
 /**
  * Style related utility functions for dvt.TimelineOverview.
  * @class
@@ -1994,6 +1999,7 @@ DvtTimelineOverviewStyleUtils.getDefaultMarkerBorderStyles = function(options)
 
   return borderStyles;
 };
+
 // Copyright (c) 2012, 2016, Oracle and/or its affiliates. All rights reserved.
 /*---------------------------------------------------------------------*/
 /*  DvtTimelineOverviewAutomation                                      */
@@ -2171,6 +2177,7 @@ DvtTimelineOverviewAutomation._findMarker = function(markers, seriesId, index) {
 
   return null;
 };
+
 dvt.exportProperty(dvt, 'TimelineOverview', dvt.TimelineOverview);
 dvt.exportProperty(dvt.TimelineOverview, 'newInstance', dvt.TimelineOverview.newInstance);
 dvt.exportProperty(dvt.TimelineOverview.prototype, 'render', dvt.TimelineOverview.prototype.render);
@@ -2178,8 +2185,8 @@ dvt.exportProperty(dvt.TimelineOverview.prototype, 'getAutomation', dvt.Timeline
 dvt.exportProperty(dvt.TimelineOverview.prototype, 'getDurationColorMap', dvt.TimelineOverview.prototype.getDurationColorMap);
 
 dvt.exportProperty(DvtTimelineOverviewAutomation.prototype, 'getDomElementForSubId', DvtTimelineOverviewAutomation.prototype.getDomElementForSubId);
-})(dvt);
 
+})(dvt);
 (function(dvt) {
 /** Copyright (c) 2011, Oracle and/or its affiliates. All rights reserved. */
 var DvtTimeUtils = new Object();
@@ -2222,6 +2229,7 @@ DvtTimeUtils.getPositionDate = function(startTime, endTime, pos, width)
 
   return (number / width) + startTime;
 };
+
 /**
  * Timeline keyboard handler.
  * @param {dvt.EventManager} manager The owning dvt.EventManager.
@@ -2325,6 +2333,7 @@ DvtTimelineKeyboardHandler.getClosestItem = function(item, navigableItems)
   }
   return null;
 };
+
 /**
  * Timeline event manager.
  * @param {dvt.Timeline} timeline The owning dvt.Timeline.
@@ -2451,6 +2460,7 @@ DvtTimelineEventManager.prototype.panBy = function(dx, dy)
 
   DvtTimelineEventManager.superclass.panBy.call(this, dx, dy);
 };
+
 /**
  * Timeline component. The component should never be instantiated directly. Use the newInstance function instead.
  * @param {dvt.Context} context The rendering context.
@@ -2726,8 +2736,10 @@ dvt.Timeline.prototype.render = function(options, width, height)
     this._timeAxis.setCanvasSize(null);
 
     var preferredLength = this._timeAxis.getPreferredLength(this._timeAxisOptions, this._canvasLength);
-    this.setContentLength(preferredLength);
-    this.prepareViewportLength();
+    if (preferredLength)
+      this.setContentLength(preferredLength);
+    if (this._timeAxis.hasValidOptions())
+      this.prepareViewportLength();
   }
   this._populateSeries();
 
@@ -3909,6 +3921,7 @@ dvt.Timeline.prototype.setBackgroundXOffset = function(backgroundX)
 {
   this._backgroundX = backgroundX;
 };
+
 /**
  * Timeline automation service.
  * @param {dvt.Timeline} timeline The owning dvt.Timeline.
@@ -3980,6 +3993,7 @@ DvtTimelineAutomation.prototype.getDomElementForSubId = function(subId)
   }
   return null;
 };
+
 /**
  * Default values and utility functions for component versioning.
  * @class
@@ -4045,6 +4059,7 @@ DvtTimelineDefaults.VERSION_1 = {
     }
   }
 };
+
 /**
  * Timeline JSON Parser
  * @class
@@ -4119,6 +4134,7 @@ DvtTimelineParser.prototype.parse = function(options)
 
   return ret;
 };
+
 /**
  * Renderer for dvt.Timeline.
  * @class
@@ -4937,6 +4953,7 @@ DvtTimelineRenderer._addLabel = function(context, container, pos, text, maxLengt
 
   return label;
 };
+
 /**
  * Style related utility functions for dvt.Timeline.
  * @class
@@ -5849,6 +5866,7 @@ DvtTimelineStyleUtils.getZoomOutButtonDisabledBorderColor = function(options)
   else
     return DvtTimelineStyleUtils._DEFAULT_ZOOM_CONTROL_BORDER_COLOR;
 };
+
 /**
  * TimelineSeries component.
  * @param {dvt.Context} context The rendering context.
@@ -6462,6 +6480,7 @@ DvtTimelineSeries.prototype.setHScrollPos = function(pos)
   if (this._canvas != null)
     this._canvas.setTranslateX(0 - pos);
 };
+
 /**
  * Creates an instance of DvtTimelineSeriesItem which extends dvt.Container with hover and selection feedback.
  * @extends {dvt.Container}
@@ -6603,6 +6622,7 @@ DvtTimelineSeriesItem.prototype.applyState = function(state)
   if (duration)
     duration.setStroke(bubbleStroke);
 };
+
 /**
  * Renderer for DvtTimelineSeriesItem.
  * @class
@@ -7260,6 +7280,7 @@ DvtTimelineSeriesItemRenderer._updateDuration = function(item, series, overflowO
     }
   }
 };
+
 /**
  * Class representing a TimelineSeries node.
  * @param {object} props The properties for the node.
@@ -7799,6 +7820,7 @@ DvtTimelineSeriesNode.prototype._updateAriaLabel = function() {
     this._displayable.setAriaProperty('label', this.getAriaLabel());
   }
 };
+
 /**
  * TimelineSeries JSON Parser
  * @param {DvtTimelineSeries} timelineSeries The owning timelineSeries component.
@@ -8023,6 +8045,7 @@ DvtTimelineSeriesParser.prototype.ParseNodeAttributes = function(data, compStart
 
   return ret;
 };
+
 /**
  * Renderer for DvtTimelineSeries.
  * @class
@@ -8669,6 +8692,7 @@ DvtTimelineSeriesRenderer._animateItemRemoval = function(items, series, animatio
     }
   }
 };
+
 dvt.exportProperty(dvt, 'Timeline', dvt.Timeline);
 dvt.exportProperty(dvt.Timeline, 'newInstance', dvt.Timeline.newInstance);
 dvt.exportProperty(dvt.Timeline.prototype, 'render', dvt.Timeline.prototype.render);
@@ -8676,7 +8700,7 @@ dvt.exportProperty(dvt.Timeline.prototype, 'getAutomation', dvt.Timeline.prototy
 dvt.exportProperty(dvt.Timeline.prototype, 'select', dvt.Timeline.prototype.select);
 
 dvt.exportProperty(DvtTimelineAutomation.prototype, 'getDomElementForSubId', DvtTimelineAutomation.prototype.getDomElementForSubId);
-})(dvt);
 
+})(dvt);
   return dvt;
 });

@@ -264,13 +264,13 @@ $iconFontFileName: 'JetFW_iconfont.woff' !default;
 
     @if global-variable-exists(oj-fwk-icon-info) and $oj-fwk-icon-info != '' {
       .oj-fwk-icon-info:before {
-        content: $oj-fwk-icon-info;
+        content: oj-prepend-slash($oj-fwk-icon-info);
       }
     }
 
     @if global-variable-exists(oj-fwk-icon-warning) and $oj-fwk-icon-warning != '' {
       .oj-fwk-icon-warning:before {
-        content: $oj-fwk-icon-warning;
+        content: oj-prepend-slash($oj-fwk-icon-warning);
       }
     }
 

@@ -1,0 +1,2 @@
+define(["./impl/pouchDBPersistenceStore"],function(a){"use strict";return function(){function b(b,c){var d=new a(b);return d.Init(c).then(function(){return Promise.resolve(d)})}return{createPersistenceStore:function(a,c){return b(a,c)}}}()});
+//# sourceMappingURL=pouchDBPersistenceStoreFactory.js.map

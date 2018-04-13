@@ -1,0 +1,100 @@
+// Copyright (c) 2014, 2018, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+@import "../../utilities/oj.utilities";
+@import "../../common/helpers/oj.common.helpers";
+
+// ----- start dependencies ---------
+
+// set up include variables before importing dependencies
+@if $includeMessagesClasses != false {
+  $includeIconClasses: true !global;
+  $includePopupClasses: true !global;
+  $includeMessageClasses: true !global;
+}
+
+// import dependencies
+@import "oj.alta.windows.icons";
+@import "oj.alta.windows.popup";
+@import "oj.alta.windows.message";
+
+// ----- end dependencies ---------
+
+// import classes defined in the common directory
+@import "../../common/widgets/oj.common.messages";
+
+@if $includeMessagesClasses != false {
+  @include module-include-once("alta.windows.messages") {
+    
+    //INDIVIDUAL MESSAGE OVERRIDES
+    //////////////////////////////
+    
+    .oj-messages-inline .oj-message-header {
+      justify-content: flex-start;
+      padding: 14px 12px 4px 12px;
+    }
+    
+    .oj-messages-inline .oj-message-body {
+      @include oj-ltr() {
+        padding: 0px 12px 14px 44px;
+      }
+      @include oj-rtl() {
+        padding: 0px 44px 14px 12px;
+      }
+    }
+    
+    .oj-messages-general .oj-message-header {
+      padding: 20px 12px 0px 12px;
+    }
+    
+    .oj-messages-general .oj-message-body {
+      @include oj-ltr() {
+        padding: 0px 12px 21px 44px;
+      }
+      @include oj-rtl() {
+        padding: 0px 44px 21px 12px;
+      }
+    }
+    
+    .oj-messages-notification .oj-message-header {
+      padding: 20px 16px 0px 16px;
+    }
+    
+    .oj-messages-notification .oj-message-body {
+      @include oj-ltr() {
+        padding: 0px 16px 21px 52px;
+      }
+      @include oj-rtl() {
+        padding: 0px 52px 21px 16px;
+      }
+    }
+    
+    oj-messages:not(.oj-messages-notification) .oj-message-category {
+      padding: 0px 12px;
+    }
+    
+    .oj-messages-notification .oj-message-category {
+      padding: 0px 16px;
+    }
+    
+    // Small screen responsive overrides
+    @if $responsiveQuerySmallOnly and $responsiveQuerySmallOnly != none {
+      @media  #{$responsiveQuerySmallOnly} {
+        
+        //INDIVIDUAL MESSAGE OVERRIDES
+        //////////////////////////////
+        
+        .oj-messages-inline .oj-message-header {
+          padding: 20px 12px 0px 12px;
+        }
+        
+        .oj-messages-inline .oj-message-body {
+          @include oj-ltr() {
+            padding: 0px 12px 20px 44px;
+          }
+          @include oj-rtl() {
+            padding: 0px 44px 20px 12px;
+          }
+        }
+      }
+    }
+  }
+}

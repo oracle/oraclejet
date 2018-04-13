@@ -1,4 +1,5 @@
 /**
+ * @license
  * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
@@ -10,6 +11,149 @@
  */
 define(['ojs/ojcore', 'jquery', 'ojs/ojdatasource-common'], function(oj, $)
 {
+/**
+ * Copyright (c) 2014, Oracle and/or its affiliates.
+ * All rights reserved.
+ */
+
+/**
+ * Copyright (c) 2014, Oracle and/or its affiliates.
+ * All rights reserved.
+ */
+
+/**
+ * @preserve Copyright 2013 jQuery Foundation and other contributors
+ * Released under the MIT license.
+ * http://jquery.org/license
+ */
+
+/*jslint browser: true,devel:true*/
+/**
+ * The interface for oj.PagingModel which should be implemented by all object instances
+ * bound to the data parameter for oj.PagingControl. oj.PagingModel implementations should
+ * also support event subscription by extending oj.EventSource or oj.DataSource.
+ * @export
+ * @interface
+ * @since 1.1
+ * @ojtsignore
+ */
+oj.PagingModel = function()
+{
+};
+
+/**
+ * Get the current page
+ * @return {number} The current page
+ * @export
+ * @expose
+ * @method
+ * @name getPage
+ * @memberof oj.PagingModel
+ * @instance
+ */
+
+/**
+ * Set the current page
+ * @param {number} value The current page
+ * @param {Object=} options Options<p>
+ *                  pageSize: The page size.<p>
+ * @return {Promise} promise object triggering done when complete..
+ * @export
+ * @expose
+ * @method
+ * @name setPage
+ * @memberof oj.PagingModel
+ * @instance
+ */
+
+/**
+ * Get the current page start index
+ * @return {number} The current page start index
+ * @export
+ * @expose
+ * @method
+ * @name getStartItemIndex
+ * @memberof oj.PagingModel
+ * @instance
+ */
+
+/**
+ * Get the current page end index
+ * @return {number} The current page end index
+ * @export
+ * @expose
+ * @method
+ * @name getEndItemIndex
+ * @memberof oj.PagingModel
+ * @instance
+ */
+
+/**
+ * Get the page count
+ * @return {number} The total number of pages
+ * @export
+ * @expose
+ * @method
+ * @name getPageCount
+ * @memberof oj.PagingModel
+ * @instance
+ */
+
+/**
+ * @export
+ * Return the total number of items. Returns -1 if unknown.
+ * @returns {number} total number of items
+ * @expose
+ * @method
+ * @name totalSize
+ * @memberof oj.PagingModel
+ * @instance
+ */
+
+/**
+ * Returns the confidence for the totalSize value. 
+ * @return {string} "actual" if the totalSize is the time of the fetch is an exact number 
+ *                  "estimate" if the totalSize is an estimate 
+ *                  "atLeast" if the totalSize is at least a certain number 
+ *                  "unknown" if the totalSize is unknown
+ * @export
+ * @expose
+ * @method
+ * @name totalSizeConfidence
+ * @memberof oj.PagingModel
+ * @instance 
+ */
+
+/**
+ * @export
+ * Event types
+ * @memberof oj.PagingModel
+ * @enum {string}
+ */
+oj.PagingModel.EventType =
+  {
+    /** Triggered before the current page has changed. <p>
+     * This event is vetoable.<p>
+     * The event payload contains:<p>
+     * <b>page</b> The new current page<br>
+     * <b>previousPage</b> The old current page
+     */
+    'BEFOREPAGE': "beforePage",
+    /** Triggered when the current page has changed<p>
+     * The event payload contains:<p>
+     * <b>page</b> The new current page<br>
+     * <b>previousPage</b> The old current page
+     */
+    'PAGE': "page",
+    /** Triggered when the page count has changed<p>
+     * The event payload contains:<p>
+     * <b>pageCount</b> The new page count<br>
+     * <b>previousPageCount</b> The old page count
+     */
+    'PAGECOUNT': "pageCount"
+  };
+
+
 /**
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
@@ -37,6 +181,8 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojdatasource-common'], function(oj, $)
  * @param {Object} dataSource
  * @param {Object|null} options Options for the PagingTableDataSource.  No option is currently supported.
  * @constructor
+ * @since 1.0
+ * @ojtsignore
  */
 oj.PagingTableDataSource = function(dataSource, options)
 {
@@ -363,6 +509,7 @@ oj.PagingTableDataSource.prototype.getCapability = function(feature)
  *        <p>In addition to this class's event types, it can also be one of the 
  *           {@link oj.PagingModel} event types.</p>
  * @param {function(Object)} eventHandler event handler function
+ * @return {void}
  * @export
  * @expose
  * @memberof oj.PagingTableDataSource
@@ -413,6 +560,7 @@ oj.PagingTableDataSource.prototype.on = function(eventType, eventHandler)
  * Detach an event handler from the datasource
  * @param {string} eventType eventType supported by the datasource
  * @param {function(Object)} eventHandler event handler function
+ * @return {void}
  * @export
  * @expose
  * @memberof oj.PagingTableDataSource
@@ -480,6 +628,7 @@ oj.PagingTableDataSource.prototype.totalSize = function()
  *                  "estimate" if the totalSize is an estimate 
  *                  "atLeast" if the totalSize is at least a certain number 
  *                  "unknown" if the totalSize is unknown
+ * @ojsignature {target: "Type", for: "returns", value: "'actual'|'estimate'|'atLeast'|'unknown'"}
  * @export
  * @expose
  * @memberof oj.PagingTableDataSource
@@ -620,142 +769,12 @@ oj.PagingTableDataSource.EventType =
     /** Triggered when a PagingDataSource has been refreshed */
     'REFRESH': "refresh",
     /** Triggered when a PagingDataSource has been sorted */
-    'SORT': "sort"
+    'SORT': "sort",
+    /** Triggered when a Row's attributes have been changed */
+    'CHANGE': "change",
+     /** Triggered when a PagingDataSource has sent a fetch request. */
+    'REQUEST': "request",
+    /** Triggered when an error occurred on the PagingDataSource */
+    'ERROR': "error"
   };
-/**
- * Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
- */
-
-/**
- * @preserve Copyright 2013 jQuery Foundation and other contributors
- * Released under the MIT license.
- * http://jquery.org/license
- */
-
-/*jslint browser: true,devel:true*/
-/**
- * The interface for oj.PagingModel which should be implemented by all object instances
- * bound to the data parameter for oj.PagingControl. oj.PagingModel implementations should
- * also support event subscription by extending oj.EventSource or oj.DataSource.
- * @export
- * @interface
- */
-oj.PagingModel = function()
-{
-};
-
-/**
- * Get the current page
- * @return {number} The current page
- * @export
- * @expose
- * @method
- * @name getPage
- * @memberof! oj.PagingModel
- * @instance
- */
-
-/**
- * Set the current page
- * @param {number} value The current page
- * @param {Object=} options Options<p>
- *                  pageSize: The page size.<p>
- * @return {Promise} promise object triggering done when complete..
- * @export
- * @expose
- * @method
- * @name setPage
- * @memberof! oj.PagingModel
- * @instance
- */
-
-/**
- * Get the current page start index
- * @return {number} The current page start index
- * @export
- * @expose
- * @method
- * @name getStartItemIndex
- * @memberof! oj.PagingModel
- * @instance
- */
-
-/**
- * Get the current page end index
- * @return {number} The current page end index
- * @export
- * @expose
- * @method
- * @name getEndItemIndex
- * @memberof! oj.PagingModel
- * @instance
- */
-
-/**
- * Get the page count
- * @return {number} The total number of pages
- * @export
- * @expose
- * @method
- * @name getPageCount
- * @memberof! oj.PagingModel
- * @instance
- */
-
-/**
- * @export
- * Return the total number of items. Returns -1 if unknown.
- * @returns {number} total number of items
- * @expose
- * @method
- * @name totalSize
- * @memberof! oj.PagingModel
- * @instance
- */
-
-/**
- * Returns the confidence for the totalSize value. 
- * @return {string} "actual" if the totalSize is the time of the fetch is an exact number 
- *                  "estimate" if the totalSize is an estimate 
- *                  "atLeast" if the totalSize is at least a certain number 
- *                  "unknown" if the totalSize is unknown
- * @export
- * @expose
- * @method
- * @name totalSizeConfidence
- * @memberof! oj.PagingModel
- * @instance 
- */
-
-/**
- * @export
- * Event types
- * @enum {string}
- */
-oj.PagingModel.EventType =
-  {
-    /** Triggered before the current page has changed. <p>
-     * This event is vetoable.<p>
-     * The event payload contains:<p>
-     * <b>page</b> The new current page<br>
-     * <b>previousPage</b> The old current page
-     */
-    'BEFOREPAGE': "beforePage",
-    /** Triggered when the current page has changed<p>
-     * The event payload contains:<p>
-     * <b>page</b> The new current page<br>
-     * <b>previousPage</b> The old current page
-     */
-    'PAGE': "page",
-    /** Triggered when the page count has changed<p>
-     * The event payload contains:<p>
-     * <b>pageCount</b> The new page count<br>
-     * <b>previousPageCount</b> The old page count
-     */
-    'PAGECOUNT': "pageCount"
-  };
-
-
-
 });

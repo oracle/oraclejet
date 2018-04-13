@@ -24,14 +24,7 @@
   
         @include oj-button-state-flat (
           $altButtonTextColor:            $buttonContrastTextColor,
-          $altButtonBgColor:              $altColor,
-          $altButtonBgColorHover:         lighten($altColor, 6%),
-          $altButtonBgColorActive:        darken($altColor, 6%),
-          $altButtonBgColorSelectedHover: darken($altColor, 3%),
-          $altButtonBgImage:              linear-gradient(to bottom, 
-                                                  lighten($altColor, 4%) 0%, 
-                                                  $altColor 50%,
-                                                  darken($altColor, 2%) 100%))
+          $altButtonBgColor:              $altColor)
 }
 
 @if $includeButtonClasses != false {

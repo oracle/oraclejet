@@ -107,7 +107,6 @@
     }
     .oj-avatar-xxs .oj-avatar-inner {
       font-size: $avatarXxsInitialsFontSize;
-      font-weight: 400;
       width: $avatarXxsInnerSize;
       height: $avatarXxsInnerSize;
     }
@@ -128,7 +127,6 @@
     }
     .oj-avatar-xs .oj-avatar-inner {
       font-size: $avatarXsInitialsFontSize;
-      font-weight: 400;
       width: $avatarXsInnerSize;
       height: $avatarXsInnerSize;
     }
@@ -145,7 +143,6 @@
       height:$avatarSmInnerSize;
       width: $avatarSmInnerSize;
       font-size: $avatarSmInitialsFontSize;
-      font-weight: 300;
     }
     .oj-avatar-sm .oj-avatar-placeholder {
       @include oj-fwk-icon-person-avatar-scale($avatarSmPlaceholderScale);
@@ -156,11 +153,11 @@
     /*Don't need to specify medium size since it is the default*/
     .oj-avatar-outer {
       padding: $avatarMdBorderOffset;
-    }.oj-avatar-inner {
+    }
+    .oj-avatar-inner {
       height:$avatarMdInnerSize;
       width: $avatarMdInnerSize;
       font-size: $avatarMdInitialsFontSize;
-      font-weight: 200;
     }
     .oj-avatar-placeholder {
       @include oj-fwk-icon-person-avatar-scale($avatarMdPlaceholderScale);
@@ -175,7 +172,6 @@
       height:$avatarLgInnerSize;
       width: $avatarLgInnerSize;
       font-size: $avatarLgInitialsFontSize;
-      font-weight: 200;
     }
     .oj-avatar-lg .oj-avatar-placeholder {
       @include oj-fwk-icon-person-avatar-scale($avatarLgPlaceholderScale);
@@ -190,7 +186,6 @@
       height:$avatarXlInnerSize;
       width: $avatarXlInnerSize;
       font-size: $avatarXlInitialsFontSize;
-      font-weight: 200;
     }
     .oj-avatar-xl .oj-avatar-placeholder {
       @include oj-fwk-icon-person-avatar-scale($avatarXlPlaceholderScale);
@@ -209,7 +204,6 @@
       height:$avatarXxlInnerSize;
       width: $avatarXxlInnerSize;
       font-size: $avatarXxlInitialsFontSize;
-      font-weight: 200;
     }
     .oj-avatar-xxl .oj-avatar-placeholder {
       @include oj-fwk-icon-person-avatar-scale($avatarXxlPlaceholderScale);

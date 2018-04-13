@@ -1,7 +1,7 @@
 // Copyright (c) 2014, 2018, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-// WARNING: do not directly import this file, instead import the 
-//          version in your base theme's directory, 
+// WARNING: do not directly import this file, instead import the
+//          version in your base theme's directory,
 //          for example alta/widgets/_oj.alta.train.scss
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 @import "../../utilities/oj.utilities";
@@ -10,18 +10,18 @@
   @include module-include-once("common.train") {
 
     /* train */
-    /* --------------------------------------------------------------- */  
-            
+    /* --------------------------------------------------------------- */
+
     // This is to prevent the flash of unstyled content before the html becomes JET components.
     @if $initialVisibility == hidden {
       oj-train:not(.oj-complete) {
         visibility: hidden;
-      }      
+      }
     }
     oj-train {
       display: block;
     }
-    
+
     .oj-train{
       white-space: nowrap;
       text-align: center;
@@ -33,13 +33,13 @@
       position:relative;
       vertical-align:top;
     }
-     
+
     /* Class that can be added to stretch train to container size */
     .oj-train-stretch .oj-train-wrapper {
       width: 100%;
     }
 
-    @if $trainConnectorType == continuous {  
+    @if $trainConnectorType == continuous {
       /* Wrapper class that contains step connector and fill */
       .oj-train-connector-wrapper {
         position: absolute;
@@ -47,15 +47,15 @@
         box-sizing: border-box;
         padding: 0 $trainStepWidth/2;
       }
-    
+
       /* Classes that define the bar connecting the steps */
       .oj-train-connector,
-      .oj-train-connector-fill { 
+      .oj-train-connector-fill {
         position: relative;
         height: $trainConnectorHeight;
         width: 100%;
 
-        // top spacing to center the connector 
+        // top spacing to center the connector
         top: ($trainButtonContinuousConnectorDiameter - $trainConnectorHeight)/2;
         box-sizing: border-box;
       }
@@ -74,7 +74,7 @@
     /* Connector circle behind the individual step buttons which matches the connector */
     .oj-train-button-connector {
       @if $trainConnectorType == continuous {
-        background: $trainConnectorBgColor;      
+        background: $trainConnectorBgColor;
       }
       position: relative;
       width: $trainButtonContinuousConnectorDiameter;
@@ -84,33 +84,50 @@
       box-sizing: border-box;
     }
 
-	 
+
     .oj-train-button-connector.oj-train-fill {
       background-color: $trainContinuousConnectorBgColorSelected;
       @include oj-background-image(none);
       top: 0;
-    }	
+    }
 
-    @if $trainConnectorType == individual {    
+    @if $trainConnectorType == individual {
+      // fix positioning on last train step
+      .oj-train-step-list-item:last-child {
+        padding-top: $trainConnectorHeight;
+      }
+      
       .oj-train-step-individual-connector {
         position: relative;
         visibility: visible;
         height: $trainConnectorHeight;
 
-        // The width is calculated by taking the distance between the midpoints of the step buttons 
-        // and subtracting a 10px margin for each side in addition to subtracting 
+        // The width is calculated by taking the distance between the midpoints of the step buttons
+        // and subtracting a 10px margin for each side in addition to subtracting
         // the radius of the buton from each side
-        width: calc(100% - #{$trainButtonDiameter} - 20px);
-        top: ($trainButtonContinuousConnectorDiameter)/2;
+        width: calc(100% - #{$trainButtonDiameter} - #{oj-add-unit-to-zero($trainIndividualConnectorPadding)} * 2);
+        top: ($trainButtonContinuousConnectorDiameter + $trainConnectorHeight)/2;
         background-color: $trainConnectorBgColor;
-        // the offset used for the individual connector line 
-        // 50% is the midpoint of the space available for the step 
+        // the offset used for the individual connector line
+        // 50% is the midpoint of the space available for the step
         // + half of the Button Diameter (24px/2) + 10px margin
         @include oj-ltr() {
-          left: calc(50% + #{$trainButtonDiameter/2} + 10px);      
+          left: calc(50% + #{$trainButtonDiameter/2} + #{oj-add-unit-to-zero($trainIndividualConnectorPadding)});
         }
         @include oj-rtl() {
-          right: calc(50% + #{$trainButtonDiameter/2} + 10px); 
+          right: calc(50% + #{$trainButtonDiameter/2} + #{oj-add-unit-to-zero($trainIndividualConnectorPadding)});
+        }
+      }
+
+      .oj-train-step-individual-connector.oj-train-connector-before-selected-step {
+        background-color: $trainIndividualConnectorBgColorSelected;
+        width: calc(100% - #{$trainButtonDiameter} - #{oj-add-unit-to-zero($trainIndividualConnectorPaddingSelected)} * 2);
+        
+        @include oj-ltr() {
+          left: calc(50% + #{$trainButtonDiameter/2} + #{oj-add-unit-to-zero($trainIndividualConnectorPaddingSelected)});
+        }
+        @include oj-rtl() {
+          right: calc(50% + #{$trainButtonDiameter/2} + #{oj-add-unit-to-zero($trainIndividualConnectorPaddingSelected)});
         }
       }
     }
@@ -123,7 +140,7 @@
       align-items: center;
       justify-content: center;
       box-sizing: border-box;
-      border-width: 1px;
+      border-width: $trainButtonBorderWidth;
       border-style: solid;
       width: $trainButtonDiameter;
       height: $trainButtonDiameter;
@@ -158,15 +175,15 @@
       background-color: $trainBgColorDisabled;
       cursor: default;
     }
-    
+
     .oj-train-button.oj-active,
     .oj-train-button.oj-hover.oj-active
     {
       background-color: $trainBgColorActive;
       border-color: $trainBorderColorActive;
     }
-    
-    // To prevent bleeding of button color onto icon due to anti-aliasing 
+
+    // To prevent bleeding of button color onto icon due to anti-aliasing
     @if $trainButtonDiameter ==  $trainIconDiameter{
       .oj-train-step-list-item.oj-confirmation .oj-train-button,
       .oj-train-step-list-item.oj-info .oj-train-button,
@@ -176,7 +193,7 @@
         border-color: transparent;
       }
     }
-    
+
     .oj-train-button-text {
       @if $trainButtonStyleType == 'numeric' {
         font-size: $trainButtonFontSize;
@@ -193,26 +210,26 @@
     .oj-train-button.oj-hover.oj-visited.oj-active .oj-train-button-text{
       color: $trainButtonTextColorActive;
     }
-    
+
     .oj-train-button.oj-disabled .oj-train-button-text{
       color: $trainButtonTextColorDisabled;
     }
-    
+
     .oj-train-button.oj-hover .oj-train-button-text,
     .oj-train-button.oj-visited.oj-hover .oj-train-button-text {
       color: $trainButtonTextColorHover;
     }
-    
+
     .oj-train-button.oj-visited .oj-train-button-text{
       color: $trainButtonTextColorVisited;
     }
-    
+
     .oj-train-button.oj-selected .oj-train-button-text{
       color: $trainButtonTextColorSelected;
     }
-    
-    
-    
+
+
+
     .oj-train-step-list {
       margin: 0;
       padding: 0;
@@ -226,20 +243,21 @@
       display: inline-block;
       white-space: $trainLabelTextWrap;
       vertical-align: top;
+      line-height: normal;
     }
-    
+
     .oj-train-label-wrapper {
-      overflow: hidden; 
+      overflow: hidden;
       text-overflow: ellipsis;
       margin-right: 5px;
       margin-left: 5px;
-      padding-top: $trainLabelPaddingTop;
+      margin-top: $trainLabelPaddingTop;
     }
-    
+
     .oj-train-label {
       text-decoration: none;
       color: $trainLabelColor;
-      text-align: center; 
+      text-align: center;
     }
 
     .oj-train-label.oj-visited {
@@ -260,7 +278,7 @@
       font-weight: $trainLabelFontWeightActive;
       cursor: pointer;
     }
-    
+
     .oj-train-label.oj-hover {
       cursor: pointer;
     }
@@ -271,11 +289,15 @@
       font-weight: $trainLabelFontWeightSelected;
     }
 
+    .oj-train-label:not(.oj-focus-highlight):focus {
+      outline: none;
+    }
+
     .oj-train-icon {
       position: absolute;
       bottom:0;
       @include oj-ltr() {
-        right: 0;	  
+        right: 0;
       }
       @include oj-rtl() {
         left: 0;
@@ -287,9 +309,9 @@
       width: $trainIconDiameter;
       height: $trainIconDiameter;
       @include oj-border-radius(50%);
-      color: $trainButtonTextColor;
+      color: $trainButtonMessagingIconColor;
       box-sizing: border-box;
-      border-width: 1px;
+      border-width: 0;
       border-style: solid;
     }
 
@@ -297,98 +319,90 @@
       @extend .oj-fwk-icon-checkmark;
       @extend .oj-fwk-icon;
       @extend .oj-train-icon;
-      background-color: $trainBgColor;
-      border-color: $trainBorderColor;
+      background-color: $trainConfirmationBgColor;
     }
     .oj-train-button.oj-disabled .oj-train-icon {
       background-color: $trainBgColorDisabled;
       border-color: $trainBorderColorDisabled;
     }
-    
+    @if $trainConnectorType == individual {
+      
+
     .oj-train-button.oj-hover .oj-train-icon,
     .oj-train-button.oj-visited.oj-hover .oj-train-icon,
     .oj-train-button.oj-visited.oj-hover .oj-train-icon.oj-confirmation,
     .oj-train-button.oj-visited.oj-hover .oj-train-icon.oj-error,
     .oj-train-button.oj-visited.oj-hover .oj-train-icon.oj-info,
     .oj-train-button.oj-visited.oj-hover .oj-train-icon.oj-warning {
-      background-color: $trainBgColorHover;
-      border-color: $trainBorderColorHover;
+      background-image: linear-gradient(rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.3));
     }
     .oj-train-button.oj-visited .oj-train-icon.oj-confirmation,
     .oj-train-button.oj-selected .oj-train-icon.oj-confirmation{
-      background-color: $trainBgColorVisited;
+      background-color: $trainConfirmationBgColor;
       border-color: $trainBorderColorVisited;
     }
-    
+
     .oj-train-button.oj-active .oj-train-icon.oj-confirmation,
     .oj-train-button.oj-hover.oj-active .oj-train-icon.oj-confirmation,
     .oj-train-button.oj-hover.oj-visited.oj-active .oj-train-icon.oj-confirmation {
-      background-color: $background6Color;
-      color: $trainBorderColorActive;
-      border-color: $trainBorderColorActive;
+      background-image: linear-gradient(rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.2));
     }
 
     .oj-train-icon.oj-error {
-      @extend .oj-fwk-icon-cross;
+      @extend .oj-fwk-icon-warning;
       @extend .oj-fwk-icon;
       @extend .oj-train-icon;
+      background-color: $trainErrorBgColor;
     }
-    
+
     .oj-train-button.oj-visited .oj-train-icon.oj-error,
     .oj-train-button.oj-selected .oj-train-icon.oj-error {
-      background-color: #e31e26;
-      border-color: #e31e26;
+      background-color: $trainErrorBgColor;
     }
-    
+
     .oj-train-button.oj-active .oj-train-icon.oj-error,
     .oj-train-button.oj-hover.oj-active .oj-train-icon.oj-error,
     .oj-train-button.oj-hover.oj-visited.oj-active .oj-train-icon.oj-error {
-      background-color: $messageInlineBorderColorError;
-      color: #e31e26;
-      border-color: #e31e26;
+      background-image: linear-gradient(rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.2));
     }
 
     .oj-train-icon.oj-info {
       @extend .oj-fwk-icon-info;
       @extend .oj-fwk-icon;
       @extend .oj-train-icon;
-      font-family: $fontFamily;
+      background-color: $trainInfoBgColor;
     }
-    
+
     .oj-train-button.oj-visited .oj-train-icon.oj-info,
     .oj-train-button.oj-selected .oj-train-icon.oj-info {
-      background-color: #0572ce;
-      border-color: #0572ce;
+      background-color: $trainInfoBgColor;
     }
-    
-    .oj-train-button.oj-active .oj-train-icon.oj-info, 
+
+    .oj-train-button.oj-active .oj-train-icon.oj-info,
     .oj-train-button.oj-hover.oj-active .oj-train-icon.oj-info,
     .oj-train-button.oj-hover.oj-visited.oj-active .oj-train-icon.oj-info {
-      background-color: $background6Color;
-      color: #0572ce;
-      border-color: #0572ce;
+      background-image: linear-gradient(rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.2));
     }
 
     .oj-train-icon.oj-warning {
       @extend .oj-fwk-icon-warning;
       @extend .oj-fwk-icon;
       @extend .oj-train-icon;
-      font-family: $fontFamily;
+      background-color: $trainWarningBgColor;
     }
-    
+
     .oj-train-button.oj-visited .oj-train-icon.oj-warning,
     .oj-train-button.oj-selected .oj-train-icon.oj-warning {
-      background-color: #f6c018;
-      border-color: #f6c018;
+      background-color: $trainWarningBgColor;
     }
-    
-    .oj-train-button.oj-active .oj-train-icon.oj-warning, 
+
+    .oj-train-button.oj-active .oj-train-icon.oj-warning,
     .oj-train-button.oj-hover.oj-active .oj-train-icon.oj-warning,
     .oj-train-button.oj-hover.oj-visited.oj-active .oj-train-icon.oj-warning {
-      background-color: $messageInlineBgColorWarning;
-      color: #f6c018;
-      border-color: #f6c018;
+      background-image: linear-gradient(rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.2));
     }
+  }
+    
 
     .oj-train-icon.oj-hover {
       cursor: pointer;

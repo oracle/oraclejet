@@ -24,6 +24,11 @@
             @include oj-justify-content-property(center);
         }
 
+        // do not overwrite hidden display properties
+        [hidden].oj-rowexpander {
+            display: none;
+        }
+
         /* Size and position the spacer that determines the distance between the icon and cell text */
         .oj-rowexpander-icon-spacer {
             min-width: $rowExpanderSpacerWidth;

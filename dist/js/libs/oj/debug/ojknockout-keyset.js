@@ -1,4 +1,5 @@
 /**
+ * @license
  * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
@@ -9,14 +10,17 @@ define(['ojs/ojcore', 'knockout', 'ojs/ojkeyset'], function(oj, ko)
  * Create an observable version of a KeySet.
  *
  * @export
- * @param {ExpandedKeySet|ExpandAllKeySet=} initialValue The KeySet to observe.
+ * @param {(ExpandedKeySet|ExpandAllKeySet)=} initialValue The KeySet to observe.
  * @class ObservableExpandedKeySet
  * @classdesc Observable implementation of ExpandedKeySet that keeps track of mutation of KeySet. 
+ * @ojtsimport ojkeyset
+ * @ojsignature [{target: "Type", value: "class ObservableExpandedKeySet<K>"},
+ *               {target: "Type", value: "ExpandedKeySet<K>|ExpandAllKeySet<K>", for:"initialValue"}]
  */
 var ObservableExpandedKeySet = function (initialValue) 
 {
     // by default if initialValue wasn't specified then we create an ExpandedKeySet
-    initialValue = initialValue || new oj.ExpandedKeySet();
+    initialValue = initialValue ? initialValue : new oj.ExpandedKeySet();
 
     var result = ko.observable(initialValue);
     Object.setPrototypeOf(result, ObservableExpandedKeySet.proto);
@@ -49,8 +53,10 @@ ko.utils.arrayForEach(["add", "addAll", "clear", "delete"], function (methodName
  * @return {ObservableExpandedKeySet} this observable KeySet.
  * @method
  * @name add
- * @memberof! ObservableExpandedKeySet
+ * @memberof ObservableExpandedKeySet
  * @instance
+ * @ojsignature [{target: "Type", value: "Set<K>|Array<K>", for:"keys"},
+ *               {target: "Type", value: "ObservableExpandedKeySet<K>", for: "returns"}]
  */
 
 /**
@@ -59,8 +65,9 @@ ko.utils.arrayForEach(["add", "addAll", "clear", "delete"], function (methodName
  * @return {ObservableExpandedKeySet} this observable KeySet.
  * @method
  * @name addAll
- * @memberof! ObservableExpandedKeySet
+ * @memberof ObservableExpandedKeySet
  * @instance
+ * @ojsignature {target: "Type", value: "ObservableExpandedKeySet<K>", for: "returns"}
  */
 
 /**
@@ -69,8 +76,9 @@ ko.utils.arrayForEach(["add", "addAll", "clear", "delete"], function (methodName
  * @return {ObservableExpandedKeySet} this observable KeySet.
  * @method
  * @name clear
- * @memberof! ObservableExpandedKeySet
+ * @memberof ObservableExpandedKeySet
  * @instance
+ * @ojsignature {target: "Type", value: "ObservableExpandedKeySet<K>", for: "returns"}
  */
 
 /**
@@ -80,8 +88,10 @@ ko.utils.arrayForEach(["add", "addAll", "clear", "delete"], function (methodName
  * @return {ObservableExpandedKeySet} this observable KeySet.
  * @method
  * @name delete
- * @memberof! ObservableExpandedKeySet
+ * @memberof ObservableExpandedKeySet
  * @instance
+ * @ojsignature [{target: "Type", value: "Set<K>|Array<K>", for:"keys"},
+ *               {target: "Type", value: "ObservableExpandedKeySet<K>", for: "returns"}]
  */
 ;return {
   'ObservableExpandedKeySet': ObservableExpandedKeySet

@@ -1,23 +1,23 @@
 // Copyright (c) 2014, 2018, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-// WARNING: do not directly import this file, instead import the 
-//          version in your base theme's directory, 
+// WARNING: do not directly import this file, instead import the
+//          version in your base theme's directory,
 //          for example alta/widgets/_oj.alta.formcontrol.colorpalette.scss
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-@import "../../utilities/oj.utilities";  
+@import "../../utilities/oj.utilities";
 
 @if $includeColorPaletteClasses != false  {
   @include module-include-once("common.formcontrol.colorpalette") {
 
    /* Color Palette */
    /* --------------------------------------------------------------- */
-       
+
    // This is to prevent the flash of unstyled content before the html becomes JET components.
    @if $initialVisibility == hidden {
      oj-color-palette:not(.oj-complete) {
        visibility: hidden;
-     }      
+     }
    }
 
    .oj-colorpalette  {
@@ -31,7 +31,7 @@
    .oj-colorpalette-swatch-entry  {
      display: inline-block;
    }
-   
+
    .oj-colorpalette-list .oj-colorpalette-swatch-entry {
      @include oj-display-flex-property();
      @include oj-align-items-property(center);
@@ -50,15 +50,15 @@
      border-style: solid;
      box-sizing: border-box;
    }
-   
+
    .oj-colorpalette-swatch-container {
      border-width: 3px;
      border-color: transparent;
-     
+
      /* reduce line height so extra small swatches remain square */
      line-height: 0;
    }
-   
+
    .oj-colorpalette-swatch  {
      border-width: 1px;
      border-color: $colorPaletteSwatchInnerBorderColor;
@@ -66,9 +66,10 @@
      //tell the browser to print the background-color
      -webkit-print-color-adjust: exact;
    }
-   
+
    .oj-colorpalette-swatch-none-icon {
-     background-color: #FFFFFF;
+     /* Color Hardcoded because this value is not related to theming and regardless of theme the swatch for none will be white */
+     background-color: #ffffff;
      display: inline-block;
      background-image: oj-common-image-url('none.svg');
      background-repeat: no-repeat;
@@ -119,7 +120,7 @@
    .oj-colorpalette-container .oj-listview-item.oj-hover.oj-selected .oj-colorpalette-swatch-container {
      border-color: $colorPaletteSwatchOuterBorderColorSelected;
    }
-   
+
    .oj-colorpalette-container .oj-selected .oj-colorpalette-swatch,
    .oj-colorpalette-container .oj-listview-item.oj-hover.oj-selected .oj-colorpalette-swatch {
      border-color: transparent;
@@ -135,12 +136,12 @@
    .oj-colorpalette-container .oj-listview.oj-disabled .oj-colorpalette-swatch-none .oj-colorpalette-swatch-none-icon {
      border-color: transparent;
    }
-   
+
    .oj-colorpalette-container .oj-listview.oj-disabled .oj-colorpalette-swatch-none .oj-colorpalette-swatch-none-icon {
      background-color: transparent;
      background-image: none;
    }
-  
+
    .oj-colorpalette-swatch-text  {
      display:block;
      text-align:center;
@@ -151,7 +152,7 @@
      overflow:hidden;
      text-overflow: ellipsis;
    }
-  
+
    .oj-colorpalette-grid .oj-colorpalette-swatch-text  {
      font-size: $colorPaletteGridFontSize;
    }
@@ -210,11 +211,11 @@
       margin-right: 0;
     }
   }
-  
+
   .oj-colorpalette-container .oj-listview-card-layout .oj-listview-group {
     margin-bottom: 0;
   }
-  
+
   //Decrease the height of the focus rect by an extra pixel so that it
   //appears centered around the swatch.  Otherwise, the bottom extends
   //one pixel further out than the other sides.
@@ -253,7 +254,7 @@
   .oj-colorpalette.oj-warning .oj-colorpalette-container {
     border: $formControlMessagingBorderWidth solid $borderColorWarning;
   }
-  
+
   .oj-colorpalette.oj-invalid .oj-colorpalette-container {
     border: $formControlMessagingBorderWidth solid $borderColorError;
   }

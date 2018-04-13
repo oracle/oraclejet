@@ -1,4 +1,5 @@
 /**
+ * @license
  * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
@@ -26,6 +27,7 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojdatasource-common'], function(
  * @see oj.DataColumnCube
  * @see oj.DataValueAttributeCube
  * @since 1.1.0
+ * @ojtsignore
  */
  oj.Cube = function(rowset, layout)
 {
@@ -71,12 +73,15 @@ oj.Cube.prototype.getAxes = function() {
 /**
  * Get oj.CubeDataValues from this cube.  These represent the values of the data in the "body" of the cube
  *
- * @param {Array.<Object>} indices an axis-ordered array of Objects or numbers.  If Objects, each should contain a 'start' property
+ * @param {Array.<Object|number>} indices an axis-ordered array of Objects or numbers.  If Objects, each should contain a 'start' property
  * (the zero based start index for the axis) and a 'count' representing the number of data values beginning at 'start' to return on this axis. 
  * This format allows the retrieval of a block of data.  Passing an array of numbers alone is equivalent to passing {start:<index>, count:1} and getting a single
  * oj.CubeDataValue
- * @return {Array.<Object>|Object} either an array of arrays of oj.CubeDataValue, depending on the number of values requested in indices, or a single oj.CubeDataValue
+ * @return {Array.<oj.CubeDataValue>|oj.CubeDataValue} either an array of arrays of oj.CubeDataValue, depending on the number of values requested in indices, or a single oj.CubeDataValue
  *                        The first subscript represents the 0th axis' values, and so on.
+ * @ojsignature  {target: "Type",
+ *                value: "Array<oj.Cube.Indices|number>",
+ *                for: "indices"}
  * @memberof oj.Cube
  * @export
  */
@@ -101,9 +106,19 @@ oj.Cube.prototype.getValues = function(indices) {
 };
 
 /**
+ * Object in getValues indices parameter
+ * @typedef oj.Cube.Indices
+ * @property {number} start
+ * @property {number} count
+ */
+
+/**
  * Set a pinned index for all axes above axis 1 ("pages")
- * @param {Array.<Object>} pin an array of objects containing an integer 'axis' attribute and its corresponding 'index' value (to which to pin the cube)
+ * @param {Array.<Object>|Object} pin an array of objects (or a single object) containing an integer 'axis' attribute and its corresponding 'index' value (to which to pin the cube)
  * @return {undefined}
+ * @ojsignature  {target: "Type",
+ *                value: "Array<oj.Cube.Pin>|oj.Cube.Pin",
+ *                for: "pin"}
  * @memberof oj.Cube
  * @export
  */
@@ -117,6 +132,13 @@ oj.Cube.prototype.setPage = function(pin) {
     }
 };
     
+/**
+ * Object in setPage pin parameter
+ * @typedef oj.Cube.Pin
+ * @property {number} axis
+ * @property {number} index
+ */
+
 /**
  * 
  * @param {number} axisFrom the axis from which to move a level
@@ -684,8 +706,10 @@ oj.Cube.prototype.GetAggType = function(dataValue) {
 /**
  * @class oj.CubeAggType
  * @classdesc Valid aggregation types
+ * @hideconstructor
  * @since 1.1.0
  * @export
+ * @ojtsignore
  */
 oj.CubeAggType = {
     /**
@@ -754,6 +778,7 @@ oj.CubeAggType = {
  * @constructor
  * @export
  * @hideconstructor
+ * @ojtsignore
  */
 oj.CubeAxisValue = function(value, label, level, parent) {
     this.Init();
@@ -876,7 +901,7 @@ oj.CubeAxisValue.prototype.getStart = function() {
 
 /**
  * Get the actual value of this axis header location
- * @return {Object} the value at this location in the header
+ * @return {Object|string} the value at this location in the header
  * @memberof oj.CubeAxisValue
  * @export
  */
@@ -886,15 +911,21 @@ oj.CubeAxisValue.prototype.getValue = function() {
 
 /**
  * Get the label for this axis header location, if any.  If none, falls back to {@link getValue}
- * @returns {Object} the label for this axis header value
- * @memberof oj.Cube
+ * @returns {string|null} the label for this axis header value
+ * @memberof oj.CubeAxisValue
+ * @since 1.1.0
+ * @ojstatus preview
  * @export
  */
 oj.CubeAxisValue.prototype.getLabel = function() {
     if (this._data.label) {
         return this._data.label;
     }
-    return this.getValue();
+    var value = this.getValue();
+    if (value) {
+      return value.toString();
+    }
+    return null;
 };
 
 /**
@@ -1044,6 +1075,7 @@ oj.CubeAxisValue.prototype._getPrevChild = function(currChild) {
  * @constructor
  * @export
  * @hideconstructor
+ * @ojtsignore
  */
 oj.CubeAxis = function(levels, axis, cube) {
     this.Init();
@@ -1188,8 +1220,456 @@ oj.CubeAxis.prototype.ProcessRow = function(row, keys) {
  * Copyright (c) 2015, Oracle and/or its affiliates.
  * All rights reserved.
  */
-/*jslint browser: true*/
 
+ /**
+ * @class oj.CubeCellSet
+ * @classdesc A CellSet represents a collection of cells.  The CellSet is an object returned by the success callback
+ * of the fetchCells method on DataGridDataSource.  This implementation of CellSet is used by the
+ * cube DataGridDataSource. 
+ * @since 1.1.0
+ * @constructor
+ * @export
+ * @hideconstructor
+ * @ojtsignore
+ * @see oj.CubeDataGridDataSource
+ */
+oj.CubeCellSet = function(cube, cellRange)
+{
+    // assert startRow/startColumn are number
+    var startRow = cellRange.row ? cellRange.row.start : 0;
+    var rowCount = cellRange.row ? cellRange.row.count : 0;
+    var startColumn = cellRange.column ? cellRange.column.start : 0;
+    var colCount = cellRange.column ? cellRange.column.count : 0;
+    oj.Assert.assertNumber(startRow, null);
+    oj.Assert.assertNumber(rowCount, null);
+    oj.Assert.assertNumber(startColumn, null);
+    oj.Assert.assertNumber(colCount, null);
+    
+    this._cube = cube;
+
+    this._starts = {'row':startRow,'column':startColumn};
+    
+    // Get the data
+    this._values = this._cube.getValues([{start:startColumn, count:colCount},{start:startRow,count:rowCount}]);
+
+    var valArray = Array.isArray(this._values);
+    
+    colCount = valArray ? this._values.length : 1;
+    if (colCount > 0) {
+        rowCount = valArray ? this._values[0].length : 1;
+    }
+    this._counts = {'row':rowCount, 'column':colCount};
+};
+
+/**
+ * Gets the data of the specified index.  An error is throw when 1) the range is not yet available 
+ * 2) the index specified is out of bounds. The indices are absolute within the entire data set, not just this cell set
+ * @param {Object} indexes the index of each axis in which we want to retrieve the data from.
+ * @property {number} indexes.row the index of the row axis.
+ * @property {number} indexes.column the index of the column axis.
+ * @return {Object} the data object for the specified index.
+ * @memberof oj.CubeCellSet
+ * @export
+ */
+oj.CubeCellSet.prototype.getData = function(indexes)
+{   
+    var row = indexes['row'];
+    var col = indexes['column'];
+    var cell = Array.isArray(this._values) ? this._values[col-this._starts['column']][row-this._starts['row']] : this._values;
+    if (cell) {
+        return cell.getValue();
+    }
+    return null;
+};
+
+/**
+ * Gets the metadata of the specified index.  An error is throw when 1) the range is not yet available 
+ * 2) the index specified is out of bounds. The indices are absolute across the entire data set not just within the cell set
+ * @param {Object} indexes the index of each axis in which we want to retrieve the metadata from.
+ * @property {number} indexes.row the index of the row axis.
+ * @property {number} indexes.column the index of the column axis.
+ * @return {Object} the metadata object for the specific index.  The metadata that the DataGrid supports are: 
+ *         1) keys - the key (of each axis) of the cell.
+ * @memberof oj.CubeCellSet
+ * @export
+ */
+oj.CubeCellSet.prototype.getMetadata = function(indexes)
+{
+    // Get each axis' key
+    var obj = {};
+    obj['keys'] = {};
+    obj['keys']['row'] = this._getAxisMetadata(indexes, 'row', 2);
+    obj['keys']['column'] = this._getAxisMetadata(indexes, 'column', 1);
+    
+    return obj;
+};
+
+/**
+ * @private
+ */
+oj.CubeCellSet.prototype._getAxisMetadata = function(indexes, axis, len) {
+    var axes = this._cube.getAxes();
+    
+    if (indexes[axis] !== undefined && axes.length >= len) {
+        var keys = new oj.CubeKeys();
+        var axisIndex = oj.CubeDataGridDataSource._convertAxes(axis);
+        keys = axes[axisIndex].GetCubeKeys(indexes[axis], keys);
+        return keys.GetHashCodes()[0].key;
+    }
+    return null;
+};
+
+/**
+ * Gets the start index of the result set for the specified axis.  Valid values are "row" and "column".
+ * @param {string} axis the axis in which to inquire the actual count of the result set.
+ * @return {number} the start index of the result set for the specified axis.  
+ * @memberof oj.CubeCellSet
+ * @export
+ */
+oj.CubeCellSet.prototype.getStart = function(axis)
+{
+    return this._starts[axis];
+};
+
+/**
+ * Gets the actual count of the result set for the specified axis.  Valid values are "row" and "column".
+ * @param {string} axis the axis in which to inquire the actual count of the result set.
+ * @return {number} the actual count of the result set for the specified axis.  
+ * @memberof oj.CubeCellSet
+ * @export
+ */
+oj.CubeCellSet.prototype.getCount = function(axis)
+{
+    return this._counts[axis];
+};
+
+/**
+ * Gets the extent of a particular row/column index within the context of the cellSet.
+ * Extent is defined as the number of indexes along the appropriate axis spanned by the cell.
+ * If the extent extends beyond the start and end of the requested cell range the extent should be trimmed to the edge of the requested cell range and the object for {'more': {'before', 'after'}} should have the value appropriate boolean set.
+ * @param {Object} indexes the index of each axis in which we want to retrieve the data from. 
+ * @property {number} indexes.row the index of the row axis.
+ * @property {number} indexes.column the index of the column axis.
+ * @return {Object} an object containing two properties row and column. Each of those properties has two sub properties:
+ *              extent: the number of absolute indexes spanned by the cell at this index
+ *                      bounded by the edges of the result set for the specified axis.
+ *              more: object with keys 'before'/'after' and boolean values true/false representing whether
+ *                       there are more indexes before/after what is available in the cellSet
+ * @example <caption>In this example the cell spans 5 row indexes and 2 column indexes and there are more column indexes spanned by the cell that
+ *              aren't included in this cellSet:</caption>
+ * {
+ *  'row': {'extent':5, 'more': {'before':false, 'after':false}},
+ *  'column': {'extent':2, 'more': {'before':false, 'after':true}}
+ * }
+ * @export
+ * @expose
+ * @instance
+ * @memberof oj.CubeCellSet
+ */
+oj.CubeCellSet.prototype.getExtent = function(indexes)
+{
+    return {'row': {'extent':1, 'more': {'before':false, 'after':false}}, 
+            'column': {'extent':1, 'more': {'before':false, 'after':false}}};
+};
+/**
+ * Copyright (c) 2015, Oracle and/or its affiliates.
+ * All rights reserved.
+ */
+
+/**
+ * @class oj.CubeDataGridDataSource
+ * @classdesc  A cubic/aggregating DataGridDataSource based on the oj.Cube
+ * @see oj.Cube
+ * @ojtsignore
+ * @param {oj.Cube} cube the cube that will underpin the data source
+ * @export
+ * @extends oj.DataGridDataSource
+ * @constructor
+ * @since 1.1.0
+ */
+oj.CubeDataGridDataSource = function(cube)
+{
+    oj.CubeDataGridDataSource.superclass.constructor.call(this, cube);
+};
+
+// Subclass CubeDataGridDataSource to DataGridDataSource
+oj.Object.createSubclass(oj.CubeDataGridDataSource, oj.DataGridDataSource, "oj.CubeDataGridDataSource");
+
+/**
+ * Set a new cube on the data source
+ * @param {oj.Cube} cube
+ * @return {undefined}
+ * @memberof oj.CubeDataGridDataSource
+ * @export
+ */
+oj.CubeDataGridDataSource.prototype.setCube = function(cube) {
+    this.data = cube;
+    this._fireRefresh();
+};
+
+/**
+ * Pin any axes beyond the row and column to specific index values (to allow the idea of "paging" through a cube)
+ * @param {Array.<Object>} indices an array of objects each containing an 'axis' attribute and a zero-based 'index' attribute giving the index to "pin" the axis to.
+ * @return {undefined}
+ * @memberof oj.CubeDataGridDataSource
+ * @ojsignature  {target: "Type",
+ *                value: "Array<oj.CubeDataGridDataSource.Indices>",
+ *                for: "indices"}
+ * @export
+ */
+oj.CubeDataGridDataSource.prototype.setPage = function(indices) {
+    this.data.setPage(indices);
+    this._fireRefresh();
+};
+
+/**
+ * Object in setPage indices parameter
+ * @typedef {Object} oj.CubeDataGridDataSource.Indices
+ * @property {number} axis
+ * @property {number} index
+ */
+
+/**
+ * @private
+ */
+oj.CubeDataGridDataSource.prototype._fireRefresh = function() {
+    var event = {};
+    event['source'] = this;
+    event['operation'] = "refresh";
+    this.handleEvent("change", event);
+};
+    
+/**
+ * Returns the total number of rows or columns.  If the value return is not >= 0 then it is automatically assumed
+ * that the total count is unknown.
+ * @param {string} axis the axis in which we inquire for the total count.  Valid values are "row" and "column".
+ * @return {number} the total number of rows/columns.
+ * @memberof oj.CubeDataGridDataSource
+ * @export
+ */
+oj.CubeDataGridDataSource.prototype.getCount = function(axis)
+{
+    var axisObj = this._getAxis(axis);
+    
+    return axisObj ? axisObj.getExtent() : 0;
+};
+
+
+/**
+ * Returns whether the total count returned in getCount function is an actual or an estimate.
+ * @param {string} axis the axis in which we inquire whether the total count is an estimate.  Valid values are 
+ *        "row" and "column".
+ * @return {string} "exact" if the count returned in getCount function is the actual count, "estimate" if the 
+ *         count returned in getCount function is an estimate.  The default value is "exact".
+ * @method
+ * @name getCountPrecision
+ * @memberof oj.CubeDataGridDataSource
+ * @instance
+ * @export
+ */
+oj.CubeDataGridDataSource.prototype.getCountPrecision = function(axis)
+{
+    return "exact";
+};
+
+
+/**
+ * Fetch a range of headers from the data source.
+ * @param {Object} headerRange information about the header range, it must contain the following properties:
+ *        axis, start, count
+ * @property {string} headerRange.axis the axis of the header that are fetched.  Valid values are "row" and "column"
+ * @property {number} headerRange.start the start index of the range in which the header data are fetched
+ * @property {number} headerRange.count the size of the range in which the header data are fetched
+ * @param {Object} callbacks the optional callbacks to be invoke when fetch headers operation is completed.  The valid callback
+ *        types are "success" and "error"
+ * @property {function({startHeaderSet: Object}, {headerRange: Object}, {endHeaderSet: Object}):void=} callbacks.success the callback to invoke when fetch headers completed successfully.
+ *        The function takes three parameters: HeaderSet object representing start headers, headerRange object passed into the original fetchHeaders call,
+ *        and a HeaderSet object representing the end headers along the axis.
+ * @property {function({status: Object}):void=} callbacks.error the callback to invoke when fetch cells failed.
+ * @param {Object=} callbackObjects the object in which the callback function is invoked on.  This is optional.  
+ *        You can specify the callback object for each callbacks using the "success" and "error" keys.
+ * @property {Object=} callbackObjects.success
+ * @property {Object=} callbackObjects.error
+ * @return {void}
+ * @memberof oj.CubeDataGridDataSource
+ * @export
+ */
+oj.CubeDataGridDataSource.prototype.fetchHeaders = function(headerRange, callbacks, callbackObjects)
+{
+    
+    var cubeheaders = new oj.CubeHeaderSet(this._getAxis(headerRange['axis']), this.data, headerRange['start'], headerRange['count']);
+    callbacks['success'].call(callbackObjects ? callbackObjects['success'] : undefined, cubeheaders, headerRange);
+};
+
+/**
+  * @param {Array.<Object>} cellRange Information about the cell range.  A cell range is defined by an array 
+ *        of range info for each axis, where each range contains three properties: axis, start, count.<p>
+ *        axis: the axis associated with this range where cells are fetched.  Valid 
+ *        values are "row" and "column".<br>
+ *        start: the start index of the range for this axis in which the cells are fetched.<br>
+ *        count: count the size of the range for this axis in which the cells are fetched. <br>
+ * @param {Object} callbacks the callbacks to be invoke when fetch cells operation is completed.  The valid callback
+ *        types are "success" and "error"
+ * @property {function({cellSet: Object}, {cellRange: Object}):void=} callbacks.success the callback to invoke when fetch cells completed successfully.  The passed arguments are CellSet and the cellRange
+ * @property {function({status: Object}):void=} callbacks.error the callback to invoke when fetch cells failed.
+ * @param {Object=} callbackObjects the object in which the callback function is invoked on.  This is optional.  
+ *        You can specify the callback object for each callbacks using the "success" and "error" keys.
+ * @property {Object=} callbackObjects.success
+ * @property {Object=} callbackObjects.error
+ * @return {void}
+ * @memberof oj.CubeDataGridDataSource
+ * @export
+ */
+oj.CubeDataGridDataSource.prototype.fetchCells = function(cellRange, callbacks, callbackObjects)
+{
+    var obj = {};
+    for (var i = 0; i < cellRange.length; i++) {
+        var start = cellRange[i]['start'] === undefined ? 0 : cellRange[i]['start'];
+        if (cellRange[i].axis === 'row') {
+            var count = cellRange[i]['count'] === undefined ? this.data.getAxes()[1].getExtent() : cellRange[i]['count'];
+            obj.row = {start: start, count: count};
+        }
+        if (cellRange[i].axis === 'column') {
+            var count = cellRange[i]['count'] === undefined ? this.data.getAxes()[0].getExtent() : cellRange[i]['count'];
+            obj.column = {start: start, count: count};
+        }
+    }
+    var cubecells = new oj.CubeCellSet(this.data, obj);
+    callbacks['success'].call(callbackObjects ? callbackObjects['success'] : undefined, cubecells, cellRange);
+};
+
+/**
+ * Returns the row and column index based on the keys.
+ * @param {Object} keys the key for each axis
+ * @property {number} keys.row the key for the row axis
+ * @property {number} keys.column the key for the column axis
+ * @return {Promise.<Object>} a Promise object which when resolved returns an object containing the key for each axis
+ * @memberof oj.CubeDataGridDataSource
+ * @export
+ */
+oj.CubeDataGridDataSource.prototype.keys = function(keys)
+{
+    var retObj = {};
+    retObj = this._getKey(keys, 'row', retObj);
+    retObj = this._getKey(keys, 'column', retObj);
+    return Promise.resolve(retObj);
+};
+
+oj.CubeDataGridDataSource.prototype._getKey = function(indexes, axis, retObj) {
+    var axisObj = this._getAxis(axis);
+    var item = indexes[axis];
+    var keys = new oj.CubeKeys();
+    keys = axisObj ? axisObj.GetCubeKeys(item, keys) : "";
+    retObj[axis] = keys.GetHashCodes()[0].key;
+    return retObj;
+};
+
+
+/**
+ * Returns the keys based on the indexes. 
+ * @param {Object} indexes the index for each axis
+ * @property {number} indexes.row the index for the row axis
+ * @property {number} indexes.column the index for the column axis
+ * @return {Promise.<Object>} a Promise object which when resolved returns an object containing the index for each axis
+ * @memberof oj.CubeDataGridDataSource
+ * @export
+ */
+oj.CubeDataGridDataSource.prototype.indexes = function(indexes)
+{
+    var retObj = {};
+    retObj = this._getIndex(indexes, 'row', retObj);
+    retObj = this._getIndex(indexes, 'column', retObj);
+
+    return Promise.resolve(retObj);
+};
+
+/**
+ * @private
+ */
+oj.CubeDataGridDataSource.prototype._getIndex = function(keys, axis, retObj) {
+    retObj[axis] = this._getAxis(axis).getIndex(keys[axis]);
+    return retObj;
+};
+
+/**
+ * @ignore
+ * @memberof oj.CubeDataGridDataSource
+ * @export
+ */
+oj.CubeDataGridDataSource.prototype.sort = function(criteria, callbacks, callbackObjects)
+{
+    oj.Assert.failedInAbstractFunction();
+};
+
+/**
+ * @ignore
+ * @memberof oj.CubeDataGridDataSource
+ * @export
+ */ 
+oj.CubeDataGridDataSource.prototype.move = function(rowToMove, referenceRow, position, callbacks, callbackObjects)
+{
+    oj.Assert.failedInAbstractFunction();
+};
+
+/**
+ * Checks whether a move operation is valid.
+ * @param {*} rowToMove the key of the row to move
+ * @param {*} referenceRow the key of the reference row which combined with position are used to determine 
+ *        the destination of where the row should moved to.
+ * @param {string} position The position of the moved row relative to the reference row. 
+ *        Valid values are: "before", "after".
+ * @return {string} returns "valid" if the move is valid, "invalid" otherwise.
+ * @memberof oj.CubeDataGridDataSource
+ * @export
+ */ 
+oj.CubeDataGridDataSource.prototype.moveOK = function(rowToMove, referenceRow, position)
+{
+    return "invalid";
+};
+
+/**
+ * Determines whether this DataGridDataSource supports certain feature.
+ * @param {string} feature the feature in which its capabilities is inquired.  Currently the only valid feature is "sort".
+ * @return {string|null} the name of the feature.  For "sort", the valid return values are: "full", "none", "row", "column".  
+ *         For "move", the valid return values are: "row", "none".  
+ *         Returns null if the feature is not recognized.
+ * @memberof oj.CubeDataGridDataSource
+ * @export
+ */
+oj.CubeDataGridDataSource.prototype.getCapability = function(feature)
+{
+    switch (feature) {
+        case "sort":
+            return "none";
+        case "move":
+            return "none";
+    }
+    return null;
+};
+
+/**
+ * @private
+ */
+oj.CubeDataGridDataSource._convertAxes = function(axis) {
+    return axis === "row" ? 1 : 0;
+};
+
+/**
+ * @private
+ */
+oj.CubeDataGridDataSource.prototype._getAxis = function(axis) {
+    var axisNum = oj.CubeDataGridDataSource._convertAxes(axis);
+    var axes = this.data.getAxes();
+    if (axes.length > axisNum) {
+        return axes[axisNum];
+    }
+    return null;
+};
+/**
+ * Copyright (c) 2015, Oracle and/or its affiliates.
+ * All rights reserved.
+ */
+/*jslint browser: true*/
 
 /**
  * @class oj.CubeDataValue 
@@ -1205,6 +1685,7 @@ oj.CubeAxis.prototype.ProcessRow = function(row, keys) {
  * @constructor
  * @export
  * @hideconstructor
+ * @ojtsignore
  */
 oj.CubeDataValue = function(value, indices, aggType, rows, square) {
     this.Init();
@@ -1230,7 +1711,7 @@ oj.CubeDataValue.prototype.Init = function()
 
 /**
  * Get the actual data value in this cell
- * @return {Object|null|number} the data value
+ * @return {Object|null|number|string} the data value
  * @memberof oj.CubeDataValue
  * @export
  */
@@ -1292,153 +1773,493 @@ oj.CubeDataValue.prototype._getVariance = function() {
  * Copyright (c) 2015, Oracle and/or its affiliates.
  * All rights reserved.
  */
-
- /**
- * @class oj.CubeCellSet
- * @classdesc A CellSet represents a collection of cells.  The CellSet is an object returned by the success callback
- * of the fetchCells method on DataGridDataSource.  This implementation of CellSet is used by the
- * array DataGridDataSource.   
+ 
+/**
+ * @class oj.CubeHeaderSet
+ * @classdesc A HeaderSet represents a collection of headers.  The HeaderSet is an object returned by the success callback
+ * of the fetchHeaders method on CubeDataGridDataSource.   
+ * @since 1.1.0
  * @constructor
  * @export
  * @hideconstructor
+ * @ojtsignore
+ * @see oj.CubeDataGridDataSource
  */
-oj.CubeCellSet = function(cube, cellRange)
+oj.CubeHeaderSet = function(axis, cube, start, count)
 {
-    // assert startRow/startColumn are number
-    var startRow = cellRange.row ? cellRange.row.start : 0;
-    var rowCount = cellRange.row ? cellRange.row.count : 0;
-    var startColumn = cellRange.column ? cellRange.column.start : 0;
-    var colCount = cellRange.column ? cellRange.column.count : 0;
-    oj.Assert.assertNumber(startRow, null);
-    oj.Assert.assertNumber(rowCount, null);
-    oj.Assert.assertNumber(startColumn, null);
-    oj.Assert.assertNumber(colCount, null);
-    
+    // The oj.Cube
     this._cube = cube;
-
-    this._starts = {'row':startRow,'column':startColumn};
-    
-    // Get the data
-    this._values = this._cube.getValues([{start:startColumn, count:colCount},{start:startRow,count:rowCount}]);
-
-    var valArray = Array.isArray(this._values);
-    
-    colCount = valArray ? this._values.length : 1;
-    if (colCount > 0) {
-        rowCount = valArray ? this._values[0].length : 1;
-    }
-    this._counts = {'row':rowCount, 'column':colCount};
+    // The oj.CubeAxis
+    this._axis = axis;    
+    this._start = start === undefined ? 0 : start;
+    this._count = count === undefined ? this._axis.getExtent() : Math.min(count, this._axis.getExtent()-start);
+    this._end = start + count - 1;
 };
 
 /**
- * Gets the data of the specified index.  An error is throw when 1) the range is not yet available 
- * 2) the index specified is out of bounds.   The indices are absolute within the entire data set, not just this cell set
- * @param {Object} indexes the index of each axis in which we want to retrieve the data from.  
- * @param {number} indexes.row the index of the row axis.
- * @param {number} indexes.column the index of the column axis.
- * @return {Object} the data object for the specified index.
- * @memberof oj.CubeCellSet
- * @export
-*/
-oj.CubeCellSet.prototype.getData = function(indexes)
-{   
-    var row = indexes['row'];
-    var col = indexes['column'];
-    var cell = Array.isArray(this._values) ? this._values[col-this._starts['column']][row-this._starts['row']] : this._values;
-    if (cell) {
-        return cell.getValue();
-    }
-    return null;
-};
-
-/**
- * Gets the metadata of the specified index.  An error is throw when 1) the range is not yet available 
- * 2) the index specified is out of bounds.   The indices are absolute across the entire data set not just within the cell set
- * @param {Object} indexes the index of each axis in which we want to retrieve the metadata from.  
- * @param {number} indexes.row the index of the row axis.
- * @param {number} indexes.column the index of the column axis.
- * @return {Object} the metadata object for the specific index.  The metadata that the DataGrid supports are: 
- *         1) keys - the key (of each axis) of the cell.
- * @memberof oj.CubeCellSet
+ * Gets the data of the specified index.  An error is throw when 1) the range is not yet available and
+ * 2) the index specified is out of bounds. 
+ * @param {number} index the index of the header in which we want to retrieve the header from.  This is an absolute index across the entire axis
+ * @param {number} level the level of the header
+ * @return {*} the data object for the specific index.
+ * @memberof oj.CubeHeaderSet
  * @export
  */
-oj.CubeCellSet.prototype.getMetadata = function(indexes)
+oj.CubeHeaderSet.prototype.getData = function(index, level)
 {
-    // Get each axis' key
-    var obj = {};
-    obj['keys'] = {};
-    obj['keys']['row'] = this._getAxisMetadata(indexes, 'row', 2);
-    obj['keys']['column'] = this._getAxisMetadata(indexes, 'column', 1);
+    var val = this._getValue(index, level);
+    return val ? val.getLabel() : null;
+};
+
+/**
+ * Gets the metadata of the specified index.  An error is throw when 1) the range is not yet available and 
+ * 2) the index specified is out of bounds. 
+ * The metadata that the data source can optionally return are:
+ *  1) sortDirection - the initial sort direction of the header.  Valid values are "ascending" and "descending".
+ *  2) key - the key of the row/column header.
+ * @param {number} index the index of the header in which we want to retrieve the metadata from.   This is an absolute index across the entire axis
+ * @param {number} level the level of the header
+ * @return {Object} the metadata object for the specific index.
+ * @memberof oj.CubeHeaderSet
+ * @export
+ */
+oj.CubeHeaderSet.prototype.getMetadata = function(index, level)
+{    
+    var keys = new oj.CubeKeys();
+    keys = this._axis.GetPartialCubeKeys(index, level, keys);
+    var hash = keys.GetHashCodes();
     
-    return obj;
+    return hash && hash.length > 0 ? {'key':hash[0].key} : null;
+};
+
+/**
+ * Gets the actual number of levels of the result set for the specified axis.
+ * @return {number} the number of levels of the result set for the specified axis. 
+ * @memberof oj.CubeHeaderSet
+ * @export
+ */
+oj.CubeHeaderSet.prototype.getLevelCount = function()
+{
+    return this._axis.getLevels().length;
+};
+ 
+/**
+ * Gets the extent of an index on a particular level.  This is the extent such as it is within the defined header set, not across the entire
+ * axis.  If the header falls across the beginning of the headerset or the end, then its extent should be only that part lying within the header set
+ * @param {number} index the index of the header (absolute within the axis)
+ * @param {number} level the level of the header
+ * @return {Object} an object containing two values. example: {extent:5, more: {'before':false, 'after':true}}
+ *              extent: the number of slices of the result set for the specified axis. 
+ *              more: object with keys 'before'/'after' and boolean values true/false representing whether
+ *                       there may be more rows/columns before or after the headerSet
+ * @memberof oj.CubeHeaderSet
+ * @export
+ */
+oj.CubeHeaderSet.prototype.getExtent = function(index, level)
+{
+    var val = this._getValue(index, level);
+    var extent = val.getExtent();
+    var start = val.getStart();
+    var end = start + extent - 1;
+    var before = index > start;
+    var after = index < start + extent - 1;
+    
+    if (start < this._start) {
+        // Need to subtract this overage from the extent
+        extent -= (this._start-start);
+    }
+    if (end > this._end) {
+        // true extent overruns the header set--adjust it down by that much
+        extent -= (end-this._end);
+    }
+    return {'extent':extent, 'more': {'before':before, 'after':after}};
+};
+
+/**
+ * Gets the depth of an index starting at a particular level.
+ * @param {number} index the index of the header (absolute within the axis)
+ * @param {number} level the level of the header
+ * @return {number} - the number of levels of the result set for the specified axis. 
+ * @memberof oj.CubeHeaderSet
+ * @export
+ */
+oj.CubeHeaderSet.prototype.getDepth = function(index, level)
+{
+    var val = this._getValue(index, level);
+    return val.getDepth();
+};
+
+/**
+ * Gets the actual count of the result set.
+ *
+ * @return {number} the actual count of the result set.  
+ * @memberof oj.CubeHeaderSet
+ * @export
+ */
+oj.CubeHeaderSet.prototype.getCount = function()
+{
+    return this._count;
+};
+
+/**
+ * Gets the start index of the result set.
+ * @return {number} the start index of the result set.
+ * @memberof oj.CubeHeaderSet
+ * @export
+ */
+oj.CubeHeaderSet.prototype.getStart = function()
+{
+    return this._start;
 };
 
 /**
  * @private
  */
-oj.CubeCellSet.prototype._getAxisMetadata = function(indexes, axis, len) {
-    var axes = this._cube.getAxes();
+oj.CubeHeaderSet.prototype._getValue = function(index, level) {
+    if (level === undefined) {
+        level = 0;
+    }
+    var values = this._axis.getValues(index);
+    if (values && values.length > level) {
+        return values[level];
+    }
+    return null;    
+};
+/**
+ * Copyright (c) 2015, Oracle and/or its affiliates.
+ * All rights reserved.
+ */
+/*jslint browser: true*/
+
+/**
+ * @constructor
+ * @private
+ */
+oj.CubeKeys = function() {
+    // Nodes referencing the data values
+    this._key = [];
     
-    if (indexes[axis] !== undefined && axes.length >= len) {
-        var keys = new oj.CubeKeys();
-        var axisIndex = oj.CubeDataGridDataSource._convertAxes(axis);
-        keys = axes[axisIndex].GetCubeKeys(indexes[axis], keys);
-        return keys.GetHashCodes()[0].key;
+    // List of dataValue name/data value pairs
+    this._data = [];
+};
+
+
+/**
+ * @protected
+ */
+oj.CubeKeys.prototype.UpdateKeys = function(node) {
+    this._key.push(node);
+};
+
+/**
+ * @param {string} name
+ * @param {Object=} value
+ * @private
+ */
+oj.CubeKeys.prototype.AddDataValue = function(name, value) {
+    this._data.push({name:name,value:value});
+};
+
+/**
+ * @protected
+ */
+oj.CubeKeys.prototype.GetHashCodes = function() {
+    var codes = [];
+    
+    var keyHash = this._buildKeyHash();
+    
+    if (this._data.length === 0) {
+        codes.push({key:JSON.stringify(keyHash)});
+    }
+    else {
+        // One pairing for each data value
+        for (var d = 0; d < this._data.length; d++) {
+            var copy = $.extend(true, {}, keyHash);
+            // This is done for easier lookups when finding child
+            copy[this._data[d].name] = this._data[d].name;
+            codes.push({key:JSON.stringify(copy),dataValue:this._data[d].name,value:this._data[d].value});
+        }
+    }
+    return codes;
+};
+
+/**
+ * @private
+ */
+oj.CubeKeys.prototype._buildKeyHash = function() {
+    var keyHash = {};
+    for (var k = 0; k < this._key.length; k++) {
+        var hc = this._key[k].GetHashCode();
+        for (var p in hc) {
+            if (hc.hasOwnProperty(p)) {
+                keyHash[p] = hc[p];
+            }
+        }
+    }
+    return keyHash;
+};
+
+
+/**
+ * Copyright (c) 2015, Oracle and/or its affiliates.
+ * All rights reserved.
+ */
+/*jslint browser: true*/
+
+/**
+ * @class oj.CubeLevel
+ * @classdesc  Represents a level within an axis.  The level is tied to an attribute within the original rowset.  Each level contains a number of [oj.CubeAxisValues]{@link oj.CubeAxisValue}, all from the same attribute
+ * @see oj.CubeAxis
+ * @since 1.1.0
+ * @constructor
+ * @export
+ * @hideconstructor
+ * @ojtsignore
+ */
+ oj.CubeLevel = function(attribute, axis, dataValue) {
+    this.Init();
+    this['attribute'] = attribute;
+    this._axisObj = axis;
+    this['axis'] = axis['axis'];
+    this._dataValue = dataValue;
+ };
+ 
+ // Subclass from oj.Object 
+oj.Object.createSubclass(oj.CubeLevel, oj.Object, "oj.CubeLevel");
+
+/**
+ * Initializes instance with the set options
+ * @private
+ */
+oj.CubeLevel.prototype.Init = function() 
+{
+  oj.CubeLevel.superclass.Init.call(this);
+};
+
+/**
+ * The rowset attribute this level represents
+ * @type {string}
+ * @memberof oj.CubeLevel
+ * @export
+ */
+oj.CubeLevel.prototype.attribute;
+ 
+/**
+ * The axis this level is a member of
+ * @type {number}
+ * @memberof oj.CubeLevel
+ * @export
+ */
+oj.CubeLevel.prototype.axis;
+ 
+
+/**
+ * Return the oj.CubeAxisValue at the given index within this level
+ * @param index {number} the axis index for which to get the value
+ * @return {oj.CubeAxisValue} the value at the given location within the level
+ * @memberof oj.CubeLevel
+ * @export
+ */
+oj.CubeLevel.prototype.getValue = function(index) {
+    var values = this._axisObj.getValues(index);
+    if (values) {
+        // Find this level within the returned list
+        for (var v = 0; v < values.length; v++) {
+            if (values[v].getLevel() === this) {
+                return values[v];
+            }
+        }
     }
     return null;
 };
-
+ 
 /**
- * Gets the start index of the result set for the specified axis.  Valid values are "row" and "column".
- * @param {string} axis the axis in which to inquire the actual count of the result set.
- * @return {number} the start index of the result set for the specified axis.  
- * @memberof oj.CubeCellSet
+ * Does this level represent the data values within the cube?
+ * @return {boolean} true if this level does represent the data values within the cube; false otherwise
+ * @memberof oj.CubeLevel
  * @export
  */
-oj.CubeCellSet.prototype.getStart = function(axis)
-{
-    return this._starts[axis];
+oj.CubeLevel.prototype.isDataValue = function() {
+    return this._dataValue;
 };
 
 /**
- * Gets the actual count of the result set for the specified axis.  Valid values are "row" and "column".
- * @param {string} axis the axis in which to inquire the actual count of the result set.
- * @return {number} the actual count of the result set for the specified axis.  
- * @memberof oj.CubeCellSet
- * @export
+ * @type {boolean}
+ * @private
  */
-oj.CubeCellSet.prototype.getCount = function(axis)
-{
-    return this._counts[axis];
+oj.CubeLevel.prototype._dataValue = false;
+
+/**
+ * @type {oj.CubeAxis}
+ * @private
+ */
+oj.CubeLevel.prototype._axisObj = null;
+/**
+ * Copyright (c) 2015, Oracle and/or its affiliates.
+ * All rights reserved.
+ */
+/*jslint browser: true*/
+
+
+/**
+ * @class oj.DataColumnCube
+ * 
+ * @classdesc Creates an object used to convert rowset data into grouped "cubic" data, where the data values are specified by a single attribute within the rowset
+ * (dataValues.labelAttr) and their header values designated by another rowset attribute (dataValues.valueAttr).
+ *
+ * @param {Array.<Object>} rowset An array of objects containing attribute/value pairs.  The entire array or collection
+ *                       will be read to group its attributes according to information given by layout and dataValues
+ * @param {Array.<Object>} layout An array of objects containing two properties: axis - a number representing the number of the axis of the levels;
+ *                       levels - a slowest-to-fastest varying ordered array of objects containing:
+ *                       attribute - an attribute of the rowset objects to assign to this axis and level.  If the attribute
+ *                       is the same as that specified by labelAttr, then this level is the data value level
+ * @param {Object} dataValues an object containing the following properties: labelAttr - the rowset attribute used to group the data values in the header
+ *                            valueAttr - the rowset attribute used for the actual data values; (optional) defaultAggregation - the default type of
+ *                            oj.CubeAggType to use to aggregate data values where necessary.  If the type is 'CUSTOM' then this should be an object with a 'type' property of oj.CubeAggType['CUSTOM'] and a 'callback' property specifying a function to call with each value.  The function takes two arguments, the first being the running value for the cell being calculated, the second being the new value to be aggregated with that running value;
+ *                            (optional) aggregation: an array of objects containing:
+ *                            value - the value of labelAttr for which this aggregation should apply; aggregation - the oj.CubeAggType for that value; if aggregation is 'CUSTOM', then a 'callback' property should be added specifying a function (for arguments see above) to call with each value
+ *                            (defaults to sum)
+ * @see oj.Cube
+ * @constructor
+ * @since 1.1.0
+ * @augments oj.Cube
+ * @ojsignature  [{target: "Type", value: "Array<oj.DataColumnCube.Layout>", for: "layout"}, {target: "Type",
+ *                value: "Array<oj.DataColumnCube.DataValue>",
+ *                for: "dataValues"}]
+ * @export
+ * @ojtsignore
+ */
+oj.DataColumnCube = function(rowset, layout, dataValues) {
+    this.Init();
+    this._dataValues = dataValues;
+    this._valueAttr = dataValues['valueAttr'];
+    this._labelAttr = dataValues['labelAttr'];
+    var defAgg = dataValues['defaultAggregation'];
+    this._defaultAggregation = defAgg ? oj.DataColumnCube._getDefaultAgg(defAgg) : {aggregation:oj.CubeAggType['SUM']};
+    this._aggregation = dataValues['aggregation'];
+    this._buildAggTypeLookup();
+    
+    oj.DataColumnCube.superclass.constructor.call(this, rowset, layout);
 };
 
 /**
- * Gets the extent of a particular row/column index within the context of the cellSet.
- * Extent is defined as the number of indexes along the appropriate axis spanned by the cell.
- * If the extent extends beyond the start and end of the requested cell range the extent should be trimmed to the edge of the requested cell range and the object for {'more': {'before', 'after'}} should have the value appropriate boolean set.
- * @param {Object} indexes the index of each axis in which we want to retrieve the data from. 
- * @param {number} indexes.row the index of the row axis.
- * @param {number} indexes.column the index of the column axis.
- * @return {Object} an object containing two properties row and column. Each of those properties has two sub properties:
- *              extent: the number of absolute indexes spanned by the cell at this index
- *                      bounded by the edges of the result set for the specified axis.
- *              more: object with keys 'before'/'after' and boolean values true/false representing whether
- *                       there are more indexes before/after what is available in the cellSet
- * @example <caption>In this example the cell spans 5 row indexes and 2 column indexes and there are more column indexes spanned by the cell that
- *              aren't included in this cellSet:</caption>
- * {
- *  'row': {'extent':5, 'more': {'before':false, 'after':false}},
- *  'column': {'extent':2, 'more': {'before':false, 'after':true}}
- * }
- * @export
- * @expose
- * @instance
- * @memberof oj.CubeCellSet
+ * @typedef {Object} oj.DataColumnCube.Aggregation
+ * @property {string} value
+ * @property {oj.CubeAggType} aggregation
  */
-oj.CubeCellSet.prototype.getExtent = function(indexes)
+
+/**
+ * @typedef {Object} oj.DataColumnCube.LayoutLevels
+ * @property {string} attribute
+ */
+ 
+/**
+ * @typedef {Object} oj.DataColumnCube.Layout
+ * @property {number} axis
+ * @property {Array<oj.DataColumnCube.LayoutLevels>} levels
+ */
+ 
+/**
+ * @typedef {Object} oj.DataColumnCube.DataValue
+ * @property {string} valueAttr
+ * @property {string} labelAttr
+ * @property {oj.CubeAggType=} defaultAggregation
+ * @property {Array<oj.DataColumnCube.Aggregation>=} aggregation
+ */
+
+// Subclass from oj.Cube 
+oj.Object.createSubclass(oj.DataColumnCube, oj.Cube, "oj.DataColumnCube");
+
+/**
+ * Initializes instance with the set options
+ * @private
+ */
+oj.DataColumnCube.prototype.Init = function() 
 {
-    return {'row': {'extent':1, 'more': {'before':false, 'after':false}}, 
-            'column': {'extent':1, 'more': {'before':false, 'after':false}}};
+  oj.DataColumnCube.superclass.Init.call(this);
+};
+
+/**
+ * @protected
+ */
+oj.DataColumnCube.prototype.BuildCube = function() {
+    oj.DataColumnCube.superclass.BuildCube.call(this);
+};
+
+/**
+ * @protected
+ */
+oj.DataColumnCube.prototype.GetAggType = function(dataValue) {
+    if (this._dataValueAggType[dataValue]) {
+        return this._dataValueAggType[dataValue];
+    }
+    return this._defaultAggregation;
+};
+
+/**
+ * @protected
+ */
+oj.DataColumnCube.prototype.GenerateCube = function(layout) {
+    return new oj.DataColumnCube(null, layout, this._dataValues);
+};
+
+/**
+ * @protected
+ */
+oj.DataColumnCube.prototype.GenerateLevel = function(level, axis) {    
+    if (level['attribute'] === this._labelAttr) {
+        // Data value level
+        return new oj.CubeLevel(level['attribute'], axis, true);
+    }
+    // Regular level
+    return new oj.CubeLevel(level['attribute'], axis, false);
+};
+
+/**
+ * @protected
+ */
+oj.DataColumnCube.prototype.ProcessLevel = function(axis, levelNum, currNode, row, keys, addKeys) {
+    if (levelNum >= axis.getLevels().length) {
+        return keys;
+    }
+    var level = axis.getLevels()[levelNum];
+    
+    // Not the data value: process this and call for the next
+    var value = row[level['attribute']];
+    var node = currNode.AddNode(value, null, level);
+    
+    if (level.isDataValue()) {
+        keys.AddDataValue(value, row[this._valueAttr]);
+    }
+    else {
+        keys.UpdateKeys(node);
+    }    
+    
+    return this.ProcessLevel(axis, levelNum+1, node, row, keys, addKeys);
+};
+
+/**
+ * @private
+ */
+oj.DataColumnCube._getDefaultAgg = function(agg) {
+    if (oj.StringUtils.isString(agg)) {
+        return {aggregation:agg};
+    }
+    return {aggregation:agg['aggregation'],callback:agg['callback']};
+};
+    
+/**
+ * @private
+ */
+oj.DataColumnCube.prototype._buildAggTypeLookup = function() {
+    this._dataValueAggType = [];
+    if (this._aggregation) {
+        for (var i = 0; i < this._aggregation.length; i++) {
+            var dv = this._aggregation[i];
+            var agg = dv['aggregation'];
+            this._dataValueAggType[dv['value']] = agg ? {aggregation:agg, callback:dv['callback']} : this._defaultAggregation;
+        }
+    }
 };
 /**
  * Copyright (c) 2015, Oracle and/or its affiliates.
@@ -1463,7 +2284,12 @@ oj.CubeCellSet.prototype.getExtent = function(indexes)
  * @see oj.Cube
  * @constructor
  * @since 1.1.0
+ * @augments oj.Cube
+ * @ojsignature  [{target: "Type", value: "Array<oj.DataValueAttributeCube.Layout>", for: "layout"}, {target: "Type",
+ *                value: "Array<oj.DataValueAttributeCube.DataValue>",
+ *                for: "dataValues"}]
  * @export
+ * @ojtsignore
  */
 oj.DataValueAttributeCube = function(rowset, layout, dataValues)
 {
@@ -1472,6 +2298,31 @@ oj.DataValueAttributeCube = function(rowset, layout, dataValues)
     this._aggTypeLookup = this._buildAggTypeLookup();
     oj.DataValueAttributeCube.superclass.constructor.call(this, rowset, layout);
 };
+
+/**
+ * @typedef {Object} oj.DataValueAttributeCube.Aggregation
+ * @property {string} value
+ * @property {oj.CubeAggType} aggregation
+ */
+
+/**
+ * @typedef {Object} oj.DataValueAttributeCube.LayoutLevels
+ * @property {string=} attribute
+ * @property {boolean=} dataValue
+ */
+ 
+/**
+ * @typedef {Object} oj.DataValueAttributeCube.Layout
+ * @property {number} axis
+ * @property {Array<oj.DataValueAttributeCube.LayoutLevels>} levels
+ */
+ 
+/**
+ * @typedef {Object} oj.DataValueAttributeCube.DataValue
+ * @property {string} attribute
+ * @property {string=} label
+ * @property {oj.CubeAggType=} aggregation
+ */
 
 // Subclass from oj.Cube 
 oj.Object.createSubclass(oj.DataValueAttributeCube, oj.Cube, "oj.DataValueAttributeCube");
@@ -1589,734 +2440,4 @@ oj.DataValueAttributeCube.prototype._buildAggTypeLookup = function() {
         this._dataValueAggType[dv['attribute']] = agg ? {aggregation:dv['aggregation'], callback:dv['callback']} : {aggregation:oj.CubeAggType['SUM'], callback:dv['callback']};
     }
 };
-/**
- * Copyright (c) 2015, Oracle and/or its affiliates.
- * All rights reserved.
- */
-/*jslint browser: true*/
-
-/**
- * @constructor
- * @private
- */
-oj.CubeKeys = function() {
-    // Nodes referencing the data values
-    this._key = [];
-    
-    // List of dataValue name/data value pairs
-    this._data = [];
-};
-
-
-/**
- * @protected
- */
-oj.CubeKeys.prototype.UpdateKeys = function(node) {
-    this._key.push(node);
-};
-
-/**
- * @param {string} name
- * @param {Object=} value
- * @private
- */
-oj.CubeKeys.prototype.AddDataValue = function(name, value) {
-    this._data.push({name:name,value:value});
-};
-
-/**
- * @protected
- */
-oj.CubeKeys.prototype.GetHashCodes = function() {
-    var codes = [];
-    
-    var keyHash = this._buildKeyHash();
-    
-    if (this._data.length === 0) {
-        codes.push({key:JSON.stringify(keyHash)});
-    }
-    else {
-        // One pairing for each data value
-        for (var d = 0; d < this._data.length; d++) {
-            var copy = $.extend(true, {}, keyHash);
-            // This is done for easier lookups when finding child
-            copy[this._data[d].name] = this._data[d].name;
-            codes.push({key:JSON.stringify(copy),dataValue:this._data[d].name,value:this._data[d].value});
-        }
-    }
-    return codes;
-};
-
-/**
- * @private
- */
-oj.CubeKeys.prototype._buildKeyHash = function() {
-    var keyHash = {};
-    for (var k = 0; k < this._key.length; k++) {
-        var hc = this._key[k].GetHashCode();
-        for (var p in hc) {
-            if (hc.hasOwnProperty(p)) {
-                keyHash[p] = hc[p];
-            }
-        }
-    }
-    return keyHash;
-};
-
-
-/**
- * Copyright (c) 2015, Oracle and/or its affiliates.
- * All rights reserved.
- */
- 
-/**
- * @class oj.CubeHeaderSet
- * @classdesc A HeaderSet represents a collection of headers.  The HeaderSet is an object returned by the success callback
- * of the fetchHeaders method on DataGridDataSource.  This implementation of HeaderSet is used by the
- * array DataGridDataSource.   
- * @constructor
- * @export
- * @hideconstructor
- */
-oj.CubeHeaderSet = function(axis, cube, start, count)
-{
-    // The oj.Cube
-    this._cube = cube;
-    // The oj.CubeAxis
-    this._axis = axis;    
-    this._start = start === undefined ? 0 : start;
-    this._count = count === undefined ? this._axis.getExtent() : Math.min(count, this._axis.getExtent()-start);
-    this._end = start + count - 1;
-};
-
-/**
- * Gets the data of the specified index.  An error is throw when 1) the range is not yet available and
- * 2) the index specified is out of bounds. 
- * @param {number} index the index of the header in which we want to retrieve the header from.  This is an absolute index across the entire axis
- * @param {number} level the level of the header
- * @return {Object} the data object for the specific index.
- * @memberof oj.CubeHeaderSet
- * @export
- */
-oj.CubeHeaderSet.prototype.getData = function(index, level)
-{
-    var val = this._getValue(index, level);
-    return val ? val.getLabel() : null;
-};
-
-/**
- * Gets the metadata of the specified index.  An error is throw when 1) the range is not yet available and 
- * 2) the index specified is out of bounds. 
- * The metadata that the data source can optionally return are:
- *  1) sortDirection - the initial sort direction of the header.  Valid values are "ascending" and "descending".
- *  2) key - the key of the row/column header.
- * @param {number} index the index of the header in which we want to retrieve the metadata from.   This is an absolute index across the entire axis
- * @param {number} level the level of the header
- * @return {Object} the metadata object for the specific index.
- * @memberof oj.CubeHeaderSet
- * @export
- */
-oj.CubeHeaderSet.prototype.getMetadata = function(index, level)
-{    
-    var keys = new oj.CubeKeys();
-    keys = this._axis.GetPartialCubeKeys(index, level, keys);
-    var hash = keys.GetHashCodes();
-    
-    return hash && hash.length > 0 ? {'key':hash[0].key} : null;
-};
-
-/**
- * Gets the actual number of levels of the result set for the specified axis.
- * @return {number} the number of levels of the result set for the specified axis. 
- * @memberof oj.CubeHeaderSet
- * @export
- */
-oj.CubeHeaderSet.prototype.getLevelCount = function()
-{
-    return this._axis.getLevels().length;
-};
- 
-/**
- * Gets the extent of an index on a particular level.  This is the extent such as it is within the defined header set, not across the entire
- * axis.  If the header falls across the beginning of the headerset or the end, then its extent should be only that part lying within the header set
- * @param {number} index the index of the header (absolute within the axis)
- * @param {number} level the level of the header
- * @return {Object} an object containing two values. example: {extent:5, more: {'before':false, 'after':true}}
- *              extent: the number of slices of the result set for the specified axis. 
- *              more: object with keys 'before'/'after' and boolean values true/false representing whether
- *                       there may be more rows/columns before or after the headerSet
- * @memberof oj.CubeHeaderSet
- * @export
- */
-oj.CubeHeaderSet.prototype.getExtent = function(index, level)
-{
-    var val = this._getValue(index, level);
-    var extent = val.getExtent();
-    var start = val.getStart();
-    var end = start + extent - 1;
-    var before = index > start;
-    var after = index < start + extent - 1;
-    
-    if (start < this._start) {
-        // Need to subtract this overage from the extent
-        extent -= (this._start-start);
-    }
-    if (end > this._end) {
-        // true extent overruns the header set--adjust it down by that much
-        extent -= (end-this._end);
-    }
-    return {'extent':extent, 'more': {'before':before, 'after':after}};
-};
- 
-/**
- * Gets the depth of an index starting at a particular level.
- * @param {number} index the index of the header (absolute within the axis)
- * @param {number} level the level of the header
- * @return {number} - the number of levels of the result set for the specified axis. 
- * @memberof oj.CubeHeaderSet
- * @export
- */
-oj.CubeHeaderSet.prototype.getDepth = function(index, level)
-{
-    var val = this._getValue(index, level);
-    return val.getDepth();
-};
-
-/**
- * Gets the actual count of the result set.
- *
- * @return {number} the actual count of the result set.  
- * @memberof oj.CubeHeaderSet
- * @export
- */
-oj.CubeHeaderSet.prototype.getCount = function()
-{
-    return this._count;
-};
-
-/**
- * Gets the start index of the result set.
- * @return {number} the start index of the result set.
- * @memberof oj.CubeHeaderSet
- * @export
- */
-oj.CubeHeaderSet.prototype.getStart = function()
-{
-    return this._start;
-};
-
-/**
- * @private
- */
-oj.CubeHeaderSet.prototype._getValue = function(index, level) {
-    if (level === undefined) {
-        level = 0;
-    }
-    var values = this._axis.getValues(index);
-    if (values && values.length > level) {
-        return values[level];
-    }
-    return null;    
-};
-/**
- * Copyright (c) 2015, Oracle and/or its affiliates.
- * All rights reserved.
- */
-
-/**
- * @class oj.CubeDataGridDataSource
- * @classdesc  A cubic/aggregating DataGridDataSource based on the oj.Cube
- * @see oj.Cube
- * @param {oj.Cube} cube the cube that will underpin the data source
- * @export
- * @extends oj.DataGridDataSource
- * @constructor
- * @since 1.1.0
- */
-oj.CubeDataGridDataSource = function(cube)
-{
-    oj.CubeDataGridDataSource.superclass.constructor.call(this, cube);
-};
-
-// Subclass CubeDataGridDataSource to DataGridDataSource
-oj.Object.createSubclass(oj.CubeDataGridDataSource, oj.DataGridDataSource, "oj.CubeDataGridDataSource");
-
-/**
- * Set a new cube on the data source
- * @param {oj.Cube} cube
- * @return {undefined}
- * @memberof oj.CubeDataGridDataSource
- * @export
- */
-oj.CubeDataGridDataSource.prototype.setCube = function(cube) {
-    this.data = cube;
-    this._fireRefresh();
-};
-
-/**
- * Pin any axes beyond the row and column to specific index values (to allow the idea of "paging" through a cube)
- * @param {Array.<Object>} indices an array of objects each containing an 'axis' attribute and a zero-based 'index' attribute giving the index to "pin" the axis to.
- * @return {undefined}
- * @memberof oj.CubeDataGridDataSource
- * @export
- */
-oj.CubeDataGridDataSource.prototype.setPage = function(indices) {
-    this.data.setPage(indices);
-    this._fireRefresh();
-};
-
-/**
- * @private
- */
-oj.CubeDataGridDataSource.prototype._fireRefresh = function() {
-    var event = {};
-    event['source'] = this;
-    event['operation'] = "refresh";
-    this.handleEvent("change", event);
-};
-    
-/**
- * Returns the total number of rows or columns.  If the value return is not >= 0 then it is automatically assumed
- * that the total count is unknown.
- * @param {string} axis the axis in which we inquire for the total count.  Valid values are "row" and "column".
- * @return {number} the total number of rows/columns.
- * @memberof oj.CubeDataGridDataSource
- * @export
- */
-oj.CubeDataGridDataSource.prototype.getCount = function(axis)
-{
-    var axisObj = this._getAxis(axis);
-    
-    return axisObj ? axisObj.getExtent() : 0;
-};
-
-/**
- * Returns whether the total count returned in getCount function is an actual or an estimate.
- * @param {string} axis the axis in which we inquire whether the total count is an estimate.  Valid values are 
- *        "row" and "column".
- * @return {string} "exact" if the count returned in getCount function is the actual count, "estimate" if the 
- *         count returned in getCount function is an estimate.  The default value is "exact".
- * @memberof oj.CubeDataGridDataSource
- * @export
- */
-oj.CubeDataGridDataSource.prototype.getCountPrecision = function(axis)
-{
-    return "exact";
-};
-
-/**
- * Fetch a range of headers from the data source.
- * @param {Object} headerRange information about the header range, it must contain the following properties:
- *        axis, start, count.
- * @param {string} headerRange.axis the axis of the header that are fetched.  Valid values are "row" and "column".
- * @param {number} headerRange.start the start index of the range in which the header data are fetched.
- * @param {number} headerRange.count the size of the range in which the header data are fetched.  
- * @param {Object} callbacks the callbacks to be invoke when fetch headers operation is completed.  The valid callback
- *        types are "success" and "error".
- * @param {function(oj.HeaderSet)} callbacks.success the callback to invoke when fetch headers completed successfully.
- * @param {function({status: Object})} callbacks.error the callback to invoke when fetch cells failed.
- * @param {Object=} callbackObjects the object in which the callback function is invoked on.  This is optional.  
- *        You can specify the callback object for each callbacks using the "success" and "error" keys.
- * @return {undefined}
- * @memberof oj.CubeDataGridDataSource
- * @export
- */
-oj.CubeDataGridDataSource.prototype.fetchHeaders = function(headerRange, callbacks, callbackObjects)
-{
-    
-    var cubeheaders = new oj.CubeHeaderSet(this._getAxis(headerRange['axis']), this.data, headerRange['start'], headerRange['count']);
-    callbacks['success'].call(callbackObjects ? callbackObjects['success'] : undefined, cubeheaders, headerRange);
-};
-
-/**
- * Fetch a range of cells from the data source.
- * @param {Array.<Object>} cellRange Information about the cell range.  A cell range is defined by an array 
- *        of range info for each axis, where each range contains three properties: axis, start, count.
- * @param {string} cellRange.axis the axis associated with this range where cells are fetched.  Valid 
- *        values are "row" and "column".
- * @param {number} cellRange.start the start index of the range for this axis in which the cells are fetched.
- * @param {number} cellRange.count the size of the range for this axis in which the cells are fetched. 
- * @param {Object} callbacks the callbacks to be invoke when fetch cells operation is completed.  The valid callback
- *        types are "success" and "error".
- * @param {function(oj.CellSet)} callbacks.success the callback to invoke when fetch cells completed successfully.
- * @param {function({status: Object})} callbacks.error the callback to invoke when fetch cells failed.
- * @param {Object=} callbackObjects the object in which the callback function is invoked on.  This is optional.  
- *        You can specify the callback object for each callbacks using the "success" and "error" keys.
- * @return {undefined}
- * @memberof oj.CubeDataGridDataSource
- * @export
- */
-oj.CubeDataGridDataSource.prototype.fetchCells = function(cellRange, callbacks, callbackObjects)
-{
-    var obj = {};
-    for (var i = 0; i < cellRange.length; i++) {
-        var start = cellRange[i]['start'] === undefined ? 0 : cellRange[i]['start'];
-        if (cellRange[i].axis === 'row') {
-            var count = cellRange[i]['count'] === undefined ? this.data.getAxes()[1].getExtent() : cellRange[i]['count'];
-            obj.row = {start: start, count: count};
-        }
-        if (cellRange[i].axis === 'column') {
-            var count = cellRange[i]['count'] === undefined ? this.data.getAxes()[0].getExtent() : cellRange[i]['count'];
-            obj.column = {start: start, count: count};
-        }
-    }
-    var cubecells = new oj.CubeCellSet(this.data, obj);
-    callbacks['success'].call(callbackObjects ? callbackObjects['success'] : undefined, cubecells, cellRange);
-};
-
-/**
- * Returns the keys based on the indexes. 
- * @param {Object} indexes the index for each axis
- * @param {Object} indexes.row the index for the row axis
- * @param {Object} indexes.column the index for the column axis
- * @return {Object} a Promise object which when resolved returns an object containing the keys for each axis
- * @memberof oj.CubeDataGridDataSource
- * @export
- */
-oj.CubeDataGridDataSource.prototype.keys = function(indexes)
-{
-    var retObj = {};
-    retObj = this._getKey(indexes, 'row', retObj);
-    retObj = this._getKey(indexes, 'column', retObj);
-    return Promise.resolve(retObj);
-};
-
-oj.CubeDataGridDataSource.prototype._getKey = function(indexes, axis, retObj) {
-    var axisObj = this._getAxis(axis);
-    var item = indexes[axis];
-    var keys = new oj.CubeKeys();
-    keys = axisObj ? axisObj.GetCubeKeys(item, keys) : "";
-    retObj[axis] = keys.GetHashCodes()[0].key;
-    return retObj;
-};
-
-/**
- * Returns the row and column index based on the keys.
- * @param {Object} keys the key for each axis
- * @param {Object} keys.row the key for the row axis
- * @param {Object} keys.column the key for the column axis
- * @return {Object} a Promise object which when resolved returns an object containing the index for each axis
- * @memberof oj.CubeDataGridDataSource
- * @export
- */
-oj.CubeDataGridDataSource.prototype.indexes = function(keys)
-{
-    var retObj = {};
-    retObj = this._getIndex(keys, 'row', retObj);
-    retObj = this._getIndex(keys, 'column', retObj);
-
-    return Promise.resolve(retObj);
-};
-
-/**
- * @private
- */
-oj.CubeDataGridDataSource.prototype._getIndex = function(keys, axis, retObj) {
-    retObj[axis] = this._getAxis(axis).getIndex(keys[axis]);
-    return retObj;
-};
-
-/**
- * @ignore
- * @memberof oj.CubeDataGridDataSource
- * @export
- */
-oj.CubeDataGridDataSource.prototype.sort = function(criteria, callbacks, callbackObjects)
-{
-    oj.Assert.failedInAbstractFunction();
-};
-
-/**
- * @ignore
- * @memberof oj.CubeDataGridDataSource
- * @export
- */ 
-oj.CubeDataGridDataSource.prototype.move = function(rowToMove, referenceRow, position, callbacks, callbackObjects)
-{
-    oj.Assert.failedInAbstractFunction();
-};
-
-/**
- * Checks whether a move operation is valid.
- * @param {Object} rowToMove the key of the row to move
- * @param {Object} referenceRow the key of the reference row which combined with position are used to determine 
- *        the destination of where the row should moved to.
- * @param {string} position The position of the moved row relative to the reference row.  
- *        Valid values are: "before", "after".
- * @return {string} returns "valid" if the move is valid, "invalid" otherwise.
- * @memberof oj.CubeDataGridDataSource
- * @export
- */ 
-oj.CubeDataGridDataSource.prototype.moveOK = function(rowToMove, referenceRow, position)
-{
-    return "invalid";
-};
-
-/**
- * Determines whether this DataGridDataSource supports certain feature.
- * @param {string} feature the feature in which its capabilities is inquired.  Currently the only valid feature is "sort".
- * @return {string|null} the name of the feature.  For "sort", the valid return values are: "full", "none", "row", "column".  
- *         For "move", the valid return values are: "row", "none".  
- *         Returns null if the feature is not recognized.
- * @memberof oj.CubeDataGridDataSource
- * @export
- */
-oj.CubeDataGridDataSource.prototype.getCapability = function(feature)
-{
-    switch (feature) {
-        case "sort":
-            return "none";
-        case "move":
-            return "none";
-    }
-    return null;
-};
-
-/**
- * @private
- */
-oj.CubeDataGridDataSource._convertAxes = function(axis) {
-    return axis === "row" ? 1 : 0;
-};
-
-/**
- * @private
- */
-oj.CubeDataGridDataSource.prototype._getAxis = function(axis) {
-    var axisNum = oj.CubeDataGridDataSource._convertAxes(axis);
-    var axes = this.data.getAxes();
-    if (axes.length > axisNum) {
-        return axes[axisNum];
-    }
-    return null;
-};
-/**
- * Copyright (c) 2015, Oracle and/or its affiliates.
- * All rights reserved.
- */
-/*jslint browser: true*/
-
-
-/**
- * @class oj.DataColumnCube
- * 
- * @classdesc Creates an object used to convert rowset data into grouped "cubic" data, where the data values are specified by a single attribute within the rowset
- * (dataValues.labelAttr) and their header values designated by another rowset attribute (dataValues.valueAttr).
- *
- * @param {Array.<Object>} rowset An array of objects containing attribute/value pairs.  The entire array or collection
- *                       will be read to group its attributes according to information given by layout and dataValues
- * @param {Array.<Object>} layout An array of objects containing two properties: axis - a number representing the number of the axis of the levels;
- *                       levels - a slowest-to-fastest varying ordered array of objects containing:
- *                       attribute - an attribute of the rowset objects to assign to this axis and level.  If the attribute
- *                       is the same as that specified by labelAttr, then this level is the data value level
- * @param {Object} dataValues an object containing the following properties: labelAttr - the rowset attribute used to group the data values in the header
- *                            valueAttr - the rowset attribute used for the actual data values; (optional) defaultAggregation - the default type of
- *                            oj.CubeAggType to use to aggregate data values where necessary.  If the type is 'CUSTOM' then this should be an object with a 'type' property of oj.CubeAggType['CUSTOM'] and a 'callback' property specifying a function to call with each value.  The function takes two arguments, the first being the running value for the cell being calculated, the second being the new value to be aggregated with that running value; (optional) aggregation: an array of objects containing:
- *                            value - the value of labelAttr for which this aggregation should apply; aggregation - the oj.CubeAggType for that value; if aggregation is 'CUSTOM', then a 'callback' property should be added specifying a function (for arguments see above) to call with each value
- *                            (defaults to sum)
- * @see oj.Cube
- * @constructor
- * @since 1.1.0
- * @export
- */
-oj.DataColumnCube = function(rowset, layout, dataValues) {
-    this.Init();
-    this._dataValues = dataValues;
-    this._valueAttr = dataValues['valueAttr'];
-    this._labelAttr = dataValues['labelAttr'];
-    var defAgg = dataValues['defaultAggregation'];
-    this._defaultAggregation = defAgg ? oj.DataColumnCube._getDefaultAgg(defAgg) : {aggregation:oj.CubeAggType['SUM']};
-    this._aggregation = dataValues['aggregation'];
-    this._buildAggTypeLookup();
-    
-    oj.DataColumnCube.superclass.constructor.call(this, rowset, layout);
-};
-
-// Subclass from oj.Cube 
-oj.Object.createSubclass(oj.DataColumnCube, oj.Cube, "oj.DataColumnCube");
-
-/**
- * Initializes instance with the set options
- * @private
- */
-oj.DataColumnCube.prototype.Init = function() 
-{
-  oj.DataColumnCube.superclass.Init.call(this);
-};
-
-/**
- * @protected
- */
-oj.DataColumnCube.prototype.BuildCube = function() {
-    oj.DataColumnCube.superclass.BuildCube.call(this);
-};
-
-/**
- * @protected
- */
-oj.DataColumnCube.prototype.GetAggType = function(dataValue) {
-    if (this._dataValueAggType[dataValue]) {
-        return this._dataValueAggType[dataValue];
-    }
-    return this._defaultAggregation;
-};
-
-/**
- * @protected
- */
-oj.DataColumnCube.prototype.GenerateCube = function(layout) {
-    return new oj.DataColumnCube(null, layout, this._dataValues);
-};
-
-/**
- * @protected
- */
-oj.DataColumnCube.prototype.GenerateLevel = function(level, axis) {    
-    if (level['attribute'] === this._labelAttr) {
-        // Data value level
-        return new oj.CubeLevel(level['attribute'], axis, true);
-    }
-    // Regular level
-    return new oj.CubeLevel(level['attribute'], axis, false);
-};
-
-/**
- * @protected
- */
-oj.DataColumnCube.prototype.ProcessLevel = function(axis, levelNum, currNode, row, keys, addKeys) {
-    if (levelNum >= axis.getLevels().length) {
-        return keys;
-    }
-    var level = axis.getLevels()[levelNum];
-    
-    // Not the data value: process this and call for the next
-    var value = row[level['attribute']];
-    var node = currNode.AddNode(value, null, level);
-    
-    if (level.isDataValue()) {
-        keys.AddDataValue(value, row[this._valueAttr]);
-    }
-    else {
-        keys.UpdateKeys(node);
-    }    
-    
-    return this.ProcessLevel(axis, levelNum+1, node, row, keys, addKeys);
-};
-
-/**
- * @private
- */
-oj.DataColumnCube._getDefaultAgg = function(agg) {
-    if (oj.StringUtils.isString(agg)) {
-        return {aggregation:agg};
-    }
-    return {aggregation:agg['aggregation'],callback:agg['callback']};
-};
-    
-/**
- * @private
- */
-oj.DataColumnCube.prototype._buildAggTypeLookup = function() {
-    this._dataValueAggType = [];
-    if (this._aggregation) {
-        for (var i = 0; i < this._aggregation.length; i++) {
-            var dv = this._aggregation[i];
-            var agg = dv['aggregation'];
-            this._dataValueAggType[dv['value']] = agg ? {aggregation:agg, callback:dv['callback']} : this._defaultAggregation;
-        }
-    }
-};
-/**
- * Copyright (c) 2015, Oracle and/or its affiliates.
- * All rights reserved.
- */
-/*jslint browser: true*/
-
-/**
- * @class oj.CubeLevel
- * @classdesc  Represents a level within an axis.  The level is tied to an attribute within the original rowset.  Each level contains a number of [oj.CubeAxisValues]{@link oj.CubeAxisValue}, all from the same attribute
- * @see oj.CubeAxis
- * @since 1.1.0
- * @constructor
- * @export
- * @hideconstructor
- */
- oj.CubeLevel = function(attribute, axis, dataValue) {
-    this.Init();
-    this['attribute'] = attribute;
-    this._axisObj = axis;
-    this['axis'] = axis['axis'];
-    this._dataValue = dataValue;
- };
- 
- // Subclass from oj.Object 
-oj.Object.createSubclass(oj.CubeLevel, oj.Object, "oj.CubeLevel");
-
-/**
- * Initializes instance with the set options
- * @private
- */
-oj.CubeLevel.prototype.Init = function() 
-{
-  oj.CubeLevel.superclass.Init.call(this);
-};
-
-/**
- * The rowset attribute this level represents
- * @type {string}
- * @memberof oj.CubeLevel
- * @export
- */
-oj.CubeLevel.prototype.attribute;
- 
-/**
- * The axis this level is a member of
- * @type {number}
- * @memberof oj.CubeLevel
- * @export
- */
-oj.CubeLevel.prototype.axis;
- 
-
-/**
- * Return the oj.CubeAxisValue at the given index within this level
- * @param index {number} the axis index for which to get the value
- * @return {oj.CubeAxisValue} the value at the given location within the level
- * @memberof oj.CubeLevel
- * @export
- */
-oj.CubeLevel.prototype.getValue = function(index) {
-    var values = this._axisObj.getValues(index);
-    if (values) {
-        // Find this level within the returned list
-        for (var v = 0; v < values.length; v++) {
-            if (values[v].getLevel() === this) {
-                return values[v];
-            }
-        }
-    }
-    return null;
-};
- 
-/**
- * Does this level represent the data values within the cube?
- * @return {boolean} true if this level does represent the data values within the cube; false otherwise
- * @memberof oj.CubeLevel
- * @export
- */
-oj.CubeLevel.prototype.isDataValue = function() {
-    return this._dataValue;
-};
-
-/**
- * @type {boolean}
- * @private
- */
-oj.CubeLevel.prototype._dataValue = false;
-
-/**
- * @type {oj.CubeAxis}
- * @private
- */
-oj.CubeLevel.prototype._axisObj = null;
 });

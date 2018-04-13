@@ -21,36 +21,6 @@
 @if $includeTabBarClasses != false {
     @include module-include-once("alta.windows.tabbar") {
 
-        // Center align item content
-        .oj-tabbar-vertical:not(.oj-tabbar-icon-only) .oj-tabbar-item-content {
-            @include oj-justify-content-property(center);
-        }
-        // dont stretch item content
-        .oj-tabbar-vertical:not(.oj-tabbar-icon-only) .oj-tabbar-item-content .oj-tabbar-item-label {
-            @include oj-flex-property(0 0 auto);
-        }
-
-        // Icons only bar should have same color as icons with text color.
-        .oj-tabbar-horizontal.oj-tabbar-icon-only .oj-tabbar-item .oj-tabbar-item-icon
-        {
-            color: $tabBarItemIconColorDefault;
-            .oj-contrast-marker & {
-              color: $tabBarItemContrastLabelColorDefault;
-            }
-        }
-
-        .oj-tabbar-horizontal.oj-tabbar-icon-only .oj-tabbar-item.oj-selected:not(.oj-hover) .oj-tabbar-item-icon
-        {
-            color: $tabBarItemIconColorSelected;
-            .oj-contrast-marker & {
-                color: $tabBarItemContrastLabelColorSelected;
-            }
-        }
-        .oj-tabbar-horizontal.oj-tabbar-icon-only .oj-tabbar-item.oj-hover .oj-tabbar-item-icon
-        {
-            color: $tabBarItemIconColorHover;
-        }
-        
         .oj-tabbar-overflow-item-icon {
            @extend .oj-fwk-icon-dots-horizontal;
         }

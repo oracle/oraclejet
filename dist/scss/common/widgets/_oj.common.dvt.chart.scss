@@ -63,24 +63,12 @@
       background-image: oj-common-image-url("dvt/chart/zoom-hover.png");
     }
 
-    .oj-chart-footnote {
+    .oj-chart-data-label {
       font-size: $smallFontSize;
-      color: $textColor;
     }
 
-    .oj-chart-data-label{
-      font-size: $smallFontSize;
+    .oj-chart-data-cursor-line {
       color: $textColor;
-    }
-
-    .oj-chart-data-cursor-line{
-      color: $textColor;
-    }
-
-    .oj-chart-subtitle {
-      font-size: $header3FontSize;
-      color: $dvtChartSubtitleTextColor;
-      font-weight: $header3FontWeight;
     }
     
     .oj-chart-stock-falling {
@@ -93,12 +81,6 @@
 
     .oj-chart-stock-rising {
       background-color: $dvtChartStockRisingBgColor;
-    }
-
-    .oj-chart-title {
-      font-size: $header3FontSize;
-      color: $dvtChartTitleTextColor;
-      font-weight: $headerFontWeight;
     }
     
     .oj-chart-stack-label{

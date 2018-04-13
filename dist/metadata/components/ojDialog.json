@@ -1,7 +1,7 @@
 {
   "name": "oj-dialog",
-  "version": "4.2.0",
-  "jetVersion": "4.2.0",
+  "version": "5.0.0",
+  "jetVersion": "5.0.0",
   "displayName": "Dialog",
   "preview": true,
   "roles": [
@@ -51,7 +51,7 @@
       "description": "Under normal circumstances this class is applied automatically. It is documented here for the rare cases that an app developer needs per-instance control.\nThe \"oj-focus-highlight\" class applies focus styling that may not be desirable when the focus results from pointer interaction (touch or mouse), but which is needed for accessibility when the focus occurs by a non-pointer mechanism, for example keyboard or initial page load.\nThe application-level behavior for this component is controlled in the theme by the \"$focusHighlightPolicy\" SASS variable; however, note that this same variable controls the focus highlight policy of many components and patterns. The values for the variable are:\n\"nonPointer\": \"oj-focus-highlight\" is applied only when focus is not the result of pointer interaction. Most themes default to this value.\n\"all\": \"oj-focus-highlight\" is applied regardless of the focus mechanism.\n\"none\": \"oj-focus-highlight\" is never applied. This behavior is not accessible, and is intended for use when the application wishes to use its own event listener to precisely control when the class is applied (see below). The application must ensure the accessibility of the result.\nTo change the behavior on a per-instance basis, the application can set the SASS variable as desired and then use event listeners to toggle this class as needed."
     }
   ],
-  "description": "Themeable, WAI-ARIA-compliant dialog component",
+  "description": "Displays a popup window that provides information and gathers input from the application user.",
   "properties": {
     "cancelBehavior": {
       "description": "Specifies the cancel behavior of the dialog. The following are valid values: \"icon\" - (the default) (a) a close icon will automatically be created, and (b) the dialog will close when it has focus and user presses the escape (ESC) key. \"none\" - no actions will be associated with the escape key. \"escape\" - the dialog will close when it has focus and user presses the escape (ESC) key. A close icon will not automatically be created. Note that the cancelBehavior applies to both automatic and user-defined headers. So by default, a user-defined header will have a system generated close icon.",
@@ -78,26 +78,33 @@
       "value": "modal"
     },
     "position": {
-      "deprecated": {
-        "since": "3.0.0",
-        "description": "jQuery UI\rposition syntax is deprectated; Use of a percent unit with\r\"my\" or \"at\" is not supported."
-      },
-      "description": "Position object is used to establish the location the dialog will appear relative to another element. Positioning defines \"my\" alignment \"at\" the alignment \"of\" some other thing which can be \"offset\" by so many pixels. The \"my\" and \"at\" properties defines aligment points relative to the dialog and other element. The \"my\" property represents the dialog's alignment where the \"at\" property represents the other element that can be identified by \"of\". The values of these properties describe horizontal and vertical alignments.",
+      "description": "Position object is used to establish the location the dialog will appear relative to another element. ojDialog.Position defines \"my\" alignment \"at\" the alignment \"of\" some other thing which can be \"offset\" by so many pixels. The \"my\" and \"at\" properties defines aligment points relative to the dialog and other element. The \"my\" property represents the dialog's alignment where the \"at\" property represents the other element that can be identified by \"of\". The values of these properties describe horizontal and vertical alignments. Deprecated v3.0.0 jQuery UI position syntax; Use of a percent unit with \"my\" or \"at\" is not supported.",
       "type": "Object",
       "displayName": "Position",
+      "value": {
+        "my": {
+          "vertical": "center",
+          "horizontal": "center"
+        },
+        "at": {
+          "vertical": "center",
+          "horizontal": "center"
+        },
+        "of": "window",
+        "collision": "fit",
+        "offset": {
+          "x": 0,
+          "y": "0"
+        }
+      },
       "properties": {
         "at": {
           "description": "Defines which position on the target element (\"of\") to align the positioned element against.",
           "type": "Object",
-          "value": {
-            "horizontal": "center",
-            "vertical": "center"
-          },
           "properties": {
             "horizontal": {
               "description": "",
               "type": "string",
-              "value": "center",
               "enumValues": [
                 "center",
                 "end",
@@ -128,7 +135,6 @@
             "vertical": {
               "description": "",
               "type": "string",
-              "value": "center",
               "enumValues": [
                 "bottom",
                 "center",
@@ -149,22 +155,40 @@
           }
         },
         "collision": {
-          "description": "",
+          "description": "Rule for alternate alignment.",
           "type": "string",
-          "value": "fit"
+          "enumValues": [
+            "fit",
+            "flip",
+            "flipfit",
+            "none"
+          ],
+          "propertyEditorValues": {
+            "fit": {
+              "description": "shift the element away from the edge of the window.",
+              "displayName": "Fit"
+            },
+            "flip": {
+              "description": "the element to the opposite side of the target and the collision detection is run again to see if it will fit. Whichever side allows more of the element to be visible will be used.",
+              "displayName": "Flip"
+            },
+            "flipfit": {
+              "description": "first applies the flip logic, placing the element on whichever side allows more of the element to be visible. Then the fit logic is applied to ensure as much of the element is visible as possible.",
+              "displayName": "Flipfit"
+            },
+            "none": {
+              "description": "no collision detection.",
+              "displayName": "None"
+            }
+          }
         },
         "my": {
           "description": "Defines which edge on the dialog to align with the target (\"of\") element.",
           "type": "Object",
-          "value": {
-            "horizontal": "center",
-            "vertical": "center"
-          },
           "properties": {
             "horizontal": {
               "description": "",
               "type": "string",
-              "value": "center",
               "enumValues": [
                 "center",
                 "end",
@@ -195,7 +219,6 @@
             "vertical": {
               "description": "",
               "type": "string",
-              "value": "center",
               "enumValues": [
                 "bottom",
                 "center",
@@ -216,7 +239,7 @@
           }
         },
         "of": {
-          "description": "Which element to position the dialog against. If the value is a string, it should be a selector or the literal string valueof window. Otherwise, a point of x,y.",
+          "description": "Which element to position the dialog against. If the value is a string, it should be a selector or the literal string value of window. Otherwise, a point of x,y. When a point is used, the values are relative to the whole document. Page horizontal and vertical scroll offsets need to be factored into this point - see UIEvent pageX, pageY.",
           "type": "string|Object"
         },
         "offset": {
@@ -224,14 +247,12 @@
           "type": "Object",
           "properties": {
             "x": {
-              "description": "",
-              "type": "number",
-              "value": 0
+              "description": "Horizontal aligment offset.",
+              "type": "number"
             },
             "y": {
-              "description": "",
-              "type": "number",
-              "value": 0
+              "description": "Vertical alignment offset.",
+              "type": "number"
             }
           }
         }
@@ -250,10 +271,10 @@
       "value": "dialog"
     },
     "translations": {
-      "description": "A collection of translated resources from the translation bundle, or null if this\ncomponent has no resources. Resources may be accessed and overridden individually or collectively, as seen in the examples.\n\nIf this component has translations, their documentation immediately follows this doc entry.",
-      "type": "Object",
+      "description": "A collection of translated resources from the translation bundle, or null if this\ncomponent has no resources. Resources may be accessed and overridden individually or collectively, as seen in the examples. If the component does not contain any translatable resource, the default value of this attribute will be \nnull. If not, an object containing all resources relevant to the component.\n\nIf this component has translations, their documentation immediately follows this doc entry.",
+      "type": "Object|null",
       "displayName": "Translations",
-      "value": null,
+      "translatable": true,
       "properties": {
         "labelCloseIcon": {
           "description": "Label for the dialog close button.\n\nSee the translations attribute for usage examples.",
@@ -277,7 +298,8 @@
       "return": "void"
     },
     "refresh": {
-      "description": "Refreshes the component."
+      "description": "Refresh the dialog. Typically used after dynamic content is added to a dialog.",
+      "return": "void"
     },
     "setProperty": {
       "description": "Sets a property or a single subproperty for complex properties and notifies the component\nof the change, triggering a [property]Changed event.",
@@ -292,7 +314,8 @@
           "description": "The new value to set the property to.",
           "type": "*"
         }
-      ]
+      ],
+      "return": "void"
     },
     "getProperty": {
       "description": "Retrieves a value for a property or a single subproperty for complex properties.",
@@ -313,7 +336,8 @@
           "description": "An object containing the property and value pairs to set.",
           "type": "Object"
         }
-      ]
+      ],
+      "return": "void"
     }
   },
   "events": {
@@ -407,29 +431,17 @@
       "bubbles": true,
       "cancelable": true,
       "detail": {
-        "event": {
-          "description": "a custom event",
-          "type": "CustomEvent",
-          "properties": {
-            "detail": {
-              "description": "an object containing component specific event info",
-              "type": "Object",
-              "properties": {
-                "action": {
-                  "description": "The action that is starting the animation. The number of actions can vary from component to component. Suggested values are: \"open\" - when a dialog component is opened \"close\" - when a dialog component is closed ",
-                  "type": "string"
-                },
-                "element": {
-                  "description": "target of animation",
-                  "type": "Element"
-                },
-                "endCallback": {
-                  "description": "If the event listener calls event.preventDefault to cancel the default animation, It must call the endCallback function when it finishes its own animation handling and any custom animation has ended.",
-                  "type": "function"
-                }
-              }
-            }
-          }
+        "action": {
+          "description": "The action that is starting the animation. The number of actions can vary from component to component. Suggested values are: \"open\" - when a dialog component is opened \"close\" - when a dialog component is closed ",
+          "type": "\"open\"|\"close\""
+        },
+        "element": {
+          "description": "target of animation",
+          "type": "Element"
+        },
+        "endCallback": {
+          "description": "If the event listener calls event.preventDefault to cancel the default animation, It must call the endCallback function when it finishes its own animation handling and any custom animation has ended.",
+          "type": "function"
         }
       }
     },
@@ -438,25 +450,13 @@
       "bubbles": true,
       "cancelable": true,
       "detail": {
-        "event": {
-          "description": "a custom event",
-          "type": "Event",
-          "properties": {
-            "detail": {
-              "description": "an object containing component specific event info",
-              "type": "Object",
-              "properties": {
-                "element": {
-                  "description": "target of animation",
-                  "type": "Element"
-                },
-                "action": {
-                  "description": "The action that is starting the animation. The number of actions can vary from component to component. Suggested values are: \"open\" - when a dialog component is opened \"close\" - when a dialog component is closed ",
-                  "type": "string"
-                }
-              }
-            }
-          }
+        "element": {
+          "description": "target of animation",
+          "type": "Element"
+        },
+        "action": {
+          "description": "The action that is ending the animation. The number of actions can vary from component to component. Suggested values are: \"open\" - when a dialog component is opened \"close\" - when a dialog component is closed ",
+          "type": "\"open\"|\"close\""
         }
       }
     }

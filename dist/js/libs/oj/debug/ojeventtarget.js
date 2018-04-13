@@ -1,4 +1,5 @@
 /**
+ * @license
  * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
@@ -10,7 +11,7 @@
  */
 define(['ojs/ojcore'], function(oj)
 {
-var EventTargetMixin = (function () {
+var EventTargetMixin = /** @class */ (function () {
     function EventTargetMixin() {
     }
     EventTargetMixin.prototype.addEventListener = function (eventType, listener) {
@@ -38,12 +39,14 @@ var EventTargetMixin = (function () {
     EventTargetMixin.prototype.dispatchEvent = function (evt) {
         if (this._eventListeners) {
             var i, returnValue;
+            //clone the eventListeners to isolate mutations that may occur during dispatching events
             var eventListeners = this._eventListeners.slice(0);
             for (i = 0; i < eventListeners.length; i++) {
                 var eventListener = eventListeners[i];
                 if (eventListener['type'] == evt.type) {
                     returnValue = eventListener['listener'].apply(this, [evt]);
                     if (returnValue === false) {
+                        // event cancelled
                         return false;
                     }
                 }
@@ -66,7 +69,7 @@ var EventTargetMixin = (function () {
 }());
 oj.EventTargetMixin = EventTargetMixin;
 
-var GenericEvent = (function () {
+var GenericEvent = /** @class */ (function () {
     function GenericEvent(type, options) {
         this.type = type;
         this.options = options;

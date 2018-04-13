@@ -1,16 +1,16 @@
 {
   "name": "oj-picto-chart",
-  "version": "4.2.0",
-  "jetVersion": "4.2.0",
+  "version": "5.0.0",
+  "jetVersion": "5.0.0",
   "displayName": "Picto Chart",
   "preview": true,
-  "description": "ojPictoChart",
+  "description": "Displays information using icons to visualize an absolute number or the relative sizes of the different parts of a population.",
   "properties": {
     "animationDuration": {
-      "description": "The duration of the animations, in milliseconds.",
+      "description": "The duration of the animations, in milliseconds. The default value comes from the CSS and varies based on theme.",
       "type": "number",
       "displayName": "Animation Duration",
-      "value": null
+      "units": "\"milliseconds\""
     },
     "animationOnDataChange": {
       "description": "The animation when the data changes.",
@@ -62,15 +62,16 @@
     },
     "columnCount": {
       "description": "The number of columns that the picto chart has. The number of columns will be automatically computed if not specified.",
-      "type": "number",
+      "type": "number|null",
       "displayName": "Column Count",
       "value": null
     },
     "columnWidth": {
-      "description": "The width of a column in pixels. Setting this property in a fixed layout (when the element width and height are defined) may cause items to be truncated.",
-      "type": "number",
+      "description": "The width of a column in pixels. The width of columns will be automatically computed if not specified. Setting this property in a fixed layout (when the element width and height are defined) may cause items to be truncated.",
+      "type": "number|null",
       "displayName": "Column Width",
-      "value": null
+      "value": null,
+      "units": "\"pixels\""
     },
     "drilling": {
       "description": "Whether drilling is enabled. Drillable items will show a pointer cursor on hover and fire an ojDrill event on click (double click if selection is enabled). To enable or disable drilling on individual items, use the drilling attribute in each item.",
@@ -92,9 +93,9 @@
     },
     "hiddenCategories": {
       "description": "An array of category strings used for category filtering. Data items with a category in hiddenCategories will be filtered.",
-      "type": "Array.<string>",
+      "type": "Array<string>",
       "displayName": "Hidden Categories",
-      "value": null,
+      "value": [],
       "writeback": true
     },
     "highlightMatch": {
@@ -117,9 +118,9 @@
     },
     "highlightedCategories": {
       "description": "An array of category strings used for category highlighting. Data items with a category in highlightedCategories will be highlighted.",
-      "type": "Array.<string>",
+      "type": "Array<string>",
       "displayName": "Highlighted Categories",
-      "value": null,
+      "value": [],
       "writeback": true
     },
     "hoverBehavior": {
@@ -144,169 +145,14 @@
       "description": "Specifies initial hover delay in ms for highlighting data items.",
       "type": "number",
       "displayName": "Hover Behavior Delay",
-      "value": null
+      "value": 200,
+      "units": "\"milliseconds\""
     },
     "items": {
       "description": "An array of objects with the following properties that defines the pictoChart items.",
-      "type": "Array.<object>",
+      "type": "Array<Object>|Promise|null",
       "displayName": "Items",
-      "value": null,
-      "properties": {
-        "borderColor": {
-          "description": "The border color of the item. Does not apply if custom image is specified.",
-          "type": "string",
-          "value": null
-        },
-        "borderWidth": {
-          "description": "The border width of the item in pixels. Does not apply if custom image is specified.",
-          "type": "number",
-          "value": null
-        },
-        "categories": {
-          "description": "An array of category strings corresponding to this item. If not specified, defaults to the item id or name. This enables highlighting and filtering of individual data items through interactions with other visualization elements.",
-          "type": "Array.<string>",
-          "value": null
-        },
-        "color": {
-          "description": "The color of the item. Does not apply if custom image is specified.",
-          "type": "string",
-          "value": null
-        },
-        "columnSpan": {
-          "description": "The number of columns each shape (or custom image) spans. Used for creating a pictoChart with mixed item sizes.",
-          "type": "number",
-          "value": 1
-        },
-        "count": {
-          "description": "Specifies the number of times that the shape (or custom image) is drawn. Fractional counts (such as 4.5) are supported; however, fractions other than the multiples of 0.5 should be avoided because the fractional rendering ignores the gaps between shapes and the irregularity of the shapes.",
-          "type": "number",
-          "value": 1
-        },
-        "drilling": {
-          "description": "Whether drilling is enabled for the item. Drillable items will show a pointer cursor on hover and fire an ojDrill event on click (double click if selection is enabled). To enable drilling for all items at once, use the drilling attribute in the top level.",
-          "type": "string",
-          "value": "inherit",
-          "enumValues": [
-            "inherit",
-            "off",
-            "on"
-          ],
-          "propertyEditorValues": {
-            "inherit": {
-              "displayName": "Inherit"
-            },
-            "off": {
-              "displayName": "Off"
-            },
-            "on": {
-              "displayName": "On"
-            }
-          }
-        },
-        "id": {
-          "description": "The id of the item.",
-          "type": "string",
-          "value": null
-        },
-        "name": {
-          "description": "The name of the item. Used for default tooltip and accessibility.",
-          "type": "string",
-          "value": null
-        },
-        "rowSpan": {
-          "description": "The number of rows each shape (or custom image) spans. Used for creating a pictoChart with mixed item sizes.",
-          "type": "number",
-          "value": 1
-        },
-        "shape": {
-          "description": "The shape of the item. Can take the name of a built-in shape or the svg path commands for a custom shape. \"None\" will make the item transparent and can be used to create gaps. Does not apply if custom image is specified.",
-          "type": "string",
-          "value": "rectangle",
-          "enumValues": [
-            "circle",
-            "diamond",
-            "ellipse",
-            "human",
-            "none",
-            "plus",
-            "rectangle",
-            "square",
-            "star",
-            "triangleDown",
-            "triangleUp"
-          ],
-          "propertyEditorValues": {
-            "circle": {
-              "displayName": "Circle"
-            },
-            "diamond": {
-              "displayName": "Diamond"
-            },
-            "ellipse": {
-              "displayName": "Ellipse"
-            },
-            "human": {
-              "displayName": "Human"
-            },
-            "none": {
-              "displayName": "None"
-            },
-            "plus": {
-              "displayName": "Plus"
-            },
-            "rectangle": {
-              "displayName": "Rectangle"
-            },
-            "square": {
-              "displayName": "Square"
-            },
-            "star": {
-              "displayName": "Star"
-            },
-            "triangleDown": {
-              "displayName": "Triangle Down"
-            },
-            "triangleUp": {
-              "displayName": "Triangle Up"
-            }
-          }
-        },
-        "shortDesc": {
-          "description": "Short description string for accessibility users.",
-          "type": "string",
-          "value": null
-        },
-        "source": {
-          "description": "The URI of the custom image. If specified, it takes precedence over shape.",
-          "type": "string",
-          "value": null
-        },
-        "sourceHover": {
-          "description": "The optional URI for the hover state. If not specified, the source image will be used.",
-          "type": "string",
-          "value": null
-        },
-        "sourceHoverSelected": {
-          "description": "The optional URI for the hover selected state. If not specified, the source image will be used.",
-          "type": "string",
-          "value": null
-        },
-        "sourceSelected": {
-          "description": "The optional URI for the selected state. If not specified, the source image will be used.",
-          "type": "string",
-          "value": null
-        },
-        "svgClassName": {
-          "description": "The CSS style class to apply to the item. The style class and inline style will override any other styling specified with other properties. For tooltip interactivity, it's recommended to also pass a representative color to the item color attribute. Does not apply if custom image is specified.",
-          "type": "string",
-          "value": null
-        },
-        "svgStyle": {
-          "description": "The inline style to apply to the item. The style class and inline style will override any other styling specified with other properties. For tooltip interactivity, it's recommended to also pass a representative color to the item color attribute. Does not apply if custom image is specified.",
-          "type": "object",
-          "value": null
-        }
-      }
+      "value": null
     },
     "layout": {
       "description": "The direction in which the items are laid out.",
@@ -354,21 +200,22 @@
     },
     "rowCount": {
       "description": "The number of rows that the picto chart has. The number of rows will be automatically computed if not specified.",
-      "type": "number",
+      "type": "number|null",
       "displayName": "Row Count",
       "value": null
     },
     "rowHeight": {
-      "description": "The height of a row in pixels. Setting this property in a fixed layout (when the element width and height are defined) may cause items to be truncated.",
-      "type": "number",
+      "description": "The height of a row in pixels. The height of rows will be automatically computed if not specified. Setting this property in a fixed layout (when the element width and height are defined) may cause items to be truncated.",
+      "type": "number|null",
       "displayName": "Row Height",
-      "value": null
+      "value": null,
+      "units": "\"pixels\""
     },
     "selection": {
       "description": "An array of id strings, used to define the selected objects.",
-      "type": "Array.<string>",
+      "type": "Array<string>",
       "displayName": "Selection",
-      "value": null,
+      "value": [],
       "writeback": true
     },
     "selectionMode": {
@@ -394,20 +241,22 @@
       }
     },
     "tooltip": {
-      "description": "An object containing an optional callback function for tooltip customization.",
-      "type": "object",
+      "description": "A function that returns a custom tooltip. The function takes a dataContext argument, provided by the picto chart. The function should return an Object that contains only one of the two properties: insert: HTMLElement | string - An HTML element, which will be appended to the tooltip, or a tooltip string. preventDefault: true - Indicates that the tooltip should not be displayed. It is not necessary to return {preventDefault:false} to display tooltip, since this is a default behavior. ",
+      "type": "Object",
       "displayName": "Tooltip",
-      "value": null,
+      "value": {
+        "renderer": null
+      },
       "properties": {
         "renderer": {
-          "description": "A function that returns a custom tooltip. The function takes a dataContext argument, provided by the picto chart, with the following properties: parentElement: The tooltip element. The function can directly modify or append content to this element. id: The id of the hovered item. name: The name of the hovered item. count: The count of the hovered item. color: The color of the hovered item. componentElement: The picto chart HTML element. The function should return an Object that contains only one of the two properties: insert: HTMLElement | string - An HTML element, which will be appended to the tooltip, or a tooltip string. preventDefault: true - Indicates that the tooltip should not be displayed. It is not necessary to return {preventDefault:false} to display tooltip, since this is a default behavior. ",
+          "description": "",
           "type": "function",
           "value": null
         }
       }
     },
     "trackResize": {
-      "description": "Defines whether the element will automatically render in response to\nchanges in size. If set to off, then the\napplication is responsible for calling refresh\nto render the element at the new size.",
+      "description": "Defines whether the element will automatically render in response to changes in size. If set to off, then the application is responsible for calling refresh to render the element at the new size.",
       "type": "string",
       "displayName": "Track Resize",
       "value": "on",
@@ -425,10 +274,10 @@
       }
     },
     "translations": {
-      "description": "A collection of translated resources from the translation bundle, or null if this\ncomponent has no resources. Resources may be accessed and overridden individually or collectively, as seen in the examples.\n\nIf this component has translations, their documentation immediately follows this doc entry.",
-      "type": "Object",
+      "description": "A collection of translated resources from the translation bundle, or null if this\ncomponent has no resources. Resources may be accessed and overridden individually or collectively, as seen in the examples. If the component does not contain any translatable resource, the default value of this attribute will be \nnull. If not, an object containing all resources relevant to the component.\n\nIf this component has translations, their documentation immediately follows this doc entry.",
+      "type": "Object|null",
       "displayName": "Translations",
-      "value": null,
+      "translatable": true,
       "properties": {
         "componentName": {
           "description": "Used to describe the data visualization type for accessibility.\n\nSee the translations attribute for usage examples.",
@@ -528,7 +377,7 @@
           "type": "number"
         }
       ],
-      "return": "Object"
+      "return": "Object|null"
     },
     "getItemCount": {
       "description": "Returns the number of items in the pictoChart data.",
@@ -546,7 +395,8 @@
       "return": "Object|null"
     },
     "refresh": {
-      "description": "Refreshes the component."
+      "description": "Refreshes the component.",
+      "return": "void"
     },
     "setProperty": {
       "description": "Sets a property or a single subproperty for complex properties and notifies the component\nof the change, triggering a [property]Changed event.",
@@ -561,7 +411,8 @@
           "description": "The new value to set the property to.",
           "type": "*"
         }
-      ]
+      ],
+      "return": "void"
     },
     "getProperty": {
       "description": "Retrieves a value for a property or a single subproperty for complex properties.",
@@ -582,7 +433,8 @@
           "description": "An object containing the property and value pairs to set.",
           "type": "Object"
         }
-      ]
+      ],
+      "return": "void"
     }
   },
   "events": {

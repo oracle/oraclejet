@@ -1,11 +1,11 @@
 // Copyright (c) 2014, 2018, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-// WARNING: do not directly import this file, instead import the 
-//          version in your base theme's directory, 
+// WARNING: do not directly import this file, instead import the
+//          version in your base theme's directory,
 //          for example alta/widgets/_oj.alta.formcontrol.colorspectrum.scss
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-@import "../../utilities/oj.utilities";  
+@import "../../utilities/oj.utilities";
 
 @if $includeColorSpectrumClasses != false  {
   @include module-include-once("common.formcontrol.colorspectrum") {
@@ -13,12 +13,12 @@
 
    /* Color  Spectrum */
    /* --------------------------------------------------------------- */
-       
+
    // This is to prevent the flash of unstyled content before the html becomes JET components.
    @if $initialVisibility == hidden {
      oj-color-spectrum:not(.oj-complete) {
        visibility: hidden;
-     }      
+     }
    }
 
    .oj-colorspectrum {
@@ -67,7 +67,7 @@
    }
 
    /*  Remove bottom margins from sliders  */
-   html .oj-colorspectrum-container .oj-form-control 
+   html .oj-colorspectrum-container .oj-form-control
    {
       margin-bottom: 0;
    }
@@ -97,9 +97,19 @@
    .oj-colorspectrum.oj-warning .oj-colorspectrum-container {
       border: $formControlMessagingBorderWidth solid $borderColorWarning;
    }
-   
+
    .oj-colorspectrum.oj-invalid .oj-colorspectrum-container {
       border: $formControlMessagingBorderWidth solid $borderColorError;
+   }
+
+   //class put on temp div to get computed path to spectrum-opacity-slider-bg.png
+   //all styles besides background-image are to ensure it is never displayed
+   .oj-colorspectrum-alpha-bg {
+     background-image: oj-common-image-url("spectrum-opacity-slider-bg.png");
+     position:absolute;
+     height:0;
+     width:0;
+     display:none;
    }
 
 

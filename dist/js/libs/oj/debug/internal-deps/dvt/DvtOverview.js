@@ -48,6 +48,7 @@ dvt.OverviewUtils.getPositionDate = function(startTime, endTime, pos, width)
 
   return (number / width) + startTime;
 };
+
 /**
  * Overview component.
  * @param {dvt.Context} context The rendering context.
@@ -2504,6 +2505,7 @@ dvt.Overview.prototype.destroy = function() {
   // Call super last during destroy
   dvt.Overview.superclass.destroy.call(this);
 };
+
 /**
  * Default values and utility functions for component versioning.
  * @class
@@ -2547,6 +2549,7 @@ DvtOverviewDefaults.VERSION_1 = {
     'windowBorderTopStyle': 'solid'
   }
 };
+
 /**
  * Overview JSON Parser
  * @param {dvt.Overview} view The owning Overview component.
@@ -2678,6 +2681,7 @@ dvt.OverviewParser.prototype.calculateWidth = function(startTime, endTime, viewp
 
   return number / denominator;
 };
+
 /**
  * Encapsulates an event fired by Overview
  * @param {string} type The type of event fired by Overview
@@ -2836,6 +2840,7 @@ dvt.OverviewEvent.prototype.getPosition = function()
 {
   return this.getParamValue(dvt.OverviewEvent.POS_KEY);
 };
+
 /**
  * Overview event manager.
  * @param {dvt.Overview} overview The owning dvt.Overview.
@@ -3011,8 +3016,10 @@ DvtOverviewEventManager.prototype._onTouchDragEnd = function(event)
   // Clear the stage absolute position cache
   this._stageAbsolutePosition = null;
 };
+
 dvt.exportProperty(dvt, 'Overview', dvt.Overview);
 dvt.exportProperty(dvt.Overview.prototype, 'render', dvt.Overview.prototype.render);
+
 /**
  * Style related utility functions for dvt.Overview.
  * @class
@@ -3343,7 +3350,7 @@ DvtOverviewStyleUtils.getRightFilterPanelAlpha = function(options)
 {
   return options['style']['rightFilterPanelAlpha'];
 };
-})(dvt);
 
+})(dvt);
   return dvt;
 });

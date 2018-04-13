@@ -1,4 +1,5 @@
 /**
+ * @license
  * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
@@ -14,56 +15,39 @@ define(['knockout'],
  function JetTemplateEngine()
  {
    this.execute = function(componentElement, node, properties)
-   {
-     var nodes  = _getTemplateNodes(node);
-     
-     var tmpContainer = _createAndPopulateContainer(nodes);
+   { 
+     var tmpContainer = _createAndPopulateContainer(node);
      
      ko.applyBindingsToDescendants(_getContext(componentElement, properties), tmpContainer);
      
      return Array.prototype.slice.call(tmpContainer.childNodes, 0);
    }
    
-   
-   function _getTemplateNodes(node)
+   function _createAndPopulateContainer(node)
    {
-     var nodes;
+     var div = document.createElement("div");
+
      if (node.nodeType === 1 && node.tagName.toLowerCase() === 'template') 
      {
        var content = node.content;
        if (content)
        {
-         nodes = content.childNodes;
+         div.appendChild(document.importNode(content, true /* deep clone*/));
        }
        else
        {
-         nodes = node.childNodes;
+         Array.prototype.forEach.call(node.childNodes,
+           function(child)
+           {
+             div.appendChild(child.cloneNode(true));
+           }
+         );
        }
      }
      else
      {
        throw "Invalid template node " + node;
      }
-     
-     var cloned  = Array.prototype.map.call(nodes, function(orig)
-      {
-        return orig.cloneNode(true);
-      }
-     );
-     
-     return cloned;
-   }
-   
-   function _createAndPopulateContainer(nodes)
-   {
-     var div = document.createElement("div");
-     
-     nodes.forEach(
-       function(child)
-       {
-         div.appendChild(child);
-       }
-     );
      
      return div;
    }
@@ -80,6 +64,6 @@ define(['knockout'],
      return properties;
    }
  }
+
 return new JetTemplateEngine();
 });
-

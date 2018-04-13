@@ -1,4 +1,5 @@
 /**
+ * @license
  * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
@@ -22,6 +23,7 @@ define(['ojs/ojcore', 'jquery', 'hammerjs', 'promise', 'ojs/ojoffcanvas'],
  * @class oj.SwipeToRevealUtils
  * @since 1.2.0
  * @export
+ * @hideconstructor
  * @ojstatus preview
  *
  * @classdesc
@@ -60,10 +62,11 @@ oj.SwipeToRevealUtils = {};
  * @export
  * @param {Element} elem the DOM element (of the offcanvas) that hosts the swipe actions
  * @param {Object=} options the options to set for swipe actions
- * @param {number} options.threshold the threshold that triggers default action.  If no default action is found (no item with style  
+ * @param {number=} options.threshold the threshold that triggers default action.  If no default action is found (no item with style  
  *                 "oj-swipetoreveal-default") then this value is ignored.  If percentage value is specified it will be calculated
  *                 based on the width of the element with class "oj-offcanvas-outer-wrapper".  A default value is determined if not specified.
  *                 An "ojdefaultaction" event will be fired when threshold is exceed upon release.
+ * @return {void}
  *
  * @see #tearDownSwipeActions
  * @see oj.OffcanvasUtils.html#setupPanToReveal
@@ -206,6 +209,7 @@ oj.SwipeToRevealUtils.setupSwipeActions = function(elem, options)
  * 
  * @export
  * @param {Element} elem the DOM element (of the offcanvas) that hosts the swipe actions
+ * @return {void}
  *
  * @see #setupSwipeActions
  * @see oj.OffcanvasUtils.html#tearDownPanToReveal
@@ -215,6 +219,8 @@ oj.SwipeToRevealUtils.tearDownSwipeActions = function(elem)
     var drawer, offcanvas, outerWrapper;
 
     drawer = $(elem);
+
+    drawer.removeClass("oj-swipetoreveal");
 
     offcanvas = {};
     offcanvas["selector"] = drawer;

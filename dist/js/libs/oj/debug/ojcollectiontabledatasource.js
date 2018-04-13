@@ -1,4 +1,5 @@
 /**
+ * @license
  * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
@@ -31,12 +32,14 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojdatasource-common', 'ojs/ojmodel'], funct
  *            See the <a href="../jetCookbook.html?component=table&demo=ojCollectionTable">Table - Using oj.Collection</a> demo for an example.<br><br>
  *            Refer to {@link oj.TableDataSource} for other data sources that represent tabular data.
  * @param {oj.Collection} data data supported by the components
- * @param {Object|null} options Options for the TableDataSource
- * @param {string} options.startFetch Control whether to start initial fetch when the TableDataSource is bound to a component.  Valid values are:<br><br>
+ * @param {Object|null} [options] Options for the TableDataSource
+ * @param {"enabled"|"disabled"} [options.startFetch] Control whether to start initial fetch when the TableDataSource is bound to a component.  Valid values are:<br><br>
  *                                    <b>"enabled"</b> (default) - Start initial fetch automatically when the TableDataSource is bound to a component.<br>
  *                                    <b>"disabled"</b> - Do not start initial fetch automatically.  Application will call the <a href="#fetch">fetch()</a> method to
  *                                                        start the first fetch.
  * @constructor
+ * @ojtsignore
+ * @since 1.0
  */
 oj.CollectionTableDataSource = function(data, options)
 {
@@ -72,6 +75,8 @@ oj.Object.createSubclass(oj.CollectionTableDataSource, oj.TableDataSource, "oj.C
  * @memberof oj.CollectionTableDataSource
  * @desc If set to a function(row1, row2), then this function is called comparing raw row data (see the
  * JavaScript array.sort() for details)
+ * @ojsignature {target: "Type",
+ *               value: "null|string|((param0: object, param1?: object)=> number|string|object)"}
  */
 oj.CollectionTableDataSource.prototype.comparator = null;
 
@@ -101,6 +106,10 @@ oj.CollectionTableDataSource.prototype.Init = function()
  * </tbody>
  * </table>
  * @export
+ * @ojsignature {target:"Type",
+ *               value: "Promise<null|oj.TableDataSource.RowData>",
+ *               for: "returns",
+ *               jsdocOverride: true}
  * @expose
  * @memberof oj.CollectionTableDataSource
  * @instance
@@ -141,8 +150,8 @@ oj.CollectionTableDataSource.prototype.at = function(index, options)
 /**
  * Fetch the row data.
  * @param {Object=} options Options to control fetch
- * @param {number} options.startIndex The index at which to start fetching records.
- * @param {boolean} options.silent If set, do not fire a sync event.
+ * @param {number} [options.startIndex] The index at which to start fetching records.
+ * @param {boolean} [options.silent] If set, do not fire a sync event.
  * @return {Promise} Promise object resolves to a compound object which contains an array of row data objects, an array of ids, and the startIndex triggering done when complete.<p>
  *         The structure of the resolved compound object is:<p>
  * <table>
@@ -152,6 +161,10 @@ oj.CollectionTableDataSource.prototype.at = function(index, options)
  * <tr><td><b>startIndex</b></td><td>The startIndex for the returned set of rows</td></tr>
  * </tbody>
  * </table>  
+ * @ojsignature {target:"Type",
+ *               value: "Promise<null|oj.TableDataSource.RowDatas>",
+ *               for: "returns",
+ *               jsdocOverride: true}
  * @export
  * @expose
  * @memberof oj.CollectionTableDataSource
@@ -182,6 +195,10 @@ oj.CollectionTableDataSource.prototype.fetch = function(options)
  * <tr><td><b>key</b></td><td>The key value for the row</td></tr>
  * </tbody>
  * </table>
+ * @ojsignature {target:"Type",
+ *               value: "Promise<null|oj.TableDataSource.RowData>",
+ *               for: "returns",
+ *               jsdocOverride: true}
  * @export
  * @expose
  * @memberof oj.CollectionTableDataSource
@@ -220,10 +237,10 @@ oj.CollectionTableDataSource.prototype.get = function(id, options)
 
 /**
  * Performs a sort on the data source.
- * @param {Object} criteria the sort criteria.
- * @param {Object} criteria.key The key that identifies which field to sort
- * @param {string} criteria.direction the sort direction, valid values are "ascending", "descending", "none" (default)
- * @return {Promise} promise object triggering done when complete.
+ * @param {Object} [criteria] the sort criteria.
+ * @param {*} criteria.key The key that identifies which field to sort
+ * @param {'ascending'|'descending'|'none'} criteria.direction the sort direction, valid values are "ascending", "descending", "none" (default)
+ * @return {Promise.<null>} promise object triggering done when complete.
  * @export
  * @expose
  * @memberof oj.CollectionTableDataSource
@@ -306,6 +323,9 @@ oj.CollectionTableDataSource.prototype.totalSize = function()
  *                  "estimate" if the totalSize is an estimate 
  *                  "atLeast" if the totalSize is at least a certain number 
  *                  "unknown" if the totalSize is unknown
+ * @ojsignature {target:"Type",
+ *               value: "'actual'|'estimate'|'atLeast'|'unknown'",
+ *               for: "returns"}
  * @export
  * @expose
  * @memberof oj.CollectionTableDataSource

@@ -1,13 +1,13 @@
 {
   "name": "oj-chart",
-  "version": "4.2.0",
-  "jetVersion": "4.2.0",
+  "version": "5.0.0",
+  "jetVersion": "5.0.0",
   "displayName": "Chart",
   "preview": true,
   "roles": [
     "application"
   ],
-  "description": "Chart Element",
+  "description": "Displays information graphically, making relationships among the data easier to understand.",
   "properties": {
     "animationOnDataChange": {
       "description": "Defines the animation that is applied on data changes. Animation is automatically disabled when there are a large number of data items.",
@@ -79,24 +79,6 @@
         }
       }
     },
-    "data": {
-      "description": "An object with the following properties, used to define the series and groups when using a DataProvider to provide data to the chart. Also accepts a Promise for deferred data rendering.",
-      "type": "object|Promise",
-      "displayName": "Data",
-      "value": null,
-      "properties": {
-        "groups": {
-          "description": "An oj.DataProvider that generates rows of ChartGroup typed objects.",
-          "type": "oj.DataProvider.<String, oj.ojChart.ChartGroup>",
-          "value": null
-        },
-        "series": {
-          "description": "An array of ChartSeries typed objects. Used when utilizing a DataProvider to provide data to the chart. Only a single series is supported for stock charts. Also accepts a Promise for deferred data rendering.",
-          "type": "Array.<oj.ojChart.ChartSeries>|Promise.<Array>",
-          "value": null
-        }
-      }
-    },
     "dataCursor": {
       "description": "Defines whether the data cursor is enabled. If set to \"auto\", the data cursor is shown only for line or area charts on touch devices. The data cursor is not shown when the tooltip is null and it is not supported on polar charts.",
       "type": "string",
@@ -143,7 +125,7 @@
     },
     "dataCursorPosition": {
       "description": "Speficies the position of the data cursor. Used for synchronizing data cursors across multiple charts. Null if the data cursor is not displayed.",
-      "type": "object",
+      "type": "Object",
       "displayName": "Data Cursor Position",
       "value": null,
       "writeback": true,
@@ -173,23 +155,23 @@
     },
     "dnd": {
       "description": "Provides support for HTML5 Drag and Drop events. Please refer to third party documentation on HTML5 Drag and Drop to learn how to use it.",
-      "type": "object",
+      "type": "Object",
       "displayName": "Dnd",
       "value": {},
       "properties": {
         "drag": {
           "description": "An object that describes drag functionality.",
-          "type": "object",
+          "type": "Object",
           "value": {},
           "properties": {
             "groups": {
               "description": "Allows dragging of chart groups from the categorical axis labels.",
-              "type": "object",
+              "type": "Object",
               "value": {},
               "properties": {
                 "dataTypes": {
                   "description": "The MIME types to use for the dragged data in the dataTransfer object. This can be a string if there is only one type, or an array of strings if multiple types are needed. For example, if selected employee data items are being dragged, dataTypes could be \"application/employees+json\". Drop targets can examine the data types and decide whether to accept the data. For each type in the array, dataTransfer.setData will be called with the specified type and the data. The data is an array of the dataContexts of the selected groups. The dataContext is the JSON version of the dataContext that we use for \"tooltip\" and \"dataLabels\" properties, excluding componentElement and parentElement. This property is required unless the application calls setData itself in a dragStart callback function.",
-                  "type": "string|Array.<string>",
+                  "type": "string|Array<string>",
                   "value": null
                 },
                 "drag": {
@@ -211,12 +193,12 @@
             },
             "items": {
               "description": "Allows dragging of chart data items, including bars, line/area/scatter markers, bubbles, and pie/funnel/pyramid slices.",
-              "type": "object",
+              "type": "Object",
               "value": {},
               "properties": {
                 "dataTypes": {
                   "description": "The MIME types to use for the dragged data in the dataTransfer object. This can be a string if there is only one type, or an array of strings if multiple types are needed. For example, if selected employee data items are being dragged, dataTypes could be \"application/employees+json\". Drop targets can examine the data types and decide whether to accept the data. For each type in the array, dataTransfer.setData will be called with the specified type and the data. The data is an array of the dataContexts of the selected data items. The dataContext is the JSON version of the dataContext that we use for \"tooltip\" and \"dataLabels\" properties, excluding componentElement and parentElement. This property is required unless the application calls setData itself in a dragStart callback function.",
-                  "type": "string|Array.<string>",
+                  "type": "string|Array<string>",
                   "value": null
                 },
                 "drag": {
@@ -238,12 +220,12 @@
             },
             "series": {
               "description": "Allows dragging of chart series from the legend items.",
-              "type": "object",
+              "type": "Object",
               "value": {},
               "properties": {
                 "dataTypes": {
                   "description": "The MIME types to use for the dragged data in the dataTransfer object. This can be a string if there is only one type, or an array of strings if multiple types are needed. For example, if selected employee data items are being dragged, dataTypes could be \"application/employees+json\". Drop targets can examine the data types and decide whether to accept the data. For each type in the array, dataTransfer.setData will be called with the specified type and the data. The data is an array of the dataContexts of the selected series. The dataContext is the JSON version of the dataContext that we use for \"tooltip\" and \"dataLabels\" properties, excluding componentElement and parentElement. This property is required unless the application calls setData itself in a dragStart callback function.",
-                  "type": "string|Array.<string>",
+                  "type": "string|Array<string>",
                   "value": null
                 },
                 "drag": {
@@ -267,17 +249,17 @@
         },
         "drop": {
           "description": "An object that describes drop functionality.",
-          "type": "object",
+          "type": "Object",
           "value": {},
           "properties": {
             "legend": {
               "description": "Allows dropping on the legend.",
-              "type": "object",
+              "type": "Object",
               "value": {},
               "properties": {
                 "dataTypes": {
                   "description": "An array of MIME data types this element can accept. This property is required unless dragEnter, dragOver, and drop callback functions are specified to handle the corresponding events.",
-                  "type": "string|Array.<string>",
+                  "type": "string|Array<string>",
                   "value": null
                 },
                 "dragEnter": {
@@ -304,12 +286,12 @@
             },
             "plotArea": {
               "description": "Allows dropping on the plot area.",
-              "type": "object",
+              "type": "Object",
               "value": {},
               "properties": {
                 "dataTypes": {
                   "description": "An array of MIME data types this element can accept. This property is required unless dragEnter, dragOver, and drop callback functions are specified to handle the corresponding events.",
-                  "type": "string|Array.<string>",
+                  "type": "string|Array<string>",
                   "value": null
                 },
                 "dragEnter": {
@@ -336,12 +318,12 @@
             },
             "xAxis": {
               "description": "Allows dropping on the X axis.",
-              "type": "object",
+              "type": "Object",
               "value": {},
               "properties": {
                 "dataTypes": {
                   "description": "An array of MIME data types this element can accept. This property is required unless dragEnter, dragOver, and drop callback functions are specified to handle the corresponding events.",
-                  "type": "string|Array.<string>",
+                  "type": "string|Array<string>",
                   "value": null
                 },
                 "dragEnter": {
@@ -368,12 +350,12 @@
             },
             "y2Axis": {
               "description": "Allows dropping on the Y2 axis.",
-              "type": "object",
+              "type": "Object",
               "value": {},
               "properties": {
                 "dataTypes": {
                   "description": "An array of MIME data types this element can accept. This property is required unless dragEnter, dragOver, and drop callback functions are specified to handle the corresponding events.",
-                  "type": "string|Array.<string>",
+                  "type": "string|Array<string>",
                   "value": null
                 },
                 "dragEnter": {
@@ -400,12 +382,12 @@
             },
             "yAxis": {
               "description": "Allows dropping on the Y axis.",
-              "type": "object",
+              "type": "Object",
               "value": {},
               "properties": {
                 "dataTypes": {
                   "description": "An array of MIME data types this element can accept. This property is required unless dragEnter, dragOver, and drop callback functions are specified to handle the corresponding events.",
-                  "type": "string|Array.<string>",
+                  "type": "string|Array<string>",
                   "value": null
                 },
                 "dragEnter": {
@@ -492,64 +474,15 @@
     },
     "groups": {
       "description": "An array of strings identifying the group labels, or an array of objects with the following properties. Also accepts a Promise for deferred data rendering.",
-      "type": "Array.<object>|Array.<string>|Promise",
+      "type": "Array<Object>|Array<string>|Promise",
       "displayName": "Groups",
-      "value": null,
-      "properties": {
-        "drilling": {
-          "description": "Whether drilling is enabled on the group label. Drillable objects will show a pointer cursor on hover and fire an ojDrill event on click. To enable drilling for all group labels at once, use the drilling attribute in the top level.",
-          "type": "string",
-          "value": "inherit",
-          "enumValues": [
-            "inherit",
-            "off",
-            "on"
-          ],
-          "propertyEditorValues": {
-            "inherit": {
-              "displayName": "Inherit"
-            },
-            "off": {
-              "displayName": "Off"
-            },
-            "on": {
-              "displayName": "On"
-            }
-          }
-        },
-        "groups": {
-          "description": "An array of nested group objects.",
-          "type": "Array.<string>|Array.<object>",
-          "value": null
-        },
-        "id": {
-          "description": "The id of the group. Defaults to the name if not specified.",
-          "type": "string",
-          "value": null
-        },
-        "labelStyle": {
-          "description": "The CSS style object defining the style of the group label text and only applies to a categorical axis.",
-          "type": "object",
-          "value": null
-        },
-        "name": {
-          "description": "The name of the group.",
-          "type": "string",
-          "value": null
-        },
-        "shortDesc": {
-          "description": "The description of the group. This is used for customizing the tooltip text and only applies to a categorical axis.",
-          "type": "string",
-          "value": null,
-          "translatable": true
-        }
-      }
+      "value": null
     },
     "hiddenCategories": {
       "description": "An array of category strings used for filtering. Series or data items with any category matching an item in this array will be filtered.",
-      "type": "Array.<string>",
+      "type": "Array<string>",
       "displayName": "Hidden Categories",
-      "value": "[]",
+      "value": [],
       "writeback": true
     },
     "hideAndShowBehavior": {
@@ -594,9 +527,9 @@
     },
     "highlightedCategories": {
       "description": "An array of category strings used for highlighting. Series or data items matching all categories in this array will be highlighted.",
-      "type": "Array.<string>",
+      "type": "Array<string>",
       "displayName": "Highlighted Categories",
-      "value": "[]",
+      "value": [],
       "writeback": true
     },
     "hoverBehavior": {
@@ -641,7 +574,7 @@
     },
     "legend": {
       "description": "An object defining the style, positioning, and behavior of the legend.",
-      "type": "object",
+      "type": "Object",
       "displayName": "Legend",
       "value": {},
       "properties": {
@@ -691,7 +624,7 @@
         },
         "referenceObjectSection": {
           "description": "An object with the following properties for the reference object section in the legend.",
-          "type": "object",
+          "type": "Object",
           "value": {},
           "properties": {
             "title": {
@@ -723,13 +656,13 @@
             },
             "titleStyle": {
               "description": "The CSS style object defining the style of the section title.",
-              "type": "object",
+              "type": "Object",
               "value": {}
             }
           }
         },
         "rendered": {
-          "description": "Defines whether the legend is displayed. If set to auto, the legend will be hidden for charts with a large number of series. To turn on legend for stock, funnel and pyramid charts, set the displayInLegend property for the series items to 'on'.",
+          "description": "Defines whether the legend is displayed. If set to auto, the legend will be hidden for charts with a large number of series. To ensure that the legend is always displayed, set this attribute to 'on'. To turn on legend for stock, funnel and pyramid charts, set the displayInLegend property for the series items to 'on'.",
           "type": "string",
           "value": "auto",
           "enumValues": [
@@ -768,275 +701,12 @@
         },
         "sections": {
           "description": "An array of objects with the following properties defining the additional legend sections, other than the default series and reference object sections.",
-          "type": "Array.<object>",
-          "value": "[]",
-          "properties": {
-            "items": {
-              "description": "An array of objects with the following properties defining the legend items. Also accepts a Promise for deferred data rendering.",
-              "type": "Array.<object>|Promise",
-              "value": null,
-              "properties": {
-                "borderColor": {
-                  "description": "The border color of the marker. Only applies if symbolType is \"marker\" or \"lineWithMarker\".",
-                  "type": "string",
-                  "value": null
-                },
-                "categories": {
-                  "description": "An array of categories for the legend item. Legend items currently only support a single category. If no category is specified, this defaults to the id or text of the legend item.",
-                  "type": "Array.<string>",
-                  "value": null
-                },
-                "categoryVisibility": {
-                  "description": "Defines whether the legend item corresponds to visible data items. A hollow symbol is shown if the value is \"hidden\".",
-                  "type": "string",
-                  "value": "visible",
-                  "enumValues": [
-                    "hidden",
-                    "visible"
-                  ],
-                  "propertyEditorValues": {
-                    "hidden": {
-                      "displayName": "Hidden"
-                    },
-                    "visible": {
-                      "displayName": "Visible"
-                    }
-                  }
-                },
-                "color": {
-                  "description": "The color of the legend symbol (line or marker). When symbolType is \"lineWithMarker\", this attribute defines the line color and the markerColor attribute defines the marker color.",
-                  "type": "string",
-                  "value": null
-                },
-                "id": {
-                  "description": "The id of the legend item, which is provided as part of the context for events fired by this chart. If not specified, the id defaults to the text of the legend item.",
-                  "type": "string",
-                  "value": null
-                },
-                "lineStyle": {
-                  "description": "The line style. Only applies when the symbolType is \"line\" or \"lineWithMarker\".",
-                  "type": "string",
-                  "value": "solid",
-                  "enumValues": [
-                    "dashed",
-                    "dotted",
-                    "solid"
-                  ],
-                  "propertyEditorValues": {
-                    "dashed": {
-                      "displayName": "Dashed"
-                    },
-                    "dotted": {
-                      "displayName": "Dotted"
-                    },
-                    "solid": {
-                      "displayName": "Solid"
-                    }
-                  }
-                },
-                "lineWidth": {
-                  "description": "The line width in pixels. Only applies when the symbolType is \"line\" or \"lineWithMarker\".",
-                  "type": "number",
-                  "value": null,
-                  "minimum": 0,
-                  "units": "pixels"
-                },
-                "markerColor": {
-                  "description": "The color of the marker, if different than the line color. Only applies if the symbolType is \"lineWithMarker\".",
-                  "type": "string",
-                  "value": null
-                },
-                "markerShape": {
-                  "description": "The shape of the marker. In addition to the built-in shapes, it may also take SVG path commands to specify a custom shape. The legend will style the custom shapes the same way as built-in shapes, supporting properties like color and borderColor and applying hover and filter effects. Only applies if symbolType is \"marker\" or \"lineWithMarker\".",
-                  "type": "string",
-                  "value": "square",
-                  "enumValues": [
-                    "circle",
-                    "diamond",
-                    "human",
-                    "plus",
-                    "rectangle",
-                    "square",
-                    "star",
-                    "triangleDown",
-                    "triangleUp"
-                  ],
-                  "propertyEditorValues": {
-                    "circle": {
-                      "displayName": "Circle"
-                    },
-                    "diamond": {
-                      "displayName": "Diamond"
-                    },
-                    "human": {
-                      "displayName": "Human"
-                    },
-                    "plus": {
-                      "displayName": "Plus"
-                    },
-                    "rectangle": {
-                      "displayName": "Rectangle"
-                    },
-                    "square": {
-                      "displayName": "Square"
-                    },
-                    "star": {
-                      "displayName": "Star"
-                    },
-                    "triangleDown": {
-                      "displayName": "Triangle Down"
-                    },
-                    "triangleUp": {
-                      "displayName": "Triangle Up"
-                    }
-                  }
-                },
-                "pattern": {
-                  "description": "The pattern used to fill the marker. Only applies if symbolType is \"marker\" or \"lineWithMarker\".",
-                  "type": "string",
-                  "value": "none",
-                  "enumValues": [
-                    "largeChecker",
-                    "largeCrosshatch",
-                    "largeDiagonalLeft",
-                    "largeDiagonalRight",
-                    "largeDiamond",
-                    "largeTriangle",
-                    "none",
-                    "smallChecker",
-                    "smallCrosshatch",
-                    "smallDiagonalLeft",
-                    "smallDiagonalRight",
-                    "smallDiamond",
-                    "smallTriangle"
-                  ],
-                  "propertyEditorValues": {
-                    "largeChecker": {
-                      "displayName": "Large Checker"
-                    },
-                    "largeCrosshatch": {
-                      "displayName": "Large Crosshatch"
-                    },
-                    "largeDiagonalLeft": {
-                      "displayName": "Large Diagonal Left"
-                    },
-                    "largeDiagonalRight": {
-                      "displayName": "Large Diagonal Right"
-                    },
-                    "largeDiamond": {
-                      "displayName": "Large Diamond"
-                    },
-                    "largeTriangle": {
-                      "displayName": "Large Triangle"
-                    },
-                    "none": {
-                      "displayName": "None"
-                    },
-                    "smallChecker": {
-                      "displayName": "Small Checker"
-                    },
-                    "smallCrosshatch": {
-                      "displayName": "Small Crosshatch"
-                    },
-                    "smallDiagonalLeft": {
-                      "displayName": "Small Diagonal Left"
-                    },
-                    "smallDiagonalRight": {
-                      "displayName": "Small Diagonal Right"
-                    },
-                    "smallDiamond": {
-                      "displayName": "Small Diamond"
-                    },
-                    "smallTriangle": {
-                      "displayName": "Small Triangle"
-                    }
-                  }
-                },
-                "shortDesc": {
-                  "description": "The description of this legend item. This is used for accessibility and for customizing the tooltip text.",
-                  "type": "string",
-                  "value": null
-                },
-                "source": {
-                  "description": "The URI of the image of the legend symbol.",
-                  "type": "string",
-                  "value": null
-                },
-                "symbolType": {
-                  "description": "The type of legend symbol to display.",
-                  "type": "string",
-                  "value": "marker",
-                  "enumValues": [
-                    "image",
-                    "line",
-                    "lineWithMarker",
-                    "marker"
-                  ],
-                  "propertyEditorValues": {
-                    "image": {
-                      "displayName": "Image"
-                    },
-                    "line": {
-                      "displayName": "Line"
-                    },
-                    "lineWithMarker": {
-                      "displayName": "Line With Marker"
-                    },
-                    "marker": {
-                      "displayName": "Marker"
-                    }
-                  }
-                },
-                "text": {
-                  "description": "The legend item text.",
-                  "type": "string",
-                  "value": null,
-                  "translatable": true
-                }
-              }
-            },
-            "sections": {
-              "description": "An array of nested legend sections.",
-              "type": "Array.<object>",
-              "value": null
-            },
-            "title": {
-              "description": "The title of the legend section.",
-              "type": "string",
-              "value": null,
-              "translatable": true
-            },
-            "titleHalign": {
-              "description": "The horizontal alignment of the section title. If the section is collapsible or nested, only start alignment is supported.",
-              "type": "string",
-              "value": "start",
-              "enumValues": [
-                "center",
-                "end",
-                "start"
-              ],
-              "propertyEditorValues": {
-                "center": {
-                  "displayName": "Center"
-                },
-                "end": {
-                  "displayName": "End"
-                },
-                "start": {
-                  "displayName": "Start"
-                }
-              }
-            },
-            "titleStyle": {
-              "description": "The CSS style object defining the style of the section title.",
-              "type": "object",
-              "value": null
-            }
-          }
+          "type": "Array<Object>",
+          "value": []
         },
         "seriesSection": {
           "description": "An object with the following properties for the series section in the legend.",
-          "type": "object",
+          "type": "Object",
           "value": {},
           "properties": {
             "title": {
@@ -1068,7 +738,7 @@
             },
             "titleStyle": {
               "description": "The CSS style object defining the style of the section title.",
-              "type": "object",
+              "type": "Object",
               "value": {}
             }
           }
@@ -1092,7 +762,7 @@
         },
         "textStyle": {
           "description": "The CSS style object defining the style of the legend text.",
-          "type": "object",
+          "type": "Object",
           "value": {}
         },
         "title": {
@@ -1124,7 +794,7 @@
         },
         "titleStyle": {
           "description": "The CSS style object defining the style of the title.",
-          "type": "object",
+          "type": "Object",
           "value": {}
         }
       }
@@ -1157,13 +827,13 @@
     },
     "overview": {
       "description": "An object defining the overview scrollbar. Only applies if zoomAndScroll is not off. Currently only supported for vertical bar, line, area, stock, and combo charts.",
-      "type": "object",
+      "type": "Object",
       "displayName": "Overview",
       "value": {},
       "properties": {
         "content": {
           "description": "An object containing the property override for the overview chart. The API is the same as the chart property API, and the property provided here will be merged on top of the default property of the overview chart. This can be used to customize the style or the type of the overview chart.",
-          "type": "object",
+          "type": "Object",
           "value": {}
         },
         "height": {
@@ -1192,13 +862,13 @@
     },
     "pieCenter": {
       "description": "An object defining the center content of a pie chart. Either a label can be displayed at the center of the pie chart or custom HTML content.",
-      "type": "object",
+      "type": "Object",
       "displayName": "Pie Center",
       "value": {},
       "properties": {
         "converter": {
           "description": "The converter (an object literal or instance that duck types oj.Converter) to format the label if it is numeric. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.",
-          "type": "object",
+          "type": "Object",
           "value": null
         },
         "label": {
@@ -1209,7 +879,7 @@
         },
         "labelStyle": {
           "description": "The CSS style object defining the style of the label.",
-          "type": "object",
+          "type": "Object",
           "value": {}
         },
         "renderer": {
@@ -1258,7 +928,7 @@
     },
     "plotArea": {
       "description": "An object defining the style of the plot area.",
-      "type": "object",
+      "type": "Object",
       "displayName": "Plot Area",
       "value": {},
       "properties": {
@@ -1317,9 +987,9 @@
     },
     "selection": {
       "description": "An array used to define the ids of the initially selected objects.\nWhen the selection is changed, the event.detail of the selectionChanged event will contain the following additional properties: Name Type Description selectionData Object an array containing objects describing the selected data items Properties Name Type Description data object the data of the item, if one was specified groupData Array the group data of the item seriesData object the series data of the item endGroup string the end group of a marquee selection on a chart with categorical axis startGroup string the start group of a marquee selection on a chart with categorical axis xMax number the maximum x value of a marquee selection xMin number the minimum x value of a marquee selection yMax number the maximum y value of a marquee selection yMin number the minimum y value of a marquee selection \n",
-      "type": "Array.<string>",
+      "type": "Array<string>",
       "displayName": "Selection",
-      "value": "[]",
+      "value": [],
       "writeback": true
     },
     "selectionMode": {
@@ -1346,910 +1016,9 @@
     },
     "series": {
       "description": "An array of objects with the following properties, used to define series labels and override series styles. Only a single series is supported for stock charts. Also accepts a Promise for deferred data rendering.",
-      "type": "Array.<object>|Promise",
+      "type": "Array<Object>|Promise",
       "displayName": "Series",
-      "value": null,
-      "properties": {
-        "areaColor": {
-          "description": "The area color of the series. Only applies if series type is area or lineWithArea.",
-          "type": "string",
-          "value": null
-        },
-        "areaSvgClassName": {
-          "description": "The CSS style class to apply if series type is area or lineWithArea. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the color attribute.",
-          "type": "string",
-          "value": null
-        },
-        "areaSvgStyle": {
-          "description": "The inline style to apply if series type is area or lineWithArea. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the color attribute.",
-          "type": "object",
-          "value": null
-        },
-        "assignedToY2": {
-          "description": "Defines whether the series is associated with the y2 axis. Only applies to Cartesian bar, line, area, and combo charts.",
-          "type": "string",
-          "value": "off",
-          "enumValues": [
-            "off",
-            "on"
-          ],
-          "propertyEditorValues": {
-            "off": {
-              "displayName": "Off"
-            },
-            "on": {
-              "displayName": "On"
-            }
-          }
-        },
-        "borderColor": {
-          "description": "The border color of the series.",
-          "type": "string",
-          "value": null
-        },
-        "borderWidth": {
-          "description": "The border width of the series.",
-          "type": "number",
-          "value": null,
-          "units": "pixels"
-        },
-        "boxPlot": {
-          "description": "An object containing the style properties of the box plot series.",
-          "type": "object",
-          "value": null,
-          "properties": {
-            "medianSvgClassName": {
-              "description": "The CSS style class to apply to the median line.",
-              "type": "string",
-              "value": null
-            },
-            "medianSvgStyle": {
-              "description": "The CSS inline style to apply to the median line.",
-              "type": "object",
-              "value": null
-            },
-            "q2Color": {
-              "description": "The color of the Q2 segment of the box.",
-              "type": "string",
-              "value": null
-            },
-            "q2SvgClassName": {
-              "description": "The CSS style class to apply to the Q2 segment of the box. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the q2Color attribute.",
-              "type": "string",
-              "value": null
-            },
-            "q2SvgStyle": {
-              "description": "The CSS inline style to apply to the Q2 segment of the box. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the q2Color attribute.",
-              "type": "object",
-              "value": null
-            },
-            "q3Color": {
-              "description": "The color of the Q3 segment of the box.",
-              "type": "string",
-              "value": null
-            },
-            "q3SvgClassName": {
-              "description": "The CSS style class to apply to the Q3 segment of the box. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the q3Color attribute.",
-              "type": "string",
-              "value": null
-            },
-            "q3SvgStyle": {
-              "description": "The CSS inline style to apply to the Q3 segment of the box. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the q3Color attribute.",
-              "type": "object",
-              "value": null
-            },
-            "whiskerEndLength": {
-              "description": "Specifies the length of the whisker ends in pixels (e.g. '9px') or as a percentage of the box width (e.g. '50%').",
-              "type": "string",
-              "value": null
-            },
-            "whiskerEndSvgClassName": {
-              "description": "The CSS style class to apply to the whisker ends.",
-              "type": "string",
-              "value": null
-            },
-            "whiskerEndSvgStyle": {
-              "description": "The CSS inline style to apply to the whisker ends.",
-              "type": "object",
-              "value": null
-            },
-            "whiskerSvgClassName": {
-              "description": "The CSS style class to apply to the whisker stems.",
-              "type": "string",
-              "value": null
-            },
-            "whiskerSvgStyle": {
-              "description": "The CSS inline style to apply to the whisker stems.",
-              "type": "object",
-              "value": null
-            }
-          }
-        },
-        "categories": {
-          "description": "An optional array of category strings corresponding to this series. This allows highlighting and filtering of a series through interactions with legend sections. If not defined, the series id is used.",
-          "type": "Array.<string>",
-          "value": null
-        },
-        "color": {
-          "description": "The color of the series.",
-          "type": "string",
-          "value": null
-        },
-        "displayInLegend": {
-          "description": "Defines whether the series should be shown in the legend. When set to 'auto', the series will not be displayed in the legend if it has null data or if it is a stock, funnel, or pyramid series.",
-          "type": "string",
-          "value": "auto",
-          "enumValues": [
-            "auto",
-            "off",
-            "on"
-          ],
-          "propertyEditorValues": {
-            "auto": {
-              "displayName": "Auto"
-            },
-            "off": {
-              "displayName": "Off"
-            },
-            "on": {
-              "displayName": "On"
-            }
-          }
-        },
-        "drilling": {
-          "description": "Whether drilling is enabled on the series item. Drillable objects will show a pointer cursor on hover and fire an ojDrill event on click. To enable drilling for all series items at once, use the drilling attribute in the top level.",
-          "type": "string",
-          "value": "inherit",
-          "enumValues": [
-            "inherit",
-            "off",
-            "on"
-          ],
-          "propertyEditorValues": {
-            "inherit": {
-              "displayName": "Inherit"
-            },
-            "off": {
-              "displayName": "Off"
-            },
-            "on": {
-              "displayName": "On"
-            }
-          }
-        },
-        "id": {
-          "description": "The id of the series. Defaults to the name or the series index if not specified.",
-          "type": "string",
-          "value": null
-        },
-        "items": {
-          "description": "An array of values or an array of objects with the following properties that defines the data items for the series.",
-          "type": "Array.<object>|Array.<number>",
-          "value": null,
-          "properties": {
-            "borderColor": {
-              "description": "The border color of the data item. For funnel and pyramid charts, it is used for the slice border.",
-              "type": "string",
-              "value": null
-            },
-            "borderWidth": {
-              "description": "The border width of the data item. For funnel and pyramid charts, it is used for the slice border.",
-              "type": "number",
-              "value": null,
-              "units": "pixels"
-            },
-            "boxPlot": {
-              "description": "An object containing the style properties of the box plot item.",
-              "type": "object",
-              "value": null,
-              "properties": {
-                "medianSvgClassName": {
-                  "description": "The CSS style class to apply to the median line.",
-                  "type": "string",
-                  "value": null
-                },
-                "medianSvgStyle": {
-                  "description": "The CSS inline style to apply to the median line.",
-                  "type": "object",
-                  "value": null
-                },
-                "q2Color": {
-                  "description": "The color of the Q2 segment of the box.",
-                  "type": "string",
-                  "value": null
-                },
-                "q2SvgClassName": {
-                  "description": "The CSS style class to apply to the Q2 segment of the box. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the q2Color attribute.",
-                  "type": "string",
-                  "value": null
-                },
-                "q2SvgStyle": {
-                  "description": "The CSS inline style to apply to the Q2 segment of the box. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the q2Color attribute.",
-                  "type": "object",
-                  "value": null
-                },
-                "q3SvgClassName": {
-                  "description": "The CSS style class to apply to the Q3 segment of the box. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the q3Color attribute.",
-                  "type": "string",
-                  "value": null
-                },
-                "q3SvgStyle": {
-                  "description": "The CSS inline style to apply to the Q3 segment of the box. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the q3Color attribute.",
-                  "type": "object",
-                  "value": null
-                },
-                "whiskerEndLength": {
-                  "description": "Specifies the length of the whisker ends in pixels (e.g. '9px') or as a percentage of the box width (e.g. '50%'). The specified length will be rounded down to an odd number of pixels to ensure symmetry.",
-                  "type": "string",
-                  "value": null
-                },
-                "whiskerEndSvgClassName": {
-                  "description": "The CSS style class to apply to the whisker ends.",
-                  "type": "string",
-                  "value": null
-                },
-                "whiskerEndSvgStyle": {
-                  "description": "The CSS inline style to apply to the whisker ends.",
-                  "type": "object",
-                  "value": null
-                },
-                "whiskerSvgClassName": {
-                  "description": "The CSS style class to apply to the whisker stems.",
-                  "type": "string",
-                  "value": null
-                },
-                "whiskerSvgStyle": {
-                  "description": "The CSS inline style to apply to the whisker stems.",
-                  "type": "object",
-                  "value": null
-                }
-              }
-            },
-            "categories": {
-              "description": "An optional array of category strings corresponding to this data item. This enables highlighting and filtering of individual data items through interactions with the legend or other visualization elements. If not defined, series categories are used.",
-              "type": "Array.<string>",
-              "value": null
-            },
-            "close": {
-              "description": "The close value for stock candlestick. When bar, line, or area series type are used on a stock chart, this value is displayed.",
-              "type": "number",
-              "value": null
-            },
-            "color": {
-              "description": "The color of the data item.",
-              "type": "string",
-              "value": null
-            },
-            "drilling": {
-              "description": "Whether drilling is enabled for the data item. Drillable objects will show a pointer cursor on hover and fire an ojDrill event on click (double click if selection is enabled). To enable drilling for all data items at once, use the drilling attribute in the top level.",
-              "type": "string",
-              "value": "inherit",
-              "enumValues": [
-                "inherit",
-                "off",
-                "on"
-              ],
-              "propertyEditorValues": {
-                "inherit": {
-                  "displayName": "Inherit"
-                },
-                "off": {
-                  "displayName": "Off"
-                },
-                "on": {
-                  "displayName": "On"
-                }
-              }
-            },
-            "high": {
-              "description": "The high value for range bar/area, stock candlestick, or box plot item. Define 'low' and 'high' instead of 'value' or 'y' to create a range bar/area chart.",
-              "type": "number",
-              "value": null
-            },
-            "id": {
-              "description": "(Optional) The id of the data item. This id will be provided as part of the context for events on the chart.",
-              "type": "string",
-              "value": null
-            },
-            "items": {
-              "description": "An array of nested data items to be used for defining the markers for outliers or additional data items of a box plot.",
-              "type": "Array.<object>|Array.<number>",
-              "value": null
-            },
-            "label": {
-              "description": "The label for the data item. For range series, if an array of two values are provided, the first and second value will apply to the low and high point respectively. Not supported for box plot or candlestick.",
-              "type": "string|Array.<string>",
-              "value": null,
-              "translatable": true
-            },
-            "labelPosition": {
-              "description": "The position of the data label. For range series, if an array of two values are provided, the first and second value will apply to the low and high point respectively. The 'outsideSlice' value only applies to pie charts. The 'aboveMarker', 'belowMarker', 'beforeMarker', and 'afterMarker' values only apply to line, area, scatter, and bubble series. The 'insideBarEdge' and 'outsideBarEdge' values only apply to non-polar bar series. Stacked bars do not support 'outsideBarEdge'. The chart does not currently adjust layout to fit labels within the plot area or deal with any overlaps between labels.",
-              "type": "string|Array.<string>",
-              "value": "auto",
-              "enumValues": [
-                "aboveMarker",
-                "afterMarker",
-                "auto",
-                "beforeMarker",
-                "belowMarker",
-                "center",
-                "insideBarEdge",
-                "none",
-                "outsideBarEdge",
-                "outsideSlice"
-              ],
-              "propertyEditorValues": {
-                "aboveMarker": {
-                  "displayName": "Above Marker"
-                },
-                "afterMarker": {
-                  "displayName": "After Marker"
-                },
-                "auto": {
-                  "displayName": "Auto"
-                },
-                "beforeMarker": {
-                  "displayName": "Before Marker"
-                },
-                "belowMarker": {
-                  "displayName": "Below Marker"
-                },
-                "center": {
-                  "displayName": "Center"
-                },
-                "insideBarEdge": {
-                  "displayName": "Inside Bar Edge"
-                },
-                "none": {
-                  "displayName": "None"
-                },
-                "outsideBarEdge": {
-                  "displayName": "Outside Bar Edge"
-                },
-                "outsideSlice": {
-                  "displayName": "Outside Slice"
-                }
-              }
-            },
-            "labelStyle": {
-              "description": "The CSS style object defining the style of the data label. For range series, if an array of two values are provided, the first and second value will apply to the low and high point respectively.",
-              "type": "object|Array.<object>",
-              "value": null
-            },
-            "low": {
-              "description": "The low value for range bar/area, stock candlestick, or box plot item. Define 'low' and 'high' instead of 'value' or 'y' to create a range bar/area chart.",
-              "type": "number",
-              "value": null
-            },
-            "markerDisplayed": {
-              "description": "Defines whether the data marker is displayed. Only applies to line, area, scatter, and bubble series. If auto, the markers will be displayed whenever the data points are not connected by a line.",
-              "type": "string",
-              "value": "auto",
-              "enumValues": [
-                "auto",
-                "off",
-                "on"
-              ],
-              "propertyEditorValues": {
-                "auto": {
-                  "displayName": "Auto"
-                },
-                "off": {
-                  "displayName": "Off"
-                },
-                "on": {
-                  "displayName": "On"
-                }
-              }
-            },
-            "markerShape": {
-              "description": "The shape of the data markers. In addition to the built-in shapes, it may also take SVG path commands to specify a custom shape. The chart will style the custom shapes the same way as built-in shapes, supporting properties like color and borderColor and applying hover and selection effects. Only 'auto' is supported for range series.",
-              "type": "string",
-              "value": "auto",
-              "enumValues": [
-                "auto",
-                "circle",
-                "diamond",
-                "human",
-                "plus",
-                "square",
-                "star",
-                "triangleDown",
-                "triangleUp"
-              ],
-              "propertyEditorValues": {
-                "auto": {
-                  "displayName": "Auto"
-                },
-                "circle": {
-                  "displayName": "Circle"
-                },
-                "diamond": {
-                  "displayName": "Diamond"
-                },
-                "human": {
-                  "displayName": "Human"
-                },
-                "plus": {
-                  "displayName": "Plus"
-                },
-                "square": {
-                  "displayName": "Square"
-                },
-                "star": {
-                  "displayName": "Star"
-                },
-                "triangleDown": {
-                  "displayName": "Triangle Down"
-                },
-                "triangleUp": {
-                  "displayName": "Triangle Up"
-                }
-              }
-            },
-            "markerSize": {
-              "description": "The size of the data markers. Does not apply to bubble charts, which calculate marker size based on the z values.",
-              "type": "number",
-              "value": null,
-              "units": "pixels"
-            },
-            "open": {
-              "description": "The open value for stock candlestick.",
-              "type": "number",
-              "value": null
-            },
-            "pattern": {
-              "description": "The pattern used to fill the data item. A solid fill is used by default, unless the seriesEffect is 'pattern'.",
-              "type": "string",
-              "value": "auto",
-              "enumValues": [
-                "auto",
-                "largeChecker",
-                "largeCrosshatch",
-                "largeDiagonalLeft",
-                "largeDiagonalRight",
-                "largeDiamond",
-                "largeTriangle",
-                "smallChecker",
-                "smallCrosshatch",
-                "smallDiagonalLeft",
-                "smallDiagonalRight",
-                "smallDiamond",
-                "smallTriangle"
-              ],
-              "propertyEditorValues": {
-                "auto": {
-                  "displayName": "Auto"
-                },
-                "largeChecker": {
-                  "displayName": "Large Checker"
-                },
-                "largeCrosshatch": {
-                  "displayName": "Large Crosshatch"
-                },
-                "largeDiagonalLeft": {
-                  "displayName": "Large Diagonal Left"
-                },
-                "largeDiagonalRight": {
-                  "displayName": "Large Diagonal Right"
-                },
-                "largeDiamond": {
-                  "displayName": "Large Diamond"
-                },
-                "largeTriangle": {
-                  "displayName": "Large Triangle"
-                },
-                "smallChecker": {
-                  "displayName": "Small Checker"
-                },
-                "smallCrosshatch": {
-                  "displayName": "Small Crosshatch"
-                },
-                "smallDiagonalLeft": {
-                  "displayName": "Small Diagonal Left"
-                },
-                "smallDiagonalRight": {
-                  "displayName": "Small Diagonal Right"
-                },
-                "smallDiamond": {
-                  "displayName": "Small Diamond"
-                },
-                "smallTriangle": {
-                  "displayName": "Small Triangle"
-                }
-              }
-            },
-            "q1": {
-              "description": "The first quartile value for box plot.",
-              "type": "number",
-              "value": null
-            },
-            "q2": {
-              "description": "The second quartile (median) value for box plot.",
-              "type": "number",
-              "value": null
-            },
-            "q3": {
-              "description": "The third quartile value for box plot.",
-              "type": "number",
-              "value": null
-            },
-            "shortDesc": {
-              "description": "The description of this object. This is used for accessibility and also for customizing the tooltip text.",
-              "type": "string",
-              "value": null,
-              "translatable": true
-            },
-            "source": {
-              "description": "The URI of the custom image. If specified, it takes precedence over shape.",
-              "type": "string",
-              "value": null
-            },
-            "sourceHover": {
-              "description": "The optional URI for the hover state. If not specified, the source image will be used.",
-              "type": "string",
-              "value": null
-            },
-            "sourceHoverSelected": {
-              "description": "The optional URI for the hover selected state. If not specified, the source image will be used.",
-              "type": "string",
-              "value": null
-            },
-            "sourceSelected": {
-              "description": "The optional URI for the selected state. If not specified, the source image will be used.",
-              "type": "string",
-              "value": null
-            },
-            "svgClassName": {
-              "description": "The CSS style class to apply to the data item. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the item color attribute.",
-              "type": "string",
-              "value": null
-            },
-            "svgStyle": {
-              "description": "The inline style to apply to the data item. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the item color attribute.",
-              "type": "object",
-              "value": null
-            },
-            "targetValue": {
-              "description": "The target value for a funnel chart. When this is set, the value attribute defines the filled area within the slice and this represents the value of the whole slice.",
-              "type": "number",
-              "value": null
-            },
-            "value": {
-              "description": "The value for this data item. Corresponding to the y value for bar, line, area, and combo charts and the slice values for pie, funnel and pyramid charts.",
-              "type": "number",
-              "value": null
-            },
-            "volume": {
-              "description": "The value for stock volume bar. When this value is provided, the volume bar is displayed on the y2 axis.",
-              "type": "number",
-              "value": null
-            },
-            "x": {
-              "description": "The x value. Mainly used for scatter and bubble chart and to specify the date for mixed-frequency time axis.\nFor categorical axis, if the x value is not specified, it will default to the item index.\nFor regular time axis, if the x value is not specified, it will default to the group name of the item.",
-              "type": "number|string",
-              "value": null
-            },
-            "y": {
-              "description": "The y value. Also the primary value for charts without a y-Axis, such as pie charts.",
-              "type": "number",
-              "value": null
-            },
-            "z": {
-              "description": "The z value. Defines the bubble radius for a bubble chart, as well as the width of a bar or a box plot item.",
-              "type": "number",
-              "value": null
-            }
-          }
-        },
-        "lineStyle": {
-          "description": "The line style of the data line. Only applies to line, lineWithArea, scatter, and bubble series.",
-          "type": "string",
-          "value": "solid",
-          "enumValues": [
-            "dashed",
-            "dotted",
-            "solid"
-          ],
-          "propertyEditorValues": {
-            "dashed": {
-              "displayName": "Dashed"
-            },
-            "dotted": {
-              "displayName": "Dotted"
-            },
-            "solid": {
-              "displayName": "Solid"
-            }
-          }
-        },
-        "lineType": {
-          "description": "The line type of the data line or area. Only applies to line, area, scatter, and bubble series. centeredStepped and centeredSegmented are not supported for polar, scatter, and bubble charts.",
-          "type": "string",
-          "value": "auto",
-          "enumValues": [
-            "auto",
-            "centeredSegmented",
-            "centeredStepped",
-            "curved",
-            "none",
-            "segmented",
-            "stepped",
-            "straight"
-          ],
-          "propertyEditorValues": {
-            "auto": {
-              "displayName": "Auto"
-            },
-            "centeredSegmented": {
-              "displayName": "Centered Segmented"
-            },
-            "centeredStepped": {
-              "displayName": "Centered Stepped"
-            },
-            "curved": {
-              "displayName": "Curved"
-            },
-            "none": {
-              "displayName": "None"
-            },
-            "segmented": {
-              "displayName": "Segmented"
-            },
-            "stepped": {
-              "displayName": "Stepped"
-            },
-            "straight": {
-              "displayName": "Straight"
-            }
-          }
-        },
-        "lineWidth": {
-          "description": "The width of the data line. Only applies to line, lineWithArea, scatter, and bubble series.",
-          "type": "number",
-          "value": null,
-          "minimum": 0,
-          "units": "pixels"
-        },
-        "markerColor": {
-          "description": "The color of the data markers, if different from the series color.",
-          "type": "string",
-          "value": null
-        },
-        "markerDisplayed": {
-          "description": "Defines whether the data markers should be displayed. Only applies to line, area, scatter, and bubble series. If auto, the markers will be displayed whenever the data points are not connected by a line.",
-          "type": "string",
-          "value": "auto",
-          "enumValues": [
-            "auto",
-            "off",
-            "on"
-          ],
-          "propertyEditorValues": {
-            "auto": {
-              "displayName": "Auto"
-            },
-            "off": {
-              "displayName": "Off"
-            },
-            "on": {
-              "displayName": "On"
-            }
-          }
-        },
-        "markerShape": {
-          "description": "The shape of the data markers. In addition to the built-in shapes, it may also take SVG path commands to specify a custom shape. The chart will style the custom shapes the same way as built-in shapes, supporting properties like color and borderColor and applying hover and selection effects. Only 'auto' is supported for range series.",
-          "type": "string",
-          "value": "auto",
-          "enumValues": [
-            "auto",
-            "circle",
-            "diamond",
-            "human",
-            "plus",
-            "square",
-            "star",
-            "triangleDown",
-            "triangleUp"
-          ],
-          "propertyEditorValues": {
-            "auto": {
-              "displayName": "Auto"
-            },
-            "circle": {
-              "displayName": "Circle"
-            },
-            "diamond": {
-              "displayName": "Diamond"
-            },
-            "human": {
-              "displayName": "Human"
-            },
-            "plus": {
-              "displayName": "Plus"
-            },
-            "square": {
-              "displayName": "Square"
-            },
-            "star": {
-              "displayName": "Star"
-            },
-            "triangleDown": {
-              "displayName": "Triangle Down"
-            },
-            "triangleUp": {
-              "displayName": "Triangle Up"
-            }
-          }
-        },
-        "markerSize": {
-          "description": "The size of the data markers.",
-          "type": "number",
-          "value": null,
-          "units": "pixels"
-        },
-        "markerSvgClassName": {
-          "description": "The CSS style class to apply to the data markers.The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the marker color attribute.",
-          "type": "string",
-          "value": null
-        },
-        "markerSvgStyle": {
-          "description": "The inline style to apply to the data markers. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the marker color attribute.",
-          "type": "object",
-          "value": null
-        },
-        "name": {
-          "description": "The name of the series, displayed in the legend and tooltips.",
-          "type": "string",
-          "value": null
-        },
-        "pattern": {
-          "description": "The pattern used to fill the series. A solid fill is used by default, unless the seriesEffect is 'pattern'.",
-          "type": "string",
-          "value": "auto",
-          "enumValues": [
-            "auto",
-            "largeChecker",
-            "largeCrosshatch",
-            "largeDiagonalLeft",
-            "largeDiagonalRight",
-            "largeDiamond",
-            "largeTriangle",
-            "smallChecker",
-            "smallCrosshatch",
-            "smallDiagonalLeft",
-            "smallDiagonalRight",
-            "smallDiamond",
-            "smallTriangle"
-          ],
-          "propertyEditorValues": {
-            "auto": {
-              "displayName": "Auto"
-            },
-            "largeChecker": {
-              "displayName": "Large Checker"
-            },
-            "largeCrosshatch": {
-              "displayName": "Large Crosshatch"
-            },
-            "largeDiagonalLeft": {
-              "displayName": "Large Diagonal Left"
-            },
-            "largeDiagonalRight": {
-              "displayName": "Large Diagonal Right"
-            },
-            "largeDiamond": {
-              "displayName": "Large Diamond"
-            },
-            "largeTriangle": {
-              "displayName": "Large Triangle"
-            },
-            "smallChecker": {
-              "displayName": "Small Checker"
-            },
-            "smallCrosshatch": {
-              "displayName": "Small Crosshatch"
-            },
-            "smallDiagonalLeft": {
-              "displayName": "Small Diagonal Left"
-            },
-            "smallDiagonalRight": {
-              "displayName": "Small Diagonal Right"
-            },
-            "smallDiamond": {
-              "displayName": "Small Diamond"
-            },
-            "smallTriangle": {
-              "displayName": "Small Triangle"
-            }
-          }
-        },
-        "pieSliceExplode": {
-          "description": "A number from 0 to 1 indicating the amount to explode the pie slice. Only applies to pie charts.",
-          "type": "number",
-          "value": 0,
-          "maximum": 1,
-          "minimum": 0
-        },
-        "shortDesc": {
-          "description": "The description of this series. This is used for accessibility and for customizing the tooltip text on the corressponding legend item for the series.",
-          "type": "string",
-          "value": null,
-          "translatable": true
-        },
-        "source": {
-          "description": "The URI of the custom image. If specified, it takes precedence over shape.",
-          "type": "string",
-          "value": null
-        },
-        "sourceHover": {
-          "description": "The optional URI for the hover state. If not specified, the source image will be used.",
-          "type": "string",
-          "value": null
-        },
-        "sourceHoverSelected": {
-          "description": "The optional URI for the hover selected state. If not specified, the source image will be used.",
-          "type": "string",
-          "value": null
-        },
-        "sourceSelected": {
-          "description": "The optional URI for the selected state. If not specified, the source image will be used.",
-          "type": "string",
-          "value": null
-        },
-        "stackCategory": {
-          "description": "In stacked charts, groups series together for stacking. All series without a stackCategory will be assigned to the same stack.",
-          "type": "string",
-          "value": null
-        },
-        "svgClassName": {
-          "description": "The CSS style class to apply to the series. For series of type lineWithArea, this style will only be applied to the line if areaClassName is also specified. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the color attribute.",
-          "type": "string",
-          "value": null
-        },
-        "svgStyle": {
-          "description": "The inline style to apply to the series. For series of type lineWithArea, this style will only be applied to the line if areaStyle is also specified.The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the color attribute.",
-          "type": "object",
-          "value": null
-        },
-        "type": {
-          "description": "The type of data objects to display for this series. Only applies to bar, line, area, stock, box plot, and combo charts.",
-          "type": "string",
-          "value": "auto",
-          "enumValues": [
-            "area",
-            "auto",
-            "bar",
-            "boxPlot",
-            "candlestick",
-            "line",
-            "lineWithArea"
-          ],
-          "propertyEditorValues": {
-            "area": {
-              "displayName": "Area"
-            },
-            "auto": {
-              "displayName": "Auto"
-            },
-            "bar": {
-              "displayName": "Bar"
-            },
-            "boxPlot": {
-              "displayName": "Box Plot"
-            },
-            "candlestick": {
-              "displayName": "Candlestick"
-            },
-            "line": {
-              "displayName": "Line"
-            },
-            "lineWithArea": {
-              "displayName": "Line With Area"
-            }
-          }
-        }
-      }
+      "value": null
     },
     "sorting": {
       "description": "Specifies the sorting of the data. It should only be used for pie charts, bar/line/area charts with one series, or stacked bar/area charts. Sorting will not apply when using a hierarchical group axis.",
@@ -2341,7 +1110,7 @@
     },
     "styleDefaults": {
       "description": "An object defining the default styles for series colors, marker shapes, and other style attributes. Properties specified on this object may be overridden by specifications on the data object.",
-      "type": "object",
+      "type": "Object",
       "displayName": "Style Defaults",
       "value": {},
       "properties": {
@@ -2399,16 +1168,17 @@
         },
         "boxPlot": {
           "description": "An object containing the style properties of the box plot items.",
-          "type": "object",
+          "type": "Object",
           "value": {},
           "properties": {
             "medianSvgClassName": {
               "description": "The CSS style class to apply to the median line.",
-              "type": "string"
+              "type": "string",
+              "value": ""
             },
             "medianSvgStyle": {
               "description": "The CSS inline style to apply to the median line.",
-              "type": "object",
+              "type": "Object",
               "value": {}
             },
             "whiskerEndLength": {
@@ -2418,32 +1188,34 @@
             },
             "whiskerEndSvgClassName": {
               "description": "The CSS style class to apply to the whisker ends.",
-              "type": "string"
+              "type": "string",
+              "value": ""
             },
             "whiskerEndSvgStyle": {
               "description": "The CSS inline style to apply to the whisker ends.",
-              "type": "object",
+              "type": "Object",
               "value": {}
             },
             "whiskerSvgClassName": {
               "description": "The CSS style class to apply to the whisker stems.",
-              "type": "string"
+              "type": "string",
+              "value": ""
             },
             "whiskerSvgStyle": {
               "description": "The CSS inline style to apply to the whisker stems.",
-              "type": "object",
+              "type": "Object",
               "value": {}
             }
           }
         },
         "colors": {
           "description": "The array defining the default color ramp for the series.",
-          "type": "Array.<string>",
+          "type": "Array<string>",
           "value": null
         },
         "dataCursor": {
           "description": "An object defining the data cursor style.",
-          "type": "object",
+          "type": "Object",
           "value": {},
           "properties": {
             "lineColor": {
@@ -2516,7 +1288,7 @@
         },
         "dataLabelPosition": {
           "description": "The position of the data label. For range series, if an array of two values are provided, the first and second value will apply to the low and high point respectively. The 'outsideSlice' value only applies to pie charts. The 'aboveMarker', 'belowMarker', 'beforeMarker', and 'afterMarker' values only apply to line, area, scatter, and bubble series. The 'insideBarEdge' and 'outsideBarEdge' values only apply to non-polar bar series. Stacked bars do not support 'outsideBarEdge'. The chart does not currently adjust layout to fit labels within the plot area or deal with any overlaps between labels.",
-          "type": "string|Array.<string>",
+          "type": "string|Array<string>",
           "value": "auto",
           "enumValues": [
             "aboveMarker",
@@ -2565,7 +1337,7 @@
         },
         "dataLabelStyle": {
           "description": "The CSS style object defining the style of the data label text. For range series, if an array of two values are provided, the first and second value will apply to the low and high point respectively.",
-          "type": "object|Array.<object>",
+          "type": "object|Array<Object>",
           "value": null
         },
         "funnelBackgroundColor": {
@@ -2575,7 +1347,7 @@
         },
         "groupSeparators": {
           "description": "An object defining the style for hierarchical label separators.",
-          "type": "object",
+          "type": "Object",
           "value": {},
           "properties": {
             "color": {
@@ -2778,7 +1550,7 @@
         },
         "patterns": {
           "description": "The array defining the default pattern ramp for the series. This is used only when seriesEffect is 'pattern'.",
-          "type": "Array.<string>",
+          "type": "Array<string>",
           "value": null
         },
         "pieFeelerColor": {
@@ -2837,12 +1609,12 @@
         },
         "shapes": {
           "description": "The array defining the default shape ramp for the series. Valid values are defined in the markerShape attribute.",
-          "type": "Array.<string>",
+          "type": "Array<string>",
           "value": null
         },
         "stackLabelStyle": {
           "description": "The CSS style object defining the style of the stack label. Only applies to stacked bar charts.",
-          "type": "object",
+          "type": "Object",
           "value": {}
         },
         "stockFallingColor": {
@@ -2884,12 +1656,12 @@
         },
         "tooltipLabelStyle": {
           "description": "The CSS style object defining the style of the labels in the tooltip.",
-          "type": "object",
+          "type": "Object",
           "value": {}
         },
         "tooltipValueStyle": {
           "description": "The CSS style object defining the style of the values in the tooltip.",
-          "type": "object",
+          "type": "Object",
           "value": {}
         }
       }
@@ -2926,7 +1698,7 @@
     },
     "tooltip": {
       "description": "An object containing an optional callback function for tooltip customization.",
-      "type": "object",
+      "type": "Object",
       "displayName": "Tooltip",
       "value": {},
       "properties": {
@@ -2956,7 +1728,7 @@
       }
     },
     "trackResize": {
-      "description": "Defines whether the element will automatically render in response to\nchanges in size. If set to off, then the\napplication is responsible for calling refresh\nto render the element at the new size.",
+      "description": "Defines whether the element will automatically render in response to changes in size. If set to off, then the application is responsible for calling refresh to render the element at the new size.",
       "type": "string",
       "displayName": "Track Resize",
       "value": "on",
@@ -2974,10 +1746,10 @@
       }
     },
     "translations": {
-      "description": "A collection of translated resources from the translation bundle, or null if this\ncomponent has no resources. Resources may be accessed and overridden individually or collectively, as seen in the examples.\n\nIf this component has translations, their documentation immediately follows this doc entry.",
-      "type": "Object",
+      "description": "A collection of translated resources from the translation bundle, or null if this\ncomponent has no resources. Resources may be accessed and overridden individually or collectively, as seen in the examples. If the component does not contain any translatable resource, the default value of this attribute will be \nnull. If not, an object containing all resources relevant to the component.\n\nIf this component has translations, their documentation immediately follows this doc entry.",
+      "type": "Object|null",
       "displayName": "Translations",
-      "value": null,
+      "translatable": true,
       "properties": {
         "componentName": {
           "description": "Used to describe the data visualization type for accessibility.\n\nSee the translations attribute for usage examples.",
@@ -3236,18 +2008,18 @@
     },
     "valueFormats": {
       "description": "An object specifying value formatting and tooltip behavior, whose keys generally correspond to the attribute names on the data items.",
-      "type": "object",
+      "type": "Object",
       "displayName": "Value Formats",
       "value": {},
       "properties": {
         "close": {
           "description": "Specifies the value formatting and tooltip behavior for the close values of a stock chart.",
-          "type": "object",
+          "type": "Object",
           "value": {},
           "properties": {
             "converter": {
               "description": "The converter (an object literal or instance that duck types oj.Converter) used to format the label. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.",
-              "type": "object",
+              "type": "Object",
               "value": null
             },
             "scaling": {
@@ -3314,7 +2086,7 @@
         },
         "group": {
           "description": "Specifies tooltip behavior for the groups.",
-          "type": "object",
+          "type": "Object",
           "value": {},
           "properties": {
             "tooltipDisplay": {
@@ -3336,7 +2108,7 @@
             },
             "tooltipLabel": {
               "description": "A string representing the label that is displayed before the value in the tooltip. This value can also take an array of strings to be applied to hierarchical group names, from outermost to innermost.",
-              "type": "string|Array.<string>",
+              "type": "string|Array<string>",
               "value": null,
               "translatable": true
             }
@@ -3344,12 +2116,12 @@
         },
         "high": {
           "description": "Specifies the value formatting and tooltip behavior for the high values.",
-          "type": "object",
+          "type": "Object",
           "value": {},
           "properties": {
             "converter": {
               "description": "The converter (an object literal or instance that duck types oj.Converter) used to format the label. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.",
-              "type": "object",
+              "type": "Object",
               "value": null
             },
             "scaling": {
@@ -3416,12 +2188,12 @@
         },
         "label": {
           "description": "Specifies the value formatting for the data item labels.",
-          "type": "object",
+          "type": "Object",
           "value": {},
           "properties": {
             "converter": {
               "description": "The converter (an object literal or instance that duck types oj.Converter) used to format the label. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.",
-              "type": "object",
+              "type": "Object",
               "value": null
             },
             "scaling": {
@@ -3465,12 +2237,12 @@
         },
         "low": {
           "description": "Specifies the value formatting and tooltip behavior for the low values.",
-          "type": "object",
+          "type": "Object",
           "value": {},
           "properties": {
             "converter": {
               "description": "The converter (an object literal or instance that duck types oj.Converter) used to format the label. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.",
-              "type": "object",
+              "type": "Object",
               "value": null
             },
             "scaling": {
@@ -3537,12 +2309,12 @@
         },
         "open": {
           "description": "Specifies the value formatting and tooltip behavior for the open values of a stock chart.",
-          "type": "object",
+          "type": "Object",
           "value": {},
           "properties": {
             "converter": {
               "description": "The converter (an object literal or instance that duck types oj.Converter) used to format the label. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.",
-              "type": "object",
+              "type": "Object",
               "value": null
             },
             "scaling": {
@@ -3609,12 +2381,12 @@
         },
         "q1": {
           "description": "Specifies the value formatting and tooltip behavior for the q1 values of a box plot.",
-          "type": "object",
+          "type": "Object",
           "value": {},
           "properties": {
             "converter": {
               "description": "The converter (an object literal or instance that duck types oj.Converter) used to format the label. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.",
-              "type": "object",
+              "type": "Object",
               "value": null
             },
             "scaling": {
@@ -3681,12 +2453,12 @@
         },
         "q2": {
           "description": "Specifies the value formatting and tooltip behavior for the q2 values of a box plot.",
-          "type": "object",
+          "type": "Object",
           "value": {},
           "properties": {
             "converter": {
               "description": "The converter (an object literal or instance that duck types oj.Converter) used to format the label. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.",
-              "type": "object",
+              "type": "Object",
               "value": null
             },
             "scaling": {
@@ -3753,12 +2525,12 @@
         },
         "q3": {
           "description": "Specifies the value formatting and tooltip behavior for the q3 values of a box plot.",
-          "type": "object",
+          "type": "Object",
           "value": {},
           "properties": {
             "converter": {
               "description": "The converter (an object literal or instance that duck types oj.Converter) used to format the label. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.",
-              "type": "object",
+              "type": "Object",
               "value": null
             },
             "scaling": {
@@ -3825,7 +2597,7 @@
         },
         "series": {
           "description": "Specifies tooltip behavior for the series.",
-          "type": "object",
+          "type": "Object",
           "value": {},
           "properties": {
             "tooltipDisplay": {
@@ -3855,12 +2627,12 @@
         },
         "targetValue": {
           "description": "Specifies the value formatting and tooltip behavior for the target values of a funnel chart.",
-          "type": "object",
+          "type": "Object",
           "value": {},
           "properties": {
             "converter": {
               "description": "The converter (an object literal or instance that duck types oj.Converter) used to format the label. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.",
-              "type": "object",
+              "type": "Object",
               "value": null
             },
             "scaling": {
@@ -3927,12 +2699,12 @@
         },
         "value": {
           "description": "Specifies the value formatting and tooltip behavior for the values.",
-          "type": "object",
+          "type": "Object",
           "value": {},
           "properties": {
             "converter": {
               "description": "The converter (an object literal or instance that duck types oj.Converter) used to format the label. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.",
-              "type": "object",
+              "type": "Object",
               "value": null
             },
             "scaling": {
@@ -3999,12 +2771,12 @@
         },
         "volume": {
           "description": "Specifies the value formatting and tooltip behavior for the volume values of a stock chart.",
-          "type": "object",
+          "type": "Object",
           "value": {},
           "properties": {
             "converter": {
               "description": "The converter (an object literal or instance that duck types oj.Converter) used to format the label. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.",
-              "type": "object",
+              "type": "Object",
               "value": null
             },
             "scaling": {
@@ -4071,12 +2843,12 @@
         },
         "x": {
           "description": "Specifies the value formatting and tooltip behavior for the x values.",
-          "type": "object",
+          "type": "Object",
           "value": {},
           "properties": {
             "converter": {
               "description": "The converter (an object literal or instance that duck types oj.Converter) used to format the label. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.",
-              "type": "object",
+              "type": "Object",
               "value": null
             },
             "scaling": {
@@ -4143,12 +2915,12 @@
         },
         "y": {
           "description": "Specifies the value formatting and tooltip behavior for the y values.",
-          "type": "object",
+          "type": "Object",
           "value": {},
           "properties": {
             "converter": {
               "description": "The converter (an object literal or instance that duck types oj.Converter) used to format the label. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.",
-              "type": "object",
+              "type": "Object",
               "value": null
             },
             "scaling": {
@@ -4215,12 +2987,12 @@
         },
         "y2": {
           "description": "Specifies the value formatting and tooltip behavior for the y2 values.",
-          "type": "object",
+          "type": "Object",
           "value": {},
           "properties": {
             "converter": {
               "description": "The converter (an object literal or instance that duck types oj.Converter) used to format the label. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.",
-              "type": "object",
+              "type": "Object",
               "value": null
             },
             "scaling": {
@@ -4287,12 +3059,12 @@
         },
         "z": {
           "description": "Specifies the value formatting and tooltip behavior for the z values.",
-          "type": "object",
+          "type": "Object",
           "value": {},
           "properties": {
             "converter": {
               "description": "The converter (an object literal or instance that duck types oj.Converter) used to format the label. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.",
-              "type": "object",
+              "type": "Object",
               "value": null
             },
             "scaling": {
@@ -4361,13 +3133,13 @@
     },
     "xAxis": {
       "description": "An object defining properties for the axis, tick marks, tick labels, and axis titles.",
-      "type": "object",
+      "type": "Object",
       "displayName": "X Axis",
       "value": {},
       "properties": {
         "axisLine": {
           "description": "An object defining properties for the axis line.",
-          "type": "object",
+          "type": "Object",
           "value": {},
           "properties": {
             "lineColor": {
@@ -4430,7 +3202,7 @@
         },
         "majorTick": {
           "description": "An object defining properties for the major tick marks.",
-          "type": "object",
+          "type": "Object",
           "value": {},
           "properties": {
             "baselineColor": {
@@ -4563,7 +3335,7 @@
         },
         "minorTick": {
           "description": "An object defining properties for the minor tick marks.",
-          "type": "object",
+          "type": "Object",
           "value": {},
           "properties": {
             "lineColor": {
@@ -4624,173 +3396,8 @@
         },
         "referenceObjects": {
           "description": "The array of reference objects associated with the axis.",
-          "type": "Array.<object>",
-          "value": "[]",
-          "properties": {
-            "categories": {
-              "description": "An optional array of category strings corresponding to this reference object. This allows highlighting and filtering of a reference object through interactions with legend sections. If not defined, the reference object id is used.",
-              "type": "Array.<string>",
-              "value": null
-            },
-            "color": {
-              "description": "The color of the reference object.",
-              "type": "string",
-              "value": null
-            },
-            "displayInLegend": {
-              "description": "Defines whether the reference object should be shown in the legend.",
-              "type": "string",
-              "value": "off",
-              "enumValues": [
-                "off",
-                "on"
-              ],
-              "propertyEditorValues": {
-                "off": {
-                  "displayName": "Off"
-                },
-                "on": {
-                  "displayName": "On"
-                }
-              }
-            },
-            "high": {
-              "description": "The high value of a reference area. For categorical axes, the value represents the group index. For example, 0 is the position of the first group, and 1.5 is the position half way between the second and the third group.",
-              "type": "number",
-              "value": null
-            },
-            "id": {
-              "description": "The id of the reference object.",
-              "type": "string",
-              "value": null
-            },
-            "lineStyle": {
-              "description": "The line style of the reference line.",
-              "type": "string",
-              "value": "solid",
-              "enumValues": [
-                "dashed",
-                "dotted",
-                "solid"
-              ],
-              "propertyEditorValues": {
-                "dashed": {
-                  "displayName": "Dashed"
-                },
-                "dotted": {
-                  "displayName": "Dotted"
-                },
-                "solid": {
-                  "displayName": "Solid"
-                }
-              }
-            },
-            "lineType": {
-              "description": "The line type of the reference line. Only applies if the line value is not constant. centeredStepped and centeredSegmented are not supported for polar, scatter, and bubble charts.",
-              "type": "string",
-              "value": "straight",
-              "enumValues": [
-                "centeredSegmented",
-                "centeredStepped",
-                "curved",
-                "segmented",
-                "stepped",
-                "straight"
-              ],
-              "propertyEditorValues": {
-                "centeredSegmented": {
-                  "displayName": "Centered Segmented"
-                },
-                "centeredStepped": {
-                  "displayName": "Centered Stepped"
-                },
-                "curved": {
-                  "displayName": "Curved"
-                },
-                "segmented": {
-                  "displayName": "Segmented"
-                },
-                "stepped": {
-                  "displayName": "Stepped"
-                },
-                "straight": {
-                  "displayName": "Straight"
-                }
-              }
-            },
-            "lineWidth": {
-              "description": "The width of the reference line.",
-              "type": "number",
-              "value": null,
-              "minimum": 0,
-              "units": "pixels"
-            },
-            "location": {
-              "description": "The location of the reference object relative to the data items.",
-              "type": "string",
-              "value": "back",
-              "enumValues": [
-                "back",
-                "front"
-              ],
-              "propertyEditorValues": {
-                "back": {
-                  "displayName": "Back"
-                },
-                "front": {
-                  "displayName": "Front"
-                }
-              }
-            },
-            "low": {
-              "description": "The low value of a reference area. For categorical axes, the value represents the group index. For example, 0 is the position of the first group, and 1.5 is the position half way between the second and the third group.",
-              "type": "number",
-              "value": null
-            },
-            "shortDesc": {
-              "description": "The description of this object. This is used for accessibility and also for customizing the tooltip text.",
-              "type": "string",
-              "value": null
-            },
-            "svgClassName": {
-              "description": "The CSS style class to apply to the reference object. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the reference object color attribute.",
-              "type": "string",
-              "value": null
-            },
-            "svgStyle": {
-              "description": "The inline style to apply to the reference object. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the reference object color attribute.",
-              "type": "object",
-              "value": null
-            },
-            "text": {
-              "description": "The text displayed in the legend for the reference object.",
-              "type": "string",
-              "value": null,
-              "translatable": true
-            },
-            "type": {
-              "description": "The type of reference object being shown.",
-              "type": "string",
-              "value": "line",
-              "enumValues": [
-                "area",
-                "line"
-              ],
-              "propertyEditorValues": {
-                "area": {
-                  "displayName": "Area"
-                },
-                "line": {
-                  "displayName": "Line"
-                }
-              }
-            },
-            "value": {
-              "description": "The value of a reference line. For categorical axes, the value represents the group index. For example, 0 is the position of the first group, and 1.5 is the position half way between the second and the third group.",
-              "type": "number",
-              "value": null
-            }
-          }
+          "type": "Array<Object>",
+          "value": []
         },
         "rendered": {
           "description": "Defines whether the axis is rendered.",
@@ -4839,12 +3446,12 @@
         },
         "tickLabel": {
           "description": "An object defining the properties of the tick labels.",
-          "type": "object",
+          "type": "Object",
           "value": {},
           "properties": {
             "converter": {
               "description": "The converter (an object literal or instance that duck types oj.Converter) to format the labels. When using a time axis, this attribute also takes an array of two converters, which apply respectively to the first and second label levels. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.",
-              "type": "object",
+              "type": "Object",
               "value": null
             },
             "rendered": {
@@ -4920,7 +3527,7 @@
             },
             "style": {
               "description": "The CSS style object defining the style of the labels. The CSS white-space property can be defined with value \"nowrap\" to disable default text wrapping of categorical labels.",
-              "type": "object",
+              "type": "Object",
               "value": {}
             }
           }
@@ -4933,7 +3540,7 @@
         },
         "titleStyle": {
           "description": "The CSS style object defining the style of the axis title. The CSS white-space property can be defined with value \"nowrap\" to disable default text wrapping of the title.",
-          "type": "object",
+          "type": "Object",
           "value": {}
         },
         "viewportEndGroup": {
@@ -4960,7 +3567,7 @@
     },
     "y2Axis": {
       "description": "An object defining properties for the axis, tick marks, tick labels, and axis titles. Y2 axis is only supported for Cartesian bar, line, area, and combo charts.",
-      "type": "object",
+      "type": "Object",
       "displayName": "Y2 Axis",
       "value": {},
       "properties": {
@@ -4983,7 +3590,7 @@
         },
         "axisLine": {
           "description": "An object defining properties for the axis line.",
-          "type": "object",
+          "type": "Object",
           "value": {},
           "properties": {
             "lineColor": {
@@ -5050,7 +3657,7 @@
         },
         "majorTick": {
           "description": "An object defining properties for the major tick marks.",
-          "type": "object",
+          "type": "Object",
           "value": {},
           "properties": {
             "baselineColor": {
@@ -5183,7 +3790,7 @@
         },
         "minorTick": {
           "description": "An object defining properties for the minor tick marks.",
-          "type": "object",
+          "type": "Object",
           "value": {},
           "properties": {
             "lineColor": {
@@ -5273,200 +3880,8 @@
         },
         "referenceObjects": {
           "description": "The array of reference objects associated with the axis.",
-          "type": "Array.<object>",
-          "value": "[]",
-          "properties": {
-            "categories": {
-              "description": "An optional array of category strings corresponding to this reference object. This allows highlighting and filtering of a reference object through interactions with legend sections. If not defined, the reference object id is used.",
-              "type": "Array.<string>",
-              "value": null
-            },
-            "color": {
-              "description": "The color of the reference object.",
-              "type": "string",
-              "value": null
-            },
-            "displayInLegend": {
-              "description": "Defines whether the reference object should be shown in the legend.",
-              "type": "string",
-              "value": "off",
-              "enumValues": [
-                "off",
-                "on"
-              ],
-              "propertyEditorValues": {
-                "off": {
-                  "displayName": "Off"
-                },
-                "on": {
-                  "displayName": "On"
-                }
-              }
-            },
-            "high": {
-              "description": "The high value of a reference area. This property defines a constant value across the entire reference area and is ignored if the items array is specified.",
-              "type": "number",
-              "value": null
-            },
-            "id": {
-              "description": "The id of the reference object.",
-              "type": "string",
-              "value": null
-            },
-            "items": {
-              "description": "An array of values or an array of objects with the following properties that defines the data for a varying reference object. Only supported for y1 and y2 axes for all chart types.",
-              "type": "Array.<object>|Array.<number>",
-              "value": null,
-              "properties": {
-                "high": {
-                  "description": "The high value of this point of a reference area.",
-                  "type": "number",
-                  "value": null
-                },
-                "low": {
-                  "description": "The low value of this point of a reference area.",
-                  "type": "number",
-                  "value": null
-                },
-                "value": {
-                  "description": "The value of this point of a line object.",
-                  "type": "number",
-                  "value": null
-                },
-                "x": {
-                  "description": "The x value of this point. Mainly used for scatter and bubble chart and to specify the date for mixed-frequency time axis.\nFor categorical axis, if the x value is not specified, it will default to the item index.\nFor regular time axis, if the x value is not specified, it will default to the group name of the item.",
-                  "type": "number|string",
-                  "value": null
-                }
-              }
-            },
-            "lineStyle": {
-              "description": "The line style of the reference line.",
-              "type": "string",
-              "value": "solid",
-              "enumValues": [
-                "dashed",
-                "dotted",
-                "solid"
-              ],
-              "propertyEditorValues": {
-                "dashed": {
-                  "displayName": "Dashed"
-                },
-                "dotted": {
-                  "displayName": "Dotted"
-                },
-                "solid": {
-                  "displayName": "Solid"
-                }
-              }
-            },
-            "lineType": {
-              "description": "The line type of the reference line. Only applies if the line value is not constant. centeredStepped and centeredSegmented are not supported for polar, scatter, and bubble charts.",
-              "type": "string",
-              "value": "straight",
-              "enumValues": [
-                "centeredSegmented",
-                "centeredStepped",
-                "curved",
-                "segmented",
-                "stepped",
-                "straight"
-              ],
-              "propertyEditorValues": {
-                "centeredSegmented": {
-                  "displayName": "Centered Segmented"
-                },
-                "centeredStepped": {
-                  "displayName": "Centered Stepped"
-                },
-                "curved": {
-                  "displayName": "Curved"
-                },
-                "segmented": {
-                  "displayName": "Segmented"
-                },
-                "stepped": {
-                  "displayName": "Stepped"
-                },
-                "straight": {
-                  "displayName": "Straight"
-                }
-              }
-            },
-            "lineWidth": {
-              "description": "The width of the reference line.",
-              "type": "number",
-              "value": null,
-              "minimum": 0,
-              "units": "pixels"
-            },
-            "location": {
-              "description": "The location of the reference object relative to the data items.",
-              "type": "string",
-              "value": "back",
-              "enumValues": [
-                "back",
-                "front"
-              ],
-              "propertyEditorValues": {
-                "back": {
-                  "displayName": "Back"
-                },
-                "front": {
-                  "displayName": "Front"
-                }
-              }
-            },
-            "low": {
-              "description": "The low value of a reference area. This property defines a constant value across the entire reference area and is ignored if the items array is specified.",
-              "type": "number",
-              "value": null
-            },
-            "shortDesc": {
-              "description": "The description of this object. This is used for accessibility and also for customizing the tooltip text.",
-              "type": "string",
-              "value": null
-            },
-            "svgClassName": {
-              "description": "The CSS style class to apply to the reference object. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the reference object color attribute.",
-              "type": "string",
-              "value": null
-            },
-            "svgStyle": {
-              "description": "The inline style to apply to the reference object. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the reference object color attribute.",
-              "type": "object",
-              "value": null
-            },
-            "text": {
-              "description": "The text displayed in the legend for the reference object.",
-              "type": "string",
-              "value": null,
-              "translatable": true
-            },
-            "type": {
-              "description": "The type of reference object being shown.",
-              "type": "string",
-              "value": "line",
-              "enumValues": [
-                "area",
-                "line"
-              ],
-              "propertyEditorValues": {
-                "area": {
-                  "displayName": "Area"
-                },
-                "line": {
-                  "displayName": "Line"
-                }
-              }
-            },
-            "value": {
-              "description": "The value of a reference line. This property defines a constant value across the entire reference line and is ignored if the items array is specified.",
-              "type": "number",
-              "value": null
-            }
-          }
+          "type": "Array<Object>",
+          "value": []
         },
         "rendered": {
           "description": "Defines whether the axis is rendered.",
@@ -5515,12 +3930,12 @@
         },
         "tickLabel": {
           "description": "An object defining the properties of the tick labels.",
-          "type": "object",
+          "type": "Object",
           "value": {},
           "properties": {
             "converter": {
               "description": "The converter (an object literal or instance that duck types oj.Converter) to format the labels. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.",
-              "type": "object",
+              "type": "Object",
               "value": null
             },
             "position": {
@@ -5596,7 +4011,7 @@
             },
             "style": {
               "description": "The CSS style object defining the style of the labels.",
-              "type": "object",
+              "type": "Object",
               "value": {}
             }
           }
@@ -5609,20 +4024,20 @@
         },
         "titleStyle": {
           "description": "The CSS style object defining the style of the axis title.",
-          "type": "object",
+          "type": "Object",
           "value": {}
         }
       }
     },
     "yAxis": {
       "description": "An object defining properties for the axis, tick marks, tick labels, and axis titles.",
-      "type": "object",
+      "type": "Object",
       "displayName": "Y Axis",
       "value": {},
       "properties": {
         "axisLine": {
           "description": "An object defining properties for the axis line.",
-          "type": "object",
+          "type": "Object",
           "value": {},
           "properties": {
             "lineColor": {
@@ -5689,7 +4104,7 @@
         },
         "majorTick": {
           "description": "An object defining properties for the major tick marks.",
-          "type": "object",
+          "type": "Object",
           "value": {},
           "properties": {
             "baselineColor": {
@@ -5822,7 +4237,7 @@
         },
         "minorTick": {
           "description": "An object defining properties for the minor tick marks.",
-          "type": "object",
+          "type": "Object",
           "value": {},
           "properties": {
             "lineColor": {
@@ -5912,200 +4327,8 @@
         },
         "referenceObjects": {
           "description": "The array of reference objects associated with the axis.",
-          "type": "Array.<object>",
-          "value": "[]",
-          "properties": {
-            "categories": {
-              "description": "An optional array of category strings corresponding to this reference object. This allows highlighting and filtering of a reference object through interactions with legend sections. If not defined, the reference object id is used.",
-              "type": "Array.<string>",
-              "value": null
-            },
-            "color": {
-              "description": "The color of the reference object.",
-              "type": "string",
-              "value": null
-            },
-            "displayInLegend": {
-              "description": "Defines whether the reference object should be shown in the legend.",
-              "type": "string",
-              "value": "off",
-              "enumValues": [
-                "off",
-                "on"
-              ],
-              "propertyEditorValues": {
-                "off": {
-                  "displayName": "Off"
-                },
-                "on": {
-                  "displayName": "On"
-                }
-              }
-            },
-            "high": {
-              "description": "The high value of a reference area. This property defines a constant value across the entire reference area and is ignored if the items array is specified.",
-              "type": "number",
-              "value": null
-            },
-            "id": {
-              "description": "The id of the reference object.",
-              "type": "string",
-              "value": null
-            },
-            "items": {
-              "description": "An array of values or an array of objects with the following properties that defines the data for a varying reference object. Only supported for y1 and y2 axes for all chart types.",
-              "type": "Array.<object>|Array.<number>",
-              "value": null,
-              "properties": {
-                "high": {
-                  "description": "The high value of this point of a reference area.",
-                  "type": "number",
-                  "value": null
-                },
-                "low": {
-                  "description": "The low value of this point of a reference area.",
-                  "type": "number",
-                  "value": null
-                },
-                "value": {
-                  "description": "The value of this point of a line object.",
-                  "type": "number",
-                  "value": null
-                },
-                "x": {
-                  "description": "The x value of this point. Mainly used for scatter and bubble chart and to specify the date for mixed-frequency time axis.\nFor categorical axis, if the x value is not specified, it will default to the item index.\nFor regular time axis, if the x value is not specified, it will default to the group name of the item.",
-                  "type": "number|string",
-                  "value": null
-                }
-              }
-            },
-            "lineStyle": {
-              "description": "The line style of the reference line.",
-              "type": "string",
-              "value": "solid",
-              "enumValues": [
-                "dashed",
-                "dotted",
-                "solid"
-              ],
-              "propertyEditorValues": {
-                "dashed": {
-                  "displayName": "Dashed"
-                },
-                "dotted": {
-                  "displayName": "Dotted"
-                },
-                "solid": {
-                  "displayName": "Solid"
-                }
-              }
-            },
-            "lineType": {
-              "description": "The line type of the reference line. Only applies if the line value is not constant. centeredStepped and centeredSegmented are not supported for polar, scatter, and bubble charts.",
-              "type": "string",
-              "value": "straight",
-              "enumValues": [
-                "centeredSegmented",
-                "centeredStepped",
-                "curved",
-                "segmented",
-                "stepped",
-                "straight"
-              ],
-              "propertyEditorValues": {
-                "centeredSegmented": {
-                  "displayName": "Centered Segmented"
-                },
-                "centeredStepped": {
-                  "displayName": "Centered Stepped"
-                },
-                "curved": {
-                  "displayName": "Curved"
-                },
-                "segmented": {
-                  "displayName": "Segmented"
-                },
-                "stepped": {
-                  "displayName": "Stepped"
-                },
-                "straight": {
-                  "displayName": "Straight"
-                }
-              }
-            },
-            "lineWidth": {
-              "description": "The width of the reference line.",
-              "type": "number",
-              "value": null,
-              "minimum": 0,
-              "units": "pixels"
-            },
-            "location": {
-              "description": "The location of the reference object relative to the data items.",
-              "type": "string",
-              "value": "back",
-              "enumValues": [
-                "back",
-                "front"
-              ],
-              "propertyEditorValues": {
-                "back": {
-                  "displayName": "Back"
-                },
-                "front": {
-                  "displayName": "Front"
-                }
-              }
-            },
-            "low": {
-              "description": "The low value of a reference area. This property defines a constant value across the entire reference area and is ignored if the items array is specified.",
-              "type": "number",
-              "value": null
-            },
-            "shortDesc": {
-              "description": "The description of this object. This is used for accessibility and also for customizing the tooltip text.",
-              "type": "string",
-              "value": null
-            },
-            "svgClassName": {
-              "description": "The CSS style class to apply to the reference object. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the reference object color attribute.",
-              "type": "string",
-              "value": null
-            },
-            "svgStyle": {
-              "description": "The inline style to apply to the reference object. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the reference object color attribute.",
-              "type": "object",
-              "value": null
-            },
-            "text": {
-              "description": "The text displayed in the legend for the reference object.",
-              "type": "string",
-              "value": null,
-              "translatable": true
-            },
-            "type": {
-              "description": "The type of reference object being shown.",
-              "type": "string",
-              "value": "line",
-              "enumValues": [
-                "area",
-                "line"
-              ],
-              "propertyEditorValues": {
-                "area": {
-                  "displayName": "Area"
-                },
-                "line": {
-                  "displayName": "Line"
-                }
-              }
-            },
-            "value": {
-              "description": "The value of a reference line. This property defines a constant value across the entire reference line and is ignored if the items array is specified.",
-              "type": "number",
-              "value": null
-            }
-          }
+          "type": "Array<Object>",
+          "value": []
         },
         "rendered": {
           "description": "Defines whether the axis is rendered.",
@@ -6154,12 +4377,12 @@
         },
         "tickLabel": {
           "description": "An object defining the properties of the tick labels.",
-          "type": "object",
+          "type": "Object",
           "value": {},
           "properties": {
             "converter": {
               "description": "The converter (an object literal or instance that duck types oj.Converter) to format the labels. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.",
-              "type": "object",
+              "type": "Object",
               "value": null
             },
             "position": {
@@ -6235,7 +4458,7 @@
             },
             "style": {
               "description": "The CSS style object defining the style of the labels.",
-              "type": "object",
+              "type": "Object",
               "value": {}
             }
           }
@@ -6248,7 +4471,7 @@
         },
         "titleStyle": {
           "description": "The CSS style object defining the style of the axis title.",
-          "type": "object",
+          "type": "Object",
           "value": {}
         },
         "viewportMax": {
@@ -6323,10 +4546,10 @@
         {
           "name": "groupIndex",
           "description": "the group index",
-          "type": "String"
+          "type": "string"
         }
       ],
-      "return": "String"
+      "return": "string"
     },
     "getSeries": {
       "description": "Returns the series corresponding to the given index",
@@ -6334,18 +4557,18 @@
         {
           "name": "seriesIndex",
           "description": "the series index",
-          "type": "String"
+          "type": "string"
         }
       ],
-      "return": "String"
+      "return": "string"
     },
     "getGroupCount": {
       "description": "Returns number of groups in the chart data",
-      "return": "Number"
+      "return": "number"
     },
     "getSeriesCount": {
       "description": "Returns number of series in the chart data",
-      "return": "Number"
+      "return": "number"
     },
     "getDataItem": {
       "description": "Returns an object with the following properties for automation testing verification of the data item with\nthe specified series and group indices.",
@@ -6389,12 +4612,12 @@
         {
           "name": "x",
           "description": "The X coordinate relative to the component.",
-          "type": "Number"
+          "type": "number"
         },
         {
           "name": "y",
           "description": "The Y coordinate relative to the component.",
-          "type": "Number"
+          "type": "number"
         }
       ],
       "return": "Object"
@@ -6411,7 +4634,8 @@
       "return": "Object|null"
     },
     "refresh": {
-      "description": "Refreshes the component."
+      "description": "Refreshes the component.",
+      "return": "void"
     },
     "setProperty": {
       "description": "Sets a property or a single subproperty for complex properties and notifies the component\nof the change, triggering a [property]Changed event.",
@@ -6426,7 +4650,8 @@
           "description": "The new value to set the property to.",
           "type": "*"
         }
-      ]
+      ],
+      "return": "void"
     },
     "getProperty": {
       "description": "Retrieves a value for a property or a single subproperty for complex properties.",
@@ -6447,7 +4672,8 @@
           "description": "An object containing the property and value pairs to set.",
           "type": "Object"
         }
-      ]
+      ],
+      "return": "void"
     }
   },
   "events": {

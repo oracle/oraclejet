@@ -1,9 +1,15 @@
 {
   "name": "oj-navigation-list",
-  "version": "4.2.0",
-  "jetVersion": "4.2.0",
+  "version": "5.0.0",
+  "jetVersion": "5.0.0",
   "displayName": "Navigation List",
   "preview": true,
+  "roles": [
+    "menu",
+    "tree",
+    "listbox",
+    "toolbar"
+  ],
   "styleClasses": [
     {
       "styleGroup": [
@@ -78,7 +84,7 @@
       "description": "Under normal circumstances this class is applied automatically. It is documented here for the rare cases that an app developer needs per-instance control.\nThe \"oj-focus-highlight\" class applies focus styling that may not be desirable when the focus results from pointer interaction (touch or mouse), but which is needed for accessibility when the focus occurs by a non-pointer mechanism, for example keyboard or initial page load.\nThe application-level behavior for this component is controlled in the theme by the \"$focusHighlightPolicy\" SASS variable; however, note that this same variable controls the focus highlight policy of many components and patterns. The values for the variable are:\n\"nonPointer\": \"oj-focus-highlight\" is applied only when focus is not the result of pointer interaction. Most themes default to this value.\n\"all\": \"oj-focus-highlight\" is applied regardless of the focus mechanism.\n\"none\": \"oj-focus-highlight\" is never applied. This behavior is not accessible, and is intended for use when the application wishes to use its own event listener to precisely control when the class is applied (see below). The application must ensure the accessibility of the result.\nTo change the behavior on a per-instance basis, the application can set the SASS variable as desired and then use event listeners to toggle this class as needed."
     }
   ],
-  "description": "JET Navigation List enhances a HTML list element into a themable, WAI-ARIA compliant, mobile friendly component with advance interactive features",
+  "description": "Displays items as a collapsible or sliding navigation list with highly interactive features.",
   "properties": {
     "currentItem": {
       "description": "Gets and sets the key of the item that should have keyboard focus.",
@@ -89,7 +95,7 @@
     },
     "data": {
       "description": "Gets and sets the data provider for Navigation List.",
-      "type": "oj.TableDataSource|oj.TreeDataSource",
+      "type": "oj.TableDataSource|oj.TreeDataSource|oj.DataProvider|null",
       "displayName": "Data",
       "value": null
     },
@@ -158,6 +164,13 @@
         }
       }
     },
+    "expanded": {
+      "description": "Specifies the key set containing the keys of the items that should be expanded. Use the ExpandedKeySet class to specify items to expand. Use the ExpandAllKeySet class to expand all items.",
+      "type": "KeySet",
+      "displayName": "Expanded",
+      "value": "new ExpandedKeySet();",
+      "writeback": true
+    },
     "hierarchyMenuThreshold": {
       "description": "Gets and sets the level at which user can see hierarchical menu button (defaults to 0 if not specified in theme).",
       "type": "number",
@@ -166,7 +179,7 @@
     },
     "item": {
       "description": "Customize the functionalities of each item in Navigation List.",
-      "type": "",
+      "type": "Object",
       "displayName": "Item",
       "properties": {
         "renderer": {
@@ -215,10 +228,10 @@
       "writeback": true
     },
     "translations": {
-      "description": "A collection of translated resources from the translation bundle, or null if this\ncomponent has no resources. Resources may be accessed and overridden individually or collectively, as seen in the examples.\n\nIf this component has translations, their documentation immediately follows this doc entry.",
-      "type": "Object",
+      "description": "A collection of translated resources from the translation bundle, or null if this\ncomponent has no resources. Resources may be accessed and overridden individually or collectively, as seen in the examples. If the component does not contain any translatable resource, the default value of this attribute will be \nnull. If not, an object containing all resources relevant to the component.\n\nIf this component has translations, their documentation immediately follows this doc entry.",
+      "type": "Object|null",
       "displayName": "Translations",
-      "value": null,
+      "translatable": true,
       "properties": {
         "defaultRootLabel": {
           "description": "Provides properties to customize the title text used by Sliding Navigation List for root node. \n\nSee the translations attribute for usage examples.",
@@ -251,7 +264,8 @@
       "return": "Object|null"
     },
     "refresh": {
-      "description": "Refreshes the visual state of the Navigation List. JET components require a refresh() after the DOM is programmatically changed underneath the component. This method does not accept any arguments."
+      "description": "Refreshes the visual state of the Navigation List. JET components require a refresh() after the DOM is programmatically changed underneath the component. This method does not accept any arguments.",
+      "return": "void"
     },
     "setProperty": {
       "description": "Sets a property or a single subproperty for complex properties and notifies the component\nof the change, triggering a [property]Changed event.",
@@ -266,7 +280,8 @@
           "description": "The new value to set the property to.",
           "type": "*"
         }
-      ]
+      ],
+      "return": "void"
     },
     "getProperty": {
       "description": "Retrieves a value for a property or a single subproperty for complex properties.",
@@ -287,7 +302,8 @@
           "description": "An object containing the property and value pairs to set.",
           "type": "Object"
         }
-      ]
+      ],
+      "return": "void"
     }
   },
   "events": {
@@ -296,11 +312,11 @@
       "detail": {
         "action": {
           "description": "the action that starts the animation. See animation section for a list of actions.",
-          "type": "Object"
+          "type": "string"
         },
         "element": {
           "description": "the target of animation.",
-          "type": "Object"
+          "type": "Element"
         },
         "endCallback": {
           "description": "if the event listener calls event.preventDefault to cancel the default animation, it must call the endCallback function when it finishes its own animation handling and when any custom animation ends.",
@@ -313,11 +329,11 @@
       "detail": {
         "action": {
           "description": "the action that started the animation. See animation section for a list of actions.",
-          "type": "Object"
+          "type": "string"
         },
         "element": {
           "description": "the target of animation.",
-          "type": "Object"
+          "type": "Element"
         }
       }
     },

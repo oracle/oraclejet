@@ -1,4 +1,5 @@
 /**
+ * @license
  * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
@@ -13,8 +14,27 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
  */
 
 /**
+ * @constructor
+ * @private
+ */
+function ojOptGroup(context) {
+  this.updateDOM = function() {
+    var customRenderer = context.element["customOptgroupRenderer"];
+    if (customRenderer && typeof customRenderer === "function")
+      customRenderer(context.element);    
+  };
+}
+/**
+ * Copyright (c) 2017, Oracle and/or its affiliates.
+ * All rights reserved.
+ */
+
+/**
  * @ojcomponent oj.ojOptgroup
  * @since 4.0.0
+ * @ojdisplayname Option Group
+ * @ojshortdesc Supports grouping of child oj-option elements.
+ * @ojrole option
  * @ojstatus preview
  *
  * @classdesc
@@ -43,11 +63,12 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
  * <p>Disables the oj-optgroup if set to <code class="prettyprint">true</code>.
  *
  * @name disabled
+ * @ojshortdesc Disables the group if set to true.
  * @expose
  * @memberof oj.ojOptgroup
  * @instance
  * @type {boolean}
- * @default <code class="prettyprint">false</code>
+ * @default false
  *
  * @example <caption>Initialize the oj-optgroup with the <code class="prettyprint">disabled</code> attribute specified:</caption>
  * &lt;oj-optgroup disabled="[[isDisabled]]">&lt;/oj-optgroup>
@@ -64,6 +85,9 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
  * <p>Specifies the oj-optgroup's label.
  *
  * @name label
+ * @ojshortdesc The group label.
+ * @ojrequired
+ * @ojtranslatable
  * @expose
  * @memberof oj.ojOptgroup
  * @instance
@@ -143,28 +167,6 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
  * myComponent.setProperties({"prop1": "value1", "prop2.subprop": "value2", "prop3": "value3"});
  */ 
 /**
- * Copyright (c) 2017, Oracle and/or its affiliates.
- * All rights reserved.
- */
-/**
- * Option Group Renderer.
- * @ignore
- */
-var OptionGroupRenderer = {};
-
-/**
- * Default option group renderer.
- * @ignore
- */
-OptionGroupRenderer.render = function(elem)
-{
-  var customRenderer = elem["customOptgroupRenderer"];
-    
-    if (customRenderer && typeof customRenderer === "function")
-      customRenderer(elem);    
-};
- 
-/**
  * @protected
  * @ignore
  */
@@ -183,7 +185,7 @@ OptionGroupRenderer.render = function(elem)
       "customOptgroupRenderer": {}
     },
     "extension": {
-      _RENDER_FUNC: OptionGroupRenderer.render
+      _CONSTRUCTOR: ojOptGroup
     }
   };
   oj.CustomElementBridge.registerMetadata('oj-optgroup', null, ojOptgroupMeta);

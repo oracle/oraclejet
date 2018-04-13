@@ -1,4 +1,5 @@
 /**
+ * @license
  * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
@@ -50,8 +51,17 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojarraytabledatasour
   * @since 3.0.0
   * @ojstatus preview
   * @class oj.ojColorPalette
-  * @ojshortdesc Color Palette element that allows an application to display a set of pre-defined
-  * colors from which a specific color can be selected.
+  * @ojshortdesc Displays a set of pre-defined colors from which a specific color can be selected.
+  * @ojsignature [{
+  *                target: "Type",
+  *                value: "class ojColorPalette extends editableValue<oj.Color, ojColorPaletteSettableProperties>"
+  *               },
+  *               {
+  *                target: "Type",
+  *                value: "ojColorPaletteSettableProperties extends editableValueSettableProperties<oj.Color>",
+  *                for: "SettableProperties"
+  *               }
+  *              ]
   *
   * @classdesc
   * <h3 id="#colorPaletteOverview-section">
@@ -123,11 +133,12 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojarraytabledatasour
            * Specify an array of objects defining the palette's color set, and optionally, descriptive labels for the colors.
            * Each object has the following structure:
            * @property {oj.Color} color the color definition
-           * @property {string} label optional descriptive string (refer to attribute <em>label-display</em>).
+           * @property {string} [label] optional descriptive string (refer to attribute <em>label-display</em>).
            *                                         If omitted, <em>label</em> defaults to the color's hex string format.
            *
            * @member
-           * @type {Array}
+           * @type {Array.<Object>}
+           * @ojsignature  {target: "Type", value: "Array<{color: oj.Color, label?: string}>"} 
            * @default null
            * @ojshortdesc Specifies an array of objects defining the palette's color set.
            * @example <caption>Initialize the color palette with the <code class="prettyprint">palette</code> attribute specified:</caption>
@@ -144,7 +155,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojarraytabledatasour
            * var palette = [{color:new oj.Color('#ffffff'), label: 'White'},
               {color: new oj.Color('#77bb99'), label: 'Std text'},
               . . .];
-           * myColorPalette.pallete = palette;
+           * myColorPalette.palette = palette;
            * @expose
            * @instance
            * @memberof oj.ojColorPalette
@@ -318,10 +329,10 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojarraytabledatasour
      * Add an entry to the palette.
      * @param {oj.Color | Object}   newEntry  An oj.Color object specfying the color to be added,
      * or an object of the same format as used for defining a palette - see the <code class="prettyprint">palette</code> option.
+     * @return {void}
      * @memberof oj.ojColorPalette
      * @expose
-     * @deprecated 4.0.0 This is deprecated for API consistency with the remove function. The same functionality can be achieved by mutating the observable array
-     * that is set as the palette.
+     * @ojdeprecated {since:"4.0.0", description: "This is deprecated for API consistency with the remove function. The same functionality can be achieved by mutating the observable array that is set as the palette."}
      * @ignore
      * @instance
      */
@@ -366,10 +377,10 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojarraytabledatasour
       * @param {Object | number | oj.Color}  palEntry  Can be the zero-based index to the entry, or an
       * object containing the color specfication (using the same format as used for defining the
       * palette - see the <code class="prettyprint">palette</code> option, or an oj.Color object.
+      * @return {void}
       * @memberof oj.ojColorPalette
       * @expose
-      * @deprecated 4.0.0 This is deprecated due to a name collision with HTMLElement. The same functionality can be achieved by mutating the observable array
-      * that is set as the palette.
+      * @ojdeprecated {since:"4.0.0", description: "This is deprecated due to a name collision with HTMLElement. The same functionality can be achieved by mutating the observable array that is set as the palette."}
       * @ignore
       * @instance
       */
@@ -531,10 +542,17 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojarraytabledatasour
      _setOption: function (key, newval, flags)
      {
         var originalValue = this.options["labelledBy"];
+        var bSkip = false;
 
         switch (key)
         {
-           case "value"  :        this._setOptValue(newval) ;
+           case "value"  :        // Fix  - COULD NOT CHANGE A PALETTE VALUE FROM JAVASCRIPT
+                                  // If the value has changed and if the value is in the palette, 
+                                  // ojlistview would trigger selection event for the color in palette (see method _onLVOptionChange).
+                                  // The selection handler (_selected) would set new value (in method _SetValue), which would
+                                  // internally set the new value in options and fires option change event.
+                                  // So in that case, skip calling _super below to avoid duplicate firing of option change event.
+                                  bSkip = this._setOptValue(newval) ;
                                   break ;
            case "palette" :       this._setOptPalette(newval) ;
                                   break ;
@@ -551,7 +569,8 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojarraytabledatasour
                                   break;
         }
 
-        this._super(key, newval, flags);
+        if (!bSkip)
+          this._super(key, newval, flags);
      },
 
     /**
@@ -1106,10 +1125,15 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojarraytabledatasour
             {
                // Color is different from current
                palIndex = this._findColorInPalette(color) ;
-               if (palIndex >= 0)
+               
+               // Fix  - COULD NOT CHANGE A PALETTE VALUE FROM JAVASCRIPT 
+               // use the id instead of the index
+               // this is needed because listview is looking up the id for selection
+               if (palIndex >= 0 && this._palette[palIndex]['id'] != null)
                {
-                  // Found in palette, so select it
-                  pal.push(palIndex) ;
+                 // Found in palette, so select it
+                 var palId = this._palette[palIndex]['id'];
+                 pal.push(palId) ;
                }
                this._$LV.ojListView("option", "selection", pal) ;   // select, or deselect if not found
                this._value = color ;
@@ -1117,7 +1141,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojarraytabledatasour
           }
         }
 
-        return (palIndex >= 0) ;        // return index or -1
+        return (pal.length > 0) ;        // return true if at least one palette color is selected
      },
 
      /**
@@ -1536,7 +1560,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojarraytabledatasour
 
      /**
       * Returns a new (unique) swatch id.
-      * @returns swatch id
+      * @returns {string} swatch id
       * @memberof oj.ojColorPalette
       * @instance
       * @private
@@ -1637,10 +1661,19 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojarraytabledatasour
      * @override
      */
     _SetDisplayValue: function (displayValue) {
-      if (typeof displayValue === "string")
-        this._value = new oj.Color(displayValue);
+      // If displayValue is null/undefined, will substitute black.
+      if (displayValue)
+      {
+        if (typeof displayValue === "string")
+          this._value = new oj.Color(displayValue);
+        else
+          this._value = displayValue;
+      }
       else
-        this._value = displayValue;
+      {
+        this._value = oj.Color.BLACK;
+        oj.Logger.warn("JET Color Palette (id='" + this.element.attr("id") + "'): Substituting oj.Color.BLACK since display value is not defined.");
+      }
     },
 
     /**
@@ -1804,6 +1837,15 @@ var ojColorPaletteMeta = {
     "swatchSize": {
       "type": "string",
       "enumValues": ["lg", "sm", "xs"]
+    },
+    "translations": {
+      "type": "Object",
+      "properties": {
+        "labelNone": {
+          "type": "string",
+          "value": "None"
+        }
+      }
     },
     "value": {
       "writeback": true

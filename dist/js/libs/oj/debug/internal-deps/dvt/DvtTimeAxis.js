@@ -9,9 +9,9 @@ define(['./DvtToolkit'], function(dvt) {
 (function(dvt) {
 /**
  * TimeAxis component. Use the newInstance function to instantiate.
- * @param {type} context
- * @param {type} callback
- * @param {type} callbackObj
+ * @param {dvt.Context} context The rendering context.
+ * @param {function} callback The function that should be called to dispatch component events.
+ * @param {object} callbackObj The optional object instance on which the callback function is defined.
  * @class
  * @constructor
  * @extends {dvt.BaseComponent}
@@ -77,7 +77,7 @@ dvt.TimeAxis.getPositionDate = function(startTime, endTime, pos, width)
 /**
  * Returns a new instance of dvt.TimeAxis.
  * @param {dvt.Context} context The rendering context.
- * @param {string} callback The function that should be called to dispatch component events.
+ * @param {function} callback The function that should be called to dispatch component events.
  * @param {object} callbackObj The optional object instance on which the callback function is defined.
  * @return {dvt.TimeAxis}
  */
@@ -96,7 +96,7 @@ dvt.TimeAxis._VALID_SCALES = ['seconds', 'minutes', 'hours', 'days', 'weeks', 'm
 /**
  * Initializes the component.
  * @param {dvt.Context} context The rendering context.
- * @param {string} callback The function that should be called to dispatch component events.
+ * @param {function} callback The function that should be called to dispatch component events.
  * @param {object} callbackObj The optional object instance on which the callback function is defined.
  * @protected
  */
@@ -326,7 +326,7 @@ dvt.TimeAxis.prototype.getPreferredLength = function(options, minViewPortLength)
   var props = this.Parse(this.Options);
   this._applyParsedProperties(props);
 
-  if (this._scale)
+  if (this.hasValidOptions())
   {
     this.prepareTimeAxisZoomLevelIntervals(this._start, this._end, minViewPortLength);
   }
@@ -995,6 +995,7 @@ dvt.TimeAxis.prototype.setZoomLevelOrder = function(zoomLevelOrder)
 {
   this._zoomLevelOrder = zoomLevelOrder;
 };
+
 // todo: this should be used by Timeline also
 var DvtTimeAxisCalendar = function(options) 
 {
@@ -1112,6 +1113,7 @@ DvtTimeAxisCalendar.prototype.getNextDate = function(time, scale)
   }
   return _nextDate;
 };
+
 var DvtTimeAxisDefaults = function()
 {
   this.Init({'alta': DvtTimeAxisDefaults.VERSION_1});
@@ -1129,6 +1131,7 @@ DvtTimeAxisDefaults.VERSION_1 = {
   'separatorColor': '#bcc7d2',
   'labelStyle': new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_ALTA_12 + 'color: #333333;')
 };
+
 var DvtTimeAxisFormatter = function(type, dateFormatStrings, locale) 
 {
   this.Init(type, dateFormatStrings, locale);
@@ -1366,6 +1369,7 @@ DvtTimeAxisFormatter.prototype.getDateFormatValue = function(date, mask, isUTC)
     }
   }
 };
+
 var DvtTimeAxisParser = function() {};
 
 dvt.Obj.createSubclass(DvtTimeAxisParser, dvt.Obj, 'DvtTimeAxisParser');
@@ -1412,6 +1416,7 @@ DvtTimeAxisParser.prototype.ParseRootAttributes = function()
 
   return ret;
 };
+
 /**
  * Renderer for dvt.TimeAxis.
  * @class
@@ -1673,6 +1678,7 @@ DvtTimeAxisRenderer._addTick = function(context, container, x1, x2, y1, y2, stro
 
   return line;
 };
+
 /**
  * Style related utility functions for dvt.TimeAxis.
  * @class
@@ -1873,10 +1879,11 @@ DvtTimeAxisStyleUtils.isBorderLeftVisible = function(options)
 {
   return options['_resources'] ? options['_resources']['borderLeftVisible'] : false;
 };
+
 dvt.exportProperty(dvt, 'TimeAxis', dvt.TimeAxis);
 dvt.exportProperty(dvt.TimeAxis, 'newInstance', dvt.TimeAxis.newInstance);
 dvt.exportProperty(dvt.TimeAxis.prototype, 'render', dvt.TimeAxis.prototype.render);
-})(dvt);
 
+})(dvt);
   return dvt;
 });

@@ -1,4 +1,5 @@
 /**
+ * @license
  * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
@@ -222,7 +223,7 @@ var yearDisplay = oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_T
  * @augments oj.ojInputDate
  * @since 4.0.0
  * @ojstatus preview
- * @ojshortdesc Inline Date Picker Element
+ * @ojshortdesc An inline element for picking a date value.
  * @ojdisplayname Inline Date Picker
  * @ojrole combobox
  *
@@ -277,11 +278,22 @@ var yearDisplay = oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_T
 /**
  * @ojcomponent oj.ojInputDate
  * @augments oj.inputBase
- * @ojsignature class ojInputDate extends inputBase<string>
+ * @ojsignature [{
+ *                target: "Type",
+ *                value: "class ojInputDate<SP extends ojInputDateSettableProperties = ojInputDateSettableProperties> extends inputBase<string, SP>"
+ *               },
+ *               {
+ *                target: "Type",
+ *                value: "ojInputDateSettableProperties extends inputBaseSettableProperties<string>",
+ *                for: "SettableProperties"
+ *               }
+ *              ]
  * @since 0.6
  * @ojstatus preview
- * @ojshortdesc Date Picker Element
+ * @ojshortdesc Provides basic support for specifying a date value.
  * @ojrole combobox
+ * @ojtsimport ojvalidation-base
+ * @ojtsimport ojvalidation-datetime
  *
  * @classdesc
  * <h3 id="inputDateOverview-section">
@@ -342,7 +354,7 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
   _ELEMENT_TRIGGER_WRAPPER_CLASS_NAMES : "",
   _INPUT_HELPER_KEY: "inputHelp",
   _ATTR_CHECK : [{"attr": "type", "setMandatory": "text"}],
-  _GET_INIT_OPTIONS_PROPS:  [{attribute: "disabled", validateOption: true},
+  _GET_INIT_OPTIONS_PROPS_FOR_WIDGET:  [{attribute: "disabled", validateOption: true},
                              {attribute: 'pattern'},
                              {attribute: "title"},
                              {attribute: "placeholder"},
@@ -399,7 +411,7 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
      *
      * @expose
      * @instance
-     * @memberof! oj.ojDatePicker
+     * @memberof oj.ojDatePicker
      * @name datePicker
      * @type {Object}
      * @ojtsignore
@@ -606,6 +618,7 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
        * @memberof! oj.ojInputDate
        * @instance
        * @type {string|number}
+       * @ojsignature {target: "Type", value:"'numberOfMonths'|number"}
        * @default "numberOfMonths"
        */
       stepMonths : "numberOfMonths",
@@ -683,6 +696,7 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
      * @instance
      * @memberof! oj.ojInputDate
      * @type {Object}
+     * @ojsignature  { target: "Type", value: "oj.Converter<string>|oj.Validation.FactoryRegisteredValidatorOrConverter|null"}
      * @default oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({"day":"2-digit","month":"2-digit","year":"2-digit"})
      */
     converter : oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter(
@@ -832,6 +846,9 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
      * <p>The supported attributes are <code class="prettyprint">class</code> and <code class="prettyprint">style</code>, which are appended to the picker's class and style, if any.
      * Note: 1) pickerAttributes is not applied in the native theme.
      * 2) setting this property after element creation has no effect.
+     * 
+     * @property {string=} style
+     * @property {string=} class
      *
      * @example <caption>Initialize the inputDate specifying a set of attributes to be set on the picker DOM element:</caption>
      * myInputDate.pickerAttributes = {
@@ -931,6 +948,7 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
      * @instance
      * @memberof! oj.ojInputDate
      * @type {Function}
+     * @ojsignature {target: "Type", value: "(param: oj.ojInputDate.DayFormatterInput)=> (null|'all'|oj.ojInputDate.DayFormatterOutput)"}
      * @default null
      */
     dayFormatter : null
@@ -948,9 +966,12 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
      * @expose
      * @name dayMetaData
      * @instance
-     * @memberof! oj.ojInputDate
+     * @memberof oj.ojInputDate
      * @type {object}
      * @default null
+     * @ojsignature [{target: "Type", 
+     *                value: "{[key:string]: {[key:string]: {[key:string]: {disabled?: boolean, className?: string, tooltip?: string}}}}"}
+     *              ]
      * @example
      * {2013: {11: {25: {disabled: true, className: 'holiday', tooltip: 'Stuff to display'}, 5: {disabled: true}}}}}
      */
@@ -1037,6 +1058,7 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
      * @name validators
      * @instance
      * @memberof oj.ojInputDate
+     * @ojsignature  { target: "Type", value: "Array<oj.Validator<string>|oj.Validation.FactoryRegisteredValidatorOrConverter>|null"}
      * @type {Array|undefined}
      */
 
@@ -1060,7 +1082,7 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
      * @expose
      * @name value
      * @instance
-     * @memberof! oj.ojDatePicker
+     * @memberof oj.ojDatePicker
      * @type {string}
      * @ojwriteback
      */
@@ -3492,7 +3514,17 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
           break;
         case kc.UP: ;
         case kc.DOWN:
-          this._dpDiv.find(".oj-datepicker-calendar").focus();
+          // when entering the datepicker via the up/down arrows, we should put the focus on the
+          // current day, which will be the only tabbable stop.  This also helps an IE11 bug that
+          // wasn't allowing tabbing to different elements in the popup ().
+          // This also fixes an unreported issue of needing to tab an extra time before it tabs to
+          // the next tab stop (all browsers).
+          var datePickerCalElem = this._dpDiv.find(".oj-datepicker-calendar")[0]
+          var tabStop = oj.FocusUtils.focusFirstTabStop(datePickerCalElem);
+          // if we don't find a tab stop, we'll focus on the whole calendar like before.
+          if (!tabStop)
+            datePickerCalElem.focus();
+          
           handled = true;
           break;
         default: ;
@@ -3781,6 +3813,7 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
    * @expose
    * @memberof oj.ojInputDate
    * @instance
+   * @return {void}
    */
   hide : function ()
   {
@@ -3835,6 +3868,7 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
    * @expose
    * @memberof oj.ojInputDate
    * @instance
+   * @return {void}
    */
   refresh : function ()
   {
@@ -3851,6 +3885,7 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
    * @expose
    * @memberof oj.ojInputDate
    * @instance
+   * @return {void}
    */
   show : function ()
   {
@@ -4441,6 +4476,21 @@ oj.Components.setDefaultOptions(
  */
 
 /**
+ * Input type for the dayFormatter callback function
+ * @typedef {object} oj.ojInputDate.DayFormatterInput
+ * @property {number} fullYear
+ * @property {number} month
+ * @property {number} date
+ */
+/**
+ * Output type for the dayFormatter callback function
+ * @typedef {object} oj.ojInputDate.DayFormatterOutput
+ * @property {boolean=} disabled
+ * @property {string=} className
+ * @property {string=} tooltip
+ */
+
+/**
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
  */
@@ -4523,10 +4573,19 @@ function _getTimePickerConverter(converter, addOpts) {
 /**
  * @ojcomponent oj.ojInputTime
  * @augments oj.inputBase
- * @ojsignature class ojInputTime extends inputBase<string>
+ * @ojsignature [{
+ *                target: "Type",
+ *                value: "class ojInputTime extends inputBase<string, ojInputTimeSettableProperties>"
+ *               },
+ *               {
+ *                target: "Type",
+ *                value: "ojInputTimeSettableProperties extends inputBaseSettableProperties<string>",
+ *                for: "SettableProperties"
+ *               }
+ *              ]
  * @since 0.6
  * @ojstatus preview
- * @ojshortdesc Time Picker Element
+ * @ojshortdesc Provides basic support for specifying a time value.
  * @ojrole combobox
  *
  * @classdesc
@@ -4566,7 +4625,7 @@ oj.__registerWidget("oj.ojInputTime", $['oj']['inputBase'],
   _ELEMENT_TRIGGER_WRAPPER_CLASS_NAMES : "",
   _INPUT_HELPER_KEY: "inputHelp",
   _ATTR_CHECK : [{"attr": "type", "setMandatory": "text"}],
-  _GET_INIT_OPTIONS_PROPS:  [{attribute: "disabled", validateOption: true},
+  _GET_INIT_OPTIONS_PROPS_FOR_WIDGET:  [{attribute: "disabled", validateOption: true},
                              {attribute: 'pattern'},
                              {attribute: "title"},
                              {attribute: "placeholder"},
@@ -4603,6 +4662,7 @@ oj.__registerWidget("oj.ojInputTime", $['oj']['inputBase'],
      * @memberof! oj.ojInputTime
      * @instance
      * @type {Object}
+     * @ojsignature  { target: "Type", value: "oj.Converter<string>|oj.Validation.FactoryRegisteredValidatorOrConverter|null"}
      * @default oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({"hour": "2-digit", "minute": "2-digit"})
      */
     converter : oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter(
@@ -4712,6 +4772,9 @@ oj.__registerWidget("oj.ojInputTime", $['oj']['inputBase'],
      * <p>The supported attributes are <code class="prettyprint">class</code> and <code class="prettyprint">style</code>, which are appended to the picker's class and style, if any.
      * Note: 1) pickerAttributes is not applied in the native theme.
      * 2) setting this property after element creation has no effect.
+     * 
+     * @property {string=} style
+     * @property {string=} class
      *
      * @example <caption>Initialize the inputTime specifying a set of attributes to be set on the picker DOM element:</caption>
      * myInputTime.pickerAttributes = {
@@ -4805,7 +4868,8 @@ oj.__registerWidget("oj.ojInputTime", $['oj']['inputBase'],
      * // Set all.  Must list every timePicker key, as those not listed are lost.
      * myComponent.timePicker = {
      *     timeIncrement: '00:10:00:00',
-     *     showOn: 'image'
+     *     showOn: 'image',
+     *     footerLayout: 'now'
      * };
      */
     timePicker:
@@ -4940,6 +5004,7 @@ oj.__registerWidget("oj.ojInputTime", $['oj']['inputBase'],
      * @name validators
      * @instance
      * @memberof oj.ojInputTime
+     * @ojsignature  { target: "Type", value: "Array<oj.Validator<string>|oj.Validation.FactoryRegisteredValidatorOrConverter>|null"}
      * @type {Array|undefined}
      */
 
@@ -4981,9 +5046,9 @@ oj.__registerWidget("oj.ojInputTime", $['oj']['inputBase'],
     //when it is of ojInputDateTime component, do not initialize values from dom node since it's an empty input node if inline or
     //if not inline the values should be taken care of by ojInputDateTime. Note that option values would have been passed by
     //ojInputDateTime
-    if(this.options["datePickerComp"] === null)
+    if(this.options["datePickerComp"] === null && !this._IsCustomElement())
     {
-      oj.EditableValueUtils.initializeOptionsFromDom(this._GET_INIT_OPTIONS_PROPS, constructorOptions, this);
+      oj.EditableValueUtils.initializeOptionsFromDom(this._GET_INIT_OPTIONS_PROPS_FOR_WIDGET, constructorOptions, this);
     }
   },
 
@@ -5654,6 +5719,7 @@ oj.__registerWidget("oj.ojInputTime", $['oj']['inputBase'],
    *
    * @expose
    * @instance
+   * @return {void}
    * @memberof! oj.ojInputTime
    */
   show : function ()
@@ -5783,6 +5849,7 @@ oj.__registerWidget("oj.ojInputTime", $['oj']['inputBase'],
    * @expose
    * @instance
    * @memberof! oj.ojInputTime
+   * @return {void}
    */
   hide : function ()
   {
@@ -5847,6 +5914,7 @@ oj.__registerWidget("oj.ojInputTime", $['oj']['inputBase'],
    * @expose
    * @instance
    * @memberof oj.ojInputTime
+   * @return {void}
    */
   refresh : function ()
   {
@@ -6769,380 +6837,6 @@ oj.Components.setDefaultOptions(
  * var node = myInputTime.getNodeBySubId( {'subId': 'oj-timepicker-now'} );
  */
 
-function createWheelItem(model, position, isMeridian)
-{
-  var _item;
-  var _position;
-  var _disabled = false;
-
-  function updatePosition(newPosition)
-  {
-    _item.classList.remove("oj-timepicker-wheel-item-position" + _position);
-    _item.classList.add("oj-timepicker-wheel-item-position" + newPosition);
-    _position = newPosition;
-    return Promise.resolve();
-  }
-
-  function itemFocusHandler()
-  {
-    _item.parentNode.focus();
-  }
-
-  var text = model.getText(position);
-  if (text)
-  {
-    _item = document.createElement("div");
-    _item.classList.add("oj-timepicker-wheel-item");
-    _item.classList.add("oj-timepicker-wheel-item-position" + position);
-    _position = position;
-    if (model.isDisabled(position))
-    {
-      _disabled = true;
-      _item.classList.add("oj-disabled");
-    }
-
-    _item.ojUpdatePosition = updatePosition;
-    
-    var content = document.createElement("div");
-    content.textContent = text;
-    content.classList.add("oj-timepicker-wheel-item-content");
-
-    if(isMeridian) 
-    {
-      //need to add title attr for hover for long am/pm translations
-      content.setAttribute("title", text);
-    }
-
-    _item.appendChild(content); //@HTMLUpdateOK content is generated internally with content being nunmber so ok
- 
-    Object.defineProperty(_item, "ojDisabled", {
-      'enumerable': true,
-      'get': function()
-      {
-        return _disabled;
-      },
-      'set': function(disabled)
-      {
-        if (disabled !== _disabled)
-        {
-          $(_item).toggleClass("oj-disabled");
-          _disabled = disabled;
-        }
-      }
-    });
-    
-    // The item div and its content div can get focus from mouse click on IE,
-    // which doesn't happen on other browsers.  Add a focus handler so that
-    // focus can be redirected to the wheel.
-    _item.addEventListener("focus", itemFocusHandler, false);
-    content.addEventListener("focus", itemFocusHandler, false);
-  }
-
-  return _item;
-}
-
-/* global Promise, Hammer */
-
-function createWheel(model, isNumber, classList)
-{
-  var CURRENT_POSITION = 7;
-  var PAN_SPIN_THRESHOLD = 2;
-  var TAP_THRESHOLDS = [0.152, 0.362, 0.638, 0.848];
-  var MOMENTUM_FACTOR = 0.007;
-
-  var KEYCODE_BACKSPACE = 8;
-  var KEYCODE_UP = 38;
-  var KEYCODE_DOWN = 40;
-
-  var _wheel;
-  var _items = [];
-  var _panStartY;
-  var _panLastSpinY;
-  var _panLastZone;
-  var _momentum;
-  var _isMeridian = !isNumber && classList === "oj-timepicker-meridian";
-
-  createDom(classList);
-  var $wheel = $(_wheel);
-
-  defineMethods();
-  defineEvents();
-  refresh();
-
-  return _wheel;
-
-  function createDom(classList)
-  {
-    _wheel = document.createElement("div");
-    _wheel.classList.add("oj-timepicker-wheel");
-    if (classList)
-      _wheel.classList.add(classList);
-    _wheel.setAttribute("id", "_ojWheel" + createWheel.counter++);
-    _wheel.setAttribute("tabIndex", "0");
-    _wheel.setAttribute("role", "spinbutton");
-    model.wheel = _wheel;
-  }
-
-  function defineMethods()
-  {
-    _wheel.ojSpinUp = spinUp;
-    _wheel.ojSpinDown = spinDown;
-    _wheel.ojRefresh = refresh;
-    _wheel.ojDestroy = destroy;
-    _wheel.ojLinked = function()
-    {
-      return model["linked"];
-    };
-  }
-
-  function defineEvents()
-  {
-    var hammerOptions = {
-      "recognizers": [
-        [Hammer.Pan, {"direction": Hammer["DIRECTION_VERTICAL"]}],
-        [Hammer.Tap],
-        [Hammer.Swipe, {"direction": Hammer["DIRECTION_VERTICAL"]}]
-      ]
-    };
-
-    $wheel.ojHammer(hammerOptions)
-    .on("tap", tapHander)
-    .on("swipeup", swipeUpHandler)
-    .on("swipedown", swipeDownHandler)
-    .on("panstart", panStartHandler)
-    .on("panend pancancel", panEndHandler)
-    .on("panup pandown", panHandler);
-
-    _wheel.addEventListener('wheel', wheelHandler, false);
-    _wheel.addEventListener('keydown', keydownHandler, false);
-    _wheel.addEventListener('focus', focusHandler, false);
-    _wheel.addEventListener('blur', blurHandler, false);
-  }
-
-  function destroy()
-  {
-    $wheel.ojHammer()
-    .off("tap", tapHander)
-    .off("swipeup", swipeUpHandler)
-    .off("swipedown", swipeDownHandler)
-    .off("panstart", panStartHandler)
-    .off("panend pancancel", panEndHandler)
-    .off("panup pandown", panHandler);
-    $wheel.ojHammer("destroy");
-  }
-
-  function spinUp()
-  {
-    var next = _items[CURRENT_POSITION + 1];
-    if (next)
-    {
-      spin(1);
-      var oldItem = _items.shift();
-      if (oldItem)
-      {
-        _wheel.removeChild(oldItem);
-      }
-      var newItem = createWheelItem(model, CURRENT_POSITION, _isMeridian);
-      if (newItem)
-      {
-        _wheel.appendChild(newItem); //@HTMLUpdateOK newItem is generated internally using number so ok
-      }
-      _items.push(newItem);
-    }
-  }
-
-  function spinDown()
-  {
-    var prev = _items[CURRENT_POSITION - 1];
-    if (prev)
-    {
-      spin(-1);
-      var oldItem = _items.pop();
-      if (oldItem)
-      {
-        _wheel.removeChild(oldItem);
-      }
-      var newItem = createWheelItem(model, -CURRENT_POSITION, _isMeridian);
-      if (newItem)
-      {
-        _wheel.insertBefore(newItem, _items[0]); //@HTMLUpdateOK newItem is generated internally using number so ok
-      }
-      _items.unshift(newItem);
-    }
-  }
-
-  function spin(direction)
-  {
-    for (var i = 0; i < _items.length; i++)
-    {
-      var item = _items[i];
-      if (item)
-      {
-        item.ojUpdatePosition(i - CURRENT_POSITION - direction);            
-      }
-    }
-
-    _wheel.setAttribute("aria-valuenow", model.getText(0));
-  }
-
-  function refresh()
-  {
-    _items.forEach(function(item)
-    {
-      if (item)
-      {
-        _wheel.removeChild(item);
-      }
-    });
-    _items = [];
-
-    for (var offset = -CURRENT_POSITION; offset <= CURRENT_POSITION; offset++)
-    {
-      var item = createWheelItem(model, offset, _isMeridian);
-      if (item)
-      {
-        _wheel.appendChild(item); //@HTMLUpdateOK item is generated internally using number so ok
-      }
-
-      _items.push(item);
-    };
-
-    // Set the current value on the wheel for accessibility
-    _wheel.setAttribute("aria-valuenow", model.getText(0));
-  }
-
-  function keydownHandler(event)
-  {
-    var keyCode = event.keyCode;
-
-    switch (keyCode) {
-    case KEYCODE_UP:
-      model["position"]++;
-      event.preventDefault();
-      break;
-    case KEYCODE_DOWN:
-      model["position"]--;
-      event.preventDefault();
-      break;
-    case KEYCODE_BACKSPACE:
-      model.keyboardValue = model.keyboardValue.slice(0,-1);
-      event.preventDefault();
-      break;
-
-    default:
-      if ((keyCode > 47 && keyCode < 58) || // number keys
-          (keyCode > 95 && keyCode < 112) || // numpad keys
-          (!isNumber &&(keyCode > 64 && keyCode < 91))) // letter keys
-      {
-        model["keyboardValue"] += event.key;
-      }
-      break;
-    }
-  }
-
-  function tapHander(event)
-  {
-    _wheel.focus();
-    var tapY = event["gesture"]["center"].y;
-    var wheelTop = $wheel.offset().top;
-    var wheelHeight = $wheel.height();
-    var tapFraction = (tapY - wheelTop) / wheelHeight;
-    var tapZone = 0;
-
-    while ((tapZone < 4) && (tapFraction > TAP_THRESHOLDS[tapZone]))
-    {
-      tapZone++;
-    }
-
-    if (tapZone !== 2)
-    {
-      model["position"] += (tapZone - 2);
-    }
-  }
-  
-  function swipeUpHandler(event)
-  {
-    _wheel.focus();
-    var velocity = event["gesture"].velocityY;
-    var extraPixels = velocity * velocity / MOMENTUM_FACTOR;
-    _momentum = Math.floor(extraPixels / $wheel.height() * 5);
-    event.preventDefault();
-  }
-
-  function swipeDownHandler(event)
-  {
-    _wheel.focus();
-    var velocity = event["gesture"].velocityY;
-    var extraPixels = velocity * velocity / MOMENTUM_FACTOR;
-    _momentum = -Math.floor(extraPixels / $wheel.height() * 5);
-    event.preventDefault();
-  }
-
-  function panStartHandler(event)
-  {
-    _wheel.focus();
-    _panStartY = _panLastSpinY = event["gesture"]["center"].y;
-    _panLastZone = 0;
-    _momentum = 0;
-  }
- 
-  function panEndHandler(event)
-  {
-    _wheel.focus();
-    if (_momentum)
-    {
-      model["position"] += _momentum;
-    }
-      
-    _panStartY = _panLastSpinY = null;
-    _panLastZone = null;
-  }
- 
-  function panHandler(event)
-  {
-    _wheel.focus();
-    var panY = event["gesture"]["center"].y;
-    var newZone = Math.round(((_panStartY - panY) / $wheel.height()) * 5);
-    if (newZone !== _panLastZone && Math.abs(_panLastSpinY - panY) > PAN_SPIN_THRESHOLD)
-    {
-      _panLastSpinY = panY;
-      model["position"] += newZone - _panLastZone;
-      _panLastZone = newZone;
-    }
-    event.preventDefault();
-  }
-
-  function wheelHandler(event)
-  {
-    if (event["deltaY"])
-    {
-      event.currentTarget.focus();
-      event.preventDefault();
-    }
-    if (event["deltaY"] < 0)
-    {
-      model["position"]++;
-    }
-    if (event["deltaY"] > 0)
-    {
-      model["position"]--;
-    }
-  }
-
-  function focusHandler()
-  {
-    model.keyboardValue = "";
-    _wheel.classList.add("oj-focus");
-  };
-
-  function blurHandler()
-  {
-    _wheel.classList.remove("oj-focus");
-    model.update();
-  };
-}
-
-createWheel.counter = 0;
 /**
  * @ignore
  * @protected
@@ -7802,6 +7496,308 @@ function TimePickerModel(properties)
 }
 
 
+/* global Promise, Hammer */
+
+function createWheel(model, isNumber, classList)
+{
+  var CURRENT_POSITION = 7;
+  var PAN_SPIN_THRESHOLD = 2;
+  var TAP_THRESHOLDS = [0.152, 0.362, 0.638, 0.848];
+  var MOMENTUM_FACTOR = 0.007;
+
+  var KEYCODE_BACKSPACE = 8;
+  var KEYCODE_UP = 38;
+  var KEYCODE_DOWN = 40;
+
+  var _wheel;
+  var _items = [];
+  var _panStartY;
+  var _panLastSpinY;
+  var _panLastZone;
+  var _momentum;
+  var _isMeridian = !isNumber && classList === "oj-timepicker-meridian";
+
+  createDom(classList);
+  var $wheel = $(_wheel);
+
+  defineMethods();
+  defineEvents();
+  refresh();
+
+  return _wheel;
+
+  function createDom(classList)
+  {
+    _wheel = document.createElement("div");
+    _wheel.classList.add("oj-timepicker-wheel");
+    if (classList)
+      _wheel.classList.add(classList);
+    _wheel.setAttribute("id", "_ojWheel" + createWheel.counter++);
+    _wheel.setAttribute("tabIndex", "0");
+    _wheel.setAttribute("role", "spinbutton");
+    model.wheel = _wheel;
+  }
+
+  function defineMethods()
+  {
+    _wheel.ojSpinUp = spinUp;
+    _wheel.ojSpinDown = spinDown;
+    _wheel.ojRefresh = refresh;
+    _wheel.ojDestroy = destroy;
+    _wheel.ojLinked = function()
+    {
+      return model["linked"];
+    };
+  }
+
+  function defineEvents()
+  {
+    var hammerOptions = {
+      "recognizers": [
+        [Hammer.Pan, {"direction": Hammer["DIRECTION_VERTICAL"]}],
+        [Hammer.Tap],
+        [Hammer.Swipe, {"direction": Hammer["DIRECTION_VERTICAL"]}]
+      ]
+    };
+
+    $wheel.ojHammer(hammerOptions)
+    .on("tap", tapHander)
+    .on("swipeup", swipeUpHandler)
+    .on("swipedown", swipeDownHandler)
+    .on("panstart", panStartHandler)
+    .on("panend pancancel", panEndHandler)
+    .on("panup pandown", panHandler);
+
+    _wheel.addEventListener('wheel', wheelHandler, false);
+    _wheel.addEventListener('keydown', keydownHandler, false);
+    _wheel.addEventListener('focus', focusHandler, false);
+    _wheel.addEventListener('blur', blurHandler, false);
+  }
+
+  function destroy()
+  {
+    $wheel.ojHammer()
+    .off("tap", tapHander)
+    .off("swipeup", swipeUpHandler)
+    .off("swipedown", swipeDownHandler)
+    .off("panstart", panStartHandler)
+    .off("panend pancancel", panEndHandler)
+    .off("panup pandown", panHandler);
+    $wheel.ojHammer("destroy");
+  }
+
+  function spinUp()
+  {
+    var next = _items[CURRENT_POSITION + 1];
+    if (next)
+    {
+      spin(1);
+      var oldItem = _items.shift();
+      if (oldItem)
+      {
+        _wheel.removeChild(oldItem);
+      }
+      var newItem = createWheelItem(model, CURRENT_POSITION, _isMeridian);
+      if (newItem)
+      {
+        _wheel.appendChild(newItem); //@HTMLUpdateOK newItem is generated internally using number so ok
+      }
+      _items.push(newItem);
+    }
+  }
+
+  function spinDown()
+  {
+    var prev = _items[CURRENT_POSITION - 1];
+    if (prev)
+    {
+      spin(-1);
+      var oldItem = _items.pop();
+      if (oldItem)
+      {
+        _wheel.removeChild(oldItem);
+      }
+      var newItem = createWheelItem(model, -CURRENT_POSITION, _isMeridian);
+      if (newItem)
+      {
+        _wheel.insertBefore(newItem, _items[0]); //@HTMLUpdateOK newItem is generated internally using number so ok
+      }
+      _items.unshift(newItem);
+    }
+  }
+
+  function spin(direction)
+  {
+    for (var i = 0; i < _items.length; i++)
+    {
+      var item = _items[i];
+      if (item)
+      {
+        item.ojUpdatePosition(i - CURRENT_POSITION - direction);            
+      }
+    }
+
+    _wheel.setAttribute("aria-valuenow", model.getText(0));
+  }
+
+  function refresh()
+  {
+    _items.forEach(function(item)
+    {
+      if (item)
+      {
+        _wheel.removeChild(item);
+      }
+    });
+    _items = [];
+
+    for (var offset = -CURRENT_POSITION; offset <= CURRENT_POSITION; offset++)
+    {
+      var item = createWheelItem(model, offset, _isMeridian);
+      if (item)
+      {
+        _wheel.appendChild(item); //@HTMLUpdateOK item is generated internally using number so ok
+      }
+
+      _items.push(item);
+    };
+
+    // Set the current value on the wheel for accessibility
+    _wheel.setAttribute("aria-valuenow", model.getText(0));
+  }
+
+  function keydownHandler(event)
+  {
+    var keyCode = event.keyCode;
+
+    switch (keyCode) {
+    case KEYCODE_UP:
+      model["position"]++;
+      event.preventDefault();
+      break;
+    case KEYCODE_DOWN:
+      model["position"]--;
+      event.preventDefault();
+      break;
+    case KEYCODE_BACKSPACE:
+      model.keyboardValue = model.keyboardValue.slice(0,-1);
+      event.preventDefault();
+      break;
+
+    default:
+      if ((keyCode > 47 && keyCode < 58) || // number keys
+          (keyCode > 95 && keyCode < 112) || // numpad keys
+          (!isNumber &&(keyCode > 64 && keyCode < 91))) // letter keys
+      {
+        model["keyboardValue"] += event.key;
+      }
+      break;
+    }
+  }
+
+  function tapHander(event)
+  {
+    _wheel.focus();
+    var tapY = event["gesture"]["center"].y;
+    var wheelTop = $wheel.offset().top;
+    var wheelHeight = $wheel.height();
+    var tapFraction = (tapY - wheelTop) / wheelHeight;
+    var tapZone = 0;
+
+    while ((tapZone < 4) && (tapFraction > TAP_THRESHOLDS[tapZone]))
+    {
+      tapZone++;
+    }
+
+    if (tapZone !== 2)
+    {
+      model["position"] += (tapZone - 2);
+    }
+  }
+  
+  function swipeUpHandler(event)
+  {
+    _wheel.focus();
+    var velocity = event["gesture"].velocityY;
+    var extraPixels = velocity * velocity / MOMENTUM_FACTOR;
+    _momentum = Math.floor(extraPixels / $wheel.height() * 5);
+    event.preventDefault();
+  }
+
+  function swipeDownHandler(event)
+  {
+    _wheel.focus();
+    var velocity = event["gesture"].velocityY;
+    var extraPixels = velocity * velocity / MOMENTUM_FACTOR;
+    _momentum = -Math.floor(extraPixels / $wheel.height() * 5);
+    event.preventDefault();
+  }
+
+  function panStartHandler(event)
+  {
+    _wheel.focus();
+    _panStartY = _panLastSpinY = event["gesture"]["center"].y;
+    _panLastZone = 0;
+    _momentum = 0;
+  }
+ 
+  function panEndHandler(event)
+  {
+    _wheel.focus();
+    if (_momentum)
+    {
+      model["position"] += _momentum;
+    }
+      
+    _panStartY = _panLastSpinY = null;
+    _panLastZone = null;
+  }
+ 
+  function panHandler(event)
+  {
+    _wheel.focus();
+    var panY = event["gesture"]["center"].y;
+    var newZone = Math.round(((_panStartY - panY) / $wheel.height()) * 5);
+    if (newZone !== _panLastZone && Math.abs(_panLastSpinY - panY) > PAN_SPIN_THRESHOLD)
+    {
+      _panLastSpinY = panY;
+      model["position"] += newZone - _panLastZone;
+      _panLastZone = newZone;
+    }
+    event.preventDefault();
+  }
+
+  function wheelHandler(event)
+  {
+    if (event["deltaY"])
+    {
+      event.currentTarget.focus();
+      event.preventDefault();
+    }
+    if (event["deltaY"] < 0)
+    {
+      model["position"]++;
+    }
+    if (event["deltaY"] > 0)
+    {
+      model["position"]--;
+    }
+  }
+
+  function focusHandler()
+  {
+    model.keyboardValue = "";
+    _wheel.classList.add("oj-focus");
+  };
+
+  function blurHandler()
+  {
+    _wheel.classList.remove("oj-focus");
+    model.update();
+  };
+}
+
+createWheel.counter = 0;
 /**
  * @protected
  * @ignore
@@ -7974,6 +7970,580 @@ function createWheelGroup(timePickerModel)
   }
 }
 
+function createWheelItem(model, position, isMeridian)
+{
+  var _item;
+  var _position;
+  var _disabled = false;
+
+  function updatePosition(newPosition)
+  {
+    _item.classList.remove("oj-timepicker-wheel-item-position" + _position);
+    _item.classList.add("oj-timepicker-wheel-item-position" + newPosition);
+    _position = newPosition;
+    return Promise.resolve();
+  }
+
+  function itemFocusHandler()
+  {
+    _item.parentNode.focus();
+  }
+
+  var text = model.getText(position);
+  if (text)
+  {
+    _item = document.createElement("div");
+    _item.classList.add("oj-timepicker-wheel-item");
+    _item.classList.add("oj-timepicker-wheel-item-position" + position);
+    _position = position;
+    if (model.isDisabled(position))
+    {
+      _disabled = true;
+      _item.classList.add("oj-disabled");
+    }
+
+    _item.ojUpdatePosition = updatePosition;
+    
+    var content = document.createElement("div");
+    content.textContent = text;
+    content.classList.add("oj-timepicker-wheel-item-content");
+
+    if(isMeridian) 
+    {
+      //need to add title attr for hover for long am/pm translations
+      content.setAttribute("title", text);
+    }
+
+    _item.appendChild(content); //@HTMLUpdateOK content is generated internally with content being nunmber so ok
+ 
+    Object.defineProperty(_item, "ojDisabled", {
+      'enumerable': true,
+      'get': function()
+      {
+        return _disabled;
+      },
+      'set': function(disabled)
+      {
+        if (disabled !== _disabled)
+        {
+          $(_item).toggleClass("oj-disabled");
+          _disabled = disabled;
+        }
+      }
+    });
+    
+    // The item div and its content div can get focus from mouse click on IE,
+    // which doesn't happen on other browsers.  Add a focus handler so that
+    // focus can be redirected to the wheel.
+    _item.addEventListener("focus", itemFocusHandler, false);
+    content.addEventListener("focus", itemFocusHandler, false);
+  }
+
+  return _item;
+}
+
+/**
+ * @ignore
+ * @constructor
+ * @protected
+ * @param {TimePickerModel} parentModel parent picker model
+ * @param {Object} properties initial property values
+ */
+function WheelModel(parentModel, properties)
+{
+  var SPIN_TIMES = [150, 100, 50, 25, 16];  // Note: No transitions for faster spins
+
+  var _value = 0;
+
+  var _position = 0;
+  var _currentPosition = 0;
+  
+  var _displayRange = 1;
+  var _valueRange = 1;
+  var _increment = 1;
+  var _wheelSize;
+  var _keyboardValue = "";
+  var _min;
+  var _max;
+  var _wrapped;
+  
+  var _valueMultiplier;
+  var _valueUpperMultiplier;
+  var _displayMultiplier = 1;
+  var _displayUpperMultiplier;
+  
+  var _spinning = false;
+  var _settingProps = false;
+  
+  var self = this;
+
+  defineProperties();
+  defineMethods();
+  setProperties(properties);
+
+  function defineProperties()
+  {
+    Object.defineProperty(self, "position", {
+      'enumerable': true,
+      'get': function()
+      {
+        return _position;
+      },
+      'set': function(position)
+      {
+        var val = mod(position, _wheelSize) * _increment;
+        if ((val >= _min) && (val < _max) &&
+            (position !== _position))
+        {
+          self["value"] += (position - _position) * _increment;
+        }
+     }
+    });
+
+    Object.defineProperty(self, "value", {
+      'enumerable': true,
+      'get': function()
+      {
+        return _value;
+      },
+      'set': function(value)
+      {
+        value = Math.round(value / _increment) * _increment;
+
+        if (validValue(value) && _value !== value)
+        {
+          _value = mod(value, _valueRange);
+          setPosition();
+          if (self["linked"])
+          {
+            if (_valueRange == 2)
+            {
+              // Don't spin the linked wheel when changing am/pm.  Just set the
+              // model value and update the DOM structure since we don't want the
+              // hour wheel to spin back to the same number.
+              parentModel["disableSpin"] = true;
+            }
+            parentModel["value"] = wheelValueToParentValue(parentModel["value"], _value);
+            parentModel["disableSpin"] = false;
+          }
+        }
+      }
+    });
+
+    Object.defineProperty(self, "increment", {
+      'enumerable': true,
+      'get': function()
+      {
+        return _increment;
+      },
+      'set': function(increment)
+      {
+        if (_increment !== increment)
+        {
+          _increment = increment;
+          refreshSettings();
+        }
+      }
+    });
+
+    
+    Object.defineProperty(self, "valueMultiplier", {
+      'enumerable': true,
+      'get': function()
+      {
+        return _valueMultiplier;
+      },
+      'set': function(valueMultiplier)
+      {
+        if (_valueMultiplier !== valueMultiplier)
+        {
+          _valueMultiplier = valueMultiplier;
+          refreshSettings();
+        }
+      }
+    });
+
+    Object.defineProperty(self, "valueRange", {
+      'enumerable': true,
+      'get': function()
+      {
+        return _valueRange;
+      },
+      'set': function(valueRange)
+      {
+        if (_valueRange !== valueRange)
+        {
+          _valueRange = valueRange;
+          refreshSettings();
+        }
+      }
+    });
+
+    Object.defineProperty(self, "displayMultiplier", {
+      'enumerable': true,
+      'get': function()
+      {
+        return _displayMultiplier;
+      },
+      'set': function(displayMultiplier)
+      {
+        if (_displayMultiplier !== displayMultiplier)
+        {
+          _displayMultiplier = displayMultiplier;
+          refreshSettings();
+        }
+      }
+    });
+
+    Object.defineProperty(self, "displayRange", {
+      'enumerable': true,
+      'get': function()
+      {
+        return _displayRange;
+      },
+      'set': function(displayRange)
+      {
+        if (_displayRange !== displayRange)
+        {
+          _displayRange = displayRange;
+          refreshSettings();
+        }
+      }
+    });
+
+    Object.defineProperty(self, "keyboardValue", {
+      'enumerable': true,
+      'get': function()
+      {
+        return _keyboardValue;
+      },
+      'set': function(keyboardValue)
+      {
+        _keyboardValue = keyboardValue;
+        if (self["parser"] && _keyboardValue)
+        {
+          var value = self["parser"](_keyboardValue);
+          if (value >= 0)
+          {
+            value = displayValueToWheelValue(_value, value);
+            if (_min <= value && value < _max)
+            {
+              self["value"] = value;
+            }
+          }
+          
+          // Clear _keyboardValue when the user has typed in 2 digits or after
+          // 1 second, so that a new value can be accepted.
+          if (_keyboardValue.length >= 2)
+          {
+            _keyboardValue = "";
+          }
+          else
+          {
+            setTimeout(function() {
+              _keyboardValue = "";
+            }, 1000);
+          }
+        }
+      }
+    });
+  };
+
+  function defineMethods()
+  {
+    self.getText = function(position)
+    {
+      var text;
+      var pos = mod(_currentPosition, _wheelSize) + position;
+      var haveText = _wrapped || (pos >= 0 && pos < _wheelSize);
+      if (self["formatter"] && haveText)
+      {
+        var val = positionToDisplayValue(_currentPosition + position);
+        text = self["formatter"](val);
+      }
+      return text;
+    };
+
+    self.isDisabled = function(position)
+    {      
+      var value = mod(_currentPosition + position, _wheelSize) * _increment;
+      if (_min !== 0 && value < _min)
+      {
+        return true;
+      }
+      if (_max !== _valueRange && value >= _max)
+      {
+        return true;
+      }
+      return false;
+    };
+
+    /*
+     * 
+     * called by wheel on blur
+     */
+    self.update = function()
+    {
+      parentModel["value"] = wheelValueToParentValue(parentModel["value"], _value);
+    };
+
+    self.refresh = refresh;
+    self.setProperties = setProperties;
+  }
+
+  function setProperties(properties)
+  {
+    if (properties)
+    {
+      for (var key in properties)
+      {
+        self[key] = properties[key];
+      }
+    }
+  }
+
+  function refresh()
+  {
+    var needRefresh = false;
+    var parentValue = parentModel.value;
+    self["value"] = parentValueToWheelValue(parentValue);
+
+    var parentMax = parentModel["max"];
+    var newMax;
+    if (parentValueUpperPart(parentValue) === parentValueUpperPart(parentMax))
+    {
+      newMax = parentValueToWheelValue(parentMax) + 1;
+    }
+    else
+    {
+      newMax = _valueRange;
+    }
+    if (_max !== newMax)
+    {
+      needRefresh = true;
+      _max = newMax;
+    }
+
+    var parentMin = parentModel["min"];
+    var newMin;
+    if (parentValueUpperPart(parentValue) === parentValueUpperPart(parentMin))
+    {
+      newMin = parentValueToWheelValue(parentMin);
+    }
+    else
+    {
+      newMin = 0;
+    }
+    if (_min !== newMin)
+    {
+      needRefresh = true;
+      _min = newMin;
+    }
+
+    var parentIncrement = parentModel["increment"];
+    var inc = gcd(parentIncrement, _valueUpperMultiplier);  // For example 60 for minutes
+
+    // If increment is a multiple of 60 then min and max are 0;
+    if (inc === _valueUpperMultiplier)
+    {
+      _min = 0;
+      _max = 1;
+      needRefresh = true;
+    }
+    else if (self["linked"] && parentIncrement > _valueMultiplier)
+    {
+      inc = parentIncrement;
+    }
+    else if (mod(inc, _valueMultiplier) === 0)
+    {
+      inc = inc / _valueMultiplier;
+    }
+    else
+    {
+      inc = 1;
+    }
+    if (_increment !== inc)
+    {
+      _increment = inc;
+      needRefresh = true;
+    }
+
+    _wheelSize = Math.floor(_valueRange / _increment);
+    _wrapped = _wheelSize > 4;
+    
+    if (self.wheel && needRefresh)
+    {
+      self.wheel.ojRefresh();
+    }
+  }
+
+  function setPosition()
+  {
+    var newPos = mod(wheelValueToPosition(_value), _wheelSize);
+    var oldPos = mod(self.position, _wheelSize);
+    var diff = newPos - oldPos;
+    if (_wrapped)
+    {
+      if (newPos > oldPos)
+      {
+        if (oldPos + _wheelSize - newPos < Math.abs(diff))
+        {
+          diff = newPos - oldPos - _wheelSize;
+        }
+      }
+      else 
+      {
+        if (newPos + _wheelSize - oldPos < Math.abs(diff))
+        {
+          diff = newPos + _wheelSize - oldPos;
+        }
+      }
+    }
+    if (diff !== 0)
+    {
+      _position += diff;
+
+      if (self.wheel)
+      {
+        if (!_spinning)
+        {
+          _spinning = true;
+          spinWheel.call(self);
+        }
+      }
+      else
+      {
+        _currentPosition = _position;
+      }
+    }
+  }
+
+  /*
+   * recalculates dependent values after settings change
+   */
+  function refreshSettings()
+  {
+    _valueUpperMultiplier = _valueMultiplier * _valueRange;
+    _displayUpperMultiplier = _displayMultiplier * _displayRange;
+  }
+
+  function spinWheel()
+  {
+    if(!self.wheel)
+    { //wheel destroyed already
+	  return;
+	}	
+	SPIN_TIMES.forEach(function(time)
+    {
+      self.wheel.classList.remove("oj-timepicker-wheel-spin-" + time);
+    });
+
+    var dist = Math.abs(_position - _currentPosition);
+    if (dist === 0)
+    {
+      _spinning = false;
+      return;
+    }
+
+    var delay;
+
+    dist--;
+    dist = Math.min(dist, SPIN_TIMES.length - 1);
+    delay = SPIN_TIMES[dist];
+    self.wheel.classList.add("oj-timepicker-wheel-spin-" + SPIN_TIMES[dist]);
+
+    if (_position > _currentPosition)
+    {
+      _currentPosition++;
+      self.wheel.ojSpinUp();
+    }
+    if (_position < _currentPosition)
+    {
+      _currentPosition--;
+      self.wheel.ojSpinDown();
+    }
+    if (delay)
+    {
+      if (parentModel["disableSpin"])
+      {
+        // Calling spinWheel without delay will update the DOM structure
+        // without visually spinning the wheel.
+        spinWheel.call(self);
+      }
+      else
+      {
+        setTimeout(spinWheel.bind(self), delay);
+      }
+    }
+  }
+
+  function validValue(value)
+  {
+    if (_wrapped)
+      return true;
+    
+    return (_min <= value && value < _max);
+  }
+
+  function mod(val1, val2)
+  {
+    // Make modulus out of remainder.  The fancy stuff deals with neg values.
+    return ((val1 % val2) + val2) % val2;
+  }
+
+  function gcd(a, b) {
+    if (b === 0)
+    {
+        return a;
+    }
+    return gcd(b, a % b);
+  }
+
+  function positionToDisplayValue(position)
+  {
+    return wheelValueToDisplayValue(positionToWheelValue(position));
+  }
+
+  function wheelValueToPosition(value)
+  {
+    return Math.floor(value / _increment);
+  }
+
+  function wheelValueToParentValue(parentValue, value)
+  {
+    return Math.floor(parentValue / _valueUpperMultiplier ) * _valueUpperMultiplier +
+                  mod(value, _valueRange) * _valueMultiplier +
+                  mod(parentValue, _valueMultiplier);
+  }
+
+  function parentValueToWheelValue(value)
+  {
+    return mod(Math.floor(value / _valueMultiplier), _valueRange);
+  }
+
+  function parentValueUpperPart(value)
+  {
+    return Math.floor(value / _valueUpperMultiplier );
+  }
+
+  function positionToWheelValue(position)
+  {
+    return mod(mod(position, _wheelSize) * _increment, _valueRange);
+  }
+
+  function wheelValueToDisplayValue(value)
+  {
+    return mod(Math.floor(value / _displayMultiplier), _displayRange);
+  }
+
+  function displayValueToWheelValue(wheelValue, displayValue)
+  {
+    return Math.floor(wheelValue / _displayUpperMultiplier ) * _displayUpperMultiplier +
+                mod(displayValue, _displayRange) * _displayMultiplier +
+                mod(wheelValue, _displayMultiplier);
+  }
+}
+
 /**
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
@@ -7994,7 +8564,7 @@ var timeSwitcherConverter =  $["oj"]["ojInputTime"]["prototype"]["options"]["con
  * @augments oj.ojInputDateTime
  * @since 4.0.0
  * @ojstatus preview
- * @ojshortdesc Inline Date Time Picker Element
+ * @ojshortdesc An inline element for picking a date-time value.
  * @ojdisplayname Inline Date Time Picker
  * @ojrole combobox
  * 
@@ -8051,8 +8621,13 @@ var timeSwitcherConverter =  $["oj"]["ojInputTime"]["prototype"]["options"]["con
  * @augments oj.ojInputDate
  * @since 0.6
  * @ojstatus preview
- * @ojshortdesc Date Time Picker Element
+ * @ojshortdesc Provides basic support for specifying a date-time value.
  * @ojrole combobox
+ * @ojsignature [{
+ *                target: "Type",
+ *                value: "class ojInputDateTime<SP extends ojInputDateTimeSettableProperties = ojInputDateTimeSettableProperties> extends ojInputDate<SP>"
+ *               }
+ *              ]
  * 
  * @classdesc
  * <h3 id="inputDateTimeOverview-section">
@@ -8125,6 +8700,7 @@ oj.__registerWidget("oj.ojInputDateTime", $['oj']['ojInputDate'],
      * @instance
      * @memberof! oj.ojInputDateTime
      * @type {Object}
+     * @ojsignature  { target: "Type", value: "oj.Converter<string>|oj.Validation.FactoryRegisteredValidatorOrConverter|null"}
      * @default oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({"day": "2-digit", "month": "2-digit", "year": "2-digit", "hour": "2-digit", "minute": "2-digit"})
      */
     converter : oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter(
@@ -8486,6 +9062,7 @@ oj.__registerWidget("oj.ojInputDateTime", $['oj']['ojInputDate'],
      * @name validators
      * @instance
      * @memberof oj.ojInputDateTime
+     * @ojsignature  { target: "Type", value: "Array<oj.Validator<string>|oj.Validation.FactoryRegisteredValidatorOrConverter>|null"}
      * @type {Array|undefined}
      */
     
@@ -8607,7 +9184,7 @@ oj.__registerWidget("oj.ojInputDateTime", $['oj']['ojInputDate'],
           self._SetValue(self._switcherPrevValue);
 
           self._switcherTimeValue = self._switcherDateValue = self._switcherPrevDay = self._switcherPrevMonth = 
-          self._switcherPrevYear = self._switcherPrevValue = null;
+                                    self._switcherPrevYear = self._switcherPrevValue = null;
         }
       };
       this._popUpDpDiv.on("ojclose", function( event, ui ) {
@@ -9121,6 +9698,7 @@ oj.__registerWidget("oj.ojInputDateTime", $['oj']['ojInputDate'],
   /**
    * @instance
    * @memberof oj.ojInputDateTime
+   * @return {void}
    */
   show : function ()
   {
@@ -9191,7 +9769,9 @@ oj.__registerWidget("oj.ojInputDateTime", $['oj']['ojInputDate'],
   {
     var retVal = this._superApply(arguments)
 
-    this._switcherPrevValue = this._getDateIso();
+    // if there is a value, save the Iso date version as the default value. Otherwise, set to ""
+    // so that we correctly restore the empty string if there is no value.
+    this._switcherPrevValue = this.options["value"] ? this._getDateIso() : "";
     this._switcherPrevDay = this._currentDay;
     this._switcherPrevMonth = this._currentMonth;
     this._switcherPrevYear = this._currentYear;
@@ -9206,6 +9786,7 @@ oj.__registerWidget("oj.ojInputDateTime", $['oj']['ojInputDate'],
    * @expose
    * @memberof oj.ojInputDateTime
    * @instance
+   * @return {void}
    */
   showTimePicker : function ()
   {
@@ -9224,6 +9805,7 @@ oj.__registerWidget("oj.ojInputDateTime", $['oj']['ojInputDate'],
    * @expose
    * @memberof oj.ojInputDateTime
    * @instance
+   * @return {void}
    */
   hideTimePicker : function ()
   {
@@ -9236,6 +9818,7 @@ oj.__registerWidget("oj.ojInputDateTime", $['oj']['ojInputDate'],
    * @override
    * @instance
    * @memberof oj.ojInputDateTime
+   * @return {void}
    */
   refresh : function ()
   {
@@ -9782,508 +10365,6 @@ oj.__registerWidget("oj.ojInputDateTime", $['oj']['ojInputDate'],
  * var node = myInputDateTime.getNodeBySubId( {'subId': 'oj-timepicker-now'} );
  */
 
-/**
- * @ignore
- * @constructor
- * @protected
- * @param {TimePickerModel} parentModel parent picker model
- * @param {Object} properties initial property values
- */
-function WheelModel(parentModel, properties)
-{
-  var SPIN_TIMES = [150, 100, 50, 25, 16];  // Note: No transitions for faster spins
-
-  var _value = 0;
-
-  var _position = 0;
-  var _currentPosition = 0;
-  
-  var _displayRange = 1;
-  var _valueRange = 1;
-  var _increment = 1;
-  var _wheelSize;
-  var _keyboardValue = "";
-  var _min;
-  var _max;
-  var _wrapped;
-  
-  var _valueMultiplier;
-  var _valueUpperMultiplier;
-  var _displayMultiplier = 1;
-  var _displayUpperMultiplier;
-  
-  var _spinning = false;
-  var _settingProps = false;
-  
-  var self = this;
-
-  defineProperties();
-  defineMethods();
-  setProperties(properties);
-
-  function defineProperties()
-  {
-    Object.defineProperty(self, "position", {
-      'enumerable': true,
-      'get': function()
-      {
-        return _position;
-      },
-      'set': function(position)
-      {
-        var val = mod(position, _wheelSize) * _increment;
-        if ((val >= _min) && (val < _max) &&
-            (position !== _position))
-        {
-          self["value"] += (position - _position) * _increment;
-        }
-     }
-    });
-
-    Object.defineProperty(self, "value", {
-      'enumerable': true,
-      'get': function()
-      {
-        return _value;
-      },
-      'set': function(value)
-      {
-        value = Math.round(value / _increment) * _increment;
-
-        if (validValue(value) && _value !== value)
-        {
-          _value = mod(value, _valueRange);
-          setPosition();
-          if (self["linked"])
-          {
-            if (_valueRange == 2)
-            {
-              // Don't spin the linked wheel when changing am/pm.  Just set the
-              // model value and update the DOM structure since we don't want the
-              // hour wheel to spin back to the same number.
-              parentModel["disableSpin"] = true;
-            }
-            parentModel["value"] = wheelValueToParentValue(parentModel["value"], _value);
-            parentModel["disableSpin"] = false;
-          }
-        }
-      }
-    });
-
-    Object.defineProperty(self, "increment", {
-      'enumerable': true,
-      'get': function()
-      {
-        return _increment;
-      },
-      'set': function(increment)
-      {
-        if (_increment !== increment)
-        {
-          _increment = increment;
-          refreshSettings();
-        }
-      }
-    });
-
-    
-    Object.defineProperty(self, "valueMultiplier", {
-      'enumerable': true,
-      'get': function()
-      {
-        return _valueMultiplier;
-      },
-      'set': function(valueMultiplier)
-      {
-        if (_valueMultiplier !== valueMultiplier)
-        {
-          _valueMultiplier = valueMultiplier;
-          refreshSettings();
-        }
-      }
-    });
-
-    Object.defineProperty(self, "valueRange", {
-      'enumerable': true,
-      'get': function()
-      {
-        return _valueRange;
-      },
-      'set': function(valueRange)
-      {
-        if (_valueRange !== valueRange)
-        {
-          _valueRange = valueRange;
-          refreshSettings();
-        }
-      }
-    });
-
-    Object.defineProperty(self, "displayMultiplier", {
-      'enumerable': true,
-      'get': function()
-      {
-        return _displayMultiplier;
-      },
-      'set': function(displayMultiplier)
-      {
-        if (_displayMultiplier !== displayMultiplier)
-        {
-          _displayMultiplier = displayMultiplier;
-          refreshSettings();
-        }
-      }
-    });
-
-    Object.defineProperty(self, "displayRange", {
-      'enumerable': true,
-      'get': function()
-      {
-        return _displayRange;
-      },
-      'set': function(displayRange)
-      {
-        if (_displayRange !== displayRange)
-        {
-          _displayRange = displayRange;
-          refreshSettings();
-        }
-      }
-    });
-
-    Object.defineProperty(self, "keyboardValue", {
-      'enumerable': true,
-      'get': function()
-      {
-        return _keyboardValue;
-      },
-      'set': function(keyboardValue)
-      {
-        _keyboardValue = keyboardValue;
-        if (self["parser"] && _keyboardValue)
-        {
-          var value = self["parser"](_keyboardValue);
-          if (value >= 0)
-          {
-            value = displayValueToWheelValue(_value, value);
-            if (_min <= value && value < _max)
-            {
-              self["value"] = value;
-            }
-          }
-          
-          // Clear _keyboardValue when the user has typed in 2 digits or after
-          // 1 second, so that a new value can be accepted.
-          if (_keyboardValue.length >= 2)
-          {
-            _keyboardValue = "";
-          }
-          else
-          {
-            setTimeout(function() {
-              _keyboardValue = "";
-            }, 1000);
-          }
-        }
-      }
-    });
-  };
-
-  function defineMethods()
-  {
-    self.getText = function(position)
-    {
-      var text;
-      var pos = mod(_currentPosition, _wheelSize) + position;
-      var haveText = _wrapped || (pos >= 0 && pos < _wheelSize);
-      if (self["formatter"] && haveText)
-      {
-        var val = positionToDisplayValue(_currentPosition + position);
-        text = self["formatter"](val);
-      }
-      return text;
-    };
-
-    self.isDisabled = function(position)
-    {      
-      var value = mod(_currentPosition + position, _wheelSize) * _increment;
-      if (_min !== 0 && value < _min)
-      {
-        return true;
-      }
-      if (_max !== _valueRange && value >= _max)
-      {
-        return true;
-      }
-      return false;
-    };
-
-    /*
-     * 
-     * called by wheel on blur
-     */
-    self.update = function()
-    {
-      parentModel["value"] = wheelValueToParentValue(parentModel["value"], _value);
-    };
-
-    self.refresh = refresh;
-    self.setProperties = setProperties;
-  }
-
-  function setProperties(properties)
-  {
-    if (properties)
-    {
-      for (var key in properties)
-      {
-        self[key] = properties[key];
-      }
-    }
-  }
-
-  function refresh()
-  {
-    var needRefresh = false;
-    var parentValue = parentModel.value;
-    self["value"] = parentValueToWheelValue(parentValue);
-
-    var parentMax = parentModel["max"];
-    var newMax;
-    if (parentValueUpperPart(parentValue) === parentValueUpperPart(parentMax))
-    {
-      newMax = parentValueToWheelValue(parentMax) + 1;
-    }
-    else
-    {
-      newMax = _valueRange;
-    }
-    if (_max !== newMax)
-    {
-      needRefresh = true;
-      _max = newMax;
-    }
-
-    var parentMin = parentModel["min"];
-    var newMin;
-    if (parentValueUpperPart(parentValue) === parentValueUpperPart(parentMin))
-    {
-      newMin = parentValueToWheelValue(parentMin);
-    }
-    else
-    {
-      newMin = 0;
-    }
-    if (_min !== newMin)
-    {
-      needRefresh = true;
-      _min = newMin;
-    }
-
-    var parentIncrement = parentModel["increment"];
-    var inc = gcd(parentIncrement, _valueUpperMultiplier);  // For example 60 for minutes
-
-    // If increment is a multiple of 60 then min and max are 0;
-    if (inc === _valueUpperMultiplier)
-    {
-      _min = 0;
-      _max = 1;
-      needRefresh = true;
-    }
-    else if (self["linked"] && parentIncrement > _valueMultiplier)
-    {
-      inc = parentIncrement;
-    }
-    else if (mod(inc, _valueMultiplier) === 0)
-    {
-      inc = inc / _valueMultiplier;
-    }
-    else
-    {
-      inc = 1;
-    }
-    if (_increment !== inc)
-    {
-      _increment = inc;
-      needRefresh = true;
-    }
-
-    _wheelSize = Math.floor(_valueRange / _increment);
-    _wrapped = _wheelSize > 4;
-    
-    if (self.wheel && needRefresh)
-    {
-      self.wheel.ojRefresh();
-    }
-  }
-
-  function setPosition()
-  {
-    var newPos = mod(wheelValueToPosition(_value), _wheelSize);
-    var oldPos = mod(self.position, _wheelSize);
-    var diff = newPos - oldPos;
-    if (_wrapped)
-    {
-      if (newPos > oldPos)
-      {
-        if (oldPos + _wheelSize - newPos < Math.abs(diff))
-        {
-          diff = newPos - oldPos - _wheelSize;
-        }
-      }
-      else 
-      {
-        if (newPos + _wheelSize - oldPos < Math.abs(diff))
-        {
-          diff = newPos + _wheelSize - oldPos;
-        }
-      }
-    }
-    if (diff !== 0)
-    {
-      _position += diff;
-
-      if (self.wheel)
-      {
-        if (!_spinning)
-        {
-          _spinning = true;
-          spinWheel.call(self);
-        }
-      }
-      else
-      {
-        _currentPosition = _position;
-      }
-    }
-  }
-
-  /*
-   * recalculates dependent values after settings change
-   */
-  function refreshSettings()
-  {
-    _valueUpperMultiplier = _valueMultiplier * _valueRange;
-    _displayUpperMultiplier = _displayMultiplier * _displayRange;
-  }
-
-  function spinWheel()
-  {
-    if(!self.wheel)
-    { //wheel destroyed already
-	  return;
-	}	
-	SPIN_TIMES.forEach(function(time)
-    {
-      self.wheel.classList.remove("oj-timepicker-wheel-spin-" + time);
-    });
-
-    var dist = Math.abs(_position - _currentPosition);
-    if (dist === 0)
-    {
-      _spinning = false;
-      return;
-    }
-
-    var delay;
-
-    dist--;
-    dist = Math.min(dist, SPIN_TIMES.length - 1);
-    delay = SPIN_TIMES[dist];
-    self.wheel.classList.add("oj-timepicker-wheel-spin-" + SPIN_TIMES[dist]);
-
-    if (_position > _currentPosition)
-    {
-      _currentPosition++;
-      self.wheel.ojSpinUp();
-    }
-    if (_position < _currentPosition)
-    {
-      _currentPosition--;
-      self.wheel.ojSpinDown();
-    }
-    if (delay)
-    {
-      if (parentModel["disableSpin"])
-      {
-        // Calling spinWheel without delay will update the DOM structure
-        // without visually spinning the wheel.
-        spinWheel.call(self);
-      }
-      else
-      {
-        setTimeout(spinWheel.bind(self), delay);
-      }
-    }
-  }
-
-  function validValue(value)
-  {
-    if (_wrapped)
-      return true;
-    
-    return (_min <= value && value < _max);
-  }
-
-  function mod(val1, val2)
-  {
-    // Make modulus out of remainder.  The fancy stuff deals with neg values.
-    return ((val1 % val2) + val2) % val2;
-  }
-
-  function gcd(a, b) {
-    if (b === 0)
-    {
-        return a;
-    }
-    return gcd(b, a % b);
-  }
-
-  function positionToDisplayValue(position)
-  {
-    return wheelValueToDisplayValue(positionToWheelValue(position));
-  }
-
-  function wheelValueToPosition(value)
-  {
-    return Math.floor(value / _increment);
-  }
-
-  function wheelValueToParentValue(parentValue, value)
-  {
-    return Math.floor(parentValue / _valueUpperMultiplier ) * _valueUpperMultiplier +
-                  mod(value, _valueRange) * _valueMultiplier +
-                  mod(parentValue, _valueMultiplier);
-  }
-
-  function parentValueToWheelValue(value)
-  {
-    return mod(Math.floor(value / _valueMultiplier), _valueRange);
-  }
-
-  function parentValueUpperPart(value)
-  {
-    return Math.floor(value / _valueUpperMultiplier );
-  }
-
-  function positionToWheelValue(position)
-  {
-    return mod(mod(position, _wheelSize) * _increment, _valueRange);
-  }
-
-  function wheelValueToDisplayValue(value)
-  {
-    return mod(Math.floor(value / _displayMultiplier), _displayRange);
-  }
-
-  function displayValueToWheelValue(wheelValue, displayValue)
-  {
-    return Math.floor(wheelValue / _displayUpperMultiplier ) * _displayUpperMultiplier +
-                mod(displayValue, _displayRange) * _displayMultiplier +
-                mod(wheelValue, _displayMultiplier);
-  }
-}
-
 (function() {
 var ojInputTimeMeta = {
   "properties": {
@@ -10322,6 +10403,109 @@ var ojInputTimeMeta = {
     "value": {
       "type": "string",
       "writeback": true
+    },
+    "translations": {
+      "type": "Object",
+      "properties": {
+        "ampmWheelLabel": {
+          "type": "string",
+          "value": "AMPM"
+        },
+        "cancelText": {
+          "type": "string",
+          "value": "Prev"
+        },
+        "currentTimeText": {
+          "type": "string",
+          "value": "Now"
+        },
+        "dateTimeRange": {
+          "type": "Object",
+          "properties": {
+            "hint": {
+              "type": "Object",
+              "properties": {
+                "inRange": {
+                  "type": "string"
+                },
+                "max": {
+                  "type": "string"
+                },
+                "min": {
+                  "type": "string"
+                }
+              }
+            },
+            "messageDetail": {
+              "type": "Object",
+              "properties": {
+                "rangeOverflow": {
+                  "type": "string"
+                },
+                "rangeUnderflow": {
+                  "type": "string"
+                }
+              }
+            },
+            "messageSummary": {
+              "type": "Object",
+              "properties": {
+                "rangeOverflow": {
+                  "type": "string"
+                },
+                "rangeUnderflow": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "hourWheelLabel": {
+          "type": "string",
+          "value": "Hour"
+        },
+        "minuteWheelLabel": {
+          "type": "string",
+          "value": "Minute"
+        },
+        "okText": {
+          "type": "string",
+          "value": "OK"
+        },
+        "regexp": {
+          "type": "Object",
+          "properties": {
+            "messageDetail": {
+              "type": "string"
+            },
+            "messageSummary": {
+              "type": "string"
+            }
+          }
+        },
+        "required": {
+          "type": "Object",
+          "properties": {
+            "hint": {
+              "type": "string"
+            },
+            "messageDetail": {
+              "type": "string"
+            },
+            "messageSummary": {
+              "type": "string"
+            }
+          }
+        },
+        "tooltipTime": {
+          "type": "string",
+          "value": "Select Time"
+        },
+        "tooltipTimeDisabled": {
+          "type": "string",
+          "value": "Select Time Disabled"
+        }
+      }
     }
   },
   "methods": {
@@ -10402,6 +10586,123 @@ var ojInputDateMeta = {
     "renderMode": {
       "type": "string"
     },
+    "translations": {
+      "type": "Object",
+      "properties": {
+        "currentText": {
+          "type": "string",
+          "value": "Today"
+        },
+        "dateRestriction": {
+          "type": "Object",
+          "properties": {
+            "hint": {
+              "type": "string"
+            },
+            "messageDetail": {
+              "type": "string"
+            },
+            "messageSummary": {
+              "type": "string"
+            }
+          }
+        },
+        "dateTimeRange": {
+          "type": "Object",
+          "properties": {
+            "hint": {
+              "type": "Object",
+              "properties": {
+                "inRange": {
+                  "type": "string"
+                },
+                "max": {
+                  "type": "string"
+                },
+                "min": {
+                  "type": "string"
+                }
+              }
+            },
+            "messageDetail": {
+              "type": "Object",
+              "properties": {
+                "rangeOverflow": {
+                  "type": "string"
+                },
+                "rangeUnderflow": {
+                  "type": "string"
+                }
+              }
+            },
+            "messageSummary": {
+              "type": "Object",
+              "properties": {
+                "rangeOverflow": {
+                  "type": "string"
+                },
+                "rangeUnderflow": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "nextText": {
+          "type": "string",
+          "value": "Next"
+        },
+        "prevText": {
+          "type": "string",
+          "value": "Prev"
+        },
+        "regexp": {
+          "type": "Object",
+          "properties": {
+            "messageDetail": {
+              "type": "string"
+            },
+            "messageSummary": {
+              "type": "string"
+            }
+          }
+        },
+        "required": {
+          "type": "Object",
+          "properties": {
+            "hint": {
+              "type": "string"
+            },
+            "messageDetail": {
+              "type": "string"
+            },
+            "messageSummary": {
+              "type": "string"
+            }
+          }
+        },
+        "tooltipCalendar": {
+          "type": "string",
+          "value": "Select Date"
+        },
+        "tooltipCalendarDisabled": {
+          "type": "string",
+          "value": "Select Date Disabled"
+        },
+        "tooltipCalendarTime": {
+          "type": "string",
+          "value": "Select Date Time"
+        },
+        "tooltipCalendarTimeDisabled": {
+          "type": "string",
+          "value": "Select Date Time Disabled"
+        },
+        "weekHeader": {
+          "type": "string",
+          "value": "Wk"
+        }
+      }
+    },
     "value": {
       "type": "string",
       "writeback": true
@@ -10439,6 +10740,131 @@ var ojInputDateTimeMeta = {
         },
         "showOn": {
           "type": "string"
+        }
+      }
+    },
+    "translations": {
+      "type": "Object",
+      "properties": {
+        "cancel": {
+          "type": "string",
+          "value": "Cancel"
+        },
+        "currentText": {
+          "type": "string",
+          "value": "Today"
+        },
+        "dateRestriction": {
+          "type": "Object",
+          "properties": {
+            "hint": {
+              "type": "string"
+            },
+            "messageDetail": {
+              "type": "string"
+            },
+            "messageSummary": {
+              "type": "string"
+            }
+          }
+        },
+        "dateTimeRange": {
+          "type": "Object",
+          "properties": {
+            "hint": {
+              "type": "Object",
+              "properties": {
+                "inRange": {
+                  "type": "string"
+                },
+                "max": {
+                  "type": "string"
+                },
+                "min": {
+                  "type": "string"
+                }
+              }
+            },
+            "messageDetail": {
+              "type": "Object",
+              "properties": {
+                "rangeOverflow": {
+                  "type": "string"
+                },
+                "rangeUnderflow": {
+                  "type": "string"
+                }
+              }
+            },
+            "messageSummary": {
+              "type": "Object",
+              "properties": {
+                "rangeOverflow": {
+                  "type": "string"
+                },
+                "rangeUnderflow": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "done": {
+          "type": "string",
+          "value": "Done"
+        },
+        "nextText": {
+          "type": "string",
+          "value": "Next"
+        },
+        "prevText": {
+          "type": "string",
+          "value": "Prev"
+        },
+        "regexp": {
+          "type": "Object",
+          "properties": {
+            "messageDetail": {
+              "type": "string"
+            },
+            "messageSummary": {
+              "type": "string"
+            }
+          }
+        },
+        "required": {
+          "type": "Object",
+          "properties": {
+            "hint": {
+              "type": "string"
+            },
+            "messageDetail": {
+              "type": "string"
+            },
+            "messageSummary": {
+              "type": "string"
+            }
+          }
+        },
+        "tooltipCalendar": {
+          "type": "string",
+          "value": "Select Date"
+        },
+        "tooltipCalendarDisabled": {
+          "type": "string",
+          "value": "Select Date Disabled"
+        },
+        "tooltipCalendarTime": {
+          "type": "string",
+          "value": "Select Date Time"
+        },
+        "tooltipCalendarTimeDisabled": {
+          "type": "string",
+          "value": "Select Date Time Disabled"
+        },
+        "weekHeader": {
+          "type": "string",
+          "value": "Wk"
         }
       }
     }

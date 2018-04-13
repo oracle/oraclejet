@@ -209,6 +209,11 @@
       }      
     }
 
+    // do not overwrite hidden display properties
+    [hidden].oj-button {
+        display: none;
+    }
+
     .oj-button {  // root element jqui/button or custom element/oj-button
         // height and width set on the root and the container button will inherit that value
         height: $buttonHeight;
@@ -227,10 +232,10 @@
         font-size: $buttonFontSize;
     }
     
-    // inherit height and width from container if set
+    // fill container height and width from container if set, cannot inherit because doesn't work with percentage values
     .oj-button-button {  // custom element only
-        width: inherit;
-        height: inherit;
+        width: 100%;
+        height: 100%;
     }
 
     .oj-button-jqui,     // jqui only
@@ -358,9 +363,9 @@
         text-decoration: none; 
     }
 
-    .oj-button-jqui:focus,     // jqui only
-    .oj-button-button:focus {  // custom element only
-        outline:none; // e.g. Chrome adds blue outline to focused element
+    .oj-button-jqui:not(.oj-focus-highlight):focus,                // jqui only
+    .oj-button:not(.oj-focus-highlight) .oj-button-button:focus {  // custom element only
+        outline: none;
     }
 
     // The oj-focus-highlight class applies focus styling that may not be desirable

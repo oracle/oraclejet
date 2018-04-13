@@ -1,0 +1,289 @@
+{
+  "name": "oj-messages",
+  "version": "5.0.0",
+  "jetVersion": "5.0.0",
+  "displayName": "Messages",
+  "preview": true,
+  "styleClasses": [
+    {
+      "styleGroup": [
+        "oj-messages-inline-remove-bottom-border"
+      ],
+      "description": "Inline messages will include a bottom border so that the messages section is demarcated from the contents below it. If this border is not desirable for certain page layouts, it can be removed by setting this marker class on oj-messages."
+    }
+  ],
+  "description": "Manages layout and display of messages.",
+  "properties": {
+    "display": {
+      "description": "Specifies the display purpose of messages. The valid values for display are\ngeneral and notification.\nGeneral messages are commonly rendered at the page level or section level, relating to the task\nthe user performed. Notification messages are typically used for reporting asynchronous events, \nor to communicate some background activity.\n\nThe presentation of the message is inline by default. However, when a\nojMessages#position property is provided, the presentation will be an overlay.\nThe alignment of the overlay will default based on the display property. The\ndefaults are defined by the theme.",
+      "type": "string",
+      "displayName": "Display",
+      "value": "general",
+      "enumValues": [
+        "general",
+        "notification"
+      ],
+      "propertyEditorValues": {
+        "general": {
+          "description": "messages pertaining to the page or region of the application",
+          "displayName": "General"
+        },
+        "notification": {
+          "description": "often used for communicating alerts arriving asynchronously",
+          "displayName": "Notification"
+        }
+      }
+    },
+    "messages": {
+      "description": " Specifies the array of structured message data used to display the individual messages.\nInstead of providing multiple oj-message as children, this property can be used to conveniently\nspecify the required data as a single collection. Individual message will be automatically\ncreated based on this data. See ojMessage.Message for message values. More information about the structured 'Message' data can be found in documentation for \n'message' attribute of oj-message element.",
+      "type": "null|Array<Object>",
+      "displayName": "Messages",
+      "value": null
+    },
+    "position": {
+      "description": "The position property defines the presentation style. The default presentation is inline,\ndefined by a null position property value. When a value is provide for the\nproperty, the presentation style will be an overaly \"popup\". The aligment of the overaly\nis defined by the position sub-properties.\n\nDefault position sub-properites are extended by the provided value. Defaults vary\nbased on the display property and provided by theme. The position\nproperty is used to establish the location where the messages popup overlay will appear\nrelative to another element.\n\nThe \"my\" and \"at\" properties defines aligment points relative to the popup and other\nelement. The \"my\" property represents the popups alignment where the \"at\" property\nrepresents the other element that can be identified by \"of\" or defauts to the launcher\nwhen the popup opens. The values of these properties describe horizontal and\nvertical alignments.",
+      "type": "Object|null",
+      "displayName": "Position",
+      "value": null,
+      "properties": {
+        "at": {
+          "description": "Defines which position on the target element (\"of\") to align the positioned element\nagainst.",
+          "type": "Object",
+          "properties": {
+            "horizontal": {
+              "description": "Defines the horizontal alignment of what the messges overlay is aligned to.",
+              "type": "string",
+              "enumValues": [
+                "center",
+                "end",
+                "left",
+                "right",
+                "start"
+              ],
+              "propertyEditorValues": {
+                "center": {
+                  "displayName": "Center"
+                },
+                "end": {
+                  "description": "evaluates to \"right\" in LTR mode and \"left\" in RTL mode.",
+                  "displayName": "End"
+                },
+                "left": {
+                  "displayName": "Left"
+                },
+                "right": {
+                  "displayName": "Right"
+                },
+                "start": {
+                  "description": "evaluates to \"left\" in LTR mode and \"right\" in RTL mode.",
+                  "displayName": "Start"
+                }
+              }
+            },
+            "vertical": {
+              "description": "Defines the vertical alignment of what the messages overlay is aligned to.",
+              "type": "string",
+              "enumValues": [
+                "bottom",
+                "center",
+                "top"
+              ],
+              "propertyEditorValues": {
+                "bottom": {
+                  "displayName": "Bottom"
+                },
+                "center": {
+                  "displayName": "Center"
+                },
+                "top": {
+                  "displayName": "Top"
+                }
+              }
+            }
+          }
+        },
+        "collision": {
+          "description": "Rule for alternate alignment.",
+          "type": "string",
+          "enumValues": [
+            "fit",
+            "flip",
+            "flipfit",
+            "none"
+          ],
+          "propertyEditorValues": {
+            "fit": {
+              "description": "shift the element away from the edge of the window.",
+              "displayName": "Fit"
+            },
+            "flip": {
+              "description": "the element to the opposite side of the target and the collision detection is run again to see if it will fit. Whichever side allows more of the element to be visible will be used.",
+              "displayName": "Flip"
+            },
+            "flipfit": {
+              "description": "first applies the flip logic, placing the element on whichever side allows more of the element to be visible. Then the fit logic is applied to ensure as much of the element is visible as possible.",
+              "displayName": "Flipfit"
+            },
+            "none": {
+              "description": "no collision detection.",
+              "displayName": "None"
+            }
+          }
+        },
+        "my": {
+          "description": "Defines which edge on the messages overlay to align with the target (\"of\") element.",
+          "type": "Object",
+          "value": {
+            "horizontal": "center",
+            "vertical": "top"
+          },
+          "properties": {
+            "horizontal": {
+              "description": "Defines the horizontal alignment of the messages overlay.",
+              "type": "string",
+              "enumValues": [
+                "center",
+                "end",
+                "left",
+                "right",
+                "start"
+              ],
+              "propertyEditorValues": {
+                "center": {
+                  "displayName": "Center"
+                },
+                "end": {
+                  "description": "evaluates to \"right\" in LTR mode and \"left\" in RTL mode.",
+                  "displayName": "End"
+                },
+                "left": {
+                  "displayName": "Left"
+                },
+                "right": {
+                  "displayName": "Right"
+                },
+                "start": {
+                  "description": "evaluates to \"left\" in LTR mode and \"right\" in RTL mode.",
+                  "displayName": "Start"
+                }
+              }
+            },
+            "vertical": {
+              "description": "Defines the vertical alignment of the messages overlay.",
+              "type": "string",
+              "enumValues": [
+                "bottom",
+                "center",
+                "top"
+              ],
+              "propertyEditorValues": {
+                "bottom": {
+                  "displayName": "Bottom"
+                },
+                "center": {
+                  "displayName": "Center"
+                },
+                "top": {
+                  "displayName": "Top"
+                }
+              }
+            }
+          }
+        },
+        "of": {
+          "description": "Which element to position the messages overlay against.\n\nIf the value is a string, it should be a selector or the literal string value\nof window. Otherwise, a point of x,y. When a point\nis used, the values are relative to the whole document. Page horizontal and vertical\nscroll offsets need to be factored into this point - see UIEvent\npageX,\npageY.",
+          "type": "string"
+        },
+        "offset": {
+          "description": "Defines a point offset in pixels from the (\"my\") alignment.",
+          "type": "Object",
+          "properties": {
+            "x": {
+              "description": "Horizontal aligment offset.",
+              "type": "number"
+            },
+            "y": {
+              "description": "Vertical alignment offset.",
+              "type": "number"
+            }
+          }
+        }
+      }
+    },
+    "translations": {
+      "description": "A collection of translated resources from the translation bundle, or null if this\ncomponent has no resources. Resources may be accessed and overridden individually or collectively, as seen in the examples.\n\nIf this component has translations, their documentation immediately follows this doc entry.",
+      "type": "Object",
+      "displayName": "Translations",
+      "translatable": true,
+      "properties": {
+        "labelLandmark": {
+          "description": "Label for the landmark region for accessibility.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Messages"
+        }
+      }
+    }
+  },
+  "methods": {
+    "close": {
+      "description": "Closes the specified message regardless of the ojMessage#message.autoTimeout or\nojMessage#message.closeAffordance properties. The message argument\nis a required argument, must be of type ojMessage#message, and must be the same object \ninstance that was used to create and show the oj-message.\n\nClosing a message changes the visibility to hidden. If the message is defined by an instance\nin the ojMessages#messages collection, the close operation will not remove the item\nfrom the backing model. Application logic needs to listen for the \nojMessage#event:close event bubbling up from the underlying oj-message child to remove \nfrom the backing collection.",
+      "params": [
+        {
+          "name": "associated",
+          "description": "message instance of type ojMessage#message",
+          "type": "Object"
+        }
+      ],
+      "return": "void"
+    },
+    "closeAll": {
+      "description": "Closes child messages matching the closeFilter callback criteria.\nThe closeFilter callback is an optional argument. If not specified, all child\nmessages will be closed. If filter is specified, object of type ojMessage#message \ncorresponding to each child will be passed to the closeFilter function. A return \nvalue of true will result in calling ojMessage#close for the message. \nOtherwise, the message will remain in its current state.\n\nClosing a message changes the visibility to hidden. If the message is defined by an instance\nin the ojMessages#messages collection, the close operation will not remove the item\nfrom the backing model. Application logic needs to listen for the \nojMessage#event:close event bubbling up from the underlying oj-message child to remove \nfrom the backing collection.",
+      "params": [
+        {
+          "name": "closeFilter",
+          "description": "an optional callback function that will be passed an instance of type ojMessage#message for each child oj-message. If closeFilter returns true, the associated oj-message will be closed. Returning false will exclude the child message from closure. If a closeFilter is not passed, all child messages will be closed.",
+          "type": "function"
+        }
+      ],
+      "return": "void"
+    },
+    "setProperty": {
+      "description": "Sets a property or a single subproperty for complex properties and notifies the component\nof the change, triggering a [property]Changed event.",
+      "params": [
+        {
+          "name": "property",
+          "description": "The property name to set. Supports dot notation for subproperty access.",
+          "type": "string"
+        },
+        {
+          "name": "value",
+          "description": "The new value to set the property to.",
+          "type": "*"
+        }
+      ],
+      "return": "void"
+    },
+    "getProperty": {
+      "description": "Retrieves a value for a property or a single subproperty for complex properties.",
+      "params": [
+        {
+          "name": "property",
+          "description": "The property name to get. Supports dot notation for subproperty access.",
+          "type": "string"
+        }
+      ],
+      "return": "*"
+    },
+    "setProperties": {
+      "description": "Performs a batch set of properties.",
+      "params": [
+        {
+          "name": "properties",
+          "description": "An object containing the property and value pairs to set.",
+          "type": "Object"
+        }
+      ],
+      "return": "void"
+    }
+  }
+}

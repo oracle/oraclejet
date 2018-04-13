@@ -1,4 +1,5 @@
 /**
+ * @license
  * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
@@ -16,7 +17,11 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/in
  * @ojcomponent oj.dvtTimeComponent
  * @augments oj.dvtBaseComponent
  * @since 2.1.0
+ * @ojtsimport ojvalidation-base
+ * @ojtsimport ojvalidation-datetime
+ * @ojtsimport ojtimeaxis
  * @abstract
+ * @ojtsignore
  */
 oj.__registerWidget('oj.dvtTimeComponent', $['oj']['dvtBaseComponent'],
 {
@@ -131,23 +136,6 @@ oj.__registerWidget('oj.dvtTimeComponent', $['oj']['dvtBaseComponent'],
 
     // first day of week; locale specific
     resources['firstDayOfWeek'] = oj.LocaleData.getFirstDayOfWeek();
-  },
-
-  /**
-   * {@ojinclude "name":"nodeContextDoc"}
-   * @param {!Element} node - {@ojinclude "name":"nodeContextParam"}
-   * @returns {Object|null} {@ojinclude "name":"nodeContextReturn"}
-   *
-   * @example {@ojinclude "name":"nodeContextExample"}
-   *
-   * @expose
-   * @instance
-   * @memberof oj.dvtTimeComponent
-   */
-  getContextByNode: function(node)
-  {
-    // context objects are documented with @ojnodecontext
-    return this.getSubIdByNode(node);
   }
 });
 

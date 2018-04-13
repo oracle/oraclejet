@@ -1,4 +1,5 @@
 /**
+ * @license
  * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
@@ -38,17 +39,18 @@ else if (typeof self !== 'undefined')
  */
 var _oldVal = _scope['oj'];
 
-/**
- * Global exported Oracle JET namespace
- * @property {String} version JET version number
- * @property {String} build JET build number
- * @property {String} revision JET source code revision number
- */
 var oj = _scope['oj'] =
 {
-  'version': "4.2.0",
-  'build' : "9",
-  'revision': "41239",
+  /**
+   * @global
+   * @member {string} version JET version numberr
+   */
+  'version': "5.0.0",
+  /**
+   * @global
+   * @member {string} revision JET source code revision number
+   */
+  'revision': "2018-04-04_15-21-24",
           
   // This function is only meant to be used outside the library, so quoting the name
   // to avoid renaming is appropriate
@@ -66,6 +68,8 @@ var oj = _scope['oj'] =
 /**
  * @class
  * @name oj.Logger
+ * @hideconstructor
+ * @since 1.0.0
  *
  * @classdesc
  * <h3>JET Logger</h3>
@@ -110,12 +114,14 @@ oj.Logger = {};
  * Log level none
  * @const
  * @export
+ * @type {number}
  * @memberof oj.Logger
  */
 oj.Logger.LEVEL_NONE = 0;
 /**
  * Log level error
  * @const
+ * @type {number}
  * @export
  * @memberof oj.Logger
  */
@@ -123,6 +129,7 @@ oj.Logger.LEVEL_ERROR = 1;
 /**
  * Log level warning
  * @const
+ * @type {number}
  * @export
  * @memberof oj.Logger
  */
@@ -130,6 +137,7 @@ oj.Logger.LEVEL_WARN = 2;
 /**
  * Log level info
  * @const
+ * @type {number}
  * @export
  * @memberof oj.Logger
  */
@@ -137,6 +145,7 @@ oj.Logger.LEVEL_INFO = 3;
 /**
  * Log level - general message
  * @const
+ * @type {number}
  * @export
  * @memberof oj.Logger
  */
@@ -156,8 +165,10 @@ oj.Logger._options = oj.Logger._defaultOptions;
  * Writes an error message.
  * @param {...(Object|string|number)} args The method supports a variable number of arguments, string substitutions and accepts a function as a parameter.
  *                                See examples in the overview section above.
+ * @return {void}
  * @export
  * @memberof oj.Logger
+ * @since 1.0.0
  */
 oj.Logger.error = function(args)
 {
@@ -168,8 +179,10 @@ oj.Logger.error = function(args)
  * Writes an informational  message.
  * @param {...(Object|string|number)} args The method supports a variable number of arguments, string substitutions and accepts a function as a parameter.
  *                                See examples in the overview section above.
+ * @return {void}
  * @export
  * @memberof oj.Logger
+ * @since 1.0.0
  */
 oj.Logger.info = function(args)
 {
@@ -181,7 +194,9 @@ oj.Logger.info = function(args)
  * @param {...(Object|string|number)} args The method supports a variable number of arguments, string substitutions and accepts a function as a parameter.
  *                                See examples in the overview section above.
  * @export
+ * @return {void}
  * @memberof oj.Logger
+ * @since 1.0.0
  */
 oj.Logger.warn = function(args)
 {
@@ -192,8 +207,10 @@ oj.Logger.warn = function(args)
  * Writes a general message.
  * @param {...(Object|string|number)} args The method supports a variable number of arguments, string substitutions and accepts a function as a parameter.
  *                                See examples in the overview section above.
+ * @return {void}
  * @export
  * @memberof oj.Logger
+ * @since 1.0.0
  */
 oj.Logger.log = function(args)
 {
@@ -216,10 +233,12 @@ oj.Logger.log = function(args)
  * oj.Logger.option("level",  oj.Logger.LEVEL_INFO);
  * oj.Logger.option("writer",  customWriter);  //an object that implements the following methods: log(), info(), warn(), error()
  *
- * @param {Object|string=} key
- * @param {Object|string=} value
+ * @param {Object|string} [key]
+ * @param {*} [value]
+ * @ojsignature {target: "Type", for: "returns", value: "any"}
  * @export
  * @memberof oj.Logger
+ * @since 1.0.0
  */
 oj.Logger.option = function (key, value)
 {
@@ -316,6 +335,7 @@ var _checkpointManagerDelegate = _scope['__ojCheckpointManager'];
  * Global Checkpoint Manager Instance
  * @const
  * @export
+ * @ignore
  */
 oj.CHECKPOINT_MANAGER = {};
 
@@ -426,6 +446,7 @@ oj.CHECKPOINT_MANAGER.dump = function (regexp)
 
 /**
  * @constructor oj.Object
+ * @since 1.0
  * @export
  */
 oj.Object = function()
@@ -452,55 +473,6 @@ oj.Object.prototype.constructor = oj.Object;
 
 
 /**
- * Calls to  this method are added by the Closure Compiler pass during JET's build process.
- * It should never be called by the Application code
- *
- * The method delegates to goog.exportProperty() for exporting a symbol with Closure compiler,
- * while recording a map of the renamed names to an original names and a map of original names to the renamed names
- * @method exportPrototypeSymbol
- * @memberof oj.Object
- * @param {string} name - name of the property ('CCCC.prototype.FFFF' is expected)
- * @param {Object} valueMapping - a name-value pair, where tke key is the renamed name (renamed FFFF), and the value is the refernce to the member function
- * whose name was exported
- * @ignore
- */
-oj.Object.exportPrototypeSymbol = function(name, valueMapping)
-{
-  var renamed = null;
-  var val = null, prop;
-  for (prop in valueMapping)
-  {
-    if (valueMapping.hasOwnProperty(prop)) {
-        renamed = prop;
-        val = valueMapping[prop];
-        break;
-    }
-  }
-
-  var tokens = name.split('.');
-
-  var constructor = oj[tokens[0]];
-  var original = tokens[2];
-
-  // Do nothing if we are exporting a function that has not been renamed
-  if (renamed == original || renamed == null)
-  {
-    return;
-  }
-
-  var renameMap = constructor._r2o;
-  if (!renameMap)
-  {
-     renameMap = {};
-     constructor._r2o = renameMap;
-  }
-
-  renameMap[renamed] = original;
-
-  goog.exportProperty(constructor.prototype, original, val);
-};
-
-/**
  * Creates a subclass of a baseClass
  * @method createSubclass
  * @memberof oj.Object
@@ -508,6 +480,7 @@ oj.Object.exportPrototypeSymbol = function(name, valueMapping)
  * @param {Object} baseClass class to make the superclass of extendingClass
  * @param {string=} typeName to use for new class.  If not specified, the typeName will be extracted from the
  * baseClass's function if possible
+ * @return {void}
  * @export
  */
 oj.Object.createSubclass = function(
@@ -557,6 +530,7 @@ oj.Object.createSubclass = function(
  * @param {Object} targetClass - the function whose prototype will be used a
  * copy target
  * @param {Object} source - object whose properties will be copied
+ * @return {void}
  * @export
  */
 oj.Object.copyPropertiesForClass = function(targetClass, source)
@@ -588,7 +562,7 @@ oj.Object._tempSubclassConstructor = function(){};
  * @memberof oj.Object
  * @instance
  * @param {Object=} otherInstance - if specified, the instance whose type
- * should be returned. Otherwise the type if this instance will be returned
+ * should be returned. Otherwise the type of this instance will be returned
  * @return {Object} the class object for the instance
  * @final
  * @export
@@ -704,6 +678,7 @@ oj.Object.prototype.getTypeName = function()
  * their superclass' Init
  * @export
  * @method Init
+ * @return {void}
  * @memberof oj.Object
  * @instance
  */
@@ -732,6 +707,7 @@ oj.Object.prototype.Init = function()
  * @method ensureClassInitialization
  * @memberof oj.Object
  * @param {Object} clazz The class to ensure initialization of
+ * @return {void}
  * @export
  */
 oj.Object.ensureClassInitialization = function(clazz)
@@ -764,11 +740,12 @@ oj.Object.prototype.equals = function(
  * Binds the supplied callback function to an object
  * @method createCallback
  * @memberof oj.Object
- * @param {Object!} obj - object that will be available to the supplied callback
+ * @param {!Object} obj - object that will be available to the supplied callback
  * function as 'this'
- * @param {Object!} func - the original callback
+ * @param {!Object} func - the original callback
  * @return {function()} a function that will be invoking the original callback with
  * 'this' object assigned to obj
+ * @ojsignature {target: "Type", for: "returns", value: "()=>any"}
  * @export
  */
 oj.Object.createCallback = function(obj, func)
@@ -804,18 +781,11 @@ oj.Object._initClasses = function(currClass)
       oj.Object._initClasses(superclassConstructor);
     }
 
-    oj.Object._applyRenamesToSubclass(currClass);
   }
 
 
   // if the class has an initialization function, call it
-  InitClassFunc = currClass["InitClass"] || null;
-
-  // Check for the quoted name in case InitClass is renamed by Closure compiler
-  if (!InitClassFunc)
-  {
-    InitClassFunc = currClass["InitClass"];
-  }
+  InitClassFunc = currClass.InitClass
 
   if (InitClassFunc)
   {
@@ -829,7 +799,9 @@ oj.Object._initClasses = function(currClass)
  *   <li> Array [order matters]; will traverse through the arrays and compare oj.Object.compareValues(array[i], array2[i]) </li>
  *   <li> Instances that support valueOf [i.e. Boolean, String, Number, Date, and etc] will be compared by usage of that function </li>
  * </ol>
- *
+ * @param {*} obj1 The first value to compare.
+ * @param {*} obj2 The second value to compare.
+ * @return {boolean}
  * @public
  * @export
  * @method compareValues
@@ -1058,59 +1030,6 @@ oj.Object.isEmpty = function(object) {
     return true;
 };
 
-/**
- * @private
- */
-oj.Object._applyRenamesToSubclass = function (currClass)
-{
-  // Check whether any renames actually happened
-  if (!oj.Object._r2o)
-  {
-    return;
-  }
-  var ancestor = currClass.superclass;
-  oj.Object._applyRenamesFromChain(currClass, ancestor);
-};
-
-/**
- * @private
- */
-oj.Object._applyRenamesFromChain = function(currClass, superclass)
-{
-  if (!superclass)
-  {
-    return;
-  }
-
-  var ancestor = superclass.constructor;
-
-
-  //Recurse up the inheritance chain first
-  oj.Object._applyRenamesFromChain(currClass, ancestor.superclass);
-
-  var renameMap = ancestor._r2o, alias;
-  if (renameMap)
-  {
-    for (alias in renameMap)
-    {
-      if (renameMap.hasOwnProperty(alias)) {
-        var orig = renameMap[alias];
-        if (alias != orig)
-        {
-          var prot = currClass.prototype;
-          if (!prot.hasOwnProperty(alias) && prot.hasOwnProperty(orig))
-          {
-            prot[alias] = prot[orig];
-          }
-          else if(!prot.hasOwnProperty(orig) && prot.hasOwnProperty(alias))
-          {
-            prot[orig] = prot[alias];
-          }
-        }
-      }
-    }
-  }
-};
 
 /**
  * @private
@@ -1791,6 +1710,7 @@ if (_assertSetting !== undefined)
  * @class oj.EventSource
  * @classdesc Object which supports subscribing to and firing events
  * @constructor
+ * @since 1.1
  */
 oj.EventSource = function()
 {
@@ -1815,6 +1735,8 @@ oj.EventSource.prototype.Init = function()
  * <p>Application can call this if it wants to be notified of an event.  It can call the <code class="prettyprint">off</code> method to detach the handler when it no longer wants to be notified.</p>
  * @param {string} eventType eventType
  * @param {function(Object)} eventHandler event handler function
+ * @return {void}
+ * @memberof oj.EventSource
  * @export
  */
 oj.EventSource.prototype.on = function(eventType, eventHandler)
@@ -1839,6 +1761,8 @@ oj.EventSource.prototype.on = function(eventType, eventHandler)
  * <p>Application can call this if it no longer wants to be notified of an event that it has attached an handler to using the <code class="prettyprint">on</code> method.</p>
  * @param {string} eventType eventType
  * @param {function(Object)} eventHandler event handler function
+ * @return {void}
+ * @memberof oj.EventSource
  * @export
  */
 oj.EventSource.prototype.off = function(eventType, eventHandler)
@@ -1860,6 +1784,7 @@ oj.EventSource.prototype.off = function(eventType, eventHandler)
  * @param {string} eventType  event type
  * @param {Object} event  event
  * @return {boolean} Returns false if event is cancelled
+ * @memberof oj.EventSource
  * @export
  */
 oj.EventSource.prototype.handleEvent = function(eventType, event)
@@ -1892,7 +1817,9 @@ oj.EventSource.prototype.handleEvent = function(eventType, event)
 
 /**
  * @class oj.Config
+ * @hideconstructor
  * @classdesc Services for setting and retrieving configuration options
+ * @since 1.0
  * @export
  */
 oj.Config = {};
@@ -1935,9 +1862,10 @@ oj.Config.getLocale = function()
  * Changes the current locale
  * @method setLocale
  * @param {string} locale (language code and subtags separated by dash)
- * @param {Function} callback - for applications running with an AMD Loader (such as Require.js), this optional callback 
+ * @param {function(): void} [callback] - for applications running with an AMD Loader (such as Require.js), this optional callback 
  * will be invoked when the framework is done loading its translated resources and Locale Elements for the newly specified locale. 
  * For applications running without an AMD loader, this optional callback will be invoked immediately
+ * @return {undefined}
  * @export
  * @memberof oj.Config
  */
@@ -2047,6 +1975,7 @@ oj.Config.getResourceUrl = function(relativePath)
  * Sets the base URL for retrieving component-specific resources
  * @method setResourceBaseUrl
  * @param {string} baseUrl base URL
+ * @return {undefined}
  * @see oj.Config.getResourceUrl
  * @export
  * @memberof oj.Config
@@ -2060,6 +1989,7 @@ oj.Config.setResourceBaseUrl = function(baseUrl)
  * Sets the automation mode.
  * @method setAutomationMode
  * @param {string} mode "enabled" for running in automation mode
+ * @return {undefined}
  * @see oj.Config.getAutomationMode
  * @export
  * @memberof oj.Config
@@ -2129,6 +2059,7 @@ oj.Config.getVersionInfo = function()
  * Dump information to the browser's console containing important version information about JET and
  * the libraries it has loaded
  * @method logVersionInfo 
+ * @return {undefined}
  * @memberof oj.Config
  * @export
  */
@@ -2363,6 +2294,7 @@ oj.Config.__getTemplateEngine = function()
 
 
 /**
+ * @ojtsignore
  * @class oj.AgentUtils
  * @classdesc Utilities for qualifying the user agent string.
  * @public
@@ -2414,6 +2346,7 @@ oj.AgentUtils.OS =
   UNKNOWN: "Unknown",
   ANDROID: "Android",
   IOS: "IOS",
+  WINDOWSPHONE: "WindowsPhone",
   LINUX: "Linux"
 };
 /**
@@ -2463,6 +2396,8 @@ oj.AgentUtils.getAgentInfo = function (userAgent)
     os = oj.AgentUtils.OS.ANDROID;
   else if (userAgent.indexOf("linux") > -1)
     os = oj.AgentUtils.OS.LINUX;
+  else if (userAgent.indexOf("windows phone") > -1)
+    os = oj.AgentUtils.OS.WINDOWSPHONE;
   else if (userAgent.indexOf("win") > -1)
     os = oj.AgentUtils.OS.WINDOWS;
   if (userAgent.indexOf("msie") > -1)
@@ -2580,8 +2515,9 @@ oj.ThemeUtils = function(){};
  * @memberof oj.ThemeUtils
  * @export
  * @static
+ * @hideconstructor
  *
- * @return {String|null} the name of the theme
+ * @return {string|null} the name of the theme
  */
 oj.ThemeUtils.getThemeName = function()
 {
@@ -2594,12 +2530,30 @@ oj.ThemeUtils.getThemeName = function()
 
 
 /**
- * get the target platform of the current theme
+ * <p>Get the target platform of the current theme. </p>
+ * <p>This API does not look at the user agent and therefore it 
+ *    tells you nothing about the current platform you are actually on.  
+ *    Instead it tells you the target platform the theme was written 
+ *    for so that programmatic behaviors that match the theme's UI can be written.
+ *    This can be useful when writing a cross platform hybrid mobile app.  </p>
+ * 
+ * <p>Example</p>
+ * <pre class="prettyprint">
+ * <code>
+ * var themeTargetPlatform = oj.ThemeUtils.getThemeTargetPlatform();
+ *
+ * if (themeTargetPlatform == 'ios')
+ *    // code for a behavior familiar in ios
+ * else if (themeTargetPlatform == 'android')
+ *    // code for a behavior familiar on android
+ * else
+ *    // code for the default behavior
+ * </code></pre>
  * @export
  * @static
  * @method getThemeTargetPlatform
  * @memberof oj.ThemeUtils
- * @return {String|null} the target platform can be any string the theme 
+ * @return {string|null} the target platform can be any string the theme 
  * wants to send down, but the usual values are 'web', 'ios', 'android', 'windows'
  */
 oj.ThemeUtils.getThemeTargetPlatform = function()
@@ -2618,6 +2572,7 @@ oj.ThemeUtils.getThemeTargetPlatform = function()
  * @export
  * @static
  * @method clearCache
+ * @return {void}
  * @memberof oj.ThemeUtils
  */
 oj.ThemeUtils.clearCache = function()
@@ -2840,6 +2795,7 @@ oj.ThemeUtils.parseJSONFromFontFamily = function(selector)
  * See the method doc below for specific examples.
  * 
  * @since 1.1.0
+ * @hideconstructor
  * @export
  */
 oj.ResponsiveUtils = function() {};
@@ -3415,6 +3371,8 @@ oj.CollectionUtils._copyIntoImpl = function(
  * @class oj.Translations
  * @classdesc Services for Retrieving Translated Resources
  * @export
+ * @since 1.0
+ * @hideconstructor
  */
 oj.Translations = {};
 
@@ -3427,6 +3385,7 @@ oj.Translations = {};
  * @method setBundle
  * @memberof oj.Translations
  * @param {Object} bundle resource bundle that should be used by the framework
+ * @return {void}
  * @export
  */
 oj.Translations.setBundle = function(bundle)
@@ -3491,7 +3450,7 @@ oj.Translations.applyParameters = function(pattern, parameters)
  * For example, 'components.chart', would be read as the 'chart' section within
  * 'components'. Thus the key name for an individual section should never contain a dot.
  * 
- * @param {...string|Object|Array} var_args  - optional parameters to be inserted into the 
+ * @param {...(string|Object|Array)} var_args  - optional parameters to be inserted into the 
  * translated pattern.
  * 
  * If more than one var_args arguments are passed, they will be treated as an array 
@@ -3504,6 +3463,7 @@ oj.Translations.applyParameters = function(pattern, parameters)
  * Object or Array will be used to replace {0} in the pattern.
  * 
  * @return formatted translated string
+ * @ojsignature {target: "Type", for:"returns", value: "string"}
  * @export
  */
 oj.Translations.getTranslatedString = function(key, var_args)
@@ -3731,7 +3691,8 @@ oj.Translations._getBundle = function()
 /**
  * Internally used by the {@link oj.BusyContext} to track a components state
  * while it is performing a task such as animation or fetching data.
- *
+ * 
+ * @hideconstructor
  * @ignore
  * @protected
  * @constructor
@@ -3924,6 +3885,7 @@ oj.BusyState._getTs = function ()
  * </code></pre>
  *
  * <b>This constructor should never be invoked by the application code directly.</b>
+ * @hideconstructor
  * @param {Element=} hostNode DOM element associated with this busy context
  * @export
  * @constructor oj.BusyContext
@@ -3939,9 +3901,10 @@ oj.Object.createSubclass(oj.BusyContext, oj.Object, "oj.BusyContext");
 
 
 /**
+ * see oj.BusyContext#setDefaultTimeout
+ * @type {number}
  * @ignore
  * @private
- * @type {number} see oj.BusyContext#setDefaultTimeout
  */
 oj.BusyContext._defaultTimeout = Number.NaN;
 
@@ -3956,6 +3919,7 @@ oj.BusyContext._defaultTimeout = Number.NaN;
  * @memberof oj.BusyContext
  * @method setDefaultTimeout
  * @param {number} timeout in milliseconds
+ * @return {undefined}
  */
 oj.BusyContext.setDefaultTimeout = function(timeout)
 {
@@ -4210,12 +4174,13 @@ oj.BusyContext._values = function (statesMap)
  * @memberof oj.BusyContext
  * @instance
  * @method addBusyState
- * @param {{description: ?}} options object that describes the busy state being registered.<br/>
+ * @param {Object} options object that describes the busy state being registered.<br/>
+ * @param {Object|function():string} options.description
  *         description: Option additional information of what is registering a busy state. Added to
  *                      logging and handling rejected status. Can be supplied as a Object or a
  *                      function.  If the type is an object the toString function needs to be
  *                      implemented.
- * @returns {Function} resolve function called by the registrant when the busy state completes.
+ * @returns {function():void} resolve function called by the registrant when the busy state completes.
  *                     The resultant function will throw an error if the busy state is no longer
  *                     registered.
  */
@@ -4253,6 +4218,7 @@ oj.BusyContext.prototype.addBusyState = function (options)
  * @instance
  * @method dump
  * @param {string=} message optional text used to further denote a debugging point
+ * @return {undefined}
  */
 oj.BusyContext.prototype.dump = function (message)
 {
@@ -4278,7 +4244,7 @@ oj.BusyContext.prototype.dump = function (message)
  * @method getBusyStates
  * @memberof oj.BusyContext
  * @instance
- * @return {Array.<{id:String, description:String}>} active busy states managed by the context
+ * @return {Array.<{id:string, description:string}>} active busy states managed by the context
  *         instance
  */
 oj.BusyContext.prototype.getBusyStates = function ()
@@ -4299,6 +4265,7 @@ oj.BusyContext.prototype.getBusyStates = function ()
  * @memberof oj.BusyContext
  * @instance
  * @export
+ * @return {undefined}
  */
 oj.BusyContext.prototype.clear = function ()
 {
@@ -4342,7 +4309,7 @@ oj.BusyContext.prototype.clear = function ()
  * @method whenReady
  * @param {number=} timeout "optional" maximum period in milliseconds the resultant promise
  *        will wait. Also see {@link oj.BusyContext.setDefaultTimeout}.
- * @returns {Promise}
+ * @returns {Promise.<boolean|Error>}
  */
 oj.BusyContext.prototype.whenReady = function (timeout)
 {
@@ -4566,7 +4533,7 @@ oj.BusyContext.prototype._evalBusyness = function()
  * @export
  * @memberof oj.BusyContext
  * @method applicationBootstrapComplete
- * @returns {void}
+ * @returns {undefined}
  */
 oj.BusyContext.prototype.applicationBootstrapComplete = function ()
 {
@@ -4577,13 +4544,6 @@ oj.BusyContext.prototype.applicationBootstrapComplete = function ()
 
   oj.Logger.log("BusyContext.applicationBootstrapComplete: end scope='%s'", debugScope);
 };
-
-/**
- * @deprecated in v3.2.0; see {@link oj.BusyContext#applicationBootstrapComplete}
- * @since 2.1.0
- * @export
- */
-oj.BusyContext.prototype.applicationBoostrapComplete = oj.BusyContext.prototype.applicationBootstrapComplete;
 
 /**
  * @ignore
@@ -4728,7 +4688,8 @@ oj.BusyContext._deliverThrottledUpdates = function()
  * @private
  * @ignore
  * @const
- * @type {string} attribute name describing a busystate
+ * attribute name describing a busystate
+ * @type {string}
  */
 oj.BusyContext._DESCRIPTION = "description";
 
@@ -4736,11 +4697,13 @@ oj.BusyContext._DESCRIPTION = "description";
  * @ignore
  * @private
  * @constant
- * @type {string} {@link oj.BusyState} property name indicating the instance is dead
+ * {@link oj.BusyState} property name indicating the instance is dead
+ * @type {string}
  */
 oj.BusyContext._OJ_RIP = "__ojRip";
 
 /**
+ * @ojtsignore
  * @private
  * @ignore
  */
@@ -4821,6 +4784,7 @@ oj.BusyContext._BOOTSTRAP_MEDIATOR = new /** @constructor */(function()
  * retrieve an instance of the context.
  * @param {Element=} node DOM node where the context should be created
  * @export
+ * @hideconstructor
  * @constructor oj.Context
  * @since 2.1.0
  * @classdesc This is a general purpose context. Initially it only exposes the BusyContext
@@ -4935,7 +4899,8 @@ oj.Context.prototype.getBusyContext = function ()
  * @ignore
  * @private
  * @constant
- * @type {string} Element marker attribute defining a context
+ * Element marker attribute defining a context
+ * @type {string}
  */
 oj.Context._OJ_CONTEXT_ATTRIBUTE = "data-oj-context";
 
@@ -4943,7 +4908,8 @@ oj.Context._OJ_CONTEXT_ATTRIBUTE = "data-oj-context";
  * @ignore
  * @private
  * @constant
- * @type {string} Element property name for a context
+ * Element property name for a context
+ * @type {string}
  */
 oj.Context._OJ_CONTEXT_INSTANCE = "__ojContextInstance";
 
@@ -4951,7 +4917,8 @@ oj.Context._OJ_CONTEXT_INSTANCE = "__ojContextInstance";
  * @ignore
  * @private
  * @constant
- * @type {string} attribute identifying an open popup
+ * attribute identifying an open popup
+ * @type {string}
  */
 oj.Context._OJ_SURROGATE_ATTR = "data-oj-surrogate-id";
 
@@ -4978,147 +4945,6 @@ oj.Context.getParentElement = function (element)
   return element.parentElement;
 };
 
-/**
- * Timing related utilities
- * @namespace
- */
-oj.TimerUtils = {};
-
-/**
- * A Timer encapsulates a Promise associated with a deferred function execution
- * and the ability to cancel the timer before timeout.
- * @interface Timer
- */
- function Timer() {};
- /**
-  * Get the Promise assocaited with this timer.  Promise callbacks will be
-  * passed a single boolean value indicating if the timer's timeout expired
-  * normally (without being canceled/cleared).  If the timer is left to expire
-  * after its configured timeout has been exceeded, then it will pass
-  * boolean(true) to the callbacks.  If the timer's {@link #clear} method is
-  * called before its configured timeout has been reached, then the callbacks
-  * will receive boolean(false).
-  * @memberof Timer
-  * @return {Promise} This timer's Promise
-  */
- Timer.prototype.getPromise = function() {};
- /**
-  * Clears the timer and resolves the Promise.  If the normal timeout hasn't
-  * yet expired, the value passed to the Promise callbacks will be boolean(false).
-  * If the timeout has already expired, this function will do nothing, and all of
-  * its Promise callbacks will receive boolean(true).
-  * @memberof Timer
-  */
- Timer.prototype.clear = function() {};
-
-/**
- * Get a Timer object with the given timeout in milliseconds.  The Promise
- * associated with the timer is resolved when the timeout window expires, or if
- * the clear() function is called.
- * This is useful for when code needs to be executed on timeout (setTimeout) and
- * must handle cleanup tasks such as clearing {@link BusyState} when the timer
- * expires or is canceled.
- *
- * @param  {number} timeout The timeout value in milliseconds to wait before the
- * promise is resolved.
- * @return {Timer}
- * A Timer object which encapsulates the Promise that will be
- * resolved once the timeout has been exceeded or cleared.
- * @export
- * @memberof oj.TimerUtils
- * @example <caption>Get a timer to execute code on normal timeout and
- * cancelation.  If the timeout occurs normally (not canceled), both
- * callbacks are executed and the value of the 'completed' parameter will be
- * true.</caption>
- * var timer = oj.TimerUtils.getTimer(1000);
- * timer.getPromise().then(function(completed) {
- *     if (completed) {
- *       // Delayed code
- *     }
- *   })
- * timer.getPromise().then(function() {
- *   // Code always to be run
- * })
- *
- * @example <caption>Get a timer to execute code on normal timeout and cancelation.
- * In this example, the timer is canceled before its timeout expires, and the
- * value of the 'completed' parameter will be false.</caption>
- * var timer = oj.TimerUtils.getTimer(1000);
- * timer.getPromise()
- *   .then(function(completed) {
- *     if (completed) {
- *       // Delayed code
- *     }
- *   })
- * timer.getPromise()
- *   .then(function() {
- *     // Code always to be run
- *   })
- * ...
- * timer.clear(); // timer cleared before timeout expires
- */
-oj.TimerUtils.getTimer = function(timeout) {
-    return new oj.TimerUtils._TimerImpl(timeout);
-}
-
-/**
- * @constructor
- * @implements {Timer}
- * @param  {number} timeout The timeout value in milliseconds.
- * @private
- */
-oj.TimerUtils._TimerImpl = function(timeout) {
-    var _promise;
-    var _resolve;
-    var _timerId;
-
-    this.getPromise = function() {
-        return _promise;
-    }
-    this.clear = function() {
-        window.clearTimeout(_timerId);
-        _timerId = null;
-        _timerDone(false);
-    }
-
-    /**
-     * Called on normal and early timeout (cancelation)
-     */
-    function _timerDone(completed) {
-        _timerId = null;
-        _resolve(completed);
-    }
-
-    if (typeof window === 'undefined') {
-        _promise = Promise.reject();
-    }
-    else {
-        _promise = new Promise(function(resolve) {
-            _resolve = resolve;
-            _timerId = window.setTimeout(_timerDone.bind(null, true), timeout);
-        });
-    }
-};
-
-(function () {  
-  if (typeof window === 'undefined') {
-    return;
-  }
-  // polyfill for Element.closest()
-  if (window['Element'] && !Element.prototype.closest) {
-    Element.prototype.closest =
-        function(s) {
-      var matches = (this.document || this.ownerDocument).querySelectorAll(s),
-              i,
-              el = this;
-      do {
-        i = matches.length;
-        while (--i >= 0 && matches.item(i) !== el) {}
-      } while ((i < 0) && (el = el.parentElement));
-      return el;
-    };
-  }
-})();
 (function()
 {
 
@@ -5350,6 +5176,228 @@ oj.TimerUtils._TimerImpl = function(timeout) {
   
 })();
 
+
+(function () {  
+  if (typeof window === 'undefined') {
+    return;
+  }
+  // polyfill for Element.closest()
+  if (window['Element'] && !Element.prototype.closest) {
+    Element.prototype.closest =
+        function(s) {
+      var matches = (this.document || this.ownerDocument).querySelectorAll(s),
+              i,
+              el = this;
+      do {
+        i = matches.length;
+        while (--i >= 0 && matches.item(i) !== el) {}
+      } while ((i < 0) && (el = el.parentElement));
+      return el;
+    };
+  }
+})();
+/**
+ * Utility class with functions for preprocessing HTML data  
+ * to avoid a problem using a custom tag within HTML table.
+ * Used as a part of ModuleElementUtils.createView() call
+ *
+ * @constructor
+ * @private
+ */
+oj.__HtmlUtils = (function() {
+  
+  //replace '<from' tag with '<oj-bind-replace-from' globally in the provided string in order to identify and reverse it later
+  var escapeTag = function (from, str) {
+    var startTag = new RegExp('<' + from + '(?=\\s|>)', 'gi');
+    var endTag = new RegExp('</' + from + '(?=\\s|>)', 'gi');
+    return str.replace(startTag, '<' + 'oj-bind-replace-' + from).replace(endTag, '</' + 'oj-bind-replace-' + from);
+  }
+  
+  //replace '<oj-bind-replace-tag' with the original <tag in the array of DOM nodes
+  var unescapeTag = function (parent) {
+    var children = parent.childNodes;
+    var len = children.length;
+    for (var i = 0; i < len; i++) {
+      var child = children[i];
+      unescapeTag(child);
+      var nodeName = child.nodeName.toLowerCase();
+      if (nodeName.substr(0,16) === 'oj-bind-replace-') {
+        var replName = nodeName.substr(16);
+        var replNode = document.createElement(replName);
+        for (var j = 0; j < child.attributes.length; j++) {
+          var attr = child.attributes[j];
+          replNode.setAttribute(attr.name, attr.value);
+        }
+        var childHolder = replNode.content ? replNode.content : replNode;
+        for (var j = 0; child.childNodes.length > 0; ) {
+          childHolder.appendChild(child.childNodes[0]);
+        }
+        parent.replaceChild(replNode, child);
+      }
+      else if(nodeName === "script" || nodeName === "style") {
+        var replNode = document.createElement(nodeName);
+        for (var j = 0; j < child.attributes.length; j++) {
+          var attr = child.attributes[j];
+          replNode.setAttribute(attr.name, attr.value);
+        }
+        var origHTML = child.innerHTML;
+        replNode.innerHTML = origHTML.replace(new RegExp('oj-bind-replace-', 'g'), '');
+        parent.replaceChild(replNode, child);
+      }
+      else if(child.nodeType === 8) { //comment node
+        var origValue = child.nodeValue;
+        child.nodeValue = origValue.replace(new RegExp('oj-bind-replace-', 'g'), '');
+      }      
+    }
+  }
+
+  return {
+    stringToNodeArray: function(html) {
+      // escape html for the predefined tags
+      var tags = ["table","caption","colgroup","col","thead","tfoot","th","tbody","tr","td","template"];
+      for (var i = 0; i < tags.length; i++) {
+        html = escapeTag(tags[i], html);
+      }
+      //convert tags into DOM structure
+      var container = document.createElement("div");
+      container.innerHTML = html; //@HTMLUpdateOK html is the oj-module or composite View which does not come from the end user
+      if (html.indexOf("<oj-bind-replace-") !== -1)
+        unescapeTag(container);
+      
+      //convert child nodes to nodes array accepted by oj-module element
+      var childList = container.childNodes;
+      var nodesArray = [];
+      for(var i = childList.length; i--; nodesArray.unshift(childList[i]));
+      return nodesArray;
+    }
+  };
+  
+})();
+/**
+ * Timing related utilities
+ * @namespace
+ * @name oj.TimerUtils
+ * @since 4.1.0
+ * @ojstatus preview
+ */
+oj.TimerUtils = {};
+
+/**
+ * A Timer encapsulates a Promise associated with a deferred function execution
+ * and the ability to cancel the timer before timeout.
+ * @interface Timer
+ */
+ function Timer() {};
+ /**
+  * Get the Promise assocaited with this timer.  Promise callbacks will be
+  * passed a single boolean value indicating if the timer's timeout expired
+  * normally (without being canceled/cleared).  If the timer is left to expire
+  * after its configured timeout has been exceeded, then it will pass
+  * boolean(true) to the callbacks.  If the timer's {@link #clear} method is
+  * called before its configured timeout has been reached, then the callbacks
+  * will receive boolean(false).
+  * @memberof Timer
+  * @return {Promise.<boolean>} This timer's Promise
+  */
+ Timer.prototype.getPromise = function() {};
+ /**
+  * Clears the timer and resolves the Promise.  If the normal timeout hasn't
+  * yet expired, the value passed to the Promise callbacks will be boolean(false).
+  * If the timeout has already expired, this function will do nothing, and all of
+  * its Promise callbacks will receive boolean(true).
+  * @return {void}
+  * @memberof Timer
+  */
+ Timer.prototype.clear = function() {};
+
+/**
+ * Get a Timer object with the given timeout in milliseconds.  The Promise
+ * associated with the timer is resolved when the timeout window expires, or if
+ * the clear() function is called.
+ * This is useful for when code needs to be executed on timeout (setTimeout) and
+ * must handle cleanup tasks such as clearing {@link BusyState} when the timer
+ * expires or is canceled.
+ *
+ * @param  {number} timeout The timeout value in milliseconds to wait before the
+ * promise is resolved.
+ * @return {Timer}
+ * A Timer object which encapsulates the Promise that will be
+ * resolved once the timeout has been exceeded or cleared.
+ * @export
+ * @memberof oj.TimerUtils
+ * @example <caption>Get a timer to execute code on normal timeout and
+ * cancelation.  If the timeout occurs normally (not canceled), both
+ * callbacks are executed and the value of the 'completed' parameter will be
+ * true.</caption>
+ * var timer = oj.TimerUtils.getTimer(1000);
+ * timer.getPromise().then(function(completed) {
+ *     if (completed) {
+ *       // Delayed code
+ *     }
+ *   })
+ * timer.getPromise().then(function() {
+ *   // Code always to be run
+ * })
+ *
+ * @example <caption>Get a timer to execute code on normal timeout and cancelation.
+ * In this example, the timer is canceled before its timeout expires, and the
+ * value of the 'completed' parameter will be false.</caption>
+ * var timer = oj.TimerUtils.getTimer(1000);
+ * timer.getPromise()
+ *   .then(function(completed) {
+ *     if (completed) {
+ *       // Delayed code
+ *     }
+ *   })
+ * timer.getPromise()
+ *   .then(function() {
+ *     // Code always to be run
+ *   })
+ * ...
+ * timer.clear(); // timer cleared before timeout expires
+ */
+oj.TimerUtils.getTimer = function(timeout) {
+    return new oj.TimerUtils._TimerImpl(timeout);
+}
+
+/**
+ * @constructor
+ * @implements {Timer}
+ * @param  {number} timeout The timeout value in milliseconds.
+ * @private
+ */
+oj.TimerUtils._TimerImpl = function(timeout) {
+    var _promise;
+    var _resolve;
+    var _timerId;
+
+    this.getPromise = function() {
+        return _promise;
+    }
+    this.clear = function() {
+        window.clearTimeout(_timerId);
+        _timerId = null;
+        _timerDone(false);
+    }
+
+    /**
+     * Called on normal and early timeout (cancelation)
+     */
+    function _timerDone(completed) {
+        _timerId = null;
+        _resolve(completed);
+    }
+
+    if (typeof window === 'undefined') {
+        _promise = Promise.reject();
+    }
+    else {
+        _promise = new Promise(function(resolve) {
+            _resolve = resolve;
+            _timerId = window.setTimeout(_timerDone.bind(null, true), timeout);
+        });
+    }
+};
 
 ;return oj;
 });

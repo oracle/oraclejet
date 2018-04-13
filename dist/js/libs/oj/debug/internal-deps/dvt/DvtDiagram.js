@@ -480,6 +480,7 @@ DvtDiagramLayoutContext.prototype.setDirtyContext = function(dirtyContext) {
 DvtDiagramLayoutContext.prototype.getDirtyContext = function() {
   return this._dirtyContext;
 };
+
 // Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
 
 
@@ -906,6 +907,7 @@ DvtDiagramLayoutContextLink.prototype.copyFrom = function(link) {
     this.setCoordinateSpace(link.getCoordinateSpace());
   }
 };
+
 // Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
 
 
@@ -1507,6 +1509,7 @@ DvtDiagramLayoutContextNode.prototype.copyFrom = function(node) {
     }
   }
 };
+
 // Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 
 
@@ -1535,6 +1538,7 @@ DvtDiagramPoint.prototype.Init = function(x, y) {
   this['x'] = ((x === null || isNaN(x)) ? 0 : x);
   this['y'] = ((y === null || isNaN(y)) ? 0 : y);
 };
+
 // Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 
 
@@ -1570,6 +1574,7 @@ DvtDiagramRectangle.prototype.Init = function(x, y, w, h) {
   this['w'] = ((w === null || isNaN(w)) ? 0 : w);
   this['h'] = ((h === null || isNaN(h)) ? 0 : h);
 };
+
 /**
  * Expose DvtDiagramPoint outside function wrapper via dvt.DiagramPoint
  */
@@ -1578,6 +1583,7 @@ dvt.DiagramPoint = DvtDiagramPoint;
  * Expose DvtDiagramRectangle outside function wrapper via dvt.DiagramRectangle
  */
 dvt.DiagramRectangle = DvtDiagramRectangle;
+
 /**
  * @param {dvt.Context} context The rendering context.
  * @param {function} callback The function that should be called to dispatch component events.
@@ -2494,6 +2500,7 @@ dvt.BaseDiagram.prototype.getCustomObjKeyboardBoundingBox = function(obj) {
       objCoords.top - contentPaneCoords.top + cpMatrix.getTy(),
       objCoords.width, objCoords.height);
 };
+
 // Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
 
 /**
@@ -2779,6 +2786,7 @@ dvt.BaseDiagramKeyboardHandler._anglesAreEqualWithinTolerance = function(a1, a2)
   }
   return res;
 };
+
 
 
 
@@ -3229,6 +3237,7 @@ dvt.BaseDiagramNode.prototype.getGroupId = function() {
   return null;
 };
 
+
 /**
  * @constructor
  * @class The base class for diagram links
@@ -3654,7 +3663,7 @@ dvt.BaseDiagramLink.prototype.setPoints = function(points) {
   if (this._shape) {
 
     if (this._shape instanceof dvt.Path) {
-      this._shape.setCommands(this._pathCmds);
+      this._shape.setCommandsArray(this._pathCmds);
 
       if (!this._endConnector) {
         this._endConnector = this.CreateConnector(this._points, this.getEndConnectorType(), 1, this.getConnectorTemplate(dvt.DiagramLinkConnectorUtils.END_CONNECTOR));
@@ -3673,7 +3682,7 @@ dvt.BaseDiagramLink.prototype.setPoints = function(points) {
   //need to update the selection feedback when animating a link
   var underlayStart = null, underlayEnd = null;
   if (this._linkUnderlay && this._linkUnderlay.getUnderlay() instanceof dvt.Path) {
-    this._linkUnderlay.getUnderlay().setCommands(this._pathCmds);
+    this._linkUnderlay.getUnderlay().setCommandsArray(this._pathCmds);
   }
   if (this._linkUnderlay && (underlayStart = this._linkUnderlay.getUnderlayStart())) {
     dvt.DiagramLinkConnectorUtils.TransformConnector(underlayStart, this.getStartConnectorType(), this.getConnectorTemplate(dvt.DiagramLinkConnectorUtils.START_CONNECTOR), this._points, 0);
@@ -3685,7 +3694,7 @@ dvt.BaseDiagramLink.prototype.setPoints = function(points) {
   //: need to update the hit detection underlay when animating
   //a link
   if (this._hitDetectionUnderlay && this._hitDetectionUnderlay.getUnderlay() instanceof dvt.Path) {
-    this._hitDetectionUnderlay.getUnderlay().setCommands(this._pathCmds);
+    this._hitDetectionUnderlay.getUnderlay().setCommandsArray(this._pathCmds);
   }
   if (this._startHandle) {
     this._startHandle.setPosition(this.getLinkStart());
@@ -3945,6 +3954,7 @@ dvt.BaseDiagramLink.prototype.setLabelAlignments = function(halign, valign) {
 dvt.BaseDiagramLink.prototype.getGroupId = function() {
   return null;
 };
+
 // Copyright (c) 2011, 2017, Oracle and/or its affiliates. All rights reserved.
 /**
  * Dvt Diagram layout utils
@@ -4004,6 +4014,7 @@ dvt.DiagramLayoutUtils.convertDiagramPointToPoint = function(diagramPoint) {
     return new dvt.Point(diagramPoint['x'], diagramPoint['y']);
   }
 };
+
 // Copyright (c) 2011, 2017, Oracle and/or its affiliates. All rights reserved.
 /**
  * @constructor
@@ -4213,6 +4224,7 @@ DvtDiagramLinkUnderlay.prototype.showUnderlayEnd = function() {
   if (this._underlayEnd)
     this.addChild(this._underlayEnd);
 };
+
 /**
  * Dvt Diagram Link Utils
  */
@@ -4409,6 +4421,7 @@ dvt.DiagramLinkUtils.GetControlPoints = function(points) {
   }
   return controlPoints;
 };
+
 /**
  * Dvt Diagram Link Connector utils
  */
@@ -4865,6 +4878,7 @@ dvt.DiagramLinkConnectorUtils.getStandardConnectorOffset = function(connectorTyp
       return 0;
   }
 };
+
 dvt.exportProperty(DvtDiagramLayoutContext.prototype, 'getLayout', DvtDiagramLayoutContext.prototype.getLayout);
 dvt.exportProperty(DvtDiagramLayoutContext.prototype, 'getLayoutAttributes', DvtDiagramLayoutContext.prototype.getLayoutAttributes);
 dvt.exportProperty(DvtDiagramLayoutContext.prototype, 'getNodeById', DvtDiagramLayoutContext.prototype.getNodeById);
@@ -4943,8 +4957,8 @@ dvt.exportProperty(DvtDiagramLayoutContextLink.prototype, 'getData', DvtDiagramL
 
 dvt.exportProperty(dvt, 'DiagramPoint', dvt.DiagramPoint);
 dvt.exportProperty(dvt, 'DiagramRectangle', dvt.DiagramRectangle);
-})(dvt);
 
+})(dvt);
 (function(dvt) {
 //
 // $Header: dsstools/modules/dvt-shared-js/src/META-INF/bi/sharedJS/toolkit/diagram/DvtDiagramStyleUtils.js /st_jdevadf_jet.trunk/4 2017/09/08 16:48:23  Exp $
@@ -5052,9 +5066,9 @@ DvtDiagramStyleUtils.getLinkDefaultStyles = function(comp, option) {
   DvtDiagramStyleUtils.prepareLinkStyle(linkDefaults, 'style');
   //Merge the link default style from options with the link default style from Diagram style defaults
   var attr = comp.getCtx().isCustomElement() ? 'svgStyle' : 'style';
-  linkDefaults['style'] = dvt.JsonUtils.merge(linkDefaults[attr], linkDefaults['_style']);
+  linkDefaults[attr] = dvt.JsonUtils.merge(linkDefaults[attr], linkDefaults['_style']);
   if (comp.getCtx().isCustomElement()) {
-    dvt.ArrayUtils.forEach(['_type'], function(entry) {delete linkDefaults['style'][entry]});
+    dvt.ArrayUtils.forEach(['_type'], function(entry) {delete linkDefaults[attr][entry]});
   }
   return linkDefaults;
 };
@@ -5107,6 +5121,7 @@ DvtDiagramStyleUtils.getAnimationOnDisplay = function(diagram) {
 DvtDiagramStyleUtils.getAnimationOnDataChange = function(diagram) {
   return diagram.getOptions()['animationOnDataChange'];
 };
+
 /**
  * @param {dvt.Context} context The rendering context.
  * @param {function} callback The function that should be called to dispatch component events.
@@ -5941,7 +5956,18 @@ dvt.Diagram.prototype.HandleZoomEvent = function(event) {
       }
       break;
     case dvt.ZoomEvent.SUBTYPE_ZOOMED:
-      if (this.getOptions()['zoomRenderer'] && event.getOldZoom() !== event.getNewZoom()) {
+      // don't update nodes on zoomed events on touch device, since touchend might be lost when the node is rerendered
+      if (!dvt.Agent.isTouchDevice() && this.getOptions()['zoomRenderer'] && event.getOldZoom() !== event.getNewZoom()) {
+        for (var nodeId in this._nodes) {
+          var node = this.getNodeById(nodeId);
+          node.rerenderOnZoom(event);
+        }
+      }
+      break;
+    case dvt.ZoomEvent.SUBTYPE_ZOOM_TO_FIT_END:
+    case dvt.ZoomEvent.SUBTYPE_ZOOM_END:
+      // when on touch, call zoom renderer on zoom_end and zoom-to-fit-end
+      if (dvt.Agent.isTouchDevice() && this.getOptions()['zoomRenderer'] && event.getOldZoom() !== event.getNewZoom()) {
         for (var nodeId in this._nodes) {
           var node = this.getNodeById(nodeId);
           node.rerenderOnZoom(event);
@@ -7041,7 +7067,7 @@ dvt.Diagram.prototype._removeLinks = function(linksData) {
       dvt.ArrayUtils.removeItem(this._arLinkIds, linkId);
       delete this._links[linkId];
     }
-    else if (this._linkToPromotedMap[linkId]) {
+    else if (this._linkToPromotedMap && this._linkToPromotedMap[linkId]) {
       var promotedLinkId = this._linkToPromotedMap[linkId];
       var promotedLink = this._links[promotedLinkId];
       var data = promotedLink ? promotedLink.getData()['_links'] : null;
@@ -7072,6 +7098,7 @@ dvt.Diagram.prototype._removeLinks = function(linksData) {
   }
 };
 
+
 //
 // $Header: dsstools/modules/dvt-shared-js/src/META-INF/bi/sharedJS/toolkit/diagram/DvtDiagramBundle.js /bibeans_root/2 2016/06/02 13:59:45  Exp $
 //
@@ -7096,6 +7123,7 @@ dvt.Bundle.addDefaultStrings(dvt.Bundle.DIAGRAM_PREFIX, {
   'PROMOTED_LINKS': '{0} links',
   'PROMOTED_LINK_ARIA_DESC': 'Indirect'
 });
+
 /**
  * Category rollover handler for Diagram
  * @param {function} callback A function that responds to component events.
@@ -7141,6 +7169,7 @@ DvtDiagramCategoryRolloverHandler.prototype.GetRolloutCallback = function(event,
   };
   return dvt.Obj.createCallback(this, callback);
 };
+
 /**
  * Default values and utility functions for component versioning.
  * @class
@@ -7190,7 +7219,7 @@ DvtDiagramDefaults.VERSION_1 = {
     '_highlightAlpha' : .1,
     'nodeDefaults': {
       '_containerStyle' : new dvt.CSSStyle('border-color:#abb3ba;background-color:#f9f9f9;border-width:.5px;border-radius:1px;padding-top:20px;padding-left:20px;padding-bottom:20px;padding-right:20px;'),
-      'labelStyle': dvt.BaseComponentDefaults.FONT_FAMILY_ALTA_BOLD_12 + 'color:#383A47',
+      'labelStyle': new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_ALTA_BOLD_12 + 'color:#383A47'),
       'hoverInnerColor': 'rgb(255,255,255)',
       'hoverOuterColor': 'rgba(0,0,0, .3)',
       'selectionColor': 'rgb(0,0,0)',
@@ -7209,7 +7238,7 @@ DvtDiagramDefaults.VERSION_1 = {
       'hoverInnerColor': 'rgb(255,255,255)',
       'hoverOuterColor': 'rgba(0,0,0, .3)',
       'selectionColor': 'rgb(0,0,0)',
-      'labelStyle': dvt.BaseComponentDefaults.FONT_FAMILY_ALTA_BOLD_12 + 'color:#383A47',
+      'labelStyle': new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_ALTA_BOLD_12 + 'color:#383A47'),
       '_hitDetectionOffset' : 10
     },
     'promotedLink' : {
@@ -7238,6 +7267,7 @@ DvtDiagramDefaults.prototype.getNoCloneObject = function() {
  */
 DvtDiagramDefaults.SKIN_ALTA = {
 };
+
 //
 // $Header: dsstools/modules/dvt-shared-js/src/META-INF/bi/sharedJS/toolkit/diagram/DvtDiagramDataAnimationState.js /st_jdevadf_jet.trunk/1 2017/06/19 15:30:24  Exp $
 //
@@ -7519,6 +7549,7 @@ DvtDiagramDataAnimationState.prototype._addAncestorStates = function(parentId) {
     parentNode = parentNode.getGroupId() ? this._diagram.getNodeById(parentNode.getGroupId()) : null;
   }
 };
+
 /**
  * Animation handler for Diagram
  * @param {dvt.Context} context the platform specific context object
@@ -7701,6 +7732,7 @@ DvtDiagramDataAnimationHandler._expandLinksArrayToMap = function(linkArray) {
   }
   return list;
 };
+
 
 
 // Copyright (c) 2014, 2017, Oracle and/or its affiliates. All rights reserved.
@@ -8208,6 +8240,7 @@ DvtDiagramEventManager.prototype.ClearDropEffect = function() {
 DvtDiagramEventManager.prototype._getPortElement = function(elem, selector) {
   return elem && elem.closest ? elem.closest(selector) : null;
 };
+
 // Copyright (c) 2011, 2017, Oracle and/or its affiliates. All rights reserved.
 
 /**
@@ -8275,6 +8308,7 @@ DvtDiagramKeyboardHandler.prototype.processKeyDown = function(event) {
 DvtDiagramKeyboardHandler.prototype.GetVisibleNode = function(nodeId) {
   return this.GetDiagram().getNodeById(nodeId);
 };
+
 /**
  * @constructor
  * @param {dvt.Context} context the rendering context
@@ -8559,17 +8593,22 @@ DvtDiagramLink._renderLinkShape = function(diagram, linkData, container) {
  * @private
  */
 DvtDiagramLink._renderLinkLabels = function(diagram, linkData, container) {
-  var rtl = dvt.Agent.isRightToLeft(diagram.getCtx());
-  var halign = rtl ? dvt.OutputText.H_ALIGN_RIGHT : dvt.OutputText.H_ALIGN_LEFT;
-  if (linkData['label']) {
-    var label = DvtDiagramLink.createText(diagram.getCtx(), linkData['label'], linkData['labelStyle'], halign, dvt.OutputText.V_ALIGN_TOP);
-    //check for label width
-    var labelWidth = dvt.CSSStyle.toNumber((new dvt.CSSStyle(linkData['labelStyle'])).getWidth());
-    if (labelWidth > 0 && dvt.TextUtils.fitText(label, labelWidth, Infinity, container)) {
-      container._labelObj = label;
-    }
-    else {
+  var labelString = linkData['label'];
+  if (labelString) {
+    var rtl = dvt.Agent.isRightToLeft(diagram.getCtx());
+    var bMultiline = labelString.indexOf('\n') > 0;
+    var halign = bMultiline ? (rtl ? dvt.MultilineText.H_ALIGN_RIGHT : dvt.MultilineText.H_ALIGN_LEFT) : (rtl ? dvt.OutputText.H_ALIGN_RIGHT : dvt.OutputText.H_ALIGN_LEFT);
+    var valign =  bMultiline ? dvt.MultilineText.V_ALIGN_TOP : dvt.OutputText.V_ALIGN_TOP;
+    var label = DvtDiagramLink.createText(diagram.getCtx(), labelString, linkData['labelStyle'], halign, valign, bMultiline);
+    
+    var maxWidth = linkData['labelStyle'].getMaxWidth() || linkData['labelStyle'].getWidth();
+    var labelWidth = dvt.CSSStyle.toNumber(maxWidth);
+    
+    if (!maxWidth) {
       container.addChild(label);
+      container._labelObj = label;
+    } 
+    else if (labelWidth > 0 && dvt.TextUtils.fitText(label, labelWidth, Infinity, container)) {
       container._labelObj = label;
     }
   }
@@ -8586,20 +8625,21 @@ DvtDiagramLink._renderLinkLabels = function(diagram, linkData, container) {
  * Creates a text element
  * @param {dvt.Context} ctx the rendering context
  * @param {string} strText the text string
- * @param {string} style the CSS style string to apply to the text
+ * @param {dvt.CSSStyle} style the CSS style string to apply to the text
  * @param {string} halign the horizontal alignment
  * @param {string} valign the vertical alignment
- * @return {dvt.OutputText|dvt.BackgroundOutputText} the text element
+ * @param {boolean} bMultiline whether or not this element will be a MultilineText
+ * @return {dvt.OutputText|dvt.BackgroundOutputText|dvt.MultilineText} the text element
  */
-DvtDiagramLink.createText = function(ctx, strText, style, halign, valign) {
-  var cssStyle = new dvt.CSSStyle(style);
+DvtDiagramLink.createText = function(ctx, strText, style, halign, valign, bMultiline) {
   var text;
-  if (cssStyle.hasBackgroundStyles())
-    text = new dvt.BackgroundOutputText(ctx, strText, 0, 0, cssStyle);
+  if (style.hasBackgroundStyles())
+    text = bMultiline ? new dvt.BackgroundMultilineText(ctx, strText, 0, 0, style, null, true) : new dvt.BackgroundOutputText(ctx, strText, 0, 0, style);
   else {
-    text = new dvt.OutputText(ctx, strText, 0, 0);
-    text.setCSSStyle(cssStyle);
+    text = bMultiline ? new dvt.MultilineText(ctx, strText, 0, 0, null, true) : new dvt.OutputText(ctx, strText, 0, 0);
+    text.setCSSStyle(style);
   }
+  
   text.setHorizAlignment(halign);
   text.setVertAlignment(valign);
   return text;
@@ -9028,24 +9068,12 @@ DvtDiagramLink.prototype.animateExpand = function(animationHandler, newLinksArra
  * @override
  */
 DvtDiagramLink.prototype.setLabelAlignments = function(halign, valign) {
-  if (halign) {
-    if (halign == dvt.OutputText.H_ALIGN_LEFT)
-      this._labelObj.alignLeft();
-    else if (halign == dvt.OutputText.H_ALIGN_CENTER)
-      this._labelObj.alignCenter();
-    else if (halign == dvt.OutputText.H_ALIGN_RIGHT)
-      this._labelObj.alignRight();
-  }
-  if (valign) {
-    if (valign == dvt.OutputText.V_ALIGN_TOP)
-      this._labelObj.alignTop();
-    else if (valign == dvt.OutputText.V_ALIGN_MIDDLE)
-      this._labelObj.alignMiddle();
-    else if (valign == dvt.OutputText.V_ALIGN_BOTTOM)
-      this._labelObj.alignBottom();
-    else if (valign == 'baseline')
-      this._labelObj.alignAuto();
-  }
+  var isMultiline = this._labelObj instanceof dvt.MultilineText || this._labelObj instanceof dvt.BackgroundMultilineText;
+  if (valign == 'baseline')
+    valign = isMultiline ? dvt.MultilineText.V_ALIGN_TOP : dvt.OutputText.V_ALIGN_AUTO;
+    
+  this._labelObj.setHorizAlignment(halign);
+  this._labelObj.setVertAlignment(valign);
 };
 
 /**
@@ -9195,6 +9223,7 @@ DvtDiagramLink.prototype.getAnimationState = function() {
   state.getShape = function() {return state['shape']};
   return state;
 };
+
 /**
  * @constructor
  * @param {dvt.Context} context the rendering context
@@ -9598,17 +9627,22 @@ DvtDiagramNode._setIconPosition = function(diagram, nodeData, container) {
  * @private
  */
 DvtDiagramNode._renderNodeLabels = function(diagram, nodeData, container) {
-  var rtl = dvt.Agent.isRightToLeft(diagram.getCtx());
-  var halign = rtl ? dvt.OutputText.H_ALIGN_RIGHT : dvt.OutputText.H_ALIGN_LEFT;
-  if (nodeData['label']) {
-    var label = DvtDiagramNode.createText(diagram.getCtx(), nodeData['label'], nodeData['labelStyle'], halign, dvt.OutputText.V_ALIGN_TOP);
-    //check for label width
-    var labelWidth = dvt.CSSStyle.toNumber((new dvt.CSSStyle(nodeData['labelStyle'])).getWidth());
-    if (labelWidth > 0 && dvt.TextUtils.fitText(label, labelWidth, Infinity, container)) {
-      container._labelObj = label;
-    }
-    else {
+  var labelString = nodeData['label'];
+  if (labelString) {
+    var rtl = dvt.Agent.isRightToLeft(diagram.getCtx());
+    var bMultiline = labelString.indexOf('\n') > 0;
+    var halign = bMultiline ? (rtl ? dvt.MultilineText.H_ALIGN_RIGHT : dvt.MultilineText.H_ALIGN_LEFT) : (rtl ? dvt.OutputText.H_ALIGN_RIGHT : dvt.OutputText.H_ALIGN_LEFT);
+    var valign =  bMultiline ? dvt.MultilineText.V_ALIGN_TOP : dvt.OutputText.V_ALIGN_TOP;
+    var label = DvtDiagramNode.createText(diagram.getCtx(), labelString, nodeData['labelStyle'], halign, valign, bMultiline);
+    
+    var maxWidth = nodeData['labelStyle'].getMaxWidth() || nodeData['labelStyle'].getWidth();
+    var labelWidth = dvt.CSSStyle.toNumber(maxWidth);
+
+    if (!maxWidth) {
       container.addChild(label);
+      container._labelObj = label;
+    } 
+    else if (labelWidth > 0 && dvt.TextUtils.fitText(label, labelWidth, Infinity, container)) {
       container._labelObj = label;
     }
   }
@@ -9625,20 +9659,21 @@ DvtDiagramNode._renderNodeLabels = function(diagram, nodeData, container) {
  * Creates a text element
  * @param {dvt.Context} ctx the rendering context
  * @param {string} strText the text string
- * @param {string} style the CSS style string to apply to the text
+ * @param {dvt.CSSStyle} style the CSS style string to apply to the text
  * @param {string} halign the horizontal alignment
  * @param {string} valign the vertical alignment
- * @return {dvt.OutputText|dvt.BackgroundOutputText} the text element
+ * @param {boolean} bMultiline whether or not this element will be a MultilineText
+ * @return {dvt.OutputText|dvt.BackgroundOutputText|dvt.MultilineText} the text element
  */
-DvtDiagramNode.createText = function(ctx, strText, style, halign, valign) {
-  var cssStyle = new dvt.CSSStyle(style);
+DvtDiagramNode.createText = function(ctx, strText, style, halign, valign, bMultiline) {
   var text;
-  if (cssStyle.hasBackgroundStyles())
-    text = new dvt.BackgroundOutputText(ctx, strText, 0, 0, cssStyle);
+  if (style.hasBackgroundStyles())
+    text = bMultiline ? new dvt.BackgroundMultilineText(ctx, strText, 0, 0, style, null, true) : new dvt.BackgroundOutputText(ctx, strText, 0, 0, style);
   else {
-    text = new dvt.OutputText(ctx, strText, 0, 0);
-    text.setCSSStyle(cssStyle);
+    text = bMultiline ? new dvt.MultilineText(ctx, strText, 0, 0, null, true) : new dvt.OutputText(ctx, strText, 0, 0);
+    text.setCSSStyle(style);
   }
+  
   text.setHorizAlignment(halign);
   text.setVertAlignment(valign);
   return text;
@@ -10275,24 +10310,12 @@ DvtDiagramNode.prototype.rerenderOnZoom = function(event) {
  * @override
  */
 DvtDiagramNode.prototype.setLabelAlignments = function(halign, valign) {
-  if (halign) {
-    if (halign == dvt.OutputText.H_ALIGN_LEFT)
-      this._labelObj.alignLeft();
-    else if (halign == dvt.OutputText.H_ALIGN_CENTER)
-      this._labelObj.alignCenter();
-    else if (halign == dvt.OutputText.H_ALIGN_RIGHT)
-      this._labelObj.alignRight();
-  }
-  if (valign) {
-    if (valign == dvt.OutputText.V_ALIGN_TOP)
-      this._labelObj.alignTop();
-    else if (valign == dvt.OutputText.V_ALIGN_MIDDLE)
-      this._labelObj.alignMiddle();
-    else if (valign == dvt.OutputText.V_ALIGN_BOTTOM)
-      this._labelObj.alignBottom();
-    else if (valign == 'baseline')
-      this._labelObj.alignAuto();
-  }
+  var isMultiline = this._labelObj instanceof dvt.MultilineText || this._labelObj instanceof dvt.BackgroundMultilineText;
+  if (valign == 'baseline')
+    valign = isMultiline ? dvt.MultilineText.V_ALIGN_TOP : dvt.OutputText.V_ALIGN_AUTO;
+    
+  this._labelObj.setHorizAlignment(halign);
+  this._labelObj.setVertAlignment(valign);
 };
 
 /**
@@ -10810,6 +10833,7 @@ DvtDiagramNode.prototype.removeChildNodesData = function(childNodesData) {
     }
   }
 };
+
 /**
  *  Provides automation services for a DVT diagram component.
  *  @class  DvtDiagramAutomation
@@ -11065,6 +11089,7 @@ DvtDiagramAutomation.prototype._getLink = function(linkIndex) {
   return (linkIndex >= 0 && linkIndex < linkIds.length) ? this._diagram.getLinkById(linkIds[linkIndex]) : null;
 };
 
+
 dvt.exportProperty(dvt, 'Diagram', dvt.Diagram);
 dvt.exportProperty(dvt.Diagram, 'newInstance', dvt.Diagram.newInstance);
 dvt.exportProperty(dvt.Diagram.prototype, 'highlight', dvt.Diagram.prototype.highlight);
@@ -11084,7 +11109,7 @@ dvt.exportProperty(DvtDiagramAutomation.prototype, 'getNode', DvtDiagramAutomati
 dvt.exportProperty(DvtDiagramAutomation.prototype, 'getLink', DvtDiagramAutomation.prototype.getLink);
 dvt.exportProperty(DvtDiagramAutomation.prototype, 'getPromotedLink', DvtDiagramAutomation.prototype.getPromotedLink);
 dvt.exportProperty(DvtDiagramAutomation.prototype, 'getExpanded', DvtDiagramAutomation.prototype.getExpanded);
-})(dvt);
 
+})(dvt);
   return dvt;
 });

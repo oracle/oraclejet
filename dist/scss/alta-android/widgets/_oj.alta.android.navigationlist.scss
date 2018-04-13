@@ -52,10 +52,10 @@
 
         //Add bottom border to separate list items
         .oj-navigationlist-page-level.oj-navigationlist-vertical .oj-navigationlist-item{
-            border-bottom-color: $border1Color;
+            border-bottom-color: $navigationListCategoryDividerColor;
         }
         .oj-navigationlist-page-level.oj-navigationlist-vertical .oj-navigationlist-item.oj-selected{
-            border-bottom-color: $border1Color;
+            border-bottom-color: $navigationListCategoryDividerColor;
         }
 
 

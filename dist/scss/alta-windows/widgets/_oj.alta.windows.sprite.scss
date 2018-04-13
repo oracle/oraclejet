@@ -9,7 +9,7 @@
 
 // Include this mixin in component SCSS if the image needs to be scaled.
 @mixin oj-fwk-icon-animated-overlay-scale($scaleFactor: 1) {
-  background-size: calc(900px * #{$scaleFactor}) calc(44px * #{$scaleFactor});
+  background-size: calc(972px * #{$scaleFactor}) calc(44px * #{$scaleFactor});
   background-position: calc((0px - 2px) * #{$scaleFactor}) calc((0px - 2px) * #{$scaleFactor});
   width: calc(52px * #{$scaleFactor});
   height: calc(4px * #{$scaleFactor});
@@ -17,7 +17,7 @@
 
 // Include this mixin in component SCSS if the image needs to be scaled.
 @mixin oj-fwk-icon-cbsingle-dis-selected-scale($scaleFactor: 1) {
-  background-size: calc(900px * #{$scaleFactor}) calc(44px * #{$scaleFactor});
+  background-size: calc(972px * #{$scaleFactor}) calc(44px * #{$scaleFactor});
   background-position: calc((-56px - 2px) * #{$scaleFactor}) calc((0px - 2px) * #{$scaleFactor});
   width: calc(20px * #{$scaleFactor});
   height: calc(20px * #{$scaleFactor});
@@ -25,7 +25,7 @@
 
 // Include this mixin in component SCSS if the image needs to be scaled.
 @mixin oj-fwk-icon-cbsingle-hover-selected-scale($scaleFactor: 1) {
-  background-size: calc(900px * #{$scaleFactor}) calc(44px * #{$scaleFactor});
+  background-size: calc(972px * #{$scaleFactor}) calc(44px * #{$scaleFactor});
   background-position: calc((-80px - 2px) * #{$scaleFactor}) calc((0px - 2px) * #{$scaleFactor});
   width: calc(20px * #{$scaleFactor});
   height: calc(20px * #{$scaleFactor});
@@ -33,7 +33,7 @@
 
 // Include this mixin in component SCSS if the image needs to be scaled.
 @mixin oj-fwk-icon-cbsingle-hover-unselected-scale($scaleFactor: 1) {
-  background-size: calc(900px * #{$scaleFactor}) calc(44px * #{$scaleFactor});
+  background-size: calc(972px * #{$scaleFactor}) calc(44px * #{$scaleFactor});
   background-position: calc((-104px - 2px) * #{$scaleFactor}) calc((0px - 2px) * #{$scaleFactor});
   width: calc(20px * #{$scaleFactor});
   height: calc(20px * #{$scaleFactor});
@@ -41,7 +41,7 @@
 
 // Include this mixin in component SCSS if the image needs to be scaled.
 @mixin oj-fwk-icon-checkbox-dis-selected-scale($scaleFactor: 1) {
-  background-size: calc(900px * #{$scaleFactor}) calc(44px * #{$scaleFactor});
+  background-size: calc(972px * #{$scaleFactor}) calc(44px * #{$scaleFactor});
   background-position: calc((-128px - 2px) * #{$scaleFactor}) calc((0px - 2px) * #{$scaleFactor});
   width: calc(20px * #{$scaleFactor});
   height: calc(20px * #{$scaleFactor});
@@ -49,7 +49,7 @@
 
 // Include this mixin in component SCSS if the image needs to be scaled.
 @mixin oj-fwk-icon-checkbox-dis-unselected-scale($scaleFactor: 1) {
-  background-size: calc(900px * #{$scaleFactor}) calc(44px * #{$scaleFactor});
+  background-size: calc(972px * #{$scaleFactor}) calc(44px * #{$scaleFactor});
   background-position: calc((-152px - 2px) * #{$scaleFactor}) calc((0px - 2px) * #{$scaleFactor});
   width: calc(20px * #{$scaleFactor});
   height: calc(20px * #{$scaleFactor});
@@ -57,7 +57,7 @@
 
 // Include this mixin in component SCSS if the image needs to be scaled.
 @mixin oj-fwk-icon-checkbox-ena-selected-scale($scaleFactor: 1) {
-  background-size: calc(900px * #{$scaleFactor}) calc(44px * #{$scaleFactor});
+  background-size: calc(972px * #{$scaleFactor}) calc(44px * #{$scaleFactor});
   background-position: calc((-176px - 2px) * #{$scaleFactor}) calc((0px - 2px) * #{$scaleFactor});
   width: calc(20px * #{$scaleFactor});
   height: calc(20px * #{$scaleFactor});
@@ -65,7 +65,7 @@
 
 // Include this mixin in component SCSS if the image needs to be scaled.
 @mixin oj-fwk-icon-checkbox-ena-unselected-scale($scaleFactor: 1) {
-  background-size: calc(900px * #{$scaleFactor}) calc(44px * #{$scaleFactor});
+  background-size: calc(972px * #{$scaleFactor}) calc(44px * #{$scaleFactor});
   background-position: calc((-200px - 2px) * #{$scaleFactor}) calc((0px - 2px) * #{$scaleFactor});
   width: calc(20px * #{$scaleFactor});
   height: calc(20px * #{$scaleFactor});
@@ -73,7 +73,7 @@
 
 // Include this mixin in component SCSS if the image needs to be scaled.
 @mixin oj-fwk-icon-checkbox-pressed-selected-scale($scaleFactor: 1) {
-  background-size: calc(900px * #{$scaleFactor}) calc(44px * #{$scaleFactor});
+  background-size: calc(972px * #{$scaleFactor}) calc(44px * #{$scaleFactor});
   background-position: calc((-224px - 2px) * #{$scaleFactor}) calc((0px - 2px) * #{$scaleFactor});
   width: calc(20px * #{$scaleFactor});
   height: calc(20px * #{$scaleFactor});
@@ -81,144 +81,168 @@
 
 // Include this mixin in component SCSS if the image needs to be scaled.
 @mixin oj-fwk-icon-checkbox-pressed-unselected-scale($scaleFactor: 1) {
-  background-size: calc(900px * #{$scaleFactor}) calc(44px * #{$scaleFactor});
+  background-size: calc(972px * #{$scaleFactor}) calc(44px * #{$scaleFactor});
   background-position: calc((-248px - 2px) * #{$scaleFactor}) calc((0px - 2px) * #{$scaleFactor});
   width: calc(20px * #{$scaleFactor});
   height: calc(20px * #{$scaleFactor});
 }
 
 // Include this mixin in component SCSS if the image needs to be scaled.
-@mixin oj-fwk-icon-move-handle-scale($scaleFactor: 1) {
-  background-size: calc(900px * #{$scaleFactor}) calc(44px * #{$scaleFactor});
+@mixin oj-fwk-icon-checkbox-tristate-partial-scale($scaleFactor: 1) {
+  background-size: calc(972px * #{$scaleFactor}) calc(44px * #{$scaleFactor});
   background-position: calc((-272px - 2px) * #{$scaleFactor}) calc((0px - 2px) * #{$scaleFactor});
+  width: calc(20px * #{$scaleFactor});
+  height: calc(20px * #{$scaleFactor});
+}
+
+// Include this mixin in component SCSS if the image needs to be scaled.
+@mixin oj-fwk-icon-checkbox-tristate-selected-scale($scaleFactor: 1) {
+  background-size: calc(972px * #{$scaleFactor}) calc(44px * #{$scaleFactor});
+  background-position: calc((-296px - 2px) * #{$scaleFactor}) calc((0px - 2px) * #{$scaleFactor});
+  width: calc(20px * #{$scaleFactor});
+  height: calc(20px * #{$scaleFactor});
+}
+
+// Include this mixin in component SCSS if the image needs to be scaled.
+@mixin oj-fwk-icon-checkbox-tristate-unselected-scale($scaleFactor: 1) {
+  background-size: calc(972px * #{$scaleFactor}) calc(44px * #{$scaleFactor});
+  background-position: calc((-320px - 2px) * #{$scaleFactor}) calc((0px - 2px) * #{$scaleFactor});
+  width: calc(20px * #{$scaleFactor});
+  height: calc(20px * #{$scaleFactor});
+}
+
+// Include this mixin in component SCSS if the image needs to be scaled.
+@mixin oj-fwk-icon-move-handle-scale($scaleFactor: 1) {
+  background-size: calc(972px * #{$scaleFactor}) calc(44px * #{$scaleFactor});
+  background-position: calc((-344px - 2px) * #{$scaleFactor}) calc((0px - 2px) * #{$scaleFactor});
   width: calc(40px * #{$scaleFactor});
   height: calc(20px * #{$scaleFactor});
 }
 
 // Include this mixin in component SCSS if the image needs to be scaled.
 @mixin oj-fwk-icon-radio-dis-selected-scale($scaleFactor: 1) {
-  background-size: calc(900px * #{$scaleFactor}) calc(44px * #{$scaleFactor});
-  background-position: calc((-316px - 2px) * #{$scaleFactor}) calc((0px - 2px) * #{$scaleFactor});
-  width: calc(20px * #{$scaleFactor});
-  height: calc(20px * #{$scaleFactor});
-}
-
-// Include this mixin in component SCSS if the image needs to be scaled.
-@mixin oj-fwk-icon-radio-dis-unselected-scale($scaleFactor: 1) {
-  background-size: calc(900px * #{$scaleFactor}) calc(44px * #{$scaleFactor});
-  background-position: calc((-340px - 2px) * #{$scaleFactor}) calc((0px - 2px) * #{$scaleFactor});
-  width: calc(20px * #{$scaleFactor});
-  height: calc(20px * #{$scaleFactor});
-}
-
-// Include this mixin in component SCSS if the image needs to be scaled.
-@mixin oj-fwk-icon-radio-ena-selected-scale($scaleFactor: 1) {
-  background-size: calc(900px * #{$scaleFactor}) calc(44px * #{$scaleFactor});
-  background-position: calc((-364px - 2px) * #{$scaleFactor}) calc((0px - 2px) * #{$scaleFactor});
-  width: calc(20px * #{$scaleFactor});
-  height: calc(20px * #{$scaleFactor});
-}
-
-// Include this mixin in component SCSS if the image needs to be scaled.
-@mixin oj-fwk-icon-radio-ena-unselected-scale($scaleFactor: 1) {
-  background-size: calc(900px * #{$scaleFactor}) calc(44px * #{$scaleFactor});
+  background-size: calc(972px * #{$scaleFactor}) calc(44px * #{$scaleFactor});
   background-position: calc((-388px - 2px) * #{$scaleFactor}) calc((0px - 2px) * #{$scaleFactor});
   width: calc(20px * #{$scaleFactor});
   height: calc(20px * #{$scaleFactor});
 }
 
 // Include this mixin in component SCSS if the image needs to be scaled.
-@mixin oj-fwk-icon-radio-pressed-selected-scale($scaleFactor: 1) {
-  background-size: calc(900px * #{$scaleFactor}) calc(44px * #{$scaleFactor});
+@mixin oj-fwk-icon-radio-dis-unselected-scale($scaleFactor: 1) {
+  background-size: calc(972px * #{$scaleFactor}) calc(44px * #{$scaleFactor});
   background-position: calc((-412px - 2px) * #{$scaleFactor}) calc((0px - 2px) * #{$scaleFactor});
   width: calc(20px * #{$scaleFactor});
   height: calc(20px * #{$scaleFactor});
 }
 
 // Include this mixin in component SCSS if the image needs to be scaled.
-@mixin oj-fwk-icon-radio-pressed-unselected-scale($scaleFactor: 1) {
-  background-size: calc(900px * #{$scaleFactor}) calc(44px * #{$scaleFactor});
+@mixin oj-fwk-icon-radio-ena-selected-scale($scaleFactor: 1) {
+  background-size: calc(972px * #{$scaleFactor}) calc(44px * #{$scaleFactor});
   background-position: calc((-436px - 2px) * #{$scaleFactor}) calc((0px - 2px) * #{$scaleFactor});
   width: calc(20px * #{$scaleFactor});
   height: calc(20px * #{$scaleFactor});
 }
 
 // Include this mixin in component SCSS if the image needs to be scaled.
-@mixin oj-fwk-icon-spinner-00-scale($scaleFactor: 1) {
-  background-size: calc(900px * #{$scaleFactor}) calc(44px * #{$scaleFactor});
+@mixin oj-fwk-icon-radio-ena-unselected-scale($scaleFactor: 1) {
+  background-size: calc(972px * #{$scaleFactor}) calc(44px * #{$scaleFactor});
   background-position: calc((-460px - 2px) * #{$scaleFactor}) calc((0px - 2px) * #{$scaleFactor});
+  width: calc(20px * #{$scaleFactor});
+  height: calc(20px * #{$scaleFactor});
+}
+
+// Include this mixin in component SCSS if the image needs to be scaled.
+@mixin oj-fwk-icon-radio-pressed-selected-scale($scaleFactor: 1) {
+  background-size: calc(972px * #{$scaleFactor}) calc(44px * #{$scaleFactor});
+  background-position: calc((-484px - 2px) * #{$scaleFactor}) calc((0px - 2px) * #{$scaleFactor});
+  width: calc(20px * #{$scaleFactor});
+  height: calc(20px * #{$scaleFactor});
+}
+
+// Include this mixin in component SCSS if the image needs to be scaled.
+@mixin oj-fwk-icon-radio-pressed-unselected-scale($scaleFactor: 1) {
+  background-size: calc(972px * #{$scaleFactor}) calc(44px * #{$scaleFactor});
+  background-position: calc((-508px - 2px) * #{$scaleFactor}) calc((0px - 2px) * #{$scaleFactor});
+  width: calc(20px * #{$scaleFactor});
+  height: calc(20px * #{$scaleFactor});
+}
+
+// Include this mixin in component SCSS if the image needs to be scaled.
+@mixin oj-fwk-icon-spinner-00-scale($scaleFactor: 1) {
+  background-size: calc(972px * #{$scaleFactor}) calc(44px * #{$scaleFactor});
+  background-position: calc((-532px - 2px) * #{$scaleFactor}) calc((0px - 2px) * #{$scaleFactor});
   width: calc(40px * #{$scaleFactor});
   height: calc(40px * #{$scaleFactor});
 }
 
 // Include this mixin in component SCSS if the image needs to be scaled.
 @mixin oj-fwk-icon-spinner-10-scale($scaleFactor: 1) {
-  background-size: calc(900px * #{$scaleFactor}) calc(44px * #{$scaleFactor});
-  background-position: calc((-504px - 2px) * #{$scaleFactor}) calc((0px - 2px) * #{$scaleFactor});
+  background-size: calc(972px * #{$scaleFactor}) calc(44px * #{$scaleFactor});
+  background-position: calc((-576px - 2px) * #{$scaleFactor}) calc((0px - 2px) * #{$scaleFactor});
   width: calc(40px * #{$scaleFactor});
   height: calc(40px * #{$scaleFactor});
 }
 
 // Include this mixin in component SCSS if the image needs to be scaled.
 @mixin oj-fwk-icon-spinner-20-scale($scaleFactor: 1) {
-  background-size: calc(900px * #{$scaleFactor}) calc(44px * #{$scaleFactor});
-  background-position: calc((-548px - 2px) * #{$scaleFactor}) calc((0px - 2px) * #{$scaleFactor});
+  background-size: calc(972px * #{$scaleFactor}) calc(44px * #{$scaleFactor});
+  background-position: calc((-620px - 2px) * #{$scaleFactor}) calc((0px - 2px) * #{$scaleFactor});
   width: calc(40px * #{$scaleFactor});
   height: calc(40px * #{$scaleFactor});
 }
 
 // Include this mixin in component SCSS if the image needs to be scaled.
 @mixin oj-fwk-icon-spinner-30-scale($scaleFactor: 1) {
-  background-size: calc(900px * #{$scaleFactor}) calc(44px * #{$scaleFactor});
-  background-position: calc((-592px - 2px) * #{$scaleFactor}) calc((0px - 2px) * #{$scaleFactor});
+  background-size: calc(972px * #{$scaleFactor}) calc(44px * #{$scaleFactor});
+  background-position: calc((-664px - 2px) * #{$scaleFactor}) calc((0px - 2px) * #{$scaleFactor});
   width: calc(40px * #{$scaleFactor});
   height: calc(40px * #{$scaleFactor});
 }
 
 // Include this mixin in component SCSS if the image needs to be scaled.
 @mixin oj-fwk-icon-spinner-40-scale($scaleFactor: 1) {
-  background-size: calc(900px * #{$scaleFactor}) calc(44px * #{$scaleFactor});
-  background-position: calc((-636px - 2px) * #{$scaleFactor}) calc((0px - 2px) * #{$scaleFactor});
+  background-size: calc(972px * #{$scaleFactor}) calc(44px * #{$scaleFactor});
+  background-position: calc((-708px - 2px) * #{$scaleFactor}) calc((0px - 2px) * #{$scaleFactor});
   width: calc(40px * #{$scaleFactor});
   height: calc(40px * #{$scaleFactor});
 }
 
 // Include this mixin in component SCSS if the image needs to be scaled.
 @mixin oj-fwk-icon-spinner-50-scale($scaleFactor: 1) {
-  background-size: calc(900px * #{$scaleFactor}) calc(44px * #{$scaleFactor});
-  background-position: calc((-680px - 2px) * #{$scaleFactor}) calc((0px - 2px) * #{$scaleFactor});
+  background-size: calc(972px * #{$scaleFactor}) calc(44px * #{$scaleFactor});
+  background-position: calc((-752px - 2px) * #{$scaleFactor}) calc((0px - 2px) * #{$scaleFactor});
   width: calc(40px * #{$scaleFactor});
   height: calc(40px * #{$scaleFactor});
 }
 
 // Include this mixin in component SCSS if the image needs to be scaled.
 @mixin oj-fwk-icon-spinner-60-scale($scaleFactor: 1) {
-  background-size: calc(900px * #{$scaleFactor}) calc(44px * #{$scaleFactor});
-  background-position: calc((-724px - 2px) * #{$scaleFactor}) calc((0px - 2px) * #{$scaleFactor});
+  background-size: calc(972px * #{$scaleFactor}) calc(44px * #{$scaleFactor});
+  background-position: calc((-796px - 2px) * #{$scaleFactor}) calc((0px - 2px) * #{$scaleFactor});
   width: calc(40px * #{$scaleFactor});
   height: calc(40px * #{$scaleFactor});
 }
 
 // Include this mixin in component SCSS if the image needs to be scaled.
 @mixin oj-fwk-icon-spinner-70-scale($scaleFactor: 1) {
-  background-size: calc(900px * #{$scaleFactor}) calc(44px * #{$scaleFactor});
-  background-position: calc((-768px - 2px) * #{$scaleFactor}) calc((0px - 2px) * #{$scaleFactor});
+  background-size: calc(972px * #{$scaleFactor}) calc(44px * #{$scaleFactor});
+  background-position: calc((-840px - 2px) * #{$scaleFactor}) calc((0px - 2px) * #{$scaleFactor});
   width: calc(40px * #{$scaleFactor});
   height: calc(40px * #{$scaleFactor});
 }
 
 // Include this mixin in component SCSS if the image needs to be scaled.
 @mixin oj-fwk-icon-spinner-80-scale($scaleFactor: 1) {
-  background-size: calc(900px * #{$scaleFactor}) calc(44px * #{$scaleFactor});
-  background-position: calc((-812px - 2px) * #{$scaleFactor}) calc((0px - 2px) * #{$scaleFactor});
+  background-size: calc(972px * #{$scaleFactor}) calc(44px * #{$scaleFactor});
+  background-position: calc((-884px - 2px) * #{$scaleFactor}) calc((0px - 2px) * #{$scaleFactor});
   width: calc(40px * #{$scaleFactor});
   height: calc(40px * #{$scaleFactor});
 }
 
 // Include this mixin in component SCSS if the image needs to be scaled.
 @mixin oj-fwk-icon-spinner-90-scale($scaleFactor: 1) {
-  background-size: calc(900px * #{$scaleFactor}) calc(44px * #{$scaleFactor});
-  background-position: calc((-856px - 2px) * #{$scaleFactor}) calc((0px - 2px) * #{$scaleFactor});
+  background-size: calc(972px * #{$scaleFactor}) calc(44px * #{$scaleFactor});
+  background-position: calc((-928px - 2px) * #{$scaleFactor}) calc((0px - 2px) * #{$scaleFactor});
   width: calc(40px * #{$scaleFactor});
   height: calc(40px * #{$scaleFactor});
 }
@@ -232,7 +256,7 @@
       @include oj-fwk-icon-animated-overlay-scale;
     }
 
-    /* in high-contrast mode, background-image disappears, so we have to use content */
+    // In high-contrast mode, background-image disappears, so we have to use content.
     .oj-hicontrast .oj-fwk-icon-animated-overlay {
       background-image: none;
     }
@@ -242,8 +266,11 @@
       height: 100%;
     }
 
-    /* in print mode, background-image disappears, so we have to use content */
-    @media print {
+    // In print mode, background-image disappears, so we have to use content.
+    // For small dppx, sprites may be clipped significantly, so we disable it.
+    // IE and Safari do not support dppx, so they will always use sprites, and
+    // that is fine because the clipping is insignificant on IE and Safari. 
+    @media print, (max-resolution: .99dppx) {
       .oj-fwk-icon-animated-overlay {
         background-image: none;
       }
@@ -259,7 +286,7 @@
       @include oj-fwk-icon-cbsingle-dis-selected-scale;
     }
 
-    /* in high-contrast mode, background-image disappears, so we have to use content */
+    // In high-contrast mode, background-image disappears, so we have to use content.
     .oj-hicontrast .oj-fwk-icon-cbsingle-dis-selected {
       background-image: none;
     }
@@ -269,8 +296,11 @@
       height: 100%;
     }
 
-    /* in print mode, background-image disappears, so we have to use content */
-    @media print {
+    // In print mode, background-image disappears, so we have to use content.
+    // For small dppx, sprites may be clipped significantly, so we disable it.
+    // IE and Safari do not support dppx, so they will always use sprites, and
+    // that is fine because the clipping is insignificant on IE and Safari. 
+    @media print, (max-resolution: .99dppx) {
       .oj-fwk-icon-cbsingle-dis-selected {
         background-image: none;
       }
@@ -286,7 +316,7 @@
       @include oj-fwk-icon-cbsingle-hover-selected-scale;
     }
 
-    /* in high-contrast mode, background-image disappears, so we have to use content */
+    // In high-contrast mode, background-image disappears, so we have to use content.
     .oj-hicontrast .oj-fwk-icon-cbsingle-hover-selected {
       background-image: none;
     }
@@ -296,8 +326,11 @@
       height: 100%;
     }
 
-    /* in print mode, background-image disappears, so we have to use content */
-    @media print {
+    // In print mode, background-image disappears, so we have to use content.
+    // For small dppx, sprites may be clipped significantly, so we disable it.
+    // IE and Safari do not support dppx, so they will always use sprites, and
+    // that is fine because the clipping is insignificant on IE and Safari. 
+    @media print, (max-resolution: .99dppx) {
       .oj-fwk-icon-cbsingle-hover-selected {
         background-image: none;
       }
@@ -313,7 +346,7 @@
       @include oj-fwk-icon-cbsingle-hover-unselected-scale;
     }
 
-    /* in high-contrast mode, background-image disappears, so we have to use content */
+    // In high-contrast mode, background-image disappears, so we have to use content.
     .oj-hicontrast .oj-fwk-icon-cbsingle-hover-unselected {
       background-image: none;
     }
@@ -323,8 +356,11 @@
       height: 100%;
     }
 
-    /* in print mode, background-image disappears, so we have to use content */
-    @media print {
+    // In print mode, background-image disappears, so we have to use content.
+    // For small dppx, sprites may be clipped significantly, so we disable it.
+    // IE and Safari do not support dppx, so they will always use sprites, and
+    // that is fine because the clipping is insignificant on IE and Safari. 
+    @media print, (max-resolution: .99dppx) {
       .oj-fwk-icon-cbsingle-hover-unselected {
         background-image: none;
       }
@@ -340,7 +376,7 @@
       @include oj-fwk-icon-checkbox-dis-selected-scale;
     }
 
-    /* in high-contrast mode, background-image disappears, so we have to use content */
+    // In high-contrast mode, background-image disappears, so we have to use content.
     .oj-hicontrast .oj-fwk-icon-checkbox-dis-selected {
       background-image: none;
     }
@@ -350,8 +386,11 @@
       height: 100%;
     }
 
-    /* in print mode, background-image disappears, so we have to use content */
-    @media print {
+    // In print mode, background-image disappears, so we have to use content.
+    // For small dppx, sprites may be clipped significantly, so we disable it.
+    // IE and Safari do not support dppx, so they will always use sprites, and
+    // that is fine because the clipping is insignificant on IE and Safari. 
+    @media print, (max-resolution: .99dppx) {
       .oj-fwk-icon-checkbox-dis-selected {
         background-image: none;
       }
@@ -367,7 +406,7 @@
       @include oj-fwk-icon-checkbox-dis-unselected-scale;
     }
 
-    /* in high-contrast mode, background-image disappears, so we have to use content */
+    // In high-contrast mode, background-image disappears, so we have to use content.
     .oj-hicontrast .oj-fwk-icon-checkbox-dis-unselected {
       background-image: none;
     }
@@ -377,8 +416,11 @@
       height: 100%;
     }
 
-    /* in print mode, background-image disappears, so we have to use content */
-    @media print {
+    // In print mode, background-image disappears, so we have to use content.
+    // For small dppx, sprites may be clipped significantly, so we disable it.
+    // IE and Safari do not support dppx, so they will always use sprites, and
+    // that is fine because the clipping is insignificant on IE and Safari. 
+    @media print, (max-resolution: .99dppx) {
       .oj-fwk-icon-checkbox-dis-unselected {
         background-image: none;
       }
@@ -394,7 +436,7 @@
       @include oj-fwk-icon-checkbox-ena-selected-scale;
     }
 
-    /* in high-contrast mode, background-image disappears, so we have to use content */
+    // In high-contrast mode, background-image disappears, so we have to use content.
     .oj-hicontrast .oj-fwk-icon-checkbox-ena-selected {
       background-image: none;
     }
@@ -404,8 +446,11 @@
       height: 100%;
     }
 
-    /* in print mode, background-image disappears, so we have to use content */
-    @media print {
+    // In print mode, background-image disappears, so we have to use content.
+    // For small dppx, sprites may be clipped significantly, so we disable it.
+    // IE and Safari do not support dppx, so they will always use sprites, and
+    // that is fine because the clipping is insignificant on IE and Safari. 
+    @media print, (max-resolution: .99dppx) {
       .oj-fwk-icon-checkbox-ena-selected {
         background-image: none;
       }
@@ -421,7 +466,7 @@
       @include oj-fwk-icon-checkbox-ena-unselected-scale;
     }
 
-    /* in high-contrast mode, background-image disappears, so we have to use content */
+    // In high-contrast mode, background-image disappears, so we have to use content.
     .oj-hicontrast .oj-fwk-icon-checkbox-ena-unselected {
       background-image: none;
     }
@@ -431,8 +476,11 @@
       height: 100%;
     }
 
-    /* in print mode, background-image disappears, so we have to use content */
-    @media print {
+    // In print mode, background-image disappears, so we have to use content.
+    // For small dppx, sprites may be clipped significantly, so we disable it.
+    // IE and Safari do not support dppx, so they will always use sprites, and
+    // that is fine because the clipping is insignificant on IE and Safari. 
+    @media print, (max-resolution: .99dppx) {
       .oj-fwk-icon-checkbox-ena-unselected {
         background-image: none;
       }
@@ -448,7 +496,7 @@
       @include oj-fwk-icon-checkbox-pressed-selected-scale;
     }
 
-    /* in high-contrast mode, background-image disappears, so we have to use content */
+    // In high-contrast mode, background-image disappears, so we have to use content.
     .oj-hicontrast .oj-fwk-icon-checkbox-pressed-selected {
       background-image: none;
     }
@@ -458,8 +506,11 @@
       height: 100%;
     }
 
-    /* in print mode, background-image disappears, so we have to use content */
-    @media print {
+    // In print mode, background-image disappears, so we have to use content.
+    // For small dppx, sprites may be clipped significantly, so we disable it.
+    // IE and Safari do not support dppx, so they will always use sprites, and
+    // that is fine because the clipping is insignificant on IE and Safari. 
+    @media print, (max-resolution: .99dppx) {
       .oj-fwk-icon-checkbox-pressed-selected {
         background-image: none;
       }
@@ -475,7 +526,7 @@
       @include oj-fwk-icon-checkbox-pressed-unselected-scale;
     }
 
-    /* in high-contrast mode, background-image disappears, so we have to use content */
+    // In high-contrast mode, background-image disappears, so we have to use content.
     .oj-hicontrast .oj-fwk-icon-checkbox-pressed-unselected {
       background-image: none;
     }
@@ -485,8 +536,11 @@
       height: 100%;
     }
 
-    /* in print mode, background-image disappears, so we have to use content */
-    @media print {
+    // In print mode, background-image disappears, so we have to use content.
+    // For small dppx, sprites may be clipped significantly, so we disable it.
+    // IE and Safari do not support dppx, so they will always use sprites, and
+    // that is fine because the clipping is insignificant on IE and Safari. 
+    @media print, (max-resolution: .99dppx) {
       .oj-fwk-icon-checkbox-pressed-unselected {
         background-image: none;
       }
@@ -497,12 +551,102 @@
       }
     }
 
+    .oj-fwk-icon-checkbox-tristate-partial {
+      background-image: oj-image-url('sprites/sprite.svg');
+      @include oj-fwk-icon-checkbox-tristate-partial-scale;
+    }
+
+    // In high-contrast mode, background-image disappears, so we have to use content.
+    .oj-hicontrast .oj-fwk-icon-checkbox-tristate-partial {
+      background-image: none;
+    }
+    .oj-hicontrast .oj-fwk-icon-checkbox-tristate-partial:before {
+      content: oj-image-url('checkbox_tristate_partial.svg');
+      width: 100%;
+      height: 100%;
+    }
+
+    // In print mode, background-image disappears, so we have to use content.
+    // For small dppx, sprites may be clipped significantly, so we disable it.
+    // IE and Safari do not support dppx, so they will always use sprites, and
+    // that is fine because the clipping is insignificant on IE and Safari. 
+    @media print, (max-resolution: .99dppx) {
+      .oj-fwk-icon-checkbox-tristate-partial {
+        background-image: none;
+      }
+      .oj-fwk-icon-checkbox-tristate-partial:before {
+        content: oj-image-url('checkbox_tristate_partial.svg');
+        width: 100%;
+        height: 100%;
+      }
+    }
+
+    .oj-fwk-icon-checkbox-tristate-selected {
+      background-image: oj-image-url('sprites/sprite.svg');
+      @include oj-fwk-icon-checkbox-tristate-selected-scale;
+    }
+
+    // In high-contrast mode, background-image disappears, so we have to use content.
+    .oj-hicontrast .oj-fwk-icon-checkbox-tristate-selected {
+      background-image: none;
+    }
+    .oj-hicontrast .oj-fwk-icon-checkbox-tristate-selected:before {
+      content: oj-image-url('checkbox_tristate_selected.svg');
+      width: 100%;
+      height: 100%;
+    }
+
+    // In print mode, background-image disappears, so we have to use content.
+    // For small dppx, sprites may be clipped significantly, so we disable it.
+    // IE and Safari do not support dppx, so they will always use sprites, and
+    // that is fine because the clipping is insignificant on IE and Safari. 
+    @media print, (max-resolution: .99dppx) {
+      .oj-fwk-icon-checkbox-tristate-selected {
+        background-image: none;
+      }
+      .oj-fwk-icon-checkbox-tristate-selected:before {
+        content: oj-image-url('checkbox_tristate_selected.svg');
+        width: 100%;
+        height: 100%;
+      }
+    }
+
+    .oj-fwk-icon-checkbox-tristate-unselected {
+      background-image: oj-image-url('sprites/sprite.svg');
+      @include oj-fwk-icon-checkbox-tristate-unselected-scale;
+    }
+
+    // In high-contrast mode, background-image disappears, so we have to use content.
+    .oj-hicontrast .oj-fwk-icon-checkbox-tristate-unselected {
+      background-image: none;
+    }
+    .oj-hicontrast .oj-fwk-icon-checkbox-tristate-unselected:before {
+      content: oj-image-url('checkbox_tristate_unselected.svg');
+      width: 100%;
+      height: 100%;
+    }
+
+    // In print mode, background-image disappears, so we have to use content.
+    // For small dppx, sprites may be clipped significantly, so we disable it.
+    // IE and Safari do not support dppx, so they will always use sprites, and
+    // that is fine because the clipping is insignificant on IE and Safari. 
+    @media print, (max-resolution: .99dppx) {
+      .oj-fwk-icon-checkbox-tristate-unselected {
+        background-image: none;
+      }
+      .oj-fwk-icon-checkbox-tristate-unselected:before {
+        content: oj-image-url('checkbox_tristate_unselected.svg');
+        width: 100%;
+        height: 100%;
+      }
+    }
+
     .oj-fwk-icon-move-handle {
       background-image: oj-image-url('sprites/sprite.svg');
       @include oj-fwk-icon-move-handle-scale;
     }
 
-    /* in high-contrast mode, background-image disappears, so we have to use content */
+    // In high-contrast mode, background-image disappears, so we have to use content.
     .oj-hicontrast .oj-fwk-icon-move-handle {
       background-image: none;
     }
@@ -512,8 +656,11 @@
       height: 100%;
     }
 
-    /* in print mode, background-image disappears, so we have to use content */
-    @media print {
+    // In print mode, background-image disappears, so we have to use content.
+    // For small dppx, sprites may be clipped significantly, so we disable it.
+    // IE and Safari do not support dppx, so they will always use sprites, and
+    // that is fine because the clipping is insignificant on IE and Safari. 
+    @media print, (max-resolution: .99dppx) {
       .oj-fwk-icon-move-handle {
         background-image: none;
       }
@@ -529,7 +676,7 @@
       @include oj-fwk-icon-radio-dis-selected-scale;
     }
 
-    /* in high-contrast mode, background-image disappears, so we have to use content */
+    // In high-contrast mode, background-image disappears, so we have to use content.
     .oj-hicontrast .oj-fwk-icon-radio-dis-selected {
       background-image: none;
     }
@@ -539,8 +686,11 @@
       height: 100%;
     }
 
-    /* in print mode, background-image disappears, so we have to use content */
-    @media print {
+    // In print mode, background-image disappears, so we have to use content.
+    // For small dppx, sprites may be clipped significantly, so we disable it.
+    // IE and Safari do not support dppx, so they will always use sprites, and
+    // that is fine because the clipping is insignificant on IE and Safari. 
+    @media print, (max-resolution: .99dppx) {
       .oj-fwk-icon-radio-dis-selected {
         background-image: none;
       }
@@ -556,7 +706,7 @@
       @include oj-fwk-icon-radio-dis-unselected-scale;
     }
 
-    /* in high-contrast mode, background-image disappears, so we have to use content */
+    // In high-contrast mode, background-image disappears, so we have to use content.
     .oj-hicontrast .oj-fwk-icon-radio-dis-unselected {
       background-image: none;
     }
@@ -566,8 +716,11 @@
       height: 100%;
     }
 
-    /* in print mode, background-image disappears, so we have to use content */
-    @media print {
+    // In print mode, background-image disappears, so we have to use content.
+    // For small dppx, sprites may be clipped significantly, so we disable it.
+    // IE and Safari do not support dppx, so they will always use sprites, and
+    // that is fine because the clipping is insignificant on IE and Safari. 
+    @media print, (max-resolution: .99dppx) {
       .oj-fwk-icon-radio-dis-unselected {
         background-image: none;
       }
@@ -583,7 +736,7 @@
       @include oj-fwk-icon-radio-ena-selected-scale;
     }
 
-    /* in high-contrast mode, background-image disappears, so we have to use content */
+    // In high-contrast mode, background-image disappears, so we have to use content.
     .oj-hicontrast .oj-fwk-icon-radio-ena-selected {
       background-image: none;
     }
@@ -593,8 +746,11 @@
       height: 100%;
     }
 
-    /* in print mode, background-image disappears, so we have to use content */
-    @media print {
+    // In print mode, background-image disappears, so we have to use content.
+    // For small dppx, sprites may be clipped significantly, so we disable it.
+    // IE and Safari do not support dppx, so they will always use sprites, and
+    // that is fine because the clipping is insignificant on IE and Safari. 
+    @media print, (max-resolution: .99dppx) {
       .oj-fwk-icon-radio-ena-selected {
         background-image: none;
       }
@@ -610,7 +766,7 @@
       @include oj-fwk-icon-radio-ena-unselected-scale;
     }
 
-    /* in high-contrast mode, background-image disappears, so we have to use content */
+    // In high-contrast mode, background-image disappears, so we have to use content.
     .oj-hicontrast .oj-fwk-icon-radio-ena-unselected {
       background-image: none;
     }
@@ -620,8 +776,11 @@
       height: 100%;
     }
 
-    /* in print mode, background-image disappears, so we have to use content */
-    @media print {
+    // In print mode, background-image disappears, so we have to use content.
+    // For small dppx, sprites may be clipped significantly, so we disable it.
+    // IE and Safari do not support dppx, so they will always use sprites, and
+    // that is fine because the clipping is insignificant on IE and Safari. 
+    @media print, (max-resolution: .99dppx) {
       .oj-fwk-icon-radio-ena-unselected {
         background-image: none;
       }
@@ -637,7 +796,7 @@
       @include oj-fwk-icon-radio-pressed-selected-scale;
     }
 
-    /* in high-contrast mode, background-image disappears, so we have to use content */
+    // In high-contrast mode, background-image disappears, so we have to use content.
     .oj-hicontrast .oj-fwk-icon-radio-pressed-selected {
       background-image: none;
     }
@@ -647,8 +806,11 @@
       height: 100%;
     }
 
-    /* in print mode, background-image disappears, so we have to use content */
-    @media print {
+    // In print mode, background-image disappears, so we have to use content.
+    // For small dppx, sprites may be clipped significantly, so we disable it.
+    // IE and Safari do not support dppx, so they will always use sprites, and
+    // that is fine because the clipping is insignificant on IE and Safari. 
+    @media print, (max-resolution: .99dppx) {
       .oj-fwk-icon-radio-pressed-selected {
         background-image: none;
       }
@@ -664,7 +826,7 @@
       @include oj-fwk-icon-radio-pressed-unselected-scale;
     }
 
-    /* in high-contrast mode, background-image disappears, so we have to use content */
+    // In high-contrast mode, background-image disappears, so we have to use content.
     .oj-hicontrast .oj-fwk-icon-radio-pressed-unselected {
       background-image: none;
     }
@@ -674,8 +836,11 @@
       height: 100%;
     }
 
-    /* in print mode, background-image disappears, so we have to use content */
-    @media print {
+    // In print mode, background-image disappears, so we have to use content.
+    // For small dppx, sprites may be clipped significantly, so we disable it.
+    // IE and Safari do not support dppx, so they will always use sprites, and
+    // that is fine because the clipping is insignificant on IE and Safari. 
+    @media print, (max-resolution: .99dppx) {
       .oj-fwk-icon-radio-pressed-unselected {
         background-image: none;
       }
@@ -691,7 +856,7 @@
       @include oj-fwk-icon-spinner-00-scale;
     }
 
-    /* in high-contrast mode, background-image disappears, so we have to use content */
+    // In high-contrast mode, background-image disappears, so we have to use content.
     .oj-hicontrast .oj-fwk-icon-spinner-00 {
       background-image: none;
     }
@@ -701,8 +866,11 @@
       height: 100%;
     }
 
-    /* in print mode, background-image disappears, so we have to use content */
-    @media print {
+    // In print mode, background-image disappears, so we have to use content.
+    // For small dppx, sprites may be clipped significantly, so we disable it.
+    // IE and Safari do not support dppx, so they will always use sprites, and
+    // that is fine because the clipping is insignificant on IE and Safari. 
+    @media print, (max-resolution: .99dppx) {
       .oj-fwk-icon-spinner-00 {
         background-image: none;
       }
@@ -718,7 +886,7 @@
       @include oj-fwk-icon-spinner-10-scale;
     }
 
-    /* in high-contrast mode, background-image disappears, so we have to use content */
+    // In high-contrast mode, background-image disappears, so we have to use content.
     .oj-hicontrast .oj-fwk-icon-spinner-10 {
       background-image: none;
     }
@@ -728,8 +896,11 @@
       height: 100%;
     }
 
-    /* in print mode, background-image disappears, so we have to use content */
-    @media print {
+    // In print mode, background-image disappears, so we have to use content.
+    // For small dppx, sprites may be clipped significantly, so we disable it.
+    // IE and Safari do not support dppx, so they will always use sprites, and
+    // that is fine because the clipping is insignificant on IE and Safari. 
+    @media print, (max-resolution: .99dppx) {
       .oj-fwk-icon-spinner-10 {
         background-image: none;
       }
@@ -745,7 +916,7 @@
       @include oj-fwk-icon-spinner-20-scale;
     }
 
-    /* in high-contrast mode, background-image disappears, so we have to use content */
+    // In high-contrast mode, background-image disappears, so we have to use content.
     .oj-hicontrast .oj-fwk-icon-spinner-20 {
       background-image: none;
     }
@@ -755,8 +926,11 @@
       height: 100%;
     }
 
-    /* in print mode, background-image disappears, so we have to use content */
-    @media print {
+    // In print mode, background-image disappears, so we have to use content.
+    // For small dppx, sprites may be clipped significantly, so we disable it.
+    // IE and Safari do not support dppx, so they will always use sprites, and
+    // that is fine because the clipping is insignificant on IE and Safari. 
+    @media print, (max-resolution: .99dppx) {
       .oj-fwk-icon-spinner-20 {
         background-image: none;
       }
@@ -772,7 +946,7 @@
       @include oj-fwk-icon-spinner-30-scale;
     }
 
-    /* in high-contrast mode, background-image disappears, so we have to use content */
+    // In high-contrast mode, background-image disappears, so we have to use content.
     .oj-hicontrast .oj-fwk-icon-spinner-30 {
       background-image: none;
     }
@@ -782,8 +956,11 @@
       height: 100%;
     }
 
-    /* in print mode, background-image disappears, so we have to use content */
-    @media print {
+    // In print mode, background-image disappears, so we have to use content.
+    // For small dppx, sprites may be clipped significantly, so we disable it.
+    // IE and Safari do not support dppx, so they will always use sprites, and
+    // that is fine because the clipping is insignificant on IE and Safari. 
+    @media print, (max-resolution: .99dppx) {
       .oj-fwk-icon-spinner-30 {
         background-image: none;
       }
@@ -799,7 +976,7 @@
       @include oj-fwk-icon-spinner-40-scale;
     }
 
-    /* in high-contrast mode, background-image disappears, so we have to use content */
+    // In high-contrast mode, background-image disappears, so we have to use content.
     .oj-hicontrast .oj-fwk-icon-spinner-40 {
       background-image: none;
     }
@@ -809,8 +986,11 @@
       height: 100%;
     }
 
-    /* in print mode, background-image disappears, so we have to use content */
-    @media print {
+    // In print mode, background-image disappears, so we have to use content.
+    // For small dppx, sprites may be clipped significantly, so we disable it.
+    // IE and Safari do not support dppx, so they will always use sprites, and
+    // that is fine because the clipping is insignificant on IE and Safari. 
+    @media print, (max-resolution: .99dppx) {
       .oj-fwk-icon-spinner-40 {
         background-image: none;
       }
@@ -826,7 +1006,7 @@
       @include oj-fwk-icon-spinner-50-scale;
     }
 
-    /* in high-contrast mode, background-image disappears, so we have to use content */
+    // In high-contrast mode, background-image disappears, so we have to use content.
     .oj-hicontrast .oj-fwk-icon-spinner-50 {
       background-image: none;
     }
@@ -836,8 +1016,11 @@
       height: 100%;
     }
 
-    /* in print mode, background-image disappears, so we have to use content */
-    @media print {
+    // In print mode, background-image disappears, so we have to use content.
+    // For small dppx, sprites may be clipped significantly, so we disable it.
+    // IE and Safari do not support dppx, so they will always use sprites, and
+    // that is fine because the clipping is insignificant on IE and Safari. 
+    @media print, (max-resolution: .99dppx) {
       .oj-fwk-icon-spinner-50 {
         background-image: none;
       }
@@ -853,7 +1036,7 @@
       @include oj-fwk-icon-spinner-60-scale;
     }
 
-    /* in high-contrast mode, background-image disappears, so we have to use content */
+    // In high-contrast mode, background-image disappears, so we have to use content.
     .oj-hicontrast .oj-fwk-icon-spinner-60 {
       background-image: none;
     }
@@ -863,8 +1046,11 @@
       height: 100%;
     }
 
-    /* in print mode, background-image disappears, so we have to use content */
-    @media print {
+    // In print mode, background-image disappears, so we have to use content.
+    // For small dppx, sprites may be clipped significantly, so we disable it.
+    // IE and Safari do not support dppx, so they will always use sprites, and
+    // that is fine because the clipping is insignificant on IE and Safari. 
+    @media print, (max-resolution: .99dppx) {
       .oj-fwk-icon-spinner-60 {
         background-image: none;
       }
@@ -880,7 +1066,7 @@
       @include oj-fwk-icon-spinner-70-scale;
     }
 
-    /* in high-contrast mode, background-image disappears, so we have to use content */
+    // In high-contrast mode, background-image disappears, so we have to use content.
     .oj-hicontrast .oj-fwk-icon-spinner-70 {
       background-image: none;
     }
@@ -890,8 +1076,11 @@
       height: 100%;
     }
 
-    /* in print mode, background-image disappears, so we have to use content */
-    @media print {
+    // In print mode, background-image disappears, so we have to use content.
+    // For small dppx, sprites may be clipped significantly, so we disable it.
+    // IE and Safari do not support dppx, so they will always use sprites, and
+    // that is fine because the clipping is insignificant on IE and Safari. 
+    @media print, (max-resolution: .99dppx) {
       .oj-fwk-icon-spinner-70 {
         background-image: none;
       }
@@ -907,7 +1096,7 @@
       @include oj-fwk-icon-spinner-80-scale;
     }
 
-    /* in high-contrast mode, background-image disappears, so we have to use content */
+    // In high-contrast mode, background-image disappears, so we have to use content.
     .oj-hicontrast .oj-fwk-icon-spinner-80 {
       background-image: none;
     }
@@ -917,8 +1106,11 @@
       height: 100%;
     }
 
-    /* in print mode, background-image disappears, so we have to use content */
-    @media print {
+    // In print mode, background-image disappears, so we have to use content.
+    // For small dppx, sprites may be clipped significantly, so we disable it.
+    // IE and Safari do not support dppx, so they will always use sprites, and
+    // that is fine because the clipping is insignificant on IE and Safari. 
+    @media print, (max-resolution: .99dppx) {
       .oj-fwk-icon-spinner-80 {
         background-image: none;
       }
@@ -934,7 +1126,7 @@
       @include oj-fwk-icon-spinner-90-scale;
     }
 
-    /* in high-contrast mode, background-image disappears, so we have to use content */
+    // In high-contrast mode, background-image disappears, so we have to use content.
     .oj-hicontrast .oj-fwk-icon-spinner-90 {
       background-image: none;
     }
@@ -944,8 +1136,11 @@
       height: 100%;
     }
 
-    /* in print mode, background-image disappears, so we have to use content */
-    @media print {
+    // In print mode, background-image disappears, so we have to use content.
+    // For small dppx, sprites may be clipped significantly, so we disable it.
+    // IE and Safari do not support dppx, so they will always use sprites, and
+    // that is fine because the clipping is insignificant on IE and Safari. 
+    @media print, (max-resolution: .99dppx) {
       .oj-fwk-icon-spinner-90 {
         background-image: none;
       }

@@ -1,4 +1,5 @@
 /**
+ * @license
  * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
@@ -1414,7 +1415,7 @@ oj.SlidingNavListHandler.prototype.SetState = function (item, state) {
 
 oj.SlidingNavListHandler.prototype.ModifyListItem = function ($item, itemContent) {
   var focusableElement = this.m_widget.getFocusItem($item);
-
+  $item.attr('role', 'presentation');
   focusableElement.attr('role', 'menuitem');
   if (!itemContent.attr('id')) {
     itemContent.uniqueId();
@@ -2235,11 +2236,13 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
       
       var listViewContainer = $(document.createElement("div"));
       listViewContainer.addClass(this.getNavListContainerStyleClass());
+      listViewContainer.attr('role', 'presentation');
 
       this._list.wrap(listViewContainer); // @HTMLUpdateOK
       opts = this._prepareListViewOptions(navlistopts);
      
       _ojNavigationListView.superclass.init.call(this, opts);
+      this.getRootElement().attr('role', 'presentation');
       this.element.removeClass('oj-component-initnode');
       this.ojContext._on(this.ojContext.element, 
       {
@@ -3140,7 +3143,11 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
           contextMenu.addEventListener("ojAction", this._handleContextMenuSelect.bind(this));
         }
         var removeItem = $(contextMenu).find('[data-oj-command=' + this.getNavListRemoveCommand() +']');
-        removeItem.empty().append($('<a href="#"></a>').text(this.ojContext.getTranslatedString('labelRemove'))); //@HTMLUpdateOK
+        var textNode = this.ojContext.getTranslatedString('labelRemove');
+        if (!this.ojContext._IsCustomElement())
+            removeItem.empty().append($('<a href="#"></a>').text(textNode)); //@HTMLUpdateOK
+        else
+            removeItem.empty().append(document.createTextNode(textNode)); //@HTMLUpdateOK
         contextMenu.refresh();
       }
     },
@@ -3367,7 +3374,23 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
    * @augments oj.baseComponent
    * @since 1.1.0
    * @ojstatus preview
-   *
+   * @ojrole menu
+   * @ojrole tree
+   * @ojrole listbox
+   * @ojrole toolbar
+   * @ojtsimport ojdataprovider
+   * @ojtsimport ojkeyset
+   * @ojsignature [{
+   *                target: "Type",
+   *                value: "class ojNavigationList<K, D> extends baseComponent<ojNavigationListSettableProperties<K,D>>"
+   *               },
+   *               {
+   *                target: "Type",
+   *                value: "ojNavigationListSettableProperties<K,D> extends baseComponentSettableProperties",
+   *                for: "SettableProperties"
+   *               }
+   *              ]
+   * @ojshortdesc Displays items as a collapsible or sliding navigation list with highly interactive features.
    * @classdesc
    * <h3 id="navlistOverview-section">
    *   JET Navigation List
@@ -3375,16 +3398,39 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
    * </h3>
    *
    * <p>Description: JET Navigation List enhances a HTML list element into a themable, WAI-ARIA compliant, mobile friendly component with advance interactive features.
-   *
-   * <p>The JET Navigation List gets its data in following ways. </p>
+   * <h3 id="data-section">
+   *   Data
+   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#data-section"></a>
+   * </h3>
+   * <p>The JET NavigationList gets its data in three different ways.  The first way is from a DataProvider/TableDataSource.  There are several types of DataProvider/TableDataSource 
+   * that are available out of the box:</p>
    * <ul>
-   * <li><b>Using table datasource</b>. This is typically used in case of flat list. There are several types of TableDataSource that
-   * are available out of the box like <a href="oj.ArrayTableDataSource.html">oj.ArrayTableDataSource</a>,<a href="oj.CollectionTableDataSource.html">oj.CollectionTableDataSource</a>. <p> NOTE: oj.PagingTableDataSource is not supported by navigation list.
-   * For large amount of data, It is recommended to use hierarhcial navigation list with tree data source.</li>
-   * <li><b>Using TreeDataSource</b>.  This is typically used to display hierarchical navigation list.  There are several types
-   * of TreeDataSource that are available out of the box like <a href="oj.JsonTreeDataSource.html">oj.JsonTreeDataSource</a>, <a href="oj.CollectionTreeDataSource.html">oj.CollectionTreeDataSource</a> </li>
-   * <li><b>Using static content </b>. The structure of the content can be either flat or hierarhical.</li>
+   * <li>oj.ArrayDataProvider</li>
+   * <li>oj.CollectionTableDataSource</li>
    * </ul>
+   *
+   * <p><b>oj.ArrayDataProvider</b> - Use this when the underlying data is an array object or an observableArray.  In the observableArray case, Navigation List will automatically react
+   * when items are added or removed from the array.  See the documentation for oj.ArrayDataProvider for more details on the available options.</p>
+   *
+   * <p><b>oj.CollectionTableDataSource</b> - Use this when oj.Collection is the model for the underlying data.  Note that the Navigation List will automatically react to model event from
+   * the underlying oj.Collection.  See the documentation for oj.CollectionTableDataSource for more details on the available options.</p>
+   *
+   * <p> NOTE: oj.PagingTableDataSource is not supported by Navigation List.
+   *
+   * <p>The second way is from a TreeDataSource.  This is typically used to display data that are logically categorized in groups.  There are several types
+   * of TreeDataSource that are available out of the box:</p>
+   * <ul>
+   * <li>oj.JsonTreeDataSource</li>
+   * <li>oj.CollectionTreeDataSource</li>
+   * </ul>
+   *
+   * <p><b>oj.JsonTreeDataSource</b> - Use this when the underlying data is a JSON object.  See the documentation for oj.JsonTreeDataSource for more details on the available options.</p>
+   *
+   * <p><b>oj.CollectionTreeDataSource</b> - Use this when oj.Collection is the model for each group of data.  See the documentation for oj.CollectionTableDataSource
+   * for more details on the available options.</p>
+   *
+   * <p>Finally, Navigation List also supports static HTML content as data.  The structure of the content can be either flat or hierarhical.</p>
+   *
    * <p>Example of flat static content</p>
    * <pre class="prettyprint">
    * <code>
@@ -3697,6 +3743,24 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
        * <a href="#key-section">Key</a> of the current item.  Current item is the list item which is having active focus.  Note that if currentItem
        * is set to an item that is currently not available (not fetched or
        * inside a collapsed parent node), then the value is ignored.
+       * <p>
+       * When the current item is changed, the <code class="prettyprint">event.detail</code> of the <code class="prettyprint">currentItemChanged</code> event will contain the following additional properties:<br><br>
+       * <table class="props">
+       *   <thead>
+       *     <tr>
+       *       <th>Name</th>
+       *       <th>Type</th>
+       *       <th>Description</th>
+       *     </tr>
+       *   </thead>
+       *   <tbody>
+       *     <tr>
+       *       <td class="name"><code>item</code></td>
+       *       <td class="type">Element</td>
+       *       <td class="description">Current Item element</td>
+       *     </tr>
+       *   </tbody>
+       * </table>  
        *
        * @expose
        * @ojshortdesc Gets and sets the key of the item that should have keyboard focus.
@@ -3704,6 +3768,7 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
        * @instance
        * @memberof! oj.ojNavigationList
        * @type {*}
+       * @ojsignature {target:"Type", value:"K"}
        * @default null
        * @ojwriteback
        * @example <caption>Initialize the Navigation List with the <code class="prettyprint">current-item</code> attribute specified:</caption>
@@ -3821,10 +3886,26 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
       rootLabel: null,
       /**
        * Item <a href="#key-section">Key</a> of currently selected list item. If the value is modified
-       * by an application, navigation list UI is modified to match the new value.
-       * 
+       * by an application, navigation list UI is modified to match the new value and the <code class="prettyprint">event.detail</code> of the <code class="prettyprint">selectionChanged</code> event will contain the following additional properties:<br><br>
+       * <table class="props">
+       *   <thead>
+       *     <tr>
+       *       <th>Name</th>
+       *       <th>Type</th>
+       *       <th>Description</th>
+       *     </tr>
+       *   </thead>
+       *   <tbody>
+       *     <tr>
+       *       <td class="name"><code>item</code></td>
+       *       <td class="type">Element</td>
+       *       <td class="description">Selected Item element</td>
+       *     </tr>
+       *   </tbody>
+       * </table>  
        * @ojshortdesc Gets and sets the key of the selected item.
        * @type {*}
+       * @ojsignature {target:"Type", value:"K"}
        * @default null
        * @expose
        * @instance
@@ -3840,33 +3921,28 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
        * myNavList.selection = "settings";
        */
       selection: null,
-      /**
-       * Specifies which items in NavigationList should be expanded. Specifies "all" value to expand all items.  Specifies
-       * an array of <a href="#key-section">Key</a>s to expand specific items.
-       *
-       * The default value is "auto", which means that NavigationList will determine which items are expanded by default.
-       * Specifically, if drillMode is set to "none", then all items are expanded, any other values for
-       * drillMode will not cause any items to expand by default.
-       *
-       * Note that expanded does not return the currently expanded items.  This only returns what is specified
-       * by default.  To retrieve the keys of currently expanded items, use the <code class="prettyprint">getExpanded</code>
-       * method.
-       * @type {Array.<*>|string}
-       * @default []
-       * @ignore
-       * @expose
-       * @instance
-       * @memberof oj.ojNavigationList
-       * @example <caption>Initialize the Navigation List with the <code class="prettyprint">expanded</code> attribute specified:</caption>
-       *  &lt;oj-navigation-list expanded='all'> ... &lt;/oj-navigation-list>
-       *  
-       * @example <caption>Get the expanded:</caption>
-       * var expanded = myNavList.expanded;
-       *
-       * @example <caption>Set the expanded on the Navigation List:</caption>
-       * myNavList.expanded = ["settings"];
-       */
-      expanded: "auto",
+      
+     /**
+      * Specifies the key set containing the keys of the items that should be expanded. 
+      *
+      * Use the <a href="ExpandedKeySet.html">ExpandedKeySet</a> class to specify items to expand.
+      * Use the <a href="ExpandAllKeySet.html">ExpandAllKeySet</a> class to expand all items.                 
+      *
+      * @expose
+      * @memberof! oj.ojNavigationList
+      * @instance
+      * @default new ExpandedKeySet();
+      * @type {KeySet}
+      * @ojsignature {target:"Type", value:"KeySet<K>"}
+      * @ojwriteback
+      *
+      * @example <caption>Initialize the NavigationList with specific items expanded:</caption>
+      * myNavList.expanded = new ExpandedKeySet(['item1', 'item2']);
+      *
+      * @example <caption>Initialize the NavigationList with all items expanded:</caption>
+      * myNavList.expanded = new ExpandAllKeySet();
+      */
+      expanded: new oj._ojListViewExpandedKeySet(),
       /**
        * The data source for the NavigationList accepts either a oj.TableDataSource or oj.TreeDataSource.
        * See the data source section in the introduction for out of the box data source types.
@@ -3877,7 +3953,7 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
        * @expose
        * @memberof! oj.ojNavigationList
        * @instance
-       * @type {oj.TableDataSource|oj.TreeDataSource}
+       * @type {oj.TableDataSource|oj.TreeDataSource|oj.DataProvider|null}
        * @default null
        * @example <caption>Initialize the Navigation List with the <code class="prettyprint">data</code> attribute specified:</caption>
        *  &lt;oj-navigation-list data='[[tableDataSource]]'> ... &lt;/oj-navigation-list>
@@ -3889,6 +3965,7 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
        * 
        * @example <caption>Set the data attribute using oj.Collection:</caption>
        * myNavList.data = new oj.CollectionTableDataSource(collection);
+	     * @ojsignature {target: "Type", value: "oj.DataProvider<K, D>|null"}
        */
       data: null,
       /**
@@ -3949,7 +4026,7 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
        * @memberof oj.ojNavigationList
        * @instance
        * @type {string}
-       * @ojvalue {string} "popup" popup menu will be shown with overflowed items. <p> NOTE: Setting <code class="prettyprint">overflow</code> to <code class="prettyprint">popup</code> can trigger browser reflow, so only set it when it is actually required.
+       * @ojvalue {string} "popup" popup menu will be shown with overflowed items.<p> NOTE: Setting <code class="prettyprint">overflow</code> to <code class="prettyprint">popup</code> can trigger browser reflow, so only set it when it is actually required.
        * @ojvalue {string} "hidden" overflow is clipped, and the rest of the content will be invisible.
        * @default hidden
        * @since 3.0.0
@@ -3963,13 +4040,27 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
        * myNavList.overflow = "hidden";
        */
       overflow: "hidden",
+      
+      /**
+       * @typedef {Object} oj.ojNavigationList.ItemContext
+       * @property {Element} componentElement oj-navigation-list element
+       * @property {oj.DataProvider<K, D>} [datasource] A reference to the data source object. (Not available for static content)
+       * @property {number} index The index of the item, where 0 is the index of the first item.
+       * @property {any} key The Key of the item.
+       * @property {any} data The data object for the item.
+       * @property {Element} parentElement The list item element. The renderer can use this to directly append content.
+       * @ojsignature [{target:"Type", value:"<K,D>", for:"genericTypeParameters"}]
+       */
+      
       /**
        * The item property contains a subset of properties for items.
        *
        * @ojshortdesc Customize the functionalities of each item in Navigation List.  
        * @expose
-       * @memberof! oj.ojNavigationList
+       * @memberof oj.ojNavigationList
        * @instance
+       * @name item
+       * @type {Object}
        */
       item: {
         /**
@@ -3990,6 +4081,9 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
          * @memberof! oj.ojNavigationList
          * @instance
          * @type {function(Object)|null}
+         * @ojsignature { target: "Type",
+         *                value: "?(((context: oj.ojNavigationList.ItemContext<K,D>) => void)|null)",
+         *                jsdocOverride: true}
          * @default null
          * @example <caption>Initialize the Navigation List with the <code class="prettyprint">item.renderer</code> attribute specified:</caption>
          *  &lt;oj-navigation-list item.renderer="{{oj.KnockoutTemplateUtils.getRenderer('template', true)}}"> ... &lt;/oj-navigation-list>
@@ -4011,6 +4105,9 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
          * @alias item.selectable
          * @memberof! oj.ojNavigationList
          * @instance
+         * @ojsignature { target: "Type",
+         *                value: "?(((context: oj.ojNavigationList.ItemContext<K,D>) => boolean)|boolean)",
+         *                jsdocOverride: true}
          * @type {function(Object)|boolean}
          * @default true
          *
@@ -4033,9 +4130,9 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
        * @event
        * @memberof oj.ojNavigationList
        * @instance
-       * @property {Object} action the action that starts the animation.  See <a href="#animation-section">animation</a> section for a list of actions.
-       * @property {Object} element the target of animation.  
-       * @property {function} endCallback if the event listener calls event.preventDefault to cancel the default animation, it must call the endCallback function when it finishes its own animation handling and when any custom animation ends.
+       * @property {string} action the action that starts the animation.  See <a href="#animation-section">animation</a> section for a list of actions.
+       * @property {Element} element the target of animation.  
+       * @property {function():void} endCallback if the event listener calls event.preventDefault to cancel the default animation, it must call the endCallback function when it finishes its own animation handling and when any custom animation ends.
        */
       animateStart: null,
       /**
@@ -4046,15 +4143,13 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
        * @event
        * @memberof oj.ojNavigationList
        * @instance
-       * @property {Object} action the action that started the animation.  See <a href="#animation-section">animation</a> section for a list of actions.
-       * @property {Object} element the target of animation.  
+       * @property {string} action the action that started the animation.  See <a href="#animation-section">animation</a> section for a list of actions.
+       * @property {Element} element the target of animation.  
        */
       animateEnd: null,
       /**
        * <p>Triggered before this list item is selected.
-       * To prevent the item selection, return <code class="prettyprint">false</code> from event handler or invoke <code class="prettyprint">event.preventDefault()</code>.
-       * <p>The <code class="prettyprint">ui.key</code> contains item key which uniquely identifies the item.
-       * <code class="prettyprint">ui.item</code> payload field contains item element being selected.
+       * To prevent the item selection, invoke <code class="prettyprint">event.preventDefault()</code>.
        *
        * @ojshortdesc Event handler for when before the selection is changed.
        * @expose
@@ -4069,7 +4164,7 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
       /**
        * Triggered before an item is collapse via the <code class="prettyprint">expanded</code> property,
        * the <code class="prettyprint">collapse</code> method, or via the UI.
-       * To prevent the item being collapsed, return <code class="prettyprint">false</code> from event handler or invoke <code class="prettyprint">event.preventDefault()</code>.
+       * To prevent the item being collapsed, invoke <code class="prettyprint">event.preventDefault()</code>.
        *
        * @ojshortdesc Event handler for when an item is about to collapse.
        * @expose
@@ -4083,7 +4178,7 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
       beforeCollapse: null,
       /**
        * Triggered before the current item is changed via the <code class="prettyprint">currentItem</code> property or via the UI.
-       * To prevent the item being focused, return <code class="prettyprint">false</code> from event handler or invoke <code class="prettyprint">event.preventDefault()</code>.
+       * To prevent the item being focused, invoke <code class="prettyprint">event.preventDefault()</code>.
        * 
        * @ojshortdesc Event handler for when before the current item is changed.
        * @expose
@@ -4115,7 +4210,7 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
       /**
        * Triggered before an item is expand via the <code class="prettyprint">expanded</code> property,
        * the <code class="prettyprint">expand</code> method, or via the UI.
-       * To prevent the item being expanded, return <code class="prettyprint">false</code> from event handler or invoke <code class="prettyprint">event.preventDefault()</code>.
+       * To prevent the item being expanded, invoke <code class="prettyprint">event.preventDefault()</code>.
        * 
        * @ojshortdesc Event handler for when an item is about to expand.
        * @expose
@@ -4205,11 +4300,24 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
     getSubIdByNode: function (node) {
       return this.navlist.getSubIdByNode(node);
     },
+    
+    /**
+     * @typedef {Object} oj.ojNavigationList.NodeContext
+     * @property {string} subId Sub-id string to identify a particular dom node.
+     * @property {number} index The index of the item, where 0 is the index of the first item.
+     * @property {K} key The Key of the item.
+     * @property {boolean} group whether the item is a group.
+     * @property {Element} [parent] the parent group item. Only available if item has a parent.
+     * @ojsignature [{target:"Type", value:"<K>", for:"genericTypeParameters"}]
+     */
+    
     /**
      * {@ojinclude "name":"nodeContextDoc"}
      * @param {!Element} node - {@ojinclude "name":"nodeContextParam"}
      * @returns {Object|null} {@ojinclude "name":"nodeContextReturn"}
-     *
+     * @ojsignature { target: "Type", for:"returns",
+     *                value: "oj.ojNavigationList.NodeContext<K>|null",
+     *                jsdocOverride: true}
      * @example {@ojinclude "name":"nodeContextExample"}
      *
      * @expose
@@ -4388,8 +4496,9 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
      * <p>This method does not accept any arguments.
      *
      * @expose
-     * @memberof oj.ojNavigationList
+     * @memberof! oj.ojNavigationList
      * @instance
+     * @return {void}
      *
      * @example <caption>Invoke the <code class="prettyprint">refresh</code> method:</caption>
      *  myNavList.refresh();
@@ -4898,6 +5007,17 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
    * @ojstatus preview
    * @since 4.0.0
    * @ojrole tablist
+   * @ojtsimport ojdataprovider
+   * @ojsignature [{
+   *                target: "Type",
+   *                value: "class ojTabBar<K, D> extends baseComponent<ojTabBarSettableProperties<K,D>>"
+   *               },
+   *               {
+   *                target: "Type",
+   *                value: "ojTabBarSettableProperties<K,D> extends baseComponentSettableProperties",
+   *                for: "SettableProperties"
+   *               }
+   *              ]
    * @ojshortdesc Displays tab bar with advanced interactive features.
    * @classdesc
    * <h3 id="navlistOverview-section">
@@ -4907,13 +5027,27 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
    *
    * <p>Description: JET Tab Bar enhances a HTML list element into a themable, WAI-ARIA compliant, mobile friendly component with advance interactive features.
    *
-   * <p>The JET Tab Bar gets its data in following ways. </p>
+   * <h3 id="data-section">
+   *   Data
+   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#data-section"></a>
+   * </h3>
+   * <p>The JET Tab Bar gets its data in two different ways.  The first way is from a DataProvider/TableDataSource.  There are several types of DataProvider/TableDataSource 
+   * that are available out of the box:</p>
    * <ul>
-   * <li><b>Using table datasource</b>. There are several types of TableDataSource that
-   * are available out of the box like  <a href="oj.ArrayTableDataSource.html">oj.ArrayTableDataSource</a>,<a href="oj.CollectionTableDataSource.html">oj.CollectionTableDataSource</a>. <p> NOTE: oj.PagingTableDataSource is not supported by tab bar.</li>
-   * <li><b>Using static content </b>.  The structure of the content should be flat as shown below. </li>
+   * <li>oj.ArrayDataProvider</li>
+   * <li>oj.CollectionTableDataSource</li>
    * </ul>
-   * <p>Example of flat static content</p>
+   *
+   * <p><b>oj.ArrayDataProvider</b> - Use this when the underlying data is an array object or an observableArray.  In the observableArray case, Tab Bar will automatically react
+   * when items are added or removed from the array.  See the documentation for oj.ArrayDataProvider for more details on the available options.</p>
+   *
+   * <p><b>oj.CollectionTableDataSource</b> - Use this when oj.Collection is the model for the underlying data.  Note that the Tab Bar will automatically react to model event from
+   * the underlying oj.Collection.  See the documentation for oj.CollectionTableDataSource for more details on the available options.</p>
+   *
+   * <p> NOTE: oj.PagingTableDataSource is not supported by Tab Bar.
+   * <p>Second way is using static HTML content as data.</p>
+   *
+   * <p>Example of static content</p>
    * <pre class="prettyprint">
    * <code>
    * &lt;oj-tab-bar>
@@ -5108,12 +5242,29 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
    * <a href="#key-section">Key</a> of the current item.  Current item is the list item which is having active focus.  Note that if currentItem
    * is set to an item that is currently not available (not fetched or
    * inside a collapsed parent node), then the value is ignored.
-   *
+   * <p>
+   * When the current item is changed, the <code class="prettyprint">event.detail</code> of the <code class="prettyprint">currentItemChanged</code> event will contain the following additional properties:<br><br>
+   * <table class="props">
+   *   <thead>
+   *     <tr>
+   *       <th>Name</th>
+   *       <th>Type</th>
+   *       <th>Description</th>
+   *     </tr>
+   *   </thead>
+   *   <tbody>
+   *     <tr>
+   *       <td class="name"><code>item</code></td>
+   *       <td class="type">Element</td>
+   *       <td class="description">Current Item element</td>
+   *     </tr>
+   *   </tbody>
+   * </table>  
    * @expose
    * @public
    * @instance
    * @name currentItem
-   * @memberof! oj.ojTabBar
+   * @memberof oj.ojTabBar
    * @type {*}
    * @default null
    * @ojshortdesc Gets and sets the key of the item that should have keyboard focus.
@@ -5194,7 +5345,23 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
 
   /**
    * Item <a href="#key-section">Key</a> of currently selected list item. If the value is modified
-   * by an application, tab bar UI is modified to match the new value.
+   * by an application, tab bar UI is modified to match the new value and the <code class="prettyprint">event.detail</code> of the <code class="prettyprint">selectionChanged</code> event will contain the following additional properties:<br><br>
+   * <table class="props">
+   *   <thead>
+   *     <tr>
+   *       <th>Name</th>
+   *       <th>Type</th>
+   *       <th>Description</th>
+   *     </tr>
+   *   </thead>
+   *   <tbody>
+   *     <tr>
+   *       <td class="name"><code>item</code></td>
+   *       <td class="type">Element</td>
+   *       <td class="description">Selected Item element</td>
+   *     </tr>
+   *   </tbody>
+   * </table>
    * @type {*}
    * @name selection
    * @ojshortdesc Gets and sets the key of the selected item.
@@ -5214,17 +5381,18 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
    */
 
   /**
-   * The data source for the Tab Bar accepts either a oj.TableDataSource.
+   * The data source for the Tab Bar accepts either a oj.TableDataSource or oj.DataProvider.
    * See the data source section in the introduction for out of the box data source types.
    * If the data attribute is not specified, the child elements are used as content.  If there's no
    * content specified, then an empty list is rendered.
    *
    * @expose
    * @name data
-   * @memberof! oj.ojTabBar
+   * @memberof oj.ojTabBar
    * @instance
    * @ojshortdesc Gets and sets the data provider for tabbar.
-   * @type {oj.TableDataSource}
+   * @type {oj.TableDataSource|oj.DataProvider|null}
+   * @ojsignature {target: "Type", value: "oj.DataProvider<K, D>|null"}
    * @default null
    * @example <caption>Initialize the Tab Bar with the <code class="prettyprint">data</code> attribute specified:</caption>
    *  &lt;oj-tab-bar data='[[tableDataSource]]'> ... &lt;/oj-tab-bar>
@@ -5286,13 +5454,25 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
    * myTabBar.overflow = "popup";
    */
 
+/**
+   * @typedef {Object} oj.ojTabBar.ItemContext
+   * @property {Element} componentElement oj-tab-bar element
+   * @property {oj.DataProvider<K, D>} [datasource] A reference to the data source object. (Not available for static content)
+   * @property {number} index The index of the item, where 0 is the index of the first item.
+   * @property {K} key The Key of the item.
+   * @property {D} data The data object for the item.
+   * @property {Element} parentElement The list item element. The renderer can use this to directly append content.
+   * @ojsignature [{target:"Type", value:"<K, D>", for:"genericTypeParameters"}]
+   */
+
   /**
    * The item property contains a subset of properties for items.
    * @ojshortdesc Customize the functionalities of each tab on Tab bar.  
    * @expose
-   * @memberof! oj.ojTabBar
+   * @memberof oj.ojTabBar
    * @instance
    * @name item
+   * @type {Object}
    */
   /**
    * The renderer function that renders the content of the item. See <a href="#context-section">itemContext</a>
@@ -5311,6 +5491,9 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
    * @name item.renderer
    * @memberof! oj.ojTabBar
    * @instance
+   * @ojsignature { target: "Type",
+   *                value: "?(((context: oj.ojTabBar.ItemContext<K, D>) => void)|null)",
+   *                jsdocOverride: true}
    * @type {function(Object)|null}
    * @default null
    * @example <caption>Initialize the Tab Bar with the <code class="prettyprint">item.renderer</code> attribute specified:</caption>
@@ -5332,6 +5515,9 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
    * @name item.selectable
    * @memberof! oj.ojTabBar
    * @instance
+   * @ojsignature { target: "Type",
+   *                value: "?(((context: oj.ojTabBar.ItemContext<K, D>) => boolean)|boolean)",
+   *                jsdocOverride: true}
    * @type {function(Object)|boolean}
    * @default true
    *
@@ -5352,9 +5538,9 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
    * @name animateStart
    * @memberof oj.ojTabBar
    * @instance
-   * @property {Object} action the action that starts the animation.  See <a href="#animation-section">animation</a> section for a list of actions.
-   * @property {Object} element the target of animation.  
-   * @property {function} endCallback if the event listener calls event.preventDefault to cancel the default animation, it must call the endCallback function when it finishes its own animation handling and when any custom animation ends.
+   * @property {string} action the action that starts the animation.  See <a href="#animation-section">animation</a> section for a list of actions.
+   * @property {Element} element the target of animation.  
+   * @property {function():void} endCallback if the event listener calls event.preventDefault to cancel the default animation, it must call the endCallback function when it finishes its own animation handling and when any custom animation ends.
    */
   /**
    * Triggered when the default animation of a particular action has ended.  Note this event will not be triggered if application cancelled the default animation on animateStart.
@@ -5365,15 +5551,13 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
    * @name animateEnd
    * @memberof oj.ojTabBar
    * @instance
-   * @property {Object} action the action that started the animation.  See <a href="#animation-section">animation</a> section for a list of actions.
-   * @property {Object} element the target of animation.  
+   * @property {string} action the action that started the animation.  See <a href="#animation-section">animation</a> section for a list of actions.
+   * @property {Element} element the target of animation.  
    */
 
   /**
    * <p>Triggered before this list item is selected.
-   * To prevent the item selection, return <code class="prettyprint">false</code> from event handler or invoke <code class="prettyprint">event.preventDefault()</code>.
-   * <p>The <code class="prettyprint">ui.key</code> contains item key which uniquely identifies the item.
-   * <code class="prettyprint">ui.item</code> payload field contains item element being selected.
+   * To prevent the item selection, invoke <code class="prettyprint">event.preventDefault()</code>.
    * @ojshortdesc Event handler for when before the selection is changed.
    * @expose
    * @event
@@ -5381,14 +5565,14 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
    * @name beforeSelect
    * @memberof oj.ojTabBar
    * @instance
-   * @property {Object|string} key Selected list item <a href="#key-section">Key</a>.
+   * @property {*} key Selected list item <a href="#key-section">Key</a>.
    * @property {Element} item Selected list item.
    */
 
  
   /**
    * Triggered before the current item is changed via the <code class="prettyprint">currentItem</code> property or via the UI.
-   * To prevent the item being focused, return <code class="prettyprint">false</code> from event handler or invoke <code class="prettyprint">event.preventDefault()</code>.
+   * To prevent the item being focused, invoke <code class="prettyprint">event.preventDefault()</code>.
    * @ojshortdesc Event handler for when before the current item is changed.
    * @expose
    * @event
@@ -5396,14 +5580,14 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
    * @ojcancelable
    * @name beforeCurrentItem
    * @instance
-   * @property {Object|string} previousKey the <a href="#key-section">Key</a> of the previous item
+   * @property {*} previousKey the <a href="#key-section">Key</a> of the previous item
    * @property {Element} previousItem the previous item
-   * @property {Object|string} key the <a href="#key-section">Key</a> of the new current item
+   * @property {*} key the <a href="#key-section">Key</a> of the new current item
    * @property {Element} item the new current item
    */
   /**
    * Triggered immediately before a tab is deselected.
-   * To prevent the item being deselected, return <code class="prettyprint">false</code> from event handler or invoke <code class="prettyprint">event.preventDefault()</code>.
+   * To prevent the item being deselected, invoke <code class="prettyprint">event.preventDefault()</code>.
    * @ojshortdesc Event handler for when before tab is deselected.
    * @expose
    * @event
@@ -5413,9 +5597,9 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
    * @ojstatus preview
    * @since 4.1.0
    * @instance
-   * @property {Object} fromKey the key of the tab item being navigated from
+   * @property {*} fromKey the <a href="#key-section">Key</a> of the tab item being navigated from
    * @property {Element} fromItem the tab item being navigated from
-   * @property {Object} toKey the key of the tab item being navigated to
+   * @property {*} toKey the <a href="#key-section">Key</a> of the tab item being navigated to
    * @property {Element} toItem the tab item being navigated to
    */
   /**
@@ -5428,14 +5612,14 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
    * @ojstatus preview
    * @since 4.1.0
    * @instance
-   * @property {Object} fromKey the key of the tab item being navigated from
+   * @property {*} fromKey the <a href="#key-section">Key</a> of the tab item being navigated from
    * @property {Element} fromItem the tab item being navigated from
-   * @property {Object} toKey the key of the tab item being navigated to
+   * @property {*} toKey the <a href="#key-section">Key</a> of the tab item being navigated to
    * @property {Element} toItem the tab item being navigated to
    */
   /**
    * Triggered before the item is removed via the UI.
-   * To prevent the item being removed, return <code class="prettyprint">false</code> from event handler or invoke <code class="prettyprint">event.preventDefault()</code>.
+   * To prevent the item being removed, invoke <code class="prettyprint">event.preventDefault()</code>.
    * @ojshortdesc Event handler for when a tab is about to be removed.
    * @expose
    * @event
@@ -5446,7 +5630,7 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
    * @since 4.1.0
    * @instance
    * @property {Element} item Item being removed
-   * @property {string} key Key of the item being removed
+   * @property {*} key <a href="#key-section">Key</a> of the item being removed
    */
   /**
    * Triggered immediately after a tab is removed. This should be used to remove item from dom or from data source.
@@ -5459,7 +5643,7 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
    * @since 4.1.0
    * @instance
    * @property {Element} item Item removed
-   * @property {string} key Key of the item removed
+   * @property {*} key <a href="#key-section">Key</a> of the item removed
    */
   /**
    * Triggered after reordering items within tabbar via drag and drop or cut and paste. This should be used to reorder item in dom or data source.
@@ -5472,15 +5656,23 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
    * @since 4.1.0
    * @instance
    * @property {Element} item Item to be moved
-   * @property {string} position the drop position relative to the reference item. Possible values are "before" and "after".
+   * @property {('before'|'after')} position the drop position relative to the reference item. Possible values are "before" and "after".
    * @property {Element} reference the item where the moved items are drop on.
    */
-      
+  /**
+   * @typedef {Object} oj.ojTabBar.NodeContext
+   * @property {string} subId Sub-id string to identify a particular dom node.
+   * @property {number} index The index of the item, where 0 is the index of the first item.
+   * @property {K} key The Key of the item.
+   * @ojsignature [{target:"Type", value:"<K>", for:"genericTypeParameters"}]
+   */
   /**
    * {@ojinclude "name":"nodeContextDoc"}
    * @param {!Element} node - {@ojinclude "name":"nodeContextParam"}
    * @returns {Object|null} {@ojinclude "name":"nodeContextReturn"}
-   *
+   * @ojsignature { target: "Type", for: "returns",
+   *                value: "oj.ojTabBar.NodeContext<K>|null",
+   *                jsdocOverride: true}
    * @example {@ojinclude "name":"nodeContextExample"}
    * @method
    * @expose
@@ -5499,6 +5691,7 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
    * @memberof oj.ojTabBar
    * @instance
    * @name refresh
+   * @return {void}
    * @method
    * @example <caption>Invoke the <code class="prettyprint">refresh</code> method:</caption>
    *  myTabBar.refresh();
@@ -5803,6 +5996,24 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
    *       </td>     
    *     </tr>
    *     <tr>
+   *       <td>oj-tabbar-hide-remove-icon</td>
+   *       <td> Use this class to hide the remove icon. In this case, Item can be removed using context menu.
+   *       </td>
+   *       <td>
+   *          <pre class="prettyprint">
+   *<code>&lt;oj-tab-bar class="oj-tabbar-hide-remove-icon">
+   *  &lt;ul>    
+   *    &lt;li id="foo" class="oj-removable" >&lt;a href="folder/foo.html">
+   *      &lt;span 
+   *        class="oj-tabbar-item-icon demo-icon-font-24 demo-palette-icon-24">&lt;/span>
+   *      Foo&lt;/a>
+   *    &lt;/li>
+   *  &lt;/ul>
+   *&lt;/oj-tab-bar>
+   *</code></pre>
+   *       </td>     
+   *     </tr>
+   *     <tr>
    *       <td>oj-focus-highlight</td>
    *       <td>{@ojinclude "name":"ojFocusHighlightDoc"}</td>
    *       <td></td>
@@ -5876,6 +6087,10 @@ var ojNavigationListMeta = {
       "type": "string",
       "enumValues": ["sliding", "collapsible", "none"]
     },
+    "expanded": {
+      "type": "object",
+      "writeback": true
+    },
     "edge": {
       "type": "string",
       "enumValues": ["top", "start"]
@@ -5900,6 +6115,23 @@ var ojNavigationListMeta = {
     "selection": {
       "type": "any",
       "writeback": true
+    },
+    "translations": {
+      "type": "Object",
+      "properties": {
+        "defaultRootLabel": {
+          "type": "string",
+          "value": "Navigation List"
+        },
+        "hierMenuBtnLabel": {
+          "type": "string",
+          "value": "Hierarchical Menu button"
+        },
+        "previousIcon": {
+          "type": "string",
+          "value": "Previous"
+        }
+      }
     }
   },
   "events": {
@@ -5960,6 +6192,59 @@ var ojTabBarMeta = {
     "selection": {
       "type": "any",
       "writeback": true
+    },
+    "translations": {
+      "type": "Object",
+      "properties": {
+        "accessibleReorderAfterItem": {
+          "type": "string",
+          "value": "After {item}"
+        },
+        "accessibleReorderBeforeItem": {
+          "type": "string",
+          "value": "Before {item}"
+        },
+        "accessibleReorderTouchInstructionText": {
+          "type": "string",
+          "value": "Double tap and hold.  Wait for the sound then drag to rearrange."
+        },
+        "labelCut": {
+          "type": "string",
+          "value": "Cut"
+        },
+        "labelPasteAfter": {
+          "type": "string",
+          "value": "Paste After"
+        },
+        "labelPasteBefore": {
+          "type": "string",
+          "value": "Paste Before"
+        },
+        "labelRemove": {
+          "type": "string",
+          "value": "Remove"
+        },
+        "msgFetchingData": {
+          "type": "string",
+          "value": "Fetching Data..."
+        },
+        "msgNoData": {
+          "type": "string",
+          "value": "No items to display."
+        },
+        "overflowItemLabel": {
+          "type": "string",
+          "value": "More"
+        },
+        "removeCueText": {
+          "type": "string",
+          "value": "Removable"
+        },
+        "selectedLabel": {
+          "type": "string",
+          "value": "selected"
+        }
+      }
     }
   },
   "events": {

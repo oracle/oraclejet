@@ -1,4 +1,5 @@
 /**
+ * @license
  * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
@@ -16,6 +17,7 @@ define(['ojs/ojcore', 'knockout', 'promise'], function(oj, ko)
 /**
  * ojModule Conventions
  * @namespace
+ * @since 1.1
  */
 oj.ModuleBinding = {};
 
@@ -507,7 +509,9 @@ oj.ModuleBinding._EMPTY_MODULE = "oj:blank";
                   childBindingContext['$parents'] = undefined;
                   childBindingContext['$parentContext'] = undefined;
                   childBindingContext['$props'] = undefined;
+                  childBindingContext['$properties'] = undefined;
                   childBindingContext['$slotNodeCounts'] = undefined;
+                  childBindingContext['$slotCounts'] = undefined;
                   childBindingContext['$unique'] = undefined;
                   childBindingContext['$uniqueId'] = undefined;
                 }
@@ -1044,6 +1048,7 @@ oj.ModuleBinding._EMPTY_MODULE = "oj:blank";
  * @interface
  * @name ConventionMethods
  * @memberof oj.ModuleBinding
+ * @ojtsimport knockout
  */
 
 /**
@@ -1072,6 +1077,7 @@ oj.ModuleBinding._EMPTY_MODULE = "oj:blank";
  * @param {Object} info  - an object with the following key-value pairs:
  * @param {Node} info.element DOM element or where the binding is attached. This may be a 'virtual' element (comment node)
  * @param {Function} info.valueAccessor binding's value accessor
+ * @return {void}
  * @memberof oj.ModuleBinding.ConventionMethods
  */
  
@@ -1095,6 +1101,7 @@ oj.ModuleBinding._EMPTY_MODULE = "oj:blank";
   * @param {Node} info.element DOM element or where the binding is attached. This may be a 'virtual' element (comment node)
   * @param {Function} info.valueAccessor binding's value accessor
   * @param {boolean} info.fromCache - a boolean indicating whether the module was retrieved from cache
+  * @return {void}
   * @memberof oj.ModuleBinding.ConventionMethods
   */
  
@@ -1107,6 +1114,7 @@ oj.ModuleBinding._EMPTY_MODULE = "oj:blank";
   * @param {Object} info  - an object with the following key-value pairs:
   * @param {Node} info.element DOM element or where the binding is attached. This may be a 'virtual' element (comment node)
   * @param {Function} info.valueAccessor binding's value accessor
+  * @return {void}
   * @memberof oj.ModuleBinding.ConventionMethods
   */
   
@@ -1118,6 +1126,7 @@ oj.ModuleBinding._EMPTY_MODULE = "oj:blank";
   * @param {Object} info  - an object with the following key-value pairs:
   * @param {Node} info.element DOM element or where the binding is attached. This may be a 'virtual' element (comment node)
   * @param {Function} info.valueAccessor binding's value accessor
+  * @return {void}
   * @memberof oj.ModuleBinding.ConventionMethods
   */
 
@@ -1129,6 +1138,7 @@ oj.ModuleBinding._EMPTY_MODULE = "oj:blank";
   * @param {Node} info.element DOM element or where the binding is attached. This may be a 'virtual' element (comment node)
   * @param {Function} info.valueAccessor binding's value accessor
   * @param {Array} info.cachedNodes an Array containing cached nodes for the View (if the cache is enabled)
+  * @return {void}
   * @memberof oj.ModuleBinding.ConventionMethods
   */
 
@@ -1139,6 +1149,7 @@ oj.ModuleBinding._EMPTY_MODULE = "oj:blank";
   * @param {Object} info  - an object with the following key-value pairs:
   * @param {Node} info.element DOM element or where the binding is attached. This may be a 'virtual' element (comment node)
   * @param {Function} info.valueAccessor binding's value accessor
+  * @return {void}
   * @memberof oj.ModuleBinding.ConventionMethods
   */
   
@@ -1308,7 +1319,7 @@ oj.ModuleBinding._EMPTY_MODULE = "oj:blank";
  
    /**
    * @name Options
-   * @property {Promise|String|Array<Node>|DocumentFragment} view the View or a Promise for the View.
+   * @property {Promise|string|Array<Node>|DocumentFragment} view the View or a Promise for the View.
    * A value has to be a document fragment, an array of DOM nodes, or a string containing the HTML. This option takes
    * precedence over all other ways to load a View. Note that ojModule will not be cloning the document fragment or the node array provided 
    * by the function before using it as the module's View and applying bindings to it. If the application needs to have access to the original 
@@ -1323,7 +1334,7 @@ oj.ModuleBinding._EMPTY_MODULE = "oj:blank";
    * If you need to create a view-only module, use the <code>viewName</code> option
    * @property {string} viewName View name. If omitted, the name of the View is assumed to be the same as the name of the 
    * VewModel. If the name is set to "oj:blank", an empty View will be displayed, and no ViewModel will be loaded
-   * @property {Function|{instance: Funcion, viewPath: string, modelPath: string}} require an instance of the require()
+   * @property {Function|{instance: Function, viewPath: string, modelPath: string}} require an instance of the require()
    * function to be used by this ojModule, or an object optionally defining the require instance, the View path prefix and
    * the ViewModel path prefix. It is recommended that the instance, the viewPath and the modelPath be defined if you are
    * using ojModule within a Composite component, and you are not passing the View and ViewModel instances to ojModule directly.
@@ -1358,6 +1369,7 @@ oj.ModuleBinding._EMPTY_MODULE = "oj:blank";
    * @interface
    * @name LifecycleListener 
    * @memberof ojModule
+   * @ojtsignore
    */
   
    /**
@@ -1382,6 +1394,7 @@ oj.ModuleBinding._EMPTY_MODULE = "oj:blank";
     * @param {Function} info.valueAccessor binding's value accessor
     * @param {Object} info.viewModel ViewModel for the View being attached
     * @param {boolean} info.fromCache a boolean indicating the view was retrieved from cache
+    * @return {void}
     * @memberof ojModule.LifecycleListener
     * @instance
     */
@@ -1394,6 +1407,7 @@ oj.ModuleBinding._EMPTY_MODULE = "oj:blank";
     * @param {Node} info.element DOM element or where the binding is attached. This may be a 'virtual' element (comment node)
     * @param {Function} info.valueAccessor binding's value accessor
     * @param {Object} info.viewMode ViewModel for the new View
+    * @return {void}
     * @memberof ojModule.LifecycleListener
     * @instance
     */
@@ -1406,6 +1420,7 @@ oj.ModuleBinding._EMPTY_MODULE = "oj:blank";
     * @param {Node} info.element DOM element or where the binding is attached. This may be a 'virtual' element (comment node)
     * @param {Function} info.valueAccessor binding's value accessor
     * @param {Object} info.viewMode ViewModel for the new View
+    * @return {void}
     * @memberof ojModule.LifecycleListener
     * @instance
     */
@@ -1419,6 +1434,7 @@ oj.ModuleBinding._EMPTY_MODULE = "oj:blank";
     * @param {Function} info.valueAccessor binding's value accessor
     * @param {Object} info.viewModel ViewModel for the View being attached
     * @param {Array} info.cachedNodes an Array containing cached nodes for the View (if the cache is enabled)
+    * @return {void}
     * @memberof ojModule.LifecycleListener
     * @instance
     */
@@ -1430,6 +1446,7 @@ oj.ModuleBinding._EMPTY_MODULE = "oj:blank";
     * @param {Node} info.element DOM element or where the binding is attached. This may be a 'virtual' element (comment node)
     * @param {Function} info.valueAccessor binding's value accessor
     * @param {Object} info.viewModel ViewModel for the View being attached
+    * @return {void}
     * @memberof ojModule.LifecycleListener
     * @instance
     */
@@ -1440,6 +1457,7 @@ oj.ModuleBinding._EMPTY_MODULE = "oj:blank";
    * @interface
    * @name ModuleAnimation 
    * @memberof ojModule
+   * @ojtsignore
    */
    
    /**

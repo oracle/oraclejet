@@ -7,7 +7,7 @@ define(['./DvtToolkit', './DvtAxis', './DvtLegend', './DvtOverview'], function(d
   // Internal use only.  All APIs and functionality are subject to change at any time.
 
 (function(dvt) {
-// Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
+// Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
 
 /**
  * Chart component.
@@ -1604,6 +1604,7 @@ dvt.Chart.prototype.__restoreChartFocus = function(focusState) {
 dvt.Chart.prototype.getRawOptions = function() {
   return this._rawOptions;
 };
+
 // Active Data Support for Charts
 /**
  * Processes an array of active data changes and updates the component.
@@ -1835,6 +1836,7 @@ dvt.Chart.prototype._findDataItemById = function(id, stampId) {
   // Return null if no match found
   return null;
 };
+
 /**
  *  Provides automation services for a DVT component.
  *  @class DvtChartAutomation
@@ -2385,6 +2387,7 @@ dvt.Automation.prototype.IsTooltipElement = function(domElement) {
   return false;
 };
 
+
 // TODO DELETE ME.
 dvt.Bundle.addDefaultStrings(dvt.Bundle.CHART_PREFIX, {
   'DEFAULT_GROUP_NAME': 'Group {0}',
@@ -2413,6 +2416,7 @@ dvt.Bundle.addDefaultStrings(dvt.Bundle.CHART_PREFIX, {
   'MARQUEE_ZOOM': 'Marquee zoom',
   'PAN': 'Pan'
 });
+
 
 /**
  * Event Manager for dvt.Chart.
@@ -2514,7 +2518,7 @@ DvtChartEventManager.prototype._getDragHandler = function(relPos) {
       (this._dragMode == DvtChartEventManager.DRAG_MODE_PAN || this._dragMode == DvtChartEventManager.DRAG_MODE_ZOOM)) {
     // For BLAC chart on desktop, the pan and zoom modes are combined.
     // If the drag starts inside the plot area, it's a pan. If the drag starts inside the axis, it's a marquee zoom.
-    if (this._panZoomHandler.isWithinBounds(relPos))
+    if (this._panZoomHandler && this._panZoomHandler.isWithinBounds(relPos))
       this._dragMode = DvtChartEventManager.DRAG_MODE_PAN;
     else
       this._dragMode = DvtChartEventManager.DRAG_MODE_ZOOM;
@@ -3503,6 +3507,15 @@ DvtChartEventManager.prototype._getDropObject = function(event) {
 
   return dropObject;
 };
+
+/**
+ * @override
+ */
+DvtChartEventManager.prototype.isClearMenuAllowed = function(logicalObject)
+{
+  return logicalObject && logicalObject.getParams && logicalObject.getParams().type == 'plotArea';
+};
+
 /*---------------------------------------------------------------------------------*/
 /*  DvtChartKeyboardHandler     Keyboard handler for Chart                         */
 /*---------------------------------------------------------------------------------*/
@@ -3640,6 +3653,7 @@ DvtChartKeyboardHandler.prototype.getDefaultNavigable = function(navigableItems)
 
   return defaultNavigable;
 };
+
 // Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
 /**
  * Logical object for chart data object displayables.
@@ -4299,6 +4313,7 @@ DvtChartObjPeer.prototype.getDragFeedback = function(mouseX, mouseY) {
   // Otherwise, return its own displayables
   return this._displayables;
 };
+
 /**
  * Logical object for reference object displayables.
  * @param {dvt.Chart} chart
@@ -4386,6 +4401,7 @@ DvtChartRefObjPeer.prototype.getDatatip = function(target) {
 DvtChartRefObjPeer.prototype.getDatatipColor = function() {
   return DvtChartRefObjUtils.getColor(this._refObj);
 };
+
 /**
   * Creates an object representing the ID of a chart data item.
   * @constructor
@@ -4460,6 +4476,7 @@ DvtChartDataItem.prototype.toString = function() {
   else
     return DvtChartDataUtils.createDataItemId(this['series'], this['group']);
 };
+
 /**
  * Default values and utility functions for component versioning.
  * @class
@@ -4698,6 +4715,7 @@ DvtChartDefaults.prototype.getNoCloneObject = function(chart) {
   // TODO: Put logic for no clone here
   return {};
 };
+
 // Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
 /*---------------------------------------------------------------------*/
 /*  DvtChartDataCursorHandler                 Data Cursor Event Handler                  */
@@ -4936,6 +4954,7 @@ DvtChartDataCursorHandler.prototype._getClosestMatch = function(x, y) {
   }
   return DvtChartDataCursorHandler._getClosestMatchSecondDirection(matchesInBounds, horizontal, x, y);
 };
+
 // Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
 /**
   *  Creates a selectable shape using SVG path commands.
@@ -5237,6 +5256,7 @@ DvtChartSelectableWedge.prototype.setSelected = function(selected)
 DvtChartSelectableWedge.prototype.UpdateSelectionEffect = function() {
   // noop: Selection effects fully managed by this class
 };
+
 // Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
 /**
  * A selectable polygon displayable.
@@ -5461,6 +5481,7 @@ DvtChartSelectableRectangularPolygon.prototype._createPointsArray = function(ins
   var y2 = this._y2 - inset;
   return [x1, y1, x2, y1, x2, y2, x1, y2];
 };
+
 /**
  * Axis component for use by dvt.Chart.  This class exposes additional functions needed for
  * rendering grid lines and data items.
@@ -5775,6 +5796,7 @@ DvtChartAxis.prototype.getMinCoord = function() {
 DvtChartAxis.prototype.getMaxCoord = function() {
   return this.axisToPlotArea(Math.max(this.Info.getStartCoord(), this.Info.getEndCoord()));
 };
+
 // Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
 /**
   *  A selectable bar for charting.
@@ -6127,6 +6149,7 @@ DvtChartBar.prototype.getDimensionsSelf = function(targetCoordinateSpace) {
   //       existing getDimensions calls.  For now, components must be aware of the presence of children to use this.
   return this.ConvertCoordSpaceRect(this.getBoundingBox(), targetCoordinateSpace);
 };
+
 /**
  * Displayable for box and whisker shape (box plot).
  * @extends {dvt.Container}
@@ -6628,6 +6651,7 @@ DvtChartBoxAndWhisker.prototype._cleanUp = function() {
   this._outerBorderShape = null;
   this._innerBorderShape = null;
 };
+
 /**
  * Displayable for stock bars.
  * @extends {dvt.Container}
@@ -6850,6 +6874,7 @@ DvtChartCandlestick._getInitialPoints = function(points) {
   var yMid = (y1 + y2) / 2;
   return [x1, yMid, x2, yMid, x2, yMid, x1, yMid];
 };
+
 // Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
 
 /**
@@ -6893,6 +6918,7 @@ DvtChartCoord.prototype.isUpstep = function(baseline) {
 DvtChartCoord.prototype.clone = function() {
   return new DvtChartCoord(this.x, this.y1, this.y2, this.groupIndex, this.group, this.filtered);
 };
+
 /**
  * A collection of line/area shapes for a chart series.
  * Usually there's only one shape for each series, but there can be multiple if there are null values in the data.
@@ -7541,6 +7567,7 @@ DvtChartLineArea._removeAreaEdge = function(arCoord, index, baseline) {
     coord.y2 = coord.y1;
   arCoord[index] = coord;
 };
+
 // Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
 /**
   *  A marker object for selectable invisible markers.
@@ -7634,6 +7661,7 @@ DvtChartLineMarker.prototype.setSelected = function(selected)
 DvtChartLineMarker.prototype.UpdateSelectionEffect = function() {
   // noop: Selection effects fully managed by this class
 };
+
 /**
  * Overview window for chart.
  * @param {dvt.Chart} chart The parent chart who owns the overview.
@@ -7792,6 +7820,7 @@ DvtChartOverview.prototype.HandleKeyDown = function(event) {
 DvtChartOverview.prototype.HandleKeyUp = function(event) {
   return; // remove keyboard behavior
 };
+
 // Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
 /**
   *  A selectable polar bar for charting.
@@ -7969,6 +7998,7 @@ DvtChartPolarBar.prototype._setBarCoords = function(baselineCoord, endCoord, x1,
 DvtChartPolarBar.prototype.getBoundingBox = function() {
   return this._bbox;
 };
+
 /**
  * A marker for range area chart.
  * @class DvtChartRangeMarker
@@ -8158,6 +8188,7 @@ DvtChartRangeMarker.prototype.getBoundingBox1 = function() {
 DvtChartRangeMarker.prototype.getBoundingBox2 = function() {
   return new dvt.Rectangle(this._x2 - this._markerSize / 2, this._y2 - this._markerSize / 2, this._markerSize, this._markerSize);
 };
+
 /**
  * Data cursor component.
  * @extends {dvt.Container}
@@ -8342,6 +8373,7 @@ DvtChartDataCursor.prototype.getBehavior = function() {
 DvtChartDataCursor.prototype.setBehavior = function(behavior) {
   this._behavior = behavior;
 };
+
 // Copyright (c) 2013, 2017, Oracle and/or its affiliates. All rights reserved.
 /**
   *  Creates a funnel shape.
@@ -8787,6 +8819,7 @@ DvtChartFunnelSlice.prototype.hideHoverEffect = function() {
 DvtChartFunnelSlice.prototype.copyShape = function() {
   return new DvtChartFunnelSlice(this._chart, this._seriesIndex, this._numDrawnSeries, this._funnelWidth, this._funnelHeight, this._startPercent, this._valuePercent, this._fillPercent, this._gap);
 };
+
 /**
   *  Creates a pyramid shape.
   *  @extends {dvt.Path}
@@ -9188,6 +9221,7 @@ DvtChartPyramidSlice.prototype.copyShape = function() {
 DvtChartPyramidSlice.prototype.getPrimaryFill = function() {
   return this._mainFace ? this._mainFace.getFill() : this.getFill();
 };
+
 // Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
 /*---------------------------------------------------------------------*/
 /*   DvtChartPie                                                       */
@@ -10085,6 +10119,7 @@ DvtChartPie.prototype.getCenterLabel = function() {
   return this._centerLabel;
 };
 
+
 // Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
 /*---------------------------------------------------------------------*/
 /*   DvtChartPieSlice                                                       */
@@ -10367,8 +10402,9 @@ DvtChartPieSlice.prototype.preRender = function() {
     this._crustSurface = DvtChartPieRenderUtils.createLateralSurface(this, DvtChartPieRenderUtils.SURFACE_CRUST, crustFill);
   }
 
-  // Clear slice label from previous render
+  // Clear slice label and feelers from previous render
   this.setSliceLabel(null);
+  this.setNoOutsideFeeler();
 };
 
 
@@ -11423,6 +11459,7 @@ DvtChartPieSlice.createFillerSlice = function(pieChart, value) {
 DvtChartPieSlice.prototype.getSeriesIndex = function() {
   return this._seriesIndex;
 };
+
 // Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 /**
  *   Animation on Display funtionality.
@@ -11681,6 +11718,7 @@ DvtChartAnimOnDisplay._getMeanPoints = function(params) {
       params[i] = mean;
   }
 };
+
 // Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 
 
@@ -11848,6 +11886,7 @@ DvtChartAnimOnDC._canAnimate = function(oldChart, newChart)
   else
     return false;
 };
+
 /**
  * Data context for an old chart during a data change animation.
  * @param {dvt.Chart} chart The actual chart, before being updated with the new data.
@@ -11882,6 +11921,7 @@ DvtChartDataChange.prototype.getCache = function() {
 DvtChartDataChange.prototype.getOptionsCache = function() {
   return this._optionsCache;
 };
+
 /**
   *  Abstract Data change handler for a chart object peer.
   *  @extends {dvt.Obj}
@@ -11996,6 +12036,7 @@ DvtChartDataChangeAbstract.prototype.setOldChart = function(chart)
 {
   this._oldChart = chart;
 };
+
 // Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 /**
  *  Data change Handler for 2D Bar Riser (implements DvtChartDataChangeAbstract).
@@ -12122,9 +12163,12 @@ DvtChartDataChangeBar.prototype._setAnimationParams = function(ar) {
  * @private
  */
 DvtChartDataChangeBar.prototype._onEndAnimation = function() {
-  this._indicator.getParent().removeChild(this._indicator);
-  this._indicator = null;
+  if(this._indicator) {
+    this._indicator.getParent().removeChild(this._indicator);
+    this._indicator = null;
+  }
 };
+
 // Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 /**
  *  Data change handler for box & whisker shape (implements DvtChartDataChangeAbstract).
@@ -12148,6 +12192,7 @@ DvtChartDataChangeBoxAndWhisker.prototype.Init = function(peer, duration) {
 
   this._animId += '/boxAndWhisker';
 };
+
 // Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 
 /**
@@ -12366,6 +12411,7 @@ DvtChartDataChangeLineArea.prototype.Init = function(peer, duration) {
   this._chart = this._peer.getChart();
   this._animId += '/' + (this._shape.isArea() ? 'area' : 'line');
 };
+
 // Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 /**
   *  Data change Handler for markers.
@@ -12497,6 +12543,7 @@ DvtChartDataChangeMarker.prototype.Init = function(peer, duration) {
 
   this._animId += '/marker';
 };
+
 /**
  *  Data change handler for range markers (implements DvtChartDataChangeAbstract).
  *  @extends {DvtChartDataChangeAbstract}
@@ -12562,6 +12609,7 @@ DvtChartDataChangeRangeMarker.prototype.animateUpdate = function(handler, oldDC)
 
   handler.add(nodePlayable, 1);
 };
+
 // Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 /*---------------------------------------------------------------------*/
 /*  DvtChartDataChangeUtils()                                                       */
@@ -12652,6 +12700,7 @@ DvtChartDataChangeUtils._drawIndicator = function(context, bDown, bHoriz, fc)
   ret.setSolidFill(fc);
   return ret;
 };
+
 // Copyright (c) 2013, 2016, Oracle and/or its affiliates. All rights reserved.
 
 
@@ -12759,6 +12808,7 @@ DvtChartDataChangeFunnelSlice.prototype.Init = function(peer, duration) {
 
   this._animId += '/funnel';
 };
+
 /**
  *  Data change Handler for DvtChartPyramidSlice (implements DvtChartDataChangeAbstract).
  *  @extends {DvtChartDataChangeAbstract}
@@ -12853,6 +12903,7 @@ DvtChartDataChangePyramidSlice.prototype.Init = function(peer, duration) {
 
   this._animId += '/pyramid';
 };
+
 /**
  * Axis related utility functions for dvt.Chart.
  * @class
@@ -13474,6 +13525,7 @@ DvtChartAxisUtils.axisContainsPoint = function(axis, relPos) {
   var axisPos = axis.stageToLocal(relPos);
   return bounds.containsPoint(axisPos.x, axisPos.y);
 };
+
 /**
  * Data related utility functions for dvt.Chart.
  * @class
@@ -14345,8 +14397,8 @@ DvtChartDataUtils._getGroupsArray = function(chart) {
  * @private
  */
 DvtChartDataUtils._getNestedGroups = function(groups, groupsArray) {
-  if (!groups)
-    return;
+  if (!groups || (groups && groups.length == 0))
+    return [];
 
   for (var i = 0; i < groups.length; i++) {
     var group = groups[i];
@@ -14363,8 +14415,8 @@ DvtChartDataUtils._getNestedGroups = function(groups, groupsArray) {
 
     if (group && group['groups']) {
       var innerGroupArray = DvtChartDataUtils._getNestedGroups(group['groups'], []);
-      if (!innerGroupArray)
-        innerGroupArray = [{'id': [], 'name': []}];
+      if (innerGroupArray.length == 0)
+        innerGroupArray.push({'id': [], 'name': []});
       for (var j = 0; j < innerGroupArray.length; j++) {
         innerGroupArray[j]['id'].unshift(elementId);
         innerGroupArray[j]['name'].unshift(elementName);
@@ -15704,6 +15756,7 @@ DvtChartDataUtils.getFilteredChartObjPeers = function(chart) {
 
   return filteredPeers;
 };
+
 /**
  * Utility functions for dvt.Chart eventing and interactivity.
  * @class
@@ -16327,6 +16380,7 @@ DvtChartEventUtils.addPlotAreaDnDBackground = function(chart, container, availSp
       background.setClassName('oj-draggable');
   }
 };
+
 /**
  * Reference object related utility functions for dvt.Chart.
  * @class
@@ -16559,6 +16613,7 @@ DvtChartRefObjUtils.getViewportMinMaxIndex = function(chart, items) {
 
   return {'min': minIndex, 'max': maxIndex};
 };
+
 /**
  * Series effect utility functions for dvt.Chart.
  * @class
@@ -16787,6 +16842,7 @@ DvtChartSeriesEffectUtils._useAltaGradients = function(chart)
 {
   return !DvtChartDefaults.isSkyrosSkin(chart);
 };
+
 /**
  * Style related utility functions for dvt.Chart.
  * @class
@@ -18369,6 +18425,7 @@ DvtChartStyleUtils._setBoxPlotDefaultLineColor = function(boxPlotOptions, prefix
   if (!lineSvgStyle['stroke'] && !boxPlotOptions[prefix + 'ClassName'] && !boxPlotOptions[prefix + 'SvgClassName'])
     boxPlotOptions[prefix + 'SvgStyle']['stroke'] = defaultLineColor;
 };
+
 /**
  * Text related utility functions.
  * @class
@@ -18412,6 +18469,7 @@ DvtChartTextUtils.areTitlesRendered = function(chart) {
   var options = chart.getOptions();
   return options['title']['text'] || options['subtitle']['text'] || options['footnote']['text'];
 };
+
 /**
  * Utility functions for dvt.Chart.
  * @class
@@ -18921,6 +18979,7 @@ DvtChartTooltipUtils.getDataCursorBehavior = function(chart) {
   // auto
   return DvtChartTypeUtils.isLineArea(chart) ? DvtChartDataCursor.BEHAVIOR_SMOOTH : DvtChartDataCursor.BEHAVIOR_SNAP;
 };
+
 /**
  * Utility functions for dvt.Chart.
  * @class
@@ -19458,6 +19517,7 @@ DvtChartTypeUtils.isStandaloneY2Axis = function(chart) {
     return false;
   return true;
 };
+
 /**
  * Bubble chart utility functions for dvt.Chart.
  * @class
@@ -19661,6 +19721,7 @@ DvtChartMarkerUtils.updatePixelMap = function(pixelMap, markerX, markerY, marker
   var y2 = Math.max(Math.round(markerY + halfSize), 0);
   pixelMap.obscure(x1, y1, x2, y2, alpha);
 };
+
 /**
  * Utility functions for pie chart.
  * @class
@@ -19898,6 +19959,7 @@ DvtChartPieUtils.getSliceBySeriesIndex = function(chart, seriesIndex) {
   }
   return null;
 };
+
 // Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 /**
  * @class DvtChartPieRenderUtils
@@ -20403,6 +20465,7 @@ DvtChartPieRenderUtils._generateInnerPoints = function(cx, cy, xpos, ypos, tilt)
   pointArray.push({x: cx, y: cy + tilt});
   return pointArray;
 };
+
 // Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 /*---------------------------------------------------------------------*/
 /* Class DvtChartPieLabelInfo       Slice label information               */
@@ -20667,6 +20730,7 @@ DvtChartPieLabelInfo.prototype.getY = function() {
 DvtChartPieLabelInfo.prototype.setY = function(y) {
   this._y = y;
 };
+
 // Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
 /*---------------------------------------------------------------------*/
 /*   DvtChartPieLabelUtils                                                  */
@@ -21806,6 +21870,7 @@ DvtChartPieLabelUtils.getPieCenterOptions = function(options) {
 DvtChartPieLabelUtils._skipSliceLabel = function(pie, slice) {
   return slice.getAngleExtent() < 3 && DvtChartDataUtils.getSeriesCount(pie.chart) > 120;
 };
+
 /**
  * Renderer for dvt.Chart.
  * @class
@@ -22710,6 +22775,7 @@ DvtChartRenderer.renderDataCursor = function(chart) {
 
   return dataCursor;
 };
+
 /**
  * Performs layout and positioning for the chart axes.
  * @class
@@ -23429,6 +23495,7 @@ DvtChartAxisRenderer._storeAxes = function(chart, xInfo, yInfo, y2Info) {
   chart.yAxis = yInfo ? yInfo.axis : null;
   chart.y2Axis = y2Info ? y2Info.axis : null;
 };
+
 /**
  * Performs layout and positioning for the chart legend.
  * @class
@@ -23832,6 +23899,7 @@ DvtChartLegendRenderer._getRefObjItems = function(chart) {
 
   return items;
 };
+
 /**
  * Renderer for the plot area of a dvt.Chart.
  * @class
@@ -25838,6 +25906,7 @@ DvtChartPlotAreaRenderer._extendClipGroup = function(chart) {
 
   return 0;
 };
+
 /**
  * Renderer for funnel chart.
  * @class
@@ -25973,6 +26042,7 @@ DvtChartFunnelRenderer._renderFunnelSlices = function(chart, container, availSpa
   }
   return true;
 };
+
 /**
  * Renderer for pyramid chart.
  * @class
@@ -26074,6 +26144,7 @@ DvtChartPyramidRenderer._renderPyramidSlices = function(chart, container, availS
   }
   return true;
 };
+
 /**
  * Renderer for the reference objects of a dvt.Chart.
  * @class
@@ -26423,6 +26494,7 @@ DvtChartRefObjRenderer._getAxisCoord = function(chart, axis, value) {
 
   return null;
 };
+
 // Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
 
 /**
@@ -26503,6 +26575,10 @@ dvt.SparkChart.prototype.Init = function(context, callback, callbackObj) {
  */
 dvt.SparkChart.prototype.SetOptions = function(options) {
   if (options) {
+    // DataProvider Support : Must be done before setting this.Options
+    //if (options['data'])
+      //options['items'] = options['data'];
+      
     // Combine the user options with the defaults and store
     this.Options = this.Defaults.calcOptions(options);
 
@@ -26644,6 +26720,7 @@ dvt.SparkChart.prototype.__getLogicalObject = function()
 {
   return this._peer;
 };
+
 /**
  *  Provides automation services for a DVT component.
  *  @class DvtSparkChartAutomation
@@ -26689,6 +26766,7 @@ DvtSparkChartAutomation.prototype.getDataItem = function(itemIndex) {
   }
   return null;
 };
+
 /**
  * Default values and utility functions for chart versioning.
  * @class
@@ -26719,12 +26797,13 @@ DvtSparkChartDefaults.VERSION_1 = {
   'type': 'line',
   'animationOnDisplay': 'none',
   'animationOnDataChange': 'none',
+  'areaSvgClassName': '',
   'emptyText': null,
   'color': '#666699',
-  'firstColor': null,
-  'lastColor': null,
-  'highColor': null,
-  'lowColor': null,
+  'firstColor': '',
+  'lastColor': '',
+  'highColor': '',
+  'lowColor': '',
   'visualEffects': 'auto',
   'baselineScaling': 'min',
   'barSpacing': 'auto',
@@ -26734,8 +26813,19 @@ DvtSparkChartDefaults.VERSION_1 = {
   'markerSize': 5,
   'markerShape': 'auto',
   'barGapRatio': 0.25,
+  'referenceObjects': [],
+  'svgClassName': '',
   '_statusMessageStyle': new dvt.CSSStyle('font-size: 12px; color: #404259;')
 };
+
+/**
+ * @override
+ */
+DvtSparkChartDefaults.prototype.getAnimationDuration = function(options)
+{ 
+  return options['animationDuration'];
+};
+
 /**
  * Event Manager for dvt.SparkChart.
  * @param {dvt.SparkChart} sparkChart
@@ -26774,6 +26864,7 @@ DvtSparkChartEventManager.prototype.OnBlur = function(event) {
   DvtSparkChartEventManager.superclass.OnBlur.call(this, event);
   this.hideTooltip();
 };
+
 /**
  * Renderer for dvt.SparkChart.
  * @class
@@ -26952,7 +27043,7 @@ DvtSparkChartRenderer._convertOptionsObj = function(spark) {
   chartOptions['series'] = [{'items': chartItems, 'areaColor': options['areaColor'], 'svgClassName': (options['className'] || options['svgClassName']), 'svgStyle': (options['style'] || options['svgStyle']), 'areaSvgClassName': (options['areaClassName'] || options['areaSvgClassName']), 'areaStyle': (options['areaStyle'] || options['areaSvgStyle'])}];
 
   // Reference Objects
-  if (options['referenceObjects'])
+  if (options['referenceObjects'] && options['referenceObjects'].length > 0)
     chartOptions['yAxis']['referenceObjects'] = options['referenceObjects'];
 
   //**************************** Style Attributes ****************************/
@@ -26969,7 +27060,9 @@ DvtSparkChartRenderer._convertOptionsObj = function(spark) {
   chartOptions['animationOnDisplay'] = options['animationOnDisplay'];
   chartOptions['emptyText'] = options['emptyText'];
 
-  chartOptions['styleDefaults']['colors'] = [options['color']];
+  if (options['color'])
+    chartOptions['styleDefaults']['colors'] = [options['color']];
+    
   chartOptions['styleDefaults']['animationDuration'] = options['animationDuration'];
   chartOptions['styleDefaults']['animationIndicators'] = 'none';
   chartOptions['styleDefaults']['lineWidth'] = options['lineWidth'];
@@ -27006,6 +27099,7 @@ DvtSparkChartRenderer._convertOptionsObj = function(spark) {
 
   return chartOptions;
 };
+
 dvt.exportProperty(dvt, 'Chart', dvt.Chart);
 dvt.exportProperty(dvt.Chart, 'newInstance', dvt.Chart.newInstance);
 dvt.exportProperty(dvt.Chart.prototype, 'destroy', dvt.Chart.prototype.destroy);
@@ -27042,7 +27136,7 @@ dvt.exportProperty(dvt.SparkChart.prototype, 'getDefaults', dvt.SparkChart.proto
 dvt.exportProperty(dvt.SparkChart.prototype, 'render', dvt.SparkChart.prototype.render);
 
 dvt.exportProperty(DvtSparkChartAutomation.prototype, 'getDataItem', DvtSparkChartAutomation.prototype.getDataItem);
-})(dvt);
 
+})(dvt);
   return dvt;
 });

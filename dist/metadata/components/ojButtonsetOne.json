@@ -1,7 +1,7 @@
 {
   "name": "oj-buttonset-one",
-  "version": "4.2.0",
-  "jetVersion": "4.2.0",
+  "version": "5.0.0",
+  "jetVersion": "5.0.0",
   "displayName": "Buttonset One",
   "preview": true,
   "roles": [
@@ -24,12 +24,6 @@
   ],
   "description": "A grouping of related buttons where only one button may be selected.",
   "properties": {
-    "translations": {
-      "description": "A collection of translated resources from the translation bundle, or null if this\ncomponent has no resources. Resources may be accessed and overridden individually or collectively, as seen in the examples.\n\nIf this component has translations, their documentation immediately follows this doc entry.",
-      "type": "Object",
-      "displayName": "Translations",
-      "value": null
-    },
     "chroming": {
       "description": "Indicates in what states the buttonset has chrome (background and border).",
       "type": "string|undefined",
@@ -100,6 +94,12 @@
         }
       }
     },
+    "translations": {
+      "description": "A collection of translated resources from the translation bundle, or null if this\ncomponent has no resources. Resources may be accessed and overridden individually or collectively, as seen in the examples. If the component does not contain any translatable resource, the default value of this attribute will be \nnull. If not, an object containing all resources relevant to the component.\n\nIf this component has translations, their documentation immediately follows this doc entry.",
+      "type": "Object|null",
+      "displayName": "Translations",
+      "translatable": true
+    },
     "value": {
       "description": "Indicates which oj-option in the buttonset is selected.",
       "type": "*",
@@ -110,7 +110,8 @@
   },
   "methods": {
     "refresh": {
-      "description": "Refreshes the component."
+      "description": "Refreshes the component.",
+      "return": "void"
     },
     "setProperty": {
       "description": "Sets a property or a single subproperty for complex properties and notifies the component\nof the change, triggering a [property]Changed event.",
@@ -125,7 +126,8 @@
           "description": "The new value to set the property to.",
           "type": "*"
         }
-      ]
+      ],
+      "return": "void"
     },
     "getProperty": {
       "description": "Retrieves a value for a property or a single subproperty for complex properties.",
@@ -146,7 +148,8 @@
           "description": "An object containing the property and value pairs to set.",
           "type": "Object"
         }
-      ]
+      ],
+      "return": "void"
     }
   },
   "slots": {

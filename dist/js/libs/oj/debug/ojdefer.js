@@ -1,10 +1,33 @@
 /**
+ * @license
  * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
 define(['ojs/ojcore', 'jquery', 'knockout', 'ojs/ojkoshared', 'customElements'], function(oj, $, ko)
 {
+/**
+ * @protected
+ * @ignore
+ */
+(function () {
+  oj.__KO_CUSTOM_BINDING_PROVIDER_INSTANCE.addPostprocessor
+    (
+      {
+        'nodeHasBindings': function (node, wrappedReturn) {
+          return wrappedReturn || (node.nodeType === 1 && 'oj-defer' === node.nodeName.toLowerCase());
+        },
+        'getBindingAccessors': function (node, bindingContext, wrappedReturn) {
+          if (node.nodeType === 1 && 'oj-defer' === node.nodeName.toLowerCase()) {
+            wrappedReturn = wrappedReturn || {};
+            wrappedReturn['_ojDefer_'] = function () {}
+          }
+          return wrappedReturn;
+        }
+      }
+    );
+})();
+
 ko['bindingHandlers']['_ojDefer_'] =
   {
     'init': function (element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) 
@@ -57,8 +80,10 @@ ko['bindingHandlers']['_ojDefer_'] =
 
 /**
  * @ojstatus preview
+ * @since 4.0.0
  * @ojcomponent oj.ojDefer
- * @ojshortdesc Defer Element
+ * @ojshortdesc Used to delay applying bindings to its children until it is activated. Child elements are disconnected from the DOM tree until the parent component activates its subtree.
+ * @ojsignature {target: "Type", value:"class ojDefer extends JetElement<ojDeferSettableProperties>"}
  * @classdesc
  * The oj-defer custom element delays applying bindings to its children until it is activated.
  * It works by disconnecting child elements from the DOM tree until the parent component activates its subtree. In addition, the tag will
@@ -68,7 +93,6 @@ ko['bindingHandlers']['_ojDefer_'] =
  * <li>Collapsible</li>
  * <li>Dialog</li>
  * <li>Film Strip</li>
- * <li>Menu</li>
  * <li>Off Canvas</li>
  * <li>Popup</li>
  * <li>MasonryLayout</li>
@@ -137,24 +161,6 @@ ko['bindingHandlers']['_ojDefer_'] =
       customElements.define('oj-defer', constructorFunc);
   };
   oj.DeferElement.register();
-})();
-
-(function () {
-  oj.__KO_CUSTOM_BINDING_PROVIDER_INSTANCE.addPostprocessor
-    (
-      {
-        'nodeHasBindings': function (node, wrappedReturn) {
-          return wrappedReturn || (node.nodeType === 1 && 'oj-defer' === node.nodeName.toLowerCase());
-        },
-        'getBindingAccessors': function (node, bindingContext, wrappedReturn) {
-          if (node.nodeType === 1 && 'oj-defer' === node.nodeName.toLowerCase()) {
-            wrappedReturn = wrappedReturn || {};
-            wrappedReturn['_ojDefer_'] = function () {}
-          }
-          return wrappedReturn;
-        }
-      }
-    );
 })();
 
 });
